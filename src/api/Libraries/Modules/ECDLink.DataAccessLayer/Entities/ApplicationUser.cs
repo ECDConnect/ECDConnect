@@ -1,0 +1,91 @@
+using ECDLink.Abstractrions.GraphQL.Attributes;
+using ECDLink.Core.Models;
+using ECDLink.DataAccessLayer.Entities.Interfaces;
+using ECDLink.DataAccessLayer.Entities.Notes;
+using HotChocolate;
+using Microsoft.AspNetCore.Identity;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace ECDLink.DataAccessLayer.Entities
+{
+    public class ApplicationUser : ApplicationIdentityUser, IMultiUserType, RaceJoin<Guid?>, GenderJoin<Guid?>
+    {
+        [ForeignKey(nameof(RaceId))]
+        public virtual Race Race { get; set; }
+
+        public Guid? RaceId { get; set; }
+
+        [ForeignKey(nameof(GenderId))]
+        public virtual Gender Gender { get; set; }
+
+        public Guid? GenderId { get; set; }
+
+        [GraphIgnoreInput]
+        public virtual ICollection<Note> Notes { get; set; }
+
+        [GraphIgnoreInput]
+        public virtual ICollection<Documents.Document> Documents { get; set; }
+
+        [GraphIgnoreInput]
+        public override string Id { get => base.Id; set => base.Id = value; }
+        public override string UserName { get => base.UserName; set => base.UserName = value; }
+        public override string NormalizedUserName { get => base.NormalizedUserName; set => base.NormalizedUserName = value; }
+        public override string Email { get => base.Email; set => base.Email = value; }
+        public override string NormalizedEmail { get => base.NormalizedEmail; set => base.NormalizedEmail = value; }
+        public override bool EmailConfirmed { get => base.EmailConfirmed; set => base.EmailConfirmed = value; }
+        public override string PhoneNumber { get => base.PhoneNumber; set => base.PhoneNumber = value; }
+        public override bool PhoneNumberConfirmed { get => base.PhoneNumberConfirmed; set => base.PhoneNumberConfirmed = value; }
+        public override bool TwoFactorEnabled { get => base.TwoFactorEnabled; set => base.TwoFactorEnabled = value; }
+
+        // Graph Ignores
+        [GraphQLIgnore]
+        public override DateTimeOffset? LockoutEnd { get => base.LockoutEnd; set => base.LockoutEnd = value; }
+
+        [GraphQLIgnore]
+        public override bool LockoutEnabled { get => base.LockoutEnabled; set => base.LockoutEnabled = value; }
+
+        [GraphQLIgnore]
+        public override int AccessFailedCount { get => base.AccessFailedCount; set => base.AccessFailedCount = value; }
+
+        [GraphQLIgnore]
+        public override string PasswordHash { get => base.PasswordHash; set => base.PasswordHash = value; }
+
+        [GraphQLIgnore]
+        public override string SecurityStamp { get => base.SecurityStamp; set => base.SecurityStamp = value; }
+
+        [GraphQLIgnore]
+        public override string ConcurrencyStamp { get => base.ConcurrencyStamp; set => base.ConcurrencyStamp = value; }
+
+        [GraphQLIgnore]
+        public int Age
+        {
+            get
+            {
+                if (DateOfBirth != default(DateTime))
+                {
+                    DateTime today = DateTime.Today;
+
+                    int age = today.Year - DateOfBirth.Year;
+
+                    if (DateOfBirth > today.AddYears(-age))
+                    {
+                        age--;
+                    }
+
+                    return age == -1 ? 0 : age;
+                }
+
+                return 0;
+            }
+        }
+    }
+
+    public interface ApplicationUserJoin
+    {
+        [ForeignKey(nameof(UserId))]
+        public ApplicationUser User { get; set; }
+        public string UserId { get; set; }
+    }
+}

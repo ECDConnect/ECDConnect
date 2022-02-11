@@ -1,0 +1,32 @@
+using System.ComponentModel;
+
+namespace ECDLink.Abstractrions.Enums
+{
+    public enum FileTypeEnum
+    {
+        [Description("unknown")]
+        Unknown,
+        [Description("theme")]
+        Theme,
+        [Description("profile-image")]
+        ProfileImage,
+        [Description("classroom-profile")]
+        ClassroomProfile,
+        [Description("child")]
+        Child,
+        [Description("Practitioner")]
+        Practitioner,
+        [Description("coach")]
+        Coach,
+        [Description("care-giver")]
+        CareGiver,
+        [Description("progress-tracking-category")]
+        ProgressTrackingCategory,
+        [Description("progress-tracking-sub-category")]
+        ProgressTrackingSubCategory,
+        [Description("progress-tracking-level")]
+        ProgressTrackingLevel,
+        [Description("report-templates")]
+        ReportTemplates
+    }
+}

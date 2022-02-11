@@ -1,0 +1,43 @@
+using ECDLink.ContentManagement.Entities;
+using Microsoft.EntityFrameworkCore;
+
+namespace ECDLink.DataAccessLayer.Context
+{
+    public class ContentManagementDbContext : DbContext
+    {
+        public DbSet<ContentType> ContentTypes { get; set; }
+
+        public DbSet<ContentTypeField> ContentTypeFields { get; set; }
+
+        public DbSet<ContentValue> ContentTypesFieldValues { get; set; }
+
+        public DbSet<FieldType> FieldTypes { get; set; }
+
+        public DbSet<Content> Contents { get; set; }
+
+        public DbSet<ContentStatus> ContentStatuses { get; set; }
+
+        public ContentManagementDbContext(DbContextOptions<ContentManagementDbContext> options)
+          : base(options)
+        {
+        }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            base.OnConfiguring(optionsBuilder);
+        }
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+            // Customize the ASP.NET Identity model and override the defaults if needed.
+            // For example, you can rename the ASP.NET Identity table names and more.
+            // Add your customizations after calling base.OnModelCreating(builder);
+
+            builder.Entity<ContentValue>(entity =>
+            {
+                entity.HasKey(e => new { e.ContentId, e.ContentTypeFieldId, e.LocaleId });
+            });
+        }
+    }
+}

@@ -1,0 +1,567 @@
+using ECDLink.Abstractrions.Constants;
+using ECDLink.Abstractrions.Enums;
+using ECDLink.Core.Extensions;
+using ECDLink.DataAccessLayer.Context;
+using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Classroom;
+using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Entities.Workflow;
+using ECDLink.DataAccessLayer.Repositories.Factories;
+using ECDLink.DataAccessLayer.Configuration.Setup.Seed.SeedData.Static;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
+{
+    public static class TestSeedId
+    {
+        public static Guid ClassroomId = Guid.Parse("a917d764-96eb-4400-9848-d43c3dbc897e");
+        public static Guid SiteAddressId = Guid.Parse("43eb37ae-3fbc-4381-be2f-7b95021a646d");
+
+        public static Guid ClassgroupOne = Guid.Parse("7068f956-df68-4336-b39b-09363b0e441b");
+        public static Guid ClassgroupTwo = Guid.Parse("fbcd4ab4-5933-4034-8946-fe1251f431c6");
+
+        public static Guid ProgrammeOne = Guid.Parse("ee193f81-fb1f-4c30-8b50-4607a68be563");
+        public static Guid ProgrammeTwo = Guid.Parse("2229f847-a390-4a12-bb67-e09b15ad427e");
+        public static Guid ProgrammeThree = Guid.Parse("49e220cf-75d8-4618-9502-fc8b2520bdd5");
+    }
+
+    public class ChildrenTest
+    {
+        public Guid ClassroomGroupId { get; set; }
+        public ApplicationUser User { get; set; }
+    }
+
+    public class TestSeed
+    {
+        private readonly IGenericRepositoryFactory _repositoryFactory;
+        private string _userId;
+        private string _practitionerId;
+
+        public TestSeed(IServiceProvider serviceProvider)
+        {
+            _repositoryFactory = serviceProvider.GetService<IGenericRepositoryFactory>();
+
+            var userManager = serviceProvider.GetService<UserManager<ApplicationUser>>();
+
+            var user = userManager.Users.FirstOrDefault();
+
+            _userId = user.Id;
+
+            var siteAddressId = SeedSiteAddress();
+
+            AddPractitioners(userManager, siteAddressId);
+
+            var classroomId = SeedClassroom();
+            SeedClassProgrammes();
+            SeedAttendance(serviceProvider, _practitionerId);
+
+            SeedChildren(serviceProvider);
+            SeedChildAttendance(serviceProvider);
+        }
+
+        private void AddPractitioners(UserManager<ApplicationUser> userManager, Guid siteAddressId)
+        {
+            var pracRepo = _repositoryFactory.CreateRepository<Practitioner>(userContext: _userId);
+
+            var pUserOne = new ApplicationUser
+            {
+                FirstName = "TestPractitioner",
+                Surname = "TestPracitionerSurname",
+                Email = "test@test.com",
+                UserName = "0000000000022111",
+                ContactPreference = MessageTypeConstants.SMS,
+                IdNumber = "0000000000022111",
+                PhoneNumber = "0614887313",
+                IsActive = true
+            };
+
+            var result = userManager.CreateAsync(pUserOne).Result;
+            _practitionerId = pUserOne.Id;
+
+            var passwordResult = userManager.AddPasswordAsync(pUserOne, "Hello123!").Result;
+
+            pracRepo.Insert(new Practitioner
+            {
+                MaxChildren = 4,
+                Id = Guid.NewGuid(),
+                UserId = _practitionerId,
+                SiteAddressId = siteAddressId
+            });
+
+            var pUser2 = new ApplicationUser
+            {
+                FirstName = "TestPractitioner2",
+                Surname = "TestPracitionerSurname2",
+                Email = "test@test.com",
+                UserName = "00000022111",
+                ContactPreference = MessageTypeConstants.SMS,
+                IdNumber = "00000022111",
+                PhoneNumber = "0614887313",
+                IsActive = true
+            };
+
+            var result2 = userManager.CreateAsync(pUser2).Result;
+
+            var passwordResult2 = userManager.AddPasswordAsync(pUser2, "Hello123!").Result;
+
+            pracRepo.Insert(new Practitioner
+            {
+                MaxChildren = 4,
+                Id = Guid.NewGuid(),
+                UserId = pUser2.Id,
+                SiteAddressId = siteAddressId
+            });
+        }
+
+        private void SeedChildAttendance(IServiceProvider serviceProvider)
+        {
+            var repo = _repositoryFactory.CreateRepository<Child>();
+            repo.SetUserContext(_practitionerId);
+
+            var child = repo.GetAll().FirstOrDefault();
+
+            SeedAttendance(serviceProvider, child.UserId);
+        }
+        private void SeedChildren(IServiceProvider serviceProvider)
+        {
+            var repositoryFactory = serviceProvider.GetService<IGenericRepositoryFactory>();
+
+            var repo = repositoryFactory.CreateRepository<WorkflowStatus>();
+            var workflowStatuses = repo.GetAll();
+            var statusId = workflowStatuses.Where(x => x.EnumId == WorkflowStatusEnum.ChildPending).Select(x => x.Id).FirstOrDefault();
+
+            var childrenUsers = new List<ChildrenTest>();
+
+            childrenUsers.Add(new ChildrenTest
+            {
+                ClassroomGroupId = TestSeedId.ClassgroupOne,
+                User = new ApplicationUser
+                {
+                    FirstName = "Hope",
+                    Surname = "Mokoena",
+                    UserName = Guid.NewGuid().ToString(),
+                    IsActive = true,
+                    IsSouthAfricanCitizen = true,
+                    VerifiedByHomeAffairs = false,
+                    DateOfBirth = new DateTime(2019, 5, 25)                    
+                }
+            });
+
+            childrenUsers.Add(new ChildrenTest
+            {
+                ClassroomGroupId = TestSeedId.ClassgroupOne,
+                User = new ApplicationUser
+                {
+                    FirstName = "Lethabo",
+                    Surname = "Nkosi",
+                    UserName = Guid.NewGuid().ToString(),
+                    IsActive = true,
+                    IsSouthAfricanCitizen = true,
+                    VerifiedByHomeAffairs = false,
+                    IdNumber = "190615",
+                    DateOfBirth = new DateTime(2018, 6, 25)
+                }
+            });
+
+            childrenUsers.Add(new ChildrenTest
+            {
+                ClassroomGroupId = TestSeedId.ClassgroupOne,
+                User = new ApplicationUser
+                {
+                    FirstName = "Themba",
+                    Surname = "Sibiya",
+                    UserName = Guid.NewGuid().ToString(),
+                    IsActive = true,
+                    IsSouthAfricanCitizen = true,
+                    VerifiedByHomeAffairs = false,
+                    IdNumber = "190615",
+                    DateOfBirth = new DateTime(2017, 7, 25)
+                }
+            });
+
+            childrenUsers.Add(new ChildrenTest
+            {
+                ClassroomGroupId = TestSeedId.ClassgroupOne,
+                User = new ApplicationUser
+                {
+                    FirstName = "Thandile",
+                    Surname = "Dlamini",
+                    UserName = Guid.NewGuid().ToString(),
+                    IsActive = true,
+                    IsSouthAfricanCitizen = true,
+                    VerifiedByHomeAffairs = false,
+                    IdNumber = "190615",
+                    DateOfBirth = new DateTime(2020, 1, 25)
+                }
+            });
+
+            childrenUsers.Add(new ChildrenTest
+            {
+                ClassroomGroupId = TestSeedId.ClassgroupTwo,
+                User = new ApplicationUser
+                {
+                    FirstName = "Amahle",
+                    Surname = "Khumalo",
+                    UserName = Guid.NewGuid().ToString(),
+                    IsActive = true,
+                    IsSouthAfricanCitizen = true,
+                    VerifiedByHomeAffairs = false,
+                    IdNumber = "190615",
+                    DateOfBirth = new DateTime(2019, 1, 25)
+                }
+            });
+
+            childrenUsers.Add(new ChildrenTest
+            {
+                ClassroomGroupId = TestSeedId.ClassgroupTwo,
+                User = new ApplicationUser
+                {
+                    FirstName = "Monwabisi",
+                    Surname = "Dasie",
+                    UserName = Guid.NewGuid().ToString(),
+                    IsActive = true,
+                    IsSouthAfricanCitizen = true,
+                    VerifiedByHomeAffairs = false,
+                    IdNumber = "190615",
+                    DateOfBirth = new DateTime(2015, 8, 25)
+                }
+            });
+
+            foreach (var child in childrenUsers)
+            {
+                SeedChild(child.User, child.ClassroomGroupId, statusId, serviceProvider);
+            }
+        }
+
+        private void SeedChild(ApplicationUser user, Guid classroomGroupId, Guid statusId, IServiceProvider serviceProvider)
+        {
+            var userManager = serviceProvider.GetService<UserManager<ApplicationUser>>();
+            var addUserResult = userManager.CreateAsync(user).Result;
+            var currentChild = userManager.FindByIdAsync(user.Id).Result;
+
+            var addUserRole = userManager.AddToRoleAsync(currentChild, "Child").Result;
+
+            var repo = _repositoryFactory.CreateRepository<Child>();
+            repo.SetUserContext(_practitionerId);
+
+            var newChild = repo.Insert(new Child
+            {
+                UserId = user.Id,
+                Allergies = "None",
+                LanguageId = LanguageSeedConstants.English,
+                InsertedDate = DateTime.Now,
+                WorkflowStatusId = statusId
+            });            
+
+            var learnerRepo = _repositoryFactory.CreateRepository<Learner>();
+            learnerRepo.SetUserContext(_practitionerId);
+
+            learnerRepo.Insert(new Learner
+            {
+                ProgrammeAttendanceReasonId = AttendenceReasonSeedConstants.GradeRGuid,
+                ClassroomGroupId = classroomGroupId,
+                UserId = newChild.UserId,
+                StartedAttendance = DateTime.Parse("April 7, 2021")
+            });            
+        }
+
+        private void SeedAttendance(IServiceProvider serviceProvider, string userId)
+        {
+            var dbFactory = serviceProvider.GetService<IDbContextFactory<AuthenticationDbContext>>();
+
+            using var context = dbFactory.CreateDbContext();
+            context.Attendances.AsNoTracking();
+
+            foreach (var day in MonthDays(12, 6, 2021))
+            {
+                context.Attendances.Add(new Attendance
+                {
+                    ClassroomProgrammeId = TestSeedId.ProgrammeOne,
+                    ParentRecordId = _practitionerId,
+                    UserId = userId,
+                    WeekOfYear = day.GetWeekOfYear(),
+                    MonthOfYear = day.Month,
+                    AttendanceDate = day,
+                    Year = day.Year,
+                    Attended = true
+                });
+
+                context.SaveChanges();
+            }
+
+            foreach (var day in MonthDays(7, 6, 2021))
+            {
+                context.Attendances.Add(new Attendance
+                {
+                    ClassroomProgrammeId = TestSeedId.ProgrammeTwo,
+                    ParentRecordId = _practitionerId,
+                    UserId = userId,
+                    WeekOfYear = day.GetWeekOfYear(),
+                    MonthOfYear = day.Month,
+                    AttendanceDate = day,
+                    Year = day.Year,
+                    Attended = true
+                });
+
+                context.SaveChanges();
+            }
+
+            foreach (var day in MonthDays(9, 6, 2021))
+            {
+                context.Attendances.Add(new Attendance
+                {
+                    ClassroomProgrammeId = TestSeedId.ProgrammeThree,
+                    ParentRecordId = _practitionerId,
+                    UserId = userId,
+                    WeekOfYear = day.GetWeekOfYear(),
+                    MonthOfYear = day.Month,
+                    AttendanceDate = day,
+                    Year = day.Year,
+                    Attended = true
+                });
+
+                context.SaveChanges();
+            }
+
+            foreach (var day in MonthDays(3, 7, 2021))
+            {
+                context.Attendances.Add(new Attendance
+                {
+                    ClassroomProgrammeId = TestSeedId.ProgrammeOne,
+                    ParentRecordId = _practitionerId,
+                    UserId = userId,
+                    WeekOfYear = day.GetWeekOfYear(),
+                    MonthOfYear = day.Month,
+                    AttendanceDate = day,
+                    Year = day.Year,
+                    Attended = true
+                });
+
+                context.SaveChanges();
+            }
+
+            foreach (var day in MonthDays(5, 7, 2021))
+            {
+                context.Attendances.Add(new Attendance
+                {
+                    ClassroomProgrammeId = TestSeedId.ProgrammeTwo,
+                    ParentRecordId = _practitionerId,
+                    UserId = userId,
+                    WeekOfYear = day.GetWeekOfYear(),
+                    MonthOfYear = day.Month,
+                    AttendanceDate = day,
+                    Year = day.Year,
+                    Attended = true
+                });
+
+                context.SaveChanges();
+            }
+
+            foreach (var day in MonthDays(7, 7, 2021))
+            {
+                context.Attendances.Add(new Attendance
+                {
+                    ClassroomProgrammeId = TestSeedId.ProgrammeThree,
+                    ParentRecordId = _practitionerId,
+                    UserId = userId,
+                    WeekOfYear = day.GetWeekOfYear(),
+                    MonthOfYear = day.Month,
+                    AttendanceDate = day,
+                    Year = day.Year,
+                    Attended = true
+                });
+
+                context.SaveChanges();
+            }
+
+            foreach (var day in MonthDays(7, 8, 2021))
+            {
+                context.Attendances.Add(new Attendance
+                {
+                    ClassroomProgrammeId = TestSeedId.ProgrammeOne,
+                    ParentRecordId = _practitionerId,
+                    UserId = userId,
+                    WeekOfYear = day.GetWeekOfYear(),
+                    MonthOfYear = day.Month,
+                    AttendanceDate = day,
+                    Year = day.Year,
+                    Attended = true
+                });
+
+                context.SaveChanges();
+            }
+
+            foreach (var day in MonthDays(2, 8, 2021))
+            {
+                context.Attendances.Add(new Attendance
+                {
+                    ClassroomProgrammeId = TestSeedId.ProgrammeTwo,
+                    ParentRecordId = _practitionerId,
+                    UserId = userId,
+                    WeekOfYear = day.GetWeekOfYear(),
+                    MonthOfYear = day.Month,
+                    AttendanceDate = day,
+                    Year = day.Year,
+                    Attended = true
+                });
+
+                context.SaveChanges();
+            }
+
+            foreach (var day in MonthDays(4, 8, 2021))
+            {
+                context.Attendances.Add(new Attendance
+                {
+                    ClassroomProgrammeId = TestSeedId.ProgrammeThree,
+                    ParentRecordId = _practitionerId,
+                    UserId = userId,
+                    WeekOfYear = day.GetWeekOfYear(),
+                    MonthOfYear = day.Month,
+                    AttendanceDate = day,
+                    Year = day.Year,
+                    Attended = true
+                });
+
+                context.SaveChanges();
+            }
+        }
+
+        private IEnumerable<DateTime> MonthDays(int startDay, int month, int year)
+        {
+            var dayList = new List<DateTime>();
+
+            var endOfMonth = new DateTime(year, month, startDay).GetEndOfMonth();
+
+            for (DateTime dt = new DateTime(year, month, startDay); dt <= endOfMonth; dt = dt.AddDays(7))
+            {
+                dayList.Add(dt);
+            }
+
+            return dayList;
+        }
+
+        private void SeedClassProgrammes()
+        {
+            var classroomGroupRepo = _repositoryFactory.CreateRepository<ClassroomGroup>(userContext: _practitionerId);
+            var repo = _repositoryFactory.CreateRepository<ClassProgramme>(userContext: _practitionerId);
+
+            var name = "Little Lions";
+            var classroomGroup = classroomGroupRepo.Insert(new ClassroomGroup
+            {
+                Id = TestSeedId.ClassgroupOne,
+                ClassroomId = TestSeedId.ClassroomId,
+                ProgrammeTypeId = ProgrammeTypeSeedConstants.Playgroup,
+                Name = name,
+                IsActive = true
+            });
+
+            var startDate = DateTime.Parse("April 7, 2021");
+
+            repo.Insert(new ClassProgramme
+            {
+                Id = TestSeedId.ProgrammeOne,
+                ClassroomGroupId = classroomGroup.Id,
+                IsFullDay = true,
+                MeetingDay = (int)DayOfWeek.Monday,
+                ProgrammeStartDate = startDate,
+                IsActive = true
+            });
+
+            repo.Insert(new ClassProgramme
+            {
+                Id = TestSeedId.ProgrammeTwo,
+                ClassroomGroupId = classroomGroup.Id,
+                IsFullDay = true,
+                MeetingDay = (int)DayOfWeek.Wednesday,
+                ProgrammeStartDate = startDate,
+                IsActive = true
+            });
+
+            repo.Insert(new ClassProgramme
+            {
+                Id = TestSeedId.ProgrammeThree,
+                ClassroomGroupId = classroomGroup.Id,
+                IsFullDay = true,
+                MeetingDay = (int)DayOfWeek.Friday,
+                ProgrammeStartDate = startDate,
+                IsActive = true
+            });
+
+            var secondName = "Little Angels";
+            var secondClassroomGroup = classroomGroupRepo.Insert(new ClassroomGroup
+            {
+                Id = TestSeedId.ClassgroupTwo,
+                ClassroomId = TestSeedId.ClassroomId,
+                ProgrammeTypeId = ProgrammeTypeSeedConstants.Playgroup,
+                Name = secondName,
+                IsActive = true
+            });
+
+            repo.Insert(new ClassProgramme
+            {
+                ClassroomGroupId = secondClassroomGroup.Id,
+                IsFullDay = true,
+                MeetingDay = (int)DayOfWeek.Tuesday,
+                ProgrammeStartDate = startDate,
+            });
+
+            repo.Insert(new ClassProgramme
+            {
+                ClassroomGroupId = secondClassroomGroup.Id,
+                IsFullDay = true,
+                MeetingDay = (int)DayOfWeek.Thursday,
+                ProgrammeStartDate = startDate,
+                IsActive = true
+            });
+
+        }
+
+        private Guid SeedSiteAddress()
+        {
+            var repo = _repositoryFactory.CreateRepository<SiteAddress>();
+
+            var siteAddress = repo.Insert(new SiteAddress
+            {
+                Id = TestSeedId.SiteAddressId,
+                AddressLine1 = "Address Line 1",
+                AddressLine2 = "Address Line 2",
+                AddressLine3 = "Address Line 3",
+                Name = "Test Classroom Address",
+                PostalCode = "7441",
+                ProvinceId = ProvincesSeedConstants.EasternCape,
+                IsActive = true
+            });
+
+            return siteAddress.Id;
+        }
+
+        private Guid SeedClassroom()
+        {
+            var repo = _repositoryFactory.CreateRepository<Classroom>(userContext: _practitionerId);
+
+            var startDate = DateTime.Parse("April 7, 2021");
+
+            var classroom = repo.Insert(new Classroom
+            {
+                Id = TestSeedId.ClassroomId,
+                UserId = _practitionerId,
+                DoesOwnerTeach = true,
+                IsPrinciple = true,
+                NumberOfAssistants = 1,
+                NumberOfOtherAssistants = 2,
+                NumberPractitioners = 3,
+                SiteAddressId = TestSeedId.SiteAddressId,
+                Name = "Seeded Test Classroom",
+                InsertedDate = startDate,
+                IsActive = true
+            });
+
+            return classroom.Id;
+        }
+    }
+}

@@ -1,0 +1,45 @@
+import { BannerWrapper } from '@ecdlink/ui';
+import { format } from 'date-fns';
+import { AttendanceResult } from '../../../../../models/classroom/attendance/AttendanceResult';
+import AttendanceList from '../attendance-list/attendance-list';
+import * as styles from './edit-attendance-register.styles';
+import { EditAttendanceRegisterProps } from './edit-attendance-register.types';
+import { useOnlineStatus } from '../../../../../hooks/useOnlineStatus';
+
+export const EditAttendanceRegister = ({
+  attendanceDate,
+  onComplete,
+  submitText = 'Submit',
+  onBack,
+}: EditAttendanceRegisterProps) => {
+  const { isOnline } = useOnlineStatus();
+
+  const attendanceSubmitted = (attendanceSuccessList: AttendanceResult) => {
+    if (onComplete) {
+      onComplete(attendanceSuccessList);
+    }
+  };
+
+  return (
+    <BannerWrapper
+      size={'small'}
+      showBackground={false}
+      color={'primary'}
+      onBack={onBack}
+      title={'Edit Register'}
+      subTitle={format(attendanceDate, 'EEEE, d LLLL')}
+      className={styles.bannerContentWrapper}
+      displayOffline={!isOnline}
+    >
+      <AttendanceList
+        attendanceDate={attendanceDate}
+        submitText={submitText}
+        onSubmitSuccess={(attendanceSuccessList: AttendanceResult) =>
+          attendanceSubmitted(attendanceSuccessList)
+        }
+      />
+    </BannerWrapper>
+  );
+};
+
+export default EditAttendanceRegister;

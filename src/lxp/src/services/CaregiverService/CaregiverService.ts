@@ -1,0 +1,180 @@
+import { CaregiverDto, Config } from '@ecdlink/core';
+import { CaregiverInput } from '@ecdlink/graphql';
+import { api } from '../axios.helper';
+class CaregiverService {
+  _accessToken: string;
+
+  constructor(accessToken: string) {
+    this._accessToken = accessToken;
+  }
+
+  async getCaregivers(): Promise<CaregiverDto[]> {
+    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        query {
+          GetAllCaregiver {
+            id
+            phoneNumber
+            idNumber
+            firstName
+            surname
+            fullName  
+            siteAddressId          
+            siteAddress {
+              id
+              provinceId
+              province {
+                id
+                description
+              }
+              name
+              addressLine1
+              addressLine2
+              addressLine3
+              postalCode
+              ward
+              isActive
+            }
+            relationId
+            educationId
+            emergencyContactFirstName
+            emergencyContactSurname
+            emergencyContactPhoneNumber
+            additionalFirstName
+            additionalSurname
+            additionalPhoneNumber
+            joinReferencePanel
+            contribution
+            grants {
+              id
+              description
+            }
+            isActive
+          }
+        }        
+      `,
+    });
+
+    if (response.status !== 200) {
+      throw new Error('Getting Caregivers failed - Server connection error');
+    }
+
+    return response.data.data.GetAllCaregiver;
+  }
+
+  async updateCareGiver(id: string, input: CaregiverInput): Promise<CaregiverDto> {
+    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        mutation updateCaregiver($input: CaregiverInput, $id: UUID) {
+          updateCaregiver(input: $input, id: $id) {
+            id
+            phoneNumber
+            idNumber
+            firstName
+            surname
+            fullName  
+            siteAddressId          
+            siteAddress {
+              id
+              province {
+                id
+                description
+              }
+              name
+              addressLine1
+              addressLine2
+              addressLine3
+              postalCode
+              ward
+            }
+            relationId
+            educationId
+            emergencyContactFirstName
+            emergencyContactSurname
+            emergencyContactPhoneNumber
+            additionalFirstName
+            additionalSurname
+            additionalPhoneNumber
+            joinReferencePanel
+            contribution
+            grants {
+              id
+              description
+            }
+            isActive
+          }
+        }
+      `,
+      variables: {
+        id: id,
+        input: input,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error('Updating caregiver failed - Server connection error');
+    }
+
+    return response.data.data.updateCaregiver;
+  }
+
+  async createCaregiver(input: CaregiverInput): Promise<CaregiverDto> {
+    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        mutation createCaregiver($input: CaregiverInput) {
+          createCaregiver(input: $input) {
+            id
+            phoneNumber
+            idNumber
+            firstName
+            surname
+            fullName  
+            siteAddressId          
+            siteAddress {
+              id
+              province {
+                id
+                description
+              }
+              name
+              addressLine1
+              addressLine2
+              addressLine3
+              postalCode
+              ward
+            }
+            relationId
+            educationId
+            emergencyContactFirstName
+            emergencyContactSurname
+            emergencyContactPhoneNumber
+            additionalFirstName
+            additionalSurname
+            additionalPhoneNumber
+            joinReferencePanel
+            contribution
+            grants {
+              id
+              description
+            }
+            isActive
+          }
+        }
+      `,
+      variables: {
+        input: input,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error('Updating caregiver failed - Server connection error');
+    }
+
+    return response.data.data.createCaregiver;
+  }
+}
+
+export default CaregiverService;

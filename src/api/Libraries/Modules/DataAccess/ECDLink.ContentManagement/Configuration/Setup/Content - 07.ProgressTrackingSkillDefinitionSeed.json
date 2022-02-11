@@ -1,0 +1,674 @@
+{
+  "contentDefinition": {
+    "contentName": "ProgressTrackingSkill",
+    "description": "Progress tracking skills",
+    "fields": [
+      {
+        "fieldOrder": 1,
+        "fieldName": "Name",
+        "fieldType": "Text",
+        "isRequired": true
+      },
+      {
+        "fieldOrder": 2,
+        "fieldName": "Level",
+        "fieldType": "DynamicRelation",
+        "isRequired": false,
+        "dataLink": "ProgressTrackingLevel"
+      }
+    ]
+  },
+  "dataSeed": [
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 30,
+          "Name": "Does simple things when asked",
+          "Level": "27"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 31,
+          "Name": "Shows friendly behaviour to other children",
+          "Level": "27"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 32,
+          "Name": "Plays jointly with other children",
+          "Level": "28"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 33,
+          "Name": "Has a simple understanding of good and bad behaviour",
+          "Level": "28"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 34,
+          "Name": "Shares and takes turns",
+          "Level": "28"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 35,
+          "Name": "Generally obeys rules and asks permission when needed",
+          "Level": "29"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 36,
+          "Name": "Comforts a child who is upset",
+          "Level": "29"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 37,
+          "Name": "Shows attachment to other people",
+          "Level": "27"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 38,
+          "Name": "Names some emotions",
+          "Level": "27"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 39,
+          "Name": "Can wait for a short time to have needs met",
+          "Level": "28"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 40,
+          "Name": "Is becoming more independent and says what they want to do",
+          "Level": "28"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 41,
+          "Name": "Takes steps to resolve conflicts and can explain why they are upset",
+          "Level": "29"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 42,
+          "Name": "Tries to control emotions in response to disappointment",
+          "Level": "29"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 43,
+          "Name": "Can adapt to new situations and changes in routine",
+          "Level": "29"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 44,
+          "Name": "Uses lots of words and short phrases correctly",
+          "Level": "27"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 45,
+          "Name": "Understands what is being said to them most of the time",
+          "Level": "27"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 46,
+          "Name": "Speech can usually be understood",
+          "Level": "27"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 47,
+          "Name": "Talks in complete sentences of more than 4 words",
+          "Level": "28"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 48,
+          "Name": "Talks about things they have done and are going to do",
+          "Level": "28"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 49,
+          "Name": "Takes turns in conversations and has longer conversations",
+          "Level": "29"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 50,
+          "Name": "Uses talk to clarify thinking and ideas during play",
+          "Level": "29"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 51,
+          "Name": "Can do actions for familiar songs and rhymes",
+          "Level": "27"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 52,
+          "Name": "Sings familiar rhymes and songs correctly",
+          "Level": "28"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 53,
+          "Name": "Can hear and repeat some sounds in words",
+          "Level": "29"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 54,
+          "Name": "Loves listening to stories and looking at storybooks",
+          "Level": "27"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 55,
+          "Name": "Makes marks and tries to draw or paint real things",
+          "Level": "27"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 56,
+          "Name": "Starts to draw or paint people",
+          "Level": "28"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 57,
+          "Name": "Enjoys looking at books and talking about the story",
+          "Level": "28"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 58,
+          "Name": "Pretends to read books",
+          "Level": "29"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 59,
+          "Name": "Uses pretend writing in games",
+          "Level": "29"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 60,
+          "Name": "Copies people and everyday actions",
+          "Level": "27"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 61,
+          "Name": "Shows lots of interest in the things around them",
+          "Level": "27"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 62,
+          "Name": "Engages in pretend play based on own experiences",
+          "Level": "28"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 63,
+          "Name": "Asks lots of questions",
+          "Level": "28"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 64,
+          "Name": "Predicts results of certain actions",
+          "Level": "29"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 65,
+          "Name": "Listens carefully and repeats what they have heard",
+          "Level": "29"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 66,
+          "Name": "Pretends to count",
+          "Level": "27"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 67,
+          "Name": "Does shape puzzles and 4-piece puzzles",
+          "Level": "27"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 68,
+          "Name": "Sorts things by colour, shape or size",
+          "Level": "28"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 69,
+          "Name": "Does puzzles with more than 4 pieces",
+          "Level": "28"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 70,
+          "Name": "Names some colours and shapes",
+          "Level": "28"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 71,
+          "Name": "Uses comparing words like ‘more’, ‘less’, ‘slower’, ‘biggest’",
+          "Level": "29"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 72,
+          "Name": "Can point and count correctly (up to 5 items in a group)",
+          "Level": "29"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 73,
+          "Name": "Enjoys responsibility of doing small tasks",
+          "Level": "27"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 74,
+          "Name": "CanSits and pays attention",
+          "Level": "27"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 75,
+          "Name": "Is confident to try new things",
+          "Level": "28"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 76,
+          "Name": "Can concentrate on an activity or task",
+          "Level": "28"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 77,
+          "Name": "Keeps trying when there is a challenge",
+          "Level": "29"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 78,
+          "Name": "Can remember and follow instructions with one or two steps",
+          "Level": "29"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 79,
+          "Name": "Runs well",
+          "Level": "27"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 80,
+          "Name": "Moves in time to music",
+          "Level": "27"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 81,
+          "Name": "Kicks a ball",
+          "Level": "27"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 82,
+          "Name": "Stands and walks on tip-toe",
+          "Level": "28"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 83,
+          "Name": "Can jump backwards and forwards",
+          "Level": "28"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 84,
+          "Name": "Hops on one foot and skips",
+          "Level": "29"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 85,
+          "Name": "Moves freely and skilfully without bumping into things",
+          "Level": "29"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 86,
+          "Name": "Makes a simple tower",
+          "Level": "27"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 87,
+          "Name": "Shows control handling objects and turning pages in a book",
+          "Level": "27"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 88,
+          "Name": "Catches large ball",
+          "Level": "28"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 89,
+          "Name": "Builds a bigger tower",
+          "Level": "28"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 90,
+          "Name": "Holds khoki or paintbrush using thumb/ fingers (not fist)",
+          "Level": "28"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 91,
+          "Name": "Can dress and undress (and do buttons and zips)",
+          "Level": "29"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 92,
+          "Name": "Copies simple shapes",
+          "Level": "29"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 93,
+          "Name": "Uses scissors to cut out simple shapes",
+          "Level": "29"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 94,
+          "Name": "Throws ball or beanbag at target",
+          "Level": "29"
+        }
+      ]
+    }
+
+  ]
+}

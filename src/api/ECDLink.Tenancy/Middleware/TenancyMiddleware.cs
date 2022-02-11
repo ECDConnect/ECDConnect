@@ -1,0 +1,82 @@
+﻿using ECDLink.Tenancy.Context;
+using ECDLink.Tenancy.Exceptions;
+using ECDLink.Tenancy.Extensions;
+using ECDLink.Tenancy.Model;
+using ECDLink.Tenancy.Services;
+using Microsoft.AspNetCore.Http;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace ECDLink.Tenancy.Middleware
+{
+    public class TenancyMiddleware
+    {
+        private readonly RequestDelegate _next;
+
+        public TenancyMiddleware(RequestDelegate next)
+        {
+            _next = next;
+        }
+
+        public async Task InvokeAsync(HttpContext context, ITenantService tenancyService)
+        {
+            var _ = tenancyService ?? throw new NotImplementedException("Missing instance definition ITenancyService");
+
+            TenantModel tenantModel = GetTenant(context, tenancyService);
+
+            if (tenantModel == null)
+            {
+                throw new TenantNotFoundException();
+            }
+
+            // Add the tenant to the ambient context to use for DB injection
+            TenantExecutionContext.SetTenant(tenantModel);
+
+            // Call the next delegate/middleware in the pipeline.
+            await _next(context);
+        }
+
+        private TenantModel GetTenant(HttpContext context, ITenantService tenancyService)
+        {
+            var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+
+            var claim = context.User.Claims
+                                .Where(x => string.Equals(x.Type, TenancyConstants.Jwt.TenantJwtClaim))
+                                .FirstOrDefault();
+
+            // If there is a jwt, automatically just use it
+            if (!string.IsNullOrEmpty(claim?.Value))
+            {
+                var tenant = tenancyService.GetTenantById(claim.Value);
+
+                return tenant;
+            }
+
+            // Check url making request
+            var refererUrl = context?.Request?.GetTypedHeaders()?.Referer?.AbsoluteUri ?? string.Empty;
+            
+            if (!string.IsNullOrWhiteSpace(refererUrl))
+            {
+                var urlTenant = tenancyService.GetTenantByUrl(refererUrl);
+
+                if (urlTenant != default(TenantModel))
+                {
+                    return urlTenant;
+                }
+            }
+
+            // If no url making the request, check the server the request was made to
+            var host = tenancyService.GetTenantByUrl(context.Request.Host.Value);
+
+            if (host != default(TenantModel))
+            {
+                return host;
+            }
+
+            return new TenantModel();
+        }
+    }
+}

@@ -1,0 +1,47 @@
+{
+  "contentDefinition": {
+    "contentName": "Theme",
+    "description": "Themes",
+    "fields": [
+      {
+        "fieldOrder": 1,
+        "fieldName": "Name",
+        "fieldType": "Text",
+        "isRequired": true
+      },
+      {
+        "fieldOrder": 2,
+        "fieldName": "Color",
+        "fieldType": "ColorPicker",
+        "isRequired": true
+      },
+      {
+        "fieldOrder": 3,
+        "fieldName": "ImageUrl",
+        "fieldType": "Image",
+        "isRequired": true
+      },
+      {
+        "fieldOrder": 4,
+        "fieldName": "ThemeDays",
+        "fieldType": "DynamicRelation",
+        "isRequired": false,
+        "dataLink": "ThemeDay"
+      }
+    ]
+  },
+  "dataSeed": [
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 95,
+          "Name": "Nature",
+          "Color": "#6974af",
+          "ImageUrl": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAWBAMAAAA2mnEIAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAwUExURUdwTP///////////////////////////////////////////////////////////0Q+7AIAAAAPdFJOUwDfvxDvnzpfj38gb8+vUBTtQR4AAABySURBVBjTY2CgADDvVboOZ/v//y/OkHFQKA7Imf9F/9PD/0CQwMBg8l9sJ4j5ESjO/f/T/P9O5/9/B+nQ//7/R/z//wIgto3ol6dANQVgoxLd+v///wox1j4bKCwFYa9cAjRlAdQ+oM5mmNVNupMZKAQA0U43R3VN7/wAAAAASUVORK5CYII=",          
+          "ThemeDays": "96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111"
+        }
+      ]
+    }
+  ]
+}

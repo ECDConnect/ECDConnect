@@ -1,0 +1,154 @@
+
+using EcdLink.Api.CoreApi.Documents;
+using EcdLink.Api.CoreApi.GraphApi.AccessValidators;
+using EcdLink.Api.CoreApi.GraphApi.Interceptors;
+using EcdLink.Api.CoreApi.Managers.Notifications;
+using EcdLink.Api.CoreApi.Security.Managers;
+using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
+using EcdLink.Api.CoreApi.Services;
+using ECDLink.AzureStorage;
+using ECDLink.ContentManagement;
+using ECDLink.Core;
+using ECDLink.Core.Services.Interfaces;
+using ECDLink.DataAccessLayer.Entities;
+using ECDLink.Development;
+using ECDLink.EGraphQL;
+using ECDLink.EGraphQL.Interceptors;
+using ECDLink.Notifications;
+using ECDLink.PDFGenerator;
+using ECDLink.PostgresTenancy;
+using ECDLink.PostgresTenancy.Configuration.Setup.Seed;
+using ECDLink.PostgresTenancy.Context;
+using ECDLink.Security;
+using ECDLink.Security.AccessModifiers.OpenAccess;
+using ECDLink.Security.Managers;
+using ECDLink.SmartStart;
+using ECDLink.Tenancy.Extensions;
+using ECDLink.UrlShortner;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using System;
+
+namespace EcdLink.Api.CoreApi
+{
+    public partial class Startup
+    {
+        public Startup(IConfiguration configuration, IWebHostEnvironment env)
+        {
+            Configuration = configuration;
+            Environment = env;
+        }
+
+        public IConfiguration Configuration { get; }
+        public IWebHostEnvironment Environment { get; }
+
+        // This method gets called by the runtime. Use this method to add services to the container.
+        public void ConfigureServices(IServiceCollection services)
+        {
+            ConfigureAuthContext(services);
+            SetIdentityUser(services);
+            ConfigureTenancy(services);
+
+            services.AddHttpContextAccessor();
+
+            services.AddCors(options => options.AddPolicy("CorsPolicy", builder => builder
+                          .WithOrigins("http://localhost:4200")
+                          .WithOrigins("http://localhost:3000")
+                          .WithOrigins("http://localhost:3001")
+                          .AllowAnyMethod()
+                          .AllowAnyHeader()
+                          .WithExposedHeaders("WWW-Authenticate")
+                     ));
+
+            CoreStartup.ConfigureCoreServices(services, Configuration);
+
+            PostgresTenancyStartup.ConfigureDataAccessServices(services, Configuration);
+
+            AzureStorageStartup.ConfigureAzureStorageServices(services, Configuration);
+
+            DataAccessStartup.ConfigureDataAccessServices(services, Configuration);
+
+            UrlShortnerStartup.ConfigureUrlShortnerServices(services, Configuration);
+
+            SecurityStartup.ConfigureSecurityServices(services, Configuration);
+
+            GraphStartup.ConfigureGraphQlServices(services, Environment.IsDevelopment());
+
+            ContentManagementStartup.ConfigureContentManagement(services, Configuration);
+
+            NotificationsStartup.ConfigureNotificationServices(services, Configuration);
+
+            PdfGeneratorStartup.ConfigureAzureStorageServices(services, Configuration);
+
+            SmartStartStartup.ConfigureSmartStartServices(services, Environment.IsDevelopment());
+
+            if (Environment.IsDevelopment())
+            {
+                DevStartup.ConfigureLocalDevServices(services, Configuration);
+            }
+
+            services.AddTransient<IOpenAccessValidator<ChildOpenAccessValidator>, ChildOpenAccessValidator>();
+
+            services.AddTransient<ITokenManager<ApplicationUser, InvitationTokenManager>, InvitationTokenManager>();
+            services.AddTransient<ITokenManager<ApplicationUser, OpenAccessTokenManager>, OpenAccessTokenManager>();
+            services.AddTransient<ITokenManager<ApplicationUser, SecurityCodeTokenManager>, SecurityCodeTokenManager>();
+
+            services.AddTransient<SecurityManager>();
+            services.AddTransient<IPasswordManager<ApplicationUser>, PasswordManager>();
+            services.AddTransient<IAuthenticationManager<ApplicationUser>, SecurityManager>();
+
+            services.AddTransient<SecurityNotificationManager>();
+            services.AddTransient<InvitationNotificationManager>();
+            services.AddTransient<IClaimsManager, ClaimsManager>();
+            services.AddTransient<IAuthorizationManager, AuthorizationManager>();
+            services.AddTransient<IUserInterceptHandler, UserInterceptHandler>();
+            services.AddTransient<IChildrenAnonymiseService, ChildrenAnonymiseService>();
+            services.AddTransient<IDocumentManagementService, DocumentManagementService>();
+
+            ConfigureJobs(services);
+
+            //services.AddControllers().AddApplicationPart(Assembly.Load(new AssemblyName("ECDLink.Security")));
+            services.AddControllers();
+        }
+
+        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IServiceProvider serviceProvider)
+        {
+            if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+
+                using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
+                {
+                    serviceScope.ServiceProvider.GetRequiredService<PostgresTenancyContext>().Database.Migrate();
+                    serviceScope.ServiceProvider.GetRequiredService<PostgresTenantSeedService>().Seed();
+                }
+            }
+
+            app.UseCors("CorsPolicy");
+
+            //app.UseHttpsRedirection();
+            app.UseCookiePolicy();
+
+            app.UseRouting();
+            app.UseAuthentication();
+            app.UseAuthorization();
+            app.UseTenancy();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllerRoute(
+              name: "default",
+              pattern: "{controller}/{action}/{id?}");
+            });
+
+            SecurityStartup.AddSecurityConfiguration(app);
+
+            GraphStartup.AddGraphConfiguration(app, env);
+        }
+    }
+}

@@ -1,0 +1,651 @@
+{
+  "contentDefinition": {
+    "contentName": "Activity",
+    "description": "Activities",
+    "fields": [
+      {
+        "fieldOrder": 1,
+        "fieldName": "Image",
+        "fieldType": "Image",
+        "isRequired": false
+      },
+      {
+        "fieldOrder": 2,
+        "fieldName": "Name",
+        "fieldType": "Text",
+        "isRequired": true
+      },
+      {
+        "fieldOrder": 3,
+        "fieldName": "Description",
+        "fieldType": "Markdown",
+        "isRequired": true
+      },
+      {
+        "fieldOrder": 4,
+        "fieldName": "Type",
+        "fieldType": "Text",
+        "isRequired": true
+      },
+      {
+        "fieldOrder": 5,
+        "fieldName": "SubType",
+        "fieldType": "Text",
+        "isRequired": true
+      },
+      {
+        "fieldOrder": 6,
+        "fieldName": "Materials",
+        "fieldType": "Text",
+        "isRequired": true
+      },
+      {
+        "fieldOrder": 7,
+        "fieldName": "Notes",
+        "fieldType": "Markdown",
+        "isRequired": true
+      },
+      {
+        "fieldOrder": 8,
+        "fieldName": "SubCategories",
+        "fieldType": "DynamicRelation",
+        "isRequired": false,
+        "dataLink": "ProgressTrackingSubCategory"
+      },
+      {
+        "fieldOrder": 9,
+        "fieldName": "AvailableLanguages",
+        "fieldType": "StaticRelation",
+        "isRequired": false,
+        "dataLink": "Language"
+      }
+    ]
+  },
+  "dataSeed": [
+    // SMALL GROUPS
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 133,
+          "Type": "Small group",
+          "Name": "Owl owl",
+          "Materials": "Toilet roll per child; Paper to cut out wings, beaks, etc.; Crayons; Glue; Scissors; Branch from outside, in a pot",
+          "Description": "1. Give each child a toilet roll, and cut out wings, beaks, face and feet 2. Children can colour in the wings, beak, face and feet. Help them to stick them on 3. Talk about owls – where to see them, what they eat, the sound they make etc. 4. Find a branch and plant it in a pot. Attach the owls to the tree, using words like ‘ above’, ‘below, ‘underneath’ etc. 5. Make the sounds that owls make and extend learning as you work",
+          "Notes": "How can I extend learning?  Level 1: What does an owl look like? Where do owls live? (in trees) When do you see them? (usually at night) Level 2: What sound do they make? (tawit-tawooooo, tawit-tawooooo) What do owls eat? (small animals like mice, or snakes) How do they see in the dark? Level 3: What sound does “owl” start with? What sound does “owl” end with? Where is your owl going to sit on the tree? (above, below, top, bottom, under)",
+          "SubCategories": "20, 25",
+          "AvailableLanguages": "",
+          "Image": ""
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 134,
+          "Type": "Small group",
+          "Name": "Curly snake",
+          "Materials": "Paper per child; Crayons or paint; Scissors",
+          "Description": "1. Get each child to draw a spiral on their paper 2. Get them to colour in the spiral 3. Get them to cut along the spiral lines (you may need to help them) 4. Turn it into a snake, giving it a little face 5. Talk about snakes, what they look like, where they live, what they eat etc.",
+          "Notes": "How can I extend learning?  Level 1: What colours have you chosen? Which is your favourite colour? Where will you put the face? Level 2: How do you feel when you see a snake? Why? What do we need to do when we see a snake? Level 3: Where do snakes live? What do they eat? What does their skin feel like?",
+          "SubCategories": "18,25",
+          "AvailableLanguages": "",
+          "Image": ""
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 135,
+          "Type": "Small group",
+          "Name": "Treasure box",
+          "Materials": "Egg box per child; Outside environment;  Paper, crayons and glue OR paint",
+          "Description": "1. Give each child an egg box and tell them you are going to go on a nature walk to find nature treasure  2. First get them to decorate the treasure boxes (painting or sticking on paper) 3. Then go for a walk together, making sure that children stay safe  4. Ask them to find a treasure item for each of the 6 egg cups (all natural items - different flowers or leaves, sticks, stones, sand, seeds etc.)  5. Then sit in a circle and talk about the items",
+          "Notes": "How can I extend learning?  Level 1: What have you found? What colour is it? What shape is it? Level 2: How does it feel? (smooth, rough, prickly, sharp etc.) Is it heavier than the first one you showed us, or lighter? Is it bigger or smaller? Level 3: Who else has one of these? How many have we got all together? What sound does it start with?",
+          "SubCategories": "24,21",
+          "AvailableLanguages": "",
+          "Image": ""
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 136,
+          "Type": "Small group",
+          "Name": "Fields of flowers",
+          "Materials": "Mealie cob (eaten); Paper per child; Crayons ; At least 2 plates of different colour paint",
+          "Description": "1. Ask children about fields and what happens in fields (crops, animals, grass). Get them to draw things that stand in a field (flowers, animals, trees, corn)  2. Give each child an eaten mealie cob and get them to roll it in paint 3. Talk about corn, how it is grown, what it makes (fields, pop corn, chips, pap) 4. Make a rolling print over drawings, making a field. They can use 2 colours 5. Talk about each field, and all the colours",
+          "Notes": "How can I extend learning?  Level 1: What is a field? Where do you see fields? What happens in fields? (animals graze, crops grow) Level 2: What will you put in your field? Why do they like to live/grow in the field? (talk about their choice) Level 3: Show empty cob. What does this come from? Where does maize grow? What does it give us? How does it grow? What",
+          "SubCategories": "25,21",
+          "AvailableLanguages": "",
+          "Image": ""
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 137,
+          "Type": "Small group",
+          "Name": "Sorting seeds",
+          "Materials": "Egg box per child with 5 written at the bottom of each ‘cup’; Container full of mixed small objects for groups of 3 children (stones, seeds, coins etc.)",
+          "Description": "1. Show children a mixed container of seeds and stones 2. Talk about each seed and where it comes from (asking questions) 3. Hand out an egg box per child 4. Give a container of mixed seeds for three children to share 5. Encourage children to pick out 5 of each seed and sort into egg boxes 6. Discuss why some piles are bigger than others 7. Support and extend learning as needed",
+          "Notes": "How can I extend learning?  Level 1: Which ones are the biggest / smallest? Which colour do you like best? Level 2: I wonder where these come from? Where do we find them? Why is this pile bigger than that one? Level 3: If we add 3 to this cup, how many will we have? If we take 3 away, how many will we have? etc.",
+          "SubCategories": "25,22",
+          "AvailableLanguages": "",
+          "Image": ""
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 138,
+          "Type": "Small group",
+          "Name": "Nature picture",
+          "Materials": "A packet and piece of paper per child; Glue",
+          "Description": "1. Give each child a packet and take them outside to collect things that interest them eg. leaves, seeds, sticks, stones, sand, flowers, seeds 2. Encourage jumping, stretching, kneeling, bending, while they find their items 3. After 5 minutes, ask them to empty packets and show their findings 4. Ask them to group similar items (all green / all soft / all small) and discuss 5. Hand out paper and glue to each child 6. Ask them to make a picture with what they collected. Encourage sharing 7. Talk about picture and ask questions",
+          "Notes": "How can I extend learning?  Level 1: What happens if you blow this? And if you blow from far way? And if we turn the item upside down? Level 2: If you put the stone on the cloth, can you still make the cloth move? I wonder why / why not? Level 3: How many items can move? How many items will not move? How many in this column?",
+          "SubCategories": "16,24",
+          "AvailableLanguages": "",
+          "Image": ""
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 139,
+          "Type": "Small group",
+          "Name": "Blow to move",
+          "Materials": "Wooden block;Paper with columns (see image);10 items from nature e.g. stones, feather, leaf, soil, stick, bark, seed, pod, grass etc.;Marker Pen",
+          "Description": "1. Take out a wooden block and ask children if you can move it by blowing 2. Take out a container with about 10 items from nature. Ask children, “I wonder which of these things will move if I blow?’ 3. Use words like ‘heavy, light, rolls, slides, up, far’ etc. 4. Show column on paper to older children and explain that < means that an item can move, X means it cannot, and ? means it moves sometimes 5. Put items into correct columns together. Together ADD totals for each column",
+          "Notes": "How can I extend learning?  Level 1: What happens if you blow this? And if you blow from far way? And if we turn the item upside down? Level 2: If you put the stone on the cloth, can you still make the cloth move? I wonder why / why not? Level 3: How many items can move? How many items will not move? How many in this column?",
+          "SubCategories": "22,21",
+          "AvailableLanguages": "",
+          "Image": ""
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 140,
+          "Type": "Small group",
+          "Name": "Float or sink",
+          "Materials": "A small item from nature per child (e.g. wood, stone, sand, feather, leaf, stick, seed); Container of water 2 empty containers - 1 marked “FLOAT ” and 1 marked “SINK”",
+          "Description": "1. Sit in a circle and explain the words ‘float’ and ‘sink’  2. Show children each item and ask them whether they think it will float or sink? 3. Give each child an item and ask them to find out what happens. Place a bowl of water in the centre of the circle and allow each child to TEST 4. Watch what happens and use words like ‘up, down, top, bottom, float, sink’  5. Sing a rhyme, for example… ‘this little boat, can float, float, float’ or ‘blink, blink, blink - watch this sink’",
+          "Notes": "How can I extend learning?  Level 1: What is this? Do you think it will float or sink? Level 2: I wonder which one will sink faster? I wonder which one will pop back up, if I let it go? Level 3: What will happen if I put THIS on top of THIS? (e.g. stone on top of leaf) What else do you know that can float?",
+          "SubCategories": "19,21",
+          "AvailableLanguages": "",
+          "Image": ""
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 141,
+          "Type": "Small group",
+          "Name": "Bubble clouds",
+          "Materials": "Paint; Straws; Dish washing liquid; Paper",
+          "Description": "NB: ONLY for children that can blow through straws 1. Mix some paint with some dishwashing liquid in a cup 2. Add a little bit of water to the mixture 3. Give children a straw and some paper and ask them to SHARE paint 4. Ask them to blow (NOT SUCK) into the cup. This will make bubbles 5. Ask children to hold the paper on top of the bubbles and press down 6. The bubbles will make a bubble pattern on the paper, like a cloud 7. Repeat with other colours, and make a picture of clouds",
+          "Notes": "How can I extend learning?  Level 1: What colour paint do we have here? Can you show me how to mix this up? Level 2: What do we normally use dishwashing soap for? Why does it make bubbles? Level 3: What does this pattern look like? We find clouds in the sky, what else do we find in the sky? (sun, stars, rainbow) What sound does ‘cloud’ start with?",
+          "SubCategories": "21,20",
+          "AvailableLanguages": "",
+          "Image": ""
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 142,
+          "Type": "Small group",
+          "Name": "Nature puzzle",
+          "Materials": "3 home-made nature puzzles (e.g. animal, tree, mountain, field) - use pictures from magazines (pictures that you can talk about with children)",
+          "Description": "1. Give each child a piece of the first puzzle 2. Ask them to put their pieces down so that all can see 3. Then slowly help them to arrange the pieces so that they can make the puzzle. Talk about the picture by asking questions 4. Repeat with the other puzzles 5. If you think they are able, to mix up the 3 puzzles and see if they can sort them out, and build the 3 separate puzzles",
+          "Notes": "How can I extend learning?  Level 1: What are the colours on your piece of puzzle? How many pieces does this puzzle have? Level 2: Is this an edge or middle piece? Tell me about the picture you see? Level 3: What happens if we mix the pieces up? Let’s make a story about all 3 puzzle pictures? How does it feel when you can’t work out how to do the puzzle? How does it feel when we complete the puzzle?",
+          "SubCategories": "23,21",
+          "AvailableLanguages": "",
+          "Image": ""
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 143,
+          "Type": "Small group",
+          "Name": "Tall Tree",
+          "Materials": "Duplo bricks (3-4 per child)",
+          "Description": "1. Give each child 3-4 duplo bricks  2. Ask them to build the tallest tree they can, short end to short end  3. Encourage them to CHANGE HANDS with each brick 4. Once they have done it, ask them to do it again in pairs  5. They can combine their bricks and see how high they can get 6. As a group, ask them to see if there are other ways that they can build a tree",
+          "Notes": "How can I extend learning?  Level 1: What colours do you have? How many bricks can you balance? Level 2: How many bricks did you balance with your partner? How did you do it? How did you feel when your tree fell down? How did you feel when your tree stayed up? Level 3: How else can you make a tree? How can you make your tree stable? What sound does this colour start with? ‘red / blue / yellow / green / orange’?",
+          "SubCategories": "16,17",
+          "AvailableLanguages": "",
+          "Image": ""
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 144,
+          "Type": "Small group",
+          "Name": "Making flowers",
+          "Materials": "Paper per child; Peg per child; Paint; Small piece of sponge per child; Crayons",
+          "Description": "1. Ask children to draw a few circles on their page. Circles are the centres of the flowers. They can also draw stems that go down to the ground  2. Tell them that they are going to turn these circles into flowers 3. Help children to peg the small piece of sponge (making a paintbrush)  4. Dip sponges into paint and make petals around the circles 5. Allow pictures to dry and then hang them around your room",
+          "Notes": "How can I extend learning?  Level 1: What colours will your petals be? Is your flower tall or short? How many flowers will you make? Level 2: How many petals do your flowers have? What else can you tell me about your flowers? Where do flowers grow? Level 3: What do they need to grow? (water, sun, soil) What sound does ‘flower, sun, water’ start with? Why do you like flowers? What can you do with flowers?",
+          "SubCategories": "20, 23",
+          "AvailableLanguages": "",
+          "Image": ""
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 145,
+          "Type": "Small group",
+          "Name": "Finger paint tree",
+          "Materials": "Paints; Water to wash hands; Paper per child",
+          "Description": "1. Give each child a piece of paper 2. Ask them to draw a tree trunk if they are able 3. Show them how to dip their fingers into the paint 4. Show them how to make finger print leaves on the paper 5. Show them how to wash their fingers before they use another colour 6. Allow them to experiment with hand prints",
+          "Notes": "How can I extend learning?  Level 1: Which is your thumb? Which is your finger? Which is bigger? Which is smaller? Which is taller? Which is shorter? What colour are you going to use? Level 2: Tell me about your tree… Which are the leaves? And which are the flowers? Level 3: What else can you make with your finger prints? Which other part of your hand can you use to make your picture? How can you use your friend’s finger prints? What sound does ‘tree, leaf, branch’ start with?",
+          "SubCategories": "25,21",
+          "AvailableLanguages": "",
+          "Image": ""
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 146,
+          "Type": "Small group",
+          "Name": "Rubbing textures",
+          "Materials": "Piece of paper per child; crayon per child",
+          "Description": "1. Give each child a small piece of paper and a crayon 2. Go outside and find different textures in nature e.g. tree, leaf, sand, ground 3. Show them how, if you put your paper onto the textured surface and press down with crayons as you colour, you will make a pattern over the paper 4. Try it with a few different surfaces 5. Sit in a circle and ask children questions about their textures 6. Get them to hold up their pictures to show everyone",
+          "Notes": "How can I extend learning?  Level 1: What colour did you use? Who has red? Who has yellow? Etc. Level 2: Who has a rough texture? Who has a smooth texture? Who has a bumpy texture? Level 3: What other textures are there? Which one do you like best? Why? What else could we find in nature to rub on?",
+          "SubCategories": "16,21",
+          "AvailableLanguages": "",
+          "Image": ""
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 147,
+          "Type": "Small group",
+          "Name": "Big, medium and small",
+          "Materials": "3 different size stones per child;paper per child;crayon per child",
+          "Description": "1. Talk about where stones are found in nature 2. Help children to find 3 stones outside. They should be 3 different sizes 3. Talk about sizes, using words like ‘big, bigger, biggest, small, smaller, smallest’ 4. Put your stones on a paper in size order and draw circles around them 5. Small circle around smallest, medium around medium, big around biggest 6. Encourage children to do the same with their stones, paper and crayon",
+          "Notes": "How can I extend learning?  Level 1: I wonder which one is bigger? Which one is smaller? Level 2: Which order should I put them in? What size circle should I draw here? Where will you put this stone? Level 3: Where do you find your stones? What other pictures can you make with your stones? Why should we be careful with stones? What can we use them for?",
+          "SubCategories": "18,22",
+          "AvailableLanguages": "",
+          "Image": ""
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 148,
+          "Type": "Small group",
+          "Name": "Colourful butterflies",
+          "Materials": "Paper and paintbrush per child; Paint to share (to paint wings of butterfly); Marker pen or ice cream stick for body of butterfly",
+          "Description": "1. Give each child a paper and show them how to fold it in half 2. Ask them what colour they would like their butterfly to be. Show them that there is red, yellow and blue paint and explain that they can make orange from yellow and red, green from blue and yellow, and purple for red and blue 3. Show them how to make a butterfly by painting the one side of the wing on one side of the paper and then pressing it down along the fold, for the pattern to rub off on the other side 4. Draw the body of the butterfly in the centre",
+          "Notes": "How can I extend learning?  Level 1: What colour will you make your butterfly? How many colours will you use? Level 2: What colours can you mix to make a new colour? What are the colours red, yellow and blue called (Answer: Primary colours) Level 3: What sound does the word ‘red’ start with? (Answer: rrrrr) What else can you draw on your butterfly to make it look interesting?",
+          "SubCategories": "25, 23",
+          "AvailableLanguages": "",
+          "Image": ""
+        }
+      ]
+    },
+    // LARGE GROUPS
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 149,
+          "Type": "Large group",
+          "Name": "Walking in the jungle song",
+          "Materials": "Song in extra notes; Space to stand in a circle and do actions",
+          "Description": "1. Ask children to stand in a circle 2. Teach the children the song going through the lines one by one 3. Ask children to do the actions: walk, stomp, jump, skip, and run 4. Repeat and have fun singing the song 5. You can find a copy of the song in notes or go to the link provided to watch it!",
+          "Notes": "Go to www.youtube.com/watch?v=GoSq-yZcJ-4 to see how the tune goes. Think of fun actions to do!  Walking in the jungle!  Let’s walk! Walking in the jungle. Walking in the jungle. We’re not afraid. We’re not afraid. Walking in the jungle. Walking in the jungle. We’re not afraid. We’re not afraid. One step. Two steps. Three steps forward. One step. Two steps. Three steps back. Stop! Listen. What’s that? It’s a frog! We’re not afraid!  Let’s stomp! Stomping in the jungle. Stomping in the jungle. We’re not afraid. We’re not afraid. Stomping in the jungle. Stomping in the jungle. We’re not afraid. We’re not afraid. One step. Two steps. Three steps forward. One step. Two steps. Three steps back. Stop! Listen. What’s that? It’s a monkey! We’re not afraid!  Let’s jump! Jumping in the jungle. Jumping in the jungle. We’re not afraid. We’re not afraid. Jumping in the jungle. Jumping in the jungle. We’re not afraid. We’re not afraid. One step. Two steps. Three steps forward. One step. Two steps. Three steps back. Stop! Listen. What’s that? It’s a bird! We’re not afraid!  Let’s skip! Skipping in the jungle. Skipping in the jungle. We’re not afraid. We’re not afraid. Skipping in the jungle. Skipping in the jungle. We’re not afraid. We’re not afraid. One step. Two steps. Three steps forward. One step. Two steps. Three steps back. Stop! Listen. What’s that? It’s a tiger! RUN!",
+          "SubCategories": "19, 24",
+          "AvailableLanguages": "",
+          "Image": ""
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 150,
+          "Type": "Large group",
+          "Name": "Hand tree",
+          "Materials": "Paint (different colours) in bowls that are big enough for children to put their hands in; Piece of paper or card big enough for 1 big painting; Bucket of soapy water for hand washing; Towel for hand drying",
+          "Description": "1. Draw a stem on the paper or card 2. Ask children to go and put their hands in one of the bowls of paint 3. Ask them to come and make a hand print on the tree (one by one) 4. Then ask them all to wash their hands and dry them 5. Then ask them to take a crayon and write their name next to their handprint if they are able. 6. Help them if they are not 7. Ask them what sound their colour begins with (e.g. green = ‘ga’) 8. Sing a song about a tree or leaves if you can.",
+          "Notes": "Children can use paintbrushes to paint their hands, if you have them. Make sure all hands are perfectly clean after the activity.",
+          "SubCategories": "20, 21",
+          "AvailableLanguages": "",
+          "Image": ""
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 151,
+          "Type": "Large group",
+          "Name": "Nature moves",
+          "Materials": "Go outside if you can",
+          "Description": "1. Say that you are going to play a game called nature moves 2. All decide together what actions you will do when you see something 3. For example: “If you see a tree, jump three times” or “If you see a bird, clap once.” 4. Walk around if you can and play the game together",
+          "Notes": "Examples: • If you see a plant, bend down and touch the floor • If you see a dog, turn around • If you see a cat, wiggle your bottom • If you see a chicken, flap your wings • If you see a stone, stamp your feet etc. • If you see some sand, turn around and clap one of your friends hands",
+          "SubCategories": "21, 24",
+          "AvailableLanguages": "",
+          "Image": ""
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 152,
+          "Type": "Large group",
+          "Name": "Spider web game",
+          "Materials": "A ball of wool",
+          "Description": "1. Say that you are going to play a game called nature moves 2. All decide together what actions you will do when you see something 3. For example: “If you see a tree, jump three times” or “If you see a bird, clap once.” 4. Walk around if you can and play the game together",
+          "Notes": "Ensure that the wool is always tightly held, making a nice web. Ensure that everyone gets the same number of turns. Once you have made the web, stand up, hold it high above your heads, walk into the circle so that the web flops, walk out of the circles so that it becomes tight again. Have fun!",
+          "SubCategories": "20, 24",
+          "AvailableLanguages": "",
+          "Image": ""
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 153,
+          "Type": "Large group",
+          "Name": "Follow the leader",
+          "Materials": "Space to move",
+          "Description": "1. Get everyone to sit in a circle 2. Hold onto the ball of wool with one hand and throw it to a child sitting on the other side of the circle 3. Say their names as you throw 4. Ask the rest of the group what sound their name begins with? 5. Get the child to hold onto the wool and throw the ball with the other hand to someone else 6. Repeat making sure that ALL children have a turn to hold and throw the wool 7. Continue if you can until the wool is finished 8. Talk about the amazing spider web you have made",
+          "Notes": "Use different actions and sound effects.",
+          "SubCategories": "17, 24",
+          "AvailableLanguages": "",
+          "Image": ""
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 154,
+          "Type": "Large group",
+          "Name": "Jumping horse",
+          "Materials": "Small boxes to jump over",
+          "Description": "1. Ask everyone to stand in a circle and pretend to be a horse 2. Ask them to make the sound of a horse 3. Trot around in a circle like horses 4. Set out a box and each child to jumpsmover the small box like a horse 5. Set out a few more boxes and all the horses jump over all the boxes 6. Keep making horse noises as you play 7. Go round and round….",
+          "Notes": "You can pretend to be other animals: elephants, lions, cats, dogs, rabbits etc. Each child can give themselves a name as a horse.",
+          "SubCategories": "16, 24",
+          "AvailableLanguages": "",
+          "Image": ""
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 155,
+          "Type": "Large group",
+          "Name": "3-legged race",
+          "Materials": "Scarf per pair of children Space to walk around",
+          "Description": "1. Divide children into pairs 2. Tie one foot from each child together using a scarf 3. It helps if they then put their arms around each other 4. Once the children are tied together, ask them to follow you around 5. Walk around the space, go around objects, through spaces etc. 6. Sing a song as you go and have fun",
+          "Notes": "• Make sure all children are comfortable and happy • Make sure the scarf is not too tight • Make sure children feel safe • Sing any song you want to • You can do a race if you want to • Talk about what you are doing as you do it",
+          "SubCategories": "16, 24",
+          "AvailableLanguages": "",
+          "Image": ""
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 156,
+          "Type": "Large group",
+          "Name": "Pin the tail on the cow",
+          "Materials": "A large picture of a cow with NO TAIL with a cross where the tail should be (could be drawn in chalk on a wall)  A tail per child (rope or paper) A blindfold (scarf) Sticky tape  A pen",
+          "Description": "1. Draw a big cow without a tail in a place where children can reach it 2. Give each child a tail and say that they will each try to give the cow a tail 3. Blindfold the first child (tie a scarf around their eyes so they can’t see) 4. Spin the child around once or twice and get them to pin tail on cow, by guessing where the red X is and pinning the tail as close as they can 5. Tape each tail up and write the name of the child next to it. Take the blindfold off and show each child where their tail is",
+          "Notes": "Encourage each child as you do it. Laugh and have fun. Talk about body parts, like: head, ear, tummy, foot, back etc. Show each child their name. Talk about cows: what they eat, what sounds they make, milk etc.",
+          "SubCategories": "18, 24",
+          "AvailableLanguages": "",
+          "Image": ""
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 157,
+          "Type": "Large group",
+          "Name": "Pass the ball",
+          "Materials": "A ball",
+          "Description": "1. Get the children to stand in a line 2. Get them to stretch up high and then bend down to touch the floor 3. Give the ball to the front child and ask them to stretch behind their heads and pass the ball to the child behind them 4. Then ask the next child to bend and pass the ball between their legs 5. Come up with other actions until the ball is at the end of the row 6. Use words like ‘over, between, through, under’. Repeat.",
+          "Notes": "If there is time, get children to stand in a circle. They pass the ball around the circle but before they pass the ball, they turn around.",
+          "SubCategories": "18, 24",
+          "AvailableLanguages": "",
+          "Image": ""
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 158,
+          "Type": "Large group",
+          "Name": "Simon says",
+          "Materials": "Space for children to stand",
+          "Description": "1. Ask all children to watch the actions that you do 2. If you say SIMONS SAYS, (an action) - they should COPY your actions 3. If you do not say SIMON SAYS, (an action) they must NOT COPY you 4. Do various actions (See Extra Notes) 5. If a child copies you when you say don’t say Simon says…, and you simply say an action (e.g. Put your hands on your head), they must sit down 6. Continue until the last child is standing",
+          "Notes": "Example Actions : • Put your hands on your hips • Touch your nose • Pat your tummy • Turn around • Bend down • Hop • Jump etc.",
+          "SubCategories": "18, 25",
+          "AvailableLanguages": "",
+          "Image": ""
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 159,
+          "Type": "Large group",
+          "Name": "Going under",
+          "Materials": "Broom stick or piece of string",
+          "Description": "1. 2 adults hold the sides of the stick or string 2. Start by holding the string or stick higher than the children so that they can just walk under it WITHOUT TOUCHING IT 3. Give each child a chance 4. Then lower the stick or string and give each child a chance again 5. Then get even lower and repeat 6. And then even lower… giving every child a chance 7. Until it is not possible for children to climb under anymore.",
+          "Notes": "You can also hold the stick or string very low and children can jump over it.",
+          "SubCategories": "16, 24",
+          "AvailableLanguages": "",
+          "Image": ""
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 160,
+          "Type": "Large group",
+          "Name": "Nature hunt",
+          "Materials": "Items from nature (stone, leaf, stick, feather, etc); Number cards per child (1, 2, 3, 4, 5 etc.)",
+          "Description": "1. Ask children to stand in a circle 2. Talk about the things you find in nature 3. Do actions with children (be a tree, be a flower, be a stone or rock, be grass) 4. Give each child an item from nature and a card with a number 5. Ask them to go outside and look for their nature items. They should get the number of items written on the card e.g. (3) leaves 6. Children bring back items and they combine them 7. Make a picture on the ground together using the items children found.",
+          "Notes": "Make a picture of… • A village • An animal • A face • A house • A car etc.",
+          "SubCategories": "21, 22",
+          "AvailableLanguages": "",
+          "Image": ""
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 161,
+          "Type": "Large group",
+          "Name": "Obstacle course",
+          "Materials": "At least 8 items to go around, through, over or into (see Extra Notes for ideas)",
+          "Description": "1. Set up an obstacle course with a bit of space between each obstacle 2. Show children the obstacle course and explain that they can choose how to move around the course 3. Participate in the activity with them 4. Use ‘position, distance and direction’ words as you comment on what they are doing e.g. ‘up, down, through, over, under, into, out of’ etc. 5. Give someone else a turn to be the leader and go the opposite way",
+          "Notes": "Some ideas for obstacles : Hoop to crawl through, box to climb into, walk around, or jump over, rope to go under, chair to go around, bucket to climb over etc. etc.",
+          "SubCategories": "18, 24",
+          "AvailableLanguages": "",
+          "Image": ""
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 162,
+          "Type": "Large group",
+          "Name": "Planting seed song",
+          "Materials": "Container of seeds; Poem in extra notes; Space to stand in a circle and do actions",
+          "Description": "1. Ask children to make a circle and put a container of seeds in the middle 2. Ask everyone to stand in a circle 3. Teach the children the poem going through the lines one by one 4. Ask children to do actions for words like ‘dig, rake, pull, water and grow’ 5. Repeat and have fun saying the poem",
+          "Notes": "Seed Planting Poem  I dig, dig, dig and I plant some seeds I rake, rake, rake and I pull out weeds I water and watch and soon I know My garden will start to grow and grow",
+          "SubCategories": "19, 24",
+          "AvailableLanguages": "",
+          "Image": ""
+        }
+      ]
+    },
+    // STORY TIME
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 163,
+          "Type": "Story time",
+          "SubType": "Story book, Read aloud, other",
+          "Name": "Story sharing",
+          "Materials": "story book or read aloud story from playkit",
+          "Description": "Before the story • If using a book, look at the cover and talk about it • Link the story to children’s lives… “Who here has been to the sea?”  During the Story Encourage children to participate by: • Sitting in a circle where everyone can see you • Making eye contact with each child • Using facial expressions • Changing your voice for each character • Changing your volume, whisper and BOOM! • Changing your pace. Speak slowly sometimes and faster at other times • Using actions throughout the story • Making sounds (like a barking dog, or the wind) • Asking questions and waiting for answers e.g. “and what do you think happened next”?  After the story • Ask children what they liked about the story • Talk about it together",
+          "Notes": "Stories are everywhere! If you don’t have books, you can still share stories using your own imagination, children’s ideas, pictures, home made books, objects or toys",
+          "SubCategories": "",
+          "AvailableLanguages": "",
+          "Image": ""
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 164,
+          "Type": "Story time",
+          "SubType": "Story book",
+          "Name": "Share story and learn new words",
+          "Materials": "story book from playkit",
+          "Description": "Before the story, talk to the children about the book and link it to their lives.  During the story, encourage children to participate and keep the story interesting. Stop to share new words and vocuabularly with children. Select 3-5 new words to learn, and highlight these in the story.  After the story you can ask children what they liked and discuss the new words together and see if children understand. You can also share these words in different AvailableLanguages of the children in the group. Ask them if they know what that word is in English or in their home language?",
+          "Notes": "",
+          "SubCategories": "",
+          "AvailableLanguages": "",
+          "Image": ""
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 165,
+          "Type": "Story time",
+          "SubType": "Story book",
+          "Name": "Story cards",
+          "Materials": "sequencing cards from playkit; story book from playkit",
+          "Description": "Use the seqencing cards from your playkit, or make your own by photocoping the pages of a story and cutting them out.  You can either use the cards to tell the story again OR give the cards to the children and ask them to try and put them in the right order. Don't worry if they get it wrong - just let them share their ideas. This is a great activity for developing language and thinking skills. You can also use the cards to ask children to tell the story by holding up each card and asking children to say what is happening.",
+          "Notes": "",
+          "SubCategories": "",
+          "AvailableLanguages": "",
+          "Image": ""
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 166,
+          "Type": "Story time",
+          "SubType": "Story book, Read aloud, other",
+          "Name": "Puppet story",
+          "Materials": "puppets from playkit OR puppets you have made; read aloud story",
+          "Description": "When reading a story without pictures, you can bring the story alive by using puppets. You can use toys OR make your own puppets. Cut out the pictures in your playkit (or find pictures in magazines) and stick them to old toilet rolls to make a puppet. Act out the story using the puppets to play different roles. Ask children help if you think they can do it!",
+          "Notes": "Make your own puppets! Draw the characters, cut them out, and stick them to a an empty toilet roll.",
+          "SubCategories": "",
+          "AvailableLanguages": "",
+          "Image": ""
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 167,
+          "Type": "Story time",
+          "SubType": "Story book, Read aloud, other",
+          "Name": "Make a story",
+          "Materials": "Any materials you like",
+          "Description": "Make up a story on your month's theme or tell a story from your childhood.   When making up a story, you can use your imagination, use props, find pictures from books to share, or use new words learned in this month's story. Always include a beginning, middle and end, and keep children involved by asking them questions.",
+          "Notes": "",
+          "SubCategories": "",
+          "AvailableLanguages": "",
+          "Image": ""
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 168,
+          "Type": "Story time",
+          "SubType": "Story book, Read aloud, other",
+          "Name": "Story act",
+          "Materials": "Space to act out the story; theme story",
+          "Description": "It is a great confidence and language building activity to ask children to act out a story. It is best to do this if they know the story well - so use your months theme story or a story that the children know well. Ask them to act it out. You will need to help them by deciding what characters they need, how those characters should act and what they should say. This is just a fun activity and does not have to be perfect! Let children have fun, make mistakes and make up their own stories/ words!",
+          "Notes": "",
+          "SubCategories": "",
+          "AvailableLanguages": "",
+          "Image": ""
+        }
+      ]
+    }
+  ]
+}

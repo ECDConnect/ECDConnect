@@ -1,0 +1,58 @@
+using ECDLink.Security.Attributes;
+using ECDLink.DataAccessLayer.Entities.Base;
+using ECDLink.DataAccessLayer.Entities.Documents;
+using ECDLink.DataAccessLayer.Entities.Interfaces;
+using ECDLink.Security;
+using HotChocolate;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace ECDLink.DataAccessLayer.Entities.Users
+{
+    [Table(nameof(Practitioner))]
+    [EntityPermission(PermissionGroups.USER)]
+    public class Practitioner : Practitioner<Guid>
+    {
+
+    }
+
+    public class Practitioner<TKey> : EntityBase<TKey>, IDocumentQueryable, SiteAddressJoin<Guid?>, IUserType
+         where TKey : IEquatable<TKey>
+    {
+        [GraphQLIgnore]
+        public string Hierarchy { get; set; }
+
+        public string AttendanceRegisterLink { get; set; }
+
+        public int? MaxChildren { get; set; }
+
+        public bool? ConsentForPhoto { get; set; }
+
+        public decimal? ParentFees { get; set; }
+
+        public string LanguageUsedInGroups { get; set; }
+
+        public DateTime? StartDate { get; set; }
+
+        public int? MonthSinceFranchisee { get; set; }
+
+        public virtual ICollection<Document> Documents { get; set; }
+
+        [ForeignKey(nameof(UserId))]
+        public virtual ApplicationUser User { get; set; }
+        public string UserId { get; set; }
+
+
+        [ForeignKey(nameof(SiteAddressId))]
+        public virtual SiteAddress SiteAddress { get; set; }
+        public Guid? SiteAddressId { get; set; }
+    }
+
+    public interface PractitionerJoin<TKey>
+    {
+        [ForeignKey(nameof(PractitionerId))]
+        public Practitioner Practitioner { get; set; }
+        public TKey PractitionerId { get; set; }
+    }
+}

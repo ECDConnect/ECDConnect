@@ -1,0 +1,179 @@
+import { gql, useMutation } from '@apollo/client';
+import {
+  camelCaseToSentanceCase,
+  ContentDefinitionModelDto,
+  ContentTypeDto,
+  ContentTypeFieldDto,
+  ContentValueDto,
+  NOTIFICATION,
+  useNotifications,
+} from '@ecdlink/core';
+import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { ContentLoader } from '../../../../../../components/content-loader/content-loader';
+import DynamicForm from '../../../../components/dynamic-form/dynamic-form';
+import { DynamicFormTemplate, FormTemplateField } from '../../../../content-management-models';
+
+export interface ContentViewProps {
+  content: any;
+  selectedLanguageId: string;
+  defaultLanguageId: string;
+  contentValues: ContentValueDto[];
+  optionDefinitions: ContentDefinitionModelDto[];
+  contentType: ContentTypeDto;
+  cancelEdit: () => void;
+  savedContent: () => void;
+}
+
+export default function ContentEdit({
+  content,
+  selectedLanguageId,
+  defaultLanguageId,
+  contentValues,
+  optionDefinitions,
+  contentType,
+  cancelEdit,
+  savedContent,
+}: ContentViewProps) {
+  const { setNotification } = useNotifications();
+  const { register, formState, setValue, handleSubmit } = useForm();
+  const { errors } = formState;
+  const handleform = {
+    register: register,
+    errors: errors,
+  };
+
+  const mutationName = `update${contentType.name}`;
+
+  const updateMutation = gql` 
+    mutation ${mutationName} ($id: String!, $input: ${contentType.name}Input!, $localeId: String!) {
+      ${mutationName} (id: $id, input: $input, localeId: $localeId) {
+        id
+      } 
+    }
+  `;
+
+  const [updateContent] = useMutation(updateMutation);
+
+  const [template, setTemplate] = useState<DynamicFormTemplate>();
+  const [loading, setLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (contentType && contentValues && selectedLanguageId) {
+      const t: DynamicFormTemplate = {
+        title: `${contentType.name} Form`,
+        fields: [],
+      };
+
+      const copy: ContentTypeFieldDto[] = Object.assign([], contentType.fields);
+
+      const orderedList = copy?.sort(function (a, b) {
+        return a.fieldOrder - b.fieldOrder;
+      });
+
+      orderedList.forEach((item: ContentTypeFieldDto) => {
+        const renderedField = getRenderField(item);
+
+        if (renderedField) t.fields.push(renderedField);
+      });
+
+      setTemplate(t);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contentType, contentValues, selectedLanguageId]);
+
+  const getRenderField = (field: ContentTypeFieldDto): FormTemplateField | undefined => {
+    const item = contentValues.find(
+      (x) => x.contentTypeField.fieldName === field.fieldName && x.localeId === selectedLanguageId
+    );
+
+    const optionDefinition = optionDefinitions.find((x) => x.contentName === field?.dataLinkName);
+
+    const returnField: FormTemplateField = {
+      propName: field?.fieldName ?? '',
+      type: field?.fieldType.dataType ?? '',
+      title: camelCaseToSentanceCase(field?.fieldName ?? ''),
+      required: {
+        value: false,
+        message: '',
+      },
+      contentValue: item,
+      optionDefinition: optionDefinition,
+      selectedLanguageId: selectedLanguageId,
+      dataLinkName: field.dataLinkName,
+    };
+
+    if (item && item.localeId === selectedLanguageId) {
+      setValue(returnField.propName, item.value);
+    } else {
+      setValue(returnField.propName, undefined);
+    }
+    return returnField;
+  };
+
+  const onSubmit = async (values: any) => {
+    setLoading(true);
+    const model = { ...values };
+
+    await updateContent({
+      variables: {
+        id: content.id.toString(),
+        input: { ...model },
+        localeId: selectedLanguageId.toString(),
+      },
+    }).catch(() => {
+      setLoading(false);
+    });
+
+    setNotification({
+      title: 'Successfully Updated Content!',
+      variant: NOTIFICATION.SUCCESS,
+    });
+
+    savedContent();
+
+    setLoading(false);
+  };
+
+  if (contentType && contentValues && template && !loading) {
+    return (
+      <div className="flex flex-col">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 divide-y divide-gray-200">
+          <div className="-ml-4 -mt-2 flex items-center justify-between flex-wrap sm:flex-nowrap">
+            <div className="ml-4 mt-2">
+              <h3 className="text-lg leading-6 font-medium text-gray-900">
+                {camelCaseToSentanceCase(contentType.name ?? '')}
+              </h3>
+            </div>
+            <div className="ml-4 mt-2 flex-shrink-0">
+              <button
+                onClick={cancelEdit}
+                type="button"
+                className="mr-2 inline-flex items-center px-4 py-2.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-uiMid hover:bg-primary focus:outline-none focus:ring-2 focus:ring-offset-2"
+              >
+                View
+              </button>
+              <button
+                type="submit"
+                className="inline-flex items-center px-4 py-2.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-uiMid focus:outline-none focus:ring-2 focus:ring-offset-2"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+
+          <div className="pt-4 pb-8">
+            <DynamicForm
+              template={template}
+              handleform={handleform}
+              setValue={setValue}
+              defaultLanguageId={defaultLanguageId}
+            />
+          </div>
+        </form>
+      </div>
+    );
+  } else {
+    return <ContentLoader />;
+  }
+}

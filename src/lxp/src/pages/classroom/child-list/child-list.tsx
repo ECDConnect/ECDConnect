@@ -1,0 +1,372 @@
+import { ChildDto, LearnerDto, useDialog } from '@ecdlink/core';
+import { getAvatarColor } from '@ecdlink/core';
+import { DialogPosition, FADButton, SearchDropDown, StackedList } from '@ecdlink/ui';
+import {
+  AlertSeverityType,
+  ComponentBaseProps,
+  FilterInfo,
+  SearchDropDownOption,
+  SearchSortOptions,
+  UserAlertListDataItem,
+} from '@ecdlink/ui';
+import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { useHistory } from 'react-router-dom';
+import { childrenSelectors } from '../../../store/children';
+import { classroomsSelectors } from '../../../store/classroom';
+import { getChildAlertModel } from '../../../utils/child/child-alert-message-util';
+import SeachHeader from '../../../components/search-header/search-header';
+import * as styles from './child-list.styles';
+import { attendanceSelectors } from '../../../store/attendance';
+import { documentSelectors } from '../../../store/document';
+import { contentReportSelectors } from '../../../store/content/report';
+import { useStaticData } from '../../../hooks/useStaticData';
+import { WorkflowStatusEnum } from '@ecdlink/graphql';
+import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
+import { useOnlineStatus } from '../../../hooks/useOnlineStatus';
+import { IconInformationIndicator } from '../programme-planning/components/icon-information-indicator/icon-information-indicator';
+
+export const ChildList: React.FC<ComponentBaseProps> = () => {
+  const { isOnline } = useOnlineStatus();
+  const dialog = useDialog();
+  const { getWorkflowStatusIdByEnum } = useStaticData();
+  const pendingStatusId = getWorkflowStatusIdByEnum(WorkflowStatusEnum.ChildPending);
+  const history = useHistory();
+  const attendanceData = useSelector(attendanceSelectors.getAttendance);
+  const children = useSelector(childrenSelectors.getChildren);
+  const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
+  const classroomGroupProgrammes = useSelector(classroomsSelectors.getClassProgrammes);
+  const childUsers = useSelector(childrenSelectors.getChildUsers);
+  const documents = useSelector(documentSelectors.getDocuments);
+  const childReportSummaries = useSelector(contentReportSelectors.getChildLatestCompletedReports());
+  const classroomGroupLearners = useSelector(classroomsSelectors.getClassroomGroupLearners);
+  const isPlaygroup = useSelector(classroomsSelectors.isPlaygroup());
+  const [addChildButtonExpanded, setAddChildButtonExpanded] = useState<boolean>(true);
+  const [searchTextActive, setSearchTextActive] = useState(false);
+  const [activeFilters, setActiveFilters] = useState<any[]>([]);
+  const [activeSort, setActiveSort] = useState<any[]>([]);
+  const [childUserListData, setChildUserListData] = useState<UserAlertListDataItem[]>();
+  const [filteredChildData, setFilteredChildData] = useState<UserAlertListDataItem[]>([]);
+  const [updatedPlaygroups, setUpdatedPlaygroups] = useState<SearchDropDownOption<string>[]>([]);
+
+  const filterInfo: FilterInfo = {
+    filterName: 'Playgroup',
+    filterHint: 'You can select multiple playgroups',
+  };
+
+  const sortOptions: SearchSortOptions = {
+    columns: [
+      {
+        id: '1',
+        label: 'Priority',
+        value: 'priority',
+      },
+      {
+        id: '2',
+        label: 'First Name',
+        value: 'firstName',
+      },
+      {
+        id: '3',
+        label: 'Surname',
+        value: 'surname',
+      },
+      {
+        id: '4',
+        label: 'Age',
+        value: 'age',
+      },
+      {
+        id: '5',
+        label: 'Attendance',
+        value: 'attendance',
+      },
+    ],
+    defaultSort: {
+      column: 'priority',
+      dir: 'asc',
+    },
+  };
+
+  useEffect(() => {
+    if (classroomGroups && classroomGroupLearners) {
+      const groupedItems: SearchDropDownOption<string>[] = classroomGroups.map(
+        (groupedItem, idx) => ({
+          id: idx.toString(),
+          label: groupedItem.name,
+          value: groupedItem.id ?? '',
+        })
+      );
+
+      setUpdatedPlaygroups(groupedItems);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [classroomGroups, classroomGroupLearners]);
+
+  useEffect(() => {
+    if (classroomGroupLearners && children && pendingStatusId) {
+      const childListItem: UserAlertListDataItem[] = [];
+
+      for (const child of children) {
+        const learner = classroomGroupLearners.find((x) => x.userId === child.userId);
+        childListItem.push(mapUserListDataItem(child, learner));
+      }
+
+      setChildUserListData(childListItem);
+      setFilteredChildData(childListItem);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [classroomGroupLearners, children, pendingStatusId]);
+
+  const onChildListItemAction = (childId: string) => {
+    history.push('child-profile', {
+      childId,
+    });
+  };
+
+  const onFilterItemsChanges = (value: SearchDropDownOption<any>[]) => {
+    setActiveFilters(value);
+    const selectedClassrooms = value.map((x) => x.value);
+    const childListItem: UserAlertListDataItem[] = [];
+    if (children && classroomGroupLearners) {
+      if (value && value.length > 0) {
+        for (const child of children) {
+          const learner = classroomGroupLearners.find(
+            (x) =>
+              x.userId === child.userId &&
+              selectedClassrooms.some((sc) => sc === x.classroomGroupId)
+          );
+          if (learner) {
+            childListItem.push(mapUserListDataItem(child, learner));
+          }
+        }
+      } else {
+        for (const child of children) {
+          const learner = classroomGroupLearners.find((x) => x.userId === child.userId);
+          if (learner) {
+            childListItem.push(mapUserListDataItem(child, learner));
+          }
+        }
+      }
+    }
+    setChildUserListData(childListItem || []);
+    setActiveSort([]);
+  };
+
+  const onSortItemsChanges = (column: string) => {
+    if (children && classroomGroupLearners) {
+      const filteredChildren = children.filter((child) =>
+        childUserListData?.some((x) => x.id === child.id)
+      );
+      const sorted = [...filteredChildren].sort((a: ChildDto, b: ChildDto) => {
+        const childUserOne = childUsers?.find((x) => x.id === a.userId);
+        const childUserTwo = childUsers?.find((x) => x.id === b.userId);
+        const childLearnerOne = classroomGroupLearners?.find((x) => x.userId === a.userId);
+        const childLearnerTwo = classroomGroupLearners?.find((x) => x.userId === a.userId);
+
+        switch (column) {
+          case 'priority': {
+            const childUserDocumentsOne = documents?.filter((x) => x.userId === a.userId);
+            const childReportsOne = childReportSummaries?.filter((x) => x.childId === a?.id);
+            const childAlertOne = getChildAlertModel(
+              childLearnerOne,
+              pendingStatusId,
+              childUserOne,
+              a,
+              childUserDocumentsOne,
+              attendanceData,
+              classroomGroups,
+              classroomGroupProgrammes,
+              childReportsOne
+            );
+            const childUserDocumentsTwo = documents?.filter((x) => x.userId === b.userId);
+            const childReportsTwo = childReportSummaries?.filter((x) => x.childId === b?.id);
+            const childAlertTwo = getChildAlertModel(
+              childLearnerTwo,
+              pendingStatusId,
+              childUserTwo,
+              b,
+              childUserDocumentsTwo,
+              attendanceData,
+              classroomGroups,
+              classroomGroupProgrammes,
+              childReportsTwo
+            );
+            return childAlertOne.severity > childAlertTwo.severity ? 1 : -1;
+          }
+          case 'surname':
+            return (childUserOne !== undefined && childUserOne?.surname) >
+              (childUserTwo !== undefined && childUserTwo.surname)
+              ? 1
+              : -1;
+          case 'age':
+            return (childUserOne !== undefined && childUserOne?.dateOfBirth !== undefined) >
+              (childUserTwo !== undefined && childUserTwo?.dateOfBirth !== undefined)
+              ? 1
+              : -1;
+          case 'firstName':
+          default:
+            return (childUserOne !== undefined && childUserOne.firstName) >
+              (childUserTwo !== undefined && childUserTwo.firstName)
+              ? 1
+              : -1;
+        }
+      });
+
+      const childListItem: UserAlertListDataItem[] = [];
+      for (const child of sorted) {
+        const learner = classroomGroupLearners.find((x) => x.userId === child.userId);
+        childListItem.push(mapUserListDataItem(child, learner));
+      }
+      setChildUserListData(childListItem || []);
+    }
+  };
+
+  const mapUserListDataItem = (
+    childRecord: ChildDto,
+    childLearner?: LearnerDto
+  ): UserAlertListDataItem => {
+    const childUser = childUsers?.find((x) => x.id === childRecord.userId);
+    const childDocuments = documents?.filter((x) => x.userId === childRecord.userId);
+    const reports = childReportSummaries?.filter((x) => x.childId === childRecord?.id);
+
+    const childAlert = getChildAlertModel(
+      childLearner,
+      pendingStatusId,
+      childUser,
+      childRecord,
+      childDocuments,
+      attendanceData,
+      classroomGroups,
+      classroomGroupProgrammes,
+      reports
+    );
+
+    return {
+      id: childRecord.id,
+      profileDataUrl: childUser?.profileImageUrl,
+      title: `${childUser?.firstName} ${childUser?.surname}`,
+      subTitle: childAlert?.message ?? '',
+      profileText: `${childUser?.firstName && childUser?.firstName[0]}${
+        childUser?.surname && childUser?.surname[0]
+      }`,
+      alertSeverity: childAlert.status as AlertSeverityType,
+      avatarColor: getAvatarColor() || '',
+      onActionClick: () => {
+        onChildListItemAction(childRecord.id as string);
+      },
+    };
+  };
+
+  const handleListScroll = (scrollTop: number) => {
+    if (scrollTop < 30) {
+      setAddChildButtonExpanded(true);
+    } else {
+      setAddChildButtonExpanded(false);
+    }
+  };
+
+  const registerNewChild = () => {
+    if (isOnline) {
+      history.push('/child-registration-landing');
+    } else {
+      showOnlineOnly();
+    }
+  };
+
+  const onSearchChange = (value: string) => {
+    setFilteredChildData(
+      childUserListData?.filter((x) => x.title.toLowerCase().includes(value.toLowerCase())) || []
+    );
+  };
+
+  const showOnlineOnly = () => {
+    dialog({
+      position: DialogPosition.Bottom,
+      render: (onSubmit) => {
+        return <OnlineOnlyModal onSubmit={onSubmit}></OnlineOnlyModal>;
+      },
+    });
+  };
+
+  return (
+    <>
+      {children && children.length > 0 && (
+        <SeachHeader<UserAlertListDataItem>
+          searchItems={filteredChildData || []}
+          onScroll={handleListScroll}
+          onSearchChange={onSearchChange}
+          isTextSearchActive={searchTextActive}
+          onBack={() => setSearchTextActive(false)}
+          onSearchButtonClick={() => setSearchTextActive(true)}
+        >
+          {isPlaygroup && (
+            <SearchDropDown<string>
+              displayMenuOverlay={true}
+              menuItemClassName={styles.dropdownStyles}
+              className={'mr-1'}
+              options={updatedPlaygroups}
+              selectedOptions={activeFilters}
+              onChange={onFilterItemsChanges}
+              placeholder={'Playgroups'}
+              pluralSelectionText={'Playgroups'}
+              multiple
+              color={'uiMidDark'}
+              info={{
+                name: `Filter by:${filterInfo?.filterName}`,
+                hint: filterInfo?.filterHint || '',
+              }}
+            />
+          )}
+
+          <SearchDropDown<string>
+            displayMenuOverlay={true}
+            menuItemClassName={styles.dropdownStyles}
+            options={sortOptions.columns}
+            selectedOptions={activeSort}
+            onChange={(selectedColumns) => {
+              setActiveSort(selectedColumns);
+              onSortItemsChanges(selectedColumns[0].value);
+            }}
+            placeholder={'Sort By'}
+            multiple={false}
+            color={'uiMidDark'}
+            info={{
+              name: `Sort By:`,
+            }}
+          />
+        </SeachHeader>
+      )}
+
+      <div className={styles.overlay}>
+        {(!children || children.length === 0) && (
+          <IconInformationIndicator
+            title="You don't have any children yet!"
+            subTitle="Tap the add a child button below to start"
+          />
+        )}
+        {childUserListData ? (
+          <StackedList
+            className={styles.stackedList}
+            listItems={childUserListData}
+            type={'UserAlertList'}
+            onScroll={(scrollTop: number) => handleListScroll(scrollTop)}
+          ></StackedList>
+        ) : null}
+        <FADButton
+          title={'Add a child'}
+          icon={'PlusIcon'}
+          iconDirection={'left'}
+          textToggle={addChildButtonExpanded}
+          type={'filled'}
+          color={'primary'}
+          shape={'round'}
+          className={styles.fadButton}
+          click={registerNewChild}
+        />
+      </div>
+    </>
+  );
+};
+
+export default ChildList;

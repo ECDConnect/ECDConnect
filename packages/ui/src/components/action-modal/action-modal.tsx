@@ -1,0 +1,123 @@
+import { Colours, ComponentBaseProps } from '../../models';
+import { renderIcon } from '../../utils';
+import Button from '../button/button';
+import { IconWrapper } from '../icon-wrapper/icon-wrapper';
+import { TypographyWeight } from '../typography/models/TypographyTypes';
+
+import Typography from '../typography/typography';
+import * as styles from './action-modal.styles';
+import { ActionModalButton } from './models/ActionModalButton';
+
+export interface ActionModalProps extends ComponentBaseProps {
+  icon?: string;
+  iconColor?: Colours;
+  iconBorderColor?: Colours;
+  title?: string;
+  importantText?: string;
+  detailText?: string;
+  paragraphs?: string[];
+  linkText?: string;
+  linkTextWeight?: TypographyWeight;
+  linkClick?: () => void;
+  actionButtons?: ActionModalButton[];
+  textAlignment?: 'left' | 'right' | 'center';
+}
+
+export const ActionModal: React.FC<ActionModalProps> = ({
+  icon = '',
+  iconColor = 'errorMain',
+  iconBorderColor = 'white',
+  title = '',
+  importantText = '',
+  detailText = '',
+  linkText = '',
+  paragraphs = [],
+  linkTextWeight = 'normal',
+  actionButtons = [],
+  linkClick,
+  textAlignment = 'center',
+  children,
+}) => {
+  return (
+    <div
+      className={styles.wrapper(
+        textAlignment === 'left' ? 'start' : textAlignment === 'right' ? 'end' : textAlignment
+      )}
+    >
+      {icon?.length > 0 && (
+        <IconWrapper icon={icon} iconBorderColor={iconBorderColor} iconColor={iconColor} />
+      )}
+      {title?.length > 0 && (
+        <div className={styles.textWrapper(textAlignment)} data-testid="title-wrapper">
+          <Typography type={'h2'} weight="bold" text={title} color={'textDark'} />
+        </div>
+      )}
+      {importantText?.length > 0 && (
+        <div className={styles.textWrapper(textAlignment)} data-testid="important-wrapper">
+          <Typography
+            type="unspecified"
+            fontSize="16"
+            hasMarkup
+            text={importantText}
+            color="textDark"
+          />
+        </div>
+      )}
+      {detailText?.length > 0 && (
+        <div className={styles.textWrapper(textAlignment)} data-testid="detail-wrapper">
+          <Typography type={'body'} text={detailText} color={'textLight'} />
+        </div>
+      )}
+      {paragraphs?.length > 0 &&
+        paragraphs.map((text, index) => {
+          return (
+            <div
+              key={`action-list-${index}`}
+              className={styles.textWrapper(textAlignment)}
+              data-testid="detail-wrapper"
+            >
+              <Typography type={'body'} text={text} color={'textLight'} />
+            </div>
+          );
+        })}
+      {linkText?.length > 0 && (
+        <div
+          className={styles.textWrapper(textAlignment)}
+          data-testid="detail-wrapper"
+          onClick={() => linkClick && linkClick()}
+        >
+          <Typography
+            type={'body'}
+            weight={linkTextWeight}
+            underline={true}
+            hover={true}
+            text={linkText}
+            color={'primary'}
+          />
+        </div>
+      )}
+      {children}
+      {actionButtons.map((button, index, { length }) => (
+        <Button
+          key={`action-modal-button-${index}`}
+          className={`w-full mt-2 ${index + 1 === length ? 'mb-0' : 'mb-2'}`}
+          type={button.type}
+          color={button.colour}
+          onClick={button.onClick}
+          disabled={button.disabled}
+          testId="close-button"
+        >
+          <div className="flex flex-row items-center">
+            {button.leadingIcon &&
+              renderIcon(button.leadingIcon, `text-${button.textColour} h-4 w-4 mr-2`)}
+            <Typography type="body" color={button.textColour} text={button.text}></Typography>
+            {button.trailingIcon &&
+              renderIcon(button.trailingIcon, `text-${button.textColour} h-4 w-4 mr-2`)}
+          </div>
+        </Button>
+      ))}
+    </div>
+  );
+};
+
+export default ActionModal;

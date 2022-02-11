@@ -1,0 +1,11 @@
+export enum LocalStorageKeys {
+  config = 'ECDConfig',
+  user = 'ECDUser',
+  theme = 'ECDTheme',
+  practitionerProfilePicture = 'PractitionerProfilePicture',
+  practitionerProgrammePicture = 'PractitionerProgrammePicture',
+  attendanceTutorialComplete = 'AttendanceTutorialComplete',
+  hasClosedAttendanceSmartStartPointsMessage = 'HasClosedAttendanceSmartStartPointsMessage',
+  HasTrackedChildProgressBefore = 'HasTrackedChildProgressBefore',
+  isSmartStartUser = 'IsSmartStartUser',
+}

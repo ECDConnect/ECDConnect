@@ -1,0 +1,101 @@
+using ECDLink.Abstractrions.Services;
+using ECDLink.Core.Extensions;
+using ECDLink.Core.Models;
+using ECDLink.DataAccessLayer.Context;
+using ECDLink.DataAccessLayer.Entities.Classroom;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace ECDLink.SmartStart.Reports
+{
+    public abstract class AttendanceReportBase : IDisposable
+    {
+        protected AuthenticationDbContext _dbContext;
+        protected IHolidayService<Holiday> _holidayService;
+
+        public AttendanceReportBase(IHolidayService<Holiday> holidayService, AuthenticationDbContext dbContext)
+        {
+            _holidayService = holidayService;
+            _dbContext = dbContext;
+        }
+
+        public virtual IEnumerable<DateTime> GetDayRangeWithoutHolidays(DateTime startMonth, DateTime endMonth)
+        {
+            var holidays = _holidayService.GetHolidays(startMonth, endMonth, "en-za").ToList();
+
+            var datesBetween = startMonth.DaysBetween(endMonth);
+
+            return RemoveHolidays(datesBetween, holidays);
+        }
+
+        public virtual IEnumerable<DateTime> RemoveHolidays(IEnumerable<DateTime> days, List<Holiday> holidays)
+        {
+            var holidayDates = holidays.Select(x => x.Day);
+
+            return days.Except(holidayDates);
+        }
+
+        public virtual List<Attendance> GetAttendanceRecordsForPeriod(IEnumerable<Guid> ClassroomProgrammeIds, string userId, DateTime startMonth, DateTime endMonth)
+        {
+            return _dbContext.Attendances
+              .Include(i => i.ClassroomProgramme)
+              .Where(a => string.Equals(userId, a.UserId) && ClassroomProgrammeIds.Contains(a.ClassroomProgrammeId))
+              .Where(f => f.AttendanceDate >= startMonth && f.AttendanceDate < endMonth)
+              .ToList();
+        }
+
+        internal virtual IEnumerable<Classroom> GetActiveClassrooms(DateTime startMonth, DateTime endMonth)
+        {
+            var activeClasses = _dbContext.ClassProgrammes
+              .Include(x => x.ClassroomGroup)
+              .ThenInclude(x => x.Classroom)
+              .ThenInclude(x => x.User)
+              .Where(cp => cp.ProgrammeStartDate <= endMonth)
+              .Select(c => c.ClassroomGroup.Classroom)
+              .Distinct();
+
+            return activeClasses;
+        }
+
+        protected virtual IEnumerable<DateTime> CalculateDaysOfClassForMonth(DateTime month, int day, IEnumerable<DateTime> validClassdays, DateTime? startBound, DateTime? endBound)
+        {
+            var actualStart = month;
+
+            if (startBound.HasValue && startBound.Value > actualStart)
+            {
+                if (actualStart.IsInSameMonth(startBound))
+                {
+                    actualStart = startBound.Value;
+                }
+                else
+                {
+                    return Enumerable.Empty<DateTime>();
+                }
+            }
+
+            var actualEnd = actualStart.GetEndOfMonth();
+            if (endBound.HasValue && endBound.Value < actualEnd)
+            {
+                if (actualEnd.IsInSameMonth(endBound))
+                {
+                    actualEnd = endBound.Value;
+                }
+                else
+                {
+                    return Enumerable.Empty<DateTime>();
+                }
+            }
+
+            var monthRange = validClassdays.Where(x => x >= actualStart && x <= actualEnd);
+
+            return monthRange.Where(x => (int)x.DayOfWeek == day).ToList();
+        }
+
+        public void Dispose()
+        {
+            _dbContext.Dispose();
+        }
+    }
+}

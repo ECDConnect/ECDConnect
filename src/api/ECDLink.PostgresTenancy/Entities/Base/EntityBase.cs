@@ -1,0 +1,25 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text;
+
+namespace ECDLink.PostgresTenancy.Entities.Base
+{
+    public abstract class EntityBase
+    {
+        [Key]
+        [Column(Order = 1)]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int Id { get; set; }
+
+        [Column(Order = 97)]
+        public DateTime InsertedDate { get; set; }
+
+        [Column(Order = 98)]
+        public DateTime UpdatedDate { get; set; }
+
+        [Column(Order = 99)]
+        public string UpdatedBy { get; set; }
+    }
+}

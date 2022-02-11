@@ -1,0 +1,134 @@
+using ECDLink.Core.Extensions;
+using ECDLink.Core.Helpers;
+using ECDLink.Security.JwtSecurity.Configuration;
+using ECDLink.Security.JwtSecurity.Enums;
+using ECDLink.Security.JwtSecurity.Factories;
+using ECDLink.Security.Managers;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
+
+namespace ECDLink.Security.JwtSecurity.Managers
+{
+    public class JwtTokenManager
+    {
+        private IJwtFactory _jwtFactory;
+        private readonly IClaimsManager _claimsManager;
+        private readonly TokenValidationParameters _parameters;
+
+        public JwtTokenManager(
+            IJwtFactory jwtFactory, 
+            IClaimsManager claimsManager, 
+            TokenValidationParameters parameters
+            )
+        {
+            _jwtFactory = jwtFactory;
+            _claimsManager = claimsManager;
+            _parameters = parameters;
+        }
+
+        public async Task<string> GenerateJwt(ClaimsIdentity identity, string userId, JwtEncoderEnum encoderType)
+        {
+            var jwtEncoder = _jwtFactory.CreateJwtEncoder(encoderType);
+
+            var response = new
+            {
+                id = identity.Claims.Single(c => c.Type == "id").Value,
+                auth_token = await jwtEncoder.GenerateEncodedToken(userId, identity.Claims),
+                expires_in = (int) jwtEncoder.Options.ValidFor.TotalSeconds
+            };
+
+            return JsonConvert.SerializeObject(response, new JsonSerializerSettings() { Formatting = Formatting.Indented });
+        }
+
+        public async  Task<bool> CanRefreshToken(string token)
+        {
+            var result = GetValidClaimPrincipal(token, out var principal);
+
+            if (!result)
+            {
+                return false;
+            }
+
+            if (principal.Claims.Any(x =>
+                string.Equals(x.Type, SecurityConstants.Strings.JwtClaimIdentifiers.Type)
+                && string.Equals(x.Value, SecurityConstants.Strings.JwtTokenTypes.OneTimeToken)))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        public bool GetValidClaimPrincipal(string jwt, out ClaimsPrincipal principal)
+        {
+            var jwtTokenHandler = new JwtSecurityTokenHandler();
+            principal = jwtTokenHandler.ValidateToken(jwt, _parameters, out var validatedToken);
+
+            if (principal == default)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        public bool GetValidUserWithToken(string jwt, out IdentityUser user)
+        {
+            var jwtTokenHandler = new JwtSecurityTokenHandler();
+            user = null;
+
+            try
+            {
+                // Validation 1 - Validation JWT token format
+                var tokenInVerification = jwtTokenHandler.ValidateToken(jwt, _parameters, out var validatedToken);
+
+                // Validation 2 - Validate encryption alg
+                if (validatedToken is JwtSecurityToken jwtSecurityToken)
+                {
+                    var result = jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase);
+
+                    if (result == false)
+                    {
+                        return false;
+                    }
+                }
+
+                // Validation 3 - validate expiry date
+                var utcExpiryDate = long.Parse(tokenInVerification.Claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Exp).Value);
+
+                var expiryDate = DateTimeHelper.GetDateFromEpoch(utcExpiryDate).AddDays(35);
+
+                var expiryDateValue = expiryDate.ToEpochTime();
+                var currentDateValue = DateTime.UtcNow.ToEpochTime();
+
+                if (expiryDateValue < currentDateValue)
+                {
+                    return false;
+                }
+
+                // Validation 4 - Validate the user issued exists
+                user = _claimsManager.GetClaimUser<IdentityUser>(tokenInVerification);
+
+                if (user == default)
+                {
+                    return false;
+                }
+
+                return true;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+        }
+    }
+}

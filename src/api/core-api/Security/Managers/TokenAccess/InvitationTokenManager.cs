@@ -1,0 +1,111 @@
+﻿using ECDLink.DataAccessLayer.Entities;
+using ECDLink.Security.Managers;
+using ECDLink.Security.Providers;
+using Microsoft.AspNetCore.Identity;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace EcdLink.Api.CoreApi.Security.Managers.TokenAccess
+{
+    public class InvitationTokenManager : ITokenManager<ApplicationUser, InvitationTokenManager>
+    {
+        private readonly UserManager<ApplicationUser> _userManager;
+
+        private string EmailTokenProvider
+        {
+            get
+            {
+                return _userManager.Options.Tokens.EmailConfirmationTokenProvider;
+            }
+        }
+
+        private string AccessTokenPurpose
+        {
+            get
+            {
+                return "Invitation Email Confirmation Authentication";
+            }
+        }
+
+        public InvitationTokenManager(UserManager<ApplicationUser> userManager)
+        {
+            _userManager = userManager;
+        }
+
+        public async Task<string> GenerateTokenAsync(ApplicationUser user)
+        {
+            if (user == default(ApplicationUser))
+            {
+                return string.Empty;
+            }
+
+            var token = await _userManager.GenerateUserTokenAsync(user, EmailTokenProvider, AccessTokenPurpose);
+
+            return token;
+        }
+
+        public async Task<ApplicationUser> GetValidUserWithTokenAsync(string userId, string token)
+        {
+            var user = await _userManager.FindByNameAsync(userId);
+
+            if (user == null)
+            {
+                return default(ApplicationUser);
+            }
+
+            var result = await _userManager.VerifyUserTokenAsync(user, EmailTokenProvider, AccessTokenPurpose, token);
+
+            if (!result)
+            {
+                return default(ApplicationUser);
+            }
+
+            return user;
+        }
+
+        public async Task<string> RefreshJwtTokenAsync(string userId, string token)
+        {
+            var user = await _userManager.FindByNameAsync(userId);
+
+            if (user == null)
+            {
+                return string.Empty;
+            }
+
+            var result = await _userManager.RemoveAuthenticationTokenAsync(user, EmailTokenProvider, ProviderKeys.Tokens.EMAIL);
+
+            if (!result.Succeeded)
+            {
+                return string.Empty;
+            }
+
+            return await GenerateTokenAsync(user);
+        }
+
+        public async Task<bool> RetractTokensAsync(ApplicationUser user)
+        {
+            if (user == default(ApplicationUser))
+            {
+                return false;
+            }
+
+            var isRetracted = await _userManager.UpdateSecurityStampAsync(user);
+
+            return isRetracted.Succeeded;
+        }
+
+        public async Task<bool> VerifyTokenAsync(ApplicationUser user, string token)
+        {
+            if (user == default(ApplicationUser))
+            {
+                return false;
+            }
+
+            var isVarified = await _userManager.VerifyUserTokenAsync(user, EmailTokenProvider, AccessTokenPurpose, token);
+
+            return isVarified;
+        }
+    }
+}

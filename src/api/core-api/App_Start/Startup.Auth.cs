@@ -1,0 +1,58 @@
+using EcdLink.Api.CoreApi.Security.Managers;
+using ECDLink.DataAccessLayer.Context;
+using ECDLink.DataAccessLayer.Entities;
+using ECDLink.Security.Managers;
+using ECDLink.Security.Providers;
+using ECDLink.Security.Providers.Tokens;
+using ECDLink.Tenancy.EntityFramework.Extensions;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using System.Linq;
+
+namespace EcdLink.Api.CoreApi
+{
+    public partial class Startup
+    {
+        private void ConfigureAuthContext(IServiceCollection services)
+        {
+            services.AddDbContextFactory<AuthenticationDbContext>((serviceProvider, options) =>
+            {
+                options.UseNpgsqlTenancy(serviceProvider, "ECDLink.DataAccessLayer");
+                options.UseLazyLoadingProxies();
+            });
+
+            services.AddDbContext<ContentManagementDbContext>((serviceProvider, options) =>
+            {
+                options.UseNpgsqlTenancy(serviceProvider, "ECDLink.ContentManagement");
+            });
+
+            services.AddScoped<AuthenticationDbContext>(p =>
+                p.GetRequiredService<IDbContextFactory<AuthenticationDbContext>>()
+                .CreateDbContext());
+        }
+         
+        private void SetIdentityUser(IServiceCollection services)
+        {
+            services.AddIdentity<ApplicationUser, IdentityRole>(config =>
+            {
+                config.Tokens.ProviderMap.Add(
+                    ProviderKeys.Tokens.EMAIL, 
+                    new TokenProviderDescriptor(typeof(CustomEmailConfirmationTokenProvider<ApplicationUser>))
+                ); 
+
+                config.Tokens.EmailConfirmationTokenProvider = ProviderKeys.Tokens.EMAIL;
+
+                config.Tokens.ProviderMap.Add(
+                    ProviderKeys.Tokens.OPEN_ACCESS,
+                    new TokenProviderDescriptor(typeof(CustomOpenAccessTokenProvider<ApplicationUser>))
+                );
+            }).AddEntityFrameworkStores<AuthenticationDbContext>()
+              .AddDefaultTokenProviders();
+
+            services.AddTransient<CustomEmailConfirmationTokenProvider<ApplicationUser>>();
+            services.AddTransient<CustomOpenAccessTokenProvider<ApplicationUser>>();
+            services.AddTransient<IAdminUserService, TenantAdminManager>();
+        }
+    }
+}

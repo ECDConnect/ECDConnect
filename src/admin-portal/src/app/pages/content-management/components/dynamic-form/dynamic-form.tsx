@@ -1,0 +1,153 @@
+import { useEffect, useState } from 'react';
+import DynamicSelector from '../../../../components/dynamic-selector/dynamic-selector';
+import DynamicStaticSelector from '../../../../components/dynamic-static-selector/dynamic-static-selector';
+import FormColorField from '../../../../components/form-color-field/form-color-field';
+import FormField from '../../../../components/form-field/form-field';
+import FormFileInput from '../../../../components/form-file-input/form-file-input';
+import Editor from '../../../../components/form-markdown-editor/form-markdown-editor';
+import { DynamicFormTemplate, FieldType, FormTemplateField } from '../../content-management-models';
+
+const acceptedFormats = ['svg', 'png', 'PNG', 'jpg', 'JPG', 'jpeg'];
+
+export interface DynamicFormProps {
+  template: DynamicFormTemplate;
+  handleform: any;
+  setValue: any;
+  defaultLanguageId: string;
+}
+
+const contentWrapper = '';
+
+const DynamicForm: React.FC<DynamicFormProps> = ({
+  template,
+  handleform,
+  setValue,
+  defaultLanguageId,
+}) => {
+  const { register, errors } = handleform;
+
+  const onStateChange = (name: string, state: any) => {
+    setValue(name, state);
+  };
+
+  const [fields, setFields] = useState<any>();
+
+  useEffect(() => {
+    if (template) {
+      const fields = renderFields(template.fields);
+      setFields(fields);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [template]);
+
+  const renderFields = (fields: FormTemplateField[]) => {
+    return fields.map((field) => {
+      const { type, title, propName, required, validation } = field;
+
+      register(propName, { required: required });
+
+      switch (type) {
+        case FieldType.Text:
+          return (
+            <div key={propName} className={contentWrapper}>
+              <div className="sm:col-span-12">
+                <FormField
+                  label={title}
+                  nameProp={propName}
+                  register={register}
+                  error={errors[propName]?.message}
+                  required={required}
+                  validation={validation}
+                />
+              </div>
+            </div>
+          );
+        case FieldType.Markdown:
+          return (
+            <div key={propName} className={contentWrapper}>
+              <div className="sm:col-span-12">
+                <Editor
+                  label={title}
+                  currentValue={field.contentValue ? field.contentValue.value : undefined}
+                  onStateChange={(data) => onStateChange(propName, data)}
+                />
+              </div>
+            </div>
+          );
+        case FieldType.Image:
+          return (
+            <div key={propName} className={contentWrapper}>
+              <div className="sm:col-span-12">
+                <FormFileInput
+                  acceptedFormats={acceptedFormats}
+                  label={title}
+                  nameProp={propName}
+                  contentUrl={field.contentValue ? field.contentValue.value : undefined}
+                  returnFullUrl={true}
+                  setValue={setValue}
+                />
+              </div>
+            </div>
+          );
+        case FieldType.Link: {
+          return (
+            <div key={propName} className={contentWrapper}>
+              <div className="sm:col-span-12">
+                <DynamicSelector
+                  title={field.title}
+                  isReview={false}
+                  contentValue={field.contentValue}
+                  languageId={defaultLanguageId}
+                  optionDefinition={field.optionDefinition}
+                  setSelectedItems={(value) => onStateChange(propName, value)}
+                />
+              </div>
+            </div>
+          );
+        }
+        case FieldType.StaticLink: {
+          return (
+            <div key={propName} className={contentWrapper}>
+              <div className="sm:col-span-12">
+                <DynamicStaticSelector
+                  title={field.title}
+                  isReview={false}
+                  contentValue={field.contentValue}
+                  entityName={field.dataLinkName}
+                  setSelectedItems={(value) => onStateChange(propName, value)}
+                />
+              </div>
+            </div>
+          );
+        }
+        case FieldType.ColorPicker: {
+          return (
+            <div key={propName} className={contentWrapper}>
+              <div className="sm:col-span-12">
+                <FormColorField
+                  setValue={setValue}
+                  currentColor={field.contentValue ? field.contentValue.value : ''}
+                  label={title}
+                  nameProp={propName}
+                  register={register}
+                  error={errors[propName]?.message}
+                />
+              </div>
+            </div>
+          );
+        }
+
+        default:
+          return (
+            <div key={propName}>
+              <span>Invalid Field</span>
+            </div>
+          );
+      }
+    });
+  };
+
+  return <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-1">{fields}</div>;
+};
+
+export default DynamicForm;

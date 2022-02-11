@@ -1,0 +1,52 @@
+import { classNames, TabItem } from '@ecdlink/ui';
+import { useState } from 'react';
+import GADashboard from './components/dashboard-qa/dashboard-qa';
+import PractitionerDashboard from './components/dashboard-practitioner/dashboard-practitioner';
+import ChildrenDashboard from './components/dashboard-children/dashboard-children';
+
+export default function Dashboard() {
+  const tabItems: TabItem[] = [
+    {
+      title: 'Analytics',
+      initActive: true,
+      child: <GADashboard />,
+    },
+    {
+      title: 'Practitioner',
+      initActive: false,
+      child: <PractitionerDashboard />,
+    },
+    {
+      title: 'Children',
+      initActive: false,
+      child: <ChildrenDashboard />,
+    },
+  ];
+
+  const [currentTab, setCurrentTab] = useState<TabItem>(tabItems[0]);
+
+  return (
+    <div className="h-full overflow-auto max-h-full bg-white px-4 py-5 border-b border-gray-200 sm:px-6 shadow rounded-lg w-full dashboard-container">
+      <div className="border-b border-gray-200">
+        <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+          {tabItems.map((tab) => (
+            <div
+              key={tab.title}
+              onClick={() => setCurrentTab(tab)}
+              className={classNames(
+                currentTab?.title === tab.title
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-200 cursor-pointer',
+                'whitespace-nowrap flex py-4 px-1 border-b-2 font-medium text-sm'
+              )}
+              aria-current={currentTab?.title === tab.title ? 'page' : undefined}
+            >
+              {tab.title}
+            </div>
+          ))}
+        </nav>
+      </div>
+      <div className="mt-4">{currentTab && currentTab.child}</div>
+    </div>
+  );
+}

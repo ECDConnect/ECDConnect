@@ -1,0 +1,102 @@
+{
+  "contentDefinition": {
+    "contentName": "StoryBookPartQuestion",
+    "description": "Story book part questions",
+    "fields": [
+      {
+        "fieldOrder": 1,
+        "fieldName": "Name",
+        "fieldType": "Text",
+        "isRequired": true
+      },
+      {
+        "fieldOrder": 2,
+        "fieldName": "Question",
+        "fieldType": "Markdown",
+        "isRequired": true
+      }
+    ]
+  },
+  "dataSeed": [
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 125,
+          "Name": "Part 1 Question",
+          "Question": "What can you see in this picture? Can you see any animals? How many? Where is the sun that was calling Serapana? What colour is the sun?"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 126,
+          "Name": "Part 2 Question",
+          "Question": "What is Serapana holding? Who are Serapana’s friends? What is the silly Duck doing? What is on his head?"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 127,
+          "Name": "Part 3 Question",
+          "Question": "What has happened? Why does she need water? What do you think they can do? Who is hiding in the bushes?"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 128,
+          "Name": "Part 4 Question",
+          "Question": "Where do you think they are going? How many buckets have they got? (lets count together)"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 129,
+          "Name": "Part 5 Question",
+          "Question": "Duck looks like she is having fun – what is she doing? Who of you can swim? What is Serapana doing? What is Hedgehog doing?"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 130,
+          "Name": "Part 6 Question",
+          "Question": "Who is in the front of the line? And who is at the back? I can see the sun going down – what does that mean?"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 131,
+          "Name": "Part 7 Question",
+          "Question": "Who is helping Serapana water the garden? What vegetables did Hedgehog pick? And what is Squirrel trying to pick?"
+        }
+      ]
+    },
+    {
+      "data": [
+        {
+          "locale": "en-za",
+          "key": 132,
+          "Name": "Part 8 Question",
+          "Question": "What do you think is going to happen tomorrow?"
+        }
+      ]
+    }
+  ]
+}

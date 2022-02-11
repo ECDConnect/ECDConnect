@@ -1,0 +1,24 @@
+using ECDLink.ContentManagement.Entities.Base;
+using ECDLink.Security;
+using ECDLink.Security.Attributes;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace ECDLink.ContentManagement.Entities
+{
+    [Table(nameof(ContentTypeField))]
+    [EntityPermission(PermissionGroups.GENERAL)]
+    public class ContentTypeField : EntityBase
+    {
+        public int FieldOrder { get; set; }
+        public string FieldName { get; set; }
+
+        public int FieldTypeId { get; set; }
+
+        [ForeignKey(nameof(FieldTypeId))]
+        public FieldType FieldType { get; set; }
+
+        public bool IsActive { get; set; }
+
+        public string DataLinkName { get; set; }
+    }
+}

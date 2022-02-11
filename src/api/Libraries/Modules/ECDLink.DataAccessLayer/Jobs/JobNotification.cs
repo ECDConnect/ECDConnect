@@ -1,0 +1,28 @@
+﻿using ECDLink.Abstractrions.Enums;
+using ECDLink.DataAccessLayer.Entities;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text;
+
+namespace ECDLink.DataAccessLayer.Jobs
+{
+    [Table("JobNotification")]
+    public class JobNotification : ApplicationUserJoin
+    {
+        [Key]
+        [Column(Order = 1)]
+        public Guid Id { get; set; }
+
+        [ForeignKey(nameof(UserId))]
+        public virtual ApplicationUser User { get; set; }
+        public string UserId { get; set; }
+
+        public DateTime UserLastSeen { get; set; }
+
+        public TemplateTypeEnum TemplateType { get; set; }
+
+        public string Protocol { get; set; }
+    }
+}

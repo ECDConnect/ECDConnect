@@ -1,0 +1,64 @@
+using ECDLink.Abstractrions.Files;
+using ECDLink.Abstractrions.GraphQL.Enums;
+using ECDLink.Abstractrions.Services;
+using ECDLink.ContentManagement.Entities;
+using ECDLink.ContentManagement.Repositories;
+using ECDLink.Core.Models.ContentManagement;
+using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Repositories.Factories;
+using ECDLink.EGraphQL.Authorization;
+using ECDLink.EGraphQL.Enums;
+using ECDLink.Security;
+using HotChocolate;
+using HotChocolate.Types;
+using NPOI.SS.UserModel;
+using NPOI.SS.Util;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace EcdLink.Api.CoreApi.GraphApi.Queries
+{
+    [ExtendObjectType(OperationTypeNames.Query)]
+    public class PractitionerQueryExtension
+    {
+        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        public async Task<FileModel> PractitionerExcelTemplateGenerator(
+          [Service] IFileGenerationService fileService,
+          [Service] IGenericRepositoryFactory repoFactory)
+        {
+            var languageRepo = repoFactory.CreateRepository<Language>();
+            var languages = languageRepo.GetAll().ToList();
+
+            var fieldList = new List<string>();
+            var fieldDefinitionList = new Dictionary<string, string>();
+            fieldDefinitionList.Add("FirstName", "Text");
+            fieldDefinitionList.Add("Surname", "Text");
+            fieldDefinitionList.Add("Cellphone Number", "Text");
+            fieldDefinitionList.Add("ID / Passport Number", "Text");
+            fieldDefinitionList.Add("Consent For Photo", "Yes / No");
+            fieldDefinitionList.Add("Language Used in group", "Language Name");
+            fieldDefinitionList.Add("Parent Fees", "Number");
+            fieldDefinitionList.Add("StartDate", "Date Text (E.g 2019/10/23)");
+            fieldDefinitionList.Add("MaxChildren", "Number");
+
+            var languageList = new Dictionary<string, string>();
+            languages.ForEach(x => languageList.Add(x.Locale, x.Description));
+
+            fieldList.Add("FirstName");
+            fieldList.Add("Surname");
+            fieldList.Add("Cellphone Number");
+            fieldList.Add("ID / Passport Number");
+            fieldList.Add("Consent For Photo");
+            fieldList.Add("Language Used in group");
+            fieldList.Add("Parent Fees");
+            fieldList.Add("StartDate");
+            fieldList.Add("MaxChildren");
+
+            var reportName = $"Practitioner Template";
+            return await fileService.FieldsToExcelTemplate(fieldList, fieldDefinitionList, languageList, reportName);
+        }       
+    }
+}

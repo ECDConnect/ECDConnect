@@ -1,0 +1,120 @@
+import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from 'react';
+
+import jwt_decode from 'jwt-decode';
+import { AuthUser, Config, LocalStorageKeys, LoginRequestModel } from '@ecdlink/core';
+import { AuthenticateUser, RefreshJwtToken } from '../services/auth.service';
+
+export interface AuthContextType {
+  authenticatedUser?: AuthUser;
+  loading: boolean;
+  login: (body: LoginRequestModel, baseEndPoint: string) => Promise<boolean>;
+  logout: () => void;
+  getAccessTokenPromise: () => Promise<any>;
+}
+
+const AuthContext = createContext<AuthContextType>({} as AuthContextType);
+
+export function AuthProvider({ children }: { children: ReactNode }): JSX.Element {
+  const [authenticatedUser, setAuthenticatedUser] = useState<AuthUser>();
+
+  const [loadingInitial, setLoadingInitial] = useState<boolean>(true);
+
+  useEffect(() => {
+    const user = localStorage.getItem(LocalStorageKeys.user);
+    if (user) {
+      setAuthenticatedUser(JSON.parse(user));
+    }
+    setLoadingInitial(false);
+  }, []);
+
+  const login = async (body: LoginRequestModel, baseEndPoint: string): Promise<boolean> => {
+    try {
+      const response = await AuthenticateUser(baseEndPoint, body);
+
+      if (response.data) {
+        localStorage.setItem(LocalStorageKeys.user, JSON.stringify(response.data));
+        setAuthenticatedUser(response.data);
+        return true;
+      }
+      return false;
+    } catch (err) {
+      return false;
+    }
+  };
+
+  const getAccessTokenPromise = async (): Promise<string> => {
+    const user = localStorage.getItem(LocalStorageKeys.user);
+    const authUser: AuthUser = JSON.parse(user ?? '');
+    const token = authUser && authUser.auth_token ? authUser.auth_token : '';
+
+    if (isTokenExpired()) {
+      const response = await refreshJwtToken(Config.authApi);
+      handleAccessTokenRefresh(response);
+      return new Promise((resolve) => resolve(response.auth_token));
+    } else {
+      return new Promise((resolve) => resolve(token));
+    }
+  };
+
+  const refreshJwtToken = async (baseEndPoint: string): Promise<AuthUser | undefined> => {
+    try {
+      const user = localStorage.getItem(LocalStorageKeys.user);
+      const authUser: AuthUser = JSON.parse(user ?? '');
+      const token = authUser && authUser.auth_token ? authUser.auth_token : '';
+      const response = await RefreshJwtToken(baseEndPoint, token);
+      return response && response.data ? response.data : undefined;
+    } catch (err) {
+      return undefined;
+    }
+  };
+
+  const handleAccessTokenRefresh = (authUser: AuthUser) => {
+    localStorage.setItem(LocalStorageKeys.user, JSON.stringify(authUser));
+    setAuthenticatedUser(authUser);
+  };
+
+  const isTokenExpired = (): boolean => {
+    try {
+      const user = localStorage.getItem(LocalStorageKeys.user);
+
+      if (user) {
+        const authUser: AuthUser = JSON.parse(user);
+        const decoded = jwt_decode(authUser.auth_token) as any;
+
+        const today = new Date();
+
+        return decoded?.exp <= today.valueOf() / 1000;
+      }
+      return true;
+    } catch (err) {
+      return true;
+    }
+  };
+
+  const logout = () => {
+    setAuthenticatedUser(undefined);
+    localStorage.removeItem(LocalStorageKeys.user);
+  };
+
+  // Make the provider update only when it should
+  const memoedValue = useMemo(
+    () => ({
+      authenticatedUser,
+      login,
+      logout,
+      getAccessTokenPromise,
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [authenticatedUser]
+  );
+
+  return (
+    <AuthContext.Provider value={memoedValue as AuthContextType}>
+      {!loadingInitial && children}
+    </AuthContext.Provider>
+  );
+}
+
+export function useAuth(): AuthContextType {
+  return useContext(AuthContext);
+}

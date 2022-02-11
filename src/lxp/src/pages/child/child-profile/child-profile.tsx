@@ -1,0 +1,601 @@
+import {
+  AttendanceDto,
+  ChildAttendanceReportModel,
+  useTheme,
+  Document,
+  ContentConsentTypeEnum,
+} from '@ecdlink/core';
+import { FileTypeEnum, NoteTypeEnum, WorkflowStatusEnum } from '@ecdlink/graphql';
+import {
+  Alert,
+  BannerWrapper,
+  Button,
+  Dialog,
+  DialogPosition,
+  Divider,
+  ListItem,
+  ListItemProps,
+  ProfileAvatar,
+  renderIcon,
+  StatusChip,
+  Typography,
+} from '@ecdlink/ui';
+import { getWeek, startOfISOWeekYear } from 'date-fns';
+import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { useHistory, useLocation } from 'react-router';
+import { RemoveChildPrompt } from '../../../components/remove-child-prompt/remove-child-prompt';
+
+import { useOnlineStatus } from '../../../hooks/useOnlineStatus';
+import { useStaticData } from '../../../hooks/useStaticData';
+import { Age } from '../../../models/common/Age';
+import { AttendanceService } from '../../../services/AttendanceService';
+import { attendanceSelectors } from '../../../store/attendance';
+import { authSelectors } from '../../../store/auth';
+import { caregiverSelectors } from '../../../store/caregiver';
+import { CaregiverContactReason } from '../../../store/caregiver/caregiver.types';
+import { childrenActions, childrenSelectors } from '../../../store/children';
+import { classroomsSelectors } from '../../../store/classroom';
+import { documentActions, documentSelectors } from '../../../store/document';
+import { notesSelectors } from '../../../store/notes';
+import {
+  getAge,
+  getChildsAttendancePercentageAtPlaygroup,
+  getLastNoteDate,
+} from '../../../utils/child/child-profile-utils';
+import { getColor, getShape } from '../../../utils/classroom/attendance/track-attendance-utils';
+import { CreateNote } from '../components/create-note/create-note';
+import { ChildPending } from './child-pending/child-pending';
+import * as styles from './child-profile.styles';
+import { ChildProfileRouteState } from './child-profile.types';
+import { useAppDispatch } from '../../../store';
+import { newGuid } from '../../../utils/common/uuid.utils';
+import { userSelectors } from '../../../store/user';
+import { PhotoPrompt } from '../../../components/photo-prompt/photo-prompt';
+import { ChildProgressReportAlert } from './components/progress-report-alert/progress-report-alert';
+import { contentReportSelectors } from '../../../store/content/report';
+import { analyticsActions } from '../../../store/analytics';
+
+const baseNotificationListItem: ListItemProps = {
+  key: 'message-caregiver',
+  showIcon: true,
+  showSubTitleShape: true,
+  showChevronIcon: true,
+  backgroundColor: 'white',
+  withPaddingX: true,
+  withPaddingY: true,
+  title: 'Message caregiver',
+  subTitleColor: 'errorMain',
+  subTitleShape: 'square',
+  iconName: 'ChatAlt2Icon',
+  iconColor: 'white',
+  iconBackgroundColor: 'primary',
+};
+
+export const ChildProfile: React.FC = () => {
+  const currentDate = new Date();
+  const { isOnline } = useOnlineStatus();
+  const { theme } = useTheme();
+  const history = useHistory();
+  const appDispatch = useAppDispatch();
+  const location = useLocation<ChildProfileRouteState>();
+  const childId = location.state.childId;
+
+  const { getDocumentTypeIdByEnum, getWorkflowStatusIdByEnum } = useStaticData();
+  const workflowDocumentVerified = getWorkflowStatusIdByEnum(WorkflowStatusEnum.DocumentVerified);
+  const workflowDocumentPendingVerified = getWorkflowStatusIdByEnum(
+    WorkflowStatusEnum.DocumentPendingVerification
+  );
+  const child = useSelector(childrenSelectors.getChildById(childId));
+  const classGroupId = useSelector(classroomsSelectors.getLearnerClassgroupId(child?.userId));
+  const user = useSelector(userSelectors.getUser);
+  const playGroup = useSelector(classroomsSelectors.getClassroomGroupById(classGroupId));
+  const classProgrames = useSelector(classroomsSelectors.getClassProgrammes);
+  const childUser = useSelector(childrenSelectors.getChildUserById(child?.userId));
+  const notes = useSelector(notesSelectors.getNotesByUserId(child?.userId));
+  const attendanceData = useSelector(attendanceSelectors.getAttendance);
+  const authUser = useSelector(authSelectors.getAuthUser);
+  const childDocuments = useSelector(documentSelectors.getDocumentsByUserId(child?.userId));
+  const childBirthCertificate = childDocuments?.find(
+    (x) => x.name?.includes('birthCertificate') || x.name?.includes('clinicCard')
+  );
+
+  const childPhotoConsent = useSelector(
+    userSelectors.getUserConsentByType(child?.userId, ContentConsentTypeEnum.PhotoPermissions)
+  );
+
+  const typeId = getDocumentTypeIdByEnum(FileTypeEnum.ProfileImage);
+  const profilePicture = useSelector(documentSelectors.getDocumentByTypeId(childUser?.id, typeId));
+
+  const allCompletedReports = useSelector(
+    contentReportSelectors.getChildLatestCompletedReports(child?.id)
+  );
+
+  const caregiverHasBeenContacted = useSelector(
+    caregiverSelectors.findCaregiverContactHistoryLog(
+      child?.caregiverId,
+      child?.id,
+      CaregiverContactReason.WeeklyAttendance,
+      getWeek(currentDate)
+    )
+  );
+
+  const [createChildNoteVisible, setCreateChildNoteVisible] = useState<boolean>(false);
+  const [editProfilePictureVisible, setEditProfilePictureVisible] = useState(false);
+
+  const [childAge, setChildAge] = useState<Age>();
+  const [removeChildConfirmationVisible, setRemoveChildConfirmationVisible] =
+    useState<boolean>(false);
+  const childPendingWorkflowStatusId = getWorkflowStatusIdByEnum(WorkflowStatusEnum.ChildPending);
+  const childExternalWorkflowStatusId = getWorkflowStatusIdByEnum(
+    WorkflowStatusEnum.ChildExternalLink
+  );
+  const [attendancePercentage, setAttendancePercentage] = useState<number>(0);
+  const [notifications, setNotifications] = useState<ListItemProps[]>([]);
+  const [profileOptions, setProfileOptions] = useState<ListItemProps[]>([
+    {
+      key: 'personal-information',
+      title: 'Personal Information',
+      subTitle: 'Child & caregiver information',
+      buttonType: 'outlined',
+      buttonIcon: 'EyeIcon',
+      buttonText: 'View',
+      buttonTextColor: 'primary',
+      buttonColor: 'primary',
+      showButton: true,
+      showDivider: true,
+      dividerType: 'dashed',
+      withPaddingY: true,
+      onButtonClick: () => {
+        history.push('/child/information/edit', { childId });
+      },
+    },
+  ]);
+  const [attendaceReport, setAttendanceReport] = useState<ChildAttendanceReportModel>();
+
+  useEffect(() => {
+    if (!isOnline) {
+      appDispatch(
+        analyticsActions.createViewTracking({
+          pageView: window.location.pathname,
+          title: 'Child Profile',
+        })
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOnline]);
+
+  useEffect(() => {
+    const profileOptionsCopy = [...profileOptions];
+
+    profileOptionsCopy.unshift({
+      key: 'attendance-record',
+      title: 'Attendance Record',
+      buttonType: 'outlined',
+      buttonIcon: 'EyeIcon',
+      buttonText: 'View',
+      buttonTextColor: 'primary',
+      buttonColor: 'primary',
+      showButton: true,
+      showSubTitleShape: true,
+      withPaddingY: true,
+      onButtonClick: () => {
+        history.push('/child-attendance-report', {
+          childId: child?.id,
+          classroomGroupId: playGroup?.id,
+        });
+      },
+    });
+
+    if (allCompletedReports.length > 0) {
+      profileOptionsCopy.push({
+        key: 'progress',
+        title: 'Progress',
+        subTitle: 'See observations & reports',
+        buttonType: 'outlined',
+        buttonIcon: 'EyeIcon',
+        buttonText: 'View',
+        buttonTextColor: 'primary',
+        buttonColor: 'primary',
+        showButton: true,
+        showDivider: true,
+        dividerType: 'dashed',
+        withPaddingY: true,
+        onButtonClick: () => {
+          viewChildProgressObservationReports();
+        },
+      });
+    }
+
+    const noteOption = getNoteProfileOption();
+    profileOptionsCopy.push(noteOption);
+
+    setProfileOptions(profileOptionsCopy);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    const option = getNoteProfileOption();
+
+    const indexOfNoteOption = profileOptions.findIndex((option) => option.key === 'notes');
+
+    if (indexOfNoteOption > -1) {
+      const profileOptionsCopy = [...profileOptions];
+      profileOptionsCopy[indexOfNoteOption] = option;
+
+      setProfileOptions(profileOptionsCopy);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [createChildNoteVisible]);
+
+  useEffect(() => {
+    if (!attendanceData || !child || !playGroup) return;
+
+    const childBirthDate = childUser?.dateOfBirth ? new Date(childUser?.dateOfBirth) : currentDate;
+
+    const ageOfChild = getAge(childBirthDate);
+
+    setChildAge(ageOfChild);
+
+    new AttendanceService(authUser?.auth_token ?? '')
+      .getChildAttendanceRecords(
+        child.userId ?? '',
+        playGroup?.id ?? '',
+        startOfISOWeekYear(new Date()),
+        currentDate
+      )
+      .then((data) => {
+        setAttendanceReport(data);
+      });
+
+    const applicableNotifications: ListItemProps[] = [];
+
+    const attendanceNotification = getAttendanceNotication(
+      child.userId || '',
+      attendanceData,
+      playGroup.id || ''
+    );
+
+    if (attendanceNotification) {
+      applicableNotifications.push(attendanceNotification);
+    }
+
+    setNotifications([...applicableNotifications]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [attendanceData, child, playGroup]);
+
+  useEffect(() => {
+    if (!attendaceReport) return;
+
+    const attendancePercentage =
+      (attendaceReport.totalActualAttendance / (attendaceReport.totalExpectedAttendance || 1)) *
+      100;
+    setAttendancePercentage(attendancePercentage);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [attendaceReport]);
+
+  useEffect(() => {
+    if (!attendancePercentage) return;
+
+    const optionIndex = profileOptions.findIndex((x) => x.key === 'attendance-record');
+
+    if (optionIndex < 0) return;
+
+    const option = profileOptions[optionIndex];
+
+    option.subTitleColor = getColor(attendancePercentage);
+    option.subTitleShape = getShape(attendancePercentage);
+    option.subTitle = `${attendancePercentage.toFixed()}% present this year`;
+
+    profileOptions[optionIndex] = option;
+    setProfileOptions([...profileOptions]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [attendancePercentage]);
+
+  const getNoteProfileOption = () => {
+    let baseNotesOptions: ListItemProps = {
+      key: 'notes',
+      title: 'Your notes',
+      showButton: true,
+      showDivider: true,
+      dividerType: 'dashed',
+      withPaddingY: true,
+    };
+
+    if (notes.length === 0) {
+      baseNotesOptions = {
+        ...baseNotesOptions,
+        subTitle: 'Add a note',
+        buttonType: 'filled',
+        buttonIcon: 'PlusIcon',
+        buttonText: 'Add',
+        buttonTextColor: 'white',
+        buttonColor: 'primary',
+        onButtonClick: () => setCreateChildNoteVisible(true),
+      };
+    } else {
+      baseNotesOptions = {
+        ...baseNotesOptions,
+        subTitle: getLastNoteDate(notes),
+        buttonType: 'outlined',
+        buttonIcon: 'EyeIcon',
+        buttonText: 'View',
+        buttonTextColor: 'primary',
+        buttonColor: 'primary',
+        showButton: true,
+        showDivider: true,
+        dividerType: 'dashed',
+        withPaddingY: true,
+        onButtonClick: () => history.push('/child-notes', { childId }),
+      };
+    }
+
+    return baseNotesOptions;
+  };
+
+  const getAttendanceNotication = (
+    childUserId: string,
+    attendance: AttendanceDto[],
+    classroomGroupCacheId: string
+  ): ListItemProps | undefined => {
+    const childAttendancePercentage = getChildsAttendancePercentageAtPlaygroup(
+      childUserId,
+      attendance,
+      classroomGroupCacheId,
+      classProgrames
+    );
+
+    if (childAttendancePercentage.percentage < 50 && !caregiverHasBeenContacted)
+      return {
+        ...baseNotificationListItem,
+        subTitle: `Attended ${childAttendancePercentage.daysAttended} days last week`,
+        onButtonClick: () =>
+          contactAttendanceCaregiver(
+            childAttendancePercentage.daysAttended,
+            childAttendancePercentage.daysExpected
+          ),
+      };
+
+    return;
+  };
+
+  const onCreateChildNoteBack = () => {
+    setCreateChildNoteVisible(false);
+  };
+
+  const viewChildProgressObservationReports = () => {
+    history.push('/completed-child-progress-observation-reports', { childId: child?.id });
+  };
+
+  const onNoteCreated = () => {
+    setCreateChildNoteVisible(false);
+  };
+
+  const goToRemoveChild = () => {
+    history.push('remove-child', { childId: child?.id });
+  };
+
+  const contactAttendanceCaregiver = (actualDaysAttended: number, expectedDaysAttended: number) => {
+    history.push('/child-attendance-caregiver', {
+      actualDaysAttended,
+      expectedDaysAttended,
+      childId: child?.id,
+    });
+  };
+
+  const deleteProfileImage = async () => {
+    if (!profilePicture) return;
+
+    appDispatch(documentActions.deleteDocument(profilePicture));
+    setEditProfilePictureVisible(false);
+  };
+
+  const picturePromtOnAction = async (imageBaseString: string) => {
+    const copy = Object.assign({}, childUser);
+    if (copy) {
+      copy.profileImageUrl = imageBaseString;
+      appDispatch(childrenActions.updateChildUser(copy));
+    }
+
+    if (profilePicture) {
+      appDispatch(
+        documentActions.updateDocument({
+          ...profilePicture,
+          file: imageBaseString,
+        })
+      );
+    } else {
+      const fileName = `ProfilePicture_${childUser?.id}.png`;
+
+      const statusId = await getWorkflowStatusIdByEnum(WorkflowStatusEnum.DocumentVerified);
+
+      const documentInputModel: Document = {
+        id: newGuid(),
+        userId: childUser?.id,
+        createdUserId: user?.id ?? '',
+        workflowStatusId: statusId ?? '',
+        documentTypeId: typeId ?? '',
+        name: fileName,
+        reference: undefined,
+        fileName: fileName,
+        file: imageBaseString,
+        fileType: FileTypeEnum.ProfileImage,
+      };
+      appDispatch(documentActions.createDocument(documentInputModel));
+    }
+    setEditProfilePictureVisible(false);
+  };
+
+  const contactCaregivers = () => {
+    history.push('/child-caregivers', { childId: child?.id });
+  };
+
+  const showCertificateError = (): boolean => {
+    if (!childBirthCertificate) {
+      return true;
+    }
+
+    if (
+      (childBirthCertificate &&
+        childBirthCertificate?.workflowStatusId === workflowDocumentPendingVerified) ||
+      childBirthCertificate?.workflowStatusId === workflowDocumentVerified
+    ) {
+      return false;
+    }
+
+    if (
+      childBirthCertificate &&
+      childBirthCertificate?.workflowStatusId !== workflowDocumentVerified
+    ) {
+      return true;
+    }
+
+    return false;
+  };
+
+  if (
+    child &&
+    (child?.workflowStatusId === childPendingWorkflowStatusId ||
+      child?.workflowStatusId === childExternalWorkflowStatusId)
+  ) {
+    return <ChildPending child={child} childUser={childUser} />;
+  }
+  return (
+    <div className={styles.contentWrapper}>
+      <BannerWrapper
+        showBackground={true}
+        backgroundUrl={theme?.images.graphicOverlayUrl}
+        title={`${childUser?.firstName} ${childUser?.surname}’s Profile`}
+        color={'primary'}
+        size="medium"
+        renderBorder={true}
+        renderOverflow={false}
+        onBack={() => history.push('/classroom')}
+        displayOffline={!isOnline}
+      >
+        <div className={styles.avatarWrapper}>
+          <ProfileAvatar
+            hasConsent={childPhotoConsent ? true : false}
+            canChangeImage={childPhotoConsent ? true : false}
+            dataUrl={profilePicture?.file || childUser?.profileImageUrl || ''}
+            size={'header'}
+            // eslint-disable-next-line @typescript-eslint/no-empty-function
+            onPressed={() => setEditProfilePictureVisible(true)}
+          />
+        </div>
+
+        <div className={styles.chipsWrapper}>
+          <StatusChip
+            backgroundColour="infoDark"
+            borderColour="infoDark"
+            text={playGroup?.name || 'No Playgroup'}
+            textColour={'white'}
+            className={'mr-2'}
+          />
+          <StatusChip
+            backgroundColour="textMid"
+            borderColour="textMid"
+            text={`${childAge?.years || '0'} years ${childAge?.months || '0'} months`}
+            textColour={'white'}
+            className={'mr-2'}
+          />
+        </div>
+
+        {showCertificateError() && (
+          <Alert
+            className="m-4"
+            title={'Problem with birth certificate or clinic card'}
+            list={[
+              `SmartStart found a problem with Themba's document. Please upload a new birth certificate or clinic card now.`,
+            ]}
+            type="error"
+            button={
+              <Button
+                color="textMid"
+                type="filled"
+                size="small"
+                onClick={() => {
+                  history.push('/child-registration-birth-certificate', {
+                    childId: child?.id,
+                  });
+                }}
+              >
+                {renderIcon('UploadIcon', 'w-5 h-5 text-white mr-1')}
+                <Typography color="white" text={'Upload'} type="small" />
+              </Button>
+            }
+          />
+        )}
+
+        {notifications && child && (
+          <div className={styles.notificationsStacklist}>
+            {notifications.map((notication, idx) => (
+              <ListItem {...notication} key={`child-profile-notification-${idx}`} />
+            ))}
+            <ChildProgressReportAlert child={child} />
+          </div>
+        )}
+        <div className={styles.profileOptionsWrapper}>
+          {profileOptions.map((options, idx) => (
+            <ListItem {...options} key={`child-profile-option-${idx}`} />
+          ))}
+
+          <Divider className={'mt-2'} />
+
+          <Button
+            className={styles.button}
+            color={'primary'}
+            type="outlined"
+            onClick={contactCaregivers}
+          >
+            {renderIcon('ChatAlt2Icon', styles.buttonIcon)}
+            <Typography type="body" text="Contact caregiver" color="primary" />
+          </Button>
+          <Button className={styles.button} color={'errorMain'} type="outlined">
+            {renderIcon('TrashIcon', styles.buttonIcon)}
+            <Typography
+              type="body"
+              text={`Remove ${childUser?.firstName}`}
+              color="errorMain"
+              onClick={() => setRemoveChildConfirmationVisible(true)}
+            />
+          </Button>
+        </div>
+      </BannerWrapper>
+      <Dialog fullScreen visible={createChildNoteVisible} position={DialogPosition.Top}>
+        <div className={styles.dialogContent}>
+          <CreateNote
+            userId={child?.userId || ''}
+            noteType={NoteTypeEnum.Child}
+            titleText={`Add a note to ${childUser?.firstName} profile`}
+            onBack={() => onCreateChildNoteBack()}
+            onCreated={() => onNoteCreated()}
+          />
+        </div>
+      </Dialog>
+      <Dialog
+        className={'px-4 mb-16'}
+        stretch={true}
+        visible={removeChildConfirmationVisible}
+        position={DialogPosition.Bottom}
+      >
+        <RemoveChildPrompt
+          child={child}
+          childUser={childUser}
+          onProceed={goToRemoveChild}
+          onClose={() => setRemoveChildConfirmationVisible(false)}
+        />
+      </Dialog>
+      <Dialog visible={editProfilePictureVisible} position={DialogPosition.Bottom}>
+        <div className={'p-4'}>
+          <PhotoPrompt
+            title="Profile Photo"
+            onClose={() => setEditProfilePictureVisible(false)}
+            onAction={picturePromtOnAction}
+            onDelete={profilePicture?.file ? deleteProfileImage : undefined}
+          ></PhotoPrompt>
+        </div>
+      </Dialog>
+    </div>
+  );
+};

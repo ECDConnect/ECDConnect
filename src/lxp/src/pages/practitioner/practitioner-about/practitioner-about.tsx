@@ -1,0 +1,316 @@
+import { LocalStorageKeys, UserDto, useTheme } from '@ecdlink/core';
+import { FileTypeEnum } from '@ecdlink/graphql';
+import {
+  ActionListDataItem,
+  BannerWrapper,
+  Button,
+  Dialog,
+  DialogPosition,
+  FormInput,
+  ProfileAvatar,
+  renderIcon,
+  StackedList,
+  Typography,
+} from '@ecdlink/ui';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { useSelector } from 'react-redux';
+import { useHistory } from 'react-router-dom';
+import { PhotoPrompt } from '../../../components/photo-prompt/photo-prompt';
+import { useDocuments } from '../../../hooks/useDocuments';
+import { useOnlineStatus } from '../../../hooks/useOnlineStatus';
+import { DialogFormInput } from '../../../models/practitioner/DialogFormInput';
+import {
+  initialPractitionerAboutValues,
+  PractitionerAboutModel,
+  practitionerAboutModelSchema,
+} from '../../../schemas/practitioner/practitioner-about';
+import { useAppDispatch } from '../../../store';
+import { userActions, userSelectors } from '../../../store/user';
+import { analyticsActions } from '../../../store/analytics';
+import { setStorageItem } from '../../../utils/common/local-storage.utils';
+import * as styles from './practitioner-about.styles';
+
+export const PractitionerAbout: React.FC = () => {
+  const history = useHistory();
+  const appDispatch = useAppDispatch();
+  const { isOnline } = useOnlineStatus();
+  const { userProfilePicture, deleteDocument, createNewDocument, updateDocument } = useDocuments();
+
+  const [editFieldVisible, setEditFieldVisible] = useState(false);
+  const [displayError, setDisplayError] = useState<boolean>(false);
+  const [editProfilePictureVisible, setEditProfilePictureVisible] = useState(false);
+
+  useEffect(() => {
+    if (!isOnline) {
+      appDispatch(
+        analyticsActions.createViewTracking({
+          pageView: window.location.pathname,
+          title: 'Practitioner About',
+        })
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOnline]);
+
+  const user = useSelector(userSelectors.getUser);
+
+  const pictureStorageKey = LocalStorageKeys.practitionerProfilePicture;
+  const [listItems, setListItems] = useState<ActionListDataItem[]>([]);
+
+  useEffect(() => {
+    if (user) {
+      setNewStackListItems(user);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
+
+  const getDefaultFormvalues = () => {
+    if (user) {
+      const tempPractitioner: PractitionerAboutModel = {
+        name: user.firstName || '',
+        surname: user.surname || '',
+        cellphone: user.phoneNumber || '',
+        email: user.email,
+      };
+      return tempPractitioner;
+    } else {
+      return initialPractitionerAboutValues;
+    }
+  };
+
+  const {
+    register: practitionerAboutRegister,
+    formState: practitionerAboutFormState,
+    getValues: practitionerAboutFormGetValues,
+  } = useForm({
+    resolver: yupResolver(practitionerAboutModelSchema),
+    defaultValues: getDefaultFormvalues(),
+    mode: 'onChange',
+  });
+
+  const [dialogFormInput, setDialogFormInput] = useState<DialogFormInput<PractitionerAboutModel>>({
+    label: '',
+    formFieldName: 'name',
+    value: '',
+  });
+
+  const { theme } = useTheme();
+
+  const setNewStackListItems = (currentUser: UserDto) => {
+    const list: ActionListDataItem[] = [
+      {
+        title: 'First Name',
+        subTitle: currentUser?.firstName,
+        actionName: 'Edit',
+        actionIcon: 'PencilIcon',
+        switchTextStyles: true,
+        onActionClick: () => {
+          editField({
+            label: 'First Name',
+            formFieldName: 'name',
+            value: practitionerAboutFormGetValues().name,
+          });
+        },
+      },
+      {
+        title: 'Surname',
+        subTitle: currentUser?.surname,
+        actionName: 'Edit',
+        actionIcon: 'PencilIcon',
+        switchTextStyles: true,
+        onActionClick: () => {
+          editField({
+            label: 'Surname',
+            formFieldName: 'surname',
+            value: practitionerAboutFormGetValues().surname,
+          });
+        },
+      },
+      {
+        title: 'Cellphone Number',
+        subTitle: currentUser?.phoneNumber || 'Add an Cellphone Number',
+        switchTextStyles: true,
+        actionName: currentUser?.phoneNumber ? 'Edit' : 'Add',
+        actionIcon: currentUser?.phoneNumber ? 'PencilIcon' : 'PlusIcon',
+        buttonType: currentUser?.phoneNumber ? 'outlined' : 'filled',
+        onActionClick: () => {
+          editField({
+            label: 'Cellphone Number',
+            formFieldName: 'cellphone',
+            value: practitionerAboutFormGetValues().cellphone,
+          });
+        },
+      },
+      {
+        title: 'Email Address',
+        subTitle: currentUser?.email || 'Add an Email Address',
+        switchTextStyles: true,
+        actionName: currentUser?.email ? 'Edit' : 'Add',
+        actionIcon: currentUser?.email ? 'PencilIcon' : 'PlusIcon',
+        buttonType: currentUser?.email ? 'outlined' : 'filled',
+        onActionClick: () => {
+          editField({
+            label: 'Email Address',
+            formFieldName: 'email',
+            value: practitionerAboutFormGetValues().email,
+          });
+        },
+      },
+    ];
+
+    setListItems(list);
+  };
+
+  const editField = (formInputToLoad: DialogFormInput<PractitionerAboutModel>) => {
+    setDialogFormInput(formInputToLoad);
+    setEditFieldVisible(true);
+  };
+
+  const saveEdit = async () => {
+    if (practitionerAboutFormState.errors[dialogFormInput.formFieldName]) {
+      setDisplayError(true);
+    } else {
+      setEditFieldVisible(false);
+      await savePractitionerUserData();
+    }
+  };
+
+  const displayProfilePicturePrompt = () => {
+    setEditProfilePictureVisible(!editProfilePictureVisible);
+  };
+
+  const closeEditField = () => {
+    setEditFieldVisible(false);
+  };
+
+  const deleteProfilePicture = () => {
+    if (userProfilePicture) deleteDocument(userProfilePicture);
+
+    const copy = Object.assign({}, user);
+    if (copy) {
+      copy.profileImageUrl = '';
+      appDispatch(userActions.updateUser(copy));
+    }
+
+    setEditProfilePictureVisible(!editProfilePictureVisible);
+  };
+
+  const picturePromtOnAction = async (imageBaseString: string) => {
+    setStorageItem(imageBaseString, pictureStorageKey);
+    setEditProfilePictureVisible(!editProfilePictureVisible);
+
+    const copy = Object.assign({}, user);
+    if (copy) {
+      copy.profileImageUrl = imageBaseString;
+      appDispatch(userActions.updateUser(copy));
+    }
+
+    if (!userProfilePicture) {
+      await createNewDocument({
+        data: imageBaseString,
+        userId: user?.id || '',
+        fileType: FileTypeEnum.ProfileImage,
+        fileName: `ProfilePicture_${user?.id}.png`,
+      });
+    } else {
+      updateDocument(userProfilePicture, imageBaseString);
+    }
+  };
+
+  const savePractitionerUserData = () => {
+    const practitionerForm = practitionerAboutFormGetValues();
+    const copy = Object.assign({}, user);
+    if (copy) {
+      copy.firstName = practitionerForm.name;
+      copy.surname = practitionerForm.surname;
+      copy.phoneNumber = practitionerForm.cellphone;
+      copy.email = practitionerForm.email;
+
+      appDispatch(userActions.updateUser(copy));
+
+      setNewStackListItems(copy);
+    }
+  };
+
+  return (
+    <div className={styles.container}>
+      <BannerWrapper
+        showBackground={true}
+        backgroundUrl={theme?.images.graphicOverlayUrl}
+        backgroundImageColour={'primary'}
+        title={'About me'}
+        color={'primary'}
+        size="medium"
+        renderBorder={true}
+        renderOverflow={false}
+        onBack={() => history.push('/practitioner/profile')}
+        displayOffline={!isOnline}
+      >
+        <div className={'w-full inline-flex justify-center pt-8'}>
+          <ProfileAvatar
+            dataUrl={userProfilePicture?.file || ''}
+            size={'header'}
+            onPressed={displayProfilePicturePrompt}
+            hasConsent={true}
+          />
+        </div>
+        <StackedList className={'bg-uiBg'} listItems={listItems} type={'ActionList'}></StackedList>
+      </BannerWrapper>
+
+      <Dialog
+        stretch={true}
+        borderRadius="normal"
+        visible={editFieldVisible}
+        position={DialogPosition.Bottom}
+      >
+        <div className={'p-4'}>
+          <div className={styles.labelContainer}>
+            <Typography
+              type="body"
+              className=""
+              color="textDark"
+              text={dialogFormInput.label}
+              weight="bold"
+            ></Typography>
+            <div onClick={closeEditField}>{renderIcon('XIcon', 'h-6 w-6 text-uiLight')}</div>
+          </div>
+          <FormInput<PractitionerAboutModel>
+            visible={true}
+            nameProp={dialogFormInput.formFieldName}
+            register={practitionerAboutRegister}
+            disabled={false}
+            className={!displayError ? 'mb-6' : ''}
+          />
+          {displayError && (
+            <div className={'mt-2'}>
+              <Typography
+                type="help"
+                color="errorMain"
+                text={
+                  practitionerAboutFormState.errors[dialogFormInput.formFieldName]?.message || ''
+                }
+                className={'mb-6'}
+              ></Typography>
+            </div>
+          )}
+          <Button type="filled" color="primary" className={'w-full'} onClick={saveEdit}>
+            {renderIcon('SaveIcon', styles.buttonIcon)}
+            <Typography type="help" className="mr-2" color="white" text={'Save'}></Typography>
+          </Button>
+        </div>
+      </Dialog>
+      <Dialog visible={editProfilePictureVisible} position={DialogPosition.Bottom}>
+        <div className={'p-4'}>
+          <PhotoPrompt
+            title="Profile Photo"
+            onClose={displayProfilePicturePrompt}
+            onAction={picturePromtOnAction}
+            onDelete={userProfilePicture ? deleteProfilePicture : undefined}
+          ></PhotoPrompt>
+        </div>
+      </Dialog>
+    </div>
+  );
+};
