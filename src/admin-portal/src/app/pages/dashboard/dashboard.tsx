@@ -12,7 +12,7 @@ export default function Dashboard() {
       child: <GADashboard />,
     },
     {
-      title: 'Practitioner',
+      title: 'Practitioners',
       initActive: false,
       child: <PractitionerDashboard />,
     },
