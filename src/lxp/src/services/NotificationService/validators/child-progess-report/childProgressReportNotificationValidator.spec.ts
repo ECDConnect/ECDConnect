@@ -25,7 +25,7 @@ describe('childProgressReportNotificationValidator', () => {
     expect(notifications).toEqual([]);
   });
 
-  test('should return notifications with high priority and be visible on the dasboard and messages', () => {
+  test('should return notifications with high priority and be visible on the dashboard and messages', () => {
     const store: RecursivePartial<EnhancedStore<RootState, any>> = {
       getState: () => ({
         children: {
