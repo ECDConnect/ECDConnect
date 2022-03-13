@@ -7,7 +7,9 @@ using ECDLink.Tenancy.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System;
+using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.Migrations
 {
@@ -17,17 +19,23 @@ namespace EcdLink.Api.CoreApi.Migrations
         private readonly AuthenticationDbContext _authDbContext;
         private readonly ContentManagementDbContext _contentManagementDbContext;
         private readonly ContentMangementSeedService _contentManagementSeed;
+        private readonly ILogger<DatabaseManagementService> _logger;
+        private readonly IServiceProvider _serviceProvider;
 
         public DatabaseManagementService(
             PostgresDataSeed postgresSeed,
             AuthenticationDbContext authDbContext,
             ContentManagementDbContext contentManagementDbContext,
-            ContentMangementSeedService contentManagementSeed)
+            ContentMangementSeedService contentManagementSeed,
+            ILogger<DatabaseManagementService> logger,
+            IServiceProvider serviceProvider)
         {
             _postgresSeed = postgresSeed;
             _authDbContext = authDbContext;
             _contentManagementDbContext = contentManagementDbContext;
             _contentManagementSeed = contentManagementSeed;
+            _logger = logger;
+            _serviceProvider = serviceProvider;
         }
 
         public bool MigrateTenantInstance(TenantModel tenant)
@@ -67,6 +75,27 @@ namespace EcdLink.Api.CoreApi.Migrations
             }
 
             return true;
+        }
+
+        public async Task<bool> SeedTenantWithTestData(){
+            try{
+                var hasUsers = _authDbContext.Users.AnyAsync().Result;
+                if (hasUsers){
+                    _logger.LogInformation("Are users already seeded?");
+                    return await Task.Run<bool>(()=>true);
+                }
+                _logger.LogInformation("Seeding database.");
+                _postgresSeed.Seed();
+                _logger.LogInformation("Seeding content information database");
+                _contentManagementDbContext.Database.Migrate();
+                _contentManagementSeed.SeedFields();
+                _contentManagementSeed.SeedContent();
+            }
+            catch(Exception e){
+                    _logger.LogWarning("Unable to seed tenant test data");
+                    return await Task.Run<bool>(()=>false);
+            }
+            return await Task.Run<bool>(()=>true);
         }
 
         private void BuildDbStructure(TenantModel tenant)

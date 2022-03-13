@@ -17,7 +17,7 @@ namespace ECDLink.Tenancy.EntityFramework.Extensions
         {
             builder.AddInterceptors(new PostgresTenantDbConnectionInterceptor());
 
-            builder.UseNpgsql("Server=localhost;Port=5432;Database=holding-db;User Id=blank;Password=_blank_");
+            builder.UseNpgsql("Server=localhost;Port=5432;Database=ecdconnect;User Id=postgres;Password=admin");
         }
     }
 }
