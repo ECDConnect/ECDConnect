@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 namespace EcdLink.Api.CoreApi.Tenancy.Api
 {
     [Route("api/tenancy")]
-    //[BasicAuth]
+    [BasicAuth]
     [ApiController]
     public class TenancyController : ControllerBase
     {
@@ -46,12 +46,16 @@ namespace EcdLink.Api.CoreApi.Tenancy.Api
         //{
         //    return _tenantService.GetTenantById(id);
         //}
+        #if DEBUG
+        [AllowAnonymous]
         [HttpGet("seedTenant")]
         public IActionResult SeedTenant()
         {
             var result = _initializationService.SeedTenantWithTestData().Result;
             return Ok(); 
         }
+        #endif
+        
         // POST api/<TenancyApi>
         [HttpPost]
         public IActionResult Post([FromBody] TenantModel model)
