@@ -59,6 +59,8 @@ namespace EcdLink.Api.CoreApi
                           .WithOrigins("http://localhost:4200")
                           .WithOrigins("http://localhost:3000")
                           .WithOrigins("http://localhost:3001")
+                          .WithOrigins("https://*.ecdconnect-co-za-fundasmartstart.datafree.co")
+                          .SetIsOriginAllowedToAllowWildcardSubdomains()
                           .AllowAnyMethod()
                           .AllowAnyHeader()
                           .WithExposedHeaders("WWW-Authenticate")
