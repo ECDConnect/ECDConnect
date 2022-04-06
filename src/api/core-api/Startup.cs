@@ -10,6 +10,7 @@ using ECDLink.AzureStorage;
 using ECDLink.ContentManagement;
 using ECDLink.Core;
 using ECDLink.Core.Services.Interfaces;
+using ECDLink.DataAccessLayer.Diagnostics;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.Development;
 using ECDLink.EGraphQL;
@@ -32,6 +33,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
+using System.Diagnostics;
 
 namespace EcdLink.Api.CoreApi
 {
@@ -118,6 +120,8 @@ namespace EcdLink.Api.CoreApi
         {
             if (env.IsDevelopment())
             {
+                DiagnosticListener.AllListeners.Subscribe(new DiagnosticObserver());
+
                 app.UseDeveloperExceptionPage();
 
                 using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
