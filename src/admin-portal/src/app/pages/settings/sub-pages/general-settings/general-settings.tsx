@@ -19,7 +19,9 @@ import GeneralSettingsPanel from './components/general-settings-panel/general-se
 export default function GeneralSettingsView() {
   const { hasPermission } = useUser();
   const type = 'General Settings';
-  const { data, refetch } = useQuery(GetAllSystemSetting, { fetchPolicy: 'cache-and-network' });
+  const { data, refetch } = useQuery(GetAllSystemSetting, {
+    fetchPolicy: 'cache-and-network',
+  });
   const [tableData, setTableData] = useState<any[]>([]);
   const dialog = useDialog();
   const { setNotification } = useNotifications();

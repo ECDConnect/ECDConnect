@@ -364,7 +364,9 @@ export const ChildProfile: React.FC = () => {
   };
 
   const viewChildProgressObservationReports = () => {
-    history.push('/completed-child-progress-observation-reports', { childId: child?.id });
+    history.push('/completed-child-progress-observation-reports', {
+      childId: child?.id,
+    });
   };
 
   const onNoteCreated = () => {

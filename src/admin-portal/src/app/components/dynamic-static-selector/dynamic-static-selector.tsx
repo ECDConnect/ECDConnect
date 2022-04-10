@@ -34,7 +34,9 @@ const DynamicStaticSelector: React.FC<DynamicStaticSelectorProps> = ({
     }
   `;
 
-  const { data: contentData } = useQuery(query, { fetchPolicy: 'cache-and-network' });
+  const { data: contentData } = useQuery(query, {
+    fetchPolicy: 'cache-and-network',
+  });
 
   const [displayFields] = useState<string[]>(['description']);
 

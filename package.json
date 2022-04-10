@@ -9,9 +9,9 @@
     "build:fe": "yarn bootstrap && (cd ./src/lxp && yarn build)",
     "lint:fe": "eslint ./src/lxp/src --ext .js,jsx,.ts,.tsx",
     "lint:portal": "eslint ./src/admin-portal/src --ext .js,jsx,.ts,.tsx",
-    "format:fe": "yarn lint:fe --fix",
-    "format": "prettier --write './src/lxp/src/**/*.{ts,tsx}'",
-    "format:portal": "yarn lint:fe:portal --fix",
+    "format": "prettier --write './src/{lxp,admin-portal}/src/**/*.{ts,tsx}'",
+    "format:portal": "prettier --write './src/admin-portal/src/**/*.{ts,tsx}'",
+    "format:fe": "prettier --write './src/lxp/src/**/*.{ts,tsx}'",
     "lint:watch:fe": "esw -w --clear ./src/lxp/src --ext .js,jsx,.ts,.tsx",
     "lint:watch:portal": "esw -w --clear ./src/admin-portal/src --ext .js,jsx,.ts,.tsx",
     "prepare": "husky install",
@@ -125,12 +125,13 @@
     "lerna": "^4.0.0",
     "lint-staged": ">=10",
     "postcss": "^7.0.39",
+    "prettier": "^2.6.2",
     "react-scripts": "^4.0.3",
     "tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.2.17",
     "typescript": "4.4.4"
   },
   "lint-staged": {
-    "./src/{lxp,admin-portal}/src/**/*.{ts,tsx}": "eslint --fix"
+    "./src/{lxp,admin-portal}/src/**/*.{ts,tsx}": "yarn format"
   },
   "resolutions": {
     "immer": "^9.0.7",

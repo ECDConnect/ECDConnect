@@ -29,7 +29,9 @@ import { UserPanelProps } from '../users';
 export default function UserPanelEdit(props: UserPanelProps) {
   const { setNotification } = useNotifications();
 
-  const { data: roleData } = useQuery(RoleList, { fetchPolicy: 'cache-and-network' });
+  const { data: roleData } = useQuery(RoleList, {
+    fetchPolicy: 'cache-and-network',
+  });
 
   const emitCloseDialog = (value: boolean) => {
     props.closeDialog(value);

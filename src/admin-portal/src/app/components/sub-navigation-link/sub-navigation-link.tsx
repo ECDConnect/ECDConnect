@@ -11,9 +11,7 @@ const SubNavigationLink: React.FC<menuItemProps> = ({ item }) => {
     <Link
       to={item.href}
       className={classNames(
-        routeMatch
-          ? 'bg-uiMidDark text-white'
-          : 'text-textMid hover:bg-uiMidDark hover:text-white',
+        routeMatch ? 'bg-uiMidDark text-white' : 'text-textMid hover:bg-uiMidDark hover:text-white',
         'group flex items-center px-4 text-sm font-medium h-14'
       )}
     >

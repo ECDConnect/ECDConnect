@@ -11,7 +11,9 @@ import RolePanel from './components/role-panel/role-panel';
 
 export default function Roles() {
   const { hasPermission } = useUser();
-  const { data, refetch } = useQuery(RoleList, { fetchPolicy: 'cache-and-network' });
+  const { data, refetch } = useQuery(RoleList, {
+    fetchPolicy: 'cache-and-network',
+  });
   const dialog = useDialog();
   const { setNotification } = useNotifications();
   const [deleteRole] = useMutation(DeleteRole);

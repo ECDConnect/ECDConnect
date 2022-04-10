@@ -82,13 +82,22 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
   const [pageSize, setPageSize] = useState(ACTIVITY_PAGE_SIZE);
 
   const themeDropDownOptions: SearchDropDownOption<number>[] = useMemo(
-    () => allThemes.map((theme) => ({ id: theme.id, label: theme.name, value: theme.id })),
+    () =>
+      allThemes.map((theme) => ({
+        id: theme.id,
+        label: theme.name,
+        value: theme.id,
+      })),
     [allThemes]
   );
 
   const skillsDropDownOptions: SearchDropDownOption<ProgressTrackingSubCategoryDto>[] = useMemo(
     () =>
-      subCategories.map((skill) => ({ id: skill.id as number, label: skill.name, value: skill })),
+      subCategories.map((skill) => ({
+        id: skill.id as number,
+        label: skill.name,
+        value: skill,
+      })),
     [subCategories]
   );
 
@@ -162,7 +171,12 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
 
     if (lang) {
       setSelectedLanguageFilterOptions([
-        { id: lang.id, label: lang.description, value: lang.locale, disabled: false },
+        {
+          id: lang.id,
+          label: lang.description,
+          value: lang.locale,
+          disabled: false,
+        },
       ]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

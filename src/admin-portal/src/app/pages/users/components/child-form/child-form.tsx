@@ -16,7 +16,9 @@ export interface ChildFormProps {
 }
 
 const ChildForm: React.FC<ChildFormProps> = ({ formKey, errors, register }) => {
-  const { loading, data } = useQuery(GetAllLanguage, { fetchPolicy: 'cache-and-network' });
+  const { loading, data } = useQuery(GetAllLanguage, {
+    fetchPolicy: 'cache-and-network',
+  });
 
   const getFormFields = () => {
     const keys = Object.keys(initialChildValues);

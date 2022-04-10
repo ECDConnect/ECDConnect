@@ -19,7 +19,9 @@ import StatsBar from '../stats-bar/stats-bar';
 export default function PractitionerDashboard() {
   const dialog = useDialog();
 
-  const { data } = useQuery(practitionerMetrics, { fetchPolicy: 'cache-and-network' });
+  const { data } = useQuery(practitionerMetrics, {
+    fetchPolicy: 'cache-and-network',
+  });
   const [getPractitionerNewSignupMetric] = useLazyQuery(practitionerNewSignupMetric, {
     fetchPolicy: 'cache-and-network',
     variables: {

@@ -19,7 +19,9 @@ import ProvincePanel from './components/province-panel/province-panel';
 export default function ProvinceView() {
   const { hasPermission } = useUser();
   const type = 'Province';
-  const { data, refetch } = useQuery(GetAllProvince, { fetchPolicy: 'cache-and-network' });
+  const { data, refetch } = useQuery(GetAllProvince, {
+    fetchPolicy: 'cache-and-network',
+  });
   const [tableData, setTableData] = useState<any[]>([]);
   const [deleteMutation] = useMutation(DeleteProvince);
   const panel = usePanel();

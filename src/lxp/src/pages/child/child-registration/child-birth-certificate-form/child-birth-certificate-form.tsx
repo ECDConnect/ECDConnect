@@ -79,7 +79,9 @@ export const ChildBirthCertificateForm: React.FC<ChildChildBirthCertificateFormP
 
   useEffect(() => {
     if (getChildBirthCertificateFormValues().hasChildDocumentation === undefined) {
-      setChildBirthCertificateFormValue('hasChildDocumentation', true, { shouldValidate: true });
+      setChildBirthCertificateFormValue('hasChildDocumentation', true, {
+        shouldValidate: true,
+      });
       triggerChildBirthCertificateForm();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -15,7 +15,9 @@ import VerticalBarChart from '../vertical-bar-chart/vertical-bar-chart';
 export default function ChildrenDashboard() {
   const dialog = useDialog();
 
-  const { data } = useQuery(childrenMetrics, { fetchPolicy: 'cache-and-network' });
+  const { data } = useQuery(childrenMetrics, {
+    fetchPolicy: 'cache-and-network',
+  });
   const [getChildrenAttendedVsAbsentMetrics, { data: attendedAbsentData }] = useLazyQuery(
     childrenAttendedVsAbsentMetrics,
     {

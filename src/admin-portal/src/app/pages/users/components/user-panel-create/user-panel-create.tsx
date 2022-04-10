@@ -25,7 +25,9 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
     props.closeDialog(value);
   };
 
-  const { data: roleData } = useQuery(RoleList, { fetchPolicy: 'cache-and-network' });
+  const { data: roleData } = useQuery(RoleList, {
+    fetchPolicy: 'cache-and-network',
+  });
 
   const [createUser] = useMutation(CreateUser);
   const [addRolesToUser] = useMutation(AddUsersToRole);

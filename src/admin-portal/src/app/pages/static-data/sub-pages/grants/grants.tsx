@@ -21,7 +21,9 @@ export default function GrantView() {
   const type = 'Grant';
   const dialog = useDialog();
   const { setNotification } = useNotifications();
-  const { data, refetch } = useQuery(GetAllGrant, { fetchPolicy: 'cache-and-network' });
+  const { data, refetch } = useQuery(GetAllGrant, {
+    fetchPolicy: 'cache-and-network',
+  });
   const [tableData, setTableData] = useState<any[]>([]);
   const [deleteMutation] = useMutation(DeleteGrant);
   const panel = usePanel();

@@ -55,7 +55,9 @@ export const ChildRegistrationLanding: React.FC = () => {
         await resetAuth();
       }
       const response = await dispatch(
-        childrenThunkActions.openAccessAddChildDetail({ token: authToken || '' })
+        childrenThunkActions.openAccessAddChildDetail({
+          token: authToken || '',
+        })
       ).unwrap();
 
       if (!response) {

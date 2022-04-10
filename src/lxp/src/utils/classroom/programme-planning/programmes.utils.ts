@@ -166,7 +166,10 @@ export const findConflictingProgramme = (
     return (
       areIntervalsOverlapping(
         { start: startDate, end: endDate },
-        { start: new Date(programme.startDate), end: new Date(programme.endDate) }
+        {
+          start: new Date(programme.startDate),
+          end: new Date(programme.endDate),
+        }
       ) ||
       isSameDay(startDate, new Date(programme.endDate)) ||
       isSameDay(endDate, new Date(programme.startDate))
@@ -281,12 +284,18 @@ export const getProgrammeDayActivities = (
       switch (type) {
         case DailyRoutineItemType.smallGroup: {
           if (curr.smallGroupActivityId)
-            prev.push({ date: curr.dayDate, activityId: curr.smallGroupActivityId });
+            prev.push({
+              date: curr.dayDate,
+              activityId: curr.smallGroupActivityId,
+            });
           break;
         }
         case DailyRoutineItemType.largeGroup: {
           if (curr.largeGroupActivityId)
-            prev.push({ date: curr.dayDate, activityId: curr.largeGroupActivityId });
+            prev.push({
+              date: curr.dayDate,
+              activityId: curr.largeGroupActivityId,
+            });
           break;
         }
         case DailyRoutineItemType.storyBook: {
@@ -312,15 +321,24 @@ export const getAllProgrammeDayActivities = (programme: ProgrammeDto): Programme
       const dayActivities: ProgrammeDayActivity[] = [];
 
       if (curr.largeGroupActivityId) {
-        dayActivities.push({ date: curr.dayDate, activityId: curr.largeGroupActivityId });
+        dayActivities.push({
+          date: curr.dayDate,
+          activityId: curr.largeGroupActivityId,
+        });
       }
 
       if (curr.smallGroupActivityId) {
-        dayActivities.push({ date: curr.dayDate, activityId: curr.smallGroupActivityId });
+        dayActivities.push({
+          date: curr.dayDate,
+          activityId: curr.smallGroupActivityId,
+        });
       }
 
       if (curr.storyActivityId) {
-        dayActivities.push({ date: curr.dayDate, activityId: curr.storyActivityId });
+        dayActivities.push({
+          date: curr.dayDate,
+          activityId: curr.storyActivityId,
+        });
       }
 
       prev.push(...dayActivities);

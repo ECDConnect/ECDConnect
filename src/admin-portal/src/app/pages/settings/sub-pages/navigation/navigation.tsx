@@ -10,7 +10,9 @@ import NavigationPanel from './components/navigation-panel/navigation-panel';
 export default function NavigationSetup() {
   const type = 'Navigation';
   const { hasPermission } = useUser();
-  const { data, refetch } = useQuery(GetAllNavigation, { fetchPolicy: 'cache-and-network' });
+  const { data, refetch } = useQuery(GetAllNavigation, {
+    fetchPolicy: 'cache-and-network',
+  });
 
   const [tableData, setTableData] = useState<any[]>([]);
 

@@ -19,7 +19,9 @@ import UserPanelEdit from '../../components/user-panel-edit/user-panel-edit';
 
 export default function ApplicationUsers() {
   const dialog = useDialog();
-  const { data, refetch } = useQuery(UserList, { fetchPolicy: 'cache-and-network' });
+  const { data, refetch } = useQuery(UserList, {
+    fetchPolicy: 'cache-and-network',
+  });
   const { setNotification } = useNotifications();
   const { hasPermission } = useUser();
 
@@ -196,7 +198,12 @@ export default function ApplicationUsers() {
                     { field: 'idNumber', use: 'id / Passport' },
                     { field: 'fullName', use: 'name' },
                     { field: 'isActive', use: 'Active' },
-                    { field: 'roles', use: 'roles', type: 'array', displayProperty: 'name' },
+                    {
+                      field: 'roles',
+                      use: 'roles',
+                      type: 'array',
+                      displayProperty: 'name',
+                    },
                   ]}
                   rows={tableData}
                   editRow={hasPermission(PermissionEnum.update_user) && displayEditUserPanel}

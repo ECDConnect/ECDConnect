@@ -92,10 +92,14 @@ export const ChildProgressReportOverview: React.FC<ChildProgressReportOverviewPr
     if (currentReport) {
       if (isOnline) {
         await completeReport(currentReport, childLearner?.classroomGroupId || '');
-        history.replace('/download-child-progress-observation-reports', { childId: childId });
+        history.replace('/download-child-progress-observation-reports', {
+          childId: childId,
+        });
       } else {
         completeReportLocally(currentReport, childLearner?.classroomGroupId || '');
-        history.replace('/completed-child-progress-observation-reports', { childId: childId });
+        history.replace('/completed-child-progress-observation-reports', {
+          childId: childId,
+        });
       }
     }
   };

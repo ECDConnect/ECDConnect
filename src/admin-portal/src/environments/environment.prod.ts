@@ -3,5 +3,5 @@ export const environment = {
   // graphQlApi: 'https://ecdlink-develop-api.azurewebsites.net/graphql/',
   // authApi: 'https://ecdlink-develop-api.azurewebsites.net/',
   // themeUrl: 'https://ecdlinkstoragedev.blob.core.windows.net/theme/smartstart.json',
-  defaultOrganization: 'smartStart'
+  defaultOrganization: 'smartStart',
 };

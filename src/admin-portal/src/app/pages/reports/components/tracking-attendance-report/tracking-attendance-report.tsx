@@ -13,7 +13,9 @@ import { useUser } from '../../../../hooks/useUser';
 
 export default function TrackingAttendanceReport() {
   const { hasPermission } = useUser();
-  const { data } = useQuery(GetAllPractitioner, { fetchPolicy: 'cache-and-network' });
+  const { data } = useQuery(GetAllPractitioner, {
+    fetchPolicy: 'cache-and-network',
+  });
 
   const [getMonthlyAttendanceRecordCSV, { data: reportData }] = useLazyQuery(
     MonthlyAttendanceRecordCSV,
@@ -156,7 +158,10 @@ export default function TrackingAttendanceReport() {
                   data &&
                   data.GetAllPractitioner &&
                   data.GetAllPractitioner.map((x: PractitionerDto) => {
-                    return { key: x.userId, value: `${x.user?.firstName} ${x.user?.surname}` };
+                    return {
+                      key: x.userId,
+                      value: `${x.user?.firstName} ${x.user?.surname}`,
+                    };
                   })
                 }
                 error={errors.ownerId?.message}
