@@ -10,7 +10,7 @@ import { useAppDispatch } from '@store';
 import { classroomsActions } from '@store/classroom';
 import { staticDataSelectors } from '@store/static-data';
 import { userSelectors } from '@store/user';
-import { newGuid } from '../../../utils/common/uuid.utils';
+import { newGuid } from '@utils/common/uuid.utils';
 import { AddPhoto } from './components/add-photo/add-photo';
 import { ConfirmPlayGroups } from './components/confirm-playgroups/confirm-playgroups';
 import { EditMultiplePlayGroups } from './components/edit-mutliple-playgroups/edit-multiple-playgroups';

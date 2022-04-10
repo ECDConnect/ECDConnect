@@ -11,9 +11,9 @@ import {
   getReportingPeriod,
   isInFinalMonthOfReportingPeriod,
   isMatchingReportingPeriods,
-} from '../../../../../utils/child/child-profile-utils';
+} from '@utils/child/child-profile-utils';
 
-import { isChildInitialRegistrationPeriod } from '../../../../../utils/child/child-progress-report.utils';
+import { isChildInitialRegistrationPeriod } from '@utils/child/child-progress-report.utils';
 
 export interface ChildProgressReportAlertProps extends ComponentBaseProps {
   child: ChildDto;

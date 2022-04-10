@@ -9,9 +9,9 @@ import { useEffect, useState } from 'react';
 import { useAppDispatch } from '@store';
 import { contentReportSelectors, contentReportThunkActions } from '@store/content/report';
 import { classroomsSelectors } from '@store/classroom';
-import { saveBase64Pdf } from '../../../../../../utils/child/child-progress-report.utils';
+import { saveBase64Pdf } from '@utils/child/child-progress-report.utils';
 import { ChildProgressReportSummaryModel } from '@ecdlink/graphql';
-import { getReportingPeriod } from '../../../../../../utils/child/child-profile-utils';
+import { getReportingPeriod } from '@utils/child/child-profile-utils';
 
 export const DownloadChildProgressReport: React.FC = () => {
   const history = useHistory();

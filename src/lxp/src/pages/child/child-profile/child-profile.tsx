@@ -42,14 +42,14 @@ import {
   getAge,
   getChildsAttendancePercentageAtPlaygroup,
   getLastNoteDate,
-} from '../../../utils/child/child-profile-utils';
-import { getColor, getShape } from '../../../utils/classroom/attendance/track-attendance-utils';
+} from '@utils/child/child-profile-utils';
+import { getColor, getShape } from '@utils/classroom/attendance/track-attendance-utils';
 import { CreateNote } from '../components/create-note/create-note';
 import { ChildPending } from './child-pending/child-pending';
 import * as styles from './child-profile.styles';
 import { ChildProfileRouteState } from './child-profile.types';
 import { useAppDispatch } from '@store';
-import { newGuid } from '../../../utils/common/uuid.utils';
+import { newGuid } from '@utils/common/uuid.utils';
 import { userSelectors } from '@store/user';
 import { PhotoPrompt } from '../../../components/photo-prompt/photo-prompt';
 import { ChildProgressReportAlert } from './components/progress-report-alert/progress-report-alert';

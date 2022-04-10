@@ -15,7 +15,7 @@ import { ChildHealthInformationForm } from '../child-registration/child-health-i
 import { ChildInformationForm } from '../child-registration/child-information-form/child-information-form';
 import { ChildRegistrationForm } from '../child-registration/child-registration-form/child-registration-form';
 import { WelcomeChildRegistration } from './welcome-child-registration/welcome-child-registration';
-import * as childRegisterUtils from '../../../utils/child/child-registration.utils';
+import * as childRegisterUtils from '@utils/child/child-registration.utils';
 import { useAppDispatch } from '@store';
 import {
   CaregiverChildRegistrationProps,

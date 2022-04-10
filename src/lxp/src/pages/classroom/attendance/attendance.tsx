@@ -14,7 +14,7 @@ import {
   getClassroomGroupSchoolDays,
   getMissedClassAttendance,
   isValidAttendableDate,
-} from '../../../utils/classroom/attendance/track-attendance-utils';
+} from '@utils/classroom/attendance/track-attendance-utils';
 import { IconInformationIndicator } from '../programme-planning/components/icon-information-indicator/icon-information-indicator';
 import { AttendanceComponentType } from './attendance.types';
 import AttendanceList from './components/attendance-list/attendance-list';

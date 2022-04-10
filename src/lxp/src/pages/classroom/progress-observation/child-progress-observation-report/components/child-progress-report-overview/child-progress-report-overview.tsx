@@ -13,9 +13,9 @@ import { ChildProgressAssessmentSteps } from '../../../child-progress-assessment
 import ObservationCategoryCard from '../../../components/observation-category-card/observation-category-card';
 import { DownloadProgressTrackingReportPrompt } from '../../../components/progress-tracking-prompts/download-progress-tracking-report-prompt/download-progress-tracking-report-prompt';
 import { classroomsSelectors } from '@store/classroom';
-import { getCategoryFromCurrentReport } from '../../../../../../utils/child/child-progress-report.utils';
+import { getCategoryFromCurrentReport } from '@utils/child/child-progress-report.utils';
 import { contentReportSelectors } from '@store/content/report';
-import { getReportingPeriod } from '../../../../../../utils/child/child-profile-utils';
+import { getReportingPeriod } from '@utils/child/child-profile-utils';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useAppDispatch } from '@store';
 import { analyticsActions } from '@store/analytics';

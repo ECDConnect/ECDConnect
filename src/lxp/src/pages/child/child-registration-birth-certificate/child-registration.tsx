@@ -13,7 +13,7 @@ import { useAppDispatch } from '@store';
 import { childrenSelectors } from '@store/children';
 import { documentActions } from '@store/document';
 import { userSelectors } from '@store/user';
-import * as childRegisterUtils from '../../../utils/child/child-registration.utils';
+import * as childRegisterUtils from '@utils/child/child-registration.utils';
 import { ChildBirthCertificateForm } from '../child-registration/child-birth-certificate-form/child-birth-certificate-form';
 import {
   ChildRegistrationRouteState,

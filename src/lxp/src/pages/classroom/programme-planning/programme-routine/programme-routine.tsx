@@ -14,7 +14,7 @@ import {
   getRoutineItemType,
   getWeekBreakDown,
   isProgrammeRoutineDayComplete,
-} from '../../../../utils/classroom/programme-planning/programmes.utils';
+} from '@utils/classroom/programme-planning/programmes.utils';
 import { DateFormats } from '../../../../constants/Dates';
 import { useHolidays } from '@hooks/useHolidays';
 import { ProgrammeWeekPaging } from './components/programme-week-paging/programme-week-paging';
@@ -26,12 +26,12 @@ import { useAppDispatch } from '@store';
 import { MessageBoard } from '../components/message-board/message-board';
 import { PublicHolidayIndicator } from './components/public-holiday-indicator/public-holiday-indicator';
 import { DailyRoutineItemType } from '@enums/ProgrammeRoutineType';
-import { isDayInThePast } from '../../../../utils/common/date.utils';
+import { isDayInThePast } from '@utils/common/date.utils';
 import { useProgrammePlanningRecommendations } from '@hooks/useProgrammePlanningRecommendations';
 import {
   getFirstActivityByType,
   getRequiredActivitiesCount,
-} from '../../../../utils/classroom/programme-planning/activity-search.utils';
+} from '@utils/classroom/programme-planning/activity-search.utils';
 import ActivityDetails from '../components/activities/activity/activity-details/activity-details';
 import StoryActivityDetails from '../components/activities/storybooks/story-activity-details/story-activity-details';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';

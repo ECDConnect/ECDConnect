@@ -36,7 +36,7 @@ import {
 } from '@schemas/child/child-registration/child-information-form';
 import { classroomsSelectors } from '@store/classroom';
 import { staticDataSelectors } from '@store/static-data';
-import { calculateFullAge } from '../../../../utils/common/date.utils';
+import { calculateFullAge } from '@utils/common/date.utils';
 import * as styles from './child-information-form.styles';
 import { ChildInformationFormProps } from './child-information-form.types';
 

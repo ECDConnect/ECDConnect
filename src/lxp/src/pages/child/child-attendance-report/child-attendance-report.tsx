@@ -20,7 +20,7 @@ import {
   getColor,
   getShape,
   getShapeClass,
-} from '../../../utils/classroom/attendance/track-attendance-utils';
+} from '@utils/classroom/attendance/track-attendance-utils';
 import { ChildAttendanceReportState } from './child-attendance-report.types';
 
 export const ChildAttendanceReportPage: React.FC = () => {

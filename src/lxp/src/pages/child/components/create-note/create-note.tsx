@@ -24,7 +24,7 @@ import {
   defaultCreateNoteFormSchema,
 } from '@schemas/child/child-notes/create-note';
 import { CreateNoteProps } from './create-notes.types';
-import { newGuid } from '../../../../utils/common/uuid.utils';
+import { newGuid } from '@utils/common/uuid.utils';
 import { notesActions } from '@store/notes';
 import { useStaticData } from '@hooks/useStaticData';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';

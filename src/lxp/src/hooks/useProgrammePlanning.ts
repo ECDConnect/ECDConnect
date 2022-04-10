@@ -13,8 +13,8 @@ import {
   findConflictingProgramme,
   getProgrammeDaysForInterval,
   refreshProgrammeDateRange,
-} from '../utils/classroom/programme-planning/programmes.utils';
-import { newGuid } from '../utils/common/uuid.utils';
+} from '@utils/classroom/programme-planning/programmes.utils';
+import { newGuid } from '@utils/common/uuid.utils';
 import { useHolidays } from './useHolidays';
 
 type DailyProgrammesCreateResult = {

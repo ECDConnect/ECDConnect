@@ -10,7 +10,8 @@
       "@store/*": [
         "./store/*", "./store"
       ],
-      "@store": ["./store"]
+      "@store": ["./store"],
+      "@utils/*": ["./utils/*"]
     }
   }
 }

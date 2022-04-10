@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 import { ACTIVITY_PAGE_SIZE } from '../../../../../../../../../constants/ActivitySearch';
 import { activitySelectors } from '@store/content/activity';
 import { programmeSelectors } from '@store/programme';
-import { getSelectedActivityWarningText } from '../../../../../../../../../utils/classroom/programme-planning/programmes.utils';
+import { getSelectedActivityWarningText } from '@utils/classroom/programme-planning/programmes.utils';
 import StoryActivityCard from '../../../story-activity-card/story-activity-card';
 import StoryCard from '../../../story-card/story-card';
 import { StoryActivitySelectViewProps } from './story-activity-select.types';

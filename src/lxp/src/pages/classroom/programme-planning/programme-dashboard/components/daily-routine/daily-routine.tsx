@@ -4,7 +4,7 @@ import {
   getActivityIdForRoutineItem,
   getProgrammeWeeks,
   getRoutineItemType,
-} from '../../../../../../utils/classroom/programme-planning/programmes.utils';
+} from '@utils/classroom/programme-planning/programmes.utils';
 import { useHistory } from 'react-router';
 import { ProgrammePlanningHeader } from '../../../components/programme-planning-header/programme-planning-header';
 import { ProgrammePlanningRoutineListItem } from '../../../components/programme-planning-routine-list-item/programme-planning-routine-list-item';
@@ -21,7 +21,7 @@ import OnlineOnlyModal from '../../../../../../modals/offline-sync/online-only-m
 import { programmeActions } from '@store/programme';
 import { useAppDispatch } from '@store';
 import ActivitySearch from '../../../components/activities/activity/activity-search/activity-search';
-import { getFirstActivityByType } from '../../../../../../utils/classroom/programme-planning/activity-search.utils';
+import { getFirstActivityByType } from '@utils/classroom/programme-planning/activity-search.utils';
 import { StoryActivitySearch } from '../../../components/activities/storybooks/story-activity-search/story-activity-search';
 import { useProgrammePlanningRecommendations } from '@hooks/useProgrammePlanningRecommendations';
 import { useHolidays } from '@hooks/useHolidays';

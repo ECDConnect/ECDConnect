@@ -14,7 +14,7 @@ import { ProgressTrackingLevels } from '@enums/ProgressTrackingLevels';
 import { HowCaregiverCanHelpChildProps } from './how-caregiver-can-help-child.types';
 import ObservationCategoryCard from '../../../components/observation-category-card/observation-category-card';
 import { useForm, useFormState } from 'react-hook-form';
-import { getCategoryFromCurrentReport } from '../../../../../../utils/child/child-progress-report.utils';
+import { getCategoryFromCurrentReport } from '@utils/child/child-progress-report.utils';
 
 export const CaregiverCanHelpChildWith: React.FC<HowCaregiverCanHelpChildProps> = ({
   childId,

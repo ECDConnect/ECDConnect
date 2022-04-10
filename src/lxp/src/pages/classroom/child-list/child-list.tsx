@@ -14,7 +14,7 @@ import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { childrenSelectors } from '@store/children';
 import { classroomsSelectors } from '@store/classroom';
-import { getChildAlertModel } from '../../../utils/child/child-alert-message-util';
+import { getChildAlertModel } from '@utils/child/child-alert-message-util';
 import SeachHeader from '../../../components/search-header/search-header';
 import * as styles from './child-list.styles';
 import { attendanceSelectors } from '@store/attendance';

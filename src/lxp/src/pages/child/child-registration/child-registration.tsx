@@ -22,8 +22,8 @@ import { classroomsActions, classroomsSelectors, classroomsThunkActions } from '
 import { contentConsentSelectors } from '@store/content/consent';
 import { documentActions, documentThunkActions } from '@store/document';
 import { userActions, userSelectors, userThunkActions } from '@store/user';
-import * as childRegisterUtils from '../../../utils/child/child-registration.utils';
-import { mapUserConsentDto } from '../../../utils/user/user-consent.utils';
+import * as childRegisterUtils from '@utils/child/child-registration.utils';
+import { mapUserConsentDto } from '@utils/user/user-consent.utils';
 import { CareGiverChildInformationForm } from './care-giver-child-information-form/care-giver-child-information-form';
 import { CareGiverContributionForm } from './care-giver-contribution-form/care-giver-contribution-form';
 import { CareGiverExtraInformationForm } from './care-giver-extra-information/care-giver-extra-information';

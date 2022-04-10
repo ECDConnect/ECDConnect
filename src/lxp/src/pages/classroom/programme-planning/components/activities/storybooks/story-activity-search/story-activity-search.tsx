@@ -22,7 +22,7 @@ import { programmeThemeSelectors } from '@store/content/programme-theme';
 import { storyBookSelectors } from '@store/content/story-book';
 import { programmeSelectors } from '@store/programme';
 import { staticDataSelectors } from '@store/static-data';
-import { filterStorybooksByTheme } from '../../../../../../../utils/classroom/programme-planning/activity-search.utils';
+import { filterStorybooksByTheme } from '@utils/classroom/programme-planning/activity-search.utils';
 import { EmptyActivities } from '../../components/empty-activity-filter-result/empty-activity-filter-result';
 
 import StoryCard from '../story-card/story-card';

@@ -24,7 +24,7 @@ import {
   getAttendanceStatusCheck,
   getPlaygroup,
   mapTrackAttendance,
-} from '../../../../../utils/classroom/attendance/track-attendance-utils';
+} from '@utils/classroom/attendance/track-attendance-utils';
 import ClassProgrammeAttendanceList from '../class-programme-attendance-list/class-programme-attendance-list';
 import * as styles from './attendance-list.styles';
 import { AttendanceListProps, AttendanceState } from './attendance-list.types';

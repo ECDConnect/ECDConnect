@@ -13,7 +13,7 @@ import {
   getDateRangeText,
   getProgrammeWeeks,
   getTotalIncompleteDaysInWeek,
-} from '../../../../utils/classroom/programme-planning/programmes.utils';
+} from '@utils/classroom/programme-planning/programmes.utils';
 import { ActivitySubCategoryCard } from '../components/activities/components/activity-sub-category-card/activity-sub-category-card';
 import { EmptyActivities } from '../components/activities/components/empty-activity-filter-result/empty-activity-filter-result';
 import { IconInformationIndicator } from '../components/icon-information-indicator/icon-information-indicator';

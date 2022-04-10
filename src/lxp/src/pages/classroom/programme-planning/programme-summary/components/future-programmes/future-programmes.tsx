@@ -3,7 +3,7 @@ import { ComponentBaseProps, StatusChip } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { DateFormats } from '../../../../../../constants/Dates';
 import { programmeSelectors } from '@store/programme';
-import { getDateRangeText } from '../../../../../../utils/classroom/programme-planning/programmes.utils';
+import { getDateRangeText } from '@utils/classroom/programme-planning/programmes.utils';
 
 interface FutureProgrammesProps extends ComponentBaseProps {
   programme?: ProgrammeDto;

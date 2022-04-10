@@ -6,7 +6,7 @@ import { ProgrammePlanningRoutineListItemProps } from './programme-planning-rout
 import {
   getActivityIdForRoutineItem,
   getRoutineItemType,
-} from '../../../../../utils/classroom/programme-planning/programmes.utils';
+} from '@utils/classroom/programme-planning/programmes.utils';
 
 export const ProgrammePlanningRoutineListItem: React.FC<ProgrammePlanningRoutineListItemProps> = ({
   routineItem,

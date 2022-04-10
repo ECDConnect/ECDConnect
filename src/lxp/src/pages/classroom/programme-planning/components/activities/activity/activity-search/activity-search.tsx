@@ -26,14 +26,14 @@ import {
   filterActivitiesByTheme,
   filterActivitiesByType,
   getProgressTrackingSubCategoryActivities,
-} from '../../../../../../../utils/classroom/programme-planning/activity-search.utils';
+} from '@utils/classroom/programme-planning/activity-search.utils';
 import { useAppDispatch } from '@store';
 import { progressTrackingSelectors } from '@store/progress-tracking';
 import {
   getDateRangeText,
   getRoutineItemType,
   getSelectedActivityWarningText,
-} from '../../../../../../../utils/classroom/programme-planning/programmes.utils';
+} from '@utils/classroom/programme-planning/programmes.utils';
 import { programmeSelectors } from '@store/programme';
 import { EmptyActivities } from '../../components/empty-activity-filter-result/empty-activity-filter-result';
 import { ACTIVITY_PAGE_SIZE } from '../../../../../../../constants/ActivitySearch';

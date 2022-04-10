@@ -25,7 +25,7 @@ import { caregiverActions, caregiverSelectors } from '@store/caregiver';
 import { childrenActions, childrenSelectors } from '@store/children';
 import { classroomsActions, classroomsSelectors } from '@store/classroom';
 import { staticDataSelectors } from '@store/static-data';
-import { newGuid } from '../../../utils/common/uuid.utils';
+import { newGuid } from '@utils/common/uuid.utils';
 import { CareGiverChildInformationForm } from '../child-registration/care-giver-child-information-form/care-giver-child-information-form';
 import { CareGiverChildInformationFormModel } from '@schemas/child/child-registration/care-giver-child-information-form';
 import { ChildEmergencyContactForm } from '../child-registration/child-emergency-contact-form/child-emergency-contact-form';

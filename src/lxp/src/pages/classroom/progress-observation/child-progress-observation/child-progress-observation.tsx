@@ -12,11 +12,8 @@ import { ProgressTrackingLevels } from '@enums/ProgressTrackingLevels';
 import { useChildProgressObservation } from '@hooks/useChildProgressObservations';
 
 import { getProgressTrackingCategories } from '@store/progress-tracking/progress-tracking.selectors';
-import {
-  getReportingPeriod,
-  isMatchingReportingPeriods,
-} from '../../../../utils/child/child-profile-utils';
-import { newGuid } from '../../../../utils/common/uuid.utils';
+import { getReportingPeriod, isMatchingReportingPeriods } from '@utils/child/child-profile-utils';
+import { newGuid } from '@utils/common/uuid.utils';
 
 import * as styles from './child-progress-observation.styles';
 import { ChildProgressObservationPageState } from './child-progress-observation.types';
@@ -29,7 +26,7 @@ import { classroomsSelectors } from '@store/classroom';
 import {
   getCategoryFromCurrentReport,
   seperateCategoriesByStatus,
-} from '../../../../utils/child/child-progress-report.utils';
+} from '@utils/child/child-progress-report.utils';
 import { contentReportSelectors } from '@store/content/report';
 import { useEffect, useState } from 'react';
 import ProgressTrackingTutorial from '../components/progress-tracking-tutorial/progress-tracking-tutorial';

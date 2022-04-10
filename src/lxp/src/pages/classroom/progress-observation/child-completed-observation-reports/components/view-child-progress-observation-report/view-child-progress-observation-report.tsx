@@ -15,7 +15,7 @@ import ObservationCategoryCard from '../../../components/observation-category-ca
 import {
   getCategoryFromCurrentReport,
   saveBase64Pdf,
-} from '../../../../../../utils/child/child-progress-report.utils';
+} from '@utils/child/child-progress-report.utils';
 import { ProgressTrackingLevels } from '@enums/ProgressTrackingLevels';
 import { classroomsSelectors } from '@store/classroom';
 import { analyticsActions } from '@store/analytics';

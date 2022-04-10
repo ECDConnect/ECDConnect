@@ -11,7 +11,7 @@ import { ClassroomGroupLearnerService } from '@services/ClassroomGroupLearnerSer
 import { ClassroomGroupProgrammesService } from '@services/ClassroomGroupProgrammesService';
 import { ClassroomGroupService } from '@services/ClassroomGroupService';
 import { ClassroomService } from '@services/ClassroomService';
-import { newGuid } from '../../utils/common/uuid.utils';
+import { newGuid } from '@utils/common/uuid.utils';
 import { RootState, ThunkApiType } from '../types';
 
 export const getClassroom = createAsyncThunk<

@@ -15,10 +15,7 @@ import { useForm, useWatch } from 'react-hook-form';
 import * as styles from '../../edit-practitioner-profile.styles';
 import { EditPlaygroupModel, editPlaygroupSchema } from '@schemas/practitioner/edit-playgroups';
 import { buttonDays, dayTypes, EditPlaygroupProps } from './edit-playgroup.form.types';
-import {
-  canDeleteClassroomGroup,
-  Weekdays,
-} from '../../../../../utils/practitioner/playgroups-utils';
+import { canDeleteClassroomGroup, Weekdays } from '@utils/practitioner/playgroups-utils';
 import { ClassroomGroupDto, DialogModalOptions, RecursivePartial, useDialog } from '@ecdlink/core';
 import { ClassroomGroupService } from '@services/ClassroomGroupService';
 import { useSelector } from 'react-redux';

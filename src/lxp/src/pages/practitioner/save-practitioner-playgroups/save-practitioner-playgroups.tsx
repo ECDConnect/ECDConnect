@@ -10,7 +10,7 @@ import { EditPlaygroupModel } from '@schemas/practitioner/edit-playgroups';
 import * as styles from './save-practitioner-playgroups.styles';
 import { useAppDispatch } from '@store';
 import { classroomsActions, classroomsSelectors } from '@store/classroom';
-import { newGuid } from '../../../utils/common/uuid.utils';
+import { newGuid } from '@utils/common/uuid.utils';
 import { EditPlaygroupsState, EditPlaygroupsSteps } from './save-practitioner-playgroups.types';
 import { staticDataSelectors } from '@store/static-data';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';

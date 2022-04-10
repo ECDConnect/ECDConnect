@@ -2,7 +2,7 @@ import { FileTypeEnum, WorkflowStatusEnum } from '@ecdlink/graphql';
 import { Document } from '@ecdlink/core';
 import { CreateDocumentRequest } from '@models/common/Document';
 import { documentActions, documentSelectors } from '@store/document';
-import { newGuid } from '../utils/common/uuid.utils';
+import { newGuid } from '@utils/common/uuid.utils';
 import { useStaticData } from './useStaticData';
 import { useAppDispatch } from '@store';
 import { useSelector } from 'react-redux';

@@ -6,14 +6,14 @@ import { ChildBasicInfoModel } from '@schemas/child/child-registration/child-bas
 import { useAppDispatch } from '@store';
 import { childrenThunkActions } from '@store/children';
 import { childrenActions } from '@store/children';
-import * as childRegisterUtils from '../../../../utils/child/child-registration.utils';
+import * as childRegisterUtils from '@utils/child/child-registration.utils';
 import { WorkflowStatusEnum } from '@ecdlink/graphql';
 import { useStaticData } from '@hooks/useStaticData';
 import { ChildRegistrationSteps } from '../../child-registration/child-registration.types';
 import { classroomsActions } from '@store/classroom';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import OnlineOnlyModal from '../../../../modals/offline-sync/online-only-modal';
-import { copyToClip } from '../../../../utils/common/clipboard.utils';
+import { copyToClip } from '@utils/common/clipboard.utils';
 import { CaregiverChildRegistrationModal } from '../../components/caregiver-child-registration-modal/caregiver-child-registration-modal';
 export interface CaregiverLinkProps extends ComponentBaseProps {
   childDetails: ChildBasicInfoModel;

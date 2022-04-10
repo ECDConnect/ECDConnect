@@ -7,7 +7,7 @@ import PointsSuccessCard from '../../../../../components/points-success-card/poi
 import { AttendanceSummary } from '@models/classroom/attendance/AttendanceSummary';
 import { AttendanceService } from '@services/AttendanceService';
 import { authSelectors } from '@store/auth';
-import { setStorageItem } from '../../../../../utils/common/local-storage.utils';
+import { setStorageItem } from '@utils/common/local-storage.utils';
 import { AttendanceReportProps } from './attendance-report.types';
 import { AttendanceMonthlyReport } from './components/attendance-monthly-report/attendance-monthly-report';
 
