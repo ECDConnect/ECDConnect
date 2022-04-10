@@ -10,7 +10,9 @@ import CoachPanelEdit from './coach-panel-edit/coach-panel-edit';
 
 export default function Coaches() {
   const { hasPermission } = useUser();
-  const { data, refetch } = useQuery(GetAllCoach, { fetchPolicy: 'cache-and-network' });
+  const { data, refetch } = useQuery(GetAllCoach, {
+    fetchPolicy: 'cache-and-network',
+  });
 
   const [tableData, setTableData] = useState<any[]>([]);
 

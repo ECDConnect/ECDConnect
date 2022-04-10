@@ -62,7 +62,10 @@ const ProgrammeTiming: React.FC = () => {
 
     const newProgramme = await createProgramme(validatedDate, formValue.language, selectedTheme);
 
-    history.replace('/programmes/summary', { programmeId: newProgramme.id, variation: 'create' });
+    history.replace('/programmes/summary', {
+      programmeId: newProgramme.id,
+      variation: 'create',
+    });
   };
 
   useEffect(() => {

@@ -28,7 +28,9 @@ export const ProgrammePlanningDailyRoutine = () => {
 
     if (hasTranslations) {
       await appDispatch(
-        programmeRoutineThunkActions.getProgrammeRoutines({ locale: language.locale })
+        programmeRoutineThunkActions.getProgrammeRoutines({
+          locale: language.locale,
+        })
       ).unwrap();
     } else {
       presentUnavailableAlert();

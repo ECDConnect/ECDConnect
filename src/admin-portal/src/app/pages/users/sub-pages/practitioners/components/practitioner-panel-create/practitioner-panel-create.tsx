@@ -39,7 +39,9 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
   const emitCloseDialog = (value: boolean) => {
     props.closeDialog(value);
   };
-  const { data: roleData } = useQuery(RoleList, { fetchPolicy: 'cache-and-network' });
+  const { data: roleData } = useQuery(RoleList, {
+    fetchPolicy: 'cache-and-network',
+  });
 
   useEffect(() => {
     if (roleData && roleData.roles) {

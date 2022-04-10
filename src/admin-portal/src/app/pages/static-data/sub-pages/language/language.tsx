@@ -21,7 +21,9 @@ export default function LanguageView() {
   const type = 'Language';
   const dialog = useDialog();
   const { setNotification } = useNotifications();
-  const { data, refetch } = useQuery(GetAllLanguage, { fetchPolicy: 'cache-and-network' });
+  const { data, refetch } = useQuery(GetAllLanguage, {
+    fetchPolicy: 'cache-and-network',
+  });
   const [tableData, setTableData] = useState<any[]>([]);
   const [deleteMutation] = useMutation(DeleteLanguage);
   const panel = usePanel();

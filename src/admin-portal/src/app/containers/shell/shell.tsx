@@ -55,7 +55,9 @@ export default function Shell() {
   const [navigation, setNavigation] = useState<NavigationDto[]>();
   const [activeNavigation, setActiveNavigation] = useState<NavigationDto>();
 
-  const { data: navigationData } = useQuery(GetAllNavigation, { fetchPolicy: 'cache-and-network' });
+  const { data: navigationData } = useQuery(GetAllNavigation, {
+    fetchPolicy: 'cache-and-network',
+  });
 
   useEffect(() => {
     if (navigation && location && location.pathname) {

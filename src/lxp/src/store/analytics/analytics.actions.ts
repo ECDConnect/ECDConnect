@@ -24,7 +24,10 @@ export const pushAnalytics = createAsyncThunk<
 
       if (eventTracking) {
         for (const eventTrackingItem of eventTracking) {
-          ReactGA.event({ action: eventTrackingItem.action, category: eventTrackingItem.category });
+          ReactGA.event({
+            action: eventTrackingItem.action,
+            category: eventTrackingItem.category,
+          });
         }
       }
       return [true];

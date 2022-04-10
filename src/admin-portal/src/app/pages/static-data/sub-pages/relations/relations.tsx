@@ -19,7 +19,9 @@ import RelationPanel from './components/relation-panel/relation-panel';
 export default function RelationsView() {
   const { hasPermission } = useUser();
   const type = 'Relations';
-  const { data, refetch } = useQuery(GetAllRelation, { fetchPolicy: 'cache-and-network' });
+  const { data, refetch } = useQuery(GetAllRelation, {
+    fetchPolicy: 'cache-and-network',
+  });
   const [tableData, setTableData] = useState<any[]>([]);
   const dialog = useDialog();
   const { setNotification } = useNotifications();

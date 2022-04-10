@@ -12,7 +12,9 @@ export interface SiteAddressFormProps {
 }
 
 const SiteAddressForm: React.FC<SiteAddressFormProps> = ({ formKey, errors, register }) => {
-  const { data } = useQuery(GetAllProvince, { fetchPolicy: 'cache-and-network' });
+  const { data } = useQuery(GetAllProvince, {
+    fetchPolicy: 'cache-and-network',
+  });
 
   return (
     <form key={formKey} className="space-y-8 divide-y divide-gray-200">

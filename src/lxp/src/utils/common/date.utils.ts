@@ -45,6 +45,9 @@ export const isDayInThePast = (dateToCompare: Date, date: Date) => {
 };
 
 export const calculateFullAge = (dob: Date) => {
-  const { years, months, days } = intervalToDuration({ start: dob, end: new Date() });
+  const { years, months, days } = intervalToDuration({
+    start: dob,
+    end: new Date(),
+  });
   return { years: years ?? 0, months: months ?? 0, days: days ?? 0 };
 };

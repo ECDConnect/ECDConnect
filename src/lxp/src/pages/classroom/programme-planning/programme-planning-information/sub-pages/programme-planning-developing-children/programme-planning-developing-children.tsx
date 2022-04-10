@@ -29,13 +29,19 @@ export const ProgrammePlanningDevelopingChildren = () => {
 
     if (hasTranslations) {
       await appDispatch(
-        progressTrackingThunkActions.getProgressTrackingCategories({ locale: language.locale })
+        progressTrackingThunkActions.getProgressTrackingCategories({
+          locale: language.locale,
+        })
       ).unwrap();
       await appDispatch(
-        progressTrackingThunkActions.getProgressTrackingSubCategories({ locale: language.locale })
+        progressTrackingThunkActions.getProgressTrackingSubCategories({
+          locale: language.locale,
+        })
       ).unwrap();
       await appDispatch(
-        progressTrackingThunkActions.getProgressTrackingSkills({ locale: language.locale })
+        progressTrackingThunkActions.getProgressTrackingSkills({
+          locale: language.locale,
+        })
       ).unwrap();
     } else {
       presentUnavailableAlert();

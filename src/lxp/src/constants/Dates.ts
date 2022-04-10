@@ -1,5 +1,10 @@
 export const DateFormats: DateFormatOption = {
-  dayFullMonthYear: { day: 'numeric', weekday: 'long', month: 'long', year: 'numeric' },
+  dayFullMonthYear: {
+    day: 'numeric',
+    weekday: 'long',
+    month: 'long',
+    year: 'numeric',
+  },
   standardDate: { year: 'numeric', month: 'long', day: 'numeric' },
   monthName: { month: 'long' },
   shortMonthName: { month: 'short' },

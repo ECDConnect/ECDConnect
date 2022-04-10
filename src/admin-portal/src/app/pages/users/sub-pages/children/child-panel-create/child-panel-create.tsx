@@ -43,7 +43,9 @@ export default function ChildPanelCreate(props: UserPanelCreateProps) {
   };
 
   // GET
-  const { data: roleData } = useQuery(RoleList, { fetchPolicy: 'cache-and-network' });
+  const { data: roleData } = useQuery(RoleList, {
+    fetchPolicy: 'cache-and-network',
+  });
 
   useEffect(() => {
     if (roleData && roleData.roles) {

@@ -9,8 +9,12 @@ import ContentList from './sub-pages/content-list/content-list';
 import ContentWorkflow from './sub-pages/content-workflow/content-workflow';
 
 export default function ContentManagement() {
-  const { data: languages } = useQuery(GetAllLanguage, { fetchPolicy: 'cache-and-network' });
-  const { data: dataTypes, refetch } = useQuery(contentTypes, { fetchPolicy: 'cache-and-network' });
+  const { data: languages } = useQuery(GetAllLanguage, {
+    fetchPolicy: 'cache-and-network',
+  });
+  const { data: dataTypes, refetch } = useQuery(contentTypes, {
+    fetchPolicy: 'cache-and-network',
+  });
   const { data: dataDefinitions, refetch: refrechDefinitions } = useQuery(contentDefinitions, {
     fetchPolicy: 'cache-and-network',
   });

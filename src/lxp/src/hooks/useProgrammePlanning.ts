@@ -230,7 +230,11 @@ export const useProgrammePlanning = () => {
       }
 
       conflictingProgrammeCopy = refreshProgrammeDateRange(conflictingProgrammeCopy);
-      dispatch(programmeActions.updateProgramme({ programme: conflictingProgrammeCopy }));
+      dispatch(
+        programmeActions.updateProgramme({
+          programme: conflictingProgrammeCopy,
+        })
+      );
     }
   };
 

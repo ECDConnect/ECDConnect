@@ -19,7 +19,9 @@ import ReasonForLeavingPanel from './components/reason-for-leaving-panel/reason-
 export default function ReasonForLeavingView() {
   const { hasPermission } = useUser();
   const type = 'Reason for leaving';
-  const { data, refetch } = useQuery(GetAllReasonForLeaving, { fetchPolicy: 'cache-and-network' });
+  const { data, refetch } = useQuery(GetAllReasonForLeaving, {
+    fetchPolicy: 'cache-and-network',
+  });
   const [tableData, setTableData] = useState<any[]>([]);
   const dialog = useDialog();
   const { setNotification } = useNotifications();

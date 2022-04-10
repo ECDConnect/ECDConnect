@@ -54,7 +54,10 @@ export const Article = ({
 
   const getOpenContent = async (locale: string) => {
     const content = await appDispatch(
-      contentConsentThunkActions.getOpenConsent({ locale: locale, type: consentEnumType })
+      contentConsentThunkActions.getOpenConsent({
+        locale: locale,
+        type: consentEnumType,
+      })
     ).unwrap();
 
     if (content && content.length > 0) {

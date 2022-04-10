@@ -5,7 +5,9 @@ import { useHistory } from 'react-router';
 
 export default function GADashboard() {
   const history = useHistory();
-  const { data } = useQuery(settingGoogleReport, { fetchPolicy: 'cache-and-network' });
+  const { data } = useQuery(settingGoogleReport, {
+    fetchPolicy: 'cache-and-network',
+  });
 
   const goToSettings = () => {
     history.push('/settings/general', {

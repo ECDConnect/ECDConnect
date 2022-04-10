@@ -36,7 +36,9 @@ export const ChildEnjoys: React.FC<ChildEnjoysProps> = ({ childId, onSubmit }) =
 
   useEffect(() => {
     if (currentReport && currentReport.childEnjoys) {
-      setFormValue('childEnjoys', currentReport.childEnjoys, { shouldValidate: true });
+      setFormValue('childEnjoys', currentReport.childEnjoys, {
+        shouldValidate: true,
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentReport]);

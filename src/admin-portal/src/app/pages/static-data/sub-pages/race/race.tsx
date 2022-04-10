@@ -19,7 +19,9 @@ import RacePanel from './components/race-panel/race-panel';
 export default function RaceView() {
   const { hasPermission } = useUser();
   const type = 'Race';
-  const { data, refetch } = useQuery(GetAllRace, { fetchPolicy: 'cache-and-network' });
+  const { data, refetch } = useQuery(GetAllRace, {
+    fetchPolicy: 'cache-and-network',
+  });
   const [tableData, setTableData] = useState<any[]>([]);
   const [deleteMutation] = useMutation(DeleteRace);
   const panel = usePanel();

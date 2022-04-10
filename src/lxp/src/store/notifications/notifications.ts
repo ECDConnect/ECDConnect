@@ -15,7 +15,10 @@ const notificationsState = createSlice({
       state.notifications = [];
     },
     addNotifications: (state: NotificationsState, action: PayloadAction<Message[]>) => {
-      const newNotifications = action.payload.map((message) => ({ isNew: true, message }));
+      const newNotifications = action.payload.map((message) => ({
+        isNew: true,
+        message,
+      }));
       state.notifications.push(...newNotifications);
     },
     markAllNotificationsRead: (state) => {

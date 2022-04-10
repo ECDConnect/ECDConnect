@@ -33,7 +33,9 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
     props.closeDialog(value);
   };
 
-  const { data: roleData } = useQuery(RoleList, { fetchPolicy: 'cache-and-network' });
+  const { data: roleData } = useQuery(RoleList, {
+    fetchPolicy: 'cache-and-network',
+  });
 
   useEffect(() => {
     if (roleData && roleData.roles) {

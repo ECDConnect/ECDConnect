@@ -110,7 +110,10 @@ export const ProgrammeRoutine: React.FC = () => {
   }, [currentDay]);
 
   const handleSummaryView = () => {
-    history.replace('/programmes/summary', { programmeId: programme?.id, variation: 'update' });
+    history.replace('/programmes/summary', {
+      programmeId: programme?.id,
+      variation: 'update',
+    });
   };
 
   const onActivitySelected = (

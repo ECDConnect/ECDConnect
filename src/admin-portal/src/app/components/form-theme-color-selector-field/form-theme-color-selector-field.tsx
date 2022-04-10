@@ -17,7 +17,9 @@ const FormThemeColorSelectorField: React.FC<FormSelectorFieldProps> = ({
   options,
   setValue,
 }) => {
-  const [selected, setSelected] = useState({ value: `Please select a ${nameProp}`});
+  const [selected, setSelected] = useState({
+    value: `Please select a ${nameProp}`,
+  });
 
   const handleSelection = (option: any) => {
     setSelected(option);
@@ -26,9 +28,7 @@ const FormThemeColorSelectorField: React.FC<FormSelectorFieldProps> = ({
 
   return (
     <Listbox value={selected} onChange={handleSelection}>
-      <Listbox.Label className="block text-sm font-medium text-gray-700">
-        {label}
-      </Listbox.Label>
+      <Listbox.Label className="block text-sm font-medium text-gray-700">{label}</Listbox.Label>
       <div className="mt-1 relative">
         <Listbox.Button className="relative w-full bg-white border border-gray-300 rounded-md shadow-sm pl-3 pr-10 py-2 text-left cursor-default focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary sm:text-sm">
           <div className="flex items-center">
@@ -39,10 +39,7 @@ const FormThemeColorSelectorField: React.FC<FormSelectorFieldProps> = ({
             <span className="ml-3 block truncate">{selected?.value}</span>
           </div>
           <span className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-            <SelectorIcon
-              className="h-5 w-5 text-gray-400"
-              aria-hidden="true"
-            />
+            <SelectorIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
           </span>
         </Listbox.Button>
 
@@ -69,9 +66,7 @@ const FormThemeColorSelectorField: React.FC<FormSelectorFieldProps> = ({
                     <div className="flex items-center">
                       <span
                         style={{ backgroundColor: option.value }}
-                        className={
-                          'flex-shrink-0 inline-block h-2 w-2 rounded-full'
-                        }
+                        className={'flex-shrink-0 inline-block h-2 w-2 rounded-full'}
                         aria-hidden="true"
                       />
 

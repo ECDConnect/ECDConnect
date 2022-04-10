@@ -29,7 +29,9 @@ export default function Practitioners() {
   const { hasPermission } = useUser();
   const { setNotification } = useNotifications();
   const dialog = useDialog();
-  const { data, refetch } = useQuery(GetAllPractitioner, { fetchPolicy: 'cache-and-network' });
+  const { data, refetch } = useQuery(GetAllPractitioner, {
+    fetchPolicy: 'cache-and-network',
+  });
 
   const [tableData, setTableData] = useState<any[]>([]);
 

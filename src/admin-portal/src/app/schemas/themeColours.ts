@@ -23,7 +23,7 @@ export const initialThemeColours: ThemeColours = {
   uiMidDark: '#5e557a',
   uiMid: '#827c93',
   uiLight: '#cac5d8',
-  uiBg: '#f3f1f9'
+  uiBg: '#f3f1f9',
 };
 
 export const themeColoursScheme = Yup.object().shape({
@@ -36,5 +36,5 @@ export const themeColoursScheme = Yup.object().shape({
   uiMidDark: Yup.string().required(),
   uiMid: Yup.string().required(),
   uiLight: Yup.string().required(),
-  uiBg: Yup.string().required()
+  uiBg: Yup.string().required(),
 });

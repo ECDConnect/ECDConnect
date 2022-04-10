@@ -189,7 +189,10 @@ export const useChildProgressObservation = (
     currentReportCopy.observationNote = note;
 
     appDispatch(
-      contentReportActions.setReportObservationNote({ reportId: currentReport.id, note: note })
+      contentReportActions.setReportObservationNote({
+        reportId: currentReport.id,
+        note: note,
+      })
     );
 
     setCurrentReport(currentReportCopy);
@@ -204,7 +207,12 @@ export const useChildProgressObservation = (
 
     currentReportCopy.childEnjoys = childEnjoys;
 
-    appDispatch(contentReportActions.setChildEnjoys({ reportId: currentReport.id, childEnjoys }));
+    appDispatch(
+      contentReportActions.setChildEnjoys({
+        reportId: currentReport.id,
+        childEnjoys,
+      })
+    );
 
     setCurrentReport(currentReportCopy);
   };
