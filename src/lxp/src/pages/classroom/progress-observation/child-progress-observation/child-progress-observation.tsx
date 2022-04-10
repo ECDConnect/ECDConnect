@@ -8,7 +8,7 @@ import { Alert, BannerWrapper, Dialog, DialogPosition, ListItem, Typography } fr
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
 import { ChildProgressNoteCard } from '../components/child-progress-note-card/child-progress-note-card';
-import { ProgressTrackingLevels } from '../../../../enums/ProgressTrackingLevels';
+import { ProgressTrackingLevels } from '@enums/ProgressTrackingLevels';
 import { useChildProgressObservation } from '../../../../hooks/useChildProgressObservations';
 
 import { getProgressTrackingCategories } from '../../../../store/progress-tracking/progress-tracking.selectors';

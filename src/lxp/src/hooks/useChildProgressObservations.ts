@@ -16,7 +16,7 @@ import {
   contentReportSelectors,
   contentReportThunkActions,
 } from '../store/content/report';
-import { ProgressTrackingLevels } from '../enums/ProgressTrackingLevels';
+import { ProgressTrackingLevels } from '@enums/ProgressTrackingLevels';
 import { ChildProgressObservationStatus } from '@ecdlink/core';
 
 export interface SeperatedCategoryResult {

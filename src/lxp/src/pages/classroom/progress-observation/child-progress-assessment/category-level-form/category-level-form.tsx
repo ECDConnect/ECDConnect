@@ -10,7 +10,7 @@ import { childrenSelectors } from '../../../../../store/children';
 import { progressTrackingSelectors } from '../../../../../store/progress-tracking';
 import { CategoryLevelFormResult } from '../../../../../models/classroom/progress-observation/ChildProgressAssessment';
 import CheckboxCard from '../../../../../components/checkbox-card/checkbox-card';
-import { ProgressTrackingLevels } from '../../../../../enums/ProgressTrackingLevels';
+import { ProgressTrackingLevels } from '@enums/ProgressTrackingLevels';
 import ProgressLevelBar from '../../components/progress-level-bar/progress-level-bar';
 import { ProgressTrackingSkillDto } from '@ecdlink/core';
 

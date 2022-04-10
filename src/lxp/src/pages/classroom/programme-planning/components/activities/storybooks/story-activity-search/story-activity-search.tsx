@@ -15,7 +15,7 @@ import { useSelector } from 'react-redux';
 import SeachHeader, {
   SearchHeaderAlternativeRenderItem,
 } from '../../../../../../../components/search-header/search-header';
-import { StoryBookTypes } from '../../../../../../../enums/ProgrammeRoutineType';
+import { StoryBookTypes } from '@enums/ProgrammeRoutineType';
 import { useOnlineStatus } from '../../../../../../../hooks/useOnlineStatus';
 import { activitySelectors } from '../../../../../../../store/content/activity';
 import { programmeThemeSelectors } from '../../../../../../../store/content/programme-theme';

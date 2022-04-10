@@ -13,7 +13,7 @@ import { useSelector } from 'react-redux';
 import { programmeRoutineSelectors } from '../../../../../../store/content/programme-routine';
 import { DailyProgrammeDto, ProgrammeRoutineItemDto, useDialog } from '@ecdlink/core';
 import { MessageBoard } from '../../../components/message-board/message-board';
-import { DailyRoutineItemType } from '../../../../../../enums/ProgrammeRoutineType';
+import { DailyRoutineItemType } from '@enums/ProgrammeRoutineType';
 import ActivityDetails from '../../../components/activities/activity/activity-details/activity-details';
 import StoryActivityDetails from '../../../components/activities/storybooks/story-activity-details/story-activity-details';
 import { useOnlineStatus } from '../../../../../../hooks/useOnlineStatus';

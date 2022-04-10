@@ -10,7 +10,7 @@ import {
 import { useSelector } from 'react-redux';
 import { progressTrackingSelectors } from '../../../../../../store/progress-tracking';
 import { useEffect } from 'react';
-import { ProgressTrackingLevels } from '../../../../../../enums/ProgressTrackingLevels';
+import { ProgressTrackingLevels } from '@enums/ProgressTrackingLevels';
 import { HowCaregiverCanHelpChildProps } from './how-caregiver-can-help-child.types';
 import ObservationCategoryCard from '../../../components/observation-category-card/observation-category-card';
 import { useForm, useFormState } from 'react-hook-form';

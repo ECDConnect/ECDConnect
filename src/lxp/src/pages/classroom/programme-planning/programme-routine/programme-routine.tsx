@@ -25,7 +25,7 @@ import { StoryActivitySearch } from '../components/activities/storybooks/story-a
 import { useAppDispatch } from '../../../../store';
 import { MessageBoard } from '../components/message-board/message-board';
 import { PublicHolidayIndicator } from './components/public-holiday-indicator/public-holiday-indicator';
-import { DailyRoutineItemType } from '../../../../enums/ProgrammeRoutineType';
+import { DailyRoutineItemType } from '@enums/ProgrammeRoutineType';
 import { isDayInThePast } from '../../../../utils/common/date.utils';
 import { useProgrammePlanningRecommendations } from '../../../../hooks/useProgrammePlanningRecommendations';
 import {

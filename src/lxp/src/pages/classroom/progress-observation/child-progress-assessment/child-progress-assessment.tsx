@@ -8,7 +8,7 @@ import { useHistory, useLocation } from 'react-router-dom';
 import { ProgressTrackingAlertLevelOnePrompt } from '../components/progress-tracking-prompts/progress-tracking-alert-level-one-prompt/progress-tracking-alert-level-one-prompt';
 import { ProgressTrackingAlertLevelTwoPrompt } from '../components/progress-tracking-prompts/progress-tracking-alert-level-two-prompt/progress-tracking-alert-level-two-prompt';
 import { ProgressTrackingInformationPrompt } from '../components/progress-tracking-prompts/progress-tracking-information-prompt/progress-tracking-information-prompt';
-import { ProgressTrackingLevels } from '../../../../enums/ProgressTrackingLevels';
+import { ProgressTrackingLevels } from '@enums/ProgressTrackingLevels';
 import { useChildProgressObservation } from '../../../../hooks/useChildProgressObservations';
 
 import { childrenSelectors } from '../../../../store/children';

@@ -7,7 +7,7 @@ import { useHistory } from 'react-router';
 import { useChildProgressObservation } from '../../../../../../hooks/useChildProgressObservations';
 import { childrenSelectors } from '../../../../../../store/children';
 import { progressTrackingSelectors } from '../../../../../../store/progress-tracking';
-import { ProgressTrackingLevels } from '../../../../../../enums/ProgressTrackingLevels';
+import { ProgressTrackingLevels } from '@enums/ProgressTrackingLevels';
 import { ChildProgressReportOverviewProps } from './child-progress-report-overview.types';
 import { ChildProgressAssessmentSteps } from '../../../child-progress-assessment/child-progress-assessment.types';
 import ObservationCategoryCard from '../../../components/observation-category-card/observation-category-card';

@@ -6,7 +6,7 @@ import {
   ProgressTrackingSubCategoryDto,
   StoryBookDto,
 } from '@ecdlink/core';
-import { DailyRoutineItemType } from '../../../enums/ProgrammeRoutineType';
+import { DailyRoutineItemType } from '@enums/ProgrammeRoutineType';
 import { RecommendedActivity } from '../../../hooks/useProgrammePlanningRecommendations';
 
 export const filterActivitiesByTheme = (
