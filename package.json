@@ -5,7 +5,7 @@
     "bootstrap": "lerna bootstrap --force-local && lerna run tsc",
     "portal": "cd ./src/admin-portal && yarn start",
     "fe": "cd ./src/lxp && yarn start",
-    "build:be:portal": "yarn bootstrap && (cd ./src/admin-portal && yarn build)",
+    "build:portal": "yarn bootstrap && (cd ./src/admin-portal && yarn build)",
     "build:fe": "yarn bootstrap && (cd ./src/lxp && yarn build)",
     "lint:fe": "eslint ./src/lxp/src --ext .js,jsx,.ts,.tsx",
     "lint:portal": "eslint ./src/admin-portal/src --ext .js,jsx,.ts,.tsx",
