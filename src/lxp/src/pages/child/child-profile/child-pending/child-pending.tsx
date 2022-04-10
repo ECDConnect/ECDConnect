@@ -4,7 +4,7 @@ import { format, addDays } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
-import { useOnlineStatus } from '../../../../hooks/useOnlineStatus';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useAppDispatch } from '../../../../store';
 import { childrenThunkActions } from '../../../../store/children';
 import { classroomsSelectors } from '../../../../store/classroom';

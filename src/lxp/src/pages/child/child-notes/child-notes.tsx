@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
 import { useLocation } from 'react-router-dom';
-import { useOnlineStatus } from '../../../hooks/useOnlineStatus';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { childrenSelectors } from '../../../store/children';
 import { notesSelectors } from '../../../store/notes';
 import { CreateNote } from '../components/create-note/create-note';

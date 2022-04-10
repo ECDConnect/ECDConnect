@@ -3,7 +3,7 @@ import { ActionModal, BannerWrapper, DialogPosition, Divider, Typography } from 
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import LanguageSelector from '../../../../../../components/language-selector/language-selector';
-import { useOnlineStatus } from '../../../../../../hooks/useOnlineStatus';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { ContentService } from '@services/ContentService';
 import { useAppDispatch } from '../../../../../../store';
 import { authSelectors } from '../../../../../../store/auth';

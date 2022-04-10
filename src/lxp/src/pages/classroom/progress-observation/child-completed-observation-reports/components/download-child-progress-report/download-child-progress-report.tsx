@@ -4,7 +4,7 @@ import { childrenSelectors } from '../../../../../../store/children';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
 import { DownloadChildProgressReportState } from './download-child-progress-report.types';
-import { useOnlineStatus } from '../../../../../../hooks/useOnlineStatus';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useEffect, useState } from 'react';
 import { useAppDispatch } from '../../../../../../store';
 import {

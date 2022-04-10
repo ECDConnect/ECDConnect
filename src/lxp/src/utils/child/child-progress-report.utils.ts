@@ -6,7 +6,7 @@ import {
 } from '@ecdlink/core';
 import { differenceInDays } from 'date-fns';
 import { childRegistrationConstants } from '../../constants/Child';
-import { SeperatedCategoryResult } from '../../hooks/useChildProgressObservations';
+import { SeperatedCategoryResult } from '@hooks/useChildProgressObservations';
 import { saveAs } from 'file-saver';
 export const isChildsFirstReport = (
   child: ChildDto,

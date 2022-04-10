@@ -16,7 +16,7 @@ import SeachHeader, {
   SearchHeaderAlternativeRenderItem,
 } from '../../../../../../../components/search-header/search-header';
 import { StoryBookTypes } from '@enums/ProgrammeRoutineType';
-import { useOnlineStatus } from '../../../../../../../hooks/useOnlineStatus';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { activitySelectors } from '../../../../../../../store/content/activity';
 import { programmeThemeSelectors } from '../../../../../../../store/content/programme-theme';
 import { storyBookSelectors } from '../../../../../../../store/content/story-book';

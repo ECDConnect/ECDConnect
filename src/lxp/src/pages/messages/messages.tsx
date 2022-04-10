@@ -2,8 +2,8 @@ import { BannerWrapper, Typography } from '@ecdlink/ui';
 import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
-import { useOnlineStatus } from '../../hooks/useOnlineStatus';
-import { usePaging } from '../../hooks/usePaging';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
+import { usePaging } from '@hooks/usePaging';
 import { useAppDispatch } from '../../store';
 import { analyticsActions } from '../../store/analytics';
 import {

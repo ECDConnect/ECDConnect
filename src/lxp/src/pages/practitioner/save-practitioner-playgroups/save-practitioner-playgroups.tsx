@@ -13,7 +13,7 @@ import { classroomsActions, classroomsSelectors } from '../../../store/classroom
 import { newGuid } from '../../../utils/common/uuid.utils';
 import { EditPlaygroupsState, EditPlaygroupsSteps } from './save-practitioner-playgroups.types';
 import { staticDataSelectors } from '../../../store/static-data';
-import { useOnlineStatus } from '../../../hooks/useOnlineStatus';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { ProgrammeTypeEnum } from '@ecdlink/graphql';
 
 export const EditPlaygroups: React.FC = () => {

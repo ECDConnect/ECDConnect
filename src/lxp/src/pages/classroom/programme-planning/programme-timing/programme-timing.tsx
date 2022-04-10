@@ -15,8 +15,8 @@ import { useForm, useWatch } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
 import { DateFormats } from '../../../../constants/Dates';
-import { useOnlineStatus } from '../../../../hooks/useOnlineStatus';
-import { useProgrammePlanning } from '../../../../hooks/useProgrammePlanning';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
+import { useProgrammePlanning } from '@hooks/useProgrammePlanning';
 import {
   ProgrammeTimingModel,
   programmeTimingSchema,

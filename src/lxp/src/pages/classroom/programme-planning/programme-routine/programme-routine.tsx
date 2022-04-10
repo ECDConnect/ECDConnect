@@ -16,7 +16,7 @@ import {
   isProgrammeRoutineDayComplete,
 } from '../../../../utils/classroom/programme-planning/programmes.utils';
 import { DateFormats } from '../../../../constants/Dates';
-import { useHolidays } from '../../../../hooks/useHolidays';
+import { useHolidays } from '@hooks/useHolidays';
 import { ProgrammeWeekPaging } from './components/programme-week-paging/programme-week-paging';
 import { useSelector } from 'react-redux';
 import { programmeActions, programmeSelectors } from '../../../../store/programme';
@@ -27,14 +27,14 @@ import { MessageBoard } from '../components/message-board/message-board';
 import { PublicHolidayIndicator } from './components/public-holiday-indicator/public-holiday-indicator';
 import { DailyRoutineItemType } from '@enums/ProgrammeRoutineType';
 import { isDayInThePast } from '../../../../utils/common/date.utils';
-import { useProgrammePlanningRecommendations } from '../../../../hooks/useProgrammePlanningRecommendations';
+import { useProgrammePlanningRecommendations } from '@hooks/useProgrammePlanningRecommendations';
 import {
   getFirstActivityByType,
   getRequiredActivitiesCount,
 } from '../../../../utils/classroom/programme-planning/activity-search.utils';
 import ActivityDetails from '../components/activities/activity/activity-details/activity-details';
 import StoryActivityDetails from '../components/activities/storybooks/story-activity-details/story-activity-details';
-import { useOnlineStatus } from '../../../../hooks/useOnlineStatus';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import OnlineOnlyModal from '../../../../modals/offline-sync/online-only-modal';
 import { isFriday } from 'date-fns';
 

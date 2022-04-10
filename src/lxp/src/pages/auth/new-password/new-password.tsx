@@ -13,7 +13,7 @@ import {
 import { authThunkActions } from '../../../store/auth';
 import { useAppDispatch } from '../../../store';
 import AuthService from '@services/AuthService/AuthService';
-import { useStoreSetup } from '../../../hooks/useStoreSetup';
+import { useStoreSetup } from '@hooks/useStoreSetup';
 
 export const NewPassword: React.FC = () => {
   const appDispatch = useAppDispatch();

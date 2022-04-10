@@ -5,7 +5,7 @@ import { endOfYear, getYear, startOfISOWeekYear } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
-import { useOnlineStatus } from '../../../hooks/useOnlineStatus';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import {
   badScoreThreshold,
   goodScoreThreshold,

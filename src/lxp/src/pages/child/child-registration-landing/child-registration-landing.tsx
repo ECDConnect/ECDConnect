@@ -2,7 +2,7 @@ import { AuthUser, useDialog, useQueryParams } from '@ecdlink/core';
 import { ActionModal, DialogPosition } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useHistory, useLocation } from 'react-router';
-import { useStoreSetup } from '../../../hooks/useStoreSetup';
+import { useStoreSetup } from '@hooks/useStoreSetup';
 import { useAppDispatch } from '../../../store';
 import { authActions } from '../../../store/auth';
 import { childrenThunkActions } from '../../../store/children';

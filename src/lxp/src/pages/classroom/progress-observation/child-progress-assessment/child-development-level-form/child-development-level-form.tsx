@@ -19,7 +19,7 @@ import {
 import * as styles from './child-development-level-form.styles';
 import { renderIcon, classNames } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
-import { useChildProgressObservation } from '../../../../../hooks/useChildProgressObservations';
+import { useChildProgressObservation } from '@hooks/useChildProgressObservations';
 import { childrenSelectors } from '../../../../../store/children';
 import { progressTrackingSelectors } from '../../../../../store/progress-tracking';
 import ChildDevelopmentLevelsDisplay from '../../components/child-development-levels-display/child-development-levels-display';

@@ -17,7 +17,7 @@ import {
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { MessageBoardProps } from './message-board.types';
-import { useOnlineStatus } from '../../../../../hooks/useOnlineStatus';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
 
 export const MessageBoard: React.FC<MessageBoardProps> = ({
   message,

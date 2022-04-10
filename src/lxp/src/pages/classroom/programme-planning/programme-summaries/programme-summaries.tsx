@@ -2,7 +2,7 @@ import { ProgrammeDto } from '@ecdlink/core';
 import { BannerWrapper } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
-import { useOnlineStatus } from '../../../../hooks/useOnlineStatus';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { programmeSelectors } from '../../../../store/programme';
 import { FutureProgrammes } from '../programme-summary/components/future-programmes/future-programmes';
 import ProgrammeSummary from '../programme-summary/programme-summary';

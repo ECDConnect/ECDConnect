@@ -13,7 +13,7 @@ import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
 import { DateFormats } from '../../../../constants/Dates';
-import { useOnlineStatus } from '../../../../hooks/useOnlineStatus';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { OfflineSyncModal } from '../../../../modals';
 import OnlineOnlyModal from '../../../../modals/offline-sync/online-only-modal';
 import { useAppDispatch } from '../../../../store';

@@ -3,7 +3,7 @@ import { Alert, BannerWrapper } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
 import { ContactPerson } from '../../../components/contact-person/contact-person';
-import { useOnlineStatus } from '../../../hooks/useOnlineStatus';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { caregiverSelectors } from '../../../store/caregiver';
 import { childrenSelectors } from '../../../store/children';
 import { ContactCaregiversState } from './contact-caregivers.types';

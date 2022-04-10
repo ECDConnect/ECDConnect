@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 import { useForm, useFormState } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
-import { useChildProgressObservation } from '../../../../hooks/useChildProgressObservations';
+import { useChildProgressObservation } from '@hooks/useChildProgressObservations';
 import {
   childProgressObservationNoteFormSchema,
   ChildProgressObservationNoteModel,

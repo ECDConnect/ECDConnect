@@ -18,8 +18,8 @@ import { useForm, useWatch } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { PhotoPrompt } from '../../../components/photo-prompt/photo-prompt';
-import { useDocuments } from '../../../hooks/useDocuments';
-import { useOnlineStatus } from '../../../hooks/useOnlineStatus';
+import { useDocuments } from '@hooks/useDocuments';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import {
   ProgrammeNameModel,
   programmeNameSchema,

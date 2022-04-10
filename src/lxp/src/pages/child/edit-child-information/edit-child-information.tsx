@@ -43,8 +43,8 @@ import {
   ChildInformationViewType,
   EditChildInformationLocationParams,
 } from './edit-child-information.types';
-import { useOnlineStatus } from '../../../hooks/useOnlineStatus';
-import { useStaticData } from '../../../hooks/useStaticData';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
+import { useStaticData } from '@hooks/useStaticData';
 import { FileTypeEnum, WorkflowStatusEnum } from '@ecdlink/graphql';
 import { documentActions, documentSelectors } from '../../../store/document';
 import { userSelectors } from '../../../store/user';

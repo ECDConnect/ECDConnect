@@ -1,7 +1,7 @@
 import { Alert, Button, Divider, Typography } from '@ecdlink/ui';
 import { CheckboxChange } from '@ecdlink/ui';
 import { classNames, renderIcon } from '@ecdlink/ui';
-import { useChildProgressObservation } from '../../../../../hooks/useChildProgressObservations';
+import { useChildProgressObservation } from '@hooks/useChildProgressObservations';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import * as styles from './category-level-form.styles';

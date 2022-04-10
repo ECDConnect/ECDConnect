@@ -4,7 +4,7 @@ import { AttendanceResult } from '../../../../../models/classroom/attendance/Att
 import AttendanceList from '../attendance-list/attendance-list';
 import * as styles from './edit-attendance-register.styles';
 import { EditAttendanceRegisterProps } from './edit-attendance-register.types';
-import { useOnlineStatus } from '../../../../../hooks/useOnlineStatus';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
 
 export const EditAttendanceRegister = ({
   attendanceDate,

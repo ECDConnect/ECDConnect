@@ -11,7 +11,7 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
-import { useOnlineStatus } from '../../../../../hooks/useOnlineStatus';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import * as styles from './attendance-tutorial.styles';
 import { AttendanceTutorialProps } from './attendance-tutorial.types';
 

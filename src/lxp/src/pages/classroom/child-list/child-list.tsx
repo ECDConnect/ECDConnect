@@ -20,10 +20,10 @@ import * as styles from './child-list.styles';
 import { attendanceSelectors } from '../../../store/attendance';
 import { documentSelectors } from '../../../store/document';
 import { contentReportSelectors } from '../../../store/content/report';
-import { useStaticData } from '../../../hooks/useStaticData';
+import { useStaticData } from '@hooks/useStaticData';
 import { WorkflowStatusEnum } from '@ecdlink/graphql';
 import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
-import { useOnlineStatus } from '../../../hooks/useOnlineStatus';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { IconInformationIndicator } from '../programme-planning/components/icon-information-indicator/icon-information-indicator';
 
 export const ChildList: React.FC<ComponentBaseProps> = () => {

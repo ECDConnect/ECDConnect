@@ -22,8 +22,8 @@ import { useEffect, useState } from 'react';
 import { useForm, useFormState } from 'react-hook-form';
 import { useHistory, useLocation } from 'react-router-dom';
 import { Article } from '../../../components/article/article';
-import { useOnlineStatus } from '../../../hooks/useOnlineStatus';
-import { useStoreSetup } from '../../../hooks/useStoreSetup';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
+import { useStoreSetup } from '@hooks/useStoreSetup';
 import {
   initialRegisterValues,
   SignUpModel,

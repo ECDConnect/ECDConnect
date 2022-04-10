@@ -5,7 +5,7 @@ import { DialogPosition } from '@ecdlink/ui';
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
-import { useOnlineStatus } from '../../../../hooks/useOnlineStatus';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { programmeThemeSelectors } from '../../../../store/content/programme-theme';
 
 const ProgrammeTheme: React.FC = () => {

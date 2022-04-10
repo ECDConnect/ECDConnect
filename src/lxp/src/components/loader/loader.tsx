@@ -2,7 +2,7 @@ import { Alert, Button, Typography } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useHistory } from 'react-router';
 import LoadingRocket from '../../assets/gifs/rocketclear.gif';
-import { useStoreSetup } from '../../hooks/useStoreSetup';
+import { useStoreSetup } from '@hooks/useStoreSetup';
 
 const Loader = ({ loadingMessage = 'Loading . . .' }) => {
   const history = useHistory();

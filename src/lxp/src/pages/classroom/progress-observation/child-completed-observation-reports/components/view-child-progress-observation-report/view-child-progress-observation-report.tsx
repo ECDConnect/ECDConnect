@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
 import { ViewChildProgressObservationReportState } from './view-child-progress-observation-report.types';
-import { useOnlineStatus } from '../../../../../../hooks/useOnlineStatus';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useAppDispatch } from '../../../../../../store';
 import { ChildProgressObservationReport } from '@ecdlink/core';
 import { contentReportThunkActions } from '../../../../../../store/content/report';

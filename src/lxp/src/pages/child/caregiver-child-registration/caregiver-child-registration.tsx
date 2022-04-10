@@ -24,10 +24,10 @@ import {
 import { CompletedCaregiverChildRegistration } from './completed-caregiver-child-registration/completed-caregiver-child-registration';
 import { childrenThunkActions } from '../../../store/children';
 import { ChildRegistrationFormState, StateAction } from '../../../models/child/child';
-import { useOnlineStatus } from '../../../hooks/useOnlineStatus';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { staticDataThunkActions } from '../../../store/static-data';
 import { ActionModal, DialogPosition } from '@ecdlink/ui';
-import { useStaticData } from '../../../hooks/useStaticData';
+import { useStaticData } from '@hooks/useStaticData';
 import { WorkflowStatusEnum } from '@ecdlink/graphql';
 import { contentConsentThunkActions } from '../../../store/content/consent';
 

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useHistory } from 'react-router';
-import { useOnlineStatus } from '../../hooks/useOnlineStatus';
-import { useStoreSetup } from '../../hooks/useStoreSetup';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
+import { useStoreSetup } from '@hooks/useStoreSetup';
 import { useAppDispatch, useAppSelector } from '../../store';
 import { settingActions } from '../../store/settings';
 import { syncActions, syncThunkActions } from '../../store/sync';

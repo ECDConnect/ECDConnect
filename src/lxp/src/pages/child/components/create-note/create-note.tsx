@@ -26,8 +26,8 @@ import {
 import { CreateNoteProps } from './create-notes.types';
 import { newGuid } from '../../../../utils/common/uuid.utils';
 import { notesActions } from '../../../../store/notes';
-import { useStaticData } from '../../../../hooks/useStaticData';
-import { useOnlineStatus } from '../../../../hooks/useOnlineStatus';
+import { useStaticData } from '@hooks/useStaticData';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
 
 export const CreateNote: React.FC<CreateNoteProps> = ({
   noteType,

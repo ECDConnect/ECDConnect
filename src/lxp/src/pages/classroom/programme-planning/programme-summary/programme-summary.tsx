@@ -5,8 +5,8 @@ import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
 import { SuccessCard } from '../../../../components/success-card/success-card';
 import { DateFormats } from '../../../../constants/Dates';
-import { useOnlineStatus } from '../../../../hooks/useOnlineStatus';
-import { useProgrammePlanningRecommendations } from '../../../../hooks/useProgrammePlanningRecommendations';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
+import { useProgrammePlanningRecommendations } from '@hooks/useProgrammePlanningRecommendations';
 import OnlineOnlyModal from '../../../../modals/offline-sync/online-only-modal';
 import { programmeSelectors } from '../../../../store/programme';
 import {

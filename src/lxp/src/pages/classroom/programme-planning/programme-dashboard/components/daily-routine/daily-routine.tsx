@@ -16,15 +16,15 @@ import { MessageBoard } from '../../../components/message-board/message-board';
 import { DailyRoutineItemType } from '@enums/ProgrammeRoutineType';
 import ActivityDetails from '../../../components/activities/activity/activity-details/activity-details';
 import StoryActivityDetails from '../../../components/activities/storybooks/story-activity-details/story-activity-details';
-import { useOnlineStatus } from '../../../../../../hooks/useOnlineStatus';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import OnlineOnlyModal from '../../../../../../modals/offline-sync/online-only-modal';
 import { programmeActions } from '../../../../../../store/programme';
 import { useAppDispatch } from '../../../../../../store';
 import ActivitySearch from '../../../components/activities/activity/activity-search/activity-search';
 import { getFirstActivityByType } from '../../../../../../utils/classroom/programme-planning/activity-search.utils';
 import { StoryActivitySearch } from '../../../components/activities/storybooks/story-activity-search/story-activity-search';
-import { useProgrammePlanningRecommendations } from '../../../../../../hooks/useProgrammePlanningRecommendations';
-import { useHolidays } from '../../../../../../hooks/useHolidays';
+import { useProgrammePlanningRecommendations } from '@hooks/useProgrammePlanningRecommendations';
+import { useHolidays } from '@hooks/useHolidays';
 import { useEffect, useState } from 'react';
 import { PublicHolidayIndicator } from '../../../programme-routine/components/public-holiday-indicator/public-holiday-indicator';
 

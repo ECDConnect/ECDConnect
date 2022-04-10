@@ -2,7 +2,7 @@ import { useQueryParams, useStepNavigation } from '@ecdlink/core';
 import { BannerWrapper } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
-import { useChildProgressObservation } from '../../../../hooks/useChildProgressObservations';
+import { useChildProgressObservation } from '@hooks/useChildProgressObservations';
 import { childrenSelectors } from '../../../../store/children';
 import { ChildEnjoys } from './components/child-enjoys/child-enjoys';
 import { ChildEnjoysFormModel } from '../../../../schemas/classroom/child-progress-observations/child-enjoys-form';
@@ -15,7 +15,7 @@ import {
   ChildProgressObservationReportState,
   ChildProgressObservationReportSteps,
 } from './child-progress-observation-report.types';
-import { useOnlineStatus } from '../../../../hooks/useOnlineStatus';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { contentReportSelectors } from '../../../../store/content/report';
 import { useEffect } from 'react';
 import { useAppDispatch } from '../../../../store';

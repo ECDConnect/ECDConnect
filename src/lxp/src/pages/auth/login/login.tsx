@@ -16,7 +16,7 @@ import * as styles from './login.styles';
 import { initialLoginValues, LoginModel, loginSchema } from '../../../schemas/auth/login/login';
 import { useAppDispatch } from '../../../store';
 import { authActions, authThunkActions } from '../../../store/auth';
-import { useOnlineStatus } from '../../../hooks/useOnlineStatus';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { settingActions } from '../../../store/settings';
 const { version } = require('../../../../package.json');
 

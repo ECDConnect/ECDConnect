@@ -13,7 +13,7 @@ import { classNames } from '@ecdlink/ui';
 import { useAppDispatch } from '../../../../../store';
 import { notesActions } from '../../../../../store/notes';
 import { ViewNoteProps } from './view-note.types';
-import { useOnlineStatus } from '../../../../../hooks/useOnlineStatus';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
 
 export const ViewNote: React.FC<ViewNoteProps> = ({ note, onDelete, onBack }) => {
   const appDispatch = useAppDispatch();

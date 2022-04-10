@@ -4,7 +4,7 @@ import { DialogPosition } from '@ecdlink/ui';
 import { renderIcon } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
-import { useChildProgressObservation } from '../../../../../../hooks/useChildProgressObservations';
+import { useChildProgressObservation } from '@hooks/useChildProgressObservations';
 import { childrenSelectors } from '../../../../../../store/children';
 import { progressTrackingSelectors } from '../../../../../../store/progress-tracking';
 import { ProgressTrackingLevels } from '@enums/ProgressTrackingLevels';
@@ -16,7 +16,7 @@ import { classroomsSelectors } from '../../../../../../store/classroom';
 import { getCategoryFromCurrentReport } from '../../../../../../utils/child/child-progress-report.utils';
 import { contentReportSelectors } from '../../../../../../store/content/report';
 import { getReportingPeriod } from '../../../../../../utils/child/child-profile-utils';
-import { useOnlineStatus } from '../../../../../../hooks/useOnlineStatus';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useAppDispatch } from '../../../../../../store';
 import { analyticsActions } from '../../../../../../store/analytics';
 

@@ -40,7 +40,7 @@ import {
 import { programmeSelectors } from '../../../../../../../store/programme';
 import { EmptyActivities } from '../../components/empty-activity-filter-result/empty-activity-filter-result';
 import { ACTIVITY_PAGE_SIZE } from '../../../../../../../constants/ActivitySearch';
-import { useOnlineStatus } from '../../../../../../../hooks/useOnlineStatus';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
 
 const ActivitySearch: React.FC<ActivitySearchProps> = ({
   title,

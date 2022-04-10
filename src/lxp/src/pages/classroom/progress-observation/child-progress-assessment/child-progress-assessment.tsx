@@ -9,7 +9,7 @@ import { ProgressTrackingAlertLevelOnePrompt } from '../components/progress-trac
 import { ProgressTrackingAlertLevelTwoPrompt } from '../components/progress-tracking-prompts/progress-tracking-alert-level-two-prompt/progress-tracking-alert-level-two-prompt';
 import { ProgressTrackingInformationPrompt } from '../components/progress-tracking-prompts/progress-tracking-information-prompt/progress-tracking-information-prompt';
 import { ProgressTrackingLevels } from '@enums/ProgressTrackingLevels';
-import { useChildProgressObservation } from '../../../../hooks/useChildProgressObservations';
+import { useChildProgressObservation } from '@hooks/useChildProgressObservations';
 
 import { childrenSelectors } from '../../../../store/children';
 import { progressTrackingSelectors } from '../../../../store/progress-tracking';
@@ -25,7 +25,7 @@ import {
   ChildProgressAssessmentSteps,
 } from './child-progress-assessment.types';
 import { CategoryLevelFormResult } from '../../../../models/classroom/progress-observation/ChildProgressAssessment';
-import { useOnlineStatus } from '../../../../hooks/useOnlineStatus';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { getCategoryFromCurrentReport } from '../../../../utils/child/child-progress-report.utils';
 import { contentReportSelectors } from '../../../../store/content/report';
 import { analyticsActions } from '../../../../store/analytics';

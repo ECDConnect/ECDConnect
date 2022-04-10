@@ -5,11 +5,11 @@ import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
 import { renderIcon } from '@ecdlink/ui';
 import { ProgressObsersvationSubCategoryCard } from '../components/progress-observation-sub-category-card/progress-observation-sub-category-card';
-import { useChildProgressObservation } from '../../../../hooks/useChildProgressObservations';
+import { useChildProgressObservation } from '@hooks/useChildProgressObservations';
 import { useEffect } from 'react';
 import { ProgressObservationCategoryState } from './progress-tracking-category.types';
 import { ChildProgressAssessmentSteps } from '../child-progress-assessment/child-progress-assessment.types';
-import { useOnlineStatus } from '../../../../hooks/useOnlineStatus';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { contentReportSelectors } from '../../../../store/content/report';
 
 export const ProgressObservationCategory = () => {

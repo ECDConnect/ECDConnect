@@ -19,9 +19,9 @@ import { EditPlaygroupCountForm } from './components/edit-practitioner-playgroup
 import { EditProgrammeForm } from './components/edit-programme-form/edit-programme-form';
 import { EditProgrammeModel } from '../../../schemas/practitioner/edit-programme';
 import { EditPractitionerSteps } from './edit-practitioner-profile.types';
-import { useOnlineStatus } from '../../../hooks/useOnlineStatus';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { ProgrammeTypeEnum } from '@ecdlink/graphql';
-import { useStoreSetup } from '../../../hooks/useStoreSetup';
+import { useStoreSetup } from '@hooks/useStoreSetup';
 import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
 
 export const EditPractitionerProfile: React.FC = () => {
