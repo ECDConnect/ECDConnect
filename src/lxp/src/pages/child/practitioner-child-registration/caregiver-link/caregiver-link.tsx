@@ -2,7 +2,7 @@ import { useDialog } from '@ecdlink/core';
 import { Button, ComponentBaseProps, DialogPosition, Divider, Typography } from '@ecdlink/ui';
 import { useState } from 'react';
 import { useHistory } from 'react-router';
-import { ChildBasicInfoModel } from '../../../../schemas/child/child-registration/child-basic-info';
+import { ChildBasicInfoModel } from '@schemas/child/child-registration/child-basic-info';
 import { useAppDispatch } from '../../../../store';
 import { childrenThunkActions } from '../../../../store/children';
 import { childrenActions } from '../../../../store/children';

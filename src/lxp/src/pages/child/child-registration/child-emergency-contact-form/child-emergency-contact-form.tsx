@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form';
 import {
   ChildEmergencyContactFormModel,
   childEmergencyContactFormSchema,
-} from '../../../../schemas/child/child-registration/child-emergency-contact-form';
+} from '@schemas/child/child-registration/child-emergency-contact-form';
 import * as styles from './child-emergency-contact-form.styles';
 import { renderIcon } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';

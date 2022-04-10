@@ -11,9 +11,9 @@ import { StepViewer } from '../../../components/step-viewer/step-viewer';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useStaticData } from '@hooks/useStaticData';
 import { ChildRegistrationFormState, StateAction } from '../../../models/child/child';
-import { CareGiverReferencePanelFormModel } from '../../../schemas/child/child-registration/care-giver-reference-panel-form';
-import { ChildBirthCertificateFormModel } from '../../../schemas/child/child-registration/child-birth-certificate-form';
-import { ChildHealthInformationFormModel } from '../../../schemas/child/child-registration/child-health-information-form';
+import { CareGiverReferencePanelFormModel } from '@schemas/child/child-registration/care-giver-reference-panel-form';
+import { ChildBirthCertificateFormModel } from '@schemas/child/child-registration/child-birth-certificate-form';
+import { ChildHealthInformationFormModel } from '@schemas/child/child-registration/child-health-information-form';
 import { useAppDispatch } from '../../../store';
 import { analyticsActions } from '../../../store/analytics';
 import {

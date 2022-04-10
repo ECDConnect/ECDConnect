@@ -9,7 +9,7 @@ import {
   initialNewPasswordValues,
   NewPasswordModel,
   newPasswordSchema,
-} from '../../../schemas/auth/password/new-password';
+} from '@schemas/auth/password/new-password';
 import { authThunkActions } from '../../../store/auth';
 import { useAppDispatch } from '../../../store';
 import AuthService from '@services/AuthService/AuthService';

@@ -7,7 +7,7 @@ import { useSelector } from 'react-redux';
 import {
   childBasicInfoFormSchema,
   ChildBasicInfoModel,
-} from '../../../../schemas/child/child-registration/child-basic-info';
+} from '@schemas/child/child-registration/child-basic-info';
 import { classroomsSelectors } from '../../../../store/classroom';
 
 export const ChildBasicInfo: React.FC<FormComponentProps<ChildBasicInfoModel>> = ({ onSubmit }) => {

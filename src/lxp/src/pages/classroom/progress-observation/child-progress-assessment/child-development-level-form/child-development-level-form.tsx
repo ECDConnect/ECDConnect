@@ -15,7 +15,7 @@ import { useForm } from 'react-hook-form';
 import {
   ChildDevelopmentLevelFormModel,
   childDevelopmentLevelFormSchema,
-} from '../../../../../schemas/classroom/child-progress-observations/child-development-level-form';
+} from '@schemas/classroom/child-progress-observations/child-development-level-form';
 import * as styles from './child-development-level-form.styles';
 import { renderIcon, classNames } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';

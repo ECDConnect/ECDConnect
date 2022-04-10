@@ -16,9 +16,9 @@ import { progressTrackingSelectors } from '../../../../store/progress-tracking';
 import { getStorageItem, setStorageItem } from '../../../../utils/common/local-storage.utils';
 import { CategoryLevelForm } from './category-level-form/category-level-form';
 import { ChildDevelopmentLevelForm } from './child-development-level-form/child-development-level-form';
-import { ChildDevelopmentLevelFormModel } from '../../../../schemas/classroom/child-progress-observations/child-development-level-form';
+import { ChildDevelopmentLevelFormModel } from '@schemas/classroom/child-progress-observations/child-development-level-form';
 import { ChildLearningSupportForm } from './child-learning-support-form/child-learning-support-form';
-import { ChildLearningSupportFormModel } from '../../../../schemas/classroom/child-progress-observations/child-learning-support-form';
+import { ChildLearningSupportFormModel } from '@schemas/classroom/child-progress-observations/child-learning-support-form';
 import { ChildUndevelopedSkillForm } from './child-undeveloped-skill-form/child-undeveloped-skill-form';
 import {
   ChildProgressAssessmentRouteState,

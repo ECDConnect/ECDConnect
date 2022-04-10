@@ -23,7 +23,7 @@ import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import {
   ProgrammeNameModel,
   programmeNameSchema,
-} from '../../../schemas/practitioner/practitioner-programme-information';
+} from '@schemas/practitioner/practitioner-programme-information';
 import { useAppDispatch } from '../../../store';
 import { classroomsActions, classroomsSelectors } from '../../../store/classroom';
 import { userSelectors } from '../../../store/user';

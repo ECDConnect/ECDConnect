@@ -18,7 +18,7 @@ import { useHistory, useLocation } from 'react-router-dom';
 import {
   VerifyPhoneNumberModel,
   verifyPhoneNumberSchema,
-} from '../../../schemas/auth/verify-phone-number/verify-phone-number';
+} from '@schemas/auth/verify-phone-number/verify-phone-number';
 import AuthService from '@services/AuthService/AuthService';
 import { useAppDispatch } from '../../../store';
 import { authThunkActions } from '../../../store/auth';

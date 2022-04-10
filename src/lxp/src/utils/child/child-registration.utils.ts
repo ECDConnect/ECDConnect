@@ -13,15 +13,15 @@ import {
   AddChildTokenModelInput,
   FileTypeEnum,
 } from '@ecdlink/graphql';
-import { CareGiverChildInformationFormModel } from '../../schemas/child/child-registration/care-giver-child-information-form';
-import { CareGiverContributionFormModel } from '../../schemas/child/child-registration/care-giver-contribution-form';
-import { CareGiverExtraInformationFormModel } from '../../schemas/child/child-registration/care-giver-extra-information';
-import { CareGiverInformationFormModel } from '../../schemas/child/child-registration/care-giver-information-form';
-import { CareGiverReferencePanelFormModel } from '../../schemas/child/child-registration/care-giver-reference-panel-form';
-import { ChildEmergencyContactFormModel } from '../../schemas/child/child-registration/child-emergency-contact-form';
-import { ChildExtraInformationFormModel } from '../../schemas/child/child-registration/child-extra-information-form';
-import { ChildHealthInformationFormModel } from '../../schemas/child/child-registration/child-health-information-form';
-import { ChildInformationFormModel } from '../../schemas/child/child-registration/child-information-form';
+import { CareGiverChildInformationFormModel } from '@schemas/child/child-registration/care-giver-child-information-form';
+import { CareGiverContributionFormModel } from '@schemas/child/child-registration/care-giver-contribution-form';
+import { CareGiverExtraInformationFormModel } from '@schemas/child/child-registration/care-giver-extra-information';
+import { CareGiverInformationFormModel } from '@schemas/child/child-registration/care-giver-information-form';
+import { CareGiverReferencePanelFormModel } from '@schemas/child/child-registration/care-giver-reference-panel-form';
+import { ChildEmergencyContactFormModel } from '@schemas/child/child-registration/child-emergency-contact-form';
+import { ChildExtraInformationFormModel } from '@schemas/child/child-registration/child-extra-information-form';
+import { ChildHealthInformationFormModel } from '@schemas/child/child-registration/child-health-information-form';
+import { ChildInformationFormModel } from '@schemas/child/child-registration/child-information-form';
 import { newGuid } from '../common/uuid.utils';
 
 export const mapChildUserDto = (

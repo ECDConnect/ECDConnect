@@ -8,7 +8,7 @@ import { childrenSelectors } from '../../../../../../store/children';
 import {
   ChildProgressedWithFormModel,
   childProgressedWithFormSchema,
-} from '../../../../../../schemas/classroom/child-progress-observations/child-progressed-with-form';
+} from '@schemas/classroom/child-progress-observations/child-progressed-with-form';
 import { useSelector } from 'react-redux';
 import { useEffect } from 'react';
 import { ChildProgressedWithProps } from './child-progressed-with.types';

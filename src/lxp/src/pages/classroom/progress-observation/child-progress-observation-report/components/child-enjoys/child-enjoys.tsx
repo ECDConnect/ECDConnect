@@ -10,7 +10,7 @@ import { childrenSelectors } from '../../../../../../store/children';
 import {
   ChildEnjoysFormModel,
   childEnjoysFormSchema,
-} from '../../../../../../schemas/classroom/child-progress-observations/child-enjoys-form';
+} from '@schemas/classroom/child-progress-observations/child-enjoys-form';
 import { ChildEnjoysProps } from './child-enjoys.types';
 
 export const ChildEnjoys: React.FC<ChildEnjoysProps> = ({ childId, onSubmit }) => {

@@ -2,7 +2,7 @@ import { useDialog, useStepNavigation } from '@ecdlink/core';
 import { useEffect, useState } from 'react';
 import { Step } from '../../../components/step-viewer/components/step';
 import { StepViewer } from '../../../components/step-viewer/step-viewer';
-import { CareGiverReferencePanelFormModel } from '../../../schemas/child/child-registration/care-giver-reference-panel-form';
+import { CareGiverReferencePanelFormModel } from '@schemas/child/child-registration/care-giver-reference-panel-form';
 import { CareGiverChildInformationForm } from '../child-registration/care-giver-child-information-form/care-giver-child-information-form';
 import { CareGiverContributionForm } from '../child-registration/care-giver-contribution-form/care-giver-contribution-form';
 import { CareGiverExtraInformationForm } from '../child-registration/care-giver-extra-information/care-giver-extra-information';

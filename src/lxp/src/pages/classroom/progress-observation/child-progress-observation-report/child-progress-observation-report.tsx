@@ -5,12 +5,12 @@ import { useHistory, useLocation } from 'react-router';
 import { useChildProgressObservation } from '@hooks/useChildProgressObservations';
 import { childrenSelectors } from '../../../../store/children';
 import { ChildEnjoys } from './components/child-enjoys/child-enjoys';
-import { ChildEnjoysFormModel } from '../../../../schemas/classroom/child-progress-observations/child-enjoys-form';
+import { ChildEnjoysFormModel } from '@schemas/classroom/child-progress-observations/child-enjoys-form';
 import { ChildProgressReportOverview } from './components/child-progress-report-overview/child-progress-report-overview';
 import { ChildProgressedWith } from './components/child-progressed-with/child-progressed-with';
-import { ChildProgressedWithFormModel } from '../../../../schemas/classroom/child-progress-observations/child-progressed-with-form';
+import { ChildProgressedWithFormModel } from '@schemas/classroom/child-progress-observations/child-progressed-with-form';
 import { CaregiverCanHelpChildWith } from './components/how-caregiver-can-help-child/how-caregiver-can-help-child';
-import { CaregiverCanHelpChildWithFormModel } from '../../../../schemas/classroom/child-progress-observations/how-caregiver-can-help-child-form';
+import { CaregiverCanHelpChildWithFormModel } from '@schemas/classroom/child-progress-observations/how-caregiver-can-help-child-form';
 import {
   ChildProgressObservationReportState,
   ChildProgressObservationReportSteps,

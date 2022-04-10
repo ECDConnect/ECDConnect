@@ -19,7 +19,7 @@ import {
   initialResetPasswordValues,
   ResetPasswordModel,
   resetPasswordSchema,
-} from '../../../schemas/auth/password/password-reset';
+} from '@schemas/auth/password/password-reset';
 import AuthService from '@services/AuthService/AuthService';
 
 export const PasswordReset: React.FC = () => {

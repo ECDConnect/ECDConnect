@@ -6,7 +6,7 @@ import { childrenSelectors } from '../../../../../../store/children';
 import {
   CaregiverCanHelpChildWithFormModel,
   caregiverCanHelpChildWithFormSchema,
-} from '../../../../../../schemas/classroom/child-progress-observations/how-caregiver-can-help-child-form';
+} from '@schemas/classroom/child-progress-observations/how-caregiver-can-help-child-form';
 import { useSelector } from 'react-redux';
 import { progressTrackingSelectors } from '../../../../../../store/progress-tracking';
 import { useEffect } from 'react';

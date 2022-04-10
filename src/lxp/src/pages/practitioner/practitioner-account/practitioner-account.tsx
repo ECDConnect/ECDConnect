@@ -15,7 +15,7 @@ import {
   initialPractitionerAccountValues,
   PractitionerAccountModel,
   practitionerAccountModelSchema,
-} from '../../../schemas/practitioner/practitioner-account';
+} from '@schemas/practitioner/practitioner-account';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { analyticsActions } from '../../../store/analytics';
 

@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
 import { ConfirmPlayGroups } from '../edit-practitioner-profile/components/confirm-playgroups/confirm-playgroups';
 import { EditMultiplePlayGroups } from '../edit-practitioner-profile/components/edit-mutliple-playgroups/edit-multiple-playgroups';
-import { EditPlaygroupModel } from '../../../schemas/practitioner/edit-playgroups';
+import { EditPlaygroupModel } from '@schemas/practitioner/edit-playgroups';
 import * as styles from './save-practitioner-playgroups.styles';
 import { useAppDispatch } from '../../../store';
 import { classroomsActions, classroomsSelectors } from '../../../store/classroom';

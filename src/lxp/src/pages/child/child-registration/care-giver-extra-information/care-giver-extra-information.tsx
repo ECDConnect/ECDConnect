@@ -16,7 +16,7 @@ import { useSelector } from 'react-redux';
 import {
   CareGiverExtraInformationFormModel,
   careGiverExtraInformationFormSchema,
-} from '../../../../schemas/child/child-registration/care-giver-extra-information';
+} from '@schemas/child/child-registration/care-giver-extra-information';
 import { staticDataSelectors } from '../../../../store/static-data';
 import * as styles from './care-giver-extra-information.styles';
 import { CareGiverExtraInformationFormProps } from './care-giver-extra-information.types';

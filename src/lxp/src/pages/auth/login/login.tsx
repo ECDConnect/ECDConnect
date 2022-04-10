@@ -13,7 +13,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
 import * as styles from './login.styles';
-import { initialLoginValues, LoginModel, loginSchema } from '../../../schemas/auth/login/login';
+import { initialLoginValues, LoginModel, loginSchema } from '@schemas/auth/login/login';
 import { useAppDispatch } from '../../../store';
 import { authActions, authThunkActions } from '../../../store/auth';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';

@@ -10,7 +10,7 @@ import * as styles from './care-giver-child-information-form.styles';
 import {
   CareGiverChildInformationFormModel,
   careGiverChildInformationFormSchema,
-} from '../../../../schemas/child/child-registration/care-giver-child-information-form';
+} from '@schemas/child/child-registration/care-giver-child-information-form';
 import { CareGiverChildInformationFormProps } from './care-giver-child-information-form.types';
 
 export const CareGiverChildInformationForm: React.FC<CareGiverChildInformationFormProps> = ({

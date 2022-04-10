@@ -13,7 +13,7 @@ import { DateFormats } from '../../../../../constants/Dates';
 import {
   MessageBoardModel,
   messageBoardSchema,
-} from '../../../../../schemas/classroom/programme-planning/message-board';
+} from '@schemas/classroom/programme-planning/message-board';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { MessageBoardProps } from './message-board.types';

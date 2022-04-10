@@ -25,7 +25,7 @@ import {
   initialPractitionerAboutValues,
   PractitionerAboutModel,
   practitionerAboutModelSchema,
-} from '../../../schemas/practitioner/practitioner-about';
+} from '@schemas/practitioner/practitioner-about';
 import { useAppDispatch } from '../../../store';
 import { userActions, userSelectors } from '../../../store/user';
 import { analyticsActions } from '../../../store/analytics';

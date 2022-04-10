@@ -27,18 +27,18 @@ import { classroomsActions, classroomsSelectors } from '../../../store/classroom
 import { staticDataSelectors } from '../../../store/static-data';
 import { newGuid } from '../../../utils/common/uuid.utils';
 import { CareGiverChildInformationForm } from '../child-registration/care-giver-child-information-form/care-giver-child-information-form';
-import { CareGiverChildInformationFormModel } from '../../../schemas/child/child-registration/care-giver-child-information-form';
+import { CareGiverChildInformationFormModel } from '@schemas/child/child-registration/care-giver-child-information-form';
 import { ChildEmergencyContactForm } from '../child-registration/child-emergency-contact-form/child-emergency-contact-form';
-import { ChildEmergencyContactFormModel } from '../../../schemas/child/child-registration/child-emergency-contact-form';
+import { ChildEmergencyContactFormModel } from '@schemas/child/child-registration/child-emergency-contact-form';
 import { ChildHealthInformationForm } from '../child-registration/child-health-information-form/child-health-information-form';
-import { ChildHealthInformationFormModel } from '../../../schemas/child/child-registration/child-health-information-form';
+import { ChildHealthInformationFormModel } from '@schemas/child/child-registration/child-health-information-form';
 import { ChildCaregiverInformation } from './child-caregiver-information/child-caregiver-information';
-import { ChildCaregiverInformationModel } from '../../../schemas/child/edit-child-information/care-giver-information-form';
+import { ChildCaregiverInformationModel } from '@schemas/child/edit-child-information/care-giver-information-form';
 import * as styles from './edit-child-information.styles';
 import {
   editChildInformationSchema,
   initialEditChildInformationValues,
-} from '../../../schemas/child/edit-child-information/edit-child-information';
+} from '@schemas/child/edit-child-information/edit-child-information';
 import {
   ChildInformationViewType,
   EditChildInformationLocationParams,

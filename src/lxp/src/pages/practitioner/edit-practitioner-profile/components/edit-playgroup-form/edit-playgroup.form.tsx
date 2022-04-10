@@ -13,10 +13,7 @@ import { renderIcon } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import * as styles from '../../edit-practitioner-profile.styles';
-import {
-  EditPlaygroupModel,
-  editPlaygroupSchema,
-} from '../../../../../schemas/practitioner/edit-playgroups';
+import { EditPlaygroupModel, editPlaygroupSchema } from '@schemas/practitioner/edit-playgroups';
 import { buttonDays, dayTypes, EditPlaygroupProps } from './edit-playgroup.form.types';
 import {
   canDeleteClassroomGroup,

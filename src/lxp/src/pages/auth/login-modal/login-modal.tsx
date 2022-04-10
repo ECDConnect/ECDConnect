@@ -14,7 +14,7 @@ import { useForm } from 'react-hook-form';
 import { useHistory } from 'react-router';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useStoreSetup } from '@hooks/useStoreSetup';
-import { initialLoginValues, LoginModel, loginSchema } from '../../../schemas/auth/login/login';
+import { initialLoginValues, LoginModel, loginSchema } from '@schemas/auth/login/login';
 import { useAppDispatch } from '../../../store';
 import { authActions, authThunkActions } from '../../../store/auth';
 import { settingActions } from '../../../store/settings';

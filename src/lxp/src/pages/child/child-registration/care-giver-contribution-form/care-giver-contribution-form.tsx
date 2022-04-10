@@ -15,7 +15,7 @@ import { useForm, useFormState } from 'react-hook-form';
 import {
   CareGiverContributionFormModel,
   careGiverContributionFormSchema,
-} from '../../../../schemas/child/child-registration/care-giver-contribution-form';
+} from '@schemas/child/child-registration/care-giver-contribution-form';
 import * as styles from './care-giver-contribution-form.styles';
 import { CareGiverContributionFormProps } from './care-giver-contribution-form.types';
 

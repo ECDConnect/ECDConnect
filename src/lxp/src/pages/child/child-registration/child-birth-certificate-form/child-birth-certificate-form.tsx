@@ -23,8 +23,8 @@ import {
   BirthDocumentationType,
   ChildBirthCertificateFormModel,
   childBirthCertificateFormSchema,
-} from '../../../../schemas/child/child-registration/child-birth-certificate-form';
-import { ChildInformationFormModel } from '../../../../schemas/child/child-registration/child-information-form';
+} from '@schemas/child/child-registration/child-birth-certificate-form';
+import { ChildInformationFormModel } from '@schemas/child/child-registration/child-information-form';
 import * as styles from './child-birth-certificate-form.styles';
 
 interface ChildChildBirthCertificateFormProps

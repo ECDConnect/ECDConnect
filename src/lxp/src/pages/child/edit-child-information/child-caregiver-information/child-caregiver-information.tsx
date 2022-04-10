@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import {
   ChildCaregiverInformationModel,
   childCareGiverInformationSchema,
-} from '../../../../schemas/child/edit-child-information/care-giver-information-form';
+} from '@schemas/child/edit-child-information/care-giver-information-form';
 import * as styles from './child-caregiver-information.styles';
 import { ChildCaregiverInformationProps } from './child-caregiver-information.types';
 

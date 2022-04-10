@@ -20,7 +20,7 @@ import {
   initialRemoveChildValues,
   RemoveChildModel,
   removeChildModelSchema,
-} from '../../../schemas/child/remove-child/remove-child';
+} from '@schemas/child/remove-child/remove-child';
 import { useAppDispatch } from '../../../store';
 import { childrenActions, childrenSelectors } from '../../../store/children';
 import { classroomsActions } from '../../../store/classroom';
