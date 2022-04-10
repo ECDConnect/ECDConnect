@@ -1,6 +1,6 @@
 import { EnhancedStore } from '@reduxjs/toolkit';
 import { getHours, getWeek, getYear, isFriday } from 'date-fns';
-import { Message } from '../../../../models/messages/messages';
+import { Message } from '@models/messages/messages';
 import { RootState } from '@store/types';
 import { getMissedClassAttendance } from '../../../../utils/classroom/attendance/track-attendance-utils';
 import {

@@ -4,7 +4,7 @@ import { endOfWeek, isSameDay } from 'date-fns';
 import getDay from 'date-fns/getDay';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { AttendanceResult } from '../../../models/classroom/attendance/AttendanceResult';
+import { AttendanceResult } from '@models/classroom/attendance/AttendanceResult';
 import { attendanceSelectors } from '@store/attendance';
 import { childrenSelectors } from '@store/children';
 import { classroomsSelectors } from '@store/classroom';

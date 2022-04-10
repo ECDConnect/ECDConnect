@@ -28,7 +28,7 @@ import { RemoveChildPrompt } from '../../../components/remove-child-prompt/remov
 
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useStaticData } from '@hooks/useStaticData';
-import { Age } from '../../../models/common/Age';
+import { Age } from '@models/common/Age';
 import { AttendanceService } from '@services/AttendanceService';
 import { attendanceSelectors } from '@store/attendance';
 import { authSelectors } from '@store/auth';

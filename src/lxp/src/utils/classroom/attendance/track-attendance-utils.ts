@@ -22,8 +22,8 @@ import {
   averageScoreThreshold,
   badScoreThreshold,
   goodScoreThreshold,
-} from '../../../models/classroom/attendance/ClassAttendance';
-import { MissedAttendanceGroups } from '../../../models/classroom/attendance/MissedAttendanceGroups';
+} from '@models/classroom/attendance/ClassAttendance';
+import { MissedAttendanceGroups } from '@models/classroom/attendance/MissedAttendanceGroups';
 import {
   AttendanceState,
   AttendanceStateCheckResult,

@@ -7,7 +7,7 @@ import { Step } from '../../../components/step-viewer/components/step';
 import { StepViewer } from '../../../components/step-viewer/step-viewer';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useStaticData } from '@hooks/useStaticData';
-import { ChildRegistrationFormState } from '../../../models/child/child';
+import { ChildRegistrationFormState } from '@models/child/child';
 import { ChildBirthCertificateFormModel } from '@schemas/child/child-registration/child-birth-certificate-form';
 import { useAppDispatch } from '@store';
 import { childrenSelectors } from '@store/children';

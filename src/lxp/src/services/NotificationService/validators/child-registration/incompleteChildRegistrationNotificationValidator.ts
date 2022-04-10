@@ -2,7 +2,7 @@ import { WorkflowStatusEnum } from '@ecdlink/graphql';
 import { EnhancedStore } from '@reduxjs/toolkit';
 import { addDays, differenceInCalendarDays } from 'date-fns';
 import { DateFormats } from '../../../../constants/Dates';
-import { Message } from '../../../../models/messages/messages';
+import { Message } from '@models/messages/messages';
 import { RootState } from '@store/types';
 import {
   NotificationPriority,

@@ -1,6 +1,6 @@
 import { EnhancedStore } from '@reduxjs/toolkit';
 import { differenceInMilliseconds } from 'date-fns';
-import { Message } from '../../models/messages/messages';
+import { Message } from '@models/messages/messages';
 import { RootState } from '@store/types';
 import { NotificationValidator } from './NotificationService.types';
 import { ChildDocumentsNotificationValidator } from './validators/child-documents/childDocumentsNotificationValidator';

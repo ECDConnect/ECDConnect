@@ -1,6 +1,6 @@
 import { FileTypeEnum, WorkflowStatusEnum } from '@ecdlink/graphql';
 import { Document } from '@ecdlink/core';
-import { CreateDocumentRquest } from '../models/common/Document';
+import { CreateDocumentRequest } from '@models/common/Document';
 import { documentActions, documentSelectors } from '@store/document';
 import { newGuid } from '../utils/common/uuid.utils';
 import { useStaticData } from './useStaticData';
@@ -22,7 +22,7 @@ export const useDocuments = () => {
   );
 
   const createNewDocument = async (
-    document: CreateDocumentRquest,
+    document: CreateDocumentRequest,
     reference?: string
   ): Promise<Document | undefined> => {
     const statusId = await getWorkflowStatusIdByEnum(

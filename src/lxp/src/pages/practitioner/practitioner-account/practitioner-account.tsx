@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
-import { DialogFormInput } from '../../../models/practitioner/DialogFormInput';
+import { DialogFormInput } from '@models/practitioner/DialogFormInput';
 import { useAppDispatch } from '@store';
 import { userSelectors, userThunkActions } from '@store/user';
 import { UserResetPasswrodParams } from '@store/user/user.types';

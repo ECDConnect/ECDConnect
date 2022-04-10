@@ -24,7 +24,7 @@ import {
   ChildProgressAssessmentRouteState,
   ChildProgressAssessmentSteps,
 } from './child-progress-assessment.types';
-import { CategoryLevelFormResult } from '../../../../models/classroom/progress-observation/ChildProgressAssessment';
+import { CategoryLevelFormResult } from '@models/classroom/progress-observation/ChildProgressAssessment';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { getCategoryFromCurrentReport } from '../../../../utils/child/child-progress-report.utils';
 import { contentReportSelectors } from '@store/content/report';

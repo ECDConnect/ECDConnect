@@ -1,4 +1,4 @@
-import { Age } from '../../models/common/Age';
+import { Age } from '@models/common/Age';
 import {
   differenceInYears,
   differenceInMonths,
@@ -9,8 +9,8 @@ import {
   getYear,
 } from 'date-fns';
 import { AttendanceDto, ClassProgrammeDto, NoteDto } from '@ecdlink/core';
-import { ChildAttendancePercentageReport } from '../../models/classroom/progress-observation/ChildAttendancePercentageReport';
-import { ReportingPeriod } from '../../models/classroom/progress-observation/ReportingPeriod';
+import { ChildAttendancePercentageReport } from '@models/classroom/progress-observation/ChildAttendancePercentageReport';
+import { ReportingPeriod } from '@models/classroom/progress-observation/ReportingPeriod';
 
 export const getAge = (dateOfBirth?: Date): Age => {
   if (!dateOfBirth) return { years: 0, months: 0 };

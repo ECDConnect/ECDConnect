@@ -3,7 +3,7 @@ import { classNames } from '@ecdlink/ui';
 import {
   averageScoreThreshold,
   goodScoreThreshold,
-} from '../../../../../../../models/classroom/attendance/ClassAttendance';
+} from '@models/classroom/attendance/ClassAttendance';
 
 export const wrapper = 'bg-white rounded-lg shadow-sm justify-center';
 

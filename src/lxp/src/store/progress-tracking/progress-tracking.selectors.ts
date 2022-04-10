@@ -7,7 +7,7 @@ import {
 } from '@ecdlink/core';
 import { createSelector } from '@reduxjs/toolkit';
 import { ProgressTrackingState } from '.';
-import { ChildProgressSubCategoryAssessment } from '../../models/classroom/progress-observation/ChildProgressAssessment';
+import { ChildProgressSubCategoryAssessment } from '@models/classroom/progress-observation/ChildProgressAssessment';
 import { RootState } from '../types';
 
 // CATEGORIES

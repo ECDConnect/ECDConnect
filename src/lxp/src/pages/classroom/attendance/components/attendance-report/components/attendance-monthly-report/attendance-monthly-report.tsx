@@ -6,8 +6,8 @@ import * as styles from './attendance-monthly-report.styles';
 import {
   goodScoreThreshold,
   averageScoreThreshold,
-} from '../../../../../../../models/classroom/attendance/ClassAttendance';
-import { AttendanceSummary } from '../../../../../../../models/classroom/attendance/AttendanceSummary';
+} from '@models/classroom/attendance/ClassAttendance';
+import { AttendanceSummary } from '@models/classroom/attendance/AttendanceSummary';
 
 interface AttendanceMonthlyReportProps extends ComponentBaseProps {
   attendanceSummary: AttendanceSummary[];

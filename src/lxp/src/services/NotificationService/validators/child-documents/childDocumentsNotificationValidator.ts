@@ -1,6 +1,6 @@
 import { WorkflowStatusEnum } from '@ecdlink/graphql';
 import { EnhancedStore } from '@reduxjs/toolkit';
-import { Message } from '../../../../models/messages/messages';
+import { Message } from '@models/messages/messages';
 import { RootState } from '@store/types';
 import {
   NotificationIntervals,

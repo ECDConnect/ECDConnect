@@ -1,6 +1,6 @@
 import { EnhancedStore } from '@reduxjs/toolkit';
 import { getDate, getMonth, getYear } from 'date-fns';
-import { Message } from '../../../../models/messages/messages';
+import { Message } from '@models/messages/messages';
 import { RootState } from '@store/types';
 import {
   NotificationPriority,

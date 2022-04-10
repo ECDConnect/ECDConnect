@@ -1,6 +1,6 @@
 import { BannerWrapper } from '@ecdlink/ui';
 import { format } from 'date-fns';
-import { AttendanceResult } from '../../../../../models/classroom/attendance/AttendanceResult';
+import { AttendanceResult } from '@models/classroom/attendance/AttendanceResult';
 import AttendanceList from '../attendance-list/attendance-list';
 import * as styles from './edit-attendance-register.styles';
 import { EditAttendanceRegisterProps } from './edit-attendance-register.types';

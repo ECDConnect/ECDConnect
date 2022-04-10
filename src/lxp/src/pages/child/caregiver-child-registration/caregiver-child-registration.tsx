@@ -23,7 +23,7 @@ import {
 } from './caregiver-child-registration.types';
 import { CompletedCaregiverChildRegistration } from './completed-caregiver-child-registration/completed-caregiver-child-registration';
 import { childrenThunkActions } from '@store/children';
-import { ChildRegistrationFormState, StateAction } from '../../../models/child/child';
+import { ChildRegistrationFormState, StateAction } from '@models/child/child';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { staticDataThunkActions } from '@store/static-data';
 import { ActionModal, DialogPosition } from '@ecdlink/ui';

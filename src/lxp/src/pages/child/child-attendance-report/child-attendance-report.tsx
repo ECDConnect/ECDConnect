@@ -9,7 +9,7 @@ import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import {
   badScoreThreshold,
   goodScoreThreshold,
-} from '../../../models/classroom/attendance/ClassAttendance';
+} from '@models/classroom/attendance/ClassAttendance';
 import { AttendanceService } from '@services/AttendanceService';
 import { useAppDispatch } from '@store';
 import { attendanceSelectors, attendanceThunkActions } from '@store/attendance';
