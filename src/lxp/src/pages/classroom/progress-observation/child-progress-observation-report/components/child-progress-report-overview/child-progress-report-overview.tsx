@@ -5,20 +5,20 @@ import { renderIcon } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
 import { useChildProgressObservation } from '@hooks/useChildProgressObservations';
-import { childrenSelectors } from '../../../../../../store/children';
-import { progressTrackingSelectors } from '../../../../../../store/progress-tracking';
+import { childrenSelectors } from '@store/children';
+import { progressTrackingSelectors } from '@store/progress-tracking';
 import { ProgressTrackingLevels } from '@enums/ProgressTrackingLevels';
 import { ChildProgressReportOverviewProps } from './child-progress-report-overview.types';
 import { ChildProgressAssessmentSteps } from '../../../child-progress-assessment/child-progress-assessment.types';
 import ObservationCategoryCard from '../../../components/observation-category-card/observation-category-card';
 import { DownloadProgressTrackingReportPrompt } from '../../../components/progress-tracking-prompts/download-progress-tracking-report-prompt/download-progress-tracking-report-prompt';
-import { classroomsSelectors } from '../../../../../../store/classroom';
+import { classroomsSelectors } from '@store/classroom';
 import { getCategoryFromCurrentReport } from '../../../../../../utils/child/child-progress-report.utils';
-import { contentReportSelectors } from '../../../../../../store/content/report';
+import { contentReportSelectors } from '@store/content/report';
 import { getReportingPeriod } from '../../../../../../utils/child/child-profile-utils';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import { useAppDispatch } from '../../../../../../store';
-import { analyticsActions } from '../../../../../../store/analytics';
+import { useAppDispatch } from '@store';
+import { analyticsActions } from '@store/analytics';
 
 export const ChildProgressReportOverview: React.FC<ChildProgressReportOverviewProps> = ({
   childId,

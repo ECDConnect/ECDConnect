@@ -4,7 +4,7 @@ import { renderIcon } from '@ecdlink/ui';
 import { getYear } from 'date-fns';
 import { useForm, useFormState } from 'react-hook-form';
 import { useChildProgressObservation } from '@hooks/useChildProgressObservations';
-import { childrenSelectors } from '../../../../../../store/children';
+import { childrenSelectors } from '@store/children';
 import {
   ChildProgressedWithFormModel,
   childProgressedWithFormSchema,

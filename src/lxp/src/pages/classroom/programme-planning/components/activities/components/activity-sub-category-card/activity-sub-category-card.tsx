@@ -1,4 +1,4 @@
-import { progressTrackingSelectors } from '../../../../../../../store/progress-tracking';
+import { progressTrackingSelectors } from '@store/progress-tracking';
 import { useSelector } from 'react-redux';
 import SkillCard from '../../../skill-card/skill-card';
 import { ActivitySubCategoryCardProps } from './activity-sub-category-card.types';

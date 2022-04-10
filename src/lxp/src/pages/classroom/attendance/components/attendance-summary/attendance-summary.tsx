@@ -21,9 +21,9 @@ import { useSelector } from 'react-redux';
 import PointsSuccessCard from '../../../../../components/points-success-card/points-success-card';
 import { AttendanceResult } from '../../../../../models/classroom/attendance/AttendanceResult';
 import { MissedAttendanceGroups } from '../../../../../models/classroom/attendance/MissedAttendanceGroups';
-import { attendanceSelectors } from '../../../../../store/attendance';
-import { classroomsSelectors } from '../../../../../store/classroom';
-import { staticDataSelectors } from '../../../../../store/static-data';
+import { attendanceSelectors } from '@store/attendance';
+import { classroomsSelectors } from '@store/classroom';
+import { staticDataSelectors } from '@store/static-data';
 import { getPointsMessage } from '../../../../../utils/classroom/attendance/attendance-message-utils';
 import {
   getAllMissedAttendanceGroupsByClassroomGroupId,

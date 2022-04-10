@@ -14,22 +14,14 @@ import { ChildRegistrationFormState, StateAction } from '../../../models/child/c
 import { CareGiverReferencePanelFormModel } from '@schemas/child/child-registration/care-giver-reference-panel-form';
 import { ChildBirthCertificateFormModel } from '@schemas/child/child-registration/child-birth-certificate-form';
 import { ChildHealthInformationFormModel } from '@schemas/child/child-registration/child-health-information-form';
-import { useAppDispatch } from '../../../store';
-import { analyticsActions } from '../../../store/analytics';
-import {
-  caregiverActions,
-  caregiverSelectors,
-  caregiverThunkActions,
-} from '../../../store/caregiver';
-import { childrenActions, childrenSelectors, childrenThunkActions } from '../../../store/children';
-import {
-  classroomsActions,
-  classroomsSelectors,
-  classroomsThunkActions,
-} from '../../../store/classroom';
-import { contentConsentSelectors } from '../../../store/content/consent';
-import { documentActions, documentThunkActions } from '../../../store/document';
-import { userActions, userSelectors, userThunkActions } from '../../../store/user';
+import { useAppDispatch } from '@store';
+import { analyticsActions } from '@store/analytics';
+import { caregiverActions, caregiverSelectors, caregiverThunkActions } from '@store/caregiver';
+import { childrenActions, childrenSelectors, childrenThunkActions } from '@store/children';
+import { classroomsActions, classroomsSelectors, classroomsThunkActions } from '@store/classroom';
+import { contentConsentSelectors } from '@store/content/consent';
+import { documentActions, documentThunkActions } from '@store/document';
+import { userActions, userSelectors, userThunkActions } from '@store/user';
 import * as childRegisterUtils from '../../../utils/child/child-registration.utils';
 import { mapUserConsentDto } from '../../../utils/user/user-consent.utils';
 import { CareGiverChildInformationForm } from './care-giver-child-information-form/care-giver-child-information-form';

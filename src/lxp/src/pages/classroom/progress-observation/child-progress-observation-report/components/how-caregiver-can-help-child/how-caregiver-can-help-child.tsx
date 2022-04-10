@@ -2,13 +2,13 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { Button, Divider, FormInput, Typography } from '@ecdlink/ui';
 import { renderIcon } from '@ecdlink/ui';
 import { useChildProgressObservation } from '@hooks/useChildProgressObservations';
-import { childrenSelectors } from '../../../../../../store/children';
+import { childrenSelectors } from '@store/children';
 import {
   CaregiverCanHelpChildWithFormModel,
   caregiverCanHelpChildWithFormSchema,
 } from '@schemas/classroom/child-progress-observations/how-caregiver-can-help-child-form';
 import { useSelector } from 'react-redux';
-import { progressTrackingSelectors } from '../../../../../../store/progress-tracking';
+import { progressTrackingSelectors } from '@store/progress-tracking';
 import { useEffect } from 'react';
 import { ProgressTrackingLevels } from '@enums/ProgressTrackingLevels';
 import { HowCaregiverCanHelpChildProps } from './how-caregiver-can-help-child.types';

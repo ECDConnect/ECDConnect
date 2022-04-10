@@ -1,5 +1,5 @@
 import { BannerWrapper, Button, Divider, Typography } from '@ecdlink/ui';
-import { progressTrackingSelectors } from '../../../../store/progress-tracking';
+import { progressTrackingSelectors } from '@store/progress-tracking';
 import * as styles from './progress-tracking-category.styles';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
@@ -10,7 +10,7 @@ import { useEffect } from 'react';
 import { ProgressObservationCategoryState } from './progress-tracking-category.types';
 import { ChildProgressAssessmentSteps } from '../child-progress-assessment/child-progress-assessment.types';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import { contentReportSelectors } from '../../../../store/content/report';
+import { contentReportSelectors } from '@store/content/report';
 
 export const ProgressObservationCategory = () => {
   const history = useHistory();

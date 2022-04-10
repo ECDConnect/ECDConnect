@@ -16,11 +16,11 @@ import { DateFormats } from '../../../../constants/Dates';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { OfflineSyncModal } from '../../../../modals';
 import OnlineOnlyModal from '../../../../modals/offline-sync/online-only-modal';
-import { useAppDispatch } from '../../../../store';
-import { childrenSelectors } from '../../../../store/children';
-import { contentReportSelectors } from '../../../../store/content/report';
-import { progressTrackingSelectors } from '../../../../store/progress-tracking';
-import { analyticsActions } from '../../../../store/analytics';
+import { useAppDispatch } from '@store';
+import { childrenSelectors } from '@store/children';
+import { contentReportSelectors } from '@store/content/report';
+import { progressTrackingSelectors } from '@store/progress-tracking';
+import { analyticsActions } from '@store/analytics';
 import { ChildCompletedObservsationReportsState } from './child-completed-observation-reports.types';
 
 export const ChildCompletedObservationReports: React.FC = () => {

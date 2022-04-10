@@ -6,7 +6,7 @@ import { useEffect } from 'react';
 import { useForm, useFormState } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import { useChildProgressObservation } from '@hooks/useChildProgressObservations';
-import { childrenSelectors } from '../../../../../../store/children';
+import { childrenSelectors } from '@store/children';
 import {
   ChildEnjoysFormModel,
   childEnjoysFormSchema,

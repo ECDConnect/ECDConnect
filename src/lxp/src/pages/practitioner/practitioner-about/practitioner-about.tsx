@@ -26,9 +26,9 @@ import {
   PractitionerAboutModel,
   practitionerAboutModelSchema,
 } from '@schemas/practitioner/practitioner-about';
-import { useAppDispatch } from '../../../store';
-import { userActions, userSelectors } from '../../../store/user';
-import { analyticsActions } from '../../../store/analytics';
+import { useAppDispatch } from '@store';
+import { userActions, userSelectors } from '@store/user';
+import { analyticsActions } from '@store/analytics';
 import { setStorageItem } from '../../../utils/common/local-storage.utils';
 import * as styles from './practitioner-about.styles';
 

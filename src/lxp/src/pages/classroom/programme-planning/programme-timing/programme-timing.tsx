@@ -21,7 +21,7 @@ import {
   ProgrammeTimingModel,
   programmeTimingSchema,
 } from '@schemas/classroom/programme-planning/programme-timing';
-import { staticDataSelectors } from '../../../../store/static-data';
+import { staticDataSelectors } from '@store/static-data';
 import { getDateRangeText } from '../../../../utils/classroom/programme-planning/programmes.utils';
 import { ProgrammeTimingRouteState } from './programme-timing.types';
 import DatePicker from 'react-datepicker';

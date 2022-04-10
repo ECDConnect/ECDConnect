@@ -14,10 +14,10 @@ import { useForm } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
 import * as styles from './login.styles';
 import { initialLoginValues, LoginModel, loginSchema } from '@schemas/auth/login/login';
-import { useAppDispatch } from '../../../store';
-import { authActions, authThunkActions } from '../../../store/auth';
+import { useAppDispatch } from '@store';
+import { authActions, authThunkActions } from '@store/auth';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import { settingActions } from '../../../store/settings';
+import { settingActions } from '@store/settings';
 const { version } = require('../../../../package.json');
 
 export const Login: React.FC = () => {

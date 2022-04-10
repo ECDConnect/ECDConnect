@@ -10,7 +10,7 @@ import { ProgrammePlanningHeader } from '../../../components/programme-planning-
 import { ProgrammePlanningRoutineListItem } from '../../../components/programme-planning-routine-list-item/programme-planning-routine-list-item';
 import { DailyRoutineProps } from './daily-routine.types';
 import { useSelector } from 'react-redux';
-import { programmeRoutineSelectors } from '../../../../../../store/content/programme-routine';
+import { programmeRoutineSelectors } from '@store/content/programme-routine';
 import { DailyProgrammeDto, ProgrammeRoutineItemDto, useDialog } from '@ecdlink/core';
 import { MessageBoard } from '../../../components/message-board/message-board';
 import { DailyRoutineItemType } from '@enums/ProgrammeRoutineType';
@@ -18,8 +18,8 @@ import ActivityDetails from '../../../components/activities/activity/activity-de
 import StoryActivityDetails from '../../../components/activities/storybooks/story-activity-details/story-activity-details';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import OnlineOnlyModal from '../../../../../../modals/offline-sync/online-only-modal';
-import { programmeActions } from '../../../../../../store/programme';
-import { useAppDispatch } from '../../../../../../store';
+import { programmeActions } from '@store/programme';
+import { useAppDispatch } from '@store';
 import ActivitySearch from '../../../components/activities/activity/activity-search/activity-search';
 import { getFirstActivityByType } from '../../../../../../utils/classroom/programme-planning/activity-search.utils';
 import { StoryActivitySearch } from '../../../components/activities/storybooks/story-activity-search/story-activity-search';

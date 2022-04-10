@@ -30,14 +30,14 @@ import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useStaticData } from '@hooks/useStaticData';
 import { Age } from '../../../models/common/Age';
 import { AttendanceService } from '@services/AttendanceService';
-import { attendanceSelectors } from '../../../store/attendance';
-import { authSelectors } from '../../../store/auth';
-import { caregiverSelectors } from '../../../store/caregiver';
-import { CaregiverContactReason } from '../../../store/caregiver/caregiver.types';
-import { childrenActions, childrenSelectors } from '../../../store/children';
-import { classroomsSelectors } from '../../../store/classroom';
-import { documentActions, documentSelectors } from '../../../store/document';
-import { notesSelectors } from '../../../store/notes';
+import { attendanceSelectors } from '@store/attendance';
+import { authSelectors } from '@store/auth';
+import { caregiverSelectors } from '@store/caregiver';
+import { CaregiverContactReason } from '@store/caregiver/caregiver.types';
+import { childrenActions, childrenSelectors } from '@store/children';
+import { classroomsSelectors } from '@store/classroom';
+import { documentActions, documentSelectors } from '@store/document';
+import { notesSelectors } from '@store/notes';
 import {
   getAge,
   getChildsAttendancePercentageAtPlaygroup,
@@ -48,13 +48,13 @@ import { CreateNote } from '../components/create-note/create-note';
 import { ChildPending } from './child-pending/child-pending';
 import * as styles from './child-profile.styles';
 import { ChildProfileRouteState } from './child-profile.types';
-import { useAppDispatch } from '../../../store';
+import { useAppDispatch } from '@store';
 import { newGuid } from '../../../utils/common/uuid.utils';
-import { userSelectors } from '../../../store/user';
+import { userSelectors } from '@store/user';
 import { PhotoPrompt } from '../../../components/photo-prompt/photo-prompt';
 import { ChildProgressReportAlert } from './components/progress-report-alert/progress-report-alert';
-import { contentReportSelectors } from '../../../store/content/report';
-import { analyticsActions } from '../../../store/analytics';
+import { contentReportSelectors } from '@store/content/report';
+import { analyticsActions } from '@store/analytics';
 
 const baseNotificationListItem: ListItemProps = {
   key: 'message-caregiver',

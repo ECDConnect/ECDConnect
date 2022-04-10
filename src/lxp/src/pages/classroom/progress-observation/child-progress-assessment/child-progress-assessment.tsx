@@ -11,8 +11,8 @@ import { ProgressTrackingInformationPrompt } from '../components/progress-tracki
 import { ProgressTrackingLevels } from '@enums/ProgressTrackingLevels';
 import { useChildProgressObservation } from '@hooks/useChildProgressObservations';
 
-import { childrenSelectors } from '../../../../store/children';
-import { progressTrackingSelectors } from '../../../../store/progress-tracking';
+import { childrenSelectors } from '@store/children';
+import { progressTrackingSelectors } from '@store/progress-tracking';
 import { getStorageItem, setStorageItem } from '../../../../utils/common/local-storage.utils';
 import { CategoryLevelForm } from './category-level-form/category-level-form';
 import { ChildDevelopmentLevelForm } from './child-development-level-form/child-development-level-form';
@@ -27,9 +27,9 @@ import {
 import { CategoryLevelFormResult } from '../../../../models/classroom/progress-observation/ChildProgressAssessment';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { getCategoryFromCurrentReport } from '../../../../utils/child/child-progress-report.utils';
-import { contentReportSelectors } from '../../../../store/content/report';
-import { analyticsActions } from '../../../../store/analytics';
-import { useAppDispatch } from '../../../../store';
+import { contentReportSelectors } from '@store/content/report';
+import { analyticsActions } from '@store/analytics';
+import { useAppDispatch } from '@store';
 
 export const ChildProgressAssessment: React.FC = () => {
   const { isOnline } = useOnlineStatus();

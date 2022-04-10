@@ -8,7 +8,7 @@ import { DateFormats } from '../../../../constants/Dates';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useProgrammePlanningRecommendations } from '@hooks/useProgrammePlanningRecommendations';
 import OnlineOnlyModal from '../../../../modals/offline-sync/online-only-modal';
-import { programmeSelectors } from '../../../../store/programme';
+import { programmeSelectors } from '@store/programme';
 import {
   getDateRangeText,
   getProgrammeWeeks,

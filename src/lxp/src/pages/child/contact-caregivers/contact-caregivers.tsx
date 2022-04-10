@@ -4,8 +4,8 @@ import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
 import { ContactPerson } from '../../../components/contact-person/contact-person';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import { caregiverSelectors } from '../../../store/caregiver';
-import { childrenSelectors } from '../../../store/children';
+import { caregiverSelectors } from '@store/caregiver';
+import { childrenSelectors } from '@store/children';
 import { ContactCaregiversState } from './contact-caregivers.types';
 
 export const ContactCaregivers: React.FC = () => {

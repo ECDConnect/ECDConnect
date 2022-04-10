@@ -15,11 +15,11 @@ import { useDocuments } from '@hooks/useDocuments';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useStoreSetup } from '@hooks/useStoreSetup';
 import { OfflineSyncModal } from '../../../modals';
-import { useAppDispatch } from '../../../store';
-import { classroomsSelectors } from '../../../store/classroom';
-import { settingSelectors } from '../../../store/settings';
-import { userSelectors } from '../../../store/user';
-import { analyticsActions } from '../../../store/analytics';
+import { useAppDispatch } from '@store';
+import { classroomsSelectors } from '@store/classroom';
+import { settingSelectors } from '@store/settings';
+import { userSelectors } from '@store/user';
+import { analyticsActions } from '@store/analytics';
 import CompleteProfile from '../edit-practitioner-profile/components/complete-profile/complete-profile';
 
 export const PractitionerProfile: React.FC = () => {

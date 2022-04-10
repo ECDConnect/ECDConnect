@@ -3,14 +3,14 @@ import { Button, ComponentBaseProps, DialogPosition, Divider, Typography } from 
 import { useState } from 'react';
 import { useHistory } from 'react-router';
 import { ChildBasicInfoModel } from '@schemas/child/child-registration/child-basic-info';
-import { useAppDispatch } from '../../../../store';
-import { childrenThunkActions } from '../../../../store/children';
-import { childrenActions } from '../../../../store/children';
+import { useAppDispatch } from '@store';
+import { childrenThunkActions } from '@store/children';
+import { childrenActions } from '@store/children';
 import * as childRegisterUtils from '../../../../utils/child/child-registration.utils';
 import { WorkflowStatusEnum } from '@ecdlink/graphql';
 import { useStaticData } from '@hooks/useStaticData';
 import { ChildRegistrationSteps } from '../../child-registration/child-registration.types';
-import { classroomsActions } from '../../../../store/classroom';
+import { classroomsActions } from '@store/classroom';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import OnlineOnlyModal from '../../../../modals/offline-sync/online-only-modal';
 import { copyToClip } from '../../../../utils/common/clipboard.utils';

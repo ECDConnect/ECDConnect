@@ -16,20 +16,20 @@ import { ChildInformationForm } from '../child-registration/child-information-fo
 import { ChildRegistrationForm } from '../child-registration/child-registration-form/child-registration-form';
 import { WelcomeChildRegistration } from './welcome-child-registration/welcome-child-registration';
 import * as childRegisterUtils from '../../../utils/child/child-registration.utils';
-import { useAppDispatch } from '../../../store';
+import { useAppDispatch } from '@store';
 import {
   CaregiverChildRegistrationProps,
   CaregiverChildRegistrationSteps,
 } from './caregiver-child-registration.types';
 import { CompletedCaregiverChildRegistration } from './completed-caregiver-child-registration/completed-caregiver-child-registration';
-import { childrenThunkActions } from '../../../store/children';
+import { childrenThunkActions } from '@store/children';
 import { ChildRegistrationFormState, StateAction } from '../../../models/child/child';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import { staticDataThunkActions } from '../../../store/static-data';
+import { staticDataThunkActions } from '@store/static-data';
 import { ActionModal, DialogPosition } from '@ecdlink/ui';
 import { useStaticData } from '@hooks/useStaticData';
 import { WorkflowStatusEnum } from '@ecdlink/graphql';
-import { contentConsentThunkActions } from '../../../store/content/consent';
+import { contentConsentThunkActions } from '@store/content/consent';
 
 export const CaregiverChildRegistration: React.FC<CaregiverChildRegistrationProps> = ({
   childDetails,

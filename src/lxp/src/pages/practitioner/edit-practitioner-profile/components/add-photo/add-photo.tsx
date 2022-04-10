@@ -6,8 +6,8 @@ import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { PhotoPrompt } from '../../../../../components/photo-prompt/photo-prompt';
 import { useDocuments } from '@hooks/useDocuments';
-import { useAppDispatch } from '../../../../../store';
-import { userActions, userSelectors } from '../../../../../store/user';
+import { useAppDispatch } from '@store';
+import { userActions, userSelectors } from '@store/user';
 import * as styles from '../../edit-practitioner-profile.styles';
 import { AddPhotoProps } from './add-photo.types';
 

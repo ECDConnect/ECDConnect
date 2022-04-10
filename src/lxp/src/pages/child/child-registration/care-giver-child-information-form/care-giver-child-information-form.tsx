@@ -5,7 +5,7 @@ import { renderIcon } from '@ecdlink/ui';
 import { useEffect } from 'react';
 import { useForm, useFormState } from 'react-hook-form';
 import { useSelector } from 'react-redux';
-import { staticDataSelectors } from '../../../../store/static-data';
+import { staticDataSelectors } from '@store/static-data';
 import * as styles from './care-giver-child-information-form.styles';
 import {
   CareGiverChildInformationFormModel,

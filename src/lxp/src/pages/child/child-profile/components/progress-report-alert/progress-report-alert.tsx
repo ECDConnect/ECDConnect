@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
 import { childRegistrationConstants } from '../../../../../constants/Child';
 import { DateFormats } from '../../../../../constants/Dates';
-import { contentReportSelectors } from '../../../../../store/content/report';
+import { contentReportSelectors } from '@store/content/report';
 import {
   getFollowingReportingPeriod,
   getReportingPeriod,

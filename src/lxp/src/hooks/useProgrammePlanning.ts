@@ -6,9 +6,9 @@ import {
 } from '@ecdlink/core';
 import { addDays, isAfter, isFriday, isWeekend } from 'date-fns';
 import { useSelector } from 'react-redux';
-import { useAppDispatch } from '../store';
-import { classroomsSelectors } from '../store/classroom';
-import { programmeActions, programmeSelectors } from '../store/programme';
+import { useAppDispatch } from '@store';
+import { classroomsSelectors } from '@store/classroom';
+import { programmeActions, programmeSelectors } from '@store/programme';
 import {
   findConflictingProgramme,
   getProgrammeDaysForInterval,

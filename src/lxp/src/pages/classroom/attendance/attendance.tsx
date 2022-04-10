@@ -5,10 +5,10 @@ import getDay from 'date-fns/getDay';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { AttendanceResult } from '../../../models/classroom/attendance/AttendanceResult';
-import { attendanceSelectors } from '../../../store/attendance';
-import { childrenSelectors } from '../../../store/children';
-import { classroomsSelectors } from '../../../store/classroom';
-import { staticDataSelectors } from '../../../store/static-data';
+import { attendanceSelectors } from '@store/attendance';
+import { childrenSelectors } from '@store/children';
+import { classroomsSelectors } from '@store/classroom';
+import { staticDataSelectors } from '@store/static-data';
 import {
   classroomGroupHasAttendanceOnDate,
   getClassroomGroupSchoolDays,

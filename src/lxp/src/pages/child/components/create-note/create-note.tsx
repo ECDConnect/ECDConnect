@@ -12,8 +12,8 @@ import {
 import { DialogPosition } from '@ecdlink/ui';
 import { renderIcon } from '@ecdlink/ui';
 import { format } from 'date-fns';
-import { useAppDispatch } from '../../../../store/config';
-import { authSelectors } from '../../../../store/auth';
+import { useAppDispatch } from '@store/config';
+import { authSelectors } from '@store/auth';
 import { classNames } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useForm, useFormState, useWatch } from 'react-hook-form';
@@ -25,7 +25,7 @@ import {
 } from '@schemas/child/child-notes/create-note';
 import { CreateNoteProps } from './create-notes.types';
 import { newGuid } from '../../../../utils/common/uuid.utils';
-import { notesActions } from '../../../../store/notes';
+import { notesActions } from '@store/notes';
 import { useStaticData } from '@hooks/useStaticData';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 

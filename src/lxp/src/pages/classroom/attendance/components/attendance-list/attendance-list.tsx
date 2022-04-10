@@ -13,12 +13,12 @@ import {
 import { getDay } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useAppDispatch } from '../../../../../store';
-import { analyticsActions } from '../../../../../store/analytics';
-import { attendanceActions } from '../../../../../store/attendance';
-import { ChildAttendance } from '../../../../../store/attendance/attendance.types';
-import { classroomsSelectors } from '../../../../../store/classroom';
-import { userSelectors } from '../../../../../store/user';
+import { useAppDispatch } from '@store';
+import { analyticsActions } from '@store/analytics';
+import { attendanceActions } from '@store/attendance';
+import { ChildAttendance } from '@store/attendance/attendance.types';
+import { classroomsSelectors } from '@store/classroom';
+import { userSelectors } from '@store/user';
 import {
   classroomGroupHasAttendanceOnDate,
   getAttendanceStatusCheck,

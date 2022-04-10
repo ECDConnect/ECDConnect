@@ -6,7 +6,7 @@ import { renderIcon } from '@ecdlink/ui';
 import { useEffect } from 'react';
 import { useForm, useFormState, useWatch } from 'react-hook-form';
 import { useSelector } from 'react-redux';
-import { staticDataSelectors } from '../../../../../store/static-data';
+import { staticDataSelectors } from '@store/static-data';
 import * as styles from '../../edit-practitioner-profile.styles';
 import { EditProgrammeModel, editProgrammeSchema } from '@schemas/practitioner/edit-programme';
 import { EditProgrammeFormProps, yesNoOptions } from './edit-programme-form.types';

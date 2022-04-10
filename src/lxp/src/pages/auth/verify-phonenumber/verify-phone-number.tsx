@@ -20,9 +20,9 @@ import {
   verifyPhoneNumberSchema,
 } from '@schemas/auth/verify-phone-number/verify-phone-number';
 import AuthService from '@services/AuthService/AuthService';
-import { useAppDispatch } from '../../../store';
-import { authThunkActions } from '../../../store/auth';
-import { settingActions } from '../../../store/settings';
+import { useAppDispatch } from '@store';
+import { authThunkActions } from '@store/auth';
+import { settingActions } from '@store/settings';
 import * as styles from './verify-phone-number.styles';
 import { VerifyPhoneNumberRouteState } from './verify-phone-number.types';
 const { version } = require('../../../../package.json');

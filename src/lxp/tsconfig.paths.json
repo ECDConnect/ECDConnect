@@ -2,11 +2,12 @@
   "compilerOptions": {
     "baseUrl": "./src",
     "paths": {
-      "@enums/*": ["enums/*"],
-      "@hooks/*": ["hooks/*"],
-      "@schemas/*": ["schemas/*"],
-      "@services/*": ["services/*"]
+      "@enums/*": ["./enums/*"],
+      "@hooks/*": ["./hooks/*"],
+      "@schemas/*": ["./schemas/*"],
+      "@services/*": ["./services/*"],
+      "@store/*": ["./store/*", "./store"],
+      "@store": ["./store"]
     }
   }
 }
-

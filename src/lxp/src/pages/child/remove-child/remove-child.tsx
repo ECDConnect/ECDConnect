@@ -21,11 +21,11 @@ import {
   RemoveChildModel,
   removeChildModelSchema,
 } from '@schemas/child/remove-child/remove-child';
-import { useAppDispatch } from '../../../store';
-import { childrenActions, childrenSelectors } from '../../../store/children';
-import { classroomsActions } from '../../../store/classroom';
-import { staticDataSelectors } from '../../../store/static-data';
-import { analyticsActions } from '../../../store/analytics';
+import { useAppDispatch } from '@store';
+import { childrenActions, childrenSelectors } from '@store/children';
+import { classroomsActions } from '@store/classroom';
+import { staticDataSelectors } from '@store/static-data';
+import { analyticsActions } from '@store/analytics';
 import * as styles from './remove-child.styles';
 import { RemoveChildRouteState } from './remove-child.types';
 

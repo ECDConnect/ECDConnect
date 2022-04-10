@@ -1,6 +1,6 @@
 import { ProgrammeDto } from '@ecdlink/core/';
 import { BaseListItem, Button, Typography } from '@ecdlink/ui/';
-import { programmeSelectors } from '../../../../../../store/programme';
+import { programmeSelectors } from '@store/programme';
 import { useSelector } from 'react-redux';
 import { getDateRangeText } from '../../../../../../utils/classroom/programme-planning/programmes.utils';
 import { ProgrammeHistoryProps } from './programme-history.types';

@@ -26,8 +26,8 @@ import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useStoreSetup } from '@hooks/useStoreSetup';
 import { initialRegisterValues, SignUpModel, signUpSchema } from '@schemas/auth/sign-up/sign-up';
 import AuthService from '@services/AuthService/AuthService';
-import { useAppDispatch } from '../../../store';
-import { staticDataThunkActions } from '../../../store/static-data';
+import { useAppDispatch } from '@store';
+import { staticDataThunkActions } from '@store/static-data';
 import * as styles from './sign-up.styles';
 
 export const SignUp: React.FC = () => {

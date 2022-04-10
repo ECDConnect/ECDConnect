@@ -10,7 +10,7 @@ import {
   childProgressObservationNoteFormSchema,
   ChildProgressObservationNoteModel,
 } from '@schemas/classroom/child-progress-observations/child-progress-observation-note';
-import { childrenSelectors } from '../../../../store/children';
+import { childrenSelectors } from '@store/children';
 import { ChildProgressObservationNoteState } from './child-progress-observation-note.types';
 
 export const ChildProgressObservationNote: React.FC = () => {

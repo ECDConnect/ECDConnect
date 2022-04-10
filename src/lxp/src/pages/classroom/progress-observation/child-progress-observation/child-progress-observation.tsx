@@ -11,7 +11,7 @@ import { ChildProgressNoteCard } from '../components/child-progress-note-card/ch
 import { ProgressTrackingLevels } from '@enums/ProgressTrackingLevels';
 import { useChildProgressObservation } from '@hooks/useChildProgressObservations';
 
-import { getProgressTrackingCategories } from '../../../../store/progress-tracking/progress-tracking.selectors';
+import { getProgressTrackingCategories } from '@store/progress-tracking/progress-tracking.selectors';
 import {
   getReportingPeriod,
   isMatchingReportingPeriods,
@@ -22,22 +22,22 @@ import * as styles from './child-progress-observation.styles';
 import { ChildProgressObservationPageState } from './child-progress-observation.types';
 import { ChildProgressAssessmentSteps } from '../child-progress-assessment/child-progress-assessment.types';
 import ObservationCategoryCard from '../components/observation-category-card/observation-category-card';
-import { childrenSelectors } from '../../../../store/children';
-import { userSelectors } from '../../../../store/user';
+import { childrenSelectors } from '@store/children';
+import { userSelectors } from '@store/user';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import { classroomsSelectors } from '../../../../store/classroom';
+import { classroomsSelectors } from '@store/classroom';
 import {
   getCategoryFromCurrentReport,
   seperateCategoriesByStatus,
 } from '../../../../utils/child/child-progress-report.utils';
-import { contentReportSelectors } from '../../../../store/content/report';
+import { contentReportSelectors } from '@store/content/report';
 import { useEffect, useState } from 'react';
 import ProgressTrackingTutorial from '../components/progress-tracking-tutorial/progress-tracking-tutorial';
 import { useStaticData } from '@hooks/useStaticData';
 import { FileTypeEnum } from '@ecdlink/graphql';
-import { documentSelectors } from '../../../../store/document';
-import { useAppDispatch } from '../../../../store';
-import { analyticsActions } from '../../../../store/analytics';
+import { documentSelectors } from '@store/document';
+import { useAppDispatch } from '@store';
+import { analyticsActions } from '@store/analytics';
 
 export const ChildProgressObservationPage: React.FC = () => {
   const history = useHistory();

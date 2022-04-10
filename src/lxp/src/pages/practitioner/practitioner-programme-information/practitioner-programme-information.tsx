@@ -24,10 +24,10 @@ import {
   ProgrammeNameModel,
   programmeNameSchema,
 } from '@schemas/practitioner/practitioner-programme-information';
-import { useAppDispatch } from '../../../store';
-import { classroomsActions, classroomsSelectors } from '../../../store/classroom';
-import { userSelectors } from '../../../store/user';
-import { analyticsActions } from '../../../store/analytics';
+import { useAppDispatch } from '@store';
+import { classroomsActions, classroomsSelectors } from '@store/classroom';
+import { userSelectors } from '@store/user';
+import { analyticsActions } from '@store/analytics';
 import * as styles from './practitioner-programme-information.styles';
 
 export const PractitionerProgrammeInformation: React.FC = () => {

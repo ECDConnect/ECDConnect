@@ -4,7 +4,7 @@ import { ComponentBaseProps } from '@ecdlink/ui';
 import { classNames } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { progressTrackingSelectors } from '../../../../../store/progress-tracking';
+import { progressTrackingSelectors } from '@store/progress-tracking';
 import { ProgressTrackingLevelDisplay } from '../progress-tracking-level-display/progress-tracking-level-display';
 
 export const ChildDevelopmentLevelsList = ({ className }: ComponentBaseProps) => {

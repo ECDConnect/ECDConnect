@@ -1,7 +1,7 @@
 import { RecursivePartial } from '@ecdlink/core';
 import { EnhancedStore } from '@reduxjs/toolkit';
 import { setDate, setMonth } from 'date-fns';
-import { RootState } from '../../../../store/types';
+import { RootState } from '@store/types';
 import { NotificationIntervals, NotificationPriority } from '../../NotificationService.types';
 import { ChildProgressReportNotificationValidator } from './childProgressReportNotificationValidator';
 

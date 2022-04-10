@@ -14,15 +14,12 @@ import {
 import React, { useState, useMemo, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import ActivityCard from '../activity-card/activity-card';
-import { staticDataSelectors } from '../../../../../../../store/static-data';
+import { staticDataSelectors } from '@store/static-data';
 import SeachHeader, {
   SearchHeaderAlternativeRenderItem,
 } from '../../../../../../../components/search-header/search-header';
-import { programmeThemeSelectors } from '../../../../../../../store/content/programme-theme';
-import {
-  activitySelectors,
-  activityThunkActions,
-} from '../../../../../../../store/content/activity';
+import { programmeThemeSelectors } from '@store/content/programme-theme';
+import { activitySelectors, activityThunkActions } from '@store/content/activity';
 import { ActivityDto, ProgressTrackingSubCategoryDto } from '@ecdlink/core/';
 import { ActivitySearchProps } from './activity-search.types';
 import {
@@ -30,14 +27,14 @@ import {
   filterActivitiesByType,
   getProgressTrackingSubCategoryActivities,
 } from '../../../../../../../utils/classroom/programme-planning/activity-search.utils';
-import { useAppDispatch } from '../../../../../../../store';
-import { progressTrackingSelectors } from '../../../../../../../store/progress-tracking';
+import { useAppDispatch } from '@store';
+import { progressTrackingSelectors } from '@store/progress-tracking';
 import {
   getDateRangeText,
   getRoutineItemType,
   getSelectedActivityWarningText,
 } from '../../../../../../../utils/classroom/programme-planning/programmes.utils';
-import { programmeSelectors } from '../../../../../../../store/programme';
+import { programmeSelectors } from '@store/programme';
 import { EmptyActivities } from '../../components/empty-activity-filter-result/empty-activity-filter-result';
 import { ACTIVITY_PAGE_SIZE } from '../../../../../../../constants/ActivitySearch';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';

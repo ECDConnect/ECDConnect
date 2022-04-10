@@ -22,7 +22,7 @@ import {
 import { ClassroomGroupDto, DialogModalOptions, RecursivePartial, useDialog } from '@ecdlink/core';
 import { ClassroomGroupService } from '@services/ClassroomGroupService';
 import { useSelector } from 'react-redux';
-import { authSelectors } from '../../../../../store/auth';
+import { authSelectors } from '@store/auth';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import OnlineOnlyModal from '../../../../../modals/offline-sync/online-only-modal';
 export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({

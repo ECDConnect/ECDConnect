@@ -1,5 +1,5 @@
 import { useSelector } from 'react-redux';
-import { staticDataSelectors } from '../store/static-data';
+import { staticDataSelectors } from '@store/static-data';
 
 export const useStaticData = () => {
   const workflowStatuses = useSelector(staticDataSelectors.getWorkflowStatuses);

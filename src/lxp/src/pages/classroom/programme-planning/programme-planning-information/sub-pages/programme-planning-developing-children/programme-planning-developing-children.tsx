@@ -5,12 +5,9 @@ import { useHistory } from 'react-router-dom';
 import LanguageSelector from '../../../../../../components/language-selector/language-selector';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { ContentService } from '@services/ContentService';
-import { useAppDispatch } from '../../../../../../store';
-import { authSelectors } from '../../../../../../store/auth';
-import {
-  progressTrackingSelectors,
-  progressTrackingThunkActions,
-} from '../../../../../../store/progress-tracking';
+import { useAppDispatch } from '@store';
+import { authSelectors } from '@store/auth';
+import { progressTrackingSelectors, progressTrackingThunkActions } from '@store/progress-tracking';
 import CategoryComponent from '../../components/category-component/category-component';
 import * as styles from './programme-planning-developing-children.styles';
 

@@ -1,6 +1,6 @@
 import { BaseListItem, RoundIcon, StatusChip, renderIcon } from '@ecdlink/ui/';
 import { DailyRoutineItemType } from '@enums/ProgrammeRoutineType';
-import { activitySelectors } from '../../../../../store/content/activity';
+import { activitySelectors } from '@store/content/activity';
 import { useSelector } from 'react-redux';
 import { ProgrammePlanningRoutineListItemProps } from './programme-planning-routine-list-item.types';
 import {

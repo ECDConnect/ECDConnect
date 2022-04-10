@@ -11,11 +11,11 @@ import {
   goodScoreThreshold,
 } from '../../../models/classroom/attendance/ClassAttendance';
 import { AttendanceService } from '@services/AttendanceService';
-import { useAppDispatch } from '../../../store';
-import { attendanceSelectors, attendanceThunkActions } from '../../../store/attendance';
-import { authSelectors } from '../../../store/auth';
-import { childrenSelectors } from '../../../store/children';
-import { analyticsActions } from '../../../store/analytics';
+import { useAppDispatch } from '@store';
+import { attendanceSelectors, attendanceThunkActions } from '@store/attendance';
+import { authSelectors } from '@store/auth';
+import { childrenSelectors } from '@store/children';
+import { analyticsActions } from '@store/analytics';
 import {
   getColor,
   getShape,

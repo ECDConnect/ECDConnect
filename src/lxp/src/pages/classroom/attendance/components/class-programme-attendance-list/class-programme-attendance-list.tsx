@@ -2,9 +2,9 @@ import { getAvatarColor, LearnerDto } from '@ecdlink/core';
 import { AttendanceListDataItem, AttendanceStackedList, Typography } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { attendanceSelectors } from '../../../../../store/attendance';
-import { childrenSelectors } from '../../../../../store/children';
-import { classroomsSelectors } from '../../../../../store/classroom';
+import { attendanceSelectors } from '@store/attendance';
+import { childrenSelectors } from '@store/children';
+import { classroomsSelectors } from '@store/classroom';
 import * as styles from './class-programme-attendance-list.styles';
 import { ClassProgrammeAttendanceListProps } from './class-programme-attendance-list.types';
 

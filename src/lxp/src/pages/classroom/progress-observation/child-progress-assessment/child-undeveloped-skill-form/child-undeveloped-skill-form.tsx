@@ -4,7 +4,7 @@ import { RadioGroupOption } from '@ecdlink/ui';
 import { classNames, renderIcon } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { childrenSelectors } from '../../../../../store/children';
+import { childrenSelectors } from '@store/children';
 import { ChildUndevelopedSkillFormProps } from './child-undeveloped-skill-form.types';
 
 export const ChildUndevelopedSkillForm: React.FC<ChildUndevelopedSkillFormProps> = ({

@@ -1,7 +1,7 @@
 import { ActivityDto, ProgrammeDto, ProgressTrackingSubCategoryDto } from '@ecdlink/core/';
 import { useSelector } from 'react-redux';
-import { activitySelectors } from '../store/content/activity';
-import { progressTrackingSelectors } from '../store/progress-tracking';
+import { activitySelectors } from '@store/content/activity';
+import { progressTrackingSelectors } from '@store/progress-tracking';
 import { getAllGroupActivityIds } from '../utils/classroom/programme-planning/programmes.utils';
 
 export type RecommendedActivity = {
