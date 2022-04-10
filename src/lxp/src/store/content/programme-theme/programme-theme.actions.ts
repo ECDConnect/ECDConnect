@@ -1,6 +1,6 @@
 import { ProgrammeThemeDto } from '@ecdlink/core';
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { ContentProgrammeThemeService } from '../../../services/ContentProgrammeThemeService';
+import { ContentProgrammeThemeService } from '@services/ContentProgrammeThemeService';
 import { RootState, ThunkApiType } from '../../types';
 
 export const getProgrammeThemes = createAsyncThunk<

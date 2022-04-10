@@ -1,7 +1,7 @@
 import { NoteDto } from '@ecdlink/core';
 import { NoteInput } from '@ecdlink/graphql';
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { NoteService } from '../../services/NoteService';
+import { NoteService } from '@services/NoteService';
 import { RootState, ThunkApiType } from '../types';
 
 export const getNotes = createAsyncThunk<

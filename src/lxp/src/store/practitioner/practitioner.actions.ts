@@ -1,6 +1,6 @@
 import { PractitionerDto } from '@ecdlink/core';
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { PractitionerService } from '../../services/PractitionerService';
+import { PractitionerService } from '@services/PractitionerService';
 import { RootState, ThunkApiType } from '../types';
 
 export const getPractitionerById = createAsyncThunk<

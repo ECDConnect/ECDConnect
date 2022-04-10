@@ -10,7 +10,7 @@ import {
   badScoreThreshold,
   goodScoreThreshold,
 } from '../../../models/classroom/attendance/ClassAttendance';
-import { AttendanceService } from '../../../services/AttendanceService';
+import { AttendanceService } from '@services/AttendanceService';
 import { useAppDispatch } from '../../../store';
 import { attendanceSelectors, attendanceThunkActions } from '../../../store/attendance';
 import { authSelectors } from '../../../store/auth';

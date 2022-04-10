@@ -1,6 +1,6 @@
 import { ProgrammeRoutineDto } from '@ecdlink/core';
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { ContentRoutineService } from '../../../services/ContentRoutineService';
+import { ContentRoutineService } from '@services/ContentRoutineService';
 import { RootState, ThunkApiType } from '../../types';
 
 export const getProgrammeRoutines = createAsyncThunk<

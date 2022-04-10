@@ -15,21 +15,21 @@ import {
   NoteTypeDto,
 } from '@ecdlink/core';
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { DocumentTypeService } from '../../services/DocumentTypeService';
-import { EducationLevelService } from '../../services/EducationLevelService';
-import { GenderService } from '../../services/GenderService';
-import GrantService from '../../services/GrantService/GrantService';
-import { HolidayService } from '../../services/HolidayService';
+import { DocumentTypeService } from '@services/DocumentTypeService';
+import { EducationLevelService } from '@services/EducationLevelService';
+import { GenderService } from '@services/GenderService';
+import GrantService from '@services/GrantService/GrantService';
+import { HolidayService } from '@services/HolidayService';
 
-import { LanguageService } from '../../services/LanguageService';
-import { NoteTypeService } from '../../services/NoteTypeService';
-import { ProgrammeAttendanceReasonService } from '../../services/ProgrammeAttendanceReasonService';
-import { ProgrammeTypeService } from '../../services/ProgrammeTypeService';
-import { ProvinceService } from '../../services/ProvinceService';
-import { RaceService } from '../../services/RaceService';
-import { ReasonForLeavingService } from '../../services/ReasonForLeavingService';
-import { RelationsService } from '../../services/RelationsService';
-import { WorkflowStatusService } from '../../services/WorkflowStatusService';
+import { LanguageService } from '@services/LanguageService';
+import { NoteTypeService } from '@services/NoteTypeService';
+import { ProgrammeAttendanceReasonService } from '@services/ProgrammeAttendanceReasonService';
+import { ProgrammeTypeService } from '@services/ProgrammeTypeService';
+import { ProvinceService } from '@services/ProvinceService';
+import { RaceService } from '@services/RaceService';
+import { ReasonForLeavingService } from '@services/ReasonForLeavingService';
+import { RelationsService } from '@services/RelationsService';
+import { WorkflowStatusService } from '@services/WorkflowStatusService';
 import { RootState, ThunkApiType } from '../types';
 
 export const getRelations = createAsyncThunk<

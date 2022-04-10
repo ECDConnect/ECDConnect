@@ -23,7 +23,7 @@ import {
   Weekdays,
 } from '../../../../../utils/practitioner/playgroups-utils';
 import { ClassroomGroupDto, DialogModalOptions, RecursivePartial, useDialog } from '@ecdlink/core';
-import { ClassroomGroupService } from '../../../../../services/ClassroomGroupService';
+import { ClassroomGroupService } from '@services/ClassroomGroupService';
 import { useSelector } from 'react-redux';
 import { authSelectors } from '../../../../../store/auth';
 import { useOnlineStatus } from '../../../../../hooks/useOnlineStatus';

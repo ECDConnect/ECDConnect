@@ -1,8 +1,8 @@
 import { CaregiverDto, SiteAddressDto } from '@ecdlink/core';
 import { CaregiverInput, SiteAddressInput } from '@ecdlink/graphql';
 import { createAction, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { CaregiverService } from '../../services/CaregiverService';
-import { SiteAddressService } from '../../services/SiteAddressService';
+import { CaregiverService } from '@services/CaregiverService';
+import { SiteAddressService } from '@services/SiteAddressService';
 import { RootState, ThunkApiType } from '../types';
 import { CaregiverContactHistory } from './caregiver.types';
 

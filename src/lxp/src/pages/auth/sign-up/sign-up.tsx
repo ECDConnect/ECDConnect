@@ -29,7 +29,7 @@ import {
   SignUpModel,
   signUpSchema,
 } from '../../../schemas/auth/sign-up/sign-up';
-import AuthService from '../../../services/AuthService/AuthService';
+import AuthService from '@services/AuthService/AuthService';
 import { useAppDispatch } from '../../../store';
 import { staticDataThunkActions } from '../../../store/static-data';
 import * as styles from './sign-up.styles';

@@ -9,7 +9,7 @@ import { useHistory } from 'react-router-dom';
 import LanguageSelector from '../../../../../../components/language-selector/language-selector';
 import { DailyRoutineItemInfo } from './components/daily-routine-item-info/daily-routine-item-info';
 import { useOnlineStatus } from '../../../../../../hooks/useOnlineStatus';
-import { ContentService } from '../../../../../../services/ContentService';
+import { ContentService } from '@services/ContentService';
 import { authSelectors } from '../../../../../../store/auth';
 import { useAppDispatch } from '../../../../../../store';
 

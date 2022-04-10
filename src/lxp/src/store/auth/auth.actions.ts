@@ -1,6 +1,6 @@
 import { Config, LoginRequestModel, AuthUser } from '@ecdlink/core';
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { AuthService } from '../../services/AuthService';
+import { AuthService } from '@services/AuthService';
 import { RootState, ThunkApiType } from '../types';
 
 export const login = createAsyncThunk<AuthUser, LoginRequestModel, ThunkApiType<RootState>>(

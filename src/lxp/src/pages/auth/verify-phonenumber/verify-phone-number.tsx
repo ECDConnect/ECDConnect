@@ -19,7 +19,7 @@ import {
   VerifyPhoneNumberModel,
   verifyPhoneNumberSchema,
 } from '../../../schemas/auth/verify-phone-number/verify-phone-number';
-import AuthService from '../../../services/AuthService/AuthService';
+import AuthService from '@services/AuthService/AuthService';
 import { useAppDispatch } from '../../../store';
 import { authThunkActions } from '../../../store/auth';
 import { settingActions } from '../../../store/settings';

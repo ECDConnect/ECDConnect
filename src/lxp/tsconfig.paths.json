@@ -2,7 +2,8 @@
   "compilerOptions": {
     "baseUrl": "./src",
     "paths": {
-      "@enums/*": ["enums/*"]
+      "@enums/*": ["enums/*"],
+      "@services/*": ["services/*"]
     }
   }
 }

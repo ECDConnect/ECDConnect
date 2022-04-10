@@ -1,6 +1,6 @@
 import { ActivityDto } from '@ecdlink/core';
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { ContentActivityService } from '../../../services/ContentActivityService';
+import { ContentActivityService } from '@services/ContentActivityService';
 import { RootState, ThunkApiType } from '../../types';
 
 export const getActivities = createAsyncThunk<

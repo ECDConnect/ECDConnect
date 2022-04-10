@@ -1,7 +1,7 @@
 import { UserConsentDto, UserDto } from '@ecdlink/core';
 import { UserConsentInput, UserModelInput } from '@ecdlink/graphql';
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { UserService } from '../../services/UserService';
+import { UserService } from '@services/UserService';
 import { RootState, ThunkApiType } from '../types';
 import { UserResetPasswrodParams } from './user.types';
 

@@ -20,7 +20,7 @@ import {
   ResetPasswordModel,
   resetPasswordSchema,
 } from '../../../schemas/auth/password/password-reset';
-import AuthService from '../../../services/AuthService/AuthService';
+import AuthService from '@services/AuthService/AuthService';
 
 export const PasswordReset: React.FC = () => {
   const [userPhoneNumberEnding, setUserPhoneNumberEnding] = useState<string>('XXXX');

@@ -1,7 +1,7 @@
 import { ProgrammeDto } from '@ecdlink/core';
 import { DailyProgrammeInput, ProgrammeInput } from '@ecdlink/graphql';
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { ProgrammeService } from '../../services/ProgrammeService';
+import { ProgrammeService } from '@services/ProgrammeService';
 import { RootState, ThunkApiType } from '../types';
 
 export const getProgrammes = createAsyncThunk<
