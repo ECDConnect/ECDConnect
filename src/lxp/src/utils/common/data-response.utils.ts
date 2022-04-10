@@ -1,5 +1,5 @@
 import { AxiosResponse } from 'axios';
-import { DataResponse } from '../../models/common/DataResponse';
+import { DataResponse } from '@models/common/DataResponse';
 
 enum HttpResponseCodes {
   success = 200,

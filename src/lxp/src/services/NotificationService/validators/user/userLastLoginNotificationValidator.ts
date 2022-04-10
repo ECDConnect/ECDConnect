@@ -1,7 +1,7 @@
 import { EnhancedStore } from '@reduxjs/toolkit';
 import { addDays, differenceInCalendarDays, getWeek, getYear } from 'date-fns';
-import { Message } from '../../../../models/messages/messages';
-import { RootState } from '../../../../store/types';
+import { Message } from '@models/messages/messages';
+import { RootState } from '@store/types';
 import {
   NotificationIntervals,
   NotificationPriority,
@@ -38,11 +38,11 @@ export class UserLastLoginNotificationValidator implements NotificationValidator
       message: `We suggest connecting to a wifi network to complete this process
 
                 After syncing your data, the Funda app will continue to work offline.
-     
-                If you choose not to sync now, you can still access the update     
-     
-                at any time in the notifications area or choose manual update in 
-     
+
+                If you choose not to sync now, you can still access the update
+
+                at any time in the notifications area or choose manual update in
+
                  your profile`,
       dateCreated: new Date().toISOString(),
       priority: NotificationPriority.higher,

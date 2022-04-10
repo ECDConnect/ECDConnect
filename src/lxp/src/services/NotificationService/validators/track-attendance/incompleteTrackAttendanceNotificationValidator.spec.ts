@@ -1,7 +1,7 @@
 import { RecursivePartial } from '@ecdlink/core';
 import { EnhancedStore } from '@reduxjs/toolkit';
 import { getWeek, getYear, nextFriday, setHours } from 'date-fns';
-import { RootState } from '../../../../store/types';
+import { RootState } from '@store/types';
 import { NotificationIntervals, NotificationPriority } from '../../NotificationService.types';
 import { IncompleteTrackAttendanceNotificationValidator } from './incompleteTrackAttendanceNotificationValidator';
 

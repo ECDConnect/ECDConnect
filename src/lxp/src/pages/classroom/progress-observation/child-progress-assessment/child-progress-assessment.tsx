@@ -8,28 +8,28 @@ import { useHistory, useLocation } from 'react-router-dom';
 import { ProgressTrackingAlertLevelOnePrompt } from '../components/progress-tracking-prompts/progress-tracking-alert-level-one-prompt/progress-tracking-alert-level-one-prompt';
 import { ProgressTrackingAlertLevelTwoPrompt } from '../components/progress-tracking-prompts/progress-tracking-alert-level-two-prompt/progress-tracking-alert-level-two-prompt';
 import { ProgressTrackingInformationPrompt } from '../components/progress-tracking-prompts/progress-tracking-information-prompt/progress-tracking-information-prompt';
-import { ProgressTrackingLevels } from '../../../../enums/ProgressTrackingLevels';
-import { useChildProgressObservation } from '../../../../hooks/useChildProgressObservations';
+import { ProgressTrackingLevels } from '@enums/ProgressTrackingLevels';
+import { useChildProgressObservation } from '@hooks/useChildProgressObservations';
 
-import { childrenSelectors } from '../../../../store/children';
-import { progressTrackingSelectors } from '../../../../store/progress-tracking';
-import { getStorageItem, setStorageItem } from '../../../../utils/common/local-storage.utils';
+import { childrenSelectors } from '@store/children';
+import { progressTrackingSelectors } from '@store/progress-tracking';
+import { getStorageItem, setStorageItem } from '@utils/common/local-storage.utils';
 import { CategoryLevelForm } from './category-level-form/category-level-form';
 import { ChildDevelopmentLevelForm } from './child-development-level-form/child-development-level-form';
-import { ChildDevelopmentLevelFormModel } from '../../../../schemas/classroom/child-progress-observations/child-development-level-form';
+import { ChildDevelopmentLevelFormModel } from '@schemas/classroom/child-progress-observations/child-development-level-form';
 import { ChildLearningSupportForm } from './child-learning-support-form/child-learning-support-form';
-import { ChildLearningSupportFormModel } from '../../../../schemas/classroom/child-progress-observations/child-learning-support-form';
+import { ChildLearningSupportFormModel } from '@schemas/classroom/child-progress-observations/child-learning-support-form';
 import { ChildUndevelopedSkillForm } from './child-undeveloped-skill-form/child-undeveloped-skill-form';
 import {
   ChildProgressAssessmentRouteState,
   ChildProgressAssessmentSteps,
 } from './child-progress-assessment.types';
-import { CategoryLevelFormResult } from '../../../../models/classroom/progress-observation/ChildProgressAssessment';
-import { useOnlineStatus } from '../../../../hooks/useOnlineStatus';
-import { getCategoryFromCurrentReport } from '../../../../utils/child/child-progress-report.utils';
-import { contentReportSelectors } from '../../../../store/content/report';
-import { analyticsActions } from '../../../../store/analytics';
-import { useAppDispatch } from '../../../../store';
+import { CategoryLevelFormResult } from '@models/classroom/progress-observation/ChildProgressAssessment';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
+import { getCategoryFromCurrentReport } from '@utils/child/child-progress-report.utils';
+import { contentReportSelectors } from '@store/content/report';
+import { analyticsActions } from '@store/analytics';
+import { useAppDispatch } from '@store';
 
 export const ChildProgressAssessment: React.FC = () => {
   const { isOnline } = useOnlineStatus();

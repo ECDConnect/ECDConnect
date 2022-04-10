@@ -11,9 +11,9 @@ import {
 import { IonContent } from '@ionic/react';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useOnlineStatus } from '../../hooks/useOnlineStatus';
-import { useAppDispatch } from '../../store';
-import { contentConsentSelectors, contentConsentThunkActions } from '../../store/content/consent';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
+import { useAppDispatch } from '@store';
+import { contentConsentSelectors, contentConsentThunkActions } from '@store/content/consent';
 import LanguageSelector from '../language-selector/language-selector';
 import * as styles from './article.styles';
 import { ArticleProps } from './article.types';

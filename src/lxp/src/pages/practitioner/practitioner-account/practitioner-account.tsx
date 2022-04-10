@@ -6,18 +6,18 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
-import { DialogFormInput } from '../../../models/practitioner/DialogFormInput';
-import { useAppDispatch } from '../../../store';
-import { userSelectors, userThunkActions } from '../../../store/user';
-import { UserResetPasswrodParams } from '../../../store/user/user.types';
+import { DialogFormInput } from '@models/practitioner/DialogFormInput';
+import { useAppDispatch } from '@store';
+import { userSelectors, userThunkActions } from '@store/user';
+import { UserResetPasswrodParams } from '@store/user/user.types';
 import * as styles from './practitioner-account.styles';
 import {
   initialPractitionerAccountValues,
   PractitionerAccountModel,
   practitionerAccountModelSchema,
-} from '../../../schemas/practitioner/practitioner-account';
-import { useOnlineStatus } from '../../../hooks/useOnlineStatus';
-import { analyticsActions } from '../../../store/analytics';
+} from '@schemas/practitioner/practitioner-account';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
+import { analyticsActions } from '@store/analytics';
 
 export default function PractitionerAccount() {
   const user = useSelector(userSelectors.getUser);

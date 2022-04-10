@@ -1,6 +1,6 @@
 import { SettingTypeDto } from '@ecdlink/core';
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { SettingsService } from '../../services/SettingsService';
+import { SettingsService } from '@services/SettingsService';
 import { RootState, ThunkApiType } from '../types';
 
 export const getSettings = createAsyncThunk<

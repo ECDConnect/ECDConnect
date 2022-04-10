@@ -1,11 +1,11 @@
 import { BannerWrapper, Button, Divider, Typography } from '@ecdlink/ui';
 import LanguageSelector from '../../../../../../../components/language-selector/language-selector';
-import { activitySelectors } from '../../../../../../../store/content/activity';
+import { activitySelectors } from '@store/content/activity';
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { ActivitySubCategoryCard } from '../../components/activity-sub-category-card/activity-sub-category-card';
 import { ActivityDetailsProps } from './activity-details.types';
-import { useOnlineStatus } from '../../../../../../../hooks/useOnlineStatus';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
 
 const ActivityDetails: React.FC<ActivityDetailsProps> = ({
   activityId,

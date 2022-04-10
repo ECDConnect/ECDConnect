@@ -18,18 +18,18 @@ import { useForm } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { PhotoPrompt } from '../../../components/photo-prompt/photo-prompt';
-import { useDocuments } from '../../../hooks/useDocuments';
-import { useOnlineStatus } from '../../../hooks/useOnlineStatus';
-import { DialogFormInput } from '../../../models/practitioner/DialogFormInput';
+import { useDocuments } from '@hooks/useDocuments';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
+import { DialogFormInput } from '@models/practitioner/DialogFormInput';
 import {
   initialPractitionerAboutValues,
   PractitionerAboutModel,
   practitionerAboutModelSchema,
-} from '../../../schemas/practitioner/practitioner-about';
-import { useAppDispatch } from '../../../store';
-import { userActions, userSelectors } from '../../../store/user';
-import { analyticsActions } from '../../../store/analytics';
-import { setStorageItem } from '../../../utils/common/local-storage.utils';
+} from '@schemas/practitioner/practitioner-about';
+import { useAppDispatch } from '@store';
+import { userActions, userSelectors } from '@store/user';
+import { analyticsActions } from '@store/analytics';
+import { setStorageItem } from '@utils/common/local-storage.utils';
 import * as styles from './practitioner-about.styles';
 
 export const PractitionerAbout: React.FC = () => {

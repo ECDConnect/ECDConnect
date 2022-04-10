@@ -1,7 +1,7 @@
 import { ComponentBaseProps, StackedList, StackedListItemType } from '@ecdlink/ui';
 import { useHistory } from 'react-router';
-import { useAppDispatch } from '../../../../store';
-import { Notification, notificationActions } from '../../../../store/notifications';
+import { useAppDispatch } from '@store';
+import { Notification, notificationActions } from '@store/notifications';
 import { NotificationHeaderCard } from '../notification-header-card/notification-header-card';
 
 interface DashboardItemsProps extends ComponentBaseProps {

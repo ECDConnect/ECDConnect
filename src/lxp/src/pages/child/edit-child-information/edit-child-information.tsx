@@ -20,34 +20,34 @@ import { useForm } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
 import { PhotoPrompt } from '../../../components/photo-prompt/photo-prompt';
-import { useAppDispatch } from '../../../store';
-import { caregiverActions, caregiverSelectors } from '../../../store/caregiver';
-import { childrenActions, childrenSelectors } from '../../../store/children';
-import { classroomsActions, classroomsSelectors } from '../../../store/classroom';
-import { staticDataSelectors } from '../../../store/static-data';
-import { newGuid } from '../../../utils/common/uuid.utils';
+import { useAppDispatch } from '@store';
+import { caregiverActions, caregiverSelectors } from '@store/caregiver';
+import { childrenActions, childrenSelectors } from '@store/children';
+import { classroomsActions, classroomsSelectors } from '@store/classroom';
+import { staticDataSelectors } from '@store/static-data';
+import { newGuid } from '@utils/common/uuid.utils';
 import { CareGiverChildInformationForm } from '../child-registration/care-giver-child-information-form/care-giver-child-information-form';
-import { CareGiverChildInformationFormModel } from '../../../schemas/child/child-registration/care-giver-child-information-form';
+import { CareGiverChildInformationFormModel } from '@schemas/child/child-registration/care-giver-child-information-form';
 import { ChildEmergencyContactForm } from '../child-registration/child-emergency-contact-form/child-emergency-contact-form';
-import { ChildEmergencyContactFormModel } from '../../../schemas/child/child-registration/child-emergency-contact-form';
+import { ChildEmergencyContactFormModel } from '@schemas/child/child-registration/child-emergency-contact-form';
 import { ChildHealthInformationForm } from '../child-registration/child-health-information-form/child-health-information-form';
-import { ChildHealthInformationFormModel } from '../../../schemas/child/child-registration/child-health-information-form';
+import { ChildHealthInformationFormModel } from '@schemas/child/child-registration/child-health-information-form';
 import { ChildCaregiverInformation } from './child-caregiver-information/child-caregiver-information';
-import { ChildCaregiverInformationModel } from '../../../schemas/child/edit-child-information/care-giver-information-form';
+import { ChildCaregiverInformationModel } from '@schemas/child/edit-child-information/care-giver-information-form';
 import * as styles from './edit-child-information.styles';
 import {
   editChildInformationSchema,
   initialEditChildInformationValues,
-} from '../../../schemas/child/edit-child-information/edit-child-information';
+} from '@schemas/child/edit-child-information/edit-child-information';
 import {
   ChildInformationViewType,
   EditChildInformationLocationParams,
 } from './edit-child-information.types';
-import { useOnlineStatus } from '../../../hooks/useOnlineStatus';
-import { useStaticData } from '../../../hooks/useStaticData';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
+import { useStaticData } from '@hooks/useStaticData';
 import { FileTypeEnum, WorkflowStatusEnum } from '@ecdlink/graphql';
-import { documentActions, documentSelectors } from '../../../store/document';
-import { userSelectors } from '../../../store/user';
+import { documentActions, documentSelectors } from '@store/document';
+import { userSelectors } from '@store/user';
 
 export const EditChildInformation: React.FC = () => {
   const appDispatch = useAppDispatch();

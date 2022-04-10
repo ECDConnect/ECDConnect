@@ -5,7 +5,7 @@ import {
   ProgressTrackingSubCategoryDto,
 } from '@ecdlink/core';
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { ProgressTrackingService } from '../../services/ProgressTrackingService';
+import { ProgressTrackingService } from '@services/ProgressTrackingService';
 import { RootState, ThunkApiType } from '../types';
 
 export const getProgressTrackingCategories = createAsyncThunk<

@@ -1,6 +1,6 @@
 import { isSameDay } from 'date-fns';
 import { useSelector } from 'react-redux';
-import { staticDataSelectors } from '../store/static-data';
+import { staticDataSelectors } from '@store/static-data';
 
 export const useHolidays = () => {
   const holidays = useSelector(staticDataSelectors.getHolidays);

@@ -2,12 +2,12 @@ import { useDialog, useStepNavigation } from '@ecdlink/core';
 import { ActionModal, DialogPosition } from '@ecdlink/ui';
 import { useState } from 'react';
 import { useHistory } from 'react-router';
-import { ChildBasicInfoModel } from '../../../schemas/child/child-registration/child-basic-info';
+import { ChildBasicInfoModel } from '@schemas/child/child-registration/child-basic-info';
 import { ChildBasicInfo } from './child-basic-info/child-basic-info';
 import { CaregiverLink } from './caregiver-link/caregiver-link';
 import { StepViewer } from '../../../components/step-viewer/step-viewer';
 import { Step } from '../../../components/step-viewer/components/step';
-import { useOnlineStatus } from '../../../hooks/useOnlineStatus';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
 enum PractitionerChildRegistrationSteps {
   childBasicDetails = 1,
   caregiverLink = 2,

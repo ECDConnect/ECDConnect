@@ -1,5 +1,5 @@
 import { FormComponentProps } from '@ecdlink/core';
-import { EditPlaygroupModel } from '../../../../../schemas/practitioner/edit-playgroups';
+import { EditPlaygroupModel } from '@schemas/practitioner/edit-playgroups';
 
 export interface EditMultiplePlayGroupsProps extends FormComponentProps<EditPlaygroupModel[]> {
   numberOfPlaygroups: number;

@@ -5,12 +5,12 @@ import { getYear } from 'date-fns';
 import { useEffect } from 'react';
 import { useForm, useFormState } from 'react-hook-form';
 import { useSelector } from 'react-redux';
-import { useChildProgressObservation } from '../../../../../../hooks/useChildProgressObservations';
-import { childrenSelectors } from '../../../../../../store/children';
+import { useChildProgressObservation } from '@hooks/useChildProgressObservations';
+import { childrenSelectors } from '@store/children';
 import {
   ChildEnjoysFormModel,
   childEnjoysFormSchema,
-} from '../../../../../../schemas/classroom/child-progress-observations/child-enjoys-form';
+} from '@schemas/classroom/child-progress-observations/child-enjoys-form';
 import { ChildEnjoysProps } from './child-enjoys.types';
 
 export const ChildEnjoys: React.FC<ChildEnjoysProps> = ({ childId, onSubmit }) => {

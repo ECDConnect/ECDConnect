@@ -1,7 +1,7 @@
 import { Button, Typography } from '@ecdlink/ui';
 import { ComponentBaseProps } from '@ecdlink/ui';
 import { classNames, renderIcon } from '@ecdlink/ui';
-import { getLogo, LogoSvgs } from '../../utils/common/svg.utils';
+import { getLogo, LogoSvgs } from '@utils/common/svg.utils';
 import * as styles from './contact-person.styles';
 
 interface ContactPersonProps extends ComponentBaseProps {

@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
-import { Message } from '../../models/messages/messages';
+import { Message } from '@models/messages/messages';
 import { NotificationsState, Notification } from './notifications.types';
 
 const initialState: NotificationsState = {

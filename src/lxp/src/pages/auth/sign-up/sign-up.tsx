@@ -22,16 +22,12 @@ import { useEffect, useState } from 'react';
 import { useForm, useFormState } from 'react-hook-form';
 import { useHistory, useLocation } from 'react-router-dom';
 import { Article } from '../../../components/article/article';
-import { useOnlineStatus } from '../../../hooks/useOnlineStatus';
-import { useStoreSetup } from '../../../hooks/useStoreSetup';
-import {
-  initialRegisterValues,
-  SignUpModel,
-  signUpSchema,
-} from '../../../schemas/auth/sign-up/sign-up';
-import AuthService from '../../../services/AuthService/AuthService';
-import { useAppDispatch } from '../../../store';
-import { staticDataThunkActions } from '../../../store/static-data';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
+import { useStoreSetup } from '@hooks/useStoreSetup';
+import { initialRegisterValues, SignUpModel, signUpSchema } from '@schemas/auth/sign-up/sign-up';
+import AuthService from '@services/AuthService/AuthService';
+import { useAppDispatch } from '@store';
+import { staticDataThunkActions } from '@store/static-data';
 import * as styles from './sign-up.styles';
 
 export const SignUp: React.FC = () => {

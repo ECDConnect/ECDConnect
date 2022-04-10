@@ -1,5 +1,5 @@
 import { ActionModal, ComponentBaseProps, Typography } from '@ecdlink/ui';
-import { ChildBasicInfoModel } from '../../../../schemas/child/child-registration/child-basic-info';
+import { ChildBasicInfoModel } from '@schemas/child/child-registration/child-basic-info';
 
 interface CaregiverChildRegistrationModalProps extends ComponentBaseProps {
   caregiverUrl: string;

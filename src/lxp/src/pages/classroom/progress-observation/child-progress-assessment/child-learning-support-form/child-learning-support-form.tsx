@@ -5,11 +5,11 @@ import { useForm } from 'react-hook-form';
 import {
   ChildLearningSupportFormModel,
   childLearningSupportFormSchema,
-} from '../../../../../schemas/classroom/child-progress-observations/child-learning-support-form';
+} from '@schemas/classroom/child-progress-observations/child-learning-support-form';
 import { renderIcon } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
-import { childrenSelectors } from '../../../../../store/children';
-import { progressTrackingSelectors } from '../../../../../store/progress-tracking';
+import { childrenSelectors } from '@store/children';
+import { progressTrackingSelectors } from '@store/progress-tracking';
 import { ChildLearningSupportFormProps } from './child-learning-support-form.types';
 
 export const ChildLearningSupportForm: React.FC<ChildLearningSupportFormProps> = ({

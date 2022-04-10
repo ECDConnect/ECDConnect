@@ -112,6 +112,7 @@
     "@typescript-eslint/eslint-plugin": "^5.18.0",
     "@typescript-eslint/parser": "^5.18.0",
     "autoprefixer": "^9.8.8",
+    "craco-alias": "^3.0.1",
     "cropperjs": "^1.5.12",
     "eslint-config-prettier": "^8.5.0",
     "eslint-config-react-app": "^7.0.0",

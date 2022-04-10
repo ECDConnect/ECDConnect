@@ -6,12 +6,12 @@ import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
 import { ContactPerson } from '../../../components/contact-person/contact-person';
 import { RemoveChildPrompt } from '../../../components/remove-child-prompt/remove-child-prompt';
-import { useOnlineStatus } from '../../../hooks/useOnlineStatus';
-import { useAppDispatch } from '../../../store';
-import { caregiverActions, caregiverSelectors } from '../../../store/caregiver';
-import { CaregiverContactReason } from '../../../store/caregiver/caregiver.types';
-import { childrenSelectors } from '../../../store/children';
-import { analyticsActions } from '../../../store/analytics';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
+import { useAppDispatch } from '@store';
+import { caregiverActions, caregiverSelectors } from '@store/caregiver';
+import { CaregiverContactReason } from '@store/caregiver/caregiver.types';
+import { childrenSelectors } from '@store/children';
+import { analyticsActions } from '@store/analytics';
 import { attendanceColor } from './contact-child-caregiver.styles';
 import { ContactChildCaregiverState } from './contact-child-caregiver.types';
 

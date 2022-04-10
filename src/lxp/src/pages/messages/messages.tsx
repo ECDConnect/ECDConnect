@@ -2,15 +2,11 @@ import { BannerWrapper, Typography } from '@ecdlink/ui';
 import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
-import { useOnlineStatus } from '../../hooks/useOnlineStatus';
-import { usePaging } from '../../hooks/usePaging';
-import { useAppDispatch } from '../../store';
-import { analyticsActions } from '../../store/analytics';
-import {
-  Notification,
-  notificationActions,
-  notificationsSelectors,
-} from '../../store/notifications';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
+import { usePaging } from '@hooks/usePaging';
+import { useAppDispatch } from '@store';
+import { analyticsActions } from '@store/analytics';
+import { Notification, notificationActions, notificationsSelectors } from '@store/notifications';
 import { IconInformationIndicator } from '../classroom/programme-planning/components/icon-information-indicator/icon-information-indicator';
 import { MessageCard } from './components/message-card';
 

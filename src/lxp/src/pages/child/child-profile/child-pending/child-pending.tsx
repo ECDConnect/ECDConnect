@@ -4,15 +4,15 @@ import { format, addDays } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
-import { useOnlineStatus } from '../../../../hooks/useOnlineStatus';
-import { useAppDispatch } from '../../../../store';
-import { childrenThunkActions } from '../../../../store/children';
-import { classroomsSelectors } from '../../../../store/classroom';
-import { settingSelectors } from '../../../../store/settings';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
+import { useAppDispatch } from '@store';
+import { childrenThunkActions } from '@store/children';
+import { classroomsSelectors } from '@store/classroom';
+import { settingSelectors } from '@store/settings';
 import { ChildRegistrationSteps } from '../../child-registration/child-registration.types';
 import { ChildPendingProps } from './child-pending.types';
 import OnlineOnlyModal from '../../../../modals/offline-sync/online-only-modal';
-import { copyToClip } from '../../../../utils/common/clipboard.utils';
+import { copyToClip } from '@utils/common/clipboard.utils';
 import { CaregiverChildRegistrationModal } from '../../components/caregiver-child-registration-modal/caregiver-child-registration-modal';
 
 export const ChildPending: React.FC<ChildPendingProps> = ({ child, childUser }) => {

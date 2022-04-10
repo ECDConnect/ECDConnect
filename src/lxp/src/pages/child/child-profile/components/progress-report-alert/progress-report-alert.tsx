@@ -5,15 +5,15 @@ import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
 import { childRegistrationConstants } from '../../../../../constants/Child';
 import { DateFormats } from '../../../../../constants/Dates';
-import { contentReportSelectors } from '../../../../../store/content/report';
+import { contentReportSelectors } from '@store/content/report';
 import {
   getFollowingReportingPeriod,
   getReportingPeriod,
   isInFinalMonthOfReportingPeriod,
   isMatchingReportingPeriods,
-} from '../../../../../utils/child/child-profile-utils';
+} from '@utils/child/child-profile-utils';
 
-import { isChildInitialRegistrationPeriod } from '../../../../../utils/child/child-progress-report.utils';
+import { isChildInitialRegistrationPeriod } from '@utils/child/child-progress-report.utils';
 
 export interface ChildProgressReportAlertProps extends ComponentBaseProps {
   child: ChildDto;

@@ -1,12 +1,12 @@
 import { BaseListItem, RoundIcon, StatusChip, renderIcon } from '@ecdlink/ui/';
-import { DailyRoutineItemType } from '../../../../../enums/ProgrammeRoutineType';
-import { activitySelectors } from '../../../../../store/content/activity';
+import { DailyRoutineItemType } from '@enums/ProgrammeRoutineType';
+import { activitySelectors } from '@store/content/activity';
 import { useSelector } from 'react-redux';
 import { ProgrammePlanningRoutineListItemProps } from './programme-planning-routine-list-item.types';
 import {
   getActivityIdForRoutineItem,
   getRoutineItemType,
-} from '../../../../../utils/classroom/programme-planning/programmes.utils';
+} from '@utils/classroom/programme-planning/programmes.utils';
 
 export const ProgrammePlanningRoutineListItem: React.FC<ProgrammePlanningRoutineListItemProps> = ({
   routineItem,

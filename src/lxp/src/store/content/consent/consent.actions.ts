@@ -1,6 +1,6 @@
 import { ConsentDto, ContentConsentTypeEnum } from '@ecdlink/core';
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { ContentConsentService } from '../../../services/ContentConsentService';
+import { ContentConsentService } from '@services/ContentConsentService';
 import { RootState, ThunkApiType } from '../../types';
 
 export const getConsent = createAsyncThunk<

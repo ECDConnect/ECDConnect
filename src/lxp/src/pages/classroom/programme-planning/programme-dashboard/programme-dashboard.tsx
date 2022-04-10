@@ -3,9 +3,9 @@ import { Button, ComponentBaseProps, DialogPosition, renderIcon, Typography } fr
 import { isSameDay } from 'date-fns';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
-import { useOnlineStatus } from '../../../../hooks/useOnlineStatus';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import OnlineOnlyModal from '../../../../modals/offline-sync/online-only-modal';
-import { programmeSelectors } from '../../../../store/programme';
+import { programmeSelectors } from '@store/programme';
 import { IconInformationIndicator } from '../components/icon-information-indicator/icon-information-indicator';
 import { DailyRoutine } from './components/daily-routine/daily-routine';
 

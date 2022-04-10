@@ -1,4 +1,4 @@
-import { Message } from '../../models/messages/messages';
+import { Message } from '@models/messages/messages';
 
 export const enum NotificationPriority {
   lowest = 1,

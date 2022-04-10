@@ -14,7 +14,7 @@ import { useForm, useFormState } from 'react-hook-form';
 import {
   CareGiverReferencePanelFormModel,
   careGiverReferencePanelFormSchema,
-} from '../../../../schemas/child/child-registration/care-giver-reference-panel-form';
+} from '@schemas/child/child-registration/care-giver-reference-panel-form';
 import * as styles from './care-giver-reference-panel-form.styles';
 import { CareGiverReferencePanelFormProps } from './care-giver-reference-panel-form.types';
 

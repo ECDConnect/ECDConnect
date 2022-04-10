@@ -5,12 +5,12 @@ import { renderIcon } from '@ecdlink/ui';
 import { useEffect } from 'react';
 import { useForm, useFormState } from 'react-hook-form';
 import { useSelector } from 'react-redux';
-import { staticDataSelectors } from '../../../../store/static-data';
+import { staticDataSelectors } from '@store/static-data';
 import * as styles from './care-giver-child-information-form.styles';
 import {
   CareGiverChildInformationFormModel,
   careGiverChildInformationFormSchema,
-} from '../../../../schemas/child/child-registration/care-giver-child-information-form';
+} from '@schemas/child/child-registration/care-giver-child-information-form';
 import { CareGiverChildInformationFormProps } from './care-giver-child-information-form.types';
 
 export const CareGiverChildInformationForm: React.FC<CareGiverChildInformationFormProps> = ({

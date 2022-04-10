@@ -15,13 +15,13 @@ import { useForm } from 'react-hook-form';
 import {
   ChildDevelopmentLevelFormModel,
   childDevelopmentLevelFormSchema,
-} from '../../../../../schemas/classroom/child-progress-observations/child-development-level-form';
+} from '@schemas/classroom/child-progress-observations/child-development-level-form';
 import * as styles from './child-development-level-form.styles';
 import { renderIcon, classNames } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
-import { useChildProgressObservation } from '../../../../../hooks/useChildProgressObservations';
-import { childrenSelectors } from '../../../../../store/children';
-import { progressTrackingSelectors } from '../../../../../store/progress-tracking';
+import { useChildProgressObservation } from '@hooks/useChildProgressObservations';
+import { childrenSelectors } from '@store/children';
+import { progressTrackingSelectors } from '@store/progress-tracking';
 import ChildDevelopmentLevelsDisplay from '../../components/child-development-levels-display/child-development-levels-display';
 import { useState } from 'react';
 

@@ -4,7 +4,7 @@ import { useForm, useFormState } from 'react-hook-form';
 import {
   ChildHealthInformationFormModel,
   childHealthInformationFormSchema,
-} from '../../../../schemas/child/child-registration/child-health-information-form';
+} from '@schemas/child/child-registration/child-health-information-form';
 import { ChildHealthInformationFormProps } from './child-health-information-form.types';
 
 export const ChildHealthInformationForm: React.FC<ChildHealthInformationFormProps> = ({

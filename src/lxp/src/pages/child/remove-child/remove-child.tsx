@@ -15,17 +15,17 @@ import { useEffect } from 'react';
 import { useForm, useFormState } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
-import { useOnlineStatus } from '../../../hooks/useOnlineStatus';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import {
   initialRemoveChildValues,
   RemoveChildModel,
   removeChildModelSchema,
-} from '../../../schemas/child/remove-child/remove-child';
-import { useAppDispatch } from '../../../store';
-import { childrenActions, childrenSelectors } from '../../../store/children';
-import { classroomsActions } from '../../../store/classroom';
-import { staticDataSelectors } from '../../../store/static-data';
-import { analyticsActions } from '../../../store/analytics';
+} from '@schemas/child/remove-child/remove-child';
+import { useAppDispatch } from '@store';
+import { childrenActions, childrenSelectors } from '@store/children';
+import { classroomsActions } from '@store/classroom';
+import { staticDataSelectors } from '@store/static-data';
+import { analyticsActions } from '@store/analytics';
 import * as styles from './remove-child.styles';
 import { RemoveChildRouteState } from './remove-child.types';
 

@@ -1,24 +1,24 @@
 import { BannerWrapper, Button, Divider, Typography } from '@ecdlink/ui';
 import { renderIcon } from '@ecdlink/ui';
 import getYear from 'date-fns/getYear';
-import { childrenSelectors } from '../../../../../../store/children';
-import { progressTrackingSelectors } from '../../../../../../store/progress-tracking';
+import { childrenSelectors } from '@store/children';
+import { progressTrackingSelectors } from '@store/progress-tracking';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
 import { ViewChildProgressObservationReportState } from './view-child-progress-observation-report.types';
-import { useOnlineStatus } from '../../../../../../hooks/useOnlineStatus';
-import { useAppDispatch } from '../../../../../../store';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
+import { useAppDispatch } from '@store';
 import { ChildProgressObservationReport } from '@ecdlink/core';
-import { contentReportThunkActions } from '../../../../../../store/content/report';
+import { contentReportThunkActions } from '@store/content/report';
 import ObservationCategoryCard from '../../../components/observation-category-card/observation-category-card';
 import {
   getCategoryFromCurrentReport,
   saveBase64Pdf,
-} from '../../../../../../utils/child/child-progress-report.utils';
-import { ProgressTrackingLevels } from '../../../../../../enums/ProgressTrackingLevels';
-import { classroomsSelectors } from '../../../../../../store/classroom';
-import { analyticsActions } from '../../../../../../store/analytics';
+} from '@utils/child/child-progress-report.utils';
+import { ProgressTrackingLevels } from '@enums/ProgressTrackingLevels';
+import { classroomsSelectors } from '@store/classroom';
+import { analyticsActions } from '@store/analytics';
 
 export const ViewChildProgressObservationReport: React.FC = () => {
   const history = useHistory();

@@ -1,6 +1,6 @@
 import { RecursivePartial } from '@ecdlink/core';
 import { EnhancedStore } from '@reduxjs/toolkit';
-import { RootState } from '../../../../store/types';
+import { RootState } from '@store/types';
 import { NotificationIntervals } from '../../NotificationService.types';
 import { UserLastLoginNotificationValidator } from './userLastLoginNotificationValidator';
 

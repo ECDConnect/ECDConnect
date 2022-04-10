@@ -8,30 +8,22 @@ import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
 import { Step } from '../../../components/step-viewer/components/step';
 import { StepViewer } from '../../../components/step-viewer/step-viewer';
-import { useOnlineStatus } from '../../../hooks/useOnlineStatus';
-import { useStaticData } from '../../../hooks/useStaticData';
-import { ChildRegistrationFormState, StateAction } from '../../../models/child/child';
-import { CareGiverReferencePanelFormModel } from '../../../schemas/child/child-registration/care-giver-reference-panel-form';
-import { ChildBirthCertificateFormModel } from '../../../schemas/child/child-registration/child-birth-certificate-form';
-import { ChildHealthInformationFormModel } from '../../../schemas/child/child-registration/child-health-information-form';
-import { useAppDispatch } from '../../../store';
-import { analyticsActions } from '../../../store/analytics';
-import {
-  caregiverActions,
-  caregiverSelectors,
-  caregiverThunkActions,
-} from '../../../store/caregiver';
-import { childrenActions, childrenSelectors, childrenThunkActions } from '../../../store/children';
-import {
-  classroomsActions,
-  classroomsSelectors,
-  classroomsThunkActions,
-} from '../../../store/classroom';
-import { contentConsentSelectors } from '../../../store/content/consent';
-import { documentActions, documentThunkActions } from '../../../store/document';
-import { userActions, userSelectors, userThunkActions } from '../../../store/user';
-import * as childRegisterUtils from '../../../utils/child/child-registration.utils';
-import { mapUserConsentDto } from '../../../utils/user/user-consent.utils';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
+import { useStaticData } from '@hooks/useStaticData';
+import { ChildRegistrationFormState, StateAction } from '@models/child/child';
+import { CareGiverReferencePanelFormModel } from '@schemas/child/child-registration/care-giver-reference-panel-form';
+import { ChildBirthCertificateFormModel } from '@schemas/child/child-registration/child-birth-certificate-form';
+import { ChildHealthInformationFormModel } from '@schemas/child/child-registration/child-health-information-form';
+import { useAppDispatch } from '@store';
+import { analyticsActions } from '@store/analytics';
+import { caregiverActions, caregiverSelectors, caregiverThunkActions } from '@store/caregiver';
+import { childrenActions, childrenSelectors, childrenThunkActions } from '@store/children';
+import { classroomsActions, classroomsSelectors, classroomsThunkActions } from '@store/classroom';
+import { contentConsentSelectors } from '@store/content/consent';
+import { documentActions, documentThunkActions } from '@store/document';
+import { userActions, userSelectors, userThunkActions } from '@store/user';
+import * as childRegisterUtils from '@utils/child/child-registration.utils';
+import { mapUserConsentDto } from '@utils/user/user-consent.utils';
 import { CareGiverChildInformationForm } from './care-giver-child-information-form/care-giver-child-information-form';
 import { CareGiverContributionForm } from './care-giver-contribution-form/care-giver-contribution-form';
 import { CareGiverExtraInformationForm } from './care-giver-extra-information/care-giver-extra-information';

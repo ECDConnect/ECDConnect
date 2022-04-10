@@ -1,7 +1,7 @@
 import { ChildProgressObservationReport, ChildProgressReportSummaryModel } from '@ecdlink/core';
 import { createSelector } from '@reduxjs/toolkit';
 import { ContentReportState } from '.';
-import { isMatchingReportingPeriods } from '../../../utils/child/child-profile-utils';
+import { isMatchingReportingPeriods } from '@utils/child/child-profile-utils';
 import { RootState } from '../../types';
 import { UnSyncedReportItem } from './report.types';
 

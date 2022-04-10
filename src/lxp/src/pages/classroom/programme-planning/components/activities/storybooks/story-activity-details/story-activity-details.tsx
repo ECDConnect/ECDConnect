@@ -12,11 +12,11 @@ import {
 import React from 'react';
 import { useSelector } from 'react-redux';
 import LanguageSelector from '../../../../../../../components/language-selector/language-selector';
-import { StoryBookTypes } from '../../../../../../../enums/ProgrammeRoutineType';
-import { useOnlineStatus } from '../../../../../../../hooks/useOnlineStatus';
-import { activitySelectors } from '../../../../../../../store/content/activity';
-import { storyBookSelectors } from '../../../../../../../store/content/story-book';
-import { getLogo, LogoSvgs } from '../../../../../../../utils/common/svg.utils';
+import { StoryBookTypes } from '@enums/ProgrammeRoutineType';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
+import { activitySelectors } from '@store/content/activity';
+import { storyBookSelectors } from '@store/content/story-book';
+import { getLogo, LogoSvgs } from '@utils/common/svg.utils';
 import StoryActivityCard from '../story-activity-card/story-activity-card';
 import StoryCard from '../story-card/story-card';
 import { StoryActivityDetailsProps } from './story-activity-details.types';

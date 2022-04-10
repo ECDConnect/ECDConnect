@@ -5,22 +5,22 @@ import { endOfYear, getYear, startOfISOWeekYear } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
-import { useOnlineStatus } from '../../../hooks/useOnlineStatus';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import {
   badScoreThreshold,
   goodScoreThreshold,
-} from '../../../models/classroom/attendance/ClassAttendance';
-import { AttendanceService } from '../../../services/AttendanceService';
-import { useAppDispatch } from '../../../store';
-import { attendanceSelectors, attendanceThunkActions } from '../../../store/attendance';
-import { authSelectors } from '../../../store/auth';
-import { childrenSelectors } from '../../../store/children';
-import { analyticsActions } from '../../../store/analytics';
+} from '@models/classroom/attendance/ClassAttendance';
+import { AttendanceService } from '@services/AttendanceService';
+import { useAppDispatch } from '@store';
+import { attendanceSelectors, attendanceThunkActions } from '@store/attendance';
+import { authSelectors } from '@store/auth';
+import { childrenSelectors } from '@store/children';
+import { analyticsActions } from '@store/analytics';
 import {
   getColor,
   getShape,
   getShapeClass,
-} from '../../../utils/classroom/attendance/track-attendance-utils';
+} from '@utils/classroom/attendance/track-attendance-utils';
 import { ChildAttendanceReportState } from './child-attendance-report.types';
 
 export const ChildAttendanceReportPage: React.FC = () => {

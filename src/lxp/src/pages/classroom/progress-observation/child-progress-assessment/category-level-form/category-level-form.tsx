@@ -1,16 +1,16 @@
 import { Alert, Button, Divider, Typography } from '@ecdlink/ui';
 import { CheckboxChange } from '@ecdlink/ui';
 import { classNames, renderIcon } from '@ecdlink/ui';
-import { useChildProgressObservation } from '../../../../../hooks/useChildProgressObservations';
+import { useChildProgressObservation } from '@hooks/useChildProgressObservations';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import * as styles from './category-level-form.styles';
 import { CategoryLevelFormProps } from './category-level-form.types';
-import { childrenSelectors } from '../../../../../store/children';
-import { progressTrackingSelectors } from '../../../../../store/progress-tracking';
-import { CategoryLevelFormResult } from '../../../../../models/classroom/progress-observation/ChildProgressAssessment';
+import { childrenSelectors } from '@store/children';
+import { progressTrackingSelectors } from '@store/progress-tracking';
+import { CategoryLevelFormResult } from '@models/classroom/progress-observation/ChildProgressAssessment';
 import CheckboxCard from '../../../../../components/checkbox-card/checkbox-card';
-import { ProgressTrackingLevels } from '../../../../../enums/ProgressTrackingLevels';
+import { ProgressTrackingLevels } from '@enums/ProgressTrackingLevels';
 import ProgressLevelBar from '../../components/progress-level-bar/progress-level-bar';
 import { ProgressTrackingSkillDto } from '@ecdlink/core';
 

@@ -13,20 +13,14 @@ import { renderIcon } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import * as styles from '../../edit-practitioner-profile.styles';
-import {
-  EditPlaygroupModel,
-  editPlaygroupSchema,
-} from '../../../../../schemas/practitioner/edit-playgroups';
+import { EditPlaygroupModel, editPlaygroupSchema } from '@schemas/practitioner/edit-playgroups';
 import { buttonDays, dayTypes, EditPlaygroupProps } from './edit-playgroup.form.types';
-import {
-  canDeleteClassroomGroup,
-  Weekdays,
-} from '../../../../../utils/practitioner/playgroups-utils';
+import { canDeleteClassroomGroup, Weekdays } from '@utils/practitioner/playgroups-utils';
 import { ClassroomGroupDto, DialogModalOptions, RecursivePartial, useDialog } from '@ecdlink/core';
-import { ClassroomGroupService } from '../../../../../services/ClassroomGroupService';
+import { ClassroomGroupService } from '@services/ClassroomGroupService';
 import { useSelector } from 'react-redux';
-import { authSelectors } from '../../../../../store/auth';
-import { useOnlineStatus } from '../../../../../hooks/useOnlineStatus';
+import { authSelectors } from '@store/auth';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import OnlineOnlyModal from '../../../../../modals/offline-sync/online-only-modal';
 export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
   isNew,

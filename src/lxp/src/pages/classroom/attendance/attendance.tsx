@@ -4,17 +4,17 @@ import { endOfWeek, isSameDay } from 'date-fns';
 import getDay from 'date-fns/getDay';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { AttendanceResult } from '../../../models/classroom/attendance/AttendanceResult';
-import { attendanceSelectors } from '../../../store/attendance';
-import { childrenSelectors } from '../../../store/children';
-import { classroomsSelectors } from '../../../store/classroom';
-import { staticDataSelectors } from '../../../store/static-data';
+import { AttendanceResult } from '@models/classroom/attendance/AttendanceResult';
+import { attendanceSelectors } from '@store/attendance';
+import { childrenSelectors } from '@store/children';
+import { classroomsSelectors } from '@store/classroom';
+import { staticDataSelectors } from '@store/static-data';
 import {
   classroomGroupHasAttendanceOnDate,
   getClassroomGroupSchoolDays,
   getMissedClassAttendance,
   isValidAttendableDate,
-} from '../../../utils/classroom/attendance/track-attendance-utils';
+} from '@utils/classroom/attendance/track-attendance-utils';
 import { IconInformationIndicator } from '../programme-planning/components/icon-information-indicator/icon-information-indicator';
 import { AttendanceComponentType } from './attendance.types';
 import AttendanceList from './components/attendance-list/attendance-list';

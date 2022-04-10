@@ -18,8 +18,8 @@ import { useSelector } from 'react-redux';
 import {
   ChildExtraInformationFormModel,
   childExtraInformationFormSchema,
-} from '../../../../schemas/child/child-registration/child-extra-information-form';
-import { staticDataSelectors } from '../../../../store/static-data';
+} from '@schemas/child/child-registration/child-extra-information-form';
+import { staticDataSelectors } from '@store/static-data';
 import * as styles from './child-extra-information-form.styles';
 import { ChildExtraInformationFormProps } from './child-extra-information-form.types';
 

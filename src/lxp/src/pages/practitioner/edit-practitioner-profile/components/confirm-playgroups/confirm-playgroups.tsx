@@ -3,8 +3,8 @@ import { Button, Divider, Typography } from '@ecdlink/ui';
 import { renderIcon } from '@ecdlink/ui';
 import { useEffect } from 'react';
 import { useState } from 'react';
-import { newGuid } from '../../../../../utils/common/uuid.utils';
-import { EditPlaygroupModel } from '../../../../../schemas/practitioner/edit-playgroups';
+import { newGuid } from '@utils/common/uuid.utils';
+import { EditPlaygroupModel } from '@schemas/practitioner/edit-playgroups';
 import * as styles from '../../edit-practitioner-profile.styles';
 import { ConfirmPlayGroupListItem } from '../edit-playgroup-form/components/confirm-playgroup-list-item/confirm-playgroup-list-item';
 interface ConfirmPlayGroupsProps extends FormComponentProps<any | void> {

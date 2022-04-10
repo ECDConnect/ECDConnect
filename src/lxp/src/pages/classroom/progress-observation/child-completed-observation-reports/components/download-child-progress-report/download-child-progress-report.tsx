@@ -1,20 +1,17 @@
 import { BannerWrapper, Button, Divider, Dropdown, DropDownOption, Typography } from '@ecdlink/ui';
 import { renderIcon } from '@ecdlink/ui';
-import { childrenSelectors } from '../../../../../../store/children';
+import { childrenSelectors } from '@store/children';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
 import { DownloadChildProgressReportState } from './download-child-progress-report.types';
-import { useOnlineStatus } from '../../../../../../hooks/useOnlineStatus';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useEffect, useState } from 'react';
-import { useAppDispatch } from '../../../../../../store';
-import {
-  contentReportSelectors,
-  contentReportThunkActions,
-} from '../../../../../../store/content/report';
-import { classroomsSelectors } from '../../../../../../store/classroom';
-import { saveBase64Pdf } from '../../../../../../utils/child/child-progress-report.utils';
+import { useAppDispatch } from '@store';
+import { contentReportSelectors, contentReportThunkActions } from '@store/content/report';
+import { classroomsSelectors } from '@store/classroom';
+import { saveBase64Pdf } from '@utils/child/child-progress-report.utils';
 import { ChildProgressReportSummaryModel } from '@ecdlink/graphql';
-import { getReportingPeriod } from '../../../../../../utils/child/child-profile-utils';
+import { getReportingPeriod } from '@utils/child/child-profile-utils';
 
 export const DownloadChildProgressReport: React.FC = () => {
   const history = useHistory();

@@ -8,10 +8,10 @@ import {
   SimpleUserModel,
   VerifyInvitationModel,
 } from '@ecdlink/core';
-import { NewPasswordRequest } from '../../models/auth/login/NewPasswordRequest';
-import { PasswordResetRequestReceived } from '../../models/auth/login/PasswordResetRequestReceived';
-import { SignUpInviteVerify } from '../../models/auth/sign-up/SignUpInviteVerify';
-import { getDataResponse } from '../../utils/common/data-response.utils';
+import { NewPasswordRequest } from '@models/auth/login/NewPasswordRequest';
+import { PasswordResetRequestReceived } from '@models/auth/login/PasswordResetRequestReceived';
+import { SignUpInviteVerify } from '@models/auth/sign-up/SignUpInviteVerify';
+import { getDataResponse } from '@utils/common/data-response.utils';
 import { api } from '../axios.helper';
 
 const handlerError = (error: any) => {

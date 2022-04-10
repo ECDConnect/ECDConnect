@@ -10,8 +10,8 @@ import {
 } from '@ecdlink/graphql';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { ChildRegistrationDetails } from '../../pages/child/caregiver-child-registration/caregiver-child-registration.types';
-import { ChildService } from '../../services/ChildService';
-import { UserService } from '../../services/UserService';
+import { ChildService } from '@services/ChildService';
+import { UserService } from '@services/UserService';
 import { RootState, ThunkApiType } from '../types';
 
 export const getChildren = createAsyncThunk<

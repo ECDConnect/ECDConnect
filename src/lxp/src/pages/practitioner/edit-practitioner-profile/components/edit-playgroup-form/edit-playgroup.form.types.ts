@@ -1,7 +1,7 @@
 import { FormComponentProps } from '@ecdlink/core';
 import { ButtonGroupOption } from '@ecdlink/ui';
-import { EditPlaygroupModel } from '../../../../../schemas/practitioner/edit-playgroups';
-import { Weekdays } from '../../../../../utils/practitioner/playgroups-utils';
+import { EditPlaygroupModel } from '@schemas/practitioner/edit-playgroups';
+import { Weekdays } from '@utils/practitioner/playgroups-utils';
 
 export const buttonDays: ButtonGroupOption<Weekdays>[] = [
   {

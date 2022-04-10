@@ -22,7 +22,7 @@ import { PhotoPrompt } from '../../../../components/photo-prompt/photo-prompt';
 import {
   ChildRegistrationFormModel,
   getChildRegistrationFormSchema,
-} from '../../../../schemas/child/child-registration/child-registration-form';
+} from '@schemas/child/child-registration/child-registration-form';
 import * as styles from './child-registration-form.styles';
 import { ChildRegistrationFormProps } from './child-registration-form.types';
 

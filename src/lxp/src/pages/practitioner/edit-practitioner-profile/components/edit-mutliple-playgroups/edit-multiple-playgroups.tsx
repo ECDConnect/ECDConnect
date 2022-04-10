@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 import { useState } from 'react';
-import { generateEmptyPlaygroups } from '../../../../../utils/practitioner/playgroups-utils';
+import { generateEmptyPlaygroups } from '@utils/practitioner/playgroups-utils';
 import { EditPlaygroupForm } from '../edit-playgroup-form/edit-playgroup.form';
-import { EditPlaygroupModel } from '../../../../../schemas/practitioner/edit-playgroups';
+import { EditPlaygroupModel } from '@schemas/practitioner/edit-playgroups';
 import { EditMultiplePlayGroupsProps } from './edit-multiple-playgroups.types';
 
 export const EditMultiplePlayGroups: React.FC<EditMultiplePlayGroupsProps> = ({

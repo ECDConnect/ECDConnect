@@ -4,7 +4,7 @@ import { MenuListDataItem } from '@ecdlink/ui';
 import { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import Article from '../../../../../components/article/article';
-import { useOnlineStatus } from '../../../../../hooks/useOnlineStatus';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import * as styles from './programme-tutorial.styles';
 
 export const ProgrammeTutorial = () => {

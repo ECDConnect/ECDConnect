@@ -7,7 +7,7 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { classNames, renderIcon } from '@ecdlink/ui';
-import { useOnlineStatus } from '../../../../../hooks/useOnlineStatus';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import ChildDevelopmentLevelsList from '../child-development-levels-list/child-development-levels-list';
 import * as styles from './progress-tracking-tutorial.styles';
 import { ProgressTrackingTutorialProps } from './progress-tracking-tutorial.types';

@@ -7,11 +7,11 @@ import {
   WorkflowStatusEnum,
 } from '@ecdlink/graphql';
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { ClassroomGroupLearnerService } from '../../services/ClassroomGroupLearnerService';
-import { ClassroomGroupProgrammesService } from '../../services/ClassroomGroupProgrammesService';
-import { ClassroomGroupService } from '../../services/ClassroomGroupService';
-import { ClassroomService } from '../../services/ClassroomService';
-import { newGuid } from '../../utils/common/uuid.utils';
+import { ClassroomGroupLearnerService } from '@services/ClassroomGroupLearnerService';
+import { ClassroomGroupProgrammesService } from '@services/ClassroomGroupProgrammesService';
+import { ClassroomGroupService } from '@services/ClassroomGroupService';
+import { ClassroomService } from '@services/ClassroomService';
+import { newGuid } from '@utils/common/uuid.utils';
 import { RootState, ThunkApiType } from '../types';
 
 export const getClassroom = createAsyncThunk<

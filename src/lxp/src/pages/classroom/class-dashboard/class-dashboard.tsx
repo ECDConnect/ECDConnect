@@ -3,10 +3,10 @@ import { BannerWrapper, Dialog, DialogPosition, TabItem, TabList, Typography } f
 import format from 'date-fns/format';
 import { useEffect, useState } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
-import { useOnlineStatus } from '../../../hooks/useOnlineStatus';
-import { useAppDispatch } from '../../../store';
-import { analyticsActions } from '../../../store/analytics';
-import { getStorageItem, setStorageItem } from '../../../utils/common/local-storage.utils';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
+import { useAppDispatch } from '@store';
+import { analyticsActions } from '@store/analytics';
+import { getStorageItem, setStorageItem } from '@utils/common/local-storage.utils';
 import { AttendanceComponent } from '../attendance/attendance';
 import AttendanceTutorial from '../attendance/components/attendance-tutorial/attendance-tutorial';
 import ChildList from '../child-list/child-list';

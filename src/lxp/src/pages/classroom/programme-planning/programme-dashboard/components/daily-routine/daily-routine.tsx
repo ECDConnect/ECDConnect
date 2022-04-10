@@ -4,27 +4,27 @@ import {
   getActivityIdForRoutineItem,
   getProgrammeWeeks,
   getRoutineItemType,
-} from '../../../../../../utils/classroom/programme-planning/programmes.utils';
+} from '@utils/classroom/programme-planning/programmes.utils';
 import { useHistory } from 'react-router';
 import { ProgrammePlanningHeader } from '../../../components/programme-planning-header/programme-planning-header';
 import { ProgrammePlanningRoutineListItem } from '../../../components/programme-planning-routine-list-item/programme-planning-routine-list-item';
 import { DailyRoutineProps } from './daily-routine.types';
 import { useSelector } from 'react-redux';
-import { programmeRoutineSelectors } from '../../../../../../store/content/programme-routine';
+import { programmeRoutineSelectors } from '@store/content/programme-routine';
 import { DailyProgrammeDto, ProgrammeRoutineItemDto, useDialog } from '@ecdlink/core';
 import { MessageBoard } from '../../../components/message-board/message-board';
-import { DailyRoutineItemType } from '../../../../../../enums/ProgrammeRoutineType';
+import { DailyRoutineItemType } from '@enums/ProgrammeRoutineType';
 import ActivityDetails from '../../../components/activities/activity/activity-details/activity-details';
 import StoryActivityDetails from '../../../components/activities/storybooks/story-activity-details/story-activity-details';
-import { useOnlineStatus } from '../../../../../../hooks/useOnlineStatus';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import OnlineOnlyModal from '../../../../../../modals/offline-sync/online-only-modal';
-import { programmeActions } from '../../../../../../store/programme';
-import { useAppDispatch } from '../../../../../../store';
+import { programmeActions } from '@store/programme';
+import { useAppDispatch } from '@store';
 import ActivitySearch from '../../../components/activities/activity/activity-search/activity-search';
-import { getFirstActivityByType } from '../../../../../../utils/classroom/programme-planning/activity-search.utils';
+import { getFirstActivityByType } from '@utils/classroom/programme-planning/activity-search.utils';
 import { StoryActivitySearch } from '../../../components/activities/storybooks/story-activity-search/story-activity-search';
-import { useProgrammePlanningRecommendations } from '../../../../../../hooks/useProgrammePlanningRecommendations';
-import { useHolidays } from '../../../../../../hooks/useHolidays';
+import { useProgrammePlanningRecommendations } from '@hooks/useProgrammePlanningRecommendations';
+import { useHolidays } from '@hooks/useHolidays';
 import { useEffect, useState } from 'react';
 import { PublicHolidayIndicator } from '../../../programme-routine/components/public-holiday-indicator/public-holiday-indicator';
 

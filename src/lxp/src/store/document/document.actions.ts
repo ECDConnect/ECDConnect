@@ -1,7 +1,7 @@
 import { DocumentDto, getBase64FromBaseString } from '@ecdlink/core';
 import { DocumentInput } from '@ecdlink/graphql';
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { DocumentService } from '../../services/DocumentService';
+import { DocumentService } from '@services/DocumentService';
 import { RootState, ThunkApiType } from '../types';
 
 export const getDocuments = createAsyncThunk<

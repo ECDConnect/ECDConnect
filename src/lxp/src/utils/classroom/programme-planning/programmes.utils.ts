@@ -13,8 +13,8 @@ import {
 } from 'date-fns';
 import isAfter from 'date-fns/isAfter';
 import { DateFormats } from '../../../constants/Dates';
-import { DailyRoutineItemType } from '../../../enums/ProgrammeRoutineType';
-import { ProgrammeWeek } from '../../../models/classroom/programme-planning/programme-types';
+import { DailyRoutineItemType } from '@enums/ProgrammeRoutineType';
+import { ProgrammeWeek } from '@models/classroom/programme-planning/programme-types';
 import { WeekDayBreakdown } from '../../../pages/classroom/programme-planning/components/week-tab/week-tab.types';
 import { getDatesForRange, isDayInThePast } from '../../common/date.utils';
 import { Weekdays } from '../../practitioner/playgroups-utils';

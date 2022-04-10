@@ -2,7 +2,7 @@ import { useDialog, useStepNavigation } from '@ecdlink/core';
 import { useEffect, useState } from 'react';
 import { Step } from '../../../components/step-viewer/components/step';
 import { StepViewer } from '../../../components/step-viewer/step-viewer';
-import { CareGiverReferencePanelFormModel } from '../../../schemas/child/child-registration/care-giver-reference-panel-form';
+import { CareGiverReferencePanelFormModel } from '@schemas/child/child-registration/care-giver-reference-panel-form';
 import { CareGiverChildInformationForm } from '../child-registration/care-giver-child-information-form/care-giver-child-information-form';
 import { CareGiverContributionForm } from '../child-registration/care-giver-contribution-form/care-giver-contribution-form';
 import { CareGiverExtraInformationForm } from '../child-registration/care-giver-extra-information/care-giver-extra-information';
@@ -15,21 +15,21 @@ import { ChildHealthInformationForm } from '../child-registration/child-health-i
 import { ChildInformationForm } from '../child-registration/child-information-form/child-information-form';
 import { ChildRegistrationForm } from '../child-registration/child-registration-form/child-registration-form';
 import { WelcomeChildRegistration } from './welcome-child-registration/welcome-child-registration';
-import * as childRegisterUtils from '../../../utils/child/child-registration.utils';
-import { useAppDispatch } from '../../../store';
+import * as childRegisterUtils from '@utils/child/child-registration.utils';
+import { useAppDispatch } from '@store';
 import {
   CaregiverChildRegistrationProps,
   CaregiverChildRegistrationSteps,
 } from './caregiver-child-registration.types';
 import { CompletedCaregiverChildRegistration } from './completed-caregiver-child-registration/completed-caregiver-child-registration';
-import { childrenThunkActions } from '../../../store/children';
-import { ChildRegistrationFormState, StateAction } from '../../../models/child/child';
-import { useOnlineStatus } from '../../../hooks/useOnlineStatus';
-import { staticDataThunkActions } from '../../../store/static-data';
+import { childrenThunkActions } from '@store/children';
+import { ChildRegistrationFormState, StateAction } from '@models/child/child';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
+import { staticDataThunkActions } from '@store/static-data';
 import { ActionModal, DialogPosition } from '@ecdlink/ui';
-import { useStaticData } from '../../../hooks/useStaticData';
+import { useStaticData } from '@hooks/useStaticData';
 import { WorkflowStatusEnum } from '@ecdlink/graphql';
-import { contentConsentThunkActions } from '../../../store/content/consent';
+import { contentConsentThunkActions } from '@store/content/consent';
 
 export const CaregiverChildRegistration: React.FC<CaregiverChildRegistrationProps> = ({
   childDetails,

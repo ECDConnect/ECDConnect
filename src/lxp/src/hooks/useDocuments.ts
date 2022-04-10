@@ -1,12 +1,12 @@
 import { FileTypeEnum, WorkflowStatusEnum } from '@ecdlink/graphql';
 import { Document } from '@ecdlink/core';
-import { CreateDocumentRquest } from '../models/common/Document';
-import { documentActions, documentSelectors } from '../store/document';
-import { newGuid } from '../utils/common/uuid.utils';
+import { CreateDocumentRequest } from '@models/common/Document';
+import { documentActions, documentSelectors } from '@store/document';
+import { newGuid } from '@utils/common/uuid.utils';
 import { useStaticData } from './useStaticData';
-import { useAppDispatch } from '../store';
+import { useAppDispatch } from '@store';
 import { useSelector } from 'react-redux';
-import { userSelectors } from '../store/user';
+import { userSelectors } from '@store/user';
 
 export const useDocuments = () => {
   const appDispatch = useAppDispatch();
@@ -22,7 +22,7 @@ export const useDocuments = () => {
   );
 
   const createNewDocument = async (
-    document: CreateDocumentRquest,
+    document: CreateDocumentRequest,
     reference?: string
   ): Promise<Document | undefined> => {
     const statusId = await getWorkflowStatusIdByEnum(

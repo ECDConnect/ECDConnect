@@ -15,14 +15,14 @@ import { useSelector } from 'react-redux';
 import SeachHeader, {
   SearchHeaderAlternativeRenderItem,
 } from '../../../../../../../components/search-header/search-header';
-import { StoryBookTypes } from '../../../../../../../enums/ProgrammeRoutineType';
-import { useOnlineStatus } from '../../../../../../../hooks/useOnlineStatus';
-import { activitySelectors } from '../../../../../../../store/content/activity';
-import { programmeThemeSelectors } from '../../../../../../../store/content/programme-theme';
-import { storyBookSelectors } from '../../../../../../../store/content/story-book';
-import { programmeSelectors } from '../../../../../../../store/programme';
-import { staticDataSelectors } from '../../../../../../../store/static-data';
-import { filterStorybooksByTheme } from '../../../../../../../utils/classroom/programme-planning/activity-search.utils';
+import { StoryBookTypes } from '@enums/ProgrammeRoutineType';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
+import { activitySelectors } from '@store/content/activity';
+import { programmeThemeSelectors } from '@store/content/programme-theme';
+import { storyBookSelectors } from '@store/content/story-book';
+import { programmeSelectors } from '@store/programme';
+import { staticDataSelectors } from '@store/static-data';
+import { filterStorybooksByTheme } from '@utils/classroom/programme-planning/activity-search.utils';
 import { EmptyActivities } from '../../components/empty-activity-filter-result/empty-activity-filter-result';
 
 import StoryCard from '../story-card/story-card';

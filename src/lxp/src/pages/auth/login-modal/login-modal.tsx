@@ -12,12 +12,12 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useHistory } from 'react-router';
-import { useOnlineStatus } from '../../../hooks/useOnlineStatus';
-import { useStoreSetup } from '../../../hooks/useStoreSetup';
-import { initialLoginValues, LoginModel, loginSchema } from '../../../schemas/auth/login/login';
-import { useAppDispatch } from '../../../store';
-import { authActions, authThunkActions } from '../../../store/auth';
-import { settingActions } from '../../../store/settings';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
+import { useStoreSetup } from '@hooks/useStoreSetup';
+import { initialLoginValues, LoginModel, loginSchema } from '@schemas/auth/login/login';
+import { useAppDispatch } from '@store';
+import { authActions, authThunkActions } from '@store/auth';
+import { settingActions } from '@store/settings';
 import * as styles from './login-modal.styles';
 const { version } = require('../../../../package.json');
 

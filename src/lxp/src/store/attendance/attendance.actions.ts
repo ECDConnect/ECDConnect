@@ -1,7 +1,7 @@
 import { AttendanceDto, ChildAttendanceReportModel, MonthlyAttendanceRecord } from '@ecdlink/core';
 import { TrackAttendanceAttendeeModelInput, TrackAttendanceModelInput } from '@ecdlink/graphql';
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { AttendanceService } from '../../services/AttendanceService';
+import { AttendanceService } from '@services/AttendanceService';
 import { RootState, ThunkApiType } from '../types';
 import {
   AttendanceQueryParams,

@@ -9,7 +9,7 @@ import {
   Dialog,
   DialogPosition,
 } from '@ecdlink/ui/';
-import { progressTrackingSelectors } from '../../../../../../../store/progress-tracking';
+import { progressTrackingSelectors } from '@store/progress-tracking';
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import ActivityDetails from '../activity-details/activity-details';

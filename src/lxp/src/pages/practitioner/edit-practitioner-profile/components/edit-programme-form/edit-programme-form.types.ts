@@ -1,5 +1,5 @@
 import { FormComponentProps } from '@ecdlink/core';
-import { EditProgrammeModel } from '../../../../../schemas/practitioner/edit-programme';
+import { EditProgrammeModel } from '@schemas/practitioner/edit-programme';
 
 export const yesNoOptions = [
   { text: 'Yes', value: true },

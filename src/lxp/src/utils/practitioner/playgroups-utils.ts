@@ -1,5 +1,5 @@
 import { ClassroomGroupDto } from '@ecdlink/core';
-import { EditPlaygroupModel } from '../../schemas/practitioner/edit-playgroups';
+import { EditPlaygroupModel } from '@schemas/practitioner/edit-playgroups';
 import { newGuid } from '../common/uuid.utils';
 
 export enum Weekdays {

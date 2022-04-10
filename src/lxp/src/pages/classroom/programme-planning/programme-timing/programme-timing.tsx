@@ -15,14 +15,14 @@ import { useForm, useWatch } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
 import { DateFormats } from '../../../../constants/Dates';
-import { useOnlineStatus } from '../../../../hooks/useOnlineStatus';
-import { useProgrammePlanning } from '../../../../hooks/useProgrammePlanning';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
+import { useProgrammePlanning } from '@hooks/useProgrammePlanning';
 import {
   ProgrammeTimingModel,
   programmeTimingSchema,
-} from '../../../../schemas/classroom/programme-planning/programme-timing';
-import { staticDataSelectors } from '../../../../store/static-data';
-import { getDateRangeText } from '../../../../utils/classroom/programme-planning/programmes.utils';
+} from '@schemas/classroom/programme-planning/programme-timing';
+import { staticDataSelectors } from '@store/static-data';
+import { getDateRangeText } from '@utils/classroom/programme-planning/programmes.utils';
 import { ProgrammeTimingRouteState } from './programme-timing.types';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';

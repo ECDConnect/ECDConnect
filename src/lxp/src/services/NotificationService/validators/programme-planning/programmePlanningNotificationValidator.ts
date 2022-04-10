@@ -1,8 +1,8 @@
 import { EnhancedStore } from '@reduxjs/toolkit';
 import { differenceInMonths, getMonth, getYear, isAfter, isBefore } from 'date-fns';
 import { DateFormats } from '../../../../constants/Dates';
-import { Message } from '../../../../models/messages/messages';
-import { RootState } from '../../../../store/types';
+import { Message } from '@models/messages/messages';
+import { RootState } from '@store/types';
 import {
   NotificationIntervals,
   NotificationPriority,

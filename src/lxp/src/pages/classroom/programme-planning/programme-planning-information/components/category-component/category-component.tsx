@@ -3,7 +3,7 @@ import { Typography } from '@ecdlink/ui';
 import { renderIcon } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 
-import { progressTrackingSelectors } from '../../../../../../store/progress-tracking';
+import { progressTrackingSelectors } from '@store/progress-tracking';
 import { ProgressObsersvationSubCategoryCard } from '../../../../progress-observation/components/progress-observation-sub-category-card/progress-observation-sub-category-card';
 import * as styles from './category-component.styles';
 

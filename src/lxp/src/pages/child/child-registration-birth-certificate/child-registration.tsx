@@ -5,15 +5,15 @@ import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
 import { Step } from '../../../components/step-viewer/components/step';
 import { StepViewer } from '../../../components/step-viewer/step-viewer';
-import { useOnlineStatus } from '../../../hooks/useOnlineStatus';
-import { useStaticData } from '../../../hooks/useStaticData';
-import { ChildRegistrationFormState } from '../../../models/child/child';
-import { ChildBirthCertificateFormModel } from '../../../schemas/child/child-registration/child-birth-certificate-form';
-import { useAppDispatch } from '../../../store';
-import { childrenSelectors } from '../../../store/children';
-import { documentActions } from '../../../store/document';
-import { userSelectors } from '../../../store/user';
-import * as childRegisterUtils from '../../../utils/child/child-registration.utils';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
+import { useStaticData } from '@hooks/useStaticData';
+import { ChildRegistrationFormState } from '@models/child/child';
+import { ChildBirthCertificateFormModel } from '@schemas/child/child-registration/child-birth-certificate-form';
+import { useAppDispatch } from '@store';
+import { childrenSelectors } from '@store/children';
+import { documentActions } from '@store/document';
+import { userSelectors } from '@store/user';
+import * as childRegisterUtils from '@utils/child/child-registration.utils';
 import { ChildBirthCertificateForm } from '../child-registration/child-birth-certificate-form/child-birth-certificate-form';
 import {
   ChildRegistrationRouteState,

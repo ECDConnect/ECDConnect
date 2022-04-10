@@ -22,16 +22,13 @@ import {
   averageScoreThreshold,
   badScoreThreshold,
   goodScoreThreshold,
-} from '../../../models/classroom/attendance/ClassAttendance';
-import { MissedAttendanceGroups } from '../../../models/classroom/attendance/MissedAttendanceGroups';
+} from '@models/classroom/attendance/ClassAttendance';
+import { MissedAttendanceGroups } from '@models/classroom/attendance/MissedAttendanceGroups';
 import {
   AttendanceState,
   AttendanceStateCheckResult,
 } from '../../../pages/classroom/attendance/components/attendance-list/attendance-list.types';
-import {
-  ChildAttendance,
-  TrackAttendanceModelInput,
-} from '../../../store/attendance/attendance.types';
+import { ChildAttendance, TrackAttendanceModelInput } from '@store/attendance/attendance.types';
 import { isWorkingDay } from '../../common/date.utils';
 import { Weekdays } from '../../practitioner/playgroups-utils';
 

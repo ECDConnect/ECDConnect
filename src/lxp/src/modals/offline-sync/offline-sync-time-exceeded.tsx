@@ -1,6 +1,6 @@
 import React from 'react';
 import { ActionModal } from '@ecdlink/ui';
-import { useOnlineStatus } from '../../hooks/useOnlineStatus';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
 
 export type OfflineSyncTimeExceededProps = {
   onSubmit: () => void;

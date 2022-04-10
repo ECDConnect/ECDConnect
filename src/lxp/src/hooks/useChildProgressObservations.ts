@@ -8,15 +8,15 @@ import {
 import { useEffect, useState } from 'react';
 
 import isAfter from 'date-fns/isAfter';
-import { useAppDispatch } from '../store';
+import { useAppDispatch } from '@store';
 import { useSelector } from 'react-redux';
-import { progressTrackingSelectors } from '../store/progress-tracking';
+import { progressTrackingSelectors } from '@store/progress-tracking';
 import {
   contentReportActions,
   contentReportSelectors,
   contentReportThunkActions,
-} from '../store/content/report';
-import { ProgressTrackingLevels } from '../enums/ProgressTrackingLevels';
+} from '@store/content/report';
+import { ProgressTrackingLevels } from '@enums/ProgressTrackingLevels';
 import { ChildProgressObservationStatus } from '@ecdlink/core';
 
 export interface SeperatedCategoryResult {

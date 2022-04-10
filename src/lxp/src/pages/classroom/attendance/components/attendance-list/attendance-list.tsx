@@ -13,18 +13,18 @@ import {
 import { getDay } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useAppDispatch } from '../../../../../store';
-import { analyticsActions } from '../../../../../store/analytics';
-import { attendanceActions } from '../../../../../store/attendance';
-import { ChildAttendance } from '../../../../../store/attendance/attendance.types';
-import { classroomsSelectors } from '../../../../../store/classroom';
-import { userSelectors } from '../../../../../store/user';
+import { useAppDispatch } from '@store';
+import { analyticsActions } from '@store/analytics';
+import { attendanceActions } from '@store/attendance';
+import { ChildAttendance } from '@store/attendance/attendance.types';
+import { classroomsSelectors } from '@store/classroom';
+import { userSelectors } from '@store/user';
 import {
   classroomGroupHasAttendanceOnDate,
   getAttendanceStatusCheck,
   getPlaygroup,
   mapTrackAttendance,
-} from '../../../../../utils/classroom/attendance/track-attendance-utils';
+} from '@utils/classroom/attendance/track-attendance-utils';
 import ClassProgrammeAttendanceList from '../class-programme-attendance-list/class-programme-attendance-list';
 import * as styles from './attendance-list.styles';
 import { AttendanceListProps, AttendanceState } from './attendance-list.types';

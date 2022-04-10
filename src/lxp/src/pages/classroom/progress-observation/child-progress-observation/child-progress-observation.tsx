@@ -8,36 +8,33 @@ import { Alert, BannerWrapper, Dialog, DialogPosition, ListItem, Typography } fr
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
 import { ChildProgressNoteCard } from '../components/child-progress-note-card/child-progress-note-card';
-import { ProgressTrackingLevels } from '../../../../enums/ProgressTrackingLevels';
-import { useChildProgressObservation } from '../../../../hooks/useChildProgressObservations';
+import { ProgressTrackingLevels } from '@enums/ProgressTrackingLevels';
+import { useChildProgressObservation } from '@hooks/useChildProgressObservations';
 
-import { getProgressTrackingCategories } from '../../../../store/progress-tracking/progress-tracking.selectors';
-import {
-  getReportingPeriod,
-  isMatchingReportingPeriods,
-} from '../../../../utils/child/child-profile-utils';
-import { newGuid } from '../../../../utils/common/uuid.utils';
+import { getProgressTrackingCategories } from '@store/progress-tracking/progress-tracking.selectors';
+import { getReportingPeriod, isMatchingReportingPeriods } from '@utils/child/child-profile-utils';
+import { newGuid } from '@utils/common/uuid.utils';
 
 import * as styles from './child-progress-observation.styles';
 import { ChildProgressObservationPageState } from './child-progress-observation.types';
 import { ChildProgressAssessmentSteps } from '../child-progress-assessment/child-progress-assessment.types';
 import ObservationCategoryCard from '../components/observation-category-card/observation-category-card';
-import { childrenSelectors } from '../../../../store/children';
-import { userSelectors } from '../../../../store/user';
-import { useOnlineStatus } from '../../../../hooks/useOnlineStatus';
-import { classroomsSelectors } from '../../../../store/classroom';
+import { childrenSelectors } from '@store/children';
+import { userSelectors } from '@store/user';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
+import { classroomsSelectors } from '@store/classroom';
 import {
   getCategoryFromCurrentReport,
   seperateCategoriesByStatus,
-} from '../../../../utils/child/child-progress-report.utils';
-import { contentReportSelectors } from '../../../../store/content/report';
+} from '@utils/child/child-progress-report.utils';
+import { contentReportSelectors } from '@store/content/report';
 import { useEffect, useState } from 'react';
 import ProgressTrackingTutorial from '../components/progress-tracking-tutorial/progress-tracking-tutorial';
-import { useStaticData } from '../../../../hooks/useStaticData';
+import { useStaticData } from '@hooks/useStaticData';
 import { FileTypeEnum } from '@ecdlink/graphql';
-import { documentSelectors } from '../../../../store/document';
-import { useAppDispatch } from '../../../../store';
-import { analyticsActions } from '../../../../store/analytics';
+import { documentSelectors } from '@store/document';
+import { useAppDispatch } from '@store';
+import { analyticsActions } from '@store/analytics';
 
 export const ChildProgressObservationPage: React.FC = () => {
   const history = useHistory();

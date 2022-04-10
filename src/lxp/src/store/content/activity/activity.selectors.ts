@@ -1,6 +1,6 @@
 import { ActivityDto } from '@ecdlink/core/';
 import { createSelector } from '@reduxjs/toolkit';
-import { filterActivitiesByType } from '../../../utils/classroom/programme-planning/activity-search.utils';
+import { filterActivitiesByType } from '@utils/classroom/programme-planning/activity-search.utils';
 import { RootState } from '../../types';
 
 export const getActivities = (state: RootState): ActivityDto[] =>
