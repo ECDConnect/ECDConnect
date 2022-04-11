@@ -8,7 +8,9 @@ class ProgrammeAttendanceReasonService {
     this._accessToken = accessToken;
   }
 
-  async getProgrammeAttendanceReasons(): Promise<ProgrammeAttendanceReasonDto[]> {
+  async getProgrammeAttendanceReasons(): Promise<
+    ProgrammeAttendanceReasonDto[]
+  > {
     const apiInstance = await api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
@@ -22,7 +24,9 @@ class ProgrammeAttendanceReasonService {
     });
 
     if (response.status !== 200) {
-      throw new Error('Get Programme Attendance Reasons Failed - Server connection error');
+      throw new Error(
+        'Get Programme Attendance Reasons Failed - Server connection error'
+      );
     }
 
     return response.data.data.GetAllProgrammeAttendanceReason;

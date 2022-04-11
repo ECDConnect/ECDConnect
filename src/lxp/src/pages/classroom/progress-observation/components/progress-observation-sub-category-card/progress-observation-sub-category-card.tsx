@@ -23,12 +23,26 @@ export const ProgressObsersvationSubCategoryCard: React.FC<
           borderRaduis={'md'}
           shadowSize={'md'}
         >
-          <div className={styles.iconWrapper} style={{ backgroundColor: color ?? '#808080' }}>
+          <div
+            className={styles.iconWrapper}
+            style={{ backgroundColor: color ?? '#808080' }}
+          >
             <img className={'m-auto'} src={image} alt="card" />
           </div>
-          <Typography className="mt-2" text={text} type="body" weight="bold" lineHeight="snug" />
+          <Typography
+            className="mt-2"
+            text={text}
+            type="body"
+            weight="bold"
+            lineHeight="snug"
+          />
 
-          <Typography className="mt-2" text={subText} type="body" lineHeight="snug" />
+          <Typography
+            className="mt-2"
+            text={subText}
+            type="body"
+            lineHeight="snug"
+          />
         </Card>
       ) : (
         <Card
@@ -36,8 +50,14 @@ export const ProgressObsersvationSubCategoryCard: React.FC<
           borderRaduis={'md'}
           shadowSize={'md'}
         >
-          <div className={styles.iconWrapper} style={{ backgroundColor: color ?? '#808080' }}>
-            <div className={styles.iconWrapper} style={{ backgroundColor: color ?? '#808080' }}>
+          <div
+            className={styles.iconWrapper}
+            style={{ backgroundColor: color ?? '#808080' }}
+          >
+            <div
+              className={styles.iconWrapper}
+              style={{ backgroundColor: color ?? '#808080' }}
+            >
               <img className={'m-auto'} src={image} alt="card" />
             </div>
             <Typography text={text} type="body" lineHeight="snug" />

@@ -7,7 +7,11 @@ export interface PractitionerFormProps {
   register: UseFormRegister<any>;
 }
 
-const PractitionerForm: React.FC<PractitionerFormProps> = ({ formKey, errors, register }) => {
+const PractitionerForm: React.FC<PractitionerFormProps> = ({
+  formKey,
+  errors,
+  register,
+}) => {
   return (
     <form key={formKey} className="space-y-8 divide-y divide-gray-200">
       <div className="space-y-8 divide-y divide-gray-200">

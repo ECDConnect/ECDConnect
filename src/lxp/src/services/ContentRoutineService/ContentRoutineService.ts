@@ -45,7 +45,9 @@ class ContentRoutineService {
     });
 
     if (response.status !== 200) {
-      throw new Error('Get Programme routines Failed - Server connection error');
+      throw new Error(
+        'Get Programme routines Failed - Server connection error'
+      );
     }
 
     return response.data.data.GetAllProgrammeRoutine;

@@ -1,5 +1,11 @@
 import { useDialog } from '@ecdlink/core';
-import { Button, ComponentBaseProps, DialogPosition, renderIcon, Typography } from '@ecdlink/ui';
+import {
+  Button,
+  ComponentBaseProps,
+  DialogPosition,
+  renderIcon,
+  Typography,
+} from '@ecdlink/ui';
 import { isSameDay } from 'date-fns';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
@@ -16,8 +22,8 @@ export const ProgrammeDashboard: React.FC<ComponentBaseProps> = () => {
 
   const currentProgramme = useSelector(programmeSelectors.getTodaysProgramme());
   const programmes = useSelector(programmeSelectors.getProgrammes);
-  const currentDailyProgramme = currentProgramme?.dailyProgrammes.find((dailyRoutine) =>
-    isSameDay(new Date(dailyRoutine.dayDate), new Date())
+  const currentDailyProgramme = currentProgramme?.dailyProgrammes.find(
+    (dailyRoutine) => isSameDay(new Date(dailyRoutine.dayDate), new Date())
   );
 
   const handleAddProgramme = () => {
@@ -98,13 +104,20 @@ export const ProgrammeDashboard: React.FC<ComponentBaseProps> = () => {
           size={'small'}
         >
           {renderIcon('CalendarIcon', 'h-5 w-5 text-primary')}
-          <Typography type={'small'} color={'primary'} text={'Programme summary'} />
+          <Typography
+            type={'small'}
+            color={'primary'}
+            text={'Programme summary'}
+          />
         </Button>
       </div>
     );
 
   return (
-    <DailyRoutine programme={currentProgramme} currentDailyProgramme={currentDailyProgramme} />
+    <DailyRoutine
+      programme={currentProgramme}
+      currentDailyProgramme={currentDailyProgramme}
+    />
   );
 };
 

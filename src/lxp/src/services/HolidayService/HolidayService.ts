@@ -30,7 +30,10 @@ class HolidayService {
     return response.data.data.holidaysByYear;
   }
 
-  async getHolidaysByDateRange(startMonth: string, endMonth: string): Promise<HolidayDto[]> {
+  async getHolidaysByDateRange(
+    startMonth: string,
+    endMonth: string
+  ): Promise<HolidayDto[]> {
     const apiInstance = await api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `

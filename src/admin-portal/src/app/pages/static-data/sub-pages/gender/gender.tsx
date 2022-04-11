@@ -120,8 +120,13 @@ export default function GenderView() {
                 <UiTable
                   columns={[{ field: 'description', use: 'description' }]}
                   rows={tableData}
-                  editRow={hasPermission(PermissionEnum.update_static) && displayPanel}
-                  deleteRow={hasPermission(PermissionEnum.delete_static) && deleteAndRefresh}
+                  editRow={
+                    hasPermission(PermissionEnum.update_static) && displayPanel
+                  }
+                  deleteRow={
+                    hasPermission(PermissionEnum.delete_static) &&
+                    deleteAndRefresh
+                  }
                 />
               </div>
             </div>

@@ -6,7 +6,7 @@ export const GetAllNoteType = gql`
       id
       name
       normalizedName
-      description      
+      description
     }
   }
 `;
@@ -17,7 +17,7 @@ export const GetNoteTypeById = gql`
       id
       name
       normalizedName
-      description  
+      description
     }
   }
 `;

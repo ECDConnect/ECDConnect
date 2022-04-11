@@ -12,7 +12,10 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { ContentLoader } from '../../../../../../components/content-loader/content-loader';
 import DynamicForm from '../../../../components/dynamic-form/dynamic-form';
-import { DynamicFormTemplate, FormTemplateField } from '../../../../content-management-models';
+import {
+  DynamicFormTemplate,
+  FormTemplateField,
+} from '../../../../content-management-models';
 
 export interface ContentViewProps {
   content: any;
@@ -82,12 +85,18 @@ export default function ContentEdit({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contentType, contentValues, selectedLanguageId]);
 
-  const getRenderField = (field: ContentTypeFieldDto): FormTemplateField | undefined => {
+  const getRenderField = (
+    field: ContentTypeFieldDto
+  ): FormTemplateField | undefined => {
     const item = contentValues.find(
-      (x) => x.contentTypeField.fieldName === field.fieldName && x.localeId === selectedLanguageId
+      (x) =>
+        x.contentTypeField.fieldName === field.fieldName &&
+        x.localeId === selectedLanguageId
     );
 
-    const optionDefinition = optionDefinitions.find((x) => x.contentName === field?.dataLinkName);
+    const optionDefinition = optionDefinitions.find(
+      (x) => x.contentName === field?.dataLinkName
+    );
 
     const returnField: FormTemplateField = {
       propName: field?.fieldName ?? '',
@@ -138,7 +147,10 @@ export default function ContentEdit({
   if (contentType && contentValues && template && !loading) {
     return (
       <div className="flex flex-col">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 divide-y divide-gray-200">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="space-y-8 divide-y divide-gray-200"
+        >
           <div className="-ml-4 -mt-2 flex items-center justify-between flex-wrap sm:flex-nowrap">
             <div className="ml-4 mt-2">
               <h3 className="text-lg leading-6 font-medium text-gray-900">

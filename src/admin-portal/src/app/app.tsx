@@ -42,7 +42,10 @@ const App: React.FC = () => {
               `[GraphQL error]: Message: ${errorMessage}, Location: ${locations}, Path: ${path}`
             );
             setNotification({
-              title: path && path.length > 0 ? path[0]?.toString()?.toUpperCase() : 'Server Error!',
+              title:
+                path && path.length > 0
+                  ? path[0]?.toString()?.toUpperCase()
+                  : 'Server Error!',
               message: errorMessage,
               variant: NOTIFICATION.ERROR,
             });

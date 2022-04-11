@@ -1,4 +1,8 @@
-import { ContentConsentTypeEnum, useQueryParams, useTheme } from '@ecdlink/core';
+import {
+  ContentConsentTypeEnum,
+  useQueryParams,
+  useTheme,
+} from '@ecdlink/core';
 import {
   ActionModal,
   Alert,
@@ -24,7 +28,11 @@ import { useHistory, useLocation } from 'react-router-dom';
 import { Article } from '../../../components/article/article';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useStoreSetup } from '@hooks/useStoreSetup';
-import { initialRegisterValues, SignUpModel, signUpSchema } from '@schemas/auth/sign-up/sign-up';
+import {
+  initialRegisterValues,
+  SignUpModel,
+  signUpSchema,
+} from '@schemas/auth/sign-up/sign-up';
 import AuthService from '@services/AuthService/AuthService';
 import { useAppDispatch } from '@store';
 import { staticDataThunkActions } from '@store/static-data';
@@ -42,11 +50,13 @@ export const SignUp: React.FC = () => {
   };
 
   const [preferId, setPreferId] = useState<boolean>(true);
-  const [contentConsentTypeEnum, setContentConsentTypeEnum] = useState<ContentConsentTypeEnum>();
+  const [contentConsentTypeEnum, setContentConsentTypeEnum] =
+    useState<ContentConsentTypeEnum>();
   const [presentArticle, setPresentArticle] = useState<boolean>(false);
   const [requestError, setRequestError] = useState<string>();
   const [isLoading, setIsLoading] = useState(false);
-  const [presentCellNumberMismatch, setPresentCellNumberMismatch] = useState<boolean>(false);
+  const [presentCellNumberMismatch, setPresentCellNumberMismatch] =
+    useState<boolean>(false);
   const [articleTitle, setArticleTitle] = useState<string>();
   const history = useHistory();
   const location = useLocation();
@@ -81,7 +91,9 @@ export const SignUp: React.FC = () => {
   });
 
   const { errors } = useFormState({ control });
-  const errorStrings = Object.keys(errors).map((x: string) => (errors as any)[x].message);
+  const errorStrings = Object.keys(errors).map(
+    (x: string) => (errors as any)[x].message
+  );
 
   const submitForm = async (formValue: SignUpModel) => {
     const valid = await signUpSchema.isValid(formValue);
@@ -90,11 +102,13 @@ export const SignUp: React.FC = () => {
 
     setIsLoading(true);
 
-    const informationVerified = await new AuthService().VerifyInvitationRequest({
-      phoneNumber: formValue.cellphone,
-      token: authToken || '',
-      username: formValue.username || '',
-    });
+    const informationVerified = await new AuthService().VerifyInvitationRequest(
+      {
+        phoneNumber: formValue.cellphone,
+        token: authToken || '',
+        username: formValue.username || '',
+      }
+    );
 
     setIsLoading(false);
 
@@ -212,13 +226,25 @@ export const SignUp: React.FC = () => {
           />
           <ul className={styles.listStyles}>
             <li>
-              <Typography text={'At least 8 characters'} type={'help'} color={'uiMidDark'} />
+              <Typography
+                text={'At least 8 characters'}
+                type={'help'}
+                color={'uiMidDark'}
+              />
             </li>
             <li>
-              <Typography text={'At least 1 number'} type={'help'} color={'uiMidDark'} />
+              <Typography
+                text={'At least 1 number'}
+                type={'help'}
+                color={'uiMidDark'}
+              />
             </li>
             <li>
-              <Typography text={'At least 1 capital letter'} type={'help'} color={'uiMidDark'} />
+              <Typography
+                text={'At least 1 capital letter'}
+                type={'help'}
+                color={'uiMidDark'}
+              />
             </li>
           </ul>
 
@@ -237,7 +263,9 @@ export const SignUp: React.FC = () => {
             text={'Terms and conditions'}
             className={styles.marginBottom}
           />
-          <div className={classNames(styles.checkboxWrapper, styles.marginBottom)}>
+          <div
+            className={classNames(styles.checkboxWrapper, styles.marginBottom)}
+          >
             <Checkbox<SignUpModel>
               register={signUpRegister}
               nameProp={'termsAndConditionsAccepted'}
@@ -333,7 +361,11 @@ export const SignUp: React.FC = () => {
             disabled={!isOnline}
             onClick={() => history.push('./login')}
           >
-            <Typography type="help" color="primary" text={'Log in'}></Typography>
+            <Typography
+              type="help"
+              color="primary"
+              text={'Log in'}
+            ></Typography>
           </Button>
         </form>
       </BannerWrapper>
@@ -347,7 +379,10 @@ export const SignUp: React.FC = () => {
         />
       )}
 
-      <Dialog visible={presentCellNumberMismatch} position={DialogPosition.Middle}>
+      <Dialog
+        visible={presentCellNumberMismatch}
+        position={DialogPosition.Middle}
+      >
         <ActionModal
           icon={'InformationCircleIcon'}
           iconColor={'alertMain'}

@@ -7,9 +7,14 @@ import { useSelector } from 'react-redux';
 import { progressTrackingSelectors } from '@store/progress-tracking';
 import { ProgressTrackingLevelDisplay } from '../progress-tracking-level-display/progress-tracking-level-display';
 
-export const ChildDevelopmentLevelsList = ({ className }: ComponentBaseProps) => {
-  const levels = useSelector(progressTrackingSelectors.getProgressTrackingLevels);
-  const [progressLevels, setProgressLevels] = useState<ProgressTrackingLevelDto[]>(levels);
+export const ChildDevelopmentLevelsList = ({
+  className,
+}: ComponentBaseProps) => {
+  const levels = useSelector(
+    progressTrackingSelectors.getProgressTrackingLevels
+  );
+  const [progressLevels, setProgressLevels] =
+    useState<ProgressTrackingLevelDto[]>(levels);
 
   useEffect(() => {
     getLevelsSorted(progressLevels);
@@ -17,7 +22,9 @@ export const ChildDevelopmentLevelsList = ({ className }: ComponentBaseProps) =>
   }, []);
 
   const getLevelsSorted = (levelsToSort: ProgressTrackingLevelDto[]) => {
-    setProgressLevels(levelsToSort.slice().sort((a, b) => (a.id || 0) - (b.id || 0)));
+    setProgressLevels(
+      levelsToSort.slice().sort((a, b) => (a.id || 0) - (b.id || 0))
+    );
   };
 
   return (

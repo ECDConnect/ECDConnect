@@ -17,7 +17,10 @@ export default function InformationPanel(props: InformationPanelProps) {
         </div>
         <div className="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
           <div className="sm:col-span-12">
-            <Typography type={'markdown'} text={props.siteInformation?.description} />{' '}
+            <Typography
+              type={'markdown'}
+              text={props.siteInformation?.description}
+            />{' '}
           </div>
         </div>
       </div>

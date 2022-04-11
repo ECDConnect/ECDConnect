@@ -13,7 +13,11 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
 import * as styles from './login.styles';
-import { initialLoginValues, LoginModel, loginSchema } from '@schemas/auth/login/login';
+import {
+  initialLoginValues,
+  LoginModel,
+  loginSchema,
+} from '@schemas/auth/login/login';
 import { useAppDispatch } from '@store';
 import { authActions, authThunkActions } from '@store/auth';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
@@ -54,7 +58,10 @@ export const Login: React.FC = () => {
 
       appDispatch(authThunkActions.login(body))
         .then((isAuthenticated: any) => {
-          if (isAuthenticated && isAuthenticated?.payload?.response?.status !== 401) {
+          if (
+            isAuthenticated &&
+            isAuthenticated?.payload?.response?.status !== 401
+          ) {
             appDispatch(settingActions.setApplicationVersion(version));
             appDispatch(authActions.setUserExpired());
             history.push('/dashboard');
@@ -166,7 +173,11 @@ export const Login: React.FC = () => {
                 disabled={!isOnline}
                 onClick={forgotPasswordClicked}
               >
-                <Typography type="small" color="primary" text={'Forgot my password'}></Typography>
+                <Typography
+                  type="small"
+                  color="primary"
+                  text={'Forgot my password'}
+                ></Typography>
               </Button>
             </div>
             <Divider></Divider>

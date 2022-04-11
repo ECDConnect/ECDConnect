@@ -83,7 +83,8 @@ export default function RolePanel(props: RolePanelProps) {
   const getErrors = () => {
     const currentErrors = [];
     if (errors.name?.message) currentErrors.push(errors.name?.message);
-    if (errors.normalizedName?.message) currentErrors.push(errors.normalizedName?.message);
+    if (errors.normalizedName?.message)
+      currentErrors.push(errors.normalizedName?.message);
     return currentErrors;
   };
 
@@ -134,7 +135,10 @@ export default function RolePanel(props: RolePanelProps) {
     }
   };
 
-  const handleRolePermissionChange = async (permissionId: number[], included: boolean) => {
+  const handleRolePermissionChange = async (
+    permissionId: number[],
+    included: boolean
+  ) => {
     if (included) {
       await removePermissionToRole({
         variables: {
@@ -165,11 +169,16 @@ export default function RolePanel(props: RolePanelProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 divide-y divide-gray-200">
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="space-y-8 divide-y divide-gray-200"
+    >
       <div className="space-y-8 divide-y divide-gray-200">
         <div className="pt-8">
           <div className="grid grid-cols-2">
-            <h3 className="text-lg leading-6 font-medium text-gray-900">Role Information</h3>
+            <h3 className="text-lg leading-6 font-medium text-gray-900">
+              Role Information
+            </h3>
             <div className="flex justify-end">
               <button
                 onClick={() => emitCloseDialog(false)}
@@ -188,7 +197,10 @@ export default function RolePanel(props: RolePanelProps) {
           </div>
           <div className="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
             <div className="sm:col-span-3">
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="name"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Name
               </label>
               <div className="mt-1">
@@ -202,7 +214,10 @@ export default function RolePanel(props: RolePanelProps) {
             </div>
 
             <div className="sm:col-span-3">
-              <label htmlFor="normalizedName" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="normalizedName"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Normalized Name
               </label>
               <div className="mt-1">
@@ -274,33 +289,38 @@ export default function RolePanel(props: RolePanelProps) {
                           </td>
 
                           {permissionGroup &&
-                            permissionGroup.permissions.map((permission: any) => {
-                              const checked =
-                                currentRole && currentRole.permissions
-                                  ? currentRole.permissions.some(
-                                      (x: any) => x.name === permission.name
-                                    )
-                                  : false;
-                              return (
-                                <td key={permission.id} className="px-6 py-4 whitespace-nowrap">
-                                  <div className="flex items-center">
-                                    <div className="text-sm font-medium text-gray-900">
-                                      <input
-                                        defaultChecked={checked}
-                                        type="checkbox"
-                                        className="focus:ring-primary h-4 w-4 text-primary border-gray-300 rounded"
-                                        onChange={(e) =>
-                                          handleRolePermissionChange(
-                                            permission.id,
-                                            !e.target.checked
-                                          )
-                                        }
-                                      />
+                            permissionGroup.permissions.map(
+                              (permission: any) => {
+                                const checked =
+                                  currentRole && currentRole.permissions
+                                    ? currentRole.permissions.some(
+                                        (x: any) => x.name === permission.name
+                                      )
+                                    : false;
+                                return (
+                                  <td
+                                    key={permission.id}
+                                    className="px-6 py-4 whitespace-nowrap"
+                                  >
+                                    <div className="flex items-center">
+                                      <div className="text-sm font-medium text-gray-900">
+                                        <input
+                                          defaultChecked={checked}
+                                          type="checkbox"
+                                          className="focus:ring-primary h-4 w-4 text-primary border-gray-300 rounded"
+                                          onChange={(e) =>
+                                            handleRolePermissionChange(
+                                              permission.id,
+                                              !e.target.checked
+                                            )
+                                          }
+                                        />
+                                      </div>
                                     </div>
-                                  </div>
-                                </td>
-                              );
-                            })}
+                                  </td>
+                                );
+                              }
+                            )}
                         </tr>
                       ))}
                   </tbody>

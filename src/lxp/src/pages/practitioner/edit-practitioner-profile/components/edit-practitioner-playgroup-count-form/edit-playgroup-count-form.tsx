@@ -6,7 +6,9 @@ import { useState } from 'react';
 import * as styles from '../../edit-practitioner-profile.styles';
 import { playgroupsOptions } from './edit-playgroup-count-form.types';
 
-export const EditPlaygroupCountForm: React.FC<FormComponentProps<number>> = ({ onSubmit }) => {
+export const EditPlaygroupCountForm: React.FC<FormComponentProps<number>> = ({
+  onSubmit,
+}) => {
   const [playGroupCount, setPlaygroupCount] = useState<number>(0);
 
   return (

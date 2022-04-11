@@ -5,7 +5,12 @@ import { format } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { NotesListProps } from './notes-list.types';
 
-export const NotesList = ({ notes, className, handleListScroll, viewToNote }: NotesListProps) => {
+export const NotesList = ({
+  notes,
+  className,
+  handleListScroll,
+  viewToNote,
+}: NotesListProps) => {
   const [listItems, setListItems] = useState<ActionListDataItem[]>([]);
 
   useEffect(() => {
@@ -38,7 +43,9 @@ export const NotesList = ({ notes, className, handleListScroll, viewToNote }: No
         <StackedList
           listItems={listItems}
           type={'ActionList'}
-          onScroll={(scrollTop: number) => handleListScroll && handleListScroll(scrollTop)}
+          onScroll={(scrollTop: number) =>
+            handleListScroll && handleListScroll(scrollTop)
+          }
         ></StackedList>
       )}
     </div>

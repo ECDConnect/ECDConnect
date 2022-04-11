@@ -1,5 +1,11 @@
 import { useDialog } from '@ecdlink/core';
-import { Button, ComponentBaseProps, DialogPosition, Divider, Typography } from '@ecdlink/ui';
+import {
+  Button,
+  ComponentBaseProps,
+  DialogPosition,
+  Divider,
+  Typography,
+} from '@ecdlink/ui';
 import { useState } from 'react';
 import { useHistory } from 'react-router';
 import { ChildBasicInfoModel } from '@schemas/child/child-registration/child-basic-info';
@@ -19,7 +25,9 @@ export interface CaregiverLinkProps extends ComponentBaseProps {
   childDetails: ChildBasicInfoModel;
 }
 
-export const CaregiverLink: React.FC<CaregiverLinkProps> = ({ childDetails }) => {
+export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
+  childDetails,
+}) => {
   const dialog = useDialog();
   const history = useHistory();
   const dispatch = useAppDispatch();
@@ -152,7 +160,9 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({ childDetails }) =>
       id: model.ChildUserId,
     };
 
-    const childStatusId = getWorkflowStatusIdByEnum(WorkflowStatusEnum.ChildExternalLink);
+    const childStatusId = getWorkflowStatusIdByEnum(
+      WorkflowStatusEnum.ChildExternalLink
+    );
 
     let childInputModel = childRegisterUtils.mapChildDto(
       model.ChildUserId,
@@ -166,7 +176,10 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({ childDetails }) =>
       id: model.ChildId,
     };
 
-    const learnerInputModel = childRegisterUtils.mapLearnerDto(model.ChildUserId, childInformation);
+    const learnerInputModel = childRegisterUtils.mapLearnerDto(
+      model.ChildUserId,
+      childInformation
+    );
 
     dispatch(childrenActions.createChildUser(userInputModel));
     dispatch(childrenActions.createChild(childInputModel));

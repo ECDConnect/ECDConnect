@@ -75,7 +75,9 @@ export default function NavigationSetup() {
                     { field: 'route', use: 'route' },
                   ]}
                   rows={tableData}
-                  editRow={hasPermission(PermissionEnum.update_system) && displayPanel}
+                  editRow={
+                    hasPermission(PermissionEnum.update_system) && displayPanel
+                  }
                 />
               </div>
             </div>

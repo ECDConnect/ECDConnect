@@ -120,13 +120,18 @@ class ChildService {
     });
 
     if (response.status !== 200) {
-      throw new Error('adding caregiver child registration token - Server connection error');
+      throw new Error(
+        'adding caregiver child registration token - Server connection error'
+      );
     }
 
     return response.data.data.generateCaregiverChildToken;
   }
 
-  async refreshCaregiverChildToken(childId: string, classgroupId: string): Promise<string> {
+  async refreshCaregiverChildToken(
+    childId: string,
+    classgroupId: string
+  ): Promise<string> {
     const apiInstance = await api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
@@ -141,13 +146,17 @@ class ChildService {
     });
 
     if (response.status !== 200) {
-      throw new Error('refreshing caregiver child registration token - Server connection error');
+      throw new Error(
+        'refreshing caregiver child registration token - Server connection error'
+      );
     }
 
     return response.data.data.refreshCaregiverChildToken;
   }
 
-  async openAccessAddChildDetail(token: string): Promise<ChildRegistrationDetails> {
+  async openAccessAddChildDetail(
+    token: string
+  ): Promise<ChildRegistrationDetails> {
     const apiInstance = await api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
@@ -173,7 +182,9 @@ class ChildService {
     });
 
     if (response.status !== 200) {
-      throw new Error('refreshing caregiver child registration token - Server connection error');
+      throw new Error(
+        'refreshing caregiver child registration token - Server connection error'
+      );
     }
 
     return response.data.data.openAccessAddChildDetail;

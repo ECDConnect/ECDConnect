@@ -142,7 +142,9 @@ export default function ApplicationUsers() {
       (acc, curr) => {
         const items = curr.roles.map((x) => ({ label: x.name, value: x.name }));
 
-        const distinctItems = items.filter((item) => !acc.some((ac) => ac.value === item.value));
+        const distinctItems = items.filter(
+          (item) => !acc.some((ac) => ac.value === item.value)
+        );
 
         if (distinctItems) {
           return [...acc, ...distinctItems];
@@ -206,8 +208,14 @@ export default function ApplicationUsers() {
                     },
                   ]}
                   rows={tableData}
-                  editRow={hasPermission(PermissionEnum.update_user) && displayEditUserPanel}
-                  deleteRow={hasPermission(PermissionEnum.delete_user) && deleteUserAndRefresh}
+                  editRow={
+                    hasPermission(PermissionEnum.update_user) &&
+                    displayEditUserPanel
+                  }
+                  deleteRow={
+                    hasPermission(PermissionEnum.delete_user) &&
+                    deleteUserAndRefresh
+                  }
                 />
               </div>
             </div>

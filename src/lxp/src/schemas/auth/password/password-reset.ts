@@ -14,7 +14,9 @@ export const initialResetPasswordValues: ResetPasswordModel = {
 export const resetPasswordSchema = Yup.object().shape({
   username: Yup.string().when('preferId', {
     is: true,
-    then: Yup.string().matches(SA_ID_REGEX, 'Please enter a valid ID number').required(),
+    then: Yup.string()
+      .matches(SA_ID_REGEX, 'Please enter a valid ID number')
+      .required(),
     otherwise: Yup.string()
       .matches(SA_PASSPORT_REGEX, 'Please enter a valid passport number')
       .required(),

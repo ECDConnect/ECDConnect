@@ -57,7 +57,9 @@ export const GetUserById = gql`
 
 export const GetAllUserHierarchyEntity = gql`
   query GetAllUserHierarchyEntity($parentId: String) {
-    GetAllUserHierarchyEntity(where: { and: [{ parentId: { eq: $parentId } }] }) {
+    GetAllUserHierarchyEntity(
+      where: { and: [{ parentId: { eq: $parentId } }] }
+    ) {
       id
       userType
       userId

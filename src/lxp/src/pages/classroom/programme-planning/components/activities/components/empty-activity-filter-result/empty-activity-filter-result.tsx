@@ -1,12 +1,22 @@
 import { classNames, RoundIcon, Typography } from '@ecdlink/ui';
 import { EmprtActivitiesProps } from './empty-activity-filter-result.types';
 
-export const EmptyActivities: React.FC<EmprtActivitiesProps> = ({ title, subTitle, className }) => {
+export const EmptyActivities: React.FC<EmprtActivitiesProps> = ({
+  title,
+  subTitle,
+  className,
+}) => {
   return (
     <div
-      className={classNames('flex flex-auto flex-col pb-6 justify-center items-center', className)}
+      className={classNames(
+        'flex flex-auto flex-col pb-6 justify-center items-center',
+        className
+      )}
     >
-      <RoundIcon icon="ExclamationCircleIcon" className={'bg-alertMain text-white mt-6'} />
+      <RoundIcon
+        icon="ExclamationCircleIcon"
+        className={'bg-alertMain text-white mt-6'}
+      />
       <Typography
         type="body"
         className="mt-4"

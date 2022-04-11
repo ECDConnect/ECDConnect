@@ -24,10 +24,16 @@ export const StepViewer: React.FC<StepViewProps> = ({
     const { stepKey } = (child as React.ReactElement).props;
     return stepKey === activeStep;
   });
-  const { viewBannerWapper = false } = activeChild ? (activeChild as React.ReactElement).props : {};
+  const { viewBannerWapper = false } = activeChild
+    ? (activeChild as React.ReactElement).props
+    : {};
 
   const getStepCount = (
-    childrenWithProps: (React.ReactChild | React.ReactFragment | React.ReactPortal)[]
+    childrenWithProps: (
+      | React.ReactChild
+      | React.ReactFragment
+      | React.ReactPortal
+    )[]
   ) => {
     return childrenWithProps.filter((child) => {
       const { isIntermission } = (child as React.ReactElement).props;
@@ -41,7 +47,9 @@ export const StepViewer: React.FC<StepViewProps> = ({
       renderBorder={true}
       title={title}
       subTitle={
-        showStepCount ? `step ${activeStep} of ${getStepCount(childrenWithProps)}` : undefined
+        showStepCount
+          ? `step ${activeStep} of ${getStepCount(childrenWithProps)}`
+          : undefined
       }
       onBack={onBack}
       renderOverflow={true}

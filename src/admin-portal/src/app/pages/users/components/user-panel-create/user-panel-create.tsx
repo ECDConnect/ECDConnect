@@ -8,7 +8,12 @@ import {
   useNotifications,
   userSchema,
 } from '@ecdlink/core';
-import { AddUsersToRole, CreateUser, RoleList, UserModelInput } from '@ecdlink/graphql';
+import {
+  AddUsersToRole,
+  CreateUser,
+  RoleList,
+  UserModelInput,
+} from '@ecdlink/graphql';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -38,7 +43,8 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
   useEffect(() => {
     if (roleData && roleData.roles) {
       const tempRoles = roleData.roles.filter(
-        (x: RoleDto) => x.name !== 'Practitioner' && x.name !== 'Coach' && x.name !== 'Child'
+        (x: RoleDto) =>
+          x.name !== 'Practitioner' && x.name !== 'Coach' && x.name !== 'Child'
       );
 
       setFilteredRoles(tempRoles);
@@ -57,7 +63,8 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
     defaultValues: initialUserDetailsValues,
     mode: 'onBlur',
   });
-  const { errors: userDetailFormErrors, isValid: isUserDetailValid } = userDetailFormState;
+  const { errors: userDetailFormErrors, isValid: isUserDetailValid } =
+    userDetailFormState;
 
   const {
     register: passwordRegister,
@@ -68,7 +75,8 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
     defaultValues: initialPasswordValue,
     mode: 'onBlur',
   });
-  const { errors: passwordFormErrors, isValid: isPasswordValid } = passwordFormState;
+  const { errors: passwordFormErrors, isValid: isPasswordValid } =
+    passwordFormState;
 
   const onSave = async () => {
     await saveUser();
@@ -146,7 +154,9 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
       <>
         <div className="bg-uiBg px-4 py-5 border-b border-gray-200 rounded-lg">
           <div className="pb-2">
-            <h3 className="text-lg leading-6 font-medium text-uiMidDark">User Detail</h3>
+            <h3 className="text-lg leading-6 font-medium text-uiMidDark">
+              User Detail
+            </h3>
           </div>
           <UserDetailsForm
             formKey={`createUserDetails-${new Date().getTime()}`}
@@ -158,7 +168,9 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
         </div>
         <div className="mt-5 bg-uiBg px-4 py-5 border-b border-gray-200 rounded-lg">
           <div className="pb-2">
-            <h3 className="text-lg leading-6 font-medium text-uiMidDark">Password</h3>
+            <h3 className="text-lg leading-6 font-medium text-uiMidDark">
+              Password
+            </h3>
           </div>
 
           <PasswordForm
@@ -170,7 +182,9 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
         </div>
         <div className="mt-5 bg-uiBg px-4 py-5 border-b border-gray-200 rounded-lg">
           <div className="pb-2">
-            <h3 className="text-lg leading-6 font-medium text-uiMidDark">Roles</h3>
+            <h3 className="text-lg leading-6 font-medium text-uiMidDark">
+              Roles
+            </h3>
           </div>
           <UserRoles
             roleList={filteredRoles ? filteredRoles : []}

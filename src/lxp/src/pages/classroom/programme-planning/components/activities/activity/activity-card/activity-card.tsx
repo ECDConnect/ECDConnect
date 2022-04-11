@@ -25,7 +25,9 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
   onDeselection,
 }) => {
   const [displayDetails, setDisplayDetails] = useState(false);
-  const activityCategories = useSelector(progressTrackingSelectors.getActivityCategories(activity));
+  const activityCategories = useSelector(
+    progressTrackingSelectors.getActivityCategories(activity)
+  );
   const handleDetailsClick = () => {
     setDisplayDetails(true);
   };
@@ -75,9 +77,23 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
             </div>
           </div>
           <div>
-            <Typography type="body" text={'Materials'} color={'textLight'} fontSize={'14'} />
-            <Typography type="body" text={activity.materials} color={'textDark'} />
-            <Button type={'outlined'} color="primary" className="mt-2" onClick={handleDetailsClick}>
+            <Typography
+              type="body"
+              text={'Materials'}
+              color={'textLight'}
+              fontSize={'14'}
+            />
+            <Typography
+              type="body"
+              text={activity.materials}
+              color={'textDark'}
+            />
+            <Button
+              type={'outlined'}
+              color="primary"
+              className="mt-2"
+              onClick={handleDetailsClick}
+            >
               see details
             </Button>
           </div>
@@ -86,7 +102,9 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
           <Alert type="info" message={recommendedText} variant="flat" />
         )}
 
-        {!!warningText && <Alert type="warning" message={warningText} variant="flat" />}
+        {!!warningText && (
+          <Alert type="warning" message={warningText} variant="flat" />
+        )}
 
         <FADButton
           title={selected ? 'Activity chosen' : 'Choose activity'}
@@ -101,7 +119,11 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
           click={handleActivitySelected}
         />
       </Card>
-      <Dialog visible={displayDetails} position={DialogPosition.Full} fullScreen>
+      <Dialog
+        visible={displayDetails}
+        position={DialogPosition.Full}
+        fullScreen
+      >
         <ActivityDetails
           isSelected={selected}
           activityId={activity.id}

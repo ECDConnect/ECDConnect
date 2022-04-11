@@ -20,18 +20,23 @@ import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useAppDispatch } from '@store';
 import { analyticsActions } from '@store/analytics';
 
-export const ChildProgressReportOverview: React.FC<ChildProgressReportOverviewProps> = ({
-  childId,
-  reportingDate,
-}) => {
+export const ChildProgressReportOverview: React.FC<
+  ChildProgressReportOverviewProps
+> = ({ childId, reportingDate }) => {
   const appDispatch = useAppDispatch();
   const history = useHistory();
   const dialog = useDialog();
   const child = useSelector(childrenSelectors.getChildById(childId));
-  const childUser = useSelector(childrenSelectors.getChildUserById(child?.userId));
+  const childUser = useSelector(
+    childrenSelectors.getChildUserById(child?.userId)
+  );
   const childLearner = useSelector(classroomsSelectors.getChildLearner(child));
-  const categories = useSelector(progressTrackingSelectors.getProgressTrackingCategories);
-  const reportingDateAsDate = reportingDate ? new Date(reportingDate) : new Date();
+  const categories = useSelector(
+    progressTrackingSelectors.getProgressTrackingCategories
+  );
+  const reportingDateAsDate = reportingDate
+    ? new Date(reportingDate)
+    : new Date();
   const { isOnline } = useOnlineStatus();
   const reportingPeriod = getReportingPeriod(reportingDateAsDate);
 
@@ -41,10 +46,8 @@ export const ChildProgressReportOverview: React.FC<ChildProgressReportOverviewPr
       childId
     )
   );
-  const { currentReport, completeReport, completeReportLocally } = useChildProgressObservation(
-    childId,
-    report
-  );
+  const { currentReport, completeReport, completeReportLocally } =
+    useChildProgressObservation(childId, report);
 
   const onCategoryNavigation = (categoryId: number) => {
     history.push('child-progress-assessment', {
@@ -91,12 +94,18 @@ export const ChildProgressReportOverview: React.FC<ChildProgressReportOverviewPr
   const downloadReport = async () => {
     if (currentReport) {
       if (isOnline) {
-        await completeReport(currentReport, childLearner?.classroomGroupId || '');
+        await completeReport(
+          currentReport,
+          childLearner?.classroomGroupId || ''
+        );
         history.replace('/download-child-progress-observation-reports', {
           childId: childId,
         });
       } else {
-        completeReportLocally(currentReport, childLearner?.classroomGroupId || '');
+        completeReportLocally(
+          currentReport,
+          childLearner?.classroomGroupId || ''
+        );
         history.replace('/completed-child-progress-observation-reports', {
           childId: childId,
         });
@@ -107,7 +116,11 @@ export const ChildProgressReportOverview: React.FC<ChildProgressReportOverviewPr
   return (
     <>
       <div className={'h-full w-full flex flex-col px-4'}>
-        <Typography type={'h1'} color={'primary'} text={`Check your progress observations:`} />
+        <Typography
+          type={'h1'}
+          color={'primary'}
+          text={`Check your progress observations:`}
+        />
         <Typography
           type={'body'}
           color={'black'}
@@ -120,7 +133,10 @@ export const ChildProgressReportOverview: React.FC<ChildProgressReportOverviewPr
         />
         {currentReport &&
           categories.map((cat: ProgressTrackingCategoryDto) => {
-            const categoryFromReport = getCategoryFromCurrentReport(cat.id, currentReport);
+            const categoryFromReport = getCategoryFromCurrentReport(
+              cat.id,
+              currentReport
+            );
 
             return (
               <ObservationCategoryCard
@@ -129,9 +145,11 @@ export const ChildProgressReportOverview: React.FC<ChildProgressReportOverviewPr
                 categoryName={cat.name}
                 categoryColour={cat.color}
                 isCompetentWithCategory={
-                  [ProgressTrackingLevels.LevelThree, ProgressTrackingLevels.LevelTwo].includes(
-                    categoryFromReport?.achievedLevelId ?? 0
-                  ) && !categoryFromReport?.supportingTask
+                  [
+                    ProgressTrackingLevels.LevelThree,
+                    ProgressTrackingLevels.LevelTwo,
+                  ].includes(categoryFromReport?.achievedLevelId ?? 0) &&
+                  !categoryFromReport?.supportingTask
                 }
                 levelId={categoryFromReport?.achievedLevelId || 0}
                 childName={`${childUser?.firstName}`}
@@ -152,7 +170,12 @@ export const ChildProgressReportOverview: React.FC<ChildProgressReportOverviewPr
           onClick={displayDownloadReportPrompt}
         >
           {renderIcon('DownloadIcon', 'h-5 w-5 text-white')}
-          <Typography type="h6" className="ml-2" text="Create report" color="white" />
+          <Typography
+            type="h6"
+            className="ml-2"
+            text="Create report"
+            color="white"
+          />
         </Button>
       </div>
     </>

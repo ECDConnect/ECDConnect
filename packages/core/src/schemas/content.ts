@@ -1,12 +1,10 @@
-
 import * as Yup from 'yup';
 
-
 export const initialContentValues = {
-  name: '',  
-  languageLocale: ''
+  name: '',
+  languageLocale: '',
 };
 
 export const contentSchema = Yup.object().shape({
-  name: Yup.string(),    
+  name: Yup.string(),
 });

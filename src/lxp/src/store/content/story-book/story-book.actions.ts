@@ -21,9 +21,9 @@ export const getStoryBooks = createAsyncThunk<
         let storyBooks: StoryBookDto[] | undefined;
 
         if (userAuth?.auth_token) {
-          storyBooks = await new ContentStoryBookService(userAuth?.auth_token).getStoryBooks(
-            locale
-          );
+          storyBooks = await new ContentStoryBookService(
+            userAuth?.auth_token
+          ).getStoryBooks(locale);
         } else {
           return rejectWithValue('no access token, profile check required');
         }

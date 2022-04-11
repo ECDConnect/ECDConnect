@@ -68,7 +68,9 @@ const ChildForm: React.FC<ChildFormProps> = ({ formKey, errors, register }) => {
 
   return (
     <form key={formKey} className="space-y-8 divide-y divide-gray-200">
-      <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">{getFormFields()}</div>
+      <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+        {getFormFields()}
+      </div>
     </form>
   );
 };

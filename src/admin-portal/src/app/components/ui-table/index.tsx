@@ -128,7 +128,9 @@ export default function UiTable({
       // date stored in UTC add 2 hours
       const date = new Date(value);
       date.setHours(date.getHours() + 2);
-      return new Date(value).toString().replace(' GMT+0200 (South Africa Standard Time)', '');
+      return new Date(value)
+        .toString()
+        .replace(' GMT+0200 (South Africa Standard Time)', '');
     } catch (e) {
       return 'N/A';
     }
@@ -162,13 +164,18 @@ export default function UiTable({
         </div>
       );
     } else if (column.field.match(/created|createdAt|updated|updatedAt/)) {
-      rowValue = <span className="overflow-ellipsis">{formatDate(display_value)}</span>;
+      rowValue = (
+        <span className="overflow-ellipsis">{formatDate(display_value)}</span>
+      );
     } else if (column.type === 'array') {
       rowValue = (
         <div className="ml-4 flex items-center flex-row flex-wrap">
           {display_value &&
             display_value.map((item) => (
-              <div key={item.id} className="text-xs rounded-full py-1 px-3 m-1 bg-uiMid text-white">
+              <div
+                key={item.id}
+                className="text-xs rounded-full py-1 px-3 m-1 bg-uiMid text-white"
+              >
                 {item[column.displayProperty]}
               </div>
             ))}

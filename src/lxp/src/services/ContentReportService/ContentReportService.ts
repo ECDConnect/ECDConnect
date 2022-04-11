@@ -3,7 +3,10 @@ import {
   ChildProgressObservationReport,
   ChildProgressReportSummaryModel,
 } from '@ecdlink/core';
-import { ChildProgressReport, ChildProgressReportInput } from '@ecdlink/graphql';
+import {
+  ChildProgressReport,
+  ChildProgressReportInput,
+} from '@ecdlink/graphql';
 import { api } from '../axios.helper';
 
 class ContentReportService {
@@ -38,13 +41,17 @@ class ContentReportService {
     });
 
     if (response.status !== 200) {
-      throw new Error('Get User Content Child Progress Reports failed - Server connection error');
+      throw new Error(
+        'Get User Content Child Progress Reports failed - Server connection error'
+      );
     }
 
     return response.data.data.GetUserContentChildProgressReport;
   }
 
-  async createChildProgressReport(input: ChildProgressReportInput): Promise<ChildProgressReport> {
+  async createChildProgressReport(
+    input: ChildProgressReportInput
+  ): Promise<ChildProgressReport> {
     const apiInstance = await api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
@@ -70,7 +77,9 @@ class ContentReportService {
     return response.data.data.createChildProgressReport;
   }
 
-  async syncChildProgressReport(input: ChildProgressReportInput): Promise<boolean> {
+  async syncChildProgressReport(
+    input: ChildProgressReportInput
+  ): Promise<boolean> {
     const apiInstance = await api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
@@ -120,7 +129,9 @@ class ContentReportService {
     });
 
     if (response.status !== 200) {
-      throw new Error('Updating child progress report failed - Server connection error');
+      throw new Error(
+        'Updating child progress report failed - Server connection error'
+      );
     }
 
     return response.data.data.updateChildProgressReport;
@@ -178,12 +189,16 @@ class ContentReportService {
       },
     });
     if (response.status !== 200) {
-      throw new Error('Get child progress report summary failed - Server connection error');
+      throw new Error(
+        'Get child progress report summary failed - Server connection error'
+      );
     }
     return response.data.data.childProgressReportSummary;
   }
 
-  async getDetailedProgressReport(reportId: string): Promise<ChildProgressObservationReport> {
+  async getDetailedProgressReport(
+    reportId: string
+  ): Promise<ChildProgressObservationReport> {
     const apiInstance = await api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `

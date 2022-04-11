@@ -24,7 +24,11 @@ export const UserAlertListItem: React.FC<UserAlertListItemProps> = ({
             {!item.icon && item.profileDataUrl ? (
               <Avatar
                 className="mr-4"
-                size={'md-lg'} dataUrl={item.profileDataUrl} displayBorder borderColor={item.avatarColor} />
+                size={'md-lg'}
+                dataUrl={item.profileDataUrl}
+                displayBorder
+                borderColor={item.avatarColor}
+              />
             ) : (
               <UserAvatar
                 className="mr-4"

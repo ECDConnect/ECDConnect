@@ -9,7 +9,8 @@ export const getActivities = (state: RootState): ActivityDto[] =>
 export const getActivityById = (activityId?: number) =>
   createSelector(
     (state: RootState) => state.activityData.activities || [],
-    (activities: ActivityDto[]) => activities.find((activity) => activity.id === activityId)
+    (activities: ActivityDto[]) =>
+      activities.find((activity) => activity.id === activityId)
   );
 
 export const getActivitiesByType = (type?: string) =>
@@ -27,7 +28,9 @@ export const getStoryActivitiesByType = (type?: string) =>
     (activities: ActivityDto[]) => {
       if (!type) return [];
       return activities.filter(
-        (act) => act.subType && act.subType?.toLowerCase()?.includes(type.toLowerCase())
+        (act) =>
+          act.subType &&
+          act.subType?.toLowerCase()?.includes(type.toLowerCase())
       );
     }
   );

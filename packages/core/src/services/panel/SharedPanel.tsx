@@ -6,7 +6,11 @@ import { Fragment } from 'react';
 export interface SharedPanelOptions {
   catchOnCancel?: boolean;
   title?: string;
-  presentationStyle?: 'fullScreen' | 'pageSheet' | 'formSheet' | 'overFullScreen';
+  presentationStyle?:
+    | 'fullScreen'
+    | 'pageSheet'
+    | 'formSheet'
+    | 'overFullScreen';
   render?: (onSubmit: () => void, onCancel: () => void) => React.ReactNode;
   noPadding?: boolean;
 }
@@ -50,7 +54,9 @@ export const SharedPanel: React.FC<SharedPanelProps> = ({
             >
               <div
                 className={
-                  presentationStyle === 'fullScreen' ? 'w-screen max-w-12xl' : 'w-screen max-w-2xl'
+                  presentationStyle === 'fullScreen'
+                    ? 'w-screen max-w-12xl'
+                    : 'w-screen max-w-2xl'
                 }
               >
                 <div className="h-full flex flex-col py-6 bg-white shadow-xl overflow-y-scroll">

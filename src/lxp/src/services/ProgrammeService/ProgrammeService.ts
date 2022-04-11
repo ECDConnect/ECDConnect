@@ -72,7 +72,10 @@ class ProgrammeService {
     return true;
   }
 
-  async updateDailyProgramme(id: string, input: DailyProgrammeInput): Promise<boolean> {
+  async updateDailyProgramme(
+    id: string,
+    input: DailyProgrammeInput
+  ): Promise<boolean> {
     const apiInstance = await api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
@@ -89,7 +92,9 @@ class ProgrammeService {
     });
 
     if (response.status !== 200) {
-      throw new Error('Updating daily programme failed - Server connection error');
+      throw new Error(
+        'Updating daily programme failed - Server connection error'
+      );
     }
 
     return true;

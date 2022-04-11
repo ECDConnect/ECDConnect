@@ -4,7 +4,7 @@ export interface Note extends EntityCacheBase {
   id: number;
   name: string;
   bodyText: string;
-  noteTypeId: number;  
+  noteTypeId: number;
   createdUserId: string;
   insertedDate: string;
 }

@@ -1,4 +1,7 @@
-import { ChildProgressObservationReport, ChildProgressReportSummaryModel } from '@ecdlink/core';
+import {
+  ChildProgressObservationReport,
+  ChildProgressReportSummaryModel,
+} from '@ecdlink/core';
 
 export type UnSyncedReportItem = {
   reportId: string;

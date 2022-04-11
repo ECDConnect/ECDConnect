@@ -5,7 +5,7 @@ export const GetAllSiteInformation = gql`
     GetAllSiteInformation {
       id
       name
-      description      
+      description
     }
   }
 `;

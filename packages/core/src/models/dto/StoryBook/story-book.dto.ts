@@ -1,6 +1,5 @@
 import { LanguageDto } from '../StaticData/language.dto';
 
-
 export interface StoryBookDto {
   id: number;
   name: string;

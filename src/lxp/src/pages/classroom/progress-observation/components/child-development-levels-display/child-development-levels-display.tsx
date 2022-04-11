@@ -25,7 +25,12 @@ export const ChildDevelopmentLevelsDisplay = ({
         className={styles.closeButton}
       >
         {renderIcon('XIcon', `text-white h-4 w-4 mr-2`)}
-        <Typography color={'white'} type={'help'} weight={'normal'} text={'Close'} />
+        <Typography
+          color={'white'}
+          type={'help'}
+          weight={'normal'}
+          text={'Close'}
+        />
       </Button>
     </div>
   );

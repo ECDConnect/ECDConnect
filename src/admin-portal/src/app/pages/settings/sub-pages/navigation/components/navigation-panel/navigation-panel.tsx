@@ -36,7 +36,9 @@ export default function NavigationPanel(props: NavigationPanelProps) {
   const [create] = useMutation(CreateNavigation);
   const [update] = useMutation(UpdateNavigation);
   const [addPermissionsToNavigation] = useMutation(AddPermissionToNavigation);
-  const [removePermissionFromNavigation] = useMutation(RemovePermissionFromNavigation);
+  const [removePermissionFromNavigation] = useMutation(
+    RemovePermissionFromNavigation
+  );
   const [tableData, setTableData] = useState<any[]>([]);
   const { data: dataPermissionGroups } = useQuery(PermissionGroupList, {
     fetchPolicy: 'cache-and-network',
@@ -138,7 +140,10 @@ export default function NavigationPanel(props: NavigationPanelProps) {
     setValue('description', state);
   };
 
-  const handlePermissionChange = async (permission: PermissionDto, included: boolean) => {
+  const handlePermissionChange = async (
+    permission: PermissionDto,
+    included: boolean
+  ) => {
     if (included) {
       await removePermissionFromNavigation({
         variables: {
@@ -165,7 +170,10 @@ export default function NavigationPanel(props: NavigationPanelProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 divide-y divide-gray-200">
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="space-y-8 divide-y divide-gray-200"
+    >
       <div className="space-y-8 divide-y divide-gray-200">
         <div className="pt-8">
           <div className="grid grid-cols-2">
@@ -279,28 +287,38 @@ export default function NavigationPanel(props: NavigationPanelProps) {
                           </td>
 
                           {permissionGroup &&
-                            permissionGroup.permissions.map((permission: PermissionDto) => {
-                              const checked =
-                                props.item && props.item.permissions
-                                  ? props.item.permissions.some((x) => x.id === permission.id)
-                                  : false;
-                              return (
-                                <td key={permission.id} className="px-6 py-4 whitespace-nowrap">
-                                  <div className="flex items-center">
-                                    <div className="text-sm font-medium text-gray-900">
-                                      <input
-                                        defaultChecked={checked}
-                                        type="checkbox"
-                                        className="focus:ring-primary h-4 w-4 text-primary border-gray-300 rounded"
-                                        onChange={(e) =>
-                                          handlePermissionChange(permission, !e.target.checked)
-                                        }
-                                      />
+                            permissionGroup.permissions.map(
+                              (permission: PermissionDto) => {
+                                const checked =
+                                  props.item && props.item.permissions
+                                    ? props.item.permissions.some(
+                                        (x) => x.id === permission.id
+                                      )
+                                    : false;
+                                return (
+                                  <td
+                                    key={permission.id}
+                                    className="px-6 py-4 whitespace-nowrap"
+                                  >
+                                    <div className="flex items-center">
+                                      <div className="text-sm font-medium text-gray-900">
+                                        <input
+                                          defaultChecked={checked}
+                                          type="checkbox"
+                                          className="focus:ring-primary h-4 w-4 text-primary border-gray-300 rounded"
+                                          onChange={(e) =>
+                                            handlePermissionChange(
+                                              permission,
+                                              !e.target.checked
+                                            )
+                                          }
+                                        />
+                                      </div>
                                     </div>
-                                  </div>
-                                </td>
-                              );
-                            })}
+                                  </td>
+                                );
+                              }
+                            )}
                         </tr>
                       ))}
                   </tbody>

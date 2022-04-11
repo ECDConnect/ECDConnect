@@ -16,14 +16,17 @@ import ObservationCategoryCard from '../../../components/observation-category-ca
 import { useForm, useFormState } from 'react-hook-form';
 import { getCategoryFromCurrentReport } from '@utils/child/child-progress-report.utils';
 
-export const CaregiverCanHelpChildWith: React.FC<HowCaregiverCanHelpChildProps> = ({
-  childId,
-  onSubmit,
-}) => {
+export const CaregiverCanHelpChildWith: React.FC<
+  HowCaregiverCanHelpChildProps
+> = ({ childId, onSubmit }) => {
   const { currentReport } = useChildProgressObservation(childId);
-  const allCategories = useSelector(progressTrackingSelectors.getProgressTrackingCategories);
+  const allCategories = useSelector(
+    progressTrackingSelectors.getProgressTrackingCategories
+  );
   const child = useSelector(childrenSelectors.getChildById(childId));
-  const childUser = useSelector(childrenSelectors.getChildUserById(child?.userId));
+  const childUser = useSelector(
+    childrenSelectors.getChildUserById(child?.userId)
+  );
 
   const {
     getValues: getFormValue,
@@ -43,9 +46,13 @@ export const CaregiverCanHelpChildWith: React.FC<HowCaregiverCanHelpChildProps> 
 
   useEffect(() => {
     if (currentReport && currentReport.howCanCaregiverHelpChild) {
-      setFormValue('howCanCaregiverHelpChild', currentReport.howCanCaregiverHelpChild, {
-        shouldValidate: true,
-      });
+      setFormValue(
+        'howCanCaregiverHelpChild',
+        currentReport.howCanCaregiverHelpChild,
+        {
+          shouldValidate: true,
+        }
+      );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentReport]);
@@ -76,16 +83,21 @@ export const CaregiverCanHelpChildWith: React.FC<HowCaregiverCanHelpChildProps> 
       {currentReport &&
         currentReport.categories &&
         allCategories.map((cat) => {
-          const categoryFromReport = getCategoryFromCurrentReport(cat.id, currentReport);
+          const categoryFromReport = getCategoryFromCurrentReport(
+            cat.id,
+            currentReport
+          );
           return (
             <ObservationCategoryCard
               key={`completed-${cat.id}`}
               className={'mt-4'}
               categoryName={cat.name}
               isCompetentWithCategory={
-                [ProgressTrackingLevels.LevelThree, ProgressTrackingLevels.LevelTwo].includes(
-                  categoryFromReport?.achievedLevelId ?? 0
-                ) && !categoryFromReport?.supportingTask
+                [
+                  ProgressTrackingLevels.LevelThree,
+                  ProgressTrackingLevels.LevelTwo,
+                ].includes(categoryFromReport?.achievedLevelId ?? 0) &&
+                !categoryFromReport?.supportingTask
               }
               categoryColour={cat.color}
               childName={`${childUser?.firstName}`}

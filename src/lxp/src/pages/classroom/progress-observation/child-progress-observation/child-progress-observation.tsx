@@ -4,7 +4,14 @@ import {
   ChildProgressObservationReport,
   capitalizeFirstLetter,
 } from '@ecdlink/core';
-import { Alert, BannerWrapper, Dialog, DialogPosition, ListItem, Typography } from '@ecdlink/ui';
+import {
+  Alert,
+  BannerWrapper,
+  Dialog,
+  DialogPosition,
+  ListItem,
+  Typography,
+} from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
 import { ChildProgressNoteCard } from '../components/child-progress-note-card/child-progress-note-card';
@@ -12,7 +19,10 @@ import { ProgressTrackingLevels } from '@enums/ProgressTrackingLevels';
 import { useChildProgressObservation } from '@hooks/useChildProgressObservations';
 
 import { getProgressTrackingCategories } from '@store/progress-tracking/progress-tracking.selectors';
-import { getReportingPeriod, isMatchingReportingPeriods } from '@utils/child/child-profile-utils';
+import {
+  getReportingPeriod,
+  isMatchingReportingPeriods,
+} from '@utils/child/child-profile-utils';
 import { newGuid } from '@utils/common/uuid.utils';
 
 import * as styles from './child-progress-observation.styles';
@@ -40,15 +50,20 @@ export const ChildProgressObservationPage: React.FC = () => {
   const history = useHistory();
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
-  const { state: routeState } = useLocation<ChildProgressObservationPageState>();
+  const { state: routeState } =
+    useLocation<ChildProgressObservationPageState>();
   const { getDocumentTypeIdByEnum } = useStaticData();
   const typeId = getDocumentTypeIdByEnum(FileTypeEnum.ProfileImage);
 
-  const reportingDate = routeState.reportingDate ? new Date(routeState.reportingDate) : new Date();
+  const reportingDate = routeState.reportingDate
+    ? new Date(routeState.reportingDate)
+    : new Date();
   const reportingPeriod = getReportingPeriod(reportingDate);
 
   const child = useSelector(childrenSelectors.getChildById(routeState.childId));
-  const childUser = useSelector(childrenSelectors.getChildUserById(child?.userId));
+  const childUser = useSelector(
+    childrenSelectors.getChildUserById(child?.userId)
+  );
 
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const [tutorialActive, setTutorialActive] = useState<boolean>(false);
@@ -56,8 +71,12 @@ export const ChildProgressObservationPage: React.FC = () => {
   const profilePicture = useSelector(
     documentSelectors.getDocumentByTypeId(practitionerUser?.id, typeId)
   );
-  const categories: ProgressTrackingCategoryDto[] = useSelector(getProgressTrackingCategories);
-  const summaries = useSelector(contentReportSelectors.getChildProgressReportSummaries());
+  const categories: ProgressTrackingCategoryDto[] = useSelector(
+    getProgressTrackingCategories
+  );
+  const summaries = useSelector(
+    contentReportSelectors.getChildProgressReportSummaries()
+  );
 
   const report = useSelector(
     contentReportSelectors.getChildProgressObservationReportByReportingPeriod(
@@ -78,7 +97,10 @@ export const ChildProgressObservationPage: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOnline]);
 
-  const { saveReport } = useChildProgressObservation(routeState.childId, report);
+  const { saveReport } = useChildProgressObservation(
+    routeState.childId,
+    report
+  );
 
   const reportNote = report?.observationNote;
 
@@ -93,7 +115,8 @@ export const ChildProgressObservationPage: React.FC = () => {
       isMatchingReportingPeriods(new Date(summary.reportDate), reportingDate)
   );
 
-  const isReturningUser = completedCategories.length > 0 || inProgressCategories.length > 0;
+  const isReturningUser =
+    completedCategories.length > 0 || inProgressCategories.length > 0;
 
   const onCategoryNavigation = async (
     categoryId: number,
@@ -172,7 +195,9 @@ export const ChildProgressObservationPage: React.FC = () => {
     <>
       <BannerWrapper
         size={'small'}
-        onBack={() => history.push('/child-profile', { childId: routeState.childId })}
+        onBack={() =>
+          history.push('/child-profile', { childId: routeState.childId })
+        }
         title={`Track ${childUser?.firstName}'s progress`}
         data-testId={'child-progress-observation-banner-wrapper'}
         renderOverflow
@@ -180,9 +205,16 @@ export const ChildProgressObservationPage: React.FC = () => {
         displayHelp={true}
         onHelp={() => setTutorialActive(true)}
       >
-        <div data-testid={'child-progress-observation-content'} className={styles.wrapper}>
+        <div
+          data-testid={'child-progress-observation-content'}
+          className={styles.wrapper}
+        >
           <div className={styles.contentWrapper}>
-            <Typography text={'Progress Observations'} type={'h1'} color="primary" />
+            <Typography
+              text={'Progress Observations'}
+              type={'h1'}
+              color="primary"
+            />
             <Typography
               text={
                 reportingPeriod.monthName === 'June'
@@ -235,7 +267,10 @@ export const ChildProgressObservationPage: React.FC = () => {
                 dividerColor={'uiBg'}
                 dividerType={'solid'}
                 onButtonClick={() => {
-                  onCategoryNavigation(cat.id, ChildProgressObservationStatus.NotStarted);
+                  onCategoryNavigation(
+                    cat.id,
+                    ChildProgressObservationStatus.NotStarted
+                  );
                 }}
               />
             );
@@ -266,7 +301,10 @@ export const ChildProgressObservationPage: React.FC = () => {
                     dividerColor={'uiBg'}
                     dividerType={'solid'}
                     onButtonClick={() => {
-                      onCategoryNavigation(cat.id, ChildProgressObservationStatus.Started);
+                      onCategoryNavigation(
+                        cat.id,
+                        ChildProgressObservationStatus.Started
+                      );
                     }}
                   />
                 );
@@ -283,7 +321,10 @@ export const ChildProgressObservationPage: React.FC = () => {
                 className={'mt-4 mb-2'}
               />
               {completedCategories.map((cat: ProgressTrackingCategoryDto) => {
-                const categoryFromReport = getCategoryFromCurrentReport(cat.id, report);
+                const categoryFromReport = getCategoryFromCurrentReport(
+                  cat.id,
+                  report
+                );
 
                 return (
                   <ObservationCategoryCard
@@ -292,16 +333,25 @@ export const ChildProgressObservationPage: React.FC = () => {
                     categoryName={cat.name}
                     categoryColour={cat.color}
                     isCompetentWithCategory={
-                      [ProgressTrackingLevels.LevelThree, ProgressTrackingLevels.LevelTwo].includes(
-                        categoryFromReport?.achievedLevelId ?? 0
-                      ) && !categoryFromReport?.supportingTask
+                      [
+                        ProgressTrackingLevels.LevelThree,
+                        ProgressTrackingLevels.LevelTwo,
+                      ].includes(categoryFromReport?.achievedLevelId ?? 0) &&
+                      !categoryFromReport?.supportingTask
                     }
                     levelId={categoryFromReport?.achievedLevelId || 0}
                     childName={`${childUser?.firstName} ${childUser?.surname}`}
-                    helpingSkillId={categoryFromReport?.supportingTask?.taskId || 0}
-                    toDoNote={categoryFromReport?.supportingTask?.todoText || ''}
+                    helpingSkillId={
+                      categoryFromReport?.supportingTask?.taskId || 0
+                    }
+                    toDoNote={
+                      categoryFromReport?.supportingTask?.todoText || ''
+                    }
                     onEdit={() =>
-                      onCategoryNavigation(cat.id, ChildProgressObservationStatus.Completed)
+                      onCategoryNavigation(
+                        cat.id,
+                        ChildProgressObservationStatus.Completed
+                      )
                     }
                   />
                 );

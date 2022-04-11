@@ -9,5 +9,3 @@ export interface ProgressTrackingCategoryDto {
   description: string;
   subCategories: ProgressTrackingSubCategoryDto[];
 }
-
-

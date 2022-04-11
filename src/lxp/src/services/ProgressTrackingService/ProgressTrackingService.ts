@@ -13,7 +13,9 @@ class ProgressTrackingService {
     this._accessToken = accessToken;
   }
 
-  async getProgressTrackingCategories(locale: string): Promise<ProgressTrackingCategoryDto[]> {
+  async getProgressTrackingCategories(
+    locale: string
+  ): Promise<ProgressTrackingCategoryDto[]> {
     const apiInstance = await api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
@@ -37,7 +39,9 @@ class ProgressTrackingService {
     });
 
     if (response.status !== 200) {
-      throw new Error('Get Progress Tracking Categories failed - Server connection error');
+      throw new Error(
+        'Get Progress Tracking Categories failed - Server connection error'
+      );
     }
 
     return response.data.data.GetAllProgressTrackingCategory;
@@ -67,13 +71,17 @@ class ProgressTrackingService {
     });
 
     if (response.status !== 200) {
-      throw new Error('Get Progress Tracking Sub-Categories failed - Server connection error');
+      throw new Error(
+        'Get Progress Tracking Sub-Categories failed - Server connection error'
+      );
     }
 
     return response.data.data.GetAllProgressTrackingSubCategory;
   }
 
-  async getProgressTrackingSkills(locale: string): Promise<ProgressTrackingSkillDto[]> {
+  async getProgressTrackingSkills(
+    locale: string
+  ): Promise<ProgressTrackingSkillDto[]> {
     const apiInstance = await api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
@@ -99,7 +107,9 @@ class ProgressTrackingService {
     return response.data.data.GetAllProgressTrackingSkill;
   }
 
-  async getProgressTrackingLevels(locale: string): Promise<ProgressTrackingLevelDto[]> {
+  async getProgressTrackingLevels(
+    locale: string
+  ): Promise<ProgressTrackingLevelDto[]> {
     const apiInstance = await api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
@@ -118,7 +128,9 @@ class ProgressTrackingService {
     });
 
     if (response.status !== 200) {
-      throw new Error('Get Progress Tracking Levels failed - Server connection error');
+      throw new Error(
+        'Get Progress Tracking Levels failed - Server connection error'
+      );
     }
 
     return response.data.data.GetAllProgressTrackingLevel;

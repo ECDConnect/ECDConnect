@@ -34,7 +34,6 @@ export const IconImageListItem: React.FC<IconImageListItemProps> = ({
       dividerType={showDivider ? 'solid' : 'none'}
       dividerColor={showDivider ? 'uiBg' : 'transparent'}
       overwritePreSlotRender={iconSlotRender}
-
     />
   );
 };

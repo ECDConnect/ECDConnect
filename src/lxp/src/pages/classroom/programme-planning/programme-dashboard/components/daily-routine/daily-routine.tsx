@@ -1,4 +1,11 @@
-import { ActionModal, Alert, Button, Typography, DialogPosition, renderIcon } from '@ecdlink/ui';
+import {
+  ActionModal,
+  Alert,
+  Button,
+  Typography,
+  DialogPosition,
+  renderIcon,
+} from '@ecdlink/ui';
 import { DateFormats } from '../../../../../../constants/Dates';
 import {
   getActivityIdForRoutineItem,
@@ -11,7 +18,11 @@ import { ProgrammePlanningRoutineListItem } from '../../../components/programme-
 import { DailyRoutineProps } from './daily-routine.types';
 import { useSelector } from 'react-redux';
 import { programmeRoutineSelectors } from '@store/content/programme-routine';
-import { DailyProgrammeDto, ProgrammeRoutineItemDto, useDialog } from '@ecdlink/core';
+import {
+  DailyProgrammeDto,
+  ProgrammeRoutineItemDto,
+  useDialog,
+} from '@ecdlink/core';
 import { MessageBoard } from '../../../components/message-board/message-board';
 import { DailyRoutineItemType } from '@enums/ProgrammeRoutineType';
 import ActivityDetails from '../../../components/activities/activity/activity-details/activity-details';
@@ -28,16 +39,23 @@ import { useHolidays } from '@hooks/useHolidays';
 import { useEffect, useState } from 'react';
 import { PublicHolidayIndicator } from '../../../programme-routine/components/public-holiday-indicator/public-holiday-indicator';
 
-export const DailyRoutine: React.FC<DailyRoutineProps> = ({ programme, currentDailyProgramme }) => {
+export const DailyRoutine: React.FC<DailyRoutineProps> = ({
+  programme,
+  currentDailyProgramme,
+}) => {
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
-  const programmeRoutine = useSelector(programmeRoutineSelectors.getProgrammeRoutineById(1));
+  const programmeRoutine = useSelector(
+    programmeRoutineSelectors.getProgrammeRoutineById(1)
+  );
   const programmeWeeks = getProgrammeWeeks(programme);
   const appDispatch = useAppDispatch();
   const dialog = useDialog();
   const currentDate = new Date();
-  const { getCurrentProgrammeRecommendedActivities } = useProgrammePlanningRecommendations();
-  const recommendedActivities = getCurrentProgrammeRecommendedActivities(programme);
+  const { getCurrentProgrammeRecommendedActivities } =
+    useProgrammePlanningRecommendations();
+  const recommendedActivities =
+    getCurrentProgrammeRecommendedActivities(programme);
   const routineContainsIncompleteDays =
     programmeWeeks.filter((week) => week.totalIncompleteDays > 0).length > 0;
   const isCurrentDayEmpty =
@@ -103,7 +121,10 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({ programme, currentDa
   };
 
   const openActivityItem = (routineItem: ProgrammeRoutineItemDto) => {
-    const activityId = getActivityIdForRoutineItem(routineItem.name, currentDailyProgramme);
+    const activityId = getActivityIdForRoutineItem(
+      routineItem.name,
+      currentDailyProgramme
+    );
 
     if (!activityId) {
       onEditActivityItem(routineItem);
@@ -182,7 +203,10 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({ programme, currentDa
     openActivityItem(routineItem);
   };
 
-  const onActivitySelected = (routineItem: ProgrammeRoutineItemDto, activityId?: number) => {
+  const onActivitySelected = (
+    routineItem: ProgrammeRoutineItemDto,
+    activityId?: number
+  ) => {
     if (!currentDailyProgramme) return;
 
     const currentDayCopy = { ...currentDailyProgramme };
@@ -198,7 +222,10 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({ programme, currentDa
 
     saveCurrentDay(currentDayCopy);
   };
-  const onStoryAndActivitySelected = (storyId?: number, activityId?: number) => {
+  const onStoryAndActivitySelected = (
+    storyId?: number,
+    activityId?: number
+  ) => {
     if (!currentDailyProgramme) return;
 
     const currentDayCopy = { ...currentDailyProgramme };
@@ -216,10 +243,9 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({ programme, currentDa
         return routineItem.name !== DailyRoutineItemType.storyBook ? (
           <ActivitySearch
             title={routineItem.name}
-            subtitle={`${new Date(currentDailyProgramme?.dayDate || new Date()).toLocaleString(
-              'en-ZA',
-              DateFormats.dayWithLongMonthName
-            )}`}
+            subtitle={`${new Date(
+              currentDailyProgramme?.dayDate || new Date()
+            ).toLocaleString('en-ZA', DateFormats.dayWithLongMonthName)}`}
             programmeId={programme?.id}
             preSelectedActivityId={
               routineItem.name === DailyRoutineItemType.largeGroup
@@ -244,10 +270,9 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({ programme, currentDa
             programmeId={programme?.id}
             routineItem={routineItem}
             title={`Story & activity`}
-            subtitle={new Date(currentDailyProgramme?.dayDate || new Date()).toLocaleString(
-              'en-ZA',
-              DateFormats.dayWithLongMonthName
-            )}
+            subtitle={new Date(
+              currentDailyProgramme?.dayDate || new Date()
+            ).toLocaleString('en-ZA', DateFormats.dayWithLongMonthName)}
             onSave={(storyId?: number, activityId?: number) => {
               onStoryAndActivitySelected(storyId, activityId);
               onSubmit();
@@ -274,10 +299,15 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({ programme, currentDa
     <div className={'flex flex-col pt-4'}>
       <ProgrammePlanningHeader
         headerText={`Today's daily Routine`}
-        subHeaderText={currentDate.toLocaleString('en-ZA', DateFormats.dayFullMonthYear)}
+        subHeaderText={currentDate.toLocaleString(
+          'en-ZA',
+          DateFormats.dayFullMonthYear
+        )}
         themeName={programme?.name || 'No theme'}
         showCount={false}
-        plannedWeeks={programmeWeeks.filter((week) => week.totalIncompleteDays === 0).length}
+        plannedWeeks={
+          programmeWeeks.filter((week) => week.totalIncompleteDays === 0).length
+        }
         totalWeeks={programmeWeeks.length}
       />
 
@@ -290,7 +320,11 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({ programme, currentDa
           onClick={handleViewProgrammeSummary}
         >
           {renderIcon('CalendarIcon', 'h-5 w-5 text-primary')}
-          <Typography type={'small'} color={'primary'} text={'Programme summary'} />
+          <Typography
+            type={'small'}
+            color={'primary'}
+            text={'Programme summary'}
+          />
         </Button>
         <Button
           id="gtm-add-programme"
@@ -305,14 +339,16 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({ programme, currentDa
         </Button>
       </div>
 
-      {!isCurrentDayEmpty && routineContainsIncompleteDays && !isCurrentDayHoliday && (
-        <Alert
-          className={'mx-4 mb-4'}
-          type={'warning'}
-          title={'There are incomplete days in your programme.'}
-          message={'Tap on Programme summary to complete your programme.'}
-        />
-      )}
+      {!isCurrentDayEmpty &&
+        routineContainsIncompleteDays &&
+        !isCurrentDayHoliday && (
+          <Alert
+            className={'mx-4 mb-4'}
+            type={'warning'}
+            title={'There are incomplete days in your programme.'}
+            message={'Tap on Programme summary to complete your programme.'}
+          />
+        )}
 
       {isCurrentDayEmpty && !isCurrentDayHoliday && (
         <Alert
@@ -325,7 +361,9 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({ programme, currentDa
 
       {currentDailyProgramme &&
         (isCurrentDayHoliday ? (
-          <PublicHolidayIndicator date={new Date(currentDailyProgramme.dayDate)} />
+          <PublicHolidayIndicator
+            date={new Date(currentDailyProgramme.dayDate)}
+          />
         ) : (
           <div className="mt-4">
             {programmeRoutine?.routineItems.map((routineItem) => (

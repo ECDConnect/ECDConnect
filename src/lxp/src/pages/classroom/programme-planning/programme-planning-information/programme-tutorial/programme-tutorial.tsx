@@ -54,7 +54,9 @@ export const ProgrammeTutorial = () => {
       displayOffline={!isOnline}
     >
       <div className="bg-white">
-        {notifications ? <StackedList listItems={notifications} type={'MenuList'} /> : null}
+        {notifications ? (
+          <StackedList listItems={notifications} type={'MenuList'} />
+        ) : null}
       </div>
 
       <div className={'px-4 pt-2 bg-uiBg'}>

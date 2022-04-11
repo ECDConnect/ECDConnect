@@ -7,7 +7,11 @@ export interface StatsBarProps {
   showDialog?: (item) => void;
 }
 
-export default function StatsBar({ stats, gridClass, showDialog }: StatsBarProps) {
+export default function StatsBar({
+  stats,
+  gridClass,
+  showDialog,
+}: StatsBarProps) {
   return (
     <div>
       <dl className={`grid grid-cols-1 gap-4 sm:grid-cols-2 lg:${gridClass}`}>
@@ -26,17 +30,23 @@ export default function StatsBar({ stats, gridClass, showDialog }: StatsBarProps
               <div className={`absolute rounded-md p-3 ${item.color}`}>
                 <item.icon className="h-6 w-6 text-white" aria-hidden="true" />
               </div>
-              <p className="ml-16 text-sm font-medium text-gray-500 truncate">{item.name}</p>
+              <p className="ml-16 text-sm font-medium text-gray-500 truncate">
+                {item.name}
+              </p>
 
               {/* {item.miniText && (
                 <p className="ml-16 text-sm font-medium text-gray-500 truncate">{item.miniText}</p>
               )} */}
             </dt>
             <dd className="ml-16 pb-6 flex items-baseline sm:pb-7">
-              <p className="text-2xl font-semibold text-gray-900">{item.stat}</p>
+              <p className="text-2xl font-semibold text-gray-900">
+                {item.stat}
+              </p>
               <p
                 className={classNames(
-                  item.changeType === 'increase' ? 'text-green-600' : 'text-red-600',
+                  item.changeType === 'increase'
+                    ? 'text-green-600'
+                    : 'text-red-600',
                   'ml-2 flex items-baseline text-sm font-semibold'
                 )}
               ></p>

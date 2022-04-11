@@ -26,7 +26,8 @@ const practitionerSlice = createSlice({
   },
 });
 
-const { reducer: practitionerReducer, actions: practitionerActions } = practitionerSlice;
+const { reducer: practitionerReducer, actions: practitionerActions } =
+  practitionerSlice;
 
 const practitionerPersistConfig = {
   key: 'practitioner',

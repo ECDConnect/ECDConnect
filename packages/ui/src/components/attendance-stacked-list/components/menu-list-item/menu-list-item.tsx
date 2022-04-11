@@ -1,8 +1,8 @@
-import { ChevronRightIcon } from "@heroicons/react/solid";
-import { renderIcon } from "../../../../utils";
-import { MenuListDataItem } from "../../../../models";
-import * as stackedListStyles from "../../../stacked-list/stacked-list.styles";
-import * as styles from "./menu-list-item.styles";
+import { ChevronRightIcon } from '@heroicons/react/solid';
+import { renderIcon } from '../../../../utils';
+import { MenuListDataItem } from '../../../../models';
+import * as stackedListStyles from '../../../stacked-list/stacked-list.styles';
+import * as styles from './menu-list-item.styles';
 
 export interface MenuListItemProps {
   item: MenuListDataItem;

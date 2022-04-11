@@ -23,7 +23,9 @@ export const getDocuments = createAsyncThunk<
         let documents: DocumentDto[] | undefined;
 
         if (userAuth?.auth_token) {
-          documents = await new DocumentService(userAuth?.auth_token).getdocuments(userAuth.id);
+          documents = await new DocumentService(
+            userAuth?.auth_token
+          ).getdocuments(userAuth.id);
         } else {
           return rejectWithValue('no access token, profile check required');
         }
@@ -82,7 +84,10 @@ export const createDocument = createAsyncThunk<
                 IsActive: true,
               };
 
-              await _documentService.updateDocument(document.id ?? '', documentInputModel);
+              await _documentService.updateDocument(
+                document.id ?? '',
+                documentInputModel
+              );
             }
           }
         }

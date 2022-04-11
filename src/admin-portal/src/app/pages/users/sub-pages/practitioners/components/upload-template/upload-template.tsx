@@ -32,7 +32,10 @@ export default function UploadPractitionerTemplate({
 
   return (
     <div className="flex flex-col">
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 divide-y divide-gray-200">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="space-y-8 divide-y divide-gray-200"
+      >
         <div className="-ml-4 -mt-2 flex items-center justify-between flex-wrap sm:flex-nowrap">
           <div className="ml-4 mt-2"></div>
           <div className="ml-4 mt-2 flex-shrink-0">

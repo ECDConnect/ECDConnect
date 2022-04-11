@@ -13,10 +13,25 @@ import { renderIcon } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import * as styles from '../../edit-practitioner-profile.styles';
-import { EditPlaygroupModel, editPlaygroupSchema } from '@schemas/practitioner/edit-playgroups';
-import { buttonDays, dayTypes, EditPlaygroupProps } from './edit-playgroup.form.types';
-import { canDeleteClassroomGroup, Weekdays } from '@utils/practitioner/playgroups-utils';
-import { ClassroomGroupDto, DialogModalOptions, RecursivePartial, useDialog } from '@ecdlink/core';
+import {
+  EditPlaygroupModel,
+  editPlaygroupSchema,
+} from '@schemas/practitioner/edit-playgroups';
+import {
+  buttonDays,
+  dayTypes,
+  EditPlaygroupProps,
+} from './edit-playgroup.form.types';
+import {
+  canDeleteClassroomGroup,
+  Weekdays,
+} from '@utils/practitioner/playgroups-utils';
+import {
+  ClassroomGroupDto,
+  DialogModalOptions,
+  RecursivePartial,
+  useDialog,
+} from '@ecdlink/core';
 import { ClassroomGroupService } from '@services/ClassroomGroupService';
 import { useSelector } from 'react-redux';
 import { authSelectors } from '@store/auth';
@@ -31,7 +46,8 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
 }) => {
   const [selectedDays, setSelectedDays] = useState<Weekdays[]>([]);
   const authUser = useSelector(authSelectors.getAuthUser);
-  const [classroomGroup, setClassroomGroup] = useState<RecursivePartial<ClassroomGroupDto>>();
+  const [classroomGroup, setClassroomGroup] =
+    useState<RecursivePartial<ClassroomGroupDto>>();
 
   const { isOnline } = useOnlineStatus();
 
@@ -90,7 +106,9 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
     return (
       <ActionModal
         title={`Delete ${playgroup?.name}.`}
-        paragraphs={[`Are you sure you want to delete ${playgroup?.name} playgroup?`]}
+        paragraphs={[
+          `Are you sure you want to delete ${playgroup?.name} playgroup?`,
+        ]}
         actionButtons={[
           {
             text: 'Delete',
@@ -131,7 +149,9 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
       return;
     }
 
-    const canDeleteGroup = canDeleteClassroomGroup(classroomGroup as ClassroomGroupDto);
+    const canDeleteGroup = canDeleteClassroomGroup(
+      classroomGroup as ClassroomGroupDto
+    );
 
     if (!canDeleteGroup) {
       dialogOptionModel = {
@@ -184,7 +204,12 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
 
   return (
     <>
-      <Typography type={'h1'} text={title} color={'primary'} className={'my-3'} />
+      <Typography
+        type={'h1'}
+        text={title}
+        color={'primary'}
+        className={'my-3'}
+      />
       <FormInput<EditPlaygroupModel>
         label={`Give your playgroup a name`}
         register={playgroupFormRegister}
@@ -195,12 +220,16 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
         <span className={styles.label}>{`When does ${
           name ? `"${name}"` : 'the'
         } playgroup meet?`}</span>
-        <span className={styles.hintStyle}>You must choose at least 2 days</span>
+        <span className={styles.hintStyle}>
+          You must choose at least 2 days
+        </span>
         <div className="mt-2">
           <ButtonGroup<number>
             type={ButtonGroupTypes.Chip}
             options={buttonDays}
-            onOptionSelected={(value: number | number[]) => handleDaySelection(value as Weekdays[])}
+            onOptionSelected={(value: number | number[]) =>
+              handleDaySelection(value as Weekdays[])
+            }
             multiple
             selectedOptions={selectedDays}
             color="secondary"
@@ -236,12 +265,24 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
           }}
           disabled={!isFormValid()}
         >
-          {renderIcon(`${isNew ? 'ArrowCircleRightIcon' : 'SaveIcon'}`, styles.icon)}
+          {renderIcon(
+            `${isNew ? 'ArrowCircleRightIcon' : 'SaveIcon'}`,
+            styles.icon
+          )}
 
-          <Typography type={'help'} text={`${isNew ? 'Next' : 'Save'}`} color={'white'} />
+          <Typography
+            type={'help'}
+            text={`${isNew ? 'Next' : 'Save'}`}
+            color={'white'}
+          />
         </Button>
         {!isNew && (
-          <Button type="outlined" color="primary" className="w-full mt-10" onClick={confirmDelete}>
+          <Button
+            type="outlined"
+            color="primary"
+            className="w-full mt-10"
+            onClick={confirmDelete}
+          >
             {renderIcon('TrashIcon', styles.iconPrimary)}
             <Typography type={'help'} text={'Delete'} color={'primary'} />
           </Button>

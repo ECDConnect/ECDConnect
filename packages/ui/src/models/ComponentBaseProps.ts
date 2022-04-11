@@ -1,5 +1,5 @@
 export interface ComponentBaseProps {
-  id?:string;
+  id?: string;
   className?: string;
   testId?: string;
   onClick?: () => void;

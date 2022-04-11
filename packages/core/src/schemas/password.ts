@@ -16,7 +16,7 @@ const containsSpecialCharactersRegex = new RegExp(
 );
 
 export const passwordSchema = Yup.object().shape({
-  password: Yup.string()    
+  password: Yup.string()
     .min(8, 'Password is too short - should be 8 chars minimum.')
     .matches(
       containsNumericRegex,

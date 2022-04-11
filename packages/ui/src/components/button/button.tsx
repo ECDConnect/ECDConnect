@@ -42,10 +42,20 @@ export const Button: React.FC<ButtonProps> = ({
       disabled={disabled}
       onClick={onClick}
     >
-      {isLoading && <LoadingSpinner size="small" spinnerColor="white" backgroundColor="uiMid" />}
-      {icon && iconPosition === 'start' && renderIcon(icon, `h-5 w-4 mr-2 text-${textColor}`)}
+      {isLoading && (
+        <LoadingSpinner
+          size="small"
+          spinnerColor="white"
+          backgroundColor="uiMid"
+        />
+      )}
+      {icon &&
+        iconPosition === 'start' &&
+        renderIcon(icon, `h-5 w-4 mr-2 text-${textColor}`)}
       {text && <Typography type={'body'} color={textColor} text={text} />}
-      {icon && iconPosition === 'end' && renderIcon(icon, `h-5 w-4 ml-2 text-${textColor}`)}
+      {icon &&
+        iconPosition === 'end' &&
+        renderIcon(icon, `h-5 w-4 ml-2 text-${textColor}`)}
       {children}
     </button>
   );

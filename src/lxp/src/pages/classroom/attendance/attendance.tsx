@@ -22,7 +22,8 @@ import { AttendanceReport } from './components/attendance-report/attendance-repo
 import { AttendanceSummary } from './components/attendance-summary/attendance-summary';
 
 export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
-  const [attendanceComponentType, setAttendanceComponentType] = useState<AttendanceComponentType>();
+  const [attendanceComponentType, setAttendanceComponentType] =
+    useState<AttendanceComponentType>();
 
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
@@ -39,7 +40,10 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
     const currentWeekAttendance: AttendanceDto[] = attendance;
     const currentDate = new Date();
 
-    const currentClassProgramme = classroomGroupHasAttendanceOnDate(classProgrammes, currentDate);
+    const currentClassProgramme = classroomGroupHasAttendanceOnDate(
+      classProgrammes,
+      currentDate
+    );
 
     const currentDayClassroomGroup = classroomGroups.find(
       (x) => x.id === currentClassProgramme?.classroomGroupId
@@ -77,7 +81,9 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
     // is attendance complete for whole weeek?
     if (!classroom) return;
 
-    const classgroup = classroomGroups?.find((x) => x.id === attendanceResult.classroomGroupId);
+    const classgroup = classroomGroups?.find(
+      (x) => x.id === attendanceResult.classroomGroupId
+    );
 
     if (!classgroup) return;
 
@@ -121,6 +127,10 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   }
 
   return (
-    <div>{attendanceComponentType ? getComponentToRender(attendanceComponentType) : null}</div>
+    <div>
+      {attendanceComponentType
+        ? getComponentToRender(attendanceComponentType)
+        : null}
+    </div>
   );
 };

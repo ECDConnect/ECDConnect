@@ -7,5 +7,6 @@ export const buttonIcon = 'w-5 h-5 text-primary mr-1';
 export const spaceTopBig = 'mt-4';
 export const spaceTopSmall = 'mt-1';
 export const spaceTopMedium = 'mt-1';
-export const headerBar = 'flex flex-row justify-between items-center flex-shrink-0';
+export const headerBar =
+  'flex flex-row justify-between items-center flex-shrink-0';
 export const levelContainer = 'flex flex-row flex-nowrap items-center';

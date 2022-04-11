@@ -36,11 +36,17 @@ export const PractitionerAbout: React.FC = () => {
   const history = useHistory();
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
-  const { userProfilePicture, deleteDocument, createNewDocument, updateDocument } = useDocuments();
+  const {
+    userProfilePicture,
+    deleteDocument,
+    createNewDocument,
+    updateDocument,
+  } = useDocuments();
 
   const [editFieldVisible, setEditFieldVisible] = useState(false);
   const [displayError, setDisplayError] = useState<boolean>(false);
-  const [editProfilePictureVisible, setEditProfilePictureVisible] = useState(false);
+  const [editProfilePictureVisible, setEditProfilePictureVisible] =
+    useState(false);
 
   useEffect(() => {
     if (!isOnline) {
@@ -90,7 +96,9 @@ export const PractitionerAbout: React.FC = () => {
     mode: 'onChange',
   });
 
-  const [dialogFormInput, setDialogFormInput] = useState<DialogFormInput<PractitionerAboutModel>>({
+  const [dialogFormInput, setDialogFormInput] = useState<
+    DialogFormInput<PractitionerAboutModel>
+  >({
     label: '',
     formFieldName: 'name',
     value: '',
@@ -163,7 +171,9 @@ export const PractitionerAbout: React.FC = () => {
     setListItems(list);
   };
 
-  const editField = (formInputToLoad: DialogFormInput<PractitionerAboutModel>) => {
+  const editField = (
+    formInputToLoad: DialogFormInput<PractitionerAboutModel>
+  ) => {
     setDialogFormInput(formInputToLoad);
     setEditFieldVisible(true);
   };
@@ -256,7 +266,11 @@ export const PractitionerAbout: React.FC = () => {
             hasConsent={true}
           />
         </div>
-        <StackedList className={'bg-uiBg'} listItems={listItems} type={'ActionList'}></StackedList>
+        <StackedList
+          className={'bg-uiBg'}
+          listItems={listItems}
+          type={'ActionList'}
+        ></StackedList>
       </BannerWrapper>
 
       <Dialog
@@ -274,7 +288,9 @@ export const PractitionerAbout: React.FC = () => {
               text={dialogFormInput.label}
               weight="bold"
             ></Typography>
-            <div onClick={closeEditField}>{renderIcon('XIcon', 'h-6 w-6 text-uiLight')}</div>
+            <div onClick={closeEditField}>
+              {renderIcon('XIcon', 'h-6 w-6 text-uiLight')}
+            </div>
           </div>
           <FormInput<PractitionerAboutModel>
             visible={true}
@@ -289,19 +305,34 @@ export const PractitionerAbout: React.FC = () => {
                 type="help"
                 color="errorMain"
                 text={
-                  practitionerAboutFormState.errors[dialogFormInput.formFieldName]?.message || ''
+                  practitionerAboutFormState.errors[
+                    dialogFormInput.formFieldName
+                  ]?.message || ''
                 }
                 className={'mb-6'}
               ></Typography>
             </div>
           )}
-          <Button type="filled" color="primary" className={'w-full'} onClick={saveEdit}>
+          <Button
+            type="filled"
+            color="primary"
+            className={'w-full'}
+            onClick={saveEdit}
+          >
             {renderIcon('SaveIcon', styles.buttonIcon)}
-            <Typography type="help" className="mr-2" color="white" text={'Save'}></Typography>
+            <Typography
+              type="help"
+              className="mr-2"
+              color="white"
+              text={'Save'}
+            ></Typography>
           </Button>
         </div>
       </Dialog>
-      <Dialog visible={editProfilePictureVisible} position={DialogPosition.Bottom}>
+      <Dialog
+        visible={editProfilePictureVisible}
+        position={DialogPosition.Bottom}
+      >
         <div className={'p-4'}>
           <PhotoPrompt
             title="Profile Photo"

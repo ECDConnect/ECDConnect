@@ -7,14 +7,17 @@ export interface DialogModalOptions {
   position?: DialogPosition;
   blocking?: boolean;
 }
-const DialogServiceContext = React.createContext<(options: DialogModalOptions) => void>(() => {
+const DialogServiceContext = React.createContext<
+  (options: DialogModalOptions) => void
+>(() => {
   throw new Error('Please ensure you register the dialog provider!');
 });
 
 export const useDialog = () => React.useContext(DialogServiceContext);
 
 export const DialogServiceProvider = ({ children }: any) => {
-  const [dialogState, setDialogState] = React.useState<DialogModalOptions | null>(null);
+  const [dialogState, setDialogState] =
+    React.useState<DialogModalOptions | null>(null);
 
   const openConfirmation = (options: DialogModalOptions) => {
     setDialogState(options);
@@ -33,7 +36,10 @@ export const DialogServiceProvider = ({ children }: any) => {
 
   return (
     <>
-      <DialogServiceContext.Provider value={openConfirmation} children={children} />
+      <DialogServiceContext.Provider
+        value={openConfirmation}
+        children={children}
+      />
       {dialogState && (
         <DialogModal
           open={Boolean(dialogState)}

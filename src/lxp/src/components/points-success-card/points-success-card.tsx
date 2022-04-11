@@ -36,16 +36,28 @@ export const PointsSuccessCard: React.FC<PointsSuccessCardProps> = ({
             <div className={styles.contentWrapper}>
               <div className={'flex flex-1 flex-row'}>
                 <div>
-                  <div className={styles.iconRound}>{renderIcon(icon, 'h-6 w-6 text-white')}</div>
+                  <div className={styles.iconRound}>
+                    {renderIcon(icon, 'h-6 w-6 text-white')}
+                  </div>
                 </div>
-                <div className={styles.textWrapper} data-testid="important-wrapper">
+                <div
+                  className={styles.textWrapper}
+                  data-testid="important-wrapper"
+                >
                   {message?.length > 0 && (
-                    <Typography type={'body'} weight={'bold'} text={message} color={'white'} />
+                    <Typography
+                      type={'body'}
+                      weight={'bold'}
+                      text={message}
+                      color={'white'}
+                    />
                   )}
                   {isSmartStartUser && (
                     <div>
                       <div className={'flex flex-row mt-2'}>
-                        <div>{renderIcon('GiftIcon', 'h-5 w-5 text-white mr-1.5')}</div>
+                        <div>
+                          {renderIcon('GiftIcon', 'h-5 w-5 text-white mr-1.5')}
+                        </div>
                         <Typography
                           type={'body'}
                           weight={'bold'}

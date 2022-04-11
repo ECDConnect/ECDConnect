@@ -72,7 +72,8 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
   };
 
   const handleFile = async (file: any) => {
-    const compressedFile = isImage && !byPassCompression ? await getCompressedImage(file) : file;
+    const compressedFile =
+      isImage && !byPassCompression ? await getCompressedImage(file) : file;
 
     const fileExtension = file?.name ? file?.name?.split('.').pop() : undefined;
     if (fileExtension) {
@@ -153,13 +154,20 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
 
   return (
     <>
-      <label htmlFor={nameProp} className="block text-sm font-medium text-gray-700 pb-1">
+      <label
+        htmlFor={nameProp}
+        className="block text-sm font-medium text-gray-700 pb-1"
+      >
         {label}
-        {acceptedFormats && <span className="font-bold">: {acceptedFormats?.join(', ')}</span>}
+        {acceptedFormats && (
+          <span className="font-bold">: {acceptedFormats?.join(', ')}</span>
+        )}
       </label>
       <label
         className={
-          contentUrl && !fileName ? '' : classNames(getContainerStyle(), containerBaseStyle)
+          contentUrl && !fileName
+            ? ''
+            : classNames(getContainerStyle(), containerBaseStyle)
         }
         onClick={() => {
           handleClick();
@@ -178,7 +186,11 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
             </div>
             <div className="relative">
               <div className="h-32 flex flex-wrap content-center">
-                <img src={contentUrl} className="mx-auto max-h-24 min-h-full rounded-md" alt="" />
+                <img
+                  src={contentUrl}
+                  className="mx-auto max-h-24 min-h-full rounded-md"
+                  alt=""
+                />
               </div>
             </div>
           </div>

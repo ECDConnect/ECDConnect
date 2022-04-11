@@ -1,7 +1,11 @@
 import { CaregiverDto } from '@ecdlink/core';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
-import { createCaregiver, getCaregivers, updateCaregiver } from './caregiver.actions';
+import {
+  createCaregiver,
+  getCaregivers,
+  updateCaregiver,
+} from './caregiver.actions';
 import { CaregiverContactHistory, CaregiverState } from './caregiver.types';
 
 const initialState: CaregiverState = {};
@@ -20,14 +24,21 @@ const caregiverSlice = createSlice({
     updateCaregiver: (state, action: PayloadAction<CaregiverDto>) => {
       if (state.caregivers) {
         for (let i = 0; i < state.caregivers.length; i++) {
-          if (state.caregivers[i].id === action.payload.id) state.caregivers[i] = action.payload;
+          if (state.caregivers[i].id === action.payload.id)
+            state.caregivers[i] = action.payload;
         }
       }
     },
-    updateCaregiverContactHistory: (state, action: PayloadAction<CaregiverContactHistory[]>) => {
+    updateCaregiverContactHistory: (
+      state,
+      action: PayloadAction<CaregiverContactHistory[]>
+    ) => {
       state.contactHistory = action.payload;
     },
-    addContactHistory: (state, action: PayloadAction<CaregiverContactHistory>) => {
+    addContactHistory: (
+      state,
+      action: PayloadAction<CaregiverContactHistory>
+    ) => {
       if (!state.contactHistory) state.contactHistory = [];
 
       state.contactHistory.push(action.payload);
@@ -45,21 +56,27 @@ const caregiverSlice = createSlice({
         state.caregivers = caregivers;
       }
     });
-    builder.addCase(updateCaregiver.fulfilled, (state, action: PayloadAction<CaregiverDto>) => {
-      if (state.caregivers) {
-        const caregiverIndex = state.caregivers.findIndex(
-          (caregiver) => caregiver.id === action.payload.id
-        );
+    builder.addCase(
+      updateCaregiver.fulfilled,
+      (state, action: PayloadAction<CaregiverDto>) => {
+        if (state.caregivers) {
+          const caregiverIndex = state.caregivers.findIndex(
+            (caregiver) => caregiver.id === action.payload.id
+          );
 
-        if (caregiverIndex < 0) return;
+          if (caregiverIndex < 0) return;
 
-        state.caregivers[caregiverIndex] = action.payload;
+          state.caregivers[caregiverIndex] = action.payload;
+        }
       }
-    });
-    builder.addCase(createCaregiver.fulfilled, (state, action: PayloadAction<CaregiverDto>) => {
-      if (!state.caregivers) state.caregivers = [];
-      state.caregivers?.push(action.payload);
-    });
+    );
+    builder.addCase(
+      createCaregiver.fulfilled,
+      (state, action: PayloadAction<CaregiverDto>) => {
+        if (!state.caregivers) state.caregivers = [];
+        state.caregivers?.push(action.payload);
+      }
+    );
   },
 });
 

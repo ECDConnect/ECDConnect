@@ -1,5 +1,11 @@
 import { FileTypeEnum } from '@ecdlink/graphql';
-import { Button, Dialog, Divider, ProfileAvatar, Typography } from '@ecdlink/ui';
+import {
+  Button,
+  Dialog,
+  Divider,
+  ProfileAvatar,
+  Typography,
+} from '@ecdlink/ui';
 import { DialogPosition } from '@ecdlink/ui';
 import { renderIcon } from '@ecdlink/ui';
 import { useState } from 'react';
@@ -14,9 +20,15 @@ import { AddPhotoProps } from './add-photo.types';
 export const AddPhoto: React.FC<AddPhotoProps> = ({ onSubmit }) => {
   const user = useSelector(userSelectors.getUser);
   const appDispatch = useAppDispatch();
-  const { userProfilePicture, createNewDocument, updateDocument, deleteDocument } = useDocuments();
+  const {
+    userProfilePicture,
+    createNewDocument,
+    updateDocument,
+    deleteDocument,
+  } = useDocuments();
 
-  const [editProfilePictureVisible, setEditProfilePictureVisible] = useState(false);
+  const [editProfilePictureVisible, setEditProfilePictureVisible] =
+    useState(false);
   const displayProfilePicturePrompt = () => {
     setEditProfilePictureVisible(!editProfilePictureVisible);
   };
@@ -86,7 +98,10 @@ export const AddPhoto: React.FC<AddPhotoProps> = ({ onSubmit }) => {
           onSubmit(userProfilePicture?.file ? '' : undefined);
         }}
       >
-        {renderIcon(userProfilePicture?.file ? 'SaveIcon' : 'ClockIcon', styles.iconPrimary)}
+        {renderIcon(
+          userProfilePicture?.file ? 'SaveIcon' : 'ClockIcon',
+          styles.iconPrimary
+        )}
         <Typography
           type="h6"
           className="ml-2"
@@ -94,7 +109,10 @@ export const AddPhoto: React.FC<AddPhotoProps> = ({ onSubmit }) => {
           color="primary"
         />
       </Button>
-      <Dialog visible={editProfilePictureVisible} position={DialogPosition.Bottom}>
+      <Dialog
+        visible={editProfilePictureVisible}
+        position={DialogPosition.Bottom}
+      >
         <div className={'p-4'}>
           <PhotoPrompt
             title="Profile Photo"

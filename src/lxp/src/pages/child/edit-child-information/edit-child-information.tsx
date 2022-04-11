@@ -1,4 +1,8 @@
-import { ContentConsentTypeEnum, SiteAddressDto, useTheme } from '@ecdlink/core';
+import {
+  ContentConsentTypeEnum,
+  SiteAddressDto,
+  useTheme,
+} from '@ecdlink/core';
 import { CaregiverDto, ChildDto, LearnerDto, Document } from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
@@ -60,43 +64,63 @@ export const EditChildInformation: React.FC = () => {
   const languages = useSelector(staticDataSelectors.getLanguages);
   const currentChild = useSelector(childrenSelectors.getChildById(childId));
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
-  const classroomGroupLearners = useSelector(classroomsSelectors.getClassroomGroupLearners);
-  const caregiver = useSelector(caregiverSelectors.getCaregiverById(currentChild?.caregiverId));
+  const classroomGroupLearners = useSelector(
+    classroomsSelectors.getClassroomGroupLearners
+  );
+  const caregiver = useSelector(
+    caregiverSelectors.getCaregiverById(currentChild?.caregiverId)
+  );
   const childPhotoConsent = useSelector(
     userSelectors.getUserConsentByType(
       currentChild?.userId,
       ContentConsentTypeEnum.PhotoPermissions
     )
   );
-  const childUser = useSelector(childrenSelectors.getChildUserById(currentChild?.userId));
-  const { getDocumentTypeIdByEnum, getWorkflowStatusIdByEnum } = useStaticData();
+  const childUser = useSelector(
+    childrenSelectors.getChildUserById(currentChild?.userId)
+  );
+  const { getDocumentTypeIdByEnum, getWorkflowStatusIdByEnum } =
+    useStaticData();
   const typeId = getDocumentTypeIdByEnum(FileTypeEnum.ProfileImage);
-  const profilePicture = useSelector(documentSelectors.getDocumentByTypeId(childUser?.id, typeId));
+  const profilePicture = useSelector(
+    documentSelectors.getDocumentByTypeId(childUser?.id, typeId)
+  );
 
-  const caregiverRelation = useSelector(staticDataSelectors.getRelationById(caregiver?.relationId));
+  const caregiverRelation = useSelector(
+    staticDataSelectors.getRelationById(caregiver?.relationId)
+  );
   const [listItems, setListItems] = useState<ActionListDataItem[]>([]);
   // View States
   const [editFieldVisible, setEditFieldVisible] = useState(false);
 
-  const [editProfilePictureVisible, setEditProfilePictureVisible] = useState(false);
-  const [viewInfomationVisible, setViewInfomationVisible] = useState<boolean>(false);
+  const [editProfilePictureVisible, setEditProfilePictureVisible] =
+    useState(false);
+  const [viewInfomationVisible, setViewInfomationVisible] =
+    useState<boolean>(false);
   const [currentViewInformationType, setCurrentViewInformationType] =
     useState<ChildInformationViewType>();
-  const [changeClassroomGroupPromptVisible, setChangeClassroomGroupPromptVisible] =
-    useState<boolean>(false);
+  const [
+    changeClassroomGroupPromptVisible,
+    setChangeClassroomGroupPromptVisible,
+  ] = useState<boolean>(false);
 
   // Data Cache
-  const [currentChildLearnerRecord, setCurrentChildLearnerRecord] = useState<LearnerDto>();
+  const [currentChildLearnerRecord, setCurrentChildLearnerRecord] =
+    useState<LearnerDto>();
   const [childCaregiver, setChildCaregiver] = useState<CaregiverDto>();
-  const [classRoomGroupsList, setClassRoomGroupsList] = useState<DropDownOption<string>[]>([]);
+  const [classRoomGroupsList, setClassRoomGroupsList] = useState<
+    DropDownOption<string>[]
+  >([]);
 
   // Forms
   const [childEmergencyContactForm, setchildEmergencyContactForm] =
     useState<ChildEmergencyContactFormModel>();
   const [childHealthInformationForm, setChildHealthInformationForm] =
     useState<ChildHealthInformationFormModel>();
-  const [childCareGiverChildInformationForm, setChildCareGiverChildInformationForm] =
-    useState<CareGiverChildInformationFormModel>();
+  const [
+    childCareGiverChildInformationForm,
+    setChildCareGiverChildInformationForm,
+  ] = useState<CareGiverChildInformationFormModel>();
   const [childCaregiverInformation, setChildCaregiverInformation] =
     useState<ChildCaregiverInformationModel>();
 
@@ -115,9 +139,10 @@ export const EditChildInformation: React.FC = () => {
 
   useEffect(() => {
     if (classroomGroups) {
-      const classRoomGroupDownDownList: DropDownOption<string>[] = classroomGroups.map((x) => {
-        return { id: x.id, value: x.id || '', label: x.name };
-      });
+      const classRoomGroupDownDownList: DropDownOption<string>[] =
+        classroomGroups.map((x) => {
+          return { id: x.id, value: x.id || '', label: x.name };
+        });
 
       setClassRoomGroupsList(classRoomGroupDownDownList);
     }
@@ -148,12 +173,16 @@ export const EditChildInformation: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentChild, childCaregiver, currentChildLearnerRecord]);
 
-  const openViewInformation = (childInformationViewType: ChildInformationViewType) => {
+  const openViewInformation = (
+    childInformationViewType: ChildInformationViewType
+  ) => {
     setCurrentViewInformationType(childInformationViewType);
     setViewInfomationVisible(true);
   };
 
-  const getViewInformation = (childInformationViewType: ChildInformationViewType | undefined) => {
+  const getViewInformation = (
+    childInformationViewType: ChildInformationViewType | undefined
+  ) => {
     if (childInformationViewType) {
       switch (childInformationViewType) {
         case 'address':
@@ -242,7 +271,10 @@ export const EditChildInformation: React.FC = () => {
         (x) => x.id === currentChildLearnerRecord?.classroomGroupId
       );
 
-      editChildInformationFormSetValues('classroomGroupId', learnerClassroomGroup?.id || '');
+      editChildInformationFormSetValues(
+        'classroomGroupId',
+        learnerClassroomGroup?.id || ''
+      );
 
       const dobString = format(
         childUser?.dateOfBirth ? new Date(childUser?.dateOfBirth) : 0,
@@ -257,7 +289,8 @@ export const EditChildInformation: React.FC = () => {
 
       list.push({
         title: 'Home languages',
-        subTitle: languages.find((x) => x.id === child.languageId)?.description || '',
+        subTitle:
+          languages.find((x) => x.id === child.languageId)?.description || '',
         switchTextStyles: true,
       });
 
@@ -299,7 +332,10 @@ export const EditChildInformation: React.FC = () => {
 
         list.push({
           title: 'Who else can pick the child up',
-          subTitle: `${caregiver?.additionalFirstName || caregiver?.emergencyContactFirstName} ${
+          subTitle: `${
+            caregiver?.additionalFirstName ||
+            caregiver?.emergencyContactFirstName
+          } ${
             caregiver?.additionalSurname || caregiver?.emergencyContactSurname
           }`,
           switchTextStyles: true,
@@ -343,7 +379,8 @@ export const EditChildInformation: React.FC = () => {
           surname: caregiver?.emergencyContactSurname,
           phoneNumber: caregiver?.emergencyContactPhoneNumber,
           isAllowedCustody:
-            caregiver?.additionalFirstName && caregiver?.additionalFirstName.length > 0
+            caregiver?.additionalFirstName &&
+            caregiver?.additionalFirstName.length > 0
               ? false
               : true,
           custodianFirstname: caregiver?.additionalFirstName,
@@ -401,25 +438,30 @@ export const EditChildInformation: React.FC = () => {
   };
 
   const saveEditClassroomGroup = async () => {
-    const newClassroomGroupId = editChildInformationFormGetValues().classroomGroupId;
+    const newClassroomGroupId =
+      editChildInformationFormGetValues().classroomGroupId;
 
     const learnerInputModel: LearnerDto = {
       id: currentChildLearnerRecord?.id,
       classroomGroupId: currentChildLearnerRecord?.classroomGroupId ?? '',
       userId: currentChildLearnerRecord?.userId ?? '',
       attendanceReasonId: currentChildLearnerRecord?.attendanceReasonId,
-      otherAttendanceReason: currentChildLearnerRecord?.otherAttendanceReason ?? '',
+      otherAttendanceReason:
+        currentChildLearnerRecord?.otherAttendanceReason ?? '',
       startedAttendance: new Date().toISOString(),
       stoppedAttendance: new Date().toISOString(),
     };
-    appDispatch(classroomsActions.updateClassroomGroupLearner(learnerInputModel));
+    appDispatch(
+      classroomsActions.updateClassroomGroupLearner(learnerInputModel)
+    );
 
     const newLearnerModel: LearnerDto = {
       id: newGuid(),
       classroomGroupId: newClassroomGroupId,
       userId: currentChildLearnerRecord?.userId ?? '',
       attendanceReasonId: currentChildLearnerRecord?.attendanceReasonId,
-      otherAttendanceReason: currentChildLearnerRecord?.otherAttendanceReason ?? '',
+      otherAttendanceReason:
+        currentChildLearnerRecord?.otherAttendanceReason ?? '',
       startedAttendance: new Date().toISOString(),
     };
 
@@ -428,7 +470,9 @@ export const EditChildInformation: React.FC = () => {
     setEditFieldVisible(false);
   };
 
-  const saveChildCareGiver = async (childCaregiverForm: ChildCaregiverInformationModel) => {
+  const saveChildCareGiver = async (
+    childCaregiverForm: ChildCaregiverInformationModel
+  ) => {
     if (childCaregiver) {
       const careGiverInputModel: CaregiverDto = {
         id: newGuid(),
@@ -443,10 +487,13 @@ export const EditChildInformation: React.FC = () => {
         educationId: caregiver?.educationId,
         emergencyContactFirstName: childEmergencyContactForm?.firstname ?? '',
         emergencyContactSurname: childEmergencyContactForm?.surname ?? '',
-        emergencyContactPhoneNumber: childEmergencyContactForm?.phoneNumber ?? '',
-        additionalFirstName: childEmergencyContactForm?.custodianFirstname ?? '',
+        emergencyContactPhoneNumber:
+          childEmergencyContactForm?.phoneNumber ?? '',
+        additionalFirstName:
+          childEmergencyContactForm?.custodianFirstname ?? '',
         additionalSurname: childEmergencyContactForm?.custodianSurname ?? '',
-        additionalPhoneNumber: childEmergencyContactForm?.custodianPhoneNumber ?? '',
+        additionalPhoneNumber:
+          childEmergencyContactForm?.custodianPhoneNumber ?? '',
         joinReferencePanel: caregiver?.joinReferencePanel ?? false,
         contribution: caregiver?.contribution ?? false,
       };
@@ -463,12 +510,18 @@ export const EditChildInformation: React.FC = () => {
       const updateCareGiver: CaregiverDto = Object.assign({}, childCaregiver);
 
       if (updateCareGiver) {
-        updateCareGiver.emergencyContactFirstName = childEmergencyContactForm?.firstname;
-        updateCareGiver.emergencyContactSurname = childEmergencyContactForm?.surname;
-        updateCareGiver.emergencyContactPhoneNumber = childEmergencyContactForm?.phoneNumber;
-        updateCareGiver.additionalFirstName = childEmergencyContactForm?.custodianFirstname;
-        updateCareGiver.additionalSurname = childEmergencyContactForm?.custodianSurname;
-        updateCareGiver.additionalPhoneNumber = childEmergencyContactForm?.custodianPhoneNumber;
+        updateCareGiver.emergencyContactFirstName =
+          childEmergencyContactForm?.firstname;
+        updateCareGiver.emergencyContactSurname =
+          childEmergencyContactForm?.surname;
+        updateCareGiver.emergencyContactPhoneNumber =
+          childEmergencyContactForm?.phoneNumber;
+        updateCareGiver.additionalFirstName =
+          childEmergencyContactForm?.custodianFirstname;
+        updateCareGiver.additionalSurname =
+          childEmergencyContactForm?.custodianSurname;
+        updateCareGiver.additionalPhoneNumber =
+          childEmergencyContactForm?.custodianPhoneNumber;
         setChildCaregiver(updateCareGiver);
 
         appDispatch(caregiverActions.updateCaregiver(updateCareGiver));
@@ -486,8 +539,10 @@ export const EditChildInformation: React.FC = () => {
 
       if (updateChild) {
         updateChild.allergies = childHealthInformationForm?.allergies || '';
-        updateChild.disabilities = childHealthInformationForm?.disabilities || '';
-        updateChild.otherHealthConditions = childHealthInformationForm?.healthConditions || '';
+        updateChild.disabilities =
+          childHealthInformationForm?.disabilities || '';
+        updateChild.otherHealthConditions =
+          childHealthInformationForm?.healthConditions || '';
 
         appDispatch(childrenActions.updateChild(updateChild));
       }
@@ -500,10 +555,14 @@ export const EditChildInformation: React.FC = () => {
     childHealthInformationForm: CareGiverChildInformationFormModel
   ) => {
     if (childCaregiver) {
-      const updateCareGiver: CaregiverDto = JSON.parse(JSON.stringify(childCaregiver));
+      const updateCareGiver: CaregiverDto = JSON.parse(
+        JSON.stringify(childCaregiver)
+      );
       if (updateCareGiver) {
         const siteAddress: SiteAddressDto = {
-          id: updateCareGiver.siteAddress ? updateCareGiver.siteAddress.id : newGuid(),
+          id: updateCareGiver.siteAddress
+            ? updateCareGiver.siteAddress.id
+            : newGuid(),
           name: childHealthInformationForm.apartmentNumber ?? '',
           addressLine1: childHealthInformationForm.streetAddress,
           addressLine2: childHealthInformationForm.suburb,
@@ -542,7 +601,9 @@ export const EditChildInformation: React.FC = () => {
     } else {
       const fileName = `ProfilePicture_${childUser?.id}.png`;
 
-      const statusId = await getWorkflowStatusIdByEnum(WorkflowStatusEnum.DocumentVerified);
+      const statusId = await getWorkflowStatusIdByEnum(
+        WorkflowStatusEnum.DocumentVerified
+      );
 
       const documentInputModel: Document = {
         id: newGuid(),
@@ -574,7 +635,11 @@ export const EditChildInformation: React.FC = () => {
         showBackground={true}
         backgroundUrl={theme?.images.graphicOverlayUrl}
         backgroundImageColour={'primary'}
-        title={childUser ? `${childUser?.firstName} ${childUser?.surname} Profile` : 'Profile'}
+        title={
+          childUser
+            ? `${childUser?.firstName} ${childUser?.surname} Profile`
+            : 'Profile'
+        }
         color={'primary'}
         size="medium"
         renderBorder={true}
@@ -582,7 +647,9 @@ export const EditChildInformation: React.FC = () => {
         onBack={() => history.goBack()}
         displayOffline={!isOnline}
       >
-        <div className={'w-full flex flex-col items-center justify-center pt-8'}>
+        <div
+          className={'w-full flex flex-col items-center justify-center pt-8'}
+        >
           <ProfileAvatar
             dataUrl={profilePicture?.file || childUser?.profileImageUrl || ''}
             size={'header'}
@@ -590,7 +657,11 @@ export const EditChildInformation: React.FC = () => {
             canChangeImage={childPhotoConsent ? true : false}
             onPressed={displayProfilePicturePrompt}
           />
-          <StackedList className={'bg-uiBg w-full'} listItems={listItems} type={'ActionList'} />
+          <StackedList
+            className={'bg-uiBg w-full'}
+            listItems={listItems}
+            type={'ActionList'}
+          />
         </div>
       </BannerWrapper>
 
@@ -613,7 +684,10 @@ export const EditChildInformation: React.FC = () => {
         </BannerWrapper>
       </Dialog>
 
-      <Dialog visible={editProfilePictureVisible} position={DialogPosition.Bottom}>
+      <Dialog
+        visible={editProfilePictureVisible}
+        position={DialogPosition.Bottom}
+      >
         <div className={'p-4'}>
           <PhotoPrompt
             title="Profile Photo"
@@ -639,7 +713,9 @@ export const EditChildInformation: React.FC = () => {
               text={'Edit Playgroup'}
               weight="bold"
             ></Typography>
-            <div onClick={closeEditField}>{renderIcon('XIcon', 'h-6 w-6 text-uiLight')}</div>
+            <div onClick={closeEditField}>
+              {renderIcon('XIcon', 'h-6 w-6 text-uiLight')}
+            </div>
           </div>
           <Dropdown<string>
             placeholder={'Select playgroup'}
@@ -661,7 +737,12 @@ export const EditChildInformation: React.FC = () => {
               onClick={saveEditClassroomGroup}
             >
               {renderIcon('SaveIcon', styles.buttonIcon)}
-              <Typography type="help" className="mr-2" color="white" text={'Save'}></Typography>
+              <Typography
+                type="help"
+                className="mr-2"
+                color="white"
+                text={'Save'}
+              ></Typography>
             </Button>
           </div>
         </div>

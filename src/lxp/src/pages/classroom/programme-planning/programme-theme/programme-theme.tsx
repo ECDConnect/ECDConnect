@@ -1,6 +1,11 @@
 import { ProgrammeThemeDto as ProgrammeThemeModel } from '@ecdlink/core';
 import { useDialog } from '@ecdlink/core';
-import { ActionModal, BannerWrapper, IconImageListItem, Typography } from '@ecdlink/ui';
+import {
+  ActionModal,
+  BannerWrapper,
+  IconImageListItem,
+  Typography,
+} from '@ecdlink/ui';
 import { DialogPosition } from '@ecdlink/ui';
 import React from 'react';
 import { useSelector } from 'react-redux';
@@ -64,7 +69,12 @@ const ProgrammeTheme: React.FC = () => {
       onHelp={handleDialog}
       displayOffline={!isOnline}
     >
-      <Typography className={'mx-4 my-2'} type="h1" text="Choose a theme" color={'primary'} />
+      <Typography
+        className={'mx-4 my-2'}
+        type="h1"
+        text="Choose a theme"
+        color={'primary'}
+      />
       {themes?.map((theme, idx) => (
         <IconImageListItem
           key={`theme-item-${theme.id}`}
@@ -76,7 +86,11 @@ const ProgrammeTheme: React.FC = () => {
         />
       ))}
       <div className="mt-4 mx-4" onClick={handleNoTheme}>
-        <Typography type="body" text="Or create your own programme →" color={'primary'} />
+        <Typography
+          type="body"
+          text="Or create your own programme →"
+          color={'primary'}
+        />
         <Typography type="body" text="No theme" color={'textLight'} />
       </div>
     </BannerWrapper>

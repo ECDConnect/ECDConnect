@@ -3,7 +3,6 @@ import { renderIcon } from '../../utils';
 import * as styles from './fad-button.styles';
 import { FADButtonProps } from './fad-button.types';
 
-
 const FADButton: React.FC<FADButtonProps> = ({
   title,
   icon,

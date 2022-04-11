@@ -10,15 +10,18 @@ import {
 } from '@schemas/child/child-registration/child-basic-info';
 import { classroomsSelectors } from '@store/classroom';
 
-export const ChildBasicInfo: React.FC<FormComponentProps<ChildBasicInfoModel>> = ({ onSubmit }) => {
+export const ChildBasicInfo: React.FC<
+  FormComponentProps<ChildBasicInfoModel>
+> = ({ onSubmit }) => {
   const classrooms = useSelector(classroomsSelectors.getClassroomGroups);
   const isPlaygroup = useSelector(classroomsSelectors.isPlaygroup());
 
-  const { getValues, setValue, register, formState } = useForm<ChildBasicInfoModel>({
-    resolver: yupResolver(childBasicInfoFormSchema),
-    mode: 'onBlur',
-    defaultValues: {},
-  });
+  const { getValues, setValue, register, formState } =
+    useForm<ChildBasicInfoModel>({
+      resolver: yupResolver(childBasicInfoFormSchema),
+      mode: 'onBlur',
+      defaultValues: {},
+    });
 
   useEffect(() => {
     if (classrooms && classrooms.length > 0) {

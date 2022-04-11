@@ -10,7 +10,6 @@ export const getImageDimensionsBasedOnSizeType = (
   borderColor: string,
   dataUrl: string
 ): AvatarStyle => {
-
   const base = {
     position: 'relative',
     borderColor: borderColor,
@@ -18,8 +17,8 @@ export const getImageDimensionsBasedOnSizeType = (
     backgroundImage: `url(${dataUrl})`,
     backgroundPosition: 'center',
     backgroundRepeat: 'no-repeat',
-    backgroundSize: 'cover'
-  }
+    backgroundSize: 'cover',
+  };
 
   switch (avatarSize) {
     case 'xs':
@@ -32,60 +31,51 @@ export const getImageDimensionsBasedOnSizeType = (
       return {
         ...base,
         height: '32px',
-        width: '32px'
+        width: '32px',
       };
 
     case 'md':
       return {
         ...base,
         height: '40px',
-        width: '40px'
+        width: '40px',
       };
     case 'md-lg':
       return {
         ...base,
         height: '48px',
-        width: '48px'
+        width: '48px',
       };
     case 'header':
       return {
         ...base,
         height: '120px',
-        width: '120px'
+        width: '120px',
       };
     case 'lg':
     default:
       return {
         ...base,
         height: '56px',
-        width: '56px'
+        width: '56px',
       };
   }
 };
 
-export const avatar = (
-  avatarSize: AvatarSize,
-  displayBorder: boolean
-) => {
+export const avatar = (avatarSize: AvatarSize, displayBorder: boolean) => {
   switch (avatarSize) {
     case 'xs':
-      return `rounded-full ${displayBorder ? `border-2` : ''
-        }`;
+      return `rounded-full ${displayBorder ? `border-2` : ''}`;
     case 'sm':
-      return `rounded-full ${displayBorder ? `border-2` : ''
-        }`;
+      return `rounded-full ${displayBorder ? `border-2` : ''}`;
     case 'md':
-      return `rounded-full ${displayBorder ? `border-2` : ''
-        }`;
+      return `rounded-full ${displayBorder ? `border-2` : ''}`;
     case 'md-lg':
-      return `rounded-full ${displayBorder ? `border-2` : ''
-        }`;
+      return `rounded-full ${displayBorder ? `border-2` : ''}`;
     case 'header':
-      return `rounded-full ${displayBorder ? `border-4` : ''
-        }`;
+      return `rounded-full ${displayBorder ? `border-4` : ''}`;
     case 'lg':
     default:
-      return `rounded-full ${displayBorder ? `border-4` : ''
-        }`;
+      return `rounded-full ${displayBorder ? `border-4` : ''}`;
   }
 };

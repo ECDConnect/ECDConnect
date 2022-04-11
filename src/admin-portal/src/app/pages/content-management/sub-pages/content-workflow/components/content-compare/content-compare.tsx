@@ -33,20 +33,25 @@ export default function ContentCompare({
   cancelCompare,
   savedContent,
 }: ContentCompareProps) {
-  const [selectedFirstLanguageId, setselectedFirstLanguageId] = useState<string>(
-    contentView.languageId
-  );
+  const [selectedFirstLanguageId, setselectedFirstLanguageId] =
+    useState<string>(contentView.languageId);
 
-  const [selectedSecondLanguageId, setselectedSecondLanguageId] = useState<string>(
-    contentView.languageId
-  );
+  const [selectedSecondLanguageId, setselectedSecondLanguageId] =
+    useState<string>(contentView.languageId);
 
   const [isEdit, setIsEdit] = useState<boolean>(false);
   const [currentContent, setCurrentContent] = useState<ContentDto>();
 
   useEffect(() => {
-    if (contentType && contentType.content && contentView && contentView.content) {
-      const content = contentType.content.find((x) => x.id === contentView.content.id);
+    if (
+      contentType &&
+      contentType.content &&
+      contentView &&
+      contentView.content
+    ) {
+      const content = contentType.content.find(
+        (x) => x.id === contentView.content.id
+      );
       if (content) {
         setCurrentContent(content);
         console.log(content);
@@ -71,7 +76,8 @@ export default function ContentCompare({
           <div className="relative h-full" style={{ minHeight: '36rem' }}>
             <div className="pb-5 sm:flex sm:items-center sm:justify-between">
               <h3 className="text-lg leading-6 font-medium text-white">
-                {camelCaseToSentanceCase(contentType.name ?? '')} - Compare languages
+                {camelCaseToSentanceCase(contentType.name ?? '')} - Compare
+                languages
               </h3>
               <div className="flex flex-row">
                 <div>
@@ -112,7 +118,9 @@ export default function ContentCompare({
                 {!isEdit ? (
                   <ContentView
                     optionDefinitions={optionDefinitions}
-                    contentValues={getOrderedContentValues(currentContent?.contentValues)}
+                    contentValues={getOrderedContentValues(
+                      currentContent?.contentValues
+                    )}
                     selectedLanguageId={selectedFirstLanguageId}
                     contentType={contentType}
                   />
@@ -121,7 +129,9 @@ export default function ContentCompare({
                     optionDefinitions={optionDefinitions}
                     content={contentView.content}
                     selectedLanguageId={selectedFirstLanguageId}
-                    contentValues={getOrderedContentValues(currentContent?.contentValues)}
+                    contentValues={getOrderedContentValues(
+                      currentContent?.contentValues
+                    )}
                     contentType={contentType}
                     cancelEdit={() => setIsEdit(!isEdit)}
                     savedContent={savedContent}
@@ -141,7 +151,9 @@ export default function ContentCompare({
                 {!isEdit ? (
                   <ContentView
                     optionDefinitions={optionDefinitions}
-                    contentValues={getOrderedContentValues(currentContent?.contentValues)}
+                    contentValues={getOrderedContentValues(
+                      currentContent?.contentValues
+                    )}
                     selectedLanguageId={selectedSecondLanguageId}
                     contentType={contentType}
                   />
@@ -150,7 +162,9 @@ export default function ContentCompare({
                     optionDefinitions={optionDefinitions}
                     content={contentView.content}
                     selectedLanguageId={selectedSecondLanguageId}
-                    contentValues={getOrderedContentValues(currentContent?.contentValues)}
+                    contentValues={getOrderedContentValues(
+                      currentContent?.contentValues
+                    )}
                     contentType={contentType}
                     cancelEdit={() => setIsEdit(!isEdit)}
                     savedContent={savedContent}

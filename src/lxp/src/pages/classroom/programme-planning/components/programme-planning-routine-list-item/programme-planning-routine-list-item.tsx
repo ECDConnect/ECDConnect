@@ -8,11 +8,9 @@ import {
   getRoutineItemType,
 } from '@utils/classroom/programme-planning/programmes.utils';
 
-export const ProgrammePlanningRoutineListItem: React.FC<ProgrammePlanningRoutineListItemProps> = ({
-  routineItem,
-  onClick,
-  day,
-}) => {
+export const ProgrammePlanningRoutineListItem: React.FC<
+  ProgrammePlanningRoutineListItemProps
+> = ({ routineItem, onClick, day }) => {
   const routineType = getRoutineItemType(routineItem.name);
   const canLinkActionToType =
     routineType === DailyRoutineItemType.smallGroup ||
@@ -20,7 +18,9 @@ export const ProgrammePlanningRoutineListItem: React.FC<ProgrammePlanningRoutine
     routineType === DailyRoutineItemType.storyBook;
   const isMessageBoard = routineType === DailyRoutineItemType.messageBoard;
   const activity = useSelector(
-    activitySelectors.getActivityById(getActivityIdForRoutineItem(routineItem.name, day))
+    activitySelectors.getActivityById(
+      getActivityIdForRoutineItem(routineItem.name, day)
+    )
   );
 
   const getTitle = () => {
@@ -99,18 +99,30 @@ export const ProgrammePlanningRoutineListItem: React.FC<ProgrammePlanningRoutine
   };
 
   const getRoutineItemPreSlotRender = () => {
-    if (routineItem.name === DailyRoutineItemType.messageBoard && day?.messageBoardText) {
+    if (
+      routineItem.name === DailyRoutineItemType.messageBoard &&
+      day?.messageBoardText
+    ) {
       return (
         <div
           className={`mr-2 rounded-full p-4 flex flex-row items-center justify-center bg-primary}`}
           style={{ backgroundColor: routineItem.iconBackgroundColor }}
         >
-          <img className={'h-5 w-5'} src={routineItem.icon} alt="routine item" />
+          <img
+            className={'h-5 w-5'}
+            src={routineItem.icon}
+            alt="routine item"
+          />
         </div>
       );
     }
     if (activity) {
-      return <RoundIcon icon={'CheckIcon'} className={'text-white bg-primary mr-2'} />;
+      return (
+        <RoundIcon
+          icon={'CheckIcon'}
+          className={'text-white bg-primary mr-2'}
+        />
+      );
     }
 
     return (

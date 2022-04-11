@@ -14,7 +14,7 @@ export const DocumentList = gql`
       workflowStatusId
       workflowStatus {
         id
-        workflowStatusTypeId        
+        workflowStatusTypeId
         description
       }
       documentTypeId
@@ -42,7 +42,6 @@ export const UpdateDocument = gql`
     }
   }
 `;
-
 
 export const DeleteDocument = gql`
   mutation deleteDocument($id: UUID!) {

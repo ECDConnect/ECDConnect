@@ -1,7 +1,7 @@
 export interface EntityCacheBase {
-  cacheId?: string;   
-  userCacheId?: string;  
-  parentCacheId?: string;  
+  cacheId?: string;
+  userCacheId?: string;
+  parentCacheId?: string;
   isActive?: boolean;
   createdDate?: string;
   updatedDate?: string;

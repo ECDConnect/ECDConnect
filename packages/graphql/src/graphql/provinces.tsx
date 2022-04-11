@@ -4,7 +4,7 @@ export const GetAllProvince = gql`
   {
     GetAllProvince {
       id
-      description      
+      description
     }
   }
 `;

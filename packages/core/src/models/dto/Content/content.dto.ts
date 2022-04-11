@@ -1,4 +1,3 @@
-
 import { EntityBase } from '../entity-base';
 import { ContentTypeDto } from './content-type.dto';
 import { ContentValueDto } from './content-value.dto';

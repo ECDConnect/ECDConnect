@@ -48,7 +48,11 @@ export const WeekTab: React.FC<WeekTabProps> = ({
           isActiveStep ? 'uiLight' : 'transparent'
         }`}
       >
-        <div className={`h-2 w-2 rounded-full bg-${isActiveStep ? 'primary' : 'uiLight'}`}></div>
+        <div
+          className={`h-2 w-2 rounded-full bg-${
+            isActiveStep ? 'primary' : 'uiLight'
+          }`}
+        ></div>
       </div>
     );
   };
@@ -71,8 +75,16 @@ export const WeekTab: React.FC<WeekTabProps> = ({
             <Typography
               className={'ml-2'}
               type={'help'}
-              text={step.weekDay.charAt(0).toUpperCase() + step.weekDay.slice(1)}
-              color={step.isDisabled ? 'uiLight' : isActiveStep ? 'primary' : 'textMid'}
+              text={
+                step.weekDay.charAt(0).toUpperCase() + step.weekDay.slice(1)
+              }
+              color={
+                step.isDisabled
+                  ? 'uiLight'
+                  : isActiveStep
+                  ? 'primary'
+                  : 'textMid'
+              }
             />
           </div>
         );

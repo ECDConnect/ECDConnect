@@ -5,7 +5,7 @@ export const GetAllUserType = gql`
     GetAllUserType {
       id
       name
-      normalizedName      
+      normalizedName
     }
   }
 `;
@@ -15,7 +15,7 @@ export const GetUserTypeById = gql`
     GetUserTypeById(id: $Id) {
       id
       name
-      normalizedName   
+      normalizedName
     }
   }
 `;

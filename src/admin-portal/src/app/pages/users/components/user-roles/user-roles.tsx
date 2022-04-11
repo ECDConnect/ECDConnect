@@ -7,7 +7,11 @@ export interface UserRolesProps {
   onUserRoleChange: (values: RoleDto[]) => void;
 }
 
-const UserRoles: React.FC<UserRolesProps> = ({ roles, roleList, onUserRoleChange }) => {
+const UserRoles: React.FC<UserRolesProps> = ({
+  roles,
+  roleList,
+  onUserRoleChange,
+}) => {
   const [selectedUserRoles, setUserRoles] = useState<RoleDto[]>([]);
 
   useEffect(() => {
@@ -51,7 +55,10 @@ const UserRoles: React.FC<UserRolesProps> = ({ roles, roleList, onUserRoleChange
                 />
               </div>
               <div className="ml-3 text-sm">
-                <label htmlFor="candidates" className="font-medium text-gray-700">
+                <label
+                  htmlFor="candidates"
+                  className="font-medium text-gray-700"
+                >
                   {role.name}
                 </label>
               </div>

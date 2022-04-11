@@ -1,15 +1,14 @@
-
 import * as Yup from 'yup';
 
 export const initialCategoryValues = {
-  imageUrl: undefined as any,  
+  imageUrl: undefined as any,
   title: '',
   subTitle: '',
-  color: ''  
+  color: '',
 };
 
-export const categorySchema = Yup.object().shape({   
-  title: Yup.string().required(),   
-  subTitle: Yup.string().required(),    
-  color: Yup.string().required(),     
+export const categorySchema = Yup.object().shape({
+  title: Yup.string().required(),
+  subTitle: Yup.string().required(),
+  color: Yup.string().required(),
 });

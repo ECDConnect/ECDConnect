@@ -1,4 +1,11 @@
-import { Button, classNames, Divider, FormInput, renderIcon, Typography } from '@ecdlink/ui';
+import {
+  Button,
+  classNames,
+  Divider,
+  FormInput,
+  renderIcon,
+  Typography,
+} from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm } from 'react-hook-form';
 import {
@@ -8,7 +15,9 @@ import {
 import * as styles from './child-caregiver-information.styles';
 import { ChildCaregiverInformationProps } from './child-caregiver-information.types';
 
-export const ChildCaregiverInformation: React.FC<ChildCaregiverInformationProps> = ({
+export const ChildCaregiverInformation: React.FC<
+  ChildCaregiverInformationProps
+> = ({
   childCareGiverInformation,
   childName,
   submitButtonIcon = 'SaveIcon',
@@ -40,10 +49,19 @@ export const ChildCaregiverInformation: React.FC<ChildCaregiverInformationProps>
         text={`${childCareGiverInformation?.firstname} ${childCareGiverInformation?.surname}`}
         color={'primary'}
       />
-      <Typography type={'body'} text={'Primary Caregiver'} color={'textMid'} weight={'bold'} />
+      <Typography
+        type={'body'}
+        text={'Primary Caregiver'}
+        color={'textMid'}
+        weight={'bold'}
+      />
 
       <div className={'pt-4'}>
-        <Typography type={'h3'} text={`Relationship to ${childName || ''}?`} color={'textMid'} />
+        <Typography
+          type={'h3'}
+          text={`Relationship to ${childName || ''}?`}
+          color={'textMid'}
+        />
         <Typography
           type={'body'}
           text={`${childCareGiverInformation?.relation}`}
@@ -69,7 +87,12 @@ export const ChildCaregiverInformation: React.FC<ChildCaregiverInformationProps>
         disabled={!isValid}
       >
         {renderIcon(submitButtonIcon, classNames('h-5 w-5 text-white'))}
-        <Typography type="h6" className="ml-2" text={submitButtonText} color="white" />
+        <Typography
+          type="h6"
+          className="ml-2"
+          text={submitButtonText}
+          color="white"
+        />
       </Button>
     </div>
   );

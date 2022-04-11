@@ -71,4 +71,4 @@ export const DefaultAvatarColors = [
   '#4f87c0',
   '#359ad1',
   '#1aade2',
-]
+];

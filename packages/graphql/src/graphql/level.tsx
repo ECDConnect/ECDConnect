@@ -6,7 +6,7 @@ export const GetAllProgressTrackingLevel = gql`
       id
       title
       description
-      imageUrl      
+      imageUrl
     }
   }
 `;
@@ -17,7 +17,7 @@ export const GetProgressTrackingLevelId = gql`
       id
       title
       description
-      imageUrl      
+      imageUrl
     }
   }
 `;
@@ -25,15 +25,18 @@ export const GetProgressTrackingLevelId = gql`
 export const CreateProgressTrackingLevel = gql`
   mutation createProgressTrackingLevel($input: ProgressTrackingLevelInput) {
     createProgressTrackingLevel(input: $input) {
-      id      
+      id
     }
   }
 `;
 
 export const UpdateProgressTrackingLevel = gql`
-  mutation updateProgressTrackingLevel($input: ProgressTrackingLevelInput, $id: UUID) {
+  mutation updateProgressTrackingLevel(
+    $input: ProgressTrackingLevelInput
+    $id: UUID
+  ) {
     updateProgressTrackingLevel(input: $input, id: $id) {
-      id      
+      id
     }
   }
 `;

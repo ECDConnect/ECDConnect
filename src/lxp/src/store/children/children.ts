@@ -31,7 +31,9 @@ const childrenSlice = createSlice({
     updateChild: (state, action: PayloadAction<ChildDto>) => {
       if (!state.children) return;
 
-      const childIndex = state.children.findIndex((child) => child.id === action.payload.id);
+      const childIndex = state.children.findIndex(
+        (child) => child.id === action.payload.id
+      );
 
       if (childIndex < 0) return;
 
@@ -44,14 +46,17 @@ const childrenSlice = createSlice({
     updateChildUser: (state, action: PayloadAction<UserDto>) => {
       if (state.childUser) {
         for (let i = 0; i < state.childUser.length; i++) {
-          if (state.childUser[i].id === action.payload.id) state.childUser[i] = action.payload;
+          if (state.childUser[i].id === action.payload.id)
+            state.childUser[i] = action.payload;
         }
       }
     },
     deactivateChild: (state, action: PayloadAction<ChildDto>) => {
       if (!state.children || !state.childUser) return;
 
-      const childIndex = state.children.findIndex((child) => child.id === action.payload.id);
+      const childIndex = state.children.findIndex(
+        (child) => child.id === action.payload.id
+      );
 
       if (childIndex < 0) return;
 
@@ -83,14 +88,22 @@ const childrenSlice = createSlice({
     builder.addCase(updateChild.fulfilled, (state, action) => {
       if (!state.children) return;
 
-      const childIndex = state.children.findIndex((child) => child.id === action.payload.id);
+      const childIndex = state.children.findIndex(
+        (child) => child.id === action.payload.id
+      );
 
       if (childIndex < 0) return;
 
       state.children[childIndex] = action.payload;
     });
-    builder.addCase(generateCaregiverChildToken.fulfilled, (state, action) => {});
-    builder.addCase(refreshCaregiverChildToken.fulfilled, (state, action) => {});
+    builder.addCase(
+      generateCaregiverChildToken.fulfilled,
+      (state, action) => {}
+    );
+    builder.addCase(
+      refreshCaregiverChildToken.fulfilled,
+      (state, action) => {}
+    );
     builder.addCase(openAccessAddChildDetail.fulfilled, (state, action) => {});
     builder.addCase(openAccessAddChild.fulfilled, (state, action) => {});
   },

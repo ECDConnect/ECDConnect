@@ -25,7 +25,6 @@ export const MessageModal: React.FC<MessageModalProps> = ({
       className={classNames(className, styles.overlayWrapper)}
       data-testid="dialog-wrapper"
     >
-
       {visible && (
         <div className={classNames(styles.wrapper)}>
           <div className={styles.contentWrapper}>
@@ -73,7 +72,6 @@ export const MessageModal: React.FC<MessageModalProps> = ({
           </div>
         </div>
       )}
-
     </div>
   );
 };

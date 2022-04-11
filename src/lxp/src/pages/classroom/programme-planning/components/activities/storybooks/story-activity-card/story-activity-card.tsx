@@ -1,4 +1,11 @@
-import { Button, Card, FADButton, Typography, Dialog, Alert } from '@ecdlink/ui';
+import {
+  Button,
+  Card,
+  FADButton,
+  Typography,
+  Dialog,
+  Alert,
+} from '@ecdlink/ui';
 import { DialogPosition } from '@ecdlink/ui';
 import { classNames } from '@ecdlink/ui';
 import { useState } from 'react';
@@ -30,7 +37,9 @@ const StoryActivityCard: React.FC<StoryActivityCardProps> = ({
       <Card
         className={classNames(
           className,
-          `flex flex-col w-full relative mt-4 ${selected ? 'border-2 border-secondary' : ''}`
+          `flex flex-col w-full relative mt-4 ${
+            selected ? 'border-2 border-secondary' : ''
+          }`
         )}
         shadowSize={'lg'}
         borderRaduis="lg"
@@ -40,7 +49,12 @@ const StoryActivityCard: React.FC<StoryActivityCardProps> = ({
             <Typography type="body" text={title} color={'textDark'} />
           </div>
           <div>
-            <Typography className={'mt-2'} type="body" text={'Materials'} color={'textDark'} />
+            <Typography
+              className={'mt-2'}
+              type="body"
+              text={'Materials'}
+              color={'textDark'}
+            />
 
             <Typography type="help" text={material} color={'textDark'} />
             {!hideDetails && (
@@ -57,7 +71,9 @@ const StoryActivityCard: React.FC<StoryActivityCardProps> = ({
           </div>
         </div>
 
-        {!!warningText && <Alert type="warning" message={warningText} variant="flat" />}
+        {!!warningText && (
+          <Alert type="warning" message={warningText} variant="flat" />
+        )}
 
         <FADButton
           title={buttonText || selected ? 'Activity chosen' : 'Choose activity'}
@@ -72,7 +88,11 @@ const StoryActivityCard: React.FC<StoryActivityCardProps> = ({
           click={() => onSelected()}
         />
       </Card>
-      <Dialog visible={displayDetails} position={DialogPosition.Full} fullScreen>
+      <Dialog
+        visible={displayDetails}
+        position={DialogPosition.Full}
+        fullScreen
+      >
         <StoryActivityDetails
           activityId={activityId}
           storyBookId={storyBookId}

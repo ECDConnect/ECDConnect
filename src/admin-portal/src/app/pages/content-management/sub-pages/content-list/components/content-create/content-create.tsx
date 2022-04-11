@@ -8,7 +8,10 @@ import {
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import DynamicForm from '../../../../components/dynamic-form/dynamic-form';
-import { DynamicFormTemplate, FormTemplateField } from '../../../../content-management-models';
+import {
+  DynamicFormTemplate,
+  FormTemplateField,
+} from '../../../../content-management-models';
 import LanguageSelector from '../../../../../../components/language-selector/language-selector';
 import { camelCaseToSentanceCase } from '@ecdlink/core';
 import { ContentLoader } from '../../../../../../components/content-loader/content-loader';
@@ -64,7 +67,10 @@ export default function ContentCreate({
         fields: [],
       };
 
-      const copyFields: ContentTypeFieldDto[] = Object.assign([], contentType.fields);
+      const copyFields: ContentTypeFieldDto[] = Object.assign(
+        [],
+        contentType.fields
+      );
 
       copyFields
         ?.sort((a, b) => a.fieldOrder - b.fieldOrder)
@@ -81,7 +87,9 @@ export default function ContentCreate({
     const fields = contentType.fields ?? [];
     const field = fields.find((x) => x.fieldName === item.fieldName);
 
-    const optionDefinition = optionDefinitions.find((x) => x.contentName === item.dataLinkName);
+    const optionDefinition = optionDefinitions.find(
+      (x) => x.contentName === item.dataLinkName
+    );
 
     const returnField: FormTemplateField = {
       propName: field?.fieldName ?? '',
@@ -114,7 +122,10 @@ export default function ContentCreate({
   if (contentType && template && defaultLanguageId) {
     return (
       <div className="flex flex-col">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 divide-y divide-gray-200">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="space-y-8 divide-y divide-gray-200"
+        >
           <div className="-ml-4 -mt-2 flex items-center justify-between flex-wrap sm:flex-nowrap">
             <div className="ml-4 mt-2">
               <LanguageSelector

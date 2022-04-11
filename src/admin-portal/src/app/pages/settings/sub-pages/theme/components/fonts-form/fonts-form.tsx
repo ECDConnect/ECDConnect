@@ -2,7 +2,10 @@ import FormField from '../../../../../../components/form-field/form-field';
 import { FormComponentProps } from '../../../../../../models/FormComponentProps';
 import { ThemeFonts } from '../../../../../../schemas/themeFonts';
 
-export function FontsForm({ register, errors }: FormComponentProps<ThemeFonts>) {
+export function FontsForm({
+  register,
+  errors,
+}: FormComponentProps<ThemeFonts>) {
   return (
     <form key={`themefontsForm:${new Date().getTime()}`}>
       <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-12">

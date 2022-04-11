@@ -28,20 +28,31 @@ export const ChildCompletedObservationReports: React.FC = () => {
   const dialog = useDialog();
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
-  const { state: routeState } = useLocation<ChildCompletedObservsationReportsState>();
+  const { state: routeState } =
+    useLocation<ChildCompletedObservsationReportsState>();
 
   const [latestCompletedSummary, previouslyCompletedSummary] = useSelector(
     contentReportSelectors.getChildLatestCompletedReports(routeState?.childId)
   );
-  const currentChild = useSelector(childrenSelectors.getChildById(routeState?.childId));
-  const currentChildUser = useSelector(childrenSelectors.getChildUserById(currentChild?.userId));
-  const hasUnsyncedReports = useSelector(contentReportSelectors.hasUnsyncedReports);
+  const currentChild = useSelector(
+    childrenSelectors.getChildById(routeState?.childId)
+  );
+  const currentChildUser = useSelector(
+    childrenSelectors.getChildUserById(currentChild?.userId)
+  );
+  const hasUnsyncedReports = useSelector(
+    contentReportSelectors.hasUnsyncedReports
+  );
   const childReportSummaries = useSelector(
     contentReportSelectors.getChildProgressReportSummaries(routeState?.childId)
   );
-  const allCategories = useSelector(progressTrackingSelectors.getProgressTrackingCategories);
+  const allCategories = useSelector(
+    progressTrackingSelectors.getProgressTrackingCategories
+  );
 
-  const allLevels = useSelector(progressTrackingSelectors.getProgressTrackingLevels);
+  const allLevels = useSelector(
+    progressTrackingSelectors.getProgressTrackingLevels
+  );
 
   useEffect(() => {
     if (!isOnline) {
@@ -128,9 +139,13 @@ export const ChildCompletedObservationReports: React.FC = () => {
           title={`Don't worry if ${currentChildUser?.firstName} hasn't changed a lot in 6 months - child development takes time!`}
         />
 
-        <div className={'flex flex-col items-stretch border-b border-uiLight mt-4'}>
+        <div
+          className={'flex flex-col items-stretch border-b border-uiLight mt-4'}
+        >
           <div
-            className={'flex flex-row items-center justify-between border-b border-uiLight pl-4'}
+            className={
+              'flex flex-row items-center justify-between border-b border-uiLight pl-4'
+            }
           >
             <Typography type={'body'} className={'w-1/2'} text={''} />
             <div className={'flex flex-row flex-shrink-0'}>
@@ -139,7 +154,9 @@ export const ChildCompletedObservationReports: React.FC = () => {
                   type={'small'}
                   className={`uppercase mr-8`}
                   align="center"
-                  text={`${new Date(latestCompletedSummary?.reportDate).toLocaleString(
+                  text={`${new Date(
+                    latestCompletedSummary?.reportDate
+                  ).toLocaleString(
                     'en-za',
                     DateFormats.shortMonthNameAndYear
                   )}`}
@@ -151,7 +168,9 @@ export const ChildCompletedObservationReports: React.FC = () => {
                   type={'small'}
                   className={'uppercase mr-5'}
                   align="center"
-                  text={`${new Date(previouslyCompletedSummary.reportDate).toLocaleString(
+                  text={`${new Date(
+                    previouslyCompletedSummary.reportDate
+                  ).toLocaleString(
                     'en-za',
                     DateFormats.shortMonthNameAndYear
                   )}`}
@@ -162,8 +181,12 @@ export const ChildCompletedObservationReports: React.FC = () => {
           </div>
           {latestCompletedSummary &&
             latestCompletedSummary.categories.map((cat, idx) => {
-              const categoryDetails = allCategories.find((aCat) => aCat.id === cat.categoryId);
-              const achievedLevel = allLevels.find((level) => level.id === cat.achievedLevelId);
+              const categoryDetails = allCategories.find(
+                (aCat) => aCat.id === cat.categoryId
+              );
+              const achievedLevel = allLevels.find(
+                (level) => level.id === cat.achievedLevelId
+              );
               const prevAchievedLevel = allLevels.find(
                 (level) =>
                   level.id ===
@@ -185,7 +208,9 @@ export const ChildCompletedObservationReports: React.FC = () => {
                   />
                   <div className={'flex flex-row flex-shrink-0'}>
                     {achievedLevel && (
-                      <div className={'flex flex-row items-center flex-shrink-0'}>
+                      <div
+                        className={'flex flex-row items-center flex-shrink-0'}
+                      >
                         <img
                           className={'m-auto'}
                           src={achievedLevel.imageUrl}
@@ -201,7 +226,11 @@ export const ChildCompletedObservationReports: React.FC = () => {
                       </div>
                     )}
                     {prevAchievedLevel && (
-                      <div className={'flex flex-row items-center flex-shrink-0 mx-1'}>
+                      <div
+                        className={
+                          'flex flex-row items-center flex-shrink-0 mx-1'
+                        }
+                      >
                         <img
                           className={'m-auto'}
                           src={prevAchievedLevel.imageUrl}
@@ -262,7 +291,12 @@ export const ChildCompletedObservationReports: React.FC = () => {
             type="filled"
           >
             {renderIcon('DownloadIcon', 'h-5 w-5 text-white')}
-            <Typography type="h6" className="ml-2" text="Download a report" color="white" />
+            <Typography
+              type="h6"
+              className="ml-2"
+              text="Download a report"
+              color="white"
+            />
           </Button>
         </div>
       </div>

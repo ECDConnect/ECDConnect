@@ -18,11 +18,12 @@ export const PractitionerChildRegistration: React.FC = () => {
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
   const [childDetails, setChildDetails] = useState<ChildBasicInfoModel>();
-  const { activeStepKey, canGoBack, goBackOneStep, goToStep } = useStepNavigation(
-    PractitionerChildRegistrationSteps.childBasicDetails
-  );
+  const { activeStepKey, canGoBack, goBackOneStep, goToStep } =
+    useStepNavigation(PractitionerChildRegistrationSteps.childBasicDetails);
 
-  const onBasicChildInfoSubmitted = async (basicDetails: ChildBasicInfoModel) => {
+  const onBasicChildInfoSubmitted = async (
+    basicDetails: ChildBasicInfoModel
+  ) => {
     setChildDetails(basicDetails);
     goToStep(PractitionerChildRegistrationSteps.caregiverLink);
   };
@@ -77,10 +78,16 @@ export const PractitionerChildRegistration: React.FC = () => {
       onClose={exitRegistrationPrompt}
       isOnline={isOnline}
     >
-      <Step stepKey={PractitionerChildRegistrationSteps.childBasicDetails} viewBannerWapper={true}>
+      <Step
+        stepKey={PractitionerChildRegistrationSteps.childBasicDetails}
+        viewBannerWapper={true}
+      >
         <ChildBasicInfo onSubmit={onBasicChildInfoSubmitted} />
       </Step>
-      <Step stepKey={PractitionerChildRegistrationSteps.caregiverLink} viewBannerWapper={true}>
+      <Step
+        stepKey={PractitionerChildRegistrationSteps.caregiverLink}
+        viewBannerWapper={true}
+      >
         {childDetails && <CaregiverLink childDetails={childDetails} />}
       </Step>
     </StepViewer>

@@ -34,9 +34,8 @@ const OfflineSyncModal: React.FC<OfflineSyncModalProps> = ({
   const { resetAppStaticStores, initStoreSetup } = useStoreSetup();
   const history = useHistory();
 
-  const { status, error, currentAction, currentStep, stepTotal } = useAppSelector(
-    (state) => state.sync
-  );
+  const { status, error, currentAction, currentStep, stepTotal } =
+    useAppSelector((state) => state.sync);
 
   const handleSync = () => {
     dispatch(syncThunkActions.syncOfflineData({}));
@@ -58,11 +57,18 @@ const OfflineSyncModal: React.FC<OfflineSyncModalProps> = ({
   };
 
   if (status === ThunkActionStatuses.Fulfilled) {
-    return <OfflineSyncSuccess onSubmit={handleSyncSuccess}></OfflineSyncSuccess>;
+    return (
+      <OfflineSyncSuccess onSubmit={handleSyncSuccess}></OfflineSyncSuccess>
+    );
   }
 
   if (unableToSync) {
-    return <OfflineSyncError onSubmit={handleOnErrorSubmit} onCancel={onCancel}></OfflineSyncError>;
+    return (
+      <OfflineSyncError
+        onSubmit={handleOnErrorSubmit}
+        onCancel={onCancel}
+      ></OfflineSyncError>
+    );
   }
 
   if (

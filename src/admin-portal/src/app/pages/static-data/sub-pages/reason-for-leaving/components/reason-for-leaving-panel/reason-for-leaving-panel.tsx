@@ -22,7 +22,9 @@ export interface ReasonForLeavingPanelProps {
   closeDialog: (value: boolean) => void;
 }
 
-export default function ReasonForLeavingPanel(props: ReasonForLeavingPanelProps) {
+export default function ReasonForLeavingPanel(
+  props: ReasonForLeavingPanelProps
+) {
   const { setNotification } = useNotifications();
   const [isEdit, setEdit] = useState(props.item ? true : false);
   const [create] = useMutation(CreateReasonForLeaving);
@@ -98,7 +100,10 @@ export default function ReasonForLeavingPanel(props: ReasonForLeavingPanelProps)
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 divide-y divide-gray-200">
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="space-y-8 divide-y divide-gray-200"
+    >
       <div className="space-y-8 divide-y divide-gray-200">
         <div className="pt-8">
           <div className="grid grid-cols-2">

@@ -1,5 +1,11 @@
 import { yupResolver } from '@hookform/resolvers/yup';
-import { BannerWrapper, Button, Divider, FormInput, Typography } from '@ecdlink/ui';
+import {
+  BannerWrapper,
+  Button,
+  Divider,
+  FormInput,
+  Typography,
+} from '@ecdlink/ui';
 import { renderIcon } from '@ecdlink/ui';
 import { useEffect } from 'react';
 import { useForm, useFormState } from 'react-hook-form';
@@ -15,16 +21,24 @@ import { ChildProgressObservationNoteState } from './child-progress-observation-
 
 export const ChildProgressObservationNote: React.FC = () => {
   const history = useHistory();
-  const { state: routeState } = useLocation<ChildProgressObservationNoteState>();
-  const currentChild = useSelector(childrenSelectors.getChildById(routeState.childId));
-  const currentChildUser = useSelector(childrenSelectors.getChildUserById(currentChild?.userId));
-  const { currentReport, setObservationNote } = useChildProgressObservation(routeState.childId);
+  const { state: routeState } =
+    useLocation<ChildProgressObservationNoteState>();
+  const currentChild = useSelector(
+    childrenSelectors.getChildById(routeState.childId)
+  );
+  const currentChildUser = useSelector(
+    childrenSelectors.getChildUserById(currentChild?.userId)
+  );
+  const { currentReport, setObservationNote } = useChildProgressObservation(
+    routeState.childId
+  );
 
-  const { getValues, register, control, setValue } = useForm<ChildProgressObservationNoteModel>({
-    resolver: yupResolver(childProgressObservationNoteFormSchema),
-    mode: 'onChange',
-    defaultValues: { note: currentReport?.observationNote },
-  });
+  const { getValues, register, control, setValue } =
+    useForm<ChildProgressObservationNoteModel>({
+      resolver: yupResolver(childProgressObservationNoteFormSchema),
+      mode: 'onChange',
+      defaultValues: { note: currentReport?.observationNote },
+    });
 
   const { isValid } = useFormState({
     control: control,

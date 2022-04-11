@@ -22,14 +22,19 @@ import { useAppDispatch } from '@store';
 import { analyticsActions } from '@store/analytics';
 
 export const ChildProgressObservationReport: React.FC = () => {
-  const { state: routeState, search } = useLocation<ChildProgressObservationReportState>();
+  const { state: routeState, search } =
+    useLocation<ChildProgressObservationReportState>();
   const history = useHistory();
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
   const childId = routeState?.childId;
-  const reportingDate = routeState?.reportingDate ? new Date(routeState.reportingDate) : new Date();
+  const reportingDate = routeState?.reportingDate
+    ? new Date(routeState.reportingDate)
+    : new Date();
   const currentChild = useSelector(childrenSelectors.getChildById(childId));
-  const currentChildUser = useSelector(childrenSelectors.getChildUserById(currentChild?.userId));
+  const currentChildUser = useSelector(
+    childrenSelectors.getChildUserById(currentChild?.userId)
+  );
 
   useEffect(() => {
     if (!isOnline) {
@@ -49,14 +54,20 @@ export const ChildProgressObservationReport: React.FC = () => {
       childId
     )
   );
-  const { currentReport, setChildEnjoys, setChildProgressedWith, setHowCategiverCanHelpChild } =
-    useChildProgressObservation(childId, report);
+  const {
+    currentReport,
+    setChildEnjoys,
+    setChildProgressedWith,
+    setHowCategiverCanHelpChild,
+  } = useChildProgressObservation(childId, report);
   const { getValue: getQueryParamValue } = useQueryParams(search);
   const stepDefinedInQueryParams = getQueryParamValue('step');
 
-  const { activeStepKey, canGoBack, goBackOneStep, goToStep } = useStepNavigation(
-    Number(stepDefinedInQueryParams) || ChildProgressObservationReportSteps.ChildEnjoys
-  );
+  const { activeStepKey, canGoBack, goBackOneStep, goToStep } =
+    useStepNavigation(
+      Number(stepDefinedInQueryParams) ||
+        ChildProgressObservationReportSteps.ChildEnjoys
+    );
 
   const onBannerBack = () => {
     if (canGoBack()) {
@@ -72,12 +83,16 @@ export const ChildProgressObservationReport: React.FC = () => {
     goToStep(ChildProgressObservationReportSteps.ChildMadeProgressWith);
   };
 
-  const onChildProgressedWithSubmitted = (formValue: ChildProgressedWithFormModel) => {
+  const onChildProgressedWithSubmitted = (
+    formValue: ChildProgressedWithFormModel
+  ) => {
     setChildProgressedWith(formValue.childProgressedWith);
     goToStep(ChildProgressObservationReportSteps.HowCanCaregiverHelpChild);
   };
 
-  const onHowCaregiverCanHelpChildSubmitted = (formValue: CaregiverCanHelpChildWithFormModel) => {
+  const onHowCaregiverCanHelpChildSubmitted = (
+    formValue: CaregiverCanHelpChildWithFormModel
+  ) => {
     setHowCategiverCanHelpChild(formValue.howCanCaregiverHelpChild);
 
     goToStep(ChildProgressObservationReportSteps.OverviewReport);
@@ -86,9 +101,16 @@ export const ChildProgressObservationReport: React.FC = () => {
   const renderStep = () => {
     switch (activeStepKey as number) {
       case ChildProgressObservationReportSteps.ChildEnjoys:
-        return <ChildEnjoys childId={childId} onSubmit={onChildEnjoysSubmitted} />;
+        return (
+          <ChildEnjoys childId={childId} onSubmit={onChildEnjoysSubmitted} />
+        );
       case ChildProgressObservationReportSteps.ChildMadeProgressWith:
-        return <ChildProgressedWith childId={childId} onSubmit={onChildProgressedWithSubmitted} />;
+        return (
+          <ChildProgressedWith
+            childId={childId}
+            onSubmit={onChildProgressedWithSubmitted}
+          />
+        );
       case ChildProgressObservationReportSteps.HowCanCaregiverHelpChild:
         return (
           <CaregiverCanHelpChildWith

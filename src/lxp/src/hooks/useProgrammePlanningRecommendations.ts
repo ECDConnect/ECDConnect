@@ -1,4 +1,8 @@
-import { ActivityDto, ProgrammeDto, ProgressTrackingSubCategoryDto } from '@ecdlink/core/';
+import {
+  ActivityDto,
+  ProgrammeDto,
+  ProgressTrackingSubCategoryDto,
+} from '@ecdlink/core/';
 import { useSelector } from 'react-redux';
 import { activitySelectors } from '@store/content/activity';
 import { progressTrackingSelectors } from '@store/progress-tracking';
@@ -11,7 +15,9 @@ export type RecommendedActivity = {
 
 export const useProgrammePlanningRecommendations = () => {
   const activities = useSelector(activitySelectors.getActivities);
-  const subCategories = useSelector(progressTrackingSelectors.getProgressTrackingSubCategories);
+  const subCategories = useSelector(
+    progressTrackingSelectors.getProgressTrackingSubCategories
+  );
 
   const getCurrentProgrammeRecommendedActivities = (
     programme?: ProgrammeDto
@@ -22,11 +28,12 @@ export const useProgrammePlanningRecommendations = () => {
 
     // LETS MAKE SURE WE HAVE 10x ACTIVITIES SELECTED
     if (plannedActivities.length > 9) {
-      const selectedActivities = activities.filter((x) => plannedActivities?.includes(x.id));
-
-      const selectedSubCategories: ProgressTrackingSubCategoryDto[] = selectedActivities.flatMap(
-        (x) => x.subCategories
+      const selectedActivities = activities.filter((x) =>
+        plannedActivities?.includes(x.id)
       );
+
+      const selectedSubCategories: ProgressTrackingSubCategoryDto[] =
+        selectedActivities.flatMap((x) => x.subCategories);
       const recommendedActivities: RecommendedActivity[] = [];
 
       for (const subCategory of subCategories) {
@@ -41,8 +48,9 @@ export const useProgrammePlanningRecommendations = () => {
           // exclude existing planned activities
           const recommendedActivity = activities.find(
             (activity) =>
-              (activity.subCategories || []).some((subCat) => subCat?.id === subCategory?.id) &&
-              !plannedActivities.some((pa) => pa === activity.id)
+              (activity.subCategories || []).some(
+                (subCat) => subCat?.id === subCategory?.id
+              ) && !plannedActivities.some((pa) => pa === activity.id)
           );
 
           if (recommendedActivity)
@@ -69,12 +77,13 @@ export const useProgrammePlanningRecommendations = () => {
     // LETS MAKE SURE WE HAVE 10x ACTIVITIES SELECTED
     if (plannedActivities.length < 10) return [];
 
-    const currentActivities = activities.filter((x) => plannedActivities?.includes(x.id));
+    const currentActivities = activities.filter((x) =>
+      plannedActivities?.includes(x.id)
+    );
 
     const recommendedSubCategories: ProgressTrackingSubCategoryDto[] = [];
-    const selectedSubCategories: ProgressTrackingSubCategoryDto[] = currentActivities.flatMap(
-      (x) => x.subCategories
-    );
+    const selectedSubCategories: ProgressTrackingSubCategoryDto[] =
+      currentActivities.flatMap((x) => x.subCategories);
 
     for (const subCategory of subCategories) {
       const subCategoryPercentage =

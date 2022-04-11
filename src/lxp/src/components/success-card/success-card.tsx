@@ -24,7 +24,9 @@ export const SuccessCard: React.FC<SuccessCardProps> = ({
       >
         <div className={styles.contentWrapper}>
           <div className={'flex flex-1 flex-row items-start'}>
-            <div className={styles.iconRound}>{renderIcon(icon, 'h-6 w-6 text-white')}</div>
+            <div className={styles.iconRound}>
+              {renderIcon(icon, 'h-6 w-6 text-white')}
+            </div>
             <div className={styles.textWrapper} data-testid="important-wrapper">
               <Typography
                 type={'help'}

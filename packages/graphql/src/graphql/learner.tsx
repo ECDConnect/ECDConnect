@@ -12,7 +12,7 @@ export const GetAllLearner = gql`
         isSouthAfricanCitizen
         verifiedByHomeAffairs
         dateOfBirth
-        idNumber        
+        idNumber
         fullName
         contactPreference
         genderId

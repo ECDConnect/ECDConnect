@@ -15,10 +15,13 @@ import { contentReportSelectors } from '@store/content/report';
 export const ProgressObservationCategory = () => {
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
-  const { state: locationState } = useLocation<ProgressObservationCategoryState>();
+  const { state: locationState } =
+    useLocation<ProgressObservationCategoryState>();
   const { childId, progressTrackingCategoryId } = locationState;
   const category = useSelector(
-    progressTrackingSelectors.getProgressTrackingCategoryById(progressTrackingCategoryId)
+    progressTrackingSelectors.getProgressTrackingCategoryById(
+      progressTrackingCategoryId
+    )
   );
   const subCategories = useSelector(
     progressTrackingSelectors.getProgressTrackingSubCategoriesByCategoryId(
@@ -34,10 +37,8 @@ export const ProgressObservationCategory = () => {
       locationState.childId
     )
   );
-  const { setCurrentCategoryById, startCurrentCategoryTracking } = useChildProgressObservation(
-    childId,
-    report
-  );
+  const { setCurrentCategoryById, startCurrentCategoryTracking } =
+    useChildProgressObservation(childId, report);
 
   useEffect(() => {
     if (report) {
@@ -127,7 +128,12 @@ export const ProgressObservationCategory = () => {
             onClick={onStartTracking}
             className={styles.startButton}
           >
-            <Typography color={'white'} type={'help'} weight={'normal'} text={'Start tracking'} />
+            <Typography
+              color={'white'}
+              type={'help'}
+              weight={'normal'}
+              text={'Start tracking'}
+            />
           </Button>
         </div>
       </div>

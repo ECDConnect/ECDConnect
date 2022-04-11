@@ -1,9 +1,15 @@
 import { useTheme } from '@ecdlink/core';
-import { Alert, BannerWrapper, ComponentBaseProps, Typography } from '@ecdlink/ui';
+import {
+  Alert,
+  BannerWrapper,
+  ComponentBaseProps,
+  Typography,
+} from '@ecdlink/ui';
 import { ContactPerson } from '../../../../components/contact-person/contact-person';
 import { ChildRegistrationDetails } from '../caregiver-child-registration.types';
 
-export interface CompletedCaregiverChildRegistrationProps extends ComponentBaseProps {
+export interface CompletedCaregiverChildRegistrationProps
+  extends ComponentBaseProps {
   childDetails: ChildRegistrationDetails;
 }
 

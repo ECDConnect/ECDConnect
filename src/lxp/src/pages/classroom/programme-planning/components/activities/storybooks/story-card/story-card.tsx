@@ -1,4 +1,11 @@
-import { Button, Card, FADButton, StatusChip, Typography, Dialog } from '@ecdlink/ui';
+import {
+  Button,
+  Card,
+  FADButton,
+  StatusChip,
+  Typography,
+  Dialog,
+} from '@ecdlink/ui';
 import { DialogPosition } from '@ecdlink/ui';
 import { classNames } from '@ecdlink/ui';
 import { useState } from 'react';
@@ -30,7 +37,9 @@ const StoryCard: React.FC<StoryCardProps> = ({
       <Card
         className={classNames(
           className,
-          `flex flex-col w-full relative mt-4 ${selected ? 'border-2 border-secondary' : ''}`
+          `flex flex-col w-full relative mt-4 ${
+            selected ? 'border-2 border-secondary' : ''
+          }`
         )}
         shadowSize={'lg'}
         borderRaduis="lg"
@@ -91,7 +100,11 @@ const StoryCard: React.FC<StoryCardProps> = ({
           click={onSelected}
         />
       </Card>
-      <Dialog visible={displayDetails} position={DialogPosition.Full} fullScreen>
+      <Dialog
+        visible={displayDetails}
+        position={DialogPosition.Full}
+        fullScreen
+      >
         <StoryActivityDetails
           viewType="StoryBook"
           storyBookId={storyBookId}

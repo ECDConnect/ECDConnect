@@ -45,7 +45,9 @@ const UserHierarchy: React.FC<UserHierarchyProps> = ({ userId }) => {
                       <p className="text-sm font-medium text-gray-900">
                         {hierarchy.user.firstName} {hierarchy.user.surname}
                       </p>
-                      <p className="text-sm text-gray-500 truncate">{hierarchy.userType}</p>
+                      <p className="text-sm text-gray-500 truncate">
+                        {hierarchy.userType}
+                      </p>
                     </div>
                   </div>
                 </div>

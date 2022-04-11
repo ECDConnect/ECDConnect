@@ -100,7 +100,10 @@ export default function Coaches() {
                     { field: 'isActive', use: 'Active' },
                   ]}
                   rows={tableData}
-                  editRow={hasPermission(PermissionEnum.update_user) && displayEditPanel}
+                  editRow={
+                    hasPermission(PermissionEnum.update_user) &&
+                    displayEditPanel
+                  }
                 />
               </div>
             </div>

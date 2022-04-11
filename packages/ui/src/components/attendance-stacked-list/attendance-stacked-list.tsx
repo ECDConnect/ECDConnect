@@ -18,9 +18,8 @@ export const AttendanceStackedList = ({
   scroll = true,
   onScroll,
 }: React.PropsWithChildren<AttendanceStackedListProps>) => {
-  const [renderList, setRenderList] = useState<AttendanceListDataItem[]>(
-    listItems
-  );
+  const [renderList, setRenderList] =
+    useState<AttendanceListDataItem[]>(listItems);
   const handleScroll = (e: any) => {
     const element = e.target;
     if (onScroll && element.scrollTop) {

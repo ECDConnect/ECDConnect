@@ -3,12 +3,12 @@ import { Document } from '../models/document';
 
 export const initialDocumentValues: Document = {
   name: '',
-  workflowStatusId: '',  
+  workflowStatusId: '',
   fileType: undefined,
-  documentTypeId: ''
+  documentTypeId: '',
 };
 
 export const documentSchema = Yup.object().shape({
   name: Yup.string(),
-  workflowStatusId: Yup.string(),  
+  workflowStatusId: Yup.string(),
 });

@@ -20,7 +20,11 @@ export const OfflineSyncExecuting: React.FC<OfflineSyncExecutingProps> = ({
       icon={error ? 'ExclamationCircleIcon' : 'SwitchVerticalIcon'}
       iconColor={error ? 'alertMain' : 'primary'}
       iconBorderColor="errorBg"
-      title={error ? 'There was a problem syncing your information' : 'Syncing your app'}
+      title={
+        error
+          ? 'There was a problem syncing your information'
+          : 'Syncing your app'
+      }
     >
       <div className="flex flex-col align-center">
         <LoadingSpinner

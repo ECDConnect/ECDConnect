@@ -21,7 +21,10 @@ export const AddPermissionToRole = gql`
 `;
 
 export const RemovePermissionToRole = gql`
-  mutation removePermissionsFromRole($roleId: String!, $permissionIds: [UUID!]) {
+  mutation removePermissionsFromRole(
+    $roleId: String!
+    $permissionIds: [UUID!]
+  ) {
     removePermissionsFromRole(roleId: $roleId, permissionIds: $permissionIds)
   }
 `;

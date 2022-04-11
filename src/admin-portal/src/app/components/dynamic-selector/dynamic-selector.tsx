@@ -25,7 +25,8 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
 }) => {
   const fields =
     optionDefinition?.fields?.map((x) => {
-      if (x.dataType !== FieldType.Link && x.dataType !== FieldType.StaticLink) return x.name;
+      if (x.dataType !== FieldType.Link && x.dataType !== FieldType.StaticLink)
+        return x.name;
       else
         return `
       ${x.name} {
@@ -64,7 +65,8 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
       const displayFields: string[] = [];
 
       optionDefinition.fields?.forEach((x) => {
-        if (x.dataType !== 'link' && displayFields.length < 2) displayFields.push(x.name);
+        if (x.dataType !== 'link' && displayFields.length < 2)
+          displayFields.push(x.name);
       });
 
       setDisplayFields(displayFields);
@@ -119,7 +121,10 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
           type={'body'}
           weight={'bold'}
           color={'textMid'}
-          text={title ?? camelCaseToSentanceCase(optionDefinition?.contentName ?? '')}
+          text={
+            title ??
+            camelCaseToSentanceCase(optionDefinition?.contentName ?? '')
+          }
         />
 
         <div className="mt-4 shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
@@ -145,7 +150,9 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
                     <td className="px-2 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">{item.name}</div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {item.name}
+                          </div>
                         </div>
                       </div>
                     </td>
@@ -154,7 +161,9 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
                         <div className="text-sm font-medium text-gray-900">
                           <input
                             disabled={isReview}
-                            defaultChecked={currentIds?.some((x) => x === item.id.toString())}
+                            defaultChecked={currentIds?.some(
+                              (x) => x === item.id.toString()
+                            )}
                             type="checkbox"
                             className="focus:ring-primary h-4 w-4 text-primary border-gray-300 rounded"
                             onChange={() => selectItem(item.id)}
@@ -167,7 +176,11 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
             </tbody>
           </table>
 
-          <Pagination recordsPerPage={8} items={tempData} responseData={setTableData} />
+          <Pagination
+            recordsPerPage={8}
+            items={tempData}
+            responseData={setTableData}
+          />
         </div>
       </div>
     );

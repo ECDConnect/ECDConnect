@@ -129,8 +129,13 @@ export default function GeneralSettingsView() {
                     { field: 'name', use: 'name' },
                   ]}
                   rows={tableData}
-                  editRow={hasPermission(PermissionEnum.update_system) && displayPanel}
-                  deleteRow={hasPermission(PermissionEnum.delete_system) && deleteAndRefresh}
+                  editRow={
+                    hasPermission(PermissionEnum.update_system) && displayPanel
+                  }
+                  deleteRow={
+                    hasPermission(PermissionEnum.delete_system) &&
+                    deleteAndRefresh
+                  }
                 />
               </div>
             </div>

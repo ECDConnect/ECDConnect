@@ -46,17 +46,28 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
   variation,
 }) => {
   const daysInMonth = getArrayRange(1, 31);
-  const years = getArrayRange(subYears(new Date(), 20).getFullYear(), new Date().getFullYear());
-  const [dayDropDownList, setDayDropDownList] = useState<DropDownOption<number>[]>([]);
+  const years = getArrayRange(
+    subYears(new Date(), 20).getFullYear(),
+    new Date().getFullYear()
+  );
+  const [dayDropDownList, setDayDropDownList] = useState<
+    DropDownOption<number>[]
+  >([]);
   const [monthDropDownList] = useState<DropDownOption<number>[]>(ShortMonths);
-  const [yearDropDownList, setYearDropDownList] = useState<DropDownOption<number>[]>([]);
+  const [yearDropDownList, setYearDropDownList] = useState<
+    DropDownOption<number>[]
+  >([]);
 
   const [alerts, setAlerts] = useState<AlertProps[]>();
 
   const [provideReason, setProvideReason] = useState(false);
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
-  const reasons = useSelector(staticDataSelectors.getProgrammeAttendanceReasons);
-  const [updatedPlaygroups, setUpdatedPlaygroups] = useState<DropDownOption<string>[]>([]);
+  const reasons = useSelector(
+    staticDataSelectors.getProgrammeAttendanceReasons
+  );
+  const [updatedPlaygroups, setUpdatedPlaygroups] = useState<
+    DropDownOption<string>[]
+  >([]);
 
   const {
     getValues: getChildInformationFormValues,
@@ -144,7 +155,8 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
       const month = idSubString.substring(2, 4);
       const year = `20${idSubString.substring(0, 2)}`;
 
-      const hasMisMatchWithId = dobDay !== +day || dobMonth !== +month || dobYear !== +year;
+      const hasMisMatchWithId =
+        dobDay !== +day || dobMonth !== +month || dobYear !== +year;
 
       if (hasMisMatchWithId) {
         alertsArray.push({
@@ -215,7 +227,10 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
 
     const idSubString = childIdField.replaceAll(' ', '');
 
-    setChildInformationFormValue('dobYear', +('20' + idSubString.substring(0, 2)));
+    setChildInformationFormValue(
+      'dobYear',
+      +('20' + idSubString.substring(0, 2))
+    );
     setChildInformationFormValue('dobMonth', +idSubString.substring(2, 4));
     setChildInformationFormValue('dobDay', +idSubString.substring(4, 6));
   };
@@ -228,7 +243,12 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
 
   return (
     <div className={'bg-uiBg pt-2'}>
-      <Typography type={'h1'} text={"Child's details"} color={'primary'} className={'px-4'} />
+      <Typography
+        type={'h1'}
+        text={"Child's details"}
+        color={'primary'}
+        className={'px-4'}
+      />
       <div className={'p-4'}>
         {variation === 'practitioner' && (
           <PractitionerForm
@@ -241,7 +261,9 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
         )}
 
         {variation === 'caregiver' && (
-          <CaregiverForm childInformationFormRegister={childInformationFormRegister} />
+          <CaregiverForm
+            childInformationFormRegister={childInformationFormRegister}
+          />
         )}
 
         <FormInput<ChildInformationFormModel>
@@ -253,7 +275,9 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
           error={errors['childIdField']}
           placeholder={'E.g. 190101 0000 000'}
         />
-        <label className={classNames(styles.label, 'mt-4')}>{'Date of birth'}</label>
+        <label className={classNames(styles.label, 'mt-4')}>
+          {'Date of birth'}
+        </label>
         <div className={'flex items-center justify-between'}>
           <Dropdown
             placeholder={'Day'}
@@ -302,7 +326,10 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
               }
               selectedValue={getChildInformationFormValues().reason}
               onChange={(item) => {
-                setChildInformationFormValue('reason', item as ProgrammeAttendanceReasonDto);
+                setChildInformationFormValue(
+                  'reason',
+                  item as ProgrammeAttendanceReasonDto
+                );
                 triggerChildInformationForm();
               }}
             />

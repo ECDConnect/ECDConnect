@@ -30,7 +30,7 @@ export const ImageInput = <T,>({
   className,
   currentImageString,
   onValueChange,
-  overrideOnClick
+  overrideOnClick,
 }: ImageInputProps<T>) => {
   const [fileName, setFileName] = useState('');
   const [error, setError] = useState('');
@@ -156,7 +156,7 @@ export const ImageInput = <T,>({
         <div
           className={styles.imageContainer}
           style={{
-            backgroundImage: `url(${currentImage})`
+            backgroundImage: `url(${currentImage})`,
           }}
         >
           <div className={styles.iconBaseStyle}>

@@ -11,7 +11,11 @@ export interface SiteAddressFormProps {
   register: UseFormRegister<any>;
 }
 
-const SiteAddressForm: React.FC<SiteAddressFormProps> = ({ formKey, errors, register }) => {
+const SiteAddressForm: React.FC<SiteAddressFormProps> = ({
+  formKey,
+  errors,
+  register,
+}) => {
   const { data } = useQuery(GetAllProvince, {
     fetchPolicy: 'cache-and-network',
   });

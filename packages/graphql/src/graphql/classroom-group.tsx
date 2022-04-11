@@ -9,7 +9,7 @@ export const CreateClassroomGroup = gql`
         id
         description
       }
-      name      
+      name
     }
   }
 `;
@@ -23,7 +23,7 @@ export const UpdateClassroomGroup = gql`
         id
         description
       }
-      name      
+      name
     }
   }
 `;

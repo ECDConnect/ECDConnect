@@ -4,7 +4,7 @@ export const GetAllReasonForLeaving = gql`
   {
     GetAllReasonForLeaving {
       id
-      description      
+      description
     }
   }
 `;

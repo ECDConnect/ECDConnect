@@ -15,7 +15,11 @@ import { notesActions } from '@store/notes';
 import { ViewNoteProps } from './view-note.types';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 
-export const ViewNote: React.FC<ViewNoteProps> = ({ note, onDelete, onBack }) => {
+export const ViewNote: React.FC<ViewNoteProps> = ({
+  note,
+  onDelete,
+  onBack,
+}) => {
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
   const dialog = useDialog();
@@ -105,7 +109,12 @@ export const ViewNote: React.FC<ViewNoteProps> = ({ note, onDelete, onBack }) =>
           type="filled"
         >
           {renderIcon('TrashIcon', classNames('h-5 w-5 text-white'))}
-          <Typography type="h6" className="ml-2" text="Delete note" color="white" />
+          <Typography
+            type="h6"
+            className="ml-2"
+            text="Delete note"
+            color="white"
+          />
         </Button>
       </div>
     </BannerWrapper>

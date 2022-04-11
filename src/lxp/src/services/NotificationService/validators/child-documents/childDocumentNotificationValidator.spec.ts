@@ -1,7 +1,10 @@
 import { RecursivePartial, WorkflowStatusEnum } from '@ecdlink/core';
 import { EnhancedStore } from '@reduxjs/toolkit';
 import { RootState } from '@store/types';
-import { NotificationIntervals, NotificationPriority } from '../../NotificationService.types';
+import {
+  NotificationIntervals,
+  NotificationPriority,
+} from '../../NotificationService.types';
 import { ChildDocumentsNotificationValidator } from './childDocumentsNotificationValidator';
 
 describe('childDocumentNotificationValidator', () => {
@@ -112,8 +115,12 @@ describe('childDocumentNotificationValidator', () => {
       store as EnhancedStore<RootState, any>
     );
     const notifications = validator.getNotifications();
-    const hopeNotification = notifications.find((x) => x.reference === `1-docs`);
-    const derickNotification = notifications.find((x) => x.reference === `2-docs`);
+    const hopeNotification = notifications.find(
+      (x) => x.reference === `1-docs`
+    );
+    const derickNotification = notifications.find(
+      (x) => x.reference === `2-docs`
+    );
 
     expect(hopeNotification).toBeDefined();
     expect(derickNotification).toBeUndefined();
@@ -150,7 +157,9 @@ describe('childDocumentNotificationValidator', () => {
       store as EnhancedStore<RootState, any>
     );
     const notifications = validator.getNotifications();
-    const hopeNotification = notifications.find((x) => x.reference === `1-docs`);
+    const hopeNotification = notifications.find(
+      (x) => x.reference === `1-docs`
+    );
 
     expect(hopeNotification?.priority).toEqual(NotificationPriority.higher);
     expect(hopeNotification?.viewType).toEqual('Both');

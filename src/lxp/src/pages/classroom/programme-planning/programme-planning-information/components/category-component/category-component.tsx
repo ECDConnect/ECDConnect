@@ -11,9 +11,13 @@ export interface ProgressTrackingCategoryProps {
   category: ProgressTrackingCategoryDto;
 }
 
-export const CategoryComponent = ({ category }: ProgressTrackingCategoryProps) => {
+export const CategoryComponent = ({
+  category,
+}: ProgressTrackingCategoryProps) => {
   const subCategories = useSelector(
-    progressTrackingSelectors.getProgressTrackingSubCategoriesByCategoryId(category.id)
+    progressTrackingSelectors.getProgressTrackingSubCategoriesByCategoryId(
+      category.id
+    )
   );
 
   return (

@@ -6,6 +6,7 @@ export const yesNoOptions = [
   { text: 'No', value: false },
 ];
 
-export interface EditProgrammeFormProps extends FormComponentProps<EditProgrammeModel> {
+export interface EditProgrammeFormProps
+  extends FormComponentProps<EditProgrammeModel> {
   programme?: EditProgrammeModel;
 }

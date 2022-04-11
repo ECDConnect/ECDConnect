@@ -23,7 +23,9 @@ export default function Editor({ label, onStateChange, currentValue }) {
     <>
       {editorLoaded ? (
         <div className="relative">
-          <div className="mb-2 text-sm font-medium capitalize text-slate-700">{label}</div>
+          <div className="mb-2 text-sm font-medium capitalize text-slate-700">
+            {label}
+          </div>
           <CKEditor
             editor={ClassicEditor}
             data={currentValue || ''}
@@ -31,7 +33,11 @@ export default function Editor({ label, onStateChange, currentValue }) {
             onChange={handleChange}
             onReady={(editor) => {
               editor.editing.view.change((writer) => {
-                writer.setStyle('min-height', '150px', editor.editing.view.document.getRoot());
+                writer.setStyle(
+                  'min-height',
+                  '150px',
+                  editor.editing.view.document.getRoot()
+                );
               });
             }}
           />

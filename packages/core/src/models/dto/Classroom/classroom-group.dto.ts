@@ -1,4 +1,3 @@
-
 import { EntityBase } from '../entity-base';
 import { ClassProgrammeDto } from './class-programme.dto';
 import { ClassroomDto } from './classroom.dto';

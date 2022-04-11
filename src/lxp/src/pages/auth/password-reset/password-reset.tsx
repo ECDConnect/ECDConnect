@@ -23,12 +23,15 @@ import {
 import AuthService from '@services/AuthService/AuthService';
 
 export const PasswordReset: React.FC = () => {
-  const [userPhoneNumberEnding, setUserPhoneNumberEnding] = useState<string>('XXXX');
+  const [userPhoneNumberEnding, setUserPhoneNumberEnding] =
+    useState<string>('XXXX');
   const [displayError, setDisplayError] = useState<boolean>(false);
   const [displaySuccess, setDisplaySuccess] = useState<boolean>(false);
   const [idFieldVisible, setIdFieldVisible] = useState<boolean>(true);
-  const [sendLinkButtonDisabled, setSendLinkButtonDisabled] = useState<boolean>(true);
-  const [resendLinkButtonDisabled, setResendLinkButtonDisabled] = useState<boolean>(false);
+  const [sendLinkButtonDisabled, setSendLinkButtonDisabled] =
+    useState<boolean>(true);
+  const [resendLinkButtonDisabled, setResendLinkButtonDisabled] =
+    useState<boolean>(false);
   const [displayCallHelp, setDisplayCallHelp] = useState<boolean>(false);
   const [hasSubmitted, setHasSubmitted] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -53,9 +56,10 @@ export const PasswordReset: React.FC = () => {
       setIsLoading(true);
       setSendLinkButtonDisabled(true);
 
-      const requestSentResponse = await new AuthService().SendForgotPasswordRequest({
-        username: formValues.username,
-      });
+      const requestSentResponse =
+        await new AuthService().SendForgotPasswordRequest({
+          username: formValues.username,
+        });
       if (requestSentResponse.valid) {
         setUserPhoneNumberEnding(
           requestSentResponse.phoneNumber
@@ -87,9 +91,10 @@ export const PasswordReset: React.FC = () => {
     setIsLoading(true);
     setResendLinkButtonDisabled(true);
 
-    const requestSentResponse = await new AuthService().SendForgotPasswordRequest({
-      username: formValues.username,
-    });
+    const requestSentResponse =
+      await new AuthService().SendForgotPasswordRequest({
+        username: formValues.username,
+      });
     if (requestSentResponse.valid) {
       setUserPhoneNumberEnding(
         requestSentResponse.phoneNumber
@@ -132,14 +137,21 @@ export const PasswordReset: React.FC = () => {
 
   return (
     <div className={styles.container}>
-      <BannerWrapper color="primary" size="normal" renderBorder={true} onBack={goBack}>
+      <BannerWrapper
+        color="primary"
+        size="normal"
+        renderBorder={true}
+        onBack={goBack}
+      >
         <div className={styles.passwordResetContainer}>
           {!displaySuccess && (
             <div>
               <Typography
                 type="body"
                 color="textMid"
-                text={'Fill in your ID number and we will send you a link to reset your password'}
+                text={
+                  'Fill in your ID number and we will send you a link to reset your password'
+                }
               ></Typography>
               <div className={'mt-4'}>
                 <form>
@@ -210,7 +222,11 @@ export const PasswordReset: React.FC = () => {
                     disabled={sendLinkButtonDisabled}
                     onClick={() => submitForm(resetPasswordFormGetValues())}
                   >
-                    <Typography type="help" color="white" text={'Send link'}></Typography>
+                    <Typography
+                      type="help"
+                      color="white"
+                      text={'Send link'}
+                    ></Typography>
                   </Button>
                 </form>
               </div>
@@ -221,7 +237,9 @@ export const PasswordReset: React.FC = () => {
               <Alert
                 className={styles.bigSpace}
                 title={`SMS sent to cellphone number ending in ${userPhoneNumberEnding}`}
-                message={'Please check your messages and click the reset passwork link.'}
+                message={
+                  'Please check your messages and click the reset passwork link.'
+                }
                 type={'success'}
               />
               <Divider className={'mt-4 mb-5'}></Divider>
@@ -234,7 +252,11 @@ export const PasswordReset: React.FC = () => {
                   disabled={resendLinkButtonDisabled}
                   onClick={() => resendLink(resetPasswordFormGetValues())}
                 >
-                  <Typography type="help" color="white" text={'Resend link'}></Typography>
+                  <Typography
+                    type="help"
+                    color="white"
+                    text={'Resend link'}
+                  ></Typography>
                 </Button>
                 <Button
                   className={styles.goBackButton}
@@ -243,7 +265,11 @@ export const PasswordReset: React.FC = () => {
                   onClick={goBack}
                 >
                   {renderIcon('ArrowCircleLeftIcon', styles.buttonIcon)}
-                  <Typography type="help" color="primary" text={'Back to log in'}></Typography>
+                  <Typography
+                    type="help"
+                    color="primary"
+                    text={'Back to log in'}
+                  ></Typography>
                 </Button>
               </div>
             </div>
@@ -264,7 +290,11 @@ export const PasswordReset: React.FC = () => {
               size="small"
               onClick={() => setDisplayCallHelp(true)}
             >
-              <Typography type="help" color="primary" text={'Get help'}></Typography>
+              <Typography
+                type="help"
+                color="primary"
+                text={'Get help'}
+              ></Typography>
             </Button>
           </div>
         </div>

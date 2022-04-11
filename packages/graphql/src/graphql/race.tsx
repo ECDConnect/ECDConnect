@@ -4,7 +4,7 @@ export const GetAllRace = gql`
   {
     GetAllRace {
       id
-      description      
+      description
     }
   }
 `;

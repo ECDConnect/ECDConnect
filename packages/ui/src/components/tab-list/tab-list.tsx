@@ -45,8 +45,7 @@ export const TabList: React.FC<TabListProps> = ({
     setActiveIndexTab(tabIndex);
     setActiveTabItem(tab);
 
-    if (tabSelected)
-      tabSelected(tab, tabIndex);
+    if (tabSelected) tabSelected(tab, tabIndex);
   };
 
   return (

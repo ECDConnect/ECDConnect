@@ -57,11 +57,16 @@ export function Dropdown<T>({
   return (
     <div className={className}>
       {label && <label className={styles.label}>{label}</label>}
-      <Menu as="div" className={classNames(styles.menu, fullWidth ? 'w-full' : '')}>
+      <Menu
+        as="div"
+        className={classNames(styles.menu, fullWidth ? 'w-full' : '')}
+      >
         {({ open }) => (
           <>
             <Menu.Button
-              className={classNames(styles.getDropDownFill(fillType, fillColor))}
+              className={classNames(
+                styles.getDropDownFill(fillType, fillColor)
+              )}
               disabled={disabled}
             >
               <Typography
@@ -74,7 +79,10 @@ export function Dropdown<T>({
 
               {renderIcon(
                 !open ? 'ChevronDownIcon' : 'ChevronUpIcon',
-                styles.getDropDownIcon(fillType, touched ? 'textDark' : 'textLight')
+                styles.getDropDownIcon(
+                  fillType,
+                  touched ? 'textDark' : 'textLight'
+                )
               )}
             </Menu.Button>
 

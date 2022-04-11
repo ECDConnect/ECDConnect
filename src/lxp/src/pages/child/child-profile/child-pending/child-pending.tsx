@@ -1,5 +1,12 @@
 import { useDialog } from '@ecdlink/core';
-import { Alert, BannerWrapper, Button, DialogPosition, Divider, Typography } from '@ecdlink/ui';
+import {
+  Alert,
+  BannerWrapper,
+  Button,
+  DialogPosition,
+  Divider,
+  Typography,
+} from '@ecdlink/ui';
 import { format, addDays } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -15,7 +22,10 @@ import OnlineOnlyModal from '../../../../modals/offline-sync/online-only-modal';
 import { copyToClip } from '@utils/common/clipboard.utils';
 import { CaregiverChildRegistrationModal } from '../../components/caregiver-child-registration-modal/caregiver-child-registration-modal';
 
-export const ChildPending: React.FC<ChildPendingProps> = ({ child, childUser }) => {
+export const ChildPending: React.FC<ChildPendingProps> = ({
+  child,
+  childUser,
+}) => {
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
   const [deadlineDateText, setDeadlineDateText] = useState<string>('');
@@ -109,7 +119,10 @@ export const ChildPending: React.FC<ChildPendingProps> = ({ child, childUser }) 
       displayOffline={!isOnline}
     >
       <div className="h-full w-full flex flex-col p-4">
-        <Alert title={`${childUser?.firstName}'s registration is not complete`} type={'error'} />
+        <Alert
+          title={`${childUser?.firstName}'s registration is not complete`}
+          type={'error'}
+        />
 
         <Typography
           className="mt-4"
@@ -118,7 +131,12 @@ export const ChildPending: React.FC<ChildPendingProps> = ({ child, childUser }) 
           text={`If the registration form is not completed, this profile will be removed on:`}
         />
 
-        <Typography weight="bolder" type="body" color={'textMid'} text={`${deadlineDateText}`} />
+        <Typography
+          weight="bolder"
+          type="body"
+          color={'textMid'}
+          text={`${deadlineDateText}`}
+        />
 
         <Typography
           className="mt-4"

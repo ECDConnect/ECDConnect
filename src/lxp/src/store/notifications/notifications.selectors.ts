@@ -9,7 +9,8 @@ export const getAllNotifications = createSelector(
 
 export const getMessageBoardNotifications = createSelector(
   (state: RootState) => state.notifications.notifications,
-  (notifications: Notification[]) => notifications.filter((n) => n.message.viewType !== 'Hub')
+  (notifications: Notification[]) =>
+    notifications.filter((n) => n.message.viewType !== 'Hub')
 );
 
 export const getNewNotificationCount = createSelector(

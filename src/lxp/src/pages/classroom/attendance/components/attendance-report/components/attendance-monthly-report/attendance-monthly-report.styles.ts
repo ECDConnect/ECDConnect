@@ -9,7 +9,10 @@ export const wrapper = 'bg-white rounded-lg shadow-sm justify-center';
 
 export const resultsSection = 'flex flex-row justify-between items-center';
 
-export const attendanceItemWrapper = (attendanceScore: number, renderDivider: boolean) => {
+export const attendanceItemWrapper = (
+  attendanceScore: number,
+  renderDivider: boolean
+) => {
   const baseStyle = `flex flex-col p-4 w-full ${
     renderDivider ? 'border-t border-color-textLight' : ''
   }`;

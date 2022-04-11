@@ -1,5 +1,10 @@
 import { useQuery } from '@apollo/client';
-import { DocumentDto, PermissionEnum, usePanel, WorkflowStatusDto } from '@ecdlink/core';
+import {
+  DocumentDto,
+  PermissionEnum,
+  usePanel,
+  WorkflowStatusDto,
+} from '@ecdlink/core';
 import { DocumentList, GetAllWorkflowStatus } from '@ecdlink/graphql';
 import { useEffect, useState } from 'react';
 import { ContentLoader } from '../../components/content-loader/content-loader';
@@ -21,15 +26,19 @@ export default function Documents() {
 
   useEffect(() => {
     if (documentData && documentData.GetAllDocument) {
-      const copyItems = documentData.GetAllDocument.map((item: DocumentDto) => ({
-        ...item,
-        fullName: item.user ? `${item.user?.firstName} ${item.user?.surname}` : 'System',
-        type: item.documentType?.name,
-        status: item.workflowStatus?.description,
-        _view: undefined,
-        _edit: undefined,
-        _url: undefined,
-      }));
+      const copyItems = documentData.GetAllDocument.map(
+        (item: DocumentDto) => ({
+          ...item,
+          fullName: item.user
+            ? `${item.user?.firstName} ${item.user?.surname}`
+            : 'System',
+          type: item.documentType?.name,
+          status: item.workflowStatus?.description,
+          _view: undefined,
+          _edit: undefined,
+          _url: undefined,
+        })
+      );
       setTableData(copyItems);
     }
   }, [documentData]);
@@ -78,8 +87,14 @@ export default function Documents() {
                     { field: 'status', use: 'status' },
                   ]}
                   rows={tableData}
-                  editRow={hasPermission(PermissionEnum.update_documents) && displayPanel}
-                  viewRow={hasPermission(PermissionEnum.view_documents) && displayDocument}
+                  editRow={
+                    hasPermission(PermissionEnum.update_documents) &&
+                    displayPanel
+                  }
+                  viewRow={
+                    hasPermission(PermissionEnum.view_documents) &&
+                    displayDocument
+                  }
                 />
               </div>
             </div>

@@ -65,7 +65,10 @@ const FormColorField: React.FC<FormFieldProps> = ({
 
   return (
     <>
-      <label htmlFor={nameProp} className="block text-sm font-medium text-gray-700">
+      <label
+        htmlFor={nameProp}
+        className="block text-sm font-medium text-gray-700"
+      >
         {label}
       </label>
       <div className="mt-1">

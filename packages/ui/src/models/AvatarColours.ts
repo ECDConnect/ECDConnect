@@ -6,5 +6,4 @@ export type AvatarColours =
   | 'avatarColor5'
   | 'avatarColor6'
   | 'avatarColor7'
-  | 'avatarColor8'
-  ;
+  | 'avatarColor8';

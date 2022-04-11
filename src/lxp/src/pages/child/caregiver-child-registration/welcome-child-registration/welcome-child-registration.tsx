@@ -15,10 +15,9 @@ interface WelcomeChildRegistrationProps extends ComponentBaseProps {
   onSubmit: (value: any) => void;
 }
 
-export const WelcomeChildRegistration: React.FC<WelcomeChildRegistrationProps> = ({
-  childDetails,
-  onSubmit,
-}) => {
+export const WelcomeChildRegistration: React.FC<
+  WelcomeChildRegistrationProps
+> = ({ childDetails, onSubmit }) => {
   const theme = useTheme();
 
   const handleNextClick = () => {
@@ -71,7 +70,10 @@ export const WelcomeChildRegistration: React.FC<WelcomeChildRegistrationProps> =
       />
 
       <div className="flex flex-col my-4 items-start">
-        <Typography type="unspecified" text="Please have your personal information ready:" />
+        <Typography
+          type="unspecified"
+          text="Please have your personal information ready:"
+        />
         <StatusChip
           className="my-2"
           backgroundColour="infoDark"

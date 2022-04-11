@@ -3,7 +3,7 @@ import { ProvinceDto } from '../models/dto/StaticData/province.dto';
 
 export const initialProvinceValues: ProvinceDto = {
   description: '',
-  enumId: ''
+  enumId: '',
 };
 
 export const provinceSchema = Yup.object().shape({

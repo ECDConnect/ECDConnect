@@ -8,7 +8,9 @@ import {
   NotificationValidator,
 } from '../../NotificationService.types';
 
-export class UserLastLoginNotificationValidator implements NotificationValidator {
+export class UserLastLoginNotificationValidator
+  implements NotificationValidator
+{
   interval: NotificationIntervals;
   lastCheckTimestamp: number;
   store: EnhancedStore<RootState, any>;
@@ -26,14 +28,20 @@ export class UserLastLoginNotificationValidator implements NotificationValidator
 
     if (!settingsState || !settingsState.lastDataSync) return [];
 
-    const lastSyncDate = new Date(settingsState.lastDataSync || this.currentDate);
+    const lastSyncDate = new Date(
+      settingsState.lastDataSync || this.currentDate
+    );
 
-    const daysPassed = Math.abs(differenceInCalendarDays(lastSyncDate, this.currentDate));
+    const daysPassed = Math.abs(
+      differenceInCalendarDays(lastSyncDate, this.currentDate)
+    );
 
     if (daysPassed < 7) return [];
 
     let defaultNotification: Message = {
-      reference: `${getWeek(this.currentDate)}-${getYear(this.currentDate)}-sync`,
+      reference: `${getWeek(this.currentDate)}-${getYear(
+        this.currentDate
+      )}-sync`,
       title: 'We need to sync your data',
       message: `We suggest connecting to a wifi network to complete this process
 
@@ -60,7 +68,9 @@ export class UserLastLoginNotificationValidator implements NotificationValidator
       return [
         {
           ...defaultNotification,
-          reference: `${getWeek(this.currentDate)}-${getYear(this.currentDate)}-sync-${
+          reference: `${getWeek(this.currentDate)}-${getYear(
+            this.currentDate
+          )}-sync-${
             daysPassed > 21 && daysPassed % 2 > 0 ? daysPassed.toString() : '21'
           }`,
           title: 'Go online again to keep using Funda App!',
@@ -74,7 +84,9 @@ export class UserLastLoginNotificationValidator implements NotificationValidator
       return [
         {
           ...defaultNotification,
-          reference: `${getWeek(this.currentDate)}-${getYear(this.currentDate)}-sync-14`,
+          reference: `${getWeek(this.currentDate)}-${getYear(
+            this.currentDate
+          )}-sync-14`,
           title: 'Go online again to keep using Funda App!',
           message: `You haven't been online for 14 days. Make sure you turn on your wifi or data soon.`,
         },
@@ -84,7 +96,9 @@ export class UserLastLoginNotificationValidator implements NotificationValidator
       return [
         {
           ...defaultNotification,
-          reference: `${getWeek(this.currentDate)}-${getYear(this.currentDate)}-sync-7`,
+          reference: `${getWeek(this.currentDate)}-${getYear(
+            this.currentDate
+          )}-sync-7`,
         },
       ];
     }

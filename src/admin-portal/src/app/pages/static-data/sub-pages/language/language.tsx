@@ -123,8 +123,13 @@ export default function LanguageView() {
                     { field: 'locale', use: 'locale' },
                   ]}
                   rows={tableData}
-                  editRow={hasPermission(PermissionEnum.update_static) && displayPanel}
-                  deleteRow={hasPermission(PermissionEnum.delete_static) && deleteAndRefresh}
+                  editRow={
+                    hasPermission(PermissionEnum.update_static) && displayPanel
+                  }
+                  deleteRow={
+                    hasPermission(PermissionEnum.delete_static) &&
+                    deleteAndRefresh
+                  }
                 />
               </div>
             </div>

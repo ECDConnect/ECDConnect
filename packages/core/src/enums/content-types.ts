@@ -1,12 +1,12 @@
 export enum ContentConsentTypeEnum {
-  TermsAndConditions = "TermsAndConditions",
-  DataPermissionsAgreement = "DataPermissionsAgreement",
-  PersonalInformationAgreement = "PersonalInformationAgreement",  
-  ConsentAgreement = "ConsentAgreement",
-  CommitmentAgreement = "CommitmentAgreement",
-  IndemnityAgreement = "IndemnityAgreement",
-  PhotoPermissions = "PhotoPermissions",
-  LearningThroughPlay = "LearningThroughPlay"
+  TermsAndConditions = 'TermsAndConditions',
+  DataPermissionsAgreement = 'DataPermissionsAgreement',
+  PersonalInformationAgreement = 'PersonalInformationAgreement',
+  ConsentAgreement = 'ConsentAgreement',
+  CommitmentAgreement = 'CommitmentAgreement',
+  IndemnityAgreement = 'IndemnityAgreement',
+  PhotoPermissions = 'PhotoPermissions',
+  LearningThroughPlay = 'LearningThroughPlay',
 }
 
 export enum ContentTypeEnum {

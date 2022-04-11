@@ -3,10 +3,15 @@ import getWeek from 'date-fns/getWeek';
 import { createSelector } from 'reselect';
 import { Weekdays } from '@utils/practitioner/playgroups-utils';
 import { RootState } from '../types';
-import { CaregiverContactHistory, CaregiverContactReason } from './caregiver.types';
+import {
+  CaregiverContactHistory,
+  CaregiverContactReason,
+} from './caregiver.types';
 
 export const getCaregivers = (state: RootState): CaregiverDto[] | undefined =>
-  state.caregivers.caregivers?.filter((caregiver: CaregiverDto) => caregiver.isActive);
+  state.caregivers.caregivers?.filter(
+    (caregiver: CaregiverDto) => caregiver.isActive
+  );
 
 export const getCaregiverById = (id?: string) =>
   createSelector(
@@ -27,7 +32,14 @@ export const findCaregiverContactHistoryLog = (
   createSelector(
     (state: RootState) => state.caregivers.contactHistory,
     (contactHistory: CaregiverContactHistory[] | undefined) => {
-      if (!contactHistory || !caregiverId || !childId || !contactHistory || !weekOfYear) return;
+      if (
+        !contactHistory ||
+        !caregiverId ||
+        !childId ||
+        !contactHistory ||
+        !weekOfYear
+      )
+        return;
 
       const contactHistoryLog = contactHistory.find(
         (log) =>

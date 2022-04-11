@@ -7,13 +7,13 @@ export const initialNavigationValues: NavigationDto = {
   icon: '',
   route: '',
   description: '',
-  permissions: []
+  permissions: [],
 };
 
 export const navigationSchema = Yup.object().shape({
-  sequence: Yup.string(),  
-  name: Yup.string(),  
-  icon: Yup.string(),  
-  route: Yup.string(),  
-  description: Yup.string(),  
+  sequence: Yup.string(),
+  name: Yup.string(),
+  icon: Yup.string(),
+  route: Yup.string(),
+  description: Yup.string(),
 });

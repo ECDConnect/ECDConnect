@@ -27,4 +27,3 @@ export interface ChildAttendanceMonthlyReportModel {
   actualAttendance: number;
   expectedAttendance: number;
 }
-

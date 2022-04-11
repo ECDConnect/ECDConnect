@@ -1,6 +1,13 @@
 import { ProvinceDto } from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Button, Divider, Dropdown, FormInput, Typography, classNames } from '@ecdlink/ui';
+import {
+  Button,
+  Divider,
+  Dropdown,
+  FormInput,
+  Typography,
+  classNames,
+} from '@ecdlink/ui';
 import { renderIcon } from '@ecdlink/ui';
 import { useEffect } from 'react';
 import { useForm, useFormState } from 'react-hook-form';
@@ -13,7 +20,9 @@ import {
 } from '@schemas/child/child-registration/care-giver-child-information-form';
 import { CareGiverChildInformationFormProps } from './care-giver-child-information-form.types';
 
-export const CareGiverChildInformationForm: React.FC<CareGiverChildInformationFormProps> = ({
+export const CareGiverChildInformationForm: React.FC<
+  CareGiverChildInformationFormProps
+> = ({
   careGiverInformation,
   submitButtonText = 'Next',
   submitButtonIcon = 'ArrowCircleRightIcon',
@@ -22,7 +31,9 @@ export const CareGiverChildInformationForm: React.FC<CareGiverChildInformationFo
   const provinces = useSelector(staticDataSelectors.getProvinces);
 
   useEffect(() => {
-    document.querySelector('.min-h-full')?.scrollIntoView({ behavior: 'smooth' });
+    document
+      .querySelector('.min-h-full')
+      ?.scrollIntoView({ behavior: 'smooth' });
   }, []);
 
   const {
@@ -48,7 +59,11 @@ export const CareGiverChildInformationForm: React.FC<CareGiverChildInformationFo
 
   return (
     <div className={styles.wrapper}>
-      <Typography type={'h1'} text={'Primary caregiver & child'} color={'primary'} />
+      <Typography
+        type={'h1'}
+        text={'Primary caregiver & child'}
+        color={'primary'}
+      />
       <Typography type={'h2'} text={'Address'} color={'textMid'} />
 
       <FormInput<CareGiverChildInformationFormModel>
@@ -126,7 +141,12 @@ export const CareGiverChildInformationForm: React.FC<CareGiverChildInformationFo
         disabled={!isValid}
       >
         {renderIcon(submitButtonIcon, classNames('h-5 w-5 text-white'))}
-        <Typography type="h6" className="ml-2" text={submitButtonText} color="white" />
+        <Typography
+          type="h6"
+          className="ml-2"
+          text={submitButtonText}
+          color="white"
+        />
       </Button>
     </div>
   );

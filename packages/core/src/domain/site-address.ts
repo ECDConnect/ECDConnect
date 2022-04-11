@@ -1,5 +1,3 @@
-
-
 import { ProvinceDto } from '../models/dto/StaticData/province.dto';
 import { EntityCacheBase } from './entity-cache-base';
 

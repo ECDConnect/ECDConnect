@@ -1,4 +1,11 @@
-import { Button, classNames, Divider, FormInput, renderIcon, Typography } from '@ecdlink/ui';
+import {
+  Button,
+  classNames,
+  Divider,
+  FormInput,
+  renderIcon,
+  Typography,
+} from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm, useFormState } from 'react-hook-form';
 import {
@@ -7,7 +14,9 @@ import {
 } from '@schemas/child/child-registration/child-health-information-form';
 import { ChildHealthInformationFormProps } from './child-health-information-form.types';
 
-export const ChildHealthInformationForm: React.FC<ChildHealthInformationFormProps> = ({
+export const ChildHealthInformationForm: React.FC<
+  ChildHealthInformationFormProps
+> = ({
   childHealthInformation,
   childName = 'Child',
   onSubmit,
@@ -75,7 +84,12 @@ export const ChildHealthInformationForm: React.FC<ChildHealthInformationFormProp
           type="filled"
         >
           {renderIcon(submitButtonIcon, classNames('h-5 w-5 text-white'))}
-          <Typography type="h6" className="ml-2" text={submitButtonText} color="white" />
+          <Typography
+            type="h6"
+            className="ml-2"
+            text={submitButtonText}
+            color="white"
+          />
         </Button>
       </div>
     </div>

@@ -21,7 +21,9 @@ const App: React.FC = () => {
   const dialog = useDialog();
   const user = useSelector(authSelectors.getAuthUser);
   const userExpired = useSelector(authSelectors.getUserExpired);
-  const applicationSettings = useSelector(settingSelectors.getApplicationSettings);
+  const applicationSettings = useSelector(
+    settingSelectors.getApplicationSettings
+  );
 
   useEffect(() => {
     if (applicationSettings && applicationSettings.Google) {

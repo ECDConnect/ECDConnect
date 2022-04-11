@@ -9,7 +9,7 @@ export const CreateSiteAddress = gql`
 `;
 
 export const UpdateSiteAddress = gql`
-  mutation updateSiteAddress($id: UUID!,$input: SiteAddressInput) {
+  mutation updateSiteAddress($id: UUID!, $input: SiteAddressInput) {
     updateSiteAddress(id: $id, input: $input) {
       id
     }

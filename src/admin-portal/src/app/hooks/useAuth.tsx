@@ -1,7 +1,19 @@
-import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from 'react';
+import {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 
 import jwt_decode from 'jwt-decode';
-import { AuthUser, Config, LocalStorageKeys, LoginRequestModel } from '@ecdlink/core';
+import {
+  AuthUser,
+  Config,
+  LocalStorageKeys,
+  LoginRequestModel,
+} from '@ecdlink/core';
 import { AuthenticateUser, RefreshJwtToken } from '../services/auth.service';
 
 export interface AuthContextType {
@@ -14,7 +26,11 @@ export interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 
-export function AuthProvider({ children }: { children: ReactNode }): JSX.Element {
+export function AuthProvider({
+  children,
+}: {
+  children: ReactNode;
+}): JSX.Element {
   const [authenticatedUser, setAuthenticatedUser] = useState<AuthUser>();
 
   const [loadingInitial, setLoadingInitial] = useState<boolean>(true);
@@ -27,12 +43,18 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
     setLoadingInitial(false);
   }, []);
 
-  const login = async (body: LoginRequestModel, baseEndPoint: string): Promise<boolean> => {
+  const login = async (
+    body: LoginRequestModel,
+    baseEndPoint: string
+  ): Promise<boolean> => {
     try {
       const response = await AuthenticateUser(baseEndPoint, body);
 
       if (response.data) {
-        localStorage.setItem(LocalStorageKeys.user, JSON.stringify(response.data));
+        localStorage.setItem(
+          LocalStorageKeys.user,
+          JSON.stringify(response.data)
+        );
         setAuthenticatedUser(response.data);
         return true;
       }
@@ -56,7 +78,9 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
     }
   };
 
-  const refreshJwtToken = async (baseEndPoint: string): Promise<AuthUser | undefined> => {
+  const refreshJwtToken = async (
+    baseEndPoint: string
+  ): Promise<AuthUser | undefined> => {
     try {
       const user = localStorage.getItem(LocalStorageKeys.user);
       const authUser: AuthUser = JSON.parse(user ?? '');

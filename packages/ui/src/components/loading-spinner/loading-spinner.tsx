@@ -17,7 +17,9 @@ export const LoadingSpinner = ({
 }: LoadingSpinnerProps) => {
   return (
     <div className={`${styles.spinnerContainer} ${className}`}>
-      <div className={styles.getSpinnerClass(size, spinnerColor, backgroundColor)}></div>
+      <div
+        className={styles.getSpinnerClass(size, spinnerColor, backgroundColor)}
+      ></div>
     </div>
   );
 };

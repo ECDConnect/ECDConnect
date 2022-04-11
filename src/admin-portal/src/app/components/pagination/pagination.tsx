@@ -8,7 +8,11 @@ export interface PaginationProps {
   responseData: (values: any[]) => void;
 }
 
-const Pagination: React.FC<PaginationProps> = ({ recordsPerPage, items, responseData }) => {
+const Pagination: React.FC<PaginationProps> = ({
+  recordsPerPage,
+  items,
+  responseData,
+}) => {
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [pager, setPager] = useState<any>();
@@ -29,7 +33,11 @@ const Pagination: React.FC<PaginationProps> = ({ recordsPerPage, items, response
   /*
    * Set pagination data and pager data
    */
-  const setPagination = (totalCount: number, pageNumber: number, recordsPerPage: number) => {
+  const setPagination = (
+    totalCount: number,
+    pageNumber: number,
+    recordsPerPage: number
+  ) => {
     const pData = getPager(totalCount, pageNumber, recordsPerPage);
     setPager({ ...pData });
   };
@@ -87,7 +95,8 @@ const Pagination: React.FC<PaginationProps> = ({ recordsPerPage, items, response
         <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
           <div>
             <p className="text-sm text-gray-700">
-              Showing <span className="font-medium">{pager.startIndex + 1}</span> to{' '}
+              Showing{' '}
+              <span className="font-medium">{pager.startIndex + 1}</span> to{' '}
               <span className="font-medium">{pager.endIndex + 1}</span> of{' '}
               <span className="font-medium">{totalCount}</span> results
             </p>

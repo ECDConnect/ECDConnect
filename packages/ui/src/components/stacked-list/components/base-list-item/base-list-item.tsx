@@ -59,7 +59,12 @@ export const BaseListItem: React.FC<BaseListItemProps> = ({
           {overwriteTextSlotRender !== undefined && overwriteTextSlotRender()}
           {overwriteTextSlotRender === undefined && (
             <>
-              {titleTypography && <Typography {...titleTypography} className={'w-full truncate'} />}
+              {titleTypography && (
+                <Typography
+                  {...titleTypography}
+                  className={'w-full truncate'}
+                />
+              )}
               {!!subTitleTypography && (
                 <div className={styles.subTitle}>
                   <Typography

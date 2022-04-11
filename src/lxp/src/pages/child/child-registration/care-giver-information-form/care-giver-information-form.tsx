@@ -1,5 +1,12 @@
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Button, Divider, Dropdown, FormInput, Typography, classNames } from '@ecdlink/ui';
+import {
+  Button,
+  Divider,
+  Dropdown,
+  FormInput,
+  Typography,
+  classNames,
+} from '@ecdlink/ui';
 import { renderIcon } from '@ecdlink/ui';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -12,11 +19,9 @@ import {
 } from '@schemas/child/child-registration/care-giver-information-form';
 import { CareGiverInformationFormProps } from './care-giver-information-form.types';
 
-export const CareGiverInformationForm: React.FC<CareGiverInformationFormProps> = ({
-  careGiverInformation,
-  childName,
-  onSubmit,
-}) => {
+export const CareGiverInformationForm: React.FC<
+  CareGiverInformationFormProps
+> = ({ careGiverInformation, childName, onSubmit }) => {
   const relations = useSelector(staticDataSelectors.getRelations);
   const [idFieldVisible, setIdFieldVisible] = useState(true);
 
@@ -41,9 +46,13 @@ export const CareGiverInformationForm: React.FC<CareGiverInformationFormProps> =
 
   const toggleIdAndpassport = (visible: boolean) => {
     const flag = !visible;
-    setCareGiverInformationFormValue(flag ? 'careGiverPassportField' : 'careGiverIdField', '', {
-      shouldValidate: true,
-    });
+    setCareGiverInformationFormValue(
+      flag ? 'careGiverPassportField' : 'careGiverIdField',
+      '',
+      {
+        shouldValidate: true,
+      }
+    );
     setCareGiverInformationFormValue('preferId', flag, {
       shouldValidate: true,
     });
@@ -119,7 +128,11 @@ export const CareGiverInformationForm: React.FC<CareGiverInformationFormProps> =
           size="small"
           onClick={() => toggleIdAndpassport(idFieldVisible)}
         >
-          <Typography type="small" color="primary" text={'Enter ID number instead'}></Typography>
+          <Typography
+            type="small"
+            color="primary"
+            text={'Enter ID number instead'}
+          ></Typography>
         </Button>
       )}
       {idFieldVisible && (

@@ -5,7 +5,11 @@ import {
   Document,
   ContentConsentTypeEnum,
 } from '@ecdlink/core';
-import { FileTypeEnum, NoteTypeEnum, WorkflowStatusEnum } from '@ecdlink/graphql';
+import {
+  FileTypeEnum,
+  NoteTypeEnum,
+  WorkflowStatusEnum,
+} from '@ecdlink/graphql';
 import {
   Alert,
   BannerWrapper,
@@ -43,7 +47,10 @@ import {
   getChildsAttendancePercentageAtPlaygroup,
   getLastNoteDate,
 } from '@utils/child/child-profile-utils';
-import { getColor, getShape } from '@utils/classroom/attendance/track-attendance-utils';
+import {
+  getColor,
+  getShape,
+} from '@utils/classroom/attendance/track-attendance-utils';
 import { CreateNote } from '../components/create-note/create-note';
 import { ChildPending } from './child-pending/child-pending';
 import * as styles from './child-profile.styles';
@@ -81,31 +88,48 @@ export const ChildProfile: React.FC = () => {
   const location = useLocation<ChildProfileRouteState>();
   const childId = location.state.childId;
 
-  const { getDocumentTypeIdByEnum, getWorkflowStatusIdByEnum } = useStaticData();
-  const workflowDocumentVerified = getWorkflowStatusIdByEnum(WorkflowStatusEnum.DocumentVerified);
+  const { getDocumentTypeIdByEnum, getWorkflowStatusIdByEnum } =
+    useStaticData();
+  const workflowDocumentVerified = getWorkflowStatusIdByEnum(
+    WorkflowStatusEnum.DocumentVerified
+  );
   const workflowDocumentPendingVerified = getWorkflowStatusIdByEnum(
     WorkflowStatusEnum.DocumentPendingVerification
   );
   const child = useSelector(childrenSelectors.getChildById(childId));
-  const classGroupId = useSelector(classroomsSelectors.getLearnerClassgroupId(child?.userId));
+  const classGroupId = useSelector(
+    classroomsSelectors.getLearnerClassgroupId(child?.userId)
+  );
   const user = useSelector(userSelectors.getUser);
-  const playGroup = useSelector(classroomsSelectors.getClassroomGroupById(classGroupId));
+  const playGroup = useSelector(
+    classroomsSelectors.getClassroomGroupById(classGroupId)
+  );
   const classProgrames = useSelector(classroomsSelectors.getClassProgrammes);
-  const childUser = useSelector(childrenSelectors.getChildUserById(child?.userId));
+  const childUser = useSelector(
+    childrenSelectors.getChildUserById(child?.userId)
+  );
   const notes = useSelector(notesSelectors.getNotesByUserId(child?.userId));
   const attendanceData = useSelector(attendanceSelectors.getAttendance);
   const authUser = useSelector(authSelectors.getAuthUser);
-  const childDocuments = useSelector(documentSelectors.getDocumentsByUserId(child?.userId));
+  const childDocuments = useSelector(
+    documentSelectors.getDocumentsByUserId(child?.userId)
+  );
   const childBirthCertificate = childDocuments?.find(
-    (x) => x.name?.includes('birthCertificate') || x.name?.includes('clinicCard')
+    (x) =>
+      x.name?.includes('birthCertificate') || x.name?.includes('clinicCard')
   );
 
   const childPhotoConsent = useSelector(
-    userSelectors.getUserConsentByType(child?.userId, ContentConsentTypeEnum.PhotoPermissions)
+    userSelectors.getUserConsentByType(
+      child?.userId,
+      ContentConsentTypeEnum.PhotoPermissions
+    )
   );
 
   const typeId = getDocumentTypeIdByEnum(FileTypeEnum.ProfileImage);
-  const profilePicture = useSelector(documentSelectors.getDocumentByTypeId(childUser?.id, typeId));
+  const profilePicture = useSelector(
+    documentSelectors.getDocumentByTypeId(childUser?.id, typeId)
+  );
 
   const allCompletedReports = useSelector(
     contentReportSelectors.getChildLatestCompletedReports(child?.id)
@@ -120,13 +144,17 @@ export const ChildProfile: React.FC = () => {
     )
   );
 
-  const [createChildNoteVisible, setCreateChildNoteVisible] = useState<boolean>(false);
-  const [editProfilePictureVisible, setEditProfilePictureVisible] = useState(false);
+  const [createChildNoteVisible, setCreateChildNoteVisible] =
+    useState<boolean>(false);
+  const [editProfilePictureVisible, setEditProfilePictureVisible] =
+    useState(false);
 
   const [childAge, setChildAge] = useState<Age>();
   const [removeChildConfirmationVisible, setRemoveChildConfirmationVisible] =
     useState<boolean>(false);
-  const childPendingWorkflowStatusId = getWorkflowStatusIdByEnum(WorkflowStatusEnum.ChildPending);
+  const childPendingWorkflowStatusId = getWorkflowStatusIdByEnum(
+    WorkflowStatusEnum.ChildPending
+  );
   const childExternalWorkflowStatusId = getWorkflowStatusIdByEnum(
     WorkflowStatusEnum.ChildExternalLink
   );
@@ -151,7 +179,8 @@ export const ChildProfile: React.FC = () => {
       },
     },
   ]);
-  const [attendaceReport, setAttendanceReport] = useState<ChildAttendanceReportModel>();
+  const [attendaceReport, setAttendanceReport] =
+    useState<ChildAttendanceReportModel>();
 
   useEffect(() => {
     if (!isOnline) {
@@ -217,7 +246,9 @@ export const ChildProfile: React.FC = () => {
   useEffect(() => {
     const option = getNoteProfileOption();
 
-    const indexOfNoteOption = profileOptions.findIndex((option) => option.key === 'notes');
+    const indexOfNoteOption = profileOptions.findIndex(
+      (option) => option.key === 'notes'
+    );
 
     if (indexOfNoteOption > -1) {
       const profileOptionsCopy = [...profileOptions];
@@ -231,7 +262,9 @@ export const ChildProfile: React.FC = () => {
   useEffect(() => {
     if (!attendanceData || !child || !playGroup) return;
 
-    const childBirthDate = childUser?.dateOfBirth ? new Date(childUser?.dateOfBirth) : currentDate;
+    const childBirthDate = childUser?.dateOfBirth
+      ? new Date(childUser?.dateOfBirth)
+      : currentDate;
 
     const ageOfChild = getAge(childBirthDate);
 
@@ -268,7 +301,8 @@ export const ChildProfile: React.FC = () => {
     if (!attendaceReport) return;
 
     const attendancePercentage =
-      (attendaceReport.totalActualAttendance / (attendaceReport.totalExpectedAttendance || 1)) *
+      (attendaceReport.totalActualAttendance /
+        (attendaceReport.totalExpectedAttendance || 1)) *
       100;
     setAttendancePercentage(attendancePercentage);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -277,7 +311,9 @@ export const ChildProfile: React.FC = () => {
   useEffect(() => {
     if (!attendancePercentage) return;
 
-    const optionIndex = profileOptions.findIndex((x) => x.key === 'attendance-record');
+    const optionIndex = profileOptions.findIndex(
+      (x) => x.key === 'attendance-record'
+    );
 
     if (optionIndex < 0) return;
 
@@ -377,7 +413,10 @@ export const ChildProfile: React.FC = () => {
     history.push('remove-child', { childId: child?.id });
   };
 
-  const contactAttendanceCaregiver = (actualDaysAttended: number, expectedDaysAttended: number) => {
+  const contactAttendanceCaregiver = (
+    actualDaysAttended: number,
+    expectedDaysAttended: number
+  ) => {
     history.push('/child-attendance-caregiver', {
       actualDaysAttended,
       expectedDaysAttended,
@@ -409,7 +448,9 @@ export const ChildProfile: React.FC = () => {
     } else {
       const fileName = `ProfilePicture_${childUser?.id}.png`;
 
-      const statusId = await getWorkflowStatusIdByEnum(WorkflowStatusEnum.DocumentVerified);
+      const statusId = await getWorkflowStatusIdByEnum(
+        WorkflowStatusEnum.DocumentVerified
+      );
 
       const documentInputModel: Document = {
         id: newGuid(),
@@ -439,7 +480,8 @@ export const ChildProfile: React.FC = () => {
 
     if (
       (childBirthCertificate &&
-        childBirthCertificate?.workflowStatusId === workflowDocumentPendingVerified) ||
+        childBirthCertificate?.workflowStatusId ===
+          workflowDocumentPendingVerified) ||
       childBirthCertificate?.workflowStatusId === workflowDocumentVerified
     ) {
       return false;
@@ -497,7 +539,9 @@ export const ChildProfile: React.FC = () => {
           <StatusChip
             backgroundColour="textMid"
             borderColour="textMid"
-            text={`${childAge?.years || '0'} years ${childAge?.months || '0'} months`}
+            text={`${childAge?.years || '0'} years ${
+              childAge?.months || '0'
+            } months`}
             textColour={'white'}
             className={'mr-2'}
           />
@@ -532,7 +576,10 @@ export const ChildProfile: React.FC = () => {
         {notifications && child && (
           <div className={styles.notificationsStacklist}>
             {notifications.map((notication, idx) => (
-              <ListItem {...notication} key={`child-profile-notification-${idx}`} />
+              <ListItem
+                {...notication}
+                key={`child-profile-notification-${idx}`}
+              />
             ))}
             <ChildProgressReportAlert child={child} />
           </div>
@@ -564,7 +611,11 @@ export const ChildProfile: React.FC = () => {
           </Button>
         </div>
       </BannerWrapper>
-      <Dialog fullScreen visible={createChildNoteVisible} position={DialogPosition.Top}>
+      <Dialog
+        fullScreen
+        visible={createChildNoteVisible}
+        position={DialogPosition.Top}
+      >
         <div className={styles.dialogContent}>
           <CreateNote
             userId={child?.userId || ''}
@@ -588,7 +639,10 @@ export const ChildProfile: React.FC = () => {
           onClose={() => setRemoveChildConfirmationVisible(false)}
         />
       </Dialog>
-      <Dialog visible={editProfilePictureVisible} position={DialogPosition.Bottom}>
+      <Dialog
+        visible={editProfilePictureVisible}
+        position={DialogPosition.Bottom}
+      >
         <div className={'p-4'}>
           <PhotoPrompt
             title="Profile Photo"
