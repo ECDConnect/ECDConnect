@@ -17,7 +17,8 @@ export const getImageDimensionsBasedOnSizeType = (
     overflow: 'hidden',
     backgroundImage: `url(${dataUrl})`,
     backgroundPosition: 'center',
-
+    backgroundRepeat: 'no-repeat',
+    backgroundSize: 'cover'
   }
 
   switch (avatarSize) {
