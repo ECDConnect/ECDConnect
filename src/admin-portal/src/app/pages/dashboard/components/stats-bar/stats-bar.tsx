@@ -30,7 +30,7 @@ export default function StatsBar({
               <div className={`absolute rounded-md p-3 ${item.color}`}>
                 <item.icon className="h-6 w-6 text-white" aria-hidden="true" />
               </div>
-              <p className="ml-16 text-sm font-medium text-gray-500 truncate">
+              <p className="ml-16 text-sm font-medium text-gray-500 truncate" title={item.name}>
                 {item.name}
               </p>
 
