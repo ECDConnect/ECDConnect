@@ -26,7 +26,9 @@ class ClassroomGroupLearnerService {
     });
 
     if (response.status !== 200) {
-      throw new Error('Get Classroom Group Learners Failed - Server connection error');
+      throw new Error(
+        'Get Classroom Group Learners Failed - Server connection error'
+      );
     }
 
     return response.data.data.GetAllLearner;

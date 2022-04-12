@@ -8,7 +8,12 @@ export type AlertModalProps = {
   onCancel: () => void;
 };
 
-const AlertModal: React.FC<AlertModalProps> = ({ title, message, onSubmit, onCancel }) => {
+const AlertModal: React.FC<AlertModalProps> = ({
+  title,
+  message,
+  onSubmit,
+  onCancel,
+}) => {
   return (
     <ActionModal
       icon={'ExclamationCircleIcon'}

@@ -31,7 +31,8 @@ export const dayTypes: ButtonGroupOption<boolean>[] = [
   { text: 'Full day', value: true },
 ];
 
-export interface EditPlaygroupProps extends FormComponentProps<EditPlaygroupModel> {
+export interface EditPlaygroupProps
+  extends FormComponentProps<EditPlaygroupModel> {
   isNew: boolean;
   playgroup?: EditPlaygroupModel;
   title: string;

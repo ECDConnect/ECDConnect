@@ -8,7 +8,7 @@ export const initialSettingValues: SettingsDto = {
 };
 
 export const settingSchema = Yup.object().shape({
-  grouping: Yup.string(),  
-  name: Yup.string(),  
-  value: Yup.string(),  
+  grouping: Yup.string(),
+  name: Yup.string(),
+  value: Yup.string(),
 });

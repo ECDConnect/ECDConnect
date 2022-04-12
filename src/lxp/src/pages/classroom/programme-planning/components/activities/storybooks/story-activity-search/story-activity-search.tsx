@@ -43,11 +43,16 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
 }) => {
   const { isOnline } = useOnlineStatus();
   const allStories = useSelector(storyBookSelectors.getStoryBooks);
-  const [filteredStories, setFilteredStories] = useState<StoryBookDto[]>(allStories);
+  const [filteredStories, setFilteredStories] =
+    useState<StoryBookDto[]>(allStories);
   const [selectedStory, setSelectedStory] = useState<StoryBookDto>();
   const [selectedActivity, setSelectedActivity] = useState<ActivityDto>();
-  const preSelectedActivity = useSelector(activitySelectors.getActivityById(preSelectedActivityId));
-  const programme = useSelector(programmeSelectors.getProgrammeById(programmeId));
+  const preSelectedActivity = useSelector(
+    activitySelectors.getActivityById(preSelectedActivityId)
+  );
+  const programme = useSelector(
+    programmeSelectors.getProgrammeById(programmeId)
+  );
 
   const [searchTextActive, setSearchTextActive] = useState(false);
   const [selectedThemeFilterOptions, setSelectedThemeFilterOptions] =
@@ -78,11 +83,12 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
       value: StoryBookTypes.other,
     },
   ];
-  const categoriesDropDownOptions: SearchDropDownOption<number>[] = allThemes.map((theme) => ({
-    id: theme.id,
-    label: theme.name,
-    value: theme.id,
-  }));
+  const categoriesDropDownOptions: SearchDropDownOption<number>[] =
+    allThemes.map((theme) => ({
+      id: theme.id,
+      label: theme.name,
+      value: theme.id,
+    }));
 
   const hasActiveFilters =
     !!selectedThemeFilterOptions?.length ||
@@ -107,10 +113,14 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
     const theme = allThemes?.find((x) => x.name === programme?.name);
 
     if (theme) {
-      setSelectedThemeFilterOptions([{ id: theme.id, label: theme.name, value: theme.id }]);
+      setSelectedThemeFilterOptions([
+        { id: theme.id, label: theme.name, value: theme.id },
+      ]);
     }
 
-    const lang = languages?.find((x) => x.locale === programme?.preferredLanguage);
+    const lang = languages?.find(
+      (x) => x.locale === programme?.preferredLanguage
+    );
 
     if (lang) {
       setSelectedLanguageFilterOptions([
@@ -138,7 +148,11 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
   useEffect(() => {
     applyFilters(allStories);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedLanguageFilterOptions, selectedThemeFilterOptions, selectedTypeFilterOptions]);
+  }, [
+    selectedLanguageFilterOptions,
+    selectedThemeFilterOptions,
+    selectedTypeFilterOptions,
+  ]);
 
   const applyFilters = (allStories: StoryBookDto[]) => {
     let allStoriesCopy = [...allStories];
@@ -151,9 +165,14 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
       }
     }
 
-    if (selectedLanguageFilterOptions && selectedLanguageFilterOptions.length > 0) {
+    if (
+      selectedLanguageFilterOptions &&
+      selectedLanguageFilterOptions.length > 0
+    ) {
       allStoriesCopy = allStoriesCopy.filter((story) =>
-        story.availableLanguages.some((x) => x.id === selectedLanguageFilterOptions[0].id)
+        story.availableLanguages.some(
+          (x) => x.id === selectedLanguageFilterOptions[0].id
+        )
       );
     }
 
@@ -188,45 +207,52 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
     setSearchTextActive(true);
   };
 
-  const onThemeFilterChange = (filterOptions: SearchDropDownOption<number>[]) => {
+  const onThemeFilterChange = (
+    filterOptions: SearchDropDownOption<number>[]
+  ) => {
     setSelectedThemeFilterOptions(filterOptions);
   };
 
-  const onLanguageFilterChange = (filterOptions: SearchDropDownOption<string>[]) => {
+  const onLanguageFilterChange = (
+    filterOptions: SearchDropDownOption<string>[]
+  ) => {
     setSelectedLanguageFilterOptions(filterOptions);
   };
 
-  const onTypeFilterChange = (filterOptions: SearchDropDownOption<StoryBookTypes>[]) => {
+  const onTypeFilterChange = (
+    filterOptions: SearchDropDownOption<StoryBookTypes>[]
+  ) => {
     setSelectedTypeFilterOptions(filterOptions);
   };
 
-  const alternativeSearchHeaderItems: SearchHeaderAlternativeRenderItem<StoryBookDto> = {
-    render: (item) => {
-      return (
-        <StoryCard
-          key={item.id}
-          className={'mt-2'}
-          storyBookId={item.id}
-          languages={item.availableLanguages}
-          onSelected={() => {
-            setSelectedStory(item);
-            setSearchTextActive(false);
-            applyFilters(allStories);
-          }}
-          onCleared={() => {
-            setSelectedStory(undefined);
-            setSelectedActivity(undefined);
-            setSearchTextActive(false);
-            applyFilters(allStories);
-          }}
-          onActivityCleared={() => setSelectedActivity(undefined)}
-          selected={selectedStory?.id === item.id}
-          title={item.name}
-          type={item.type}
-        />
-      );
-    },
-  };
+  const alternativeSearchHeaderItems: SearchHeaderAlternativeRenderItem<StoryBookDto> =
+    {
+      render: (item) => {
+        return (
+          <StoryCard
+            key={item.id}
+            className={'mt-2'}
+            storyBookId={item.id}
+            languages={item.availableLanguages}
+            onSelected={() => {
+              setSelectedStory(item);
+              setSearchTextActive(false);
+              applyFilters(allStories);
+            }}
+            onCleared={() => {
+              setSelectedStory(undefined);
+              setSelectedActivity(undefined);
+              setSearchTextActive(false);
+              applyFilters(allStories);
+            }}
+            onActivityCleared={() => setSelectedActivity(undefined)}
+            selected={selectedStory?.id === item.id}
+            title={item.name}
+            type={item.type}
+          />
+        );
+      },
+    };
 
   return (
     <>
@@ -347,7 +373,12 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
           />
         </div>
       </BannerWrapper>
-      <Dialog visible={displayHelp} position={DialogPosition.Middle} stretch className="px-4">
+      <Dialog
+        visible={displayHelp}
+        position={DialogPosition.Middle}
+        stretch
+        className="px-4"
+      >
         <ActionModal
           title={'Story & activity'}
           importantText={`${routineItem.timeSpan} minutes`}

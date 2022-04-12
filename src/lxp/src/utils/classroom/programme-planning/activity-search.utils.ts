@@ -108,8 +108,13 @@ const getThemeActivities = (
   return [];
 };
 
-export const filterActivitiesByType = (type: string, activities: ActivityDto[]) =>
-  activities.filter((act) => act.type && act.type.toLowerCase() === type.toLowerCase());
+export const filterActivitiesByType = (
+  type: string,
+  activities: ActivityDto[]
+) =>
+  activities.filter(
+    (act) => act.type && act.type.toLowerCase() === type.toLowerCase()
+  );
 
 export const getFirstActivityByType = (
   activities: RecommendedActivity[],

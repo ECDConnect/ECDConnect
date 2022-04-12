@@ -1,5 +1,10 @@
 import * as styles from './banner-wrapper.styles';
-import { ArrowLeftIcon, XIcon, MenuIcon, QuestionMarkCircleIcon } from '@heroicons/react/solid';
+import {
+  ArrowLeftIcon,
+  XIcon,
+  MenuIcon,
+  QuestionMarkCircleIcon,
+} from '@heroicons/react/solid';
 import { Colours, ComponentBaseProps } from '../../models';
 import Typography from '../typography/typography';
 import { classNames } from '../../utils/style-class.utils';
@@ -80,7 +85,12 @@ export const BannerWrapper: React.FC<BannerWrapperProps> = ({
       <div className={styles.header(showBackground, color, size, renderBorder)}>
         <div className={styles.iconWrapperLeft}>
           {onBack && (
-            <ArrowLeftIcon className={styles.icons} width={25} height={30} onClick={onBack} />
+            <ArrowLeftIcon
+              className={styles.icons}
+              width={25}
+              height={30}
+              onClick={onBack}
+            />
           )}
           {showMenu && (
             <MenuIcon
@@ -118,7 +128,14 @@ export const BannerWrapper: React.FC<BannerWrapperProps> = ({
             ))}
         </div>
         <div className={styles.iconWrapperRight}>
-          {onClose && <XIcon className={styles.icons} width={25} height={30} onClick={onClose} />}
+          {onClose && (
+            <XIcon
+              className={styles.icons}
+              width={25}
+              height={30}
+              onClick={onClose}
+            />
+          )}
           {onHelp && displayHelp && (
             <QuestionMarkCircleIcon
               className={styles.icons}
@@ -128,9 +145,14 @@ export const BannerWrapper: React.FC<BannerWrapperProps> = ({
             />
           )}
           {notificationRender && (
-            <div className={'flex items-center mr-5'}>{notificationRender()}</div>
+            <div className={'flex items-center mr-5'}>
+              {notificationRender()}
+            </div>
           )}
-          <div className="flex-shrink-0" onClick={onAvatarSelect && onAvatarSelect}>
+          <div
+            className="flex-shrink-0"
+            onClick={onAvatarSelect && onAvatarSelect}
+          >
             {avatar}
           </div>
         </div>

@@ -30,17 +30,22 @@ export const GetProgressTrackingSubCategoryId = gql`
 `;
 
 export const CreateProgressTrackingSubCategory = gql`
-  mutation createProgressTrackingSubCategory($input: ProgressTrackingSubCategoryInput) {
+  mutation createProgressTrackingSubCategory(
+    $input: ProgressTrackingSubCategoryInput
+  ) {
     createProgressTrackingSubCategory(input: $input) {
-      id      
+      id
     }
   }
 `;
 
 export const UpdateProgressTrackingSubCategory = gql`
-  mutation updateProgressTrackingSubCategory($input: ProgressTrackingSubCategoryInput, $id: UUID) {
+  mutation updateProgressTrackingSubCategory(
+    $input: ProgressTrackingSubCategoryInput
+    $id: UUID
+  ) {
     updateProgressTrackingSubCategory(input: $input, id: $id) {
-      id      
+      id
     }
   }
 `;

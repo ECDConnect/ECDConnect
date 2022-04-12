@@ -13,7 +13,10 @@ export function TitleListItem({ item }: TitleListItemProps) {
   };
 
   return (
-    <div className={styles.titlelistItemContainer} onClick={() => item.onActionClick()}>
+    <div
+      className={styles.titlelistItemContainer}
+      onClick={() => item.onActionClick()}
+    >
       <div className={styles.contentWrapper}>
         <div className={styles.textRowsWrapper}>
           <div

@@ -19,13 +19,11 @@ import {
 import * as styles from './care-giver-contribution-form.styles';
 import { CareGiverContributionFormProps } from './care-giver-contribution-form.types';
 
-export const CareGiverContributionForm: React.FC<CareGiverContributionFormProps> = ({
-  careGiverContributionForm,
-  onSubmit,
-  variation,
-  childDetails,
-}) => {
-  const [commitedToContributing, setCommitedToContributing] = useState<boolean>();
+export const CareGiverContributionForm: React.FC<
+  CareGiverContributionFormProps
+> = ({ careGiverContributionForm, onSubmit, variation, childDetails }) => {
+  const [commitedToContributing, setCommitedToContributing] =
+    useState<boolean>();
 
   const {
     getValues: getCareGiverContributionFormValues,
@@ -44,7 +42,9 @@ export const CareGiverContributionForm: React.FC<CareGiverContributionFormProps>
 
   useEffect(() => {
     if (careGiverContributionForm) {
-      setCommitedToContributing(careGiverContributionForm.commitedToContributing);
+      setCommitedToContributing(
+        careGiverContributionForm.commitedToContributing
+      );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [careGiverContributionForm]);
@@ -67,7 +67,11 @@ export const CareGiverContributionForm: React.FC<CareGiverContributionFormProps>
   return (
     <div className={'bg-uiBg pt-2 pb-4 px-4'}>
       <Typography type={'h1'} text={'Primary caregiver'} color={'primary'} />
-      <Typography type={'h2'} text={'Contribution to the programme'} color={'textMid'} />
+      <Typography
+        type={'h2'}
+        text={'Contribution to the programme'}
+        color={'textMid'}
+      />
       <div>
         {variation === 'practitioner' && <PractitionerForm />}
         {variation === 'caregiver' && (
@@ -80,7 +84,10 @@ export const CareGiverContributionForm: React.FC<CareGiverContributionFormProps>
           <ButtonGroup
             options={commitToContributing}
             onOptionSelected={(value: boolean | boolean[]) => {
-              setCareGiverContributionFormValue('commitedToContributing', value as boolean);
+              setCareGiverContributionFormValue(
+                'commitedToContributing',
+                value as boolean
+              );
               setCommitedToContributing(value as boolean);
             }}
             selectedOptions={commitedToContributing}
@@ -120,7 +127,9 @@ const PractitionerForm: React.FC<any> = () => {
   return (
     <>
       <label className={classNames(styles.label, 'mt-4')}>
-        {'Did the caregiver commit to contributing a monthly amount to the programme?'}
+        {
+          'Did the caregiver commit to contributing a monthly amount to the programme?'
+        }
       </label>
     </>
   );

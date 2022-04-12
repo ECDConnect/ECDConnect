@@ -52,7 +52,10 @@ export const MessageBoard: React.FC<MessageBoardProps> = ({
         displayOffline={!isOnline}
       >
         <div className={'h-full w-full p-4 bg-uiBg'}>
-          <Typography type={'body'} text={'What messages would you like to share for today?'} />
+          <Typography
+            type={'body'}
+            text={'What messages would you like to share for today?'}
+          />
           <FormInput<MessageBoardModel>
             textInputType={'textarea'}
             register={register}
@@ -75,7 +78,10 @@ export const MessageBoard: React.FC<MessageBoardProps> = ({
               <Typography type={'help'} text={'today’s weather'} />
             </li>
             <li>
-              <Typography type={'help'} text={'an activity we are going to do'} />
+              <Typography
+                type={'help'}
+                text={'an activity we are going to do'}
+              />
             </li>
             <li>
               <Typography type={'help'} text={'a story we will share'} />
@@ -93,7 +99,9 @@ export const MessageBoard: React.FC<MessageBoardProps> = ({
           <Typography
             className={'mt-2'}
             type={'body'}
-            text={'Create pictures or symbols for each message you would like to share.'}
+            text={
+              'Create pictures or symbols for each message you would like to share.'
+            }
           />
 
           <Divider className={'my-4'} />
@@ -112,7 +120,11 @@ export const MessageBoard: React.FC<MessageBoardProps> = ({
           )}
         </div>
       </BannerWrapper>
-      <Dialog visible={displayHelp} position={DialogPosition.Middle} className={'mx-4'}>
+      <Dialog
+        visible={displayHelp}
+        position={DialogPosition.Middle}
+        className={'mx-4'}
+      >
         <ActionModal
           title={routineItem?.name}
           importantText={`${routineItem?.timeSpan}`}

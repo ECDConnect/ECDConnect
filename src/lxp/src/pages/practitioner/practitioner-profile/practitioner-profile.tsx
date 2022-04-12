@@ -81,7 +81,9 @@ export const PractitionerProfile: React.FC = () => {
                     iconBorderColor="alertBg"
                     iconColor="alertMain"
                     title="Complete your profile!"
-                    paragraphs={[`Please Complete your profile to unlock the classroom feature`]}
+                    paragraphs={[
+                      `Please Complete your profile to unlock the classroom feature`,
+                    ]}
                     actionButtons={[
                       {
                         colour: 'primary',
@@ -209,7 +211,10 @@ export const PractitionerProfile: React.FC = () => {
       child: (
         <div>
           {classroom ? null : <CompleteProfile />}
-          <StackedList listItems={getStackedMenuList()} type={'MenuList'}></StackedList>
+          <StackedList
+            listItems={getStackedMenuList()}
+            type={'MenuList'}
+          ></StackedList>
         </div>
       ),
     },

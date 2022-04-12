@@ -8,19 +8,37 @@ import { authActions } from './store/auth';
 import { caregiverActions, caregiverThunkActions } from './store/caregiver';
 import { childrenActions, childrenThunkActions } from './store/children';
 import { classroomsActions, classroomsThunkActions } from './store/classroom';
-import { activityActions, activityThunkActions } from './store/content/activity';
-import { contentConsentActions, contentConsentThunkActions } from './store/content/consent';
+import {
+  activityActions,
+  activityThunkActions,
+} from './store/content/activity';
+import {
+  contentConsentActions,
+  contentConsentThunkActions,
+} from './store/content/consent';
 import {
   programmeRoutineActions,
   programmeRoutineThunkActions,
 } from './store/content/programme-routine';
-import { programmeThemeActions, programmeThemeThunkActions } from './store/content/programme-theme';
-import { contentReportActions, contentReportThunkActions } from './store/content/report';
-import { storyBookActions, storyBookThunkActions } from './store/content/story-book';
+import {
+  programmeThemeActions,
+  programmeThemeThunkActions,
+} from './store/content/programme-theme';
+import {
+  contentReportActions,
+  contentReportThunkActions,
+} from './store/content/report';
+import {
+  storyBookActions,
+  storyBookThunkActions,
+} from './store/content/story-book';
 import { documentActions, documentThunkActions } from './store/document';
 import { notesActions, notesThunkActions } from './store/notes';
 import { notificationActions } from './store/notifications';
-import { progressTrackingActions, progressTrackingThunkActions } from './store/progress-tracking';
+import {
+  progressTrackingActions,
+  progressTrackingThunkActions,
+} from './store/progress-tracking';
 import { settingActions, settingThunkActions } from './store/settings';
 import { staticDataActions, staticDataThunkActions } from './store/static-data';
 import { userActions, userThunkActions } from './store/user';
@@ -35,9 +53,10 @@ type IntialStoreSetupContextValues = {
   syncClassroom: () => Promise<void>;
 };
 
-export const IntialStoreSetupContext = React.createContext<IntialStoreSetupContextValues>(
-  {} as IntialStoreSetupContextValues
-);
+export const IntialStoreSetupContext =
+  React.createContext<IntialStoreSetupContextValues>(
+    {} as IntialStoreSetupContextValues
+  );
 
 const InitialStoreSetup: React.FC = ({ children }) => {
   const appDispatch = useAppDispatch();
@@ -102,14 +121,20 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     await appDispatch(notesThunkActions.getNotes({})).unwrap();
     await appDispatch(classroomsThunkActions.getClassroom({})).unwrap();
     await appDispatch(classroomsThunkActions.getClassroomGroups({})).unwrap();
-    await appDispatch(classroomsThunkActions.getClassroomProgrammes({})).unwrap();
-    await appDispatch(classroomsThunkActions.getClassroomGroupLearners({})).unwrap();
+    await appDispatch(
+      classroomsThunkActions.getClassroomProgrammes({})
+    ).unwrap();
+    await appDispatch(
+      classroomsThunkActions.getClassroomGroupLearners({})
+    ).unwrap();
     await appDispatch(userThunkActions.getUser({})).unwrap();
     await appDispatch(userThunkActions.getUserConsents({})).unwrap();
     await appDispatch(childrenThunkActions.getChildren({})).unwrap();
     await appDispatch(caregiverThunkActions.getCaregivers({})).unwrap();
     await appDispatch(documentThunkActions.getDocuments({})).unwrap();
-    await appDispatch(contentReportThunkActions.getChildProgressReportSummary(10)).unwrap();
+    await appDispatch(
+      contentReportThunkActions.getChildProgressReportSummary(10)
+    ).unwrap();
     await appDispatch(
       attendanceThunkActions.getAttendance({
         year: getYear(new Date()),
@@ -124,16 +149,22 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   const initStaticStoreSetup = async () => {
     const today = new Date();
     setStaticDataLoading(true);
-    await appDispatch(contentConsentThunkActions.getConsent({ locale: 'en-za' })).unwrap();
+    await appDispatch(
+      contentConsentThunkActions.getConsent({ locale: 'en-za' })
+    ).unwrap();
     await appDispatch(settingThunkActions.getSettings({})).unwrap();
     await appDispatch(staticDataThunkActions.getRelations({})).unwrap();
     await appDispatch(staticDataThunkActions.getProgrammeTypes({})).unwrap();
-    await appDispatch(staticDataThunkActions.getProgrammeAttendanceReasons({})).unwrap();
+    await appDispatch(
+      staticDataThunkActions.getProgrammeAttendanceReasons({})
+    ).unwrap();
     await appDispatch(staticDataThunkActions.getGenders({})).unwrap();
     await appDispatch(staticDataThunkActions.getRaces({})).unwrap();
     await appDispatch(staticDataThunkActions.getLanguages({})).unwrap();
     await appDispatch(staticDataThunkActions.getEducationLevels({})).unwrap();
-    await appDispatch(staticDataThunkActions.getHolidays({ year: today.getFullYear() })).unwrap();
+    await appDispatch(
+      staticDataThunkActions.getHolidays({ year: today.getFullYear() })
+    ).unwrap();
     await appDispatch(staticDataThunkActions.getProvinces({})).unwrap();
     await appDispatch(staticDataThunkActions.getReasonsForLeaving({})).unwrap();
     await appDispatch(staticDataThunkActions.getGrants({})).unwrap();
@@ -167,19 +198,29 @@ const InitialStoreSetup: React.FC = ({ children }) => {
       programmeRoutineThunkActions.getProgrammeRoutines({ locale: 'en-za' })
     ).unwrap();
 
-    await appDispatch(activityThunkActions.getActivities({ locale: 'en-za' })).unwrap();
+    await appDispatch(
+      activityThunkActions.getActivities({ locale: 'en-za' })
+    ).unwrap();
 
-    await appDispatch(storyBookThunkActions.getStoryBooks({ locale: 'en-za' })).unwrap();
+    await appDispatch(
+      storyBookThunkActions.getStoryBooks({ locale: 'en-za' })
+    ).unwrap();
 
-    await appDispatch(programmeThemeThunkActions.getProgrammeThemes({ locale: 'en-za' })).unwrap();
+    await appDispatch(
+      programmeThemeThunkActions.getProgrammeThemes({ locale: 'en-za' })
+    ).unwrap();
 
     setStaticDataLoading(false);
   };
 
   const syncClassroom = async () => {
     await appDispatch(classroomsThunkActions.upsertClassroom({})).unwrap();
-    await appDispatch(classroomsThunkActions.upsertClassroomGroups({})).unwrap();
-    await appDispatch(classroomsThunkActions.upsertClassroomGroupProgrammes({})).unwrap();
+    await appDispatch(
+      classroomsThunkActions.upsertClassroomGroups({})
+    ).unwrap();
+    await appDispatch(
+      classroomsThunkActions.upsertClassroomGroupProgrammes({})
+    ).unwrap();
   };
 
   const getLoadingMessage = () => {

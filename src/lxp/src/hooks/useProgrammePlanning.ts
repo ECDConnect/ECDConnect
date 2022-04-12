@@ -43,9 +43,15 @@ export const useProgrammePlanning = () => {
       dailyProgrammes: [],
     };
 
-    const dailyProgrammesResult = createProgrammeDailyProgrammes(newProgramme, startDate, theme);
+    const dailyProgrammesResult = createProgrammeDailyProgrammes(
+      newProgramme,
+      startDate,
+      theme
+    );
 
-    newProgramme.endDate = new Date(dailyProgrammesResult.endDate).toISOString();
+    newProgramme.endDate = new Date(
+      dailyProgrammesResult.endDate
+    ).toISOString();
     newProgramme.dailyProgrammes = dailyProgrammesResult.dailyProgrammes;
 
     clearOverlappingDaysProgrammes(newProgramme);
@@ -56,7 +62,8 @@ export const useProgrammePlanning = () => {
   };
 
   const validateStartDate = (startDate: Date): Date => {
-    const isStartDateUnattendable = isWeekend(startDate) || holiday.isHoliday(startDate);
+    const isStartDateUnattendable =
+      isWeekend(startDate) || holiday.isHoliday(startDate);
 
     if (isStartDateUnattendable) {
       startDate = getNextValidDate(startDate);
@@ -173,7 +180,10 @@ export const useProgrammePlanning = () => {
     };
   };
 
-  const createDailyProgrammesForNoTheme = (programme: ProgrammeDto, startDate: Date) => {
+  const createDailyProgrammesForNoTheme = (
+    programme: ProgrammeDto,
+    startDate: Date
+  ) => {
     let dayDate = startDate;
     let endDateResult = getNoThemedProgrammeEndDate(startDate);
     const dailyProgrammes: DailyProgrammeDto[] = [];
@@ -214,10 +224,13 @@ export const useProgrammePlanning = () => {
         { start: newProgrammeStartDate, end: newProgrammeEndDate },
         conflictingProgrammeCopy
       );
-      const nonConflictingDays = conflictingProgrammeCopy.dailyProgrammes.filter(
-        (dailyProg) =>
-          !overlappingDays.some((overlappingDay) => overlappingDay.day === dailyProg.day)
-      );
+      const nonConflictingDays =
+        conflictingProgrammeCopy.dailyProgrammes.filter(
+          (dailyProg) =>
+            !overlappingDays.some(
+              (overlappingDay) => overlappingDay.day === dailyProg.day
+            )
+        );
       const sortedDays = nonConflictingDays.sort((a, b) =>
         sortDateFunction(new Date(a.dayDate), new Date(b.dayDate))
       );
@@ -226,10 +239,13 @@ export const useProgrammePlanning = () => {
 
       if (sortedDays.length > 0) {
         conflictingProgrammeCopy.startDate = sortedDays[0].dayDate;
-        conflictingProgrammeCopy.endDate = sortedDays[sortedDays.length - 1].dayDate;
+        conflictingProgrammeCopy.endDate =
+          sortedDays[sortedDays.length - 1].dayDate;
       }
 
-      conflictingProgrammeCopy = refreshProgrammeDateRange(conflictingProgrammeCopy);
+      conflictingProgrammeCopy = refreshProgrammeDateRange(
+        conflictingProgrammeCopy
+      );
       dispatch(
         programmeActions.updateProgramme({
           programme: conflictingProgrammeCopy,

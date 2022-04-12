@@ -10,7 +10,9 @@ export enum Weekdays {
   fri = 5,
 }
 
-export const generateEmptyPlaygroups = (numberOfPlaygroups: number): EditPlaygroupModel[] => {
+export const generateEmptyPlaygroups = (
+  numberOfPlaygroups: number
+): EditPlaygroupModel[] => {
   const playGroups: EditPlaygroupModel[] = [];
   for (let i = 0; i < numberOfPlaygroups; i++) {
     playGroups.push({ name: '', meetingDays: [], classroomGroupId: newGuid() });
@@ -19,9 +21,13 @@ export const generateEmptyPlaygroups = (numberOfPlaygroups: number): EditPlaygro
 };
 
 export const isValidWeekday = (dayValue: number) => {
-  return [Weekdays.mon, Weekdays.tue, Weekdays.wed, Weekdays.thu, Weekdays.fri].some(
-    (singleBwValue) => singleBwValue === dayValue
-  );
+  return [
+    Weekdays.mon,
+    Weekdays.tue,
+    Weekdays.wed,
+    Weekdays.thu,
+    Weekdays.fri,
+  ].some((singleBwValue) => singleBwValue === dayValue);
 };
 
 export const getWeekdayValue = (weekDay: Weekdays): string => {
@@ -40,8 +46,14 @@ export const getWeekdayValue = (weekDay: Weekdays): string => {
 };
 
 export const canDeleteClassroomGroup = (classroomGroup: ClassroomGroupDto) => {
-  if (!classroomGroup || !classroomGroup.learners || classroomGroup.learners.length === 0)
+  if (
+    !classroomGroup ||
+    !classroomGroup.learners ||
+    classroomGroup.learners.length === 0
+  )
     return true;
 
-  return classroomGroup.learners.every((learner) => !!learner.stoppedAttendance);
+  return classroomGroup.learners.every(
+    (learner) => !!learner.stoppedAttendance
+  );
 };

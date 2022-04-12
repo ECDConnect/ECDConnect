@@ -13,10 +13,16 @@ import {
 } from '@schemas/classroom/child-progress-observations/child-enjoys-form';
 import { ChildEnjoysProps } from './child-enjoys.types';
 
-export const ChildEnjoys: React.FC<ChildEnjoysProps> = ({ childId, onSubmit }) => {
-  const { currentReport, previousReport } = useChildProgressObservation(childId);
+export const ChildEnjoys: React.FC<ChildEnjoysProps> = ({
+  childId,
+  onSubmit,
+}) => {
+  const { currentReport, previousReport } =
+    useChildProgressObservation(childId);
   const child = useSelector(childrenSelectors.getChildById(childId));
-  const childUser = useSelector(childrenSelectors.getChildUserById(child?.userId));
+  const childUser = useSelector(
+    childrenSelectors.getChildUserById(child?.userId)
+  );
 
   const {
     getValues: getFormValue,

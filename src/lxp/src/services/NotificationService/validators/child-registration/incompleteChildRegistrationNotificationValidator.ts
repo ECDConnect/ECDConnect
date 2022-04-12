@@ -10,7 +10,9 @@ import {
   NotificationIntervals,
 } from '../../NotificationService.types';
 
-export class IncompleteChildRegistrationNotificationValidator implements NotificationValidator {
+export class IncompleteChildRegistrationNotificationValidator
+  implements NotificationValidator
+{
   interval: NotificationIntervals;
   lastCheckTimestamp: number;
   store: EnhancedStore<RootState, any>;
@@ -23,7 +25,8 @@ export class IncompleteChildRegistrationNotificationValidator implements Notific
   }
 
   getNotifications = (): Message[] => {
-    const { children: childrenState, staticData: staticDataState } = this.store.getState();
+    const { children: childrenState, staticData: staticDataState } =
+      this.store.getState();
 
     if (!childrenState || !staticDataState) return [];
 
@@ -32,7 +35,8 @@ export class IncompleteChildRegistrationNotificationValidator implements Notific
     );
     const notifications: Message[] = [];
     const incompleteChildren = (childrenState.children || []).filter(
-      (child) => child.workflowStatusId === workflowStatus?.id || !child?.caregiverId
+      (child) =>
+        child.workflowStatusId === workflowStatus?.id || !child?.caregiverId
     );
 
     const applicableChildren = incompleteChildren.filter(
@@ -48,14 +52,18 @@ export class IncompleteChildRegistrationNotificationValidator implements Notific
     if (!applicableChildren) return [];
 
     for (const child of applicableChildren) {
-      const childUser = childrenState.childUser?.find((childUser) => childUser.id === child.userId);
+      const childUser = childrenState.childUser?.find(
+        (childUser) => childUser.id === child.userId
+      );
 
       if (!childUser) continue;
 
       notifications.push({
         reference: `${child.id || childUser.firstName}-reg`,
         title: `${childUser.firstName}'s registration incomplete`,
-        message: `If you do not complete ${childUser.firstName}'s registration form, ${
+        message: `If you do not complete ${
+          childUser.firstName
+        }'s registration form, ${
           childUser.firstName
         }'s profile will be removed on ${addDays(
           new Date(child.insertedDate || 0),

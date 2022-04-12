@@ -1,5 +1,12 @@
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Button, ButtonGroup, Divider, FormInput, Typography, classNames } from '@ecdlink/ui';
+import {
+  Button,
+  ButtonGroup,
+  Divider,
+  FormInput,
+  Typography,
+  classNames,
+} from '@ecdlink/ui';
 import { ButtonGroupOption, ButtonGroupTypes } from '@ecdlink/ui';
 import { useFormState } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
@@ -12,7 +19,9 @@ import { renderIcon } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { ChildEmergencyContactFormProps } from './child-emergency-contact-form.types';
 
-export const ChildEmergencyContactForm: React.FC<ChildEmergencyContactFormProps> = ({
+export const ChildEmergencyContactForm: React.FC<
+  ChildEmergencyContactFormProps
+> = ({
   childEmergencyContactForm,
   childName,
   submitButtonText = 'Next',
@@ -21,7 +30,8 @@ export const ChildEmergencyContactForm: React.FC<ChildEmergencyContactFormProps>
   variation = 'practitioner',
 }) => {
   const [contactAllowedCustody, setContactAllowedCustody] = useState<boolean>();
-  const [displayAllowedCustodian, setDisplayAllowedCustodian] = useState<boolean>(false);
+  const [displayAllowedCustodian, setDisplayAllowedCustodian] =
+    useState<boolean>(false);
   const [childDisplayName, setChildDisplayName] = useState<string>('Child');
 
   useEffect(() => {
@@ -71,7 +81,11 @@ export const ChildEmergencyContactForm: React.FC<ChildEmergencyContactFormProps>
 
   return (
     <div className={'bg-uiBg pt-2 pb-4 px-4'}>
-      <Typography type={'h1'} text={'Person to contact in an emergency'} color={'primary'} />
+      <Typography
+        type={'h1'}
+        text={'Person to contact in an emergency'}
+        color={'primary'}
+      />
       <FormInput<ChildEmergencyContactFormModel>
         label={'First name'}
         className={styles.spacer}
@@ -105,7 +119,10 @@ export const ChildEmergencyContactForm: React.FC<ChildEmergencyContactFormProps>
         <ButtonGroup
           options={custodyAllowedOptions}
           onOptionSelected={(value: boolean | boolean[]) => {
-            setChildEmergencyContactFormValue('isAllowedCustody', value as boolean);
+            setChildEmergencyContactFormValue(
+              'isAllowedCustody',
+              value as boolean
+            );
             setContactAllowedCustody(value as boolean);
             triggerChildEmergencyContactForm();
           }}
@@ -121,7 +138,9 @@ export const ChildEmergencyContactForm: React.FC<ChildEmergencyContactFormProps>
           <Typography
             type={'h1'}
             text={`Who can pick ${childName} up if ${
-              variation === 'caregiver' ? 'you are unable to come' : 'the caregiver cannot'
+              variation === 'caregiver'
+                ? 'you are unable to come'
+                : 'the caregiver cannot'
             }?`}
             color={'primary'}
           />
@@ -163,7 +182,12 @@ export const ChildEmergencyContactForm: React.FC<ChildEmergencyContactFormProps>
         disabled={!isValid}
       >
         {renderIcon(submitButtonIcon, classNames('h-5 w-5 text-white'))}
-        <Typography type="h6" className="ml-2" text={submitButtonText} color="white" />
+        <Typography
+          type="h6"
+          className="ml-2"
+          text={submitButtonText}
+          color="white"
+        />
       </Button>
     </div>
   );

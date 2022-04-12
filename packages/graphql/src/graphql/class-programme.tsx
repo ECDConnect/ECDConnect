@@ -3,7 +3,7 @@ import { gql } from '@apollo/client';
 export const GetAllClassProgramme = gql`
   {
     GetAllClassProgramme {
-      id      
+      id
       programmeStartDate
       isFullDay
       meetingDay
@@ -14,7 +14,7 @@ export const GetAllClassProgramme = gql`
 export const GetClassProgrammeById = gql`
   query GetClassProgrammeById($id: UUID) {
     GetClassProgrammeById(id: $id) {
-      id      
+      id
       programmeStartDate
       isFullDay
       meetingDay
@@ -35,7 +35,7 @@ export const CreateClassProgramme = gql`
 export const UpdateClassProgramme = gql`
   mutation updateClassProgramme($input: ClassProgrammeInput, $id: UUID) {
     updateClassProgramme(input: $input, id: $id) {
-      id 
+      id
       meetingDay
       isFullDay
     }

@@ -8,7 +8,10 @@ export interface ProgrammeTimingModel {
 
 export const programmeTimingSchema = Yup.object().shape({
   date: Yup.date()
-    .min(startOfDay(new Date()), 'Start date of the programme cannot be in the past')
+    .min(
+      startOfDay(new Date()),
+      'Start date of the programme cannot be in the past'
+    )
     .required(),
   language: Yup.string().required(),
 });

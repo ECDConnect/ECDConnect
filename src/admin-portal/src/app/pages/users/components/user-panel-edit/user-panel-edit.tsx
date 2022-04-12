@@ -57,7 +57,8 @@ export default function UserPanelEdit(props: UserPanelProps) {
     defaultValues: initialUserDetailsValues,
     mode: 'onBlur',
   });
-  const { errors: userDetailFormErrors, isValid: isUserDetailValid } = userDetailFormState;
+  const { errors: userDetailFormErrors, isValid: isUserDetailValid } =
+    userDetailFormState;
   // PASSWORD FORMS
   const {
     register: passwordRegister,
@@ -68,7 +69,8 @@ export default function UserPanelEdit(props: UserPanelProps) {
     defaultValues: initialPasswordValue,
     mode: 'onBlur',
   });
-  const { errors: passwordFormErrors, isValid: isPasswordValid } = passwordFormState;
+  const { errors: passwordFormErrors, isValid: isPasswordValid } =
+    passwordFormState;
 
   // SET EDIT FORMS
   useEffect(() => {
@@ -76,15 +78,23 @@ export default function UserPanelEdit(props: UserPanelProps) {
       userDetailSetValue('email', props.user.email ?? '', {
         shouldValidate: true,
       });
-      userDetailSetValue('isSouthAfricanCitizen', props.user.isSouthAfricanCitizen, {
-        shouldValidate: true,
-      });
+      userDetailSetValue(
+        'isSouthAfricanCitizen',
+        props.user.isSouthAfricanCitizen,
+        {
+          shouldValidate: true,
+        }
+      );
       userDetailSetValue('idNumber', props.user.idNumber ?? '', {
         shouldValidate: true,
       });
-      userDetailSetValue('verifiedByHomeAffairs', props.user.verifiedByHomeAffairs, {
-        shouldValidate: true,
-      });
+      userDetailSetValue(
+        'verifiedByHomeAffairs',
+        props.user.verifiedByHomeAffairs,
+        {
+          shouldValidate: true,
+        }
+      );
       userDetailSetValue(
         'dateOfBirth',
         props.user.dateOfBirth ? new Date(props.user.dateOfBirth) : new Date(),
@@ -104,9 +114,13 @@ export default function UserPanelEdit(props: UserPanelProps) {
       userDetailSetValue('phoneNumber', props.user.phoneNumber ?? '', {
         shouldValidate: true,
       });
-      userDetailSetValue('contactPreference', props.user.contactPreference ?? '', {
-        shouldValidate: true,
-      });
+      userDetailSetValue(
+        'contactPreference',
+        props.user.contactPreference ?? '',
+        {
+          shouldValidate: true,
+        }
+      );
       if (props.user.roles) setUserRoles(props.user.roles);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -249,10 +263,14 @@ export default function UserPanelEdit(props: UserPanelProps) {
       <>
         <div className="bg-uiBg px-4 py-5 border-b border-gray-200 rounded-lg">
           <div className="pb-2">
-            <h3 className="text-lg leading-6 font-medium text-uiMidDark">User Detail</h3>
+            <h3 className="text-lg leading-6 font-medium text-uiMidDark">
+              User Detail
+            </h3>
           </div>
           <UserDetailsForm
-            formKey={`editUserDetails-${new Date().getTime()}-${props.user?.id}`}
+            formKey={`editUserDetails-${new Date().getTime()}-${
+              props.user?.id
+            }`}
             register={userDetailRegister}
             errors={userDetailFormErrors}
             setValue={userDetailSetValue}
@@ -262,7 +280,9 @@ export default function UserPanelEdit(props: UserPanelProps) {
         </div>
         <div className="mt-5 bg-uiBg px-4 py-5 border-b border-gray-200 rounded-lg">
           <div className="pb-2">
-            <h3 className="text-lg leading-6 font-medium text-uiMidDark">Password</h3>
+            <h3 className="text-lg leading-6 font-medium text-uiMidDark">
+              Password
+            </h3>
           </div>
           <PasswordForm
             formKey={`editpassword-${new Date().getTime()}-${props.user?.id}`}
@@ -273,7 +293,9 @@ export default function UserPanelEdit(props: UserPanelProps) {
         </div>
         <div className="mt-5 bg-uiBg px-4 py-5 border-b border-gray-200 rounded-lg">
           <div className="pb-2">
-            <h3 className="text-lg leading-6 font-medium text-uiMidDark">Roles</h3>
+            <h3 className="text-lg leading-6 font-medium text-uiMidDark">
+              Roles
+            </h3>
           </div>
           <UserRoles
             roleList={roleData ? roleData.roles : []}
@@ -290,7 +312,11 @@ export default function UserPanelEdit(props: UserPanelProps) {
 
   return (
     <article>
-      <UserPanelSave user={props.user} disabled={!getIsValid()} onSave={onSave} />
+      <UserPanelSave
+        user={props.user}
+        disabled={!getIsValid()}
+        onSave={onSave}
+      />
       <div className="mt-5 max-w-5xl mx-auto">{getComponent()}</div>
     </article>
   );

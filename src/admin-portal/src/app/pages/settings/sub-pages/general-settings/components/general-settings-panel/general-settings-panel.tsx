@@ -7,7 +7,11 @@ import {
   SettingsDto,
   useNotifications,
 } from '@ecdlink/core';
-import { CreateSystemSetting, SystemSettingInput, UpdateSystemSetting } from '@ecdlink/graphql';
+import {
+  CreateSystemSetting,
+  SystemSettingInput,
+  UpdateSystemSetting,
+} from '@ecdlink/graphql';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -105,7 +109,10 @@ export default function GeneralSettingsPanel(props: GeneralSettingsProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 divide-y divide-gray-200">
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="space-y-8 divide-y divide-gray-200"
+    >
       <div className="space-y-8 divide-y divide-gray-200">
         <div className="pt-8">
           <div className="grid grid-cols-2">

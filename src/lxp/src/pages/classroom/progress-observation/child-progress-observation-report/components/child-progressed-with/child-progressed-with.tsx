@@ -13,11 +13,17 @@ import { useSelector } from 'react-redux';
 import { useEffect } from 'react';
 import { ChildProgressedWithProps } from './child-progressed-with.types';
 
-export const ChildProgressedWith: React.FC<ChildProgressedWithProps> = ({ childId, onSubmit }) => {
-  const { currentReport, previousReport } = useChildProgressObservation(childId);
+export const ChildProgressedWith: React.FC<ChildProgressedWithProps> = ({
+  childId,
+  onSubmit,
+}) => {
+  const { currentReport, previousReport } =
+    useChildProgressObservation(childId);
 
   const child = useSelector(childrenSelectors.getChildById(childId));
-  const childUser = useSelector(childrenSelectors.getChildUserById(child?.userId));
+  const childUser = useSelector(
+    childrenSelectors.getChildUserById(child?.userId)
+  );
 
   const {
     getValues: getFormValue,

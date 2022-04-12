@@ -35,8 +35,12 @@ export const RemoveChild: React.FC = () => {
   const { isOnline } = useOnlineStatus();
   const childId = location.state.childId;
   const child = useSelector(childrenSelectors.getChildById(childId));
-  const childUser = useSelector(childrenSelectors.getChildUserById(child?.userId));
-  const reasonsForLeaving = useSelector(staticDataSelectors.getReasonsForLeaving);
+  const childUser = useSelector(
+    childrenSelectors.getChildUserById(child?.userId)
+  );
+  const reasonsForLeaving = useSelector(
+    staticDataSelectors.getReasonsForLeaving
+  );
   const history = useHistory();
 
   useEffect(() => {
@@ -73,7 +77,9 @@ export const RemoveChild: React.FC = () => {
     const updatedChild = { ...child };
     updatedChild.isActive = false;
     appDispatch(childrenActions.deactivateChild(updatedChild));
-    appDispatch(classroomsActions.deactivateClassroomGroupLearner(updatedChild));
+    appDispatch(
+      classroomsActions.deactivateClassroomGroupLearner(updatedChild)
+    );
 
     history.replace('/classroom');
   };
@@ -105,7 +111,9 @@ export const RemoveChild: React.FC = () => {
           className={'pt-1'}
         />
 
-        <label className={classNames(styles.label, 'mt-4')}>{'Reason for leaving'}</label>
+        <label className={classNames(styles.label, 'mt-4')}>
+          {'Reason for leaving'}
+        </label>
         <Dropdown<string>
           placeholder={'Choose reason'}
           fullWidth
@@ -159,7 +167,12 @@ export const RemoveChild: React.FC = () => {
           type="outlined"
         >
           {renderIcon('XIcon', classNames('h-5 w-5 text-primary'))}
-          <Typography type="h6" className="ml-2" text="Cancel" color="primary" />
+          <Typography
+            type="h6"
+            className="ml-2"
+            text="Cancel"
+            color="primary"
+          />
         </Button>
       </div>
     </BannerWrapper>

@@ -31,4 +31,8 @@ const programmeRoutinePersistConfig = {
   blacklist: [],
 };
 
-export { programmeRoutinePersistConfig, programmeRoutineReducer, programmeRoutineActions };
+export {
+  programmeRoutinePersistConfig,
+  programmeRoutineReducer,
+  programmeRoutineActions,
+};

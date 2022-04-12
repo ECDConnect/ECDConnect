@@ -22,7 +22,9 @@ export const getConsent = createAsyncThunk<
       if (userAuth?.auth_token || authToken) {
         content = await new ContentConsentService(
           locale,
-          userAuth && userAuth?.auth_token ? userAuth?.auth_token : authToken ?? ''
+          userAuth && userAuth?.auth_token
+            ? userAuth?.auth_token
+            : authToken ?? ''
         ).getConsent();
       } else {
         return rejectWithValue('no access token, profile check required');
@@ -49,7 +51,9 @@ export const getOpenConsent = createAsyncThunk<
   // eslint-disable-next-line no-empty-pattern
   async ({ locale, type }, { rejectWithValue }) => {
     try {
-      let content = await new ContentConsentService(locale, '').getOpenConsent(type);
+      let content = await new ContentConsentService(locale, '').getOpenConsent(
+        type
+      );
 
       if (!content) {
         return rejectWithValue('Error getting Terms And Conditions');

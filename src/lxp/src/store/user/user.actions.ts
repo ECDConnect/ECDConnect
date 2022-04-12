@@ -24,7 +24,9 @@ export const getUser = createAsyncThunk<
         let user: UserDto | undefined;
 
         if (userAuth?.auth_token) {
-          user = await new UserService(userAuth?.auth_token).getUserById(userAuth.id);
+          user = await new UserService(userAuth?.auth_token).getUserById(
+            userAuth.id
+          );
         } else {
           return rejectWithValue('no access token, profile check required');
         }
@@ -62,7 +64,9 @@ export const getUserConsents = createAsyncThunk<
         let userConsent: UserConsentDto[] | undefined;
 
         if (userAuth?.auth_token) {
-          userConsent = await new UserService(userAuth?.auth_token).getUserConsents(userAuth.id);
+          userConsent = await new UserService(
+            userAuth?.auth_token
+          ).getUserConsents(userAuth.id);
         } else {
           return rejectWithValue('no access token, profile check required');
         }
@@ -109,7 +113,10 @@ export const upsertUserConsents = createAsyncThunk<
             IsActive: true,
           };
 
-          return await new UserService(userAuth?.auth_token).updateUserConsents(x.id ?? '', input);
+          return await new UserService(userAuth?.auth_token).updateUserConsents(
+            x.id ?? '',
+            input
+          );
         });
       }
       return Promise.all(promises);
@@ -154,7 +161,11 @@ export const resetUserPassword = createAsyncThunk<
   }
 );
 
-export const updateUser = createAsyncThunk<boolean[], {}, ThunkApiType<RootState>>(
+export const updateUser = createAsyncThunk<
+  boolean[],
+  {},
+  ThunkApiType<RootState>
+>(
   'updateUser',
   // eslint-disable-next-line no-empty-pattern
   async ({}, { getState, rejectWithValue }) => {
@@ -192,26 +203,29 @@ type AddUserRequest = {
   user: UserDto;
 };
 
-export const addUser = createAsyncThunk<UserDto, AddUserRequest, ThunkApiType<RootState>>(
-  'addUser',
-  async ({ user }, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-    } = getState();
+export const addUser = createAsyncThunk<
+  UserDto,
+  AddUserRequest,
+  ThunkApiType<RootState>
+>('addUser', async ({ user }, { getState, rejectWithValue }) => {
+  const {
+    auth: { userAuth },
+  } = getState();
 
-    try {
-      if (userAuth?.auth_token) {
-        const userModelInput: UserModelInput = mapUser(user);
+  try {
+    if (userAuth?.auth_token) {
+      const userModelInput: UserModelInput = mapUser(user);
 
-        return await new UserService(userAuth?.auth_token).addUser(userModelInput);
-      } else {
-        return rejectWithValue('no access token, profile check required');
-      }
-    } catch (err) {
-      return rejectWithValue(err);
+      return await new UserService(userAuth?.auth_token).addUser(
+        userModelInput
+      );
+    } else {
+      return rejectWithValue('no access token, profile check required');
     }
+  } catch (err) {
+    return rejectWithValue(err);
   }
-);
+});
 
 const mapUser = (user: Partial<UserDto>): UserModelInput => ({
   isSouthAfricanCitizen: user.isSouthAfricanCitizen || false,

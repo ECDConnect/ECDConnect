@@ -11,7 +11,9 @@ export const DownloadProgressTrackingReportPrompt: React.FC<
       iconColor="alertMain"
       iconBorderColor="alertBg"
       importantText={`Are you sure you want to create the report?`}
-      detailText={'Once you create the report, you will not be able to edit it.'}
+      detailText={
+        'Once you create the report, you will not be able to edit it.'
+      }
       actionButtons={[
         {
           text: 'Yes create report',

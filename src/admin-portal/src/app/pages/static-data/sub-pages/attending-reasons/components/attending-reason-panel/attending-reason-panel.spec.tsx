@@ -3,7 +3,9 @@ import AttendingReasonPanel from './attending-reason-panel';
 
 describe('AttendingReasonPanel', () => {
   it('should render successfully', () => {
-    const { baseElement } = render(<AttendingReasonPanel closeDialog={() => {}} />);
+    const { baseElement } = render(
+      <AttendingReasonPanel closeDialog={() => {}} />
+    );
     expect(baseElement).toBeTruthy();
   });
 });

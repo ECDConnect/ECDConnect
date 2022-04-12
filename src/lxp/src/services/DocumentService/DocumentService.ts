@@ -73,7 +73,11 @@ class DocumentService {
     return true;
   }
 
-  async fileUpload(file: string, fileName: string, fileType: string): Promise<FileReturnModel> {
+  async fileUpload(
+    file: string,
+    fileName: string,
+    fileType: string
+  ): Promise<FileReturnModel> {
     const apiInstance = await api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `

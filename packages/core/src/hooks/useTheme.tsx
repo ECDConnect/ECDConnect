@@ -22,7 +22,7 @@ const ThemeContext = createContext<ThemeContextType>({} as ThemeContextType);
 function ThemeProvider({
   children,
   themeEndPoint,
-  overRideCache
+  overRideCache,
 }: {
   children: ReactNode;
   themeEndPoint: string;
@@ -32,7 +32,7 @@ function ThemeProvider({
   const [theme, setTheme] = useState<ThemeModel>();
 
   const getData = async () => {
-    const { value } = await Storage.get({ key: 'storageTheme' });    
+    const { value } = await Storage.get({ key: 'storageTheme' });
 
     if (!value || overRideCache) {
       fetch(themeEndPoint)
@@ -90,7 +90,8 @@ function ThemeProvider({
         DefaultTheme.graphicOverlayUrl = data.images.graphicOverlayUrl;
         DefaultTheme.faviconUrl = data.images.faviconUrl;
         DefaultTheme.portalLoginLogoUrl = data.images.portalLoginLogoUrl;
-        DefaultTheme.portalLoginBackgroundUrl = data.images.portalLoginBackgroundUrl;
+        DefaultTheme.portalLoginBackgroundUrl =
+          data.images.portalLoginBackgroundUrl;
       }
 
       if (data.fonts) {
@@ -128,7 +129,8 @@ function ThemeProvider({
     DefaultTheme.successDark = WhiteLabelTheme.successDark;
     DefaultTheme.successMain = WhiteLabelTheme.successMain;
     DefaultTheme.fontUrl = WhiteLabelTheme.fontUrl;
-    DefaultTheme.mainHeadingOverrideFontUrl = WhiteLabelTheme.mainHeadingOverrideFontUrl;
+    DefaultTheme.mainHeadingOverrideFontUrl =
+      WhiteLabelTheme.mainHeadingOverrideFontUrl;
   }
 
   function overRideTheme(theme: ThemeModel) {
@@ -139,7 +141,7 @@ function ThemeProvider({
     () => ({
       theme,
       overRideTheme,
-      setWhiteLabelTheme
+      setWhiteLabelTheme,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [theme]

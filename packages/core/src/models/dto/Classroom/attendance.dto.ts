@@ -1,4 +1,3 @@
-
 import { UserDto } from '../Users/user.dto';
 import { ClassProgrammeDto } from './class-programme.dto';
 

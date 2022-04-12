@@ -11,10 +11,12 @@ export const getAvatarDimensionsBasedOnSizeType = (
   displayBorder: boolean,
   borderColor: Colours
 ): string => {
-  const borderNormal = `${displayBorder ? `border-2 border-${borderColor}` : ''
-    }`;
-  const borderLarge = `${displayBorder ? `border-4 border-${borderColor}` : ''
-    }`;
+  const borderNormal = `${
+    displayBorder ? `border-2 border-${borderColor}` : ''
+  }`;
+  const borderLarge = `${
+    displayBorder ? `border-4 border-${borderColor}` : ''
+  }`;
   switch (avatarSize) {
     case 'xs':
       return classNames(avatarWrapper, 'h-6 w-6', borderNormal);
@@ -24,24 +26,12 @@ export const getAvatarDimensionsBasedOnSizeType = (
       return classNames(avatarWrapper, 'h-11 w-11', borderNormal);
     case 'md':
     case 'md-lg':
-      return classNames(
-        avatarWrapper,
-        'h-12 w-12',
-        borderLarge
-      );
+      return classNames(avatarWrapper, 'h-12 w-12', borderLarge);
     case 'header':
-      return classNames(
-        avatarWrapper,
-        'h-120 w-120',
-        borderLarge
-      );
+      return classNames(avatarWrapper, 'h-120 w-120', borderLarge);
     case 'lg':
     default:
-      return classNames(
-        avatarWrapper,
-        'h-14 w-14',
-        borderLarge
-      );
+      return classNames(avatarWrapper, 'h-14 w-14', borderLarge);
   }
 };
 

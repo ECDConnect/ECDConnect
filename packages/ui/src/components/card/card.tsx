@@ -1,15 +1,27 @@
-import { ComponentBaseProps } from "../../models/ComponentBaseProps";
-import { CardBorderRaduis, CardShadowSize } from "./models/CardTypes";
+import { ComponentBaseProps } from '../../models/ComponentBaseProps';
+import { CardBorderRaduis, CardShadowSize } from './models/CardTypes';
 import * as styles from './card.styles';
-import { classNames } from "../../utils/style-class.utils";
+import { classNames } from '../../utils/style-class.utils';
 
 interface CardProps extends ComponentBaseProps {
-    borderRaduis?: CardBorderRaduis,
-    shadowSize?: CardShadowSize,
+  borderRaduis?: CardBorderRaduis;
+  shadowSize?: CardShadowSize;
 }
 
-export const Card: React.FC<CardProps> = ({ borderRaduis = 'sm', shadowSize = 'sm', className, children }) => {
-    return <div className={classNames(styles.getCardStyles(borderRaduis, shadowSize), className)}>
-        {children}
+export const Card: React.FC<CardProps> = ({
+  borderRaduis = 'sm',
+  shadowSize = 'sm',
+  className,
+  children,
+}) => {
+  return (
+    <div
+      className={classNames(
+        styles.getCardStyles(borderRaduis, shadowSize),
+        className
+      )}
+    >
+      {children}
     </div>
+  );
 };

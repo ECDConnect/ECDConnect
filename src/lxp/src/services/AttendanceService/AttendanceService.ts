@@ -87,7 +87,9 @@ class AttendanceService {
     });
 
     if (response.status !== 200) {
-      throw new Error('Get Monthly Attendance Report failed - Server connection error');
+      throw new Error(
+        'Get Monthly Attendance Report failed - Server connection error'
+      );
     }
 
     return response.data.data.monthlyAttendanceReport;
@@ -140,13 +142,17 @@ class AttendanceService {
     });
 
     if (response.status !== 200) {
-      throw new Error('Get Monthly Attendance Report failed - Server connection error');
+      throw new Error(
+        'Get Monthly Attendance Report failed - Server connection error'
+      );
     }
 
     return response.data.data.childAttendanceReport;
   }
 
-  async trackAttendance(attendance: TrackAttendanceModelInput): Promise<boolean> {
+  async trackAttendance(
+    attendance: TrackAttendanceModelInput
+  ): Promise<boolean> {
     const apiInstance = await api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `

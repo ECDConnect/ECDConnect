@@ -55,8 +55,6 @@ export const CoreRadioGroup: React.FC<CoreRadioGroupProps> = ({
                 color={checked ? 'textDark' : 'textMid'}
                 weight={checked ? 'bolder' : 'normal'}
               />
-
-
             </div>
           )}
         </RadioGroup.Option>

@@ -1,4 +1,5 @@
-export const contentWrapper = 'flex flex-row items-center justify-between px-4 py-4';
+export const contentWrapper =
+  'flex flex-row items-center justify-between px-4 py-4';
 export const actionTitle = 'text-base font-medium text-primary truncate';
 export const actionTitleInput = 'text-base font-medium text-textDark truncate';
 export const actionSubTitle =

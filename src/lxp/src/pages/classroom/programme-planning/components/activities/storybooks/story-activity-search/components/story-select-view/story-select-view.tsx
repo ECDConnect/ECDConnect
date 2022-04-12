@@ -5,7 +5,10 @@ import StoryCard from '../../../story-card/story-card';
 import { StoryCardProps } from '../../../story-card/story-card.types';
 import { StorySelectViewProps } from './story-select-view.types';
 
-export const StorySelectView: React.FC<StorySelectViewProps> = ({ stories, onStorySelected }) => {
+export const StorySelectView: React.FC<StorySelectViewProps> = ({
+  stories,
+  onStorySelected,
+}) => {
   const storieProps: StoryCardProps[] = stories.map((item) => ({
     storyBookId: item.id,
     title: item.name,

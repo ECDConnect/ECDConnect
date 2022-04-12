@@ -7,7 +7,12 @@ export type SkillCardProps = {
   hexBackgroundColor?: string;
 };
 
-const SkillCard: React.FC<SkillCardProps> = ({ className, icon, title, hexBackgroundColor }) => {
+const SkillCard: React.FC<SkillCardProps> = ({
+  className,
+  icon,
+  title,
+  hexBackgroundColor,
+}) => {
   return (
     <Card
       shadowSize="lg"

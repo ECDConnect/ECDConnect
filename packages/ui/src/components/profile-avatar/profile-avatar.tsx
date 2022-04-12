@@ -23,7 +23,7 @@ export const ProfileAvatar: React.FC<ProfileAvatarProps> = ({
   hasConsent = false,
   canChangeImage = true,
   onPressed,
-}) => {  
+}) => {
   const displayAvatar: boolean = hasConsent && !!dataUrl;
   const displayUserAvatar: boolean = !hasConsent || (hasConsent && !dataUrl);
   return (

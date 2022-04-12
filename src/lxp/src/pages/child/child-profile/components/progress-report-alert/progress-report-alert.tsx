@@ -37,10 +37,14 @@ const baseProgressReportListItem: ListItemProps = {
   iconBackgroundColor: 'primary',
 };
 
-export const ChildProgressReportAlert: React.FC<ChildProgressReportAlertProps> = ({ child }) => {
+export const ChildProgressReportAlert: React.FC<
+  ChildProgressReportAlertProps
+> = ({ child }) => {
   const history = useHistory();
 
-  const childInsertedDate = child.insertedDate ? new Date(child.insertedDate) : undefined;
+  const childInsertedDate = child.insertedDate
+    ? new Date(child.insertedDate)
+    : undefined;
   const reportSummaries = useSelector(
     contentReportSelectors.getChildLatestCompletedReports(child.id)
   );
@@ -48,7 +52,8 @@ export const ChildProgressReportAlert: React.FC<ChildProgressReportAlertProps> =
 
   const currentDate = new Date();
 
-  const requiresInitialReport = !latestCompletedSummary && isChildInitialRegistrationPeriod(child);
+  const requiresInitialReport =
+    !latestCompletedSummary && isChildInitialRegistrationPeriod(child);
 
   const currentReportingPeriodReportSummary = reportSummaries.find(
     (summary) =>
@@ -56,7 +61,8 @@ export const ChildProgressReportAlert: React.FC<ChildProgressReportAlertProps> =
       isMatchingReportingPeriods(new Date(summary.reportDate), currentDate)
   );
 
-  const isCurrentlyInReportingOverduePeriod = isInFinalMonthOfReportingPeriod(currentDate);
+  const isCurrentlyInReportingOverduePeriod =
+    isInFinalMonthOfReportingPeriod(currentDate);
 
   const reportingPeriod = !currentReportingPeriodReportSummary
     ? getReportingPeriod(currentDate)
@@ -68,7 +74,9 @@ export const ChildProgressReportAlert: React.FC<ChildProgressReportAlertProps> =
         )
       );
 
-  const reportDate = new Date(`${reportingPeriod.monthName}-01-${reportingPeriod.year}`);
+  const reportDate = new Date(
+    `${reportingPeriod.monthName}-01-${reportingPeriod.year}`
+  );
 
   const navigateToChildProgressObservation = () => {
     history.push('/child-progress-observation', {
@@ -76,7 +84,8 @@ export const ChildProgressReportAlert: React.FC<ChildProgressReportAlertProps> =
       reportingDate: reportDate,
     });
   };
-  if (!childInsertedDate) return <div>Child does not have a valid inserted date...</div>;
+  if (!childInsertedDate)
+    return <div>Child does not have a valid inserted date...</div>;
   const getListItemProps = (): ListItemProps => {
     if (requiresInitialReport) {
       return {
@@ -115,5 +124,10 @@ export const ChildProgressReportAlert: React.FC<ChildProgressReportAlertProps> =
     };
   };
 
-  return <ListItem {...getListItemProps()} key={`child-profile-notification-${child.id}`} />;
+  return (
+    <ListItem
+      {...getListItemProps()}
+      key={`child-profile-notification-${child.id}`}
+    />
+  );
 };

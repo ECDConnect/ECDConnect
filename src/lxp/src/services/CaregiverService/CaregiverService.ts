@@ -63,7 +63,10 @@ class CaregiverService {
     return response.data.data.GetAllCaregiver;
   }
 
-  async updateCareGiver(id: string, input: CaregiverInput): Promise<CaregiverDto> {
+  async updateCareGiver(
+    id: string,
+    input: CaregiverInput
+  ): Promise<CaregiverDto> {
     const apiInstance = await api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `

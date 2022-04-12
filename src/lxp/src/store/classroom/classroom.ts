@@ -43,7 +43,10 @@ const classroomsSlice = createSlice({
         }
       }
     },
-    updateClassroomProgramme: (state, action: PayloadAction<ClassProgrammeDto>) => {
+    updateClassroomProgramme: (
+      state,
+      action: PayloadAction<ClassProgrammeDto>
+    ) => {
       if (state.classroomProgrammes) {
         for (let i = 0; i < state.classroomProgrammes.length; i++) {
           if (state.classroomProgrammes[i].id === action.payload.id)
@@ -56,7 +59,8 @@ const classroomsSlice = createSlice({
         for (let i = 0; i < state.classroomGroupLearners.length; i++) {
           if (
             state.classroomGroupLearners[i].userId === action.payload.userId &&
-            state.classroomGroupLearners[i].classroomGroupId === action.payload.classroomGroupId
+            state.classroomGroupLearners[i].classroomGroupId ===
+              action.payload.classroomGroupId
           )
             state.classroomGroupLearners[i] = action.payload;
         }
@@ -69,7 +73,10 @@ const classroomsSlice = createSlice({
       if (!state.classroomGroups) state.classroomGroups = [];
       state.classroomGroups?.push(action.payload);
     },
-    createClassroomProgramme: (state, action: PayloadAction<ClassProgrammeDto>) => {
+    createClassroomProgramme: (
+      state,
+      action: PayloadAction<ClassProgrammeDto>
+    ) => {
       if (!state.classroomProgrammes) state.classroomProgrammes = [];
       state.classroomProgrammes?.push(action.payload);
     },
@@ -86,11 +93,16 @@ const classroomsSlice = createSlice({
           }
         }
       } else {
-        const index = state.classroomGroups?.findIndex((c) => c.id === action.payload.id);
+        const index = state.classroomGroups?.findIndex(
+          (c) => c.id === action.payload.id
+        );
         if (index && index > -1) state.classroomGroups?.splice(index, 1);
       }
     },
-    deleteClassroomProgramme: (state, action: PayloadAction<ClassProgrammeDto>) => {
+    deleteClassroomProgramme: (
+      state,
+      action: PayloadAction<ClassProgrammeDto>
+    ) => {
       if (action.payload.id) {
         if (state.classroomProgrammes) {
           for (let i = 0; i < state.classroomProgrammes.length; i++) {
@@ -99,7 +111,9 @@ const classroomsSlice = createSlice({
           }
         }
       } else {
-        const index = state.classroomProgrammes?.findIndex((c) => c.id === action.payload.id);
+        const index = state.classroomProgrammes?.findIndex(
+          (c) => c.id === action.payload.id
+        );
         if (index && index > -1) state.classroomProgrammes?.splice(index, 1);
       }
     },
@@ -111,7 +125,10 @@ const classroomsSlice = createSlice({
       );
       if (index && index > -1) state.classroomGroupLearners?.splice(index, 1);
     },
-    deactivateClassroomGroupLearner: (state, action: PayloadAction<ChildDto>) => {
+    deactivateClassroomGroupLearner: (
+      state,
+      action: PayloadAction<ChildDto>
+    ) => {
       if (!state.classroomGroupLearners) return;
 
       const learnerIndex = state.classroomGroupLearners.findIndex(
@@ -121,7 +138,8 @@ const classroomsSlice = createSlice({
       if (learnerIndex < 0) return;
 
       const newDate = new Date();
-      state.classroomGroupLearners[learnerIndex].stoppedAttendance = newDate.toISOString();
+      state.classroomGroupLearners[learnerIndex].stoppedAttendance =
+        newDate.toISOString();
       state.classroomGroupLearners[learnerIndex].isActive = false;
     },
   },
@@ -149,7 +167,8 @@ const classroomsSlice = createSlice({
   },
 });
 
-const { reducer: classroomsReducer, actions: classroomsActions } = classroomsSlice;
+const { reducer: classroomsReducer, actions: classroomsActions } =
+  classroomsSlice;
 
 const classroomsPersistConfig = {
   key: 'classrooms',

@@ -37,7 +37,9 @@ export default function ContentWorkflow({
   goBack,
   savedContent,
 }: ContentWorkflowProps) {
-  const [selectedLanguageId, setSelectedLanguageId] = useState<string>(contentView.languageId);
+  const [selectedLanguageId, setSelectedLanguageId] = useState<string>(
+    contentView.languageId
+  );
 
   const [viewKey, setViewKey] = useState<number>(Math.random());
   const [defaultLanguageId, setDefaultLanguageId] = useState<string>();
@@ -55,8 +57,15 @@ export default function ContentWorkflow({
   }, [languages]);
 
   useEffect(() => {
-    if (contentType && contentType.content && contentView && contentView.content) {
-      const c = contentType.content.find((x) => x.id === contentView.content.id);
+    if (
+      contentType &&
+      contentType.content &&
+      contentView &&
+      contentView.content
+    ) {
+      const c = contentType.content.find(
+        (x) => x.id === contentView.content.id
+      );
       if (c) {
         setCurrentContent(c);
         setViewKey(Math.random());
@@ -65,8 +74,15 @@ export default function ContentWorkflow({
   }, [contentType, contentView]);
 
   useEffect(() => {
-    if (contentType && contentType.content && contentView && contentView.content) {
-      const c = contentType.content.find((x) => x.id === contentView.content.id);
+    if (
+      contentType &&
+      contentType.content &&
+      contentView &&
+      contentView.content
+    ) {
+      const c = contentType.content.find(
+        (x) => x.id === contentView.content.id
+      );
       if (c) {
         setCurrentContent(c);
         setViewKey(Math.random());
@@ -77,7 +93,9 @@ export default function ContentWorkflow({
   const checkIfLanguageTranslated = (languageId: string) => {
     let translated = false;
     if (currentContent) {
-      translated = currentContent.contentValues.some((x) => x.localeId === languageId);
+      translated = currentContent.contentValues.some(
+        (x) => x.localeId === languageId
+      );
     }
 
     return translated;
@@ -136,7 +154,10 @@ export default function ContentWorkflow({
                     {item.description}
 
                     {checkIfLanguageTranslated(item.id ?? '') ? (
-                      <CheckCircleIcon className="text-successMain" width="20px" />
+                      <CheckCircleIcon
+                        className="text-successMain"
+                        width="20px"
+                      />
                     ) : (
                       <XCircleIcon className="text-alertMain" width="20px" />
                     )}
@@ -146,14 +167,19 @@ export default function ContentWorkflow({
 
               <div className="bg-uiMidDark lg:min-w-0 lg:flex-1 ">
                 <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
-                  <div className="relative h-full" style={{ minHeight: '36rem' }}>
+                  <div
+                    className="relative h-full"
+                    style={{ minHeight: '36rem' }}
+                  >
                     <div className="bg-white px-4 py-5 border-b border-gray-200 sm:px-6 rounded-lg">
                       {!isEdit ? (
                         <div>
                           <div className="-ml-4 -mt-2 flex items-center justify-between flex-wrap sm:flex-nowrap">
                             <div className="ml-4 mt-2">
                               <h3 className="text-lg leading-6 font-medium text-gray-900">
-                                {camelCaseToSentanceCase(contentType.name ?? '')}
+                                {camelCaseToSentanceCase(
+                                  contentType.name ?? ''
+                                )}
                               </h3>
                             </div>
                             <div className="ml-4 mt-2 flex-shrink-0">
@@ -169,7 +195,9 @@ export default function ContentWorkflow({
                           <ContentView
                             key={viewKey}
                             optionDefinitions={optionDefinitions}
-                            contentValues={getOrderedContentValues(currentContent?.contentValues)}
+                            contentValues={getOrderedContentValues(
+                              currentContent?.contentValues
+                            )}
                             selectedLanguageId={selectedLanguageId}
                             contentType={contentType}
                           />
@@ -180,7 +208,9 @@ export default function ContentWorkflow({
                             optionDefinitions={optionDefinitions}
                             content={contentView.content}
                             selectedLanguageId={selectedLanguageId}
-                            contentValues={getOrderedContentValues(currentContent?.contentValues)}
+                            contentValues={getOrderedContentValues(
+                              currentContent?.contentValues
+                            )}
                             contentType={contentType}
                             cancelEdit={() => setIsEdit(!isEdit)}
                             savedContent={savedContent}

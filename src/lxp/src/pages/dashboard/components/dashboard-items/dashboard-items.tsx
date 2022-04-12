@@ -1,4 +1,8 @@
-import { ComponentBaseProps, StackedList, StackedListItemType } from '@ecdlink/ui';
+import {
+  ComponentBaseProps,
+  StackedList,
+  StackedListItemType,
+} from '@ecdlink/ui';
 import { useHistory } from 'react-router';
 import { useAppDispatch } from '@store';
 import { Notification, notificationActions } from '@store/notifications';
@@ -9,12 +13,18 @@ interface DashboardItemsProps extends ComponentBaseProps {
   notification?: Notification;
 }
 
-export const DashboardItems: React.FC<DashboardItemsProps> = ({ listItems, notification }) => {
+export const DashboardItems: React.FC<DashboardItemsProps> = ({
+  listItems,
+  notification,
+}) => {
   const history = useHistory();
   const appDispatch = useAppDispatch();
   const onActioned = (notification: Notification) => {
     if (notification.message.routeConfig) {
-      history.push(notification.message.routeConfig.route, notification.message.routeConfig.params);
+      history.push(
+        notification.message.routeConfig.route,
+        notification.message.routeConfig.params
+      );
     }
     appDispatch(notificationActions.removeNotification(notification));
   };

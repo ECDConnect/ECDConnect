@@ -1,7 +1,15 @@
 /* This example requires Tailwind CSS v2.0+ */
 import { useLazyQuery, useQuery } from '@apollo/client';
-import { b64toBlob, getArrayRange, PermissionEnum, PractitionerDto } from '@ecdlink/core';
-import { GetAllPractitioner, MonthlyAttendanceRecordCSV } from '@ecdlink/graphql';
+import {
+  b64toBlob,
+  getArrayRange,
+  PermissionEnum,
+  PractitionerDto,
+} from '@ecdlink/core';
+import {
+  GetAllPractitioner,
+  MonthlyAttendanceRecordCSV,
+} from '@ecdlink/graphql';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { endOfMonth, format, startOfMonth } from 'date-fns';
 import { useEffect, useState } from 'react';
@@ -30,10 +38,17 @@ export default function TrackingAttendanceReport() {
   );
   const [reportDownloaded, setReportDownloaded] = useState<boolean>(false);
   const monthsInYear = getArrayRange(1, 12);
-  const years = getArrayRange(new Date().getFullYear() - 10, new Date().getFullYear());
+  const years = getArrayRange(
+    new Date().getFullYear() - 10,
+    new Date().getFullYear()
+  );
 
   useEffect(() => {
-    if (reportData && reportData.monthlyAttendanceRecordCSV && !reportDownloaded) {
+    if (
+      reportData &&
+      reportData.monthlyAttendanceRecordCSV &&
+      !reportDownloaded
+    ) {
       const b64Data = reportData.monthlyAttendanceRecordCSV.base64File;
       const contentType = reportData.monthlyAttendanceRecordCSV.fileType;
       const fileName = reportData.monthlyAttendanceRecordCSV.fileName;
@@ -132,7 +147,10 @@ export default function TrackingAttendanceReport() {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 divide-y divide-gray-200">
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="space-y-8 divide-y divide-gray-200"
+    >
       <div className="space-y-8 divide-y divide-gray-200">
         <div className="pt-8">
           <div className="grid grid-cols-2">
@@ -168,7 +186,9 @@ export default function TrackingAttendanceReport() {
               />
             </div>
             <div className="sm:col-span-3">
-              <label className="block text-sm font-medium text-gray-700">From</label>
+              <label className="block text-sm font-medium text-gray-700">
+                From
+              </label>
               <DatePicker
                 placeholderText={'Please select a date'}
                 className="mt-1 w-full border-gray-300 rounded-md text-sm focus:border-primary focus:ring-primary shadow-sm"
@@ -181,7 +201,9 @@ export default function TrackingAttendanceReport() {
               />
             </div>
             <div className="sm:col-span-3">
-              <label className="block text-sm font-medium text-gray-700">To</label>
+              <label className="block text-sm font-medium text-gray-700">
+                To
+              </label>
               <DatePicker
                 placeholderText={'Please select a date'}
                 className="mt-1 w-full border-gray-300 rounded-md text-sm focus:border-primary focus:ring-primary shadow-sm"

@@ -5,7 +5,9 @@ export type OfflineSyncSuccessProps = {
   onSubmit: () => void;
 };
 
-const OfflineSyncSuccess: React.FC<OfflineSyncSuccessProps> = ({ onSubmit }) => {
+const OfflineSyncSuccess: React.FC<OfflineSyncSuccessProps> = ({
+  onSubmit,
+}) => {
   return (
     <ActionModal
       icon={'CheckCircleIcon'}

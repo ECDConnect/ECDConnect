@@ -91,12 +91,28 @@ const StaticDataRoutes: React.FC = () => {
       <Route path={`/data/languages`} component={LanguageView}></Route>
       <Route path={`/data/provinces`} component={ProvinceView}></Route>
       <Route path={`/data/grants`} component={GrantView}></Route>
-      <Route path={`/data/education-levels`} component={EducationLevelView}></Route>
-      <Route path={`/data/attending-reasons`} component={AttendingReasonsView}></Route>
+      <Route
+        path={`/data/education-levels`}
+        component={EducationLevelView}
+      ></Route>
+      <Route
+        path={`/data/attending-reasons`}
+        component={AttendingReasonsView}
+      ></Route>
       <Route path={`/data/relations`} component={RelationsView}></Route>
-      <Route path={`/data/reasons-for-leaving`} component={ReasonForLeavingView}></Route>
+      <Route
+        path={`/data/reasons-for-leaving`}
+        component={ReasonForLeavingView}
+      ></Route>
     </Switch>
   );
 };
 
-export { PublicRoutes, AuthRoutes, MainRoutes, SettingsRoutes, StaticDataRoutes, UserRoutes };
+export {
+  PublicRoutes,
+  AuthRoutes,
+  MainRoutes,
+  SettingsRoutes,
+  StaticDataRoutes,
+  UserRoutes,
+};

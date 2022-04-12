@@ -32,8 +32,17 @@ export const ContactPerson: React.FC<ContactPersonProps> = ({
     <div className={classNames(className, styles.wrapper)}>
       {displayHeader && (
         <>
-          <Typography color={'primary'} type={'h1'} text={`${name} ${surname}`} />
-          <Typography color={'black'} type={'body'} weight={'bolder'} text={type} />
+          <Typography
+            color={'primary'}
+            type={'h1'}
+            text={`${name} ${surname}`}
+          />
+          <Typography
+            color={'black'}
+            type={'body'}
+            weight={'bolder'}
+            text={type}
+          />
         </>
       )}
 
@@ -43,7 +52,12 @@ export const ContactPerson: React.FC<ContactPersonProps> = ({
         type={'body'}
         text={`${name}'s phone number:`}
       />
-      <Typography color={'black'} type={'body'} weight={'bolder'} text={contactNumber} />
+      <Typography
+        color={'black'}
+        type={'body'}
+        weight={'bolder'}
+        text={contactNumber}
+      />
       <div className={styles.actionsWrapper}>
         <Button
           color={'primary'}
@@ -52,10 +66,23 @@ export const ContactPerson: React.FC<ContactPersonProps> = ({
           size={'small'}
           onClick={whatsapp}
         >
-          <img src={getLogo(LogoSvgs.whatsapp)} alt="whatsapp" className={styles.buttonIconStyle} />
-          <Typography color={'primary'} type={'small'} text={`WhatsApp ${name}`} />
+          <img
+            src={getLogo(LogoSvgs.whatsapp)}
+            alt="whatsapp"
+            className={styles.buttonIconStyle}
+          />
+          <Typography
+            color={'primary'}
+            type={'small'}
+            text={`WhatsApp ${name}`}
+          />
         </Button>
-        <Button color={'primary'} type={'outlined'} size={'small'} onClick={call}>
+        <Button
+          color={'primary'}
+          type={'outlined'}
+          size={'small'}
+          onClick={call}
+        >
           {renderIcon('PhoneIcon', styles.buttonIconStyle)}
           <Typography color={'primary'} type={'small'} text={`Call ${name}`} />
         </Button>

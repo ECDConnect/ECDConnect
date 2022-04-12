@@ -1,5 +1,14 @@
-import { useDialog, DailyProgrammeDto, ProgrammeRoutineItemDto } from '@ecdlink/core/';
-import { ActionModal, BannerWrapper, Button, DialogPosition } from '@ecdlink/ui/';
+import {
+  useDialog,
+  DailyProgrammeDto,
+  ProgrammeRoutineItemDto,
+} from '@ecdlink/core/';
+import {
+  ActionModal,
+  BannerWrapper,
+  Button,
+  DialogPosition,
+} from '@ecdlink/ui/';
 import { useHistory, useLocation } from 'react-router';
 import ActivitySearch from '../components/activities/activity/activity-search/activity-search';
 import { ProgrammePlanningRoutineListItem } from '../components/programme-planning-routine-list-item/programme-planning-routine-list-item';
@@ -45,14 +54,21 @@ export const ProgrammeRoutine: React.FC = () => {
   const dialog = useDialog();
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
-  const programme = useSelector(programmeSelectors.getProgrammeById(state.programmeId));
-  const prorgammeRoutine = useSelector(programmeRoutineSelectors.getProgrammeRoutineById(1));
+  const programme = useSelector(
+    programmeSelectors.getProgrammeById(state.programmeId)
+  );
+  const prorgammeRoutine = useSelector(
+    programmeRoutineSelectors.getProgrammeRoutineById(1)
+  );
   const initialWeekIndex = state?.weekIndex;
 
   const [activeDayIndex, setActiveDayIndex] = useState<number>(0);
-  const [activeWeekIndex, setActiveWeekIndex] = useState<number>(initialWeekIndex || 0);
+  const [activeWeekIndex, setActiveWeekIndex] = useState<number>(
+    initialWeekIndex || 0
+  );
   const [currentDay, setCurrentDay] = useState<DailyProgrammeDto>();
-  const [displayDayCompletedCard, setDisplayDayCompletedCard] = useState<boolean>();
+  const [displayDayCompletedCard, setDisplayDayCompletedCard] =
+    useState<boolean>();
   const programmeWeeks = getProgrammeWeeks(programme);
   const [programmeWeekBreakdown, setProgrammeWeekBreakdown] = useState(
     getWeekBreakDown(programmeWeeks[activeWeekIndex], holidays, programme)
@@ -61,14 +77,17 @@ export const ProgrammeRoutine: React.FC = () => {
   const activeBreakdown = programmeWeekBreakdown[activeDayIndex];
 
   const isDayCompleted = isProgrammeRoutineDayComplete(currentDay);
-  const isWeekComplete = programmeWeeks[activeWeekIndex].totalIncompleteDays === 0;
+  const isWeekComplete =
+    programmeWeeks[activeWeekIndex].totalIncompleteDays === 0;
   const isProgrammeCompleted =
     programmeWeeks.filter((week) => week.totalIncompleteDays === 0).length ===
     programmeWeeks.length;
 
-  const { getCurrentProgrammeRecommendedActivities } = useProgrammePlanningRecommendations();
+  const { getCurrentProgrammeRecommendedActivities } =
+    useProgrammePlanningRecommendations();
 
-  const recommendedActivities = getCurrentProgrammeRecommendedActivities(programme);
+  const recommendedActivities =
+    getCurrentProgrammeRecommendedActivities(programme);
   const sortedRoutineItems = prorgammeRoutine?.routineItems
     ? [...prorgammeRoutine?.routineItems].sort((a, b) =>
         (a.sequence || 1) < (b.sequence || 0) ? -1 : 1
@@ -90,21 +109,31 @@ export const ProgrammeRoutine: React.FC = () => {
   }, [activeBreakdown]);
 
   useEffect(() => {
-    const newWeekBreakdown = getWeekBreakDown(programmeWeeks[activeWeekIndex], holidays, programme);
+    const newWeekBreakdown = getWeekBreakDown(
+      programmeWeeks[activeWeekIndex],
+      holidays,
+      programme
+    );
     setProgrammeWeekBreakdown(newWeekBreakdown);
 
     let indexOfFirstValidDay = newWeekBreakdown.findIndex(
       (day) => !day.isCompleted && !day.isDisabled && !day.isHoliday
     );
     if (indexOfFirstValidDay < 0) {
-      indexOfFirstValidDay = newWeekBreakdown.findIndex((day) => day.isCompleted);
+      indexOfFirstValidDay = newWeekBreakdown.findIndex(
+        (day) => day.isCompleted
+      );
     }
     setActiveDayIndex(indexOfFirstValidDay);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeWeekIndex]);
 
   useEffect(() => {
-    const newWeekBreakdown = getWeekBreakDown(programmeWeeks[activeWeekIndex], holidays, programme);
+    const newWeekBreakdown = getWeekBreakDown(
+      programmeWeeks[activeWeekIndex],
+      holidays,
+      programme
+    );
     setProgrammeWeekBreakdown(newWeekBreakdown);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentDay]);
@@ -152,7 +181,12 @@ export const ProgrammeRoutine: React.FC = () => {
   };
 
   const editNextOutstandingActivity = (day: DailyProgrammeDto) => {
-    const [smallGroupActivityId, largeGroupActivityId, storyBookId, storyActivityId] = [
+    const [
+      smallGroupActivityId,
+      largeGroupActivityId,
+      storyBookId,
+      storyActivityId,
+    ] = [
       day.smallGroupActivityId,
       day.largeGroupActivityId,
       day.storyBookId,
@@ -234,7 +268,9 @@ export const ProgrammeRoutine: React.FC = () => {
   const onProgrammeClick = (routineItem: ProgrammeRoutineItemDto) => {
     const routineItemName = routineItem?.name;
 
-    const currentDayDate = currentDay?.dayDate ? new Date(currentDay?.dayDate) : new Date();
+    const currentDayDate = currentDay?.dayDate
+      ? new Date(currentDay?.dayDate)
+      : new Date();
 
     const currentDayIsInPast = isDayInThePast(currentDayDate, new Date());
 
@@ -332,7 +368,10 @@ export const ProgrammeRoutine: React.FC = () => {
     });
   };
 
-  const onEditMessageBoard = (routineItem: ProgrammeRoutineItemDto, canEdit: boolean) => {
+  const onEditMessageBoard = (
+    routineItem: ProgrammeRoutineItemDto,
+    canEdit: boolean
+  ) => {
     dialog({
       position: DialogPosition.Full,
       render: (onSubmit, onClose) => {
@@ -435,7 +474,10 @@ export const ProgrammeRoutine: React.FC = () => {
 
     const dayDate = new Date(day?.dayDate);
 
-    const subTitleText = dayDate.toLocaleString('en-ZA', DateFormats.dayFullMonthYear);
+    const subTitleText = dayDate.toLocaleString(
+      'en-ZA',
+      DateFormats.dayFullMonthYear
+    );
     return isFriday(dayDate) ? `Mahala ${subTitleText}` : subTitleText;
   };
 
@@ -465,56 +507,74 @@ export const ProgrammeRoutine: React.FC = () => {
               headerText={isDayCompleted ? 'Your routine' : 'Plan your routine'}
               subHeaderText={getCurrentDateSubTitleText(currentDay)}
               themeName={programme?.name}
-              plannedWeeks={programmeWeeks.filter((week) => week.totalIncompleteDays === 0).length}
+              plannedWeeks={
+                programmeWeeks.filter((week) => week.totalIncompleteDays === 0)
+                  .length
+              }
               totalWeeks={programmeWeeks.length}
             />
           )}
 
-          {isDayCompleted && !isProgrammeCompleted && !isWeekComplete && displayDayCompletedCard && (
-            <SuccessCard
-              className={'mx-4 mt-2'}
-              icon={'SparklesIcon'}
-              text={'You have planned your day.'}
-              subText={'You can see your daily routine and add a note to the message board.'}
-              onClose={() => {
-                setDisplayDayCompletedCard(false);
-              }}
-            />
-          )}
-
-          {isDayCompleted && !isProgrammeCompleted && isWeekComplete && displayDayCompletedCard && (
-            <SuccessCard
-              className={'mx-4 mt-2'}
-              icon={'SparklesIcon'}
-              text={`All your days are planned for week ${activeWeekIndex + 1}`}
-              subText={'You can see your daily routine and add a note to the message board.'}
-              onClose={() => {
-                setDisplayDayCompletedCard(false);
-              }}
-            />
-          )}
-
-          {isDayCompleted && isProgrammeCompleted && isWeekComplete && displayDayCompletedCard && (
-            <div className={'px-4 mt-2'}>
+          {isDayCompleted &&
+            !isProgrammeCompleted &&
+            !isWeekComplete &&
+            displayDayCompletedCard && (
               <SuccessCard
+                className={'mx-4 mt-2'}
                 icon={'SparklesIcon'}
-                text={`Great job, your whole “${programme?.name}” programme has been planned!`}
-                subText={'You can now view your programme summary'}
+                text={'You have planned your day.'}
+                subText={
+                  'You can see your daily routine and add a note to the message board.'
+                }
                 onClose={() => {
                   setDisplayDayCompletedCard(false);
                 }}
               />
-              <Button
-                className={'w-full mt-4'}
-                type={'filled'}
-                color={'primary'}
-                onClick={handleSummaryView}
-                icon={'CalendarIcon'}
-                text={'See programme summary'}
-                textColor={'white'}
+            )}
+
+          {isDayCompleted &&
+            !isProgrammeCompleted &&
+            isWeekComplete &&
+            displayDayCompletedCard && (
+              <SuccessCard
+                className={'mx-4 mt-2'}
+                icon={'SparklesIcon'}
+                text={`All your days are planned for week ${
+                  activeWeekIndex + 1
+                }`}
+                subText={
+                  'You can see your daily routine and add a note to the message board.'
+                }
+                onClose={() => {
+                  setDisplayDayCompletedCard(false);
+                }}
               />
-            </div>
-          )}
+            )}
+
+          {isDayCompleted &&
+            isProgrammeCompleted &&
+            isWeekComplete &&
+            displayDayCompletedCard && (
+              <div className={'px-4 mt-2'}>
+                <SuccessCard
+                  icon={'SparklesIcon'}
+                  text={`Great job, your whole “${programme?.name}” programme has been planned!`}
+                  subText={'You can now view your programme summary'}
+                  onClose={() => {
+                    setDisplayDayCompletedCard(false);
+                  }}
+                />
+                <Button
+                  className={'w-full mt-4'}
+                  type={'filled'}
+                  color={'primary'}
+                  onClick={handleSummaryView}
+                  icon={'CalendarIcon'}
+                  text={'See programme summary'}
+                  textColor={'white'}
+                />
+              </div>
+            )}
 
           <div className={'pt-4'}>
             {isDayCompleted &&

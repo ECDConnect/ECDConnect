@@ -74,7 +74,8 @@ export const mapChildDto = (
     return {
       ...child,
       languageId:
-        childExtraInformationForm?.homeLanguages && childExtraInformationForm.homeLanguages[0]
+        childExtraInformationForm?.homeLanguages &&
+        childExtraInformationForm.homeLanguages[0]
           ? childExtraInformationForm.homeLanguages[0]
           : undefined,
       allergies: healthInformationForm?.allergies ?? '',
@@ -89,7 +90,8 @@ export const mapChildDto = (
     userId: userId,
     caregiverId: '',
     languageId:
-      childExtraInformationForm?.homeLanguages && childExtraInformationForm.homeLanguages[0]
+      childExtraInformationForm?.homeLanguages &&
+      childExtraInformationForm.homeLanguages[0]
         ? childExtraInformationForm.homeLanguages[0]
         : undefined,
     allergies: healthInformationForm?.allergies ?? '',
@@ -204,9 +206,11 @@ export const mapCaregiverDto = (
       emergencyContactPhoneNumber: childEmergencyContactForm?.phoneNumber ?? '',
       additionalFirstName: childEmergencyContactForm?.custodianFirstname ?? '',
       additionalSurname: childEmergencyContactForm?.custodianSurname ?? '',
-      additionalPhoneNumber: childEmergencyContactForm?.custodianPhoneNumber ?? '',
+      additionalPhoneNumber:
+        childEmergencyContactForm?.custodianPhoneNumber ?? '',
       joinReferencePanel: referencePanelForm?.interestedInJoiningPanel ?? false,
-      contribution: childCareGiverContributionForm?.commitedToContributing ?? false,
+      contribution:
+        childCareGiverContributionForm?.commitedToContributing ?? false,
     };
   }
 
@@ -229,9 +233,11 @@ export const mapCaregiverDto = (
     emergencyContactPhoneNumber: childEmergencyContactForm?.phoneNumber ?? '',
     additionalFirstName: childEmergencyContactForm?.custodianFirstname ?? '',
     additionalSurname: childEmergencyContactForm?.custodianSurname ?? '',
-    additionalPhoneNumber: childEmergencyContactForm?.custodianPhoneNumber ?? '',
+    additionalPhoneNumber:
+      childEmergencyContactForm?.custodianPhoneNumber ?? '',
     joinReferencePanel: referencePanelForm?.interestedInJoiningPanel ?? false,
-    contribution: childCareGiverContributionForm?.commitedToContributing ?? false,
+    contribution:
+      childCareGiverContributionForm?.commitedToContributing ?? false,
   };
 };
 
@@ -257,9 +263,11 @@ export const mapAddChildCaregiverTokenModelInput = (
     emergencyContactPhoneNumber: childEmergencyContactForm?.phoneNumber ?? '',
     additionalFirstName: childEmergencyContactForm?.custodianFirstname ?? '',
     additionalSurname: childEmergencyContactForm?.custodianSurname ?? '',
-    additionalPhoneNumber: childEmergencyContactForm?.custodianPhoneNumber ?? '',
+    additionalPhoneNumber:
+      childEmergencyContactForm?.custodianPhoneNumber ?? '',
     joinReferencePanel: referencePanelForm?.interestedInJoiningPanel ?? false,
-    contribution: childCareGiverContributionForm?.commitedToContributing ?? false,
+    contribution:
+      childCareGiverContributionForm?.commitedToContributing ?? false,
   };
 };
 
@@ -304,7 +312,8 @@ export const mapAddChildTokenModelInput = (
     userId: userId,
     raceId: childExtraInformationForm?.race,
     languageId:
-      childExtraInformationForm?.homeLanguages && childExtraInformationForm.homeLanguages[0]
+      childExtraInformationForm?.homeLanguages &&
+      childExtraInformationForm.homeLanguages[0]
         ? childExtraInformationForm.homeLanguages[0]
         : undefined,
     allergies: healthInformationForm?.allergies ?? '',

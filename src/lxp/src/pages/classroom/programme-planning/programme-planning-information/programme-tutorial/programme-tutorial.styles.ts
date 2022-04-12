@@ -1,4 +1,5 @@
-export const bannerContentWrapper = 'flex flex-col justify-between items-stretch';
+export const bannerContentWrapper =
+  'flex flex-col justify-between items-stretch';
 
 export const stackedList = 'bg-white';
 

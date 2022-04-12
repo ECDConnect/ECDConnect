@@ -7,10 +7,15 @@ export const buttonTypeWrapper =
 export const chipTypeWrapper = 'relative z-0 inline-flex flex-wrap';
 
 export const chip = (disabled?: boolean) => {
-  return `inline-flex items-center px-4 py-2 rounded-full text-sm font-medium mr-2 mb-4 border cursor-pointer ${disabled ? 'bg-uiLight opacity-80' : ''}`;
+  return `inline-flex items-center px-4 py-2 rounded-full text-sm font-medium mr-2 mb-4 border cursor-pointer ${
+    disabled ? 'bg-uiLight opacity-80' : ''
+  }`;
 };
 
-const sharedButtonStyles = (disabled?: boolean) => `px-4 py-2 border bg-white text-sm font-medium items-center relative text-center ${disabled ? 'bg-uiLight opacity-80' : ''}`;
+const sharedButtonStyles = (disabled?: boolean) =>
+  `px-4 py-2 border bg-white text-sm font-medium items-center relative text-center ${
+    disabled ? 'bg-uiLight opacity-80' : ''
+  }`;
 
 export const firstButton = `rounded-l-md w-full `;
 export const middleButton = `-ml-px w-full`;
@@ -38,9 +43,7 @@ export const getOptionStyle = (
   }
 };
 
-export const getNotSelectedStyle = (
-  type: ButtonGroupTypes
-) => {
+export const getNotSelectedStyle = (type: ButtonGroupTypes) => {
   switch (type) {
     case ButtonGroupTypes.Chip:
       return notSelectedChip;
@@ -50,7 +53,11 @@ export const getNotSelectedStyle = (
   }
 };
 
-const getButtonStyleByIndex = (index: number, maxIndex: number, disabled?: boolean) => {
+const getButtonStyleByIndex = (
+  index: number,
+  maxIndex: number,
+  disabled?: boolean
+) => {
   const sharedStyles = sharedButtonStyles(disabled);
   if (index === 0) {
     return classNames(sharedStyles, firstButton);

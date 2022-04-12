@@ -22,11 +22,21 @@ export const ActionListItem: React.FC<ActionListItemProps> = ({ item }) => {
         <div className={stackedListStyles.textRowsWrapper}>
           <div className={classNames('pl-4', styles.actionParagraphWrapper)}>
             <>
-              <p className={!item.switchTextStyles ? styles.actionTitle : styles.actionSubTitle}>
+              <p
+                className={
+                  !item.switchTextStyles
+                    ? styles.actionTitle
+                    : styles.actionSubTitle
+                }
+              >
                 {item.title}
               </p>
               <p
-                className={item.switchTextStyles ? styles.actionTitleInput : styles.actionSubTitle}
+                className={
+                  item.switchTextStyles
+                    ? styles.actionTitleInput
+                    : styles.actionSubTitle
+                }
               >
                 <span className="truncate">{item.subTitle}</span>
               </p>

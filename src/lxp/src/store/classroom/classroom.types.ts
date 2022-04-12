@@ -1,4 +1,9 @@
-import { ClassProgrammeDto, ClassroomDto, ClassroomGroupDto, LearnerDto } from '@ecdlink/core';
+import {
+  ClassProgrammeDto,
+  ClassroomDto,
+  ClassroomGroupDto,
+  LearnerDto,
+} from '@ecdlink/core';
 
 export type ClassroomState = {
   classroom: ClassroomDto | undefined;

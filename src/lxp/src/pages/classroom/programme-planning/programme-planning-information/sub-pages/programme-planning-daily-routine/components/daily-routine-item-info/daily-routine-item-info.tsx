@@ -6,7 +6,9 @@ import {
   DailyRoutineItemInfoProps,
 } from './daily-routine-item-info.types';
 
-export const DailyRoutineItemInfo: React.FC<DailyRoutineItemInfoProps> = ({ routineItem }) => {
+export const DailyRoutineItemInfo: React.FC<DailyRoutineItemInfoProps> = ({
+  routineItem,
+}) => {
   return (
     <div className={'w-full flex flex-col mt-4'}>
       <div
@@ -36,19 +38,24 @@ export const DailyRoutineItemInfo: React.FC<DailyRoutineItemInfoProps> = ({ rout
   );
 };
 
-export const DailyRoutineItemInfoHeader: React.FC<DailyRoutineItemInfoHeaderProps> = ({
-  routineItem,
-}) => {
+export const DailyRoutineItemInfoHeader: React.FC<
+  DailyRoutineItemInfoHeaderProps
+> = ({ routineItem }) => {
   return (
     <div className={'flex flex-row items-center justify-start mt-2'}>
-      <RoundIcon hexBackgroundColor={routineItem.iconBackgroundColor} imageUrl={routineItem.icon} />
+      <RoundIcon
+        hexBackgroundColor={routineItem.iconBackgroundColor}
+        imageUrl={routineItem.icon}
+      />
       <TitleStatusChip
         className={'ml-4'}
         timeSpan={routineItem.timeSpan}
         titleTypographyProps={{
           type: 'unspecified',
           fontSize: '16',
-          text: `${routineItem.sequence ? `${routineItem.sequence}.` : ''} ${routineItem.name}`,
+          text: `${routineItem.sequence ? `${routineItem.sequence}.` : ''} ${
+            routineItem.name
+          }`,
         }}
       />
     </div>

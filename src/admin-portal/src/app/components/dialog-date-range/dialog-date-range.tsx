@@ -8,7 +8,11 @@ export type DateRangeModalProps = {
   onCancel: () => void;
 };
 
-const DateRangeModal: React.FC<DateRangeModalProps> = ({ title, onSubmit, onCancel }) => {
+const DateRangeModal: React.FC<DateRangeModalProps> = ({
+  title,
+  onSubmit,
+  onCancel,
+}) => {
   const [startMonth, setStartMonth] = useState<Date>();
   const [endMonth, setEndMonth] = useState<Date>();
 
@@ -16,14 +20,21 @@ const DateRangeModal: React.FC<DateRangeModalProps> = ({ title, onSubmit, onCanc
     <div className="px-4 py-4 bg-white overflow-hidden">
       {title?.length > 0 && (
         <div data-testid="title-wrapper">
-          <Typography type={'h2'} weight="bold" text={title} color={'textDark'} />
+          <Typography
+            type={'h2'}
+            weight="bold"
+            text={title}
+            color={'textDark'}
+          />
         </div>
       )}
 
       <div className="mt-8">
         <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
           <div className="sm:col-span-6">
-            <label className="block text-sm font-medium text-gray-700">From</label>
+            <label className="block text-sm font-medium text-gray-700">
+              From
+            </label>
             <DatePicker
               placeholderText={'Please select a date'}
               className="z-50 mt-1 w-full border-gray-300 rounded-md text-sm focus:border-primary focus:ring-primary shadow-sm"
@@ -36,7 +47,9 @@ const DateRangeModal: React.FC<DateRangeModalProps> = ({ title, onSubmit, onCanc
             />
           </div>
           <div className="sm:col-span-6">
-            <label className="block text-sm font-medium text-gray-700">To</label>
+            <label className="block text-sm font-medium text-gray-700">
+              To
+            </label>
             <DatePicker
               placeholderText={'Please select a date'}
               className="z-50 mt-1 w-full border-gray-300 rounded-md text-sm focus:border-primary focus:ring-primary shadow-sm"
@@ -59,14 +72,27 @@ const DateRangeModal: React.FC<DateRangeModalProps> = ({ title, onSubmit, onCanc
           >
             <div className="flex flex-row items-center">
               {renderIcon('CheckCircleIcon', `text-white h-4 w-4 mr-2`)}
-              <Typography type="body" color={'white'} text={'Filter'}></Typography>
+              <Typography
+                type="body"
+                color={'white'}
+                text={'Filter'}
+              ></Typography>
             </div>
           </Button>
 
-          <Button className={`w-full ml-2`} type={'filled'} color={'primary'} onClick={onCancel}>
+          <Button
+            className={`w-full ml-2`}
+            type={'filled'}
+            color={'primary'}
+            onClick={onCancel}
+          >
             <div className="flex flex-row items-center">
               {renderIcon('XCircleIcon', `text-white h-4 w-4 mr-2`)}
-              <Typography type="body" color={'white'} text={'Cancel'}></Typography>
+              <Typography
+                type="body"
+                color={'white'}
+                text={'Cancel'}
+              ></Typography>
             </div>
           </Button>
         </div>

@@ -22,7 +22,9 @@ export const getSettings = createAsyncThunk<
         let settings: SettingTypeDto | undefined;
 
         if (userAuth?.auth_token) {
-          settings = await new SettingsService(userAuth?.auth_token).getSettingType();
+          settings = await new SettingsService(
+            userAuth?.auth_token
+          ).getSettingType();
         } else {
           return rejectWithValue('no access token, profile check required');
         }

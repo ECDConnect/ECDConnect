@@ -23,7 +23,11 @@ export const childInformationFormSchema = Yup.object().shape({
   otherReason: Yup.string(),
   dobValid: Yup.bool().isTrue().required(),
   childIdField: Yup.lazy((value: string) => {
-    if (!!value) return Yup.string().matches(SA_ID_REGEX, 'Please enter a valid ID number');
+    if (!!value)
+      return Yup.string().matches(
+        SA_ID_REGEX,
+        'Please enter a valid ID number'
+      );
 
     return Yup.string();
   }),
@@ -35,7 +39,11 @@ export const childInformationFormSchemaCaregiver = Yup.object().shape({
   otherReason: Yup.string(),
   dobValid: Yup.bool().isTrue().required(),
   childIdField: Yup.lazy((value: string) => {
-    if (!!value) return Yup.string().matches(SA_ID_REGEX, 'Please enter a valid ID number');
+    if (!!value)
+      return Yup.string().matches(
+        SA_ID_REGEX,
+        'Please enter a valid ID number'
+      );
 
     return Yup.string();
   }),
@@ -65,7 +73,9 @@ export const yearsBetweenList = [
 
 export const invalidDateMessage = 'Please enter a valid date of birth';
 
-export const invalidDateList = ["Date of birth cannot be today's date or a future date"];
+export const invalidDateList = [
+  "Date of birth cannot be today's date or a future date",
+];
 
 export const olderMessage = 'Child is older than 10';
 

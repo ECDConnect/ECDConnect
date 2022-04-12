@@ -22,14 +22,18 @@ const documentSlice = createSlice({
     deleteDocument: (state, action: PayloadAction<Document>) => {
       if (!state.documents) return;
 
-      const index = state.documents.findIndex((c) => c.id === action.payload.id);
+      const index = state.documents.findIndex(
+        (c) => c.id === action.payload.id
+      );
 
       if (index > -1) state.documents?.splice(index, 1);
     },
     updateDocument: (state, action: PayloadAction<Document>) => {
       if (!state.documents) return;
 
-      const index = state.documents.findIndex((c) => c.id === action.payload.id);
+      const index = state.documents.findIndex(
+        (c) => c.id === action.payload.id
+      );
 
       if (index < 0) return;
 

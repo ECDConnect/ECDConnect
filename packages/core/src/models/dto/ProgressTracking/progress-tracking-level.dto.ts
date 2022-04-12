@@ -1,4 +1,3 @@
-
 export interface ProgressTrackingLevelDto {
   id: number;
   imageUrl: string;

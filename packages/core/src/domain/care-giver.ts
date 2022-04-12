@@ -1,10 +1,9 @@
-
 import { GrantDto } from '../models/dto/StaticData/grant.dto';
 import { EntityCacheBase } from './entity-cache-base';
 import { SiteAddress } from './site-address';
 
 export interface Caregiver extends EntityCacheBase {
-  id?: number;  
+  id?: number;
   phoneNumber: string;
   idNumber: string;
   firstName: string;

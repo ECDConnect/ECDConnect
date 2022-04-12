@@ -3,7 +3,7 @@ import { RaceDto } from '../models/dto/StaticData/race.dto';
 
 export const initialRaceValues: RaceDto = {
   description: '',
-  enumId: ''
+  enumId: '',
 };
 
 export const raceSchema = Yup.object().shape({

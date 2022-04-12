@@ -11,16 +11,23 @@ import { setStorageItem } from '@utils/common/local-storage.utils';
 import { AttendanceReportProps } from './attendance-report.types';
 import { AttendanceMonthlyReport } from './components/attendance-monthly-report/attendance-monthly-report';
 
-export const AttendanceReport: React.FC<AttendanceReportProps> = ({ classroom }) => {
+export const AttendanceReport: React.FC<AttendanceReportProps> = ({
+  classroom,
+}) => {
   const isOnline = true;
-  const [successMessageVisible, setSuccessMessageVisible] = useState<boolean>(true);
-  const [displaySmartStartMessage, setDisplaySmartStartMessage] = useState<boolean>(true);
+  const [successMessageVisible, setSuccessMessageVisible] =
+    useState<boolean>(true);
+  const [displaySmartStartMessage, setDisplaySmartStartMessage] =
+    useState<boolean>(true);
 
   const authUser = useSelector(authSelectors.getAuthUser);
 
   const closeMessage = () => {
     setDisplaySmartStartMessage(false);
-    setStorageItem(true, LocalStorageKeys.hasClosedAttendanceSmartStartPointsMessage);
+    setStorageItem(
+      true,
+      LocalStorageKeys.hasClosedAttendanceSmartStartPointsMessage
+    );
   };
 
   const [attendanceData, setAttendanceData] = useState<AttendanceSummary[]>([]);
@@ -72,7 +79,9 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({ classroom })
           message={'Your attendance registers are up to date this week!'}
           icon={'SparklesIcon'}
         />
-        {isOnline && <AttendanceMonthlyReport attendanceSummary={attendanceData} />}
+        {isOnline && (
+          <AttendanceMonthlyReport attendanceSummary={attendanceData} />
+        )}
         {!isOnline && <OfflineCard />}
       </div>
       <MessageModal

@@ -1,4 +1,9 @@
-import { ClassProgrammeDto, ClassroomDto, ClassroomGroupDto, LearnerDto } from '@ecdlink/core';
+import {
+  ClassProgrammeDto,
+  ClassroomDto,
+  ClassroomGroupDto,
+  LearnerDto,
+} from '@ecdlink/core';
 import {
   ClassProgrammeInput,
   ClassroomGroupInput,
@@ -33,7 +38,9 @@ export const getClassroom = createAsyncThunk<
         let classrooms: ClassroomDto[] | undefined;
 
         if (userAuth?.auth_token) {
-          classrooms = await new ClassroomService(userAuth?.auth_token).getClassrooms();
+          classrooms = await new ClassroomService(
+            userAuth?.auth_token
+          ).getClassrooms();
         } else {
           return rejectWithValue('no access token, profile check required');
         }
@@ -71,7 +78,9 @@ export const getClassroomGroups = createAsyncThunk<
         let groups: ClassroomGroupDto[] | undefined;
 
         if (userAuth?.auth_token) {
-          groups = await new ClassroomGroupService(userAuth?.auth_token).getClassroomGroups();
+          groups = await new ClassroomGroupService(
+            userAuth?.auth_token
+          ).getClassroomGroups();
         } else {
           return rejectWithValue('no access token, profile check required');
         }
@@ -200,10 +209,9 @@ export const upsertClassroom = createAsyncThunk<
           IsActive: classroom.isActive === false ? false : true,
         };
 
-        const result = await new ClassroomService(userAuth?.auth_token).updateClassroom(
-          classroom.id ?? '',
-          input
-        );
+        const result = await new ClassroomService(
+          userAuth?.auth_token
+        ).updateClassroom(classroom.id ?? '', input);
 
         return [result];
       }
@@ -241,10 +249,9 @@ export const upsertClassroomGroups = createAsyncThunk<
             IsActive: x.isActive === false ? false : true,
           };
 
-          return await new ClassroomGroupService(userAuth?.auth_token).updateClassroomGroup(
-            x.id ?? '',
-            input
-          );
+          return await new ClassroomGroupService(
+            userAuth?.auth_token
+          ).updateClassroomGroup(x.id ?? '', input);
         });
       }
       return Promise.all(promises);
@@ -319,8 +326,12 @@ export const upsertClassroomGroupLearners = createAsyncThunk<
       if (userAuth?.auth_token && classroomGroupLearners) {
         promises = classroomGroupLearners
           .filter((classroomGroupLearner) => {
-            const child = children?.find((x) => x.userId === classroomGroupLearner.userId);
-            return child && child.workflowStatusId !== workflowStatus?.id ? true : false;
+            const child = children?.find(
+              (x) => x.userId === classroomGroupLearner.userId
+            );
+            return child && child.workflowStatusId !== workflowStatus?.id
+              ? true
+              : false;
           })
           .map(async (x) => {
             const input: LearnerInput = {
@@ -333,10 +344,9 @@ export const upsertClassroomGroupLearners = createAsyncThunk<
               IsActive: x.isActive === false ? false : true,
             };
 
-            return await new ClassroomGroupLearnerService(userAuth?.auth_token).updateLearner(
-              x.id && x.id.length > 0 ? x.id : newGuid(),
-              input
-            );
+            return await new ClassroomGroupLearnerService(
+              userAuth?.auth_token
+            ).updateLearner(x.id && x.id.length > 0 ? x.id : newGuid(), input);
           });
       }
       return Promise.all(promises);
@@ -364,7 +374,9 @@ export const updateLearner = createAsyncThunk<
     if (userAuth?.auth_token) {
       const input = mapLearnerInput(learner);
 
-      await new ClassroomGroupLearnerService(userAuth?.auth_token).updateLearner(id, input);
+      await new ClassroomGroupLearnerService(
+        userAuth?.auth_token
+      ).updateLearner(id, input);
 
       return learner;
     }
@@ -391,7 +403,9 @@ export const createLearner = createAsyncThunk<
     if (userAuth?.auth_token) {
       const input = mapLearnerInput(learner);
 
-      await new ClassroomGroupLearnerService(userAuth?.auth_token).createLearner(input);
+      await new ClassroomGroupLearnerService(
+        userAuth?.auth_token
+      ).createLearner(input);
 
       return learner;
     }

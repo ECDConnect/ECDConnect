@@ -19,7 +19,10 @@ export type StackedListType =
   | 'UserAlertList'
   | 'AlertList';
 
-export type StackedListItemType = ActionListDataItem | MenuListDataItem | TitleListDataItem;
+export type StackedListItemType =
+  | ActionListDataItem
+  | MenuListDataItem
+  | TitleListDataItem;
 
 export interface StackedListProps<T> extends ComponentBaseProps {
   type: string;
@@ -33,7 +36,11 @@ export const StackedList = <T extends {}>({
   className,
   onScroll,
 }: StackedListProps<T>) => {
-  const getItemComponent = (type: string, item: StackedListItemType, index: number) => {
+  const getItemComponent = (
+    type: string,
+    item: StackedListItemType,
+    index: number
+  ) => {
     switch (type) {
       case 'ActionList':
         return (

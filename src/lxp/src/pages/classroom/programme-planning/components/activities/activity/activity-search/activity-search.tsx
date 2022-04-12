@@ -19,7 +19,10 @@ import SeachHeader, {
   SearchHeaderAlternativeRenderItem,
 } from '../../../../../../../components/search-header/search-header';
 import { programmeThemeSelectors } from '@store/content/programme-theme';
-import { activitySelectors, activityThunkActions } from '@store/content/activity';
+import {
+  activitySelectors,
+  activityThunkActions,
+} from '@store/content/activity';
 import { ActivityDto, ProgressTrackingSubCategoryDto } from '@ecdlink/core/';
 import { ActivitySearchProps } from './activity-search.types';
 import {
@@ -53,17 +56,24 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
   const { isOnline } = useOnlineStatus();
   const languages = useSelector(staticDataSelectors.getLanguages);
   const allThemes = useSelector(programmeThemeSelectors.getProgrammeThemes);
-  const subCategories = useSelector(progressTrackingSelectors.getProgressTrackingSubCategories);
+  const subCategories = useSelector(
+    progressTrackingSelectors.getProgressTrackingSubCategories
+  );
 
-  const allActivities = useSelector(activitySelectors.getActivitiesByType(title));
+  const allActivities = useSelector(
+    activitySelectors.getActivitiesByType(title)
+  );
 
-  const programme = useSelector(programmeSelectors.getProgrammeById(programmeId));
+  const programme = useSelector(
+    programmeSelectors.getProgrammeById(programmeId)
+  );
 
   const [activities, setActivities] = useState<ActivityDto[]>(allActivities);
-  const [filteredActivities, setFilteredActivities] = useState<ActivityDto[]>(allActivities);
-  const [selectedActivityId, setSelectedActivityId] = useState<number | undefined>(
-    preSelectedActivityId
-  );
+  const [filteredActivities, setFilteredActivities] =
+    useState<ActivityDto[]>(allActivities);
+  const [selectedActivityId, setSelectedActivityId] = useState<
+    number | undefined
+  >(preSelectedActivityId);
   const [displayHelp, setDisplayHelp] = useState(false);
   const [searchTextActive, setSearchTextActive] = useState(false);
   const dispatch = useAppDispatch();
@@ -88,15 +98,16 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
     [allThemes]
   );
 
-  const skillsDropDownOptions: SearchDropDownOption<ProgressTrackingSubCategoryDto>[] = useMemo(
-    () =>
-      subCategories.map((skill) => ({
-        id: skill.id as number,
-        label: skill.name,
-        value: skill,
-      })),
-    [subCategories]
-  );
+  const skillsDropDownOptions: SearchDropDownOption<ProgressTrackingSubCategoryDto>[] =
+    useMemo(
+      () =>
+        subCategories.map((skill) => ({
+          id: skill.id as number,
+          label: skill.name,
+          value: skill,
+        })),
+      [subCategories]
+    );
 
   const languagesDropDownOptions = useMemo(() => {
     return languages
@@ -134,12 +145,16 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
     setFilteredActivities(matchingActicities);
   };
 
-  const onThemeFilterChange = (filterOptions: SearchDropDownOption<number>[]) => {
+  const onThemeFilterChange = (
+    filterOptions: SearchDropDownOption<number>[]
+  ) => {
     setSelectedThemeFilterOptions(filterOptions);
     setPageSize(ACTIVITY_PAGE_SIZE);
   };
 
-  const onLanguageFilterChange = (filterOptions: SearchDropDownOption<string>[]) => {
+  const onLanguageFilterChange = (
+    filterOptions: SearchDropDownOption<string>[]
+  ) => {
     setPageSize(ACTIVITY_PAGE_SIZE);
     setSelectedLanguageFilterOptions(filterOptions);
   };
@@ -152,7 +167,9 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
   };
 
   useEffect(() => {
-    const programmeTheme = allThemes?.find((theme) => theme.name === programme?.name);
+    const programmeTheme = allThemes?.find(
+      (theme) => theme.name === programme?.name
+    );
     if (programmeTheme) {
       setSelectedThemeFilterOptions([
         {
@@ -164,7 +181,9 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
       ]);
     }
 
-    const lang = languages.find((x) => x.locale === programme?.preferredLanguage);
+    const lang = languages.find(
+      (x) => x.locale === programme?.preferredLanguage
+    );
 
     if (lang) {
       setSelectedLanguageFilterOptions([
@@ -182,18 +201,27 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
   useEffect(() => {
     applyFilters(activities);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedThemeFilterOptions, activities, selectedSkillsFilterOptions, title]);
+  }, [
+    selectedThemeFilterOptions,
+    activities,
+    selectedSkillsFilterOptions,
+    title,
+  ]);
 
   useEffect(() => {
     if (selectedLanguageFilterOptions === undefined) return;
 
     const getActivitiesForLocale = async (locale: string) => {
-      const result = await dispatch(activityThunkActions.getActivities({ locale })).unwrap();
+      const result = await dispatch(
+        activityThunkActions.getActivities({ locale })
+      ).unwrap();
       setActivities(filterActivitiesByType(title, result));
     };
 
     if (selectedLanguageFilterOptions.length > 0) {
-      getActivitiesForLocale(selectedLanguageFilterOptions[0]?.value || 'en-za');
+      getActivitiesForLocale(
+        selectedLanguageFilterOptions[0]?.value || 'en-za'
+      );
     } else {
       getActivitiesForLocale('en-za');
     }
@@ -226,28 +254,29 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
     setFilteredActivities(activitiesCopy);
   };
 
-  const alternativeSearchHeaderItems: SearchHeaderAlternativeRenderItem<ActivityDto> = {
-    render: (item) => {
-      const isSelected = selectedActivityId === item.id;
-      return (
-        <ActivityCard
-          key={`search-header-activity-${item.id}`}
-          activity={item}
-          selected={isSelected}
-          onSelected={() => {
-            setSelectedActivityId(item.id);
-            setSearchTextActive(false);
-            applyFilters(activities);
-          }}
-          onDeselection={() => {
-            setSelectedActivityId(undefined);
-            setSearchTextActive(false);
-            applyFilters(activities);
-          }}
-        />
-      );
-    },
-  };
+  const alternativeSearchHeaderItems: SearchHeaderAlternativeRenderItem<ActivityDto> =
+    {
+      render: (item) => {
+        const isSelected = selectedActivityId === item.id;
+        return (
+          <ActivityCard
+            key={`search-header-activity-${item.id}`}
+            activity={item}
+            selected={isSelected}
+            onSelected={() => {
+              setSelectedActivityId(item.id);
+              setSearchTextActive(false);
+              applyFilters(activities);
+            }}
+            onDeselection={() => {
+              setSelectedActivityId(undefined);
+              setSearchTextActive(false);
+              applyFilters(activities);
+            }}
+          />
+        );
+      },
+    };
 
   return (
     <>
@@ -330,7 +359,9 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
                 <ActivityCard
                   key={`search-header-activity-${recommendedActivity.activity?.id}`}
                   activity={recommendedActivity.activity}
-                  selected={selectedActivityId === recommendedActivity.activity?.id}
+                  selected={
+                    selectedActivityId === recommendedActivity.activity?.id
+                  }
                   recommended
                   recommendedText={`Recommended because you do not have enough <b>${
                     recommendedActivity?.subCategory?.name
@@ -350,14 +381,20 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
                   }}
                 />
               }
-              <Typography type="body" text="Other activities" className={'mt-4'} />
+              <Typography
+                type="body"
+                text="Other activities"
+                className={'mt-4'}
+              />
             </div>
           )}
 
           {hasActiveFilters && filteredActivities.length === 0 && (
             <EmptyActivities
               title={`Sorry, we couldn't find any activities!`}
-              subTitle={'Please choose a different theme, skill, and/or language and try again.'}
+              subTitle={
+                'Please choose a different theme, skill, and/or language and try again.'
+              }
             />
           )}
 
@@ -368,7 +405,11 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
                 key={`activity-search-filtered-card-${activity.id}`}
                 activity={activity}
                 selected={isSelected}
-                warningText={isSelected ? getSelectedActivityWarningText(activity, programme) : ''}
+                warningText={
+                  isSelected
+                    ? getSelectedActivityWarningText(activity, programme)
+                    : ''
+                }
                 onSelected={() => {
                   setSelectedActivityId(activity.id);
                 }}
@@ -405,7 +446,11 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
           />
         </div>
       </BannerWrapper>
-      <Dialog visible={displayHelp} position={DialogPosition.Middle} className={'mx-4'}>
+      <Dialog
+        visible={displayHelp}
+        position={DialogPosition.Middle}
+        className={'mx-4'}
+      >
         <ActionModal
           title={routineItem.name}
           importantText={`${routineItem.timeSpan} minutes`}

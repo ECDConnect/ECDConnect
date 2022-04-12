@@ -5,21 +5,21 @@ export interface IInterpolateColor {
 }
 
 function hex(c: any) {
-  var s = "0123456789abcdef";
+  var s = '0123456789abcdef';
   var i = parseInt(c);
-  if (i == 0 || isNaN(c)) return "00";
+  if (i == 0 || isNaN(c)) return '00';
   i = Math.round(Math.min(Math.max(0, i), 255));
   return s.charAt((i - (i % 16)) / 16) + s.charAt(i % 16);
 }
 
 /* Convert an RGB triplet to a hex string */
 function convertToHex(rgb: number[]) {
-  return "#" + hex(rgb[0]) + hex(rgb[1]) + hex(rgb[2]);
+  return '#' + hex(rgb[0]) + hex(rgb[1]) + hex(rgb[2]);
 }
 
 /* Remove '#' in color hex string */
 function trim(s: any) {
-  return s.charAt(0) == "#" ? s.substring(1, 7) : s;
+  return s.charAt(0) == '#' ? s.substring(1, 7) : s;
 }
 
 /* Convert a hex string to an RGB triplet */

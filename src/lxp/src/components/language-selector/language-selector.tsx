@@ -11,7 +11,10 @@ export interface LanguageSelectorProps extends ComponentBaseProps {
   selectLanguage: (value: LanguageDto) => void;
 }
 
-export const LanguageSelector = ({ currentLocale, selectLanguage }: LanguageSelectorProps) => {
+export const LanguageSelector = ({
+  currentLocale,
+  selectLanguage,
+}: LanguageSelectorProps) => {
   const languages = useSelector(staticDataSelectors.getLanguages);
 
   const [locale, setLocale] = useState<string>('en-za'); // SET DEFAULT LOCALE

@@ -21,7 +21,8 @@ const settingSlice = createSlice({
     resetSettingsState: (state) => {
       state.childExpiryTime = initialState.childExpiryTime;
       state.childProgressReportMonths = initialState.childProgressReportMonths;
-      state.childInitialObservationPeriod = initialState.childInitialObservationPeriod;
+      state.childInitialObservationPeriod =
+        initialState.childInitialObservationPeriod;
       state.settings = initialState.settings;
     },
     setLastDataSync: (state) => {
@@ -41,7 +42,8 @@ const settingSlice = createSlice({
       }
 
       if (action.payload && action.payload.Reporting) {
-        const months = action.payload.Reporting.ChildProgressReportMonths.split(',');
+        const months =
+          action.payload.Reporting.ChildProgressReportMonths.split(',');
         months?.forEach((x) => {
           state.childProgressReportMonths.push(+x);
         });

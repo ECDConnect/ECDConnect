@@ -76,7 +76,9 @@ export const getProgressTrackingSubCategories = createAsyncThunk<
         }
 
         if (!subCategories) {
-          return rejectWithValue('Error getting progress tracking sub-categories');
+          return rejectWithValue(
+            'Error getting progress tracking sub-categories'
+          );
         }
 
         return subCategories;

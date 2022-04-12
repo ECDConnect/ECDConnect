@@ -3,7 +3,10 @@ import 'react-color-palette/lib/css/styles.css';
 import { get } from 'react-hook-form';
 import FormColorField from '../../../../../../components/form-color-field/form-color-field';
 import { FormComponentProps } from '../../../../../../models/FormComponentProps';
-import { initialThemeColours, ThemeColours } from '../../../../../../schemas/themeColours';
+import {
+  initialThemeColours,
+  ThemeColours,
+} from '../../../../../../schemas/themeColours';
 
 import * as styles from './colours-form.styles';
 
@@ -39,8 +42,13 @@ export function ColoursForm({
   };
 
   return (
-    <form key={`themecoloursForm:${new Date().getTime()}`} className={styles.form}>
-      <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-12">{getFormFields()}</div>
+    <form
+      key={`themecoloursForm:${new Date().getTime()}`}
+      className={styles.form}
+    >
+      <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-12">
+        {getFormFields()}
+      </div>
     </form>
   );
 }

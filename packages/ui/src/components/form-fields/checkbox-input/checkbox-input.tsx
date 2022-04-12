@@ -52,7 +52,10 @@ export const Checkbox = <T,>({
                 disabled={disabled}
                 data-testid={testId}
                 type="checkbox"
-                className={classNames(styles.checkboxInput, `text-${checkboxColor}`)}
+                className={classNames(
+                  styles.checkboxInput,
+                  `text-${checkboxColor}`
+                )}
                 {...register(nameProp)}
               />
             )}
@@ -61,14 +64,21 @@ export const Checkbox = <T,>({
                 disabled={disabled}
                 data-testid={testId}
                 type="checkbox"
-                className={classNames(styles.checkboxInput, `text-${checkboxColor}`)}
+                className={classNames(
+                  styles.checkboxInput,
+                  `text-${checkboxColor}`
+                )}
                 checked={checked}
                 onChange={(e) => checkboxChange(e)}
               />
             )}
           </div>
           <div className={styles.textContainer}>
-            <Typography type="body" color={descriptionColor} text={description || ''}></Typography>
+            <Typography
+              type="body"
+              color={descriptionColor}
+              text={description || ''}
+            ></Typography>
           </div>
         </div>
       )}

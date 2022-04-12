@@ -4,7 +4,7 @@ export const GetAllProgrammeAttendanceReason = gql`
   {
     GetAllProgrammeAttendanceReason {
       id
-      reason      
+      reason
     }
   }
 `;
@@ -19,7 +19,9 @@ export const GetProgrammeAttendanceReasonById = gql`
 `;
 
 export const CreateProgrammeAttendanceReason = gql`
-  mutation createProgrammeAttendanceReason($input: ProgrammeAttendanceReasonInput) {
+  mutation createProgrammeAttendanceReason(
+    $input: ProgrammeAttendanceReasonInput
+  ) {
     createProgrammeAttendanceReason(input: $input) {
       id
     }
@@ -27,7 +29,10 @@ export const CreateProgrammeAttendanceReason = gql`
 `;
 
 export const UpdateProgrammeAttendanceReason = gql`
-  mutation updateProgrammeAttendanceReason($input: ProgrammeAttendanceReasonInput, $id: UUID) {
+  mutation updateProgrammeAttendanceReason(
+    $input: ProgrammeAttendanceReasonInput
+    $id: UUID
+  ) {
     updateProgrammeAttendanceReason(input: $input, id: $id) {
       id
     }

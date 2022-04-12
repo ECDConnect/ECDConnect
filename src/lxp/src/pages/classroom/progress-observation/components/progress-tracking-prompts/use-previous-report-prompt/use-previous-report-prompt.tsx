@@ -2,11 +2,9 @@ import { ActionModal } from '@ecdlink/ui';
 import { ComponentBaseProps } from '@ecdlink/ui';
 import { UsePreviousReportPromptProps } from './use-previous-report-prompt.types';
 
-export const UsePreviousReportPrompt: React.FC<UsePreviousReportPromptProps> = ({
-  onClose,
-  onProceed,
-  className,
-}) => {
+export const UsePreviousReportPrompt: React.FC<
+  UsePreviousReportPromptProps
+> = ({ onClose, onProceed, className }) => {
   return (
     <ActionModal
       icon={'QuestionMarkCircleIcon'}

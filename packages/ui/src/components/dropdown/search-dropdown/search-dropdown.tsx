@@ -87,12 +87,16 @@ export function SearchDropDown<T>({
     }
 
     const optionSelected = isOptionSelected(option);
-    const newSelection = multiple ? handleMutlipleItemSelection(option, optionSelected) : handleSingleItemSelection(option, optionSelected);
+    const newSelection = multiple
+      ? handleMutlipleItemSelection(option, optionSelected)
+      : handleSingleItemSelection(option, optionSelected);
     onChange && onChange(newSelection);
-
   };
 
-  const handleMutlipleItemSelection = (option: SearchDropDownOption<T>, selected: boolean): SearchDropDownOption<T>[] => {
+  const handleMutlipleItemSelection = (
+    option: SearchDropDownOption<T>,
+    selected: boolean
+  ): SearchDropDownOption<T>[] => {
     const newSelectedOptions = [...selectedOptions];
 
     if (selected) {
@@ -104,9 +108,12 @@ export function SearchDropDown<T>({
 
     updateSelectedLabel(newSelectedOptions, options);
     return newSelectedOptions;
-  }
+  };
 
-  const handleSingleItemSelection = (option: SearchDropDownOption<T>, selected: boolean): SearchDropDownOption<T>[] => {
+  const handleSingleItemSelection = (
+    option: SearchDropDownOption<T>,
+    selected: boolean
+  ): SearchDropDownOption<T>[] => {
     if (selected) {
       setSelectedLabel('');
       return [];
@@ -166,9 +173,17 @@ export function SearchDropDown<T>({
               leaveFrom={styles.leaveFrom}
               leaveTo={styles.leaveTo}
             >
-              <div className={displayMenuOverlay ? styles.overlay(overlayTopOffset) : ''}>
+              <div
+                className={
+                  displayMenuOverlay ? styles.overlay(overlayTopOffset) : ''
+                }
+              >
                 <Menu.Items
-                  className={classNames(styles.menuItems, menuItemClassName, displayMenuOverlay ? 'absolute' : '')}
+                  className={classNames(
+                    styles.menuItems,
+                    menuItemClassName,
+                    displayMenuOverlay ? 'absolute' : ''
+                  )}
                 >
                   {info && (
                     <div className={styles.infoWrapper}>

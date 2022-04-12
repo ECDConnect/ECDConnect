@@ -22,7 +22,11 @@ import { ProgrammeHistory } from './components/programme-history/programme-histo
 import { ProgrammeSummaryListItem } from './components/programme-summary-list-item/programme-summary-list-item';
 import { ProgrammeSummaryProps } from './programme-summary.types';
 
-const ProgrammeSummary: React.FC<ProgrammeSummaryProps> = ({ programme, noPlan, variation }) => {
+const ProgrammeSummary: React.FC<ProgrammeSummaryProps> = ({
+  programme,
+  noPlan,
+  variation,
+}) => {
   const history = useHistory();
 
   const { isOnline } = useOnlineStatus();
@@ -40,11 +44,14 @@ const ProgrammeSummary: React.FC<ProgrammeSummaryProps> = ({ programme, noPlan, 
 
   const programmeWeeks = getProgrammeWeeks(programme);
 
-  const { getAdditionalRecommendedSubCategories } = useProgrammePlanningRecommendations();
+  const { getAdditionalRecommendedSubCategories } =
+    useProgrammePlanningRecommendations();
 
   const recommendations = getAdditionalRecommendedSubCategories(programme);
 
-  const isProgrammeCompleted = programmeWeeks.every((x) => x.totalIncompleteDays === 0);
+  const isProgrammeCompleted = programmeWeeks.every(
+    (x) => x.totalIncompleteDays === 0
+  );
 
   const [displayGoodMixCard, setDisplayGoodMixCard] = useState(true);
 
@@ -101,18 +108,26 @@ const ProgrammeSummary: React.FC<ProgrammeSummaryProps> = ({ programme, noPlan, 
       {!noPlan && (
         <>
           <ProgrammePlanningHeader
-            headerText={variation === 'update' ? 'Programme summary' : 'Plan your programme'}
+            headerText={
+              variation === 'update'
+                ? 'Programme summary'
+                : 'Plan your programme'
+            }
             themeName={programme?.name}
-            plannedWeeks={programmeWeeks?.filter((week) => week.totalIncompleteDays === 0)?.length}
-            showCount={variation === 'create' || (variation === 'update' && isProgrammeCompleted)}
+            plannedWeeks={
+              programmeWeeks?.filter((week) => week.totalIncompleteDays === 0)
+                ?.length
+            }
+            showCount={
+              variation === 'create' ||
+              (variation === 'update' && isProgrammeCompleted)
+            }
             totalWeeks={programmeWeeks?.length}
-            subHeaderText={`${new Date(programme?.startDate || 0).toLocaleString(
-              'en-ZA',
-              DateFormats.standardDate
-            )} - ${new Date(programme?.endDate || 0).toLocaleString(
-              'en-ZA',
-              DateFormats.standardDate
-            )}`}
+            subHeaderText={`${new Date(
+              programme?.startDate || 0
+            ).toLocaleString('en-ZA', DateFormats.standardDate)} - ${new Date(
+              programme?.endDate || 0
+            ).toLocaleString('en-ZA', DateFormats.standardDate)}`}
           />
 
           <div className="w-full px-4 py-4">
@@ -157,10 +172,16 @@ const ProgrammeSummary: React.FC<ProgrammeSummaryProps> = ({ programme, noPlan, 
               <ProgrammeSummaryListItem
                 key={week.startDate.toString()}
                 title={getDateRangeText(
-                  week.startDate > programmeStartDate ? week.startDate : programmeStartDate,
-                  week.endDate < programmeEndDate ? week.endDate : programmeEndDate
+                  week.startDate > programmeStartDate
+                    ? week.startDate
+                    : programmeStartDate,
+                  week.endDate < programmeEndDate
+                    ? week.endDate
+                    : programmeEndDate
                 )}
-                subTitle={`${getTotalIncompleteDaysInWeek(week)} days incomplete`}
+                subTitle={`${getTotalIncompleteDaysInWeek(
+                  week
+                )} days incomplete`}
                 programmeWeek={idx + 1}
                 isCompleted={week.totalIncompleteDays === 0}
                 onClick={() => handleWeekSelected(idx)}

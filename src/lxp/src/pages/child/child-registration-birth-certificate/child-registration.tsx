@@ -23,13 +23,16 @@ import {
 export const ChildRegistrationBirthCertificate: React.FC = () => {
   const history = useHistory();
   const appDispatch = useAppDispatch();
-  const { getWorkflowStatusIdByEnum, getDocumentTypeIdByEnum } = useStaticData();
+  const { getWorkflowStatusIdByEnum, getDocumentTypeIdByEnum } =
+    useStaticData();
   const location = useLocation<ChildRegistrationRouteState>();
   const childId = location.state.childId;
   const { isOnline } = useOnlineStatus();
   const user = useSelector(userSelectors.getUser);
   const existingChild = useSelector(childrenSelectors.getChildById(childId));
-  const existingChildUser = useSelector(childrenSelectors.getChildUserById(existingChild?.userId));
+  const existingChildUser = useSelector(
+    childrenSelectors.getChildUserById(existingChild?.userId)
+  );
 
   const [formState, setFormState] = useState<ChildRegistrationFormState>({});
 
@@ -87,10 +90,15 @@ export const ChildRegistrationBirthCertificate: React.FC = () => {
           onBack={() => exitRegistration()}
           isOnline={isOnline}
         >
-          <Step stepKey={ChildRegistrationSteps.childBirthCertificateForm} viewBannerWapper>
+          <Step
+            stepKey={ChildRegistrationSteps.childBirthCertificateForm}
+            viewBannerWapper
+          >
             <ChildBirthCertificateForm
               isSingleForm={true}
-              childBirthCertificateForm={formState.childBirthCertificateFormModel}
+              childBirthCertificateForm={
+                formState.childBirthCertificateFormModel
+              }
               childInformation={formState.childInformationFormModel}
               onSubmit={(form) => {
                 saveChildBirthCertificate(form);

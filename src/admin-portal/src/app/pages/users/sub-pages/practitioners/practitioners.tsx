@@ -35,23 +35,28 @@ export default function Practitioners() {
 
   const [tableData, setTableData] = useState<any[]>([]);
 
-  const [getPractitionerExcelTemplateGenerator, { data: templateData }] = useLazyQuery(
-    practitionerExcelTemplateGenerator,
-    {
+  const [getPractitionerExcelTemplateGenerator, { data: templateData }] =
+    useLazyQuery(practitionerExcelTemplateGenerator, {
       fetchPolicy: 'cache-and-network',
-    }
-  );
+    });
 
   const [sendInviteToApplication] = useMutation(SendInviteToApplication);
   const [templateDownloaded, setTemplateDownloaded] = useState<boolean>(false);
   const panel = usePanel();
 
   useEffect(() => {
-    if (templateData && templateData.practitionerExcelTemplateGenerator && !templateDownloaded) {
-      const b64Data = templateData.practitionerExcelTemplateGenerator.base64File;
-      const contentType = templateData.practitionerExcelTemplateGenerator.fileType;
+    if (
+      templateData &&
+      templateData.practitionerExcelTemplateGenerator &&
+      !templateDownloaded
+    ) {
+      const b64Data =
+        templateData.practitionerExcelTemplateGenerator.base64File;
+      const contentType =
+        templateData.practitionerExcelTemplateGenerator.fileType;
       const fileName = templateData.practitionerExcelTemplateGenerator.fileName;
-      const extension = templateData.practitionerExcelTemplateGenerator.extension;
+      const extension =
+        templateData.practitionerExcelTemplateGenerator.extension;
       const blob = b64toBlob(b64Data, contentType);
 
       const link = document.createElement('a');
@@ -72,15 +77,17 @@ export default function Practitioners() {
 
   useEffect(() => {
     if (data && data.GetAllPractitioner) {
-      const copyItems = data.GetAllPractitioner.map((item: PractitionerDto) => ({
-        ...item,
-        fullName: `${item.user?.firstName} ${item.user?.surname}`,
-        isActive: item.user?.isActive,
-        idNumber: item.user?.idNumber,
-        _view: undefined,
-        _edit: undefined,
-        _url: undefined,
-      }));
+      const copyItems = data.GetAllPractitioner.map(
+        (item: PractitionerDto) => ({
+          ...item,
+          fullName: `${item.user?.firstName} ${item.user?.surname}`,
+          isActive: item.user?.isActive,
+          idNumber: item.user?.idNumber,
+          _view: undefined,
+          _edit: undefined,
+          _url: undefined,
+        })
+      );
       setTableData(copyItems);
     }
   }, [data]);
@@ -224,7 +231,9 @@ export default function Practitioners() {
                               <div className="py-1">
                                 <Menu.Item>
                                   <div
-                                    onClick={() => downloadContentTypeTemplate()}
+                                    onClick={() =>
+                                      downloadContentTypeTemplate()
+                                    }
                                     className="text-gray-700 flex px-4 py-2 text-sm cursor-pointer"
                                   >
                                     <DownloadIcon
@@ -268,8 +277,13 @@ export default function Practitioners() {
                     { field: 'isActive', use: 'Active' },
                   ]}
                   rows={tableData}
-                  editRow={hasPermission(PermissionEnum.update_user) && displayEditPanel}
-                  sendRow={hasPermission(PermissionEnum.update_user) && sendInvite}
+                  editRow={
+                    hasPermission(PermissionEnum.update_user) &&
+                    displayEditPanel
+                  }
+                  sendRow={
+                    hasPermission(PermissionEnum.update_user) && sendInvite
+                  }
                 />
               </div>
             </div>

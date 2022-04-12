@@ -38,14 +38,15 @@ export const ChildRegistrationForm: React.FC<ChildRegistrationFormProps> = ({
   childRegisterForm,
   variation = 'practitioner',
 }) => {
-  const [contentConsentTypeEnum, setContentConsentTypeEnum] = useState<ContentConsentTypeEnum>(
-    ContentConsentTypeEnum.PhotoPermissions
-  );
+  const [contentConsentTypeEnum, setContentConsentTypeEnum] =
+    useState<ContentConsentTypeEnum>(ContentConsentTypeEnum.PhotoPermissions);
   const [presentArticle, setPresentArticle] = useState<boolean>(false);
   const [articleTitle, setArticleTitle] = useState<string>();
-  const [registrationFormPhotoUrl, setRegistrationFormPhotoUrl] = useState<string>();
+  const [registrationFormPhotoUrl, setRegistrationFormPhotoUrl] =
+    useState<string>();
   const [photoConsent, setPhotoConsent] = useState<boolean>();
-  const [photoActionBarVisible, setPhotoActionBarVisible] = useState<boolean>(false);
+  const [photoActionBarVisible, setPhotoActionBarVisible] =
+    useState<boolean>(false);
 
   const {
     formState: childRegistrationFormState,
@@ -135,7 +136,11 @@ export const ChildRegistrationForm: React.FC<ChildRegistrationFormProps> = ({
           onClose={() => setPresentArticle(false)}
         />
       </div>
-      <Dialog visible={photoActionBarVisible} position={DialogPosition.Bottom} stretch>
+      <Dialog
+        visible={photoActionBarVisible}
+        position={DialogPosition.Bottom}
+        stretch
+      >
         <PhotoPrompt
           title="Child registration form"
           onClose={() => setPhotoActionBarVisible(false)}
@@ -196,12 +201,21 @@ const PractitionerForm: React.FC<any> = ({
           weight="bold"
           type={'body'}
           color={'textMid'}
-          text={'Did the caregiver give permission for their child to be photographed?'}
+          text={
+            'Did the caregiver give permission for their child to be photographed?'
+          }
         ></Typography>
-        <Typography type={'help'} color={'textLight'} text={'Optional'}></Typography>
+        <Typography
+          type={'help'}
+          color={'textLight'}
+          text={'Optional'}
+        ></Typography>
         <Typography
           onClick={() => {
-            displayArticle(ContentConsentTypeEnum.PhotoPermissions, 'Photo Permissions');
+            displayArticle(
+              ContentConsentTypeEnum.PhotoPermissions,
+              'Photo Permissions'
+            );
           }}
           className={'cursor-pointer pt-1'}
           text={'View photo permissions'}
@@ -214,7 +228,10 @@ const PractitionerForm: React.FC<any> = ({
             <ButtonGroup
               options={yesNoOptions}
               onOptionSelected={(value: boolean | boolean[]) => {
-                setChildRegistrationFormValue('childPhotoConsentAccepted', value as boolean);
+                setChildRegistrationFormValue(
+                  'childPhotoConsentAccepted',
+                  value as boolean
+                );
                 setPhotoConsent(value as boolean);
               }}
               selectedOptions={photoConsent}
@@ -253,7 +270,11 @@ const PractitionerForm: React.FC<any> = ({
               checkAcceptance('personalInformationAgreementAccepted', change)
             }
           ></Checkbox>
-          <Typography text={'Personal information agreement'} type="help" color={'textMid'} />
+          <Typography
+            text={'Personal information agreement'}
+            type="help"
+            color={'textMid'}
+          />
         </div>
         <Typography
           onClick={() => {
@@ -275,13 +296,22 @@ const PractitionerForm: React.FC<any> = ({
             register={childRegistrationFormRegister}
             nameProp={'consentAgreementAccepted'}
             checkboxColor={'secondary'}
-            onCheckboxChange={(change) => checkAcceptance('consentAgreementAccepted', change)}
+            onCheckboxChange={(change) =>
+              checkAcceptance('consentAgreementAccepted', change)
+            }
           ></Checkbox>
-          <Typography text={'Consent agreement'} type="help" color={'textMid'} />
+          <Typography
+            text={'Consent agreement'}
+            type="help"
+            color={'textMid'}
+          />
         </div>
         <Typography
           onClick={() => {
-            displayArticle(ContentConsentTypeEnum.ConsentAgreement, 'Consent Agreement');
+            displayArticle(
+              ContentConsentTypeEnum.ConsentAgreement,
+              'Consent Agreement'
+            );
           }}
           className={'cursor-pointer pt-1'}
           text={'View'}
@@ -296,13 +326,22 @@ const PractitionerForm: React.FC<any> = ({
             register={childRegistrationFormRegister}
             nameProp={'commitmentAgreementAccepted'}
             checkboxColor={'secondary'}
-            onCheckboxChange={(change) => checkAcceptance('commitmentAgreementAccepted', change)}
+            onCheckboxChange={(change) =>
+              checkAcceptance('commitmentAgreementAccepted', change)
+            }
           ></Checkbox>
-          <Typography text={'Commitment agreement'} type="help" color={'textMid'} />
+          <Typography
+            text={'Commitment agreement'}
+            type="help"
+            color={'textMid'}
+          />
         </div>
         <Typography
           onClick={() => {
-            displayArticle(ContentConsentTypeEnum.CommitmentAgreement, 'Caregiver Commitments');
+            displayArticle(
+              ContentConsentTypeEnum.CommitmentAgreement,
+              'Caregiver Commitments'
+            );
           }}
           className={'cursor-pointer pt-1'}
           text={'View'}
@@ -317,13 +356,22 @@ const PractitionerForm: React.FC<any> = ({
             register={childRegistrationFormRegister}
             nameProp={'indemnityAgreementAccepted'}
             checkboxColor={'secondary'}
-            onCheckboxChange={(change) => checkAcceptance('indemnityAgreementAccepted', change)}
+            onCheckboxChange={(change) =>
+              checkAcceptance('indemnityAgreementAccepted', change)
+            }
           ></Checkbox>
-          <Typography text={'Indemnity agreement'} type="help" color={'textMid'} />
+          <Typography
+            text={'Indemnity agreement'}
+            type="help"
+            color={'textMid'}
+          />
         </div>
         <Typography
           onClick={() => {
-            displayArticle(ContentConsentTypeEnum.IndemnityAgreement, 'Indemnity Agreement');
+            displayArticle(
+              ContentConsentTypeEnum.IndemnityAgreement,
+              'Indemnity Agreement'
+            );
           }}
           className={'cursor-pointer pt-1'}
           text={'View'}
@@ -362,7 +410,11 @@ const CaregiverForm: React.FC<any> = ({
 }) => {
   return (
     <div className={'p-4 w-full'}>
-      <Typography type="h1" color="primary" text="Consent, indemnity, and photo permissions" />
+      <Typography
+        type="h1"
+        color="primary"
+        text="Consent, indemnity, and photo permissions"
+      />
 
       <Typography
         type="unspecified"
@@ -380,7 +432,11 @@ const CaregiverForm: React.FC<any> = ({
               checkAcceptance('personalInformationAgreementAccepted', change)
             }
           ></Checkbox>
-          <Typography text={'Personal information agreement'} type="help" color={'textMid'} />
+          <Typography
+            text={'Personal information agreement'}
+            type="help"
+            color={'textMid'}
+          />
         </div>
         <Typography
           onClick={() => {
@@ -402,13 +458,22 @@ const CaregiverForm: React.FC<any> = ({
             register={childRegistrationFormRegister}
             nameProp={'consentAgreementAccepted'}
             checkboxColor={'secondary'}
-            onCheckboxChange={(change) => checkAcceptance('consentAgreementAccepted', change)}
+            onCheckboxChange={(change) =>
+              checkAcceptance('consentAgreementAccepted', change)
+            }
           ></Checkbox>
-          <Typography text={'Consent agreement'} type="help" color={'textMid'} />
+          <Typography
+            text={'Consent agreement'}
+            type="help"
+            color={'textMid'}
+          />
         </div>
         <Typography
           onClick={() => {
-            displayArticle(ContentConsentTypeEnum.ConsentAgreement, 'Consent Agreement');
+            displayArticle(
+              ContentConsentTypeEnum.ConsentAgreement,
+              'Consent Agreement'
+            );
           }}
           className={'cursor-pointer pt-1'}
           text={'View'}
@@ -423,13 +488,22 @@ const CaregiverForm: React.FC<any> = ({
             register={childRegistrationFormRegister}
             nameProp={'commitmentAgreementAccepted'}
             checkboxColor={'secondary'}
-            onCheckboxChange={(change) => checkAcceptance('commitmentAgreementAccepted', change)}
+            onCheckboxChange={(change) =>
+              checkAcceptance('commitmentAgreementAccepted', change)
+            }
           ></Checkbox>
-          <Typography text={'Commitment agreement'} type="help" color={'textMid'} />
+          <Typography
+            text={'Commitment agreement'}
+            type="help"
+            color={'textMid'}
+          />
         </div>
         <Typography
           onClick={() => {
-            displayArticle(ContentConsentTypeEnum.CommitmentAgreement, 'Caregiver Commitments');
+            displayArticle(
+              ContentConsentTypeEnum.CommitmentAgreement,
+              'Caregiver Commitments'
+            );
           }}
           className={'cursor-pointer pt-1'}
           text={'View'}
@@ -444,13 +518,22 @@ const CaregiverForm: React.FC<any> = ({
             register={childRegistrationFormRegister}
             nameProp={'indemnityAgreementAccepted'}
             checkboxColor={'secondary'}
-            onCheckboxChange={(change) => checkAcceptance('indemnityAgreementAccepted', change)}
+            onCheckboxChange={(change) =>
+              checkAcceptance('indemnityAgreementAccepted', change)
+            }
           ></Checkbox>
-          <Typography text={'Indemnity agreement'} type="help" color={'textMid'} />
+          <Typography
+            text={'Indemnity agreement'}
+            type="help"
+            color={'textMid'}
+          />
         </div>
         <Typography
           onClick={() => {
-            displayArticle(ContentConsentTypeEnum.IndemnityAgreement, 'Indemnity Agreement');
+            displayArticle(
+              ContentConsentTypeEnum.IndemnityAgreement,
+              'Indemnity Agreement'
+            );
           }}
           className={'cursor-pointer pt-1'}
           text={'View'}
@@ -467,10 +550,17 @@ const CaregiverForm: React.FC<any> = ({
           color={'textMid'}
           text={`Do you give permission for the child to be photographed?`}
         ></Typography>
-        <Typography type={'help'} color={'textLight'} text={'Optional'}></Typography>
+        <Typography
+          type={'help'}
+          color={'textLight'}
+          text={'Optional'}
+        ></Typography>
         <Typography
           onClick={() => {
-            displayArticle(ContentConsentTypeEnum.PhotoPermissions, 'Photo Permissions');
+            displayArticle(
+              ContentConsentTypeEnum.PhotoPermissions,
+              'Photo Permissions'
+            );
           }}
           className={'cursor-pointer pt-1'}
           text={'View photo permissions'}
@@ -483,7 +573,10 @@ const CaregiverForm: React.FC<any> = ({
             <ButtonGroup
               options={yesNoOptions}
               onOptionSelected={(value: boolean | boolean[]) => {
-                setChildRegistrationFormValue('childPhotoConsentAccepted', value as boolean);
+                setChildRegistrationFormValue(
+                  'childPhotoConsentAccepted',
+                  value as boolean
+                );
                 setPhotoConsent(value as boolean);
               }}
               selectedOptions={photoConsent}

@@ -6,7 +6,9 @@ export type OfflineSyncTimeExceededProps = {
   onSubmit: () => void;
 };
 
-const OfflineSyncTimeExceeded: React.FC<OfflineSyncTimeExceededProps> = ({ onSubmit }) => {
+const OfflineSyncTimeExceeded: React.FC<OfflineSyncTimeExceededProps> = ({
+  onSubmit,
+}) => {
   const { isOnline } = useOnlineStatus();
 
   const generalMessage = `We suggest connecting to a wifi network to complete this process.\nAfter syncing your data, the Funda App will continue to work offline.\n`;

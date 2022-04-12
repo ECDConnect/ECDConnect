@@ -2,7 +2,11 @@ import { ProgrammeDto } from '@ecdlink/core';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import { getProgrammes } from './programme.actions';
-import { ProgrammeState, UpdateProgramme, UpdateProgrammeDay } from './programme.types';
+import {
+  ProgrammeState,
+  UpdateProgramme,
+  UpdateProgrammeDay,
+} from './programme.types';
 
 const initialState: ProgrammeState = {};
 
@@ -46,7 +50,8 @@ const programmeSlice = createSlice({
 
       if (indexOfDay < 0) return;
 
-      state.programmes[indexOfProgramme].dailyProgrammes[indexOfDay] = action.payload.programmeDay;
+      state.programmes[indexOfProgramme].dailyProgrammes[indexOfDay] =
+        action.payload.programmeDay;
     },
   },
   extraReducers: (builder) => {

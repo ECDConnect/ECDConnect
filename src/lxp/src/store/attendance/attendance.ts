@@ -17,7 +17,10 @@ const attendanceSlice = createSlice({
       state.attendance = initialState.attendance;
       state.attendanceTracked = initialState.attendanceTracked;
     },
-    trackAttendance: (state, action: PayloadAction<TrackAttendanceModelInput>) => {
+    trackAttendance: (
+      state,
+      action: PayloadAction<TrackAttendanceModelInput>
+    ) => {
       if (!state.attendanceTracked) state.attendanceTracked = [];
 
       state.attendanceTracked?.push(action.payload);
@@ -62,7 +65,8 @@ const attendanceSlice = createSlice({
   },
 });
 
-const { reducer: attendanceReducer, actions: attendanceActions } = attendanceSlice;
+const { reducer: attendanceReducer, actions: attendanceActions } =
+  attendanceSlice;
 
 const attendancePersistConfig = {
   key: 'attendance',

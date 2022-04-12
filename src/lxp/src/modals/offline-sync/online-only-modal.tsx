@@ -6,13 +6,20 @@ export type OnlineOnlyModalProps = {
   overrideText?: string;
 };
 
-const OnlineOnlyModal: React.FC<OnlineOnlyModalProps> = ({ onSubmit, overrideText }) => {
+const OnlineOnlyModal: React.FC<OnlineOnlyModalProps> = ({
+  onSubmit,
+  overrideText,
+}) => {
   return (
     <ActionModal
       icon={'ExclamationCircleIcon'}
       iconColor="alertMain"
       iconBorderColor="alertBg"
-      title={overrideText ? overrideText : 'You need to go online to use this feature'}
+      title={
+        overrideText
+          ? overrideText
+          : 'You need to go online to use this feature'
+      }
       detailText={`Switch on your mobile data or connect to a wifi network to use this feature.`}
       actionButtons={[
         {

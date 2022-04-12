@@ -1,5 +1,4 @@
-export const checkboxStyle =
-  'h-4 w-4 text-primary border-gray-300 rounded';
+export const checkboxStyle = 'h-4 w-4 text-primary border-gray-300 rounded';
 export const errorStyle =
   'block w-full py-3 pr-10 border-errorMain text-errorMain placeholder-errorMain focus:outline-none focus:ring-errorMain focus:border-errorMain sm:text-sm rounded-md';
 export const defaultInputStyle =

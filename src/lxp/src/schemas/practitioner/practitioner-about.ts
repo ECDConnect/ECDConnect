@@ -21,5 +21,7 @@ export const practitionerAboutModelSchema = Yup.object().shape({
   cellphone: Yup.string()
     .required('Cellphone number is required')
     .matches(SA_CELL_REGEX, 'Please enter a valid cellphone number'),
-  email: Yup.string().email('Please enter a valid email address').required('Email is required'),
+  email: Yup.string()
+    .email('Please enter a valid email address')
+    .required('Email is required'),
 });

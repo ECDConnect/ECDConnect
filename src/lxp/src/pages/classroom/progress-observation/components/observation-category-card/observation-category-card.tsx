@@ -6,7 +6,9 @@ import { progressTrackingSelectors } from '@store/progress-tracking';
 import * as styles from './observation-category-card.styles';
 import { ObservationCategoryCardProps } from './observation-category-card.types';
 
-export const ObservationCategoryCard: React.FC<ObservationCategoryCardProps> = ({
+export const ObservationCategoryCard: React.FC<
+  ObservationCategoryCardProps
+> = ({
   categoryName,
   categoryColour,
   levelId,
@@ -20,7 +22,9 @@ export const ObservationCategoryCard: React.FC<ObservationCategoryCardProps> = (
   const achievedLevel = useSelector(
     progressTrackingSelectors.getProgressTrackingLevelById(levelId)
   );
-  const skill = useSelector(progressTrackingSelectors.getProgressTrackingSkillById(helpingSkillId));
+  const skill = useSelector(
+    progressTrackingSelectors.getProgressTrackingSkillById(helpingSkillId)
+  );
 
   return (
     <div
@@ -39,7 +43,11 @@ export const ObservationCategoryCard: React.FC<ObservationCategoryCardProps> = (
           {achievedLevel && (
             <div className={styles.levelContainer}>
               {achievedLevel && (
-                <img className={'m-auto'} src={achievedLevel.imageUrl} alt="category" />
+                <img
+                  className={'m-auto'}
+                  src={achievedLevel.imageUrl}
+                  alt="category"
+                />
               )}
               <Typography
                 type={'small'}

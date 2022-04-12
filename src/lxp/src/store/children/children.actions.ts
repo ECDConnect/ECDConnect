@@ -56,46 +56,54 @@ type CreateChildRequest = {
   child: ChildDto;
 };
 
-export const createChild = createAsyncThunk<ChildDto, CreateChildRequest, ThunkApiType<RootState>>(
-  'createChild',
-  async ({ child }, { getState, rejectWithValue }) => {
-    try {
-      const {
-        auth: { userAuth },
-      } = getState();
-      if (userAuth?.auth_token) {
-        const input = mapChildInput(child);
-        await new ChildService(userAuth?.auth_token).updateChild(input.Id || '', input);
-        return child;
-      } else return rejectWithValue('no access token, profile check required');
-    } catch (err) {
-      return rejectWithValue(err);
-    }
+export const createChild = createAsyncThunk<
+  ChildDto,
+  CreateChildRequest,
+  ThunkApiType<RootState>
+>('createChild', async ({ child }, { getState, rejectWithValue }) => {
+  try {
+    const {
+      auth: { userAuth },
+    } = getState();
+    if (userAuth?.auth_token) {
+      const input = mapChildInput(child);
+      await new ChildService(userAuth?.auth_token).updateChild(
+        input.Id || '',
+        input
+      );
+      return child;
+    } else return rejectWithValue('no access token, profile check required');
+  } catch (err) {
+    return rejectWithValue(err);
   }
-);
+});
 
 type UpdateChildRequest = {
   child: ChildDto;
   id: string;
 };
 
-export const updateChild = createAsyncThunk<ChildDto, UpdateChildRequest, ThunkApiType<RootState>>(
-  'updateChild',
-  async ({ child }, { getState, rejectWithValue }) => {
-    try {
-      const {
-        auth: { userAuth },
-      } = getState();
-      if (userAuth?.auth_token) {
-        const input = mapChildInput(child);
-        await new ChildService(userAuth?.auth_token).updateChild(input.Id || '', input);
-        return child;
-      } else return rejectWithValue('no access token, profile check required');
-    } catch (err) {
-      return rejectWithValue(err);
-    }
+export const updateChild = createAsyncThunk<
+  ChildDto,
+  UpdateChildRequest,
+  ThunkApiType<RootState>
+>('updateChild', async ({ child }, { getState, rejectWithValue }) => {
+  try {
+    const {
+      auth: { userAuth },
+    } = getState();
+    if (userAuth?.auth_token) {
+      const input = mapChildInput(child);
+      await new ChildService(userAuth?.auth_token).updateChild(
+        input.Id || '',
+        input
+      );
+      return child;
+    } else return rejectWithValue('no access token, profile check required');
+  } catch (err) {
+    return rejectWithValue(err);
   }
-);
+});
 
 type UpdateChildUserRequest = {
   childUser: UserDto;
@@ -106,20 +114,23 @@ export const updateChildUser = createAsyncThunk<
   UserDto,
   UpdateChildUserRequest,
   ThunkApiType<RootState>
->('updateChildUser', async ({ childUser, id }, { getState, rejectWithValue }) => {
-  try {
-    const {
-      auth: { userAuth },
-    } = getState();
-    if (userAuth?.auth_token) {
-      const input = mapUserInput(childUser);
-      await new UserService(userAuth?.auth_token).updateUser(id, input);
-      return childUser;
-    } else return rejectWithValue('no access token, profile check required');
-  } catch (err) {
-    return rejectWithValue(err);
+>(
+  'updateChildUser',
+  async ({ childUser, id }, { getState, rejectWithValue }) => {
+    try {
+      const {
+        auth: { userAuth },
+      } = getState();
+      if (userAuth?.auth_token) {
+        const input = mapUserInput(childUser);
+        await new UserService(userAuth?.auth_token).updateUser(id, input);
+        return childUser;
+      } else return rejectWithValue('no access token, profile check required');
+    } catch (err) {
+      return rejectWithValue(err);
+    }
   }
-});
+);
 
 export const upsertChildUsers = createAsyncThunk<
   boolean[],
@@ -145,7 +156,9 @@ export const upsertChildUsers = createAsyncThunk<
         promises = childUser
           .filter((childUser) => {
             const child = children?.find((x) => x.userId === childUser.id);
-            return child && child.workflowStatusId !== workflowStatus?.id ? true : false;
+            return child && child.workflowStatusId !== workflowStatus?.id
+              ? true
+              : false;
           })
           .map(async (x) => {
             const input: UserModelInput = {
@@ -163,7 +176,10 @@ export const upsertChildUsers = createAsyncThunk<
               profileImageUrl: x.profileImageUrl,
             };
 
-            return await new UserService(userAuth?.auth_token).updateUser(x.id ?? '', input);
+            return await new UserService(userAuth?.auth_token).updateUser(
+              x.id ?? '',
+              input
+            );
           });
       }
       return Promise.all(promises);
@@ -209,7 +225,10 @@ export const upsertChildren = createAsyncThunk<
               IsActive: x.isActive === false ? false : true,
             };
 
-            return await new ChildService(userAuth?.auth_token).updateChild(x.id ?? '', input);
+            return await new ChildService(userAuth?.auth_token).updateChild(
+              x.id ?? '',
+              input
+            );
           });
       }
       return Promise.all(promises);
@@ -233,13 +252,18 @@ export const generateCaregiverChildToken = createAsyncThunk<
 >(
   'generateCaregiverChildToken',
   // eslint-disable-next-line no-empty-pattern
-  async ({ firstName, surname, classgroupId }, { getState, rejectWithValue }) => {
+  async (
+    { firstName, surname, classgroupId },
+    { getState, rejectWithValue }
+  ) => {
     try {
       const {
         auth: { userAuth },
       } = getState();
       if (userAuth?.auth_token) {
-        const result = await new ChildService(userAuth?.auth_token).generateCaregiverChildToken(
+        const result = await new ChildService(
+          userAuth?.auth_token
+        ).generateCaregiverChildToken(
           firstName || '',
           surname || '',
           classgroupId || ''
@@ -271,10 +295,9 @@ export const refreshCaregiverChildToken = createAsyncThunk<
         auth: { userAuth },
       } = getState();
       if (userAuth?.auth_token) {
-        const result = await new ChildService(userAuth?.auth_token).refreshCaregiverChildToken(
-          childId || '',
-          classgroupId || ''
-        );
+        const result = await new ChildService(
+          userAuth?.auth_token
+        ).refreshCaregiverChildToken(childId || '', classgroupId || '');
         return result;
       } else return rejectWithValue('no access token, profile check required');
     } catch (err) {
@@ -297,7 +320,9 @@ export const openAccessAddChildDetail = createAsyncThunk<
   // eslint-disable-next-line no-empty-pattern
   async ({ token }, { rejectWithValue }) => {
     try {
-      const result = await new ChildService('').openAccessAddChildDetail(token || '');
+      const result = await new ChildService('').openAccessAddChildDetail(
+        token || ''
+      );
       return result;
     } catch (err) {
       return rejectWithValue(err);
@@ -321,7 +346,10 @@ export const openAccessAddChild = createAsyncThunk<
 >(
   'openAccessAddChild',
   // eslint-disable-next-line no-empty-pattern
-  async ({ token, caregiver, learner, siteAddress, child }, { rejectWithValue }) => {
+  async (
+    { token, caregiver, learner, siteAddress, child },
+    { rejectWithValue }
+  ) => {
     try {
       const result = await new ChildService('').openAccessAddChild(
         token,

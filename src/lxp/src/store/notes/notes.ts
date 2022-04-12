@@ -20,13 +20,16 @@ const notesSlice = createSlice({
     updateNote: (state, action: PayloadAction<NoteDto>) => {
       if (state.notes) {
         for (let i = 0; i < state.notes.length; i++) {
-          if (state.notes[i].id === action.payload.id) state.notes[i] = action.payload;
+          if (state.notes[i].id === action.payload.id)
+            state.notes[i] = action.payload;
         }
       }
     },
     deleteNote: (state, action: PayloadAction<NoteDto>) => {
       if (state.notes) {
-        const noteIndex = state.notes.findIndex((x) => x.id === action.payload.id);
+        const noteIndex = state.notes.findIndex(
+          (x) => x.id === action.payload.id
+        );
 
         if (noteIndex < 0) return;
 

@@ -8,12 +8,9 @@ interface CaregiverChildRegistrationModalProps extends ComponentBaseProps {
   onCancel: () => void;
 }
 
-export const CaregiverChildRegistrationModal: React.FC<CaregiverChildRegistrationModalProps> = ({
-  childDetails,
-  caregiverUrl,
-  onSubmit,
-  onCancel,
-}) => {
+export const CaregiverChildRegistrationModal: React.FC<
+  CaregiverChildRegistrationModalProps
+> = ({ childDetails, caregiverUrl, onSubmit, onCancel }) => {
   const whatsapp = () => {
     window.open(`https://wa.me/`);
   };

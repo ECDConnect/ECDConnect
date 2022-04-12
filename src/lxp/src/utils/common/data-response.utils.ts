@@ -7,7 +7,9 @@ enum HttpResponseCodes {
   serviceError = 500,
 }
 
-export const getDataResponse = <T>(response: AxiosResponse<any>): DataResponse<T> => {
+export const getDataResponse = <T>(
+  response: AxiosResponse<any>
+): DataResponse<T> => {
   let dataResponse: DataResponse<T> = {};
 
   if (!response) {

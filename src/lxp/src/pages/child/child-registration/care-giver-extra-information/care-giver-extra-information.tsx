@@ -21,16 +21,17 @@ import { staticDataSelectors } from '@store/static-data';
 import * as styles from './care-giver-extra-information.styles';
 import { CareGiverExtraInformationFormProps } from './care-giver-extra-information.types';
 
-export const CareGiverExtraInformationForm: React.FC<CareGiverExtraInformationFormProps> = ({
-  careGiverExtraInformation,
-  onSubmit,
-}) => {
+export const CareGiverExtraInformationForm: React.FC<
+  CareGiverExtraInformationFormProps
+> = ({ careGiverExtraInformation, onSubmit }) => {
   const [selectedFamilyGrants, setSelectedFamilyGrants] = useState<string[]>(
     careGiverExtraInformation?.familyGrants || []
   );
 
   const grants: GrantDto[] = useSelector(staticDataSelectors.getGrants);
-  const education: EducationLevelDto[] = useSelector(staticDataSelectors.getEducationLevels);
+  const education: EducationLevelDto[] = useSelector(
+    staticDataSelectors.getEducationLevels
+  );
 
   const {
     getValues: getCareGiverExtraInformationFormValues,
@@ -75,7 +76,11 @@ export const CareGiverExtraInformationForm: React.FC<CareGiverExtraInformationFo
   return (
     <div className={'bg-uiBg pt-2 pb-4 px-4'}>
       <Typography type={'h1'} text={'Primary caregiver'} color={'primary'} />
-      <Typography type={'h2'} text={'Additional information'} color={'textMid'} />
+      <Typography
+        type={'h2'}
+        text={'Additional information'}
+        color={'textMid'}
+      />
 
       <Dropdown<string>
         placeholder={'Choose highest level of education'}
@@ -87,7 +92,9 @@ export const CareGiverExtraInformationForm: React.FC<CareGiverExtraInformationFo
         fullWidth
         label={'What is your highest level of education?'}
         className={'mt-3 w-full'}
-        selectedValue={getCareGiverExtraInformationFormValues().highestEducationId}
+        selectedValue={
+          getCareGiverExtraInformationFormValues().highestEducationId
+        }
         onChange={(item: string | string[]) => {
           onEducationChanged(item as string);
         }}

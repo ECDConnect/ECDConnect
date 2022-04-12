@@ -24,14 +24,24 @@ export const ViewChildProgressObservationReport: React.FC = () => {
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
-  const [currentReport, setCurrentReport] = useState<ChildProgressObservationReport>();
-  const { state: routeState } = useLocation<ViewChildProgressObservationReportState>();
+  const [currentReport, setCurrentReport] =
+    useState<ChildProgressObservationReport>();
+  const { state: routeState } =
+    useLocation<ViewChildProgressObservationReportState>();
   const [loading, setLoading] = useState(false);
 
-  const currentChild = useSelector(childrenSelectors.getChildById(routeState.childId));
-  const currentChildUser = useSelector(childrenSelectors.getChildUserById(currentChild?.userId));
-  const currentChildLearner = useSelector(classroomsSelectors.getChildLearner(currentChild));
-  const allCategories = useSelector(progressTrackingSelectors.getProgressTrackingCategories);
+  const currentChild = useSelector(
+    childrenSelectors.getChildById(routeState.childId)
+  );
+  const currentChildUser = useSelector(
+    childrenSelectors.getChildUserById(currentChild?.userId)
+  );
+  const currentChildLearner = useSelector(
+    classroomsSelectors.getChildLearner(currentChild)
+  );
+  const allCategories = useSelector(
+    progressTrackingSelectors.getProgressTrackingCategories
+  );
 
   useEffect(() => {
     if (!isOnline) {
@@ -101,7 +111,10 @@ export const ViewChildProgressObservationReport: React.FC = () => {
         {currentReport &&
           allCategories &&
           allCategories.map((cat) => {
-            const categoryFromReport = getCategoryFromCurrentReport(cat.id, currentReport);
+            const categoryFromReport = getCategoryFromCurrentReport(
+              cat.id,
+              currentReport
+            );
             return (
               <ObservationCategoryCard
                 key={`completed-${cat.id}`}
@@ -109,9 +122,11 @@ export const ViewChildProgressObservationReport: React.FC = () => {
                 categoryName={cat.name}
                 categoryColour={cat.color}
                 isCompetentWithCategory={
-                  [ProgressTrackingLevels.LevelThree, ProgressTrackingLevels.LevelTwo].includes(
-                    categoryFromReport?.achievedLevelId ?? 0
-                  ) && !categoryFromReport?.supportingTask
+                  [
+                    ProgressTrackingLevels.LevelThree,
+                    ProgressTrackingLevels.LevelTwo,
+                  ].includes(categoryFromReport?.achievedLevelId ?? 0) &&
+                  !categoryFromReport?.supportingTask
                 }
                 levelId={categoryFromReport?.achievedLevelId || 0}
                 childName={`${currentChildUser?.firstName}`}

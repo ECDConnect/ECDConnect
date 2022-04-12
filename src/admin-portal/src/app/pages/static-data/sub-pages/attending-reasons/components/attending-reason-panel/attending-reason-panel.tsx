@@ -7,7 +7,10 @@ import {
 } from '@ecdlink/graphql';
 import { NOTIFICATION, useNotifications } from '@ecdlink/core';
 import { ProgrammeAttendanceReasonDto } from '@ecdlink/core';
-import { attendenceReasonSchema, initialAttendenceReasonValues } from '@ecdlink/core';
+import {
+  attendenceReasonSchema,
+  initialAttendenceReasonValues,
+} from '@ecdlink/core';
 
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
@@ -96,7 +99,10 @@ export default function AttendingReasonPanel(props: AttendingReasonProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 divide-y divide-gray-200">
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="space-y-8 divide-y divide-gray-200"
+    >
       <div className="space-y-8 divide-y divide-gray-200">
         <div className="pt-8">
           <div className="grid grid-cols-2">

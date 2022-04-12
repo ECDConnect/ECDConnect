@@ -94,7 +94,10 @@ export const ChildRegistrationLanding: React.FC = () => {
   }
   if (authToken && childDetails) {
     return (
-      <CaregiverChildRegistration childDetails={childDetails} caregiverAuthToken={authToken} />
+      <CaregiverChildRegistration
+        childDetails={childDetails}
+        caregiverAuthToken={authToken}
+      />
     );
   }
 

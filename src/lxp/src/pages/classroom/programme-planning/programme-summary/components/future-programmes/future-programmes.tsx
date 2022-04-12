@@ -23,26 +23,45 @@ export const FutureProgrammes: React.FC<FutureProgrammesProps> = ({
   );
 
   return (
-    <div className={'flex flex-row w-full overflow-x-scroll py-2 border-b border-uiLight'}>
+    <div
+      className={
+        'flex flex-row w-full overflow-x-scroll py-2 border-b border-uiLight'
+      }
+    >
       {noPlan ? (
         <StatusChip
           className="ml-2 px-3 py-2 flex-nowrap"
           borderColour="infoDark"
           textColour="white"
           backgroundColour="infoDark"
-          text={`Today, ${new Date().toLocaleString('en-ZA', DateFormats.dayWithShortMonthName)}`}
+          text={`Today, ${new Date().toLocaleString(
+            'en-ZA',
+            DateFormats.dayWithShortMonthName
+          )}`}
         />
       ) : (
         <StatusChip
           key={todaysProgramme?.id}
           className="ml-2 px-3 py-2 flex-nowrap"
-          borderColour={todaysProgramme?.id === programme?.id ? 'infoDark' : 'textLight'}
-          textColour={todaysProgramme?.id === programme?.id ? 'white' : 'textLight'}
-          backgroundColour={todaysProgramme?.id === programme?.id ? 'infoDark' : 'white'}
+          borderColour={
+            todaysProgramme?.id === programme?.id ? 'infoDark' : 'textLight'
+          }
+          textColour={
+            todaysProgramme?.id === programme?.id ? 'white' : 'textLight'
+          }
+          backgroundColour={
+            todaysProgramme?.id === programme?.id ? 'infoDark' : 'white'
+          }
           text={`${todaysProgramme?.name || 'Today'}, ${
             todaysProgramme
-              ? getDateRangeText(todaysProgramme.startDate, todaysProgramme.endDate)
-              : new Date().toLocaleString('en-ZA', DateFormats.dayWithShortMonthName)
+              ? getDateRangeText(
+                  todaysProgramme.startDate,
+                  todaysProgramme.endDate
+                )
+              : new Date().toLocaleString(
+                  'en-ZA',
+                  DateFormats.dayWithShortMonthName
+                )
           }`}
           onClick={() => {
             onSummarySelected(todaysProgramme);
@@ -59,7 +78,10 @@ export const FutureProgrammes: React.FC<FutureProgrammesProps> = ({
             borderColour={isCurrentProgramme ? 'infoDark' : 'textLight'}
             textColour={isCurrentProgramme ? 'white' : 'textLight'}
             backgroundColour={isCurrentProgramme ? 'infoDark' : 'white'}
-            text={`${fProg.name}, ${getDateRangeText(fProg.startDate, fProg.endDate)}`}
+            text={`${fProg.name}, ${getDateRangeText(
+              fProg.startDate,
+              fProg.endDate
+            )}`}
             onClick={() => {
               onSummarySelected(fProg);
             }}

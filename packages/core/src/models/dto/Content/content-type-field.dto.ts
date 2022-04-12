@@ -1,4 +1,3 @@
-
 import { EntityBase } from '../entity-base';
 import { FieldTypeDto } from './field-type.dto';
 

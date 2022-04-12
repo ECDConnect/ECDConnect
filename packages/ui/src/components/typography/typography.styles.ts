@@ -1,7 +1,6 @@
 import { classNames } from '../../utils/style-class.utils';
 import { TypographyType } from './models/TypographyTypes';
 
-
 export const h1 = 'font-bold text-24 font-h1';
 export const h2 = 'font-semibold text-lg font-body';
 export const h3 = 'font-semibold font-body';
@@ -29,7 +28,8 @@ const getWeightStyles = (weight?: string) => {
   }
 };
 
-const getUnderlineStyle = (underline?: boolean) => `${underline ? 'underline' : ''}`;
+const getUnderlineStyle = (underline?: boolean) =>
+  `${underline ? 'underline' : ''}`;
 
 const getHoverStyle = (hover?: boolean) => `${hover ? 'cursor-pointer' : ''}`;
 

@@ -19,7 +19,11 @@ export const SideMenu: React.FC<SideMenuProps> = ({
   return (
     <div>
       <Transition.Root show={sidebarOpen} as={Fragment}>
-        <Dialog as="div" className="fixed inset-0 flex z-40" onClose={setSidebarOpen}>
+        <Dialog
+          as="div"
+          className="fixed inset-0 flex z-40"
+          onClose={setSidebarOpen}
+        >
           <Transition.Child
             as={Fragment}
             enter="transition-opacity ease-linear duration-300"
@@ -71,27 +75,47 @@ export const SideMenu: React.FC<SideMenuProps> = ({
                       key={item.name}
                       onClick={() => onNavigation(item)}
                       className={classNames(
-                        item.current ? 'text-white bg-primary' : 'text-white bg-textDark',
+                        item.current
+                          ? 'text-white bg-primary'
+                          : 'text-white bg-textDark',
                         'group flex flex-row items-center px-2 py-2 text-base font-medium rounded-md'
                       )}
                     >
-                      <div className={'w-2/3 h-full flex flex-row items-center'}>
-                        <div className={'w-1/12 items-center justify-center mr-4 '}>
-                          {item.icon && renderIcon(item.icon, 'flex-shrink-0 h-6 w-6 text-white')}
+                      <div
+                        className={'w-2/3 h-full flex flex-row items-center'}
+                      >
+                        <div
+                          className={'w-1/12 items-center justify-center mr-4 '}
+                        >
+                          {item.icon &&
+                            renderIcon(
+                              item.icon,
+                              'flex-shrink-0 h-6 w-6 text-white'
+                            )}
                         </div>
-                        <Typography type={'body'} color={'white'} text={item.name} />
+                        <Typography
+                          type={'body'}
+                          color={'white'}
+                          text={item.name}
+                        />
                       </div>
 
                       <div className={'w-1/3 flex flex-row justify-end'}>
-                        {item.getNotificationCount && item.getNotificationCount() > 0 && (
-                          <Badge>{item.getNotificationCount()}</Badge>
-                        )}
+                        {item.getNotificationCount &&
+                          item.getNotificationCount() > 0 && (
+                            <Badge>{item.getNotificationCount()}</Badge>
+                          )}
                       </div>
                     </div>
                   ))}
                 </nav>
                 {version && (
-                  <Typography align="center" type={'body'} color="white" text={version} />
+                  <Typography
+                    align="center"
+                    type={'body'}
+                    color="white"
+                    text={version}
+                  />
                 )}
               </div>
             </div>

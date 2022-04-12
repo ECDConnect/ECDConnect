@@ -7,7 +7,10 @@ export type OfflineSyncErrorProps = {
   onCancel?: () => void;
 };
 
-const OfflineSyncError: React.FC<OfflineSyncErrorProps> = ({ onSubmit, onCancel }) => {
+const OfflineSyncError: React.FC<OfflineSyncErrorProps> = ({
+  onSubmit,
+  onCancel,
+}) => {
   const actionButtons: ActionModalButton[] = [
     {
       text: 'Sync my app',

@@ -3,7 +3,7 @@ import { GrantDto } from '../models/dto/StaticData/grant.dto';
 
 export const initialGrantValues: GrantDto = {
   description: '',
-  enumId: ''
+  enumId: '',
 };
 
 export const grantSchema = Yup.object().shape({

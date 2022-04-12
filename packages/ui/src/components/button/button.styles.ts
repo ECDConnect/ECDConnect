@@ -1,7 +1,11 @@
 import { Colours } from '../../models/Colours';
 import { classNames } from '../../utils/style-class.utils';
-import { ButtonType, ButtonShapeType, ButtonSize, ButtonBackgroundType } from './button.types';
-
+import {
+  ButtonType,
+  ButtonShapeType,
+  ButtonSize,
+  ButtonBackgroundType,
+} from './button.types';
 
 export const solid =
   'inline-flex items-center border-2 border-transparent text-sm font-normal rounded-md shadow-sm justify-center outline-none';
@@ -43,8 +47,9 @@ export const getButtonClassName = (
         outline,
         disabled
           ? disabledOutline
-          : `border-${color} text-${color} bg-${background === 'filled' ? 'white' : 'transparent'
-          }`
+          : `border-${color} text-${color} bg-${
+              background === 'filled' ? 'white' : 'transparent'
+            }`
       );
       break;
     case 'ghost':

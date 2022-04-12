@@ -1,6 +1,10 @@
 import { ActionSelect } from '@ecdlink/ui';
 import { ActionSelectItem, ComponentBaseProps } from '@ecdlink/ui';
-import { getImageSourceFromCamera, getImageSourceFromFileSystem, renderIcon } from '@ecdlink/ui';
+import {
+  getImageSourceFromCamera,
+  getImageSourceFromFileSystem,
+  renderIcon,
+} from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import * as styles from './photo-prompt.styles';
 import { PhotoPromptActionType } from './photo-prompt.types';
@@ -17,8 +21,15 @@ export interface PhotoPromptProps extends ComponentBaseProps {
  *
  */
 
-export const PhotoPrompt: React.FC<PhotoPromptProps> = ({ title, onClose, onAction, onDelete }) => {
-  const [actions, setActions] = useState<ActionSelectItem<PhotoPromptActionType>[]>([]);
+export const PhotoPrompt: React.FC<PhotoPromptProps> = ({
+  title,
+  onClose,
+  onAction,
+  onDelete,
+}) => {
+  const [actions, setActions] = useState<
+    ActionSelectItem<PhotoPromptActionType>[]
+  >([]);
 
   useEffect(() => {
     getActions();

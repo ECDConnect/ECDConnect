@@ -27,7 +27,9 @@ const userSlice = createSlice({
       if (!state.userConsent) state.userConsent = [];
 
       const existCheck = state.userConsent.some(
-        (x) => x.userId === action.payload.userId && x.consentType === action.payload.consentType
+        (x) =>
+          x.userId === action.payload.userId &&
+          x.consentType === action.payload.consentType
       );
 
       if (!existCheck) state.userConsent?.push(action.payload);

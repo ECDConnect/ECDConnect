@@ -1,5 +1,11 @@
 import { useMutation, useQuery } from '@apollo/client';
-import { NOTIFICATION, PermissionEnum, useDialog, useNotifications, usePanel } from '@ecdlink/core';
+import {
+  NOTIFICATION,
+  PermissionEnum,
+  useDialog,
+  useNotifications,
+  usePanel,
+} from '@ecdlink/core';
 import { DeleteRole, RoleList } from '@ecdlink/graphql';
 import { DialogPosition } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
@@ -129,8 +135,14 @@ export default function Roles() {
                 <UiTable
                   columns={[{ field: 'name', use: 'name' }]}
                   rows={tableData}
-                  editRow={hasPermission(PermissionEnum.update_system) && displayEditUserPanel}
-                  deleteRow={hasPermission(PermissionEnum.delete_system) && deleteRoleAndRefresh}
+                  editRow={
+                    hasPermission(PermissionEnum.update_system) &&
+                    displayEditUserPanel
+                  }
+                  deleteRow={
+                    hasPermission(PermissionEnum.delete_system) &&
+                    deleteRoleAndRefresh
+                  }
                 />
               </div>
             </div>

@@ -18,7 +18,10 @@ export interface CoachPanelProps {
   closeDialog: (value: boolean) => void;
 }
 
-export default function CoachPanelEdit({ coach, closeDialog }: CoachPanelProps) {
+export default function CoachPanelEdit({
+  coach,
+  closeDialog,
+}: CoachPanelProps) {
   const { setNotification } = useNotifications();
 
   const emitCloseDialog = (value: boolean) => {
@@ -44,12 +47,20 @@ export default function CoachPanelEdit({ coach, closeDialog }: CoachPanelProps) 
       coachSetValue('areaOfOperation', coach.areaOfOperation ?? '', {
         shouldValidate: true,
       });
-      coachSetValue('secondaryAreaOfOperation', coach.secondaryAreaOfOperation ?? '', {
-        shouldValidate: true,
-      });
-      coachSetValue('startDate', coach.startDate ? new Date(coach.startDate) : undefined, {
-        shouldValidate: true,
-      });
+      coachSetValue(
+        'secondaryAreaOfOperation',
+        coach.secondaryAreaOfOperation ?? '',
+        {
+          shouldValidate: true,
+        }
+      );
+      coachSetValue(
+        'startDate',
+        coach.startDate ? new Date(coach.startDate) : undefined,
+        {
+          shouldValidate: true,
+        }
+      );
     }
   }, [coach, coachSetValue]);
 
@@ -98,9 +109,15 @@ export default function CoachPanelEdit({ coach, closeDialog }: CoachPanelProps) 
   return (
     <div className="flex flex-col min-w-0 flex-1 overflow-hidden">
       <article>
-        <UserPanelSave user={coach.user} disabled={!isCoachValid} onSave={onSave} />
+        <UserPanelSave
+          user={coach.user}
+          disabled={!isCoachValid}
+          onSave={onSave}
+        />
 
-        <div className="mt-6 max-w-5xl mx-auto sm:px-6 lg:px-8">{getComponent()}</div>
+        <div className="mt-6 max-w-5xl mx-auto sm:px-6 lg:px-8">
+          {getComponent()}
+        </div>
       </article>
     </div>
   );

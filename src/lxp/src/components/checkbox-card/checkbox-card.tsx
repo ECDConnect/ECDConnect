@@ -37,7 +37,11 @@ export const CheckboxCard = <T,>({
       className={classNames(
         styles.wrapper,
         className,
-        styles.getCheckboxCardStyle(checked, checkedBackgroundColour, checkedFocusColour)
+        styles.getCheckboxCardStyle(
+          checked,
+          checkedBackgroundColour,
+          checkedFocusColour
+        )
       )}
       onClick={() => {
         onCheckboxChange &&
@@ -71,7 +75,11 @@ export const CheckboxCard = <T,>({
           />
         )}
         <div className={styles.textContainer}>
-          <Typography type="body" color={descriptionColor} text={description || ''}></Typography>
+          <Typography
+            type="body"
+            color={descriptionColor}
+            text={description || ''}
+          ></Typography>
         </div>
       </div>
     </div>

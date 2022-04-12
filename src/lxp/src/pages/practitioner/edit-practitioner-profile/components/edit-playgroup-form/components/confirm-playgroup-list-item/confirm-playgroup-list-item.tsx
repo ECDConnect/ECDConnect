@@ -1,16 +1,19 @@
 import { Button, Typography } from '@ecdlink/ui';
 import { renderIcon } from '@ecdlink/ui';
-import { getWeekdayValue, Weekdays } from '@utils/practitioner/playgroups-utils';
+import {
+  getWeekdayValue,
+  Weekdays,
+} from '@utils/practitioner/playgroups-utils';
 import * as styles from './confirm-playgroup-list-item.styles';
 import { ConfirmPlaygroupListItemProps } from './confirm-playgroup-list-item.types';
 
-export const ConfirmPlayGroupListItem: React.FC<ConfirmPlaygroupListItemProps> = ({
-  index,
-  playGroup,
-  onPlayGroupEdit,
-}) => {
+export const ConfirmPlayGroupListItem: React.FC<
+  ConfirmPlaygroupListItemProps
+> = ({ index, playGroup, onPlayGroupEdit }) => {
   const getText = () => {
-    return playGroup.meetingDays.map((day) => getWeekdayValue(day as Weekdays)).join(' & ');
+    return playGroup.meetingDays
+      .map((day) => getWeekdayValue(day as Weekdays))
+      .join(' & ');
   };
 
   return (

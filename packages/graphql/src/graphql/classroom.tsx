@@ -27,7 +27,7 @@ export const GetAllClassroom = gql`
             id
             dateOfBirth
             firstName
-            surname            
+            surname
             genderId
           }
         }
@@ -70,7 +70,7 @@ export const GetClassroomById = gql`
             id
             dateOfBirth
             firstName
-            surname            
+            surname
             genderId
           }
         }

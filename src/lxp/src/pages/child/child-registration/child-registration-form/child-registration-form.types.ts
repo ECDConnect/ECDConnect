@@ -3,7 +3,8 @@ import { ChildRegistrationFormModel } from '@schemas/child/child-registration/ch
 
 export type ChildRegistrationVariation = 'caregiver' | 'practitioner';
 
-export interface ChildRegistrationFormProps extends FormComponentProps<ChildRegistrationFormModel> {
+export interface ChildRegistrationFormProps
+  extends FormComponentProps<ChildRegistrationFormModel> {
   childRegisterForm?: ChildRegistrationFormModel;
   variation: ChildRegistrationVariation;
 }

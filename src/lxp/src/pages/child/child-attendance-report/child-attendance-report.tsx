@@ -1,5 +1,14 @@
-import { ChildAttendanceReportModel, ChildGroupingAttendanceReportModel } from '@ecdlink/core';
-import { BannerWrapper, Button, Divider, StatusChip, Typography } from '@ecdlink/ui';
+import {
+  ChildAttendanceReportModel,
+  ChildGroupingAttendanceReportModel,
+} from '@ecdlink/core';
+import {
+  BannerWrapper,
+  Button,
+  Divider,
+  StatusChip,
+  Typography,
+} from '@ecdlink/ui';
 import { renderIcon } from '@ecdlink/ui';
 import { endOfYear, getYear, startOfISOWeekYear } from 'date-fns';
 import { useEffect, useState } from 'react';
@@ -31,7 +40,9 @@ export const ChildAttendanceReportPage: React.FC = () => {
   const appDispatch = useAppDispatch();
 
   const child = useSelector(childrenSelectors.getChildById(childId));
-  const childUser = useSelector(childrenSelectors.getChildUserById(child?.userId));
+  const childUser = useSelector(
+    childrenSelectors.getChildUserById(child?.userId)
+  );
   const attendanceData = useSelector(attendanceSelectors.getTrackedAttendance);
 
   useEffect(() => {
@@ -54,7 +65,8 @@ export const ChildAttendanceReportPage: React.FC = () => {
       classGroupAttendance: [],
     });
   const [attendancePercentage, setAttendancePercentage] = useState<number>(0);
-  const [classroomGroup, setClassroomGroup] = useState<ChildGroupingAttendanceReportModel>();
+  const [classroomGroup, setClassroomGroup] =
+    useState<ChildGroupingAttendanceReportModel>();
 
   const authUser = useSelector(authSelectors.getAuthUser);
 
@@ -73,14 +85,21 @@ export const ChildAttendanceReportPage: React.FC = () => {
   useEffect(() => {
     async function init() {
       if (attendanceData && attendanceData.length > 0) {
-        await appDispatch(attendanceThunkActions.trackAttendanceSync({})).unwrap();
+        await appDispatch(
+          attendanceThunkActions.trackAttendanceSync({})
+        ).unwrap();
       }
 
       const startDate = startOfISOWeekYear(new Date());
       const endDate = endOfYear(new Date());
 
       new AttendanceService(authUser?.auth_token ?? '')
-        .getChildAttendanceRecords(child?.userId ?? '', classroomGroupId, startDate, endDate)
+        .getChildAttendanceRecords(
+          child?.userId ?? '',
+          classroomGroupId,
+          startDate,
+          endDate
+        )
         .then((data) => {
           setChildAttendanceReportData(data);
         });
@@ -152,7 +171,12 @@ export const ChildAttendanceReportPage: React.FC = () => {
             'w-full flex flex-row justify-between items-center border-b border-solid border-uiLight py-3'
           }
         >
-          <Typography className={'mt-2 w-1/2 pl-6'} type="small" color={'textMid'} text={'MONTH'} />
+          <Typography
+            className={'mt-2 w-1/2 pl-6'}
+            type="small"
+            color={'textMid'}
+            text={'MONTH'}
+          />
           <Typography
             className={'mt-2 w-1/2 pl-6'}
             type="small"
@@ -181,7 +205,9 @@ export const ChildAttendanceReportPage: React.FC = () => {
                   text={report.month}
                 />
                 <div className={'w-1/2 flex flex-row items-center pl-6'}>
-                  <div className={getShapeClass(reportItemShape, reportItemColor)}></div>
+                  <div
+                    className={getShapeClass(reportItemShape, reportItemColor)}
+                  ></div>
                   <Typography
                     align={'center'}
                     className={'ml-2'}
@@ -195,9 +221,18 @@ export const ChildAttendanceReportPage: React.FC = () => {
           })}
         <div className="px-4">
           <Divider className={'my-4'} />
-          <Button color={'primary'} type="filled" onClick={contactCaregiver} className="w-full">
+          <Button
+            color={'primary'}
+            type="filled"
+            onClick={contactCaregiver}
+            className="w-full"
+          >
             {renderIcon('ChatAlt2Icon', 'w-5 h-5 text-white mr-2')}
-            <Typography type="small" color={'white'} text={'Contact caregiver'} />
+            <Typography
+              type="small"
+              color={'white'}
+              text={'Contact caregiver'}
+            />
           </Button>
         </div>
       </div>

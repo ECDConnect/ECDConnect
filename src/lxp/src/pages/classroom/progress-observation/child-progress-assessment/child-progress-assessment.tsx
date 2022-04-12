@@ -13,7 +13,10 @@ import { useChildProgressObservation } from '@hooks/useChildProgressObservations
 
 import { childrenSelectors } from '@store/children';
 import { progressTrackingSelectors } from '@store/progress-tracking';
-import { getStorageItem, setStorageItem } from '@utils/common/local-storage.utils';
+import {
+  getStorageItem,
+  setStorageItem,
+} from '@utils/common/local-storage.utils';
 import { CategoryLevelForm } from './category-level-form/category-level-form';
 import { ChildDevelopmentLevelForm } from './child-development-level-form/child-development-level-form';
 import { ChildDevelopmentLevelFormModel } from '@schemas/classroom/child-progress-observations/child-development-level-form';
@@ -43,7 +46,9 @@ export const ChildProgressAssessment: React.FC = () => {
   const userHasTrackedBefore =
     getStorageItem(LocalStorageKeys.HasTrackedChildProgressBefore) || false;
   const currentChild = useSelector(childrenSelectors.getChildById(childId));
-  const currentChildUser = useSelector(childrenSelectors.getChildUserById(currentChild?.userId));
+  const currentChildUser = useSelector(
+    childrenSelectors.getChildUserById(currentChild?.userId)
+  );
   const category = useSelector(
     progressTrackingSelectors.getProgressTrackingCategoryById(
       location.state.progressTrackingCategoryId
@@ -91,22 +96,29 @@ export const ChildProgressAssessment: React.FC = () => {
   const [firstTimeTrackingPromptVisible, setFirstTimeTrackingPromptVisible] =
     useState<boolean>(false);
 
-  const [progressTrackingLevelOneAlertVisible, setProgressTrackingLevelOneAlertVisible] =
-    useState<boolean>(false);
+  const [
+    progressTrackingLevelOneAlertVisible,
+    setProgressTrackingLevelOneAlertVisible,
+  ] = useState<boolean>(false);
 
-  const [progressTrackingLevelTwoAlertVisible, setProgressTrackingLevelTwoAlertVisible] =
-    useState<boolean>(false);
+  const [
+    progressTrackingLevelTwoAlertVisible,
+    setProgressTrackingLevelTwoAlertVisible,
+  ] = useState<boolean>(false);
 
   const [childDevelopmentLevelForm, setChildDevelopmentLevelForm] =
     useState<ChildDevelopmentLevelFormModel>();
 
-  const [userObservedLevelOneWarning, setUserObservedLevelOneWarning] = useState<boolean>(false);
+  const [userObservedLevelOneWarning, setUserObservedLevelOneWarning] =
+    useState<boolean>(false);
 
-  const [userObservedLevelTwoWarning, setUserObservedLevelTwoWarning] = useState<boolean>(false);
+  const [userObservedLevelTwoWarning, setUserObservedLevelTwoWarning] =
+    useState<boolean>(false);
 
-  const { goToStep, canGoBack, goBackOneStep, activeStepKey } = useStepNavigation(
-    routeStep || ChildProgressAssessmentSteps.assessmentStepOne
-  );
+  const { goToStep, canGoBack, goBackOneStep, activeStepKey } =
+    useStepNavigation(
+      routeStep || ChildProgressAssessmentSteps.assessmentStepOne
+    );
 
   useEffect(() => {
     if (currentReport) {
@@ -127,14 +139,26 @@ export const ChildProgressAssessment: React.FC = () => {
     setFirstTimeTrackingPromptVisible(false);
   };
 
-  const saveChildDevelopmentLevelForm = (form: ChildDevelopmentLevelFormModel) => {
+  const saveChildDevelopmentLevelForm = (
+    form: ChildDevelopmentLevelFormModel
+  ) => {
     setCategoryAchievedLevel(form.levelId);
 
-    const level1Percentage = getChildAchievedLevelPercentage(ProgressTrackingLevels.LevelOne);
-    const level2Percentage = getChildAchievedLevelPercentage(ProgressTrackingLevels.LevelTwo);
-    const level3Percentage = getChildAchievedLevelPercentage(ProgressTrackingLevels.LevelThree);
+    const level1Percentage = getChildAchievedLevelPercentage(
+      ProgressTrackingLevels.LevelOne
+    );
+    const level2Percentage = getChildAchievedLevelPercentage(
+      ProgressTrackingLevels.LevelTwo
+    );
+    const level3Percentage = getChildAchievedLevelPercentage(
+      ProgressTrackingLevels.LevelThree
+    );
 
-    if (level1Percentage < 100 || level2Percentage < 100 || level3Percentage < 100) {
+    if (
+      level1Percentage < 100 ||
+      level2Percentage < 100 ||
+      level3Percentage < 100
+    ) {
       goToStep(ChildProgressAssessmentSteps.assessmentStepFive);
     } else {
       clearHelpingWithTaskId();
@@ -162,7 +186,9 @@ export const ChildProgressAssessment: React.FC = () => {
     });
   };
 
-  const saveChildLearningSupportForm = (form: ChildLearningSupportFormModel) => {
+  const saveChildLearningSupportForm = (
+    form: ChildLearningSupportFormModel
+  ) => {
     setHelpingWithTaskText(form.learningSupport || '');
     completeCurrentCategoryTracking();
     exitAssessment();
@@ -176,7 +202,9 @@ export const ChildProgressAssessment: React.FC = () => {
   const validateLevelOneSelection = () => {
     if (userObservedLevelOneWarning) return;
 
-    const childIsCompetentWithLevelOne = isCompetentInLevel(ProgressTrackingLevels.LevelOne);
+    const childIsCompetentWithLevelOne = isCompetentInLevel(
+      ProgressTrackingLevels.LevelOne
+    );
 
     if (childIsCompetentWithLevelOne) return;
 
@@ -186,14 +214,18 @@ export const ChildProgressAssessment: React.FC = () => {
   const validateLevelOneAndTwoSelection = () => {
     if (userObservedLevelTwoWarning) return;
 
-    const childIsCompetentWithLevelOne = isCompetentInLevel(ProgressTrackingLevels.LevelOne);
+    const childIsCompetentWithLevelOne = isCompetentInLevel(
+      ProgressTrackingLevels.LevelOne
+    );
 
     if (!childIsCompetentWithLevelOne) {
       setProgressTrackingLevelTwoAlertVisible(true);
       return;
     }
 
-    const childIsCompetentWithLevelTwo = isCompetentInLevel(ProgressTrackingLevels.LevelTwo);
+    const childIsCompetentWithLevelTwo = isCompetentInLevel(
+      ProgressTrackingLevels.LevelTwo
+    );
 
     if (!childIsCompetentWithLevelTwo) {
       setProgressTrackingLevelTwoAlertVisible(true);
@@ -277,7 +309,9 @@ export const ChildProgressAssessment: React.FC = () => {
         return (
           <ChildLearningSupportForm
             childId={currentChild?.id as string}
-            helpingWithSkillId={currentCategoryDetails?.supportingTask?.taskId || 0}
+            helpingWithSkillId={
+              currentCategoryDetails?.supportingTask?.taskId || 0
+            }
             onSubmit={(form: ChildLearningSupportFormModel) => {
               saveChildLearningSupportForm(form);
             }}

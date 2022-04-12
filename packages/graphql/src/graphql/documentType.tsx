@@ -20,7 +20,6 @@ export const GetDocumentTypesById = gql`
   }
 `;
 
-
 export const CreateDocumentType = gql`
   mutation createDocumentType($input: DocumentTypeInput) {
     createDocumentType(input: $input) {
@@ -36,7 +35,6 @@ export const UpdateDocumentType = gql`
     }
   }
 `;
-
 
 export const DeleteDocumentType = gql`
   mutation deleteDocumentType($id: UUID!) {

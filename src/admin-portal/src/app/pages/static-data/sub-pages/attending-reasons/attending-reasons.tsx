@@ -7,7 +7,10 @@ import {
   useNotifications,
   usePanel,
 } from '@ecdlink/core';
-import { DeleteProgrammeAttendanceReason, GetAllProgrammeAttendanceReason } from '@ecdlink/graphql';
+import {
+  DeleteProgrammeAttendanceReason,
+  GetAllProgrammeAttendanceReason,
+} from '@ecdlink/graphql';
 import { DialogPosition } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
@@ -120,8 +123,13 @@ export default function AttendingReasonsView() {
                 <UiTable
                   columns={[{ field: 'reason', use: 'reason' }]}
                   rows={tableData}
-                  editRow={hasPermission(PermissionEnum.update_static) && displayPanel}
-                  deleteRow={hasPermission(PermissionEnum.delete_static) && deleteAndRefresh}
+                  editRow={
+                    hasPermission(PermissionEnum.update_static) && displayPanel
+                  }
+                  deleteRow={
+                    hasPermission(PermissionEnum.delete_static) &&
+                    deleteAndRefresh
+                  }
                 />
               </div>
             </div>

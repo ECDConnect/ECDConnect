@@ -18,7 +18,11 @@ export const pushAnalytics = createAsyncThunk<
     try {
       if (viewTracking) {
         for (const viewTrackingItem of viewTracking) {
-          ReactGA.pageview(viewTrackingItem.pageView, undefined, viewTrackingItem.title);
+          ReactGA.pageview(
+            viewTrackingItem.pageView,
+            undefined,
+            viewTrackingItem.title
+          );
         }
       }
 

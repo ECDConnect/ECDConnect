@@ -20,7 +20,8 @@ export interface Notification {
   timeout?: number | null; // pass in null for no timeout
 }
 
-type OptionalExceptFor<T, TRequired extends keyof T> = Partial<T> & Pick<T, TRequired>;
+type OptionalExceptFor<T, TRequired extends keyof T> = Partial<T> &
+  Pick<T, TRequired>;
 type AddNotification = OptionalExceptFor<Notification, 'message'>;
 
 const defaultApi = {
@@ -34,7 +35,8 @@ export type NotificationsContextApi = typeof defaultApi;
 /**
  * Create Context
  */
-export const NotificationsContext = React.createContext<NotificationsContextApi>(defaultApi);
+export const NotificationsContext =
+  React.createContext<NotificationsContextApi>(defaultApi);
 
 /**
  * Custom Notifications Provider
@@ -70,7 +72,9 @@ export function NotificationsProvider({ children }: any) {
         setNotifications([]);
       } else {
         const ids = Array.isArray(id) ? id : [id];
-        const nextNotifications = notifications.filter(({ id }) => !ids.includes(id));
+        const nextNotifications = notifications.filter(
+          ({ id }) => !ids.includes(id)
+        );
         setNotifications(nextNotifications);
       }
     },
@@ -82,7 +86,8 @@ export function NotificationsProvider({ children }: any) {
     (currentTime) => {
       if (notifications.length) {
         const expiredIds = notifications.reduce((acc, n: any) => {
-          const isExpired = n.timestamp <= currentTime - (n.timeout || DEFAULT_TIMEOUT);
+          const isExpired =
+            n.timestamp <= currentTime - (n.timeout || DEFAULT_TIMEOUT);
           return isExpired && n.timeout !== null ? acc.concat(n.id) : acc;
         }, []);
         if (expiredIds.length) {

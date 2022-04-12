@@ -3,7 +3,9 @@ import { classNames } from '@ecdlink/ui';
 import * as styles from './icon-information-indicator.styles';
 import { IconInformationIndicatorProps } from './icon-information-indicator.types';
 
-export const IconInformationIndicator: React.FC<IconInformationIndicatorProps> = ({
+export const IconInformationIndicator: React.FC<
+  IconInformationIndicatorProps
+> = ({
   title,
   subTitle,
   actions,

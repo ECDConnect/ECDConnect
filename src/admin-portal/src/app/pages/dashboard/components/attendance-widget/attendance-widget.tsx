@@ -25,7 +25,9 @@ export default function AttendanceWidget() {
             {data.attendance.map((attendance: AttendanceDto) => {
               ++key;
               return (
-                <li key={`${attendance.userId}${attendance.attendanceDate}${key}`}>
+                <li
+                  key={`${attendance.userId}${attendance.attendanceDate}${key}`}
+                >
                   <div className="block hover:bg-gray-50">
                     <div className="flex items-center px-4 py-4 sm:px-6">
                       <div className="min-w-0 flex-1 flex items-center">
@@ -33,8 +35,12 @@ export default function AttendanceWidget() {
                           <UserAvatar
                             size={'md'}
                             avatarColor={getAvatarColor()}
-                            text={`${attendance?.user?.firstName && attendance.user.firstName[0]}${
-                              attendance?.user?.surname && attendance.user.surname[0]
+                            text={`${
+                              attendance?.user?.firstName &&
+                              attendance.user.firstName[0]
+                            }${
+                              attendance?.user?.surname &&
+                              attendance.user.surname[0]
                             }`}
                             displayBorder
                           />
@@ -42,7 +48,8 @@ export default function AttendanceWidget() {
                         <div className="min-w-0 flex-1 px-4 md:grid md:grid-cols-2 md:gap-4">
                           <div>
                             <p className="text-sm font-medium text-primary truncate">
-                              {attendance.user?.firstName} {attendance.user?.surname}
+                              {attendance.user?.firstName}{' '}
+                              {attendance.user?.surname}
                             </p>
                             <p className="mt-2 flex items-center text-sm text-gray-500">
                               <AcademicCapIcon
@@ -50,7 +57,10 @@ export default function AttendanceWidget() {
                                 aria-hidden="true"
                               />
                               <span className="truncate">
-                                {attendance.classroomProgramme?.classroomGroup?.name}
+                                {
+                                  attendance.classroomProgramme?.classroomGroup
+                                    ?.name
+                                }
                               </span>
                             </p>
                           </div>
@@ -58,7 +68,10 @@ export default function AttendanceWidget() {
                             <div>
                               <p className="text-sm text-gray-900">
                                 {attendance.attendanceDate &&
-                                  format(new Date(attendance.attendanceDate), 'MM/dd/yyyy')}
+                                  format(
+                                    new Date(attendance.attendanceDate),
+                                    'MM/dd/yyyy'
+                                  )}
                               </p>
                               <p className="mt-2 flex items-center text-sm text-gray-500">
                                 {attendance.attended ? (

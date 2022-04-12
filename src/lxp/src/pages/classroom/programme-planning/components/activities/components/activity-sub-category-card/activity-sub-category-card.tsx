@@ -4,12 +4,13 @@ import SkillCard from '../../../skill-card/skill-card';
 import { ActivitySubCategoryCardProps } from './activity-sub-category-card.types';
 import { classNames } from '@ecdlink/ui';
 
-export const ActivitySubCategoryCard: React.FC<ActivitySubCategoryCardProps> = ({
-  subCategory,
-  className,
-}) => {
+export const ActivitySubCategoryCard: React.FC<
+  ActivitySubCategoryCardProps
+> = ({ subCategory, className }) => {
   const category = useSelector(
-    progressTrackingSelectors.getProgressTrackingCategoryBySubCategoryId(subCategory?.id)
+    progressTrackingSelectors.getProgressTrackingCategoryBySubCategoryId(
+      subCategory?.id
+    )
   );
 
   return (

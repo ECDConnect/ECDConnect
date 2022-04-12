@@ -9,7 +9,7 @@
     "build:fe": "yarn bootstrap && (cd ./src/lxp && yarn build)",
     "lint:fe": "eslint ./src/lxp/src --ext .js,jsx,.ts,.tsx",
     "lint:portal": "eslint ./src/admin-portal/src --ext .js,jsx,.ts,.tsx",
-    "format": "prettier --write './src/{lxp,admin-portal}/src/**/*.{ts,tsx}'",
+    "format": "prettier --write './**/*.{ts,tsx}'",
     "format:portal": "prettier --write './src/admin-portal/src/**/*.{ts,tsx}'",
     "format:fe": "prettier --write './src/lxp/src/**/*.{ts,tsx}'",
     "lint:watch:fe": "esw -w --clear ./src/lxp/src --ext .js,jsx,.ts,.tsx",
@@ -132,7 +132,7 @@
     "typescript": "4.4.4"
   },
   "lint-staged": {
-    "./src/{lxp,admin-portal}/src/**/*.{ts,tsx}": "yarn format"
+    "*.{ts,tsx}": "prettier --write"
   },
   "resolutions": {
     "immer": "^9.0.7",

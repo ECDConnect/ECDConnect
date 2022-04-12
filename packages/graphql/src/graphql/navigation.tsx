@@ -7,13 +7,13 @@ export const GetAllNavigation = gql`
       name
       icon
       route
-      description      
+      description
       isActive
       sequence
       permissions {
-         id
-         name 
-         isActive
+        id
+        name
+        isActive
       }
     }
   }
@@ -50,16 +50,26 @@ export const DeleteNavigation = gql`
   }
 `;
 
-
 export const AddPermissionToNavigation = gql`
-  mutation addPermissionsToNavigation($navigationId: UUID!, $permissionIds: [UUID!]) {
-    addPermissionsToNavigation(navigationId: $navigationId, permissionIds: $permissionIds)
+  mutation addPermissionsToNavigation(
+    $navigationId: UUID!
+    $permissionIds: [UUID!]
+  ) {
+    addPermissionsToNavigation(
+      navigationId: $navigationId
+      permissionIds: $permissionIds
+    )
   }
 `;
 
 export const RemovePermissionFromNavigation = gql`
-  mutation removePermissionsFromNavigation($navigationId: UUID!, $permissionIds: [UUID!]) {
-    removePermissionsFromNavigation(navigationId: $navigationId, permissionIds: $permissionIds)
+  mutation removePermissionsFromNavigation(
+    $navigationId: UUID!
+    $permissionIds: [UUID!]
+  ) {
+    removePermissionsFromNavigation(
+      navigationId: $navigationId
+      permissionIds: $permissionIds
+    )
   }
 `;
-

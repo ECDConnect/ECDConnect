@@ -4,7 +4,7 @@ export const GetAllProgressTrackingSkill = gql`
   {
     GetAllProgressTrackingSkill {
       id
-      levelId      
+      levelId
       description
       subCategoryId
       level {
@@ -12,7 +12,7 @@ export const GetAllProgressTrackingSkill = gql`
       }
       subCategory {
         title
-      }      
+      }
     }
   }
 `;
@@ -21,15 +21,15 @@ export const GetProgressTrackingSkillId = gql`
   query GetProgressTrackingSkillId($id: UUID) {
     GetProgressTrackingSkillId(id: $id) {
       id
-      LevelId      
-      description  
+      LevelId
+      description
       subCategoryId
       level {
         title
       }
       subCategory {
         title
-      }      
+      }
     }
   }
 `;
@@ -37,15 +37,18 @@ export const GetProgressTrackingSkillId = gql`
 export const CreateProgressTrackingSkill = gql`
   mutation createProgressTrackingSkill($input: ProgressTrackingSkillInput) {
     createProgressTrackingSkill(input: $input) {
-      id      
+      id
     }
   }
 `;
 
 export const UpdateProgressTrackingSkill = gql`
-  mutation updateProgressTrackingSkill($input: ProgressTrackingSkillInput, $id: UUID) {
+  mutation updateProgressTrackingSkill(
+    $input: ProgressTrackingSkillInput
+    $id: UUID
+  ) {
     updateProgressTrackingSkill(input: $input, id: $id) {
-      id      
+      id
     }
   }
 `;

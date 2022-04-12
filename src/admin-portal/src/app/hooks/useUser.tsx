@@ -1,7 +1,14 @@
 import { useQuery } from '@apollo/client';
 import { PermissionDto, UserDto } from '@ecdlink/core';
 import { GetUserById } from '@ecdlink/graphql';
-import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from 'react';
+import {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 
 export interface UserContextType {
   user?: UserDto;

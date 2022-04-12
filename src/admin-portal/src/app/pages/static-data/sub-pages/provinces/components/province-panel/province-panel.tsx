@@ -1,6 +1,10 @@
 /* This example requires Tailwind CSS v2.0+ */
 import { useMutation } from '@apollo/client';
-import { CreateProvince, ProvinceInput, UpdateProvince } from '@ecdlink/graphql';
+import {
+  CreateProvince,
+  ProvinceInput,
+  UpdateProvince,
+} from '@ecdlink/graphql';
 import { ProvinceDto } from '@ecdlink/core';
 import { initialProvinceValues, provinceSchema } from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -92,7 +96,10 @@ export default function ProvincePanel(props: ProvinceProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 divide-y divide-gray-200">
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="space-y-8 divide-y divide-gray-200"
+    >
       <div className="space-y-8 divide-y divide-gray-200">
         <div className="pt-8">
           <div className="grid grid-cols-2">

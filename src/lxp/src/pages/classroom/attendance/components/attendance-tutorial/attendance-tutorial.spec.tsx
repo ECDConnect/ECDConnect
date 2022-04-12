@@ -4,7 +4,9 @@ import AttendanceTutorial from './attendance-tutorial';
 
 describe('AttendanceTutorial', () => {
   it('should render successfully', () => {
-    const { baseElement } = render(<AttendanceTutorial onClose={() => {}} onComplete={() => {}} />);
+    const { baseElement } = render(
+      <AttendanceTutorial onClose={() => {}} onComplete={() => {}} />
+    );
     expect(baseElement).toBeTruthy();
   });
 });

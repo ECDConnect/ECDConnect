@@ -73,13 +73,18 @@ class UserService {
     });
 
     if (response.status !== 200) {
-      throw new Error('Getting GetAllUserConsent failed - Server connection error');
+      throw new Error(
+        'Getting GetAllUserConsent failed - Server connection error'
+      );
     }
 
     return response.data.data.GetAllUserConsent;
   }
 
-  async updateUserConsents(id: string, input: UserConsentInput): Promise<boolean> {
+  async updateUserConsents(
+    id: string,
+    input: UserConsentInput
+  ): Promise<boolean> {
     const apiInstance = await api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
@@ -102,7 +107,10 @@ class UserService {
     return true;
   }
 
-  async resetUserPassword(userId: string, newPassword: string): Promise<boolean> {
+  async resetUserPassword(
+    userId: string,
+    newPassword: string
+  ): Promise<boolean> {
     const apiInstance = await api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
@@ -117,7 +125,9 @@ class UserService {
     });
 
     if (response.status !== 200) {
-      throw new Error('Resetting User Password failed - Server connection error');
+      throw new Error(
+        'Resetting User Password failed - Server connection error'
+      );
     }
 
     return true;

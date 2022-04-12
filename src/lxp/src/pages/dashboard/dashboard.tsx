@@ -46,8 +46,12 @@ export const Dashboard: React.FC = () => {
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
   const dialog = useDialog();
-  const newNotificationCount = useSelector(notificationsSelectors.getNewNotificationCount);
-  const dashboardNotification = useSelector(notificationsSelectors.getDashboardNotification);
+  const newNotificationCount = useSelector(
+    notificationsSelectors.getNewNotificationCount
+  );
+  const dashboardNotification = useSelector(
+    notificationsSelectors.getDashboardNotification
+  );
   const { userProfilePicture } = useDocuments();
 
   useEffect(() => {
@@ -120,7 +124,9 @@ export const Dashboard: React.FC = () => {
                   position: DialogPosition.Bottom,
                   blocking: true,
                   render: (onSubmit, onCancel) => {
-                    return <OfflineSyncModal onSubmit={onSubmit}></OfflineSyncModal>;
+                    return (
+                      <OfflineSyncModal onSubmit={onSubmit}></OfflineSyncModal>
+                    );
                   },
                 });
               }}
@@ -203,9 +209,18 @@ export const Dashboard: React.FC = () => {
       backgroundImageColour={'primary'}
       avatar={
         userProfilePicture?.file ? (
-          <Avatar dataUrl={userProfilePicture?.file} size={'sm'} displayBorder={true} />
+          <Avatar
+            dataUrl={userProfilePicture?.file}
+            size={'sm'}
+            displayBorder={true}
+          />
         ) : (
-          <UserAvatar size="sm-md" color="transparent" displayBorder borderColour="white" />
+          <UserAvatar
+            size="sm-md"
+            color="transparent"
+            displayBorder
+            borderColour="white"
+          />
         )
       }
       menuItems={navigation}
@@ -240,7 +255,9 @@ export const Dashboard: React.FC = () => {
         className={styles.welcomeText}
       />
 
-      <div className={`${!classroom ? styles.wrapper : 'bg-white rounded p-0.5'}`}>
+      <div
+        className={`${!classroom ? styles.wrapper : 'bg-white rounded p-0.5'}`}
+      >
         <DashboardItems
           listItems={[
             {

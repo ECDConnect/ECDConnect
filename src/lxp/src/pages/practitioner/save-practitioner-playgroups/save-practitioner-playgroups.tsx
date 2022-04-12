@@ -11,7 +11,10 @@ import * as styles from './save-practitioner-playgroups.styles';
 import { useAppDispatch } from '@store';
 import { classroomsActions, classroomsSelectors } from '@store/classroom';
 import { newGuid } from '@utils/common/uuid.utils';
-import { EditPlaygroupsState, EditPlaygroupsSteps } from './save-practitioner-playgroups.types';
+import {
+  EditPlaygroupsState,
+  EditPlaygroupsSteps,
+} from './save-practitioner-playgroups.types';
 import { staticDataSelectors } from '@store/static-data';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { ProgrammeTypeEnum } from '@ecdlink/graphql';
@@ -21,9 +24,8 @@ export const EditPlaygroups: React.FC = () => {
   const { returnRoute } = location.state;
   const history = useHistory();
   const [activePlaygroupIndex, setActivePlaygroupIndex] = useState<number>(0);
-  const { activeStepKey, goToStep, goBackOneStep, canGoBack } = useStepNavigation(
-    EditPlaygroupsSteps.confirm
-  );
+  const { activeStepKey, goToStep, goBackOneStep, canGoBack } =
+    useStepNavigation(EditPlaygroupsSteps.confirm);
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
   const dialog = useDialog();
@@ -32,7 +34,9 @@ export const EditPlaygroups: React.FC = () => {
   const classProgrammes = useSelector(classroomsSelectors.getClassProgrammes);
   const programmeTypes = useSelector(staticDataSelectors.getProgrammeTypes);
 
-  const [updatedPlaygroups, setUpdatedPlaygroups] = useState<EditPlaygroupModel[]>([]);
+  const [updatedPlaygroups, setUpdatedPlaygroups] = useState<
+    EditPlaygroupModel[]
+  >([]);
 
   useEffect(() => {
     if (classroomGroups && classProgrammes) {
@@ -49,8 +53,11 @@ export const EditPlaygroups: React.FC = () => {
           classroomId: groupedItem.classroomId,
           name: groupedItem.name,
           classroomGroupId: groupedItem.id,
-          meetingDays: filteredClassProgrammes && filteredClassProgrammes?.map((x) => x.meetingDay),
-          isFullDay: filteredClassProgrammes && filteredClassProgrammes[0].isFullDay,
+          meetingDays:
+            filteredClassProgrammes &&
+            filteredClassProgrammes?.map((x) => x.meetingDay),
+          isFullDay:
+            filteredClassProgrammes && filteredClassProgrammes[0].isFullDay,
         } as EditPlaygroupModel);
       });
 
@@ -58,7 +65,10 @@ export const EditPlaygroups: React.FC = () => {
     }
   }, [classroomGroups, classProgrammes]);
 
-  const onPlayGroupsEdit = (playgroups: EditPlaygroupModel[], index: number) => {
+  const onPlayGroupsEdit = (
+    playgroups: EditPlaygroupModel[],
+    index: number
+  ) => {
     setUpdatedPlaygroups(playgroups);
     setActivePlaygroupIndex(index);
     goToStep(EditPlaygroupsSteps.edit);
@@ -87,7 +97,9 @@ export const EditPlaygroups: React.FC = () => {
   const saveEditedPlayGroups = async (results: EditPlaygroupModel[]) => {
     if (classroom) {
       for (const playGroup of results) {
-        const currentGroup = classroomGroups?.find((x) => x.id === playGroup.classroomGroupId);
+        const currentGroup = classroomGroups?.find(
+          (x) => x.id === playGroup.classroomGroupId
+        );
 
         if (currentGroup) {
           const currentGroupCopy = Object.assign({}, currentGroup);
@@ -105,12 +117,16 @@ export const EditPlaygroups: React.FC = () => {
 
           if (removablePlaygroups) {
             for (const removePlaygroup of removablePlaygroups) {
-              appDispatch(classroomsActions.deleteClassroomProgramme(removePlaygroup));
+              appDispatch(
+                classroomsActions.deleteClassroomProgramme(removePlaygroup)
+              );
             }
           }
 
           for (const meetingDay of playGroup.meetingDays) {
-            const currentGroupItem = classProgrammes?.find((x) => x.meetingDay === meetingDay);
+            const currentGroupItem = classProgrammes?.find(
+              (x) => x.meetingDay === meetingDay
+            );
 
             const playgroupInputModel: ClassProgrammeDto = {
               id: newGuid(),
@@ -124,13 +140,19 @@ export const EditPlaygroups: React.FC = () => {
 
             if (currentGroupItem) {
               playgroupInputModel.id = currentGroupItem.id;
-              appDispatch(classroomsActions.updateClassroomProgramme(playgroupInputModel));
+              appDispatch(
+                classroomsActions.updateClassroomProgramme(playgroupInputModel)
+              );
             } else {
-              appDispatch(classroomsActions.createClassroomProgramme(playgroupInputModel));
+              appDispatch(
+                classroomsActions.createClassroomProgramme(playgroupInputModel)
+              );
             }
           }
         } else {
-          const type = programmeTypes.find((x) => x.enumId === ProgrammeTypeEnum.Playgroup);
+          const type = programmeTypes.find(
+            (x) => x.enumId === ProgrammeTypeEnum.Playgroup
+          );
 
           const classroomGroupInputModel: ClassroomGroupDto = {
             id: newGuid(),
@@ -141,7 +163,9 @@ export const EditPlaygroups: React.FC = () => {
             isActive: true,
           };
 
-          appDispatch(classroomsActions.createClassroomGroup(classroomGroupInputModel));
+          appDispatch(
+            classroomsActions.createClassroomGroup(classroomGroupInputModel)
+          );
 
           for (const meetingDay of playGroup.meetingDays) {
             const classProgrammeInputModel: ClassProgrammeDto = {
@@ -154,7 +178,11 @@ export const EditPlaygroups: React.FC = () => {
               isActive: true,
             };
 
-            appDispatch(classroomsActions.createClassroomProgramme(classProgrammeInputModel));
+            appDispatch(
+              classroomsActions.createClassroomProgramme(
+                classProgrammeInputModel
+              )
+            );
           }
         }
       }
@@ -256,7 +284,9 @@ export const EditPlaygroups: React.FC = () => {
       renderBorder
       displayOffline={!isOnline}
     >
-      <div className={styles.stepsWrapper}>{steps(activeStepKey as EditPlaygroupsSteps)}</div>
+      <div className={styles.stepsWrapper}>
+        {steps(activeStepKey as EditPlaygroupsSteps)}
+      </div>
     </BannerWrapper>
   );
 };

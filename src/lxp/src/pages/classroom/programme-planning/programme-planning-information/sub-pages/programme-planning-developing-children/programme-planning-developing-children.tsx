@@ -1,5 +1,11 @@
 import { ContentTypeEnum, LanguageDto, useDialog } from '@ecdlink/core';
-import { ActionModal, BannerWrapper, DialogPosition, Divider, Typography } from '@ecdlink/ui';
+import {
+  ActionModal,
+  BannerWrapper,
+  DialogPosition,
+  Divider,
+  Typography,
+} from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import LanguageSelector from '../../../../../../components/language-selector/language-selector';
@@ -7,7 +13,10 @@ import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { ContentService } from '@services/ContentService';
 import { useAppDispatch } from '@store';
 import { authSelectors } from '@store/auth';
-import { progressTrackingSelectors, progressTrackingThunkActions } from '@store/progress-tracking';
+import {
+  progressTrackingSelectors,
+  progressTrackingThunkActions,
+} from '@store/progress-tracking';
 import CategoryComponent from '../../components/category-component/category-component';
 import * as styles from './programme-planning-developing-children.styles';
 
@@ -17,12 +26,17 @@ export const ProgrammePlanningDevelopingChildren = () => {
   const dialog = useDialog();
   const { isOnline } = useOnlineStatus();
   const userAuth = useSelector(authSelectors.getAuthUser);
-  const categories = useSelector(progressTrackingSelectors.getProgressTrackingCategories);
+  const categories = useSelector(
+    progressTrackingSelectors.getProgressTrackingCategories
+  );
 
   const getDataByLanguage = async (language: LanguageDto) => {
     const hasTranslations = await new ContentService(
       userAuth?.auth_token ?? ''
-    ).hasContentTypeBeenTranslated(ContentTypeEnum.ProgressTrackingCategory, language.id ?? '');
+    ).hasContentTypeBeenTranslated(
+      ContentTypeEnum.ProgressTrackingCategory,
+      language.id ?? ''
+    );
 
     if (hasTranslations) {
       await appDispatch(
@@ -87,12 +101,17 @@ export const ProgrammePlanningDevelopingChildren = () => {
       backgroundColour={'uiBg'}
       displayOffline={!isOnline}
     >
-      <LanguageSelector currentLocale={'en-za'} selectLanguage={getDataByLanguage} />
+      <LanguageSelector
+        currentLocale={'en-za'}
+        selectLanguage={getDataByLanguage}
+      />
       <Divider />
       <div className={'px-4'}>
         <Typography
           className="mt-4"
-          text={'All your activities should result in the holistic development of each child.'}
+          text={
+            'All your activities should result in the holistic development of each child.'
+          }
           weight="bold"
           type="body"
           lineHeight="snug"
@@ -108,7 +127,10 @@ export const ProgrammePlanningDevelopingChildren = () => {
       </div>
       <div className={'pb-4'}>
         {categories?.map((category) => (
-          <div key={`progress-sub-category-card-${category.id}`} className="mt-2">
+          <div
+            key={`progress-sub-category-card-${category.id}`}
+            className="mt-2"
+          >
             <CategoryComponent category={category} />
           </div>
         ))}

@@ -14,7 +14,10 @@ const notificationsState = createSlice({
     resetNotificationState: (state) => {
       state.notifications = [];
     },
-    addNotifications: (state: NotificationsState, action: PayloadAction<Message[]>) => {
+    addNotifications: (
+      state: NotificationsState,
+      action: PayloadAction<Message[]>
+    ) => {
       const newNotifications = action.payload.map((message) => ({
         isNew: true,
         message,
@@ -40,7 +43,8 @@ const notificationsState = createSlice({
   },
 });
 
-const { reducer: notificationReducer, actions: notificationActions } = notificationsState;
+const { reducer: notificationReducer, actions: notificationActions } =
+  notificationsState;
 
 const notificationPersistConfig = {
   key: 'notifications',

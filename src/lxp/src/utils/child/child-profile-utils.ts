@@ -58,8 +58,13 @@ export const isInFinalMonthOfReportingPeriod = (date: Date) => {
   return currentDay <= 20;
 };
 
-export const getFollowingReportingPeriod = (reportDate: Date): ReportingPeriod => {
-  const [reportingPeriod, reportingYear] = [getReportingPeriod(reportDate), getYear(reportDate)];
+export const getFollowingReportingPeriod = (
+  reportDate: Date
+): ReportingPeriod => {
+  const [reportingPeriod, reportingYear] = [
+    getReportingPeriod(reportDate),
+    getYear(reportDate),
+  ];
 
   if (reportingPeriod.monthName === 'June') {
     return {
@@ -117,11 +122,15 @@ export const getChildsAttendancePercentageAtPlaygroup = (
   classroomGroupId: string,
   classProgrammes: ClassProgrammeDto[]
 ): ChildAttendancePercentageReport => {
-  const filteredProgrammes = classProgrammes.filter((x) => x.classroomGroupId === classroomGroupId);
+  const filteredProgrammes = classProgrammes.filter(
+    (x) => x.classroomGroupId === classroomGroupId
+  );
   const filteredProgrammesIds = filteredProgrammes.map((x) => x.id);
 
   let attendanceRecords = attendance.filter(
-    (x) => filteredProgrammesIds.includes(x.classroomProgrammeId) && x.userId === childUserId
+    (x) =>
+      filteredProgrammesIds.includes(x.classroomProgrammeId) &&
+      x.userId === childUserId
   );
 
   const attendedCount = attendanceRecords.filter(
@@ -141,7 +150,9 @@ export const getLastNoteDate = (notes: NoteDto[]) => {
   if (!notes) return '';
 
   const sortedNotes = notes.sort((noteA, noteB) => {
-    return isAfter(new Date(noteA.insertedDate), new Date(noteB.insertedDate)) ? 1 : -1;
+    return isAfter(new Date(noteA.insertedDate), new Date(noteB.insertedDate))
+      ? 1
+      : -1;
   });
 
   if (sortedNotes.length > 0) {
