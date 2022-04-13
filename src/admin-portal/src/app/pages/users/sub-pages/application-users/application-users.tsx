@@ -121,7 +121,7 @@ export default function ApplicationUsers() {
                   refetch();
 
                   setNotification({
-                    title: 'Successfully Deleted User!',
+                    title: 'Successfully Deactivated User!',
                     variant: NOTIFICATION.SUCCESS,
                   });
                 }
