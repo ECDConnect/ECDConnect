@@ -11,19 +11,23 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
-import { useOnlineStatus } from '../../../../../hooks/useOnlineStatus';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import * as styles from './attendance-tutorial.styles';
 import { AttendanceTutorialProps } from './attendance-tutorial.types';
 
-export const AttendanceTutorial = ({ onComplete, onClose }: AttendanceTutorialProps) => {
+export const AttendanceTutorial = ({
+  onComplete,
+  onClose,
+}: AttendanceTutorialProps) => {
   const { isOnline } = useOnlineStatus();
   const tutorialCompleteClicks = 3;
   const tutorialResetClicks = 4;
-  const [attendanceBadgeTutorialMessage, setAttendanceBadgeTutorialMessage] = useState<string>(
-    'Tap the tick mark once to mark Amahle present.'
-  );
-  const [tutorialProgressClicks, setTutorialProgressClicks] = useState<number>(0);
-  const [displayTutorialComplete, setDisplayTutorialComplete] = useState<boolean>(false);
+  const [attendanceBadgeTutorialMessage, setAttendanceBadgeTutorialMessage] =
+    useState<string>('Tap the tick mark once to mark Amahle present.');
+  const [tutorialProgressClicks, setTutorialProgressClicks] =
+    useState<number>(0);
+  const [displayTutorialComplete, setDisplayTutorialComplete] =
+    useState<boolean>(false);
   const [attendanceItem, setAttendanceItem] = useState<AttendanceListDataItem>({
     title: 'Amahle Khumalo',
     profileText: 'AM',
@@ -32,21 +36,29 @@ export const AttendanceTutorial = ({ onComplete, onClose }: AttendanceTutorialPr
     avatarColor: getAvatarColor(),
   });
 
-  const updateItemAttendance = (currentAttendanceItem: AttendanceListDataItem) => {
+  const updateItemAttendance = (
+    currentAttendanceItem: AttendanceListDataItem
+  ) => {
     switch (currentAttendanceItem.status) {
       case AttendanceStatus.Present:
-        setAttendanceBadgeTutorialMessage('Great! Now tap the tick again to mark Amahle absent.');
+        setAttendanceBadgeTutorialMessage(
+          'Great! Now tap the tick again to mark Amahle absent.'
+        );
         setTutorialProgressClicks(tutorialProgressClicks + 1);
         break;
       case AttendanceStatus.Absent:
-        setAttendanceBadgeTutorialMessage('Tap one more time if you need to mark them present.');
+        setAttendanceBadgeTutorialMessage(
+          'Tap one more time if you need to mark them present.'
+        );
         setTutorialProgressClicks(tutorialProgressClicks + 1);
         break;
       case AttendanceStatus.Unknown:
         setTutorialProgressClicks(tutorialProgressClicks + 1);
         break;
       default:
-        setAttendanceBadgeTutorialMessage('Tap the tick mark once to mark Amahle present.');
+        setAttendanceBadgeTutorialMessage(
+          'Tap the tick mark once to mark Amahle present.'
+        );
     }
   };
 
@@ -134,16 +146,23 @@ export const AttendanceTutorial = ({ onComplete, onClose }: AttendanceTutorialPr
         }
       />
       <div className={'px-4 pt-2 bg-uiBg'}>
-        {!displayTutorialComplete && <Alert title={attendanceBadgeTutorialMessage} type={'info'} />}
+        {!displayTutorialComplete && (
+          <Alert title={attendanceBadgeTutorialMessage} type={'info'} />
+        )}
         {displayTutorialComplete && (
-          <Alert title={'Good job, you’re ready to start tracking!'} type={'success'} />
+          <Alert
+            title={'Good job, you’re ready to start tracking!'}
+            type={'success'}
+          />
         )}
         <Typography
           className={'mt-4'}
           color={'textDark'}
           type={'body'}
           weight={'bolder'}
-          text={'How can I see and mark attendance for children from other playgroups?'}
+          text={
+            'How can I see and mark attendance for children from other playgroups?'
+          }
         />
         <Typography
           color={'textMid'}
@@ -162,7 +181,9 @@ export const AttendanceTutorial = ({ onComplete, onClose }: AttendanceTutorialPr
             placeholder={'Playgroups'}
             pluralSelectionText={'Playgroups'}
             color={'uiMidDark'}
-            selectedOptions={[{ label: 'Playgroup', value: 'Playgroup', id: '1' }]}
+            selectedOptions={[
+              { label: 'Playgroup', value: 'Playgroup', id: '1' },
+            ]}
           />
         </div>
         <Typography

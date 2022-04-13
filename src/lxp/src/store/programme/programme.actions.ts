@@ -1,7 +1,7 @@
 import { ProgrammeDto } from '@ecdlink/core';
 import { DailyProgrammeInput, ProgrammeInput } from '@ecdlink/graphql';
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { ProgrammeService } from '../../services/ProgrammeService';
+import { ProgrammeService } from '@services/ProgrammeService';
 import { RootState, ThunkApiType } from '../types';
 
 export const getProgrammes = createAsyncThunk<
@@ -23,7 +23,9 @@ export const getProgrammes = createAsyncThunk<
         let programmes: ProgrammeDto[] | undefined;
 
         if (userAuth?.auth_token) {
-          programmes = await new ProgrammeService(userAuth?.auth_token).getProgrammes(userAuth.id);
+          programmes = await new ProgrammeService(
+            userAuth?.auth_token
+          ).getProgrammes(userAuth.id);
         } else {
           return rejectWithValue('no access token, profile check required');
         }
@@ -90,7 +92,10 @@ export const upsertProgrammes = createAsyncThunk<
               IsActive: true,
             };
 
-            await _programmeService.updateDailyProgramme(daily.id ?? '', dailyInput);
+            await _programmeService.updateDailyProgramme(
+              daily.id ?? '',
+              dailyInput
+            );
           }
         }
       }

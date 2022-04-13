@@ -7,10 +7,8 @@ const PanelServiceContext = React.createContext<
 
 export const usePanel = () => React.useContext(PanelServiceContext);
 export const PanelServiceProvider = ({ children }: any) => {
-  const [
-    dialogState,
-    setDialogState,
-  ] = React.useState<SharedPanelOptions | null>(null);
+  const [dialogState, setDialogState] =
+    React.useState<SharedPanelOptions | null>(null);
 
   const awaitingPromiseRef = React.useRef<{
     resolve: () => void;

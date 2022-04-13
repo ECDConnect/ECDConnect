@@ -1,4 +1,3 @@
-
 import { Colours } from '../../models/Colours';
 import { ComponentBaseProps } from '../../models/ComponentBaseProps';
 import * as styles from './avatar.styles';
@@ -19,9 +18,14 @@ export const Avatar: React.FC<AvatarProps> = ({
   className,
 }) => {
   return (
-    <div className={`${styles.avatar(size, displayBorder)} ${className}`}
-      style={styles.getImageDimensionsBasedOnSizeType(size, borderColor, dataUrl)}>
-    </div>
+    <div
+      className={`${styles.avatar(size, displayBorder)} ${className}`}
+      style={styles.getImageDimensionsBasedOnSizeType(
+        size,
+        borderColor,
+        dataUrl
+      )}
+    ></div>
   );
 };
 

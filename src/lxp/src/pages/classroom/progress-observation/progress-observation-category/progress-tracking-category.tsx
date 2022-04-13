@@ -1,24 +1,27 @@
 import { BannerWrapper, Button, Divider, Typography } from '@ecdlink/ui';
-import { progressTrackingSelectors } from '../../../../store/progress-tracking';
+import { progressTrackingSelectors } from '@store/progress-tracking';
 import * as styles from './progress-tracking-category.styles';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
 import { renderIcon } from '@ecdlink/ui';
 import { ProgressObsersvationSubCategoryCard } from '../components/progress-observation-sub-category-card/progress-observation-sub-category-card';
-import { useChildProgressObservation } from '../../../../hooks/useChildProgressObservations';
+import { useChildProgressObservation } from '@hooks/useChildProgressObservations';
 import { useEffect } from 'react';
 import { ProgressObservationCategoryState } from './progress-tracking-category.types';
 import { ChildProgressAssessmentSteps } from '../child-progress-assessment/child-progress-assessment.types';
-import { useOnlineStatus } from '../../../../hooks/useOnlineStatus';
-import { contentReportSelectors } from '../../../../store/content/report';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
+import { contentReportSelectors } from '@store/content/report';
 
 export const ProgressObservationCategory = () => {
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
-  const { state: locationState } = useLocation<ProgressObservationCategoryState>();
+  const { state: locationState } =
+    useLocation<ProgressObservationCategoryState>();
   const { childId, progressTrackingCategoryId } = locationState;
   const category = useSelector(
-    progressTrackingSelectors.getProgressTrackingCategoryById(progressTrackingCategoryId)
+    progressTrackingSelectors.getProgressTrackingCategoryById(
+      progressTrackingCategoryId
+    )
   );
   const subCategories = useSelector(
     progressTrackingSelectors.getProgressTrackingSubCategoriesByCategoryId(
@@ -34,10 +37,8 @@ export const ProgressObservationCategory = () => {
       locationState.childId
     )
   );
-  const { setCurrentCategoryById, startCurrentCategoryTracking } = useChildProgressObservation(
-    childId,
-    report
-  );
+  const { setCurrentCategoryById, startCurrentCategoryTracking } =
+    useChildProgressObservation(childId, report);
 
   useEffect(() => {
     if (report) {
@@ -127,7 +128,12 @@ export const ProgressObservationCategory = () => {
             onClick={onStartTracking}
             className={styles.startButton}
           >
-            <Typography color={'white'} type={'help'} weight={'normal'} text={'Start tracking'} />
+            <Typography
+              color={'white'}
+              type={'help'}
+              weight={'normal'}
+              text={'Start tracking'}
+            />
           </Button>
         </div>
       </div>

@@ -13,18 +13,18 @@ import {
 import { getDay } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useAppDispatch } from '../../../../../store';
-import { analyticsActions } from '../../../../../store/analytics';
-import { attendanceActions } from '../../../../../store/attendance';
-import { ChildAttendance } from '../../../../../store/attendance/attendance.types';
-import { classroomsSelectors } from '../../../../../store/classroom';
-import { userSelectors } from '../../../../../store/user';
+import { useAppDispatch } from '@store';
+import { analyticsActions } from '@store/analytics';
+import { attendanceActions } from '@store/attendance';
+import { ChildAttendance } from '@store/attendance/attendance.types';
+import { classroomsSelectors } from '@store/classroom';
+import { userSelectors } from '@store/user';
 import {
   classroomGroupHasAttendanceOnDate,
   getAttendanceStatusCheck,
   getPlaygroup,
   mapTrackAttendance,
-} from '../../../../../utils/classroom/attendance/track-attendance-utils';
+} from '@utils/classroom/attendance/track-attendance-utils';
 import ClassProgrammeAttendanceList from '../class-programme-attendance-list/class-programme-attendance-list';
 import * as styles from './attendance-list.styles';
 import { AttendanceListProps, AttendanceState } from './attendance-list.types';
@@ -42,7 +42,9 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
   const [shouldFilter, setShouldFilter] = useState<boolean>(true);
 
   const [attendanceGroups, setAttendanceGroups] = useState<AttendanceState[]>();
-  const [selectedClassroomGroups, setSelectedClassroomGroups] = useState<ClassroomGroupDto[]>([]);
+  const [selectedClassroomGroups, setSelectedClassroomGroups] = useState<
+    ClassroomGroupDto[]
+  >([]);
 
   const filterInfo: FilterInfo = {
     filterName: 'Playgroup',
@@ -83,7 +85,9 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
   ) => {
     const newAttendanceGroups = [...(attendanceGroups || [])];
 
-    const groupIndex = newAttendanceGroups.findIndex((x) => x.cacheId === attendanceListId);
+    const groupIndex = newAttendanceGroups.findIndex(
+      (x) => x.cacheId === attendanceListId
+    );
 
     if (groupIndex === -1) {
       newAttendanceGroups.push({
@@ -103,7 +107,10 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
   };
 
   const updateAttendanceState = (attendanceGroups: AttendanceState[]) => {
-    const attendanceStatusCheck = getAttendanceStatusCheck(attendanceGroups, isButtonActive);
+    const attendanceStatusCheck = getAttendanceStatusCheck(
+      attendanceGroups,
+      isButtonActive
+    );
 
     setPresentChildrenCount(attendanceStatusCheck.presentCount);
     setAbsentChildrenCount(attendanceStatusCheck.absentCount);
@@ -123,7 +130,9 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
 
     if (!currentGroup) return;
 
-    const currentAttendanceGroup = attendanceGroups?.find((x) => x.cacheId === currentGroup.id);
+    const currentAttendanceGroup = attendanceGroups?.find(
+      (x) => x.cacheId === currentGroup.id
+    );
 
     if (!currentAttendanceGroup) return;
 
@@ -227,7 +236,8 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
       </div>
       <div className={styles.attendanceListsWrapper}>
         {selectedClassroomGroups.map((selectedGroup, idx) => {
-          const isPrimaryList = selectedGroup.id === primaryClassProgramme?.classroomGroupId;
+          const isPrimaryList =
+            selectedGroup.id === primaryClassProgramme?.classroomGroupId;
           return (
             <ClassProgrammeAttendanceList
               key={`class_attencance_list_${idx}`}
@@ -235,7 +245,11 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
               classroomGroup={selectedGroup}
               attendanceDate={attendanceDate}
               onAttendanceUpdated={(state) => {
-                validateAttendanceList(selectedGroup.id ?? '', state.listItems, isPrimaryList);
+                validateAttendanceList(
+                  selectedGroup.id ?? '',
+                  state.listItems,
+                  isPrimaryList
+                );
               }}
             />
           );
@@ -255,7 +269,9 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
             <Typography
               type="h6"
               className="ml-2"
-              text={submitText.length > 0 ? submitText : 'Submit today’s register'}
+              text={
+                submitText.length > 0 ? submitText : 'Submit today’s register'
+              }
               color="white"
             />
           </Button>

@@ -1,16 +1,16 @@
 import { Alert, Button, Divider, Typography } from '@ecdlink/ui';
 import { CheckboxChange } from '@ecdlink/ui';
 import { classNames, renderIcon } from '@ecdlink/ui';
-import { useChildProgressObservation } from '../../../../../hooks/useChildProgressObservations';
+import { useChildProgressObservation } from '@hooks/useChildProgressObservations';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import * as styles from './category-level-form.styles';
 import { CategoryLevelFormProps } from './category-level-form.types';
-import { childrenSelectors } from '../../../../../store/children';
-import { progressTrackingSelectors } from '../../../../../store/progress-tracking';
-import { CategoryLevelFormResult } from '../../../../../models/classroom/progress-observation/ChildProgressAssessment';
+import { childrenSelectors } from '@store/children';
+import { progressTrackingSelectors } from '@store/progress-tracking';
+import { CategoryLevelFormResult } from '@models/classroom/progress-observation/ChildProgressAssessment';
 import CheckboxCard from '../../../../../components/checkbox-card/checkbox-card';
-import { ProgressTrackingLevels } from '../../../../../enums/ProgressTrackingLevels';
+import { ProgressTrackingLevels } from '@enums/ProgressTrackingLevels';
 import ProgressLevelBar from '../../components/progress-level-bar/progress-level-bar';
 import { ProgressTrackingSkillDto } from '@ecdlink/core';
 
@@ -27,11 +27,13 @@ export const CategoryLevelForm: React.FC<CategoryLevelFormProps> = ({
     setCurrentCategoryById,
     getSelectedSkillIdsForCategoryLevel,
   } = useChildProgressObservation(childId);
-  const [selectedTasks, setSelectedTasks] = useState<ProgressTrackingSkillDto[]>(
-    getSelectedSkillIdsForCategoryLevel(levelId) || []
-  );
+  const [selectedTasks, setSelectedTasks] = useState<
+    ProgressTrackingSkillDto[]
+  >(getSelectedSkillIdsForCategoryLevel(levelId) || []);
   const child = useSelector(childrenSelectors.getChildById(childId));
-  const childUser = useSelector(childrenSelectors.getChildUserById(child?.userId));
+  const childUser = useSelector(
+    childrenSelectors.getChildUserById(child?.userId)
+  );
 
   const subCategories = useSelector(
     progressTrackingSelectors.getProgressTrackingSubCategoriesByCategoryId(
@@ -39,16 +41,24 @@ export const CategoryLevelForm: React.FC<CategoryLevelFormProps> = ({
     )
   );
 
-  const subCategoryIds = subCategories?.map((subCategory) => subCategory?.id || 0);
-
-  const subCategoryAssessments = useSelector(
-    progressTrackingSelectors.getChildProgressSubCategoryAssessments(subCategoryIds, levelId)
+  const subCategoryIds = subCategories?.map(
+    (subCategory) => subCategory?.id || 0
   );
 
-  const subCategoryAssessmentTasks = subCategoryAssessments?.reduce((acc, curr) => {
-    acc = acc.concat(curr.skills);
-    return acc;
-  }, [] as ProgressTrackingSkillDto[]);
+  const subCategoryAssessments = useSelector(
+    progressTrackingSelectors.getChildProgressSubCategoryAssessments(
+      subCategoryIds,
+      levelId
+    )
+  );
+
+  const subCategoryAssessmentTasks = subCategoryAssessments?.reduce(
+    (acc, curr) => {
+      acc = acc.concat(curr.skills);
+      return acc;
+    },
+    [] as ProgressTrackingSkillDto[]
+  );
 
   useEffect(() => {
     if (progressTrackingCategoryId && currentReport) {
@@ -79,7 +89,9 @@ export const CategoryLevelForm: React.FC<CategoryLevelFormProps> = ({
   const childSkillSelected = (checkBox: CheckboxChange) => {
     if (!checkBox.value) return;
 
-    const selectedSkillIndex = selectedTasks?.findIndex((task) => task.id === checkBox.value);
+    const selectedSkillIndex = selectedTasks?.findIndex(
+      (task) => task.id === checkBox.value
+    );
 
     if (selectedSkillIndex === -1) {
       const newSelectedTask = subCategoryAssessmentTasks?.find(
@@ -103,7 +115,8 @@ export const CategoryLevelForm: React.FC<CategoryLevelFormProps> = ({
   const isItemSelected = (skillId?: number) => {
     if (!skillId) return false;
 
-    const isSelected = selectedTasks.findIndex((skill) => skill.id === skillId) > -1;
+    const isSelected =
+      selectedTasks.findIndex((skill) => skill.id === skillId) > -1;
 
     return isSelected;
   };
@@ -130,18 +143,20 @@ export const CategoryLevelForm: React.FC<CategoryLevelFormProps> = ({
                 color="textDark"
                 text={subCategoryAssessment.subCategory.name}
               />
-              {subCategoryAssessment.skills.map((skill: ProgressTrackingSkillDto) => (
-                <div className={'pt-2'} key={`assessment-skill-${skill?.id}`}>
-                  <CheckboxCard
-                    description={skill.name}
-                    checked={isItemSelected(skill.id)}
-                    onCheckboxChange={(checkBox: CheckboxChange) => {
-                      childSkillSelected(checkBox);
-                    }}
-                    value={skill?.id}
-                  />
-                </div>
-              ))}
+              {subCategoryAssessment.skills.map(
+                (skill: ProgressTrackingSkillDto) => (
+                  <div className={'pt-2'} key={`assessment-skill-${skill?.id}`}>
+                    <CheckboxCard
+                      description={skill.name}
+                      checked={isItemSelected(skill.id)}
+                      onCheckboxChange={(checkBox: CheckboxChange) => {
+                        childSkillSelected(checkBox);
+                      }}
+                      value={skill?.id}
+                    />
+                  </div>
+                )
+              )}
             </div>
           ))}
         {levelId && levelId === ProgressTrackingLevels.LevelTwo && (
@@ -165,8 +180,16 @@ export const CategoryLevelForm: React.FC<CategoryLevelFormProps> = ({
           onClick={() => submitAssessment()}
           className={styles.startButton}
         >
-          {renderIcon('ArrowCircleRightIcon', classNames('h-5 w-5 mr-2 text-white'))}
-          <Typography color={'white'} type={'help'} weight={'normal'} text={'Next'} />
+          {renderIcon(
+            'ArrowCircleRightIcon',
+            classNames('h-5 w-5 mr-2 text-white')
+          )}
+          <Typography
+            color={'white'}
+            type={'help'}
+            weight={'normal'}
+            text={'Next'}
+          />
         </Button>
       </div>
     </>

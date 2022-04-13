@@ -1,20 +1,27 @@
-import { BannerWrapper, Button, Divider, Dropdown, DropDownOption, Typography } from '@ecdlink/ui';
+import {
+  BannerWrapper,
+  Button,
+  Divider,
+  Dropdown,
+  DropDownOption,
+  Typography,
+} from '@ecdlink/ui';
 import { renderIcon } from '@ecdlink/ui';
-import { childrenSelectors } from '../../../../../../store/children';
+import { childrenSelectors } from '@store/children';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
 import { DownloadChildProgressReportState } from './download-child-progress-report.types';
-import { useOnlineStatus } from '../../../../../../hooks/useOnlineStatus';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useEffect, useState } from 'react';
-import { useAppDispatch } from '../../../../../../store';
+import { useAppDispatch } from '@store';
 import {
   contentReportSelectors,
   contentReportThunkActions,
-} from '../../../../../../store/content/report';
-import { classroomsSelectors } from '../../../../../../store/classroom';
-import { saveBase64Pdf } from '../../../../../../utils/child/child-progress-report.utils';
+} from '@store/content/report';
+import { classroomsSelectors } from '@store/classroom';
+import { saveBase64Pdf } from '@utils/child/child-progress-report.utils';
 import { ChildProgressReportSummaryModel } from '@ecdlink/graphql';
-import { getReportingPeriod } from '../../../../../../utils/child/child-profile-utils';
+import { getReportingPeriod } from '@utils/child/child-profile-utils';
 
 export const DownloadChildProgressReport: React.FC = () => {
   const history = useHistory();
@@ -23,20 +30,33 @@ export const DownloadChildProgressReport: React.FC = () => {
   const reportSummaries = useSelector(
     contentReportSelectors.getChildProgressReportSummaries(routeState.childId)
   );
-  const currentChild = useSelector(childrenSelectors.getChildById(routeState.childId));
-  const currentChildUser = useSelector(childrenSelectors.getChildUserById(currentChild?.userId));
-  const currentChildLearner = useSelector(classroomsSelectors.getChildLearner(currentChild));
-  const [selectedReport, setSelectedReport] = useState<ChildProgressReportSummaryModel>();
+  const currentChild = useSelector(
+    childrenSelectors.getChildById(routeState.childId)
+  );
+  const currentChildUser = useSelector(
+    childrenSelectors.getChildUserById(currentChild?.userId)
+  );
+  const currentChildLearner = useSelector(
+    classroomsSelectors.getChildLearner(currentChild)
+  );
+  const [selectedReport, setSelectedReport] =
+    useState<ChildProgressReportSummaryModel>();
   const [loading, setLoading] = useState(false);
-  const [summaryDropDownItems, setSummaryDropDownItems] = useState<DropDownOption<string>[]>([]);
+  const [summaryDropDownItems, setSummaryDropDownItems] = useState<
+    DropDownOption<string>[]
+  >([]);
 
   useEffect(() => {
     if (reportSummaries) {
       const options = reportSummaries.map((summary) => {
-        const summaryReportingPeriod = getReportingPeriod(new Date(summary.reportDate));
+        const summaryReportingPeriod = getReportingPeriod(
+          new Date(summary.reportDate)
+        );
 
         return {
-          label: `${summaryReportingPeriod.monthName.substr(0, 3)} ${summaryReportingPeriod.year}`,
+          label: `${summaryReportingPeriod.monthName.substr(0, 3)} ${
+            summaryReportingPeriod.year
+          }`,
           value: summary.reportId,
         };
       });
@@ -47,7 +67,9 @@ export const DownloadChildProgressReport: React.FC = () => {
   }, []);
 
   const onReportSelected = (reportId: string) => {
-    const lookedUpReport = reportSummaries.find((report) => report.reportId === reportId);
+    const lookedUpReport = reportSummaries.find(
+      (report) => report.reportId === reportId
+    );
     setSelectedReport(lookedUpReport);
   };
 
@@ -62,13 +84,17 @@ export const DownloadChildProgressReport: React.FC = () => {
       contentReportThunkActions.generateChildProgressReport({
         childId: selectedReport.childId || '',
         classgroupId: currentChildLearner?.classroomGroupId || '',
-        reportDate: selectedReport.reportDate ? new Date(selectedReport.reportDate) : new Date(),
+        reportDate: selectedReport.reportDate
+          ? new Date(selectedReport.reportDate)
+          : new Date(),
       })
     ).unwrap();
 
     setLoading(false);
 
-    const summaryReportingPeriod = getReportingPeriod(new Date(selectedReport.reportDate || ''));
+    const summaryReportingPeriod = getReportingPeriod(
+      new Date(selectedReport.reportDate || '')
+    );
 
     saveBase64Pdf(
       base64Pdf,
@@ -89,7 +115,11 @@ export const DownloadChildProgressReport: React.FC = () => {
       displayOffline={!isOnline}
     >
       <div className={'p-4 flex flex-col'}>
-        <Typography type={'h1'} color={'primary'} text={'Download report to share'} />
+        <Typography
+          type={'h1'}
+          color={'primary'}
+          text={'Download report to share'}
+        />
         <Dropdown
           placeholder={'Tap to choose a report'}
           className={'mt-4 justify-between'}
@@ -156,7 +186,12 @@ export const DownloadChildProgressReport: React.FC = () => {
           isLoading={loading}
         >
           {!loading && renderIcon('DownloadIcon', 'h-5 w-5 text-white')}
-          <Typography type="h6" className="ml-2" text="Download a report" color="white" />
+          <Typography
+            type="h6"
+            className="ml-2"
+            text="Download a report"
+            color="white"
+          />
         </Button>
       </div>
     </BannerWrapper>

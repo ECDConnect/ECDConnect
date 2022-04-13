@@ -1,7 +1,11 @@
 import { ClassProgramme, Holiday } from '@ecdlink/graphql';
 import { RecursivePartial } from '@ecdlink/core';
 
-import { isAttendableDay, getMissedClassAttendance, getMonthName } from './track-attendance-utils';
+import {
+  isAttendableDay,
+  getMissedClassAttendance,
+  getMonthName,
+} from './track-attendance-utils';
 import { Weekdays } from '../../practitioner/playgroups-utils';
 
 const holidays: Holiday[] = [
@@ -94,7 +98,9 @@ describe('days-utils', () => {
         },
       ];
 
-      const result = getMissedClassAttendance(classProgrammes as ClassProgramme[]);
+      const result = getMissedClassAttendance(
+        classProgrammes as ClassProgramme[]
+      );
 
       expect(result).toEqual([
         { id: 2, attendance: [], meetingDay: 3 },
@@ -126,10 +132,13 @@ describe('days-utils', () => {
       [13, 'Invalid month'],
     ];
 
-    test.each(cases)('givin %monthOfYear, return %monthName', (monthOfYear, monthName) => {
-      const result = getMonthName(monthOfYear);
+    test.each(cases)(
+      'givin %monthOfYear, return %monthName',
+      (monthOfYear, monthName) => {
+        const result = getMonthName(monthOfYear);
 
-      expect(result).toEqual(monthName);
-    });
+        expect(result).toEqual(monthName);
+      }
+    );
   });
 });

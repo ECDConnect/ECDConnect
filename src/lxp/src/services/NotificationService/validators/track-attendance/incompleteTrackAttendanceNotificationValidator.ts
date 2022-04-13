@@ -1,15 +1,17 @@
 import { EnhancedStore } from '@reduxjs/toolkit';
 import { getHours, getWeek, getYear, isFriday } from 'date-fns';
-import { Message } from '../../../../models/messages/messages';
-import { RootState } from '../../../../store/types';
-import { getMissedClassAttendance } from '../../../../utils/classroom/attendance/track-attendance-utils';
+import { Message } from '@models/messages/messages';
+import { RootState } from '@store/types';
+import { getMissedClassAttendance } from '@utils/classroom/attendance/track-attendance-utils';
 import {
   NotificationIntervals,
   NotificationPriority,
   NotificationValidator,
 } from '../../NotificationService.types';
 
-export class IncompleteTrackAttendanceNotificationValidator implements NotificationValidator {
+export class IncompleteTrackAttendanceNotificationValidator
+  implements NotificationValidator
+{
   interval: NotificationIntervals;
   lastCheckTimestamp: number;
   store: EnhancedStore<RootState, any>;
@@ -46,7 +48,9 @@ export class IncompleteTrackAttendanceNotificationValidator implements Notificat
 
     return [
       {
-        reference: `attendance-${getWeek(this.currentDate)}-${getYear(this.currentDate)}`,
+        reference: `attendance-${getWeek(this.currentDate)}-${getYear(
+          this.currentDate
+        )}`,
         title: '2 days left to submit attendance registers',
         message:
           'Submit all of your registers for this week to receive your stipend and get SmartStart points.',

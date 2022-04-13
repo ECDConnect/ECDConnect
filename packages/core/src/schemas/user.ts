@@ -1,7 +1,6 @@
 import * as Yup from 'yup';
 import { UserDto } from '../models/dto/Users/user.dto';
 
-
 export const initialUserDetailsValues: UserDto = {
   isSouthAfricanCitizen: false,
   idNumber: '',

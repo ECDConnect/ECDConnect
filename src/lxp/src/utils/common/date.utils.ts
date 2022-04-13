@@ -11,7 +11,9 @@ import {
 } from 'date-fns';
 
 export const isWorkingDay = (date: Date, holidays: HolidayDto[]) => {
-  const holidaysAsDaysOfYears = holidays.map((x) => getDayOfYear(parseISO(x.day)));
+  const holidaysAsDaysOfYears = holidays.map((x) =>
+    getDayOfYear(parseISO(x.day))
+  );
 
   const dateDayOfYear = getDayOfYear(date);
 
@@ -22,7 +24,10 @@ export const isWorkingDay = (date: Date, holidays: HolidayDto[]) => {
   return true;
 };
 
-export const getDatesForRange = (startDate: number | Date, endDate: number | Date): Date[] => {
+export const getDatesForRange = (
+  startDate: number | Date,
+  endDate: number | Date
+): Date[] => {
   let now = startDate,
     dates: Date[] = [];
 
@@ -41,10 +46,15 @@ export const isDayInThePast = (dateToCompare: Date, date: Date) => {
     getYear(date),
   ];
 
-  return dateToCompareDayOfYear < dateDayOfyear && dateToCompareYear <= dateYear;
+  return (
+    dateToCompareDayOfYear < dateDayOfyear && dateToCompareYear <= dateYear
+  );
 };
 
 export const calculateFullAge = (dob: Date) => {
-  const { years, months, days } = intervalToDuration({ start: dob, end: new Date() });
+  const { years, months, days } = intervalToDuration({
+    start: dob,
+    end: new Date(),
+  });
   return { years: years ?? 0, months: months ?? 0, days: days ?? 0 };
 };

@@ -42,7 +42,9 @@ const UserDetailsForm: React.FC<UserDetailsFormProps> = ({
     <form key={formKey} className="space-y-8 divide-y divide-gray-200">
       <div className="space-y-8">
         <div>
-          <label className="block text-sm font-medium text-gray-700">* Fields are required</label>
+          <label className="block text-sm font-medium text-gray-700">
+            * Fields are required
+          </label>
         </div>
         <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
           <div className="sm:col-span-3">
@@ -110,12 +112,16 @@ const UserDetailsForm: React.FC<UserDetailsFormProps> = ({
             />
           </div>
           <div className="sm:col-span-3">
-            <label className="block text-sm font-medium text-gray-700">Date Of Birth *</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Date Of Birth *
+            </label>
             <DatePicker
               placeholderText={'Please select a date'}
               className="mt-1 w-full border-gray-300 rounded-md text-sm focus:border-primary focus:ring-primary shadow-sm"
               selected={dateOfBirth ? new Date(dateOfBirth) : undefined}
-              onChange={(date: Date) => setValue('dateOfBirth', date ? date.toISOString() : '')}
+              onChange={(date: Date) =>
+                setValue('dateOfBirth', date ? date.toISOString() : '')
+              }
               maxDate={new Date()}
               dateFormat="EEE, dd MMM yyyy"
               showYearDropdown

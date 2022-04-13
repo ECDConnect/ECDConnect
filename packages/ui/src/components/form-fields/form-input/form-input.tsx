@@ -39,59 +39,66 @@ export const FormInput = <T,>({
   register,
   value,
   hint,
-  maxLength
+  maxLength,
 }: FormFieldProps<T>) => {
-
   const getInputToRender = () => {
     switch (textInputType) {
       case 'textarea':
         if (nameProp && register) {
-          return (<textarea
-            autoComplete="new-off"
-            placeholder={placeholder}
-            disabled={disabled}
-            maxLength={maxLength}
-            rows={4}
-            {...register(nameProp)}
-            className={error ? styles.errorStyle : styles.defaultInputStyle}
-            defaultValue={''}
-          />)
+          return (
+            <textarea
+              autoComplete="new-off"
+              placeholder={placeholder}
+              disabled={disabled}
+              maxLength={maxLength}
+              rows={4}
+              {...register(nameProp)}
+              className={error ? styles.errorStyle : styles.defaultInputStyle}
+              defaultValue={''}
+            />
+          );
         } else {
-          return (<textarea
-            autoComplete="new-off"
-            placeholder={placeholder}
-            disabled={disabled}
-            rows={4}
-            maxLength={maxLength}
-            className={error ? styles.errorStyle : styles.defaultInputStyle}
-            defaultValue={value ?? ''}
-          />)
+          return (
+            <textarea
+              autoComplete="new-off"
+              placeholder={placeholder}
+              disabled={disabled}
+              rows={4}
+              maxLength={maxLength}
+              className={error ? styles.errorStyle : styles.defaultInputStyle}
+              defaultValue={value ?? ''}
+            />
+          );
         }
       case 'input':
       default:
         if (nameProp && register) {
-          return (<input
-            autoComplete="new-off"
-            placeholder={placeholder}
-            disabled={disabled}
-            type={type}
-            maxLength={maxLength}
-            {...register(nameProp)}
-            className={error ? styles.errorStyle : styles.defaultInputStyle}
-          />)
+          return (
+            <input
+              autoComplete="new-off"
+              placeholder={placeholder}
+              disabled={disabled}
+              type={type}
+              maxLength={maxLength}
+              {...register(nameProp)}
+              className={error ? styles.errorStyle : styles.defaultInputStyle}
+            />
+          );
         } else {
-          return (<input
-            autoComplete="new-off"
-            placeholder={placeholder}
-            disabled={disabled}
-            type={type}
-            value={value ?? ''}
-            maxLength={maxLength}
-            className={error ? styles.errorStyle : styles.defaultInputStyle}
-          />)
+          return (
+            <input
+              autoComplete="new-off"
+              placeholder={placeholder}
+              disabled={disabled}
+              type={type}
+              value={value ?? ''}
+              maxLength={maxLength}
+              className={error ? styles.errorStyle : styles.defaultInputStyle}
+            />
+          );
         }
     }
-  }
+  };
 
   return (
     <>

@@ -22,7 +22,9 @@ class ReasonForLeavingService {
     });
 
     if (response.status !== 200) {
-      throw new Error('Get Reasons for leaving Failed - Server connection error');
+      throw new Error(
+        'Get Reasons for leaving Failed - Server connection error'
+      );
     }
 
     return response.data.data.GetAllReasonForLeaving;

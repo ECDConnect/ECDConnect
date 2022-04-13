@@ -50,7 +50,10 @@ export default function DocumentPanel(props: DocumentPanelProps) {
       const inputModel: DocumentInput = {
         Id: props.item?.id,
         UserId: props.item.userId,
-        DocumentTypeId: props.item && props.item.documentTypeId ? props.item.documentTypeId : 0,
+        DocumentTypeId:
+          props.item && props.item.documentTypeId
+            ? props.item.documentTypeId
+            : 0,
         Name: formValues.name,
         Reference: props.item.reference,
         WorkflowStatusId: formValues.workflowStatusId,
@@ -77,7 +80,10 @@ export default function DocumentPanel(props: DocumentPanelProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 divide-y divide-gray-200">
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="space-y-8 divide-y divide-gray-200"
+    >
       <div className="space-y-8 divide-y divide-gray-200">
         <div className="pt-8">
           <div className="grid grid-cols-2">

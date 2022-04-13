@@ -1,9 +1,8 @@
-
 import { EntityCacheBase } from './entity-cache-base';
 import { SiteAddress } from './site-address';
 
 export interface Classroom extends EntityCacheBase {
-  id: number;  
+  id: number;
   userId: string;
   siteAddressId?: number;
   siteAddress?: SiteAddress;

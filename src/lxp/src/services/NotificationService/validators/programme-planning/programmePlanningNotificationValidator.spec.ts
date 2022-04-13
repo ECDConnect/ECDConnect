@@ -1,13 +1,19 @@
 import { RecursivePartial } from '@ecdlink/core';
 import { EnhancedStore } from '@reduxjs/toolkit';
-import { RootState } from '../../../../store/types';
-import { NotificationIntervals, NotificationPriority } from '../../NotificationService.types';
+import { RootState } from '@store/types';
+import {
+  NotificationIntervals,
+  NotificationPriority,
+} from '../../NotificationService.types';
 import { ProgrammePlanningNotificationValidator } from './programmePlanningNotificationValidator';
 
 describe('ProgrammePlanningNotificationValidator', () => {
   test('should be able to create successfully', () => {
     const store: any = {};
-    const validator = new ProgrammePlanningNotificationValidator(store, new Date());
+    const validator = new ProgrammePlanningNotificationValidator(
+      store,
+      new Date()
+    );
 
     expect(validator.interval).toEqual(NotificationIntervals.hour);
   });

@@ -1,4 +1,4 @@
-import { ChildBasicInfoModel } from '../../../schemas/child/child-registration/child-basic-info';
+import { ChildBasicInfoModel } from '@schemas/child/child-registration/child-basic-info';
 
 export enum ChildRegistrationSteps {
   registrationForm = 1,

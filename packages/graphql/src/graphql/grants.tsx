@@ -4,7 +4,7 @@ export const GetAllGrant = gql`
   {
     GetAllGrant {
       id
-      description      
+      description
     }
   }
 `;

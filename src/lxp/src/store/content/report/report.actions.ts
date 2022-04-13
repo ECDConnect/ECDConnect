@@ -1,7 +1,13 @@
-import { ChildProgressObservationReport, ChildProgressReportSummaryModel } from '@ecdlink/core';
-import { ChildProgressReport, ChildProgressReportInput } from '@ecdlink/graphql';
+import {
+  ChildProgressObservationReport,
+  ChildProgressReportSummaryModel,
+} from '@ecdlink/core';
+import {
+  ChildProgressReport,
+  ChildProgressReportInput,
+} from '@ecdlink/graphql';
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { ContentReportService } from '../../../services/ContentReportService';
+import { ContentReportService } from '@services/ContentReportService';
 import { RootState, ThunkApiType } from '../../types';
 import { ChildProgressReportQueryParams } from './report.types';
 
@@ -83,7 +89,10 @@ export const syncChildProgressReports = createAsyncThunk<
     const {
       auth: { userAuth },
       user: { userLocalePreference },
-      contentReportData: { unsyncedChildProgressReportsIds, childProgressionReports },
+      contentReportData: {
+        unsyncedChildProgressReportsIds,
+        childProgressionReports,
+      },
     } = getState();
 
     try {
@@ -91,7 +100,9 @@ export const syncChildProgressReports = createAsyncThunk<
 
       if (userAuth?.auth_token && unsyncedChildProgressReportsIds) {
         promises = unsyncedChildProgressReportsIds.map(async (x) => {
-          const currentReportCopy = childProgressionReports?.find((z) => z.id === x.reportId);
+          const currentReportCopy = childProgressionReports?.find(
+            (z) => z.id === x.reportId
+          );
 
           const childProgressReportInput: ChildProgressReportInput = {
             ChildId: currentReportCopy?.childId,
@@ -163,7 +174,10 @@ export const generateChildProgressReport = createAsyncThunk<
 >(
   'generateChildProgressReport',
   // eslint-disable-next-line no-empty-pattern
-  async ({ childId, classgroupId, reportDate }, { getState, rejectWithValue }) => {
+  async (
+    { childId, classgroupId, reportDate },
+    { getState, rejectWithValue }
+  ) => {
     const {
       auth: { userAuth },
       user: { userLocalePreference },
@@ -186,7 +200,11 @@ export const generateChildProgressReport = createAsyncThunk<
   }
 );
 
-export const getChildProgressReportSummary = createAsyncThunk<any, number, ThunkApiType<RootState>>(
+export const getChildProgressReportSummary = createAsyncThunk<
+  any,
+  number,
+  ThunkApiType<RootState>
+>(
   'getChildProgressReportSummary',
   // eslint-disable-next-line no-empty-pattern
   async (count, { getState, rejectWithValue }) => {
@@ -218,7 +236,11 @@ export const getChildProgressReportSummary = createAsyncThunk<any, number, Thunk
   }
 );
 
-export const getDetailedProgressReport = createAsyncThunk<any, string, ThunkApiType<RootState>>(
+export const getDetailedProgressReport = createAsyncThunk<
+  any,
+  string,
+  ThunkApiType<RootState>
+>(
   'getDetailedProgressReport',
   // eslint-disable-next-line no-empty-pattern
   async (reportId, { getState, rejectWithValue }) => {

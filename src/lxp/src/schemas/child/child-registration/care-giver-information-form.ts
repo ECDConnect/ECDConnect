@@ -15,7 +15,9 @@ export const careGiverInformationFormSchema = Yup.object().shape({
   firstname: Yup.string().required('First name is required'),
   surname: Yup.string().required('Surname is required'),
   relationId: Yup.string().required(),
-  phoneNumber: Yup.string().required().matches(SA_CELL_REGEX, 'Please enter a valid cell number'),
+  phoneNumber: Yup.string()
+    .required()
+    .matches(SA_CELL_REGEX, 'Please enter a valid cell number'),
   careGiverIdField: Yup.string().when('preferId', {
     is: true,
     then: Yup.string()

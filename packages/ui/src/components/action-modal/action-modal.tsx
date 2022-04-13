@@ -41,19 +41,38 @@ export const ActionModal: React.FC<ActionModalProps> = ({
   return (
     <div
       className={styles.wrapper(
-        textAlignment === 'left' ? 'start' : textAlignment === 'right' ? 'end' : textAlignment
+        textAlignment === 'left'
+          ? 'start'
+          : textAlignment === 'right'
+          ? 'end'
+          : textAlignment
       )}
     >
       {icon?.length > 0 && (
-        <IconWrapper icon={icon} iconBorderColor={iconBorderColor} iconColor={iconColor} />
+        <IconWrapper
+          icon={icon}
+          iconBorderColor={iconBorderColor}
+          iconColor={iconColor}
+        />
       )}
       {title?.length > 0 && (
-        <div className={styles.textWrapper(textAlignment)} data-testid="title-wrapper">
-          <Typography type={'h2'} weight="bold" text={title} color={'textDark'} />
+        <div
+          className={styles.textWrapper(textAlignment)}
+          data-testid="title-wrapper"
+        >
+          <Typography
+            type={'h2'}
+            weight="bold"
+            text={title}
+            color={'textDark'}
+          />
         </div>
       )}
       {importantText?.length > 0 && (
-        <div className={styles.textWrapper(textAlignment)} data-testid="important-wrapper">
+        <div
+          className={styles.textWrapper(textAlignment)}
+          data-testid="important-wrapper"
+        >
           <Typography
             type="unspecified"
             fontSize="16"
@@ -64,7 +83,10 @@ export const ActionModal: React.FC<ActionModalProps> = ({
         </div>
       )}
       {detailText?.length > 0 && (
-        <div className={styles.textWrapper(textAlignment)} data-testid="detail-wrapper">
+        <div
+          className={styles.textWrapper(textAlignment)}
+          data-testid="detail-wrapper"
+        >
           <Typography type={'body'} text={detailText} color={'textLight'} />
         </div>
       )}
@@ -109,10 +131,20 @@ export const ActionModal: React.FC<ActionModalProps> = ({
         >
           <div className="flex flex-row items-center">
             {button.leadingIcon &&
-              renderIcon(button.leadingIcon, `text-${button.textColour} h-4 w-4 mr-2`)}
-            <Typography type="body" color={button.textColour} text={button.text}></Typography>
+              renderIcon(
+                button.leadingIcon,
+                `text-${button.textColour} h-4 w-4 mr-2`
+              )}
+            <Typography
+              type="body"
+              color={button.textColour}
+              text={button.text}
+            ></Typography>
             {button.trailingIcon &&
-              renderIcon(button.trailingIcon, `text-${button.textColour} h-4 w-4 mr-2`)}
+              renderIcon(
+                button.trailingIcon,
+                `text-${button.textColour} h-4 w-4 mr-2`
+              )}
           </div>
         </Button>
       ))}

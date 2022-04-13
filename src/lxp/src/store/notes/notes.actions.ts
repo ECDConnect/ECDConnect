@@ -1,7 +1,7 @@
 import { NoteDto } from '@ecdlink/core';
 import { NoteInput } from '@ecdlink/graphql';
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { NoteService } from '../../services/NoteService';
+import { NoteService } from '@services/NoteService';
 import { RootState, ThunkApiType } from '../types';
 
 export const getNotes = createAsyncThunk<
@@ -23,7 +23,9 @@ export const getNotes = createAsyncThunk<
         let notes: NoteDto[] | undefined;
 
         if (userAuth?.auth_token) {
-          notes = await new NoteService(userAuth?.auth_token).getNotes(userAuth.id);
+          notes = await new NoteService(userAuth?.auth_token).getNotes(
+            userAuth.id
+          );
         } else {
           return rejectWithValue('no access token, profile check required');
         }
@@ -71,7 +73,10 @@ export const upsertNotes = createAsyncThunk<
             IsActive: x.isActive === false ? false : true,
           };
 
-          return await new NoteService(userAuth?.auth_token).updateNote(x.id ?? '', input);
+          return await new NoteService(userAuth?.auth_token).updateNote(
+            x.id ?? '',
+            input
+          );
         });
       }
       return Promise.all(promises);

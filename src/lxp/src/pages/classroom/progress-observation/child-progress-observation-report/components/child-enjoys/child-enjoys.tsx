@@ -5,18 +5,24 @@ import { getYear } from 'date-fns';
 import { useEffect } from 'react';
 import { useForm, useFormState } from 'react-hook-form';
 import { useSelector } from 'react-redux';
-import { useChildProgressObservation } from '../../../../../../hooks/useChildProgressObservations';
-import { childrenSelectors } from '../../../../../../store/children';
+import { useChildProgressObservation } from '@hooks/useChildProgressObservations';
+import { childrenSelectors } from '@store/children';
 import {
   ChildEnjoysFormModel,
   childEnjoysFormSchema,
-} from '../../../../../../schemas/classroom/child-progress-observations/child-enjoys-form';
+} from '@schemas/classroom/child-progress-observations/child-enjoys-form';
 import { ChildEnjoysProps } from './child-enjoys.types';
 
-export const ChildEnjoys: React.FC<ChildEnjoysProps> = ({ childId, onSubmit }) => {
-  const { currentReport, previousReport } = useChildProgressObservation(childId);
+export const ChildEnjoys: React.FC<ChildEnjoysProps> = ({
+  childId,
+  onSubmit,
+}) => {
+  const { currentReport, previousReport } =
+    useChildProgressObservation(childId);
   const child = useSelector(childrenSelectors.getChildById(childId));
-  const childUser = useSelector(childrenSelectors.getChildUserById(child?.userId));
+  const childUser = useSelector(
+    childrenSelectors.getChildUserById(child?.userId)
+  );
 
   const {
     getValues: getFormValue,
@@ -36,7 +42,9 @@ export const ChildEnjoys: React.FC<ChildEnjoysProps> = ({ childId, onSubmit }) =
 
   useEffect(() => {
     if (currentReport && currentReport.childEnjoys) {
-      setFormValue('childEnjoys', currentReport.childEnjoys, { shouldValidate: true });
+      setFormValue('childEnjoys', currentReport.childEnjoys, {
+        shouldValidate: true,
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentReport]);

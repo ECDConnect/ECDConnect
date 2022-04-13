@@ -1,5 +1,7 @@
-export const contentWrapper = 'flex h-full z-20 flex-col justify-start items-center px-2';
-export const checkboxWrapper = 'flex w-full flex-row justify-start items-center';
+export const contentWrapper =
+  'flex h-full z-20 flex-col justify-start items-center px-2';
+export const checkboxWrapper =
+  'flex w-full flex-row justify-start items-center';
 export const formStyle = 'pb-2 px-2';
 export const wrapper = 'bg-uiBg h-full overflow-y-auto';
 export const marginBottom = 'mb-4';

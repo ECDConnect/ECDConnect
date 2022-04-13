@@ -21,7 +21,9 @@ export default function EducationLevelView() {
   const type = 'Education Level';
   const dialog = useDialog();
   const { setNotification } = useNotifications();
-  const { data, refetch } = useQuery(GetAllEducation, { fetchPolicy: 'cache-and-network' });
+  const { data, refetch } = useQuery(GetAllEducation, {
+    fetchPolicy: 'cache-and-network',
+  });
   const [tableData, setTableData] = useState<any[]>([]);
   const [deleteMutation] = useMutation(DeleteEducation);
   const panel = usePanel();
@@ -118,8 +120,13 @@ export default function EducationLevelView() {
                 <UiTable
                   columns={[{ field: 'description', use: 'description' }]}
                   rows={tableData}
-                  editRow={hasPermission(PermissionEnum.update_static) && displayPanel}
-                  deleteRow={hasPermission(PermissionEnum.delete_static) && deleteAndRefresh}
+                  editRow={
+                    hasPermission(PermissionEnum.update_static) && displayPanel
+                  }
+                  deleteRow={
+                    hasPermission(PermissionEnum.delete_static) &&
+                    deleteAndRefresh
+                  }
                 />
               </div>
             </div>

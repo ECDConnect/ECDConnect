@@ -2,7 +2,8 @@ export interface AcceptInvitationModel {
   username: string;
   token: string;
   password: string;
-  verificationCode: string;}
+  verificationCode: string;
+}
 
 export interface VerifyInvitationModel {
   username: string;

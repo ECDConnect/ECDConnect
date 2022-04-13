@@ -57,7 +57,13 @@ export default function Login() {
 
   const getLogoUrl = () => {
     if (theme && theme.images) {
-      return <img className="h-32 w-auto" src={theme.images.portalLoginLogoUrl} alt="Login Logo" />;
+      return (
+        <img
+          className="h-32 w-auto"
+          src={theme.images.portalLoginLogoUrl}
+          alt="Login Logo"
+        />
+      );
     } else {
       return <div className="h-32 w-32">&nbsp;</div>;
     }
@@ -73,7 +79,11 @@ export default function Login() {
         />
       );
     } else {
-      return <div className="absolute inset-0 h-full w-full object-cover">&nbsp;</div>;
+      return (
+        <div className="absolute inset-0 h-full w-full object-cover">
+          &nbsp;
+        </div>
+      );
     }
   };
 
@@ -81,7 +91,9 @@ export default function Login() {
     <div className="min-h-full bg-white flex">
       <div className="flex-1 flex flex-col justify-center py-12 px-4 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
         <div className="mx-auto w-full max-w-sm lg:w-96">
-          <div className="flex items-center justify-center flex-shrink-0">{getLogoUrl()}</div>
+          <div className="flex items-center justify-center flex-shrink-0">
+            {getLogoUrl()}
+          </div>
           <div className="flex items-center justify-center flex-shrink-0">
             <h2 className="mt-6 text-3xl font-extrabold text-gray-900 font-h1">
               Sign in to your account
@@ -125,7 +137,11 @@ export default function Login() {
                     disabled={!isValid}
                     onClick={signIn}
                   >
-                    <Typography type="help" color="white" text={'Log in'}></Typography>
+                    <Typography
+                      type="help"
+                      color="white"
+                      text={'Log in'}
+                    ></Typography>
                   </Button>
                 </div>
               </form>
@@ -133,7 +149,9 @@ export default function Login() {
           </div>
         </div>
       </div>
-      <div className="hidden lg:block relative w-0 flex-1">{getBackgroundUrl()}</div>
+      <div className="hidden lg:block relative w-0 flex-1">
+        {getBackgroundUrl()}
+      </div>
     </div>
   );
 }

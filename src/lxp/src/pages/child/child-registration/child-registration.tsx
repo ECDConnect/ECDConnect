@@ -1,4 +1,8 @@
-import { ChildDto, ContentConsentTypeEnum, useStepNavigation } from '@ecdlink/core';
+import {
+  ChildDto,
+  ContentConsentTypeEnum,
+  useStepNavigation,
+} from '@ecdlink/core';
 import { FileTypeEnum, WorkflowStatusEnum } from '@ecdlink/graphql';
 import { ActionModal, Dialog, DialogPosition } from '@ecdlink/ui';
 import { IonContent } from '@ionic/react';
@@ -8,30 +12,34 @@ import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
 import { Step } from '../../../components/step-viewer/components/step';
 import { StepViewer } from '../../../components/step-viewer/step-viewer';
-import { useOnlineStatus } from '../../../hooks/useOnlineStatus';
-import { useStaticData } from '../../../hooks/useStaticData';
-import { ChildRegistrationFormState, StateAction } from '../../../models/child/child';
-import { CareGiverReferencePanelFormModel } from '../../../schemas/child/child-registration/care-giver-reference-panel-form';
-import { ChildBirthCertificateFormModel } from '../../../schemas/child/child-registration/child-birth-certificate-form';
-import { ChildHealthInformationFormModel } from '../../../schemas/child/child-registration/child-health-information-form';
-import { useAppDispatch } from '../../../store';
-import { analyticsActions } from '../../../store/analytics';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
+import { useStaticData } from '@hooks/useStaticData';
+import { ChildRegistrationFormState, StateAction } from '@models/child/child';
+import { CareGiverReferencePanelFormModel } from '@schemas/child/child-registration/care-giver-reference-panel-form';
+import { ChildBirthCertificateFormModel } from '@schemas/child/child-registration/child-birth-certificate-form';
+import { ChildHealthInformationFormModel } from '@schemas/child/child-registration/child-health-information-form';
+import { useAppDispatch } from '@store';
+import { analyticsActions } from '@store/analytics';
 import {
   caregiverActions,
   caregiverSelectors,
   caregiverThunkActions,
-} from '../../../store/caregiver';
-import { childrenActions, childrenSelectors, childrenThunkActions } from '../../../store/children';
+} from '@store/caregiver';
+import {
+  childrenActions,
+  childrenSelectors,
+  childrenThunkActions,
+} from '@store/children';
 import {
   classroomsActions,
   classroomsSelectors,
   classroomsThunkActions,
-} from '../../../store/classroom';
-import { contentConsentSelectors } from '../../../store/content/consent';
-import { documentActions, documentThunkActions } from '../../../store/document';
-import { userActions, userSelectors, userThunkActions } from '../../../store/user';
-import * as childRegisterUtils from '../../../utils/child/child-registration.utils';
-import { mapUserConsentDto } from '../../../utils/user/user-consent.utils';
+} from '@store/classroom';
+import { contentConsentSelectors } from '@store/content/consent';
+import { documentActions, documentThunkActions } from '@store/document';
+import { userActions, userSelectors, userThunkActions } from '@store/user';
+import * as childRegisterUtils from '@utils/child/child-registration.utils';
+import { mapUserConsentDto } from '@utils/user/user-consent.utils';
 import { CareGiverChildInformationForm } from './care-giver-child-information-form/care-giver-child-information-form';
 import { CareGiverContributionForm } from './care-giver-contribution-form/care-giver-contribution-form';
 import { CareGiverExtraInformationForm } from './care-giver-extra-information/care-giver-extra-information';
@@ -43,12 +51,16 @@ import { ChildExtraInformationForm } from './child-extra-information-form/child-
 import { ChildHealthInformationForm } from './child-health-information-form/child-health-information-form';
 import { ChildInformationForm } from './child-information-form/child-information-form';
 import { ChildRegistrationForm } from './child-registration-form/child-registration-form';
-import { ChildRegistrationRouteState, ChildRegistrationSteps } from './child-registration.types';
+import {
+  ChildRegistrationRouteState,
+  ChildRegistrationSteps,
+} from './child-registration.types';
 
 export const ChildRegistration: React.FC = () => {
   const history = useHistory();
   const appDispatch = useAppDispatch();
-  const { getWorkflowStatusIdByEnum, getDocumentTypeIdByEnum } = useStaticData();
+  const { getWorkflowStatusIdByEnum, getDocumentTypeIdByEnum } =
+    useStaticData();
   const location = useLocation<ChildRegistrationRouteState>();
   const routeStep = location.state.step;
   const childId = location.state.childId;
@@ -58,20 +70,24 @@ export const ChildRegistration: React.FC = () => {
   const consentList = useSelector(contentConsentSelectors.getConsent);
   const existingChild = useSelector(childrenSelectors.getChildById(childId));
 
-  const existingLearner = useSelector(classroomsSelectors.getChildLearner(existingChild));
+  const existingLearner = useSelector(
+    classroomsSelectors.getChildLearner(existingChild)
+  );
   const existingCaregiver = useSelector(
     caregiverSelectors.getCaregiverById(existingChild?.caregiverId)
   );
-  const existingChildUser = useSelector(childrenSelectors.getChildUserById(existingChild?.userId));
-
-  const { goToStep, canGoBack, goBackOneStep, activeStepKey } = useStepNavigation(
-    routeStep || ChildRegistrationSteps.registrationForm
+  const existingChildUser = useSelector(
+    childrenSelectors.getChildUserById(existingChild?.userId)
   );
+
+  const { goToStep, canGoBack, goBackOneStep, activeStepKey } =
+    useStepNavigation(routeStep || ChildRegistrationSteps.registrationForm);
 
   const [exitRegistrationPromptVisible, setExitRegistrationPromptVisible] =
     useState<boolean>(false);
 
-  const [currentChildInputModel, setCurrentChildInputModel] = useState<ChildDto>();
+  const [currentChildInputModel, setCurrentChildInputModel] =
+    useState<ChildDto>();
 
   const [formState, setFormState] = useState<ChildRegistrationFormState>({});
 
@@ -94,7 +110,9 @@ export const ChildRegistration: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOnline]);
 
-  const saveChild = async (healthInformationForm: ChildHealthInformationFormModel) => {
+  const saveChild = async (
+    healthInformationForm: ChildHealthInformationFormModel
+  ) => {
     if (!formState.childInformationFormModel) return;
 
     const userInputModel = childRegisterUtils.mapChildUserDto(
@@ -107,7 +125,9 @@ export const ChildRegistration: React.FC = () => {
     userInputModel.isActive = true;
 
     // marked external to clear out local learner on sync
-    const childStatusId = await getWorkflowStatusIdByEnum(WorkflowStatusEnum.ChildExternalLink);
+    const childStatusId = await getWorkflowStatusIdByEnum(
+      WorkflowStatusEnum.ChildExternalLink
+    );
 
     const childInputModel = childRegisterUtils.mapChildDto(
       userId,
@@ -129,10 +149,16 @@ export const ChildRegistration: React.FC = () => {
 
     // CONSENT
     if (formState.childRegistrationFormModel?.childPhotoConsentAccepted) {
-      const consent = consentList?.find((x) => x.type === ContentConsentTypeEnum.PhotoPermissions);
+      const consent = consentList?.find(
+        (x) => x.type === ContentConsentTypeEnum.PhotoPermissions
+      );
 
       if (consent) {
-        const childPhotoConsent = mapUserConsentDto(user?.id ?? '', userId, consent);
+        const childPhotoConsent = mapUserConsentDto(
+          user?.id ?? '',
+          userId,
+          consent
+        );
         appDispatch(userActions.createUserConsent(childPhotoConsent));
       }
     }
@@ -142,15 +168,25 @@ export const ChildRegistration: React.FC = () => {
       );
 
       if (consent) {
-        const childPhotoConsent = mapUserConsentDto(user?.id ?? '', userId, consent);
+        const childPhotoConsent = mapUserConsentDto(
+          user?.id ?? '',
+          userId,
+          consent
+        );
         appDispatch(userActions.createUserConsent(childPhotoConsent));
       }
     }
     if (formState.childRegistrationFormModel?.consentAgreementAccepted) {
-      const consent = consentList?.find((x) => x.type === ContentConsentTypeEnum.ConsentAgreement);
+      const consent = consentList?.find(
+        (x) => x.type === ContentConsentTypeEnum.ConsentAgreement
+      );
 
       if (consent) {
-        const childPhotoConsent = mapUserConsentDto(user?.id ?? '', userId, consent);
+        const childPhotoConsent = mapUserConsentDto(
+          user?.id ?? '',
+          userId,
+          consent
+        );
         appDispatch(userActions.createUserConsent(childPhotoConsent));
       }
     }
@@ -160,17 +196,27 @@ export const ChildRegistration: React.FC = () => {
       );
 
       if (consent) {
-        const childPhotoConsent = mapUserConsentDto(user?.id ?? '', userId, consent);
+        const childPhotoConsent = mapUserConsentDto(
+          user?.id ?? '',
+          userId,
+          consent
+        );
         appDispatch(userActions.createUserConsent(childPhotoConsent));
       }
     }
-    if (formState.childRegistrationFormModel?.personalInformationAgreementAccepted) {
+    if (
+      formState.childRegistrationFormModel?.personalInformationAgreementAccepted
+    ) {
       const consent = consentList?.find(
         (x) => x.type === ContentConsentTypeEnum.PersonalInformationAgreement
       );
 
       if (consent) {
-        const childPhotoConsent = mapUserConsentDto(user?.id ?? '', userId, consent);
+        const childPhotoConsent = mapUserConsentDto(
+          user?.id ?? '',
+          userId,
+          consent
+        );
         appDispatch(userActions.createUserConsent(childPhotoConsent));
       }
     }
@@ -186,7 +232,9 @@ export const ChildRegistration: React.FC = () => {
       ).unwrap();
     } else {
       appDispatch(childrenActions.createChildUser(userInputModel));
-      await appDispatch(userThunkActions.addUser({ user: userInputModel })).unwrap();
+      await appDispatch(
+        userThunkActions.addUser({ user: userInputModel })
+      ).unwrap();
     }
 
     if (existingChild) {
@@ -199,11 +247,15 @@ export const ChildRegistration: React.FC = () => {
       );
     } else {
       appDispatch(childrenActions.createChild(childInputModel));
-      await appDispatch(childrenThunkActions.createChild({ child: childInputModel })).unwrap();
+      await appDispatch(
+        childrenThunkActions.createChild({ child: childInputModel })
+      ).unwrap();
     }
 
     if (existingLearner) {
-      appDispatch(classroomsActions.updateClassroomGroupLearner(learnerInputModel));
+      appDispatch(
+        classroomsActions.updateClassroomGroupLearner(learnerInputModel)
+      );
       await appDispatch(
         classroomsThunkActions.updateLearner({
           id: learnerInputModel.id as string,
@@ -211,7 +263,9 @@ export const ChildRegistration: React.FC = () => {
         })
       );
     } else {
-      appDispatch(classroomsActions.createClassroomGroupLearner(learnerInputModel));
+      appDispatch(
+        classroomsActions.createClassroomGroupLearner(learnerInputModel)
+      );
       await appDispatch(
         classroomsThunkActions.createLearner({ learner: learnerInputModel })
       ).unwrap();
@@ -233,13 +287,17 @@ export const ChildRegistration: React.FC = () => {
         user
       );
       appDispatch(documentActions.createDocument(documentInputModel));
-      await appDispatch(documentThunkActions.createDocument(documentInputModel)).unwrap();
+      await appDispatch(
+        documentThunkActions.createDocument(documentInputModel)
+      ).unwrap();
     }
 
     setCurrentChildInputModel(childInputModel);
   };
 
-  const saveCaregiver = async (caregiverReferencePanelForm: CareGiverReferencePanelFormModel) => {
+  const saveCaregiver = async (
+    caregiverReferencePanelForm: CareGiverReferencePanelFormModel
+  ) => {
     if (!formState.childInformationFormModel) return;
 
     const siteAddressDto = childRegisterUtils.mapSiteAddressDto(
@@ -272,9 +330,13 @@ export const ChildRegistration: React.FC = () => {
       ).unwrap();
     }
 
-    const childInputModel = existingChild ? { ...existingChild } : { ...currentChildInputModel };
+    const childInputModel = existingChild
+      ? { ...existingChild }
+      : { ...currentChildInputModel };
 
-    const childStatusId = await getWorkflowStatusIdByEnum(WorkflowStatusEnum.ChildActive);
+    const childStatusId = await getWorkflowStatusIdByEnum(
+      WorkflowStatusEnum.ChildActive
+    );
     childInputModel.caregiverId = caregiverDto.id;
     childInputModel.workflowStatusId = childStatusId;
 
@@ -385,7 +447,10 @@ export const ChildRegistration: React.FC = () => {
           onClose={exitRegistrationPrompt}
           isOnline={isOnline}
         >
-          <Step stepKey={ChildRegistrationSteps.registrationForm} viewBannerWapper>
+          <Step
+            stepKey={ChildRegistrationSteps.registrationForm}
+            viewBannerWapper
+          >
             <ChildRegistrationForm
               childRegisterForm={formState.childRegistrationFormModel}
               variation="practitioner"
@@ -397,7 +462,10 @@ export const ChildRegistration: React.FC = () => {
               }}
             />
           </Step>
-          <Step stepKey={ChildRegistrationSteps.childInformationForm} viewBannerWapper>
+          <Step
+            stepKey={ChildRegistrationSteps.childInformationForm}
+            viewBannerWapper
+          >
             <ChildInformationForm
               childInformation={formState.childInformationFormModel}
               variation="practitioner"
@@ -409,19 +477,28 @@ export const ChildRegistration: React.FC = () => {
               }}
             />
           </Step>
-          <Step stepKey={ChildRegistrationSteps.childExtraInformationForm} viewBannerWapper>
+          <Step
+            stepKey={ChildRegistrationSteps.childExtraInformationForm}
+            viewBannerWapper
+          >
             <ChildExtraInformationForm
               childName={formState.childInformationFormModel?.firstname ?? ''}
               childExtraInformation={formState.childExtraInformationFormModel}
               onSubmit={(form) => {
-                onStepChange(ChildRegistrationSteps.childHealthInformationForm, {
-                  formProp: 'childExtraInformationFormModel',
-                  value: form,
-                });
+                onStepChange(
+                  ChildRegistrationSteps.childHealthInformationForm,
+                  {
+                    formProp: 'childExtraInformationFormModel',
+                    value: form,
+                  }
+                );
               }}
             />
           </Step>
-          <Step stepKey={ChildRegistrationSteps.childHealthInformationForm} viewBannerWapper>
+          <Step
+            stepKey={ChildRegistrationSteps.childHealthInformationForm}
+            viewBannerWapper
+          >
             <ChildHealthInformationForm
               childName={formState.childInformationFormModel?.firstname ?? ''}
               childHealthInformation={formState.childHealthInformationFormModel}
@@ -434,28 +511,42 @@ export const ChildRegistration: React.FC = () => {
               }}
             />
           </Step>
-          <Step stepKey={ChildRegistrationSteps.childBirthCertificateForm} viewBannerWapper>
+          <Step
+            stepKey={ChildRegistrationSteps.childBirthCertificateForm}
+            viewBannerWapper
+          >
             <ChildBirthCertificateForm
-              childBirthCertificateForm={formState.childBirthCertificateFormModel}
+              childBirthCertificateForm={
+                formState.childBirthCertificateFormModel
+              }
               childInformation={formState.childInformationFormModel}
               onSubmit={(form) => {
-                onStepChange(ChildRegistrationSteps.childCareGiverInformationForm, {
-                  formProp: 'childBirthCertificateFormModel',
-                  value: form,
-                });
+                onStepChange(
+                  ChildRegistrationSteps.childCareGiverInformationForm,
+                  {
+                    formProp: 'childBirthCertificateFormModel',
+                    value: form,
+                  }
+                );
                 saveChildBirthCertificate(form);
               }}
             />
           </Step>
 
-          <Step stepKey={ChildRegistrationSteps.childCareGiverInformationForm} viewBannerWapper>
+          <Step
+            stepKey={ChildRegistrationSteps.childCareGiverInformationForm}
+            viewBannerWapper
+          >
             <CareGiverInformationForm
               careGiverInformation={formState.careGiverInformationFormModel}
               onSubmit={(form) => {
-                onStepChange(ChildRegistrationSteps.childCareGiverChildInformationForm, {
-                  formProp: 'careGiverInformationFormModel',
-                  value: form,
-                });
+                onStepChange(
+                  ChildRegistrationSteps.childCareGiverChildInformationForm,
+                  {
+                    formProp: 'careGiverInformationFormModel',
+                    value: form,
+                  }
+                );
               }}
               childName={formState.childInformationFormModel?.firstname ?? ''}
             />
@@ -466,12 +557,17 @@ export const ChildRegistration: React.FC = () => {
             viewBannerWapper
           >
             <CareGiverChildInformationForm
-              careGiverInformation={formState.careGiverChildInformationFormModel}
+              careGiverInformation={
+                formState.careGiverChildInformationFormModel
+              }
               onSubmit={(form) => {
-                onStepChange(ChildRegistrationSteps.childCareGiverExtraInformationForm, {
-                  formProp: 'careGiverChildInformationFormModel',
-                  value: form,
-                });
+                onStepChange(
+                  ChildRegistrationSteps.childCareGiverExtraInformationForm,
+                  {
+                    formProp: 'careGiverChildInformationFormModel',
+                    value: form,
+                  }
+                );
               }}
             />
           </Step>
@@ -481,19 +577,29 @@ export const ChildRegistration: React.FC = () => {
             viewBannerWapper
           >
             <CareGiverExtraInformationForm
-              careGiverExtraInformation={formState.careGiverExtraInformationFormModel}
+              careGiverExtraInformation={
+                formState.careGiverExtraInformationFormModel
+              }
               onSubmit={(form) => {
-                onStepChange(ChildRegistrationSteps.childCareGiverContributionForm, {
-                  formProp: 'careGiverExtraInformationFormModel',
-                  value: form,
-                });
+                onStepChange(
+                  ChildRegistrationSteps.childCareGiverContributionForm,
+                  {
+                    formProp: 'careGiverExtraInformationFormModel',
+                    value: form,
+                  }
+                );
               }}
             />
           </Step>
 
-          <Step stepKey={ChildRegistrationSteps.childCareGiverContributionForm} viewBannerWapper>
+          <Step
+            stepKey={ChildRegistrationSteps.childCareGiverContributionForm}
+            viewBannerWapper
+          >
             <CareGiverContributionForm
-              careGiverContributionForm={formState.careGiverContributionFormModel}
+              careGiverContributionForm={
+                formState.careGiverContributionFormModel
+              }
               variation="practitioner"
               onSubmit={(form) => {
                 onStepChange(ChildRegistrationSteps.childEmergencyContactForm, {
@@ -504,24 +610,37 @@ export const ChildRegistration: React.FC = () => {
             />
           </Step>
 
-          <Step stepKey={ChildRegistrationSteps.childEmergencyContactForm} viewBannerWapper>
+          <Step
+            stepKey={ChildRegistrationSteps.childEmergencyContactForm}
+            viewBannerWapper
+          >
             <ChildEmergencyContactForm
-              childEmergencyContactForm={formState.childEmergencyContactFormModel}
+              childEmergencyContactForm={
+                formState.childEmergencyContactFormModel
+              }
               childName={formState.childInformationFormModel?.firstname ?? ''}
               variation="practitioner"
               onSubmit={(form) => {
-                onStepChange(ChildRegistrationSteps.careGiverReferencePanelForm, {
-                  formProp: 'childEmergencyContactFormModel',
-                  value: form,
-                });
+                onStepChange(
+                  ChildRegistrationSteps.careGiverReferencePanelForm,
+                  {
+                    formProp: 'childEmergencyContactFormModel',
+                    value: form,
+                  }
+                );
               }}
             />
           </Step>
 
-          <Step stepKey={ChildRegistrationSteps.careGiverReferencePanelForm} viewBannerWapper>
+          <Step
+            stepKey={ChildRegistrationSteps.careGiverReferencePanelForm}
+            viewBannerWapper
+          >
             <CareGiverReferencePanelForm
               variation="practitioner"
-              careGiverReferencePanelForm={formState.careGiverReferencePanelFormModel}
+              careGiverReferencePanelForm={
+                formState.careGiverReferencePanelFormModel
+              }
               onSubmit={(form) => {
                 saveCaregiver(form);
               }}

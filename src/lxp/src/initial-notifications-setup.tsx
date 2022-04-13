@@ -4,7 +4,10 @@ import { useStoreSetup } from './hooks/useStoreSetup';
 import { Message } from './models/messages/messages';
 import { NotificationService } from './services/NotificationService/NotificationService';
 import { store, useAppDispatch } from './store';
-import { notificationActions, notificationsSelectors } from './store/notifications';
+import {
+  notificationActions,
+  notificationsSelectors,
+} from './store/notifications';
 import { settingSelectors } from './store/settings';
 
 type IntialNotificationSetupContextValues = {
@@ -20,9 +23,13 @@ export const IntialNotificationSetupContext =
 const InitialNotificationSetup: React.FC = ({ children }) => {
   const dispatch = useAppDispatch();
   const notifications = useSelector(notificationsSelectors.getAllNotifications);
-  const notificationPollInterval = useSelector(settingSelectors.getNotificationPollInterval);
+  const notificationPollInterval = useSelector(
+    settingSelectors.getNotificationPollInterval
+  );
   const { initloading } = useStoreSetup();
-  const notificationServiceRef = useRef<NotificationService | undefined>(undefined);
+  const notificationServiceRef = useRef<NotificationService | undefined>(
+    undefined
+  );
 
   useEffect(() => {
     initializeServices();
@@ -35,18 +42,25 @@ const InitialNotificationSetup: React.FC = ({ children }) => {
   const onNotificationsRecieved = (messages: Message[]) => {
     const newMessages = messages.filter(
       (message) =>
-        !notifications.some((notification) => notification.message.reference === message.reference)
+        !notifications.some(
+          (notification) => notification.message.reference === message.reference
+        )
     );
 
-    if (newMessages.length > 0) dispatch(notificationActions.addNotifications(newMessages));
+    if (newMessages.length > 0)
+      dispatch(notificationActions.addNotifications(newMessages));
   };
 
   const initializeServices = () => {
     if (!notificationServiceRef.current) {
-      notificationServiceRef.current = new NotificationService(notificationPollInterval);
+      notificationServiceRef.current = new NotificationService(
+        notificationPollInterval
+      );
     }
     notificationServiceRef.current.registerValidators(store);
-    notificationServiceRef.current.onNotificationsReceived = (messages: Message[]) => {
+    notificationServiceRef.current.onNotificationsReceived = (
+      messages: Message[]
+    ) => {
       if (!initloading) {
         onNotificationsRecieved(messages);
       }
@@ -69,7 +83,9 @@ const InitialNotificationSetup: React.FC = ({ children }) => {
   };
 
   return (
-    <IntialNotificationSetupContext.Provider value={{ stopService, startService }}>
+    <IntialNotificationSetupContext.Provider
+      value={{ stopService, startService }}
+    >
       {children}
     </IntialNotificationSetupContext.Provider>
   );

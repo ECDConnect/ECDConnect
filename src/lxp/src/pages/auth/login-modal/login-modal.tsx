@@ -12,12 +12,16 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useHistory } from 'react-router';
-import { useOnlineStatus } from '../../../hooks/useOnlineStatus';
-import { useStoreSetup } from '../../../hooks/useStoreSetup';
-import { initialLoginValues, LoginModel, loginSchema } from '../../../schemas/auth/login/login';
-import { useAppDispatch } from '../../../store';
-import { authActions, authThunkActions } from '../../../store/auth';
-import { settingActions } from '../../../store/settings';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
+import { useStoreSetup } from '@hooks/useStoreSetup';
+import {
+  initialLoginValues,
+  LoginModel,
+  loginSchema,
+} from '@schemas/auth/login/login';
+import { useAppDispatch } from '@store';
+import { authActions, authThunkActions } from '@store/auth';
+import { settingActions } from '@store/settings';
 import * as styles from './login-modal.styles';
 const { version } = require('../../../../package.json');
 
@@ -60,7 +64,10 @@ export const LoginModal: React.FC<LoginModalProps> = ({ loginSuccessful }) => {
 
       appDispatch(authThunkActions.login(body))
         .then(async (isAuthenticated: any) => {
-          if (isAuthenticated && isAuthenticated?.payload?.response?.status !== 401) {
+          if (
+            isAuthenticated &&
+            isAuthenticated?.payload?.response?.status !== 401
+          ) {
             loginSuccessful();
             await appDispatch(settingActions.setApplicationVersion(version));
             await appDispatch(authActions.setUserExpired());
@@ -92,7 +99,9 @@ export const LoginModal: React.FC<LoginModalProps> = ({ loginSuccessful }) => {
           iconBorderColor="errorBg"
           iconColor="errorMain"
           importantText={`Your session has expired`}
-          paragraphs={['If you would like to continue, please re-login or reset']}
+          paragraphs={[
+            'If you would like to continue, please re-login or reset',
+          ]}
         />
 
         <form>
@@ -193,7 +202,11 @@ export const LoginModal: React.FC<LoginModalProps> = ({ loginSuccessful }) => {
               history.push('/login');
             }}
           >
-            <Typography type="help" color="white" text={'Reset & Go back to login'}></Typography>
+            <Typography
+              type="help"
+              color="white"
+              text={'Reset & Go back to login'}
+            ></Typography>
           </Button>
         </form>
       </div>

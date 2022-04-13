@@ -16,9 +16,18 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import ContentLoader from '../../../../components/content-loader/content-loader';
 import { useUser } from '../../../../hooks/useUser';
-import { initialThemeColours, themeColoursScheme } from '../../../../schemas/themeColours';
-import { initialThemeFonts, themeFontsScheme } from '../../../../schemas/themeFonts';
-import { initialThemeImages, themeImagesScheme } from '../../../../schemas/themeImages';
+import {
+  initialThemeColours,
+  themeColoursScheme,
+} from '../../../../schemas/themeColours';
+import {
+  initialThemeFonts,
+  themeFontsScheme,
+} from '../../../../schemas/themeFonts';
+import {
+  initialThemeImages,
+  themeImagesScheme,
+} from '../../../../schemas/themeImages';
 import { ColoursForm } from './components/colours-form/colours-form';
 import { FontsForm } from './components/fonts-form/fonts-form';
 import { ImagesForm } from './components/images-form/images-form';
@@ -45,7 +54,8 @@ export function Theme() {
       initialThemeColours.uiMid = DefaultTheme.uiMid;
       initialThemeColours.uiMidDark = DefaultTheme.uiMidDark;
       initialThemeFonts.fontUrl = DefaultTheme.fontUrl;
-      initialThemeFonts.mainHeadingOverrideFontUrl = DefaultTheme.mainHeadingOverrideFontUrl;
+      initialThemeFonts.mainHeadingOverrideFontUrl =
+        DefaultTheme.mainHeadingOverrideFontUrl;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [DefaultTheme]);
@@ -88,7 +98,10 @@ export function Theme() {
   useEffect(() => {
     if (fontsRegister) {
       fontsSetValue('fontUrl', WhiteLabelTheme.fontUrl);
-      fontsSetValue('mainHeadingOverrideFontUrl', WhiteLabelTheme.mainHeadingOverrideFontUrl);
+      fontsSetValue(
+        'mainHeadingOverrideFontUrl',
+        WhiteLabelTheme.mainHeadingOverrideFontUrl
+      );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fontsRegister]);
@@ -208,7 +221,9 @@ export function Theme() {
             : DefaultTheme.mainHeadingOverrideFontUrl,
         },
         images: {
-          graphicOverlayUrl: graphicOverlayUrl ? graphicOverlayUrl : DefaultTheme.graphicOverlayUrl,
+          graphicOverlayUrl: graphicOverlayUrl
+            ? graphicOverlayUrl
+            : DefaultTheme.graphicOverlayUrl,
           logoUrl: logoUrl ? logoUrl : DefaultTheme.logoUrl,
           faviconUrl: faviconUrl ? faviconUrl : DefaultTheme.faviconUrl,
           portalLoginLogoUrl: portalLoginLogoUrl
@@ -237,10 +252,12 @@ export function Theme() {
         DefaultTheme.uiLight = colors.uiLight;
         DefaultTheme.uiBg = colors.uiBg;
         DefaultTheme.logoUrl = themeInputModel.images.logoUrl;
-        DefaultTheme.graphicOverlayUrl = themeInputModel.images.graphicOverlayUrl;
+        DefaultTheme.graphicOverlayUrl =
+          themeInputModel.images.graphicOverlayUrl;
         DefaultTheme.faviconUrl = themeInputModel.images.faviconUrl;
         DefaultTheme.fontUrl = themeInputModel.fonts.fontUrl;
-        DefaultTheme.mainHeadingOverrideFontUrl = themeInputModel.fonts.mainHeadingOverrideFontUrl;
+        DefaultTheme.mainHeadingOverrideFontUrl =
+          themeInputModel.fonts.mainHeadingOverrideFontUrl;
 
         setNotification({
           title: 'Successfully Updated Theme!',
@@ -267,7 +284,10 @@ export function Theme() {
     colorSetValue('uiMid', WhiteLabelTheme.uiMid);
     colorSetValue('uiMidDark', WhiteLabelTheme.uiMidDark);
     fontsSetValue('fontUrl', WhiteLabelTheme.fontUrl);
-    fontsSetValue('mainHeadingOverrideFontUrl', WhiteLabelTheme.mainHeadingOverrideFontUrl);
+    fontsSetValue(
+      'mainHeadingOverrideFontUrl',
+      WhiteLabelTheme.mainHeadingOverrideFontUrl
+    );
     setWhiteLabelTheme();
   };
   if (!loading) {
@@ -322,7 +342,11 @@ export function Theme() {
           <Typography type={'h2'} color={'white'} text="Google fonts:" />
         </div>
         <div className="mt-2 bg-uiBg px-4 py-5 border-b border-gray-200 rounded-lg">
-          <FontsForm getValues={fontsGetValues} setValue={fontsSetValue} register={fontsRegister} />
+          <FontsForm
+            getValues={fontsGetValues}
+            setValue={fontsSetValue}
+            register={fontsRegister}
+          />
         </div>
       </div>
     );

@@ -4,7 +4,8 @@ import { BannerHeaderSizes } from './models';
 
 export const content = (scrollable: boolean) =>
   `w-full ${scrollable ? 'h-full overflow-y-auto' : ''}`;
-export const titleWrapper = 'inline-block py-2 pr-2 text-center z-0 w-10/12 justify-between';
+export const titleWrapper =
+  'inline-block py-2 pr-2 text-center z-0 w-10/12 justify-between';
 export const titleSubWrapper = 'inline-flex flex-col';
 export const iconWrapperLeft = 'w-4/12 flex justify-start';
 export const iconWrapperRight = 'w-4/12 flex justify-end';
@@ -26,28 +27,36 @@ export const header = (
         showBackground ? 'bg-transparent' : `bg-${colour}`,
         baseClass,
         renderBorder ? 'h-16' : 'h-116',
-        renderBorder ? 'border-t-0 border-b border-uiMidDark border-r-0 border-l-0' : ''
+        renderBorder
+          ? 'border-t-0 border-b border-uiMidDark border-r-0 border-l-0'
+          : ''
       );
     case 'medium':
       return classNames(
         baseClass,
         renderBorder ? 'h-16' : 'h-116',
         showBackground ? 'bg-transparent' : `bg-${colour}`,
-        renderBorder ? 'border-t-0 border-b border-uiMidDark border-r-0 border-l-0' : ''
+        renderBorder
+          ? 'border-t-0 border-b border-uiMidDark border-r-0 border-l-0'
+          : ''
       );
     case 'smaller':
       return classNames(
         baseClass,
         renderBorder ? 'h-16' : 'h-16',
         showBackground ? 'bg-transparent' : `bg-${colour}`,
-        renderBorder ? 'border-t-0 border-b border-uiMidDark border-r-0 border-l-0' : ''
+        renderBorder
+          ? 'border-t-0 border-b border-uiMidDark border-r-0 border-l-0'
+          : ''
       );
     case 'sub-normal':
       return classNames(
         baseClass,
         renderBorder ? 'h-16' : 'h-112',
         showBackground ? 'bg-transparent' : `bg-${colour}`,
-        renderBorder ? 'border-t-0 border-b border-uiMidDark border-r-0 border-l-0' : ''
+        renderBorder
+          ? 'border-t-0 border-b border-uiMidDark border-r-0 border-l-0'
+          : ''
       );
     case 'normal':
     default:
@@ -55,21 +64,27 @@ export const header = (
         baseClass,
         renderBorder ? 'h-16' : 'h-116',
         showBackground ? 'bg-transparent' : `bg-${colour}`,
-        renderBorder ? 'border-t-0 border-b border-uiMidDark border-r-0 border-l-0' : ''
+        renderBorder
+          ? 'border-t-0 border-b border-uiMidDark border-r-0 border-l-0'
+          : ''
       );
     case 'small':
       return classNames(
         baseClass,
         'h-16',
         showBackground ? 'bg-transparent' : `bg-${colour}`,
-        renderBorder ? 'border-t-0 border-b border-uiMidDark border-r-0 border-l-0' : ''
+        renderBorder
+          ? 'border-t-0 border-b border-uiMidDark border-r-0 border-l-0'
+          : ''
       );
     case 'signup':
       return classNames(
         showBackground ? 'bg-transparent' : `bg-${colour}`,
         baseClass,
         renderBorder ? 'h-16' : 'h-16',
-        renderBorder ? 'border-t-0 border-b border-uiMidDark border-r-0 border-l-0' : ''
+        renderBorder
+          ? 'border-t-0 border-b border-uiMidDark border-r-0 border-l-0'
+          : ''
       );
   }
 };
@@ -78,29 +93,62 @@ export const backgroundWrapper = `w-full flex flex-col justify-start items-stret
 
 const baseBackgroundImageClass = 'w-full top-0 absolute z-0 overflow-hidden';
 
-export const backgroundImageWrapper = (size: BannerHeaderSizes, backgroundImageColour: Colours) => {
+export const backgroundImageWrapper = (
+  size: BannerHeaderSizes,
+  backgroundImageColour: Colours
+) => {
   switch (size) {
     case 'large':
-      return classNames(baseBackgroundImageClass, 'h-360', `bg-${backgroundImageColour}`);
+      return classNames(
+        baseBackgroundImageClass,
+        'h-360',
+        `bg-${backgroundImageColour}`
+      );
     case 'signup':
-      return classNames(baseBackgroundImageClass, 'h-360', `bg-${backgroundImageColour}`);
+      return classNames(
+        baseBackgroundImageClass,
+        'h-360',
+        `bg-${backgroundImageColour}`
+      );
     case 'medium':
-      return classNames(baseBackgroundImageClass, 'h-40', `bg-${backgroundImageColour}`);
+      return classNames(
+        baseBackgroundImageClass,
+        'h-40',
+        `bg-${backgroundImageColour}`
+      );
     case 'sub-normal':
-      return classNames(baseBackgroundImageClass, 'h-112', `bg-${backgroundImageColour}`);
+      return classNames(
+        baseBackgroundImageClass,
+        'h-112',
+        `bg-${backgroundImageColour}`
+      );
     case 'small':
-      return classNames(baseBackgroundImageClass, 'h-40', `bg-${backgroundImageColour}`);
+      return classNames(
+        baseBackgroundImageClass,
+        'h-40',
+        `bg-${backgroundImageColour}`
+      );
     case 'smaller':
-      return classNames(baseBackgroundImageClass, 'h-16', `bg-${backgroundImageColour}`);
+      return classNames(
+        baseBackgroundImageClass,
+        'h-16',
+        `bg-${backgroundImageColour}`
+      );
     case 'normal':
     default:
-      return classNames(baseBackgroundImageClass, 'h-116', `bg-${backgroundImageColour}`);
+      return classNames(
+        baseBackgroundImageClass,
+        'h-116',
+        `bg-${backgroundImageColour}`
+      );
   }
 };
 
-export const offlineBadgeLarge = 'absolute z-50 top-102 left-1/2 transform -translate-x-1/2';
+export const offlineBadgeLarge =
+  'absolute z-50 top-102 left-1/2 transform -translate-x-1/2';
 
-export const offlineBadgeSmall = 'absolute z-50 top-54 left-1/2 transform -translate-x-1/2';
+export const offlineBadgeSmall =
+  'absolute z-50 top-54 left-1/2 transform -translate-x-1/2';
 
 export const backgroundWrapperOfflineBadge = (renderBorder: boolean) => {
   return renderBorder ? offlineBadgeSmall : offlineBadgeLarge;

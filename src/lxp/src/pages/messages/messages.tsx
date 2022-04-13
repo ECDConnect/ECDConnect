@@ -2,22 +2,24 @@ import { BannerWrapper, Typography } from '@ecdlink/ui';
 import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
-import { useOnlineStatus } from '../../hooks/useOnlineStatus';
-import { usePaging } from '../../hooks/usePaging';
-import { useAppDispatch } from '../../store';
-import { analyticsActions } from '../../store/analytics';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
+import { usePaging } from '@hooks/usePaging';
+import { useAppDispatch } from '@store';
+import { analyticsActions } from '@store/analytics';
 import {
   Notification,
   notificationActions,
   notificationsSelectors,
-} from '../../store/notifications';
+} from '@store/notifications';
 import { IconInformationIndicator } from '../classroom/programme-planning/components/icon-information-indicator/icon-information-indicator';
 import { MessageCard } from './components/message-card';
 
 export const Messages: React.FC = () => {
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
-  const notifications = useSelector(notificationsSelectors.getMessageBoardNotifications);
+  const notifications = useSelector(
+    notificationsSelectors.getMessageBoardNotifications
+  );
   const paging = usePaging<Notification>(notifications, 3, 0, 'accummilate');
   const appDispatch = useAppDispatch();
 
@@ -40,7 +42,10 @@ export const Messages: React.FC = () => {
 
   const messageActioned = (notification: Notification) => {
     if (notification.message.routeConfig) {
-      history.push(notification.message.routeConfig.route, notification.message.routeConfig.params);
+      history.push(
+        notification.message.routeConfig.route,
+        notification.message.routeConfig.params
+      );
     }
     appDispatch(notificationActions.removeNotification(notification));
   };
@@ -79,17 +84,21 @@ export const Messages: React.FC = () => {
           );
         })}
       </div>
-      {!paging.isLastPage && paging.visibleItems && paging.visibleItems.length > 0 && (
-        <div className={'p-4 bg-uiBg flex flex-row items-center justify-center'}>
-          <Typography
-            hasMarkup
-            color="primary"
-            text="<u>See more messages</u>"
-            type="body"
-            onClick={paging.getNextPage}
-          />
-        </div>
-      )}
+      {!paging.isLastPage &&
+        paging.visibleItems &&
+        paging.visibleItems.length > 0 && (
+          <div
+            className={'p-4 bg-uiBg flex flex-row items-center justify-center'}
+          >
+            <Typography
+              hasMarkup
+              color="primary"
+              text="<u>See more messages</u>"
+              type="body"
+              onClick={paging.getNextPage}
+            />
+          </div>
+        )}
     </BannerWrapper>
   );
 };

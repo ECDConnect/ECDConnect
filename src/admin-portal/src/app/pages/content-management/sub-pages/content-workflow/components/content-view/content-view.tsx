@@ -18,7 +18,8 @@ export interface ContentViewProps {
   optionDefinitions: ContentDefinitionModelDto[];
 }
 
-const contentWrapper = 'mt-2 bg-uiBg px-4 py-5 border-b border-gray-200 rounded-lg';
+const contentWrapper =
+  'mt-2 bg-uiBg px-4 py-5 border-b border-gray-200 rounded-lg';
 
 export default function ContentView({
   contentValues,
@@ -28,7 +29,9 @@ export default function ContentView({
 }: ContentViewProps) {
   const getRenderElement = (item: ContentValueDto) => {
     const fields = contentType.fields ?? [];
-    const field = fields.find((x) => x.fieldName === item.contentTypeField.fieldName);
+    const field = fields.find(
+      (x) => x.fieldName === item.contentTypeField.fieldName
+    );
 
     if (item.localeId === selectedLanguageId) {
       switch (field?.fieldType.dataType) {
@@ -36,7 +39,12 @@ export default function ContentView({
           return (
             <div className={contentWrapper}>
               {getFieldHeader(field)}
-              <Typography type={'body'} weight={'normal'} color={'textMid'} text={item.value} />
+              <Typography
+                type={'body'}
+                weight={'normal'}
+                color={'textMid'}
+                text={item.value}
+              />
             </div>
           );
         case FieldType.Markdown:

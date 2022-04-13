@@ -1,6 +1,6 @@
 import { StoryBookDto } from '@ecdlink/core';
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { ContentStoryBookService } from '../../../services/ContentStoryBookService';
+import { ContentStoryBookService } from '@services/ContentStoryBookService';
 import { RootState, ThunkApiType } from '../../types';
 
 export const getStoryBooks = createAsyncThunk<
@@ -21,9 +21,9 @@ export const getStoryBooks = createAsyncThunk<
         let storyBooks: StoryBookDto[] | undefined;
 
         if (userAuth?.auth_token) {
-          storyBooks = await new ContentStoryBookService(userAuth?.auth_token).getStoryBooks(
-            locale
-          );
+          storyBooks = await new ContentStoryBookService(
+            userAuth?.auth_token
+          ).getStoryBooks(locale);
         } else {
           return rejectWithValue('no access token, profile check required');
         }

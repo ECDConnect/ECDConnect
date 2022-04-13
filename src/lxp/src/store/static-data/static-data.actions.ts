@@ -15,21 +15,21 @@ import {
   NoteTypeDto,
 } from '@ecdlink/core';
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { DocumentTypeService } from '../../services/DocumentTypeService';
-import { EducationLevelService } from '../../services/EducationLevelService';
-import { GenderService } from '../../services/GenderService';
-import GrantService from '../../services/GrantService/GrantService';
-import { HolidayService } from '../../services/HolidayService';
+import { DocumentTypeService } from '@services/DocumentTypeService';
+import { EducationLevelService } from '@services/EducationLevelService';
+import { GenderService } from '@services/GenderService';
+import GrantService from '@services/GrantService/GrantService';
+import { HolidayService } from '@services/HolidayService';
 
-import { LanguageService } from '../../services/LanguageService';
-import { NoteTypeService } from '../../services/NoteTypeService';
-import { ProgrammeAttendanceReasonService } from '../../services/ProgrammeAttendanceReasonService';
-import { ProgrammeTypeService } from '../../services/ProgrammeTypeService';
-import { ProvinceService } from '../../services/ProvinceService';
-import { RaceService } from '../../services/RaceService';
-import { ReasonForLeavingService } from '../../services/ReasonForLeavingService';
-import { RelationsService } from '../../services/RelationsService';
-import { WorkflowStatusService } from '../../services/WorkflowStatusService';
+import { LanguageService } from '@services/LanguageService';
+import { NoteTypeService } from '@services/NoteTypeService';
+import { ProgrammeAttendanceReasonService } from '@services/ProgrammeAttendanceReasonService';
+import { ProgrammeTypeService } from '@services/ProgrammeTypeService';
+import { ProvinceService } from '@services/ProvinceService';
+import { RaceService } from '@services/RaceService';
+import { ReasonForLeavingService } from '@services/ReasonForLeavingService';
+import { RelationsService } from '@services/RelationsService';
+import { WorkflowStatusService } from '@services/WorkflowStatusService';
 import { RootState, ThunkApiType } from '../types';
 
 export const getRelations = createAsyncThunk<
@@ -51,7 +51,9 @@ export const getRelations = createAsyncThunk<
         let relations: RelationDto[] | undefined;
 
         if (userAuth?.auth_token) {
-          relations = await new RelationsService(userAuth?.auth_token).getRelations();
+          relations = await new RelationsService(
+            userAuth?.auth_token
+          ).getRelations();
         } else {
           return rejectWithValue('no access token, profile check required');
         }
@@ -89,7 +91,9 @@ export const getProgrammeTypes = createAsyncThunk<
         let programmeTypes: ProgrammeTypeDto[] | undefined;
 
         if (userAuth?.auth_token) {
-          programmeTypes = await new ProgrammeTypeService(userAuth?.auth_token).getProgrammeTypes();
+          programmeTypes = await new ProgrammeTypeService(
+            userAuth?.auth_token
+          ).getProgrammeTypes();
         } else {
           return rejectWithValue('no access token, profile check required');
         }
@@ -124,12 +128,15 @@ export const getProgrammeAttendanceReasons = createAsyncThunk<
 
     if (!programmeAttendanceReasonCache) {
       try {
-        let programmeAttendanceReason: ProgrammeAttendanceReasonDto[] | undefined;
+        let programmeAttendanceReason:
+          | ProgrammeAttendanceReasonDto[]
+          | undefined;
 
         if (userAuth?.auth_token) {
-          programmeAttendanceReason = await new ProgrammeAttendanceReasonService(
-            userAuth?.auth_token
-          ).getProgrammeAttendanceReasons();
+          programmeAttendanceReason =
+            await new ProgrammeAttendanceReasonService(
+              userAuth?.auth_token
+            ).getProgrammeAttendanceReasons();
         } else {
           return rejectWithValue('no access token, profile check required');
         }
@@ -276,7 +283,9 @@ export const getProvinces = createAsyncThunk<
         let provinces: ProvinceDto[] | undefined;
 
         if (userAuth?.auth_token) {
-          provinces = await new ProvinceService(userAuth?.auth_token).getProvinces();
+          provinces = await new ProvinceService(
+            userAuth?.auth_token
+          ).getProvinces();
         } else {
           return rejectWithValue('no access token, profile check required');
         }
@@ -353,7 +362,9 @@ export const getHolidays = createAsyncThunk<
         let holidays: HolidayDto[] | undefined;
 
         if (userAuth?.auth_token) {
-          holidays = await new HolidayService(userAuth?.auth_token).getHolidaysByYear(year);
+          holidays = await new HolidayService(
+            userAuth?.auth_token
+          ).getHolidaysByYear(year);
         } else {
           return rejectWithValue('no access token, profile check required');
         }
@@ -391,7 +402,9 @@ export const getReasonsForLeaving = createAsyncThunk<
         let reasons: ReasonForLeavingDto[] | undefined;
 
         if (userAuth?.auth_token) {
-          reasons = await new ReasonForLeavingService(userAuth?.auth_token).getReasonsForLeaving();
+          reasons = await new ReasonForLeavingService(
+            userAuth?.auth_token
+          ).getReasonsForLeaving();
         } else {
           return rejectWithValue('no access token, profile check required');
         }
@@ -427,9 +440,12 @@ export const getGrants = createAsyncThunk<
     if (grantsCache) return grantsCache;
 
     try {
-      if (!userAuth?.auth_token) return rejectWithValue('no access token, profile check required');
+      if (!userAuth?.auth_token)
+        return rejectWithValue('no access token, profile check required');
 
-      const grants: GrantDto[] = await new GrantService(userAuth?.auth_token).getGrants();
+      const grants: GrantDto[] = await new GrantService(
+        userAuth?.auth_token
+      ).getGrants();
 
       if (!grants) {
         return rejectWithValue('Error getting grants');
@@ -459,7 +475,8 @@ export const getDocumentTypes = createAsyncThunk<
     if (documentTypesCache) return documentTypesCache;
 
     try {
-      if (!userAuth?.auth_token) return rejectWithValue('no access token, profile check required');
+      if (!userAuth?.auth_token)
+        return rejectWithValue('no access token, profile check required');
 
       const documentTypes: DocumentTypeDto[] = await new DocumentTypeService(
         userAuth?.auth_token
@@ -493,7 +510,8 @@ export const getWorkflowStatuses = createAsyncThunk<
     if (WorkflowStatusesCache) return WorkflowStatusesCache;
 
     try {
-      if (!userAuth?.auth_token) return rejectWithValue('no access token, profile check required');
+      if (!userAuth?.auth_token)
+        return rejectWithValue('no access token, profile check required');
 
       const statuses: WorkflowStatusDto[] = await new WorkflowStatusService(
         userAuth?.auth_token
@@ -527,9 +545,12 @@ export const getNoteTypes = createAsyncThunk<
     if (noteTypesCache) return noteTypesCache;
 
     try {
-      if (!userAuth?.auth_token) return rejectWithValue('no access token, profile check required');
+      if (!userAuth?.auth_token)
+        return rejectWithValue('no access token, profile check required');
 
-      const types: NoteTypeDto[] = await new NoteTypeService(userAuth?.auth_token).getNoteTypes();
+      const types: NoteTypeDto[] = await new NoteTypeService(
+        userAuth?.auth_token
+      ).getNoteTypes();
 
       if (!types) {
         return rejectWithValue('Error getting note types');

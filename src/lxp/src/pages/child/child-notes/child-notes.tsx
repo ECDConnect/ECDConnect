@@ -1,13 +1,19 @@
 import { NoteDto } from '@ecdlink/core';
 import { NoteTypeEnum } from '@ecdlink/graphql';
-import { BannerWrapper, Dialog, DialogPosition, FADButton, Typography } from '@ecdlink/ui';
+import {
+  BannerWrapper,
+  Dialog,
+  DialogPosition,
+  FADButton,
+  Typography,
+} from '@ecdlink/ui';
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
 import { useLocation } from 'react-router-dom';
-import { useOnlineStatus } from '../../../hooks/useOnlineStatus';
-import { childrenSelectors } from '../../../store/children';
-import { notesSelectors } from '../../../store/notes';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
+import { childrenSelectors } from '@store/children';
+import { notesSelectors } from '@store/notes';
 import { CreateNote } from '../components/create-note/create-note';
 import * as styles from './child-notes.styles';
 import { ChildNotesRouteState } from './child-notes.types';
@@ -17,13 +23,16 @@ import { ViewNote } from './components/view-note/view-note';
 export const ChildNotes: React.FC = () => {
   const history = useHistory();
   const location = useLocation<ChildNotesRouteState>();
-  const [createChildNoteVisible, setCreateChildNoteVisible] = useState<boolean>(false);
+  const [createChildNoteVisible, setCreateChildNoteVisible] =
+    useState<boolean>(false);
   const [viewNoteVisible, setViewNoteVisible] = useState<boolean>(false);
   const [noteToView, setNoteToView] = useState<NoteDto>();
 
   const childId = location.state.childId;
   const child = useSelector(childrenSelectors.getChildById(childId));
-  const childUser = useSelector(childrenSelectors.getChildUserById(child?.userId));
+  const childUser = useSelector(
+    childrenSelectors.getChildUserById(child?.userId)
+  );
   const notes = useSelector(notesSelectors.getNotesByUserId(child?.userId));
   const { isOnline } = useOnlineStatus();
 
@@ -54,7 +63,12 @@ export const ChildNotes: React.FC = () => {
         onBack={history.goBack}
         displayOffline={!isOnline}
       >
-        <Typography className={'pt-1 px-4'} type={'h1'} color={'primary'} text="Notes" />
+        <Typography
+          className={'pt-1 px-4'}
+          type={'h1'}
+          color={'primary'}
+          text="Notes"
+        />
         <NotesList
           className={'bg-uiBg w-full'}
           notes={notes}
@@ -72,7 +86,11 @@ export const ChildNotes: React.FC = () => {
           click={() => openCreateNote()}
         />
       </BannerWrapper>
-      <Dialog fullScreen visible={createChildNoteVisible} position={DialogPosition.Top}>
+      <Dialog
+        fullScreen
+        visible={createChildNoteVisible}
+        position={DialogPosition.Top}
+      >
         <div className={styles.dialogContent}>
           <CreateNote
             userId={child?.userId || ''}
@@ -90,7 +108,12 @@ export const ChildNotes: React.FC = () => {
         visible={viewNoteVisible}
         position={DialogPosition.Bottom}
       >
-        {noteToView && <ViewNote note={noteToView} onBack={() => setViewNoteVisible(false)} />}
+        {noteToView && (
+          <ViewNote
+            note={noteToView}
+            onBack={() => setViewNoteVisible(false)}
+          />
+        )}
       </Dialog>
     </>
   );

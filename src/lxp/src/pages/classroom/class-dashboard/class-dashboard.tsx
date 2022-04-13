@@ -1,12 +1,22 @@
 import { LocalStorageKeys } from '@ecdlink/core';
-import { BannerWrapper, Dialog, DialogPosition, TabItem, TabList, Typography } from '@ecdlink/ui';
+import {
+  BannerWrapper,
+  Dialog,
+  DialogPosition,
+  TabItem,
+  TabList,
+  Typography,
+} from '@ecdlink/ui';
 import format from 'date-fns/format';
 import { useEffect, useState } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
-import { useOnlineStatus } from '../../../hooks/useOnlineStatus';
-import { useAppDispatch } from '../../../store';
-import { analyticsActions } from '../../../store/analytics';
-import { getStorageItem, setStorageItem } from '../../../utils/common/local-storage.utils';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
+import { useAppDispatch } from '@store';
+import { analyticsActions } from '@store/analytics';
+import {
+  getStorageItem,
+  setStorageItem,
+} from '@utils/common/local-storage.utils';
 import { AttendanceComponent } from '../attendance/attendance';
 import AttendanceTutorial from '../attendance/components/attendance-tutorial/attendance-tutorial';
 import ChildList from '../child-list/child-list';
@@ -18,8 +28,10 @@ export const ClassDashboard: React.FC = () => {
   const history = useHistory();
   const { state } = useLocation<ClassDashboardRouteState>();
   const date = format(new Date(), 'EEEE, d LLLL');
-  const [attendanceTutorialActive, setAttendanceTutorialActive] = useState<boolean>(false);
-  const [attendanceTutorialComplete, setAttendanceTutorialComplete] = useState<boolean>(false);
+  const [attendanceTutorialActive, setAttendanceTutorialActive] =
+    useState<boolean>(false);
+  const [attendanceTutorialComplete, setAttendanceTutorialComplete] =
+    useState<boolean>(false);
   const [selectedTabIndex, setSelectedTabIndex] = useState<number>(
     state?.activeTabIndex !== undefined ? state?.activeTabIndex : 1
   );
@@ -33,7 +45,9 @@ export const ClassDashboard: React.FC = () => {
   };
 
   useEffect(() => {
-    const isTutorialComplete = getStorageItem<boolean>(LocalStorageKeys.attendanceTutorialComplete);
+    const isTutorialComplete = getStorageItem<boolean>(
+      LocalStorageKeys.attendanceTutorialComplete
+    );
     if (isTutorialComplete !== undefined) {
       setAttendanceTutorialComplete(isTutorialComplete);
     }
@@ -108,7 +122,8 @@ export const ClassDashboard: React.FC = () => {
     }
   };
 
-  const displayHelp = currentTab?.title === 'Attendance' || currentTab?.title === 'Programme';
+  const displayHelp =
+    currentTab?.title === 'Attendance' || currentTab?.title === 'Programme';
 
   const closeAttendanceTutorial = () => {
     if (!attendanceTutorialComplete && previousTabIndex) {
@@ -142,10 +157,16 @@ export const ClassDashboard: React.FC = () => {
           className="bg-white"
           tabItems={tabItems}
           setSelectedIndex={selectedTabIndex}
-          tabSelected={(tab: TabItem, tabIndex: number) => setTabSelected(tab, tabIndex)}
+          tabSelected={(tab: TabItem, tabIndex: number) =>
+            setTabSelected(tab, tabIndex)
+          }
         />
       </BannerWrapper>
-      <Dialog fullScreen visible={attendanceTutorialActive} position={DialogPosition.Top}>
+      <Dialog
+        fullScreen
+        visible={attendanceTutorialActive}
+        position={DialogPosition.Top}
+      >
         <div className={styles.dialogContent}>
           <AttendanceTutorial
             onComplete={completeTutorial}

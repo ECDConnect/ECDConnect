@@ -11,9 +11,12 @@ import {
 import { IonContent } from '@ionic/react';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useOnlineStatus } from '../../hooks/useOnlineStatus';
-import { useAppDispatch } from '../../store';
-import { contentConsentSelectors, contentConsentThunkActions } from '../../store/content/consent';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
+import { useAppDispatch } from '@store';
+import {
+  contentConsentSelectors,
+  contentConsentThunkActions,
+} from '@store/content/consent';
 import LanguageSelector from '../language-selector/language-selector';
 import * as styles from './article.styles';
 import { ArticleProps } from './article.types';
@@ -54,7 +57,10 @@ export const Article = ({
 
   const getOpenContent = async (locale: string) => {
     const content = await appDispatch(
-      contentConsentThunkActions.getOpenConsent({ locale: locale, type: consentEnumType })
+      contentConsentThunkActions.getOpenConsent({
+        locale: locale,
+        type: consentEnumType,
+      })
     ).unwrap();
 
     if (content && content.length > 0) {
@@ -144,7 +150,12 @@ export const Article = ({
                     className={styles.closeButton}
                   >
                     {renderIcon('XIcon', 'h-4 w-4 mr-2')}
-                    <Typography color={'primary'} type={'body'} weight={'bold'} text={'Close'} />
+                    <Typography
+                      color={'primary'}
+                      type={'body'}
+                      weight={'bold'}
+                      text={'Close'}
+                    />
                   </Button>
                 </div>
               )}

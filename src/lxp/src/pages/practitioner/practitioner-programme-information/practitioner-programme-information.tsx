@@ -1,5 +1,9 @@
 import { ClassroomDto, useTheme } from '@ecdlink/core';
-import { FileTypeEnum, ProgrammeTypeEnum, WorkflowStatusEnum } from '@ecdlink/graphql';
+import {
+  FileTypeEnum,
+  ProgrammeTypeEnum,
+  WorkflowStatusEnum,
+} from '@ecdlink/graphql';
 import {
   ActionListDataItem,
   BannerWrapper,
@@ -18,16 +22,16 @@ import { useForm, useWatch } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { PhotoPrompt } from '../../../components/photo-prompt/photo-prompt';
-import { useDocuments } from '../../../hooks/useDocuments';
-import { useOnlineStatus } from '../../../hooks/useOnlineStatus';
+import { useDocuments } from '@hooks/useDocuments';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import {
   ProgrammeNameModel,
   programmeNameSchema,
-} from '../../../schemas/practitioner/practitioner-programme-information';
-import { useAppDispatch } from '../../../store';
-import { classroomsActions, classroomsSelectors } from '../../../store/classroom';
-import { userSelectors } from '../../../store/user';
-import { analyticsActions } from '../../../store/analytics';
+} from '@schemas/practitioner/practitioner-programme-information';
+import { useAppDispatch } from '@store';
+import { classroomsActions, classroomsSelectors } from '@store/classroom';
+import { userSelectors } from '@store/user';
+import { analyticsActions } from '@store/analytics';
 import * as styles from './practitioner-programme-information.styles';
 
 export const PractitionerProgrammeInformation: React.FC = () => {
@@ -40,11 +44,15 @@ export const PractitionerProgrammeInformation: React.FC = () => {
 
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
-  const programeType = useSelector(classroomsSelectors.getClassroomProgrameType());
+  const programeType = useSelector(
+    classroomsSelectors.getClassroomProgrameType()
+  );
 
-  const { createNewDocument, classroomImage, updateDocument, deleteDocument } = useDocuments();
+  const { createNewDocument, classroomImage, updateDocument, deleteDocument } =
+    useDocuments();
   const [editFieldVisible, setEditFieldVisible] = useState(false);
-  const [editProfilePictureVisible, setEditProfilePictureVisible] = useState(false);
+  const [editProfilePictureVisible, setEditProfilePictureVisible] =
+    useState(false);
 
   const [listItems, setListItems] = useState<ActionListDataItem[]>([]);
   const { theme } = useTheme();
@@ -167,7 +175,8 @@ export const PractitionerProgrammeInformation: React.FC = () => {
   };
 
   const savePractitionerName = async () => {
-    if (!updatedProgrammeName || updatedProgrammeName === classroom?.name) return;
+    if (!updatedProgrammeName || updatedProgrammeName === classroom?.name)
+      return;
 
     if (classroom) {
       setUpdatedClassroom(classroom);
@@ -221,7 +230,9 @@ export const PractitionerProgrammeInformation: React.FC = () => {
               text={'Programme Name'}
               weight="bold"
             ></Typography>
-            <div onClick={closeEditField}>{renderIcon('XIcon', 'h-6 w-6 text-uiLight')}</div>
+            <div onClick={closeEditField}>
+              {renderIcon('XIcon', 'h-6 w-6 text-uiLight')}
+            </div>
           </div>
           <FormInput<ProgrammeNameModel>
             register={programmeNameRegister}
@@ -238,11 +249,19 @@ export const PractitionerProgrammeInformation: React.FC = () => {
             }}
           >
             {renderIcon('SaveIcon', styles.buttonIcon)}
-            <Typography type="help" className="mr-2" color="white" text={'Save'}></Typography>
+            <Typography
+              type="help"
+              className="mr-2"
+              color="white"
+              text={'Save'}
+            ></Typography>
           </Button>
         </div>
       </Dialog>
-      <Dialog visible={editProfilePictureVisible} position={DialogPosition.Bottom}>
+      <Dialog
+        visible={editProfilePictureVisible}
+        position={DialogPosition.Bottom}
+      >
         <div className={'p-4'}>
           <PhotoPrompt
             title="Profile Photo"

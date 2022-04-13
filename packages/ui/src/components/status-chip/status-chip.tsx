@@ -34,7 +34,7 @@ export const StatusChip: React.FC<StatusChipProps> = ({
   padding = '',
   className,
   children,
-  onClick
+  onClick,
 }) => {
   return (
     <div
@@ -44,9 +44,9 @@ export const StatusChip: React.FC<StatusChipProps> = ({
         className
       )}
     >
-      {
-        iconPosition === 'start' && icon && renderIcon(icon, `w-5 h-5 text-${textColour} mr-2`)
-      }
+      {iconPosition === 'start' &&
+        icon &&
+        renderIcon(icon, `w-5 h-5 text-${textColour} mr-2`)}
       <Typography
         type={textType}
         weight={textWeight}
@@ -55,9 +55,9 @@ export const StatusChip: React.FC<StatusChipProps> = ({
         lineHeight={4}
       />
       {children}
-      {
-        iconPosition === 'end' && icon && renderIcon(icon, `w-5 h-5 text-${textColour} ml-2`)
-      }
+      {iconPosition === 'end' &&
+        icon &&
+        renderIcon(icon, `w-5 h-5 text-${textColour} ml-2`)}
     </div>
   );
 };

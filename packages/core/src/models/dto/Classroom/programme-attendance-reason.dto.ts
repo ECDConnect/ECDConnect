@@ -1,5 +1,5 @@
 import { EntityBase } from '../entity-base';
 
-export interface ProgrammeAttendanceReasonDto extends EntityBase {  
+export interface ProgrammeAttendanceReasonDto extends EntityBase {
   reason: string;
 }

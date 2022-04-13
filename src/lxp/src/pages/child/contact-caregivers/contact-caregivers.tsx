@@ -3,9 +3,9 @@ import { Alert, BannerWrapper } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
 import { ContactPerson } from '../../../components/contact-person/contact-person';
-import { useOnlineStatus } from '../../../hooks/useOnlineStatus';
-import { caregiverSelectors } from '../../../store/caregiver';
-import { childrenSelectors } from '../../../store/children';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
+import { caregiverSelectors } from '@store/caregiver';
+import { childrenSelectors } from '@store/children';
 import { ContactCaregiversState } from './contact-caregivers.types';
 
 export const ContactCaregivers: React.FC = () => {
@@ -14,7 +14,9 @@ export const ContactCaregivers: React.FC = () => {
   const { state: locationState } = useLocation<ContactCaregiversState>();
   const { childId } = locationState;
   const child = useSelector(childrenSelectors.getChildById(childId));
-  const childUser = useSelector(childrenSelectors.getChildUserById(child?.userId));
+  const childUser = useSelector(
+    childrenSelectors.getChildUserById(child?.userId)
+  );
   const caregiver: CaregiverDto | undefined = useSelector(
     caregiverSelectors.getCaregiverById(child?.caregiverId)
   );
@@ -28,11 +30,17 @@ export const ContactCaregivers: React.FC = () => {
       title={`Contact ${childUser?.firstName}'s caregiver`}
       displayOffline={!isOnline}
     >
-      <div className={'pt-2 px-4 pb-20 h-full w-full flex flex-col overflow-y-scroll'}>
+      <div
+        className={
+          'pt-2 px-4 pb-20 h-full w-full flex flex-col overflow-y-scroll'
+        }
+      >
         <Alert
           className={'mt-2'}
           type={'info'}
-          title={'WhatsApps and phone calls will be charged at your standard carrier rates.'}
+          title={
+            'WhatsApps and phone calls will be charged at your standard carrier rates.'
+          }
         />
         {caregiver && (
           <ContactPerson

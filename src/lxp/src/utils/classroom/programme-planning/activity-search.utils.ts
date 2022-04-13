@@ -6,8 +6,8 @@ import {
   ProgressTrackingSubCategoryDto,
   StoryBookDto,
 } from '@ecdlink/core';
-import { DailyRoutineItemType } from '../../../enums/ProgrammeRoutineType';
-import { RecommendedActivity } from '../../../hooks/useProgrammePlanningRecommendations';
+import { DailyRoutineItemType } from '@enums/ProgrammeRoutineType';
+import { RecommendedActivity } from '@hooks/useProgrammePlanningRecommendations';
 
 export const filterActivitiesByTheme = (
   activities: ActivityDto[],
@@ -108,8 +108,13 @@ const getThemeActivities = (
   return [];
 };
 
-export const filterActivitiesByType = (type: string, activities: ActivityDto[]) =>
-  activities.filter((act) => act.type && act.type.toLowerCase() === type.toLowerCase());
+export const filterActivitiesByType = (
+  type: string,
+  activities: ActivityDto[]
+) =>
+  activities.filter(
+    (act) => act.type && act.type.toLowerCase() === type.toLowerCase()
+  );
 
 export const getFirstActivityByType = (
   activities: RecommendedActivity[],

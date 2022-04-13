@@ -34,7 +34,9 @@ const DynamicStaticSelector: React.FC<DynamicStaticSelectorProps> = ({
     }
   `;
 
-  const { data: contentData } = useQuery(query, { fetchPolicy: 'cache-and-network' });
+  const { data: contentData } = useQuery(query, {
+    fetchPolicy: 'cache-and-network',
+  });
 
   const [displayFields] = useState<string[]>(['description']);
 
@@ -123,7 +125,9 @@ const DynamicStaticSelector: React.FC<DynamicStaticSelectorProps> = ({
                         <div className="text-sm font-medium text-gray-900">
                           <input
                             disabled={isReview}
-                            defaultChecked={currentIds?.some((x) => x === item.id.toString())}
+                            defaultChecked={currentIds?.some(
+                              (x) => x === item.id.toString()
+                            )}
                             type="checkbox"
                             className="focus:ring-primary h-4 w-4 text-primary border-gray-300 rounded"
                             onChange={() => selectItem(item.id)}
@@ -136,7 +140,11 @@ const DynamicStaticSelector: React.FC<DynamicStaticSelectorProps> = ({
             </tbody>
           </table>
 
-          <Pagination recordsPerPage={8} items={tempData} responseData={setTableData} />
+          <Pagination
+            recordsPerPage={8}
+            items={tempData}
+            responseData={setTableData}
+          />
         </div>
       </div>
     );

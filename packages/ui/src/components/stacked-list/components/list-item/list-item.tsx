@@ -83,7 +83,7 @@ export const ListItem: React.FC<ListItemProps> = ({
   buttonType = 'outlined',
   buttonText = '',
   buttonIcon = '',
-  onButtonClick = () => { },
+  onButtonClick = () => {},
 }) => {
   return (
     <div
@@ -182,9 +182,7 @@ export const ListItem: React.FC<ListItemProps> = ({
         )}
 
         {showChevronIcon && (
-          <div >
-            {renderIcon('ChevronRightIcon', styles.chevronIcon)}
-          </div>
+          <div>{renderIcon('ChevronRightIcon', styles.chevronIcon)}</div>
         )}
       </div>
     </div>

@@ -19,7 +19,9 @@ import ProvincePanel from './components/province-panel/province-panel';
 export default function ProvinceView() {
   const { hasPermission } = useUser();
   const type = 'Province';
-  const { data, refetch } = useQuery(GetAllProvince, { fetchPolicy: 'cache-and-network' });
+  const { data, refetch } = useQuery(GetAllProvince, {
+    fetchPolicy: 'cache-and-network',
+  });
   const [tableData, setTableData] = useState<any[]>([]);
   const [deleteMutation] = useMutation(DeleteProvince);
   const panel = usePanel();
@@ -118,8 +120,13 @@ export default function ProvinceView() {
                 <UiTable
                   columns={[{ field: 'description', use: 'description' }]}
                   rows={tableData}
-                  editRow={hasPermission(PermissionEnum.update_static) && displayPanel}
-                  deleteRow={hasPermission(PermissionEnum.delete_static) && deleteAndRefresh}
+                  editRow={
+                    hasPermission(PermissionEnum.update_static) && displayPanel
+                  }
+                  deleteRow={
+                    hasPermission(PermissionEnum.delete_static) &&
+                    deleteAndRefresh
+                  }
                 />
               </div>
             </div>

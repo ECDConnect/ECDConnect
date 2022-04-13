@@ -22,8 +22,8 @@ import {
   averageScoreThreshold,
   badScoreThreshold,
   goodScoreThreshold,
-} from '../../../models/classroom/attendance/ClassAttendance';
-import { MissedAttendanceGroups } from '../../../models/classroom/attendance/MissedAttendanceGroups';
+} from '@models/classroom/attendance/ClassAttendance';
+import { MissedAttendanceGroups } from '@models/classroom/attendance/MissedAttendanceGroups';
 import {
   AttendanceState,
   AttendanceStateCheckResult,
@@ -31,7 +31,7 @@ import {
 import {
   ChildAttendance,
   TrackAttendanceModelInput,
-} from '../../../store/attendance/attendance.types';
+} from '@store/attendance/attendance.types';
 import { isWorkingDay } from '../../common/date.utils';
 import { Weekdays } from '../../practitioner/playgroups-utils';
 
@@ -49,7 +49,10 @@ export const isValidAttendableDate = (
   return isValid;
 };
 
-export const isAttendableDay = (date: Date, programmeAttendanceDays: number[]) => {
+export const isAttendableDay = (
+  date: Date,
+  programmeAttendanceDays: number[]
+) => {
   let dayFound = false;
   for (const scheduleDay of programmeAttendanceDays) {
     if (dayFound) break;
@@ -85,14 +88,18 @@ export const getMissedClassAttendance = (
   const currentDayFilter = dayOfWeek === 0 ? 7 : dayOfWeek;
   const returnProgrammes: ClassProgrammeDto[] = [];
   for (const group of classRoomGroup) {
-    const groupProgrammes = classProgrammes.filter((x) => x.classroomGroupId === group.id);
+    const groupProgrammes = classProgrammes.filter(
+      (x) => x.classroomGroupId === group.id
+    );
     const classProgrammesUpToCurrentDay = groupProgrammes?.filter(
       (x) => (x.meetingDay || -1) <= currentDayFilter
     );
 
     if (classProgrammesUpToCurrentDay)
       for (const programme of classProgrammesUpToCurrentDay) {
-        if (!attendance.some((att) => att.classroomProgrammeId === programme.id)) {
+        if (
+          !attendance.some((att) => att.classroomProgrammeId === programme.id)
+        ) {
           returnProgrammes.push(programme);
         }
       }
@@ -107,7 +114,9 @@ export const isPracitionerAttendanceMissingForLearner = (
   attendance: AttendanceDto[],
   date: Date
 ) => {
-  const learnerGroups = classRoomGroup.filter((x) => x.id === learner.classroomGroupId);
+  const learnerGroups = classRoomGroup.filter(
+    (x) => x.id === learner.classroomGroupId
+  );
   const missedAttendanceClassProgramme = getMissedClassAttendance(
     learnerGroups,
     classPrgorammes,
@@ -115,7 +124,10 @@ export const isPracitionerAttendanceMissingForLearner = (
     date
   );
 
-  return missedAttendanceClassProgramme && missedAttendanceClassProgramme.length > 0 ? true : false;
+  return missedAttendanceClassProgramme &&
+    missedAttendanceClassProgramme.length > 0
+    ? true
+    : false;
 };
 
 export const mapTrackAttendance = (
@@ -137,7 +149,9 @@ export const getMonthName = (monthOfYear: number) => {
   return format(new Date().setMonth(monthOfYear), 'MMMM');
 };
 
-export const getClassroomGroupSchoolDays = (classProgrammes: ClassProgrammeDto[]) => {
+export const getClassroomGroupSchoolDays = (
+  classProgrammes: ClassProgrammeDto[]
+) => {
   const allMeetingDays = classProgrammes?.map((prog) => prog.meetingDay);
   return allMeetingDays;
 };
@@ -185,7 +199,11 @@ export const getMissedAttendanceSummaryGroups = (
             missedAttendanceClassProgramme.meetingDay - 1
           );
 
-          const isValidDay = isValidAttendableDate(missedDayDate, meetingDays || [], holidays);
+          const isValidDay = isValidAttendableDate(
+            missedDayDate,
+            meetingDays || [],
+            holidays
+          );
 
           if (isValidDay) {
             attendanceToDoList.push({
@@ -197,7 +215,9 @@ export const getMissedAttendanceSummaryGroups = (
         }
       }
 
-      return attendanceToDoList.sort((a, b) => (a.missedDay > b.missedDay ? 1 : -1));
+      return attendanceToDoList.sort((a, b) =>
+        a.missedDay > b.missedDay ? 1 : -1
+      );
     }
   }
 
@@ -216,13 +236,19 @@ export const getAttendanceStatusCheck = (
   for (const attendanceList of attendanceGroups) {
     if (attendanceList.isRequired) {
       isValid = attendanceList.list.every(
-        (x) => x.status === AttendanceStatus.Present || x.status === AttendanceStatus.Absent
+        (x) =>
+          x.status === AttendanceStatus.Present ||
+          x.status === AttendanceStatus.Absent
       );
     }
     //TD: test t-eq
-    presentCount += attendanceList.list.filter((x) => x.status === AttendanceStatus.Present).length;
+    presentCount += attendanceList.list.filter(
+      (x) => x.status === AttendanceStatus.Present
+    ).length;
 
-    absentCount += attendanceList.list.filter((x) => x.status === AttendanceStatus.Absent).length;
+    absentCount += attendanceList.list.filter(
+      (x) => x.status === AttendanceStatus.Absent
+    ).length;
   }
 
   return {
@@ -236,10 +262,15 @@ export const classroomGroupHasAttendanceOnDate = (
   classProgrammes: ClassProgrammeDto[],
   date: Date
 ): ClassProgrammeDto | undefined => {
-  return classProgrammes ? classProgrammes.find((x) => x.meetingDay === getDay(date)) : undefined;
+  return classProgrammes
+    ? classProgrammes.find((x) => x.meetingDay === getDay(date))
+    : undefined;
 };
 
-export const getPlaygroup = (classProgrammes: ClassProgrammeDto[], date: Date) => {
+export const getPlaygroup = (
+  classProgrammes: ClassProgrammeDto[],
+  date: Date
+) => {
   return classProgrammes?.find((x) => x.meetingDay === getDay(date));
 };
 

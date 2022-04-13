@@ -19,8 +19,11 @@ export const childBirthCertificateFormSchema = Yup.object().shape({
     is: true,
     then: Yup.string().required(),
   }),
-  acceptChildDocumentationDeclaration: Yup.bool().when('hasChildDocumentation', {
-    is: false,
-    then: Yup.bool().required().isTrue(),
-  }),
+  acceptChildDocumentationDeclaration: Yup.bool().when(
+    'hasChildDocumentation',
+    {
+      is: false,
+      then: Yup.bool().required().isTrue(),
+    }
+  ),
 });

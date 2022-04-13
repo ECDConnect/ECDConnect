@@ -1,6 +1,11 @@
 import { ChildDto, LearnerDto, useDialog } from '@ecdlink/core';
 import { getAvatarColor } from '@ecdlink/core';
-import { DialogPosition, FADButton, SearchDropDown, StackedList } from '@ecdlink/ui';
+import {
+  DialogPosition,
+  FADButton,
+  SearchDropDown,
+  StackedList,
+} from '@ecdlink/ui';
 import {
   AlertSeverityType,
   ComponentBaseProps,
@@ -12,42 +17,56 @@ import {
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
-import { childrenSelectors } from '../../../store/children';
-import { classroomsSelectors } from '../../../store/classroom';
-import { getChildAlertModel } from '../../../utils/child/child-alert-message-util';
+import { childrenSelectors } from '@store/children';
+import { classroomsSelectors } from '@store/classroom';
+import { getChildAlertModel } from '@utils/child/child-alert-message-util';
 import SeachHeader from '../../../components/search-header/search-header';
 import * as styles from './child-list.styles';
-import { attendanceSelectors } from '../../../store/attendance';
-import { documentSelectors } from '../../../store/document';
-import { contentReportSelectors } from '../../../store/content/report';
-import { useStaticData } from '../../../hooks/useStaticData';
+import { attendanceSelectors } from '@store/attendance';
+import { documentSelectors } from '@store/document';
+import { contentReportSelectors } from '@store/content/report';
+import { useStaticData } from '@hooks/useStaticData';
 import { WorkflowStatusEnum } from '@ecdlink/graphql';
 import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
-import { useOnlineStatus } from '../../../hooks/useOnlineStatus';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { IconInformationIndicator } from '../programme-planning/components/icon-information-indicator/icon-information-indicator';
 
 export const ChildList: React.FC<ComponentBaseProps> = () => {
   const { isOnline } = useOnlineStatus();
   const dialog = useDialog();
   const { getWorkflowStatusIdByEnum } = useStaticData();
-  const pendingStatusId = getWorkflowStatusIdByEnum(WorkflowStatusEnum.ChildPending);
+  const pendingStatusId = getWorkflowStatusIdByEnum(
+    WorkflowStatusEnum.ChildPending
+  );
   const history = useHistory();
   const attendanceData = useSelector(attendanceSelectors.getAttendance);
   const children = useSelector(childrenSelectors.getChildren);
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
-  const classroomGroupProgrammes = useSelector(classroomsSelectors.getClassProgrammes);
+  const classroomGroupProgrammes = useSelector(
+    classroomsSelectors.getClassProgrammes
+  );
   const childUsers = useSelector(childrenSelectors.getChildUsers);
   const documents = useSelector(documentSelectors.getDocuments);
-  const childReportSummaries = useSelector(contentReportSelectors.getChildLatestCompletedReports());
-  const classroomGroupLearners = useSelector(classroomsSelectors.getClassroomGroupLearners);
+  const childReportSummaries = useSelector(
+    contentReportSelectors.getChildLatestCompletedReports()
+  );
+  const classroomGroupLearners = useSelector(
+    classroomsSelectors.getClassroomGroupLearners
+  );
   const isPlaygroup = useSelector(classroomsSelectors.isPlaygroup());
-  const [addChildButtonExpanded, setAddChildButtonExpanded] = useState<boolean>(true);
+  const [addChildButtonExpanded, setAddChildButtonExpanded] =
+    useState<boolean>(true);
   const [searchTextActive, setSearchTextActive] = useState(false);
   const [activeFilters, setActiveFilters] = useState<any[]>([]);
   const [activeSort, setActiveSort] = useState<any[]>([]);
-  const [childUserListData, setChildUserListData] = useState<UserAlertListDataItem[]>();
-  const [filteredChildData, setFilteredChildData] = useState<UserAlertListDataItem[]>([]);
-  const [updatedPlaygroups, setUpdatedPlaygroups] = useState<SearchDropDownOption<string>[]>([]);
+  const [childUserListData, setChildUserListData] =
+    useState<UserAlertListDataItem[]>();
+  const [filteredChildData, setFilteredChildData] = useState<
+    UserAlertListDataItem[]
+  >([]);
+  const [updatedPlaygroups, setUpdatedPlaygroups] = useState<
+    SearchDropDownOption<string>[]
+  >([]);
 
   const filterInfo: FilterInfo = {
     filterName: 'Playgroup',
@@ -108,7 +127,9 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
       const childListItem: UserAlertListDataItem[] = [];
 
       for (const child of children) {
-        const learner = classroomGroupLearners.find((x) => x.userId === child.userId);
+        const learner = classroomGroupLearners.find(
+          (x) => x.userId === child.userId
+        );
         childListItem.push(mapUserListDataItem(child, learner));
       }
 
@@ -142,7 +163,9 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
         }
       } else {
         for (const child of children) {
-          const learner = classroomGroupLearners.find((x) => x.userId === child.userId);
+          const learner = classroomGroupLearners.find(
+            (x) => x.userId === child.userId
+          );
           if (learner) {
             childListItem.push(mapUserListDataItem(child, learner));
           }
@@ -161,13 +184,21 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
       const sorted = [...filteredChildren].sort((a: ChildDto, b: ChildDto) => {
         const childUserOne = childUsers?.find((x) => x.id === a.userId);
         const childUserTwo = childUsers?.find((x) => x.id === b.userId);
-        const childLearnerOne = classroomGroupLearners?.find((x) => x.userId === a.userId);
-        const childLearnerTwo = classroomGroupLearners?.find((x) => x.userId === a.userId);
+        const childLearnerOne = classroomGroupLearners?.find(
+          (x) => x.userId === a.userId
+        );
+        const childLearnerTwo = classroomGroupLearners?.find(
+          (x) => x.userId === a.userId
+        );
 
         switch (column) {
           case 'priority': {
-            const childUserDocumentsOne = documents?.filter((x) => x.userId === a.userId);
-            const childReportsOne = childReportSummaries?.filter((x) => x.childId === a?.id);
+            const childUserDocumentsOne = documents?.filter(
+              (x) => x.userId === a.userId
+            );
+            const childReportsOne = childReportSummaries?.filter(
+              (x) => x.childId === a?.id
+            );
             const childAlertOne = getChildAlertModel(
               childLearnerOne,
               pendingStatusId,
@@ -179,8 +210,12 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
               classroomGroupProgrammes,
               childReportsOne
             );
-            const childUserDocumentsTwo = documents?.filter((x) => x.userId === b.userId);
-            const childReportsTwo = childReportSummaries?.filter((x) => x.childId === b?.id);
+            const childUserDocumentsTwo = documents?.filter(
+              (x) => x.userId === b.userId
+            );
+            const childReportsTwo = childReportSummaries?.filter(
+              (x) => x.childId === b?.id
+            );
             const childAlertTwo = getChildAlertModel(
               childLearnerTwo,
               pendingStatusId,
@@ -200,8 +235,10 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
               ? 1
               : -1;
           case 'age':
-            return (childUserOne !== undefined && childUserOne?.dateOfBirth !== undefined) >
-              (childUserTwo !== undefined && childUserTwo?.dateOfBirth !== undefined)
+            return (childUserOne !== undefined &&
+              childUserOne?.dateOfBirth !== undefined) >
+              (childUserTwo !== undefined &&
+                childUserTwo?.dateOfBirth !== undefined)
               ? 1
               : -1;
           case 'firstName':
@@ -215,7 +252,9 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
 
       const childListItem: UserAlertListDataItem[] = [];
       for (const child of sorted) {
-        const learner = classroomGroupLearners.find((x) => x.userId === child.userId);
+        const learner = classroomGroupLearners.find(
+          (x) => x.userId === child.userId
+        );
         childListItem.push(mapUserListDataItem(child, learner));
       }
       setChildUserListData(childListItem || []);
@@ -227,8 +266,12 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
     childLearner?: LearnerDto
   ): UserAlertListDataItem => {
     const childUser = childUsers?.find((x) => x.id === childRecord.userId);
-    const childDocuments = documents?.filter((x) => x.userId === childRecord.userId);
-    const reports = childReportSummaries?.filter((x) => x.childId === childRecord?.id);
+    const childDocuments = documents?.filter(
+      (x) => x.userId === childRecord.userId
+    );
+    const reports = childReportSummaries?.filter(
+      (x) => x.childId === childRecord?.id
+    );
 
     const childAlert = getChildAlertModel(
       childLearner,
@@ -276,7 +319,9 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
 
   const onSearchChange = (value: string) => {
     setFilteredChildData(
-      childUserListData?.filter((x) => x.title.toLowerCase().includes(value.toLowerCase())) || []
+      childUserListData?.filter((x) =>
+        x.title.toLowerCase().includes(value.toLowerCase())
+      ) || []
     );
   };
 

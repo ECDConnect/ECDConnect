@@ -18,13 +18,20 @@ export const pushAnalytics = createAsyncThunk<
     try {
       if (viewTracking) {
         for (const viewTrackingItem of viewTracking) {
-          ReactGA.pageview(viewTrackingItem.pageView, undefined, viewTrackingItem.title);
+          ReactGA.pageview(
+            viewTrackingItem.pageView,
+            undefined,
+            viewTrackingItem.title
+          );
         }
       }
 
       if (eventTracking) {
         for (const eventTrackingItem of eventTracking) {
-          ReactGA.event({ action: eventTrackingItem.action, category: eventTrackingItem.category });
+          ReactGA.event({
+            action: eventTrackingItem.action,
+            category: eventTrackingItem.category,
+          });
         }
       }
       return [true];

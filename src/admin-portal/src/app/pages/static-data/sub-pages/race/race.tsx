@@ -19,7 +19,9 @@ import RacePanel from './components/race-panel/race-panel';
 export default function RaceView() {
   const { hasPermission } = useUser();
   const type = 'Race';
-  const { data, refetch } = useQuery(GetAllRace, { fetchPolicy: 'cache-and-network' });
+  const { data, refetch } = useQuery(GetAllRace, {
+    fetchPolicy: 'cache-and-network',
+  });
   const [tableData, setTableData] = useState<any[]>([]);
   const [deleteMutation] = useMutation(DeleteRace);
   const panel = usePanel();
@@ -118,8 +120,13 @@ export default function RaceView() {
                 <UiTable
                   columns={[{ field: 'description', use: 'description' }]}
                   rows={tableData}
-                  editRow={hasPermission(PermissionEnum.update_static) && displayPanel}
-                  deleteRow={hasPermission(PermissionEnum.delete_static) && deleteAndRefresh}
+                  editRow={
+                    hasPermission(PermissionEnum.update_static) && displayPanel
+                  }
+                  deleteRow={
+                    hasPermission(PermissionEnum.delete_static) &&
+                    deleteAndRefresh
+                  }
                 />
               </div>
             </div>

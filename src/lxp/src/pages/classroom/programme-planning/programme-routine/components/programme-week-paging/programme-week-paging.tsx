@@ -26,7 +26,10 @@ export const ProgrammeWeekPaging: React.FC<ProgrammeWeekPagingProps> = ({
         )}
       </div>
       <div className={'w-1/3 flex flex-row justify-center'}>
-        <Typography text={`Week ${displayIndex} of ${maxIndex + 1}`} type={'small'} />
+        <Typography
+          text={`Week ${displayIndex} of ${maxIndex + 1}`}
+          type={'small'}
+        />
       </div>
       <div className={'w-1/3 flex flex-row justify-center'}>
         {activeIndex < maxIndex && (

@@ -1,5 +1,5 @@
 import { AxiosResponse } from 'axios';
-import { DataResponse } from '../../models/common/DataResponse';
+import { DataResponse } from '@models/common/DataResponse';
 
 enum HttpResponseCodes {
   success = 200,
@@ -7,7 +7,9 @@ enum HttpResponseCodes {
   serviceError = 500,
 }
 
-export const getDataResponse = <T>(response: AxiosResponse<any>): DataResponse<T> => {
+export const getDataResponse = <T>(
+  response: AxiosResponse<any>
+): DataResponse<T> => {
   let dataResponse: DataResponse<T> = {};
 
   if (!response) {

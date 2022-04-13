@@ -8,7 +8,10 @@ class SiteAddressService {
     this._accessToken = accessToken;
   }
 
-  async updateSiteAddress(id: string, input: SiteAddressInput): Promise<boolean> {
+  async updateSiteAddress(
+    id: string,
+    input: SiteAddressInput
+  ): Promise<boolean> {
     const apiInstance = await api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `

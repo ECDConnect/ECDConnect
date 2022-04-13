@@ -13,12 +13,10 @@ export const container = (
   dividerType: DividerType,
   dividerColor: Colours
 ) =>
-  `w-full flex flex-row justify-between items-center bg-${backgroundColor} cursor-pointer ${withPaddingY ? 'py-3' : ''
+  `w-full flex flex-row justify-between items-center bg-${backgroundColor} cursor-pointer ${
+    withPaddingY ? 'py-3' : ''
   } ${withPaddingX ? 'px-4' : ''}
-   ${showDivider
-    ? `border-t border-${dividerColor} border-${dividerType}`
-    : ''
-  }
+   ${showDivider ? `border-t border-${dividerColor} border-${dividerType}` : ''}
   `;
 
 export const getShapeClass = (type: SubTitleShape, subTitleColor: Colours) => {

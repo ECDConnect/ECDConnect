@@ -14,7 +14,7 @@ export const GetAllContent = gql`
           name
           description
         }
-      }      
+      }
     }
   }
 `;
@@ -29,14 +29,14 @@ export const GetContentById = gql`
         id
         name
         description
-      }     
+      }
     }
   }
 `;
 
 export const GetContentForGroup = gql`
   query contentForGroup($group: String, $locale: String) {
-    contentForGroup(group: $group, locale: $locale) {      
+    contentForGroup(group: $group, locale: $locale) {
       content
       reference
       contentType
@@ -53,16 +53,36 @@ export const CreateContent = gql`
 `;
 
 export const InsertContent = gql`
-  mutation insertContent($input: ContentInput, $contentData: String, $locale: String, $isVariant: Boolean!) {
-    insertContent(input: $input, contentData: $contentData, locale: $locale, isVariant: $isVariant) {
+  mutation insertContent(
+    $input: ContentInput
+    $contentData: String
+    $locale: String
+    $isVariant: Boolean!
+  ) {
+    insertContent(
+      input: $input
+      contentData: $contentData
+      locale: $locale
+      isVariant: $isVariant
+    ) {
       id
     }
   }
 `;
 
 export const UpdateContent = gql`
-  mutation updateContent($input: ContentInput, $id: UUID!, $contentData: String, $locale: String) {
-    updateContent(input: $input, id: $id, contentData: $contentData, locale: $locale) {
+  mutation updateContent(
+    $input: ContentInput
+    $id: UUID!
+    $contentData: String
+    $locale: String
+  ) {
+    updateContent(
+      input: $input
+      id: $id
+      contentData: $contentData
+      locale: $locale
+    ) {
       id
     }
   }

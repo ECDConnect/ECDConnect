@@ -18,18 +18,18 @@ import { useSelector } from 'react-redux';
 import {
   ChildExtraInformationFormModel,
   childExtraInformationFormSchema,
-} from '../../../../schemas/child/child-registration/child-extra-information-form';
-import { staticDataSelectors } from '../../../../store/static-data';
+} from '@schemas/child/child-registration/child-extra-information-form';
+import { staticDataSelectors } from '@store/static-data';
 import * as styles from './child-extra-information-form.styles';
 import { ChildExtraInformationFormProps } from './child-extra-information-form.types';
 
-export const ChildExtraInformationForm: React.FC<ChildExtraInformationFormProps> = ({
-  childExtraInformation,
-  childName,
-  onSubmit,
-}) => {
+export const ChildExtraInformationForm: React.FC<
+  ChildExtraInformationFormProps
+> = ({ childExtraInformation, childName, onSubmit }) => {
   const [racesList, setRacesList] = useState<DropDownOption<string>[]>([]);
-  const [languagesList, setLanguagesList] = useState<ButtonGroupOption<string>[]>([]);
+  const [languagesList, setLanguagesList] = useState<
+    ButtonGroupOption<string>[]
+  >([]);
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
   const [childGender, setChildGender] = useState<string>();
   const [otherLanguageSelected, setOtherLanguageSelected] = useState<boolean>();
@@ -155,7 +155,9 @@ export const ChildExtraInformationForm: React.FC<ChildExtraInformationFormProps>
         <label className={classNames(styles.label, 'mt-4')}>
           {`${childName}’s home language(s)?`}
         </label>
-        <label className="mt-2 text-sm text-textLight">You can choose more than one</label>
+        <label className="mt-2 text-sm text-textLight">
+          You can choose more than one
+        </label>
         <div className={'mt-2'}>
           <ButtonGroup<string>
             type={ButtonGroupTypes.Chip}

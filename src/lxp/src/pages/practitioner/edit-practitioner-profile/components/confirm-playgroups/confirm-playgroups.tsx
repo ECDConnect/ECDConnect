@@ -3,8 +3,8 @@ import { Button, Divider, Typography } from '@ecdlink/ui';
 import { renderIcon } from '@ecdlink/ui';
 import { useEffect } from 'react';
 import { useState } from 'react';
-import { newGuid } from '../../../../../utils/common/uuid.utils';
-import { EditPlaygroupModel } from '../../../../../schemas/practitioner/edit-playgroups';
+import { newGuid } from '@utils/common/uuid.utils';
+import { EditPlaygroupModel } from '@schemas/practitioner/edit-playgroups';
 import * as styles from '../../edit-practitioner-profile.styles';
 import { ConfirmPlayGroupListItem } from '../edit-playgroup-form/components/confirm-playgroup-list-item/confirm-playgroup-list-item';
 interface ConfirmPlayGroupsProps extends FormComponentProps<any | void> {
@@ -19,7 +19,8 @@ export const ConfirmPlayGroups: React.FC<ConfirmPlayGroupsProps> = ({
   onEditPlaygroup,
   title = 'Confirm Playgroups',
 }) => {
-  const [playgroups, setPlayGroups] = useState<EditPlaygroupModel[]>(defaultPlayGroups);
+  const [playgroups, setPlayGroups] =
+    useState<EditPlaygroupModel[]>(defaultPlayGroups);
 
   const onAddNewPlaygroup = () => {
     playgroups.push({ meetingDays: [], name: '', classroomGroupId: newGuid() });
@@ -32,12 +33,19 @@ export const ConfirmPlayGroups: React.FC<ConfirmPlayGroupsProps> = ({
 
   return (
     <>
-      <Typography type={'h1'} text={title} color={'primary'} className={'mt-3'} />
+      <Typography
+        type={'h1'}
+        text={title}
+        color={'primary'}
+        className={'mt-3'}
+      />
 
       {playgroups.map((playGroup, index) => {
         return (
           <div key={`confirm-playgroup-${index}`}>
-            {index > 0 && <Divider dividerType="dashed" className={styles.divider} />}
+            {index > 0 && (
+              <Divider dividerType="dashed" className={styles.divider} />
+            )}
 
             <ConfirmPlayGroupListItem
               playGroup={playGroup}
@@ -57,7 +65,12 @@ export const ConfirmPlayGroups: React.FC<ConfirmPlayGroupsProps> = ({
           onClick={onAddNewPlaygroup}
         >
           {renderIcon('PlusSmIcon', styles.icon)}
-          <Typography className="mx-2" text="Add playgroup" type="help" color="white" />
+          <Typography
+            className="mx-2"
+            text="Add playgroup"
+            type="help"
+            color="white"
+          />
         </Button>
       )}
 

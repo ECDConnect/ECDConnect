@@ -1,6 +1,6 @@
 import { PractitionerDto } from '@ecdlink/core';
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { PractitionerService } from '../../services/PractitionerService';
+import { PractitionerService } from '@services/PractitionerService';
 import { RootState, ThunkApiType } from '../types';
 
 export const getPractitionerById = createAsyncThunk<
@@ -21,9 +21,9 @@ export const getPractitionerById = createAsyncThunk<
         let practitioner: PractitionerDto | undefined;
 
         if (userAuth?.auth_token) {
-          practitioner = await new PractitionerService(userAuth?.auth_token).getPractitionerById(
-            id
-          );
+          practitioner = await new PractitionerService(
+            userAuth?.auth_token
+          ).getPractitionerById(id);
         } else {
           return rejectWithValue('no access token, profile check required');
         }

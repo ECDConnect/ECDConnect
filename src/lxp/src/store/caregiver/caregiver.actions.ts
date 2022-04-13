@@ -1,8 +1,12 @@
 import { CaregiverDto, SiteAddressDto } from '@ecdlink/core';
 import { CaregiverInput, SiteAddressInput } from '@ecdlink/graphql';
-import { createAction, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { CaregiverService } from '../../services/CaregiverService';
-import { SiteAddressService } from '../../services/SiteAddressService';
+import {
+  createAction,
+  createAsyncThunk,
+  PayloadAction,
+} from '@reduxjs/toolkit';
+import { CaregiverService } from '@services/CaregiverService';
+import { SiteAddressService } from '@services/SiteAddressService';
 import { RootState, ThunkApiType } from '../types';
 import { CaregiverContactHistory } from './caregiver.types';
 
@@ -31,7 +35,9 @@ export const getCaregivers = createAsyncThunk<
         let caregivers: CaregiverDto[] | undefined;
 
         if (userAuth?.auth_token) {
-          caregivers = await new CaregiverService(userAuth?.auth_token).getCaregivers();
+          caregivers = await new CaregiverService(
+            userAuth?.auth_token
+          ).getCaregivers();
         } else {
           return rejectWithValue('no access token, profile check required');
         }
@@ -50,13 +56,13 @@ export const getCaregivers = createAsyncThunk<
   }
 );
 
-export const updateCaregiverContactHistory = createAction<PayloadAction<CaregiverContactHistory[]>>(
-  CaregiverActions.UPDATE_CONTACT_HISTORY
-);
+export const updateCaregiverContactHistory = createAction<
+  PayloadAction<CaregiverContactHistory[]>
+>(CaregiverActions.UPDATE_CONTACT_HISTORY);
 
-export const addCaregiverContactHistory = createAction<PayloadAction<CaregiverContactHistory>>(
-  CaregiverActions.ADD_CONTACT_HISTORY
-);
+export const addCaregiverContactHistory = createAction<
+  PayloadAction<CaregiverContactHistory>
+>(CaregiverActions.ADD_CONTACT_HISTORY);
 
 export const upsertCareGivers = createAsyncThunk<
   boolean[],
@@ -79,10 +85,9 @@ export const upsertCareGivers = createAsyncThunk<
 
           if (caregiver.siteAddress) {
             const addressInput = mapSiteAddress(caregiver.siteAddress);
-            await new SiteAddressService(userAuth?.auth_token).updateSiteAddress(
-              caregiver.siteAddress.id ?? '',
-              addressInput
-            );
+            await new SiteAddressService(
+              userAuth?.auth_token
+            ).updateSiteAddress(caregiver.siteAddress.id ?? '', addressInput);
 
             input.SiteAddressId = addressInput.Id;
           }
@@ -116,7 +121,9 @@ export const createCaregiver = createAsyncThunk<
     let mappedCaregiverInput = mapCaregiver(caregiver);
 
     if (userAuth?.auth_token) {
-      return await new CaregiverService(userAuth?.auth_token).createCaregiver(mappedCaregiverInput);
+      return await new CaregiverService(userAuth?.auth_token).createCaregiver(
+        mappedCaregiverInput
+      );
     } else {
       return rejectWithValue('no access token, profile check required');
     }
@@ -134,25 +141,28 @@ export const updateCaregiver = createAsyncThunk<
   CaregiverDto,
   UpdateCaregiverRequest,
   ThunkApiType<RootState>
->('updateCaregiver', async ({ caregiver, id }, { getState, rejectWithValue }) => {
-  const {
-    auth: { userAuth },
-  } = getState();
-  try {
-    let mappedCaregiverInput = mapCaregiver(caregiver);
+>(
+  'updateCaregiver',
+  async ({ caregiver, id }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+    try {
+      let mappedCaregiverInput = mapCaregiver(caregiver);
 
-    if (userAuth?.auth_token) {
-      return await new CaregiverService(userAuth?.auth_token).updateCareGiver(
-        id,
-        mappedCaregiverInput
-      );
-    } else {
-      return rejectWithValue('no access token, profile check required');
+      if (userAuth?.auth_token) {
+        return await new CaregiverService(userAuth?.auth_token).updateCareGiver(
+          id,
+          mappedCaregiverInput
+        );
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
     }
-  } catch (err) {
-    return rejectWithValue(err);
   }
-});
+);
 
 const mapCaregiver = (x: Partial<CaregiverDto>): CaregiverInput => ({
   Id: x.id,

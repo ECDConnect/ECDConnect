@@ -2,7 +2,9 @@ import { StatusChip, Typography } from '@ecdlink/ui/';
 import { classNames } from '@ecdlink/ui/';
 import { ProgrammePlanningHeaderProps } from './programme-planning-header.types';
 
-export const ProgrammePlanningHeader: React.FC<ProgrammePlanningHeaderProps> = ({
+export const ProgrammePlanningHeader: React.FC<
+  ProgrammePlanningHeaderProps
+> = ({
   themeName,
   headerText,
   subHeaderText,
@@ -28,7 +30,9 @@ export const ProgrammePlanningHeader: React.FC<ProgrammePlanningHeaderProps> = (
             <StatusChip
               className={'ml-2'}
               backgroundColour={
-                plannedWeeks < totalWeeks || totalWeeks === 0 ? 'alertMain' : 'successMain'
+                plannedWeeks < totalWeeks || totalWeeks === 0
+                  ? 'alertMain'
+                  : 'successMain'
               }
               borderColour="transparent"
               textColour="white"
@@ -37,7 +41,11 @@ export const ProgrammePlanningHeader: React.FC<ProgrammePlanningHeaderProps> = (
             <Typography
               type={'small'}
               text={'weeks planned'}
-              color={plannedWeeks < totalWeeks || totalWeeks === 0 ? 'alertMain' : 'successMain'}
+              color={
+                plannedWeeks < totalWeeks || totalWeeks === 0
+                  ? 'alertMain'
+                  : 'successMain'
+              }
               className={'ml-2'}
             />
           </>

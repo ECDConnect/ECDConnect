@@ -8,15 +8,15 @@ import {
 import { useEffect, useState } from 'react';
 
 import isAfter from 'date-fns/isAfter';
-import { useAppDispatch } from '../store';
+import { useAppDispatch } from '@store';
 import { useSelector } from 'react-redux';
-import { progressTrackingSelectors } from '../store/progress-tracking';
+import { progressTrackingSelectors } from '@store/progress-tracking';
 import {
   contentReportActions,
   contentReportSelectors,
   contentReportThunkActions,
-} from '../store/content/report';
-import { ProgressTrackingLevels } from '../enums/ProgressTrackingLevels';
+} from '@store/content/report';
+import { ProgressTrackingLevels } from '@enums/ProgressTrackingLevels';
 import { ChildProgressObservationStatus } from '@ecdlink/core';
 
 export interface SeperatedCategoryResult {
@@ -30,22 +30,32 @@ export const useChildProgressObservation = (
   report?: ChildProgressObservationReport
 ) => {
   const levelCompetencyThreshold = 75;
-  const [currentReport, setCurrentReport] = useState<ChildProgressObservationReport | undefined>(
-    report
-  );
-  const [previousReport, setPreviousReport] = useState<ChildProgressObservationReport>();
-  const [currentCategory, setCurrentCategory] = useState<ChildProgressObservationCategory>();
+  const [currentReport, setCurrentReport] = useState<
+    ChildProgressObservationReport | undefined
+  >(report);
+  const [previousReport, setPreviousReport] =
+    useState<ChildProgressObservationReport>();
+  const [currentCategory, setCurrentCategory] =
+    useState<ChildProgressObservationCategory>();
 
   const childReports = useSelector(
     contentReportSelectors.getChildProgressObservationReports(childId)
   );
-  const allCategories = useSelector(progressTrackingSelectors.getProgressTrackingCategories);
-  const allSubCategories = useSelector(progressTrackingSelectors.getProgressTrackingSubCategories);
+  const allCategories = useSelector(
+    progressTrackingSelectors.getProgressTrackingCategories
+  );
+  const allSubCategories = useSelector(
+    progressTrackingSelectors.getProgressTrackingSubCategories
+  );
   const appDispatch = useAppDispatch();
 
-  const allSkills = useSelector(progressTrackingSelectors.getProgressTrackingSkills);
+  const allSkills = useSelector(
+    progressTrackingSelectors.getProgressTrackingSkills
+  );
 
-  const allSummaries = useSelector(contentReportSelectors.getChildProgressReportSummaries(childId));
+  const allSummaries = useSelector(
+    contentReportSelectors.getChildProgressReportSummaries(childId)
+  );
 
   useEffect(() => {
     if (childReports && childReports.length > 0) {
@@ -53,7 +63,9 @@ export const useChildProgressObservation = (
       setCurrentReport(latestReport);
 
       if (childReports.length > 1) {
-        const sortedReports = childReports.sort(sortChildReportsByDateCreatedDesc);
+        const sortedReports = childReports.sort(
+          sortChildReportsByDateCreatedDesc
+        );
         const prevReport = sortedReports[1];
 
         if (!prevReport) return;
@@ -68,7 +80,9 @@ export const useChildProgressObservation = (
     const report = childReports.find((rep) => rep.id === reportId);
 
     if (!report) {
-      throw new Error('Could not find report to set. useChildProgressObservation hook');
+      throw new Error(
+        'Could not find report to set. useChildProgressObservation hook'
+      );
     }
 
     setCurrentReport(report);
@@ -79,7 +93,9 @@ export const useChildProgressObservation = (
       throw new Error('Current report is set, could not set current category');
     }
 
-    const category = currentReport.categories.find((cat) => cat.categoryId === categoryId);
+    const category = currentReport.categories.find(
+      (cat) => cat.categoryId === categoryId
+    );
 
     if (!category)
       throw new Error(
@@ -91,9 +107,13 @@ export const useChildProgressObservation = (
 
   const setHelpingWithTask = (task?: ProgressTrackingSkillDto) => {
     if (!currentReport)
-      throw new Error('Current report is not set, could not set category helping task id');
+      throw new Error(
+        'Current report is not set, could not set category helping task id'
+      );
     if (!currentCategory)
-      throw new Error('Current category is not set, could not set category helping task id');
+      throw new Error(
+        'Current category is not set, could not set category helping task id'
+      );
 
     let supportingTask = { ...currentCategory.supportingTask };
 
@@ -118,9 +138,13 @@ export const useChildProgressObservation = (
 
   const clearHelpingWithTaskId = () => {
     if (!currentReport)
-      throw new Error('Current report is not set, could not clear category helping task id');
+      throw new Error(
+        'Current report is not set, could not clear category helping task id'
+      );
     if (!currentCategory)
-      throw new Error('Current category is not set, could not clear category helping task id');
+      throw new Error(
+        'Current category is not set, could not clear category helping task id'
+      );
 
     const currentCategoryCopy = { ...currentCategory };
 
@@ -139,9 +163,13 @@ export const useChildProgressObservation = (
 
   const setHelpingWithTaskText = (text: string) => {
     if (!currentReport)
-      throw new Error('Current report is not set, could not set category helping task id');
+      throw new Error(
+        'Current report is not set, could not set category helping task id'
+      );
     if (!currentCategory)
-      throw new Error('Current category is not set, could not set category helping task id');
+      throw new Error(
+        'Current category is not set, could not set category helping task id'
+      );
 
     const supportingTask = { ...currentCategory.supportingTask };
 
@@ -162,9 +190,13 @@ export const useChildProgressObservation = (
 
   const setCategoryAchievedLevel = (levelId: number) => {
     if (!currentReport)
-      throw new Error('Current report is not set, could not set category achieved level');
+      throw new Error(
+        'Current report is not set, could not set category achieved level'
+      );
     if (!currentCategory)
-      throw new Error('Current category is not set, could not set category achieved level');
+      throw new Error(
+        'Current category is not set, could not set category achieved level'
+      );
 
     const currentCategoryCopy = { ...currentCategory };
 
@@ -181,7 +213,9 @@ export const useChildProgressObservation = (
 
   const setObservationNote = (note: string) => {
     if (!currentReport)
-      throw new Error('Current report is not set, could not update report observation note');
+      throw new Error(
+        'Current report is not set, could not update report observation note'
+      );
     const currentReportCopy: ChildProgressObservationReport = JSON.parse(
       JSON.stringify(currentReport)
     );
@@ -189,7 +223,10 @@ export const useChildProgressObservation = (
     currentReportCopy.observationNote = note;
 
     appDispatch(
-      contentReportActions.setReportObservationNote({ reportId: currentReport.id, note: note })
+      contentReportActions.setReportObservationNote({
+        reportId: currentReport.id,
+        note: note,
+      })
     );
 
     setCurrentReport(currentReportCopy);
@@ -197,21 +234,30 @@ export const useChildProgressObservation = (
 
   const setChildEnjoys = (childEnjoys: string) => {
     if (!currentReport)
-      throw new Error('Current report is not set, could not update report observation note');
+      throw new Error(
+        'Current report is not set, could not update report observation note'
+      );
     const currentReportCopy: ChildProgressObservationReport = JSON.parse(
       JSON.stringify(currentReport)
     );
 
     currentReportCopy.childEnjoys = childEnjoys;
 
-    appDispatch(contentReportActions.setChildEnjoys({ reportId: currentReport.id, childEnjoys }));
+    appDispatch(
+      contentReportActions.setChildEnjoys({
+        reportId: currentReport.id,
+        childEnjoys,
+      })
+    );
 
     setCurrentReport(currentReportCopy);
   };
 
   const setChildProgressedWith = (childProgressedWith: string) => {
     if (!currentReport)
-      throw new Error('Current report is not set, could not update report observation note');
+      throw new Error(
+        'Current report is not set, could not update report observation note'
+      );
     const currentReportCopy: ChildProgressObservationReport = JSON.parse(
       JSON.stringify(currentReport)
     );
@@ -230,7 +276,9 @@ export const useChildProgressObservation = (
 
   const setHowCategiverCanHelpChild = (howCanCaregiverHelpChild: string) => {
     if (!currentReport)
-      throw new Error('Current report is not set, could not update report observation note');
+      throw new Error(
+        'Current report is not set, could not update report observation note'
+      );
     const currentReportCopy: ChildProgressObservationReport = JSON.parse(
       JSON.stringify(currentReport)
     );
@@ -247,11 +295,17 @@ export const useChildProgressObservation = (
     setCurrentReport(currentReportCopy);
   };
 
-  const setCategoryTrackingStatus = (status: ChildProgressObservationStatus) => {
+  const setCategoryTrackingStatus = (
+    status: ChildProgressObservationStatus
+  ) => {
     if (!currentReport)
-      throw new Error('Current report is not set, could not complete current category');
+      throw new Error(
+        'Current report is not set, could not complete current category'
+      );
     if (!currentCategory)
-      throw new Error('Current category is not set, could not complete current category');
+      throw new Error(
+        'Current category is not set, could not complete current category'
+      );
 
     const currentCategoryCopy = { ...currentCategory };
     const currentReportCopy = JSON.parse(JSON.stringify(currentReport));
@@ -262,7 +316,11 @@ export const useChildProgressObservation = (
       (cat: any) => cat.categoryId === currentCategory.categoryId
     );
 
-    currentReportCopy.categories.splice(indexOfCurrentCategory, 0, currentCategoryCopy);
+    currentReportCopy.categories.splice(
+      indexOfCurrentCategory,
+      0,
+      currentCategoryCopy
+    );
 
     appDispatch(
       contentReportActions.setCategoryStatus({
@@ -281,7 +339,9 @@ export const useChildProgressObservation = (
     missedSkills: ProgressTrackingSkillDto[]
   ) => {
     if (!currentCategory)
-      throw new Error('Current category is not set, could not submit level skills');
+      throw new Error(
+        'Current category is not set, could not submit level skills'
+      );
 
     const mappedLevelSkills: CategoryTask[] = selectedSkills.map((skill) => ({
       levelId,
@@ -297,13 +357,18 @@ export const useChildProgressObservation = (
 
     const currentCategoryCopy = { ...currentCategory };
 
-    const otherLevelTasks = currentCategoryCopy.tasks.filter((task) => task.levelId !== levelId);
+    const otherLevelTasks = currentCategoryCopy.tasks.filter(
+      (task) => task.levelId !== levelId
+    );
     const otherMissedLevelsTasks = (currentCategory.missingTasks || []).filter(
       (task) => task.levelId !== levelId
     );
 
     currentCategoryCopy.tasks = [...mappedLevelSkills, ...otherLevelTasks];
-    currentCategoryCopy.missingTasks = [...mappedMissedSkills, ...otherMissedLevelsTasks];
+    currentCategoryCopy.missingTasks = [
+      ...mappedMissedSkills,
+      ...otherMissedLevelsTasks,
+    ];
 
     appDispatch(
       contentReportActions.setSkillsForCategory({
@@ -321,18 +386,26 @@ export const useChildProgressObservation = (
 
   const completeCurrentCategoryTracking = () => {
     if (!currentReport)
-      throw new Error('Current report is not set, could not complete current category');
+      throw new Error(
+        'Current report is not set, could not complete current category'
+      );
     if (!currentCategory)
-      throw new Error('Current category is not set, could not complete current category');
+      throw new Error(
+        'Current category is not set, could not complete current category'
+      );
 
     setCategoryTrackingStatus(ChildProgressObservationStatus.Completed);
   };
 
   const startCurrentCategoryTracking = () => {
     if (!currentReport)
-      throw new Error('Current report is not set, could not complete current category');
+      throw new Error(
+        'Current report is not set, could not complete current category'
+      );
     if (!currentCategory)
-      throw new Error('Current category is not set, could not complete current category');
+      throw new Error(
+        'Current category is not set, could not complete current category'
+      );
 
     setCategoryTrackingStatus(ChildProgressObservationStatus.Started);
   };
@@ -341,8 +414,11 @@ export const useChildProgressObservation = (
     if (!currentReport || !currentCategory) return [];
 
     const flatSeletedSkills = currentCategory.tasks.map((x) => x.skillId);
-    const category = allCategories.find((x) => x.id === currentCategory.categoryId);
-    const currentCategorySubCategoryIds = category?.subCategories.map((x) => x.id) ?? [];
+    const category = allCategories.find(
+      (x) => x.id === currentCategory.categoryId
+    );
+    const currentCategorySubCategoryIds =
+      category?.subCategories.map((x) => x.id) ?? [];
     const subCategories = allSubCategories.filter((x) =>
       currentCategorySubCategoryIds.includes(x.id)
     );
@@ -365,36 +441,47 @@ export const useChildProgressObservation = (
     if (!currentReport || !currentCategory) {
       return [];
     }
-    const category = allCategories.find((x) => x.id === currentCategory.categoryId);
-    const currentCategorySubCategoryIds = category?.subCategories.map((x) => x.id) ?? [];
+    const category = allCategories.find(
+      (x) => x.id === currentCategory.categoryId
+    );
+    const currentCategorySubCategoryIds =
+      category?.subCategories.map((x) => x.id) ?? [];
     const subCategories = allSubCategories.filter((x) =>
       currentCategorySubCategoryIds.includes(x.id)
     );
 
-    const subCategorySkills: ProgressTrackingSkillDto[] = allSkills.filter((skill) =>
-      subCategories.some((subCategory) =>
-        subCategory.skills.some((subCatSkill) => subCatSkill.id === skill.id)
-      )
+    const subCategorySkills: ProgressTrackingSkillDto[] = allSkills.filter(
+      (skill) =>
+        subCategories.some((subCategory) =>
+          subCategory.skills.some((subCatSkill) => subCatSkill.id === skill.id)
+        )
     );
     const selectedLevelSkillsForCategory = currentCategory.tasks.filter(
       (task) => task.levelId === levelId
     );
 
     return subCategorySkills.filter((skill) =>
-      selectedLevelSkillsForCategory.some((selectedSkill) => skill.id === selectedSkill.skillId)
+      selectedLevelSkillsForCategory.some(
+        (selectedSkill) => skill.id === selectedSkill.skillId
+      )
     );
   };
 
   const getChildAchievedLevelPercentage = (
     levelId: number,
-    activeCategory: ChildProgressObservationCategory | undefined = currentCategory
+    activeCategory:
+      | ChildProgressObservationCategory
+      | undefined = currentCategory
   ) => {
     if (!activeCategory) {
       return 0;
     }
 
-    const category = allCategories.find((x) => x.id === activeCategory.categoryId);
-    const currentCategorySubCategoryIds = category?.subCategories.map((x) => x.id) ?? [];
+    const category = allCategories.find(
+      (x) => x.id === activeCategory.categoryId
+    );
+    const currentCategorySubCategoryIds =
+      category?.subCategories.map((x) => x.id) ?? [];
 
     const subCategories = allSubCategories.filter((x) =>
       currentCategorySubCategoryIds.includes(x.id)
@@ -406,14 +493,20 @@ export const useChildProgressObservation = (
     const subCategorySkillsIds = subCategorySkills?.map((x) => x.id);
 
     const totalLevelSkillCount = allSkills.filter(
-      (skill) => skill.level[0]?.id === levelId && subCategorySkillsIds.includes(skill.id)
+      (skill) =>
+        skill.level[0]?.id === levelId &&
+        subCategorySkillsIds.includes(skill.id)
     ).length;
-    const selectedSkillCount = activeCategory.tasks.filter((x) => x.levelId === levelId).length;
+    const selectedSkillCount = activeCategory.tasks.filter(
+      (x) => x.levelId === levelId
+    ).length;
 
     return (selectedSkillCount / (totalLevelSkillCount || 1)) * 100;
   };
 
-  const getChildAchievedLevelId = (activeCategory?: ChildProgressObservationCategory) => {
+  const getChildAchievedLevelId = (
+    activeCategory?: ChildProgressObservationCategory
+  ) => {
     if (!activeCategory && currentCategory) {
       activeCategory = currentCategory;
     } else if (!activeCategory) {
@@ -455,7 +548,8 @@ export const useChildProgressObservation = (
   };
 
   const getLatestReport = () => {
-    if (!childReports) throw new Error('child reports are not set, could not get latest report');
+    if (!childReports)
+      throw new Error('child reports are not set, could not get latest report');
 
     const latest = childReports.sort(sortChildReportsByDateCreatedDesc);
 
@@ -500,7 +594,8 @@ export const useChildProgressObservation = (
   };
 
   const saveReport = async (report: ChildProgressObservationReport) => {
-    if (!report) throw new Error('Current report is not set, could not save report');
+    if (!report)
+      throw new Error('Current report is not set, could not save report');
 
     await appDispatch(contentReportActions.saveReport(report));
 
@@ -511,9 +606,12 @@ export const useChildProgressObservation = (
     report: ChildProgressObservationReport,
     classroomGroupId: string
   ) => {
-    if (!report) throw new Error('Current report is not set, could not complete report');
+    if (!report)
+      throw new Error('Current report is not set, could not complete report');
 
-    const currentReportCopy: ChildProgressObservationReport = JSON.parse(JSON.stringify(report));
+    const currentReportCopy: ChildProgressObservationReport = JSON.parse(
+      JSON.stringify(report)
+    );
 
     currentReportCopy.dateCompleted = new Date().toISOString();
 
@@ -528,7 +626,9 @@ export const useChildProgressObservation = (
           IsActive: true,
         })
       ).unwrap();
-      await appDispatch(contentReportThunkActions.getChildProgressReportSummary(50));
+      await appDispatch(
+        contentReportThunkActions.getChildProgressReportSummary(50)
+      );
     } finally {
       appDispatch(contentReportActions.saveReport(currentReportCopy));
       setCurrentReport(currentReportCopy);
@@ -539,9 +639,12 @@ export const useChildProgressObservation = (
     report: ChildProgressObservationReport,
     classroomGroupId: string
   ) => {
-    if (!report) throw new Error('Current report is not set, could not complete report');
+    if (!report)
+      throw new Error('Current report is not set, could not complete report');
 
-    const currentReportCopy: ChildProgressObservationReport = JSON.parse(JSON.stringify(report));
+    const currentReportCopy: ChildProgressObservationReport = JSON.parse(
+      JSON.stringify(report)
+    );
 
     currentReportCopy.dateCompleted = new Date().toISOString();
 
@@ -558,7 +661,10 @@ export const useChildProgressObservation = (
   const sortChildReportsByDateCreatedDesc = (
     reportA: ChildProgressObservationReport,
     reportB: ChildProgressObservationReport
-  ) => (isAfter(new Date(reportA.reportingDate), new Date(reportB.reportingDate)) ? -1 : 1);
+  ) =>
+    isAfter(new Date(reportA.reportingDate), new Date(reportB.reportingDate))
+      ? -1
+      : 1;
 
   return {
     getUnseletedSkills,

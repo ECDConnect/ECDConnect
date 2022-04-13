@@ -1,11 +1,14 @@
 import { ProgrammeDto } from '@ecdlink/core/';
 import { BaseListItem, Button, Typography } from '@ecdlink/ui/';
-import { programmeSelectors } from '../../../../../../store/programme';
+import { programmeSelectors } from '@store/programme';
 import { useSelector } from 'react-redux';
-import { getDateRangeText } from '../../../../../../utils/classroom/programme-planning/programmes.utils';
+import { getDateRangeText } from '@utils/classroom/programme-planning/programmes.utils';
 import { ProgrammeHistoryProps } from './programme-history.types';
 
-export const ProgrammeHistory: React.FC<ProgrammeHistoryProps> = ({ date, onViewItem }) => {
+export const ProgrammeHistory: React.FC<ProgrammeHistoryProps> = ({
+  date,
+  onViewItem,
+}) => {
   const historicalProgrammes: ProgrammeDto[] = useSelector(
     programmeSelectors.getProgrammesBeforeDate(date || new Date())
   );
@@ -31,7 +34,11 @@ export const ProgrammeHistory: React.FC<ProgrammeHistoryProps> = ({ date, onView
 
   return (
     <div className={'w-full flex flex-col'}>
-      <Typography text={'Previous programmes'} type={'body'} className={'ml-4'} />
+      <Typography
+        text={'Previous programmes'}
+        type={'body'}
+        className={'ml-4'}
+      />
       {historicalProgrammes &&
         historicalProgrammes.map((programme, idx) => {
           return (

@@ -12,8 +12,8 @@ import {
 import { DialogPosition } from '@ecdlink/ui';
 import { renderIcon } from '@ecdlink/ui';
 import { format } from 'date-fns';
-import { useAppDispatch } from '../../../../store/config';
-import { authSelectors } from '../../../../store/auth';
+import { useAppDispatch } from '@store/config';
+import { authSelectors } from '@store/auth';
 import { classNames } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useForm, useFormState, useWatch } from 'react-hook-form';
@@ -22,12 +22,12 @@ import {
   CreateNoteFormModel,
   createNoteFormSchema,
   defaultCreateNoteFormSchema,
-} from '../../../../schemas/child/child-notes/create-note';
+} from '@schemas/child/child-notes/create-note';
 import { CreateNoteProps } from './create-notes.types';
-import { newGuid } from '../../../../utils/common/uuid.utils';
-import { notesActions } from '../../../../store/notes';
-import { useStaticData } from '../../../../hooks/useStaticData';
-import { useOnlineStatus } from '../../../../hooks/useOnlineStatus';
+import { newGuid } from '@utils/common/uuid.utils';
+import { notesActions } from '@store/notes';
+import { useStaticData } from '@hooks/useStaticData';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
 
 export const CreateNote: React.FC<CreateNoteProps> = ({
   noteType,
@@ -43,7 +43,8 @@ export const CreateNote: React.FC<CreateNoteProps> = ({
 
   const appDispatch = useAppDispatch();
 
-  const [confirmGoBackPromptVisible, setConfirmGoBackPromptVisible] = useState<boolean>(false);
+  const [confirmGoBackPromptVisible, setConfirmGoBackPromptVisible] =
+    useState<boolean>(false);
   const [hasChangesOnNote, setHasChangesOnNote] = useState<boolean>(false);
   const {
     getValues: getNoteFormValues,
@@ -116,7 +117,12 @@ export const CreateNote: React.FC<CreateNoteProps> = ({
         onBack={() => exitCreateNote()}
         displayOffline={!isOnline}
       >
-        <Typography type={'h1'} text={'Create note'} color={'primary'} className={'px-4 pt-1'} />
+        <Typography
+          type={'h1'}
+          text={'Create note'}
+          color={'primary'}
+          className={'px-4 pt-1'}
+        />
         <Typography
           type={'h3'}
           text={format(new Date(), 'dd MMM yyyy')}
@@ -138,7 +144,9 @@ export const CreateNote: React.FC<CreateNoteProps> = ({
             textInputType="textarea"
             register={noteFormRegister}
             nameProp={'body'}
-            placeholder={'E.g. Themba’s mother shared some information about his health.'}
+            placeholder={
+              'E.g. Themba’s mother shared some information about his health.'
+            }
           />
           <div className={'py-4'}>
             <Divider></Divider>

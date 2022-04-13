@@ -23,8 +23,8 @@ import {
   BirthDocumentationType,
   ChildBirthCertificateFormModel,
   childBirthCertificateFormSchema,
-} from '../../../../schemas/child/child-registration/child-birth-certificate-form';
-import { ChildInformationFormModel } from '../../../../schemas/child/child-registration/child-information-form';
+} from '@schemas/child/child-registration/child-birth-certificate-form';
+import { ChildInformationFormModel } from '@schemas/child/child-registration/child-information-form';
 import * as styles from './child-birth-certificate-form.styles';
 
 interface ChildChildBirthCertificateFormProps
@@ -34,20 +34,29 @@ interface ChildChildBirthCertificateFormProps
   isSingleForm?: boolean;
 }
 
-export const ChildBirthCertificateForm: React.FC<ChildChildBirthCertificateFormProps> = ({
+export const ChildBirthCertificateForm: React.FC<
+  ChildChildBirthCertificateFormProps
+> = ({
   onSubmit,
   childBirthCertificateForm,
   childInformation,
   isSingleForm = false,
 }) => {
-  const [hasUploadedDocument, setHasUploadedDocument] = useState<boolean>(false);
-  const [hasChildDocumentation, setHasChildDocumentation] = useState<boolean>(true);
+  const [hasUploadedDocument, setHasUploadedDocument] =
+    useState<boolean>(false);
+  const [hasChildDocumentation, setHasChildDocumentation] =
+    useState<boolean>(true);
   const [selectedBirthDocumentType, setSelectedBirthDocumentType] =
     useState<BirthDocumentationType>();
-  const [childName, setChildName] = useState<string>(childInformation?.firstname ?? 'Child');
-  const [childBirthDocumentPhotoUrl, setChildBirthDocumentPhotoUrl] = useState<string>();
-  const [photoActionBarVisible, setPhotoActionBarVisible] = useState<boolean>(false);
-  const [displayPhotoDeleteWarning, setDisplayPhotoDeleteWarning] = useState<boolean>(false);
+  const [childName, setChildName] = useState<string>(
+    childInformation?.firstname ?? 'Child'
+  );
+  const [childBirthDocumentPhotoUrl, setChildBirthDocumentPhotoUrl] =
+    useState<string>();
+  const [photoActionBarVisible, setPhotoActionBarVisible] =
+    useState<boolean>(false);
+  const [displayPhotoDeleteWarning, setDisplayPhotoDeleteWarning] =
+    useState<boolean>(false);
 
   const {
     formState: childBirthCertificateFormState,
@@ -71,24 +80,33 @@ export const ChildBirthCertificateForm: React.FC<ChildChildBirthCertificateFormP
     if (childBirthCertificateForm) {
       resetChildBirthCertificateFormValue(childBirthCertificateForm);
       setChildName(childBirthCertificateForm?.childname ?? 'Child');
-      setChildBirthDocumentPhotoUrl(childBirthCertificateForm.birthCertificateImage);
-      setSelectedBirthDocumentType(childBirthCertificateForm.birthCertificateType);
+      setChildBirthDocumentPhotoUrl(
+        childBirthCertificateForm.birthCertificateImage
+      );
+      setSelectedBirthDocumentType(
+        childBirthCertificateForm.birthCertificateType
+      );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [childBirthCertificateForm]);
 
   useEffect(() => {
-    if (getChildBirthCertificateFormValues().hasChildDocumentation === undefined) {
-      setChildBirthCertificateFormValue('hasChildDocumentation', true, { shouldValidate: true });
+    if (
+      getChildBirthCertificateFormValues().hasChildDocumentation === undefined
+    ) {
+      setChildBirthCertificateFormValue('hasChildDocumentation', true, {
+        shouldValidate: true,
+      });
       triggerChildBirthCertificateForm();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const birthDocumentationTypeOptions: ButtonGroupOption<BirthDocumentationType>[] = [
-    { text: 'Birth certificate', value: 'birthCertificate' },
-    { text: 'Clinic card', value: 'clinicCard' },
-  ];
+  const birthDocumentationTypeOptions: ButtonGroupOption<BirthDocumentationType>[] =
+    [
+      { text: 'Birth certificate', value: 'birthCertificate' },
+      { text: 'Clinic card', value: 'clinicCard' },
+    ];
 
   const handleFormSubmit = () => {
     if (isValid && onSubmit) {
@@ -101,7 +119,10 @@ export const ChildBirthCertificateForm: React.FC<ChildChildBirthCertificateFormP
   const toggleHasChildDocumentation = () => {
     const currentHasChildDocumentation = hasChildDocumentation;
     setHasChildDocumentation(!currentHasChildDocumentation);
-    setChildBirthCertificateFormValue('hasChildDocumentation', !currentHasChildDocumentation);
+    setChildBirthCertificateFormValue(
+      'hasChildDocumentation',
+      !currentHasChildDocumentation
+    );
     setChildBirthCertificateFormValue('birthCertificateImage', '');
     setChildBirthDocumentPhotoUrl('');
     triggerChildBirthCertificateForm();
@@ -158,7 +179,9 @@ export const ChildBirthCertificateForm: React.FC<ChildChildBirthCertificateFormP
                         'birthCertificateType',
                         value as BirthDocumentationType
                       );
-                      setSelectedBirthDocumentType(value as BirthDocumentationType);
+                      setSelectedBirthDocumentType(
+                        value as BirthDocumentationType
+                      );
                     }}
                     selectedOptions={selectedBirthDocumentType}
                     color="secondary"
@@ -172,7 +195,9 @@ export const ChildBirthCertificateForm: React.FC<ChildChildBirthCertificateFormP
             <ImageInput<ChildBirthCertificateFormModel>
               acceptedFormats={acceptedFormats}
               label={`Take a photo of ${childName}’s ${
-                birthCertificateType === 'clinicCard' ? 'clinic card' : 'birth certificate'
+                birthCertificateType === 'clinicCard'
+                  ? 'clinic card'
+                  : 'birth certificate'
               }`}
               nameProp="birthCertificateImage"
               icon="CameraIcon"
@@ -181,7 +206,10 @@ export const ChildBirthCertificateForm: React.FC<ChildChildBirthCertificateFormP
               register={childBirthCertificateFormRegister}
               overrideOnClick={() => setPhotoActionBarVisible(true)}
               onValueChange={(imageString: string) => {
-                setChildBirthCertificateFormValue('birthCertificateImage', imageString);
+                setChildBirthCertificateFormValue(
+                  'birthCertificateImage',
+                  imageString
+                );
                 setHasUploadedDocument(true);
                 triggerChildBirthCertificateForm();
               }}
@@ -271,14 +299,23 @@ export const ChildBirthCertificateForm: React.FC<ChildChildBirthCertificateFormP
           </Button>
         </div>
       </div>
-      <Dialog visible={photoActionBarVisible} position={DialogPosition.Bottom} stretch>
+      <Dialog
+        visible={photoActionBarVisible}
+        position={DialogPosition.Bottom}
+        stretch
+      >
         <div className={'p-4'}>
           <PhotoPrompt
-            title={birthCertificateType === 'clinicCard' ? 'Clinic card' : 'Birth certificate'}
+            title={
+              birthCertificateType === 'clinicCard'
+                ? 'Clinic card'
+                : 'Birth certificate'
+            }
             onClose={() => setPhotoActionBarVisible(false)}
             onAction={(imageUrl: string) => setPhotoUrl(imageUrl)}
             onDelete={
-              childBirthCertificateForm?.birthCertificateImage || birthCertificateImage
+              childBirthCertificateForm?.birthCertificateImage ||
+              birthCertificateImage
                 ? enableDeletePhotoWarning
                 : undefined
             }
@@ -296,9 +333,13 @@ export const ChildBirthCertificateForm: React.FC<ChildChildBirthCertificateFormP
           iconColor="alertMain"
           iconBorderColor="alertBg"
           importantText={`Delete uploaded photo of ${childName}’s ${
-            birthCertificateType === 'clinicCard' ? 'clinic card' : 'birth certificate'
+            birthCertificateType === 'clinicCard'
+              ? 'clinic card'
+              : 'birth certificate'
           }?`}
-          detailText={'If you continue, the photo you have added will be deleted.'}
+          detailText={
+            'If you continue, the photo you have added will be deleted.'
+          }
           actionButtons={[
             {
               text: 'Delete photo',

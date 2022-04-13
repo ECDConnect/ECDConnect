@@ -2,8 +2,8 @@ import { APIs } from '@ecdlink/core';
 import type { AxiosInstance } from 'axios';
 import axios from 'axios';
 import jwt_decode from 'jwt-decode';
-import { store } from '../store';
-import { refreshToken } from '../store/auth/auth.actions';
+import { store } from '@store';
+import { refreshToken } from '@store/auth/auth.actions';
 
 export const api = (baseUrl: string, token?: string): AxiosInstance => {
   const blackList = [

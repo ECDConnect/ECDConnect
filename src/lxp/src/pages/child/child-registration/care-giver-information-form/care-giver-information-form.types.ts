@@ -1,5 +1,5 @@
 import { FormComponentProps } from '@ecdlink/core';
-import { CareGiverInformationFormModel } from '../../../../schemas/child/child-registration/care-giver-information-form';
+import { CareGiverInformationFormModel } from '@schemas/child/child-registration/care-giver-information-form';
 
 export interface CareGiverInformationFormProps
   extends FormComponentProps<CareGiverInformationFormModel> {

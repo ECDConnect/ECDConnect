@@ -5,7 +5,7 @@ const getImageSourceFromCamera = async (): Promise<string | undefined> => {
     const imageSrc = await Camera.getPhoto({
       allowEditing: true,
       resultType: CameraResultType.DataUrl,
-      source: CameraSource.Camera
+      source: CameraSource.Camera,
     });
 
     return imageSrc.dataUrl;
@@ -14,14 +14,11 @@ const getImageSourceFromCamera = async (): Promise<string | undefined> => {
   }
 };
 
-const getImageSourceFromFileSystem = async (
-): Promise<string | undefined> => {
-
+const getImageSourceFromFileSystem = async (): Promise<string | undefined> => {
   try {
     const imageSrc = await Camera.getPhoto({
       resultType: CameraResultType.DataUrl,
       source: CameraSource.Photos,
-
     });
 
     return imageSrc.dataUrl;

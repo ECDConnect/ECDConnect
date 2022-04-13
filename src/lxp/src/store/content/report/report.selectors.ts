@@ -1,14 +1,19 @@
-import { ChildProgressObservationReport, ChildProgressReportSummaryModel } from '@ecdlink/core';
+import {
+  ChildProgressObservationReport,
+  ChildProgressReportSummaryModel,
+} from '@ecdlink/core';
 import { createSelector } from '@reduxjs/toolkit';
 import { ContentReportState } from '.';
-import { isMatchingReportingPeriods } from '../../../utils/child/child-profile-utils';
+import { isMatchingReportingPeriods } from '@utils/child/child-profile-utils';
 import { RootState } from '../../types';
 import { UnSyncedReportItem } from './report.types';
 
 export const getChildProgressObservationReports = (childId: string) =>
   createSelector(
     (state: RootState) => state.contentReportData.childProgressionReports || [],
-    (stateReports: ChildProgressObservationReport[]): ChildProgressObservationReport[] => {
+    (
+      stateReports: ChildProgressObservationReport[]
+    ): ChildProgressObservationReport[] => {
       const reports = stateReports.filter((mr) => {
         return mr.childId === childId;
       });
@@ -18,7 +23,8 @@ export const getChildProgressObservationReports = (childId: string) =>
   );
 
 export const hasUnsyncedReports = createSelector(
-  (state: RootState) => state.contentReportData.unsyncedChildProgressReportsIds || [],
+  (state: RootState) =>
+    state.contentReportData.unsyncedChildProgressReportsIds || [],
   (reportIds: UnSyncedReportItem[]) => reportIds.length > 0
 );
 
@@ -26,20 +32,26 @@ export const getChildCompletedObservationReports = (childId?: string) =>
   createSelector(
     (state: RootState) => state.contentReportData.childProgressionReports || [],
     (reports: ChildProgressObservationReport[]) =>
-      reports.filter((x) => x.childId === childId && x.dateCompleted !== undefined)
+      reports.filter(
+        (x) => x.childId === childId && x.dateCompleted !== undefined
+      )
   );
 
 export const getAllChildProgressObservationReports = (
   state: RootState
-): ChildProgressObservationReport[] => state.contentReportData.childProgressionReports || [];
+): ChildProgressObservationReport[] =>
+  state.contentReportData.childProgressionReports || [];
 
 export const getChildProgressReportSummaries = (childId?: string) =>
   createSelector(
-    (state: RootState) => state.contentReportData.childProgressReportSummaries || [],
+    (state: RootState) =>
+      state.contentReportData.childProgressReportSummaries || [],
     (summaries: ChildProgressReportSummaryModel[]) =>
       summaries
         .filter((summary) => summary.childId === childId)
-        .sort((a, b) => (new Date(a.reportDate) > new Date(b.reportDate) ? 1 : -1))
+        .sort((a, b) =>
+          new Date(a.reportDate) > new Date(b.reportDate) ? 1 : -1
+        )
   );
 
 export const getChildProgressObservationReportByReportingPeriod = (
@@ -52,7 +64,10 @@ export const getChildProgressObservationReportByReportingPeriod = (
       reports.find(
         (report) =>
           report.childId === childId &&
-          isMatchingReportingPeriods(new Date(report.reportingDate), reportingDate)
+          isMatchingReportingPeriods(
+            new Date(report.reportingDate),
+            reportingDate
+          )
       )
   );
 
@@ -65,14 +80,17 @@ export const getChildLatestCompletedReports = (childId?: string) =>
       const childLocallyCompletedReports =
         contentReportState.childProgressionReports?.filter(
           (report) =>
-            (!childId ? true : report.childId === childId) && report.dateCompleted !== undefined
+            (!childId ? true : report.childId === childId) &&
+            report.dateCompleted !== undefined
         ) || [];
 
       const excludingSummaries =
         contentReportState.childProgressReportSummaries?.filter(
           (summary) =>
             (!childId ? true : summary.childId === childId) &&
-            !childLocallyCompletedReports.some((report) => report.id === summary.reportId)
+            !childLocallyCompletedReports.some(
+              (report) => report.id === summary.reportId
+            )
         ) || [];
 
       const completdLocalReportAsSummaries: ChildProgressReportSummaryModel[] =
@@ -89,7 +107,10 @@ export const getChildLatestCompletedReports = (childId?: string) =>
           classroomName: report.classroomName,
         }));
 
-      const mergedSummaries = [...completdLocalReportAsSummaries, ...excludingSummaries];
+      const mergedSummaries = [
+        ...completdLocalReportAsSummaries,
+        ...excludingSummaries,
+      ];
 
       const sortedSummaries = mergedSummaries.sort((a, b) =>
         new Date(a.reportDate) > new Date(b.reportDate) ? -1 : 1

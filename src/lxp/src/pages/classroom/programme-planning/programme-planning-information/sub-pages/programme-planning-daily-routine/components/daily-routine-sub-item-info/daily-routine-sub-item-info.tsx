@@ -2,9 +2,9 @@ import { Typography } from '@ecdlink/ui';
 import { TitleStatusChip } from '../TitleStatusChip/title-status-chip';
 import { ProgrammeRoutineSubItemProps } from './daily-routine-sub-item-info.types';
 
-export const DailyRoutineSubItemInfo: React.FC<ProgrammeRoutineSubItemProps> = ({
-  routineSubItem,
-}) => {
+export const DailyRoutineSubItemInfo: React.FC<
+  ProgrammeRoutineSubItemProps
+> = ({ routineSubItem }) => {
   return (
     <div className={'flex flex-col mt-4'}>
       <div className={'flex flex-row items-center justify-start'}>

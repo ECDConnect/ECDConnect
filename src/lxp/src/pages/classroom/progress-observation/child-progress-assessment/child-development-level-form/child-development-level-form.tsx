@@ -9,19 +9,23 @@ import {
   Divider,
   Typography,
 } from '@ecdlink/ui';
-import { ButtonGroupOption, ButtonGroupTypes, DialogPosition } from '@ecdlink/ui';
+import {
+  ButtonGroupOption,
+  ButtonGroupTypes,
+  DialogPosition,
+} from '@ecdlink/ui';
 import { useFormState, useWatch } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
 import {
   ChildDevelopmentLevelFormModel,
   childDevelopmentLevelFormSchema,
-} from '../../../../../schemas/classroom/child-progress-observations/child-development-level-form';
+} from '@schemas/classroom/child-progress-observations/child-development-level-form';
 import * as styles from './child-development-level-form.styles';
 import { renderIcon, classNames } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
-import { useChildProgressObservation } from '../../../../../hooks/useChildProgressObservations';
-import { childrenSelectors } from '../../../../../store/children';
-import { progressTrackingSelectors } from '../../../../../store/progress-tracking';
+import { useChildProgressObservation } from '@hooks/useChildProgressObservations';
+import { childrenSelectors } from '@store/children';
+import { progressTrackingSelectors } from '@store/progress-tracking';
 import ChildDevelopmentLevelsDisplay from '../../components/child-development-levels-display/child-development-levels-display';
 import { useState } from 'react';
 
@@ -32,7 +36,9 @@ interface ChildDevelopmentLevelFormProps
   childAchievedLevelId: number;
 }
 
-export const ChildDevelopmentLevelForm: React.FC<ChildDevelopmentLevelFormProps> = ({
+export const ChildDevelopmentLevelForm: React.FC<
+  ChildDevelopmentLevelFormProps
+> = ({
   childDevelopmentLevelForm,
   childId,
   childAchievedLevelId,
@@ -40,13 +46,20 @@ export const ChildDevelopmentLevelForm: React.FC<ChildDevelopmentLevelFormProps>
 }) => {
   const dialog = useDialog();
   const currentChild = useSelector(childrenSelectors.getChildById(childId));
-  const [developmentLevelsDisplayActive, setDevelopmentLevelsDisplayActive] = useState(false);
-  const currentChildUser = useSelector(childrenSelectors.getChildUserById(currentChild?.userId));
+  const [developmentLevelsDisplayActive, setDevelopmentLevelsDisplayActive] =
+    useState(false);
+  const currentChildUser = useSelector(
+    childrenSelectors.getChildUserById(currentChild?.userId)
+  );
   const { getLevelSummaryText } = useChildProgressObservation(childId);
 
-  const levels = useSelector(progressTrackingSelectors.getProgressTrackingLevels);
+  const levels = useSelector(
+    progressTrackingSelectors.getProgressTrackingLevels
+  );
 
-  const currentChildLevel = levels.find((level) => level.id === childAchievedLevelId);
+  const currentChildLevel = levels.find(
+    (level) => level.id === childAchievedLevelId
+  );
 
   const {
     getValues: getChildDevelopmentLevelFormValues,
@@ -67,7 +80,9 @@ export const ChildDevelopmentLevelForm: React.FC<ChildDevelopmentLevelFormProps>
     defaultValue: { levelId: childAchievedLevelId },
     control: childDevelopmentLevelFormControl,
   });
-  const currentLevelIndex = levels.findIndex((level) => level.id === currentChildLevel?.id);
+  const currentLevelIndex = levels.findIndex(
+    (level) => level.id === currentChildLevel?.id
+  );
   const practitionerAgreeToLevelOptions: ButtonGroupOption<boolean>[] = [
     { text: 'Yes', value: true },
     { text: 'No', value: false },
@@ -103,7 +118,10 @@ export const ChildDevelopmentLevelForm: React.FC<ChildDevelopmentLevelFormProps>
         <div>
           <Alert
             type="info"
-            title={getLevelSummaryText(childAchievedLevelId, currentChildUser?.firstName || '')}
+            title={getLevelSummaryText(
+              childAchievedLevelId,
+              currentChildUser?.firstName || ''
+            )}
             className={'mt-4'}
             button={
               <Button
@@ -113,7 +131,10 @@ export const ChildDevelopmentLevelForm: React.FC<ChildDevelopmentLevelFormProps>
                 color="textMid"
                 type="filled"
               >
-                {renderIcon('QuestionMarkCircleIcon', classNames('h-5 w-5 text-white'))}
+                {renderIcon(
+                  'QuestionMarkCircleIcon',
+                  classNames('h-5 w-5 text-white')
+                )}
                 <Typography
                   type="small"
                   className="ml-2"
@@ -124,7 +145,9 @@ export const ChildDevelopmentLevelForm: React.FC<ChildDevelopmentLevelFormProps>
             }
           />
           <label className={classNames(styles.label, 'mt-4')}>
-            {`Do you agree that ${currentChildUser?.firstName} is at ${capitalizeWords(
+            {`Do you agree that ${
+              currentChildUser?.firstName
+            } is at ${capitalizeWords(
               currentChildLevel?.name?.toLowerCase() ?? ''
             )}?`}
           </label>
@@ -132,7 +155,10 @@ export const ChildDevelopmentLevelForm: React.FC<ChildDevelopmentLevelFormProps>
             <ButtonGroup
               options={practitionerAgreeToLevelOptions}
               onOptionSelected={(value: boolean | boolean[]) => {
-                setChildDevelopmentLevelFormValue('practitionerAgreeToLevel', value as boolean);
+                setChildDevelopmentLevelFormValue(
+                  'practitionerAgreeToLevel',
+                  value as boolean
+                );
                 childDevelopmentLevelFormTrigger();
               }}
               selectedOptions={practitionerAgreeToLevel}
@@ -159,7 +185,10 @@ export const ChildDevelopmentLevelForm: React.FC<ChildDevelopmentLevelFormProps>
                     }) as ButtonGroupOption<number>[]
                   }
                   onOptionSelected={(value: number | number[]) => {
-                    setChildDevelopmentLevelFormValue('levelId', value as number);
+                    setChildDevelopmentLevelFormValue(
+                      'levelId',
+                      value as number
+                    );
                     childDevelopmentLevelFormTrigger();
                   }}
                   selectedOptions={[selectedLevelId || 0]}
@@ -182,7 +211,10 @@ export const ChildDevelopmentLevelForm: React.FC<ChildDevelopmentLevelFormProps>
             type="filled"
             disabled={!isValid}
           >
-            {renderIcon('ArrowCircleRightIcon', classNames('h-5 w-5 text-white'))}
+            {renderIcon(
+              'ArrowCircleRightIcon',
+              classNames('h-5 w-5 text-white')
+            )}
             <Typography type="h6" className="ml-2" text="Next" color="white" />
           </Button>
         </div>

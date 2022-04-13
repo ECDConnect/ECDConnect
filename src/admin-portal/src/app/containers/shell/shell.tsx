@@ -1,9 +1,18 @@
 import { useQuery } from '@apollo/client';
-import { getAvatarColor, NavigationDto, usePanel, useTheme } from '@ecdlink/core';
+import {
+  getAvatarColor,
+  NavigationDto,
+  usePanel,
+  useTheme,
+} from '@ecdlink/core';
 import { GetAllNavigation } from '@ecdlink/graphql';
 import { UserAvatar } from '@ecdlink/ui';
 import { Dialog, Menu, Transition } from '@headlessui/react';
-import { InformationCircleIcon, MenuAlt2Icon, XIcon } from '@heroicons/react/outline';
+import {
+  InformationCircleIcon,
+  MenuAlt2Icon,
+  XIcon,
+} from '@heroicons/react/outline';
 import { Fragment, useEffect, useState } from 'react';
 import { Link, useHistory, useLocation, useRouteMatch } from 'react-router-dom';
 import { AuthRoutes } from '../../app.routes';
@@ -26,14 +35,18 @@ const MenuItem: React.FC<menuItemProps> = ({ item }) => {
     <Link
       to={item.route}
       className={classNames(
-        routeMatch ? 'bg-white text-textMid' : 'hover:bg-white hover:text-textMid',
+        routeMatch
+          ? 'bg-white text-textMid'
+          : 'hover:bg-white hover:text-textMid',
         'text-white group flex items-center px-2 py-2 text-sm font-medium rounded-md'
       )}
     >
       <Icon
         icon={item.icon}
         className={classNames(
-          routeMatch ? 'text-gray-500' : 'text-gray-400 group-hover:text-gray-500',
+          routeMatch
+            ? 'text-gray-500'
+            : 'text-gray-400 group-hover:text-gray-500',
           'mr-3 flex-shrink-0 h-6 w-6'
         )}
         color="transparent"
@@ -55,11 +68,15 @@ export default function Shell() {
   const [navigation, setNavigation] = useState<NavigationDto[]>();
   const [activeNavigation, setActiveNavigation] = useState<NavigationDto>();
 
-  const { data: navigationData } = useQuery(GetAllNavigation, { fetchPolicy: 'cache-and-network' });
+  const { data: navigationData } = useQuery(GetAllNavigation, {
+    fetchPolicy: 'cache-and-network',
+  });
 
   useEffect(() => {
     if (navigation && location && location.pathname) {
-      const current = navigation.find((x) => location.pathname.includes(x.route));
+      const current = navigation.find((x) =>
+        location.pathname.includes(x.route)
+      );
       if (current) setActiveNavigation(current);
     }
   }, [navigation, location]);
@@ -74,7 +91,9 @@ export default function Shell() {
       const userRolePermissions = user.roles.map((x) => x.permissions).flat();
       const userPermissionIds = userRolePermissions.map((x) => x.id);
       if (user.roles.some((x) => x.name === 'Administrator')) {
-        const sorted = navigationList.slice().sort((a, b) => a.sequence - b.sequence);
+        const sorted = navigationList
+          .slice()
+          .sort((a, b) => a.sequence - b.sequence);
         setNavigation(sorted);
       } else {
         const filtered = navigationList.filter((x) =>
@@ -104,7 +123,9 @@ export default function Shell() {
     panel({
       noPadding: true,
       title: 'Information',
-      render: (onSubmit: any) => <InformationPanel siteInformation={activeNavigation} />,
+      render: (onSubmit: any) => (
+        <InformationPanel siteInformation={activeNavigation} />
+      ),
     });
   };
 
@@ -160,12 +181,19 @@ export default function Shell() {
                 </div>
               </Transition.Child>
               <div className="flex items-center justify-center flex-shrink-0 px-4">
-                <img className="h-20 w-auto" src={getLogoUrl()} alt="Workflow" />
+                <img
+                  className="h-20 w-auto"
+                  src={getLogoUrl()}
+                  alt="Workflow"
+                />
               </div>
               <div className="mt-5 flex-1 h-0 overflow-y-auto">
                 <nav className="px-2 space-y-1">
                   {navigation?.map((item) => (
-                    <MenuItem key={`${item.name}-${new Date().getTime()}`} item={item}></MenuItem>
+                    <MenuItem
+                      key={`${item.name}-${new Date().getTime()}`}
+                      item={item}
+                    ></MenuItem>
                   ))}
                 </nav>
               </div>
@@ -184,7 +212,10 @@ export default function Shell() {
             <div className="mt-5 flex-1 flex flex-col">
               <nav className="flex-1 px-2 space-y-1">
                 {navigation?.map((item) => (
-                  <MenuItem key={`${item.name}-${new Date().getTime()}`} item={item}></MenuItem>
+                  <MenuItem
+                    key={`${item.name}-${new Date().getTime()}`}
+                    item={item}
+                  ></MenuItem>
                 ))}
               </nav>
             </div>
@@ -212,7 +243,9 @@ export default function Shell() {
                 />
               )}
 
-              <span className="pl-2 text-black font-semibold">{activeNavigation?.name}</span>
+              <span className="pl-2 text-black font-semibold">
+                {activeNavigation?.name}
+              </span>
             </div>
             <div className="ml-4 flex items-center md:ml-6">
               <Menu as="div" className="ml-3 relative">

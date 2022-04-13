@@ -1,5 +1,5 @@
-import { Colours } from "../../../models/Colours";
-import { classNames } from "../../../utils/style-class.utils";
+import { Colours } from '../../../models/Colours';
+import { classNames } from '../../../utils/style-class.utils';
 
 export const menu = 'w-full';
 export const icon = 'h-6 w-6 pr-2';
@@ -15,7 +15,9 @@ export const leaveFrom = 'transform opacity-100 scale-100';
 export const leaveTo = 'transform opacity-0 scale-95';
 export const label = 'font-medium block text-base font-body text-textMid';
 export const overlay = (overlayTopOffset?: string) =>
-  `absolute top-${overlayTopOffset || '177'} z-20 inset-0 bg-gray-500 bg-opacity-75`;
+  `absolute top-${
+    overlayTopOffset || '177'
+  } z-20 inset-0 bg-gray-500 bg-opacity-75`;
 export const infoWrapper = 'px-2 py-2 border-b border-uiBg';
 export const getButtonStyles = (
   colour: Colours,

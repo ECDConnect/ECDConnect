@@ -27,7 +27,10 @@ export const leaveFrom = 'transform opacity-100 scale-100';
 export const leaveTo = 'transform opacity-0 scale-95';
 export const label = 'font-medium block text-base font-body text-textMid';
 
-export const getDropDownFill = (fillType: DropDownFillType, fillColor: Colours) => {
+export const getDropDownFill = (
+  fillType: DropDownFillType,
+  fillColor: Colours
+) => {
   switch (fillType) {
     case 'clear':
       return classNames(dropdownClearWrapper, `bg-${fillColor}`);
@@ -47,7 +50,10 @@ export const getDropDownSelectedTextColour = (fillType: DropDownFillType) => {
   }
 };
 
-export const getDropDownIcon = (fillType: DropDownFillType, colour: Colours) => {
+export const getDropDownIcon = (
+  fillType: DropDownFillType,
+  colour: Colours
+) => {
   switch (fillType) {
     case 'clear':
       return classNames(iconClear, `text-${colour}`);

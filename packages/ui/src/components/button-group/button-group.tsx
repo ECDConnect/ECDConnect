@@ -85,10 +85,11 @@ export const ButtonGroup = <T,>({
                 index,
                 options.length - 1,
                 option.disabled
-              )} ${isOptionSelected(option)
-                ? styles.selected(color)
-                : getNotSelectedStyle(type)
-                }`}
+              )} ${
+                isOptionSelected(option)
+                  ? styles.selected(color)
+                  : getNotSelectedStyle(type)
+              }`}
             >
               {option.text}
             </div>

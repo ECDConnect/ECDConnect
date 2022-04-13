@@ -19,7 +19,9 @@ import RelationPanel from './components/relation-panel/relation-panel';
 export default function RelationsView() {
   const { hasPermission } = useUser();
   const type = 'Relations';
-  const { data, refetch } = useQuery(GetAllRelation, { fetchPolicy: 'cache-and-network' });
+  const { data, refetch } = useQuery(GetAllRelation, {
+    fetchPolicy: 'cache-and-network',
+  });
   const [tableData, setTableData] = useState<any[]>([]);
   const dialog = useDialog();
   const { setNotification } = useNotifications();
@@ -118,8 +120,13 @@ export default function RelationsView() {
                 <UiTable
                   columns={[{ field: 'description', use: 'description' }]}
                   rows={tableData}
-                  editRow={hasPermission(PermissionEnum.update_static) && displayPanel}
-                  deleteRow={hasPermission(PermissionEnum.delete_static) && deleteAndRefresh}
+                  editRow={
+                    hasPermission(PermissionEnum.update_static) && displayPanel
+                  }
+                  deleteRow={
+                    hasPermission(PermissionEnum.delete_static) &&
+                    deleteAndRefresh
+                  }
                 />
               </div>
             </div>

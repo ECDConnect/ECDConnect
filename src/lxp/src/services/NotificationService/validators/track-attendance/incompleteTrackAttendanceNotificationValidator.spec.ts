@@ -1,14 +1,20 @@
 import { RecursivePartial } from '@ecdlink/core';
 import { EnhancedStore } from '@reduxjs/toolkit';
 import { getWeek, getYear, nextFriday, setHours } from 'date-fns';
-import { RootState } from '../../../../store/types';
-import { NotificationIntervals, NotificationPriority } from '../../NotificationService.types';
+import { RootState } from '@store/types';
+import {
+  NotificationIntervals,
+  NotificationPriority,
+} from '../../NotificationService.types';
 import { IncompleteTrackAttendanceNotificationValidator } from './incompleteTrackAttendanceNotificationValidator';
 
 describe('incompleteTrackAttendanceNotificationValidator', () => {
   test('should be able to create successfully', () => {
     const store: any = {};
-    const validator = new IncompleteTrackAttendanceNotificationValidator(store, new Date());
+    const validator = new IncompleteTrackAttendanceNotificationValidator(
+      store,
+      new Date()
+    );
 
     expect(validator.interval).toEqual(NotificationIntervals.hour);
   });
@@ -138,7 +144,9 @@ describe('incompleteTrackAttendanceNotificationValidator', () => {
     );
     const notifications = validator.getNotifications();
     const n = notifications.find(
-      (x) => x.reference === `attendance-${getWeek(currentDate)}-${getYear(currentDate)}`
+      (x) =>
+        x.reference ===
+        `attendance-${getWeek(currentDate)}-${getYear(currentDate)}`
     );
     expect(n?.viewType).toEqual('Both');
     expect(n?.priority).toEqual(NotificationPriority.low);

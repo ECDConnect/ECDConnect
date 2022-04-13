@@ -4,7 +4,7 @@ import { MenuListDataItem } from '@ecdlink/ui';
 import { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import Article from '../../../../../components/article/article';
-import { useOnlineStatus } from '../../../../../hooks/useOnlineStatus';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import * as styles from './programme-tutorial.styles';
 
 export const ProgrammeTutorial = () => {
@@ -54,7 +54,9 @@ export const ProgrammeTutorial = () => {
       displayOffline={!isOnline}
     >
       <div className="bg-white">
-        {notifications ? <StackedList listItems={notifications} type={'MenuList'} /> : null}
+        {notifications ? (
+          <StackedList listItems={notifications} type={'MenuList'} />
+        ) : null}
       </div>
 
       <div className={'px-4 pt-2 bg-uiBg'}>

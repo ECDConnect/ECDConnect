@@ -12,7 +12,8 @@ export const getDocumentByTypeId = (userId?: string, typeId?: string) =>
       if (!documents || !userId || !typeId) return;
 
       return documents.find(
-        (document) => document.userId === userId && document.documentTypeId === typeId
+        (document) =>
+          document.userId === userId && document.documentTypeId === typeId
       );
     }
   );

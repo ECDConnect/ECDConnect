@@ -7,11 +7,13 @@ import {
 } from '@ecdlink/core';
 import { createSelector } from '@reduxjs/toolkit';
 import { ProgressTrackingState } from '.';
-import { ChildProgressSubCategoryAssessment } from '../../models/classroom/progress-observation/ChildProgressAssessment';
+import { ChildProgressSubCategoryAssessment } from '@models/classroom/progress-observation/ChildProgressAssessment';
 import { RootState } from '../types';
 
 // CATEGORIES
-export const getProgressTrackingCategories = (state: RootState): ProgressTrackingCategoryDto[] =>
+export const getProgressTrackingCategories = (
+  state: RootState
+): ProgressTrackingCategoryDto[] =>
   state.progressTracking.progressTrackingCategories || [];
 
 export const getProgressTrackingCategoryById = (categoryId?: number) =>
@@ -29,21 +31,25 @@ export const getProgressTrackingCategoryById = (categoryId?: number) =>
 // SUB- CATEGORIES
 export const getProgressTrackingSubCategories = (
   state: RootState
-): ProgressTrackingSubCategoryDto[] => state.progressTracking.progressTrackingSubCategories || [];
+): ProgressTrackingSubCategoryDto[] =>
+  state.progressTracking.progressTrackingSubCategories || [];
 
-export const getProgressTrackingSubCategoriesByCategoryId = (categoryId?: number) =>
+export const getProgressTrackingSubCategoriesByCategoryId = (
+  categoryId?: number
+) =>
   createSelector(
     (state: RootState) => state,
     (rootState: RootState) => {
       if (!rootState || !categoryId) return;
 
-      const category = rootState.progressTracking.progressTrackingCategories?.find(
-        (x) => x.id === categoryId
-      );
+      const category =
+        rootState.progressTracking.progressTrackingCategories?.find(
+          (x) => x.id === categoryId
+        );
       const subCategoryIds = category?.subCategories?.map((x) => x.id);
 
-      return rootState.progressTracking?.progressTrackingSubCategories?.filter((subCategory) =>
-        subCategoryIds?.includes(subCategory.id)
+      return rootState.progressTracking?.progressTrackingSubCategories?.filter(
+        (subCategory) => subCategoryIds?.includes(subCategory.id)
       );
     }
   );
@@ -56,11 +62,15 @@ export const getProgressTrackingSubCategoryById = (subCategoryId?: number) =>
     ): ProgressTrackingSubCategoryDto | undefined => {
       if (!subCategories || !subCategoryId) return;
 
-      return subCategories.find((subCategory) => subCategory.id === subCategoryId);
+      return subCategories.find(
+        (subCategory) => subCategory.id === subCategoryId
+      );
     }
   );
 
-export const getProgressTrackingCategoryBySubCategoryId = (subCategoryId?: number) =>
+export const getProgressTrackingCategoryBySubCategoryId = (
+  subCategoryId?: number
+) =>
   createSelector(
     (state: RootState) => state.progressTracking,
     (
@@ -81,7 +91,9 @@ export const getProgressTrackingCategoryBySubCategoryId = (subCategoryId?: numbe
   );
 
 // SKILLS
-export const getProgressTrackingSkills = (state: RootState): ProgressTrackingSkillDto[] =>
+export const getProgressTrackingSkills = (
+  state: RootState
+): ProgressTrackingSkillDto[] =>
   state.progressTracking.progressTrackingSkills || [];
 
 export const getProgressTrackingSkillById = (skillId: number) =>
@@ -90,19 +102,22 @@ export const getProgressTrackingSkillById = (skillId: number) =>
     (skills: ProgressTrackingSkillDto[]) => skills.find((x) => x.id === skillId)
   );
 
-export const getProgressTrackingSkillsBySubCategoryId = (subCategoryId?: number) =>
+export const getProgressTrackingSkillsBySubCategoryId = (
+  subCategoryId?: number
+) =>
   createSelector(
     (state: RootState) => state,
     (rootState: RootState) => {
       if (!rootState || !subCategoryId) return;
 
-      const subCategory = rootState.progressTracking.progressTrackingSubCategories?.find(
-        (x) => x.id === subCategoryId
-      );
+      const subCategory =
+        rootState.progressTracking.progressTrackingSubCategories?.find(
+          (x) => x.id === subCategoryId
+        );
       const skillIds = subCategory?.skills.map((x) => x.id);
 
-      return rootState.progressTracking?.progressTrackingSkills?.filter((skill) =>
-        skillIds?.includes(skill.id)
+      return rootState.progressTracking?.progressTrackingSkills?.filter(
+        (skill) => skillIds?.includes(skill.id)
       );
     }
   );
@@ -120,17 +135,23 @@ export const getChildProgressSubCategoryAssessments = (
 
       const subCategories: ProgressTrackingSubCategoryDto[] =
         state.progressTrackingSubCategories
-          ?.filter((subCategory) => subCategoryIds.includes(subCategory.id || 0))
+          ?.filter((subCategory) =>
+            subCategoryIds.includes(subCategory.id || 0)
+          )
           .sort((a, b) => (b?.id || 0) - (a?.id || 0)) || [];
 
-      const level = state.progressTrackingLevels?.find((level) => level.id === levelId);
+      const level = state.progressTrackingLevels?.find(
+        (level) => level.id === levelId
+      );
       // redux state only has the id in the data.
-      const subCategoriesSkillIds: number[] = subCategories?.flatMap((subCategory) =>
-        subCategory.skills.map((skill) => skill.id)
+      const subCategoriesSkillIds: number[] = subCategories?.flatMap(
+        (subCategory) => subCategory.skills.map((skill) => skill.id)
       );
 
       const subCategoryLevelSkills = state.progressTrackingSkills?.filter(
-        (skill) => subCategoriesSkillIds.includes(skill.id) && skill.level[0]?.id === levelId
+        (skill) =>
+          subCategoriesSkillIds.includes(skill.id) &&
+          skill.level[0]?.id === levelId
       );
 
       if (subCategories && level && subCategoryLevelSkills) {
@@ -156,7 +177,9 @@ export const getChildProgressSubCategoryAssessments = (
   );
 
 // LEVELS
-export const getProgressTrackingLevels = (state: RootState): ProgressTrackingLevelDto[] =>
+export const getProgressTrackingLevels = (
+  state: RootState
+): ProgressTrackingLevelDto[] =>
   state.progressTracking.progressTrackingLevels || [];
 
 export const getProgressTrackingLevelById = (levelId?: number) =>
@@ -171,7 +194,8 @@ export const getProgressTrackingLevelById = (levelId?: number) =>
 
 export const getActivityCategories = (activity: ActivityDto) =>
   createSelector(
-    (state: RootState) => state.progressTracking.progressTrackingCategories || [],
+    (state: RootState) =>
+      state.progressTracking.progressTrackingCategories || [],
     (categories: ProgressTrackingCategoryDto[]) => {
       if (!activity || !activity.subCategories) return [];
 

@@ -115,7 +115,11 @@ export default function Children() {
                   columns={[
                     { field: 'fullName', use: 'name' },
                     { field: 'language', use: 'language' },
-                    { field: 'statusChip', use: 'status', type: 'workflowStatus' },
+                    {
+                      field: 'statusChip',
+                      use: 'status',
+                      type: 'workflowStatus',
+                    },
                   ]}
                   rows={tableData}
                 />

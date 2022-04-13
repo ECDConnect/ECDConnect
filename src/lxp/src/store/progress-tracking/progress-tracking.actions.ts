@@ -5,7 +5,7 @@ import {
   ProgressTrackingSubCategoryDto,
 } from '@ecdlink/core';
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { ProgressTrackingService } from '../../services/ProgressTrackingService';
+import { ProgressTrackingService } from '@services/ProgressTrackingService';
 import { RootState, ThunkApiType } from '../types';
 
 export const getProgressTrackingCategories = createAsyncThunk<
@@ -76,7 +76,9 @@ export const getProgressTrackingSubCategories = createAsyncThunk<
         }
 
         if (!subCategories) {
-          return rejectWithValue('Error getting progress tracking sub-categories');
+          return rejectWithValue(
+            'Error getting progress tracking sub-categories'
+          );
         }
 
         return subCategories;

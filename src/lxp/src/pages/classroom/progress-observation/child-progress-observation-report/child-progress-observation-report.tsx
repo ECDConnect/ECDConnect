@@ -2,34 +2,39 @@ import { useQueryParams, useStepNavigation } from '@ecdlink/core';
 import { BannerWrapper } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
-import { useChildProgressObservation } from '../../../../hooks/useChildProgressObservations';
-import { childrenSelectors } from '../../../../store/children';
+import { useChildProgressObservation } from '@hooks/useChildProgressObservations';
+import { childrenSelectors } from '@store/children';
 import { ChildEnjoys } from './components/child-enjoys/child-enjoys';
-import { ChildEnjoysFormModel } from '../../../../schemas/classroom/child-progress-observations/child-enjoys-form';
+import { ChildEnjoysFormModel } from '@schemas/classroom/child-progress-observations/child-enjoys-form';
 import { ChildProgressReportOverview } from './components/child-progress-report-overview/child-progress-report-overview';
 import { ChildProgressedWith } from './components/child-progressed-with/child-progressed-with';
-import { ChildProgressedWithFormModel } from '../../../../schemas/classroom/child-progress-observations/child-progressed-with-form';
+import { ChildProgressedWithFormModel } from '@schemas/classroom/child-progress-observations/child-progressed-with-form';
 import { CaregiverCanHelpChildWith } from './components/how-caregiver-can-help-child/how-caregiver-can-help-child';
-import { CaregiverCanHelpChildWithFormModel } from '../../../../schemas/classroom/child-progress-observations/how-caregiver-can-help-child-form';
+import { CaregiverCanHelpChildWithFormModel } from '@schemas/classroom/child-progress-observations/how-caregiver-can-help-child-form';
 import {
   ChildProgressObservationReportState,
   ChildProgressObservationReportSteps,
 } from './child-progress-observation-report.types';
-import { useOnlineStatus } from '../../../../hooks/useOnlineStatus';
-import { contentReportSelectors } from '../../../../store/content/report';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
+import { contentReportSelectors } from '@store/content/report';
 import { useEffect } from 'react';
-import { useAppDispatch } from '../../../../store';
-import { analyticsActions } from '../../../../store/analytics';
+import { useAppDispatch } from '@store';
+import { analyticsActions } from '@store/analytics';
 
 export const ChildProgressObservationReport: React.FC = () => {
-  const { state: routeState, search } = useLocation<ChildProgressObservationReportState>();
+  const { state: routeState, search } =
+    useLocation<ChildProgressObservationReportState>();
   const history = useHistory();
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
   const childId = routeState?.childId;
-  const reportingDate = routeState?.reportingDate ? new Date(routeState.reportingDate) : new Date();
+  const reportingDate = routeState?.reportingDate
+    ? new Date(routeState.reportingDate)
+    : new Date();
   const currentChild = useSelector(childrenSelectors.getChildById(childId));
-  const currentChildUser = useSelector(childrenSelectors.getChildUserById(currentChild?.userId));
+  const currentChildUser = useSelector(
+    childrenSelectors.getChildUserById(currentChild?.userId)
+  );
 
   useEffect(() => {
     if (!isOnline) {
@@ -49,14 +54,20 @@ export const ChildProgressObservationReport: React.FC = () => {
       childId
     )
   );
-  const { currentReport, setChildEnjoys, setChildProgressedWith, setHowCategiverCanHelpChild } =
-    useChildProgressObservation(childId, report);
+  const {
+    currentReport,
+    setChildEnjoys,
+    setChildProgressedWith,
+    setHowCategiverCanHelpChild,
+  } = useChildProgressObservation(childId, report);
   const { getValue: getQueryParamValue } = useQueryParams(search);
   const stepDefinedInQueryParams = getQueryParamValue('step');
 
-  const { activeStepKey, canGoBack, goBackOneStep, goToStep } = useStepNavigation(
-    Number(stepDefinedInQueryParams) || ChildProgressObservationReportSteps.ChildEnjoys
-  );
+  const { activeStepKey, canGoBack, goBackOneStep, goToStep } =
+    useStepNavigation(
+      Number(stepDefinedInQueryParams) ||
+        ChildProgressObservationReportSteps.ChildEnjoys
+    );
 
   const onBannerBack = () => {
     if (canGoBack()) {
@@ -72,12 +83,16 @@ export const ChildProgressObservationReport: React.FC = () => {
     goToStep(ChildProgressObservationReportSteps.ChildMadeProgressWith);
   };
 
-  const onChildProgressedWithSubmitted = (formValue: ChildProgressedWithFormModel) => {
+  const onChildProgressedWithSubmitted = (
+    formValue: ChildProgressedWithFormModel
+  ) => {
     setChildProgressedWith(formValue.childProgressedWith);
     goToStep(ChildProgressObservationReportSteps.HowCanCaregiverHelpChild);
   };
 
-  const onHowCaregiverCanHelpChildSubmitted = (formValue: CaregiverCanHelpChildWithFormModel) => {
+  const onHowCaregiverCanHelpChildSubmitted = (
+    formValue: CaregiverCanHelpChildWithFormModel
+  ) => {
     setHowCategiverCanHelpChild(formValue.howCanCaregiverHelpChild);
 
     goToStep(ChildProgressObservationReportSteps.OverviewReport);
@@ -86,9 +101,16 @@ export const ChildProgressObservationReport: React.FC = () => {
   const renderStep = () => {
     switch (activeStepKey as number) {
       case ChildProgressObservationReportSteps.ChildEnjoys:
-        return <ChildEnjoys childId={childId} onSubmit={onChildEnjoysSubmitted} />;
+        return (
+          <ChildEnjoys childId={childId} onSubmit={onChildEnjoysSubmitted} />
+        );
       case ChildProgressObservationReportSteps.ChildMadeProgressWith:
-        return <ChildProgressedWith childId={childId} onSubmit={onChildProgressedWithSubmitted} />;
+        return (
+          <ChildProgressedWith
+            childId={childId}
+            onSubmit={onChildProgressedWithSubmitted}
+          />
+        );
       case ChildProgressObservationReportSteps.HowCanCaregiverHelpChild:
         return (
           <CaregiverCanHelpChildWith

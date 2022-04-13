@@ -3,9 +3,12 @@ import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from '../types';
 
 export const getChildren = (state: RootState): ChildDto[] | undefined =>
-  state.children.children?.filter((child: ChildDto) => child.isActive !== false);
+  state.children.children?.filter(
+    (child: ChildDto) => child.isActive !== false
+  );
 
-export const getChildUsers = (state: RootState): UserDto[] => state.children.childUser || [];
+export const getChildUsers = (state: RootState): UserDto[] =>
+  state.children.childUser || [];
 
 export const getChildById = (id?: string) =>
   createSelector(

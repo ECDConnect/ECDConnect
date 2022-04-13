@@ -40,13 +40,13 @@ export const contentDefinitions = gql`
   {
     contentDefinitions {
       contentName
-      identifier            
+      identifier
       fields {
         name
         dataType
         fieldTypeId
         graphDataTypeName
-        assemblyDataTypeName        
+        assemblyDataTypeName
       }
     }
   }

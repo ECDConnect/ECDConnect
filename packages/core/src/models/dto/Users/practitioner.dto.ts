@@ -3,7 +3,7 @@ import { EntityBase } from '../entity-base';
 import { SiteAddressDto } from '../SiteAddress';
 import { UserDto } from './user.dto';
 
-export interface PractitionerDto extends EntityBase {  
+export interface PractitionerDto extends EntityBase {
   user?: UserDto;
   userId?: string;
   siteAddress?: SiteAddressDto;

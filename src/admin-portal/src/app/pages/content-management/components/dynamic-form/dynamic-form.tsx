@@ -5,7 +5,11 @@ import FormColorField from '../../../../components/form-color-field/form-color-f
 import FormField from '../../../../components/form-field/form-field';
 import FormFileInput from '../../../../components/form-file-input/form-file-input';
 import Editor from '../../../../components/form-markdown-editor/form-markdown-editor';
-import { DynamicFormTemplate, FieldType, FormTemplateField } from '../../content-management-models';
+import {
+  DynamicFormTemplate,
+  FieldType,
+  FormTemplateField,
+} from '../../content-management-models';
 
 const acceptedFormats = ['svg', 'png', 'PNG', 'jpg', 'JPG', 'jpeg'];
 
@@ -68,7 +72,9 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
               <div className="sm:col-span-12">
                 <Editor
                   label={title}
-                  currentValue={field.contentValue ? field.contentValue.value : undefined}
+                  currentValue={
+                    field.contentValue ? field.contentValue.value : undefined
+                  }
                   onStateChange={(data) => onStateChange(propName, data)}
                 />
               </div>
@@ -82,7 +88,9 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
                   acceptedFormats={acceptedFormats}
                   label={title}
                   nameProp={propName}
-                  contentUrl={field.contentValue ? field.contentValue.value : undefined}
+                  contentUrl={
+                    field.contentValue ? field.contentValue.value : undefined
+                  }
                   returnFullUrl={true}
                   setValue={setValue}
                 />
@@ -126,7 +134,9 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
               <div className="sm:col-span-12">
                 <FormColorField
                   setValue={setValue}
-                  currentColor={field.contentValue ? field.contentValue.value : ''}
+                  currentColor={
+                    field.contentValue ? field.contentValue.value : ''
+                  }
                   label={title}
                   nameProp={propName}
                   register={register}
@@ -147,7 +157,11 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
     });
   };
 
-  return <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-1">{fields}</div>;
+  return (
+    <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-1">
+      {fields}
+    </div>
+  );
 };
 
 export default DynamicForm;

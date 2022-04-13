@@ -1,11 +1,23 @@
-import { classNames, Colours, ComponentBaseProps } from "../..";
+import { classNames, Colours, ComponentBaseProps } from '../..';
 
 interface BadgeProps extends ComponentBaseProps {
-    color?: Colours;
+  color?: Colours;
 }
 
-export const Badge: React.FC<BadgeProps> = ({ children, className,
-    color = 'errorMain',
+export const Badge: React.FC<BadgeProps> = ({
+  children,
+  className,
+  color = 'errorMain',
 }) => {
-    return <span className={classNames(className, "inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none rounded-full", `bg-${color}`)}>{children}</span>
+  return (
+    <span
+      className={classNames(
+        className,
+        'inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none rounded-full',
+        `bg-${color}`
+      )}
+    >
+      {children}
+    </span>
+  );
 };

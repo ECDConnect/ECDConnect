@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
-import { Message } from '../../models/messages/messages';
+import { Message } from '@models/messages/messages';
 import { NotificationsState, Notification } from './notifications.types';
 
 const initialState: NotificationsState = {
@@ -14,8 +14,14 @@ const notificationsState = createSlice({
     resetNotificationState: (state) => {
       state.notifications = [];
     },
-    addNotifications: (state: NotificationsState, action: PayloadAction<Message[]>) => {
-      const newNotifications = action.payload.map((message) => ({ isNew: true, message }));
+    addNotifications: (
+      state: NotificationsState,
+      action: PayloadAction<Message[]>
+    ) => {
+      const newNotifications = action.payload.map((message) => ({
+        isNew: true,
+        message,
+      }));
       state.notifications.push(...newNotifications);
     },
     markAllNotificationsRead: (state) => {
@@ -37,7 +43,8 @@ const notificationsState = createSlice({
   },
 });
 
-const { reducer: notificationReducer, actions: notificationActions } = notificationsState;
+const { reducer: notificationReducer, actions: notificationActions } =
+  notificationsState;
 
 const notificationPersistConfig = {
   key: 'notifications',

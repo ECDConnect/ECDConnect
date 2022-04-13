@@ -1,23 +1,30 @@
 import { yupResolver } from '@hookform/resolvers/yup';
-import { BannerWrapper, Button, Dialog, PasswordInput, StackedList, Typography } from '@ecdlink/ui';
+import {
+  BannerWrapper,
+  Button,
+  Dialog,
+  PasswordInput,
+  StackedList,
+  Typography,
+} from '@ecdlink/ui';
 import { ActionListDataItem, DialogPosition } from '@ecdlink/ui';
 import { renderIcon } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
-import { DialogFormInput } from '../../../models/practitioner/DialogFormInput';
-import { useAppDispatch } from '../../../store';
-import { userSelectors, userThunkActions } from '../../../store/user';
-import { UserResetPasswrodParams } from '../../../store/user/user.types';
+import { DialogFormInput } from '@models/practitioner/DialogFormInput';
+import { useAppDispatch } from '@store';
+import { userSelectors, userThunkActions } from '@store/user';
+import { UserResetPasswrodParams } from '@store/user/user.types';
 import * as styles from './practitioner-account.styles';
 import {
   initialPractitionerAccountValues,
   PractitionerAccountModel,
   practitionerAccountModelSchema,
-} from '../../../schemas/practitioner/practitioner-account';
-import { useOnlineStatus } from '../../../hooks/useOnlineStatus';
-import { analyticsActions } from '../../../store/analytics';
+} from '@schemas/practitioner/practitioner-account';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
+import { analyticsActions } from '@store/analytics';
 
 export default function PractitionerAccount() {
   const user = useSelector(userSelectors.getUser);
@@ -38,9 +45,9 @@ export default function PractitionerAccount() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOnline]);
 
-  const [dialogFormInput, setDialogFormInput] = useState<DialogFormInput<PractitionerAccountModel>>(
-    { label: '', formFieldName: 'password', value: '' }
-  );
+  const [dialogFormInput, setDialogFormInput] = useState<
+    DialogFormInput<PractitionerAccountModel>
+  >({ label: '', formFieldName: 'password', value: '' });
   const {
     register: practitionerAccountRegister,
     formState: practitionerAccountFormState,
@@ -67,7 +74,9 @@ export default function PractitionerAccount() {
     } as ActionListDataItem,
   ];
 
-  const editField = (formInputToLoad: DialogFormInput<PractitionerAccountModel>) => {
+  const editField = (
+    formInputToLoad: DialogFormInput<PractitionerAccountModel>
+  ) => {
     setDialogFormInput(formInputToLoad);
     setEditFieldVisible(true);
   };
@@ -104,7 +113,10 @@ export default function PractitionerAccount() {
         onBack={() => history.goBack()}
         displayOffline={!isOnline}
       >
-        <StackedList listItems={stackedActionList} type={'ActionList'}></StackedList>
+        <StackedList
+          listItems={stackedActionList}
+          type={'ActionList'}
+        ></StackedList>
       </BannerWrapper>
       <Dialog
         borderRadius="normal"
@@ -121,7 +133,9 @@ export default function PractitionerAccount() {
               text={dialogFormInput.label}
               weight="bold"
             ></Typography>
-            <div onClick={closeEditField}>{renderIcon('XIcon', 'h-6 w-6 text-uiLight')}</div>
+            <div onClick={closeEditField}>
+              {renderIcon('XIcon', 'h-6 w-6 text-uiLight')}
+            </div>
           </div>
           <PasswordInput<PractitionerAccountModel>
             visible={true}
@@ -132,9 +146,19 @@ export default function PractitionerAccount() {
             className={'mb-6'}
             value={practitionerAccountFormGetValues().password}
           />
-          <Button type="filled" color="primary" className={'w-full'} onClick={saveNewPassword}>
+          <Button
+            type="filled"
+            color="primary"
+            className={'w-full'}
+            onClick={saveNewPassword}
+          >
             {renderIcon('SaveIcon', styles.buttonIcon)}
-            <Typography type="help" className="mr-2" color="white" text={'Save'}></Typography>
+            <Typography
+              type="help"
+              className="mr-2"
+              color="white"
+              text={'Save'}
+            ></Typography>
           </Button>
         </div>
       </Dialog>

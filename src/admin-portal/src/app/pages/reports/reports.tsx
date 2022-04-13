@@ -9,7 +9,8 @@ function classNames(...classes: any[]) {
 const actions = [
   {
     title: 'Tracking Attendance',
-    description: 'A report consisting of Practitioner attendance records filtered by a date range',
+    description:
+      'A report consisting of Practitioner attendance records filtered by a date range',
     disabled: false,
     icon: ClockIcon,
     iconForeground: 'text-white',
@@ -47,7 +48,9 @@ export function Reports() {
           }}
           key={action.title}
           className={classNames(
-            actionIdx === 0 ? 'rounded-tl-lg rounded-tr-lg sm:rounded-tr-none' : '',
+            actionIdx === 0
+              ? 'rounded-tl-lg rounded-tr-lg sm:rounded-tr-none'
+              : '',
             actionIdx === 1 ? 'sm:rounded-tr-lg' : '',
             actionIdx === actions.length - 2 ? 'sm:rounded-bl-lg' : '',
             actionIdx === actions.length - 1

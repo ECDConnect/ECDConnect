@@ -17,7 +17,9 @@ const FormThemeColorSelectorField: React.FC<FormSelectorFieldProps> = ({
   options,
   setValue,
 }) => {
-  const [selected, setSelected] = useState({ value: `Please select a ${nameProp}`});
+  const [selected, setSelected] = useState({
+    value: `Please select a ${nameProp}`,
+  });
 
   const handleSelection = (option: any) => {
     setSelected(option);

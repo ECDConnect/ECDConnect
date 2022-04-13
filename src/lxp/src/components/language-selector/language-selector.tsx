@@ -3,7 +3,7 @@ import { Dropdown } from '@ecdlink/ui';
 import { ComponentBaseProps } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { staticDataSelectors } from '../../store/static-data';
+import { staticDataSelectors } from '@store/static-data';
 import * as styles from './language-selector.styles';
 
 export interface LanguageSelectorProps extends ComponentBaseProps {
@@ -11,7 +11,10 @@ export interface LanguageSelectorProps extends ComponentBaseProps {
   selectLanguage: (value: LanguageDto) => void;
 }
 
-export const LanguageSelector = ({ currentLocale, selectLanguage }: LanguageSelectorProps) => {
+export const LanguageSelector = ({
+  currentLocale,
+  selectLanguage,
+}: LanguageSelectorProps) => {
   const languages = useSelector(staticDataSelectors.getLanguages);
 
   const [locale, setLocale] = useState<string>('en-za'); // SET DEFAULT LOCALE

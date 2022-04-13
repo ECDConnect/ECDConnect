@@ -8,9 +8,18 @@ export const ChildProgressNoteCard: React.FC<ChildProgressNoteCardProps> = ({
   className,
 }) => {
   return (
-    <Card className={classNames(className, 'p-4')} borderRaduis={'lg'} shadowSize={'lg'}>
+    <Card
+      className={classNames(className, 'p-4')}
+      borderRaduis={'lg'}
+      shadowSize={'lg'}
+    >
       <Typography type="h3" text="Notes" />
-      <Typography type="body" text={note} weight={'skinny'} className={'mt-4'} />
+      <Typography
+        type="body"
+        text={note}
+        weight={'skinny'}
+        className={'mt-4'}
+      />
       <Button
         type={'outlined'}
         color={'primary'}

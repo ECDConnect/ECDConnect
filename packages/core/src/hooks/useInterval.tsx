@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react';
 
 type TCallback = (time?: number) => void;
 
@@ -21,7 +21,7 @@ function useInterval(callback: TCallback, timeout: number) {
       const id = window.setInterval(handler, timeout);
       return () => window.clearInterval(id);
     } else {
-        return undefined;
+      return undefined;
     }
   }, [handler, timeout]);
 }

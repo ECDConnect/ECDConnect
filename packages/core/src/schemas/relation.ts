@@ -2,10 +2,10 @@ import * as Yup from 'yup';
 import { RelationDto } from '../models/dto/StaticData/relation.dto';
 
 export const initialRelationValues: RelationDto = {
-  description: '',   
-  enumId: ''
+  description: '',
+  enumId: '',
 };
 
 export const relationSchema = Yup.object().shape({
-  description: Yup.string(),  
+  description: Yup.string(),
 });

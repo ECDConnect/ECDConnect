@@ -43,4 +43,3 @@ export * from './skill';
 export * from './reason-for-leaving';
 export * from './siteInformation';
 export * from './navigation';
-

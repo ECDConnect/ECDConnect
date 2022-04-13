@@ -1,6 +1,6 @@
 import { FileTypeEnum, WorkflowStatusEnum } from '@ecdlink/graphql';
 
-export interface CreateDocumentRquest {
+export interface CreateDocumentRequest {
   fileName: string;
   fileType: FileTypeEnum;
   data: string;

@@ -7,7 +7,7 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { classNames, renderIcon } from '@ecdlink/ui';
-import { useOnlineStatus } from '../../../../../hooks/useOnlineStatus';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import ChildDevelopmentLevelsList from '../child-development-levels-list/child-development-levels-list';
 import * as styles from './progress-tracking-tutorial.styles';
 import { ProgressTrackingTutorialProps } from './progress-tracking-tutorial.types';
@@ -49,7 +49,9 @@ export const ProgressTrackingTutorial = ({
               <Typography
                 color={'textDark'}
                 type={'body'}
-                text={'Continue to observe children and track progress throughout the year'}
+                text={
+                  'Continue to observe children and track progress throughout the year'
+                }
               />
             </li>
             <li>
@@ -121,7 +123,9 @@ export const ProgressTrackingTutorial = ({
           />
           <IconTitleDescriptionTile
             title={'03: THINK'}
-            subTitle={'Think about activties that will stretch and extend learning.'}
+            subTitle={
+              'Think about activties that will stretch and extend learning.'
+            }
             icon={'LightBulbIcon'}
           />
           <IconTitleDescriptionTile
@@ -163,7 +167,12 @@ export const ProgressTrackingTutorial = ({
             onClick={onComplete}
             className={styles.closeButton}
           >
-            <Typography color={'white'} type={'help'} weight={'normal'} text={'Start tracking'} />
+            <Typography
+              color={'white'}
+              type={'help'}
+              weight={'normal'}
+              text={'Start tracking'}
+            />
           </Button>
         </div>
       </div>

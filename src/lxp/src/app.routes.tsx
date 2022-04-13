@@ -48,7 +48,10 @@ const PublicRoutes: React.FC = () => {
       <Route path="/new-password" component={NewPassword} exact={true} />
       <Route path="/sign-up" component={SignUp} exact={true} />
       <Route path="/verify-phone" component={VerifyPhoneNumber} exact={true} />
-      <Route path="/child-registration-landing" component={ChildRegistrationLanding} />
+      <Route
+        path="/child-registration-landing"
+        component={ChildRegistrationLanding}
+      />
     </Switch>
   );
 };
@@ -59,14 +62,20 @@ const ProgrammeRoutes = () => (
     <Route path="/programmes/timing" component={ProgrammeTiming} />
     <Route path="/programmes/summary" component={ProgrammeSummaries} />
     <Route path="/programmes/routine" component={ProgrammeRoutine} />
-    <Route path="/programmes/tutorial/getting-started" component={ProgrammeTutorial} />
+    <Route
+      path="/programmes/tutorial/getting-started"
+      component={ProgrammeTutorial}
+    />
 
     <Route
       path="/programmes/tutorial/developing-children"
       component={ProgrammePlanningDevelopingChildren}
     />
 
-    <Route path="/programmes/tutorial/daily-routine" component={ProgrammePlanningDailyRoutine} />
+    <Route
+      path="/programmes/tutorial/daily-routine"
+      component={ProgrammePlanningDailyRoutine}
+    />
   </>
 );
 
@@ -81,16 +90,35 @@ const AuthRoutes: React.FC = () => {
       <Route path="/" component={Dashboard} exact={true} />
       <Route path="/dashboard" component={Dashboard} exact={true} />
       <Route exact path="/practitioner/about" component={PractitionerAbout} />
-      <Route path="/child-registration-landing" component={ChildRegistrationLanding} />
-      <Route exact path="/practitioner/profile/playgroups" component={EditPlaygroups} />
+      <Route
+        path="/child-registration-landing"
+        component={ChildRegistrationLanding}
+      />
+      <Route
+        exact
+        path="/practitioner/profile/playgroups"
+        component={EditPlaygroups}
+      />
       <Route
         exact
         path="/practitioner/programme-information"
         component={PractitionerProgrammeInformation}
       />
-      <Route exact path="/practitioner/account" component={PractitionerAccount} />
-      <Route exact path="/practitioner/profile" component={PractitionerProfile} />
-      <Route exact path="/practitioner/profile/edit/" component={EditPractitionerProfile} />
+      <Route
+        exact
+        path="/practitioner/account"
+        component={PractitionerAccount}
+      />
+      <Route
+        exact
+        path="/practitioner/profile"
+        component={PractitionerProfile}
+      />
+      <Route
+        exact
+        path="/practitioner/profile/edit/"
+        component={EditPractitionerProfile}
+      />
       <Route path="/classroom" component={ClassDashboard} />
       <Route path="/child-registration" component={ChildRegistration} />
       <Route
@@ -102,14 +130,35 @@ const AuthRoutes: React.FC = () => {
       <Route path="/child-notes" component={ChildNotes} />
       <Route path="/child-profile" component={ChildProfile} />
       <Route path="/child-caregivers" component={ContactCaregivers} />
-      <Route path="/child-attendance-caregiver" component={ContactChildCaregiver} />
-      <Route path="/child-attendance-report" component={ChildAttendanceReportPage} />
+      <Route
+        path="/child-attendance-caregiver"
+        component={ContactChildCaregiver}
+      />
+      <Route
+        path="/child-attendance-report"
+        component={ChildAttendanceReportPage}
+      />
       <Route path="/remove-child" component={RemoveChild} />
-      <Route path="/progress-tracking-category" component={ProgressObservationCategory} />
-      <Route path="/child-progress-assessment" component={ChildProgressAssessment} />
-      <Route path="/child-progress-observation" component={ChildProgressObservationPage} />
-      <Route path="/child-progress-observation-note" component={ChildProgressObservationNote} />
-      <Route path="/child-progress-observation-report" component={ChildProgressObservationReport} />
+      <Route
+        path="/progress-tracking-category"
+        component={ProgressObservationCategory}
+      />
+      <Route
+        path="/child-progress-assessment"
+        component={ChildProgressAssessment}
+      />
+      <Route
+        path="/child-progress-observation"
+        component={ChildProgressObservationPage}
+      />
+      <Route
+        path="/child-progress-observation-note"
+        component={ChildProgressObservationNote}
+      />
+      <Route
+        path="/child-progress-observation-report"
+        component={ChildProgressObservationReport}
+      />
       <Route
         path="/completed-child-progress-observation-reports"
         component={ChildCompletedObservationReports}

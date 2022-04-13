@@ -25,13 +25,18 @@ class ClassroomGroupProgrammesService {
     });
 
     if (response.status !== 200) {
-      throw new Error('Get Classroom Programmes Failed - Server connection error');
+      throw new Error(
+        'Get Classroom Programmes Failed - Server connection error'
+      );
     }
 
     return response.data.data.GetAllClassProgramme;
   }
 
-  async updateClassProgramme(id: string, input: ClassProgrammeInput): Promise<boolean> {
+  async updateClassProgramme(
+    id: string,
+    input: ClassProgrammeInput
+  ): Promise<boolean> {
     const apiInstance = await api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
@@ -48,7 +53,9 @@ class ClassroomGroupProgrammesService {
     });
 
     if (response.status !== 200) {
-      throw new Error('Updating classroom group programme failed - Server connection error');
+      throw new Error(
+        'Updating classroom group programme failed - Server connection error'
+      );
     }
 
     return true;

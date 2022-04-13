@@ -2,10 +2,10 @@ import { AuthUser, useDialog, useQueryParams } from '@ecdlink/core';
 import { ActionModal, DialogPosition } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useHistory, useLocation } from 'react-router';
-import { useStoreSetup } from '../../../hooks/useStoreSetup';
-import { useAppDispatch } from '../../../store';
-import { authActions } from '../../../store/auth';
-import { childrenThunkActions } from '../../../store/children';
+import { useStoreSetup } from '@hooks/useStoreSetup';
+import { useAppDispatch } from '@store';
+import { authActions } from '@store/auth';
+import { childrenThunkActions } from '@store/children';
 import { CaregiverChildRegistration } from '../caregiver-child-registration/caregiver-child-registration';
 import { PractitionerChildRegistration } from '../practitioner-child-registration/practitioner-child-registration';
 
@@ -55,7 +55,9 @@ export const ChildRegistrationLanding: React.FC = () => {
         await resetAuth();
       }
       const response = await dispatch(
-        childrenThunkActions.openAccessAddChildDetail({ token: authToken || '' })
+        childrenThunkActions.openAccessAddChildDetail({
+          token: authToken || '',
+        })
       ).unwrap();
 
       if (!response) {
@@ -92,7 +94,10 @@ export const ChildRegistrationLanding: React.FC = () => {
   }
   if (authToken && childDetails) {
     return (
-      <CaregiverChildRegistration childDetails={childDetails} caregiverAuthToken={authToken} />
+      <CaregiverChildRegistration
+        childDetails={childDetails}
+        caregiverAuthToken={authToken}
+      />
     );
   }
 

@@ -13,15 +13,15 @@ import {
   AddChildTokenModelInput,
   FileTypeEnum,
 } from '@ecdlink/graphql';
-import { CareGiverChildInformationFormModel } from '../../schemas/child/child-registration/care-giver-child-information-form';
-import { CareGiverContributionFormModel } from '../../schemas/child/child-registration/care-giver-contribution-form';
-import { CareGiverExtraInformationFormModel } from '../../schemas/child/child-registration/care-giver-extra-information';
-import { CareGiverInformationFormModel } from '../../schemas/child/child-registration/care-giver-information-form';
-import { CareGiverReferencePanelFormModel } from '../../schemas/child/child-registration/care-giver-reference-panel-form';
-import { ChildEmergencyContactFormModel } from '../../schemas/child/child-registration/child-emergency-contact-form';
-import { ChildExtraInformationFormModel } from '../../schemas/child/child-registration/child-extra-information-form';
-import { ChildHealthInformationFormModel } from '../../schemas/child/child-registration/child-health-information-form';
-import { ChildInformationFormModel } from '../../schemas/child/child-registration/child-information-form';
+import { CareGiverChildInformationFormModel } from '@schemas/child/child-registration/care-giver-child-information-form';
+import { CareGiverContributionFormModel } from '@schemas/child/child-registration/care-giver-contribution-form';
+import { CareGiverExtraInformationFormModel } from '@schemas/child/child-registration/care-giver-extra-information';
+import { CareGiverInformationFormModel } from '@schemas/child/child-registration/care-giver-information-form';
+import { CareGiverReferencePanelFormModel } from '@schemas/child/child-registration/care-giver-reference-panel-form';
+import { ChildEmergencyContactFormModel } from '@schemas/child/child-registration/child-emergency-contact-form';
+import { ChildExtraInformationFormModel } from '@schemas/child/child-registration/child-extra-information-form';
+import { ChildHealthInformationFormModel } from '@schemas/child/child-registration/child-health-information-form';
+import { ChildInformationFormModel } from '@schemas/child/child-registration/child-information-form';
 import { newGuid } from '../common/uuid.utils';
 
 export const mapChildUserDto = (
@@ -74,7 +74,8 @@ export const mapChildDto = (
     return {
       ...child,
       languageId:
-        childExtraInformationForm?.homeLanguages && childExtraInformationForm.homeLanguages[0]
+        childExtraInformationForm?.homeLanguages &&
+        childExtraInformationForm.homeLanguages[0]
           ? childExtraInformationForm.homeLanguages[0]
           : undefined,
       allergies: healthInformationForm?.allergies ?? '',
@@ -89,7 +90,8 @@ export const mapChildDto = (
     userId: userId,
     caregiverId: '',
     languageId:
-      childExtraInformationForm?.homeLanguages && childExtraInformationForm.homeLanguages[0]
+      childExtraInformationForm?.homeLanguages &&
+      childExtraInformationForm.homeLanguages[0]
         ? childExtraInformationForm.homeLanguages[0]
         : undefined,
     allergies: healthInformationForm?.allergies ?? '',
@@ -204,9 +206,11 @@ export const mapCaregiverDto = (
       emergencyContactPhoneNumber: childEmergencyContactForm?.phoneNumber ?? '',
       additionalFirstName: childEmergencyContactForm?.custodianFirstname ?? '',
       additionalSurname: childEmergencyContactForm?.custodianSurname ?? '',
-      additionalPhoneNumber: childEmergencyContactForm?.custodianPhoneNumber ?? '',
+      additionalPhoneNumber:
+        childEmergencyContactForm?.custodianPhoneNumber ?? '',
       joinReferencePanel: referencePanelForm?.interestedInJoiningPanel ?? false,
-      contribution: childCareGiverContributionForm?.commitedToContributing ?? false,
+      contribution:
+        childCareGiverContributionForm?.commitedToContributing ?? false,
     };
   }
 
@@ -229,9 +233,11 @@ export const mapCaregiverDto = (
     emergencyContactPhoneNumber: childEmergencyContactForm?.phoneNumber ?? '',
     additionalFirstName: childEmergencyContactForm?.custodianFirstname ?? '',
     additionalSurname: childEmergencyContactForm?.custodianSurname ?? '',
-    additionalPhoneNumber: childEmergencyContactForm?.custodianPhoneNumber ?? '',
+    additionalPhoneNumber:
+      childEmergencyContactForm?.custodianPhoneNumber ?? '',
     joinReferencePanel: referencePanelForm?.interestedInJoiningPanel ?? false,
-    contribution: childCareGiverContributionForm?.commitedToContributing ?? false,
+    contribution:
+      childCareGiverContributionForm?.commitedToContributing ?? false,
   };
 };
 
@@ -257,9 +263,11 @@ export const mapAddChildCaregiverTokenModelInput = (
     emergencyContactPhoneNumber: childEmergencyContactForm?.phoneNumber ?? '',
     additionalFirstName: childEmergencyContactForm?.custodianFirstname ?? '',
     additionalSurname: childEmergencyContactForm?.custodianSurname ?? '',
-    additionalPhoneNumber: childEmergencyContactForm?.custodianPhoneNumber ?? '',
+    additionalPhoneNumber:
+      childEmergencyContactForm?.custodianPhoneNumber ?? '',
     joinReferencePanel: referencePanelForm?.interestedInJoiningPanel ?? false,
-    contribution: childCareGiverContributionForm?.commitedToContributing ?? false,
+    contribution:
+      childCareGiverContributionForm?.commitedToContributing ?? false,
   };
 };
 
@@ -304,7 +312,8 @@ export const mapAddChildTokenModelInput = (
     userId: userId,
     raceId: childExtraInformationForm?.race,
     languageId:
-      childExtraInformationForm?.homeLanguages && childExtraInformationForm.homeLanguages[0]
+      childExtraInformationForm?.homeLanguages &&
+      childExtraInformationForm.homeLanguages[0]
         ? childExtraInformationForm.homeLanguages[0]
         : undefined,
     allergies: healthInformationForm?.allergies ?? '',

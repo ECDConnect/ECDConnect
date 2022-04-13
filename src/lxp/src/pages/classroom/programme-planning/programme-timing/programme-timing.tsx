@@ -15,14 +15,14 @@ import { useForm, useWatch } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
 import { DateFormats } from '../../../../constants/Dates';
-import { useOnlineStatus } from '../../../../hooks/useOnlineStatus';
-import { useProgrammePlanning } from '../../../../hooks/useProgrammePlanning';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
+import { useProgrammePlanning } from '@hooks/useProgrammePlanning';
 import {
   ProgrammeTimingModel,
   programmeTimingSchema,
-} from '../../../../schemas/classroom/programme-planning/programme-timing';
-import { staticDataSelectors } from '../../../../store/static-data';
-import { getDateRangeText } from '../../../../utils/classroom/programme-planning/programmes.utils';
+} from '@schemas/classroom/programme-planning/programme-timing';
+import { staticDataSelectors } from '@store/static-data';
+import { getDateRangeText } from '@utils/classroom/programme-planning/programmes.utils';
 import { ProgrammeTimingRouteState } from './programme-timing.types';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -60,9 +60,16 @@ const ProgrammeTiming: React.FC = () => {
 
     const validatedDate = validateStartDate(new Date(formValue.date));
 
-    const newProgramme = await createProgramme(validatedDate, formValue.language, selectedTheme);
+    const newProgramme = await createProgramme(
+      validatedDate,
+      formValue.language,
+      selectedTheme
+    );
 
-    history.replace('/programmes/summary', { programmeId: newProgramme.id, variation: 'create' });
+    history.replace('/programmes/summary', {
+      programmeId: newProgramme.id,
+      variation: 'create',
+    });
   };
 
   useEffect(() => {
@@ -87,7 +94,10 @@ const ProgrammeTiming: React.FC = () => {
       endDate = getThemedProgrammeEndDate(validatedDate);
     }
 
-    const overlappingProgramme = getConflictingProgramme(new Date(validatedDate), endDate);
+    const overlappingProgramme = getConflictingProgramme(
+      new Date(validatedDate),
+      endDate
+    );
     if (overlappingProgramme) {
       setAlertState({
         title: 'This start date causes conflicts',
@@ -111,10 +121,15 @@ const ProgrammeTiming: React.FC = () => {
     setAlertState({
       title: 'No conflicts for these dates',
       message: selectedTheme
-        ? `Your ${selectedTheme.name} programme will start on <b>${validatedDate.toLocaleString(
+        ? `Your ${
+            selectedTheme.name
+          } programme will start on <b>${validatedDate.toLocaleString(
             'en-ZA',
             DateFormats.dayFullMonthYear
-          )}</b> and end on <b>${endDate.toLocaleString('en-ZA', DateFormats.dayFullMonthYear)}.</>`
+          )}</b> and end on <b>${endDate.toLocaleString(
+            'en-ZA',
+            DateFormats.dayFullMonthYear
+          )}.</>`
         : `Your programme will be <b>${
             selectedTheme ? 20 : daysLength
           } day(s)</b> long, starting on <b>${validatedDate.toLocaleString(
@@ -175,7 +190,9 @@ const ProgrammeTiming: React.FC = () => {
           placeholderText={`Please select a date`}
           className="w-full border-uiLight rounded-md"
           selected={selectedDate ? new Date(selectedDate) : undefined}
-          onChange={(date: Date) => setValue('date', date ? date.toString() : '')}
+          onChange={(date: Date) =>
+            setValue('date', date ? date.toString() : '')
+          }
           dateFormat="EEE, dd MMM yyyy"
           minDate={new Date()}
         />

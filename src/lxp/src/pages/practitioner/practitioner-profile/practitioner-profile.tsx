@@ -11,15 +11,15 @@ import {
 import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
-import { useDocuments } from '../../../hooks/useDocuments';
-import { useOnlineStatus } from '../../../hooks/useOnlineStatus';
-import { useStoreSetup } from '../../../hooks/useStoreSetup';
+import { useDocuments } from '@hooks/useDocuments';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
+import { useStoreSetup } from '@hooks/useStoreSetup';
 import { OfflineSyncModal } from '../../../modals';
-import { useAppDispatch } from '../../../store';
-import { classroomsSelectors } from '../../../store/classroom';
-import { settingSelectors } from '../../../store/settings';
-import { userSelectors } from '../../../store/user';
-import { analyticsActions } from '../../../store/analytics';
+import { useAppDispatch } from '@store';
+import { classroomsSelectors } from '@store/classroom';
+import { settingSelectors } from '@store/settings';
+import { userSelectors } from '@store/user';
+import { analyticsActions } from '@store/analytics';
 import CompleteProfile from '../edit-practitioner-profile/components/complete-profile/complete-profile';
 
 export const PractitionerProfile: React.FC = () => {
@@ -81,7 +81,9 @@ export const PractitionerProfile: React.FC = () => {
                     iconBorderColor="alertBg"
                     iconColor="alertMain"
                     title="Complete your profile!"
-                    paragraphs={[`Please Complete your profile to unlock the classroom feature`]}
+                    paragraphs={[
+                      `Please Complete your profile to unlock the classroom feature`,
+                    ]}
                     actionButtons={[
                       {
                         colour: 'primary',
@@ -209,7 +211,10 @@ export const PractitionerProfile: React.FC = () => {
       child: (
         <div>
           {classroom ? null : <CompleteProfile />}
-          <StackedList listItems={getStackedMenuList()} type={'MenuList'}></StackedList>
+          <StackedList
+            listItems={getStackedMenuList()}
+            type={'MenuList'}
+          ></StackedList>
         </div>
       ),
     },

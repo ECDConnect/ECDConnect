@@ -1,34 +1,47 @@
 import { ContentTypeEnum, LanguageDto, useDialog } from '@ecdlink/core';
-import { ActionModal, BannerWrapper, DialogPosition, Divider, Typography } from '@ecdlink/ui';
+import {
+  ActionModal,
+  BannerWrapper,
+  DialogPosition,
+  Divider,
+  Typography,
+} from '@ecdlink/ui';
 import {
   programmeRoutineSelectors,
   programmeRoutineThunkActions,
-} from '../../../../../../store/content/programme-routine';
+} from '@store/content/programme-routine';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import LanguageSelector from '../../../../../../components/language-selector/language-selector';
 import { DailyRoutineItemInfo } from './components/daily-routine-item-info/daily-routine-item-info';
-import { useOnlineStatus } from '../../../../../../hooks/useOnlineStatus';
-import { ContentService } from '../../../../../../services/ContentService';
-import { authSelectors } from '../../../../../../store/auth';
-import { useAppDispatch } from '../../../../../../store';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
+import { ContentService } from '@services/ContentService';
+import { authSelectors } from '@store/auth';
+import { useAppDispatch } from '@store';
 
 export const ProgrammePlanningDailyRoutine = () => {
   const appDispatch = useAppDispatch();
   const dialog = useDialog();
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
-  const routinePlan = useSelector(programmeRoutineSelectors.getProgrammeRoutineById(1));
+  const routinePlan = useSelector(
+    programmeRoutineSelectors.getProgrammeRoutineById(1)
+  );
   const userAuth = useSelector(authSelectors.getAuthUser);
 
   const getDataByLanguage = async (language: LanguageDto) => {
     const hasTranslations = await new ContentService(
       userAuth?.auth_token ?? ''
-    ).hasContentTypeBeenTranslated(ContentTypeEnum.ProgrammeRoutine, language.id ?? '');
+    ).hasContentTypeBeenTranslated(
+      ContentTypeEnum.ProgrammeRoutine,
+      language.id ?? ''
+    );
 
     if (hasTranslations) {
       await appDispatch(
-        programmeRoutineThunkActions.getProgrammeRoutines({ locale: language.locale })
+        programmeRoutineThunkActions.getProgrammeRoutines({
+          locale: language.locale,
+        })
       ).unwrap();
     } else {
       presentUnavailableAlert();
@@ -76,20 +89,37 @@ export const ProgrammePlanningDailyRoutine = () => {
       backgroundColour={'uiBg'}
       displayOffline={!isOnline}
     >
-      <LanguageSelector currentLocale={'en-za'} selectLanguage={getDataByLanguage} />
+      <LanguageSelector
+        currentLocale={'en-za'}
+        selectLanguage={getDataByLanguage}
+      />
       <Divider />
 
-      <Typography className="mt-2 ml-4" color={'primary'} type={'h1'} text={'The daily routine'} />
+      <Typography
+        className="mt-2 ml-4"
+        color={'primary'}
+        type={'h1'}
+        text={'The daily routine'}
+      />
 
-      <img src={routinePlan?.headerBanner} className={'w-full'} alt="header banner" />
+      <img
+        src={routinePlan?.headerBanner}
+        className={'w-full'}
+        alt="header banner"
+      />
       <div className={'px-4 pt-4'}>
-        <Typography text={'Use daily routine cards in your classroom'} type={'body'} />
+        <Typography
+          text={'Use daily routine cards in your classroom'}
+          type={'body'}
+        />
 
         <ul className={'ml-4 mt-2 list-disc'}>
           <li>
             <Typography
               type={'help'}
-              text={'Hang daily routine cards up and point to them as you move through the day.'}
+              text={
+                'Hang daily routine cards up and point to them as you move through the day.'
+              }
             />
           </li>
           <li>
@@ -103,14 +133,19 @@ export const ProgrammePlanningDailyRoutine = () => {
           <li>
             <Typography
               type={'help'}
-              text={'Encourage children to move the marker as you move through the routine.'}
+              text={
+                'Encourage children to move the marker as you move through the routine.'
+              }
             />
           </li>
         </ul>
 
         {routinePlan &&
           routinePlan.routineItems?.map((routineItem) => (
-            <DailyRoutineItemInfo key={routineItem.name} routineItem={routineItem} />
+            <DailyRoutineItemInfo
+              key={routineItem.name}
+              routineItem={routineItem}
+            />
           ))}
       </div>
     </BannerWrapper>

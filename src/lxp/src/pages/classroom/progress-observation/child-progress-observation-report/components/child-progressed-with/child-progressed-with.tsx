@@ -3,21 +3,27 @@ import { Button, Card, Divider, FormInput, Typography } from '@ecdlink/ui';
 import { renderIcon } from '@ecdlink/ui';
 import { getYear } from 'date-fns';
 import { useForm, useFormState } from 'react-hook-form';
-import { useChildProgressObservation } from '../../../../../../hooks/useChildProgressObservations';
-import { childrenSelectors } from '../../../../../../store/children';
+import { useChildProgressObservation } from '@hooks/useChildProgressObservations';
+import { childrenSelectors } from '@store/children';
 import {
   ChildProgressedWithFormModel,
   childProgressedWithFormSchema,
-} from '../../../../../../schemas/classroom/child-progress-observations/child-progressed-with-form';
+} from '@schemas/classroom/child-progress-observations/child-progressed-with-form';
 import { useSelector } from 'react-redux';
 import { useEffect } from 'react';
 import { ChildProgressedWithProps } from './child-progressed-with.types';
 
-export const ChildProgressedWith: React.FC<ChildProgressedWithProps> = ({ childId, onSubmit }) => {
-  const { currentReport, previousReport } = useChildProgressObservation(childId);
+export const ChildProgressedWith: React.FC<ChildProgressedWithProps> = ({
+  childId,
+  onSubmit,
+}) => {
+  const { currentReport, previousReport } =
+    useChildProgressObservation(childId);
 
   const child = useSelector(childrenSelectors.getChildById(childId));
-  const childUser = useSelector(childrenSelectors.getChildUserById(child?.userId));
+  const childUser = useSelector(
+    childrenSelectors.getChildUserById(child?.userId)
+  );
 
   const {
     getValues: getFormValue,

@@ -11,7 +11,8 @@ export interface FormFieldProps {
   validation?: any;
 }
 
-const checkboxStyle = 'focus:ring-primary h-4 w-4 text-primary border-gray-300 rounded';
+const checkboxStyle =
+  'focus:ring-primary h-4 w-4 text-primary border-gray-300 rounded';
 const errorStyle =
   'block w-full pr-10 border-errorMain text-errorMain placeholder-errorMain focus:outline-none focus:ring-errorMain focus:border-errorMain sm:text-sm rounded-md';
 const defaultInputStyle =
@@ -38,7 +39,10 @@ const FormField: React.FC<FormFieldProps> = ({
 
   return (
     <>
-      <label htmlFor={nameProp} className="block text-sm font-medium text-gray-700">
+      <label
+        htmlFor={nameProp}
+        className="block text-sm font-medium text-gray-700"
+      >
         {label}
       </label>
       <div className="mt-1">

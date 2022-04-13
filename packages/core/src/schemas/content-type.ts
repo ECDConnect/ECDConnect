@@ -1,13 +1,12 @@
-
 import * as Yup from 'yup';
 import { ContentTypeDto } from '../models/dto/Content/content-type.dto';
 
 export const initialContentTypeValues: ContentTypeDto = {
   name: '',
-  description: '',   
+  description: '',
 };
 
 export const contentTypeSchema = Yup.object().shape({
-  name: Yup.string(),  
-  description: Yup.string(),  
+  name: Yup.string(),
+  description: Yup.string(),
 });

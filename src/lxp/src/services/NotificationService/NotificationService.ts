@@ -1,7 +1,7 @@
 import { EnhancedStore } from '@reduxjs/toolkit';
 import { differenceInMilliseconds } from 'date-fns';
-import { Message } from '../../models/messages/messages';
-import { RootState } from '../../store/types';
+import { Message } from '@models/messages/messages';
+import { RootState } from '@store/types';
 import { NotificationValidator } from './NotificationService.types';
 import { ChildDocumentsNotificationValidator } from './validators/child-documents/childDocumentsNotificationValidator';
 import { ChildProgressReportNotificationValidator } from './validators/child-progess-report/childProgressReportNotificationValidator';
@@ -24,7 +24,8 @@ export class NotificationService {
   start = () => {
     this.timeout = setInterval(() => {
       const notifications = this.evaluateNotifications();
-      this.onNotificationsReceived && this.onNotificationsReceived(notifications);
+      this.onNotificationsReceived &&
+        this.onNotificationsReceived(notifications);
     }, this.interval);
   };
 
@@ -41,7 +42,10 @@ export class NotificationService {
   evaluateNotifications = (): Message[] => {
     const notifications = [];
     for (let validator of this.validators) {
-      const differenceInMs = differenceInMilliseconds(new Date(), validator.lastCheckTimestamp);
+      const differenceInMs = differenceInMilliseconds(
+        new Date(),
+        validator.lastCheckTimestamp
+      );
       if (Math.abs(differenceInMs) > validator.interval) {
         const validatorNotifications = validator.getNotifications();
         notifications.push(...validatorNotifications);

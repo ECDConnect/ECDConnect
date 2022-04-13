@@ -14,15 +14,13 @@ import { useForm, useFormState } from 'react-hook-form';
 import {
   CareGiverReferencePanelFormModel,
   careGiverReferencePanelFormSchema,
-} from '../../../../schemas/child/child-registration/care-giver-reference-panel-form';
+} from '@schemas/child/child-registration/care-giver-reference-panel-form';
 import * as styles from './care-giver-reference-panel-form.styles';
 import { CareGiverReferencePanelFormProps } from './care-giver-reference-panel-form.types';
 
-export const CareGiverReferencePanelForm: React.FC<CareGiverReferencePanelFormProps> = ({
-  careGiverReferencePanelForm,
-  variation,
-  onSubmit,
-}) => {
+export const CareGiverReferencePanelForm: React.FC<
+  CareGiverReferencePanelFormProps
+> = ({ careGiverReferencePanelForm, variation, onSubmit }) => {
   const [joinReferencePanel, setJoinReferencePanel] = useState<boolean>();
 
   const {
@@ -53,7 +51,11 @@ export const CareGiverReferencePanelForm: React.FC<CareGiverReferencePanelFormPr
 
   return (
     <div className={'bg-uiBg pt-2 pb-4 px-4'}>
-      <Typography type={'h1'} text={'Caregiver reference panel'} color={'primary'} />
+      <Typography
+        type={'h1'}
+        text={'Caregiver reference panel'}
+        color={'primary'}
+      />
       <div>
         <label className={classNames(styles.label, 'mt-4')}>
           {variation === 'practitioner' &&
@@ -65,7 +67,10 @@ export const CareGiverReferencePanelForm: React.FC<CareGiverReferencePanelFormPr
           <ButtonGroup
             options={joiningReferencePanel}
             onOptionSelected={(value: boolean | boolean[]) => {
-              setCareGiverContributionFormValue('interestedInJoiningPanel', value as boolean);
+              setCareGiverContributionFormValue(
+                'interestedInJoiningPanel',
+                value as boolean
+              );
               setJoinReferencePanel(value as boolean);
               careGiverContributionFormTrigger();
             }}

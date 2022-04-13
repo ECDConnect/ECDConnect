@@ -51,7 +51,8 @@ export default function PractitionerPanelEdit({
     defaultValues: { ...initialPractitionerValues, sendInvite: false },
     mode: 'onBlur',
   });
-  const { errors: practitionerFormErrors, isValid: isPractitionerValid } = practitionerFormState;
+  const { errors: practitionerFormErrors, isValid: isPractitionerValid } =
+    practitionerFormState;
 
   // SITE ADDRESS FORMS
   const {
@@ -67,21 +68,33 @@ export default function PractitionerPanelEdit({
 
   useEffect(() => {
     if (practitioner) {
-      practitionerSetValue('attendanceRegisterLink', practitioner.attendanceRegisterLink ?? '', {
-        shouldValidate: true,
-      });
+      practitionerSetValue(
+        'attendanceRegisterLink',
+        practitioner.attendanceRegisterLink ?? '',
+        {
+          shouldValidate: true,
+        }
+      );
       practitionerSetValue('maxChildren', practitioner.maxChildren ?? 0, {
         shouldValidate: true,
       });
-      practitionerSetValue('consentForPhoto', practitioner.consentForPhoto ?? false, {
-        shouldValidate: true,
-      });
+      practitionerSetValue(
+        'consentForPhoto',
+        practitioner.consentForPhoto ?? false,
+        {
+          shouldValidate: true,
+        }
+      );
       practitionerSetValue('parentFees', practitioner.parentFees ?? 0, {
         shouldValidate: true,
       });
-      practitionerSetValue('languageUsedInGroups', practitioner.languageUsedInGroups ?? '', {
-        shouldValidate: true,
-      });
+      practitionerSetValue(
+        'languageUsedInGroups',
+        practitioner.languageUsedInGroups ?? '',
+        {
+          shouldValidate: true,
+        }
+      );
       practitionerSetValue(
         'startDate',
         practitioner.startDate ? new Date(practitioner.startDate) : undefined,
@@ -89,29 +102,49 @@ export default function PractitionerPanelEdit({
           shouldValidate: true,
         }
       );
-      practitionerSetValue('monthSinceFranchisee', practitioner.monthSinceFranchisee ?? 0, {
-        shouldValidate: true,
-      });
+      practitionerSetValue(
+        'monthSinceFranchisee',
+        practitioner.monthSinceFranchisee ?? 0,
+        {
+          shouldValidate: true,
+        }
+      );
 
       if (practitioner.siteAddress) {
         siteAddressSetValue('name', practitioner.siteAddress.name, {
           shouldValidate: true,
         });
-        siteAddressSetValue('addressLine1', practitioner.siteAddress.addressLine1, {
-          shouldValidate: true,
-        });
-        siteAddressSetValue('addressLine2', practitioner.siteAddress.addressLine2, {
-          shouldValidate: true,
-        });
-        siteAddressSetValue('addressLine3', practitioner.siteAddress.addressLine3, {
-          shouldValidate: true,
-        });
+        siteAddressSetValue(
+          'addressLine1',
+          practitioner.siteAddress.addressLine1,
+          {
+            shouldValidate: true,
+          }
+        );
+        siteAddressSetValue(
+          'addressLine2',
+          practitioner.siteAddress.addressLine2,
+          {
+            shouldValidate: true,
+          }
+        );
+        siteAddressSetValue(
+          'addressLine3',
+          practitioner.siteAddress.addressLine3,
+          {
+            shouldValidate: true,
+          }
+        );
         siteAddressSetValue('ward', practitioner.siteAddress.ward, {
           shouldValidate: true,
         });
-        siteAddressSetValue('provinceId', practitioner.siteAddress.province.id, {
-          shouldValidate: true,
-        });
+        siteAddressSetValue(
+          'provinceId',
+          practitioner.siteAddress.province.id,
+          {
+            shouldValidate: true,
+          }
+        );
         siteAddressSetValue('postalCode', practitioner.siteAddress.postalCode, {
           shouldValidate: true,
         });
@@ -136,13 +169,15 @@ export default function PractitionerPanelEdit({
       UserId: practitioner.userId,
       SiteAddressId: siteAddressId,
       AttendanceRegisterLink: practitionerForm.attendanceRegisterLink,
-      MaxChildren: practitionerForm.maxChildren && +practitionerForm.maxChildren,
+      MaxChildren:
+        practitionerForm.maxChildren && +practitionerForm.maxChildren,
       ConsentForPhoto: practitionerForm.consentForPhoto,
       ParentFees: practitionerForm.parentFees && +practitionerForm.parentFees,
       LanguageUsedInGroups: practitionerForm.languageUsedInGroups,
       StartDate: practitionerForm.startDate,
       MonthSinceFranchisee:
-        practitionerForm.monthSinceFranchisee && +practitionerForm.monthSinceFranchisee,
+        practitionerForm.monthSinceFranchisee &&
+        +practitionerForm.monthSinceFranchisee,
       IsActive: true,
     };
 
@@ -204,10 +239,14 @@ export default function PractitionerPanelEdit({
       <>
         <div className="mt-5 bg-uiBg px-4 py-5 border-b border-gray-200 rounded-lg">
           <div className="pb-2">
-            <h3 className="text-lg leading-6 font-medium text-uiMidDark">Practitioner Detail</h3>
+            <h3 className="text-lg leading-6 font-medium text-uiMidDark">
+              Practitioner Detail
+            </h3>
           </div>
           <PractitionerForm
-            formKey={`editpractitioner-${new Date().getTime()}-${practitioner.id}`}
+            formKey={`editpractitioner-${new Date().getTime()}-${
+              practitioner.id
+            }`}
             register={practitionerRegister}
             errors={practitionerFormErrors}
           />
@@ -215,7 +254,9 @@ export default function PractitionerPanelEdit({
 
         <div className="mt-5 bg-uiBg px-4 py-5 border-b border-gray-200 rounded-lg">
           <div className="pb-2">
-            <h3 className="text-lg leading-6 font-medium text-uiMidDark">Address Detail</h3>
+            <h3 className="text-lg leading-6 font-medium text-uiMidDark">
+              Address Detail
+            </h3>
           </div>
           <SiteAddressForm
             formKey={`createSiteAddress-${new Date().getTime()}`}
@@ -230,9 +271,15 @@ export default function PractitionerPanelEdit({
   return (
     <div className="flex flex-col min-w-0 flex-1 overflow-hidden">
       <article>
-        <UserPanelSave user={practitioner.user} disabled={!isPractitionerValid} onSave={onSave} />
+        <UserPanelSave
+          user={practitioner.user}
+          disabled={!isPractitionerValid}
+          onSave={onSave}
+        />
 
-        <div className="mt-6 max-w-5xl mx-auto sm:px-6 lg:px-8">{getComponent()}</div>
+        <div className="mt-6 max-w-5xl mx-auto sm:px-6 lg:px-8">
+          {getComponent()}
+        </div>
       </article>
     </div>
   );

@@ -1,4 +1,9 @@
-import { DailyProgrammeDto, HolidayDto, ProgrammeDto, ActivityDto } from '@ecdlink/core/';
+import {
+  DailyProgrammeDto,
+  HolidayDto,
+  ProgrammeDto,
+  ActivityDto,
+} from '@ecdlink/core/';
 import {
   areIntervalsOverlapping,
   endOfWeek,
@@ -13,20 +18,24 @@ import {
 } from 'date-fns';
 import isAfter from 'date-fns/isAfter';
 import { DateFormats } from '../../../constants/Dates';
-import { DailyRoutineItemType } from '../../../enums/ProgrammeRoutineType';
-import { ProgrammeWeek } from '../../../models/classroom/programme-planning/programme-types';
+import { DailyRoutineItemType } from '@enums/ProgrammeRoutineType';
+import { ProgrammeWeek } from '@models/classroom/programme-planning/programme-types';
 import { WeekDayBreakdown } from '../../../pages/classroom/programme-planning/components/week-tab/week-tab.types';
 import { getDatesForRange, isDayInThePast } from '../../common/date.utils';
 import { Weekdays } from '../../practitioner/playgroups-utils';
 
-export const getProgrammeWeeks = (programme?: ProgrammeDto): ProgrammeWeek[] => {
+export const getProgrammeWeeks = (
+  programme?: ProgrammeDto
+): ProgrammeWeek[] => {
   if (!programme) return [];
 
   const weeks = programme.dailyProgrammes.reduce((prev, curr) => {
     let currentItemDate = new Date(curr.dayDate);
     const weekOfYear = getWeek(currentItemDate);
 
-    const existingIndex = prev.findIndex((week) => week.weekNumber === weekOfYear);
+    const existingIndex = prev.findIndex(
+      (week) => week.weekNumber === weekOfYear
+    );
 
     if (existingIndex < 0) {
       prev.push({
@@ -53,9 +62,15 @@ export const getProgrammeWeeks = (programme?: ProgrammeDto): ProgrammeWeek[] => 
   return weeks;
 };
 
-export const isProgrammeRoutineDayComplete = (day?: DailyProgrammeDto): boolean => {
+export const isProgrammeRoutineDayComplete = (
+  day?: DailyProgrammeDto
+): boolean => {
   if (!day) return false;
-  return !!day.largeGroupActivityId && !!day.smallGroupActivityId && !!day.storyActivityId;
+  return (
+    !!day.largeGroupActivityId &&
+    !!day.smallGroupActivityId &&
+    !!day.storyActivityId
+  );
 };
 
 export const getProgrammeRoutineDay = (
@@ -66,7 +81,9 @@ export const getProgrammeRoutineDay = (
   if (!programme) return;
 
   const programmeDay = programme.dailyProgrammes.find(
-    (day) => getWeek(new Date(day.dayDate)) === week && getDay(new Date(day.dayDate)) === weekday
+    (day) =>
+      getWeek(new Date(day.dayDate)) === week &&
+      getDay(new Date(day.dayDate)) === weekday
   );
 
   return programmeDay;
@@ -78,7 +95,9 @@ export const getProgrammeRoutineDayFromWeek = (
 ): DailyProgrammeDto | undefined => {
   if (!programmeWeek) return;
 
-  const programmeDay = programmeWeek.days.find((day) => isSameDay(date, new Date(day.dayDate)));
+  const programmeDay = programmeWeek.days.find((day) =>
+    isSameDay(date, new Date(day.dayDate))
+  );
 
   return programmeDay;
 };
@@ -95,7 +114,9 @@ export const getDateRangeText = (
   const sharesMonth = isSameMonth(dateFromAsDate, dateToAsDate);
 
   return `${dateFromAsDate.getDate()} ${
-    !sharesMonth ? dateFromAsDate.toLocaleString('en-ZA', DateFormats.shortMonthName) : ''
+    !sharesMonth
+      ? dateFromAsDate.toLocaleString('en-ZA', DateFormats.shortMonthName)
+      : ''
   } to ${dateToAsDate.getDate()} ${dateToAsDate.toLocaleString(
     'en-ZA',
     DateFormats.shortMonthName
@@ -119,7 +140,8 @@ export const getActivityIdForRoutineItem = (
 };
 
 export const getTotalIncompleteDaysInWeek = (programmeWeek: ProgrammeWeek) => {
-  return programmeWeek.days.filter((day) => !isProgrammeRoutineDayComplete(day)).length;
+  return programmeWeek.days.filter((day) => !isProgrammeRoutineDayComplete(day))
+    .length;
 };
 
 export const getWeekBreakDown = (
@@ -137,18 +159,28 @@ export const getWeekBreakDown = (
   const weekbreakdown: WeekDayBreakdown[] = datesOfWeek.map((weekdayDate) => {
     const dayOfWeek = getDay(weekdayDate);
 
-    const programmeDay = getProgrammeRoutineDayFromWeek(weekdayDate, programmeWeek);
-    const isHoliday = holidays.some((holiday) => isSameDay(new Date(holiday.day), weekdayDate));
+    const programmeDay = getProgrammeRoutineDayFromWeek(
+      weekdayDate,
+      programmeWeek
+    );
+    const isHoliday = holidays.some((holiday) =>
+      isSameDay(new Date(holiday.day), weekdayDate)
+    );
     const isPastDate =
       isDayInThePast(weekdayDate, new Date()) ||
       isDayInThePast(weekdayDate, new Date(programme.startDate));
 
-    const isDateAfterEndDate = isDayInThePast(new Date(programme.endDate), weekdayDate);
+    const isDateAfterEndDate = isDayInThePast(
+      new Date(programme.endDate),
+      weekdayDate
+    );
     return {
       date: weekdayDate,
       programmeDay: programmeDay,
       weekDay: Weekdays[dayOfWeek].toString(),
-      isCompleted: programmeDay ? isProgrammeRoutineDayComplete(programmeDay) : false,
+      isCompleted: programmeDay
+        ? isProgrammeRoutineDayComplete(programmeDay)
+        : false,
       isHoliday: isHoliday,
       isDisabled: isPastDate || isDateAfterEndDate,
     };
@@ -166,7 +198,10 @@ export const findConflictingProgramme = (
     return (
       areIntervalsOverlapping(
         { start: startDate, end: endDate },
-        { start: new Date(programme.startDate), end: new Date(programme.endDate) }
+        {
+          start: new Date(programme.startDate),
+          end: new Date(programme.endDate),
+        }
       ) ||
       isSameDay(startDate, new Date(programme.endDate)) ||
       isSameDay(endDate, new Date(programme.startDate))
@@ -201,7 +236,9 @@ export const getProgrammeDaysForInterval = (
   );
 };
 
-export const refreshProgrammeDateRange = (programme: ProgrammeDto): ProgrammeDto => {
+export const refreshProgrammeDateRange = (
+  programme: ProgrammeDto
+): ProgrammeDto => {
   if (!programme) return programme;
 
   const sortedDays = programme.dailyProgrammes.sort((progA, progB) =>
@@ -236,7 +273,10 @@ export const getRoutineItemType = (name: string) => {
   }
 };
 
-export const getExistingProgrammeActivity = (activity: ActivityDto, programme?: ProgrammeDto) => {
+export const getExistingProgrammeActivity = (
+  activity: ActivityDto,
+  programme?: ProgrammeDto
+) => {
   if (!activity || !programme) return;
 
   let activityType: DailyRoutineItemType | undefined;
@@ -252,7 +292,10 @@ export const getExistingProgrammeActivity = (activity: ActivityDto, programme?: 
       break;
   }
 
-  const existingProgrammeActivities = getProgrammeDayActivities(programme, activityType);
+  const existingProgrammeActivities = getProgrammeDayActivities(
+    programme,
+    activityType
+  );
 
   const existingActivity = existingProgrammeActivities.find(
     (dayActivity) => dayActivity.activityId === activity.id
@@ -281,12 +324,18 @@ export const getProgrammeDayActivities = (
       switch (type) {
         case DailyRoutineItemType.smallGroup: {
           if (curr.smallGroupActivityId)
-            prev.push({ date: curr.dayDate, activityId: curr.smallGroupActivityId });
+            prev.push({
+              date: curr.dayDate,
+              activityId: curr.smallGroupActivityId,
+            });
           break;
         }
         case DailyRoutineItemType.largeGroup: {
           if (curr.largeGroupActivityId)
-            prev.push({ date: curr.dayDate, activityId: curr.largeGroupActivityId });
+            prev.push({
+              date: curr.dayDate,
+              activityId: curr.largeGroupActivityId,
+            });
           break;
         }
         case DailyRoutineItemType.storyBook: {
@@ -304,37 +353,55 @@ export const getProgrammeDayActivities = (
   return programmeActivitiesForType;
 };
 
-export const getAllProgrammeDayActivities = (programme: ProgrammeDto): ProgrammeDayActivity[] => {
+export const getAllProgrammeDayActivities = (
+  programme: ProgrammeDto
+): ProgrammeDayActivity[] => {
   if (!programme) return [];
 
-  const reducedActivities: ProgrammeDayActivity[] = programme.dailyProgrammes.reduce(
-    (prev: ProgrammeDayActivity[], curr: DailyProgrammeDto) => {
-      const dayActivities: ProgrammeDayActivity[] = [];
+  const reducedActivities: ProgrammeDayActivity[] =
+    programme.dailyProgrammes.reduce(
+      (prev: ProgrammeDayActivity[], curr: DailyProgrammeDto) => {
+        const dayActivities: ProgrammeDayActivity[] = [];
 
-      if (curr.largeGroupActivityId) {
-        dayActivities.push({ date: curr.dayDate, activityId: curr.largeGroupActivityId });
-      }
+        if (curr.largeGroupActivityId) {
+          dayActivities.push({
+            date: curr.dayDate,
+            activityId: curr.largeGroupActivityId,
+          });
+        }
 
-      if (curr.smallGroupActivityId) {
-        dayActivities.push({ date: curr.dayDate, activityId: curr.smallGroupActivityId });
-      }
+        if (curr.smallGroupActivityId) {
+          dayActivities.push({
+            date: curr.dayDate,
+            activityId: curr.smallGroupActivityId,
+          });
+        }
 
-      if (curr.storyActivityId) {
-        dayActivities.push({ date: curr.dayDate, activityId: curr.storyActivityId });
-      }
+        if (curr.storyActivityId) {
+          dayActivities.push({
+            date: curr.dayDate,
+            activityId: curr.storyActivityId,
+          });
+        }
 
-      prev.push(...dayActivities);
+        prev.push(...dayActivities);
 
-      return prev;
-    },
-    []
-  );
+        return prev;
+      },
+      []
+    );
 
   return reducedActivities;
 };
 
-export const getSelectedActivityWarningText = (activity: ActivityDto, programme?: ProgrammeDto) => {
-  const existingProgrammeActivity = getExistingProgrammeActivity(activity, programme);
+export const getSelectedActivityWarningText = (
+  activity: ActivityDto,
+  programme?: ProgrammeDto
+) => {
+  const existingProgrammeActivity = getExistingProgrammeActivity(
+    activity,
+    programme
+  );
 
   if (!existingProgrammeActivity) return;
 

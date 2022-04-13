@@ -1,17 +1,17 @@
-import { PasswordStrengthMeter } from "../../password-strength-meter/password-strength-meter";
+import { PasswordStrengthMeter } from '../../password-strength-meter/password-strength-meter';
 import {
   Colours,
   ComponentBaseProps,
   containsLowerCaseRegex,
   containsNumericRegex,
   containsUpperCaseRegex,
-} from "../../../models";
-import { useEffect } from "react";
-import { useState } from "react";
-import { FieldError } from "react-hook-form";
-import { Path, UseFormRegister } from "react-hook-form";
-import { PasswordStrength } from "../../password-strength-meter/models/PasswordStrength";
-import { FormFieldType, FormInput } from "../form-input/form-input";
+} from '../../../models';
+import { useEffect } from 'react';
+import { useState } from 'react';
+import { FieldError } from 'react-hook-form';
+import { Path, UseFormRegister } from 'react-hook-form';
+import { PasswordStrength } from '../../password-strength-meter/models/PasswordStrength';
+import { FormFieldType, FormInput } from '../form-input/form-input';
 
 interface PasswordInputProps<T> extends ComponentBaseProps {
   label?: string;
@@ -45,19 +45,19 @@ export const PasswordInput = <T,>({
   error,
   strengthMeterVisible = false,
 }: PasswordInputProps<T>) => {
-  const [inputType, setInputType] = useState<FormFieldType>("password");
-  const [suffixIcon, setSuffixIcon] = useState<string>("EyeIcon");
+  const [inputType, setInputType] = useState<FormFieldType>('password');
+  const [suffixIcon, setSuffixIcon] = useState<string>('EyeIcon');
 
   const [passwordMeterType, setPasswordMeterType] = useState<PasswordStrength>(
     PasswordStrength.none
   );
 
-  const [passwordMeterMessage, setPasswordMeterMessage] = useState<string>("");
+  const [passwordMeterMessage, setPasswordMeterMessage] = useState<string>('');
   const [passwordMeterVisibility, setPasswordMeterVisibility] =
     useState<boolean>(false);
   const updateIcon = (fieldType: FormFieldType) => {
-    const newFieldType = fieldType === "password" ? "text" : "password";
-    const newFieldIcon = newFieldType === "password" ? "EyeIcon" : "EyeOffIcon";
+    const newFieldType = fieldType === 'password' ? 'text' : 'password';
+    const newFieldIcon = newFieldType === 'password' ? 'EyeIcon' : 'EyeOffIcon';
 
     setInputType(newFieldType);
     setSuffixIcon(newFieldIcon);
@@ -75,7 +75,7 @@ export const PasswordInput = <T,>({
   const getPasswordLevel = (value: string): PasswordChangedEvent => {
     const defaultReturnValue: PasswordChangedEvent = {
       type: PasswordStrength.none,
-      message: "",
+      message: '',
     };
 
     if (value && value.length === 0) {
@@ -88,45 +88,45 @@ export const PasswordInput = <T,>({
     if (value.match(containsLowerCaseRegex)) {
       errorCount -= 1;
     } else {
-      passwordMessage = "Password must contain at least 1 lowercase character";
+      passwordMessage = 'Password must contain at least 1 lowercase character';
       setPasswordMeterMessage(passwordMessage);
     }
 
     if (value.match(containsUpperCaseRegex)) {
       errorCount -= 1;
       if (!passwordMessage) {
-        setPasswordMeterMessage("");
+        setPasswordMeterMessage('');
       }
     } else {
-      passwordMessage = "Password must contain at least 1 uppercase character";
+      passwordMessage = 'Password must contain at least 1 uppercase character';
       setPasswordMeterMessage(passwordMessage);
     }
 
     if (value.match(containsNumericRegex)) {
       errorCount -= 1;
       if (!passwordMessage) {
-        setPasswordMeterMessage("");
+        setPasswordMeterMessage('');
       }
     } else {
-      passwordMessage = "Password must contain at least 1 numeric character";
+      passwordMessage = 'Password must contain at least 1 numeric character';
       setPasswordMeterMessage(passwordMessage);
     }
 
     if (value.length >= 8) {
       errorCount -= 1;
       if (!passwordMessage) {
-        setPasswordMeterMessage("");
+        setPasswordMeterMessage('');
       }
     } else {
       if (value.length > 0) {
-        passwordMessage = "Password must be at least 8 characters";
+        passwordMessage = 'Password must be at least 8 characters';
         setPasswordMeterMessage(passwordMessage);
       }
     }
 
     if (errorCount === 0) {
       defaultReturnValue.type = PasswordStrength.veryGood;
-      setPasswordMeterMessage("Very Good");
+      setPasswordMeterMessage('Very Good');
     } else if (errorCount === 1 || errorCount === 2) {
       defaultReturnValue.type = PasswordStrength.weak;
     } else if (errorCount === 3) {

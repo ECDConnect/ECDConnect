@@ -1,21 +1,21 @@
 import { Typography } from '@ecdlink/ui';
 import { ComponentBaseProps } from '@ecdlink/ui';
 import { renderIcon } from '@ecdlink/ui';
-import { getMonthName } from '../../../../../../../utils/classroom/attendance/track-attendance-utils';
+import { getMonthName } from '@utils/classroom/attendance/track-attendance-utils';
 import * as styles from './attendance-monthly-report.styles';
 import {
   goodScoreThreshold,
   averageScoreThreshold,
-} from '../../../../../../../models/classroom/attendance/ClassAttendance';
-import { AttendanceSummary } from '../../../../../../../models/classroom/attendance/AttendanceSummary';
+} from '@models/classroom/attendance/ClassAttendance';
+import { AttendanceSummary } from '@models/classroom/attendance/AttendanceSummary';
 
 interface AttendanceMonthlyReportProps extends ComponentBaseProps {
   attendanceSummary: AttendanceSummary[];
 }
 
-export const AttendanceMonthlyReport: React.FC<AttendanceMonthlyReportProps> = ({
-  attendanceSummary,
-}) => {
+export const AttendanceMonthlyReport: React.FC<
+  AttendanceMonthlyReportProps
+> = ({ attendanceSummary }) => {
   const getText = (score: number) => {
     if (score === 100) {
       return 'You took attendance every day, great job!';
@@ -39,7 +39,10 @@ export const AttendanceMonthlyReport: React.FC<AttendanceMonthlyReportProps> = (
           return (
             <div
               key={`attendance-summary-item-${idx}`}
-              className={styles.attendanceItemWrapper(attendanceItem.attendanceScore, idx > 0)}
+              className={styles.attendanceItemWrapper(
+                attendanceItem.attendanceScore,
+                idx > 0
+              )}
             >
               <div className={styles.resultsSection} id="results-section">
                 <div className={'flex flex-col items-start justify-between'}>
@@ -47,12 +50,17 @@ export const AttendanceMonthlyReport: React.FC<AttendanceMonthlyReportProps> = (
                     type={'body'}
                     weight={'bolder'}
                     color={'black'}
-                    text={`${getMonthName(attendanceItem.monthOfYear - 1)} attendance`}
+                    text={`${getMonthName(
+                      attendanceItem.monthOfYear - 1
+                    )} attendance`}
                     lineHeight={'none'}
                   ></Typography>
 
                   <div className={'flex flex-row mt-1'} id="month-with-points">
-                    {renderIcon('GiftIcon', styles.icon(attendanceItem.attendanceScore))}
+                    {renderIcon(
+                      'GiftIcon',
+                      styles.icon(attendanceItem.attendanceScore)
+                    )}
                     <Typography
                       text={`${attendanceItem.attendanceScore}`}
                       weight={'bolder'}
@@ -60,7 +68,11 @@ export const AttendanceMonthlyReport: React.FC<AttendanceMonthlyReportProps> = (
                       type={'help'}
                       className={'mr-1'}
                     />
-                    <Typography text={'points earned'} color={'textLight'} type={'help'} />
+                    <Typography
+                      text={'points earned'}
+                      color={'textLight'}
+                      type={'help'}
+                    />
                   </div>
                 </div>
 

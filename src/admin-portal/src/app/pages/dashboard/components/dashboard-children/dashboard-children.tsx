@@ -1,8 +1,19 @@
 import { useLazyQuery, useQuery } from '@apollo/client';
-import { ChildrenMetricReport, MetricReportStatItem, useDialog } from '@ecdlink/core';
-import { childrenAttendedVsAbsentMetrics, childrenMetrics } from '@ecdlink/graphql';
+import {
+  ChildrenMetricReport,
+  MetricReportStatItem,
+  useDialog,
+} from '@ecdlink/core';
+import {
+  childrenAttendedVsAbsentMetrics,
+  childrenMetrics,
+} from '@ecdlink/graphql';
 import { DialogPosition } from '@ecdlink/ui';
-import { DocumentReportIcon, ExclamationIcon, UsersIcon } from '@heroicons/react/outline';
+import {
+  DocumentReportIcon,
+  ExclamationIcon,
+  UsersIcon,
+} from '@heroicons/react/outline';
 import { CogIcon } from '@heroicons/react/solid';
 import { useEffect, useState } from 'react';
 import ContentLoader from '../../../../components/content-loader/content-loader';
@@ -15,21 +26,22 @@ import VerticalBarChart from '../vertical-bar-chart/vertical-bar-chart';
 export default function ChildrenDashboard() {
   const dialog = useDialog();
 
-  const { data } = useQuery(childrenMetrics, { fetchPolicy: 'cache-and-network' });
-  const [getChildrenAttendedVsAbsentMetrics, { data: attendedAbsentData }] = useLazyQuery(
-    childrenAttendedVsAbsentMetrics,
-    {
+  const { data } = useQuery(childrenMetrics, {
+    fetchPolicy: 'cache-and-network',
+  });
+  const [getChildrenAttendedVsAbsentMetrics, { data: attendedAbsentData }] =
+    useLazyQuery(childrenAttendedVsAbsentMetrics, {
       fetchPolicy: 'cache-and-network',
       variables: {
         fromDate: new Date(),
         toDate: new Date(),
       },
-    }
-  );
+    });
   const [childstats, setChildstats] = useState([]);
   const [childStatusdata, setChildStatusdata] = useState<any>();
   const [childAttendacedata, setChildAttendacedata] = useState<any>();
-  const [childAttendancePerMonthdata, setChildAttendancePerMonthdata] = useState<any>();
+  const [childAttendancePerMonthdata, setChildAttendancePerMonthdata] =
+    useState<any>();
   const [attendedAbsentDate, setAttendedAbsentDate] = useState<string>();
 
   useEffect(() => {
@@ -47,7 +59,9 @@ export default function ChildrenDashboard() {
       });
 
       setAttendedAbsentDate(
-        `${new Date(pastDate).toDateString()} - ${new Date(today).toDateString()}`
+        `${new Date(pastDate).toDateString()} - ${new Date(
+          today
+        ).toDateString()}`
       );
 
       setupChildstats(reportData);
@@ -57,8 +71,12 @@ export default function ChildrenDashboard() {
   }, [data]);
 
   useEffect(() => {
-    if (attendedAbsentData && attendedAbsentData.childrenAttendedVsAbsentMetrics) {
-      const reportData: MetricReportStatItem[] = attendedAbsentData.childrenAttendedVsAbsentMetrics;
+    if (
+      attendedAbsentData &&
+      attendedAbsentData.childrenAttendedVsAbsentMetrics
+    ) {
+      const reportData: MetricReportStatItem[] =
+        attendedAbsentData.childrenAttendedVsAbsentMetrics;
       setupChildAttendacedata(reportData);
     }
   }, [attendedAbsentData]);
@@ -129,7 +147,9 @@ export default function ChildrenDashboard() {
     setChildAttendacedata(PractProgramdata);
   };
 
-  const setupChildAttendancePerMonthdata = (reportData: ChildrenMetricReport) => {
+  const setupChildAttendancePerMonthdata = (
+    reportData: ChildrenMetricReport
+  ) => {
     const labelMap = reportData.childAttendacePerMonthData.map((x) => x.name);
     const dataMap = reportData.childAttendacePerMonthData.map((x) => x.value);
     const childAttendancePerMonthdata = {
@@ -177,12 +197,17 @@ export default function ChildrenDashboard() {
   if (data && data.childrenMetrics) {
     return (
       <div className="h-full">
-        {childstats && <StatsBar stats={childstats} gridClass={'grid-cols-3'} />}
+        {childstats && (
+          <StatsBar stats={childstats} gridClass={'grid-cols-3'} />
+        )}
 
         <div className="mt-4 grid grid-cols-2 gap-4">
           <div className="bg-uiBg pt-5 px-4 pb-12 sm:pt-6 sm:px-6 rounded-lg overflow-hidden">
             {childStatusdata && (
-              <DoughnutChart data={childStatusdata} graphTitle={'Children Status'} />
+              <DoughnutChart
+                data={childStatusdata}
+                graphTitle={'Children Status'}
+              />
             )}
           </div>
           <div className="relative bg-uiBg pt-5 px-4 pb-12 sm:pt-6 sm:px-6 rounded-lg overflow-hidden">

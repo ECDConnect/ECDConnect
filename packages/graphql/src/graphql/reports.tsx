@@ -1,8 +1,16 @@
 import { gql } from '@apollo/client';
 
 export const MonthlyAttendanceRecordCSV = gql`
-  query monthlyAttendanceRecordCSV($startMonth: DateTime!, $endMonth: DateTime!, $ownerId: String) {
-    monthlyAttendanceRecordCSV(startMonth: $startMonth, endMonth: $endMonth, ownerId: $ownerId) {
+  query monthlyAttendanceRecordCSV(
+    $startMonth: DateTime!
+    $endMonth: DateTime!
+    $ownerId: String
+  ) {
+    monthlyAttendanceRecordCSV(
+      startMonth: $startMonth
+      endMonth: $endMonth
+      ownerId: $ownerId
+    ) {
       base64File
       fileType
       fileName
@@ -107,7 +115,10 @@ export const childrenMetrics = gql`
 `;
 
 export const childrenAttendedVsAbsentMetrics = gql`
-  query childrenAttendedVsAbsentMetrics($fromDate: DateTime!, $toDate: DateTime!) {
+  query childrenAttendedVsAbsentMetrics(
+    $fromDate: DateTime!
+    $toDate: DateTime!
+  ) {
     childrenAttendedVsAbsentMetrics(fromDate: $fromDate, toDate: $toDate) {
       name
       value

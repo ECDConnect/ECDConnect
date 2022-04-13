@@ -4,23 +4,30 @@ import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { OfflineCard } from '../../../../../components/offline-card/offline-card';
 import PointsSuccessCard from '../../../../../components/points-success-card/points-success-card';
-import { AttendanceSummary } from '../../../../../models/classroom/attendance/AttendanceSummary';
-import { AttendanceService } from '../../../../../services/AttendanceService';
-import { authSelectors } from '../../../../../store/auth';
-import { setStorageItem } from '../../../../../utils/common/local-storage.utils';
+import { AttendanceSummary } from '@models/classroom/attendance/AttendanceSummary';
+import { AttendanceService } from '@services/AttendanceService';
+import { authSelectors } from '@store/auth';
+import { setStorageItem } from '@utils/common/local-storage.utils';
 import { AttendanceReportProps } from './attendance-report.types';
 import { AttendanceMonthlyReport } from './components/attendance-monthly-report/attendance-monthly-report';
 
-export const AttendanceReport: React.FC<AttendanceReportProps> = ({ classroom }) => {
+export const AttendanceReport: React.FC<AttendanceReportProps> = ({
+  classroom,
+}) => {
   const isOnline = true;
-  const [successMessageVisible, setSuccessMessageVisible] = useState<boolean>(true);
-  const [displaySmartStartMessage, setDisplaySmartStartMessage] = useState<boolean>(true);
+  const [successMessageVisible, setSuccessMessageVisible] =
+    useState<boolean>(true);
+  const [displaySmartStartMessage, setDisplaySmartStartMessage] =
+    useState<boolean>(true);
 
   const authUser = useSelector(authSelectors.getAuthUser);
 
   const closeMessage = () => {
     setDisplaySmartStartMessage(false);
-    setStorageItem(true, LocalStorageKeys.hasClosedAttendanceSmartStartPointsMessage);
+    setStorageItem(
+      true,
+      LocalStorageKeys.hasClosedAttendanceSmartStartPointsMessage
+    );
   };
 
   const [attendanceData, setAttendanceData] = useState<AttendanceSummary[]>([]);
@@ -72,7 +79,9 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({ classroom })
           message={'Your attendance registers are up to date this week!'}
           icon={'SparklesIcon'}
         />
-        {isOnline && <AttendanceMonthlyReport attendanceSummary={attendanceData} />}
+        {isOnline && (
+          <AttendanceMonthlyReport attendanceSummary={attendanceData} />
+        )}
         {!isOnline && <OfflineCard />}
       </div>
       <MessageModal

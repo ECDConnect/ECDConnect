@@ -7,7 +7,10 @@ import {
   useNotifications,
   usePanel,
 } from '@ecdlink/core';
-import { DeleteReasonForLeaving, GetAllReasonForLeaving } from '@ecdlink/graphql';
+import {
+  DeleteReasonForLeaving,
+  GetAllReasonForLeaving,
+} from '@ecdlink/graphql';
 import { DialogPosition } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
@@ -19,7 +22,9 @@ import ReasonForLeavingPanel from './components/reason-for-leaving-panel/reason-
 export default function ReasonForLeavingView() {
   const { hasPermission } = useUser();
   const type = 'Reason for leaving';
-  const { data, refetch } = useQuery(GetAllReasonForLeaving, { fetchPolicy: 'cache-and-network' });
+  const { data, refetch } = useQuery(GetAllReasonForLeaving, {
+    fetchPolicy: 'cache-and-network',
+  });
   const [tableData, setTableData] = useState<any[]>([]);
   const dialog = useDialog();
   const { setNotification } = useNotifications();
@@ -118,8 +123,13 @@ export default function ReasonForLeavingView() {
                 <UiTable
                   columns={[{ field: 'description', use: 'description' }]}
                   rows={tableData}
-                  editRow={hasPermission(PermissionEnum.update_static) && displayPanel}
-                  deleteRow={hasPermission(PermissionEnum.delete_static) && deleteAndRefresh}
+                  editRow={
+                    hasPermission(PermissionEnum.update_static) && displayPanel
+                  }
+                  deleteRow={
+                    hasPermission(PermissionEnum.delete_static) &&
+                    deleteAndRefresh
+                  }
                 />
               </div>
             </div>

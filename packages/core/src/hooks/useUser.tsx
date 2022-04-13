@@ -41,10 +41,10 @@ import { useLazyQuery } from '@apollo/client';
 //       if (user) {
 //         getUserById({ variables: { userId: user.id } });
 //       }
-//     }    
+//     }
 //   }, []);
 
-//   useEffect(() => {    
+//   useEffect(() => {
 //     if (userData) {
 //       setUser(userData.GetUserById)
 //       setLoading(false);

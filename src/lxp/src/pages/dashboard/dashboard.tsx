@@ -13,16 +13,16 @@ import {
 import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
-import { useDocuments } from '../../hooks/useDocuments';
-import { useOnlineStatus } from '../../hooks/useOnlineStatus';
+import { useDocuments } from '@hooks/useDocuments';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { OfflineSyncModal } from '../../modals';
 import OfflineSyncTimeExceeded from '../../modals/offline-sync/offline-sync-time-exceeded';
-import { useAppDispatch } from '../../store';
-import { classroomsSelectors } from '../../store/classroom';
-import { notificationsSelectors } from '../../store/notifications';
-import { settingSelectors } from '../../store/settings';
-import { userSelectors } from '../../store/user';
-import { analyticsActions } from '../../store/analytics';
+import { useAppDispatch } from '@store';
+import { classroomsSelectors } from '@store/classroom';
+import { notificationsSelectors } from '@store/notifications';
+import { settingSelectors } from '@store/settings';
+import { userSelectors } from '@store/user';
+import { analyticsActions } from '@store/analytics';
 import { DashboardItems } from './components/dashboard-items/dashboard-items';
 import * as styles from './dashboard.styles';
 const { version } = require('../../../package.json');
@@ -46,8 +46,12 @@ export const Dashboard: React.FC = () => {
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
   const dialog = useDialog();
-  const newNotificationCount = useSelector(notificationsSelectors.getNewNotificationCount);
-  const dashboardNotification = useSelector(notificationsSelectors.getDashboardNotification);
+  const newNotificationCount = useSelector(
+    notificationsSelectors.getNewNotificationCount
+  );
+  const dashboardNotification = useSelector(
+    notificationsSelectors.getDashboardNotification
+  );
   const { userProfilePicture } = useDocuments();
 
   useEffect(() => {
@@ -120,7 +124,9 @@ export const Dashboard: React.FC = () => {
                   position: DialogPosition.Bottom,
                   blocking: true,
                   render: (onSubmit, onCancel) => {
-                    return <OfflineSyncModal onSubmit={onSubmit}></OfflineSyncModal>;
+                    return (
+                      <OfflineSyncModal onSubmit={onSubmit}></OfflineSyncModal>
+                    );
                   },
                 });
               }}
@@ -203,9 +209,18 @@ export const Dashboard: React.FC = () => {
       backgroundImageColour={'primary'}
       avatar={
         userProfilePicture?.file ? (
-          <Avatar dataUrl={userProfilePicture?.file} size={'sm'} displayBorder={true} />
+          <Avatar
+            dataUrl={userProfilePicture?.file}
+            size={'sm'}
+            displayBorder={true}
+          />
         ) : (
-          <UserAvatar size="sm-md" color="transparent" displayBorder borderColour="white" />
+          <UserAvatar
+            size="sm-md"
+            color="transparent"
+            displayBorder
+            borderColour="white"
+          />
         )
       }
       menuItems={navigation}
@@ -240,7 +255,9 @@ export const Dashboard: React.FC = () => {
         className={styles.welcomeText}
       />
 
-      <div className={`${!classroom ? styles.wrapper : 'bg-white rounded p-0.5'}`}>
+      <div
+        className={`${!classroom ? styles.wrapper : 'bg-white rounded p-0.5'}`}
+      >
         <DashboardItems
           listItems={[
             {

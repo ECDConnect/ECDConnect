@@ -63,9 +63,12 @@ const staticDataSlice = createSlice({
     builder.addCase(getProgrammeTypes.fulfilled, (state, action) => {
       state.programmeTypes = action.payload;
     });
-    builder.addCase(getProgrammeAttendanceReasons.fulfilled, (state, action) => {
-      state.programmeAttendanceReason = action.payload;
-    });
+    builder.addCase(
+      getProgrammeAttendanceReasons.fulfilled,
+      (state, action) => {
+        state.programmeAttendanceReason = action.payload;
+      }
+    );
     builder.addCase(getGenders.fulfilled, (state, action) => {
       state.gender = action.payload;
     });
@@ -102,7 +105,8 @@ const staticDataSlice = createSlice({
   },
 });
 
-const { reducer: staticDataReducer, actions: staticDataActions } = staticDataSlice;
+const { reducer: staticDataReducer, actions: staticDataActions } =
+  staticDataSlice;
 
 const staticDataPersistConfig = {
   key: 'staticData',

@@ -11,8 +11,18 @@ export const NotificationHeaderCard: React.FC<NotificationHeaderCardProps> = ({
   return (
     <div className={styles.wrapper}>
       <div className={styles.content}>
-        <Typography type={'h3'} text={header} color={'textDark'} className={styles.header} />
-        <Typography type={'body'} text={message} color={'textLight'} className={styles.text} />
+        <Typography
+          type={'h3'}
+          text={header}
+          color={'textDark'}
+          className={styles.header}
+        />
+        <Typography
+          type={'body'}
+          text={message}
+          color={'textLight'}
+          className={styles.text}
+        />
         {!!actionText && (
           <div className={styles.linkText}>
             <div onClick={onActioned}>

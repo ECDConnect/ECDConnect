@@ -6,25 +6,33 @@ import {
 } from '@ecdlink/core';
 import { differenceInDays } from 'date-fns';
 import { childRegistrationConstants } from '../../constants/Child';
-import { SeperatedCategoryResult } from '../../hooks/useChildProgressObservations';
+import { SeperatedCategoryResult } from '@hooks/useChildProgressObservations';
 import { saveAs } from 'file-saver';
 export const isChildsFirstReport = (
   child: ChildDto,
   completedReports: ChildProgressObservationReport[]
 ) => {
-  return isChildInitialRegistrationPeriod(child) && completedReports.length === 0;
+  return (
+    isChildInitialRegistrationPeriod(child) && completedReports.length === 0
+  );
 };
 
 export const isChildInitialRegistrationPeriod = (child: ChildDto) => {
-  const childRegistrationDate = child.insertedDate ? new Date(child.insertedDate) : undefined;
+  const childRegistrationDate = child.insertedDate
+    ? new Date(child.insertedDate)
+    : undefined;
 
   if (!childRegistrationDate) {
     return false;
   }
 
-  const daysSinceRegistration = Math.abs(differenceInDays(childRegistrationDate, new Date()));
+  const daysSinceRegistration = Math.abs(
+    differenceInDays(childRegistrationDate, new Date())
+  );
 
-  return daysSinceRegistration < childRegistrationConstants.firstProgressReportPeriod;
+  return (
+    daysSinceRegistration < childRegistrationConstants.firstProgressReportPeriod
+  );
 };
 
 export const getCategoryFromCurrentReport = (
@@ -55,19 +63,24 @@ export const seperateCategoriesByStatus = (
   }
 
   const completedCategories =
-    report?.categories.filter((cat) => cat.status === ChildProgressObservationStatus.Completed) ||
-    [];
+    report?.categories.filter(
+      (cat) => cat.status === ChildProgressObservationStatus.Completed
+    ) || [];
   const inProgressCategories =
     report?.categories.filter(
       (cat) =>
         cat.status === ChildProgressObservationStatus.Started &&
-        !completedCategories.some((compCat) => compCat.categoryId === cat.categoryId)
+        !completedCategories.some(
+          (compCat) => compCat.categoryId === cat.categoryId
+        )
     ) || [];
   const notStartedCategories =
     report?.categories.filter(
       (cat) =>
         cat.status === ChildProgressObservationStatus.NotStarted &&
-        !inProgressCategories.some((compCat) => compCat.categoryId === cat.categoryId)
+        !inProgressCategories.some(
+          (compCat) => compCat.categoryId === cat.categoryId
+        )
     ) || [];
 
   return {

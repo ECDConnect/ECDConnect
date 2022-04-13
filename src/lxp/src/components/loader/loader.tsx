@@ -2,7 +2,7 @@ import { Alert, Button, Typography } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useHistory } from 'react-router';
 import LoadingRocket from '../../assets/gifs/rocketclear.gif';
-import { useStoreSetup } from '../../hooks/useStoreSetup';
+import { useStoreSetup } from '@hooks/useStoreSetup';
 
 const Loader = ({ loadingMessage = 'Loading . . .' }) => {
   const history = useHistory();
@@ -35,7 +35,9 @@ const Loader = ({ loadingMessage = 'Loading . . .' }) => {
       <div className="px-4 py-4 flex flex-col items-center justify-center">
         {showIssue && (
           <Alert
-            message={'Having issues? Go back to the login screen here to allow for a reset'}
+            message={
+              'Having issues? Go back to the login screen here to allow for a reset'
+            }
             type={'warning'}
             button={
               <Button
@@ -48,7 +50,11 @@ const Loader = ({ loadingMessage = 'Loading . . .' }) => {
                   history.push('/login');
                 }}
               >
-                <Typography color="white" text={'Reset & Go back to login'} type="small" />
+                <Typography
+                  color="white"
+                  text={'Reset & Go back to login'}
+                  type="small"
+                />
               </Button>
             }
           />

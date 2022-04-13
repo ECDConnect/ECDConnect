@@ -9,7 +9,8 @@ export const getProgrammes = (state: RootState): ProgrammeDto[] =>
 export const getProgrammeById = (programmeId?: string) =>
   createSelector(
     (state: RootState) => state.programmeData.programmes || [],
-    (programmes: ProgrammeDto[]) => programmes.find((programme) => programme.id === programmeId)
+    (programmes: ProgrammeDto[]) =>
+      programmes.find((programme) => programme.id === programmeId)
   );
 
 export const getTodaysProgramme = () =>
@@ -40,12 +41,16 @@ export const getProgrammesAfterDate = (date: Date) =>
   createSelector(
     (state: RootState) => state.programmeData.programmes || [],
     (programmes: ProgrammeDto[]) =>
-      programmes.filter((programme) => isAfter(new Date(programme.startDate), date))
+      programmes.filter((programme) =>
+        isAfter(new Date(programme.startDate), date)
+      )
   );
 
 export const getProgrammesBeforeDate = (date: Date) =>
   createSelector(
     (state: RootState) => state.programmeData.programmes || [],
     (programmes: ProgrammeDto[]) =>
-      programmes.filter((programme) => isBefore(new Date(programme.endDate), date))
+      programmes.filter((programme) =>
+        isBefore(new Date(programme.endDate), date)
+      )
   );

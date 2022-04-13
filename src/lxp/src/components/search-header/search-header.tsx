@@ -37,16 +37,25 @@ const SeachHeader = <T extends {}>({
 }: SearchHeaderProps<T>) => {
   return (
     <>
-      <Menu as="div" className={classNames(styles.quickSearchWrapper, className)}>
+      <Menu
+        as="div"
+        className={classNames(styles.quickSearchWrapper, className)}
+      >
         <div className={styles.searchIconWrapper} onClick={onSearchButtonClick}>
           <SearchIcon className={styles.iconFill} />
         </div>
         {children}
       </Menu>
-      <Dialog fullScreen visible={isTextSearchActive} position={DialogPosition.Top}>
+      <Dialog
+        fullScreen
+        visible={isTextSearchActive}
+        position={DialogPosition.Top}
+      >
         <div className={styles.dialogContent}>
           <div className={styles.searchTextWrapper}>
-            <div onClick={onBack}>{renderIcon('ArrowLeftIcon', styles.iconFill)}</div>
+            <div onClick={onBack}>
+              {renderIcon('ArrowLeftIcon', styles.iconFill)}
+            </div>
             <input
               className={styles.searchInput}
               onChange={(e) => {
@@ -69,7 +78,9 @@ const SeachHeader = <T extends {}>({
             />
             {alternativeSearchItemRender &&
               searchItems.length > 0 &&
-              searchItems.map((item: T) => alternativeSearchItemRender.render(item))}
+              searchItems.map((item: T) =>
+                alternativeSearchItemRender.render(item)
+              )}
 
             {!alternativeSearchItemRender && searchItems.length > 0 && (
               <StackedList

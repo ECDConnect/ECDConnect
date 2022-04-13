@@ -7,7 +7,10 @@ class ContentService {
     this._accessToken = accessToken;
   }
 
-  async hasContentTypeBeenTranslated(id: number, localeId: string): Promise<boolean> {
+  async hasContentTypeBeenTranslated(
+    id: number,
+    localeId: string
+  ): Promise<boolean> {
     const apiInstance = await api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
@@ -22,7 +25,9 @@ class ContentService {
     });
 
     if (response.status !== 200) {
-      throw new Error('Get Has Content Type been translated  Failed - Server connection error');
+      throw new Error(
+        'Get Has Content Type been translated  Failed - Server connection error'
+      );
     }
 
     return response.data.data.hasContentTypeBeenTranslated;

@@ -22,6 +22,7 @@ const contentConsentSlice = createSlice({
   },
 });
 
-const { reducer: contentConsentReducer, actions: contentConsentActions } = contentConsentSlice;
+const { reducer: contentConsentReducer, actions: contentConsentActions } =
+  contentConsentSlice;
 
 export { contentConsentReducer, contentConsentActions };

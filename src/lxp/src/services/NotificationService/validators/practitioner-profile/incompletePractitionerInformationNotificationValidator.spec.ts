@@ -1,13 +1,17 @@
 import { RecursivePartial } from '@ecdlink/core';
 import { EnhancedStore } from '@reduxjs/toolkit';
-import { RootState } from '../../../../store/types';
-import { NotificationIntervals, NotificationPriority } from '../../NotificationService.types';
+import { RootState } from '@store/types';
+import {
+  NotificationIntervals,
+  NotificationPriority,
+} from '../../NotificationService.types';
 import { IncompletePractitionerInformationNotificationValidator } from './incompletePractitionerInformationNotificationValidator';
 
 describe('incompletePractitionerInformationNotificationValidator', () => {
   test('should be able to create successfully', () => {
     const store: any = {};
-    const validator = new IncompletePractitionerInformationNotificationValidator(store);
+    const validator =
+      new IncompletePractitionerInformationNotificationValidator(store);
 
     expect(validator.interval).toEqual(NotificationIntervals.hour);
   });
@@ -16,9 +20,10 @@ describe('incompletePractitionerInformationNotificationValidator', () => {
     const store: RecursivePartial<EnhancedStore<RootState, any>> = {
       getState: () => ({}),
     };
-    const validator = new IncompletePractitionerInformationNotificationValidator(
-      store as EnhancedStore<RootState, any>
-    );
+    const validator =
+      new IncompletePractitionerInformationNotificationValidator(
+        store as EnhancedStore<RootState, any>
+      );
     const notifications = validator.getNotifications();
     expect(notifications).toEqual([]);
   });
@@ -32,9 +37,10 @@ describe('incompletePractitionerInformationNotificationValidator', () => {
         },
       }),
     };
-    const validator = new IncompletePractitionerInformationNotificationValidator(
-      store as EnhancedStore<RootState, any>
-    );
+    const validator =
+      new IncompletePractitionerInformationNotificationValidator(
+        store as EnhancedStore<RootState, any>
+      );
     const notifications = validator.getNotifications();
     const notification = notifications[0];
 
@@ -54,9 +60,10 @@ describe('incompletePractitionerInformationNotificationValidator', () => {
         },
       }),
     };
-    const validator = new IncompletePractitionerInformationNotificationValidator(
-      store as EnhancedStore<RootState, any>
-    );
+    const validator =
+      new IncompletePractitionerInformationNotificationValidator(
+        store as EnhancedStore<RootState, any>
+      );
     const notifications = validator.getNotifications();
 
     expect(notifications.length).toEqual(0);

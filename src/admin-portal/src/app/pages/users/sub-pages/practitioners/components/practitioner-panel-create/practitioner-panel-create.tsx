@@ -39,7 +39,9 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
   const emitCloseDialog = (value: boolean) => {
     props.closeDialog(value);
   };
-  const { data: roleData } = useQuery(RoleList, { fetchPolicy: 'cache-and-network' });
+  const { data: roleData } = useQuery(RoleList, {
+    fetchPolicy: 'cache-and-network',
+  });
 
   useEffect(() => {
     if (roleData && roleData.roles) {
@@ -69,7 +71,8 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
     defaultValues: initialUserDetailsValues,
     mode: 'onBlur',
   });
-  const { errors: userDetailFormErrors, isValid: isUserDetailValid } = userDetailFormState;
+  const { errors: userDetailFormErrors, isValid: isUserDetailValid } =
+    userDetailFormState;
   // PASSWORD FORMS
   const {
     register: passwordRegister,
@@ -91,14 +94,16 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
     defaultValues: { ...initialPractitionerValues, sendInvite: false },
     mode: 'onBlur',
   });
-  const { errors: practitionerFormErrors, isValid: isPractitionerValid } = practitionerFormState;
+  const { errors: practitionerFormErrors, isValid: isPractitionerValid } =
+    practitionerFormState;
 
   // SITE ADDRESS FORMS
-  const { register: siteAddressRegister, getValues: siteAddressGetValues } = useForm({
-    resolver: yupResolver(siteAddressSchema),
-    defaultValues: { ...initialSiteAddressValues, sendInvite: false },
-    mode: 'onBlur',
-  });
+  const { register: siteAddressRegister, getValues: siteAddressGetValues } =
+    useForm({
+      resolver: yupResolver(siteAddressSchema),
+      defaultValues: { ...initialSiteAddressValues, sendInvite: false },
+      mode: 'onBlur',
+    });
   const { errors: siteAddressFormErrors } = practitionerFormState;
 
   const onSave = async () => {
@@ -117,14 +122,18 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
       verifiedByHomeAffairs: userDetailForm.verifiedByHomeAffairs,
       dateOfBirth: userDetailForm.dateOfBirth,
       genderId:
-        userDetailForm.genderId && userDetailForm.genderId.length ? userDetailForm.genderId : null,
+        userDetailForm.genderId && userDetailForm.genderId.length
+          ? userDetailForm.genderId
+          : null,
       firstName: userDetailForm.firstName,
       surname: userDetailForm.surname,
       contactPreference: userDetailForm.contactPreference,
       phoneNumber: userDetailForm.phoneNumber,
       email: userDetailForm.email,
       password:
-        passwordForm.password && passwordForm.password.length > 0 ? passwordForm.password : null,
+        passwordForm.password && passwordForm.password.length > 0
+          ? passwordForm.password
+          : null,
     };
 
     await createUser({
@@ -190,13 +199,15 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
       UserId: userId,
       SiteAddressId: siteAddressId,
       AttendanceRegisterLink: practitionerForm.attendanceRegisterLink,
-      MaxChildren: practitionerForm.maxChildren && +practitionerForm.maxChildren,
+      MaxChildren:
+        practitionerForm.maxChildren && +practitionerForm.maxChildren,
       ConsentForPhoto: practitionerForm.consentForPhoto,
       ParentFees: practitionerForm.parentFees && +practitionerForm.parentFees,
       LanguageUsedInGroups: practitionerForm.languageUsedInGroups,
       StartDate: practitionerForm.startDate,
       MonthSinceFranchisee:
-        practitionerForm.monthSinceFranchisee && +practitionerForm.monthSinceFranchisee,
+        practitionerForm.monthSinceFranchisee &&
+        +practitionerForm.monthSinceFranchisee,
       IsActive: true,
     };
 
@@ -249,7 +260,9 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
   };
 
   const addUserRole = () => {
-    const role = roleData.roles.find((role: RoleDto) => role.name === 'Practitioner');
+    const role = roleData.roles.find(
+      (role: RoleDto) => role.name === 'Practitioner'
+    );
 
     const copy = [...selectedUserRoles];
     if (!copy.some((x) => x.id === role.id)) {
@@ -271,7 +284,9 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
       <>
         <div className="bg-uiBg px-4 py-5 border-b border-gray-200 rounded-lg">
           <div className="pb-2">
-            <h3 className="text-lg leading-6 font-medium text-uiMidDark">User Detail</h3>
+            <h3 className="text-lg leading-6 font-medium text-uiMidDark">
+              User Detail
+            </h3>
           </div>
 
           <UserDetailsForm
@@ -285,7 +300,9 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
 
         <div className="mt-5 bg-uiBg px-4 py-5 border-b border-gray-200 rounded-lg">
           <div className="pb-2">
-            <h3 className="text-lg leading-6 font-medium text-uiMidDark">Practitioner Detail</h3>
+            <h3 className="text-lg leading-6 font-medium text-uiMidDark">
+              Practitioner Detail
+            </h3>
           </div>
 
           <PractitionerForm
@@ -297,7 +314,9 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
 
         <div className="mt-5 bg-uiBg px-4 py-5 border-b border-gray-200 rounded-lg">
           <div className="pb-2">
-            <h3 className="text-lg leading-6 font-medium text-uiMidDark">Address Detail</h3>
+            <h3 className="text-lg leading-6 font-medium text-uiMidDark">
+              Address Detail
+            </h3>
           </div>
           <SiteAddressForm
             formKey={`createSiteAddress-${new Date().getTime()}`}
@@ -308,7 +327,9 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
 
         <div className="mt-5 bg-uiBg px-4 py-5 border-b border-gray-200 rounded-lg">
           <div className="pb-2">
-            <h3 className="text-lg leading-6 font-medium text-uiMidDark">Password</h3>
+            <h3 className="text-lg leading-6 font-medium text-uiMidDark">
+              Password
+            </h3>
           </div>
 
           <PasswordForm

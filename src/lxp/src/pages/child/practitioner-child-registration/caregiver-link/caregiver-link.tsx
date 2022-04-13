@@ -1,25 +1,33 @@
 import { useDialog } from '@ecdlink/core';
-import { Button, ComponentBaseProps, DialogPosition, Divider, Typography } from '@ecdlink/ui';
+import {
+  Button,
+  ComponentBaseProps,
+  DialogPosition,
+  Divider,
+  Typography,
+} from '@ecdlink/ui';
 import { useState } from 'react';
 import { useHistory } from 'react-router';
-import { ChildBasicInfoModel } from '../../../../schemas/child/child-registration/child-basic-info';
-import { useAppDispatch } from '../../../../store';
-import { childrenThunkActions } from '../../../../store/children';
-import { childrenActions } from '../../../../store/children';
-import * as childRegisterUtils from '../../../../utils/child/child-registration.utils';
+import { ChildBasicInfoModel } from '@schemas/child/child-registration/child-basic-info';
+import { useAppDispatch } from '@store';
+import { childrenThunkActions } from '@store/children';
+import { childrenActions } from '@store/children';
+import * as childRegisterUtils from '@utils/child/child-registration.utils';
 import { WorkflowStatusEnum } from '@ecdlink/graphql';
-import { useStaticData } from '../../../../hooks/useStaticData';
+import { useStaticData } from '@hooks/useStaticData';
 import { ChildRegistrationSteps } from '../../child-registration/child-registration.types';
-import { classroomsActions } from '../../../../store/classroom';
-import { useOnlineStatus } from '../../../../hooks/useOnlineStatus';
+import { classroomsActions } from '@store/classroom';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import OnlineOnlyModal from '../../../../modals/offline-sync/online-only-modal';
-import { copyToClip } from '../../../../utils/common/clipboard.utils';
+import { copyToClip } from '@utils/common/clipboard.utils';
 import { CaregiverChildRegistrationModal } from '../../components/caregiver-child-registration-modal/caregiver-child-registration-modal';
 export interface CaregiverLinkProps extends ComponentBaseProps {
   childDetails: ChildBasicInfoModel;
 }
 
-export const CaregiverLink: React.FC<CaregiverLinkProps> = ({ childDetails }) => {
+export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
+  childDetails,
+}) => {
   const dialog = useDialog();
   const history = useHistory();
   const dispatch = useAppDispatch();
@@ -152,7 +160,9 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({ childDetails }) =>
       id: model.ChildUserId,
     };
 
-    const childStatusId = getWorkflowStatusIdByEnum(WorkflowStatusEnum.ChildExternalLink);
+    const childStatusId = getWorkflowStatusIdByEnum(
+      WorkflowStatusEnum.ChildExternalLink
+    );
 
     let childInputModel = childRegisterUtils.mapChildDto(
       model.ChildUserId,
@@ -166,7 +176,10 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({ childDetails }) =>
       id: model.ChildId,
     };
 
-    const learnerInputModel = childRegisterUtils.mapLearnerDto(model.ChildUserId, childInformation);
+    const learnerInputModel = childRegisterUtils.mapLearnerDto(
+      model.ChildUserId,
+      childInformation
+    );
 
     dispatch(childrenActions.createChildUser(userInputModel));
     dispatch(childrenActions.createChild(childInputModel));

@@ -1,19 +1,24 @@
 import { FileTypeEnum, WorkflowStatusEnum } from '@ecdlink/graphql';
 import { Document } from '@ecdlink/core';
-import { CreateDocumentRquest } from '../models/common/Document';
-import { documentActions, documentSelectors } from '../store/document';
-import { newGuid } from '../utils/common/uuid.utils';
+import { CreateDocumentRequest } from '@models/common/Document';
+import { documentActions, documentSelectors } from '@store/document';
+import { newGuid } from '@utils/common/uuid.utils';
 import { useStaticData } from './useStaticData';
-import { useAppDispatch } from '../store';
+import { useAppDispatch } from '@store';
 import { useSelector } from 'react-redux';
-import { userSelectors } from '../store/user';
+import { userSelectors } from '@store/user';
 
 export const useDocuments = () => {
   const appDispatch = useAppDispatch();
-  const { getWorkflowStatusIdByEnum, getDocumentTypeIdByEnum } = useStaticData();
+  const { getWorkflowStatusIdByEnum, getDocumentTypeIdByEnum } =
+    useStaticData();
   const user = useSelector(userSelectors.getUser);
-  const profilePictureTypeId = getDocumentTypeIdByEnum(FileTypeEnum.ProfileImage);
-  const classroomImageTypeId = getDocumentTypeIdByEnum(FileTypeEnum.ClassroomProfile);
+  const profilePictureTypeId = getDocumentTypeIdByEnum(
+    FileTypeEnum.ProfileImage
+  );
+  const classroomImageTypeId = getDocumentTypeIdByEnum(
+    FileTypeEnum.ClassroomProfile
+  );
   const userProfilePicture = useSelector(
     documentSelectors.getDocumentByTypeId(user?.id, profilePictureTypeId)
   );
@@ -22,7 +27,7 @@ export const useDocuments = () => {
   );
 
   const createNewDocument = async (
-    document: CreateDocumentRquest,
+    document: CreateDocumentRequest,
     reference?: string
   ): Promise<Document | undefined> => {
     const statusId = await getWorkflowStatusIdByEnum(
@@ -46,8 +51,13 @@ export const useDocuments = () => {
     return documentInputModel;
   };
 
-  const updateDocument = async (existingDocument: Document, imageBaseString: string) => {
-    const statusId = await getWorkflowStatusIdByEnum(WorkflowStatusEnum.DocumentVerified);
+  const updateDocument = async (
+    existingDocument: Document,
+    imageBaseString: string
+  ) => {
+    const statusId = await getWorkflowStatusIdByEnum(
+      WorkflowStatusEnum.DocumentVerified
+    );
 
     const documentInputModel: Document = {
       ...existingDocument,

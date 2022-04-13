@@ -2,14 +2,16 @@ import { renderIcon, Typography } from '@ecdlink/ui';
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { ACTIVITY_PAGE_SIZE } from '../../../../../../../../../constants/ActivitySearch';
-import { activitySelectors } from '../../../../../../../../../store/content/activity';
-import { programmeSelectors } from '../../../../../../../../../store/programme';
-import { getSelectedActivityWarningText } from '../../../../../../../../../utils/classroom/programme-planning/programmes.utils';
+import { activitySelectors } from '@store/content/activity';
+import { programmeSelectors } from '@store/programme';
+import { getSelectedActivityWarningText } from '@utils/classroom/programme-planning/programmes.utils';
 import StoryActivityCard from '../../../story-activity-card/story-activity-card';
 import StoryCard from '../../../story-card/story-card';
 import { StoryActivitySelectViewProps } from './story-activity-select.types';
 
-export const StoryActivitySelectView: React.FC<StoryActivitySelectViewProps> = ({
+export const StoryActivitySelectView: React.FC<
+  StoryActivitySelectViewProps
+> = ({
   story,
   programmeId,
   selectedActivityId,
@@ -17,9 +19,13 @@ export const StoryActivitySelectView: React.FC<StoryActivitySelectViewProps> = (
   onActivityCleared,
   onClearStory,
 }) => {
-  const storyActivities = useSelector(activitySelectors.getStoryActivitiesByType(story.type));
+  const storyActivities = useSelector(
+    activitySelectors.getStoryActivitiesByType(story.type)
+  );
 
-  const programme = useSelector(programmeSelectors.getProgrammeById(programmeId));
+  const programme = useSelector(
+    programmeSelectors.getProgrammeById(programmeId)
+  );
   const handleClearStory = () => {
     onClearStory && onClearStory();
   };
@@ -65,7 +71,11 @@ export const StoryActivitySelectView: React.FC<StoryActivitySelectViewProps> = (
               className={'mt-2'}
               activityId={activity.id}
               material={activity.materials}
-              warningText={isSelected ? getSelectedActivityWarningText(activity, programme) : ''}
+              warningText={
+                isSelected
+                  ? getSelectedActivityWarningText(activity, programme)
+                  : ''
+              }
               onSelected={() => {
                 onActivitySelected(activity);
               }}

@@ -19,7 +19,8 @@ export const AttendanceListItem = ({
   onBadgeClick,
   className,
 }: React.PropsWithChildren<AttendanceListItemProps>) => {
-  const [attendanceItem, setAttendanceItem] = useState<AttendanceListDataItem>(item);
+  const [attendanceItem, setAttendanceItem] =
+    useState<AttendanceListDataItem>(item);
   useEffect(() => {
     item.status = item.status ?? AttendanceStatus.Unknown;
     setAttendanceItem(item);
@@ -69,7 +70,11 @@ export const AttendanceListItem = ({
         <div className={stackedListStyles.textRowsWrapper}>
           <div>
             {attendanceItem.profileDataUrl ? (
-              <Avatar size={'md'} dataUrl={attendanceItem.profileDataUrl} displayBorder />
+              <Avatar
+                size={'md'}
+                dataUrl={attendanceItem.profileDataUrl}
+                displayBorder
+              />
             ) : (
               <UserAvatar
                 size={'md'}

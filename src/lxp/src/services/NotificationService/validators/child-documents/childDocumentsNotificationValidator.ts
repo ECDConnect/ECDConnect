@@ -1,13 +1,15 @@
 import { WorkflowStatusEnum } from '@ecdlink/graphql';
 import { EnhancedStore } from '@reduxjs/toolkit';
-import { Message } from '../../../../models/messages/messages';
-import { RootState } from '../../../../store/types';
+import { Message } from '@models/messages/messages';
+import { RootState } from '@store/types';
 import {
   NotificationIntervals,
   NotificationPriority,
   NotificationValidator,
 } from '../../NotificationService.types';
-export class ChildDocumentsNotificationValidator implements NotificationValidator {
+export class ChildDocumentsNotificationValidator
+  implements NotificationValidator
+{
   interval: NotificationIntervals;
   lastCheckTimestamp: number;
   store: EnhancedStore<RootState, any>;
@@ -38,8 +40,14 @@ export class ChildDocumentsNotificationValidator implements NotificationValidato
         (doc) => doc.userId === child.userId
       );
 
-      if (childDocuments.some((doc) => doc.workflowStatusId === workflowStatus?.id)) {
-        const childUser = childrenState.childUser?.find((x) => x.id === child.userId);
+      if (
+        childDocuments.some(
+          (doc) => doc.workflowStatusId === workflowStatus?.id
+        )
+      ) {
+        const childUser = childrenState.childUser?.find(
+          (x) => x.id === child.userId
+        );
         notifications.push({
           reference: `${child.id || childUser?.idNumber}-docs`,
           title: `Problem with ${childUser?.firstName}'s document`,

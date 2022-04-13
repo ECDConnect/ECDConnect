@@ -1,14 +1,20 @@
 import { RecursivePartial } from '@ecdlink/core';
 import { EnhancedStore } from '@reduxjs/toolkit';
 import { subDays } from 'date-fns';
-import { RootState } from '../../../../store/types';
-import { NotificationIntervals, NotificationPriority } from '../../NotificationService.types';
+import { RootState } from '@store/types';
+import {
+  NotificationIntervals,
+  NotificationPriority,
+} from '../../NotificationService.types';
 import { IncompleteChildRegistrationNotificationValidator } from './incompleteChildRegistrationNotificationValidator';
 
 describe('incompleteChildRegistrationNotificationValidator', () => {
   test('should be able to create successfully', () => {
     const store: any = {};
-    const validator = new IncompleteChildRegistrationNotificationValidator(store, new Date());
+    const validator = new IncompleteChildRegistrationNotificationValidator(
+      store,
+      new Date()
+    );
 
     expect(validator.interval).toEqual(NotificationIntervals.hour);
   });
@@ -97,7 +103,9 @@ describe('incompleteChildRegistrationNotificationValidator', () => {
       new Date()
     );
     const notifications = validator.getNotifications();
-    const derickNotification = notifications.find((x) => x.reference === `1-reg`);
+    const derickNotification = notifications.find(
+      (x) => x.reference === `1-reg`
+    );
     const hopeNotification = notifications.find((x) => x.reference === `2-reg`);
 
     expect(notifications.length).toEqual(1);
@@ -140,7 +148,9 @@ describe('incompleteChildRegistrationNotificationValidator', () => {
     );
 
     const notifications = validator.getNotifications();
-    const derickNotification = notifications.find((x) => x.reference === `1-reg`);
+    const derickNotification = notifications.find(
+      (x) => x.reference === `1-reg`
+    );
 
     expect(derickNotification?.viewType).toEqual('Both');
     expect(derickNotification?.priority).toEqual(NotificationPriority.lowest);

@@ -19,7 +19,10 @@ import AlertModal from '../../../../components/dialog-alert/dialog-alert';
 import LanguageSelector from '../../../../components/language-selector/language-selector';
 import UiTable from '../../../../components/ui-table';
 import { useUser } from '../../../../hooks/useUser';
-import { ContentManagementView, FieldType } from '../../content-management-models';
+import {
+  ContentManagementView,
+  FieldType,
+} from '../../content-management-models';
 import ContentCreate from './components/content-create/content-create';
 
 export interface ContentListProps {
@@ -107,7 +110,8 @@ export default function ContentList({
       });
 
       orderedList.forEach((x) => {
-        if (x.fieldType.dataType === FieldType.Text) displayFields.push(x.fieldName);
+        if (x.fieldType.dataType === FieldType.Text)
+          displayFields.push(x.fieldName);
       });
 
       setDisplayFields(displayFields);
@@ -116,7 +120,10 @@ export default function ContentList({
 
   const fields =
     contentType.fields?.map((x) => {
-      if (x.fieldType.dataType !== FieldType.Link && x.fieldType.dataType !== FieldType.StaticLink)
+      if (
+        x.fieldType.dataType !== FieldType.Link &&
+        x.fieldType.dataType !== FieldType.StaticLink
+      )
         return x.fieldName;
       else
         return `
@@ -386,8 +393,13 @@ export default function ContentList({
                     return { field: item, use: item };
                   })}
                   rows={tableData}
-                  editRow={hasPermission(PermissionEnum.update_static) && viewEdit}
-                  deleteRow={hasPermission(PermissionEnum.delete_static) && deleteAndRefresh}
+                  editRow={
+                    hasPermission(PermissionEnum.update_static) && viewEdit
+                  }
+                  deleteRow={
+                    hasPermission(PermissionEnum.delete_static) &&
+                    deleteAndRefresh
+                  }
                 />
               </div>
             </div>

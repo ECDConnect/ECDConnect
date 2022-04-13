@@ -9,9 +9,12 @@ export interface ChildRegistrationFormModel {
   indemnityAgreementAccepted: boolean;
 }
 
-export const getChildRegistrationFormSchema = (variant: 'caregiver' | 'practitioner') => {
+export const getChildRegistrationFormSchema = (
+  variant: 'caregiver' | 'practitioner'
+) => {
   return Yup.object().shape({
-    registrationForm: variant === 'caregiver' ? Yup.string() : Yup.string().required(),
+    registrationForm:
+      variant === 'caregiver' ? Yup.string() : Yup.string().required(),
     childPhotoConsentAccepted: Yup.boolean(),
     personalInformationAgreementAccepted: Yup.boolean().required().isTrue(),
     consentAgreementAccepted: Yup.boolean().required().isTrue(),

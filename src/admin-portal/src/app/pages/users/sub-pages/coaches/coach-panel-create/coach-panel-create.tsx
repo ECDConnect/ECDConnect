@@ -33,7 +33,9 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
     props.closeDialog(value);
   };
 
-  const { data: roleData } = useQuery(RoleList, { fetchPolicy: 'cache-and-network' });
+  const { data: roleData } = useQuery(RoleList, {
+    fetchPolicy: 'cache-and-network',
+  });
 
   useEffect(() => {
     if (roleData && roleData.roles) {
@@ -61,7 +63,8 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
     defaultValues: initialUserDetailsValues,
     mode: 'onBlur',
   });
-  const { errors: userDetailFormErrors, isValid: isUserDetailValid } = userDetailFormState;
+  const { errors: userDetailFormErrors, isValid: isUserDetailValid } =
+    userDetailFormState;
   // PASSWORD FORMS
   const {
     register: passwordRegister,
@@ -72,7 +75,8 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
     defaultValues: initialPasswordValue,
     mode: 'onBlur',
   });
-  const { errors: passwordFormErrors, isValid: isPasswordValid } = passwordFormState;
+  const { errors: passwordFormErrors, isValid: isPasswordValid } =
+    passwordFormState;
   // COACH FORMS
   const {
     register: coachRegister,
@@ -197,7 +201,9 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
       <>
         <div className="bg-uiBg px-4 py-5 border-b border-gray-200 rounded-lg">
           <div className="pb-2">
-            <h3 className="text-lg leading-6 font-medium text-uiMidDark">User Detail</h3>
+            <h3 className="text-lg leading-6 font-medium text-uiMidDark">
+              User Detail
+            </h3>
           </div>
 
           <UserDetailsForm
@@ -211,7 +217,9 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
 
         <div className="mt-5 bg-uiBg px-4 py-5 border-b border-gray-200 rounded-lg">
           <div className="pb-2">
-            <h3 className="text-lg leading-6 font-medium text-uiMidDark">Coach Detail</h3>
+            <h3 className="text-lg leading-6 font-medium text-uiMidDark">
+              Coach Detail
+            </h3>
           </div>
 
           <CoachForm
@@ -223,7 +231,9 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
 
         <div className="mt-5 bg-uiBg px-4 py-5 border-b border-gray-200 rounded-lg">
           <div className="pb-2">
-            <h3 className="text-lg leading-6 font-medium text-uiMidDark">Password</h3>
+            <h3 className="text-lg leading-6 font-medium text-uiMidDark">
+              Password
+            </h3>
           </div>
 
           <PasswordForm

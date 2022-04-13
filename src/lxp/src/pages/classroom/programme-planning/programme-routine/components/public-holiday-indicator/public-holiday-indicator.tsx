@@ -4,7 +4,10 @@ import { DateFormats } from '../../../../../../constants/Dates';
 export const PublicHolidayIndicator: React.FC<{ date: Date }> = ({ date }) => {
   return (
     <div className={'flex flex-auto flex-col justify-center items-center'}>
-      <RoundIcon icon="ExclamationCircleIcon" className={'bg-alertMain text-white mt-12'} />
+      <RoundIcon
+        icon="ExclamationCircleIcon"
+        className={'bg-alertMain text-white mt-12'}
+      />
       <Typography
         type="body"
         className="mt-4"

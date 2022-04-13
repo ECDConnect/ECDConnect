@@ -15,7 +15,9 @@ export const getCheckboxCardStyle = (
   checkedBackgroundColour: Colours,
   checkedFocusColour: Colours
 ) => {
-  const backgroundColour = checked ? `bg-${checkedBackgroundColour}` : ' bg-white';
+  const backgroundColour = checked
+    ? `bg-${checkedBackgroundColour}`
+    : ' bg-white';
 
   const focusColour = checked
     ? `border-2 border-${checkedFocusColour}`

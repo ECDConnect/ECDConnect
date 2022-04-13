@@ -31,7 +31,8 @@ export const getClassroomGroupLearners = (state: RootState): LearnerDto[] =>
 export const getChildLearner = (child?: ChildDto) =>
   createSelector(
     (state: RootState) => state.classroomData.classroomGroupLearners || [],
-    (learners: LearnerDto[]) => learners.find((learner) => learner.userId === child?.userId)
+    (learners: LearnerDto[]) =>
+      learners.find((learner) => learner.userId === child?.userId)
   );
 
 export const getClassProgrammes = (state: RootState): ClassProgrammeDto[] =>
@@ -55,10 +56,14 @@ export const getClassroomProgrameType = () =>
     (state: RootState) => state,
     (rootState: RootState) => {
       if (!rootState) return;
-      const groups = rootState.classroomData.classroomGroups?.filter((x) => x.isActive) || [];
+      const groups =
+        rootState.classroomData.classroomGroups?.filter((x) => x.isActive) ||
+        [];
 
       if (groups?.length > 0) {
-        return rootState.staticData.programmeTypes?.find((x) => x.id === groups[0].programmeTypeId);
+        return rootState.staticData.programmeTypes?.find(
+          (x) => x.id === groups[0].programmeTypeId
+        );
       }
 
       return;
@@ -70,13 +75,17 @@ export const isPlaygroup = () =>
     (state: RootState) => state,
     (rootState: RootState) => {
       if (!rootState) return;
-      const groups = rootState.classroomData.classroomGroups?.filter((x) => x.isActive) || [];
+      const groups =
+        rootState.classroomData.classroomGroups?.filter((x) => x.isActive) ||
+        [];
 
       if (groups.length > 0) {
         const programmeType = rootState.staticData.programmeTypes?.find(
           (x) => x.id === groups[0].programmeTypeId
         );
-        return programmeType && programmeType.enumId === ProgrammeTypeEnum.Playgroup;
+        return (
+          programmeType && programmeType.enumId === ProgrammeTypeEnum.Playgroup
+        );
       }
 
       return;

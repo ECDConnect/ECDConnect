@@ -5,15 +5,15 @@ import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
 import { SuccessCard } from '../../../../components/success-card/success-card';
 import { DateFormats } from '../../../../constants/Dates';
-import { useOnlineStatus } from '../../../../hooks/useOnlineStatus';
-import { useProgrammePlanningRecommendations } from '../../../../hooks/useProgrammePlanningRecommendations';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
+import { useProgrammePlanningRecommendations } from '@hooks/useProgrammePlanningRecommendations';
 import OnlineOnlyModal from '../../../../modals/offline-sync/online-only-modal';
-import { programmeSelectors } from '../../../../store/programme';
+import { programmeSelectors } from '@store/programme';
 import {
   getDateRangeText,
   getProgrammeWeeks,
   getTotalIncompleteDaysInWeek,
-} from '../../../../utils/classroom/programme-planning/programmes.utils';
+} from '@utils/classroom/programme-planning/programmes.utils';
 import { ActivitySubCategoryCard } from '../components/activities/components/activity-sub-category-card/activity-sub-category-card';
 import { EmptyActivities } from '../components/activities/components/empty-activity-filter-result/empty-activity-filter-result';
 import { IconInformationIndicator } from '../components/icon-information-indicator/icon-information-indicator';
@@ -22,7 +22,11 @@ import { ProgrammeHistory } from './components/programme-history/programme-histo
 import { ProgrammeSummaryListItem } from './components/programme-summary-list-item/programme-summary-list-item';
 import { ProgrammeSummaryProps } from './programme-summary.types';
 
-const ProgrammeSummary: React.FC<ProgrammeSummaryProps> = ({ programme, noPlan, variation }) => {
+const ProgrammeSummary: React.FC<ProgrammeSummaryProps> = ({
+  programme,
+  noPlan,
+  variation,
+}) => {
   const history = useHistory();
 
   const { isOnline } = useOnlineStatus();
@@ -40,11 +44,14 @@ const ProgrammeSummary: React.FC<ProgrammeSummaryProps> = ({ programme, noPlan, 
 
   const programmeWeeks = getProgrammeWeeks(programme);
 
-  const { getAdditionalRecommendedSubCategories } = useProgrammePlanningRecommendations();
+  const { getAdditionalRecommendedSubCategories } =
+    useProgrammePlanningRecommendations();
 
   const recommendations = getAdditionalRecommendedSubCategories(programme);
 
-  const isProgrammeCompleted = programmeWeeks.every((x) => x.totalIncompleteDays === 0);
+  const isProgrammeCompleted = programmeWeeks.every(
+    (x) => x.totalIncompleteDays === 0
+  );
 
   const [displayGoodMixCard, setDisplayGoodMixCard] = useState(true);
 
@@ -101,18 +108,26 @@ const ProgrammeSummary: React.FC<ProgrammeSummaryProps> = ({ programme, noPlan, 
       {!noPlan && (
         <>
           <ProgrammePlanningHeader
-            headerText={variation === 'update' ? 'Programme summary' : 'Plan your programme'}
+            headerText={
+              variation === 'update'
+                ? 'Programme summary'
+                : 'Plan your programme'
+            }
             themeName={programme?.name}
-            plannedWeeks={programmeWeeks?.filter((week) => week.totalIncompleteDays === 0)?.length}
-            showCount={variation === 'create' || (variation === 'update' && isProgrammeCompleted)}
+            plannedWeeks={
+              programmeWeeks?.filter((week) => week.totalIncompleteDays === 0)
+                ?.length
+            }
+            showCount={
+              variation === 'create' ||
+              (variation === 'update' && isProgrammeCompleted)
+            }
             totalWeeks={programmeWeeks?.length}
-            subHeaderText={`${new Date(programme?.startDate || 0).toLocaleString(
-              'en-ZA',
-              DateFormats.standardDate
-            )} - ${new Date(programme?.endDate || 0).toLocaleString(
-              'en-ZA',
-              DateFormats.standardDate
-            )}`}
+            subHeaderText={`${new Date(
+              programme?.startDate || 0
+            ).toLocaleString('en-ZA', DateFormats.standardDate)} - ${new Date(
+              programme?.endDate || 0
+            ).toLocaleString('en-ZA', DateFormats.standardDate)}`}
           />
 
           <div className="w-full px-4 py-4">
@@ -157,10 +172,16 @@ const ProgrammeSummary: React.FC<ProgrammeSummaryProps> = ({ programme, noPlan, 
               <ProgrammeSummaryListItem
                 key={week.startDate.toString()}
                 title={getDateRangeText(
-                  week.startDate > programmeStartDate ? week.startDate : programmeStartDate,
-                  week.endDate < programmeEndDate ? week.endDate : programmeEndDate
+                  week.startDate > programmeStartDate
+                    ? week.startDate
+                    : programmeStartDate,
+                  week.endDate < programmeEndDate
+                    ? week.endDate
+                    : programmeEndDate
                 )}
-                subTitle={`${getTotalIncompleteDaysInWeek(week)} days incomplete`}
+                subTitle={`${getTotalIncompleteDaysInWeek(
+                  week
+                )} days incomplete`}
                 programmeWeek={idx + 1}
                 isCompleted={week.totalIncompleteDays === 0}
                 onClick={() => handleWeekSelected(idx)}

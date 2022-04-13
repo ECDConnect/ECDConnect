@@ -19,37 +19,48 @@ import _ from 'lodash';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import PointsSuccessCard from '../../../../../components/points-success-card/points-success-card';
-import { AttendanceResult } from '../../../../../models/classroom/attendance/AttendanceResult';
-import { MissedAttendanceGroups } from '../../../../../models/classroom/attendance/MissedAttendanceGroups';
-import { attendanceSelectors } from '../../../../../store/attendance';
-import { classroomsSelectors } from '../../../../../store/classroom';
-import { staticDataSelectors } from '../../../../../store/static-data';
-import { getPointsMessage } from '../../../../../utils/classroom/attendance/attendance-message-utils';
+import { AttendanceResult } from '@models/classroom/attendance/AttendanceResult';
+import { MissedAttendanceGroups } from '@models/classroom/attendance/MissedAttendanceGroups';
+import { attendanceSelectors } from '@store/attendance';
+import { classroomsSelectors } from '@store/classroom';
+import { staticDataSelectors } from '@store/static-data';
+import { getPointsMessage } from '@utils/classroom/attendance/attendance-message-utils';
 import {
   getAllMissedAttendanceGroupsByClassroomGroupId,
   getClassroomGroupSchoolDays,
   getMissedAttendanceSummaryGroups,
   isValidAttendableDate,
-} from '../../../../../utils/classroom/attendance/track-attendance-utils';
-import { getStorageItem, setStorageItem } from '../../../../../utils/common/local-storage.utils';
+} from '@utils/classroom/attendance/track-attendance-utils';
+import {
+  getStorageItem,
+  setStorageItem,
+} from '@utils/common/local-storage.utils';
 import EditAttendanceRegister from '../edit-attendance-register/edit-attendance-register';
 import * as styles from './attendance-summary.styles';
 
 export const AttendanceSummary: React.FC = () => {
-  const [displaySmartStartMessage, setDisplaySmartStartMessage] = useState<boolean>(false);
-  const [successMessageVisible, setSuccessMessageVisible] = useState<boolean>(true);
+  const [displaySmartStartMessage, setDisplaySmartStartMessage] =
+    useState<boolean>(false);
+  const [successMessageVisible, setSuccessMessageVisible] =
+    useState<boolean>(true);
   const [isSmartStartUser, setIsSmartStartUser] = useState<boolean>(true);
-  const [attendanceActionList, setAttendanceActionList] = useState<ActionListDataItem[]>([]);
+  const [attendanceActionList, setAttendanceActionList] = useState<
+    ActionListDataItem[]
+  >([]);
 
   const [attendanceEditDay, setAttendanceEditDay] = useState<Date>();
-  const [missedAttendanceGroups, setMissedAttendanceGroups] = useState<MissedAttendanceGroups[]>(
-    []
+  const [missedAttendanceGroups, setMissedAttendanceGroups] = useState<
+    MissedAttendanceGroups[]
+  >([]);
+  const [submitText, setSubmitText] = useState<string>(
+    'Submit & go to next day'
   );
-  const [submitText, setSubmitText] = useState<string>('Submit & go to next day');
   const [editAttendanceRegisterVisible, setEditAttendanceRegisterVisible] =
     useState<boolean>(false);
-  const [isValidAttendanceDay, setIsValidAttendanceDay] = useState<boolean>(false);
-  const [currentEditClassroomGroupId, setCurrentEditClassroomGroupId] = useState<string>();
+  const [isValidAttendanceDay, setIsValidAttendanceDay] =
+    useState<boolean>(false);
+  const [currentEditClassroomGroupId, setCurrentEditClassroomGroupId] =
+    useState<string>();
 
   const todayDate = new Date();
   const classProgrammes = useSelector(classroomsSelectors.getClassProgrammes);
@@ -61,7 +72,9 @@ export const AttendanceSummary: React.FC = () => {
     let hasClosedPointsMessage = getStorageItem<boolean>(
       LocalStorageKeys.hasClosedAttendanceSmartStartPointsMessage
     );
-    let isCurrentSmartStartUser = getStorageItem<boolean>(LocalStorageKeys.isSmartStartUser);
+    let isCurrentSmartStartUser = getStorageItem<boolean>(
+      LocalStorageKeys.isSmartStartUser
+    );
 
     if (hasClosedPointsMessage === undefined) {
       hasClosedPointsMessage = false;
@@ -84,16 +97,20 @@ export const AttendanceSummary: React.FC = () => {
       const attendance = attendanceData as AttendanceDto[];
       const holidays = publicHolidays as Holiday[];
 
-      const meetingDays: number[] = getClassroomGroupSchoolDays(classProgrammes);
+      const meetingDays: number[] =
+        getClassroomGroupSchoolDays(classProgrammes);
 
-      setIsValidAttendanceDay(isValidAttendableDate(todayDate, meetingDays || [], holidays));
-      const attendanceToDoList: MissedAttendanceGroups[] = getMissedAttendanceSummaryGroups(
-        classroomGroups || [],
-        classProgrammes,
-        attendance,
-        holidays,
-        todayDate
+      setIsValidAttendanceDay(
+        isValidAttendableDate(todayDate, meetingDays || [], holidays)
       );
+      const attendanceToDoList: MissedAttendanceGroups[] =
+        getMissedAttendanceSummaryGroups(
+          classroomGroups || [],
+          classProgrammes,
+          attendance,
+          holidays,
+          todayDate
+        );
 
       if (attendanceToDoList) {
         setMissedAttendanceGroups(attendanceToDoList);
@@ -116,10 +133,15 @@ export const AttendanceSummary: React.FC = () => {
         group: ClassroomGroupDto;
       }[] = [];
       for (const classProgramme of classProgrammes) {
-        const group = classroomGroups?.find((x) => x.id === classProgramme.classroomGroupId);
+        const group = classroomGroups?.find(
+          (x) => x.id === classProgramme.classroomGroupId
+        );
 
         if (group) {
-          const dayDate = addDays(startOfWeekDate, classProgramme.meetingDay - 1);
+          const dayDate = addDays(
+            startOfWeekDate,
+            classProgramme.meetingDay - 1
+          );
           if (dayDate.valueOf() < new Date().valueOf()) {
             actionListToDisplayWrapper.push({
               date: dayDate,
@@ -210,13 +232,23 @@ export const AttendanceSummary: React.FC = () => {
     setSubmitText(isLast ? 'Submit' : 'Submit & go to next day');
   };
 
-  const goToNextEditAttendanceRegister = (attendanceResult: AttendanceResult) => {
-    if (currentEditClassroomGroupId && missedAttendanceGroups && attendanceResult) {
-      const updatedMissedAttendanceItemIndex = missedAttendanceGroups.findIndex((x) => {
-        return isSameDay(x.missedDay, attendanceResult.attendanceDate);
-      });
+  const goToNextEditAttendanceRegister = (
+    attendanceResult: AttendanceResult
+  ) => {
+    if (
+      currentEditClassroomGroupId &&
+      missedAttendanceGroups &&
+      attendanceResult
+    ) {
+      const updatedMissedAttendanceItemIndex = missedAttendanceGroups.findIndex(
+        (x) => {
+          return isSameDay(x.missedDay, attendanceResult.attendanceDate);
+        }
+      );
 
-      const updatedMissedAttendance: MissedAttendanceGroups[] = _.cloneDeep(missedAttendanceGroups);
+      const updatedMissedAttendance: MissedAttendanceGroups[] = _.cloneDeep(
+        missedAttendanceGroups
+      );
 
       if (updatedMissedAttendanceItemIndex >= 0) {
         updatedMissedAttendance.splice(updatedMissedAttendanceItemIndex, 1);
@@ -228,7 +260,11 @@ export const AttendanceSummary: React.FC = () => {
         getAllMissedAttendanceGroupsByClassroomGroupId(updatedMissedAttendance);
 
       if (allMissedAttendanceDays && allMissedAttendanceDays.length > 0) {
-        setSubmitText(allMissedAttendanceDays.length > 1 ? 'Submit & go to next day' : 'Submit');
+        setSubmitText(
+          allMissedAttendanceDays.length > 1
+            ? 'Submit & go to next day'
+            : 'Submit'
+        );
         setAttendanceEditDay(allMissedAttendanceDays[0]);
       } else {
         setEditAttendanceRegisterVisible(false);
@@ -238,7 +274,10 @@ export const AttendanceSummary: React.FC = () => {
 
   const closeMessage = () => {
     setDisplaySmartStartMessage(false);
-    setStorageItem(true, LocalStorageKeys.hasClosedAttendanceSmartStartPointsMessage);
+    setStorageItem(
+      true,
+      LocalStorageKeys.hasClosedAttendanceSmartStartPointsMessage
+    );
   };
 
   const closeEditAttendanceRegister = () => {
@@ -262,7 +301,9 @@ export const AttendanceSummary: React.FC = () => {
           <div className={'px-4 pt-4'}>
             <Alert
               title={'Today is not a school day.'}
-              message={'This is a great time to catch up on your attendance registers!'}
+              message={
+                'This is a great time to catch up on your attendance registers!'
+              }
               type={'info'}
             />
           </div>
@@ -296,7 +337,10 @@ export const AttendanceSummary: React.FC = () => {
           </div>
         )}
 
-        <StackedList listItems={attendanceActionList} type={'ActionList'}></StackedList>
+        <StackedList
+          listItems={attendanceActionList}
+          type={'ActionList'}
+        ></StackedList>
 
         <MessageModal
           title={'What can you do with SmartStart points?'}
@@ -307,7 +351,11 @@ export const AttendanceSummary: React.FC = () => {
         />
       </div>
       {attendanceEditDay && (
-        <Dialog fullScreen visible={editAttendanceRegisterVisible} position={DialogPosition.Top}>
+        <Dialog
+          fullScreen
+          visible={editAttendanceRegisterVisible}
+          position={DialogPosition.Top}
+        >
           <div className={styles.dialogContent}>
             <EditAttendanceRegister
               attendanceDate={attendanceEditDay}

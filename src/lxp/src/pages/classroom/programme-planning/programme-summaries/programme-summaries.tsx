@@ -2,8 +2,8 @@ import { ProgrammeDto } from '@ecdlink/core';
 import { BannerWrapper } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
-import { useOnlineStatus } from '../../../../hooks/useOnlineStatus';
-import { programmeSelectors } from '../../../../store/programme';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
+import { programmeSelectors } from '@store/programme';
 import { FutureProgrammes } from '../programme-summary/components/future-programmes/future-programmes';
 import ProgrammeSummary from '../programme-summary/programme-summary';
 import { ProgrammeSummaryRouteState } from '../programme-summary/programme-summary.types';
@@ -14,7 +14,9 @@ export const ProgrammeSummaries: React.FC = () => {
   const { state } = useLocation<ProgrammeSummaryRouteState>();
   const todaysProgramme = useSelector(programmeSelectors.getTodaysProgramme());
   const variation = state.variation;
-  const idProgramme = useSelector(programmeSelectors.getProgrammeById(state?.programmeId));
+  const idProgramme = useSelector(
+    programmeSelectors.getProgrammeById(state?.programmeId)
+  );
   const noPlan = state?.programmeId === undefined;
   const programme = idProgramme || todaysProgramme;
 
@@ -27,7 +29,9 @@ export const ProgrammeSummaries: React.FC = () => {
       showBackground={false}
       size="medium"
       renderBorder={true}
-      title={variation === 'create' ? 'Plan your programme' : 'Programme summary'}
+      title={
+        variation === 'create' ? 'Plan your programme' : 'Programme summary'
+      }
       color="primary"
       onBack={handleBack}
       displayOffline={!isOnline}
@@ -44,7 +48,11 @@ export const ProgrammeSummaries: React.FC = () => {
           }}
         />
       )}
-      <ProgrammeSummary programme={programme} noPlan={noPlan && !programme} variation={variation} />
+      <ProgrammeSummary
+        programme={programme}
+        noPlan={noPlan && !programme}
+        variation={variation}
+      />
     </BannerWrapper>
   );
 };

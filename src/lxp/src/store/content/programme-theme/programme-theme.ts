@@ -21,6 +21,7 @@ const programmeThemeSlice = createSlice({
   },
 });
 
-const { reducer: programmeThemeReducer, actions: programmeThemeActions } = programmeThemeSlice;
+const { reducer: programmeThemeReducer, actions: programmeThemeActions } =
+  programmeThemeSlice;
 
 export { programmeThemeReducer, programmeThemeActions };

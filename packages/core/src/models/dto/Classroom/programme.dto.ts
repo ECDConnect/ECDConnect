@@ -1,6 +1,5 @@
 import { EntityBase } from '../entity-base';
 
-
 export interface ProgrammeDto extends EntityBase {
   classroomId: string;
   name: string;

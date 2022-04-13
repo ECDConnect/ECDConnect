@@ -21,7 +21,9 @@ export default function LanguageView() {
   const type = 'Language';
   const dialog = useDialog();
   const { setNotification } = useNotifications();
-  const { data, refetch } = useQuery(GetAllLanguage, { fetchPolicy: 'cache-and-network' });
+  const { data, refetch } = useQuery(GetAllLanguage, {
+    fetchPolicy: 'cache-and-network',
+  });
   const [tableData, setTableData] = useState<any[]>([]);
   const [deleteMutation] = useMutation(DeleteLanguage);
   const panel = usePanel();
@@ -121,8 +123,13 @@ export default function LanguageView() {
                     { field: 'locale', use: 'locale' },
                   ]}
                   rows={tableData}
-                  editRow={hasPermission(PermissionEnum.update_static) && displayPanel}
-                  deleteRow={hasPermission(PermissionEnum.delete_static) && deleteAndRefresh}
+                  editRow={
+                    hasPermission(PermissionEnum.update_static) && displayPanel
+                  }
+                  deleteRow={
+                    hasPermission(PermissionEnum.delete_static) &&
+                    deleteAndRefresh
+                  }
                 />
               </div>
             </div>

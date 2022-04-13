@@ -1,6 +1,9 @@
 import { useLazyQuery, useQuery } from '@apollo/client';
 import { PractitionerMetricReport, useDialog } from '@ecdlink/core';
-import { practitionerMetrics, practitionerNewSignupMetric } from '@ecdlink/graphql';
+import {
+  practitionerMetrics,
+  practitionerNewSignupMetric,
+} from '@ecdlink/graphql';
 import { DialogPosition } from '@ecdlink/ui';
 import {
   AcademicCapIcon,
@@ -19,14 +22,19 @@ import StatsBar from '../stats-bar/stats-bar';
 export default function PractitionerDashboard() {
   const dialog = useDialog();
 
-  const { data } = useQuery(practitionerMetrics, { fetchPolicy: 'cache-and-network' });
-  const [getPractitionerNewSignupMetric] = useLazyQuery(practitionerNewSignupMetric, {
+  const { data } = useQuery(practitionerMetrics, {
     fetchPolicy: 'cache-and-network',
-    variables: {
-      fromDate: new Date(),
-      toDate: new Date(),
-    },
   });
+  const [getPractitionerNewSignupMetric] = useLazyQuery(
+    practitionerNewSignupMetric,
+    {
+      fetchPolicy: 'cache-and-network',
+      variables: {
+        fromDate: new Date(),
+        toDate: new Date(),
+      },
+    }
+  );
 
   const [practstats, setPractstats] = useState([]);
   const [practStatusdata, setPractStatusdata] = useState<any>();
@@ -97,7 +105,10 @@ export default function PractitionerDashboard() {
     const today = new Date();
     const pastDate = new Date();
     pastDate.setDate(pastDate.getDate() - 30);
-    const dateRange = `${format(pastDate, 'd MMM yyyy')} - ${format(today, 'd MMM yyyy')}`;
+    const dateRange = `${format(pastDate, 'd MMM yyyy')} - ${format(
+      today,
+      'd MMM yyyy'
+    )}`;
 
     getPractitionerNewSignupMetric({
       variables: {
@@ -140,9 +151,15 @@ export default function PractitionerDashboard() {
   };
 
   const setupPractProgramdata = (reportData: PractitionerMetricReport) => {
-    const playgroupData = reportData.programTypesData?.find((x) => x.name === 'Playgroup')?.value;
-    const preschoolData = reportData.programTypesData?.find((x) => x.name === 'Preschool')?.value;
-    const dayMotherData = reportData.programTypesData?.find((x) => x.name === 'Day Mother')?.value;
+    const playgroupData = reportData.programTypesData?.find(
+      (x) => x.name === 'Playgroup'
+    )?.value;
+    const preschoolData = reportData.programTypesData?.find(
+      (x) => x.name === 'Preschool'
+    )?.value;
+    const dayMotherData = reportData.programTypesData?.find(
+      (x) => x.name === 'Day Mother'
+    )?.value;
 
     const PractProgramdata = {
       labels: ['Program Types'],
@@ -221,14 +238,19 @@ export default function PractitionerDashboard() {
         <div className="mt-4 grid grid-cols-2 gap-4">
           <div className="bg-uiBg pt-5 px-4 pb-12 sm:pt-6 sm:px-6 rounded-lg overflow-hidden">
             {practStatusdata && (
-              <DoughnutChart data={practStatusdata} graphTitle={"Practitioner's Status"} />
+              <DoughnutChart
+                data={practStatusdata}
+                graphTitle={"Practitioner's Status"}
+              />
             )}
           </div>
           <div className="bg-uiBg pt-5 px-4 pb-12 sm:pt-6 sm:px-6 rounded-lg overflow-hidden">
             {practProgramdata && (
               <HorizontalBarChart
                 data={practProgramdata}
-                graphTitle={'Number of practitioners with Program / Classroom types'}
+                graphTitle={
+                  'Number of practitioners with Program / Classroom types'
+                }
               />
             )}
           </div>

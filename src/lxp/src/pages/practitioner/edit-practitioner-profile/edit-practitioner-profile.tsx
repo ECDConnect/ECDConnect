@@ -1,27 +1,31 @@
 import { useDialog, useStepNavigation } from '@ecdlink/core';
-import { ClassProgrammeDto, ClassroomDto, ClassroomGroupDto } from '@ecdlink/core';
+import {
+  ClassProgrammeDto,
+  ClassroomDto,
+  ClassroomGroupDto,
+} from '@ecdlink/core';
 import { IonContent } from '@ionic/react';
 import { ActionModal, BannerWrapper } from '@ecdlink/ui';
 import { DialogPosition } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
-import { useAppDispatch } from '../../../store';
-import { classroomsActions } from '../../../store/classroom';
-import { staticDataSelectors } from '../../../store/static-data';
-import { userSelectors } from '../../../store/user';
-import { newGuid } from '../../../utils/common/uuid.utils';
+import { useAppDispatch } from '@store';
+import { classroomsActions } from '@store/classroom';
+import { staticDataSelectors } from '@store/static-data';
+import { userSelectors } from '@store/user';
+import { newGuid } from '@utils/common/uuid.utils';
 import { AddPhoto } from './components/add-photo/add-photo';
 import { ConfirmPlayGroups } from './components/confirm-playgroups/confirm-playgroups';
 import { EditMultiplePlayGroups } from './components/edit-mutliple-playgroups/edit-multiple-playgroups';
-import { EditPlaygroupModel } from '../../../schemas/practitioner/edit-playgroups';
+import { EditPlaygroupModel } from '@schemas/practitioner/edit-playgroups';
 import { EditPlaygroupCountForm } from './components/edit-practitioner-playgroup-count-form/edit-playgroup-count-form';
 import { EditProgrammeForm } from './components/edit-programme-form/edit-programme-form';
-import { EditProgrammeModel } from '../../../schemas/practitioner/edit-programme';
+import { EditProgrammeModel } from '@schemas/practitioner/edit-programme';
 import { EditPractitionerSteps } from './edit-practitioner-profile.types';
-import { useOnlineStatus } from '../../../hooks/useOnlineStatus';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { ProgrammeTypeEnum } from '@ecdlink/graphql';
-import { useStoreSetup } from '../../../hooks/useStoreSetup';
+import { useStoreSetup } from '@hooks/useStoreSetup';
 import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
 
 export const EditPractitionerProfile: React.FC = () => {
@@ -39,15 +43,17 @@ export const EditPractitionerProfile: React.FC = () => {
   const [playgroups, setPlaygroups] = useState<EditPlaygroupModel[]>();
   const [editPlaygroupAtIndex, setEditPlayGroupAtIndex] = useState<number>();
 
-  const { activeStepKey, goBackOneStep, canGoBack, goToStep } = useStepNavigation(
-    EditPractitionerSteps.setupProgramme
-  );
+  const { activeStepKey, goBackOneStep, canGoBack, goToStep } =
+    useStepNavigation(EditPractitionerSteps.setupProgramme);
 
   useEffect(() => {
     setLabel(`step 1 of 3`);
   }, []);
 
-  const onPlayGroupsEdit = (playgroups: EditPlaygroupModel[], index: number) => {
+  const onPlayGroupsEdit = (
+    playgroups: EditPlaygroupModel[],
+    index: number
+  ) => {
     setPlaygroups(playgroups);
     setEditPlayGroupAtIndex(index);
     goToStep(EditPractitionerSteps.setupPlaygroups);
@@ -90,7 +96,9 @@ export const EditPractitionerProfile: React.FC = () => {
 
       appDispatch(classroomsActions.createClassroom(classroomInputModel));
 
-      const programmeType = programmeTypes.find((x) => x.enumId === ProgrammeTypeEnum.Playgroup);
+      const programmeType = programmeTypes.find(
+        (x) => x.enumId === ProgrammeTypeEnum.Playgroup
+      );
       if (programme?.type === programmeType?.id && playgroups && classroomId) {
         for (const playGroup of playgroups) {
           const classroomGroupId = newGuid();
@@ -102,7 +110,9 @@ export const EditPractitionerProfile: React.FC = () => {
             isActive: true,
           };
 
-          appDispatch(classroomsActions.createClassroomGroup(classProgrammeInputModel));
+          appDispatch(
+            classroomsActions.createClassroomGroup(classProgrammeInputModel)
+          );
 
           for (const meetingDay of playGroup.meetingDays) {
             const classProgrammeId = newGuid();
@@ -116,7 +126,11 @@ export const EditPractitionerProfile: React.FC = () => {
               isActive: true,
             };
 
-            appDispatch(classroomsActions.createClassroomProgramme(classProgrammeInputModel));
+            appDispatch(
+              classroomsActions.createClassroomProgramme(
+                classProgrammeInputModel
+              )
+            );
           }
         }
       } else {
@@ -129,7 +143,9 @@ export const EditPractitionerProfile: React.FC = () => {
           isActive: true,
         };
 
-        appDispatch(classroomsActions.createClassroomGroup(classProgrammeInputModel));
+        appDispatch(
+          classroomsActions.createClassroomGroup(classProgrammeInputModel)
+        );
 
         const weekDays = [1, 2, 3, 4, 5];
         for (const meetingDay of weekDays) {
@@ -144,7 +160,9 @@ export const EditPractitionerProfile: React.FC = () => {
             isActive: true,
           };
 
-          appDispatch(classroomsActions.createClassroomProgramme(classProgrammeInputModel));
+          appDispatch(
+            classroomsActions.createClassroomProgramme(classProgrammeInputModel)
+          );
         }
       }
 
@@ -248,7 +266,9 @@ export const EditPractitionerProfile: React.FC = () => {
           icon={'XCircleIcon'}
           iconColor={'alertMain'}
           iconBorderColor="alertBg"
-          importantText={'Please complete the process otherwise you will lose your changes.'}
+          importantText={
+            'Please complete the process otherwise you will lose your changes.'
+          }
           actionButtons={[
             {
               colour: 'primary',
@@ -295,7 +315,9 @@ export const EditPractitionerProfile: React.FC = () => {
           backgroundColour={'uiBg'}
           displayOffline={!isOnline}
         >
-          <div className={'px-4 pb-5'}>{steps(activeStepKey as EditPractitionerSteps)}</div>
+          <div className={'px-4 pb-5'}>
+            {steps(activeStepKey as EditPractitionerSteps)}
+          </div>
         </BannerWrapper>
       </IonContent>
     </>

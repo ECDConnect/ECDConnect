@@ -3,13 +3,9 @@ import { classNames, renderIcon } from '@ecdlink/ui';
 import * as styles from './programme-summary-list-item.styles';
 import { ProgrammeSummaryListItemProps } from './programme-summary-list-item.types';
 
-export const ProgrammeSummaryListItem: React.FC<ProgrammeSummaryListItemProps> = ({
-  title,
-  subTitle,
-  programmeWeek,
-  isCompleted = false,
-  onClick,
-}) => {
+export const ProgrammeSummaryListItem: React.FC<
+  ProgrammeSummaryListItemProps
+> = ({ title, subTitle, programmeWeek, isCompleted = false, onClick }) => {
   const getRoutineItemPostSlotRender = () => {
     return (
       <>
@@ -34,7 +30,12 @@ export const ProgrammeSummaryListItem: React.FC<ProgrammeSummaryListItemProps> =
         <Typography type={'body'} color={'black'} weight="bold" text={title} />
         {!isCompleted && (
           <div className={styles.subTitle}>
-            <div className={classNames('mr-1', styles.getShapeClass('triangle', 'alertDark'))} />
+            <div
+              className={classNames(
+                'mr-1',
+                styles.getShapeClass('triangle', 'alertDark')
+              )}
+            />
 
             <Typography
               className="truncate"

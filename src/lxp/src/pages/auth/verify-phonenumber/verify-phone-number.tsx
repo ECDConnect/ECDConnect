@@ -18,11 +18,11 @@ import { useHistory, useLocation } from 'react-router-dom';
 import {
   VerifyPhoneNumberModel,
   verifyPhoneNumberSchema,
-} from '../../../schemas/auth/verify-phone-number/verify-phone-number';
-import AuthService from '../../../services/AuthService/AuthService';
-import { useAppDispatch } from '../../../store';
-import { authThunkActions } from '../../../store/auth';
-import { settingActions } from '../../../store/settings';
+} from '@schemas/auth/verify-phone-number/verify-phone-number';
+import AuthService from '@services/AuthService/AuthService';
+import { useAppDispatch } from '@store';
+import { authThunkActions } from '@store/auth';
+import { settingActions } from '@store/settings';
 import * as styles from './verify-phone-number.styles';
 import { VerifyPhoneNumberRouteState } from './verify-phone-number.types';
 const { version } = require('../../../../package.json');
@@ -52,7 +52,9 @@ export const VerifyPhoneNumber = () => {
             icon="ExclamationCircleIcon"
             iconBorderColor="alertBg"
             iconColor="alertMain"
-            importantText={`Is your phone number correct: <b>${state?.phoneNumber || '000'}</b>`}
+            importantText={`Is your phone number correct: <b>${
+              state?.phoneNumber || '000'
+            }</b>`}
             paragraphs={[
               'If your phone number is incorrect, please call our toll free number to change it.',
             ]}
@@ -112,7 +114,10 @@ export const VerifyPhoneNumber = () => {
 
       appDispatch(authThunkActions.login(body))
         .then(async (isAuthenticated: any) => {
-          if (isAuthenticated && isAuthenticated?.payload?.response?.status !== 401) {
+          if (
+            isAuthenticated &&
+            isAuthenticated?.payload?.response?.status !== 401
+          ) {
             await appDispatch(settingActions.setApplicationVersion(version));
             history.push('/');
             setIsLoading(false);
@@ -163,7 +168,11 @@ export const VerifyPhoneNumber = () => {
               className={styles.marginTop}
               disabled={disableNewCodeSend}
             >
-              <Typography type={'small'} color="primary" text={'Send me a new code'} />
+              <Typography
+                type={'small'}
+                color="primary"
+                text={'Send me a new code'}
+              />
             </Button>
           )}
           {isValid && (
@@ -180,7 +189,10 @@ export const VerifyPhoneNumber = () => {
           )}
 
           <div className={classNames(styles.helpWrapper, 'mt-6')}>
-            {renderIcon('QuestionMarkCircleIcon', classNames(styles.iconSize, 'text-primary mr-2'))}
+            {renderIcon(
+              'QuestionMarkCircleIcon',
+              classNames(styles.iconSize, 'text-primary mr-2')
+            )}
             <Typography
               className={styles.smallMarginLeft}
               type={'help'}

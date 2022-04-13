@@ -1,6 +1,6 @@
 import { ActivityDto } from '@ecdlink/core';
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import { ContentActivityService } from '../../../services/ContentActivityService';
+import { ContentActivityService } from '@services/ContentActivityService';
 import { RootState, ThunkApiType } from '../../types';
 
 export const getActivities = createAsyncThunk<
@@ -19,7 +19,9 @@ export const getActivities = createAsyncThunk<
       let activities: ActivityDto[] | undefined;
 
       if (userAuth?.auth_token) {
-        activities = await new ContentActivityService(userAuth?.auth_token).getActivities(locale);
+        activities = await new ContentActivityService(
+          userAuth?.auth_token
+        ).getActivities(locale);
       } else {
         return rejectWithValue('no access token, profile check required');
       }

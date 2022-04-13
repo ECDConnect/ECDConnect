@@ -12,11 +12,11 @@ import {
 import React from 'react';
 import { useSelector } from 'react-redux';
 import LanguageSelector from '../../../../../../../components/language-selector/language-selector';
-import { StoryBookTypes } from '../../../../../../../enums/ProgrammeRoutineType';
-import { useOnlineStatus } from '../../../../../../../hooks/useOnlineStatus';
-import { activitySelectors } from '../../../../../../../store/content/activity';
-import { storyBookSelectors } from '../../../../../../../store/content/story-book';
-import { getLogo, LogoSvgs } from '../../../../../../../utils/common/svg.utils';
+import { StoryBookTypes } from '@enums/ProgrammeRoutineType';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
+import { activitySelectors } from '@store/content/activity';
+import { storyBookSelectors } from '@store/content/story-book';
+import { getLogo, LogoSvgs } from '@utils/common/svg.utils';
 import StoryActivityCard from '../story-activity-card/story-activity-card';
 import StoryCard from '../story-card/story-card';
 import { StoryActivityDetailsProps } from './story-activity-details.types';
@@ -34,10 +34,15 @@ const StoryActivityDetails: React.FC<StoryActivityDetailsProps> = ({
   selected,
 }) => {
   const { isOnline } = useOnlineStatus();
-  const activityDetail = useSelector(activitySelectors.getActivityById(activityId));
-  const storyBook = useSelector(storyBookSelectors.getStoryBookById(storyBookId));
+  const activityDetail = useSelector(
+    activitySelectors.getActivityById(activityId)
+  );
+  const storyBook = useSelector(
+    storyBookSelectors.getStoryBookById(storyBookId)
+  );
 
-  const title = viewType === 'StoryBook' ? storyBook?.name : activityDetail?.name;
+  const title =
+    viewType === 'StoryBook' ? storyBook?.name : activityDetail?.name;
   const subTitle = viewType === 'StoryBook' ? 'Story' : 'Story Activity';
 
   if (viewType === 'StoryBook' && !storyBook) return <></>;
@@ -114,7 +119,11 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
       <div className={'flex flex-col items-start justify-start'}>
         <LanguageSelector currentLocale={'en-za'} selectLanguage={() => {}} />
 
-        <div className={'p-4 mb-24 w-full flex flex-col items-stetch justify-start'}>
+        <div
+          className={
+            'p-4 mb-24 w-full flex flex-col items-stetch justify-start'
+          }
+        >
           <div className={'flex flex-row items-center justify-start'}>
             <StatusChip
               backgroundColour={'infoBb'}
@@ -124,7 +133,12 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
               text={storyBook.type}
             />
           </div>
-          <Typography text={storyBook.name} type={'h1'} color={'primary'} className={'mt-2'} />
+          <Typography
+            text={storyBook.name}
+            type={'h1'}
+            color={'primary'}
+            className={'mt-2'}
+          />
           {!disabled &&
             (isSelected ? (
               <Button
@@ -181,7 +195,9 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
                       text={storyBook.bookLocation}
                       type={'unspecified'}
                       underline
-                      color={storyBook.bookLocation.match(URL) ? 'infoBb' : 'black'}
+                      color={
+                        storyBook.bookLocation.match(URL) ? 'infoBb' : 'black'
+                      }
                       onClick={() => {
                         onBookLocationClicked(storyBook.bookLocation);
                       }}
@@ -189,7 +205,11 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
                     />
                   </li>
                 </ul>
-                <Typography text={'Key words:'} type={'unspecified'} className={'mt-4'} />
+                <Typography
+                  text={'Key words:'}
+                  type={'unspecified'}
+                  className={'mt-4'}
+                />
                 <div className={'flex flex-row flex-wrap'}>
                   {storyBook.keywords.split(',').map((keyword) => (
                     <StatusChip
@@ -208,7 +228,9 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
             {storyBook?.type === StoryBookTypes.readAloud && (
               <>
                 <Typography
-                  text={'Where can you find a copy of this read aloud story for print or download?'}
+                  text={
+                    'Where can you find a copy of this read aloud story for print or download?'
+                  }
                   type={'unspecified'}
                 />
                 <ul className={'ml-4 list-disc mt-4'}>
@@ -218,7 +240,9 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
                       type={'unspecified'}
                       underline
                       hasMarkup
-                      color={storyBook.bookLocation.match(URL) ? 'primary' : 'black'}
+                      color={
+                        storyBook.bookLocation.match(URL) ? 'primary' : 'black'
+                      }
                       onClick={() => {
                         onBookLocationClicked(storyBook.bookLocation);
                       }}
@@ -248,14 +272,20 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
                 </li>
                 <li>
                   <Typography
-                    text={'Join a book club or ask your club or community to share books'}
+                    text={
+                      'Join a book club or ask your club or community to share books'
+                    }
                     type={'unspecified'}
                     fontSize={'14'}
                   />
                 </li>
               </ul>
 
-              <Typography className={'mt-2'} text={'Use an online resource'} type={'unspecified'} />
+              <Typography
+                className={'mt-2'}
+                text={'Use an online resource'}
+                type={'unspecified'}
+              />
 
               <Typography
                 className={'mt-4'}
@@ -310,10 +340,15 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
               <Alert
                 className={'my-4'}
                 type={'info'}
-                message={'WhatsApps will be charged at your standard carrier rates.'}
+                message={
+                  'WhatsApps will be charged at your standard carrier rates.'
+                }
               />
 
-              <Typography text={'Ideas for making your own stories:'} type={'unspecified'} />
+              <Typography
+                text={'Ideas for making your own stories:'}
+                type={'unspecified'}
+              />
               <ul className={'ml-4 list-disc mt-4'}>
                 <li>
                   <Typography
@@ -324,7 +359,9 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
                 </li>
                 <li>
                   <Typography
-                    text={'Use your imagination to make up your own story and use expressions'}
+                    text={
+                      'Use your imagination to make up your own story and use expressions'
+                    }
                     type={'unspecified'}
                     fontSize={'14'}
                   />
@@ -355,7 +392,10 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
             storyBook.type !== StoryBookTypes.other &&
             storyBookParts &&
             storyBookParts.map((bookPart) => (
-              <div key={bookPart.id} className={'flex flex-col items-stretch justify-start mt-4'}>
+              <div
+                key={bookPart.id}
+                className={'flex flex-col items-stretch justify-start mt-4'}
+              >
                 <div className={'flex flex-row items-start justify-start'}>
                   <div className={'mr-4 flex flex-row justify-center w-1/12'}>
                     <div
@@ -374,12 +414,19 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
                   </div>
 
                   <div className={'flex flex-col w-11/12'}>
-                    <Typography type={'markdown'} fontSize={'14'} text={bookPart.partText} />
+                    <Typography
+                      type={'markdown'}
+                      fontSize={'14'}
+                      text={bookPart.partText}
+                    />
                   </div>
                 </div>
 
                 {bookPart.storyBookPartQuestions.map((question) => (
-                  <div className={'flex flex-row items-start mt-2'} key={question.id}>
+                  <div
+                    className={'flex flex-row items-start mt-2'}
+                    key={question.id}
+                  >
                     <div className={'mr-4 flex flex-row justify-center w-1/12'}>
                       <RoundIcon
                         size={{ h: '7', w: '7' }}
@@ -401,7 +448,9 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
               </div>
             ))}
         </div>
-        <div className={'p-4 mb-20 w-full flex flex-col items-start justify-start'}>
+        <div
+          className={'p-4 mb-20 w-full flex flex-col items-start justify-start'}
+        >
           {!disabled &&
             (isSelected ? (
               <Button
@@ -456,7 +505,12 @@ const StorybookActivityDetails: React.FC<StorybookActivityDetailsProps> = ({
       <div className={'flex flex-col pb-24'}>
         <LanguageSelector currentLocale={'en-za'} selectLanguage={() => {}} />
         <Divider />
-        <Typography className="px-4" text={activity.name} type={'h1'} color={'primary'} />
+        <Typography
+          className="px-4"
+          text={activity.name}
+          type={'h1'}
+          color={'primary'}
+        />
         {!disabled &&
           (isSelected ? (
             <div className="pl-4 pr-4">
@@ -502,10 +556,18 @@ const StorybookActivityDetails: React.FC<StorybookActivityDetailsProps> = ({
         )}
 
         <div className="px-4 mt-4">
-          <Typography type="markdown" fontSize="14" text={activity.description} />
+          <Typography
+            type="markdown"
+            fontSize="14"
+            text={activity.description}
+          />
         </div>
         <div className="p-4 mt-2">
-          <Typography className="p-4 mt-2" type="markdown" text={activity.notes} />
+          <Typography
+            className="p-4 mt-2"
+            type="markdown"
+            text={activity.notes}
+          />
         </div>
       </div>
     </div>

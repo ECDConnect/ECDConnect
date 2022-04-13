@@ -1,6 +1,10 @@
 import { useQuery } from '@apollo/client';
 import { ContentTypeDto } from '@ecdlink/core';
-import { contentDefinitions, contentTypes, GetAllLanguage } from '@ecdlink/graphql';
+import {
+  contentDefinitions,
+  contentTypes,
+  GetAllLanguage,
+} from '@ecdlink/graphql';
 import { classNames } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import ContentLoader from '../../components/content-loader/content-loader';
@@ -9,20 +13,30 @@ import ContentList from './sub-pages/content-list/content-list';
 import ContentWorkflow from './sub-pages/content-workflow/content-workflow';
 
 export default function ContentManagement() {
-  const { data: languages } = useQuery(GetAllLanguage, { fetchPolicy: 'cache-and-network' });
-  const { data: dataTypes, refetch } = useQuery(contentTypes, { fetchPolicy: 'cache-and-network' });
-  const { data: dataDefinitions, refetch: refrechDefinitions } = useQuery(contentDefinitions, {
+  const { data: languages } = useQuery(GetAllLanguage, {
     fetchPolicy: 'cache-and-network',
   });
+  const { data: dataTypes, refetch } = useQuery(contentTypes, {
+    fetchPolicy: 'cache-and-network',
+  });
+  const { data: dataDefinitions, refetch: refrechDefinitions } = useQuery(
+    contentDefinitions,
+    {
+      fetchPolicy: 'cache-and-network',
+    }
+  );
 
   const [selectedType, setSelectedType] = useState<ContentTypeDto>();
-  const [selectedContent, setSelectedContent] = useState<ContentManagementView>();
+  const [selectedContent, setSelectedContent] =
+    useState<ContentManagementView>();
 
   useEffect(() => {
     if (dataTypes && dataTypes.contentTypes && !selectedType) {
       setSelectedType(dataTypes.contentTypes[0]);
     } else if (dataTypes && dataTypes.contentTypes && selectedType) {
-      const currentSelectedContent = dataTypes.contentTypes.find((x) => x.id === selectedType.id);
+      const currentSelectedContent = dataTypes.contentTypes.find(
+        (x) => x.id === selectedType.id
+      );
       setSelectedType(currentSelectedContent);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

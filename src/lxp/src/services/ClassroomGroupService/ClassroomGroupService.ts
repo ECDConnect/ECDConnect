@@ -30,7 +30,9 @@ class ClassroomGroupService {
     });
 
     if (response.status !== 200) {
-      throw new Error('Get Classroom Group by id failed - Server connection error');
+      throw new Error(
+        'Get Classroom Group by id failed - Server connection error'
+      );
     }
 
     return response.data.data.GetClassroomGroupById;
@@ -63,7 +65,10 @@ class ClassroomGroupService {
     return response.data.data.GetAllClassroomGroup;
   }
 
-  async updateClassroomGroup(id: string, input: ClassroomGroupInput): Promise<boolean> {
+  async updateClassroomGroup(
+    id: string,
+    input: ClassroomGroupInput
+  ): Promise<boolean> {
     const apiInstance = await api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
@@ -80,7 +85,9 @@ class ClassroomGroupService {
     });
 
     if (response.status !== 200) {
-      throw new Error('Updating classroom group failed - Server connection error');
+      throw new Error(
+        'Updating classroom group failed - Server connection error'
+      );
     }
 
     return true;

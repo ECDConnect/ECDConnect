@@ -1,4 +1,11 @@
-import { Alert, BannerWrapper, Button, Dialog, StatusChip, Typography } from '@ecdlink/ui';
+import {
+  Alert,
+  BannerWrapper,
+  Button,
+  Dialog,
+  StatusChip,
+  Typography,
+} from '@ecdlink/ui';
 import { DialogPosition } from '@ecdlink/ui';
 import { renderIcon } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
@@ -6,12 +13,12 @@ import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
 import { ContactPerson } from '../../../components/contact-person/contact-person';
 import { RemoveChildPrompt } from '../../../components/remove-child-prompt/remove-child-prompt';
-import { useOnlineStatus } from '../../../hooks/useOnlineStatus';
-import { useAppDispatch } from '../../../store';
-import { caregiverActions, caregiverSelectors } from '../../../store/caregiver';
-import { CaregiverContactReason } from '../../../store/caregiver/caregiver.types';
-import { childrenSelectors } from '../../../store/children';
-import { analyticsActions } from '../../../store/analytics';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
+import { useAppDispatch } from '@store';
+import { caregiverActions, caregiverSelectors } from '@store/caregiver';
+import { CaregiverContactReason } from '@store/caregiver/caregiver.types';
+import { childrenSelectors } from '@store/children';
+import { analyticsActions } from '@store/analytics';
 import { attendanceColor } from './contact-child-caregiver.styles';
 import { ContactChildCaregiverState } from './contact-child-caregiver.types';
 
@@ -24,9 +31,13 @@ export const ContactChildCaregiver: React.FC = () => {
 
   const { actualDaysAttended, expectedDaysAttended, childId } = locationState;
   const child = useSelector(childrenSelectors.getChildById(childId));
-  const childUser = useSelector(childrenSelectors.getChildUserById(child?.userId));
+  const childUser = useSelector(
+    childrenSelectors.getChildUserById(child?.userId)
+  );
   const appDispatch = useAppDispatch();
-  const caregiver = useSelector(caregiverSelectors.getCaregiverById(child?.caregiverId));
+  const caregiver = useSelector(
+    caregiverSelectors.getCaregiverById(child?.caregiverId)
+  );
 
   useEffect(() => {
     if (!isOnline) {
@@ -82,7 +93,11 @@ export const ContactChildCaregiver: React.FC = () => {
                 borderColour={attendanceColor}
                 className={'mr-1'}
               />
-              <Typography type="body" color={attendanceColor} text={`days attended last week`} />
+              <Typography
+                type="body"
+                color={attendanceColor}
+                text={`days attended last week`}
+              />
             </div>
 
             <Typography
@@ -103,7 +118,9 @@ export const ContactChildCaregiver: React.FC = () => {
             <Alert
               className={'mt-4'}
               type={'info'}
-              title={'WhatsApps and phone calls will be charged at your standard carrier rates.'}
+              title={
+                'WhatsApps and phone calls will be charged at your standard carrier rates.'
+              }
             />
           </div>
           <div className={'w-full bg-uiLight p-4'}>
@@ -113,7 +130,11 @@ export const ContactChildCaregiver: React.FC = () => {
               weight={'bolder'}
               text={`If ${childUser?.firstName} is no longer attending your programme, please remove them.`}
             />
-            <Button type={'outlined'} color={'errorMain'} className={'w-full mt-4'}>
+            <Button
+              type={'outlined'}
+              color={'errorMain'}
+              className={'w-full mt-4'}
+            >
               {renderIcon('TrashIcon', 'w-5 h-5 text-errorMain mr-1')}
               <Typography
                 type="help"
@@ -131,7 +152,11 @@ export const ContactChildCaregiver: React.FC = () => {
               onClick={addCaregiverContactHistoryLog}
             >
               {renderIcon('CheckCircleIcon', 'w-5 h-5 text-white mr-1')}
-              <Typography type="help" color={'white'} text={`I have contacted the caregiver`} />
+              <Typography
+                type="help"
+                color={'white'}
+                text={`I have contacted the caregiver`}
+              />
             </Button>
           </div>
         </div>

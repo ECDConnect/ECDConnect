@@ -1,14 +1,20 @@
 import { RecursivePartial } from '@ecdlink/core';
 import { EnhancedStore } from '@reduxjs/toolkit';
 import { setDate, setMonth } from 'date-fns';
-import { RootState } from '../../../../store/types';
-import { NotificationIntervals, NotificationPriority } from '../../NotificationService.types';
+import { RootState } from '@store/types';
+import {
+  NotificationIntervals,
+  NotificationPriority,
+} from '../../NotificationService.types';
 import { ChildProgressReportNotificationValidator } from './childProgressReportNotificationValidator';
 
 describe('childProgressReportNotificationValidator', () => {
   test('should be able to create successfully', () => {
     const store: any = {};
-    const validator = new ChildProgressReportNotificationValidator(store, new Date());
+    const validator = new ChildProgressReportNotificationValidator(
+      store,
+      new Date()
+    );
 
     expect(validator.interval).toEqual(NotificationIntervals.hour);
   });
@@ -72,7 +78,10 @@ describe('childProgressReportNotificationValidator', () => {
     expect(notification.priority).toEqual(NotificationPriority.high);
   });
 
-  type FinalReportingPeriodDay = [date: Date, expectedNumberOfNotifications: number];
+  type FinalReportingPeriodDay = [
+    date: Date,
+    expectedNumberOfNotifications: number
+  ];
 
   const finalReportingPeriodDayCases: FinalReportingPeriodDay[] = [
     // First day of July

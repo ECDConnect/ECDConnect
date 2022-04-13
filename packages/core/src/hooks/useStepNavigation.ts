@@ -5,7 +5,6 @@ export interface StepItem {
 }
 
 export const useStepNavigation = (initialStepKey: number) => {
-
   const [stepHistory, setStepHistory] = useState<StepItem[]>([]);
   const [activeStepKey, setActiveStepKey] = useState<number>(initialStepKey);
 

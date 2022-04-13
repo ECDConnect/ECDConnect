@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { useHistory } from 'react-router';
-import { useOnlineStatus } from '../../hooks/useOnlineStatus';
-import { useStoreSetup } from '../../hooks/useStoreSetup';
-import { useAppDispatch, useAppSelector } from '../../store';
-import { settingActions } from '../../store/settings';
-import { syncActions, syncThunkActions } from '../../store/sync';
-import { ThunkActionStatuses } from '../../store/types';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
+import { useStoreSetup } from '@hooks/useStoreSetup';
+import { useAppDispatch, useAppSelector } from '@store';
+import { settingActions } from '@store/settings';
+import { syncActions, syncThunkActions } from '@store/sync';
+import { ThunkActionStatuses } from '@store/types';
 import OfflineSyncError from './offline-sync-error';
 import { OfflineSyncExecuting } from './offline-sync-executing';
 import { OfflineSyncInformation } from './offline-sync-information';
@@ -34,9 +34,8 @@ const OfflineSyncModal: React.FC<OfflineSyncModalProps> = ({
   const { resetAppStaticStores, initStoreSetup } = useStoreSetup();
   const history = useHistory();
 
-  const { status, error, currentAction, currentStep, stepTotal } = useAppSelector(
-    (state) => state.sync
-  );
+  const { status, error, currentAction, currentStep, stepTotal } =
+    useAppSelector((state) => state.sync);
 
   const handleSync = () => {
     dispatch(syncThunkActions.syncOfflineData({}));
@@ -58,11 +57,18 @@ const OfflineSyncModal: React.FC<OfflineSyncModalProps> = ({
   };
 
   if (status === ThunkActionStatuses.Fulfilled) {
-    return <OfflineSyncSuccess onSubmit={handleSyncSuccess}></OfflineSyncSuccess>;
+    return (
+      <OfflineSyncSuccess onSubmit={handleSyncSuccess}></OfflineSyncSuccess>
+    );
   }
 
   if (unableToSync) {
-    return <OfflineSyncError onSubmit={handleOnErrorSubmit} onCancel={onCancel}></OfflineSyncError>;
+    return (
+      <OfflineSyncError
+        onSubmit={handleOnErrorSubmit}
+        onCancel={onCancel}
+      ></OfflineSyncError>
+    );
   }
 
   if (

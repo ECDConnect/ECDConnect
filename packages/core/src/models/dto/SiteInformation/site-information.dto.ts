@@ -1,6 +1,6 @@
 import { EntityBase } from '../entity-base';
 
-export interface SiteInformationDto extends EntityBase {  
+export interface SiteInformationDto extends EntityBase {
   name: string;
-  description: string; 
+  description: string;
 }

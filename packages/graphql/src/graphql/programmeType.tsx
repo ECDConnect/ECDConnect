@@ -18,7 +18,6 @@ export const GetProgrammeTypeById = gql`
   }
 `;
 
-
 export const CreateProgrammeType = gql`
   mutation createProgrammeType($input: ProgrammeTypeInput) {
     createPractitionerProgramType(input: $input) {

@@ -19,7 +19,9 @@ import GenderPanel from './components/gender-panel/gender-panel';
 export default function GenderView() {
   const { hasPermission } = useUser();
   const type = 'Sex';
-  const { data, refetch } = useQuery(GenderList, { fetchPolicy: 'cache-and-network' });
+  const { data, refetch } = useQuery(GenderList, {
+    fetchPolicy: 'cache-and-network',
+  });
   const [tableData, setTableData] = useState<any[]>([]);
   const dialog = useDialog();
   const { setNotification } = useNotifications();
@@ -118,8 +120,13 @@ export default function GenderView() {
                 <UiTable
                   columns={[{ field: 'description', use: 'description' }]}
                   rows={tableData}
-                  editRow={hasPermission(PermissionEnum.update_static) && displayPanel}
-                  deleteRow={hasPermission(PermissionEnum.delete_static) && deleteAndRefresh}
+                  editRow={
+                    hasPermission(PermissionEnum.update_static) && displayPanel
+                  }
+                  deleteRow={
+                    hasPermission(PermissionEnum.delete_static) &&
+                    deleteAndRefresh
+                  }
                 />
               </div>
             </div>

@@ -15,7 +15,9 @@ export const CompleteProfile: React.FC = () => {
         />
         <Typography
           type={'body'}
-          text={'Share more information about your programme to make Funda App useful for you.'}
+          text={
+            'Share more information about your programme to make Funda App useful for you.'
+          }
           color={'textLight'}
           className={styles.text}
         />

@@ -21,8 +21,6 @@ export const sortDateFunction = (a: Date, b: Date) => {
   return dateA > dateB ? 1 : -1;
 };
 
-
-
 export const flatArray = (array: any[]): any[] => {
   return array.reduce((acc, val) => acc.concat(val), []);
 };

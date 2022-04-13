@@ -8,10 +8,10 @@ import {
   SimpleUserModel,
   VerifyInvitationModel,
 } from '@ecdlink/core';
-import { NewPasswordRequest } from '../../models/auth/login/NewPasswordRequest';
-import { PasswordResetRequestReceived } from '../../models/auth/login/PasswordResetRequestReceived';
-import { SignUpInviteVerify } from '../../models/auth/sign-up/SignUpInviteVerify';
-import { getDataResponse } from '../../utils/common/data-response.utils';
+import { NewPasswordRequest } from '@models/auth/login/NewPasswordRequest';
+import { PasswordResetRequestReceived } from '@models/auth/login/PasswordResetRequestReceived';
+import { SignUpInviteVerify } from '@models/auth/sign-up/SignUpInviteVerify';
+import { getDataResponse } from '@utils/common/data-response.utils';
 import { api } from '../axios.helper';
 
 const handlerError = (error: any) => {
@@ -21,11 +21,18 @@ const handlerError = (error: any) => {
 const headers = { 'Content-Type': 'application/json' };
 
 class AuthService {
-  async login(baseEndPoint: string, body: LoginRequestModel): Promise<AuthUser> {
+  async login(
+    baseEndPoint: string,
+    body: LoginRequestModel
+  ): Promise<AuthUser> {
     const apiInstance = await api(baseEndPoint);
-    const response = await apiInstance.post(APIs.authLogin, JSON.stringify(body), {
-      headers: headers,
-    });
+    const response = await apiInstance.post(
+      APIs.authLogin,
+      JSON.stringify(body),
+      {
+        headers: headers,
+      }
+    );
 
     if (response.status !== 200) {
       throw new Error('Login failed - Server connection error');
@@ -58,7 +65,9 @@ class AuthService {
     };
   }
 
-  async AcceptInvitationRequest(acceptInvitationModel: AcceptInvitationModel): Promise<boolean> {
+  async AcceptInvitationRequest(
+    acceptInvitationModel: AcceptInvitationModel
+  ): Promise<boolean> {
     const BASE_URL = Config.authApi;
     const response = await api(BASE_URL)
       .post(APIs.acceptInvitation, JSON.stringify(acceptInvitationModel))
@@ -78,7 +87,8 @@ class AuthService {
       .post(APIs.forgotPassword, JSON.stringify(simpleUserModel))
       .catch(handlerError);
 
-    const dataResponse = getDataResponse<PasswordResetRequestReceived>(requestSentResponse);
+    const dataResponse =
+      getDataResponse<PasswordResetRequestReceived>(requestSentResponse);
 
     if (dataResponse.dataError)
       return {
@@ -93,12 +103,15 @@ class AuthService {
     };
   }
 
-  async SendNewPasswordRequest(newPasswordModel: PasswordResetModel): Promise<NewPasswordRequest> {
+  async SendNewPasswordRequest(
+    newPasswordModel: PasswordResetModel
+  ): Promise<NewPasswordRequest> {
     const requestSentResponse = await api(Config.authApi)
       .post(APIs.confirmForgotPasswordReset, JSON.stringify(newPasswordModel))
       .catch(handlerError);
 
-    const dataResponse = getDataResponse<NewPasswordRequest>(requestSentResponse);
+    const dataResponse =
+      getDataResponse<NewPasswordRequest>(requestSentResponse);
 
     if (dataResponse.dataError)
       return {

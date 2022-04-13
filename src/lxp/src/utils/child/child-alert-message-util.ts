@@ -33,7 +33,12 @@ export const getChildAlertModel = (
     (x) => x.name.includes('clinicCard') || x.name.includes('clinicCard')
   );
 
-  if (!childUser?.firstName || !childUser?.surname || !child?.caregiverId || !learner) {
+  if (
+    !childUser?.firstName ||
+    !childUser?.surname ||
+    !child?.caregiverId ||
+    !learner
+  ) {
     alert = 'error';
     alertMessage = 'Child information missing';
 
@@ -76,7 +81,9 @@ export const getChildAlertModel = (
   }
 
   if (classroomGroups && attendance) {
-    const classroomGroup = classroomGroups.find((x) => x.id === learner?.classroomGroupId);
+    const classroomGroup = classroomGroups.find(
+      (x) => x.id === learner?.classroomGroupId
+    );
 
     const childAttendancePercentage = getChildsAttendancePercentageAtPlaygroup(
       child?.userId ?? '',

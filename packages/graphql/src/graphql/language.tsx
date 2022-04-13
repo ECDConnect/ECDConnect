@@ -4,8 +4,8 @@ export const GetAllLanguage = gql`
   {
     GetAllLanguage {
       id
-      description  
-      locale    
+      description
+      locale
     }
   }
 `;

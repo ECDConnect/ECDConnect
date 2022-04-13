@@ -1,11 +1,11 @@
 import { BannerWrapper, Button, Divider, Typography } from '@ecdlink/ui';
 import LanguageSelector from '../../../../../../../components/language-selector/language-selector';
-import { activitySelectors } from '../../../../../../../store/content/activity';
+import { activitySelectors } from '@store/content/activity';
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { ActivitySubCategoryCard } from '../../components/activity-sub-category-card/activity-sub-category-card';
 import { ActivityDetailsProps } from './activity-details.types';
-import { useOnlineStatus } from '../../../../../../../hooks/useOnlineStatus';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
 
 const ActivityDetails: React.FC<ActivityDetailsProps> = ({
   activityId,
@@ -16,7 +16,9 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({
   onBack,
 }) => {
   const { isOnline } = useOnlineStatus();
-  const activityDetail = useSelector(activitySelectors.getActivityById(activityId));
+  const activityDetail = useSelector(
+    activitySelectors.getActivityById(activityId)
+  );
 
   const date = new Date();
 
@@ -35,7 +37,11 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({
       displayOffline={!isOnline}
     >
       {activityDetail.image && activityDetail.image?.length > 0 && (
-        <img src={activityDetail.image} className="mx-auto h-40 w-full rounded-md" alt="" />
+        <img
+          src={activityDetail.image}
+          className="mx-auto h-40 w-full rounded-md"
+          alt=""
+        />
       )}
 
       <LanguageSelector currentLocale={'en-za'} selectLanguage={() => {}} />
@@ -116,7 +122,13 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({
         />
       </div>
       <div className="px-4 py-2 bg-uiLight">
-        <Typography type="body" fontSize={'18'} weight="bold" text={'Notes'} color={'textDark'} />
+        <Typography
+          type="body"
+          fontSize={'18'}
+          weight="bold"
+          text={'Notes'}
+          color={'textDark'}
+        />
         <Typography
           type="markdown"
           fontSize={'16'}
