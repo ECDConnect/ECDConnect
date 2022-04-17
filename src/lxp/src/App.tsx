@@ -10,7 +10,7 @@ import { default as React, useEffect } from 'react';
 import ReactGA from 'react-ga';
 import TagManager from 'react-gtm-module';
 import { useSelector } from 'react-redux';
-import { AuthRoutes, PublicRoutes } from './app.routes';
+import { AuthRoutes, PublicRoutes } from '@routes';
 import InitialNotificationSetup from './initial-notifications-setup';
 import InitialStoreSetup from './initial-store-setup';
 import { LoginModal } from './pages/auth/login-modal/login-modal';

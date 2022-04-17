@@ -11,7 +11,9 @@
         "./store/*", "./store"
       ],
       "@store": ["./store"],
-      "@utils/*": ["./utils/*"]
+      "@utils/*": ["./utils/*"],
+      "@routes/*": ["./routes/*"],
+      "@routes": ["./routes"]
     }
   }
 }
