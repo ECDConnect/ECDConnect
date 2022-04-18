@@ -8,9 +8,8 @@ import {
   TypographyAlign,
 } from './models/TypographyTypes';
 import * as styles from './typography.styles';
-// import './typography.module.css';
-
 import { classNames } from '../../utils/style-class.utils';
+import { stripPTag } from '../../utils/typography.util';
 
 export interface TypographyProps extends ComponentBaseProps {
   type: TypographyType;
@@ -191,7 +190,7 @@ export const Typography: React.FC<TypographyProps> = ({
               `leading-${lineHeight}`
             )}
           >
-            {splitText ?? text}
+            {splitText ?? stripPTag(text)}
           </div>
         );
       case 'body':
