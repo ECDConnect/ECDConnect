@@ -9,7 +9,11 @@ import * as styles from '../../edit-practitioner-profile.styles';
 import { ConfirmPlayGroupListItem } from '../edit-playgroup-form/components/confirm-playgroup-list-item/confirm-playgroup-list-item';
 interface ConfirmPlayGroupsProps extends FormComponentProps<any | void> {
   defaultPlayGroups: EditPlaygroupModel[];
-  onEditPlaygroup: (playgroups: EditPlaygroupModel[], index: number) => void;
+  onEditPlaygroup: (
+    playgroups: EditPlaygroupModel[],
+    index: number,
+    addingPlayGroup?: boolean
+  ) => void;
   title?: string;
 }
 
@@ -24,7 +28,7 @@ export const ConfirmPlayGroups: React.FC<ConfirmPlayGroupsProps> = ({
 
   const onAddNewPlaygroup = () => {
     playgroups.push({ meetingDays: [], name: '', classroomGroupId: newGuid() });
-    onEditPlaygroup(playgroups, playgroups.length - 1);
+    onEditPlaygroup(playgroups, playgroups.length - 1, true);
   };
 
   useEffect(() => {
