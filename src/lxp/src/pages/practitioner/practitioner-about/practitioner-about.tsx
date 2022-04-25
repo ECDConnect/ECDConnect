@@ -31,6 +31,7 @@ import { userActions, userSelectors } from '@store/user';
 import { analyticsActions } from '@store/analytics';
 import { setStorageItem } from '@utils/common/local-storage.utils';
 import * as styles from './practitioner-about.styles';
+import ROUTES from '@routes/routes';
 
 export const PractitionerAbout: React.FC = () => {
   const history = useHistory();
@@ -255,7 +256,7 @@ export const PractitionerAbout: React.FC = () => {
         size="medium"
         renderBorder={true}
         renderOverflow={false}
-        onBack={() => history.push('/practitioner/profile')}
+        onBack={() => history.push(ROUTES.PRACTITIONER.PROFILE.ROOT)}
         displayOffline={!isOnline}
       >
         <div className={'w-full inline-flex justify-center pt-8'}>

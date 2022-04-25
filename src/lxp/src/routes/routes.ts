@@ -44,7 +44,7 @@ const ROUTES = {
   CHILD_ATTENDANCE_REPORT: '/child-attendance-report',
   CHILD_PROGRESS_ASSESSMENT: '/child-progress-assessment',
   REMOVE_CHILD: '/remove-child',
-  MESSAGE: '/message',
+  MESSAGES: '/messages',
   PROGRESS_TRACKING_CATEGORY: '/progress-tracking-category',
   CHILD_PROGRESS_OBSERVATION: '/child-progress-observation',
   CHILD_PROGRESS_OBSERVATION_NOTE: '/child-progress-observation-note',

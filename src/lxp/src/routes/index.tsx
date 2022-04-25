@@ -65,28 +65,7 @@ const PublicRoutes: React.FC = () => {
   );
 };
 
-const ProgrammeRoutes = () => (
-  <>
-    <Route path={ROUTES.PROGRAMMES.THEME} component={ProgrammeTheme} />
-    <Route path={ROUTES.PROGRAMMES.TIMING} component={ProgrammeTiming} />
-    <Route path={ROUTES.PROGRAMMES.SUMMARY} component={ProgrammeSummaries} />
-    <Route path={ROUTES.PROGRAMMES.ROUTINE} component={ProgrammeRoutine} />
-    <Route
-      path={ROUTES.PROGRAMMES.TUTORIAL.GETTING_STARTED}
-      component={ProgrammeTutorial}
-    />
-
-    <Route
-      path={ROUTES.PROGRAMMES.TUTORIAL.DEVELOPING_CHILDREN}
-      component={ProgrammePlanningDevelopingChildren}
-    />
-
-    <Route
-      path={ROUTES.PROGRAMMES.TUTORIAL.DAILY_ROUTINE}
-      component={ProgrammePlanningDailyRoutine}
-    />
-  </>
-);
+// const ProgrammeRoutes = () => <></>;
 
 const AuthRoutes: React.FC = () => {
   return (
@@ -196,9 +175,24 @@ const AuthRoutes: React.FC = () => {
         path={ROUTES.DOWNLOAD_CHILD_PROGRESS_OBSERVATION_REPORTS}
         component={DownloadChildProgressReport}
       />
-      <Route path={ROUTES.MESSAGE} component={Messages} />
+      <Route path={ROUTES.MESSAGES} component={Messages} />
 
-      {ProgrammeRoutes()}
+      <Route path={ROUTES.PROGRAMMES.THEME} component={ProgrammeTheme} />
+      <Route path={ROUTES.PROGRAMMES.TIMING} component={ProgrammeTiming} />
+      <Route path={ROUTES.PROGRAMMES.SUMMARY} component={ProgrammeSummaries} />
+      <Route path={ROUTES.PROGRAMMES.ROUTINE} component={ProgrammeRoutine} />
+      <Route
+        path={ROUTES.PROGRAMMES.TUTORIAL.GETTING_STARTED}
+        component={ProgrammeTutorial}
+      />
+      <Route
+        path={ROUTES.PROGRAMMES.TUTORIAL.DEVELOPING_CHILDREN}
+        component={ProgrammePlanningDevelopingChildren}
+      />
+      <Route
+        path={ROUTES.PROGRAMMES.TUTORIAL.DAILY_ROUTINE}
+        component={ProgrammePlanningDailyRoutine}
+      />
     </Switch>
   );
 };

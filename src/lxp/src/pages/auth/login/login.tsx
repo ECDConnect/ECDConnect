@@ -22,6 +22,7 @@ import { useAppDispatch } from '@store';
 import { authActions, authThunkActions } from '@store/auth';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { settingActions } from '@store/settings';
+import ROUTES from '@routes/routes';
 const { version } = require('../../../../package.json');
 
 export const Login: React.FC = () => {
@@ -64,7 +65,7 @@ export const Login: React.FC = () => {
           ) {
             appDispatch(settingActions.setApplicationVersion(version));
             appDispatch(authActions.setUserExpired());
-            history.push('/dashboard');
+            history.push(ROUTES.DASHBOARD);
             setIsLoading(false);
           } else {
             setDisplayError(true);

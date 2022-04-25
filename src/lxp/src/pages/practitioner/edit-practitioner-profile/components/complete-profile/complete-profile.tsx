@@ -1,5 +1,6 @@
 import { Typography } from '@ecdlink/ui';
 import { renderIcon } from '@ecdlink/ui';
+import ROUTES from '@routes/routes';
 import { useHistory } from 'react-router-dom';
 import * as styles from './complete-profile.styles';
 export const CompleteProfile: React.FC = () => {
@@ -22,7 +23,7 @@ export const CompleteProfile: React.FC = () => {
           className={styles.text}
         />
         <div className={styles.linkText}>
-          <div onClick={() => history.push('/practitioner/profile/edit/')}>
+          <div onClick={() => history.push(ROUTES.PRACTITIONER.PROFILE.EDIT)}>
             <Typography
               type={'help'}
               weight={'bold'}

@@ -10,6 +10,7 @@ import OfflineSyncError from './offline-sync-error';
 import { OfflineSyncExecuting } from './offline-sync-executing';
 import { OfflineSyncInformation } from './offline-sync-information';
 import OfflineSyncSuccess from './offline-sync-success';
+import ROUTES from '@routes/routes';
 
 export type OfflineSyncModalProps = {
   onSubmit: () => void;
@@ -53,7 +54,7 @@ const OfflineSyncModal: React.FC<OfflineSyncModalProps> = ({
     await dispatch(syncActions.clearSyncState());
     await resetAppStaticStores();
     await initStoreSetup();
-    if (!avoidNavigation) history.push('/');
+    if (!avoidNavigation) history.push(ROUTES.ROOT);
   };
 
   if (status === ThunkActionStatuses.Fulfilled) {

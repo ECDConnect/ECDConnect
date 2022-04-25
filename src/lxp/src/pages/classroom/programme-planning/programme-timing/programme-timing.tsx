@@ -26,6 +26,7 @@ import { getDateRangeText } from '@utils/classroom/programme-planning/programmes
 import { ProgrammeTimingRouteState } from './programme-timing.types';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import ROUTES from '@routes/routes';
 
 const ProgrammeTiming: React.FC = () => {
   const history = useHistory();
@@ -66,7 +67,7 @@ const ProgrammeTiming: React.FC = () => {
       selectedTheme
     );
 
-    history.replace('/programmes/summary', {
+    history.replace(ROUTES.PROGRAMMES.SUMMARY, {
       programmeId: newProgramme.id,
       variation: 'create',
     });

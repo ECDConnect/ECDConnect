@@ -12,6 +12,7 @@ import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { programmeThemeSelectors } from '@store/content/programme-theme';
+import ROUTES from '@routes/routes';
 
 const ProgrammeTheme: React.FC = () => {
   const dialog = useDialog();
@@ -50,11 +51,11 @@ const ProgrammeTheme: React.FC = () => {
   };
 
   const handleNoTheme = () => {
-    history.push('/programmes/timing');
+    history.push(ROUTES.PROGRAMMES.TIMING);
   };
 
   const handelThemeSelected = (theme: ProgrammeThemeModel) => {
-    history.push('/programmes/timing', { theme });
+    history.push(ROUTES.PROGRAMMES.TIMING, { theme });
   };
 
   return (

@@ -21,6 +21,7 @@ import {
   resetPasswordSchema,
 } from '@schemas/auth/password/password-reset';
 import AuthService from '@services/AuthService/AuthService';
+import ROUTES from '@routes/routes';
 
 export const PasswordReset: React.FC = () => {
   const [userPhoneNumberEnding, setUserPhoneNumberEnding] =
@@ -125,7 +126,7 @@ export const PasswordReset: React.FC = () => {
   };
 
   const goBack = () => {
-    history.push('/login');
+    history.push(ROUTES.LOGIN);
   };
 
   const toggleIdAndpassport = (visible: boolean) => {

@@ -6,6 +6,7 @@ import { useHistory } from 'react-router-dom';
 import Article from '../../../../../components/article/article';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import * as styles from './programme-tutorial.styles';
+import ROUTES from '@routes/routes';
 
 export const ProgrammeTutorial = () => {
   const history = useHistory();
@@ -20,7 +21,7 @@ export const ProgrammeTutorial = () => {
     {
       title: 'Developing children holistically',
       onActionClick: () => {
-        navigate('/programmes/tutorial/developing-children');
+        navigate(ROUTES.PROGRAMMES.TUTORIAL.DEVELOPING_CHILDREN);
       },
     },
     {
@@ -32,14 +33,14 @@ export const ProgrammeTutorial = () => {
     {
       title: 'The daily routine',
       onActionClick: () => {
-        navigate('/programmes/tutorial/daily-routine');
+        navigate(ROUTES.PROGRAMMES.TUTORIAL.DAILY_ROUTINE);
       },
     },
   ]);
 
   const startPlanning = () => {
     // ROUTE TO PROGRAMME CREATION
-    history.replace('/programmes/theme');
+    history.replace(ROUTES.PROGRAMMES.THEME);
   };
 
   return (
@@ -48,7 +49,7 @@ export const ProgrammeTutorial = () => {
       renderBorder={true}
       title={'Programme best practices'}
       color={'primary'}
-      onBack={() => history.push('/classroom', { activeTabIndex: 2 })}
+      onBack={() => history.push(ROUTES.CLASSROOM, { activeTabIndex: 2 })}
       className={styles.bannerContentWrapper}
       backgroundColour="uiBg"
       displayOffline={!isOnline}

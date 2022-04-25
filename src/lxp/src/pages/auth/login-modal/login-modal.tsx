@@ -23,6 +23,7 @@ import { useAppDispatch } from '@store';
 import { authActions, authThunkActions } from '@store/auth';
 import { settingActions } from '@store/settings';
 import * as styles from './login-modal.styles';
+import ROUTES from '@routes/routes';
 const { version } = require('../../../../package.json');
 
 interface LoginModalProps {
@@ -199,7 +200,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ loginSuccessful }) => {
             onClick={async () => {
               await resetAuth();
               await resetAppStaticStores();
-              history.push('/login');
+              history.push(ROUTES.LOGIN);
             }}
           >
             <Typography
