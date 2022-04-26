@@ -8,6 +8,7 @@ import {
   StatusChip,
   Typography,
   URL,
+  stripPTag,
 } from '@ecdlink/ui/';
 import React from 'react';
 import { useSelector } from 'react-redux';
@@ -109,8 +110,14 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
   );
 
   const onBookLocationClicked = (bookLocation: string) => {
-    if (bookLocation.match(URL)) {
-      window.open(bookLocation, '_blank');
+    /**
+     * Strip default <p>...</p> in string from CMS text.
+     * This should be done in the CMS
+     * #TODO remove <p></p> tag from string
+     **/
+    const _strippedHtml = stripPTag(bookLocation);
+    if (_strippedHtml.match(URL)) {
+      window.open(_strippedHtml, '_blank');
     }
   };
 
@@ -196,7 +203,9 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
                       type={'unspecified'}
                       underline
                       color={
-                        storyBook.bookLocation.match(URL) ? 'infoBb' : 'black'
+                        stripPTag(storyBook.bookLocation).match(URL)
+                          ? 'infoBb'
+                          : 'black'
                       }
                       onClick={() => {
                         onBookLocationClicked(storyBook.bookLocation);
@@ -241,7 +250,9 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
                       underline
                       hasMarkup
                       color={
-                        storyBook.bookLocation.match(URL) ? 'primary' : 'black'
+                        stripPTag(storyBook.bookLocation).match(URL)
+                          ? 'primary'
+                          : 'black'
                       }
                       onClick={() => {
                         onBookLocationClicked(storyBook.bookLocation);
