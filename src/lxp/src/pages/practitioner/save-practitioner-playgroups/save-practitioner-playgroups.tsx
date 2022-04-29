@@ -24,8 +24,10 @@ export const EditPlaygroups: React.FC = () => {
   const { returnRoute } = location.state;
   const history = useHistory();
   const [activePlaygroupIndex, setActivePlaygroupIndex] = useState<number>(0);
-  const { activeStepKey, goToStep, goBackOneStep, canGoBack } =
-    useStepNavigation(EditPlaygroupsSteps.confirm);
+  const [activePage, setActivePage] = useState<EditPlaygroupsSteps>(
+    EditPlaygroupsSteps.confirm
+  );
+  const [addingPlayGroup, setAddingPlayGroup] = useState<boolean>(false);
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
   const dialog = useDialog();
@@ -67,11 +69,13 @@ export const EditPlaygroups: React.FC = () => {
 
   const onPlayGroupsEdit = (
     playgroups: EditPlaygroupModel[],
-    index: number
+    index: number,
+    addingPlayGroup: boolean = false
   ) => {
     setUpdatedPlaygroups(playgroups);
     setActivePlaygroupIndex(index);
-    goToStep(EditPlaygroupsSteps.edit);
+    setActivePage(EditPlaygroupsSteps.edit);
+    setAddingPlayGroup(addingPlayGroup);
   };
 
   const confirmPlaygroups = async (playgroups: EditPlaygroupModel[]) => {
@@ -197,7 +201,7 @@ export const EditPlaygroups: React.FC = () => {
 
     setUpdatedPlaygroups(updatedPlaygroups);
 
-    goToStep(EditPlaygroupsSteps.confirm);
+    setActivePage(EditPlaygroupsSteps.confirm);
   };
 
   const steps = (step: number) => {
@@ -211,7 +215,7 @@ export const EditPlaygroups: React.FC = () => {
             onPlayGroupDelete={deletePlayGroup}
             onSubmit={(value) => {
               setUpdatedPlaygroups(value);
-              goToStep(EditPlaygroupsSteps.confirm);
+              setActivePage(EditPlaygroupsSteps.confirm);
             }}
           />
         );
@@ -231,8 +235,15 @@ export const EditPlaygroups: React.FC = () => {
   };
 
   const onBack = () => {
-    if (canGoBack()) goBackOneStep();
-    else history.goBack();
+    if (activePage === EditPlaygroupsSteps.edit) {
+      if (addingPlayGroup) {
+        updatedPlaygroups.splice(updatedPlaygroups.length - 1, 1);
+        setUpdatedPlaygroups(updatedPlaygroups);
+      }
+      setActivePage(EditPlaygroupsSteps.confirm);
+    } else {
+      history.goBack();
+    }
   };
 
   const onClose = () => {
@@ -285,7 +296,7 @@ export const EditPlaygroups: React.FC = () => {
       displayOffline={!isOnline}
     >
       <div className={styles.stepsWrapper}>
-        {steps(activeStepKey as EditPlaygroupsSteps)}
+        {steps(activePage as EditPlaygroupsSteps)}
       </div>
     </BannerWrapper>
   );

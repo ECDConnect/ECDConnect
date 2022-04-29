@@ -21,6 +21,7 @@ import { ChildPendingProps } from './child-pending.types';
 import OnlineOnlyModal from '../../../../modals/offline-sync/online-only-modal';
 import { copyToClip } from '@utils/common/clipboard.utils';
 import { CaregiverChildRegistrationModal } from '../../components/caregiver-child-registration-modal/caregiver-child-registration-modal';
+import ROUTES from '@routes/routes';
 
 export const ChildPending: React.FC<ChildPendingProps> = ({
   child,
@@ -53,7 +54,7 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
   };
 
   const goToChildRegistration = () => {
-    history.push('/child-registration', {
+    history.push(ROUTES.CHILD_REGISTRATION, {
       step: ChildRegistrationSteps.registrationForm,
       childId: child.id,
     });

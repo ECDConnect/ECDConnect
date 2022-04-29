@@ -7,6 +7,7 @@ import { programmeSelectors } from '@store/programme';
 import { FutureProgrammes } from '../programme-summary/components/future-programmes/future-programmes';
 import ProgrammeSummary from '../programme-summary/programme-summary';
 import { ProgrammeSummaryRouteState } from '../programme-summary/programme-summary.types';
+import ROUTES from '@routes/routes';
 
 export const ProgrammeSummaries: React.FC = () => {
   const history = useHistory();
@@ -21,7 +22,7 @@ export const ProgrammeSummaries: React.FC = () => {
   const programme = idProgramme || todaysProgramme;
 
   const handleBack = () => {
-    history.replace('/classroom', { activeTabIndex: 2 });
+    history.replace(ROUTES.CLASSROOM, { activeTabIndex: 2 });
   };
 
   return (
@@ -41,7 +42,7 @@ export const ProgrammeSummaries: React.FC = () => {
           programme={programme}
           noPlan={noPlan}
           onSummarySelected={(selectedProgramme?: ProgrammeDto) => {
-            history.replace('/programmes/summary', {
+            history.replace(ROUTES.PROGRAMMES.SUMMARY, {
               programmeId: selectedProgramme?.id,
               variation: 'view',
             });

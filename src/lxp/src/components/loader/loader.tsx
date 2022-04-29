@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useHistory } from 'react-router';
 import LoadingRocket from '../../assets/gifs/rocketclear.gif';
 import { useStoreSetup } from '@hooks/useStoreSetup';
+import ROUTES from '@routes/routes';
 
 const Loader = ({ loadingMessage = 'Loading . . .' }) => {
   const history = useHistory();
@@ -47,7 +48,7 @@ const Loader = ({ loadingMessage = 'Loading . . .' }) => {
                 onClick={async () => {
                   await resetAuth();
                   await resetAppStaticStores();
-                  history.push('/login');
+                  history.push(ROUTES.LOGIN);
                 }}
               >
                 <Typography

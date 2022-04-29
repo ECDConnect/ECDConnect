@@ -55,6 +55,7 @@ import {
   ChildRegistrationRouteState,
   ChildRegistrationSteps,
 } from './child-registration.types';
+import ROUTES from '@routes/routes';
 
 export const ChildRegistration: React.FC = () => {
   const history = useHistory();
@@ -342,7 +343,7 @@ export const ChildRegistration: React.FC = () => {
 
     await updateChild(childInputModel);
 
-    history.push('/classroom');
+    history.push(ROUTES.CLASSROOM);
   };
 
   const updateChild = async (child: ChildDto) => {

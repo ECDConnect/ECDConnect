@@ -28,6 +28,7 @@ import { staticDataSelectors } from '@store/static-data';
 import { analyticsActions } from '@store/analytics';
 import * as styles from './remove-child.styles';
 import { RemoveChildRouteState } from './remove-child.types';
+import ROUTES from '@routes/routes';
 
 export const RemoveChild: React.FC = () => {
   const location = useLocation<RemoveChildRouteState>();
@@ -81,7 +82,7 @@ export const RemoveChild: React.FC = () => {
       classroomsActions.deactivateClassroomGroupLearner(updatedChild)
     );
 
-    history.replace('/classroom');
+    history.replace(ROUTES.CLASSROOM);
   };
 
   return (

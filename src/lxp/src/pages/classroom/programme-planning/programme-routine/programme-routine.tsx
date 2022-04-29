@@ -46,6 +46,7 @@ import StoryActivityDetails from '../components/activities/storybooks/story-acti
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import OnlineOnlyModal from '../../../../modals/offline-sync/online-only-modal';
 import { isFriday } from 'date-fns';
+import ROUTES from '@routes/routes';
 
 export const ProgrammeRoutine: React.FC = () => {
   const { state } = useLocation<ProgrammeRoutineRouteState>();
@@ -139,7 +140,7 @@ export const ProgrammeRoutine: React.FC = () => {
   }, [currentDay]);
 
   const handleSummaryView = () => {
-    history.replace('/programmes/summary', {
+    history.replace(ROUTES.PROGRAMMES.SUMMARY, {
       programmeId: programme?.id,
       variation: 'update',
     });
