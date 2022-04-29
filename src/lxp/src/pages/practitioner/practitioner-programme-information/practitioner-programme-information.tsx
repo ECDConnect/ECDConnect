@@ -45,8 +45,8 @@ export const PractitionerProgrammeInformation: React.FC = () => {
 
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
-  const programeType = useSelector(
-    classroomsSelectors.getClassroomProgrameType()
+  const programmeType = useSelector(
+    classroomsSelectors.getClassroomProgrammeType()
   );
 
   const { createNewDocument, classroomImage, updateDocument, deleteDocument } =
@@ -92,7 +92,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
       setProgrammeNameValue('name', classroom?.name || '');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [classroom, classroomGroups, programeType]);
+  }, [classroom, classroomGroups, programmeType]);
 
   const displayProfilePicturePrompt = () => {
     setEditProfilePictureVisible(!editProfilePictureVisible);
@@ -152,12 +152,12 @@ export const PractitionerProgrammeInformation: React.FC = () => {
       },
       {
         title: 'Type of ECD service',
-        subTitle: programeType?.description,
+        subTitle: programmeType?.description,
         switchTextStyles: true,
       },
     ];
 
-    if (programeType?.enumId === ProgrammeTypeEnum.Playgroup) {
+    if (programmeType?.enumId === ProgrammeTypeEnum.Playgroup) {
       stackedActionList.push({
         title: 'Groups',
         subTitle: classroomGroups?.map((x) => x.name).join(','),

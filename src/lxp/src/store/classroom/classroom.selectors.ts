@@ -51,7 +51,7 @@ export const getLearnerClassgroupId = (userId?: string) =>
     }
   );
 
-export const getClassroomProgrameType = () =>
+export const getClassroomProgrammeType = () =>
   createSelector(
     (state: RootState) => state,
     (rootState: RootState) => {

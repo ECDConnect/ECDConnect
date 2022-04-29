@@ -63,6 +63,7 @@ export const EditChildInformation: React.FC = () => {
   const user = useSelector(userSelectors.getUser);
   const languages = useSelector(staticDataSelectors.getLanguages);
   const currentChild = useSelector(childrenSelectors.getChildById(childId));
+  const isPlaygroup = useSelector(classroomsSelectors.isPlaygroup());
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const classroomGroupLearners = useSelector(
     classroomsSelectors.getClassroomGroupLearners
@@ -294,16 +295,18 @@ export const EditChildInformation: React.FC = () => {
         switchTextStyles: true,
       });
 
-      list.push({
-        title: 'Playgroup',
-        subTitle: learnerClassroomGroup?.name || '',
-        switchTextStyles: true,
-        actionName: 'Edit',
-        actionIcon: 'PencilIcon',
-        onActionClick: () => {
-          setChangeClassroomGroupPromptVisible(true);
-        },
-      });
+      if (isPlaygroup) {
+        list.push({
+          title: 'Playgroup',
+          subTitle: learnerClassroomGroup?.name || '',
+          switchTextStyles: true,
+          actionName: 'Edit',
+          actionIcon: 'PencilIcon',
+          onActionClick: () => {
+            setChangeClassroomGroupPromptVisible(true);
+          },
+        });
+      }
 
       if (caregiver) {
         list.push({
