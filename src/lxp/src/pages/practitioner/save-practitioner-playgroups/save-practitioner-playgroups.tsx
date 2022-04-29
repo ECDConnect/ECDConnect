@@ -1,4 +1,4 @@
-import { useDialog, useStepNavigation } from '@ecdlink/core';
+import { useDialog } from '@ecdlink/core';
 import { ClassProgrammeDto, ClassroomGroupDto } from '@ecdlink/core';
 import { ActionModal, BannerWrapper, DialogPosition } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
@@ -17,7 +17,6 @@ import {
 } from './save-practitioner-playgroups.types';
 import { staticDataSelectors } from '@store/static-data';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import { ProgrammeTypeEnum } from '@ecdlink/graphql';
 
 export const EditPlaygroups: React.FC = () => {
   const location = useLocation<EditPlaygroupsState>();
@@ -34,7 +33,9 @@ export const EditPlaygroups: React.FC = () => {
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const classProgrammes = useSelector(classroomsSelectors.getClassProgrammes);
-  const programmeTypes = useSelector(staticDataSelectors.getProgrammeTypes);
+  const playGroupType = useSelector(
+    staticDataSelectors.getPlaygroupProgrammeType
+  );
 
   const [updatedPlaygroups, setUpdatedPlaygroups] = useState<
     EditPlaygroupModel[]
@@ -57,7 +58,7 @@ export const EditPlaygroups: React.FC = () => {
           classroomGroupId: groupedItem.id,
           meetingDays:
             filteredClassProgrammes &&
-            filteredClassProgrammes?.map((x) => x.meetingDay),
+            filteredClassProgrammes?.map((x) => x.meetingDay).sort(),
           isFullDay:
             filteredClassProgrammes && filteredClassProgrammes[0].isFullDay,
         } as EditPlaygroupModel);
@@ -78,14 +79,45 @@ export const EditPlaygroups: React.FC = () => {
     setAddingPlayGroup(addingPlayGroup);
   };
 
+  const createPlayGroup = (playgroup: EditPlaygroupModel) => {
+    const classroomGroupInputModel: ClassroomGroupDto = {
+      id: newGuid(),
+      insertedDate: new Date().toISOString(),
+      classroomId: classroom?.id ?? '',
+      name: playgroup.name,
+      programmeTypeId: playGroupType?.id ?? '',
+      isActive: true,
+    };
+
+    appDispatch(
+      classroomsActions.createClassroomGroup(classroomGroupInputModel)
+    );
+
+    for (const meetingDay of playgroup.meetingDays) {
+      const classProgrammeInputModel: ClassProgrammeDto = {
+        id: newGuid(),
+        classroomGroupId: classroomGroupInputModel.id ?? '',
+        insertedDate: new Date().toISOString(),
+        meetingDay: meetingDay,
+        isFullDay: playgroup?.isFullDay || false,
+        programmeStartDate: new Date().toISOString(),
+        isActive: true,
+      };
+
+      appDispatch(
+        classroomsActions.createClassroomProgramme(classProgrammeInputModel)
+      );
+    }
+  };
+
   const confirmPlaygroups = async (playgroups: EditPlaygroupModel[]) => {
     setUpdatedPlaygroups(playgroups);
 
-    const removedPlaygroups = classroomGroups.filter(
+    const removedClassroomGroups = classroomGroups.filter(
       (group) => !playgroups.some((pg) => pg.classroomGroupId === group.id)
     );
 
-    for (const playG of removedPlaygroups) {
+    for (const playG of removedClassroomGroups) {
       appDispatch(classroomsActions.deleteClassroomGroup(playG));
     }
 
@@ -101,49 +133,51 @@ export const EditPlaygroups: React.FC = () => {
   const saveEditedPlayGroups = async (results: EditPlaygroupModel[]) => {
     if (classroom) {
       for (const playGroup of results) {
-        const currentGroup = classroomGroups?.find(
+        const currentPlayGroup = classroomGroups?.find(
           (x) => x.id === playGroup.classroomGroupId
         );
 
-        if (currentGroup) {
-          const currentGroupCopy = Object.assign({}, currentGroup);
-          currentGroupCopy.name = playGroup.name;
-
-          appDispatch(classroomsActions.updateClassroomGroup(currentGroupCopy));
-
-          const filteredClassProgrammes = classProgrammes?.filter(
-            (x) => x.classroomGroupId === currentGroup.id
+        if (currentPlayGroup) {
+          appDispatch(
+            classroomsActions.updateClassroomGroup({
+              ...currentPlayGroup,
+              name: playGroup.name,
+            })
           );
 
-          const removablePlaygroups = filteredClassProgrammes?.filter(
+          const currentPlayGroupProgrammes = classProgrammes?.filter(
+            (x) => x.classroomGroupId === currentPlayGroup.id
+          );
+
+          /* Remove deleted classProgrammes */
+          const deletedClassProgrammes = currentPlayGroupProgrammes?.filter(
             (x) => !playGroup.meetingDays.includes(x.meetingDay)
           );
 
-          if (removablePlaygroups) {
-            for (const removePlaygroup of removablePlaygroups) {
-              appDispatch(
-                classroomsActions.deleteClassroomProgramme(removePlaygroup)
-              );
-            }
+          for (const deletedClassProgramme of deletedClassProgrammes) {
+            appDispatch(
+              classroomsActions.deleteClassroomProgramme(deletedClassProgramme)
+            );
           }
 
+          /* Update/Create new classProgrammes */
           for (const meetingDay of playGroup.meetingDays) {
-            const currentGroupItem = classProgrammes?.find(
+            const playGroupProgramme = currentPlayGroupProgrammes?.find(
               (x) => x.meetingDay === meetingDay
             );
 
             const playgroupInputModel: ClassProgrammeDto = {
               id: newGuid(),
               insertedDate: new Date().toISOString(),
-              classroomGroupId: currentGroup.id ?? '',
+              classroomGroupId: currentPlayGroup.id ?? '',
               meetingDay: meetingDay,
               isFullDay: playGroup?.isFullDay || false,
               programmeStartDate: new Date().toISOString(),
               isActive: true,
             };
 
-            if (currentGroupItem) {
-              playgroupInputModel.id = currentGroupItem.id;
+            if (playGroupProgramme) {
+              playgroupInputModel.id = playGroupProgramme.id;
               appDispatch(
                 classroomsActions.updateClassroomProgramme(playgroupInputModel)
               );
@@ -154,40 +188,7 @@ export const EditPlaygroups: React.FC = () => {
             }
           }
         } else {
-          const type = programmeTypes.find(
-            (x) => x.enumId === ProgrammeTypeEnum.Playgroup
-          );
-
-          const classroomGroupInputModel: ClassroomGroupDto = {
-            id: newGuid(),
-            insertedDate: new Date().toISOString(),
-            classroomId: classroom.id ?? '',
-            name: playGroup.name,
-            programmeTypeId: type?.id ?? '',
-            isActive: true,
-          };
-
-          appDispatch(
-            classroomsActions.createClassroomGroup(classroomGroupInputModel)
-          );
-
-          for (const meetingDay of playGroup.meetingDays) {
-            const classProgrammeInputModel: ClassProgrammeDto = {
-              id: newGuid(),
-              classroomGroupId: classroomGroupInputModel.id ?? '',
-              insertedDate: new Date().toISOString(),
-              meetingDay: meetingDay,
-              isFullDay: playGroup?.isFullDay || false,
-              programmeStartDate: new Date().toISOString(),
-              isActive: true,
-            };
-
-            appDispatch(
-              classroomsActions.createClassroomProgramme(
-                classProgrammeInputModel
-              )
-            );
-          }
+          createPlayGroup(playGroup);
         }
       }
     }
