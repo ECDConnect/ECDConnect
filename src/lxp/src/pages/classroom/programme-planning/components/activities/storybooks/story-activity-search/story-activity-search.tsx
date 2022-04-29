@@ -362,7 +362,7 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
 
           <Button
             type="filled"
-            className="w-full"
+            className="w-full mb-20"
             color="primary"
             icon="SaveIcon"
             text={submitButtonText}
