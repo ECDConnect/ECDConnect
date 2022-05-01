@@ -227,9 +227,12 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
           <ButtonGroup<number>
             type={ButtonGroupTypes.Chip}
             options={buttonDays}
-            onOptionSelected={(value: number | number[]) =>
-              handleDaySelection(value as Weekdays[])
-            }
+            onOptionSelected={(value: number | number[]) => {
+              if (typeof value !== 'number') {
+                value = value.sort();
+              }
+              handleDaySelection(value as Weekdays[]);
+            }}
             multiple
             selectedOptions={selectedDays}
             color="secondary"
