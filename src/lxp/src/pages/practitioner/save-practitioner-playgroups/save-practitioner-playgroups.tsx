@@ -9,7 +9,11 @@ import { EditMultiplePlayGroups } from '../edit-practitioner-profile/components/
 import { EditPlaygroupModel } from '@schemas/practitioner/edit-playgroups';
 import * as styles from './save-practitioner-playgroups.styles';
 import { useAppDispatch } from '@store';
-import { classroomsActions, classroomsSelectors } from '@store/classroom';
+import {
+  classroomsActions,
+  classroomsSelectors,
+  classroomsThunkActions,
+} from '@store/classroom';
 import { newGuid } from '@utils/common/uuid.utils';
 import {
   EditPlaygroupsState,
@@ -17,15 +21,18 @@ import {
 } from './save-practitioner-playgroups.types';
 import { staticDataSelectors } from '@store/static-data';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
+import { useStoreSetup } from '@hooks/useStoreSetup';
 
 export const EditPlaygroups: React.FC = () => {
   const location = useLocation<EditPlaygroupsState>();
   const { returnRoute } = location.state;
   const history = useHistory();
+  const [isLoading, setIsLoading] = useState(false);
   const [activePlaygroupIndex, setActivePlaygroupIndex] = useState<number>(0);
   const [activePage, setActivePage] = useState<EditPlaygroupsSteps>(
     EditPlaygroupsSteps.confirm
   );
+  const { syncClassroom } = useStoreSetup();
   const [addingPlayGroup, setAddingPlayGroup] = useState<boolean>(false);
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
@@ -60,7 +67,7 @@ export const EditPlaygroups: React.FC = () => {
             filteredClassProgrammes &&
             filteredClassProgrammes?.map((x) => x.meetingDay).sort(),
           isFullDay:
-            filteredClassProgrammes && filteredClassProgrammes[0].isFullDay,
+            filteredClassProgrammes && filteredClassProgrammes[0]?.isFullDay,
         } as EditPlaygroupModel);
       });
 
@@ -77,6 +84,19 @@ export const EditPlaygroups: React.FC = () => {
     setActivePlaygroupIndex(index);
     setActivePage(EditPlaygroupsSteps.edit);
     setAddingPlayGroup(addingPlayGroup);
+  };
+
+  const updateClassroomData = async () => {
+    try {
+      if (isOnline) {
+        setIsLoading(true);
+        await syncClassroom();
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const createPlayGroup = (playgroup: EditPlaygroupModel) => {
@@ -191,6 +211,8 @@ export const EditPlaygroups: React.FC = () => {
           createPlayGroup(playGroup);
         }
       }
+
+      await updateClassroomData();
     }
   };
 
@@ -227,6 +249,7 @@ export const EditPlaygroups: React.FC = () => {
             defaultPlayGroups={updatedPlaygroups || []}
             onEditPlaygroup={onPlayGroupsEdit}
             title="Edit Playgroups"
+            isLoading={isLoading}
             onSubmit={(value) => {
               confirmPlaygroups(value);
             }}

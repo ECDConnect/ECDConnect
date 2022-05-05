@@ -13,7 +13,7 @@ import {
   isMatchingReportingPeriods,
 } from '@utils/child/child-profile-utils';
 import { isChildInitialRegistrationPeriod } from '@utils/child/child-progress-report.utils';
-import ROUTES from '@/routes/routes';
+import ROUTES from '@routes/routes';
 
 export interface ChildProgressReportAlertProps extends ComponentBaseProps {
   child: ChildDto;

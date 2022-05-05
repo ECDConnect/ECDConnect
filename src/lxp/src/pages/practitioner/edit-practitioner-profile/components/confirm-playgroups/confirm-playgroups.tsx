@@ -15,6 +15,7 @@ interface ConfirmPlayGroupsProps extends FormComponentProps<any | void> {
     addingPlayGroup?: boolean
   ) => void;
   title?: string;
+  isLoading?: boolean;
 }
 
 export const ConfirmPlayGroups: React.FC<ConfirmPlayGroupsProps> = ({
@@ -22,10 +23,10 @@ export const ConfirmPlayGroups: React.FC<ConfirmPlayGroupsProps> = ({
   onSubmit,
   onEditPlaygroup,
   title = 'Confirm Playgroups',
+  isLoading,
 }) => {
   const [playgroups, setPlayGroups] =
     useState<EditPlaygroupModel[]>(defaultPlayGroups);
-
   const onAddNewPlaygroup = () => {
     playgroups.push({ meetingDays: [], name: '', classroomGroupId: newGuid() });
     onEditPlaygroup(playgroups, playgroups.length - 1, true);
@@ -84,11 +85,13 @@ export const ConfirmPlayGroups: React.FC<ConfirmPlayGroupsProps> = ({
         type="filled"
         color="primary"
         className={'w-full my-3'}
+        isLoading={isLoading}
+        disabled={isLoading}
         onClick={() => {
           onSubmit(playgroups);
         }}
       >
-        {renderIcon('CheckCircleIcon', styles.icon)}
+        {!isLoading && renderIcon('CheckCircleIcon', styles.icon)}
         <Typography type={'help'} text={'Confirm'} color={'white'} />
       </Button>
     </>

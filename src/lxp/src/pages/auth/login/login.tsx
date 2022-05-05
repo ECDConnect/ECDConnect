@@ -80,7 +80,7 @@ export const Login: React.FC = () => {
   };
 
   const forgotPasswordClicked = () => {
-    history.push('/password-reset');
+    history.push(ROUTES.PASSWORD_RESET);
   };
 
   const toggleIdAndpassport = (visible: boolean) => {
