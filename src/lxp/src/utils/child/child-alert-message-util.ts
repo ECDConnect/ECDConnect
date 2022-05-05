@@ -10,7 +10,7 @@ import {
 } from '@ecdlink/core';
 import { isPracitionerAttendanceMissingForLearner } from '../classroom/attendance/track-attendance-utils';
 import {
-  getChildsAttendancePercentageAtPlaygroup,
+  getChildAttendancePercentageAtPlaygroup,
   isMatchingReportingPeriods,
 } from './child-profile-utils';
 
@@ -85,7 +85,7 @@ export const getChildAlertModel = (
       (x) => x.id === learner?.classroomGroupId
     );
 
-    const childAttendancePercentage = getChildsAttendancePercentageAtPlaygroup(
+    const childAttendancePercentage = getChildAttendancePercentageAtPlaygroup(
       child?.userId ?? '',
       attendance,
       classroomGroup?.id ?? '',

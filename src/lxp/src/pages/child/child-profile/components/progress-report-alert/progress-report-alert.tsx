@@ -3,8 +3,8 @@ import { ComponentBaseProps, ListItem, ListItemProps } from '@ecdlink/ui';
 import { addDays } from 'date-fns';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
-import { childRegistrationConstants } from '../../../../../constants/Child';
-import { DateFormats } from '../../../../../constants/Dates';
+import { childRegistrationConstants } from '@/constants/Child';
+import { DateFormats } from '@/constants/Dates';
 import { contentReportSelectors } from '@store/content/report';
 import {
   getFollowingReportingPeriod,
@@ -12,8 +12,8 @@ import {
   isInFinalMonthOfReportingPeriod,
   isMatchingReportingPeriods,
 } from '@utils/child/child-profile-utils';
-
 import { isChildInitialRegistrationPeriod } from '@utils/child/child-progress-report.utils';
+import ROUTES from '@/routes/routes';
 
 export interface ChildProgressReportAlertProps extends ComponentBaseProps {
   child: ChildDto;
@@ -79,7 +79,7 @@ export const ChildProgressReportAlert: React.FC<
   );
 
   const navigateToChildProgressObservation = () => {
-    history.push('/child-progress-observation', {
+    history.push(ROUTES.CHILD_PROGRESS_OBSERVATION, {
       childId: child.id,
       reportingDate: reportDate,
     });

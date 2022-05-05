@@ -21,6 +21,7 @@ import { childrenSelectors } from '@store/children';
 import { analyticsActions } from '@store/analytics';
 import { attendanceColor } from './contact-child-caregiver.styles';
 import { ContactChildCaregiverState } from './contact-child-caregiver.types';
+import ROUTES from '@routes/routes';
 
 export const ContactChildCaregiver: React.FC = () => {
   const history = useHistory();
@@ -70,7 +71,7 @@ export const ContactChildCaregiver: React.FC = () => {
   };
 
   const goToRemoveChild = () => {
-    history.push('remove-child', { childId: child?.id });
+    history.push(ROUTES.REMOVE_CHILD, { childId: child?.id });
   };
 
   return (

@@ -72,37 +72,37 @@ import { userPersistConfig, userReducer } from '../user/user';
 import type { RootState } from './types';
 
 const persistedReducers = {
-  auth: persistReducer(authPersistConfig, authReducer),
-  settings: persistReducer(settingPersistConfig, settingReducer),
-  staticData: persistReducer(staticDataPersistConfig, staticDataReducer),
-  classroomData: persistReducer(classroomsPersistConfig, classroomsReducer),
-  user: persistReducer(userPersistConfig, userReducer),
-  children: persistReducer(childrenPersistConfig, childrenReducer),
-  caregivers: persistReducer(caregiverPersistConfig, caregiverReducer),
+  activityData: persistReducer(activityPersistConfig, activityReducer),
+  analytics: persistReducer(analyticsPersistConfig, analyticsReducer),
   attendanceData: persistReducer(attendancePersistConfig, attendanceReducer),
+  auth: persistReducer(authPersistConfig, authReducer),
+  caregivers: persistReducer(caregiverPersistConfig, caregiverReducer),
+  children: persistReducer(childrenPersistConfig, childrenReducer),
+  classroomData: persistReducer(classroomsPersistConfig, classroomsReducer),
   contentConsentData: contentConsentReducer,
-  documents: persistReducer(documentPersistConfig, documentReducer),
-  progressTracking: persistReducer(
-    progressTrackingPersistConfig,
-    progressTrackingReducer
-  ),
   contentReportData: persistReducer(
     contentReportPersistConfig,
     contentReportReducer
   ),
+  documents: persistReducer(documentPersistConfig, documentReducer),
   notesData: persistReducer(notesPersistConfig, notesReducer),
+  notifications: persistReducer(notificationPersistConfig, notificationReducer),
   practitioner: persistReducer(practitionerPersistConfig, practitionerReducer),
-  activityData: persistReducer(activityPersistConfig, activityReducer),
-  programmeThemeData: programmeThemeReducer,
-  storyBookData: persistReducer(storyBookPersistConfig, storyBookReducer),
+  programmeData: persistReducer(programmePersistConfig, programmeReducer),
   programmeRoutineData: persistReducer(
     programmeRoutinePersistConfig,
     programmeRoutineReducer
   ),
-  programmeData: persistReducer(programmePersistConfig, programmeReducer),
-  notifications: persistReducer(notificationPersistConfig, notificationReducer),
-  analytics: persistReducer(analyticsPersistConfig, analyticsReducer),
+  programmeThemeData: programmeThemeReducer,
+  progressTracking: persistReducer(
+    progressTrackingPersistConfig,
+    progressTrackingReducer
+  ),
+  settings: persistReducer(settingPersistConfig, settingReducer),
+  staticData: persistReducer(staticDataPersistConfig, staticDataReducer),
+  storyBookData: persistReducer(storyBookPersistConfig, storyBookReducer),
   sync: syncReducer,
+  user: persistReducer(userPersistConfig, userReducer),
 };
 
 const rootReducer = combineReducers(persistedReducers);
