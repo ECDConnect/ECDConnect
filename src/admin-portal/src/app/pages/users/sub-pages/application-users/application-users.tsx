@@ -102,6 +102,7 @@ export default function ApplicationUsers() {
 
   const deleteUserAndRefresh = async (user: any) => {
     dialog({
+      blocking: true,
       position: DialogPosition.Middle,
       render: (onSubmit: any, onCancel: any) => (
         <AlertModal

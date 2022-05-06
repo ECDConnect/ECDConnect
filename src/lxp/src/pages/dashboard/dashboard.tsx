@@ -162,6 +162,7 @@ export const Dashboard: React.FC = () => {
   const showCompleteProfileBlockingDialog = () => {
     dialog({
       blocking: true,
+      position: DialogPosition.Top,
       render: (onSubmit, onCancel) => {
         return (
           <ActionModal
