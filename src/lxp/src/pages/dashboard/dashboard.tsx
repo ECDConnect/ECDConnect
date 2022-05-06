@@ -163,7 +163,7 @@ export const Dashboard: React.FC = () => {
   const showCompleteProfileBlockingDialog = () => {
     dialog({
       blocking: true,
-      position: DialogPosition.Top,
+      position: DialogPosition.Bottom,
       render: (onSubmit, onCancel) => {
         return (
           <ActionModal
@@ -201,7 +201,6 @@ export const Dashboard: React.FC = () => {
           />
         );
       },
-      position: DialogPosition.Bottom,
     });
   };
 
