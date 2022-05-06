@@ -21,6 +21,7 @@ import { settingSelectors } from '@store/settings';
 import { userSelectors } from '@store/user';
 import { analyticsActions } from '@store/analytics';
 import CompleteProfile from '../edit-practitioner-profile/components/complete-profile/complete-profile';
+import ROUTES from '@routes/routes';
 
 export const PractitionerProfile: React.FC = () => {
   const { resetAuth, resetAppStaticStores } = useStoreSetup();
@@ -57,7 +58,7 @@ export const PractitionerProfile: React.FC = () => {
 
         showIcon: userProfilePicture?.file === undefined,
         onActionClick: () => {
-          history.push('/practitioner/about');
+          history.push(ROUTES.PRACTITIONER.ABOUT);
         },
       },
       {
@@ -71,7 +72,7 @@ export const PractitionerProfile: React.FC = () => {
         showIcon: classroomImage?.file === undefined,
         onActionClick: () => {
           if (classroom && classroom.id) {
-            history.push('/practitioner/programme-information');
+            history.push(ROUTES.PRACTITIONER.PROGRAMME_INFORMATION);
           } else {
             dialog({
               render: (onSubmit, onCancel) => {
@@ -93,7 +94,7 @@ export const PractitionerProfile: React.FC = () => {
                         leadingIcon: 'ArrowCircleRightIcon',
                         onClick: async () => {
                           onSubmit();
-                          history.push('/practitioner/profile/edit/');
+                          history.push(ROUTES.PRACTITIONER.PROFILE.EDIT);
                         },
                       },
                       {
@@ -124,7 +125,7 @@ export const PractitionerProfile: React.FC = () => {
         showIcon: true,
         iconColor: 'white',
         onActionClick: () => {
-          history.push('/practitioner/account');
+          history.push(ROUTES.PRACTITIONER.ACCOUNT);
         },
       },
       {
@@ -226,7 +227,7 @@ export const PractitionerProfile: React.FC = () => {
       renderBorder={true}
       title={`${user?.firstName} ${user?.surname}`}
       color={'primary'}
-      onBack={() => history.push('/')}
+      onBack={() => history.push(ROUTES.ROOT)}
       backgroundColour="uiBg"
       displayOffline={!isOnline}
     >

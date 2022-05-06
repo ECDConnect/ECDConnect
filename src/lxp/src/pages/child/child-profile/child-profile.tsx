@@ -62,6 +62,7 @@ import { PhotoPrompt } from '../../../components/photo-prompt/photo-prompt';
 import { ChildProgressReportAlert } from './components/progress-report-alert/progress-report-alert';
 import { contentReportSelectors } from '@store/content/report';
 import { analyticsActions } from '@store/analytics';
+import ROUTES from '@routes/routes';
 
 const baseNotificationListItem: ListItemProps = {
   key: 'message-caregiver',
@@ -175,7 +176,7 @@ export const ChildProfile: React.FC = () => {
       dividerType: 'dashed',
       withPaddingY: true,
       onButtonClick: () => {
-        history.push('/child/information/edit', { childId });
+        history.push(ROUTES.CHILD.INFORMATION.EDIT, { childId });
       },
     },
   ]);
@@ -514,7 +515,7 @@ export const ChildProfile: React.FC = () => {
         size="medium"
         renderBorder={true}
         renderOverflow={false}
-        onBack={() => history.push('/classroom')}
+        onBack={() => history.push(ROUTES.CLASSROOM)}
         displayOffline={!isOnline}
       >
         <div className={styles.avatarWrapper}>

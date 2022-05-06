@@ -23,6 +23,7 @@ import ChildList from '../child-list/child-list';
 import ProgrammeDashboard from '../programme-planning/programme-dashboard/programme-dashboard';
 import * as styles from './class-dashboard.styles';
 import { ClassDashboardRouteState } from './class-dashboard.types';
+import ROUTES from '@routes/routes';
 
 export const ClassDashboard: React.FC = () => {
   const history = useHistory();
@@ -115,7 +116,7 @@ export const ClassDashboard: React.FC = () => {
         setAttendanceTutorialActive(true);
         break;
       case 'Programme':
-        history.push('/programmes/tutorial/getting-started');
+        history.push(ROUTES.PROGRAMMES.TUTORIAL.GETTING_STARTED);
         break;
       default:
         break;

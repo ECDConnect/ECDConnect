@@ -14,6 +14,7 @@ import OnlineOnlyModal from '../../../../modals/offline-sync/online-only-modal';
 import { programmeSelectors } from '@store/programme';
 import { IconInformationIndicator } from '../components/icon-information-indicator/icon-information-indicator';
 import { DailyRoutine } from './components/daily-routine/daily-routine';
+import ROUTES from '@routes/routes';
 
 export const ProgrammeDashboard: React.FC<ComponentBaseProps> = () => {
   const history = useHistory();
@@ -28,7 +29,7 @@ export const ProgrammeDashboard: React.FC<ComponentBaseProps> = () => {
 
   const handleAddProgramme = () => {
     if (isOnline) {
-      history.push('/programmes/theme');
+      history.push(ROUTES.PROGRAMMES.THEME);
     } else {
       showOnlineOnly();
     }
@@ -44,7 +45,7 @@ export const ProgrammeDashboard: React.FC<ComponentBaseProps> = () => {
   };
 
   const handleViewProgrammeSummary = () => {
-    history.push('/programmes/summary', { variation: 'view' });
+    history.push(ROUTES.PROGRAMMES.SUMMARY, { variation: 'view' });
   };
 
   if (programmes.length === 0)

@@ -38,6 +38,7 @@ import { useProgrammePlanningRecommendations } from '@hooks/useProgrammePlanning
 import { useHolidays } from '@hooks/useHolidays';
 import { useEffect, useState } from 'react';
 import { PublicHolidayIndicator } from '../../../programme-routine/components/public-holiday-indicator/public-holiday-indicator';
+import ROUTES from '@routes/routes';
 
 export const DailyRoutine: React.FC<DailyRoutineProps> = ({
   programme,
@@ -72,7 +73,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
 
   const handleAddProgramme = () => {
     if (isOnline) {
-      history.push('/programmes/theme');
+      history.push(ROUTES.PROGRAMMES.THEME);
     } else {
       showOnlineOnly();
     }
@@ -88,7 +89,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
   };
 
   const handleViewProgrammeSummary = () => {
-    history.push('/programmes/summary', { variation: 'view' });
+    history.push(ROUTES.PROGRAMMES.SUMMARY, { variation: 'view' });
   };
 
   const openInfoItem = (routineItem: ProgrammeRoutineItemDto) => {

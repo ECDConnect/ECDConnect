@@ -25,6 +25,7 @@ import { userSelectors } from '@store/user';
 import { analyticsActions } from '@store/analytics';
 import { DashboardItems } from './components/dashboard-items/dashboard-items';
 import * as styles from './dashboard.styles';
+import ROUTES from '@routes/routes';
 const { version } = require('../../../package.json');
 
 export enum NavigationTypes {
@@ -70,37 +71,37 @@ export const Dashboard: React.FC = () => {
     { name: NavigationTypes.Home, href: '/', icon: 'HomeIcon', current: true },
     {
       name: NavigationTypes.Classroom,
-      href: '/classroom',
+      href: ROUTES.CLASSROOM,
       icon: 'AcademicCapIcon',
       current: false,
     },
     {
       name: NavigationTypes.Attendance,
-      href: '/classroom',
+      href: ROUTES.CLASSROOM,
       params: { activeTabIndex: 0 },
       current: false,
     },
     {
       name: NavigationTypes.Children,
-      href: '/classroom',
+      href: ROUTES.CLASSROOM,
       params: { activeTabIndex: 1 },
       current: false,
     },
     {
       name: NavigationTypes.Programme,
-      href: '/classroom',
+      href: ROUTES.CLASSROOM,
       params: { activeTabIndex: 2 },
       current: false,
     },
     {
       name: NavigationTypes.Profile,
-      href: '/practitioner/profile',
+      href: ROUTES.PRACTITIONER.PROFILE.ROOT,
       icon: 'UserIcon',
       current: false,
     },
     {
       name: NavigationTypes.Messages,
-      href: '/messages',
+      href: ROUTES.MESSAGES,
       icon: 'BellIcon',
       current: false,
       getNotificationCount: () => {
@@ -138,12 +139,12 @@ export const Dashboard: React.FC = () => {
   }, [shouldUserSync]);
 
   const goToProfile = () => {
-    history.push('/practitioner/profile');
+    history.push(ROUTES.PRACTITIONER.PROFILE.ROOT);
   };
 
   const goToClassroom = () => {
     if (classroom && classroom.id) {
-      history.push('/classroom', { activeTabIndex: 1 });
+      history.push(ROUTES.CLASSROOM, { activeTabIndex: 1 });
     } else {
       showCompleteProfileBlockingDialog();
     }
@@ -183,7 +184,7 @@ export const Dashboard: React.FC = () => {
                 leadingIcon: 'PlusIcon',
                 onClick: async () => {
                   onSubmit();
-                  history.push('/practitioner/profile/edit/');
+                  history.push(ROUTES.PRACTITIONER.PROFILE.EDIT);
                 },
               },
               {
@@ -230,7 +231,7 @@ export const Dashboard: React.FC = () => {
       notificationRender={() => {
         return (
           <IconBadge
-            onClick={() => history.push('/messages')}
+            onClick={() => history.push(ROUTES.MESSAGES)}
             badgeColor={'errorMain'}
             badgeTextColor={'white'}
             icon={'BellIcon'}
