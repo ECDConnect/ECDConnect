@@ -328,7 +328,7 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
             }}
           />
         </SeachHeader>
-        <div className="h-full px-4 pt-2 mb-32">
+        <div className="px-4 pt-2">
           {!selectedStory && (
             <>
               {hasActiveFilters && filteredStories.length === 0 && (
