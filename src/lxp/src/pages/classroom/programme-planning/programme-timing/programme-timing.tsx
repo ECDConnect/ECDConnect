@@ -27,6 +27,8 @@ import { ProgrammeTimingRouteState } from './programme-timing.types';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import ROUTES from '@routes/routes';
+import { useAppDispatch } from '@/store';
+import { programmeThunkActions } from '@/store/programme';
 
 const ProgrammeTiming: React.FC = () => {
   const history = useHistory();
@@ -47,6 +49,7 @@ const ProgrammeTiming: React.FC = () => {
     resolver: yupResolver(programmeTimingSchema),
     mode: 'onChange',
   });
+  const appDispatch = useAppDispatch();
 
   const { date: selectedDate, language: selectedLanguage } = useWatch({
     control: control,
@@ -66,6 +69,14 @@ const ProgrammeTiming: React.FC = () => {
       formValue.language,
       selectedTheme
     );
+
+    if (isOnline) {
+      try {
+        appDispatch(programmeThunkActions.upsertProgrammes({}));
+      } catch (err) {
+        console.log(err);
+      }
+    }
 
     history.replace(ROUTES.PROGRAMMES.SUMMARY, {
       programmeId: newProgramme.id,
