@@ -31,7 +31,7 @@ class AttendanceService {
           classroomProgrammeId
           userId
           attended
-          attendanceDate          
+          attendanceDate
           weekOfYear
           year
         }

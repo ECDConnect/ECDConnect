@@ -27,6 +27,7 @@ import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { ProgrammeTypeEnum } from '@ecdlink/graphql';
 import { useStoreSetup } from '@hooks/useStoreSetup';
 import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
+import ROUTES from '@routes/routes';
 
 export const EditPractitionerProfile: React.FC = () => {
   const history = useHistory();
@@ -42,9 +43,10 @@ export const EditPractitionerProfile: React.FC = () => {
   const [programme, setProgramme] = useState<EditProgrammeModel>();
   const [playgroups, setPlaygroups] = useState<EditPlaygroupModel[]>();
   const [editPlaygroupAtIndex, setEditPlayGroupAtIndex] = useState<number>();
-
-  const { activeStepKey, goBackOneStep, canGoBack, goToStep } =
-    useStepNavigation(EditPractitionerSteps.setupProgramme);
+  const [activeStep, setActiveStep] = useState(
+    EditPractitionerSteps.setupProgramme
+  );
+  const [addingPlaygroup, setAddingPlaygroup] = useState(false);
 
   useEffect(() => {
     setLabel(`step 1 of 3`);
@@ -52,11 +54,13 @@ export const EditPractitionerProfile: React.FC = () => {
 
   const onPlayGroupsEdit = (
     playgroups: EditPlaygroupModel[],
-    index: number
+    index: number,
+    addPlaygroup: boolean = false
   ) => {
     setPlaygroups(playgroups);
     setEditPlayGroupAtIndex(index);
-    goToStep(EditPractitionerSteps.setupPlaygroups);
+    setAddingPlaygroup(addPlaygroup);
+    setActiveStep(EditPractitionerSteps.setupPlaygroups);
   };
 
   const deletePlayGroup = async (playgroup: EditPlaygroupModel) => {
@@ -70,7 +74,7 @@ export const EditPractitionerProfile: React.FC = () => {
 
     setPlaygroups(updatedPlaygroups);
 
-    goToStep(EditPractitionerSteps.confirmPlaygroups);
+    setActiveStep(EditPractitionerSteps.confirmPlaygroups);
   };
 
   const onAllStepsComplete = async () => {
@@ -167,7 +171,7 @@ export const EditPractitionerProfile: React.FC = () => {
       }
 
       await syncClassroom();
-      history.push('/');
+      history.push(ROUTES.ROOT);
     } else {
       showOnlineOnly();
     }
@@ -203,9 +207,9 @@ export const EditPractitionerProfile: React.FC = () => {
                 );
 
                 if (programme.type === playgroupProgrammeType?.id) {
-                  goToStep(EditPractitionerSteps.setPlaygroupCount);
+                  setActiveStep(EditPractitionerSteps.setPlaygroupCount);
                 } else {
-                  goToStep(EditPractitionerSteps.addPhoto);
+                  setActiveStep(EditPractitionerSteps.addPhoto);
                   setLabel(`step 3 of 3`);
                 }
               }}
@@ -217,7 +221,7 @@ export const EditPractitionerProfile: React.FC = () => {
           <EditPlaygroupCountForm
             onSubmit={(value) => {
               setPlayGroupCount(value);
-              goToStep(EditPractitionerSteps.setupPlaygroups);
+              setActiveStep(EditPractitionerSteps.setupPlaygroups);
               setLabel(`step 2 of 3`);
             }}
           />
@@ -231,7 +235,7 @@ export const EditPractitionerProfile: React.FC = () => {
             onPlayGroupDelete={deletePlayGroup}
             onSubmit={(value) => {
               setPlaygroups(value);
-              goToStep(EditPractitionerSteps.confirmPlaygroups);
+              setActiveStep(EditPractitionerSteps.confirmPlaygroups);
             }}
           />
         );
@@ -242,7 +246,7 @@ export const EditPractitionerProfile: React.FC = () => {
             onEditPlaygroup={onPlayGroupsEdit}
             onSubmit={(value) => {
               setPlaygroups(value);
-              goToStep(EditPractitionerSteps.addPhoto);
+              setActiveStep(EditPractitionerSteps.addPhoto);
               setLabel(`step 3 of 3`);
             }}
           />
@@ -297,6 +301,36 @@ export const EditPractitionerProfile: React.FC = () => {
     });
   };
 
+  const onBack = () => {
+    switch (activeStep) {
+      case EditPractitionerSteps.setupProgramme:
+      default:
+        return history.goBack();
+      case EditPractitionerSteps.setPlaygroupCount:
+        return setActiveStep(EditPractitionerSteps.setupProgramme);
+      case EditPractitionerSteps.setupPlaygroups:
+        if (addingPlaygroup) {
+          const _playGroups = playgroups && [...playgroups];
+          _playGroups?.pop();
+          setPlaygroups(_playGroups);
+          setAddingPlaygroup(false);
+          setActiveStep(EditPractitionerSteps.confirmPlaygroups);
+        } else {
+          setActiveStep(EditPractitionerSteps.setPlaygroupCount);
+          setPlaygroups(undefined);
+          setEditPlayGroupAtIndex(undefined);
+        }
+        return;
+      case EditPractitionerSteps.confirmPlaygroups:
+        setActiveStep(EditPractitionerSteps.setupPlaygroups);
+        setPlaygroups(undefined);
+        setEditPlayGroupAtIndex(undefined);
+        return;
+      case EditPractitionerSteps.addPhoto:
+        return setActiveStep(EditPractitionerSteps.confirmPlaygroups);
+    }
+  };
+
   return (
     <>
       <IonContent scrollY={true}>
@@ -305,18 +339,13 @@ export const EditPractitionerProfile: React.FC = () => {
           renderBorder={true}
           title={'Edit Profile'}
           subTitle={label}
-          onBack={() => {
-            if (canGoBack()) goBackOneStep();
-            else {
-              history.goBack();
-            }
-          }}
+          onBack={onBack}
           onClose={exitPrompt}
           backgroundColour={'uiBg'}
           displayOffline={!isOnline}
         >
           <div className={'px-4 pb-5'}>
-            {steps(activeStepKey as EditPractitionerSteps)}
+            {steps(activeStep as EditPractitionerSteps)}
           </div>
         </BannerWrapper>
       </IonContent>

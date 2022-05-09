@@ -45,6 +45,7 @@ import { FileTypeEnum } from '@ecdlink/graphql';
 import { documentSelectors } from '@store/document';
 import { useAppDispatch } from '@store';
 import { analyticsActions } from '@store/analytics';
+import ROUTES from '@routes/routes';
 
 export const ChildProgressObservationPage: React.FC = () => {
   const history = useHistory();
@@ -129,13 +130,13 @@ export const ChildProgressObservationPage: React.FC = () => {
     }
 
     if (status === ChildProgressObservationStatus.NotStarted)
-      history.push('/progress-tracking-category', {
+      history.push(ROUTES.PROGRESS_TRACKING_CATEGORY, {
         childId: child?.id,
         progressTrackingCategoryId: categoryId,
         reportingDate: reportingDate.toISOString(),
       });
     else {
-      history.push('child-progress-assessment', {
+      history.push(ROUTES.CHILD_PROGRESS_ASSESSMENT, {
         step: ChildProgressAssessmentSteps.assessmentStepOne,
         childId: routeState.childId,
         progressTrackingCategoryId: categoryId,
@@ -179,13 +180,13 @@ export const ChildProgressObservationPage: React.FC = () => {
       await persistReport();
     }
 
-    history.push('/child-progress-observation-note', {
+    history.push(ROUTES.CHILD_PROGRESS_OBSERVATION_NOTE, {
       childId: routeState.childId,
     });
   };
 
-  const finaliseReport = () => {
-    history.push('/child-progress-observation-report', {
+  const finalizeReport = () => {
+    history.push(ROUTES.CHILD_PROGRESS_OBSERVATION_REPORT, {
       childId: routeState.childId,
       reportingDate,
     });
@@ -196,7 +197,7 @@ export const ChildProgressObservationPage: React.FC = () => {
       <BannerWrapper
         size={'small'}
         onBack={() =>
-          history.push('/child-profile', { childId: routeState.childId })
+          history.push(ROUTES.CHILD_PROFILE, { childId: routeState.childId })
         }
         title={`Track ${childUser?.firstName}'s progress`}
         data-testId={'child-progress-observation-banner-wrapper'}
@@ -238,7 +239,7 @@ export const ChildProgressObservationPage: React.FC = () => {
               title={`Create ${reportingPeriod.monthName} caregiver report`}
               subTitle={`Report due <b>30 ${reportingPeriod.monthName} ${reportingPeriod.year}</>`}
               showChevronIcon
-              onButtonClick={finaliseReport}
+              onButtonClick={finalizeReport}
             />
           )}
           {isReturningUser && notStartedCategories.length > 0 && (

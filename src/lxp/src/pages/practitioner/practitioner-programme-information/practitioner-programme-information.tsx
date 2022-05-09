@@ -29,7 +29,11 @@ import {
   programmeNameSchema,
 } from '@schemas/practitioner/practitioner-programme-information';
 import { useAppDispatch } from '@store';
-import { classroomsActions, classroomsSelectors } from '@store/classroom';
+import {
+  classroomsActions,
+  classroomsSelectors,
+  classroomsThunkActions,
+} from '@store/classroom';
 import { userSelectors } from '@store/user';
 import { analyticsActions } from '@store/analytics';
 import * as styles from './practitioner-programme-information.styles';
@@ -184,11 +188,15 @@ export const PractitionerProgrammeInformation: React.FC = () => {
     }
   };
 
-  const setUpdatedClassroom = (classroomDto: ClassroomDto) => {
+  const setUpdatedClassroom = async (classroomDto: ClassroomDto) => {
     const copy = Object.assign({}, classroomDto);
     if (copy) {
       copy.name = updatedProgrammeName as string;
       appDispatch(classroomsActions.updateClassroom(copy));
+      isOnline &&
+        (await appDispatch(
+          classroomsThunkActions.upsertClassroom({})
+        ).unwrap());
     }
   };
 
