@@ -55,12 +55,19 @@ export const ChildRegistrationForm: React.FC<ChildRegistrationFormProps> = ({
     reset: resetChildRegistrationFormValue,
     register: childRegistrationFormRegister,
     trigger,
+    watch,
   } = useForm<ChildRegistrationFormModel>({
     resolver: yupResolver(getChildRegistrationFormSchema(variation)),
-    mode: 'onChange',
+    mode: 'all',
     reValidateMode: 'onChange',
   });
   const { isValid } = childRegistrationFormState;
+  const { childPhotoConsentAccepted } = watch();
+
+  useEffect(() => {
+    trigger();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [childPhotoConsentAccepted]);
 
   useEffect(() => {
     if (childRegisterForm) {
@@ -549,11 +556,6 @@ const CaregiverForm: React.FC<any> = ({
           type={'body'}
           color={'textMid'}
           text={`Do you give permission for the child to be photographed?`}
-        ></Typography>
-        <Typography
-          type={'help'}
-          color={'textLight'}
-          text={'Optional'}
         ></Typography>
         <Typography
           onClick={() => {
