@@ -114,6 +114,7 @@
     "autoprefixer": "^9.8.8",
     "craco-alias": "^3.0.1",
     "cropperjs": "^1.5.12",
+    "dotenv": "^16.0.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-config-react-app": "^7.0.0",
     "eslint-import-resolver-typescript": "^2.7.1",
