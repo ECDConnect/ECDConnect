@@ -164,11 +164,13 @@ export const CreateNote: React.FC<CreateNoteProps> = ({
           </Button>
         </div>
       </BannerWrapper>
+
       <Dialog
         className={'px-4 mb-16'}
         stretch={true}
         visible={confirmGoBackPromptVisible}
-        position={DialogPosition.Bottom}
+        position={DialogPosition.Middle}
+        
       >
         <ActionModal
           icon={'InformationCircleIcon'}

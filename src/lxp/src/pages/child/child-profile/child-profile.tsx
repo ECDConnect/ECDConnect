@@ -622,7 +622,7 @@ export const ChildProfile: React.FC = () => {
       <Dialog
         fullScreen
         visible={createChildNoteVisible}
-        position={DialogPosition.Top}
+        position={DialogPosition.Middle}
       >
         <div className={styles.dialogContent}>
           <CreateNote

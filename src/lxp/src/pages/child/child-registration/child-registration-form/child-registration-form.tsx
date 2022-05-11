@@ -145,7 +145,7 @@ export const ChildRegistrationForm: React.FC<ChildRegistrationFormProps> = ({
       </div>
       <Dialog
         visible={photoActionBarVisible}
-        position={DialogPosition.Bottom}
+        position={DialogPosition.Middle}
         stretch
       >
         <PhotoPrompt
