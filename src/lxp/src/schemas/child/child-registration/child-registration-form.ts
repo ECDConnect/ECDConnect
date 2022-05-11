@@ -15,7 +15,7 @@ export const getChildRegistrationFormSchema = (
   return Yup.object().shape({
     registrationForm:
       variant === 'caregiver' ? Yup.string() : Yup.string().required(),
-    childPhotoConsentAccepted: Yup.boolean(),
+    childPhotoConsentAccepted: Yup.boolean().required(),
     personalInformationAgreementAccepted: Yup.boolean().required().isTrue(),
     consentAgreementAccepted: Yup.boolean().required().isTrue(),
     commitmentAgreementAccepted: Yup.boolean().required().isTrue(),
