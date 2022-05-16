@@ -17,7 +17,7 @@ class ClassroomService {
             id
             name
             classroomImageUrl
-            isActive            
+            isActive
             userId
             isPrinciple
             numberPractitioners

@@ -89,7 +89,7 @@ export const ChildNotes: React.FC = () => {
       <Dialog
         fullScreen
         visible={createChildNoteVisible}
-        position={DialogPosition.Top}
+        position={DialogPosition.Middle}
       >
         <div className={styles.dialogContent}>
           <CreateNote
@@ -106,7 +106,7 @@ export const ChildNotes: React.FC = () => {
         stretch={true}
         fullScreen={true}
         visible={viewNoteVisible}
-        position={DialogPosition.Bottom}
+        position={DialogPosition.Middle}
       >
         {noteToView && (
           <ViewNote

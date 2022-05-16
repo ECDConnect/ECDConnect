@@ -18,7 +18,7 @@ export const transitionChildWrapper = (position: DialogPosition) =>
   `flex ${getItemPosition(position)} justify-center min-h-screen  ${
     position !== DialogPosition.Full ? 'pt-4 px-4' : 'h-screen'
   } text-center`;
-export const overlay = 'fixed bg-gray-500 bg-opacity-75 transition-opacity';
+export const overlay = 'fixed inset-0 opacity-50 bg-gray-500';
 
 export const contentWrapper = (position: DialogPosition) =>
   `align-bottom bg-uiBg max-h-screen overflow-y-auto ${

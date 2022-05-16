@@ -44,7 +44,7 @@ import { documentActions, documentSelectors } from '@store/document';
 import { notesSelectors } from '@store/notes';
 import {
   getAge,
-  getChildsAttendancePercentageAtPlaygroup,
+  getChildAttendancePercentageAtPlaygroup,
   getLastNoteDate,
 } from '@utils/child/child-profile-utils';
 import {
@@ -180,7 +180,7 @@ export const ChildProfile: React.FC = () => {
       },
     },
   ]);
-  const [attendaceReport, setAttendanceReport] =
+  const [attendanceReport, setAttendanceReport] =
     useState<ChildAttendanceReportModel>();
 
   useEffect(() => {
@@ -210,7 +210,7 @@ export const ChildProfile: React.FC = () => {
       showSubTitleShape: true,
       withPaddingY: true,
       onButtonClick: () => {
-        history.push('/child-attendance-report', {
+        history.push(ROUTES.CHILD_ATTENDANCE_REPORT, {
           childId: child?.id,
           classroomGroupId: playGroup?.id,
         });
@@ -284,7 +284,7 @@ export const ChildProfile: React.FC = () => {
 
     const applicableNotifications: ListItemProps[] = [];
 
-    const attendanceNotification = getAttendanceNotication(
+    const attendanceNotification = getAttendanceNotification(
       child.userId || '',
       attendanceData,
       playGroup.id || ''
@@ -299,15 +299,15 @@ export const ChildProfile: React.FC = () => {
   }, [attendanceData, child, playGroup]);
 
   useEffect(() => {
-    if (!attendaceReport) return;
+    if (!attendanceReport) return;
 
     const attendancePercentage =
-      (attendaceReport.totalActualAttendance /
-        (attendaceReport.totalExpectedAttendance || 1)) *
+      (attendanceReport.totalActualAttendance /
+        (attendanceReport.totalExpectedAttendance || 1)) *
       100;
     setAttendancePercentage(attendancePercentage);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [attendaceReport]);
+  }, [attendanceReport]);
 
   useEffect(() => {
     if (!attendancePercentage) return;
@@ -363,24 +363,26 @@ export const ChildProfile: React.FC = () => {
         showDivider: true,
         dividerType: 'dashed',
         withPaddingY: true,
-        onButtonClick: () => history.push('/child-notes', { childId }),
+        onButtonClick: () => history.push(ROUTES.CHILD_NOTES, { childId }),
       };
     }
 
     return baseNotesOptions;
   };
 
-  const getAttendanceNotication = (
+  const getAttendanceNotification = (
     childUserId: string,
     attendance: AttendanceDto[],
     classroomGroupCacheId: string
   ): ListItemProps | undefined => {
-    const childAttendancePercentage = getChildsAttendancePercentageAtPlaygroup(
+    const childAttendancePercentage = getChildAttendancePercentageAtPlaygroup(
       childUserId,
       attendance,
       classroomGroupCacheId,
       classProgrames
     );
+
+    // Check when the child was register and determine wether attendance should have been recorded
 
     if (childAttendancePercentage.percentage < 50 && !caregiverHasBeenContacted)
       return {
@@ -418,7 +420,7 @@ export const ChildProfile: React.FC = () => {
     actualDaysAttended: number,
     expectedDaysAttended: number
   ) => {
-    history.push('/child-attendance-caregiver', {
+    history.push(ROUTES.CHILD_ATTENDANCE_CAREGIVER, {
       actualDaysAttended,
       expectedDaysAttended,
       childId: child?.id,
@@ -553,7 +555,9 @@ export const ChildProfile: React.FC = () => {
             className="m-4"
             title={'Problem with birth certificate or clinic card'}
             list={[
-              `SmartStart found a problem with Themba's document. Please upload a new birth certificate or clinic card now.`,
+              `SmartStart found a problem with ${
+                childUser?.firstName || 'this child'
+              }'s document. Please upload a new birth certificate or clinic card now.`,
             ]}
             type="error"
             button={
@@ -576,18 +580,21 @@ export const ChildProfile: React.FC = () => {
 
         {notifications && child && (
           <div className={styles.notificationsStacklist}>
-            {notifications.map((notication, idx) => (
+            {notifications.map((notification) => (
               <ListItem
-                {...notication}
-                key={`child-profile-notification-${idx}`}
+                {...notification}
+                key={`child-profile-notification-${notification.key}`}
               />
             ))}
             <ChildProgressReportAlert child={child} />
           </div>
         )}
         <div className={styles.profileOptionsWrapper}>
-          {profileOptions.map((options, idx) => (
-            <ListItem {...options} key={`child-profile-option-${idx}`} />
+          {profileOptions.map((options) => (
+            <ListItem
+              {...options}
+              key={`child-profile-option-${options.key}`}
+            />
           ))}
 
           <Divider className={'mt-2'} />
@@ -615,7 +622,7 @@ export const ChildProfile: React.FC = () => {
       <Dialog
         fullScreen
         visible={createChildNoteVisible}
-        position={DialogPosition.Top}
+        position={DialogPosition.Middle}
       >
         <div className={styles.dialogContent}>
           <CreateNote

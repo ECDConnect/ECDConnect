@@ -352,7 +352,7 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
             }}
           />
         </SeachHeader>
-        <div className="h-full px-4 pt-2 pb-8">
+        <div className="px-4 pt-2 pb-8">
           {recommendedActivity && !hasActiveFilters && (
             <div className={'flex flex-col items-center justify-start'}>
               {
