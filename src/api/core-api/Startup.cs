@@ -34,6 +34,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
 using System.Diagnostics;
+using ECDLink.Tenancy.EntityFramework.Extensions;
 
 namespace EcdLink.Api.CoreApi
 {
@@ -51,7 +52,7 @@ namespace EcdLink.Api.CoreApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            ConfigureAuthContext(services);
+            ConfigureAuthContext(services, Configuration);
             SetIdentityUser(services);
             ConfigureTenancy(services);
 
