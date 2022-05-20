@@ -435,7 +435,7 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
           <Divider className="my-2" />
           <Button
             type="filled"
-            className="w-full mb-20"
+            className="w-full mb-32"
             color="primary"
             icon="SaveIcon"
             text={submitButtonText}
