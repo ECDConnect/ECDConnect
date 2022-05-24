@@ -12,9 +12,10 @@ const Loader = ({ loadingMessage = 'Loading . . .' }) => {
   const [showIssue, setShowIssue] = useState<boolean>(false);
 
   useEffect(() => {
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       setShowIssue(true);
-    }, 15000);
+    }, 20000);
+    return () => clearTimeout(timer);
   }, []);
 
   return (

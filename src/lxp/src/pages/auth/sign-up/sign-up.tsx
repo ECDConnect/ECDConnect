@@ -38,17 +38,16 @@ import { useAppDispatch } from '@store';
 import { staticDataThunkActions } from '@store/static-data';
 import * as styles from './sign-up.styles';
 
+const headerSlide: HeaderSlide = {
+  status: ChipStatus.Available,
+  title: 'Manage your classroom',
+  text: 'Take attendance, track progress, and plan your programme',
+  image: '../../../assets/banner-ss.jpg',
+};
+
 export const SignUp: React.FC = () => {
   const appDispatch = useAppDispatch();
   const { resetAppStaticStores, resetAuth } = useStoreSetup();
-
-  const headerSlide: HeaderSlide = {
-    status: ChipStatus.Available,
-    title: 'Manage your classroom',
-    text: 'Take attendance, track progress, and plan your programme',
-    image: '../../../assets/banner-ss.jpg',
-  };
-
   const [preferId, setPreferId] = useState<boolean>(true);
   const [contentConsentTypeEnum, setContentConsentTypeEnum] =
     useState<ContentConsentTypeEnum>();

@@ -65,8 +65,8 @@ export const Login: React.FC = () => {
           ) {
             appDispatch(settingActions.setApplicationVersion(version));
             appDispatch(authActions.setUserExpired());
-            history.push(ROUTES.DASHBOARD);
             setIsLoading(false);
+            history.push(ROUTES.DASHBOARD);
           } else {
             setDisplayError(true);
             setIsLoading(false);
