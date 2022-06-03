@@ -38,14 +38,13 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
     if (!classroom) return;
     const year = new Date().getFullYear();
     const currentMonth = new Date().getMonth() + 1;
-
-    const startMonth = new Date(classroom.insertedDate ?? '');
+    const startDate = new Date(classroom.insertedDate ?? '');
 
     new AttendanceService(authUser?.auth_token ?? '')
       .getMonthlyAttendanceReport(
         authUser?.id ?? '',
         classroom.id ?? '',
-        startMonth,
+        startDate,
         new Date(year, currentMonth, 1)
       )
       .then((data) => {
@@ -79,9 +78,7 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
           message={'Your attendance registers are up to date this week!'}
           icon={'SparklesIcon'}
         />
-        {isOnline && (
-          <AttendanceMonthlyReport attendanceSummary={attendanceData} />
-        )}
+        <AttendanceMonthlyReport attendanceSummary={attendanceData} />
         {!isOnline && <OfflineCard />}
       </div>
       <MessageModal
