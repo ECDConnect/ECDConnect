@@ -80,9 +80,9 @@ class AttendanceService {
       `,
       variables: {
         userId: userId,
-        classgroupId: classroomId,
-        startDate: startDate,
-        endDate: endDate,
+        classroomId: classroomId,
+        startMonth: startDate,
+        endMonth: endDate,
       },
     });
 
