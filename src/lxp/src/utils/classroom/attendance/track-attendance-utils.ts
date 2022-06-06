@@ -22,6 +22,7 @@ import {
   nextTuesday,
   nextWednesday,
   startOfWeek,
+  differenceInDays,
 } from 'date-fns';
 import {
   averageScoreThreshold,
@@ -39,7 +40,6 @@ import {
 } from '@store/attendance/attendance.types';
 import { isWorkingDay } from '../../common/date.utils';
 import { Weekdays } from '../../practitioner/playgroups-utils';
-import { differenceInDays } from 'date-fns/esm';
 
 export const isValidAttendableDate = (
   date: Date,
@@ -84,36 +84,32 @@ export const isAttendableDay = (
   return dayFound;
 };
 
-export const nextAttendableDate = (
+export const nextAttendableDateAfterStartDate = (
   programmeStartDate: Date,
   meetingDay: number
 ) => {
-  let today = getDay(programmeStartDate);
+  let nextAttendableDate = new Date();
 
-  if (meetingDay < today) {
-    let nextAttendableDate = new Date();
-
-    switch (meetingDay) {
-      case Weekdays.mon:
-        nextAttendableDate = nextMonday(programmeStartDate);
-        break;
-      case Weekdays.tue:
-        nextAttendableDate = nextTuesday(programmeStartDate);
-        break;
-      case Weekdays.wed:
-        nextAttendableDate = nextWednesday(programmeStartDate);
-        break;
-      case Weekdays.thu:
-        nextAttendableDate = nextThursday(programmeStartDate);
-        break;
-      case Weekdays.fri:
-        nextAttendableDate = nextFriday(programmeStartDate);
-        break;
-    }
-    return nextAttendableDate;
-  } else {
-    return programmeStartDate;
+  switch (meetingDay) {
+    case Weekdays.mon:
+      nextAttendableDate = nextMonday(programmeStartDate);
+      break;
+    case Weekdays.tue:
+      nextAttendableDate = nextTuesday(programmeStartDate);
+      break;
+    case Weekdays.wed:
+      nextAttendableDate = nextWednesday(programmeStartDate);
+      break;
+    case Weekdays.thu:
+      nextAttendableDate = nextThursday(programmeStartDate);
+      break;
+    case Weekdays.fri:
+      nextAttendableDate = nextFriday(programmeStartDate);
+      break;
+    default:
+      nextAttendableDate = programmeStartDate;
   }
+  return nextAttendableDate;
 };
 
 export const getMissedClassAttendance = (
@@ -133,10 +129,13 @@ export const getMissedClassAttendance = (
 
     const classProgrammesUpToCurrentDay = groupProgrammes?.filter((x) => {
       const startDate = new Date(x.programmeStartDate);
-      const nextClass = nextAttendableDate(startDate, x.meetingDay);
+      const nextClassAfterStartDate = nextAttendableDateAfterStartDate(
+        startDate,
+        x.meetingDay
+      );
       return (
         (x.meetingDay || -1) <= currentDayFilter &&
-        differenceInDays(nextClass, startDate) <= 0
+        differenceInDays(nextClassAfterStartDate, startDate) <= 0
       );
     });
 
