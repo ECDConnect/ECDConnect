@@ -11,6 +11,8 @@ import { childrenSelectors } from '@store/children';
 import { classroomsSelectors } from '@store/classroom';
 import * as styles from './class-programme-attendance-list.styles';
 import { ClassProgrammeAttendanceListProps } from './class-programme-attendance-list.types';
+import { getDay, getDayOfYear } from 'date-fns';
+import { classroomGroupHasAttendanceOnDate } from '@/utils/classroom/attendance/track-attendance-utils';
 
 export const ClassProgrammeAttendanceList: React.FC<
   ClassProgrammeAttendanceListProps
@@ -32,23 +34,48 @@ export const ClassProgrammeAttendanceList: React.FC<
   const attendance = useSelector(
     attendanceSelectors.getClassroomProgrammeAttendanceFor(attendanceDate)
   );
+  const classProgrammes = useSelector(
+    classroomsSelectors.getClassProgrammesByClassGroupId(classroomGroup.id)
+  );
 
   useEffect(() => {
     if (!classroomGroup) return;
+    const currentDate = new Date();
     const filteredLearners = [];
-    for (const learner of allLearners) {
+    const _learners: LearnerDto[] = allLearners;
+
+    const currentClassProgramme = classroomGroupHasAttendanceOnDate(
+      classProgrammes,
+      currentDate
+    );
+
+    if (!currentClassProgramme) return;
+
+    const programmeStartDate =
+      typeof currentClassProgramme?.programmeStartDate != 'undefined'
+        ? new Date(currentClassProgramme?.programmeStartDate)
+        : new Date();
+
+    for (const learner of _learners) {
       if (learner.classroomGroupId !== classroomGroup.id) continue;
 
       const child = children?.find(
         (child) => child.userId === learner.userId && child.isActive
       );
       const childUser = childUsers?.find((y) => y.id === learner.userId);
+      const startedAttendanceDay = getDayOfYear(
+        new Date(learner.startedAttendance)
+      );
+      const showChildInRegister =
+        startedAttendanceDay <= getDayOfYear(currentDate) &&
+        startedAttendanceDay >= getDayOfYear(programmeStartDate);
 
       if (
         child &&
         child?.caregiverId &&
         childUser?.firstName &&
-        childUser?.surname
+        childUser?.surname &&
+        showChildInRegister
       ) {
         filteredLearners.push(learner);
       }
@@ -56,7 +83,7 @@ export const ClassProgrammeAttendanceList: React.FC<
 
     getAttendanceClassrooms(filteredLearners);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [classroomGroup]);
+  }, [classroomGroup.id]);
 
   const getAttendanceClassrooms = (learners?: LearnerDto[]) => {
     if (!learners || learners.length === 0) return;
