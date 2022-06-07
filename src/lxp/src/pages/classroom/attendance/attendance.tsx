@@ -1,6 +1,6 @@
-import { AttendanceDto } from '@ecdlink/core';
+import { AttendanceDto, LearnerDto } from '@ecdlink/core';
 import { ComponentBaseProps } from '@ecdlink/ui';
-import { endOfWeek, isSameDay } from 'date-fns';
+import { endOfWeek, getDayOfYear, isSameDay } from 'date-fns';
 import getDay from 'date-fns/getDay';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -31,6 +31,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   const classProgrammes = useSelector(classroomsSelectors.getClassProgrammes);
   const publicHolidays = useSelector(staticDataSelectors.getHolidays);
   const attendance = useSelector(attendanceSelectors.getAttendance);
+  const learners = useSelector(classroomsSelectors.getClassroomGroupLearners);
 
   useEffect(() => {
     if (!classroomGroups || classroomGroups?.length === 0) return;
@@ -38,6 +39,8 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
     if (attendance === undefined) return;
 
     const currentWeekAttendance: AttendanceDto[] = attendance;
+    const _learners: LearnerDto[] = learners;
+
     const currentDate = new Date();
 
     const currentClassProgramme = classroomGroupHasAttendanceOnDate(
@@ -50,6 +53,33 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
     );
 
     if (!currentDayClassroomGroup) {
+      setAttendanceComponentType('summary');
+      return;
+    }
+
+    const currentLearners = [];
+    const programmeStartDate =
+      typeof currentClassProgramme?.programmeStartDate != 'undefined'
+        ? new Date(currentClassProgramme?.programmeStartDate)
+        : new Date();
+
+    for (const learner of _learners) {
+      const startedAttendanceDay = getDayOfYear(
+        new Date(learner.startedAttendance)
+      );
+
+      const showChildInRegister =
+        startedAttendanceDay <= getDayOfYear(currentDate) &&
+        startedAttendanceDay >= getDayOfYear(programmeStartDate);
+      if (
+        learner.classroomGroupId === currentDayClassroomGroup.id &&
+        showChildInRegister
+      ) {
+        currentLearners.push(learner);
+      }
+    }
+
+    if (!currentLearners.length) {
       setAttendanceComponentType('summary');
       return;
     }

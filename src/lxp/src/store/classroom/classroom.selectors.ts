@@ -38,6 +38,18 @@ export const getChildLearner = (child?: ChildDto) =>
 export const getClassProgrammes = (state: RootState): ClassProgrammeDto[] =>
   state.classroomData.classroomProgrammes?.filter((x) => x.isActive) || [];
 
+export const getClassProgrammesByClassGroupId = (classGroupId?: string) =>
+  createSelector(
+    (state: RootState) => state.classroomData.classroomProgrammes,
+    (classroomProgrammes: ClassProgrammeDto[] | undefined) => {
+      return (
+        classroomProgrammes?.filter(
+          (x) => x.isActive && x.classroomGroupId === classGroupId
+        ) || []
+      );
+    }
+  );
+
 export const getLearnerClassgroupId = (userId?: string) =>
   createSelector(
     (state: RootState) => state.classroomData.classroomGroupLearners,
