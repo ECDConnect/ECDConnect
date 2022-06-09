@@ -49,7 +49,7 @@ namespace ECDLink.SmartStart.Reports
                         var attendedClasses = attendanceForPeriod
                                               .Where(x => string.Equals(x.UserId, userId)
                                               && x.ClassroomProgrammeId == programme.Id
-                                              && x.MonthOfYear == dt.Month);
+                                              && x.MonthOfYear == dt.Month && x.AttendanceDate >= learner.InsertedDate);
 
                         attendance.Add(Tuple.Create(daysOfClass.Count(), attendedClasses.Count()));
                     }
@@ -87,6 +87,7 @@ namespace ECDLink.SmartStart.Reports
 
         private ChildGroupingAttendanceReportModel CreateLearnerReport(Learner learner, IEnumerable<ChildAttendanceMonthlyReportModel> monthlyReports)
         {
+            
             var totalExpectedAttendance = monthlyReports.Sum(x => x.ExpectedAttendance);
             var totalActualAttendance = monthlyReports.Sum(x => x.ActualAttendance);
             var attendancePercentage = (int)Math.Ceiling((double)((totalActualAttendance / totalExpectedAttendance) * 100));
