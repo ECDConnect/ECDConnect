@@ -17,6 +17,8 @@ namespace ECDLink.SmartStart.Reports.Models
 
         public int ActualAttendance { get; set; }
 
+        public decimal AttendancePercentage { get; set; }
+
         public IEnumerable<ChildAttendanceMonthlyReportModel> MonthlyAttendance { get; set; }
     }
 }

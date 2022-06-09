@@ -67,12 +67,14 @@ namespace ECDLink.SmartStart.Reports
         {
             var totalExpectedAttendance = learnerReports.Sum(x => x.ExpectedAttendance);
             var totalActualAttendance = learnerReports.Sum(x => x.ActualAttendance);
+            var attendancePercentage = ((totalActualAttendance / totalExpectedAttendance) * 100);
 
             return new ChildAttendanceReportModel
             {
                 TotalActualAttendance = totalActualAttendance,
                 TotalExpectedAttendance = totalExpectedAttendance,
-                ClassGroupAttendance = learnerReports
+                ClassGroupAttendance = learnerReports,
+                AttendancePercentage = attendancePercentage
             };
         }
 
@@ -87,6 +89,7 @@ namespace ECDLink.SmartStart.Reports
         {
             var totalExpectedAttendance = monthlyReports.Sum(x => x.ExpectedAttendance);
             var totalActualAttendance = monthlyReports.Sum(x => x.ActualAttendance);
+            var attendancePercentage =(totalActualAttendance/totalExpectedAttendance*100);
 
             return new ChildGroupingAttendanceReportModel
             {
@@ -96,7 +99,8 @@ namespace ECDLink.SmartStart.Reports
                 ClassroomGroupId = learner.ClassroomGroupId,
                 ClassroomGroupName = learner.ClassroomGroup.Name,
                 MonthlyAttendance = monthlyReports,
-                EndDate = learner.StoppedAttendance
+                EndDate = learner.StoppedAttendance,
+                AttendancePercentage = attendancePercentage
             };
         }
 
@@ -124,13 +128,15 @@ namespace ECDLink.SmartStart.Reports
             {
                 var totalAttendance = item.Value.Sum(x => x.Item1);
                 var actualAttendance = item.Value.Sum(x => x.Item2);
+                var attendancePercentage = (totalAttendance / actualAttendance * 100);
 
                 report.Add(new ChildAttendanceMonthlyReportModel
                 {
                     Month = item.Key.ToString("MMMM"),
                     MonthNumber = item.Key.Month,
                     ActualAttendance = actualAttendance,
-                    ExpectedAttendance = totalAttendance
+                    ExpectedAttendance = totalAttendance,
+                    AttendancePercentage = attendancePercentage
                 });
             }
 

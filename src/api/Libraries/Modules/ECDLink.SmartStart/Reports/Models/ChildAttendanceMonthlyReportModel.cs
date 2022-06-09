@@ -9,5 +9,7 @@ namespace ECDLink.SmartStart.Reports.Models
         public int ActualAttendance { get; set; }
 
         public int ExpectedAttendance { get; set; }
+
+        public decimal AttendancePercentage { get; set; }
     }
 }
