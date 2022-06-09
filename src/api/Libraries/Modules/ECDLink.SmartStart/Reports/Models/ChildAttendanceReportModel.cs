@@ -10,6 +10,6 @@ namespace ECDLink.SmartStart.Reports.Models
 
         public IEnumerable<ChildGroupingAttendanceReportModel> ClassGroupAttendance { get; set; }
 
-        public decimal AttendancePercentage { get; set; }
+        public int AttendancePercentage { get; set; }
     }
 }
