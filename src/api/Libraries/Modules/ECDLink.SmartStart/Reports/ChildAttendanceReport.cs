@@ -49,7 +49,7 @@ namespace ECDLink.SmartStart.Reports
                         var attendedClasses = attendanceForPeriod
                                               .Where(x => string.Equals(x.UserId, userId)
                                               && x.ClassroomProgrammeId == programme.Id
-                                              && x.MonthOfYear == dt.Month && x.AttendanceDate >= learner.InsertedDate);
+                                              && x.MonthOfYear == dt.Month && x.AttendanceDate >= learner.StartedAttendance);
 
                         attendance.Add(Tuple.Create(daysOfClass.Count(), attendedClasses.Count()));
                     }
