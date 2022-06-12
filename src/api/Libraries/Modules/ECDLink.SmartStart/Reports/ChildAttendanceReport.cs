@@ -67,7 +67,7 @@ namespace ECDLink.SmartStart.Reports
         {
             var totalExpectedAttendance = learnerReports.Sum(x => x.ExpectedAttendance);
             var totalActualAttendance = learnerReports.Sum(x => x.ActualAttendance);
-            var attendancePercentage = (int)Math.Ceiling((double)((totalActualAttendance / totalExpectedAttendance) * 100));
+            var attendancePercentage = (int)Math.Ceiling(((double)totalActualAttendance / totalExpectedAttendance) * 100);
 
             return new ChildAttendanceReportModel
             {
@@ -90,7 +90,7 @@ namespace ECDLink.SmartStart.Reports
             
             var totalExpectedAttendance = monthlyReports.Sum(x => x.ExpectedAttendance);
             var totalActualAttendance = monthlyReports.Sum(x => x.ActualAttendance);
-            var attendancePercentage = (int)Math.Ceiling((double)((totalActualAttendance / totalExpectedAttendance) * 100));
+            var attendancePercentage = (int)Math.Ceiling(((double)totalActualAttendance / totalExpectedAttendance) * 100);
 
             return new ChildGroupingAttendanceReportModel
             {
@@ -129,7 +129,7 @@ namespace ECDLink.SmartStart.Reports
             {
                 var totalAttendance = item.Value.Sum(x => x.Item1);
                 var actualAttendance = item.Value.Sum(x => x.Item2);
-                var attendancePercentage = (int)Math.Ceiling((double)((totalAttendance / actualAttendance) * 100));
+                var attendancePercentage = (int)Math.Ceiling(((double)actualAttendance / totalAttendance) * 100);
 
                 report.Add(new ChildAttendanceMonthlyReportModel
                 {
