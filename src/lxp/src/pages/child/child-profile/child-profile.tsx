@@ -300,12 +300,7 @@ export const ChildProfile: React.FC = () => {
 
   useEffect(() => {
     if (!attendanceReport) return;
-
-    const attendancePercentage =
-      (attendanceReport.totalActualAttendance /
-        (attendanceReport.totalExpectedAttendance || 1)) *
-      100;
-    setAttendancePercentage(attendancePercentage);
+    setAttendancePercentage(attendanceReport.attendancePercentage);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [attendanceReport]);
 

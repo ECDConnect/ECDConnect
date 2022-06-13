@@ -8,6 +8,7 @@ export interface MonthlyAttendanceRecord {
 export interface ChildAttendanceReportModel {
   totalExpectedAttendance: number;
   totalActualAttendance: number;
+  attendancePercentage: number;
   classGroupAttendance: ChildGroupingAttendanceReportModel[];
 }
 
@@ -18,6 +19,7 @@ export interface ChildGroupingAttendanceReportModel {
   endDate?: string;
   expectedAttendance: number;
   actualAttendance: number;
+  attendancePercentage: number;
   monthlyAttendance: ChildAttendanceMonthlyReportModel[];
 }
 
@@ -26,4 +28,5 @@ export interface ChildAttendanceMonthlyReportModel {
   monthNumber: number;
   actualAttendance: number;
   expectedAttendance: number;
+  attendancePercentage: number;
 }
