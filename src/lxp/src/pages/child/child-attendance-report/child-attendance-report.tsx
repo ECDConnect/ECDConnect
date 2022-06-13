@@ -186,48 +186,39 @@ export const ChildAttendanceReportPage: React.FC = () => {
         </div>
         {classroomGroup &&
           classroomGroup.monthlyAttendance.map((report, idx) => {
-            if (report.expectedAttendance && report.actualAttendance) {
-              const currentReportAttendancePercentage =
-                (report.actualAttendance / report.expectedAttendance) * 100;
-              const reportItemColor = getColor(
-                currentReportAttendancePercentage
-              );
-              const reportItemShape = getShape(
-                currentReportAttendancePercentage
-              );
+            const currentReportAttendancePercentage =
+              (report.actualAttendance / report.expectedAttendance) * 100;
+            const reportItemColor = getColor(currentReportAttendancePercentage);
+            const reportItemShape = getShape(currentReportAttendancePercentage);
 
-              return (
-                <div
-                  key={`child-attendance-report-month-${idx}`}
-                  className={`w-full flex flex-row justify-between items-center py-4 bg-${
-                    (idx + 1) % 2 === 0 ? 'uiBg' : 'white'
-                  }`}
-                >
+            return (
+              <div
+                key={`child-attendance-report-month-${idx}`}
+                className={`w-full flex flex-row justify-between items-center py-4 bg-${
+                  (idx + 1) % 2 === 0 ? 'uiBg' : 'white'
+                }`}
+              >
+                <Typography
+                  className={'w-1/2 pl-6'}
+                  type="body"
+                  weight="bolder"
+                  color={'black'}
+                  text={report.month}
+                />
+                <div className={'w-1/2 flex flex-row items-center pl-6'}>
+                  <div
+                    className={getShapeClass(reportItemShape, reportItemColor)}
+                  ></div>
                   <Typography
-                    className={'w-1/2 pl-6'}
+                    align={'center'}
+                    className={'ml-2'}
                     type="body"
-                    weight="bolder"
-                    color={'black'}
-                    text={report.month}
+                    color={reportItemColor}
+                    text={`${report.actualAttendance} out of ${report.expectedAttendance}`}
                   />
-                  <div className={'w-1/2 flex flex-row items-center pl-6'}>
-                    <div
-                      className={getShapeClass(
-                        reportItemShape,
-                        reportItemColor
-                      )}
-                    ></div>
-                    <Typography
-                      align={'center'}
-                      className={'ml-2'}
-                      type="body"
-                      color={reportItemColor}
-                      text={`${report.actualAttendance} out of ${report.expectedAttendance}`}
-                    />
-                  </div>
                 </div>
-              );
-            }
+              </div>
+            );
           })}
         <div className="px-4">
           <Divider className={'my-4'} />

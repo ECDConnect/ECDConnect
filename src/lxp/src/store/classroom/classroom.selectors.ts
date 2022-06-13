@@ -50,7 +50,7 @@ export const getClassProgrammesByClassGroupId = (classGroupId?: string) =>
     }
   );
 
-export const getLearnerClassgroupId = (userId?: string) =>
+export const getLearnerClassGroupId = (userId?: string) =>
   createSelector(
     (state: RootState) => state.classroomData.classroomGroupLearners,
     (classroomGroupLearners: LearnerDto[] | undefined) => {

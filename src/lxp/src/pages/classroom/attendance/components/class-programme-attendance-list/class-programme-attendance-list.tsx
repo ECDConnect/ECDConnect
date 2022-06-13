@@ -11,8 +11,8 @@ import { childrenSelectors } from '@store/children';
 import { classroomsSelectors } from '@store/classroom';
 import * as styles from './class-programme-attendance-list.styles';
 import { ClassProgrammeAttendanceListProps } from './class-programme-attendance-list.types';
-import { getDay, getDayOfYear } from 'date-fns';
 import { classroomGroupHasAttendanceOnDate } from '@/utils/classroom/attendance/track-attendance-utils';
+import { getDay, isBefore, isAfter, isSameDay } from 'date-fns';
 
 export const ClassProgrammeAttendanceList: React.FC<
   ClassProgrammeAttendanceListProps
@@ -63,12 +63,20 @@ export const ClassProgrammeAttendanceList: React.FC<
         (child) => child.userId === learner.userId && child.isActive
       );
       const childUser = childUsers?.find((y) => y.id === learner.userId);
-      const startedAttendanceDay = getDayOfYear(
-        new Date(learner.startedAttendance)
+      const attendanceDay = getDay(attendanceDate);
+      const [currentClassProgram] = classProgrammes.filter(
+        (x) => x.meetingDay === attendanceDay
       );
+
+      if (!currentClassProgram) return;
+
+      const programStartDate = new Date(programmeStartDate);
+      const startedAttendanceDate = new Date(learner.startedAttendance);
       const showChildInRegister =
-        startedAttendanceDay <= getDayOfYear(currentDate) &&
-        startedAttendanceDay >= getDayOfYear(programmeStartDate);
+        (isBefore(startedAttendanceDate, attendanceDate) ||
+          isSameDay(startedAttendanceDate, attendanceDate)) &&
+        (isAfter(startedAttendanceDate, programStartDate) ||
+          isSameDay(startedAttendanceDate, attendanceDate));
 
       if (
         child &&

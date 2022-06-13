@@ -99,7 +99,7 @@ export const ChildProfile: React.FC = () => {
   );
   const child = useSelector(childrenSelectors.getChildById(childId));
   const classGroupId = useSelector(
-    classroomsSelectors.getLearnerClassgroupId(child?.userId)
+    classroomsSelectors.getLearnerClassGroupId(child?.userId)
   );
   const user = useSelector(userSelectors.getUser);
   const playGroup = useSelector(
