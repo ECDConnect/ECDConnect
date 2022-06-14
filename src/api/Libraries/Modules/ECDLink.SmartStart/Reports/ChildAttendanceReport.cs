@@ -53,6 +53,7 @@ namespace ECDLink.SmartStart.Reports
 
                         attendance.Add(Tuple.Create(daysOfClass.Count(), attendedClasses.Count()));
                     }
+                    monthlyAttendance.Add(dt, attendance);
                 }
 
                 learnerReports.Add(CreateLearnerReport(learner, GetMonthlyReport(monthlyAttendance)));
@@ -101,6 +102,7 @@ namespace ECDLink.SmartStart.Reports
                             attendance.Add(Tuple.Create(daysOfClass.Count(), (attendedClasses!=null?attendedClasses.Count():0)));
                         }
                     }
+                    monthlyAttendance.Add(dt, attendance);
                 }
 
                 learnerReports.Add(CreateLearnerReport(learner, GetMonthlyReport(monthlyAttendance)));
@@ -153,9 +155,6 @@ namespace ECDLink.SmartStart.Reports
 
         private IEnumerable<Learner> GetAllLearnerInstances(string userId, Guid classgroupId = default(Guid))
         {
-            var attendance = _dbContext.Attendances;
-            var allLearners = _dbContext.Learners;
-            var relevantUser = _dbContext.Learners.Where(l => string.Equals(l.UserId, userId));
             var learners = _dbContext.Learners
                             .Include(x => x.ClassroomGroup)
                             .ThenInclude(x => x.ClassProgrammes)
