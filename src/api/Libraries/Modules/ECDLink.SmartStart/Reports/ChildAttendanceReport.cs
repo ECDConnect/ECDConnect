@@ -53,8 +53,6 @@ namespace ECDLink.SmartStart.Reports
 
                         attendance.Add(Tuple.Create(daysOfClass.Count(), attendedClasses.Count()));
                     }
-
-                    ///l.Add(dt, attendance);
                 }
 
                 learnerReports.Add(CreateLearnerReport(learner, GetMonthlyReportClassDays(monthlyAttendance)));
@@ -101,8 +99,6 @@ namespace ECDLink.SmartStart.Reports
 
                         attendance.Add(Tuple.Create(daysOfClass.Count(), attendedClasses.Count()));
                     }
-
-                    ///l.Add(dt, attendance);
                 }
 
                 learnerReports.Add(CreateLearnerReport(learner, GetMonthlyReport(monthlyAttendance)));
