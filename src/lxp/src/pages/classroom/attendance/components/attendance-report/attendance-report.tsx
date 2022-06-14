@@ -36,8 +36,9 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
 
   useEffect(() => {
     if (!classroom) return;
-    const year = new Date().getFullYear();
-    const currentMonth = new Date().getMonth() + 1;
+    const today = new Date();
+    const year = today.getFullYear();
+    const currentMonth = today.getMonth() + 1;
     const startDate = new Date(classroom.insertedDate ?? '');
 
     new AttendanceService(authUser?.auth_token ?? '')
