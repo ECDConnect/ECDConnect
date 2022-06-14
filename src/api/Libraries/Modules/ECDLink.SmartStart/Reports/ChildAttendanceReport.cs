@@ -119,7 +119,7 @@ namespace ECDLink.SmartStart.Reports
                 TotalActualAttendance = totalActualAttendance,
                 TotalExpectedAttendance = totalExpectedAttendance,
                 ClassGroupAttendance = learnerReports,
-                AttendancePercentage = attendancePercentage
+                AttendancePercentage = (attendancePercentage>0?attendancePercentage:0)
             };
         }
 
@@ -146,7 +146,7 @@ namespace ECDLink.SmartStart.Reports
                 ClassroomGroupName = learner.ClassroomGroup.Name,
                 MonthlyAttendance = monthlyReports,
                 EndDate = learner.StoppedAttendance,
-                AttendancePercentage = attendancePercentage
+                AttendancePercentage = (attendancePercentage > 0 ? attendancePercentage : 0)
             };
         }
 
@@ -182,7 +182,7 @@ namespace ECDLink.SmartStart.Reports
                     MonthNumber = item.Key.Month,
                     ActualAttendance = actualAttendance,
                     ExpectedAttendance = totalAttendance,
-                    AttendancePercentage = attendancePercentage
+                    AttendancePercentage = (attendancePercentage > 0 ? attendancePercentage : 0)
                 });
             }
 
