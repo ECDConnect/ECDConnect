@@ -17,7 +17,7 @@ namespace ECDLink.SmartStart.Reports
         {
         }
 
-        public ChildAttendanceReportModel GetChildAttendance(Guid classgroupId, string userId, DateTime startMonth, DateTime endMonth)
+        public ChildAttendanceReportModel GetChildAttendanceExpected(Guid classgroupId, string userId, DateTime startMonth, DateTime endMonth)
         {
             var learners = GetAllLearnerInstances(userId, classgroupId);
 
@@ -54,7 +54,55 @@ namespace ECDLink.SmartStart.Reports
                         attendance.Add(Tuple.Create(daysOfClass.Count(), attendedClasses.Count()));
                     }
 
-                    monthlyAttendance.Add(dt, attendance);
+                    ///l.Add(dt, attendance);
+                }
+
+                learnerReports.Add(CreateLearnerReport(learner, GetMonthlyReportClassDays(monthlyAttendance)));
+            }
+
+            return CreateCompleteAttendanceReport(learnerReports);
+        }
+
+        public ChildAttendanceReportModel GetChildAttendance(Guid classgroupId, string userId, DateTime startMonth, DateTime endMonth)
+        {
+            var learners = GetAllLearnerInstances(userId, classgroupId);
+
+            if (!learners.Any())
+            {
+                return null;
+            }
+
+            var learnerReports = new List<ChildGroupingAttendanceReportModel>();
+
+            var validClassDays = GetDayRangeWithoutHolidays(startMonth, endMonth);
+
+            // prolly one 1 for now
+            foreach (var learner in learners)
+            {
+                var attendanceForPeriod = GetAttendanceRecordsForPeriod(learner, userId, startMonth, endMonth);
+
+                var monthlyAttendance = new Dictionary<DateTime, List<Tuple<int, int>>>();
+
+                // Do monthly Tracking here
+                for (DateTime dt = startMonth; dt <= endMonth; dt = dt.AddMonths(1))
+                {
+                    var attendance = new List<Tuple<int, int>>();
+
+                    foreach (var programme in learner.ClassroomGroup.ClassProgrammes)
+                    {
+                        var daysOfClass = attendanceForPeriod.Where(x => string.Equals(x.UserId, userId)
+                                              && x.ClassroomProgrammeId == programme.Id
+                                              && x.MonthOfYear == dt.Month); 
+
+                        var attendedClasses = attendanceForPeriod
+                                              .Where(x => string.Equals(x.UserId, userId)
+                                              && x.ClassroomProgrammeId == programme.Id
+                                              && x.MonthOfYear == dt.Month && x.Attended==true);
+
+                        attendance.Add(Tuple.Create(daysOfClass.Count(), attendedClasses.Count()));
+                    }
+
+                    ///l.Add(dt, attendance);
                 }
 
                 learnerReports.Add(CreateLearnerReport(learner, GetMonthlyReport(monthlyAttendance)));
@@ -107,11 +155,13 @@ namespace ECDLink.SmartStart.Reports
 
         private IEnumerable<Learner> GetAllLearnerInstances(string userId, Guid classgroupId = default(Guid))
         {
-            // Get all instances of where the user was a learner
+            var attendance = _dbContext.Attendances;
+
             var learners = _dbContext.Learners
                             .Include(x => x.ClassroomGroup)
                             .ThenInclude(x => x.ClassProgrammes)
                             .Where(l => string.Equals(l.UserId, userId));
+            // Get all instances of where the user was a learner
 
             if (classgroupId != default(Guid))
             {
@@ -119,6 +169,29 @@ namespace ECDLink.SmartStart.Reports
             }
 
             return learners.ToList();
+        }
+
+        private IEnumerable<ChildAttendanceMonthlyReportModel> GetMonthlyReportClassDays(Dictionary<DateTime, List<Tuple<int, int>>> monthlyAttendance)
+        {
+            var report = new List<ChildAttendanceMonthlyReportModel>();
+
+            foreach (var item in monthlyAttendance)
+            {
+                var totalAttendance = item.Value.Sum(x => x.Item1);
+                var actualAttendance = item.Value.Sum(x => x.Item2);
+                var attendancePercentage = (int)Math.Round(((double)actualAttendance / totalAttendance) * 100);
+
+                report.Add(new ChildAttendanceMonthlyReportModel
+                {
+                    Month = item.Key.ToString("MMMM"),
+                    MonthNumber = item.Key.Month,
+                    ActualAttendance = actualAttendance,
+                    ExpectedAttendance = totalAttendance,
+                    AttendancePercentage = attendancePercentage
+                });
+            }
+
+            return report.OrderBy(report => report.MonthNumber);
         }
 
         private IEnumerable<ChildAttendanceMonthlyReportModel> GetMonthlyReport(Dictionary<DateTime, List<Tuple<int, int>>> monthlyAttendance)
@@ -143,5 +216,6 @@ namespace ECDLink.SmartStart.Reports
 
             return report.OrderBy(report => report.MonthNumber);
         }
+
     }
 }
