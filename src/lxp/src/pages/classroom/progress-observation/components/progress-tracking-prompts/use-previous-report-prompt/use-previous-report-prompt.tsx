@@ -1,5 +1,4 @@
 import { ActionModal } from '@ecdlink/ui';
-import { ComponentBaseProps } from '@ecdlink/ui';
 import { UsePreviousReportPromptProps } from './use-previous-report-prompt.types';
 
 export const UsePreviousReportPrompt: React.FC<

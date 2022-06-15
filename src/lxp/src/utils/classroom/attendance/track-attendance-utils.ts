@@ -11,6 +11,7 @@ import {
   format,
   getDay,
   isAfter,
+  isBefore,
   isFriday,
   isMonday,
   isThursday,
@@ -22,7 +23,6 @@ import {
   nextTuesday,
   nextWednesday,
   startOfWeek,
-  differenceInDays,
 } from 'date-fns';
 import {
   averageScoreThreshold,
@@ -127,15 +127,15 @@ export const getMissedClassAttendance = (
       (x) => x.classroomGroupId === group.id
     );
 
+    // all the class programs for up until today but does not check the start date
     const classProgrammesUpToCurrentDay = groupProgrammes?.filter((x) => {
-      const startDate = new Date(x.programmeStartDate);
-      const nextClassAfterStartDate = nextAttendableDateAfterStartDate(
-        startDate,
-        x.meetingDay
-      );
+      const programStartDate =
+        typeof x.programmeStartDate !== 'undefined'
+          ? new Date(x.programmeStartDate)
+          : new Date();
       return (
         (x.meetingDay || -1) <= currentDayFilter &&
-        differenceInDays(nextClassAfterStartDate, startDate) <= 0
+        isBefore(programStartDate, date)
       );
     });
 

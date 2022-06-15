@@ -10,7 +10,7 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { renderIcon } from '@ecdlink/ui';
-import { endOfYear, getYear, startOfISOWeekYear } from 'date-fns';
+import { getYear } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
@@ -31,6 +31,7 @@ import {
   getShapeClass,
 } from '@utils/classroom/attendance/track-attendance-utils';
 import { ChildAttendanceReportState } from './child-attendance-report.types';
+import { classroomsSelectors } from '@/store/classroom';
 
 export const ChildAttendanceReportPage: React.FC = () => {
   const history = useHistory();
@@ -44,6 +45,9 @@ export const ChildAttendanceReportPage: React.FC = () => {
     childrenSelectors.getChildUserById(child?.userId)
   );
   const attendanceData = useSelector(attendanceSelectors.getTrackedAttendance);
+  const learner = useSelector(
+    classroomsSelectors.getChildLearnerByClassroom(classroomGroupId, child)
+  );
 
   useEffect(() => {
     if (!isOnline) {
@@ -63,6 +67,7 @@ export const ChildAttendanceReportPage: React.FC = () => {
       totalActualAttendance: 0,
       totalExpectedAttendance: 0,
       classGroupAttendance: [],
+      attendancePercentage: 0,
     });
   const [attendancePercentage, setAttendancePercentage] = useState<number>(0);
   const [classroomGroup, setClassroomGroup] =
@@ -89,9 +94,8 @@ export const ChildAttendanceReportPage: React.FC = () => {
           attendanceThunkActions.trackAttendanceSync({})
         ).unwrap();
       }
-
-      const startDate = startOfISOWeekYear(new Date());
-      const endDate = endOfYear(new Date());
+      const startDate = new Date(learner?.startedAttendance || new Date());
+      const endDate = new Date();
 
       new AttendanceService(authUser?.auth_token ?? '')
         .getChildAttendanceRecords(
@@ -110,12 +114,7 @@ export const ChildAttendanceReportPage: React.FC = () => {
 
   useEffect(() => {
     if (!childAttendanceReportData) return;
-
-    const attendancePercentage =
-      (childAttendanceReportData.totalActualAttendance /
-        (childAttendanceReportData.totalExpectedAttendance || 1)) *
-      100;
-    setAttendancePercentage(attendancePercentage);
+    setAttendancePercentage(childAttendanceReportData.attendancePercentage);
     const group = childAttendanceReportData.classGroupAttendance.find(
       (x) => x.classroomGroupId === classroomGroupId
     );
@@ -186,48 +185,36 @@ export const ChildAttendanceReportPage: React.FC = () => {
         </div>
         {classroomGroup &&
           classroomGroup.monthlyAttendance.map((report, idx) => {
-            if (report.expectedAttendance && report.actualAttendance) {
-              const currentReportAttendancePercentage =
-                (report.actualAttendance / report.expectedAttendance) * 100;
-              const reportItemColor = getColor(
-                currentReportAttendancePercentage
-              );
-              const reportItemShape = getShape(
-                currentReportAttendancePercentage
-              );
-
-              return (
-                <div
-                  key={`child-attendance-report-month-${idx}`}
-                  className={`w-full flex flex-row justify-between items-center py-4 bg-${
-                    (idx + 1) % 2 === 0 ? 'uiBg' : 'white'
-                  }`}
-                >
+            const reportItemColor = getColor(report.attendancePercentage);
+            const reportItemShape = getShape(report.attendancePercentage);
+            return (
+              <div
+                key={`child-attendance-report-month-${idx}`}
+                className={`w-full flex flex-row justify-between items-center py-4 bg-${
+                  (idx + 1) % 2 === 0 ? 'uiBg' : 'white'
+                }`}
+              >
+                <Typography
+                  className={'w-1/2 pl-6'}
+                  type="body"
+                  weight="bolder"
+                  color={'black'}
+                  text={report.month}
+                />
+                <div className={'w-1/2 flex flex-row items-center pl-6'}>
+                  <div
+                    className={getShapeClass(reportItemShape, reportItemColor)}
+                  ></div>
                   <Typography
-                    className={'w-1/2 pl-6'}
+                    align={'center'}
+                    className={'ml-2'}
                     type="body"
-                    weight="bolder"
-                    color={'black'}
-                    text={report.month}
+                    color={reportItemColor}
+                    text={`${report.actualAttendance} out of ${report.expectedAttendance}`}
                   />
-                  <div className={'w-1/2 flex flex-row items-center pl-6'}>
-                    <div
-                      className={getShapeClass(
-                        reportItemShape,
-                        reportItemColor
-                      )}
-                    ></div>
-                    <Typography
-                      align={'center'}
-                      className={'ml-2'}
-                      type="body"
-                      color={reportItemColor}
-                      text={`${report.actualAttendance} out of ${report.expectedAttendance}`}
-                    />
-                  </div>
                 </div>
-              );
-            }
+              </div>
+            );
           })}
         <div className="px-4">
           <Divider className={'my-4'} />

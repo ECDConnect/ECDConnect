@@ -1,4 +1,4 @@
-import { useDialog, useStepNavigation } from '@ecdlink/core';
+import { useDialog } from '@ecdlink/core';
 import {
   ClassProgrammeDto,
   ClassroomDto,

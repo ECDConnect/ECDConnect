@@ -1,6 +1,6 @@
 import { AttendanceDto, LearnerDto } from '@ecdlink/core';
 import { ComponentBaseProps } from '@ecdlink/ui';
-import { endOfWeek, getDayOfYear, isSameDay } from 'date-fns';
+import { addDays, getDayOfYear, isSameDay, startOfWeek } from 'date-fns';
 import getDay from 'date-fns/getDay';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -20,6 +20,7 @@ import { AttendanceComponentType } from './attendance.types';
 import AttendanceList from './components/attendance-list/attendance-list';
 import { AttendanceReport } from './components/attendance-report/attendance-report';
 import { AttendanceSummary } from './components/attendance-summary/attendance-summary';
+import { isWorkingDay } from '@/utils/common/date.utils';
 
 export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   const [attendanceComponentType, setAttendanceComponentType] =
@@ -32,6 +33,8 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   const publicHolidays = useSelector(staticDataSelectors.getHolidays);
   const attendance = useSelector(attendanceSelectors.getAttendance);
   const learners = useSelector(classroomsSelectors.getClassroomGroupLearners);
+  const holidays = useSelector(staticDataSelectors.getHolidays);
+  const currentDate = new Date();
 
   useEffect(() => {
     if (!classroomGroups || classroomGroups?.length === 0) return;
@@ -40,8 +43,6 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
 
     const currentWeekAttendance: AttendanceDto[] = attendance;
     const _learners: LearnerDto[] = learners;
-
-    const currentDate = new Date();
 
     const currentClassProgramme = classroomGroupHasAttendanceOnDate(
       classProgrammes,
@@ -71,10 +72,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       const showChildInRegister =
         startedAttendanceDay <= getDayOfYear(currentDate) &&
         startedAttendanceDay >= getDayOfYear(programmeStartDate);
-      if (
-        learner.classroomGroupId === currentDayClassroomGroup.id &&
-        showChildInRegister
-      ) {
+      if (showChildInRegister) {
         currentLearners.push(learner);
       }
     }
@@ -101,6 +99,31 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
 
     if (!attendanceAlreadyTaken && isValidDayForAttendance) {
       setAttendanceComponentType('attendance');
+      return;
+    }
+
+    const missedClassAttendance = getMissedClassAttendance(
+      [currentDayClassroomGroup],
+      classProgrammes.filter(
+        (x) => x.classroomGroupId === currentDayClassroomGroup.id
+      ),
+      attendance || [],
+      currentDate
+    );
+
+    const removeTodaysAttendance = missedClassAttendance.filter(
+      (x) => x.meetingDay !== getDay(currentDate)
+    );
+
+    const removeHolidays = removeTodaysAttendance.filter((x) => {
+      return isWorkingDay(
+        addDays(startOfWeek(currentDate), x.meetingDay),
+        holidays
+      );
+    });
+
+    if (removeHolidays.length === 0) {
+      setAttendanceComponentType('report');
     } else {
       setAttendanceComponentType('summary');
     }
@@ -121,13 +144,20 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       [classgroup],
       classProgrammes.filter((x) => x.classroomGroupId === classgroup.id),
       attendance || [],
-      endOfWeek(new Date())
+      currentDate
     );
     const removeTodaysAttendance = missedClassAttendance.filter(
       (x) => x.meetingDay !== getDay(attendanceResult.attendanceDate)
     );
 
-    if (removeTodaysAttendance.length === 0) {
+    const removeHolidays = removeTodaysAttendance.filter((x) => {
+      return isWorkingDay(
+        addDays(startOfWeek(currentDate), x.meetingDay),
+        holidays
+      );
+    });
+
+    if (removeHolidays.length === 0) {
       setAttendanceComponentType('report');
     } else {
       setAttendanceComponentType('summary');
