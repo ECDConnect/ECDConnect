@@ -1,13 +1,6 @@
-import { AttendanceDto, ClassroomGroupDto, LearnerDto } from '@ecdlink/core';
+import { AttendanceDto, LearnerDto } from '@ecdlink/core';
 import { ComponentBaseProps } from '@ecdlink/ui';
-import {
-  addDays,
-  endOfWeek,
-  getDayOfYear,
-  getWeek,
-  isSameDay,
-  startOfWeek,
-} from 'date-fns';
+import { addDays, getDayOfYear, isSameDay, startOfWeek } from 'date-fns';
 import getDay from 'date-fns/getDay';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -42,7 +35,6 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   const learners = useSelector(classroomsSelectors.getClassroomGroupLearners);
   const holidays = useSelector(staticDataSelectors.getHolidays);
   const currentDate = new Date();
-  const endOfWeekDate = endOfWeek(currentDate);
 
   useEffect(() => {
     if (!classroomGroups || classroomGroups?.length === 0) return;

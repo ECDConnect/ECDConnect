@@ -10,7 +10,7 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { renderIcon } from '@ecdlink/ui';
-import { getYear, endOfMonth } from 'date-fns';
+import { getYear } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
