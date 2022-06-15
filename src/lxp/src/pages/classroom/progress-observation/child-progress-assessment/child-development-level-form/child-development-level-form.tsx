@@ -1,4 +1,4 @@
-import { capitalizeWords, FormComponentProps, useDialog } from '@ecdlink/core';
+import { capitalizeWords, FormComponentProps } from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
   Alert,
@@ -44,7 +44,6 @@ export const ChildDevelopmentLevelForm: React.FC<
   childAchievedLevelId,
   onSubmit,
 }) => {
-  const dialog = useDialog();
   const currentChild = useSelector(childrenSelectors.getChildById(childId));
   const [developmentLevelsDisplayActive, setDevelopmentLevelsDisplayActive] =
     useState(false);

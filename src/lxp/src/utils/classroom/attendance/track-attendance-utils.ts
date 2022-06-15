@@ -23,7 +23,6 @@ import {
   nextTuesday,
   nextWednesday,
   startOfWeek,
-  differenceInDays,
 } from 'date-fns';
 import {
   averageScoreThreshold,
