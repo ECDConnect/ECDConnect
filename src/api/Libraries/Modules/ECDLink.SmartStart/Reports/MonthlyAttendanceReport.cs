@@ -46,7 +46,7 @@ namespace ECDLink.SmartStart.Reports
             var monthlyAttendance = new Dictionary<DateTime, List<Tuple<int, int>>>();
 
             // Do monthly Tracking here
-            for (DateTime dt = startMonth; dt < endMonth; dt = dt.AddMonths(1))
+            for (DateTime dt = startMonth; dt <= endMonth; dt = dt.AddMonths(1))
             {
                 var attendance = new List<Tuple<int, int>>();
                 // Nest into class per month
