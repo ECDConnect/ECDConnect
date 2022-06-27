@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { useDialog, useTheme } from '@ecdlink/core';
 import {
   ActionModal,
@@ -34,6 +33,7 @@ export enum NavigationTypes {
   Attendance = 'Attendance',
   Children = 'Children',
   Programme = 'Programme',
+  Trainning = 'Trainning',
   Profile = 'Profile',
   Messages = 'Messages',
 }
@@ -91,6 +91,12 @@ export const Dashboard: React.FC = () => {
       name: NavigationTypes.Programme,
       href: ROUTES.CLASSROOM,
       params: { activeTabIndex: 2 },
+      current: false,
+    },
+    {
+      name: NavigationTypes.Trainning,
+      href: ROUTES.TRAINNING,
+      icon: 'AcademicCapIcon',
       current: false,
     },
     {
