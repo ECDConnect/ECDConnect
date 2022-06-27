@@ -6,7 +6,7 @@ import { useOnlineStatus } from '@hooks/useOnlineStatus';
 
 import React from 'react';
 
-export const Trainning: React.FC = () => {
+export const Training: React.FC = () => {
   const { isOnline } = useOnlineStatus();
   const history = useHistory();
 
@@ -34,7 +34,7 @@ export const Trainning: React.FC = () => {
       size="medium"
       renderBorder={true}
       onBack={() => history.goBack()}
-      title="Trainning"
+      title="Training"
       backgroundColour="white"
       displayOffline={!isOnline}
     >
