@@ -14,6 +14,7 @@ import {
   SearchSortOptions,
   UserAlertListDataItem,
 } from '@ecdlink/ui';
+import { isBefore } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
@@ -137,7 +138,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
 
       for (const child of children) {
         const learner = classroomGroupLearners.find(
-          (x) => x.userId === child.userId
+          (x) => x.userId === child.userId && x.stoppedAttendance === null
         );
         childListItem.push(mapUserListDataItem(child, learner));
       }
@@ -164,6 +165,8 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
           const learner = classroomGroupLearners.find(
             (x) =>
               x.userId === child.userId &&
+              /* ensures only children in a playgroup are shown and not those who stopped attending or changed playgroups */
+              x.stoppedAttendance === null &&
               selectedClassrooms.some((sc) => sc === x.classroomGroupId)
           );
           if (learner) {
@@ -174,7 +177,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
         for (const child of children) {
           // TODO: change to display all children
           const learner = classroomGroupLearners.find(
-            (x) => x.userId === child.userId
+            (x) => x.userId === child.userId && x.stoppedAttendance === null
           );
           if (learner) {
             childListItem.push(mapUserListDataItem(child, learner));
@@ -246,14 +249,19 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
               ? 1
               : -1;
           case 'age':
-            return (childUserOne !== undefined &&
+            if (
+              childUserOne !== undefined &&
               childUserOne?.dateOfBirth !== undefined &&
-              childUserOne?.dateOfBirth) >
-              (childUserTwo !== undefined &&
-                childUserTwo?.dateOfBirth !== undefined &&
-                childUserTwo?.dateOfBirth)
-              ? 1
-              : -1;
+              childUserTwo !== undefined &&
+              childUserTwo?.dateOfBirth !== undefined
+            ) {
+              return isBefore(
+                new Date(childUserOne.dateOfBirth),
+                new Date(childUserTwo.dateOfBirth)
+              )
+                ? 1
+                : -1;
+            } else return 1;
           case 'firstName':
           default:
             return (childUserOne !== undefined &&

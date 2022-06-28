@@ -451,7 +451,7 @@ export const EditChildInformation: React.FC = () => {
       attendanceReasonId: currentChildLearnerRecord?.attendanceReasonId,
       otherAttendanceReason:
         currentChildLearnerRecord?.otherAttendanceReason ?? '',
-      startedAttendance: new Date().toISOString(),
+      startedAttendance: currentChildLearnerRecord?.startedAttendance ?? '',
       stoppedAttendance: new Date().toISOString(),
     };
     appDispatch(
