@@ -10,24 +10,24 @@ export const Training: React.FC = () => {
   const { isOnline } = useOnlineStatus();
   const history = useHistory();
 
-  //   const handleFetch = async () => {
-  //     const res = await fetch(
-  //       'http://apy-ecd-d-vm-moodle-01.northeurope.cloudapp.azure.com/login/index.php',
-  //       {
-  //         method: 'POST',
-  //         headers: {
-  //           // username: 'ubiratan@jungledevs.com',
-  //           // password: 'Test@1234',
-  //           loginToken: 'CiRa3bM03QkSXuEEraFBYiRANwkI2nZQ',
-  //         },
-  //       }
-  //     );
-  //     return res;
-  //   };
+  // const handleFetch = async () => {
+  //   const res = await fetch(
+  //     'https://ecdconnect.appysites.co.za/login/index.php',
+  //     {
+  //       method: 'POST',
+  //       headers: {
+  //         // username: 'Reeffaard',
+  //         // password: 'M4%c%1h$38',
+  //         loginToken: 'yKYGWNdj7ZBLQwPg5dZ4tcssJgAsdgu5',
+  //       },
+  //     }
+  //   );
+  //   return res;
+  // };
 
-  //   useEffect(() => {
-  //     handleFetch();
-  //   }, []);
+  // useEffect(() => {
+  //   handleFetch();
+  // }, []);
 
   return (
     <BannerWrapper
@@ -40,7 +40,7 @@ export const Training: React.FC = () => {
     >
       <div className="divide-y-2 divide-uiLight divide-dashed">
         <iframe
-          src="http://apy-ecd-d-vm-moodle-01.northeurope.cloudapp.azure.com"
+          src="https://ecdconnect.appysites.co.za"
           title="ECD Moodle"
           height="800px"
           width="90%"
