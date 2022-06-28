@@ -1,3 +1,4 @@
+import { NoPlaygroupClassroomType } from './../../enums/ProgrammeType';
 import {
   AttendanceDto,
   ChildDto,
@@ -28,6 +29,19 @@ export const getChildAlertModel = (
   const today = new Date();
   let alert = 'success';
   let alertMessage = 'All information captured';
+
+  if (classroomGroups && learner) {
+    const classroomGroup = classroomGroups.find(
+      (x) => x.id === learner?.classroomGroupId
+    );
+
+    if (classroomGroup?.name === NoPlaygroupClassroomType.name) {
+      alert = 'error';
+      alertMessage = 'No playgroup assigned';
+
+      return { status: alert, message: alertMessage, severity: 1 };
+    }
+  }
 
   const userBirthDocument = userDocuments?.find(
     (x) => x.name.includes('clinicCard') || x.name.includes('birthCertificate')
