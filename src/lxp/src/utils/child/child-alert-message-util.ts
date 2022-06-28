@@ -8,7 +8,7 @@ import {
   LearnerDto,
   UserDto,
 } from '@ecdlink/core';
-import { isPracitionerAttendanceMissingForLearner } from '../classroom/attendance/track-attendance-utils';
+import { isPractitionerAttendanceMissingForLearner } from '../classroom/attendance/track-attendance-utils';
 import {
   getChildAttendancePercentageAtPlaygroup,
   isMatchingReportingPeriods,
@@ -30,7 +30,7 @@ export const getChildAlertModel = (
   let alertMessage = 'All information captured';
 
   const userBirthDocument = userDocuments?.find(
-    (x) => x.name.includes('clinicCard') || x.name.includes('clinicCard')
+    (x) => x.name.includes('clinicCard') || x.name.includes('birthCertificate')
   );
 
   if (
@@ -64,7 +64,7 @@ export const getChildAlertModel = (
   }
 
   if (classroomGroups && attendance) {
-    const missedAttendance = isPracitionerAttendanceMissingForLearner(
+    const missedAttendance = isPractitionerAttendanceMissingForLearner(
       classroomGroups,
       classProgrammes || [],
       learner,

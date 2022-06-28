@@ -68,7 +68,12 @@ export const Dashboard: React.FC = () => {
   }, [isOnline]);
 
   const navigation: NavigationItem[] = [
-    { name: NavigationTypes.Home, href: '/', icon: 'HomeIcon', current: true },
+    {
+      name: NavigationTypes.Home,
+      href: ROUTES.ROOT,
+      icon: 'HomeIcon',
+      current: true,
+    },
     {
       name: NavigationTypes.Classroom,
       href: ROUTES.CLASSROOM,

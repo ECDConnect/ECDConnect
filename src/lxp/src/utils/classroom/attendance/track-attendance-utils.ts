@@ -151,9 +151,9 @@ export const getMissedClassAttendance = (
   return returnProgrammes;
 };
 
-export const isPracitionerAttendanceMissingForLearner = (
+export const isPractitionerAttendanceMissingForLearner = (
   classRoomGroup: ClassroomGroupDto[],
-  classPrgorammes: ClassProgrammeDto[],
+  classProgrammes: ClassProgrammeDto[],
   learner: LearnerDto,
   attendance: AttendanceDto[],
   date: Date
@@ -163,7 +163,7 @@ export const isPracitionerAttendanceMissingForLearner = (
   );
   const missedAttendanceClassProgramme = getMissedClassAttendance(
     learnerGroups,
-    classPrgorammes,
+    classProgrammes,
     attendance,
     date
   );

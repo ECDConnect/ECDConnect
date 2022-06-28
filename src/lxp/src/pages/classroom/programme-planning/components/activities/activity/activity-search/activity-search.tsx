@@ -15,7 +15,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import ActivityCard from '../activity-card/activity-card';
 import { staticDataSelectors } from '@store/static-data';
-import SeachHeader, {
+import SearchHeader, {
   SearchHeaderAlternativeRenderItem,
 } from '../../../../../../../components/search-header/search-header';
 import { programmeThemeSelectors } from '@store/content/programme-theme';
@@ -293,7 +293,7 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
         onBack={onClose}
         displayOffline={!isOnline}
       >
-        <SeachHeader<ActivityDto>
+        <SearchHeader<ActivityDto>
           searchItems={filteredActivities}
           onSearchChange={onSearchChange}
           isTextSearchActive={searchTextActive}
@@ -351,7 +351,7 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
               name: `Skills:`,
             }}
           />
-        </SeachHeader>
+        </SearchHeader>
         <div className="px-4 pt-2 pb-8">
           {recommendedActivity && !hasActiveFilters && (
             <div className={'flex flex-col items-center justify-start'}>

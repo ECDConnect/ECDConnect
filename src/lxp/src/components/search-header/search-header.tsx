@@ -23,7 +23,7 @@ type SearchHeaderProps<T> = {
   className?: string;
 };
 
-const SeachHeader = <T extends {}>({
+const SearchHeader = <T extends {}>({
   children,
   onSearchChange,
   searchItems,
@@ -67,7 +67,7 @@ const SeachHeader = <T extends {}>({
           <div
             className={`flex flex-col h-full flex-1 overflow-y-auto ${
               alternativeSearchItemRender ? 'px-4 pt-4 pb-24' : ''
-            }  `}
+            }`}
           >
             <Typography
               text={heading}
@@ -97,4 +97,4 @@ const SeachHeader = <T extends {}>({
   );
 };
 
-export default SeachHeader;
+export default SearchHeader;

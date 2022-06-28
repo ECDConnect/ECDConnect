@@ -20,7 +20,7 @@ import { useHistory } from 'react-router-dom';
 import { childrenSelectors } from '@store/children';
 import { classroomsSelectors } from '@store/classroom';
 import { getChildAlertModel } from '@utils/child/child-alert-message-util';
-import SeachHeader from '../../../components/search-header/search-header';
+import SearchHeader from '../../../components/search-header/search-header';
 import * as styles from './child-list.styles';
 import { attendanceSelectors } from '@store/attendance';
 import { documentSelectors } from '@store/document';
@@ -30,6 +30,46 @@ import { WorkflowStatusEnum } from '@ecdlink/graphql';
 import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { IconInformationIndicator } from '../programme-planning/components/icon-information-indicator/icon-information-indicator';
+import ROUTES from '@/routes/routes';
+
+const filterInfo: FilterInfo = {
+  filterName: 'Playgroup',
+  filterHint: 'You can select multiple playgroups',
+};
+
+const sortOptions: SearchSortOptions = {
+  columns: [
+    {
+      id: '1',
+      label: 'Priority',
+      value: 'priority',
+    },
+    {
+      id: '2',
+      label: 'First Name',
+      value: 'firstName',
+    },
+    {
+      id: '3',
+      label: 'Surname',
+      value: 'surname',
+    },
+    {
+      id: '4',
+      label: 'Age',
+      value: 'age',
+    },
+    {
+      id: '5',
+      label: 'Attendance',
+      value: 'attendance',
+    },
+  ],
+  defaultSort: {
+    column: 'priority',
+    dir: 'asc',
+  },
+};
 
 export const ChildList: React.FC<ComponentBaseProps> = () => {
   const { isOnline } = useOnlineStatus();
@@ -68,45 +108,6 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
     SearchDropDownOption<string>[]
   >([]);
 
-  const filterInfo: FilterInfo = {
-    filterName: 'Playgroup',
-    filterHint: 'You can select multiple playgroups',
-  };
-
-  const sortOptions: SearchSortOptions = {
-    columns: [
-      {
-        id: '1',
-        label: 'Priority',
-        value: 'priority',
-      },
-      {
-        id: '2',
-        label: 'First Name',
-        value: 'firstName',
-      },
-      {
-        id: '3',
-        label: 'Surname',
-        value: 'surname',
-      },
-      {
-        id: '4',
-        label: 'Age',
-        value: 'age',
-      },
-      {
-        id: '5',
-        label: 'Attendance',
-        value: 'attendance',
-      },
-    ],
-    defaultSort: {
-      column: 'priority',
-      dir: 'asc',
-    },
-  };
-
   useEffect(() => {
     if (classroomGroups && classroomGroupLearners) {
       const groupedItems: SearchDropDownOption<string>[] = classroomGroups.map(
@@ -140,7 +141,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
   }, [classroomGroupLearners, children, pendingStatusId]);
 
   const onChildListItemAction = (childId: string) => {
-    history.push('child-profile', {
+    history.push(ROUTES.CHILD_PROFILE, {
       childId,
     });
   };
@@ -163,6 +164,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
         }
       } else {
         for (const child of children) {
+          // TODO: change to display all children
           const learner = classroomGroupLearners.find(
             (x) => x.userId === child.userId
           );
@@ -188,7 +190,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
           (x) => x.userId === a.userId
         );
         const childLearnerTwo = classroomGroupLearners?.find(
-          (x) => x.userId === a.userId
+          (x) => x.userId === b.userId
         );
 
         switch (column) {
@@ -337,7 +339,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
   return (
     <>
       {children && children.length > 0 && (
-        <SeachHeader<UserAlertListDataItem>
+        <SearchHeader<UserAlertListDataItem>
           searchItems={filteredChildData || []}
           onScroll={handleListScroll}
           onSearchChange={onSearchChange}
@@ -358,7 +360,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
               multiple
               color={'uiMidDark'}
               info={{
-                name: `Filter by:${filterInfo?.filterName}`,
+                name: `Filter by: ${filterInfo?.filterName}`,
                 hint: filterInfo?.filterHint || '',
               }}
             />
@@ -371,7 +373,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
             selectedOptions={activeSort}
             onChange={(selectedColumns) => {
               setActiveSort(selectedColumns);
-              onSortItemsChanges(selectedColumns[0].value);
+              onSortItemsChanges(selectedColumns[0]?.value);
             }}
             placeholder={'Sort By'}
             multiple={false}
@@ -380,7 +382,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
               name: `Sort By:`,
             }}
           />
-        </SeachHeader>
+        </SearchHeader>
       )}
 
       <div className={styles.overlay}>
@@ -396,7 +398,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
             listItems={childUserListData}
             type={'UserAlertList'}
             onScroll={(scrollTop: number) => handleListScroll(scrollTop)}
-          ></StackedList>
+          />
         ) : null}
         <FADButton
           title={'Add a child'}

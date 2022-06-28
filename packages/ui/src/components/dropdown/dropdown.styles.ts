@@ -17,7 +17,8 @@ export const menuItem =
   'block px-4 py-2 text-textDark font-body cursor-pointer';
 export const menuItemSm =
   'block px-4 py-2 text-textDark font-body text-sm cursor-pointer';
-export const menuItemSelected = 'font-body block px-4 py-2 cursor-pointer';
+export const menuItemSelected =
+  'font-body block px-4 py-2 cursor-pointer text-gray-700 bg-gray-300';
 export const menuItemWrapper = '';
 export const enter = 'transition ease-out duration-100';
 export const enterFrom = 'transform opacity-0 scale-95';
