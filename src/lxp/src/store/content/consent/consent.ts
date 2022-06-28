@@ -1,6 +1,5 @@
-import { ConsentDto } from '@ecdlink/core';
 import { createSlice } from '@reduxjs/toolkit';
-import { getConsent, getOpenConsent } from './consent.actions';
+import { getConsent } from './consent.actions';
 import { ContentConsentState } from './consent.types';
 
 const initialState: ContentConsentState = {

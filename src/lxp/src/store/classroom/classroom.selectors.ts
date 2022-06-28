@@ -35,10 +35,36 @@ export const getChildLearner = (child?: ChildDto) =>
       learners.find((learner) => learner.userId === child?.userId)
   );
 
+export const getChildLearnerByClassroom = (
+  classroomGroupId: string,
+  child?: ChildDto
+) =>
+  createSelector(
+    (state: RootState) => state.classroomData.classroomGroupLearners || [],
+    (learners: LearnerDto[]) =>
+      learners.find(
+        (learner) =>
+          learner.userId === child?.userId &&
+          learner.classroomGroupId === classroomGroupId
+      )
+  );
+
 export const getClassProgrammes = (state: RootState): ClassProgrammeDto[] =>
   state.classroomData.classroomProgrammes?.filter((x) => x.isActive) || [];
 
-export const getLearnerClassgroupId = (userId?: string) =>
+export const getClassProgrammesByClassGroupId = (classGroupId?: string) =>
+  createSelector(
+    (state: RootState) => state.classroomData.classroomProgrammes,
+    (classroomProgrammes: ClassProgrammeDto[] | undefined) => {
+      return (
+        classroomProgrammes?.filter(
+          (x) => x.isActive && x.classroomGroupId === classGroupId
+        ) || []
+      );
+    }
+  );
+
+export const getLearnerClassGroupId = (userId?: string) =>
   createSelector(
     (state: RootState) => state.classroomData.classroomGroupLearners,
     (classroomGroupLearners: LearnerDto[] | undefined) => {

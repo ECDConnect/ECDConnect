@@ -44,7 +44,7 @@ export class IncompleteTrackAttendanceNotificationValidator
       this.currentDate
     );
 
-    if (!missedAttendance) return [];
+    if (!missedAttendance.length) return [];
 
     return [
       {

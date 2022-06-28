@@ -2,8 +2,6 @@ import { api } from '../axios.helper';
 import { Config } from '@ecdlink/core';
 import { LanguageDto } from '@ecdlink/core';
 class LanguageService {
-  constructor() {}
-
   async getLanguages(): Promise<LanguageDto[]> {
     const apiInstance = await api(Config.graphQlApi);
     const response = await apiInstance.post<any>(``, {
@@ -11,8 +9,8 @@ class LanguageService {
         query {
           openLanguage {
             id
-            description  
-            locale    
+            description
+            locale
           }
         }
           `,

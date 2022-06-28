@@ -29,6 +29,11 @@ import ClassProgrammeAttendanceList from '../class-programme-attendance-list/cla
 import * as styles from './attendance-list.styles';
 import { AttendanceListProps, AttendanceState } from './attendance-list.types';
 
+const filterInfo: FilterInfo = {
+  filterName: 'Playgroup',
+  filterHint: 'You can select multiple playgroups',
+};
+
 export const AttendanceList: React.FC<AttendanceListProps> = ({
   submitText = '',
   attendanceDate = new Date(),
@@ -45,11 +50,6 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
   const [selectedClassroomGroups, setSelectedClassroomGroups] = useState<
     ClassroomGroupDto[]
   >([]);
-
-  const filterInfo: FilterInfo = {
-    filterName: 'Playgroup',
-    filterHint: 'You can select multiple playgroups',
-  };
 
   const user = useSelector(userSelectors.getUser);
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);

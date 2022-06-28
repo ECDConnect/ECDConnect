@@ -17,14 +17,7 @@ export const initTestSchema = Yup.object().shape({
 
 describe('CheckboxCard', () => {
   it('should render successfully', () => {
-    const {
-      formState: checkboxTestFormState,
-      getValues: getCheckboxTestFormValues,
-      setValue: setCheckboxTestFormValues,
-      reset: resetCheckboxTestFormValue,
-      register: checkboxTestFormRegister,
-      trigger,
-    } = useForm<TestCheckModel>({
+    const { register: checkboxTestFormRegister } = useForm<TestCheckModel>({
       resolver: yupResolver(initTestSchema),
       mode: 'onChange',
       reValidateMode: 'onChange',

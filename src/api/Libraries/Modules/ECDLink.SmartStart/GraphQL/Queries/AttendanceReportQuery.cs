@@ -23,7 +23,7 @@ namespace ECDLink.EGraphQL.ObjectTypes.Extentions.Query
           DateTime endMonth)
         {
             startMonth = startMonth.GetStartOfMonth();
-            endMonth = endMonth.GetStartOfMonth();
+            endMonth = endMonth.GetEndOfMonth();
 
             return report.GenerateMonthlyAttendanceReport(userId, classroomId, startMonth, endMonth);
         }

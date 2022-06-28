@@ -7,13 +7,16 @@ import PointsSuccessCard from '../../../../../components/points-success-card/poi
 import { AttendanceSummary } from '@models/classroom/attendance/AttendanceSummary';
 import { AttendanceService } from '@services/AttendanceService';
 import { authSelectors } from '@store/auth';
+import { useAppDispatch } from '@store';
 import { setStorageItem } from '@utils/common/local-storage.utils';
 import { AttendanceReportProps } from './attendance-report.types';
 import { AttendanceMonthlyReport } from './components/attendance-monthly-report/attendance-monthly-report';
+import { attendanceThunkActions } from '@/store/attendance';
 
 export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   classroom,
 }) => {
+  const appDispatch = useAppDispatch();
   const isOnline = true;
   const [successMessageVisible, setSuccessMessageVisible] =
     useState<boolean>(true);
@@ -31,28 +34,40 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   };
 
   const [attendanceData, setAttendanceData] = useState<AttendanceSummary[]>([]);
-
   const [reportData, setReportData] = useState<MonthlyAttendanceRecord[]>();
+  const [attendanceTracked, setAttendanceTracked] = useState<boolean>(false);
+
+  useEffect(() => {
+    const trackAttendance = async () => {
+      return await appDispatch(attendanceThunkActions.trackAttendanceSync({}));
+    };
+    trackAttendance().then(() => {
+      setAttendanceTracked(true);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!classroom) return;
-    const year = new Date().getFullYear();
-    const currentMonth = new Date().getMonth() + 1;
+    const today = new Date();
+    const year = today.getFullYear();
+    const currentMonth = today.getMonth() + 1;
+    const startDate = new Date(classroom.insertedDate ?? '');
 
-    const startMonth = new Date(classroom.insertedDate ?? '');
-
-    new AttendanceService(authUser?.auth_token ?? '')
-      .getMonthlyAttendanceReport(
-        authUser?.id ?? '',
-        classroom.id ?? '',
-        startMonth,
-        new Date(year, currentMonth, 1)
-      )
-      .then((data) => {
-        setReportData(data);
-      });
+    if (attendanceTracked) {
+      new AttendanceService(authUser?.auth_token ?? '')
+        .getMonthlyAttendanceReport(
+          authUser?.id ?? '',
+          classroom.id ?? '',
+          startDate,
+          new Date(year, currentMonth, 1)
+        )
+        .then((data) => {
+          setReportData(data);
+        });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [classroom]);
+  }, [classroom, attendanceTracked]);
 
   useEffect(() => {
     if (!reportData) return;
@@ -79,9 +94,7 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
           message={'Your attendance registers are up to date this week!'}
           icon={'SparklesIcon'}
         />
-        {isOnline && (
-          <AttendanceMonthlyReport attendanceSummary={attendanceData} />
-        )}
+        <AttendanceMonthlyReport attendanceSummary={attendanceData} />
         {!isOnline && <OfflineCard />}
       </div>
       <MessageModal
