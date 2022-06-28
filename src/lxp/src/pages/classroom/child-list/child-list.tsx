@@ -240,21 +240,26 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
             return childAlertOne.severity > childAlertTwo.severity ? 1 : -1;
           }
           case 'surname':
-            return (childUserOne !== undefined && childUserOne?.surname) >
-              (childUserTwo !== undefined && childUserTwo.surname)
+            return (childUserOne !== undefined &&
+              childUserOne?.surname.toUpperCase()) >
+              (childUserTwo !== undefined && childUserTwo.surname.toUpperCase())
               ? 1
               : -1;
           case 'age':
             return (childUserOne !== undefined &&
-              childUserOne?.dateOfBirth !== undefined) >
+              childUserOne?.dateOfBirth !== undefined &&
+              childUserOne?.dateOfBirth) >
               (childUserTwo !== undefined &&
-                childUserTwo?.dateOfBirth !== undefined)
+                childUserTwo?.dateOfBirth !== undefined &&
+                childUserTwo?.dateOfBirth)
               ? 1
               : -1;
           case 'firstName':
           default:
-            return (childUserOne !== undefined && childUserOne.firstName) >
-              (childUserTwo !== undefined && childUserTwo.firstName)
+            return (childUserOne !== undefined &&
+              childUserOne.firstName.toUpperCase()) >
+              (childUserTwo !== undefined &&
+                childUserTwo.firstName.toUpperCase())
               ? 1
               : -1;
         }
@@ -300,9 +305,9 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
       profileDataUrl: childUser?.profileImageUrl,
       title: `${childUser?.firstName} ${childUser?.surname}`,
       subTitle: childAlert?.message ?? '',
-      profileText: `${childUser?.firstName && childUser?.firstName[0]}${
-        childUser?.surname && childUser?.surname[0]
-      }`,
+      profileText: `${
+        childUser?.firstName && childUser?.firstName[0]?.toUpperCase()
+      }${childUser?.surname && childUser?.surname[0]?.toUpperCase()}`,
       alertSeverity: childAlert.status as AlertSeverityType,
       avatarColor: getAvatarColor() || '',
       onActionClick: () => {
