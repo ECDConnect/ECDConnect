@@ -31,6 +31,7 @@ import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { IconInformationIndicator } from '../programme-planning/components/icon-information-indicator/icon-information-indicator';
 import ROUTES from '@/routes/routes';
+import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 
 const filterInfo: FilterInfo = {
   filterName: 'Playgroup',
@@ -111,11 +112,18 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
   useEffect(() => {
     if (classroomGroups && classroomGroupLearners) {
       const groupedItems: SearchDropDownOption<string>[] = classroomGroups.map(
-        (groupedItem, idx) => ({
-          id: idx.toString(),
-          label: groupedItem.name,
-          value: groupedItem.id ?? '',
-        })
+        (groupedItem, idx) =>
+          groupedItem.name === NoPlaygroupClassroomType.name
+            ? {
+                id: idx.toString(),
+                label: NoPlaygroupClassroomType.title,
+                value: groupedItem.id ?? '',
+              }
+            : {
+                id: idx.toString(),
+                label: groupedItem.name,
+                value: groupedItem.id ?? '',
+              }
       );
 
       setUpdatedPlaygroups(groupedItems);
@@ -313,7 +321,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
 
   const registerNewChild = () => {
     if (isOnline) {
-      history.push('/child-registration-landing');
+      history.push(ROUTES.CHILD_REGISTRATION_LANDING);
     } else {
       showOnlineOnly();
     }

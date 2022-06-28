@@ -63,6 +63,7 @@ import { ChildProgressReportAlert } from './components/progress-report-alert/pro
 import { contentReportSelectors } from '@store/content/report';
 import { analyticsActions } from '@store/analytics';
 import ROUTES from '@routes/routes';
+import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 
 const baseNotificationListItem: ListItemProps = {
   key: 'message-caregiver',
@@ -429,7 +430,7 @@ export const ChildProfile: React.FC = () => {
     setEditProfilePictureVisible(false);
   };
 
-  const picturePromtOnAction = async (imageBaseString: string) => {
+  const picturePromptOnAction = async (imageBaseString: string) => {
     const copy = Object.assign({}, childUser);
     if (copy) {
       copy.profileImageUrl = imageBaseString;
@@ -468,7 +469,7 @@ export const ChildProfile: React.FC = () => {
   };
 
   const contactCaregivers = () => {
-    history.push('/child-caregivers', { childId: child?.id });
+    history.push(ROUTES.CHILD_CAREGIVERS, { childId: child?.id });
   };
 
   const showCertificateError = (): boolean => {
@@ -530,7 +531,7 @@ export const ChildProfile: React.FC = () => {
           <StatusChip
             backgroundColour="infoDark"
             borderColour="infoDark"
-            text={playGroup?.name || 'No Playgroup'}
+            text={playGroup?.name || NoPlaygroupClassroomType.title}
             textColour={'white'}
             className={'mr-2'}
           />
@@ -650,7 +651,7 @@ export const ChildProfile: React.FC = () => {
           <PhotoPrompt
             title="Profile Photo"
             onClose={() => setEditProfilePictureVisible(false)}
-            onAction={picturePromtOnAction}
+            onAction={picturePromptOnAction}
             onDelete={profilePicture?.file ? deleteProfileImage : undefined}
           ></PhotoPrompt>
         </div>
