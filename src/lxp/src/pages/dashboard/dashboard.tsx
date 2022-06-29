@@ -8,6 +8,7 @@ import {
   IconBadge,
   NavigationRouteItem,
   NavigationDropdown,
+  StackedListItemType,
   Typography,
   UserAvatar,
 } from '@ecdlink/ui';
@@ -122,6 +123,58 @@ export const Dashboard: React.FC = () => {
     },
   ];
 
+  const dashboardItems: StackedListItemType[] = [];
+
+  if (userData?.roles?.some((role) => role.name === 'Coach')) {
+    dashboardItems.push(
+      {
+        title: 'Smartstarters',
+        titleIcon: 'AcademicCapIcon',
+        titleIconClassName: styles.smartStarterIcon,
+        onActionClick: () => ({}),
+      },
+      {
+        title: 'Clubs',
+        titleIcon: 'BriefcaseIcon',
+        titleIconClassName: styles.businessIcon,
+        onActionClick: () => ({}),
+        chipConfig: {
+          colorPalette: {
+            backgroundColour: 'white',
+            borderColour: 'errorMain',
+            textColour: 'errorMain',
+          },
+          text: 'Coming soon',
+        },
+      }
+    );
+  } else {
+    dashboardItems.push(
+      {
+        title: 'Classroom',
+        titleIcon: 'AcademicCapIcon',
+        titleIconClassName: styles.classRoomIcon,
+        onActionClick: () => {
+          goToClassroom();
+        },
+      },
+      {
+        title: 'Business',
+        titleIcon: 'AcademicCapIcon',
+        titleIconClassName: styles.businessIcon,
+        onActionClick: () => ({}),
+        chipConfig: {
+          colorPalette: {
+            backgroundColour: 'white',
+            borderColour: 'errorMain',
+            textColour: 'errorMain',
+          },
+          text: 'Coming soon',
+        },
+      }
+    );
+  }
+
   useEffect(() => {
     if (shouldUserSync) {
       dialog({
@@ -151,7 +204,11 @@ export const Dashboard: React.FC = () => {
   }, [shouldUserSync]);
 
   const goToProfile = () => {
-    history.push(ROUTES.PRACTITIONER.PROFILE.ROOT);
+    const profileRoute = userData?.roles?.some((role) => role.name === 'Coach')
+      ? ROUTES.COACH.PROFILE.ROOT
+      : ROUTES.PRACTITIONER.PROFILE.ROOT;
+
+    history.push(profileRoute);
   };
 
   const goToClassroom = () => {
@@ -269,32 +326,7 @@ export const Dashboard: React.FC = () => {
 
       <div className={`${!classroom ? styles.wrapper : ''}`}>
         <DashboardItems
-          listItems={[
-            {
-              title: 'Classroom',
-              titleIcon: 'AcademicCapIcon',
-              titleIconClassName: styles.classRoomIcon,
-              onActionClick: () => {
-                goToClassroom();
-              },
-              classNames: 'bg-uiBg',
-            },
-            {
-              title: 'Business',
-              titleIcon: 'AcademicCapIcon',
-              titleIconClassName: styles.businessIcon,
-              onActionClick: () => ({}),
-              chipConfig: {
-                colorPalette: {
-                  backgroundColour: 'alertMain',
-                  borderColour: 'alertMain',
-                  textColour: 'white',
-                },
-                text: 'Coming soon',
-              },
-              classNames: 'bg-uiBg',
-            },
-          ]}
+          listItems={dashboardItems}
           notification={dashboardNotification}
         />
       </div>

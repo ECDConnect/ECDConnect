@@ -38,6 +38,11 @@ import { PractitionerProgrammeInformation } from '@practitioner-p/practitioner-p
 import { EditPlaygroups } from '@practitioner-p/save-practitioner-playgroups/save-practitioner-playgroups';
 import { ProgrammeSummaries } from '@programme-planning-p/programme-summaries/programme-summaries';
 import { ChildRegistrationBirthCertificate } from '@child-p/child-registration-birth-certificate/child-registration';
+import { CoachRegistration } from '@coach-p/coach-registation/coach-registation';
+import { EditCoachProfile } from '@coach-p/edit-coach-profile/edit-coach-profile';
+import { CoachProfile } from '@coach-p/coach-profile/coach-profile';
+import { CoachAbout } from '@coach-p/coach-about/coach-about';
+
 import ROUTES from './routes';
 
 const PublicRoutes: React.FC = () => {
@@ -52,6 +57,11 @@ const PublicRoutes: React.FC = () => {
       />
       <Route path={ROUTES.NEW_PASSWORD} component={NewPassword} exact={true} />
       <Route path={ROUTES.SIGN_UP} component={SignUp} exact={true} />
+      <Route
+        path={ROUTES.COACH_REGISTRATION}
+        component={CoachRegistration}
+        exact={true}
+      />
       <Route
         path={ROUTES.VERIFY_PHONE}
         component={VerifyPhoneNumber}
@@ -193,6 +203,13 @@ const AuthRoutes: React.FC = () => {
         path={ROUTES.PROGRAMMES.TUTORIAL.DAILY_ROUTINE}
         component={ProgrammePlanningDailyRoutine}
       />
+      <Route exact path={ROUTES.COACH.PROFILE.ROOT} component={CoachProfile} />
+      <Route
+        exact
+        path={ROUTES.COACH.PROFILE.EDIT}
+        component={EditCoachProfile}
+      />
+      <Route exact path={ROUTES.COACH.ABOUT} component={CoachAbout} />
     </Switch>
   );
 };
