@@ -1,15 +1,15 @@
+import { FieldPath, useForm, useFormState } from 'react-hook-form';
+import { EditProfileFormProps } from './edit-profile-form.types';
+import * as styles from '../../edit-coach-profile.styles';
+import { staticDataSelectors } from '@store/static-data';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { ProvinceDto } from '@ecdlink/core';
+import { useSelector } from 'react-redux';
 import {
   EditProfileModel,
   editProfileSchema,
 } from '@schemas/coach/edit-profile';
-import { EditProfileFormProps } from './edit-profile-form.types';
-import * as styles from '../../edit-coach-profile.styles';
-import { staticDataSelectors } from '@store/static-data';
-import { FieldPath, useForm, useFormState } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import { useSelector } from 'react-redux';
-import { useEffect } from 'react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Button,
   ButtonGroup,
@@ -25,11 +25,11 @@ import {
 
 export const EditProfileForm: React.FC<EditProfileFormProps> = ({
   onSubmit,
-  profile,
+  coachProfileInformation,
 }) => {
   const provinces = useSelector(staticDataSelectors.getProvinces);
 
-  const franchisorAddress = {
+  const tmpFranchisorSiteAddress = {
     name: 'Lima Foundation',
     apartmentNumber: '',
     streetAddress: '111 - 113 Oxford Road',
@@ -40,49 +40,66 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
   };
 
   const {
-    getValues: getProfileFormValues,
-    setValue: setProfileFormValue,
-    reset: resetProfileFormValue,
-    register: profileFormRegister,
-    control: profileFormControl,
+    getValues: getCoachProfileFormValues,
+    setValue: setCoachProfileFormValue,
+    reset: resetCoachProfileFormValue,
+    register: coachProfileFormRegister,
+    control: coachProfileFormControl,
+    trigger: coachProfileFormTrigger,
   } = useForm<EditProfileModel>({
     resolver: yupResolver(editProfileSchema),
+    defaultValues: coachProfileInformation,
     mode: 'onChange',
   });
 
-  useEffect(() => {
-    resetProfileFormValue(profile);
-    setFranchisorAddress(profile?.isOfficeAddress || true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profile]);
+  const { isValid, errors } = useFormState({
+    control: coachProfileFormControl,
+  });
+  const [isOfficeAddress, setIsOfficeAddress] = useState<boolean>(
+    coachProfileInformation?.isOfficeAddress || true
+  );
 
-  const { isValid, errors } = useFormState({ control: profileFormControl });
-  const [isOfficeAddress, setIsOfficeAddress] = useState<boolean>(true);
-  const atOffice: ButtonGroupOption<boolean>[] = [
+  useEffect(() => {
+    setCoachAddressAsOfficeLocation(isOfficeAddress);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOfficeAddress]);
+
+  useEffect(() => {
+    resetCoachProfileFormValue(coachProfileInformation);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [coachProfileInformation]);
+
+  const isAtOfficeLocation: ButtonGroupOption<boolean>[] = [
     { text: 'At the office', value: true },
     { text: 'Other location', value: false },
   ];
-
-  const setFranchisorAddress = (isAtOfficeAddress: boolean) => {
-    if (isAtOfficeAddress === true) {
-      Object.keys(franchisorAddress).forEach((key: string) => {
-        if (key !== 'name') {
-          const fieldValue =
-            franchisorAddress[key as keyof typeof franchisorAddress];
-          setProfileFormValue(key as FieldPath<EditProfileModel>, fieldValue);
-        }
-      });
-    } else {
-      resetProfileFormValue(profile);
-    }
-  };
 
   const getProvinceNameFromId = (provinceId: string) => {
     const province = provinces.find((province) => province.id === provinceId);
     return province?.description;
   };
 
-  console.log(`Is valid: ${isValid}`);
+  const setCoachAddressAsOfficeLocation = (isAtOfficeAddress: boolean) => {
+    if (isAtOfficeAddress === true) {
+      const keys = Object.keys(tmpFranchisorSiteAddress);
+      for (let key of keys) {
+        if (key !== 'name') {
+          const fieldValue =
+            tmpFranchisorSiteAddress[
+              key as keyof typeof tmpFranchisorSiteAddress
+            ];
+          setCoachProfileFormValue(
+            key as FieldPath<EditProfileModel>,
+            fieldValue
+          );
+        }
+      }
+
+      coachProfileFormTrigger();
+    } else {
+      resetCoachProfileFormValue(coachProfileInformation);
+    }
+  };
 
   return (
     <div>
@@ -95,7 +112,7 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
       <div className="space-y-4">
         <FormInput<EditProfileModel>
           label={'Email address?'}
-          register={profileFormRegister}
+          register={coachProfileFormRegister}
           nameProp={'email'}
           placeholder={'E.g. example@example.com'}
           type={'text'}
@@ -105,11 +122,11 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
           <label className={styles.label}>Where do you work?</label>
           <div className="mt-1">
             <ButtonGroup
-              options={atOffice}
+              options={isAtOfficeLocation}
               onOptionSelected={(value: boolean | boolean[]) => {
+                setCoachProfileFormValue('isOfficeAddress', value as boolean);
                 setIsOfficeAddress(value as boolean);
-                setProfileFormValue('isOfficeAddress', value as boolean);
-                setFranchisorAddress(value as boolean);
+                // setFranchisorAddress(value as boolean);
               }}
               selectedOptions={isOfficeAddress}
               color="secondary"
@@ -122,20 +139,20 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
 
         {isOfficeAddress === true && (
           <div>
-            <h5>{franchisorAddress.name}</h5>
+            <h5>{tmpFranchisorSiteAddress.name}</h5>
             <p>
-              {franchisorAddress.apartmentNumber.length > 0 && (
+              {tmpFranchisorSiteAddress.apartmentNumber.length > 0 && (
                 <>
-                  {franchisorAddress.apartmentNumber}
+                  {tmpFranchisorSiteAddress.apartmentNumber}
                   <br />
                 </>
               )}
-              {franchisorAddress.streetAddress}
+              {tmpFranchisorSiteAddress.streetAddress}
               <br />
-              {franchisorAddress.suburb}, {franchisorAddress.city}{' '}
-              {franchisorAddress.postalCode}
+              {tmpFranchisorSiteAddress.suburb}, {tmpFranchisorSiteAddress.city}{' '}
+              {tmpFranchisorSiteAddress.postalCode}
               <br />
-              {getProvinceNameFromId(franchisorAddress.provinceId)}
+              {getProvinceNameFromId(tmpFranchisorSiteAddress.provinceId)}
             </p>
           </div>
         )}
@@ -145,7 +162,7 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
             <FormInput<EditProfileModel>
               label={'Flat / unit / apartment number'}
               hint={'Optional'}
-              register={profileFormRegister}
+              register={coachProfileFormRegister}
               nameProp={'apartmentNumber'}
               placeholder={'203 Oak Apartments'}
               error={errors['apartmentNumber']}
@@ -153,7 +170,7 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
             />
             <FormInput<EditProfileModel>
               label={'Street address'}
-              register={profileFormRegister}
+              register={coachProfileFormRegister}
               nameProp={'streetAddress'}
               placeholder={'e.g. 11 Green Road'}
               error={errors['streetAddress']}
@@ -161,7 +178,7 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
             />
             <FormInput<EditProfileModel>
               label={'Suburb / area'}
-              register={profileFormRegister}
+              register={coachProfileFormRegister}
               nameProp={'suburb'}
               placeholder={'e.g. Mamelodi East'}
               error={errors['suburb']}
@@ -169,7 +186,7 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
             />
             <FormInput<EditProfileModel>
               label={'City'}
-              register={profileFormRegister}
+              register={coachProfileFormRegister}
               nameProp={'city'}
               placeholder={'e.g. Cape Town'}
               error={errors['city']}
@@ -179,7 +196,7 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
               placeholder={'Choose province'}
               list={
                 (provinces &&
-                  provinces.map((province) => ({
+                  provinces.map((province: ProvinceDto) => ({
                     label: province.description,
                     value: province.id!,
                   }))) ||
@@ -189,18 +206,18 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
               fullWidth={true}
               label={'Province'}
               className={classNames(styles.divider, 'w-full')}
-              selectedValue={getProfileFormValues().provinceId}
+              selectedValue={getCoachProfileFormValues().provinceId}
               onChange={(item: string) => {
-                setProfileFormValue('provinceId', item, {
+                setCoachProfileFormValue('provinceId', item, {
                   shouldValidate: true,
                 });
               }}
             />
             <FormInput<EditProfileModel>
               label={'Postal Code'}
-              register={profileFormRegister}
+              register={coachProfileFormRegister}
               nameProp={'postalCode'}
-              placeholder={'e.g. 7700'}
+              placeholder={'e.g. 0081'}
               error={errors['postalCode']}
               type={'text'}
             />
@@ -214,7 +231,7 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
             color="primary"
             className={styles.button}
             disabled={!isValid}
-            onClick={() => onSubmit(getProfileFormValues())}
+            onClick={() => onSubmit(getCoachProfileFormValues())}
           >
             {renderIcon('ArrowCircleRightIcon', styles.icon)}
             <Typography type={'help'} text={'Next'} color={'white'} />

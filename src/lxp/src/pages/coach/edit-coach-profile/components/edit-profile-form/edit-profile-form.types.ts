@@ -8,5 +8,5 @@ export const yesNoOptions = [
 
 export interface EditProfileFormProps
   extends FormComponentProps<EditProfileModel> {
-  profile?: EditProfileModel;
+  coachProfileInformation?: EditProfileModel;
 }

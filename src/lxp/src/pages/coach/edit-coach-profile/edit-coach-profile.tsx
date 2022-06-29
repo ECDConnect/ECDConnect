@@ -22,16 +22,17 @@ export const EditCoachProfile: React.FC = () => {
   const history = useHistory();
   const dialog = useDialog();
 
-  const [profile, setProfile] = useState<EditProfileModel>({
-    email: user?.email || '',
-    isOfficeAddress: true,
-    apartmentNumber: '',
-    streetAddress: '',
-    suburb: '',
-    city: '',
-    provinceId: '',
-    postalCode: '',
-  });
+  const [coachProfileInformation, setCoachProfileInformation] =
+    useState<EditProfileModel>({
+      email: user?.email || '',
+      isOfficeAddress: true,
+      apartmentNumber: '',
+      streetAddress: '',
+      suburb: '',
+      city: '',
+      provinceId: '',
+      postalCode: '',
+    });
 
   useEffect(() => {
     setLabel(`step 1 of 2`);
@@ -46,6 +47,7 @@ export const EditCoachProfile: React.FC = () => {
        *
        * const profileId = newGuid();
        */
+      console.log(coachProfileInformation);
       console.log('All Steps Complete! No, Really, I promise!');
       history.push(ROUTES.ROOT);
     } else {
@@ -73,9 +75,10 @@ export const EditCoachProfile: React.FC = () => {
       default:
         return (
           <EditProfileForm
-            profile={profile}
-            onSubmit={(profile) => {
-              setProfile(profile);
+            coachProfileInformation={coachProfileInformation}
+            onSubmit={(coachProfileInformation) => {
+              console.log(coachProfileInformation);
+              setCoachProfileInformation(coachProfileInformation);
               setActiveStep(EditCoachSteps.addPhoto);
               setLabel(`step 2 of 2`);
             }}
