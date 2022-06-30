@@ -47,7 +47,7 @@ export const EditCoachProfile: React.FC = () => {
        *
        * const profileId = newGuid();
        */
-      console.log(coachProfileInformation);
+      // console.log(coachProfileInformation);
       console.log('All Steps Complete! No, Really, I promise!');
       history.push(ROUTES.ROOT);
     } else {
@@ -77,7 +77,6 @@ export const EditCoachProfile: React.FC = () => {
           <EditProfileForm
             coachProfileInformation={coachProfileInformation}
             onSubmit={(coachProfileInformation) => {
-              console.log(coachProfileInformation);
               setCoachProfileInformation(coachProfileInformation);
               setActiveStep(EditCoachSteps.addPhoto);
               setLabel(`step 2 of 2`);

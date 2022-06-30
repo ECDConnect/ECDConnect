@@ -64,10 +64,10 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOfficeAddress]);
 
-  useEffect(() => {
-    resetCoachProfileFormValue(coachProfileInformation);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [coachProfileInformation]);
+  // useEffect(() => {
+  //   resetCoachProfileFormValue(coachProfileInformation);
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [coachProfileInformation]);
 
   const isAtOfficeLocation: ButtonGroupOption<boolean>[] = [
     { text: 'At the office', value: true },
@@ -90,14 +90,21 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
             ];
           setCoachProfileFormValue(
             key as FieldPath<EditProfileModel>,
-            fieldValue
+            fieldValue,
+            { shouldTouch: true, shouldValidate: true }
           );
         }
       }
-
-      coachProfileFormTrigger();
     } else {
       resetCoachProfileFormValue(coachProfileInformation);
+    }
+
+    coachProfileFormTrigger();
+  };
+
+  const handleFormSubmit = (): void => {
+    if (isValid && onSubmit) {
+      onSubmit(getCoachProfileFormValues());
     }
   };
 
@@ -126,7 +133,6 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
               onOptionSelected={(value: boolean | boolean[]) => {
                 setCoachProfileFormValue('isOfficeAddress', value as boolean);
                 setIsOfficeAddress(value as boolean);
-                // setFranchisorAddress(value as boolean);
               }}
               selectedOptions={isOfficeAddress}
               color="secondary"
@@ -231,7 +237,8 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
             color="primary"
             className={styles.button}
             disabled={!isValid}
-            onClick={() => onSubmit(getCoachProfileFormValues())}
+            onClick={handleFormSubmit}
+            // onClick={() => onSubmit(getCoachProfileFormValues())}
           >
             {renderIcon('ArrowCircleRightIcon', styles.icon)}
             <Typography type={'help'} text={'Next'} color={'white'} />
