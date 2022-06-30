@@ -183,6 +183,8 @@ export const ChildProfile: React.FC = () => {
   ]);
   const [attendanceReport, setAttendanceReport] =
     useState<ChildAttendanceReportModel>();
+  const [belongsToNoPlaygroup, setBelongsToNoPlaygroup] =
+    useState<boolean>(false);
 
   useEffect(() => {
     if (!isOnline) {
@@ -197,6 +199,10 @@ export const ChildProfile: React.FC = () => {
   }, [isOnline]);
 
   useEffect(() => {
+    if (playGroup?.name === NoPlaygroupClassroomType.name) {
+      setBelongsToNoPlaygroup(true);
+    }
+
     const profileOptionsCopy = [...profileOptions];
 
     profileOptionsCopy.unshift({
@@ -546,6 +552,39 @@ export const ChildProfile: React.FC = () => {
           />
         </div>
 
+        {belongsToNoPlaygroup && (
+          <Alert
+            className="m-4"
+            title={`${
+              childUser?.firstName || 'This child'
+            } does not have a playgroup`}
+            list={[
+              `Add ${childUser?.firstName || 'this child'} to a playgroup now`,
+            ]}
+            type="error"
+            button={
+              <Button
+                color="textMid"
+                type="filled"
+                size="small"
+                onClick={() => {
+                  history.push(ROUTES.CHILD.INFORMATION.EDIT, {
+                    childId: child?.id,
+                    playgroupEdit: true,
+                  });
+                }}
+              >
+                {renderIcon('PlusIcon', 'w-5 h-5 text-white mr-1')}
+                <Typography
+                  color="white"
+                  text="Add to a Playgroup"
+                  type="small"
+                />
+              </Button>
+            }
+          />
+        )}
+
         {showCertificateError() && (
           <Alert
             className="m-4"
@@ -562,7 +601,7 @@ export const ChildProfile: React.FC = () => {
                 type="filled"
                 size="small"
                 onClick={() => {
-                  history.push('/child-registration-birth-certificate', {
+                  history.push(ROUTES.CHILD_REGISTRATION_BIRTH_CERTIFICATE, {
                     childId: child?.id,
                   });
                 }}

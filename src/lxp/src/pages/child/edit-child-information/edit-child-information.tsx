@@ -60,6 +60,7 @@ export const EditChildInformation: React.FC = () => {
   const { theme } = useTheme();
   const location = useLocation<EditChildInformationLocationParams>();
   const childId = location.state.childId;
+  const playgroupEdit = location.state.playgroupEdit;
   const user = useSelector(userSelectors.getUser);
   const languages = useSelector(staticDataSelectors.getLanguages);
   const currentChild = useSelector(childrenSelectors.getChildById(childId));
@@ -137,6 +138,12 @@ export const EditChildInformation: React.FC = () => {
     defaultValues: getDefaultFormValues(),
     mode: 'onChange',
   });
+
+  useEffect(() => {
+    if (playgroupEdit) {
+      setChangeClassroomGroupPromptVisible(playgroupEdit);
+    }
+  }, [playgroupEdit]);
 
   useEffect(() => {
     if (classroomGroups) {
