@@ -138,7 +138,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
 
       for (const child of children) {
         const learner = classroomGroupLearners.find(
-          (x) => x.userId === child.userId && x.stoppedAttendance === null
+          (x) => x.userId === child.userId && x.stoppedAttendance == null
         );
         childListItem.push(mapUserListDataItem(child, learner));
       }
@@ -166,7 +166,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
             (x) =>
               x.userId === child.userId &&
               /* ensures only children in a playgroup are shown and not those who stopped attending or changed playgroups */
-              x.stoppedAttendance === null &&
+              x.stoppedAttendance == null &&
               selectedClassrooms.some((sc) => sc === x.classroomGroupId)
           );
           if (learner) {
@@ -177,7 +177,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
         for (const child of children) {
           // TODO: change to display all children
           const learner = classroomGroupLearners.find(
-            (x) => x.userId === child.userId && x.stoppedAttendance === null
+            (x) => x.userId === child.userId && x.stoppedAttendance == null
           );
           if (learner) {
             childListItem.push(mapUserListDataItem(child, learner));

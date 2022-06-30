@@ -160,7 +160,7 @@ export const EditChildInformation: React.FC = () => {
   useEffect(() => {
     if (currentChild && classroomGroupLearners) {
       const currentChildL = classroomGroupLearners.find(
-        (x) => !x.stoppedAttendance && x.userId === currentChild.userId
+        (x) => x.userId === currentChild.userId && x.stoppedAttendance == null
       );
       setCurrentChildLearnerRecord(currentChildL);
     }
@@ -453,22 +453,52 @@ export const EditChildInformation: React.FC = () => {
         currentChildLearnerRecord?.otherAttendanceReason ?? '',
       startedAttendance: currentChildLearnerRecord?.startedAttendance ?? '',
       stoppedAttendance: new Date().toISOString(),
+      isActive: currentChildLearnerRecord?.isActive,
     };
+
     appDispatch(
       classroomsActions.updateClassroomGroupLearner(learnerInputModel)
     );
 
-    const newLearnerModel: LearnerDto = {
-      id: newGuid(),
-      classroomGroupId: newClassroomGroupId,
-      userId: currentChildLearnerRecord?.userId ?? '',
-      attendanceReasonId: currentChildLearnerRecord?.attendanceReasonId,
-      otherAttendanceReason:
-        currentChildLearnerRecord?.otherAttendanceReason ?? '',
-      startedAttendance: new Date().toISOString(),
-    };
+    // check if the record already exists then change the start time and end time
+    const [_learner] = classroomGroupLearners.filter(
+      (x) =>
+        x.userId === currentChildLearnerRecord?.userId &&
+        x.classroomGroupId === newClassroomGroupId
+    );
 
-    appDispatch(classroomsActions.createClassroomGroupLearner(newLearnerModel));
+    if (_learner) {
+      const newUpdatedLearnerModel: LearnerDto = {
+        id: _learner.id,
+        classroomGroupId: newClassroomGroupId,
+        userId: _learner?.userId ?? '',
+        attendanceReasonId: _learner?.attendanceReasonId,
+        otherAttendanceReason: _learner?.otherAttendanceReason ?? '',
+        startedAttendance: new Date().toISOString(),
+        stoppedAttendance: null,
+        isActive: _learner?.isActive,
+      };
+
+      appDispatch(
+        classroomsActions.updateClassroomGroupLearner(newUpdatedLearnerModel)
+      );
+    } else {
+      const newLearnerModel: LearnerDto = {
+        id: newGuid(),
+        classroomGroupId: newClassroomGroupId,
+        userId: currentChildLearnerRecord?.userId ?? '',
+        attendanceReasonId: currentChildLearnerRecord?.attendanceReasonId,
+        otherAttendanceReason:
+          currentChildLearnerRecord?.otherAttendanceReason ?? '',
+        startedAttendance: new Date().toISOString(),
+        stoppedAttendance: null,
+        isActive: currentChildLearnerRecord?.isActive,
+      };
+
+      appDispatch(
+        classroomsActions.createClassroomGroupLearner(newLearnerModel)
+      );
+    }
 
     setEditFieldVisible(false);
   };
@@ -715,7 +745,7 @@ export const EditChildInformation: React.FC = () => {
               color="textDark"
               text={'Edit Playgroup'}
               weight="bold"
-            ></Typography>
+            />
             <div onClick={closeEditField}>
               {renderIcon('XIcon', 'h-6 w-6 text-uiLight')}
             </div>
@@ -745,7 +775,7 @@ export const EditChildInformation: React.FC = () => {
                 className="mr-2"
                 color="white"
                 text={'Save'}
-              ></Typography>
+              />
             </Button>
           </div>
         </div>

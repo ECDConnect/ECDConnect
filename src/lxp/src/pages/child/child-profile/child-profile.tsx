@@ -106,7 +106,7 @@ export const ChildProfile: React.FC = () => {
   const playGroup = useSelector(
     classroomsSelectors.getClassroomGroupById(classGroupId)
   );
-  const classProgrames = useSelector(classroomsSelectors.getClassProgrammes);
+  const classProgrammes = useSelector(classroomsSelectors.getClassProgrammes);
   const childUser = useSelector(
     childrenSelectors.getChildUserById(child?.userId)
   );
@@ -375,7 +375,7 @@ export const ChildProfile: React.FC = () => {
       childUserId,
       attendance,
       classroomGroupCacheId,
-      classProgrames
+      classProgrammes
     );
 
     // Check when the child was register and determine wether attendance should have been recorded
@@ -399,7 +399,7 @@ export const ChildProfile: React.FC = () => {
   };
 
   const viewChildProgressObservationReports = () => {
-    history.push('/completed-child-progress-observation-reports', {
+    history.push(ROUTES.COMPLETED_CHILD_PROGRESS_OBSERVATION_REPORTS, {
       childId: child?.id,
     });
   };
@@ -409,7 +409,7 @@ export const ChildProfile: React.FC = () => {
   };
 
   const goToRemoveChild = () => {
-    history.push('remove-child', { childId: child?.id });
+    history.push(ROUTES.REMOVE_CHILD, { childId: child?.id });
   };
 
   const contactAttendanceCaregiver = (
