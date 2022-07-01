@@ -10,6 +10,7 @@ import {
   addDays,
   format,
   getDay,
+  getDayOfYear,
   isAfter,
   isBefore,
   isFriday,
@@ -133,9 +134,11 @@ export const getMissedClassAttendance = (
         typeof x.programmeStartDate !== 'undefined'
           ? new Date(x.programmeStartDate)
           : new Date();
+      const programStartDateDay = getDayOfYear(programStartDate);
+      const dateDay = getDayOfYear(date);
       return (
         (x.meetingDay || -1) <= currentDayFilter &&
-        isBefore(programStartDate, date)
+        isBefore(programStartDateDay, dateDay)
       );
     });
 

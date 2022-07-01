@@ -43,10 +43,6 @@ export const getChildAlertModel = (
     }
   }
 
-  const userBirthDocument = userDocuments?.find(
-    (x) => x.name.includes('clinicCard') || x.name.includes('birthCertificate')
-  );
-
   if (
     !childUser?.firstName ||
     !childUser?.surname ||
@@ -69,6 +65,10 @@ export const getChildAlertModel = (
 
     return { status: alert, message: alertMessage, severity: 1 };
   }
+
+  const userBirthDocument = userDocuments?.find(
+    (x) => x.name.includes('clinicCard') || x.name.includes('birthCertificate')
+  );
 
   if (userBirthDocument) {
     alert = 'error';
