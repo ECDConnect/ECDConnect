@@ -17,7 +17,13 @@ export interface EditGroupedPlaygroupModel {
 }
 
 export const editPlaygroupSchema = Yup.object().shape({
-  name: Yup.string().required(),
+  name: Yup.string()
+    .trim()
+    .matches(/^(?!(unsure)$).+$/gi, {
+      excludeEmptyString: true,
+      message: 'You cannot use Unsure as a playgroup name',
+    })
+    .required('This field is required'),
   meetingDays: Yup.number().required(),
   isFullDay: Yup.boolean().required(),
 });
