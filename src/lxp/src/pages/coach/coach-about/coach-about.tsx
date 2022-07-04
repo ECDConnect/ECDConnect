@@ -266,6 +266,11 @@ export const CoachAbout: React.FC = () => {
     }
   };
 
+  const practitionerInfo =
+    'mr-4 p-4 pt-1 pb-1 bg-infoMain rounded-full text-white text-sm';
+  const childrenInfo =
+    'p-4 pt-1 pb-1 bg-primary rounded-full text-white text-sm';
+
   return (
     <div className={styles.container}>
       <BannerWrapper
@@ -287,6 +292,10 @@ export const CoachAbout: React.FC = () => {
             onPressed={displayProfilePicturePrompt}
             hasConsent={true}
           />
+        </div>
+        <div className={'bg-uiBg flex justify-center mt-4'}>
+          <span className={practitionerInfo}>22 Practitioners</span>
+          <span className={childrenInfo}>120 Children</span>
         </div>
         <StackedList
           className={'bg-uiBg'}
