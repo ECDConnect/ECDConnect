@@ -1,12 +1,15 @@
 import CompleteProfile from '../edit-coach-profile/components/complete-profile/complete-profile';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useStoreSetup } from '@hooks/useStoreSetup';
+import { analyticsActions } from '@store/analytics';
 import { useDocuments } from '@hooks/useDocuments';
 import { useHistory } from 'react-router-dom';
 import { userSelectors } from '@store/user';
 import { useSelector } from 'react-redux';
 import { useDialog } from '@ecdlink/core';
+import { useAppDispatch } from '@store';
 import ROUTES from '@routes/routes';
+import { useEffect } from 'react';
 import {
   ActionModal,
   BannerWrapper,
@@ -22,8 +25,21 @@ export const CoachProfile: React.FC = () => {
   const user = useSelector(userSelectors.getUser);
   const { userProfilePicture } = useDocuments();
   const { isOnline } = useOnlineStatus();
+  const appDispatch = useAppDispatch();
   const history = useHistory();
   const dialog = useDialog();
+
+  useEffect(() => {
+    if (!isOnline) {
+      appDispatch(
+        analyticsActions.createViewTracking({
+          pageView: window.location.pathname,
+          title: 'Coach Profile',
+        })
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOnline]);
 
   const getStackedMenuList = (): MenuListDataItem[] => {
     const stackedMenuList: MenuListDataItem[] = [
@@ -107,13 +123,18 @@ export const CoachProfile: React.FC = () => {
     return stackedMenuList;
   };
 
+  const isProfileComplete =
+    user!.firstName.length > 0 &&
+    user!.surname.length > 0 &&
+    user!.phoneNumber.length > 0;
+
   const tabItem: TabItem[] = [
     {
       title: 'Profile',
       initActive: true,
       child: (
         <div>
-          <CompleteProfile />
+          {isProfileComplete ? null : <CompleteProfile />}
           <StackedList
             listItems={getStackedMenuList()}
             type={'MenuList'}

@@ -44,11 +44,7 @@ export const EditCoachProfile: React.FC = () => {
        * Save the profile to the backend database here.
        * This is unknown right now due to the feature being
        * rewritten.
-       *
-       * const profileId = newGuid();
        */
-      // console.log(coachProfileInformation);
-      console.log('All Steps Complete! No, Really, I promise!');
       history.push(ROUTES.ROOT);
     } else {
       showOnlineOnly();

@@ -3,6 +3,7 @@ import { renderIcon } from '@ecdlink/ui';
 import ROUTES from '@routes/routes';
 import { useHistory } from 'react-router-dom';
 import * as styles from './complete-profile.styles';
+
 export const CompleteProfile: React.FC = () => {
   const history = useHistory();
   return (
