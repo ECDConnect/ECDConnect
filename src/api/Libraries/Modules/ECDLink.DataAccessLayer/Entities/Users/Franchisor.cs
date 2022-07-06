@@ -6,25 +6,22 @@ using HotChocolate;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace ECDLink.DataAccessLayer.Entities.Coach
+namespace ECDLink.DataAccessLayer.Entities.Franchisor
 {
-    [Table(nameof(Coach))]
+    [Table(nameof(Franchisor))]
     [EntityPermission(PermissionGroups.USER)]
-    public class Coach : Coach<Guid>
+    public class Franchisor : Franchisor<Guid>
     {
     }
 
-    public class Coach<TKey> : EntityBase<TKey>, ApplicationUserJoin, IUserType
+    public class Franchisor<TKey> : EntityBase<TKey>, ApplicationUserJoin, IUserType
         where TKey : IEquatable<TKey>
     {
         [ForeignKey(nameof(UserId))]
         public virtual ApplicationUser User { get; set; }
         public string UserId { get; set; }
-
         public string AreaOfOperation { get; set; }
-
         public string SecondaryAreaOfOperation { get; set; }
-
         public DateTime StartDate { get; set; }
 
         [GraphQLIgnore]
@@ -32,10 +29,10 @@ namespace ECDLink.DataAccessLayer.Entities.Coach
         public Guid? SiteAddressId { get; set; }
     }
 
-    public interface CoachJoin<TKey>
+    public interface FranchisorJoin<TKey>
     {
-        [ForeignKey(nameof(CoachId))]
-        public Coach Coach { get; set; }
-        public TKey CoachId { get; set; }
+        [ForeignKey(nameof(FranchisorId))]
+        public Franchisor Franchisor { get; set; }
+        public TKey FranchisorId { get; set; }
     }
 }

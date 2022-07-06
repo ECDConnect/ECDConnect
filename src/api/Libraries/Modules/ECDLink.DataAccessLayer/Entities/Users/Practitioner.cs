@@ -47,6 +47,10 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         [ForeignKey(nameof(SiteAddressId))]
         public virtual SiteAddress SiteAddress { get; set; }
         public Guid? SiteAddressId { get; set; }
+        public string CoachHierarchy { get; set; }
+        public string PrincipleHierarchy { get; set; }
+        public bool? IsPrincipal { get; set; }
+        public bool? IsFundaAppAdmin { get; set; }
     }
 
     public interface PractitionerJoin<TKey>
