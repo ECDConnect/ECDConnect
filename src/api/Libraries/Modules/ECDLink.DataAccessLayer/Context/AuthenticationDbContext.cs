@@ -4,6 +4,7 @@ using ECDLink.DataAccessLayer.Entities.AuditLog;
 using ECDLink.DataAccessLayer.Entities.Caregiver;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Coach;
+using ECDLink.DataAccessLayer.Entities.Franchisor;
 using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.Navigation;
 using ECDLink.DataAccessLayer.Entities.Notes;
@@ -68,6 +69,7 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<Practitioner> Practitioners { get; set; }
         public DbSet<Coach> Coaches { get; set; }
         public DbSet<Caregiver> Caregivers { get; set; }
+        public DbSet<Franchisor> Franchisors { get; set; }
 
         //Reports
         public DbSet<ChildProgressReport> ChildProgressReports { get; set; }

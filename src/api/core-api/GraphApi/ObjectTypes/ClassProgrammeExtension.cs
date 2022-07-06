@@ -27,7 +27,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.ObjectTypes
         {
             var userId = httpContextAccessor.HttpContext.GetUser().Id;
 
-            var attendance = trackingRepository.GetAllAttedancesByParentId(userId);
+            var attendance = trackingRepository.GetAllAttendancesByParentId(userId);
 
             return attendance.Where(x => x.ClassroomProgrammeId == classProgramme.Id);
         }
