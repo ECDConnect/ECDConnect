@@ -123,10 +123,13 @@ export const CoachProfile: React.FC = () => {
     return stackedMenuList;
   };
 
-  const isProfileComplete =
-    user!.firstName.length > 0 &&
-    user!.surname.length > 0 &&
-    user!.phoneNumber.length > 0;
+  const isProfileComplete = false;
+  // (
+  //   user &&
+  //   user!.firstName.length > 0 &&
+  //   user!.surname.length > 0 &&
+  //   user!.phoneNumber.length > 0
+  // );
 
   const tabItem: TabItem[] = [
     {

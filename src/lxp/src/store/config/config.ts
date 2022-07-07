@@ -54,7 +54,6 @@ import {
   practitionerPersistConfig,
   practitionerReducer,
 } from '../practitioner/practitioner';
-import { coachPersistConfig, coachReducer } from '../coach/coach';
 import {
   programmePersistConfig,
   programmeReducer,
@@ -104,7 +103,6 @@ const persistedReducers = {
   storyBookData: persistReducer(storyBookPersistConfig, storyBookReducer),
   sync: syncReducer,
   user: persistReducer(userPersistConfig, userReducer),
-  coach: persistReducer(coachPersistConfig, coachReducer),
 };
 
 const rootReducer = combineReducers(persistedReducers);

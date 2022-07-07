@@ -64,11 +64,6 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOfficeAddress]);
 
-  // useEffect(() => {
-  //   resetCoachProfileFormValue(coachProfileInformation);
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [coachProfileInformation]);
-
   const isAtOfficeLocation: ButtonGroupOption<boolean>[] = [
     { text: 'At the office', value: true },
     { text: 'Other location', value: false },
