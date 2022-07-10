@@ -39,6 +39,10 @@ namespace ECDLink.DataAccessLayer.Entities
         public override bool PhoneNumberConfirmed { get => base.PhoneNumberConfirmed; set => base.PhoneNumberConfirmed = value; }
         public override bool TwoFactorEnabled { get => base.TwoFactorEnabled; set => base.TwoFactorEnabled = value; }
 
+        public string NickFirstName { get; set; }
+        public string NickSurname { get; set; }
+        public string NickFullName { get; set; }
+
         // Graph Ignores
         [GraphQLIgnore]
         public override DateTimeOffset? LockoutEnd { get => base.LockoutEnd; set => base.LockoutEnd = value; }

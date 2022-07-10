@@ -40,12 +40,30 @@ namespace ECDLink.DataAccessLayer.Migrations
                         onDelete: ReferentialAction.Restrict);
              });
 
+            migrationBuilder.CreateTable(
+                 name: "Signatures",
+                 columns: table => new
+                 {
+                     Id = table.Column<Guid>(type: "uuid", nullable: false),
+                     IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                     InsertedDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                     UpdatedDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                     UpdatedBy = table.Column<string>(type: "text", nullable: true),
+                     Signature = table.Column<string>(type: "text", nullable: true)
+                 });
+
             migrationBuilder.AddColumn<string>("CoachHierarchy", "Practitioner", "text", nullable: true);
             migrationBuilder.AddColumn<string>("PrincipalHierarchy", "Practitioner", "text", nullable: true);
-            migrationBuilder.AddColumn<string>("IsPrincipal", "Practitioner", "bool", nullable: true);
-            migrationBuilder.AddColumn<string>("IsFundaAppAdmin", "Practitioner", "bool", nullable: true);
+            migrationBuilder.AddColumn<string>("IsPrincipal", "Practitioner", "bool", nullable: false, defaultValue: false);
+            migrationBuilder.AddColumn<string>("IsFundaAppAdmin", "Practitioner", "bool", nullable: true, defaultValue: false);
+            migrationBuilder.AddColumn<string>("IsTrainee", "Practitioner", "bool", nullable: true, defaultValue: false);
+            migrationBuilder.AddColumn<string>("NotInvitedYet", "Practitioner", "bool", nullable: true, defaultValue: false);
 
             migrationBuilder.AddColumn<Guid>("SiteAddressId", "Coach", "uuid", nullable: true);
+
+            migrationBuilder.AddColumn<string>("NickFirstName", "AspNetUsers", "text", nullable: true);
+            migrationBuilder.AddColumn<string>("NickSurname", "AspNetUsers", "text", nullable: true);
+            migrationBuilder.AddColumn<string>("NickFullName", "AspNetUsers", "text", nullable: true);
 
             //migrationBuilder.DropPrimaryKey("PK_Learner", "Learner");
             //migrationBuilder.AddPrimaryKey("PK_Learner", "Learner", x => new { x.ClassroomGroupId, x.UserId, x.Id });                      
@@ -55,11 +73,14 @@ namespace ECDLink.DataAccessLayer.Migrations
         {
             migrationBuilder.DropTable(
                 name: "Franchisor");
+            migrationBuilder.DropTable(
+                name: "Signatures");
 
             migrationBuilder.DropColumn("CoachHierarchy", "Practitioner");
             migrationBuilder.DropColumn("PrincipalHierarchy", "Practitioner");
             migrationBuilder.DropColumn("IsPrincipal", "Practitioner");
             migrationBuilder.DropColumn("IsFundaAppAdmin", "Practitioner");
+            migrationBuilder.DropColumn("IsTrainee", "Practitioner");
             migrationBuilder.DropColumn("SiteAddressId", "Coach");
         }
     }
