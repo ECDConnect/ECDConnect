@@ -2,7 +2,7 @@ export const checkboxStyle = 'h-4 w-4 text-primary border-gray-300 rounded';
 export const errorStyle =
   'block w-full py-3 pr-10 border-errorMain text-errorMain placeholder-errorMain focus:outline-none focus:ring-errorMain focus:border-errorMain sm:text-sm rounded-md';
 export const defaultInputStyle =
-  'font-body focus:ring-uiMidDark focus:border-uiMidDark block w-full sm:text-sm border-uiLight rounded-md text-textDark py-3 px-4';
+  'font-body bg-uiBg focus:bg-white focus:ring-uiMidDark border border-transparent focus:border focus:border-uiMidDark block w-full sm:text-sm rounded-md text-textDark py-3 px-4';
 export const label = 'block text-16 leading-snug font-body text-textMid';
 export const navStyle = '-mb-px flex flex-1 space-x-8';
 export const inputValid =
