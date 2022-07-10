@@ -21,6 +21,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
     public class PrincipalQueryExtension
     {
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        private List<Practitioner> GetAllPrincipal([Service] IHttpContextAccessor contextAccessor,
+            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+            [Service] IGenericRepositoryFactory repoFactory)
+        {
+            using var scope = dbFactory.CreateDbContext();
+            using var dbContextTransaction = scope.Database.BeginTransaction();
+            var userId = contextAccessor.HttpContext.GetUser().Id;
+            var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: userId);
+            List<Practitioner> principals = practitionerRepo.GetAll().Where(x => x.IsPrincipal == true).ToList();
+
+            return principals;
+        }
         private List<Practitioner> GetAllPractitionersForPrincipal([Service] IHttpContextAccessor contextAccessor,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
