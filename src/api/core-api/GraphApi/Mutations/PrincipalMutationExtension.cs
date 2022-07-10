@@ -84,7 +84,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return practitioner;
         }
 
-        private Practitioner DemotePractitionerFromPrincipal([Service] IHttpContextAccessor contextAccessor,
+        private Practitioner DemotePractitionerAsPrincipal([Service] IHttpContextAccessor contextAccessor,
              [Service] UserManager<ApplicationUser> userManager,
              [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
              [Service] IGenericRepositoryFactory repoFactory,
@@ -94,7 +94,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             using var dbContextTransaction = scope.Database.BeginTransaction();
             var userId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: userId);
-            practitioner.IsPrincipal = true;
+            practitioner.IsPrincipal = false;
             var updateResult = practitionerRepo.Update(practitioner);
 
             return practitioner;
