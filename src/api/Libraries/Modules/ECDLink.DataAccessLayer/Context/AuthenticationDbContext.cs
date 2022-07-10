@@ -3,7 +3,6 @@ using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.AuditLog;
 using ECDLink.DataAccessLayer.Entities.Caregiver;
 using ECDLink.DataAccessLayer.Entities.Classroom;
-using ECDLink.DataAccessLayer.Entities.Coach;
 using ECDLink.DataAccessLayer.Entities.Franchisor;
 using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.Navigation;
@@ -36,7 +35,7 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<ReasonForLeaving> ReasonsForLeaving { get; set; }
         public DbSet<ShortenUrlEntity> ShortUrls { get; set; }
         public DbSet<UserConsent> UserConsents { get; set; }
-
+        public DbSet<Signatures> Signatures { get; set; }
 
         // Notes
         public DbSet<Note> Notes { get; set; }
