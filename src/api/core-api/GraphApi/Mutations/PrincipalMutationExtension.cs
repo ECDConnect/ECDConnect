@@ -100,34 +100,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return practitioner;
         }
 
-        private List<Practitioner> GetAllPractitionersForPrincipal([Service] IHttpContextAccessor contextAccessor,
-            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
-            [Service] IGenericRepositoryFactory repoFactory,
-            Practitioner practitioner)
-        {
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
-            var userId = contextAccessor.HttpContext.GetUser().Id;
-            var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: userId);
-            List<Practitioner> practitioners = practitionerRepo.GetAll().Where(x => x.PrincipalHierarchy.Contains(practitioner.UserId)).ToList();
-
-            return practitioners;
-        }
-
-        private List<Child> GetAllChildrenForPrincipal([Service] IHttpContextAccessor contextAccessor,
-        [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
-        [Service] IGenericRepositoryFactory repoFactory,
-        Practitioner practitioner)
-        {
-            
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
-            var userId = contextAccessor.HttpContext.GetUser().Id;
-            var childRepo = repoFactory.CreateRepository<Child>(userContext: userId);
-            List<Child> children = childRepo.GetAll().Where(x => x.Hierarchy.Contains(practitioner.Hierarchy)).ToList();
-
-            return children;
-        }
+        
 
 
 
