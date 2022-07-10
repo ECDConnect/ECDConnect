@@ -1,7 +1,7 @@
 const plugin = require('tailwindcss/plugin');
 
 // purge: ['./src/**/*.{js,jsx,ts,tsx}', './public/index.html'],
-module.exports = {  
+module.exports = {
   important: true,
   mode: 'aot',
   darkMode: false, // or 'media' or 'class'
@@ -13,8 +13,11 @@ module.exports = {
       height: {
         bannerimage: '200px',
       },
+      borderRadius: {
+        10: '0.625rem',
+        15: '0.9375rem',
+      },
       spacing: {
-        10: '10px',
         17: '17px',
         112: '112px',
         116: '116px',
@@ -26,8 +29,8 @@ module.exports = {
         102: '102px',
       },
       fontFamily: {
-        h1: "var(--h1-font)",
-        body: "var(--body-font)",
+        h1: 'var(--h1-font)',
+        body: 'var(--body-font)',
       },
       borderWidth: {
         5: '5px',
@@ -48,6 +51,7 @@ module.exports = {
       },
       colors: {
         primary: 'var(--primary)',
+        primaryAccent1: '#9484BD',
         secondary: 'var(--secondary)',
         tertiary: 'var(--tertiary)',
         textDark: 'var(--textDark)',
@@ -71,7 +75,7 @@ module.exports = {
         infoBb: 'var(--infoBb)',
       },
       backgroundImage: (theme) => ({
-        logo: "url('./assets/logo.svg')",        
+        logo: "url('./assets/logo.svg')",
         bannerx2: "url('./assets/bannerx2.png')",
       }),
       animation: {
@@ -88,6 +92,7 @@ module.exports = {
   variants: {
     extend: {
       opacity: ['disabled'],
+      borderWidth: ['hover', 'focus'],
     },
   },
   plugins: [

@@ -8,10 +8,10 @@ import {
 } from './button.types';
 
 export const solid =
-  'inline-flex items-center border-2 border-transparent text-sm font-normal rounded-md shadow-sm justify-center outline-none';
+  'inline-flex items-center border-2 border-transparent text-sm font-normal shadow-sm justify-center outline-none';
 
 export const outline =
-  'inline-flex items-center border-2 border-solid shadow-sm text-sm font-semibold rounded-md justify-center outline-none';
+  'inline-flex items-center border-2 border-solid shadow-sm text-sm font-semibold justify-center outline-none';
 
 export const ghost =
   'inline-flex items-center text-sm font-semibold justify-center outline-none';
@@ -19,9 +19,9 @@ export const ghost =
 export const disabledSolid = 'bg-uiLight';
 
 export const disabledOutline =
-  'border-uiLight shadow-sm text-sm font-semibold rounded-md text-uiLight bg-white';
+  'border-uiLight shadow-sm text-sm font-semibold text-uiLight bg-white';
 
-export const disabledghost = ' font-semibold text-uiLight';
+export const disabledghost = 'font-semibold text-uiLight';
 
 export const rounded = 'rounded-full';
 
@@ -78,11 +78,22 @@ export const getButtonClassName = (
       break;
     case 'normal':
     default:
-      sizeStyle = 'py-10 px-17';
+      sizeStyle = 'py-2.5 px-17';
       break;
   }
 
-  const roundedStyle = shape === 'round' ? rounded : '';
+  let roundedStyle = shape === 'round' ? rounded : '';
+
+  switch (size) {
+    case 'small':
+      if (roundedStyle) break;
+      roundedStyle = 'rounded-10';
+      break;
+    default:
+      if (roundedStyle) break;
+      roundedStyle = 'rounded-15';
+      break;
+  }
 
   className = classNames(className, sizeStyle, roundedStyle);
 
