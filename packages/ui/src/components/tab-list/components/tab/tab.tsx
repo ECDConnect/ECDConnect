@@ -36,7 +36,7 @@ export function Tab({
     >
       <Typography
         type="body"
-        color={tabIndex === activeIndex ? 'primary' : 'textLight'}
+        color={tabIndex === activeIndex ? 'primary' : 'primaryAccent1'}
         text={title}
         className="font-medium"
       ></Typography>
