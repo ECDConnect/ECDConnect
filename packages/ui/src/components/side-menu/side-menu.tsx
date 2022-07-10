@@ -57,10 +57,13 @@ export const SideMenu: React.FC<SideMenuProps> = ({
                 <div className="absolute top-0 right-0 -mr-12 pt-2">
                   <button
                     type="button"
-                    className="cursor-pointer bg-white z-10 rounded-10 h-10 w-10 p-2 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white" // TODO: fix this to be generic
+                    className="cursor-pointer bg-white flex place-items-center z-10 rounded-10 h-9 w-9 p-2 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white" // TODO: fix this to be generic
                     onClick={() => setSidebarOpen(false)}
                   >
-                    <XIcon className="h-6 w-6" aria-hidden="true" />
+                    <XIcon
+                      className="h-6 w-6 text-primary"
+                      aria-hidden="true"
+                    />
                   </button>
                 </div>
               </Transition.Child>

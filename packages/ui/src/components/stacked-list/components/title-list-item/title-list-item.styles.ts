@@ -3,4 +3,4 @@ export const contentWrapper =
 
 export const title = 'text-xl font-medium text-textDark truncate';
 export const titleChevron = 'h-5 w-5 text-textLight';
-export const titlelistItemContainer = `block border border-r-0 border-l-0 border-b-0 border-solid border-color-textLight block`;
+export const titlelistItemContainer = `block rounded-2xl`;

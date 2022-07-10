@@ -13,7 +13,7 @@ export interface TitleListItemProps {
 export function TitleListItem({ item }: TitleListItemProps) {
   return (
     <div
-      className={styles.titlelistItemContainer}
+      className={classNames(styles.titlelistItemContainer, item.classNames)}
       onClick={() => item.onActionClick()}
     >
       <div className={styles.contentWrapper}>

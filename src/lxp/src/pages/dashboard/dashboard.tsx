@@ -206,7 +206,7 @@ export const Dashboard: React.FC = () => {
 
   return (
     <BannerWrapper
-      backgroundColour={'primary'}
+      backgroundColour={'white'}
       backgroundImageColour={'primary'}
       avatar={
         userProfilePicture?.file ? (
@@ -256,9 +256,7 @@ export const Dashboard: React.FC = () => {
         className={styles.welcomeText}
       />
 
-      <div
-        className={`${!classroom ? styles.wrapper : 'bg-white rounded p-0.5'}`}
-      >
+      <div className={`${!classroom ? styles.wrapper : ''}`}>
         <DashboardItems
           listItems={[
             {
@@ -268,6 +266,7 @@ export const Dashboard: React.FC = () => {
               onActionClick: () => {
                 goToClassroom();
               },
+              classNames: 'bg-uiBg',
             },
             {
               title: 'Business',
@@ -282,6 +281,7 @@ export const Dashboard: React.FC = () => {
                 },
                 text: 'Coming soon',
               },
+              classNames: 'bg-uiBg',
             },
           ]}
           notification={dashboardNotification}
