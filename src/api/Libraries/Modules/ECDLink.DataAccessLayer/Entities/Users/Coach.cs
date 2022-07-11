@@ -29,7 +29,6 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public virtual SiteAddress SiteAddress { get; set; }
         public Guid? SiteAddressId { get; set; }
         public string Signature { get; set; }
-        public string Id { get; set; }
         //[GraphQLIgnore]
         //public string Hierarchy { get; set; }
     }
