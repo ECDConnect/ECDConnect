@@ -26,7 +26,7 @@ import {
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { analyticsActions } from '@store/analytics';
 
-export default function CoachrAccount() {
+export default function CoachAccount() {
   const user = useSelector(userSelectors.getUser);
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();

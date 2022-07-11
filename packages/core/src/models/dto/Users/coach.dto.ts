@@ -1,3 +1,4 @@
+import { SiteAddressDto } from '../SiteAddress';
 import { EntityBase } from '../entity-base';
 import { UserDto } from './user.dto';
 
@@ -7,4 +8,7 @@ export interface CoachDto extends EntityBase {
   areaOfOperation: string;
   secondaryAreaOfOperation: string;
   startDate?: Date;
+  siteAddress?: SiteAddressDto;
+  siteAddressId?: string;
+  signature?: string;
 }

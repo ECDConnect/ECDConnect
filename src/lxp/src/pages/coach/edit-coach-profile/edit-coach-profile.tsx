@@ -45,7 +45,6 @@ export const EditCoachProfile: React.FC = () => {
        * This is unknown right now due to the feature being
        * rewritten.
        */
-
       history.push(ROUTES.ROOT);
     } else {
       showOnlineOnly();

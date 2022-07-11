@@ -11,6 +11,7 @@ import {
   ProfileAvatar,
   renderIcon,
   StackedList,
+  StatusChip,
   Typography,
 } from '@ecdlink/ui';
 import {
@@ -37,7 +38,6 @@ export const CoachAbout: React.FC = () => {
   const [editProfilePictureVisible, setEditProfilePictureVisible] =
     useState(false);
   const [editAddressFieldVisible, setEditAddressFieldVisible] = useState(false);
-  const pictureStorageKey = LocalStorageKeys.practitionerProfilePicture;
   const [listItems, setListItems] = useState<ActionListDataItem[]>([]);
   const [displayError, setDisplayError] = useState<boolean>(false);
   const [editFieldVisible, setEditFieldVisible] = useState(false);
@@ -51,6 +51,8 @@ export const CoachAbout: React.FC = () => {
   const appDispatch = useAppDispatch();
   const history = useHistory();
   const { theme } = useTheme();
+
+  const pictureStorageKey = LocalStorageKeys.coachProfilePicture;
 
   useEffect(() => {
     if (!isOnline) {
@@ -75,13 +77,14 @@ export const CoachAbout: React.FC = () => {
 
   const getDefaultFormvalues = () => {
     if (user) {
-      const tempCoach: CoachAboutModel = {
-        name: user.firstName || '',
-        surname: user.surname || '',
-        cellphone: user.phoneNumber || '',
-        email: user.email,
-      };
-      return tempCoach;
+      // const tempCoach: CoachAboutModel = {
+      //   name: user.firstName || '',
+      //   surname: user.surname || '',
+      //   cellphone: user.phoneNumber || '',
+      //   email: user.email,
+      //   // signature: user.signature || '',
+      // };
+      // return tempCoach;
     } else {
       return initialCoachAboutValues;
     }
@@ -158,6 +161,17 @@ export const CoachAbout: React.FC = () => {
         },
       },
       {
+        title: 'Signature',
+        subTitle: 'Add your signature',
+        switchTextStyles: true,
+        actionName: 'Add',
+        actionIcon: 'PlusIcon',
+        buttonType: 'filled',
+        onActionClick: () => {
+          history.push(ROUTES.COACH.ABOUT.SIGNATURE);
+        },
+      },
+      {
         title: 'Work address',
         subTitle: 'Add a work address',
         switchTextStyles: true,
@@ -197,7 +211,7 @@ export const CoachAbout: React.FC = () => {
       setDisplayError(true);
     } else {
       setEditFieldVisible(false);
-      await saveCoachUserData();
+      saveCoachUserData();
     }
   };
 
@@ -230,8 +244,8 @@ export const CoachAbout: React.FC = () => {
   };
 
   const picturePromptOnAction = async (imageBaseString: string) => {
-    setStorageItem(imageBaseString, pictureStorageKey);
     setEditProfilePictureVisible(!editProfilePictureVisible);
+    setStorageItem(imageBaseString, pictureStorageKey);
 
     const copy = Object.assign({}, user);
     if (copy) {
@@ -266,11 +280,6 @@ export const CoachAbout: React.FC = () => {
     }
   };
 
-  const practitionerInfo =
-    'mr-4 p-4 pt-1 pb-1 bg-infoMain rounded-full text-white text-sm';
-  const childrenInfo =
-    'p-4 pt-1 pb-1 bg-primary rounded-full text-white text-sm';
-
   return (
     <div className={styles.container}>
       <BannerWrapper
@@ -293,9 +302,21 @@ export const CoachAbout: React.FC = () => {
             hasConsent={true}
           />
         </div>
-        <div className={'bg-uiBg flex justify-center mt-4'}>
-          <span className={practitionerInfo}>22 Practitioners</span>
-          <span className={childrenInfo}>120 Children</span>
+        <div className="flex my-4 justify-center">
+          <StatusChip
+            className="mr-2"
+            backgroundColour="infoDark"
+            textColour={'white'}
+            borderColour="infoDark"
+            text="22 Practitioners"
+          />
+          <StatusChip
+            className={'ml-2'}
+            backgroundColour="primary"
+            textColour={'white'}
+            borderColour="primary"
+            text="120 Children"
+          />
         </div>
         <StackedList
           className={'bg-uiBg'}

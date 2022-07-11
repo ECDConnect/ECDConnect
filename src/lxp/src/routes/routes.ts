@@ -57,7 +57,9 @@ const ROUTES = {
     '/download-child-progress-observation-reports',
   COACH_REGISTRATION: '/coach-registration',
   COACH: addPrefix('/coach', {
-    ABOUT: '/about',
+    ABOUT: addPrefix('/about', {
+      SIGNATURE: '/signature',
+    }),
     ACCOUNT: '/account',
     PROFILE: addPrefix('/profile', {
       EDIT: '/edit',

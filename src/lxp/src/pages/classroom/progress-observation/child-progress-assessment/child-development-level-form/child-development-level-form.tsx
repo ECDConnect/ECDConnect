@@ -1,11 +1,4 @@
-<<<<<<< HEAD
 import { capitalizeWords, FormComponentProps } from '@ecdlink/core';
-=======
-import {
-  capitalizeWords,
-  FormComponentProps /* , useDialog */,
-} from '@ecdlink/core';
->>>>>>> 3c5b2c2 (feat(coach): starting to add implementations for coaches)
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
   Alert,

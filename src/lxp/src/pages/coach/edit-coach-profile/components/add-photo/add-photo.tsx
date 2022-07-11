@@ -1,4 +1,14 @@
+import { PhotoPrompt } from '../../../../../components/photo-prompt/photo-prompt';
 import { FileTypeEnum } from '@ecdlink/graphql';
+import * as styles from '../../edit-coach-profile.styles';
+import { userActions, userSelectors } from '@store/user';
+import { useDocuments } from '@hooks/useDocuments';
+import { AddPhotoProps } from './add-photo.types';
+import { DialogPosition } from '@ecdlink/ui';
+import { useSelector } from 'react-redux';
+import { renderIcon } from '@ecdlink/ui';
+import { useAppDispatch } from '@store';
+import { useState } from 'react';
 import {
   Button,
   Dialog,
@@ -6,16 +16,6 @@ import {
   ProfileAvatar,
   Typography,
 } from '@ecdlink/ui';
-import { DialogPosition } from '@ecdlink/ui';
-import { renderIcon } from '@ecdlink/ui';
-import { useState } from 'react';
-import { useSelector } from 'react-redux';
-import { PhotoPrompt } from '../../../../../components/photo-prompt/photo-prompt';
-import { useDocuments } from '@hooks/useDocuments';
-import { useAppDispatch } from '@store';
-import { userActions, userSelectors } from '@store/user';
-import * as styles from '../../edit-coach-profile.styles';
-import { AddPhotoProps } from './add-photo.types';
 
 export const AddPhoto: React.FC<AddPhotoProps> = ({ onSubmit }) => {
   const user = useSelector(userSelectors.getUser);
@@ -29,11 +29,12 @@ export const AddPhoto: React.FC<AddPhotoProps> = ({ onSubmit }) => {
 
   const [editProfilePictureVisible, setEditProfilePictureVisible] =
     useState(false);
+
   const displayProfilePicturePrompt = () => {
     setEditProfilePictureVisible(!editProfilePictureVisible);
   };
 
-  const picturePromtOnAction = async (imageBaseString: string) => {
+  const picturePromptOnAction = async (imageBaseString: string) => {
     setEditProfilePictureVisible(!editProfilePictureVisible);
 
     const copy = Object.assign({}, user);
@@ -117,7 +118,7 @@ export const AddPhoto: React.FC<AddPhotoProps> = ({ onSubmit }) => {
           <PhotoPrompt
             title="Profile Photo"
             onClose={displayProfilePicturePrompt}
-            onAction={picturePromtOnAction}
+            onAction={picturePromptOnAction}
             onDelete={userProfilePicture ? handleDelete : undefined}
           ></PhotoPrompt>
         </div>

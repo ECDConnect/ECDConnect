@@ -233,7 +233,6 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
             className={styles.button}
             disabled={!isValid}
             onClick={handleFormSubmit}
-            // onClick={() => onSubmit(getCoachProfileFormValues())}
           >
             {renderIcon('ArrowCircleRightIcon', styles.icon)}
             <Typography type={'help'} text={'Next'} color={'white'} />

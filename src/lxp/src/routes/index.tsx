@@ -42,6 +42,7 @@ import { CoachRegistration } from '@coach-p/coach-registation/coach-registation'
 import { EditCoachProfile } from '@coach-p/edit-coach-profile/edit-coach-profile';
 import { CoachProfile } from '@coach-p/coach-profile/coach-profile';
 import { CoachAbout } from '@coach-p/coach-about/coach-about';
+import { CoachSignature } from '@coach-p/coach-signature/coach-signature';
 import CoachAccount from '@coach-p/coach-account/coach-account';
 
 import ROUTES from './routes';
@@ -210,7 +211,13 @@ const AuthRoutes: React.FC = () => {
         path={ROUTES.COACH.PROFILE.EDIT}
         component={EditCoachProfile}
       />
-      <Route exact path={ROUTES.COACH.ABOUT} component={CoachAbout} />
+      <Route exact path={ROUTES.COACH.ABOUT.ROOT} component={CoachAbout} />
+      <Route
+        exact
+        path={ROUTES.COACH.ABOUT.SIGNATURE}
+        component={CoachSignature}
+      />
+
       <Route exact path={ROUTES.COACH.ACCOUNT} component={CoachAccount} />
     </Switch>
   );

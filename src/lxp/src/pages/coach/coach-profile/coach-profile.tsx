@@ -53,7 +53,7 @@ export const CoachProfile: React.FC = () => {
 
         showIcon: userProfilePicture?.file === undefined,
         onActionClick: () => {
-          history.push(ROUTES.COACH.ABOUT);
+          history.push(ROUTES.COACH.ABOUT.ROOT);
         },
       },
       {
