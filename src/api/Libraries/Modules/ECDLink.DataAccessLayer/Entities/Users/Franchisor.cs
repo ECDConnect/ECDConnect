@@ -6,7 +6,7 @@ using HotChocolate;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace ECDLink.DataAccessLayer.Entities.Franchisor
+namespace ECDLink.DataAccessLayer.Entities.Users
 {
     [Table(nameof(Franchisor))]
     [EntityPermission(PermissionGroups.USER)]

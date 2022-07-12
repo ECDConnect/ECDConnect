@@ -42,7 +42,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return await invite.SendInviteToApplication(invitationManager, notificationManager, userManager, userId);
         }
 
-        private Practitioner AddPractitionerToCoach([Service] IHttpContextAccessor contextAccessor, 
+        public Practitioner AddPractitionerToCoach([Service] IHttpContextAccessor contextAccessor, 
             [Service] UserManager<ApplicationUser> userManager, 
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
@@ -74,7 +74,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return practitioner;
         }
 
-        private Practitioner DeletePractitionerForPrincipal([Service] IHttpContextAccessor contextAccessor,
+        public Practitioner DeletePractitionerForCoach([Service] IHttpContextAccessor contextAccessor,
             [Service] UserManager<ApplicationUser> userManager,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
@@ -91,6 +91,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             return practitioner;
         }
+
 
     }
 }

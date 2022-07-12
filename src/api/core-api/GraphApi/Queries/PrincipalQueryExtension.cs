@@ -21,45 +21,61 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
     public class PrincipalQueryExtension
     {
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        private List<Practitioner> GetAllPrincipal([Service] IHttpContextAccessor contextAccessor,
-            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
-            [Service] IGenericRepositoryFactory repoFactory)
+        public List<Practitioner> GetAllPrincipal([Service] IHttpContextAccessor contextAccessor,
+        [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+        [Service] IGenericRepositoryFactory repoFactory)
         {
             using var scope = dbFactory.CreateDbContext();
             using var dbContextTransaction = scope.Database.BeginTransaction();
-            var userId = contextAccessor.HttpContext.GetUser().Id;
-            var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: userId);
-            List<Practitioner> principals = practitionerRepo.GetAll().Where(x => x.IsPrincipal == true).ToList();
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var principalRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+            List<Practitioner> principals = principalRepo.GetAll().Where(x => x.IsPrincipal == true).ToList();
 
             return principals;
         }
-        private List<Practitioner> GetAllPractitionersForPrincipal([Service] IHttpContextAccessor contextAccessor,
-            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
-            [Service] IGenericRepositoryFactory repoFactory,
-            Practitioner practitioner)
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public List<Practitioner> GetPrincipalByUserId([Service] IHttpContextAccessor contextAccessor,
+        [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+        [Service] IGenericRepositoryFactory repoFactory,
+        string userId)
         {
             using var scope = dbFactory.CreateDbContext();
             using var dbContextTransaction = scope.Database.BeginTransaction();
-            var userId = contextAccessor.HttpContext.GetUser().Id;
-            var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: userId);
-            List<Practitioner> practitioners = practitionerRepo.GetAll().Where(x => x.PrincipalHierarchy.Contains(practitioner.UserId)).ToList();
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var principalRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+            List<Practitioner> principal = principalRepo.GetAll().Where(x => x.UserId.Contains(userId)).ToList();
+
+            return principal;
+        }
+
+        public List<Practitioner> GetAllPractitionersForPrincipal([Service] IHttpContextAccessor contextAccessor,
+        [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+        [Service] IGenericRepositoryFactory repoFactory,
+        string userId)
+        {
+            using var scope = dbFactory.CreateDbContext();
+            using var dbContextTransaction = scope.Database.BeginTransaction();
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var principalRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+            List<Practitioner> practitioners = principalRepo.GetAll().Where(x => x.PrincipalHierarchy.Contains(userId)).ToList();
 
             return practitioners;
         }
 
-        private List<Child> GetAllChildrenForPrincipal([Service] IHttpContextAccessor contextAccessor,
+        public List<Child> GetAllChildrenForPrincipal([Service] IHttpContextAccessor contextAccessor,
         [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
         [Service] IGenericRepositoryFactory repoFactory,
-        Practitioner practitioner)
+        string userId)
         {
 
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
-            var userId = contextAccessor.HttpContext.GetUser().Id;
-            var childRepo = repoFactory.CreateRepository<Child>(userContext: userId);
-            List<Child> children = childRepo.GetAll().Where(x => x.Hierarchy.Contains(practitioner.Hierarchy)).ToList();
+            //using var scope = dbFactory.CreateDbContext();
+            //using var dbContextTransaction = scope.Database.BeginTransaction();
+            //var userId = contextAccessor.HttpContext.GetUser().Id;
+            //var childRepo = repoFactory.CreateRepository<Child>(userContext: userId);
+            //List<Child> children = childRepo.GetAll().Where(x => x.Hierarchy.Contains(practitioner.Hierarchy)).ToList();
 
-            return children;
+            return new List<Child>();
         }
     }
 }
