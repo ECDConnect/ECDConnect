@@ -35,33 +35,3 @@ const coachPersistConfig = {
 };
 
 export { coachPersistConfig, coachReducer, coachActions };
-
-/* export const mapSiteAddresso = (
-  childCareGiverChildInformationForm?: CareGiverChildInformationFormModel,
-  siteAddress?: SiteAddressDto
-): SiteAddressDto => {
-  if (siteAddress) {
-    return {
-      ...siteAddress,
-      provinceId: childCareGiverChildInformationForm?.provinceId,
-      addressLine1: childCareGiverChildInformationForm?.streetAddress ?? '',
-      addressLine2: childCareGiverChildInformationForm?.suburb ?? '',
-      addressLine3: childCareGiverChildInformationForm?.city ?? '',
-      postalCode: childCareGiverChildInformationForm?.postalCode ?? '',
-      ward: childCareGiverChildInformationForm?.apartmentNumber ?? '',
-    };
-  }
-
-  return {
-    id: newGuid(),
-    isActive: true,
-    insertedDate: new Date().toISOString(),
-    name: '',
-    provinceId: childCareGiverChildInformationForm?.provinceId,
-    addressLine1: childCareGiverChildInformationForm?.streetAddress ?? '',
-    addressLine2: childCareGiverChildInformationForm?.suburb ?? '',
-    addressLine3: childCareGiverChildInformationForm?.city ?? '',
-    postalCode: childCareGiverChildInformationForm?.postalCode ?? '',
-    ward: childCareGiverChildInformationForm?.apartmentNumber ?? '',
-  };
-}; */

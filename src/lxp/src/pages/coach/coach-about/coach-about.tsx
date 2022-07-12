@@ -22,6 +22,7 @@ import {
 import { PhotoPrompt } from '../../../components/photo-prompt/photo-prompt';
 import { DialogFormInput } from '@models/practitioner/DialogFormInput';
 import { setStorageItem } from '@utils/common/local-storage.utils';
+import { coachActions, coachSelectors } from '@store/coach';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { userActions, userSelectors } from '@store/user';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -53,6 +54,9 @@ export const CoachAbout: React.FC = () => {
   const { theme } = useTheme();
 
   const pictureStorageKey = LocalStorageKeys.coachProfilePicture;
+
+  console.log(coachActions);
+  console.log(coachSelectors);
 
   useEffect(() => {
     if (!isOnline) {

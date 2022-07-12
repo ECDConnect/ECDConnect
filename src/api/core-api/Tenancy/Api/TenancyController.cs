@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 namespace EcdLink.Api.CoreApi.Tenancy.Api
 {
     [Route("api/tenancy")]
-    [BasicAuth]
+    // [BasicAuth]
     [ApiController]
     public class TenancyController : ControllerBase
     {
