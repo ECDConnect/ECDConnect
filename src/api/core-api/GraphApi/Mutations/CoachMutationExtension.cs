@@ -66,6 +66,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId.Equals(practi.Id));
                 practitioner.CoachHierarchy = coachId;
                 var updateResult = practitionerRepo.Update(practitioner);
+                ////update nicknames to user
+                //var userRepo = repoFactory.CreateRepository<ApplicationUser>(userContext: userId);
+                //ApplicationUser user = (ApplicationUser)userRepo.GetById(Guid.Parse(practitioner.UserId));
+                //user.NickFirstName = firstName;
+                //user.NickSurname = lastName;
+                //user.NickFullName = firstName + " " + lastName;
+                //var userUpdate = userRepo.Update(user);
             } else
             {
                 //TODO: create user and practitioner with NotYetInvited set and a basic practitioner outline
