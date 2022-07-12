@@ -2,6 +2,7 @@ using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Entities.Caregiver;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
@@ -21,18 +22,29 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
     public class CaregiveQueryExtension
     {
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public List<Practitioner> GetAllCaregiverByPractitioner([Service] IHttpContextAccessor contextAccessor,
+        public List<Caregiver> GetAllCaregiverByPractitioner([Service] IHttpContextAccessor contextAccessor,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
-            Practitioner practitioner)
+            string practitionerId)
         {
             using var scope = dbFactory.CreateDbContext();
             using var dbContextTransaction = scope.Database.BeginTransaction();
-            var userId = contextAccessor.HttpContext.GetUser().Id;
-            var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: userId);
-            List<Practitioner> practitioners = practitionerRepo.GetAll().Where(x => x.PrincipalHierarchy.Contains(practitioner.UserId)).ToList();
-
-            return practitioners;
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
+            var careGiverRepo = repoFactory.CreateRepository<Caregiver>(userContext: uId);
+            var practitionerrRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+            List<Practitioner> practitioner = practitionerrRepo.GetAll().Where(x => x.UserId.Equals(practitionerId)).ToList();
+            List<Child> children = childRepo.GetAll().Where(x => x.Hierarchy.Contains(practitioner.FirstOrDefault().Hierarchy)).ToList();
+            List<Caregiver> caregivers = new List<Caregiver>();
+            foreach (var child in children)
+            {
+                if (child.CaregiverId != null)
+                {
+                    Caregiver cg = careGiverRepo.GetById((Guid)child.CaregiverId);
+                    caregivers.Add(cg);
+                }
+            }
+            return caregivers;
         }
     }
 }
