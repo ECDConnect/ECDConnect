@@ -25,7 +25,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class PrincipalMutationExtension
     {
-        private Practitioner AddPractitionerToPrincipal([Service] IHttpContextAccessor contextAccessor,
+        public Practitioner AddPractitionerToPrincipal([Service] IHttpContextAccessor contextAccessor,
     [Service] UserManager<ApplicationUser> userManager,
     [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
     [Service] IGenericRepositoryFactory repoFactory,
@@ -50,7 +50,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return practitioner;
         }
 
-        private Practitioner DeletePractitionerForPrincipal([Service] IHttpContextAccessor contextAccessor,
+        public Practitioner DeletePractitionerForPrincipal([Service] IHttpContextAccessor contextAccessor,
             [Service] UserManager<ApplicationUser> userManager,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
@@ -68,7 +68,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return practitioner;
         }
 
-        private Practitioner PromotePractitionerToPrincipal([Service] IHttpContextAccessor contextAccessor,
+        public Practitioner PromotePractitionerToPrincipal([Service] IHttpContextAccessor contextAccessor,
              [Service] UserManager<ApplicationUser> userManager,
              [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
              [Service] IGenericRepositoryFactory repoFactory,
@@ -84,7 +84,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return practitioner;
         }
 
-        private Practitioner DemotePractitionerAsPrincipal([Service] IHttpContextAccessor contextAccessor,
+        public Practitioner DemotePractitionerAsPrincipal([Service] IHttpContextAccessor contextAccessor,
              [Service] UserManager<ApplicationUser> userManager,
              [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
              [Service] IGenericRepositoryFactory repoFactory,
