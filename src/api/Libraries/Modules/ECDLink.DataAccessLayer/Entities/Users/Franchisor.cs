@@ -6,7 +6,7 @@ using HotChocolate;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace ECDLink.DataAccessLayer.Entities.Franchisor
+namespace ECDLink.DataAccessLayer.Entities.Users
 {
     [Table(nameof(Franchisor))]
     [EntityPermission(PermissionGroups.USER)]
@@ -14,7 +14,7 @@ namespace ECDLink.DataAccessLayer.Entities.Franchisor
     {
     }
 
-    public class Franchisor<TKey> : EntityBase<TKey>, ApplicationUserJoin, IUserType
+    public class Franchisor<TKey> : EntityBase<TKey>, ApplicationUserJoin//, IUserType
         where TKey : IEquatable<TKey>
     {
         [ForeignKey(nameof(UserId))]
@@ -24,8 +24,8 @@ namespace ECDLink.DataAccessLayer.Entities.Franchisor
         public string SecondaryAreaOfOperation { get; set; }
         public DateTime StartDate { get; set; }
 
-        [GraphQLIgnore]
-        public string Hierarchy { get; set; }
+        //[GraphQLIgnore]
+        //public string Hierarchy { get; set; }
         public Guid? SiteAddressId { get; set; }
     }
 
