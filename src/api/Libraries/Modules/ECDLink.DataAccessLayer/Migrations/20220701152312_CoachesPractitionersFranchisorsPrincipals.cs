@@ -65,6 +65,31 @@ namespace ECDLink.DataAccessLayer.Migrations
             migrationBuilder.AddColumn<string>("NickSurname", "AspNetUsers", "text", nullable: true);
             migrationBuilder.AddColumn<string>("NickFullName", "AspNetUsers", "text", nullable: true);
 
+            migrationBuilder.CreateTable(
+            name: "Absentees",
+            columns: table => new
+            {
+                Id = table.Column<Guid>(type: "uuid", nullable: false),
+                IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                InsertedDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                UpdatedDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                UpdatedBy = table.Column<string>(type: "text", nullable: true),
+                UserId = table.Column<string>(type: "text", nullable: true),
+                Reason = table.Column<string>(type: "text", nullable: true),
+                AbsentDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                LoggedBy = table.Column<string>(type: "text", nullable: true),
+            },
+            constraints: table =>
+            {
+                table.PrimaryKey("PK_Absentees", x => x.Id);
+                table.ForeignKey(
+                    name: "FK_Absentees_AspNetUsers_UserId",
+                    column: x => x.UserId,
+                    principalTable: "AspNetUsers",
+                    principalColumn: "Id",
+                    onDelete: ReferentialAction.Restrict);
+            });
+
             //migrationBuilder.DropPrimaryKey("PK_Learner", "Learner");
             //migrationBuilder.AddPrimaryKey("PK_Learner", "Learner", x => new { x.ClassroomGroupId, x.UserId, x.Id });                      
         }
