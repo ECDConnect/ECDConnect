@@ -78,6 +78,8 @@ namespace ECDLink.DataAccessLayer.Migrations
                 Reason = table.Column<string>(type: "text", nullable: true),
                 AbsentDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                 LoggedBy = table.Column<string>(type: "text", nullable: true),
+                ReassignedClass = table.Column<string>(type: "text", nullable: true),
+                ReassignedToPractitioner = table.Column<string>(type: "text", nullable: true),
             },
             constraints: table =>
             {
