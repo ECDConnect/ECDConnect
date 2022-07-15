@@ -134,7 +134,7 @@ export const DownloadChildProgressReport: React.FC = () => {
           type={'body'}
           className={'mt-4'}
           text={'Tips for sharing the report'}
-          weight={'bolder'}
+          weight={'bold'}
         />
         <div className={'px-5 text-textLight'}>
           <ul className={'list-disc'}>

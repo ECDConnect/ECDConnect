@@ -661,7 +661,7 @@ export const EditChildInformation: React.FC = () => {
             onPressed={displayProfilePicturePrompt}
           />
           <StackedList
-            className={'bg-uiBg w-full'}
+            className={'bg-white w-full'}
             listItems={listItems}
             type={'ActionList'}
           />

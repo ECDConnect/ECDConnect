@@ -128,7 +128,7 @@ export const ContactChildCaregiver: React.FC = () => {
             <Typography
               type="body"
               color={'black'}
-              weight={'bolder'}
+              weight={'bold'}
               text={`If ${childUser?.firstName} is no longer attending your programme, please remove them.`}
             />
             <Button

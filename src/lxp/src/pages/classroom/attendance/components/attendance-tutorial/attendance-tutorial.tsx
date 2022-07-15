@@ -105,7 +105,7 @@ export const AttendanceTutorial = ({
         <Typography
           color={'textDark'}
           type={'body'}
-          weight={'bolder'}
+          weight={'bold'}
           text={'Why take attendance daily?'}
         />
         <Typography
@@ -134,7 +134,7 @@ export const AttendanceTutorial = ({
           className={'mt-4'}
           color={'textDark'}
           type={'body'}
-          weight={'bolder'}
+          weight={'bold'}
           text={'How can I take attendance on Funda App?'}
         />
       </div>
@@ -159,7 +159,7 @@ export const AttendanceTutorial = ({
           className={'mt-4'}
           color={'textDark'}
           type={'body'}
-          weight={'bolder'}
+          weight={'bold'}
           text={
             'How can I see and mark attendance for children from other playgroups?'
           }

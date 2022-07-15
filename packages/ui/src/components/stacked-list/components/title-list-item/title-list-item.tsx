@@ -20,14 +20,14 @@ export function TitleListItem({ item }: TitleListItemProps) {
         <div className={stackedListStyles.textRowsWrapper}>
           <RoundIcon
             icon={item.titleIcon}
-            className={classNames('mr-5', item.titleIconClassName)}
+            className={classNames('mr-4', item.titleIconClassName)}
           />
           <div className={stackedListStyles.paragraphWrapper}>
             <div className={styles.title}>{item.title}</div>
           </div>
         </div>
         {item.chipConfig && (
-          <div className="mr-2">
+          <div>
             <StatusChip
               backgroundColour={item.chipConfig.colorPalette.backgroundColour}
               borderColour={item.chipConfig.colorPalette.borderColour}

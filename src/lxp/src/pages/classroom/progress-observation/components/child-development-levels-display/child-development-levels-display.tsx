@@ -13,7 +13,7 @@ export const ChildDevelopmentLevelsDisplay = ({
       <Typography
         color={'textDark'}
         type={'body'}
-        weight={'bolder'}
+        weight={'bold'}
         text={'Developmental levels'}
       />
       <ChildDevelopmentLevelsList />
