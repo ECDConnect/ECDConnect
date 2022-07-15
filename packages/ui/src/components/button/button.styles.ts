@@ -68,7 +68,7 @@ export const getButtonClassName = (
 
   switch (size) {
     case 'small':
-      sizeStyle = 'py-2 px-3';
+      sizeStyle = 'py-2 px-2';
       break;
     case 'large':
       sizeStyle = 'py-2 px-5';
