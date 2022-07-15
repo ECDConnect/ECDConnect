@@ -285,15 +285,15 @@ export const PasswordReset: React.FC = () => {
               text={'Not able to click the link?'}
             ></Typography>
             <Button
-              type="outlined"
-              color="primary"
+              type="filled"
+              color="secondaryAccent2"
               background="transparent"
               size="small"
               onClick={() => setDisplayCallHelp(true)}
             >
               <Typography
                 type="help"
-                color="primary"
+                color="secondary"
                 text={'Get help'}
               ></Typography>
             </Button>
