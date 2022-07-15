@@ -18,13 +18,18 @@ module.exports = {
         15: '0.9375rem',
       },
       spacing: {
+        13: '13px',
         17: '17px',
+        18: '18px',
+        22: '22px',
+        30: '30px',
         112: '112px',
         116: '116px',
         120: '120px',
         177: '177px',
         180: '180px',
         360: '360px',
+        244: '244px',
         54: '54px',
         102: '102px',
       },
@@ -35,6 +40,9 @@ module.exports = {
       borderWidth: {
         5: '5px',
         10: '10px',
+      },
+      boxShadow: {
+        card: '0px 10px 10px rgba(39, 56, 90, 0.2);'
       },
       minWidth: {
         120: '120px',
@@ -48,12 +56,18 @@ module.exports = {
       },
       lineHeight: {
         1.56: '1.56',
+        snug: '1.375rem'
       },
       colors: {
         primary: 'var(--primary)',
-        primaryAccent1: '#9484BD',
+        primaryAccent1: 'var(--primaryAccent1)',
+        primaryAccent2: 'var(--primaryAccent2)',
         secondary: 'var(--secondary)',
+        secondaryAccent1: 'var(--secondaryAccent1)',
+        secondaryAccent2: 'var(--secondaryAccent2)',
         tertiary: 'var(--tertiary)',
+        tertiaryAccent1: 'var(--tertiaryAccent1)',
+        tertiaryAccent2: 'var(--tertiaryAccent2)',
         textDark: 'var(--textDark)',
         textMid: 'var(--textMid)',
         textLight: 'var(--textLight)',
@@ -73,6 +87,10 @@ module.exports = {
         infoMain: 'var(--infoMain)',
         infoDark: 'var(--infoDark)',
         infoBb: 'var(--infoBb)',
+        modalBg: 'var(--modalBg)',
+        blue: {
+          accent3: '#1DBADF',
+        }
       },
       backgroundImage: (theme) => ({
         logo: "url('./assets/logo.svg')",
