@@ -83,8 +83,8 @@ export const WhiteLabelTheme: DefaultThemeType = {
   faviconUrl: '',
   portalLoginLogoUrl: '',
   portalLoginBackgroundUrl: '',
-  fontUrl: 'Inter, sans-serif',
-  mainHeadingOverrideFontUrl: 'Quicksand, sans-serif',
+  fontUrl: 'Quicksand, sans-serif',
+  mainHeadingOverrideFontUrl: 'Inter, sans-serif',
 };
 
 export const DefaultTheme: DefaultThemeType = {
@@ -122,8 +122,8 @@ export const DefaultTheme: DefaultThemeType = {
   faviconUrl: '',
   portalLoginLogoUrl: '',
   portalLoginBackgroundUrl: '',
-  fontUrl: 'Inter, sans-serif',
-  mainHeadingOverrideFontUrl: 'Quicksand, sans-serif',
+  fontUrl: 'Quicksand, sans-serif',
+  mainHeadingOverrideFontUrl: 'Inter, sans-serif',
 };
 
 export const DefaultAvatarColors = [
