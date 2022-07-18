@@ -3,7 +3,7 @@ import { Colours } from '../../models/Colours';
 import { ButtonGroupTypes } from './models/ButtonGroupTypes';
 
 export const buttonTypeWrapper =
-  'relative z-0 inline-flex rounded-md cursor-pointer w-full';
+  'relative z-0 inline-flex gap-2 cursor-pointer w-full';
 export const chipTypeWrapper = 'relative z-0 inline-flex flex-wrap';
 
 export const chip = (disabled?: boolean) => {
@@ -13,33 +13,24 @@ export const chip = (disabled?: boolean) => {
 };
 
 const sharedButtonStyles = (disabled?: boolean) =>
-  `px-4 py-2 border bg-white text-sm font-medium items-center relative text-center ${
+  `font-body p-3 border bg-primary text-sm font-medium rounded-10 items-center flex items-center justify-center ${
     disabled ? 'bg-uiLight opacity-80' : ''
   }`;
 
-export const firstButton = `rounded-l-md w-full `;
-export const middleButton = `-ml-px w-full`;
-export const lastButton = `-ml-px rounded-r-md bg-black w-full`;
-
 export const notSelectedChip = 'text-textLight border-textLight';
-export const notSelectedButton = 'text-textLight';
+export const notSelectedButton = 'text-secondary';
 
 export const selected = (colour: Colours) => {
   return `z-10 outline-none border-${colour} text-white bg-${colour}`;
 };
 
-export const getOptionStyle = (
-  type: ButtonGroupTypes,
-  index: number,
-  maxIndex: number,
-  disabled?: boolean
-) => {
+export const getOptionStyle = (type: ButtonGroupTypes, disabled?: boolean) => {
   switch (type) {
     case ButtonGroupTypes.Chip:
       return chip(disabled);
     case ButtonGroupTypes.Button:
     default:
-      return getButtonStyleByIndex(index, maxIndex, disabled);
+      return classNames(sharedButtonStyles(disabled), `w-full`);
   }
 };
 
@@ -50,20 +41,5 @@ export const getNotSelectedStyle = (type: ButtonGroupTypes) => {
     case ButtonGroupTypes.Button:
     default:
       return notSelectedButton;
-  }
-};
-
-const getButtonStyleByIndex = (
-  index: number,
-  maxIndex: number,
-  disabled?: boolean
-) => {
-  const sharedStyles = sharedButtonStyles(disabled);
-  if (index === 0) {
-    return classNames(sharedStyles, firstButton);
-  } else if (index < maxIndex) {
-    return classNames(sharedStyles, middleButton);
-  } else {
-    return classNames(sharedStyles, lastButton);
   }
 };
