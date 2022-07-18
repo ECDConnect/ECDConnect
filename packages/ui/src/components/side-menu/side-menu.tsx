@@ -1,11 +1,9 @@
-import { Fragment, useState } from 'react';
+import React, { Fragment, useState } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { XIcon } from '@heroicons/react/outline';
-import React from 'react';
-import { classNames, renderIcon } from '../..';
-import { Divider, Typography } from '..';
 import { SideMenuProps } from './side-menu.types';
-import { Badge } from '../badge/badge';
+import NestedSubMenu from './nested-submenu';
+import SideMenuItem from './side-menu-item';
 
 export const SideMenu: React.FC<SideMenuProps> = ({
   sidebarOpen,
@@ -77,94 +75,21 @@ export const SideMenu: React.FC<SideMenuProps> = ({
               </div>
               <div className="flex flex-col mt-5 flex-1 h-0 overflow-y-auto justify-between">
                 <nav className="px-18 space-y-1.5">
-                  {navigation.map((item) => (
-                    <Fragment key={item.name}>
-                      <div className={`group items-center w-full`}>
-                        {item.showDivider && (
-                          <Divider
-                            className="bg-primaryAccent1"
-                            dividerType="dashed"
-                          />
-                        )}
-                        <div
-                          onClick={() => {
-                            item.nestedChildren
-                              ? openFolder()
-                              : onNavigation(item);
-                          }}
-                          className={classNames(
-                            item.nestedChildren && openSub
-                              ? 'bg-secondaryAccent2 text-primary'
-                              : item.current
-                              ? 'text-white bg-primary'
-                              : 'text-primary',
-                            'h-full flex flex-row items-center p-2.5 text-base font-medium rounded-lg cursor-pointer'
-                          )}
-                        >
-                          <div
-                            className={
-                              'w-1/12 items-center justify-center mr-4 '
-                            }
-                          >
-                            {item.icon &&
-                              renderIcon(item.icon, 'flex-shrink-0 h-6 w-6')}
-                          </div>
-                          <Typography
-                            type={'h4'}
-                            color={
-                              item.nestedChildren && openSub
-                                ? 'primary'
-                                : item.current
-                                ? 'white'
-                                : 'textDark'
-                            }
-                            text={item.name}
-                          />
-                          {item.nestedChildren &&
-                            openSub &&
-                            renderIcon(
-                              'ChevronUpIcon',
-                              'flex-shrink-0 h-6 w-6 ml-auto'
-                            )}
-                          {item.nestedChildren &&
-                            !openSub &&
-                            renderIcon(
-                              'ChevronDownIcon',
-                              'flex-shrink-0 h-6 w-6 ml-auto'
-                            )}
-                          {item.getNotificationCount && (
-                            <div className="ml-auto">
-                              {item.getNotificationCount() > 0 && (
-                                <Badge className="text-white">
-                                  {item.getNotificationCount()}
-                                </Badge>
-                              )}
-                            </div>
-                          )}
-                        </div>
-
-                        {openSub &&
-                          item.nestedChildren?.map((nested) => (
-                            <div
-                              key={nested.name}
-                              onClick={() => onNavigation(nested)}
-                              className="h-full flex flex-row items-center p-2.5 text-base font-medium rounded-lg cursor-pointer"
-                            >
-                              <div
-                                className={
-                                  'w-1/12 items-center justify-center mr-4 '
-                                }
-                              />
-                              <Typography
-                                type={'help'}
-                                color={'textDark'}
-                                text={nested.name}
-                              />
-                            </div>
-                          ))}
-                      </div>
-                    </Fragment>
-                  ))}
+                  {navigation.map((item) =>
+                    item.nestedChildren ? (
+                      <NestedSubMenu
+                        key={item.name}
+                        item={item}
+                        onNavigation={onNavigation}
+                      />
+                    ) : (
+                      <SideMenuItem
+                        key={item.name}
+                        item={item}
+                        onNavigation={onNavigation}
+                      />
+                    )
+                  )}
                 </nav>
               </div>
             </div>
