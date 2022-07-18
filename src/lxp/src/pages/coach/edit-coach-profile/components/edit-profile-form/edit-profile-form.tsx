@@ -1,15 +1,3 @@
-import { FieldPath, useForm, useFormState } from 'react-hook-form';
-import { EditProfileFormProps } from './edit-profile-form.types';
-import * as styles from '../../edit-coach-profile.styles';
-import { staticDataSelectors } from '@store/static-data';
-import { yupResolver } from '@hookform/resolvers/yup';
-import { ProvinceDto } from '@ecdlink/core';
-import { useSelector } from 'react-redux';
-import {
-  EditProfileModel,
-  editProfileSchema,
-} from '@schemas/coach/edit-profile';
-import { useEffect, useState } from 'react';
 import {
   Button,
   ButtonGroup,
@@ -23,44 +11,38 @@ import {
   renderIcon,
 } from '@ecdlink/ui';
 
+import { /* FieldPath,  */ useForm, useFormState } from 'react-hook-form';
+import { EditProfileFormProps } from './edit-profile-form.types';
+import * as styles from '../../edit-coach-profile.styles';
+import { staticDataSelectors } from '@store/static-data';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { ProvinceDto, SiteAddressDto } from '@ecdlink/core';
+import { useSelector } from 'react-redux';
+import {
+  EditCoachProfileModel,
+  editCoachProfileSchema,
+} from '@schemas/coach/edit-profile';
+import { useEffect, useState } from 'react';
+
 export const EditProfileForm: React.FC<EditProfileFormProps> = ({
-  onSubmit,
   coachProfileInformation,
+  onSubmit,
 }) => {
   const provinces = useSelector(staticDataSelectors.getProvinces);
+  const franchisorAddress = coachProfileInformation?.franchisorAddress;
+  const siteAddress = coachProfileInformation?.siteAddress;
 
-  const tmpFranchisorSiteAddress = {
-    name: 'Lima Foundation',
-    apartmentNumber: '',
-    streetAddress: '111 - 113 Oxford Road',
-    suburb: 'Saxonwold',
-    city: 'Johannesburg',
-    provinceId: 'd1a18dc2-8ad7-4417-8cbf-ebf07833f86c',
-    postalCode: '2196',
-  };
-
-  const {
-    getValues: getCoachProfileFormValues,
-    setValue: setCoachProfileFormValue,
-    reset: resetCoachProfileFormValue,
-    register: coachProfileFormRegister,
-    control: coachProfileFormControl,
-    trigger: coachProfileFormTrigger,
-  } = useForm<EditProfileModel>({
-    resolver: yupResolver(editProfileSchema),
-    defaultValues: coachProfileInformation,
-    mode: 'onChange',
-  });
-
-  const { isValid, errors } = useFormState({
-    control: coachProfileFormControl,
-  });
   const [isOfficeAddress, setIsOfficeAddress] = useState<boolean>(
-    coachProfileInformation?.isOfficeAddress || true
+    coachProfileInformation?.siteAddressId ===
+      coachProfileInformation?.franchisorAddressId || false
   );
 
   useEffect(() => {
-    setCoachAddressAsOfficeLocation(isOfficeAddress);
+    if (isOfficeAddress && franchisorAddress) {
+      resetCoachProfileFormValue(franchisorAddress);
+    } else {
+      resetCoachProfileFormValue(siteAddress);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOfficeAddress]);
 
@@ -69,37 +51,61 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
     { text: 'Other location', value: false },
   ];
 
-  const getProvinceNameFromId = (provinceId: string) => {
-    const province = provinces.find((province) => province.id === provinceId);
-    return province?.description;
+  const formatSiteAddressAsText = (siteAddress: SiteAddressDto): string => {
+    const address = siteAddress.ward ? `${siteAddress.ward}<br/>` : '';
+
+    return address.concat(`
+      ${siteAddress.addressLine1}<br/>
+      ${siteAddress.addressLine2}, ${siteAddress?.addressLine3} ${siteAddress?.postalCode}
+      <br/>${siteAddress?.province?.description}`);
   };
 
-  const setCoachAddressAsOfficeLocation = (isAtOfficeAddress: boolean) => {
-    if (isAtOfficeAddress === true) {
-      const keys = Object.keys(tmpFranchisorSiteAddress);
-      for (let key of keys) {
-        if (key !== 'name') {
-          const fieldValue =
-            tmpFranchisorSiteAddress[
-              key as keyof typeof tmpFranchisorSiteAddress
-            ];
-          setCoachProfileFormValue(
-            key as FieldPath<EditProfileModel>,
-            fieldValue,
-            { shouldTouch: true, shouldValidate: true }
-          );
-        }
-      }
-    } else {
-      resetCoachProfileFormValue(coachProfileInformation);
-    }
+  const {
+    getValues: getCoachProfileFormValues,
+    setValue: setCoachProfileFormValue,
+    reset: resetCoachProfileFormValue,
+    register: coachProfileFormRegister,
+    control: coachProfileFormControl,
+  } = useForm<EditCoachProfileModel>({
+    resolver: yupResolver(editCoachProfileSchema),
+    defaultValues: {
+      email: coachProfileInformation?.email || '',
+      ...siteAddress,
+    },
+    mode: 'onChange',
+  });
 
-    coachProfileFormTrigger();
-  };
+  const { isValid, errors } = useFormState({
+    control: coachProfileFormControl,
+  });
 
   const handleFormSubmit = (): void => {
-    if (isValid && onSubmit) {
-      onSubmit(getCoachProfileFormValues());
+    if (isValid /*  && onSubmit */) {
+      const profileFormValues = getCoachProfileFormValues();
+
+      const newCoachProfileInformation = Object.assign(
+        {},
+        coachProfileInformation
+      );
+      newCoachProfileInformation.siteAddress = {
+        name: profileFormValues.name,
+        addressLine1: profileFormValues.addressLine1,
+        addressLine2: profileFormValues.addressLine2,
+        addressLine3: profileFormValues.addressLine3,
+        postalCode: profileFormValues.postalCode,
+        ward: profileFormValues.ward,
+        provinceId: profileFormValues.provinceId,
+        province: profileFormValues.province,
+      };
+
+      newCoachProfileInformation.email = profileFormValues.email;
+
+      if (isOfficeAddress) {
+        newCoachProfileInformation.siteAddressId =
+          coachProfileInformation?.franchisorAddressId;
+      }
+
+      onSubmit(newCoachProfileInformation);
     }
   };
 
@@ -112,7 +118,7 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
         className={'my-3'}
       />
       <div className="space-y-4">
-        <FormInput<EditProfileModel>
+        <FormInput<EditCoachProfileModel>
           label={'Email address?'}
           register={coachProfileFormRegister}
           nameProp={'email'}
@@ -126,7 +132,6 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
             <ButtonGroup
               options={isAtOfficeLocation}
               onOptionSelected={(value: boolean | boolean[]) => {
-                setCoachProfileFormValue('isOfficeAddress', value as boolean);
                 setIsOfficeAddress(value as boolean);
               }}
               selectedOptions={isOfficeAddress}
@@ -138,59 +143,56 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
           </div>
         </div>
 
-        {isOfficeAddress === true && (
-          <div>
-            <h5>{tmpFranchisorSiteAddress.name}</h5>
-            <p>
-              {tmpFranchisorSiteAddress.apartmentNumber.length > 0 && (
-                <>
-                  {tmpFranchisorSiteAddress.apartmentNumber}
-                  <br />
-                </>
-              )}
-              {tmpFranchisorSiteAddress.streetAddress}
-              <br />
-              {tmpFranchisorSiteAddress.suburb}, {tmpFranchisorSiteAddress.city}{' '}
-              {tmpFranchisorSiteAddress.postalCode}
-              <br />
-              {getProvinceNameFromId(tmpFranchisorSiteAddress.provinceId)}
-            </p>
-          </div>
+        {isOfficeAddress && franchisorAddress && (
+          <>
+            <Typography
+              type={'h5'}
+              text={franchisorAddress.name}
+              color={'textDark'}
+              className={'my-3'}
+            />
+            <Typography
+              type={'body'}
+              text={formatSiteAddressAsText(franchisorAddress)}
+              color={'textDark'}
+              hasMarkup={true}
+            />
+          </>
         )}
 
-        {isOfficeAddress === false && (
+        {!isOfficeAddress && (
           <>
-            <FormInput<EditProfileModel>
+            <FormInput<EditCoachProfileModel>
               label={'Flat / unit / apartment number'}
               hint={'Optional'}
               register={coachProfileFormRegister}
-              nameProp={'apartmentNumber'}
+              nameProp={'ward'}
               placeholder={'203 Oak Apartments'}
-              error={errors['apartmentNumber']}
+              error={errors['ward']}
               type={'text'}
             />
-            <FormInput<EditProfileModel>
+            <FormInput<EditCoachProfileModel>
               label={'Street address'}
               register={coachProfileFormRegister}
-              nameProp={'streetAddress'}
+              nameProp={'addressLine1'}
               placeholder={'e.g. 11 Green Road'}
-              error={errors['streetAddress']}
+              error={errors['addressLine1']}
               type={'text'}
             />
-            <FormInput<EditProfileModel>
+            <FormInput<EditCoachProfileModel>
               label={'Suburb / area'}
               register={coachProfileFormRegister}
-              nameProp={'suburb'}
+              nameProp={'addressLine2'}
               placeholder={'e.g. Mamelodi East'}
-              error={errors['suburb']}
+              error={errors['addressLine2']}
               type={'text'}
             />
-            <FormInput<EditProfileModel>
+            <FormInput<EditCoachProfileModel>
               label={'City'}
               register={coachProfileFormRegister}
-              nameProp={'city'}
+              nameProp={'addressLine3'}
               placeholder={'e.g. Cape Town'}
-              error={errors['city']}
+              error={errors['addressLine3']}
               type={'text'}
             />
             <Dropdown
@@ -214,7 +216,7 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
                 });
               }}
             />
-            <FormInput<EditProfileModel>
+            <FormInput<EditCoachProfileModel>
               label={'Postal Code'}
               register={coachProfileFormRegister}
               nameProp={'postalCode'}

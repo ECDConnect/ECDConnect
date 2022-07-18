@@ -1,4 +1,4 @@
-import { CoachDto } from '@ecdlink/core';
+import { CoachDto /* , PractitionerDto */ } from '@ecdlink/core';
 import { Config } from '@ecdlink/core';
 import { api } from '../axios.helper';
 
@@ -9,22 +9,79 @@ class CoachService {
     this._accessToken = accessToken;
   }
 
-  async getCoachById(id: number): Promise<CoachDto> {
+  /* async getAllPractionersForCoachId(userId: string): Promise<PractitionerDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-        query GetCoachById($id: Int) {
-          GetCoachById(id: $id) {
+        query allPractitionersForCoach($userId: String) {
+          allPractitionersForCoach(userId: $userId) {
             id
             user {
-              firstName
-              surname
+              id
+              userName
               email
               isSouthAfricanCitizen
               verifiedByHomeAffairs
+              dateOfBirth
+              idNumber            
+              firstName
+              surname
+              fullName
+              contactPreference
+              genderId
+              phoneNumber
+              profileImageUrl
+              roles {
+                id
+                name
+              }
             }
+          }
+        }
+      `,
+      variables: {
+        userId: userId,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error('Get Practitioners for Coach Failed - Server connection error');
+    }
+
+    return response.data.data;
+  } */
+
+  async getCoachByUserId(userId: string): Promise<CoachDto> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        query coachByUserId($userId: String) {
+          coachByUserId(userId: $userId) {
+            id
+            user {
+              id
+              userName
+              email
+              isSouthAfricanCitizen
+              verifiedByHomeAffairs
+              dateOfBirth
+              idNumber            
+              firstName
+              surname
+              fullName
+              contactPreference
+              genderId
+              phoneNumber
+              profileImageUrl
+              roles {
+                id
+                name
+              }
+            }
+            siteAddressId
             siteAddress {
               id
+              provinceId
               province {
                 id
                 description
@@ -35,13 +92,32 @@ class CoachService {
               addressLine3
               postalCode
               ward
-            }            
+            }
+            franchisorId
+            franchisor {
+              siteAddressId
+              siteAddress {
+                id
+                provinceId
+                province {
+                  id
+                  description
+                }
+                name
+                addressLine1
+                addressLine2
+                addressLine3
+                postalCode
+                ward
+              }
+            } 
             startDate
+            signature
           }
         }
       `,
       variables: {
-        id: id,
+        userId: userId,
       },
     });
 
@@ -49,7 +125,7 @@ class CoachService {
       throw new Error('Get Coach Failed - Server connection error');
     }
 
-    return response.data.data.GetCoachById;
+    return response.data.data.coachByUserId[0];
   }
 }
 

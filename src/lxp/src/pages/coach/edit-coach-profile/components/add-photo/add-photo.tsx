@@ -1,7 +1,7 @@
 import { PhotoPrompt } from '../../../../../components/photo-prompt/photo-prompt';
 import { FileTypeEnum } from '@ecdlink/graphql';
+import { coachActions, coachSelectors } from '@store/coach';
 import * as styles from '../../edit-coach-profile.styles';
-import { userActions, userSelectors } from '@store/user';
 import { useDocuments } from '@hooks/useDocuments';
 import { AddPhotoProps } from './add-photo.types';
 import { DialogPosition } from '@ecdlink/ui';
@@ -18,7 +18,7 @@ import {
 } from '@ecdlink/ui';
 
 export const AddPhoto: React.FC<AddPhotoProps> = ({ onSubmit }) => {
-  const user = useSelector(userSelectors.getUser);
+  const coach = useSelector(coachSelectors.getCoach);
   const appDispatch = useAppDispatch();
   const {
     userProfilePicture,
@@ -37,18 +37,21 @@ export const AddPhoto: React.FC<AddPhotoProps> = ({ onSubmit }) => {
   const picturePromptOnAction = async (imageBaseString: string) => {
     setEditProfilePictureVisible(!editProfilePictureVisible);
 
-    const copy = Object.assign({}, user);
+    const copy = Object.assign({}, coach);
     if (copy) {
-      copy.profileImageUrl = imageBaseString;
-      appDispatch(userActions.updateUser(copy));
+      const tmpUser = Object.assign({}, copy.user);
+      tmpUser.profileImageUrl = imageBaseString;
+      copy.user = tmpUser;
+
+      appDispatch(coachActions.updateCoach(copy));
     }
 
     if (!userProfilePicture) {
       await createNewDocument({
         data: imageBaseString,
-        userId: user?.id || '',
+        userId: coach!.user?.id || '',
         fileType: FileTypeEnum.ProfileImage,
-        fileName: `ProfilePicture_${user?.id}.png`,
+        fileName: `ProfilePicture_${coach!.user?.id}.png`,
       });
     } else {
       updateDocument(userProfilePicture, imageBaseString);

@@ -3,25 +3,29 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import { RootState, ThunkApiType } from '../types';
 import { CoachDto } from '@ecdlink/core';
 
-export const getCoachById = createAsyncThunk<
+export const getCoachByUserId = createAsyncThunk<
   CoachDto,
-  { id: number },
+  {},
   ThunkApiType<RootState>
 >(
-  'getCoachById',
+  'getCoachByUserId',
   // eslint-disable-next-line no-empty-pattern
-  async ({ id }, { getState, rejectWithValue }) => {
+  async ({}, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
       coach: { coach: coachCache },
     } = getState();
+
+    console.log(coachCache);
 
     if (!coachCache) {
       try {
         let coach: CoachDto | undefined;
 
         if (userAuth?.auth_token) {
-          coach = await new CoachService(userAuth?.auth_token).getCoachById(id);
+          coach = await new CoachService(userAuth?.auth_token).getCoachByUserId(
+            userAuth.id
+          );
         } else {
           return rejectWithValue('no access token, profile check required');
         }

@@ -1,9 +1,8 @@
-import { FranchisorDto } from './franchisor.dto';
 import { SiteAddressDto } from '../SiteAddress';
 import { EntityBase } from '../entity-base';
 import { UserDto } from './user.dto';
 
-export interface CoachDto extends EntityBase {
+export interface FranchisorDto extends EntityBase {
   user?: UserDto;
   userId?: string;
   areaOfOperation: string;
@@ -11,7 +10,4 @@ export interface CoachDto extends EntityBase {
   startDate?: Date;
   siteAddress?: SiteAddressDto;
   siteAddressId?: string;
-  signature?: string;
-  franchisorId?: string;
-  franchisor?: FranchisorDto;
 }

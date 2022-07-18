@@ -7,13 +7,7 @@ export interface CoachAboutModel {
   cellphone: string;
   email: string;
   signature?: string;
-  addressName?: string;
-  apartmentNumber?: string;
-  streetAddress: string;
-  suburb: string;
-  city: string;
-  provinceId: string;
-  postalCode?: string;
+  address?: string;
 }
 
 export const initialCoachAboutValues: CoachAboutModel = {
@@ -22,13 +16,7 @@ export const initialCoachAboutValues: CoachAboutModel = {
   cellphone: '',
   email: '',
   signature: '',
-  addressName: '',
-  apartmentNumber: '',
-  streetAddress: '',
-  suburb: '',
-  city: '',
-  provinceId: '',
-  postalCode: '',
+  address: '',
 };
 
 export const coachAboutModelSchema = Yup.object().shape({
@@ -41,11 +29,5 @@ export const coachAboutModelSchema = Yup.object().shape({
     .email('Please enter a valid email address')
     .required('Email is required'),
   signature: Yup.string().optional(),
-  addressName: Yup.string().optional(),
-  apartmentNumber: Yup.string().optional(),
-  streetAddress: Yup.string().required('Street address is required'),
-  suburb: Yup.string().required('Suburb is required'),
-  city: Yup.string().required('City is required'),
-  provinceId: Yup.string().required('Please select a province'),
-  postalCode: Yup.string().required('Postal code is required'),
+  address: Yup.string().optional(),
 });

@@ -42,6 +42,7 @@ import {
 import { settingActions, settingThunkActions } from './store/settings';
 import { staticDataActions, staticDataThunkActions } from './store/static-data';
 import { userActions, userThunkActions } from './store/user';
+import { coachActions, coachThunkActions } from './store/coach';
 import { analyticsActions } from './store/analytics';
 
 type IntialStoreSetupContextValues = {
@@ -98,6 +99,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     await appDispatch(notesActions.resetNotesState());
     await appDispatch(classroomsActions.resetClassroomState());
     await appDispatch(userActions.resetUserState());
+    await appDispatch(coachActions.resetCoachState());
     await appDispatch(childrenActions.resetChildrenState());
     await appDispatch(caregiverActions.resetCaregiverState());
     await appDispatch(documentActions.resetDocumentsState());
@@ -129,6 +131,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     ).unwrap();
     await appDispatch(userThunkActions.getUser({})).unwrap();
     await appDispatch(userThunkActions.getUserConsents({})).unwrap();
+    await appDispatch(coachThunkActions.getCoachByUserId({})).unwrap();
     await appDispatch(childrenThunkActions.getChildren({})).unwrap();
     await appDispatch(caregiverThunkActions.getCaregivers({})).unwrap();
     await appDispatch(documentThunkActions.getDocuments({})).unwrap();

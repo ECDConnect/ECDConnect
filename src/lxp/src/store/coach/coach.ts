@@ -1,10 +1,12 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { getCoachById } from './coach.actions';
+import { getCoachByUserId } from './coach.actions';
 import { CoachState } from './coach.types';
 import { CoachDto } from '@ecdlink/core';
 import localForage from 'localforage';
 
-const initialState: CoachState = {};
+const initialState: CoachState = {
+  coach: undefined,
+};
 
 const coachSlice = createSlice({
   name: 'coach',
@@ -20,7 +22,7 @@ const coachSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    builder.addCase(getCoachById.fulfilled, (state, action) => {
+    builder.addCase(getCoachByUserId.fulfilled, (state, action) => {
       state.coach = action.payload;
     });
   },

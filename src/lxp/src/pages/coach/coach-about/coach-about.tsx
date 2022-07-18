@@ -1,4 +1,4 @@
-import { LocalStorageKeys, UserDto, useTheme } from '@ecdlink/core';
+import { LocalStorageKeys, CoachDto, useTheme } from '@ecdlink/core';
 import { FileTypeEnum } from '@ecdlink/graphql';
 import * as styles from './coach-about.styles';
 import {
@@ -24,7 +24,6 @@ import { DialogFormInput } from '@models/practitioner/DialogFormInput';
 import { setStorageItem } from '@utils/common/local-storage.utils';
 import { coachActions, coachSelectors } from '@store/coach';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import { userActions, userSelectors } from '@store/user';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { analyticsActions } from '@store/analytics';
 import { useDocuments } from '@hooks/useDocuments';
@@ -38,25 +37,21 @@ import ROUTES from '@routes/routes';
 export const CoachAbout: React.FC = () => {
   const [editProfilePictureVisible, setEditProfilePictureVisible] =
     useState(false);
-  const [editAddressFieldVisible, setEditAddressFieldVisible] = useState(false);
   const [listItems, setListItems] = useState<ActionListDataItem[]>([]);
   const [displayError, setDisplayError] = useState<boolean>(false);
   const [editFieldVisible, setEditFieldVisible] = useState(false);
+  const { isOnline } = useOnlineStatus();
+  const appDispatch = useAppDispatch();
+  const history = useHistory();
+  const { theme } = useTheme();
   const {
     createNewDocument,
     deleteDocument,
     updateDocument,
     userProfilePicture,
   } = useDocuments();
-  const { isOnline } = useOnlineStatus();
-  const appDispatch = useAppDispatch();
-  const history = useHistory();
-  const { theme } = useTheme();
 
   const pictureStorageKey = LocalStorageKeys.coachProfilePicture;
-
-  console.log(coachActions);
-  console.log(coachSelectors);
 
   useEffect(() => {
     if (!isOnline) {
@@ -70,25 +65,27 @@ export const CoachAbout: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOnline]);
 
-  const user = useSelector(userSelectors.getUser);
+  const coach = useSelector(coachSelectors.getCoach);
 
   useEffect(() => {
-    if (user) {
-      setNewStackListItems(user);
+    if (coach) {
+      setNewStackListItems(coach);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+  }, [coach]);
 
   const getDefaultFormvalues = () => {
-    if (user) {
-      // const tempCoach: CoachAboutModel = {
-      //   name: user.firstName || '',
-      //   surname: user.surname || '',
-      //   cellphone: user.phoneNumber || '',
-      //   email: user.email,
-      //   // signature: user.signature || '',
-      // };
-      // return tempCoach;
+    if (coach) {
+      const tmpCoach: CoachAboutModel = {
+        name: coach.user?.firstName || '',
+        surname: coach.user?.surname || '',
+        cellphone: coach.user?.phoneNumber || '',
+        email: coach.user?.email || '',
+        signature: coach.signature || '',
+        address: coach.siteAddressId || '',
+      };
+
+      return tmpCoach;
     } else {
       return initialCoachAboutValues;
     }
@@ -104,11 +101,25 @@ export const CoachAbout: React.FC = () => {
     mode: 'onChange',
   });
 
-  const setNewStackListItems = (currentUser: UserDto) => {
+  const formatSiteAddressAsText = (user: CoachDto): string => {
+    if (!user || !user.siteAddressId || !user.siteAddress)
+      return 'Add a work address';
+
+    const address = user.siteAddress.ward?.length
+      ? `${user.siteAddress.ward}<br/>`
+      : '';
+
+    return address.concat(`
+      ${user.siteAddress.addressLine1}<br/>
+      ${user.siteAddress.addressLine2}, ${user.siteAddress.addressLine3} ${user.siteAddress.postalCode}
+      <br/>${user.siteAddress.province?.description}`);
+  };
+
+  const setNewStackListItems = (currentUser: CoachDto) => {
     const list: ActionListDataItem[] = [
       {
         title: 'First Name',
-        subTitle: currentUser?.firstName,
+        subTitle: currentUser?.user?.firstName,
         actionName: 'Edit',
         actionIcon: 'PencilIcon',
         switchTextStyles: true,
@@ -122,7 +133,7 @@ export const CoachAbout: React.FC = () => {
       },
       {
         title: 'Surname',
-        subTitle: currentUser?.surname,
+        subTitle: currentUser?.user?.surname,
         actionName: 'Edit',
         actionIcon: 'PencilIcon',
         switchTextStyles: true,
@@ -136,11 +147,11 @@ export const CoachAbout: React.FC = () => {
       },
       {
         title: 'Cellphone Number',
-        subTitle: currentUser?.phoneNumber || 'Add an Cellphone Number',
+        subTitle: currentUser?.user?.phoneNumber || 'Add an Cellphone Number',
         switchTextStyles: true,
-        actionName: currentUser?.phoneNumber ? 'Edit' : 'Add',
-        actionIcon: currentUser?.phoneNumber ? 'PencilIcon' : 'PlusIcon',
-        buttonType: currentUser?.phoneNumber ? 'outlined' : 'filled',
+        actionName: currentUser?.user?.phoneNumber ? 'Edit' : 'Add',
+        actionIcon: currentUser?.user?.phoneNumber ? 'PencilIcon' : 'PlusIcon',
+        buttonType: currentUser?.user?.phoneNumber ? 'outlined' : 'filled',
         onActionClick: () => {
           editField({
             label: 'Cellphone Number',
@@ -151,11 +162,11 @@ export const CoachAbout: React.FC = () => {
       },
       {
         title: 'Email address',
-        subTitle: currentUser?.email || 'Add an Email Address',
+        subTitle: currentUser?.user?.email || 'Add an Email Address',
         switchTextStyles: true,
-        actionName: currentUser?.email ? 'Edit' : 'Add',
-        actionIcon: currentUser?.email ? 'PencilIcon' : 'PlusIcon',
-        buttonType: currentUser?.email ? 'outlined' : 'filled',
+        actionName: currentUser?.user?.email ? 'Edit' : 'Add',
+        actionIcon: currentUser?.user?.email ? 'PencilIcon' : 'PlusIcon',
+        buttonType: currentUser?.user?.email ? 'outlined' : 'filled',
         onActionClick: () => {
           editField({
             label: 'Email Address',
@@ -177,32 +188,18 @@ export const CoachAbout: React.FC = () => {
       },
       {
         title: 'Work address',
-        subTitle: 'Add a work address',
+        subTitle: formatSiteAddressAsText(currentUser),
         switchTextStyles: true,
-        actionName: currentUser?.email ? 'Edit' : 'Add',
-        actionIcon: currentUser?.email ? 'PencilIcon' : 'PlusIcon',
-        buttonType: currentUser?.email ? 'outlined' : 'filled',
+        hasMarkup: true,
+        actionName: currentUser?.siteAddressId ? 'Edit' : 'Add',
+        actionIcon: currentUser?.siteAddressId ? 'PencilIcon' : 'PlusIcon',
+        buttonType: currentUser?.siteAddressId ? 'outlined' : 'filled',
         onActionClick: () => {
-          addressEditField({
-            label: 'Address',
-            formFieldName: 'email',
-            value: coachAboutFormGetValues().email,
-          });
+          history.push(ROUTES.COACH.ABOUT.ADDRESS);
         },
       },
     ];
     setListItems(list);
-  };
-
-  const addressEditField = (
-    formInputToLoad: DialogFormInput<CoachAboutModel>
-  ): void => {
-    setDialogFormInput(formInputToLoad);
-    setEditAddressFieldVisible(true);
-  };
-
-  const closeAddressEditField = () => {
-    setEditAddressFieldVisible(false);
   };
 
   const editField = (formInputToLoad: DialogFormInput<CoachAboutModel>) => {
@@ -238,10 +235,10 @@ export const CoachAbout: React.FC = () => {
   const deleteProfilePicture = () => {
     if (userProfilePicture) deleteDocument(userProfilePicture);
 
-    const copy = Object.assign({}, user);
+    const copy = Object.assign({}, coach);
     if (copy) {
-      copy.profileImageUrl = '';
-      appDispatch(userActions.updateUser(copy));
+      copy.user!.profileImageUrl = '';
+      appDispatch(coachActions.updateCoach(copy));
     }
 
     setEditProfilePictureVisible(!editProfilePictureVisible);
@@ -251,18 +248,21 @@ export const CoachAbout: React.FC = () => {
     setEditProfilePictureVisible(!editProfilePictureVisible);
     setStorageItem(imageBaseString, pictureStorageKey);
 
-    const copy = Object.assign({}, user);
+    const copy = Object.assign({}, coach);
     if (copy) {
-      copy.profileImageUrl = imageBaseString;
-      appDispatch(userActions.updateUser(copy));
+      const tmpUser = Object.assign({}, copy.user);
+      tmpUser.profileImageUrl = imageBaseString;
+      copy.user = tmpUser;
+
+      appDispatch(coachActions.updateCoach(copy));
     }
 
     if (!userProfilePicture) {
       await createNewDocument({
         data: imageBaseString,
-        userId: user?.id || '',
+        userId: coach!.user?.id || '',
         fileType: FileTypeEnum.ProfileImage,
-        fileName: `ProfilePicture_${user?.id}.png`,
+        fileName: `ProfilePicture_${coach!.user?.id}.png`,
       });
     } else {
       updateDocument(userProfilePicture, imageBaseString);
@@ -271,15 +271,17 @@ export const CoachAbout: React.FC = () => {
 
   const saveCoachUserData = () => {
     const coachForm = coachAboutFormGetValues();
-    const copy = Object.assign({}, user);
+    const copy = Object.assign({}, coach);
     if (copy) {
-      copy.firstName = coachForm.name;
-      copy.surname = coachForm.surname;
-      copy.phoneNumber = coachForm.cellphone;
-      copy.email = coachForm.email;
+      const tmpUser = Object.assign({}, copy.user);
+      tmpUser.firstName = coachForm.name;
+      tmpUser.surname = coachForm.surname;
+      tmpUser.phoneNumber = coachForm.cellphone;
+      tmpUser.email = coachForm.email;
 
-      appDispatch(userActions.updateUser(copy));
+      copy.user = tmpUser;
 
+      appDispatch(coachActions.updateCoach(copy));
       setNewStackListItems(copy);
     }
   };
@@ -395,27 +397,6 @@ export const CoachAbout: React.FC = () => {
             onAction={picturePromptOnAction}
             onDelete={userProfilePicture ? deleteProfilePicture : undefined}
           ></PhotoPrompt>
-        </div>
-      </Dialog>
-      <Dialog
-        stretch={true}
-        borderRadius="normal"
-        position={DialogPosition.Full}
-        visible={editAddressFieldVisible}
-      >
-        <div className={'p-4'}>
-          <div className={styles.labelContainer}>
-            <Typography
-              type="body"
-              className=""
-              color="textDark"
-              text={dialogFormInput.label}
-              weight="bold"
-            ></Typography>
-            <div onClick={closeAddressEditField}>
-              {renderIcon('XIcon', 'h-6 w-6 text-uiLight')}
-            </div>
-          </div>
         </div>
       </Dialog>
     </div>

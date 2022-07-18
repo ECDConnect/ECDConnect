@@ -1,37 +1,37 @@
+import { ActionModal, BannerWrapper, DialogPosition } from '@ecdlink/ui';
+
 import { EditProfileForm } from './components/edit-profile-form/edit-profile-form';
 import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
-import { ActionModal, BannerWrapper, DialogPosition } from '@ecdlink/ui';
-import { EditProfileModel } from '@schemas/coach/edit-profile';
+import { EditProfileInformationModel } from '@schemas/coach/edit-profile';
 import { EditCoachSteps } from './edit-coach-profile.types';
 import { AddPhoto } from './components/add-photo/add-photo';
+import { coachActions, coachSelectors } from '@store/coach';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useHistory } from 'react-router-dom';
-import { userSelectors } from '@store/user';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { IonContent } from '@ionic/react';
 import { useDialog } from '@ecdlink/core';
+import { useAppDispatch } from '@store';
 import ROUTES from '@routes/routes';
 
 export const EditCoachProfile: React.FC = () => {
   const [activeStep, setActiveStep] = useState(EditCoachSteps.completeProfile);
-
-  const user = useSelector(userSelectors.getUser);
   const { isOnline } = useOnlineStatus();
   const [label, setLabel] = useState('');
+  const appDispatch = useAppDispatch();
   const history = useHistory();
   const dialog = useDialog();
 
+  const coach = useSelector(coachSelectors.getCoach);
+
   const [coachProfileInformation, setCoachProfileInformation] =
-    useState<EditProfileModel>({
-      email: user?.email || '',
-      isOfficeAddress: true,
-      apartmentNumber: '',
-      streetAddress: '',
-      suburb: '',
-      city: '',
-      provinceId: '',
-      postalCode: '',
+    useState<EditProfileInformationModel>({
+      email: coach?.user?.email || '',
+      siteAddress: coach?.siteAddress,
+      siteAddressId: coach?.siteAddressId,
+      franchisorAddress: coach?.franchisor?.siteAddress,
+      franchisorAddressId: coach?.franchisor?.siteAddressId,
     });
 
   useEffect(() => {
@@ -40,11 +40,15 @@ export const EditCoachProfile: React.FC = () => {
 
   const onAllStepsComplete = async () => {
     if (isOnline) {
-      /**
-       * Save the profile to the backend database here.
-       * This is unknown right now due to the feature being
-       * rewritten.
-       */
+      const newCoachObj = Object.assign({}, coach);
+      newCoachObj.siteAddress = coachProfileInformation.siteAddress;
+      newCoachObj.siteAddressId = coachProfileInformation.siteAddressId;
+
+      const user = Object.assign({}, newCoachObj.user);
+      user.email = coachProfileInformation.email;
+
+      appDispatch(coachActions.updateCoach(newCoachObj));
+
       history.push(ROUTES.ROOT);
     } else {
       showOnlineOnly();

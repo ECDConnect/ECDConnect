@@ -4,7 +4,7 @@ import { useStoreSetup } from '@hooks/useStoreSetup';
 import { analyticsActions } from '@store/analytics';
 import { useDocuments } from '@hooks/useDocuments';
 import { useHistory } from 'react-router-dom';
-import { userSelectors } from '@store/user';
+import { coachSelectors } from '@store/coach';
 import { useSelector } from 'react-redux';
 import { useDialog } from '@ecdlink/core';
 import { useAppDispatch } from '@store';
@@ -22,12 +22,13 @@ import {
 
 export const CoachProfile: React.FC = () => {
   const { resetAuth, resetAppStaticStores } = useStoreSetup();
-  const user = useSelector(userSelectors.getUser);
   const { userProfilePicture } = useDocuments();
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
   const history = useHistory();
   const dialog = useDialog();
+
+  const coach = useSelector(coachSelectors.getCoach);
 
   useEffect(() => {
     if (!isOnline) {
@@ -44,7 +45,7 @@ export const CoachProfile: React.FC = () => {
   const getStackedMenuList = (): MenuListDataItem[] => {
     const stackedMenuList: MenuListDataItem[] = [
       {
-        title: `${user?.firstName} ${user?.surname}`,
+        title: `${coach?.user?.firstName} ${coach?.user?.surname}`,
         subTitle: 'About me',
         menuIconUrl: userProfilePicture?.file,
         menuIcon: 'UserIcon',
@@ -123,13 +124,10 @@ export const CoachProfile: React.FC = () => {
     return stackedMenuList;
   };
 
-  const isProfileComplete = false;
-  // (
-  //   user &&
-  //   user!.firstName.length > 0 &&
-  //   user!.surname.length > 0 &&
-  //   user!.phoneNumber.length > 0
-  // );
+  const isProfileComplete =
+    !!coach?.user?.firstName &&
+    !!coach?.user?.surname &&
+    !!coach?.user?.phoneNumber;
 
   const tabItem: TabItem[] = [
     {
@@ -151,7 +149,7 @@ export const CoachProfile: React.FC = () => {
     <BannerWrapper
       size="normal"
       renderBorder={true}
-      title={`${user?.firstName} ${user?.surname}`}
+      title={`${coach?.user?.firstName} ${coach?.user?.surname}`}
       color={'primary'}
       onBack={() => history.push(ROUTES.ROOT)}
       backgroundColour="uiBg"
