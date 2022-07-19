@@ -105,15 +105,17 @@ export const ListItem: React.FC<ListItemProps> = ({
           (iconImageSrc ? (
             <div
               style={{ backgroundColor: iconImageBackgroundColor }}
-              className={`p-3 rounded-full mr-4`}
+              className={`p-4 rounded-full mr-4`}
             >
-              <img src={iconImageSrc} className={'w-5 h-5'} />
+              <img src={iconImageSrc} className={'w-22 h-22'} />
             </div>
           ) : (
-            <div className={`bg-${iconBackgroundColor} p-3 rounded-full mr-4`}>
+            <div
+              className={`bg-${iconBackgroundColor} rounded-full mr-4 w-12 h-12 p-13`}
+            >
               {renderIcon(
                 iconName || 'InformationIcon',
-                `w-5 h-5 text-${iconColor}`
+                `w-22 h-22 text-${iconColor}`
               )}
             </div>
           ))}

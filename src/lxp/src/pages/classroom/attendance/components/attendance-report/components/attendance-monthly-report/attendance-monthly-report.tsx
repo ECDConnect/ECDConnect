@@ -48,7 +48,7 @@ export const AttendanceMonthlyReport: React.FC<
                 <div className={'flex flex-col items-start justify-between'}>
                   <Typography
                     type={'body'}
-                    weight={'bolder'}
+                    weight={'bold'}
                     color={'black'}
                     text={`${getMonthName(
                       attendanceItem.monthOfYear - 1
@@ -63,7 +63,7 @@ export const AttendanceMonthlyReport: React.FC<
                     )}
                     <Typography
                       text={`${attendanceItem.attendanceScore}`}
-                      weight={'bolder'}
+                      weight={'bold'}
                       color={'textLight'}
                       type={'help'}
                       className={'mr-1'}
@@ -79,7 +79,7 @@ export const AttendanceMonthlyReport: React.FC<
                 <div id="big-score-result">
                   <Typography
                     text={`${attendanceItem.attendanceScore}%`}
-                    weight={'bolder'}
+                    weight={'bold'}
                     color={styles.getColor(attendanceItem.attendanceScore)}
                     type={'h1'}
                     className={'text-4xl'}

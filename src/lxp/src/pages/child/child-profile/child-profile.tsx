@@ -69,7 +69,7 @@ const baseNotificationListItem: ListItemProps = {
   showIcon: true,
   showSubTitleShape: true,
   showChevronIcon: true,
-  backgroundColor: 'white',
+  backgroundColor: 'uiBg',
   withPaddingX: true,
   withPaddingY: true,
   title: 'Message caregiver',

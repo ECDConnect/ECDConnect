@@ -61,7 +61,7 @@ export const TabList: React.FC<TabListProps> = ({
                   tabIndex={0}
                   activeIndex={0}
                   isOnlyTab={true}
-                ></Tab>
+                />
               ) : (
                 tabItems.map((item, index) => {
                   return (
@@ -72,7 +72,7 @@ export const TabList: React.FC<TabListProps> = ({
                       tabIndex={index}
                       activeIndex={activeTabIndex}
                       tabSelected={(idx) => setSelectedTab(item, idx)}
-                    ></Tab>
+                    />
                   );
                 })
               )}

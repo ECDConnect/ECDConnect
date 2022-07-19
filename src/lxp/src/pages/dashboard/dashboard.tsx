@@ -5,7 +5,8 @@ import {
   BannerWrapper,
   DialogPosition,
   IconBadge,
-  NavigationItem,
+  NavigationRouteItem,
+  NavigationDropdown,
   Typography,
   UserAvatar,
 } from '@ecdlink/ui';
@@ -29,13 +30,14 @@ const { version } = require('../../../package.json');
 
 export enum NavigationTypes {
   Home = 'Home',
-  Classroom = 'Classroom',
+  ClientFolders = 'Client folders',
   Attendance = 'Attendance',
   Children = 'Children',
   Programme = 'Programme',
   Training = 'Training',
   Profile = 'Profile',
   Messages = 'Messages',
+  Logout = 'Logout',
 }
 
 export const Dashboard: React.FC = () => {
@@ -67,31 +69,32 @@ export const Dashboard: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOnline]);
 
-  const navigation: NavigationItem[] = [
+  const navigation: (NavigationRouteItem | NavigationDropdown)[] = [
     { name: NavigationTypes.Home, href: '/', icon: 'HomeIcon', current: true },
     {
-      name: NavigationTypes.Classroom,
-      href: ROUTES.CLASSROOM,
+      name: NavigationTypes.ClientFolders,
       icon: 'AcademicCapIcon',
       current: false,
-    },
-    {
-      name: NavigationTypes.Attendance,
-      href: ROUTES.CLASSROOM,
-      params: { activeTabIndex: 0 },
-      current: false,
-    },
-    {
-      name: NavigationTypes.Children,
-      href: ROUTES.CLASSROOM,
-      params: { activeTabIndex: 1 },
-      current: false,
-    },
-    {
-      name: NavigationTypes.Programme,
-      href: ROUTES.CLASSROOM,
-      params: { activeTabIndex: 2 },
-      current: false,
+      nestedChildren: [
+        {
+          name: NavigationTypes.Attendance,
+          href: ROUTES.CLASSROOM,
+          params: { activeTabIndex: 0 },
+          current: false,
+        },
+        {
+          name: NavigationTypes.Children,
+          href: ROUTES.CLASSROOM,
+          params: { activeTabIndex: 1 },
+          current: false,
+        },
+        {
+          name: NavigationTypes.Programme,
+          href: ROUTES.CLASSROOM,
+          params: { activeTabIndex: 2 },
+          current: false,
+        },
+      ],
     },
     {
       name: NavigationTypes.Training,
@@ -104,15 +107,24 @@ export const Dashboard: React.FC = () => {
       href: ROUTES.PRACTITIONER.PROFILE.ROOT,
       icon: 'UserIcon',
       current: false,
+      showDivider: true,
     },
     {
       name: NavigationTypes.Messages,
       href: ROUTES.MESSAGES,
       icon: 'BellIcon',
       current: false,
+      showDivider: true,
       getNotificationCount: () => {
         return newNotificationCount;
       },
+    },
+    {
+      name: NavigationTypes.Logout,
+      href: ROUTES.LOGIN,
+      icon: 'ExternalLinkIcon',
+      current: false,
+      showDivider: true,
     },
   ];
 
@@ -169,7 +181,7 @@ export const Dashboard: React.FC = () => {
   const showCompleteProfileBlockingDialog = () => {
     dialog({
       blocking: true,
-      position: DialogPosition.Bottom,
+      position: DialogPosition.Top,
       render: (onSubmit, onCancel) => {
         return (
           <ActionModal
@@ -212,7 +224,7 @@ export const Dashboard: React.FC = () => {
 
   return (
     <BannerWrapper
-      backgroundColour={'primary'}
+      backgroundColour={'white'}
       backgroundImageColour={'primary'}
       avatar={
         userProfilePicture?.file ? (
@@ -258,13 +270,10 @@ export const Dashboard: React.FC = () => {
         type={'h1'}
         color="white"
         text={`Welcome ${userData && userData?.firstName}`}
-        lineHeight={'none'}
         className={styles.welcomeText}
       />
 
-      <div
-        className={`${!classroom ? styles.wrapper : 'bg-white rounded p-0.5'}`}
-      >
+      <div className={`${!classroom ? styles.wrapper : ''}`}>
         <DashboardItems
           listItems={[
             {
@@ -274,6 +283,7 @@ export const Dashboard: React.FC = () => {
               onActionClick: () => {
                 goToClassroom();
               },
+              classNames: 'bg-uiBg',
             },
             {
               title: 'Business',
@@ -282,12 +292,13 @@ export const Dashboard: React.FC = () => {
               onActionClick: () => ({}),
               chipConfig: {
                 colorPalette: {
-                  backgroundColour: 'white',
-                  borderColour: 'errorMain',
-                  textColour: 'errorMain',
+                  backgroundColour: 'alertMain',
+                  borderColour: 'alertMain',
+                  textColour: 'white',
                 },
                 text: 'Coming soon',
               },
+              classNames: 'bg-uiBg',
             },
           ]}
           notification={dashboardNotification}

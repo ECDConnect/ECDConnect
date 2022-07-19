@@ -31,7 +31,7 @@ export const IconTitleDescriptionTile = ({
         <Typography
           color={'textDark'}
           type={'small'}
-          weight={'bolder'}
+          weight={'bold'}
           text={title}
         />
         <Typography

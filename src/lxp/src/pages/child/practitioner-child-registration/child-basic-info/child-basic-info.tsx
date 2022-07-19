@@ -41,7 +41,7 @@ export const ChildBasicInfo: React.FC<
   };
 
   return (
-    <div className="bg-uiBg p-4 flex flex-col h-full w-full">
+    <div className="bg-white p-4 flex flex-col h-full w-full">
       <Typography type="h1" color="primary" text="Child" />
       <Typography type={'h2'} text="Basic details" color={'textMid'} />
 

@@ -21,7 +21,7 @@ export const Dialog: React.FC<DialogProps> = ({
   position,
   stretch = false,
   solidBackdrop = false,
-  backdropColour = 'black',
+  backdropColour = 'modalBg',
   borderRadius = 'rounded',
   fullScreen = false,
   className = '',

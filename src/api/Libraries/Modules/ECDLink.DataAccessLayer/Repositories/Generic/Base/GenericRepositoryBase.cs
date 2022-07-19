@@ -68,6 +68,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
 
             if (Exists(entity.Id))
             {
+                entity.UpdatedDate = DateTime.Now;                
                 entities.Update(entity);
                 _domainEventService.NotifyUpdate<T>(_userId, entity);
             }

@@ -69,7 +69,7 @@ export const ChildEnjoys: React.FC<ChildEnjoysProps> = ({
         <Card shadowSize="lg" borderRaduis={'lg'} className={'p-4 mt-4'}>
           <Typography
             type={'body'}
-            weight={'bolder'}
+            weight={'bold'}
             color={'black'}
             text={'Your observation notes'}
           />
@@ -94,7 +94,7 @@ export const ChildEnjoys: React.FC<ChildEnjoysProps> = ({
         <Card shadowSize="lg" borderRaduis={'lg'} className={'my-4 p-4'}>
           <Typography
             type={'body'}
-            weight={'bolder'}
+            weight={'bold'}
             color={'black'}
             text={'Your previous answer'}
           />
