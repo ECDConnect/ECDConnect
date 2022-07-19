@@ -467,45 +467,19 @@ export const EditChildInformation: React.FC = () => {
       classroomsActions.updateClassroomGroupLearner(learnerInputModel)
     );
 
-    // check if the record already exists then change the start time and end time
-    const [_learner] = classroomGroupLearners.filter(
-      (x) =>
-        x.userId === currentChildLearnerRecord?.userId &&
-        x.classroomGroupId === newClassroomGroupId
-    );
+    const newLearnerModel: LearnerDto = {
+      id: newGuid(),
+      classroomGroupId: newClassroomGroupId,
+      userId: currentChildLearnerRecord?.userId ?? '',
+      attendanceReasonId: currentChildLearnerRecord?.attendanceReasonId,
+      otherAttendanceReason:
+        currentChildLearnerRecord?.otherAttendanceReason ?? '',
+      startedAttendance: new Date().toISOString(),
+      stoppedAttendance: null,
+      isActive: currentChildLearnerRecord?.isActive,
+    };
 
-    if (_learner) {
-      const newUpdatedLearnerModel: LearnerDto = {
-        id: _learner.id,
-        classroomGroupId: newClassroomGroupId,
-        userId: _learner?.userId ?? '',
-        attendanceReasonId: _learner?.attendanceReasonId,
-        otherAttendanceReason: _learner?.otherAttendanceReason ?? '',
-        startedAttendance: new Date().toISOString(),
-        stoppedAttendance: null,
-        isActive: _learner?.isActive,
-      };
-
-      appDispatch(
-        classroomsActions.updateClassroomGroupLearner(newUpdatedLearnerModel)
-      );
-    } else {
-      const newLearnerModel: LearnerDto = {
-        id: newGuid(),
-        classroomGroupId: newClassroomGroupId,
-        userId: currentChildLearnerRecord?.userId ?? '',
-        attendanceReasonId: currentChildLearnerRecord?.attendanceReasonId,
-        otherAttendanceReason:
-          currentChildLearnerRecord?.otherAttendanceReason ?? '',
-        startedAttendance: new Date().toISOString(),
-        stoppedAttendance: null,
-        isActive: currentChildLearnerRecord?.isActive,
-      };
-
-      appDispatch(
-        classroomsActions.createClassroomGroupLearner(newLearnerModel)
-      );
-    }
+    appDispatch(classroomsActions.createClassroomGroupLearner(newLearnerModel));
 
     setEditFieldVisible(false);
   };
