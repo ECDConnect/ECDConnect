@@ -8,6 +8,30 @@ class PractitionerService {
     this._accessToken = accessToken;
   }
 
+  async getPractitionersForUser(userId: string): Promise<PractitionerDto[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        query allPractitionersForCoach($userId: String) {
+          allPractitionersForCoach(userId: $userId) {
+            id
+            userId
+          }
+        }
+      `,
+      variables: {
+        userId,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error('Get Practitioner Failed - Server connection error');
+    }
+
+    return response.data.data.allPractitionersForCoach;
+  }
+
   async getPractitionerById(id: number): Promise<PractitionerDto> {
     const apiInstance = await api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {

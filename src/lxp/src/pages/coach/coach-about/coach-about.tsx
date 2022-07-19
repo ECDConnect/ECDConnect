@@ -11,7 +11,7 @@ import {
   ProfileAvatar,
   renderIcon,
   StackedList,
-  StatusChip,
+  // StatusChip,
   Typography,
 } from '@ecdlink/ui';
 import {
@@ -22,6 +22,7 @@ import {
 import { PhotoPrompt } from '../../../components/photo-prompt/photo-prompt';
 import { DialogFormInput } from '@models/practitioner/DialogFormInput';
 import { setStorageItem } from '@utils/common/local-storage.utils';
+import { practitionerSelectors } from '@/store/practitioner';
 import { coachActions, coachSelectors } from '@store/coach';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -65,12 +66,13 @@ export const CoachAbout: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOnline]);
 
+  // const authUser = useSelector(authSelectors.getAuthUser);
   const coach = useSelector(coachSelectors.getCoach);
+  // const practitioners = useSelector(practitionerSelectors.getPractitioners);
+  // console.log(practitioners);
 
   useEffect(() => {
-    if (coach) {
-      setNewStackListItems(coach);
-    }
+    if (coach) setNewStackListItems(coach);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [coach]);
 
@@ -309,20 +311,20 @@ export const CoachAbout: React.FC = () => {
           />
         </div>
         <div className="flex my-4 justify-center">
-          <StatusChip
+          {/* <StatusChip
             className="mr-2"
             backgroundColour="infoDark"
             textColour={'white'}
             borderColour="infoDark"
-            text="22 Practitioners"
+            text={'22 Practitioners'}
           />
           <StatusChip
             className={'ml-2'}
             backgroundColour="primary"
             textColour={'white'}
             borderColour="primary"
-            text="120 Children"
-          />
+            text={'4 Children'}
+          /> */}
         </div>
         <StackedList
           className={'bg-uiBg'}

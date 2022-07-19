@@ -1,8 +1,9 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { getCoachByUserId } from './coach.actions';
-import { CoachState } from './coach.types';
 import { CoachDto } from '@ecdlink/core';
 import localForage from 'localforage';
+
+import { CoachState } from './coach.types';
+import { getCoachByUserId } from './coach.actions';
 
 const initialState: CoachState = {
   coach: undefined,

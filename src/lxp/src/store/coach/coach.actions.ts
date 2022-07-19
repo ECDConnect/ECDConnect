@@ -16,8 +16,6 @@ export const getCoachByUserId = createAsyncThunk<
       coach: { coach: coachCache },
     } = getState();
 
-    console.log(coachCache);
-
     if (!coachCache) {
       try {
         let coach: CoachDto | undefined;

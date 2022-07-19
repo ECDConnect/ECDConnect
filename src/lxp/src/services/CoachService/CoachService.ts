@@ -1,4 +1,4 @@
-import { CoachDto /* , PractitionerDto */ } from '@ecdlink/core';
+import { CoachDto } from '@ecdlink/core';
 import { Config } from '@ecdlink/core';
 import { api } from '../axios.helper';
 
@@ -8,48 +8,6 @@ class CoachService {
   constructor(accessToken: string) {
     this._accessToken = accessToken;
   }
-
-  /* async getAllPractionersForCoachId(userId: string): Promise<PractitionerDto[]> {
-    const apiInstance = api(Config.graphQlApi, this._accessToken);
-    const response = await apiInstance.post<any>(``, {
-      query: `
-        query allPractitionersForCoach($userId: String) {
-          allPractitionersForCoach(userId: $userId) {
-            id
-            user {
-              id
-              userName
-              email
-              isSouthAfricanCitizen
-              verifiedByHomeAffairs
-              dateOfBirth
-              idNumber            
-              firstName
-              surname
-              fullName
-              contactPreference
-              genderId
-              phoneNumber
-              profileImageUrl
-              roles {
-                id
-                name
-              }
-            }
-          }
-        }
-      `,
-      variables: {
-        userId: userId,
-      },
-    });
-
-    if (response.status !== 200) {
-      throw new Error('Get Practitioners for Coach Failed - Server connection error');
-    }
-
-    return response.data.data;
-  } */
 
   async getCoachByUserId(userId: string): Promise<CoachDto> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
