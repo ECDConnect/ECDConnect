@@ -42,8 +42,8 @@ export const ChildBasicInfo: React.FC<
 
   return (
     <div className="bg-white p-4 flex flex-col h-full w-full">
-      <Typography type="h1" color="primary" text="Child" />
-      <Typography type={'h2'} text="Basic details" color={'textMid'} />
+      <Typography type="h2" color="textDark" text="Child" />
+      <Typography type={'h4'} text="Basic details" color={'textMid'} />
 
       <FormInput<ChildBasicInfoModel>
         className="mt-4"
