@@ -30,7 +30,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public Guid? SiteAddressId { get; set; }
         public string Signature { get; set; }
         //[GraphQLIgnore]
-        //public string Hierarchy { get; set; }
+        public string FranchisorHierarchy { get; set; }
     }
 
     public interface CoachJoin<TKey>

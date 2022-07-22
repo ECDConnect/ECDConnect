@@ -35,7 +35,7 @@ namespace ECDLink.DataAccessLayer.Entities.Classroom
         public string Name { get; set; }
         public string ClassroomImageUrl { get; set; }
 
-        public bool? IsPrinciple { get; set; }
+        public bool? IsPrincipal { get; set; }
 
         public int? NumberPractitioners { get; set; }
 

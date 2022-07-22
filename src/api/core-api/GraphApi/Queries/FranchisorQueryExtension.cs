@@ -19,20 +19,44 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
     [ExtendObjectType(OperationTypeNames.Query)]
     public class FranchisorQueryExtension
-    {
+    {   
+        public FranchisorQueryExtension()
+        {
+        }
+
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public List<Franchisor> GetFranchisorByUserId([Service] IHttpContextAccessor contextAccessor,
+        public Franchisor GetFranchisorByUserId([Service] IHttpContextAccessor contextAccessor,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
-            string userId)
+        string userId)
         {
             using var scope = dbFactory.CreateDbContext();
             using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
-            var coachRepo = repoFactory.CreateRepository<Franchisor>(userContext: uId);
-            List<Franchisor> franchisor = coachRepo.GetAll().Where(x => x.UserId.Contains(userId)).ToList();
+            var dbRepo = repoFactory.CreateRepository<Franchisor>(userContext: uId);
+            Franchisor franchisor = new Franchisor();
+            List<Franchisor> franchisors = dbRepo.GetAll().Where(x => x.UserId.Contains(userId)).ToList();
+            if (franchisors.Count > 0)
+            {
+                franchisor = franchisors.FirstOrDefault();
+            }
 
             return franchisor;
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public List<Coach> GetAllCoachesForFranchisor([Service] IHttpContextAccessor contextAccessor,
+     [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+     [Service] IGenericRepositoryFactory repoFactory,
+     string userId)
+        {
+            using var scope = dbFactory.CreateDbContext();
+            using var dbContextTransaction = scope.Database.BeginTransaction();
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var coachRepo = repoFactory.CreateRepository<Coach>(userContext: uId);
+            List<Coach> coaches = coachRepo.GetAll().Where(x => x.FranchisorHierarchy.Contains(userId)).ToList();
+
+            return coaches;
         }
 
     }
