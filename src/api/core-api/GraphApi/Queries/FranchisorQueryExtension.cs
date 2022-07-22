@@ -44,5 +44,20 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return franchisor;
         }
 
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public List<Coach> GetAllCoachesForFranchisor([Service] IHttpContextAccessor contextAccessor,
+     [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+     [Service] IGenericRepositoryFactory repoFactory,
+     string userId)
+        {
+            using var scope = dbFactory.CreateDbContext();
+            using var dbContextTransaction = scope.Database.BeginTransaction();
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var coachRepo = repoFactory.CreateRepository<Coach>(userContext: uId);
+            List<Coach> coaches = coachRepo.GetAll().Where(x => x.FranchisorHierarchy.Contains(userId)).ToList();
+
+            return coaches;
+        }
+
     }
 }
