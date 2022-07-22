@@ -44,8 +44,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             user.franchisorObjectData = new FranchisorQueryExtension().GetFranchisorByUserId(contextAccessor, dbFactory,repoFactory, userId);
             //Coach
             user.coachObjectData = new CoachQueryExtension().GetCoachByUserId(contextAccessor, dbFactory, repoFactory, userId);
-            //Principal
-            //user.principalObjectData = new PrincipalQueryExtension().GetPrincipalByUserId(contextAccessor, dbFactory, repoFactory, userId);
+            //Principal            
+            user.principalObjectData = new PrincipalQueryExtension().GetPrincipalByUserId(contextAccessor, dbFactory, repoFactory, userId);
             //Practitioner
             user.practitionerObjectData = new PractitionerQueryExtension().GetPractitionerByUserId(contextAccessor, dbFactory, repoFactory, userId);
             //Child

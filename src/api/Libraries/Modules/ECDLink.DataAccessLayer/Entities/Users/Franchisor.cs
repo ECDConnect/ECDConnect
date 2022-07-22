@@ -26,6 +26,8 @@ namespace ECDLink.DataAccessLayer.Entities.Users
 
         //[GraphQLIgnore]
         //public string Hierarchy { get; set; }
+
+        [ForeignKey(nameof(SiteAddressId))]
         public virtual SiteAddress SiteAddress { get; set; }
         public Guid? SiteAddressId { get; set; }
     }

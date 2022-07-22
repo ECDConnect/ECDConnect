@@ -47,7 +47,8 @@ namespace ECDLink.DataAccessLayer.Entities
 
         public virtual Franchisor franchisorObjectData { get; set; }
         public virtual Coach coachObjectData { get; set; }
-        //public virtual Practitioner principalObjectData { get; set; }
+        [NotMapped]
+        public virtual Practitioner principalObjectData { get; set; }
         public virtual Practitioner practitionerObjectData { get; set; }
         public virtual Child childObjectData { get; set; }
 

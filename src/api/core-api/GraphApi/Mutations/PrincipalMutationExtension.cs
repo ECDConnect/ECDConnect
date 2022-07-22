@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using EcdLink.Api.CoreApi.GraphApi.Queries;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
@@ -43,15 +44,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            practitioners = practitionerRepo.GetAll().Where(x => x.UserId.Equals(practionerUser.Id)).ToList();
-            if (practitioners != null)
+            Practitioner practitioner = new PractitionerQueryExtension().GetPractitionerByUserId(contextAccessor, dbFactory, repoFactory, userId);
+            //practitioners = practitionerRepo.GetAll().Where(x => x.UserId.Equals(practionerUser.Id)).ToList();
+            if (practitioner != null)
             {
-                Practitioner practitioner = practitioners.FirstOrDefault();
                 practitioner.PrincipalHierarchy = userId;
                 var updateResult = practitionerRepo.Update(practitioner);
 
                 return practitioner;
-            } else
+            }
+            else
             {
                 //TODO: create practitioner + user
                 return new Practitioner();

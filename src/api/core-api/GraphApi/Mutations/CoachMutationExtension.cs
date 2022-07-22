@@ -24,6 +24,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using EcdLink.Api.CoreApi.GraphApi.Queries;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
@@ -51,21 +52,32 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             string idNumber, 
             string coachId)
         {
-            Practitioner practitioner = new Practitioner();
+            //Practitioner practitioner = new Practitioner();
             //find the practitioner
             var coach = userManager.FindByIdAsync(coachId).Result;
-            
+            Practitioner practitioner = new Practitioner();
 
             var practi = userManager.FindByNameAsync(idNumber).Result;//find practitioner by Username/Id number, if exists, add coach to practitioner
             if (practi != null)
             {
                 using var scope = dbFactory.CreateDbContext();
                 using var dbContextTransaction = scope.Database.BeginTransaction();
-                var userId = contextAccessor.HttpContext.GetUser().Id;
-                var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: userId);
-                practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId.Equals(practi.Id));
-                practitioner.CoachHierarchy = coachId;
-                var updateResult = practitionerRepo.Update(practitioner);
+                var uId = contextAccessor.HttpContext.GetUser().Id;
+                var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+                //practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId.Equals(practi.Id));
+                practitioner = new PractitionerQueryExtension().GetPractitionerByUserId(contextAccessor, dbFactory, repoFactory, practi.Id);
+                if (practitioner != null)
+                {
+                    practitioner.CoachHierarchy = coachId;
+                    var updateResult = practitionerRepo.Update(practitioner);
+                    return practitioner;
+                }
+                else
+                {
+                    //TODO: create practitioner + user
+                    return practitioner;
+                }
+
                 ////update nicknames to user
                 //var userRepo = repoFactory.CreateRepository<ApplicationUser>(userContext: userId);
                 //ApplicationUser user = (ApplicationUser)userRepo.GetById(Guid.Parse(practitioner.UserId));
