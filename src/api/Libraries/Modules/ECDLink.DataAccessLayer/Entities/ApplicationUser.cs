@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Repositories;
 
 namespace ECDLink.DataAccessLayer.Entities
 {
@@ -42,6 +44,12 @@ namespace ECDLink.DataAccessLayer.Entities
         public string NickFirstName { get; set; }
         public string NickSurname { get; set; }
         public string NickFullName { get; set; }
+
+        public virtual Franchisor franchisorObjectData { get; set; }
+        public virtual Coach coachObjectData { get; set; }
+        //public virtual Practitioner principalObjectData { get; set; }
+        public virtual Practitioner practitionerObjectData { get; set; }
+        public virtual Child childObjectData { get; set; }
 
         // Graph Ignores
         [GraphQLIgnore]

@@ -18,14 +18,14 @@ using System.Linq;
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
     [ExtendObjectType(OperationTypeNames.Query)]
-    public class FranchisorQueryExtension
-    {   
-        public FranchisorQueryExtension()
+    public class ChildQueryExtension
+    {
+        public ChildQueryExtension()
         {
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public Franchisor GetFranchisorByUserId([Service] IHttpContextAccessor contextAccessor,
+        public Child GetChildByUserId([Service] IHttpContextAccessor contextAccessor,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
         string userId)
@@ -33,15 +33,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             using var scope = dbFactory.CreateDbContext();
             using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
-            var dbRepo = repoFactory.CreateRepository<Franchisor>(userContext: uId);
-            Franchisor franchisor = new Franchisor();
-            List<Franchisor> franchisors = dbRepo.GetAll().Where(x => x.UserId.Contains(userId)).ToList();
-            if (franchisors.Count > 0)
+            var dbRepo = repoFactory.CreateRepository<Child>(userContext: uId);
+            Child child = new Child();
+            List<Child> children = dbRepo.GetAll().Where(x => x.UserId.Contains(userId)).ToList();
+            if (children.Count > 0)
             {
-                franchisor = franchisors.FirstOrDefault();
+                child = children.FirstOrDefault();
             }
 
-            return franchisor;
+            return child;
         }
 
     }
