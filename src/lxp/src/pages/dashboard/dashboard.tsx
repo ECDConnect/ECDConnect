@@ -230,9 +230,9 @@ export const Dashboard: React.FC = () => {
         ) : (
           <UserAvatar
             size="sm-md"
-            color="transparent"
+            color="secondary"
             displayBorder
-            borderColour="white"
+            borderColour="secondary"
           />
         )
       }

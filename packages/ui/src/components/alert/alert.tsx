@@ -30,8 +30,8 @@ export const Alert: React.FC<AlertProps> = ({
             {title && (
               <Typography
                 type={'help'}
-                weight="bold"
                 text={title}
+                weight="normal"
                 className={styles.title}
                 color={styles.alertTextColor(type)}
               />
@@ -39,7 +39,6 @@ export const Alert: React.FC<AlertProps> = ({
             {message && (
               <Typography
                 type={'help'}
-                weight={'bold'}
                 hasMarkup
                 text={message}
                 className={styles.message(!!title)}
@@ -59,7 +58,7 @@ export const Alert: React.FC<AlertProps> = ({
                       type={'help'}
                       hasMarkup
                       text={item}
-                      className={'text-sm'}
+                      className={'text-sm font-normal'}
                       color={listColor === 'black' ? 'textDark' : 'white'}
                     />
                   </li>

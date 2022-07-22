@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Tab } from './components/tab/tab';
 import * as styles from './tab-list.styles';
 import { ComponentBaseProps } from '../../models/ComponentBaseProps';
+import { classNames } from '../../utils';
 
 export interface TabListProps extends ComponentBaseProps {
   tabItems: TabItem[];
@@ -14,6 +15,7 @@ export const TabList: React.FC<TabListProps> = ({
   tabItems,
   tabSelected,
   setSelectedIndex,
+  className,
 }) => {
   const [activeTabIndex, setActiveIndexTab] = useState(0);
   const [activeTabItem, setActiveTabItem] = useState<TabItem>();
@@ -50,7 +52,7 @@ export const TabList: React.FC<TabListProps> = ({
 
   return (
     <>
-      <div className={styles.tabScrollBar}>
+      <div className={classNames(styles.tabScrollBar, className)}>
         <div>
           <div className={styles.navContainer}>
             <nav className={styles.navStyle} aria-label="Tabs">
@@ -66,7 +68,7 @@ export const TabList: React.FC<TabListProps> = ({
                 tabItems.map((item, index) => {
                   return (
                     <Tab
-                      className="font-medium"
+                      className="font-medium text-textDark"
                       key={index}
                       title={item.title}
                       tabIndex={index}

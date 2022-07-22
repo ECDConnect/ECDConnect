@@ -35,8 +35,14 @@ export function Tab({
       onClick={() => selectTabReceived(tabIndex)}
     >
       <Typography
-        type="h4"
-        color={tabIndex === activeIndex ? 'primary' : 'primaryAccent1'}
+        type={isOnlyTab ? 'h2' : 'h4'}
+        color={
+          isOnlyTab
+            ? 'textDark'
+            : tabIndex === activeIndex
+            ? 'primary'
+            : 'primaryAccent1'
+        }
         text={title}
         className="font-medium"
       ></Typography>

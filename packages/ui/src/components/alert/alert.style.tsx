@@ -7,8 +7,9 @@ export const iconWrapper = 'flex-shrink-0';
 export const contentWrapper = 'flex flex-col justify-start items-start ';
 export const icon = 'h-5 w-5 ';
 export const messageWrapper = 'ml-3 ';
-export const message = (hasTitle: boolean) => `text-sm ${hasTitle && 'mt-2 '}`;
-export const title = 'text-sm font-thin ';
+export const message = (hasTitle: boolean) =>
+  `text-sm font-normal ${hasTitle && 'mt-2 '}`;
+export const title = 'text-sm ';
 export const list = 'list-disc pl-4 mt-2 ';
 
 export const alertColor = (type: string, style: AlertVariant) => {
