@@ -192,8 +192,14 @@ export function Theme() {
         version: themeVersion,
         colors: {
           primary: colors.primary,
+          primaryAccent1: colors.primaryAccent1,
+          primaryAccent2: colors.primaryAccent2,
           secondary: colors.secondary,
+          secondaryAccent1: colors.secondaryAccent1,
+          secondaryAccent: colors.secondaryAccent2,
           tertiary: colors.tertiary,
+          tertiaryAccent1: colors.tertiaryAccent1,
+          tertiaryAccent2: colors.tertiaryAccent2,
           textDark: colors.textDark,
           textMid: colors.textMid,
           textLight: colors.textLight,
@@ -201,18 +207,19 @@ export function Theme() {
           uiMid: colors.uiMid,
           uiLight: colors.uiLight,
           uiBg: colors.uiBg,
-          alertBg: DefaultTheme.alertBg,
-          alertDark: DefaultTheme.alertDark,
-          alertMain: DefaultTheme.alertMain,
-          errorBg: DefaultTheme.errorBg,
-          errorDark: DefaultTheme.errorDark,
-          errorMain: DefaultTheme.errorMain,
-          infoBb: DefaultTheme.infoBb,
-          infoDark: DefaultTheme.infoDark,
-          infoMain: DefaultTheme.infoMain,
-          successBg: DefaultTheme.successBg,
-          successDark: DefaultTheme.successDark,
-          successMain: DefaultTheme.successMain,
+          modalBg: colors.modalBg,
+          errorMain: colors.errorMain,
+          errorDark: colors.errorDark,
+          errorBg: colors.errorBg,
+          alertMain: colors.alertMain,
+          alertDark: colors.alertDark,
+          alertBg: colors.alertBg,
+          successMain: colors.successMain,
+          successDark: colors.successDark,
+          successBg: colors.successBg,
+          infoMain: colors.infoMain,
+          infoDark: colors.infoDark,
+          infoBb: colors.infoBb,
         },
         fonts: {
           fontUrl: fontUrls.fontUrl ? fontUrls.fontUrl : DefaultTheme.fontUrl,
@@ -242,8 +249,14 @@ export function Theme() {
         },
       }).then(() => {
         DefaultTheme.primary = colors.primary;
+        DefaultTheme.primaryAccent1 = colors.primaryAccent1;
+        DefaultTheme.primaryAccent2 = colors.primaryAccent2;
         DefaultTheme.secondary = colors.secondary;
+        DefaultTheme.secondaryAccent1 = colors.secondaryAccent1;
+        DefaultTheme.secondaryAccent2 = colors.secondaryAccent2;
         DefaultTheme.tertiary = colors.tertiary;
+        DefaultTheme.tertiaryAccent1 = colors.tertiaryAccent1;
+        DefaultTheme.tertiaryAccent2 = colors.tertiaryAccent2;
         DefaultTheme.textDark = colors.textDark;
         DefaultTheme.textMid = colors.textMid;
         DefaultTheme.textLight = colors.textLight;
@@ -251,6 +264,19 @@ export function Theme() {
         DefaultTheme.uiMid = colors.uiMid;
         DefaultTheme.uiLight = colors.uiLight;
         DefaultTheme.uiBg = colors.uiBg;
+        DefaultTheme.modalBg = colors.modalBg;
+        DefaultTheme.errorMain = colors.errorMain;
+        DefaultTheme.errorDark = colors.errorDark;
+        DefaultTheme.errorBg = colors.errorBg;
+        DefaultTheme.alertMain = colors.alertMain;
+        DefaultTheme.alertDark = colors.alertDark;
+        DefaultTheme.alertBg = colors.alertBg;
+        DefaultTheme.successMain = colors.successMain;
+        DefaultTheme.successDark = colors.successDark;
+        DefaultTheme.successBg = colors.successBg;
+        DefaultTheme.infoMain = colors.infoMain;
+        DefaultTheme.infoDark = colors.infoDark;
+        DefaultTheme.infoBb = colors.infoBb;
         DefaultTheme.logoUrl = themeInputModel.images.logoUrl;
         DefaultTheme.graphicOverlayUrl =
           themeInputModel.images.graphicOverlayUrl;

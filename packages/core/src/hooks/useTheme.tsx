@@ -102,7 +102,7 @@ function ThemeProvider({
       }
 
       if (data.fonts) {
-        DefaultTheme.fontUrl = data.fonts.fontUrl;
+        DefaultTheme.fontUrl = "'Quicksand', sans-serif";
         DefaultTheme.mainHeadingOverrideFontUrl =
           data.fonts.mainHeadingOverrideFontUrl;
       }
