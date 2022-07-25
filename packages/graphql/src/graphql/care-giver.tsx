@@ -57,6 +57,65 @@ export const GetAllCaregiver = gql`
   }
 `;
 
+export const GetAllCaregiverByPractitioner = gql`
+  {
+    GetAllCaregiverByPractitioner($practitionerId: UUID) {
+      GetAllCaregiverByPractitioner(practitionerId: $practitionerId) {
+        id
+        relation {
+          id
+          description
+        }
+        education {
+          id
+          description
+        }
+        siteAddress {
+          id
+          province {
+            id
+            description
+          }
+          name
+          addressLine1
+          addressLine2
+          addressLine3
+          postalCode
+          ward
+        }
+        grants {
+          id
+          description
+        }
+        user {
+          id
+          userName
+          email
+          isSouthAfricanCitizen
+          verifiedByHomeAffairs
+          dateOfBirth
+          idNumber
+          firstName
+          surname
+          fullName
+          contactPreference
+          genderId
+          phoneNumber
+          profileImageUrl
+        }
+        emergencyContactFirstName
+        emergencyContactSurname
+        emergencyContactPhoneNumber
+        additionalFirstName
+        additionalSurname
+        additionalPhoneNumber
+        joinReferencePanel
+        contribution
+      }
+    }
+  }
+`;
+
 export const GetCaregiverById = gql`
   query GetCaregiverById($id: UUID) {
     GetCaregiverById(id: $id) {

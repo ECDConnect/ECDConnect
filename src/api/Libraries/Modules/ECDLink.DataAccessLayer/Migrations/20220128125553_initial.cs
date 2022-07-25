@@ -713,7 +713,7 @@ namespace ECDLink.DataAccessLayer.Migrations
                     SiteAddressId = table.Column<Guid>(type: "uuid", nullable: true),
                     Name = table.Column<string>(type: "text", nullable: true),
                     ClassroomImageUrl = table.Column<string>(type: "text", nullable: true),
-                    IsPrinciple = table.Column<bool>(type: "boolean", nullable: true),
+                    IsPrincipal = table.Column<bool>(type: "boolean", nullable: true),
                     NumberPractitioners = table.Column<int>(type: "integer", nullable: true),
                     NumberOfAssistants = table.Column<int>(type: "integer", nullable: true),
                     NumberOfOtherAssistants = table.Column<int>(type: "integer", nullable: true),
