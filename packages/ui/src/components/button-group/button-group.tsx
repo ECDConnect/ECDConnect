@@ -80,12 +80,7 @@ export const ButtonGroup = <T,>({
 
                 optionClicked(option);
               }}
-              className={`${getOptionStyle(
-                type,
-                index,
-                options.length - 1,
-                option.disabled
-              )} ${
+              className={`${getOptionStyle(type, option.disabled)} ${
                 isOptionSelected(option)
                   ? styles.selected(color)
                   : getNotSelectedStyle(type)

@@ -40,7 +40,7 @@ export const ContactPerson: React.FC<ContactPersonProps> = ({
           <Typography
             color={'black'}
             type={'body'}
-            weight={'bolder'}
+            weight={'bold'}
             text={type}
           />
         </>
@@ -55,7 +55,7 @@ export const ContactPerson: React.FC<ContactPersonProps> = ({
       <Typography
         color={'black'}
         type={'body'}
-        weight={'bolder'}
+        weight={'bold'}
         text={contactNumber}
       />
       <div className={styles.actionsWrapper}>

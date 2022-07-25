@@ -11,4 +11,5 @@ export interface AlertProps extends ComponentBaseProps {
   list?: Array<string>;
   button?: React.ReactElement;
   variant?: AlertVariant;
+  listColor?: 'white' | 'black';
 }

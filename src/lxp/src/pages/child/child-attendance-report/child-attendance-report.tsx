@@ -197,7 +197,7 @@ export const ChildAttendanceReportPage: React.FC = () => {
                 <Typography
                   className={'w-1/2 pl-6'}
                   type="body"
-                  weight="bolder"
+                  weight="bold"
                   color={'black'}
                   text={report.month}
                 />

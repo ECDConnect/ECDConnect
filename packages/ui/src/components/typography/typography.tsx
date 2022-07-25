@@ -29,8 +29,8 @@ export const Typography: React.FC<TypographyProps> = ({
   type,
   text,
   color = 'black',
-  weight = 'normal',
-  lineHeight = 'normal',
+  weight,
+  lineHeight,
   align,
   fontSize,
   hasMarkup = false,
@@ -63,11 +63,11 @@ export const Typography: React.FC<TypographyProps> = ({
           <h1
             onClick={onClick}
             className={classNames(
-              styles.h1,
+              styles.getFontStyleByType(type, weight),
               className,
               `${align ? `text-${align}` : ''}`,
               `text-${color}`,
-              `leading-${lineHeight}`
+              `${lineHeight ? `leading-${lineHeight}` : ''}`
             )}
           >
             {splitText ?? text}
@@ -83,8 +83,8 @@ export const Typography: React.FC<TypographyProps> = ({
               `${align ? `text-${align}` : ''}`,
               `text-${color}`,
               'font-body',
-              `text-${fontSize}`,
-              `leading-${lineHeight}`
+              `${fontSize ? `text-${fontSize}` : ''}`,
+              `${lineHeight ? `leading-${lineHeight}` : ''}`
             )}
           >
             {text}
@@ -100,8 +100,8 @@ export const Typography: React.FC<TypographyProps> = ({
               `${align ? `text-${align}` : ''}`,
               `text-${color}`,
               'font-body',
-              `text-${fontSize}`,
-              `leading-${lineHeight}`
+              `${fontSize ? `text-${fontSize}` : ''}`,
+              `${lineHeight ? `leading-${lineHeight}` : ''}`
             )}
           >
             {splitText ?? text}
@@ -117,8 +117,8 @@ export const Typography: React.FC<TypographyProps> = ({
               `${align ? `text-${align}` : ''}`,
               `text-${color}`,
               'font-body',
-              `text-${fontSize}`,
-              `leading-${lineHeight}`
+              `${fontSize ? `text-${fontSize}` : ''}`,
+              `${lineHeight ? `leading-${lineHeight}` : ''}`
             )}
           >
             {splitText ?? text}
@@ -134,9 +134,8 @@ export const Typography: React.FC<TypographyProps> = ({
               `${align ? `text-${align}` : ''}`,
               `text-${color}`,
               'font-body',
-              `text-${fontSize}`,
-
-              `leading-${lineHeight}`
+              `${fontSize ? `text-${fontSize}` : ''}`,
+              `${lineHeight ? `leading-${lineHeight}` : ''}`
             )}
           >
             {splitText ?? text}
@@ -152,8 +151,8 @@ export const Typography: React.FC<TypographyProps> = ({
               `${align ? `text-${align}` : ''}`,
               `text-${color}`,
               'font-body',
-              `text-${fontSize}`,
-              `leading- ${lineHeight}`
+              `${fontSize ? `text-${fontSize}` : ''}`,
+              `${lineHeight ? `leading-${lineHeight}` : ''}`
             )}
           >
             {splitText ?? text}
@@ -169,8 +168,8 @@ export const Typography: React.FC<TypographyProps> = ({
               `${align ? `text-${align}` : ''}`,
               `text-${color}`,
               'font-body',
-              `text-${fontSize}`,
-              `leading-${lineHeight}`
+              `${fontSize ? `text-${fontSize}` : ''}`,
+              `${lineHeight ? `leading-${lineHeight}` : ''}`
             )}
           >
             {splitText ?? text}
@@ -187,11 +186,29 @@ export const Typography: React.FC<TypographyProps> = ({
               `${align ? `text-${align}` : ''}`,
               `text-${color}`,
               'font-body',
-              `leading-${lineHeight}`
+              `${lineHeight ? `leading-${lineHeight}` : ''}`
             )}
           >
             {splitText ?? stripPTag(text)}
           </div>
+        );
+      case 'buttonSmall':
+      case 'button':
+        return (
+          <p
+            onClick={onClick}
+            className={classNames(
+              `${fontSize ? `text-${fontSize}` : ''}`,
+              styles.getFontStyleByType(type, weight, underline, hover),
+              className,
+              `${align ? `text-${align}` : ''}`,
+              `text-${color}`,
+              'font-body',
+              `${lineHeight ? `leading-${lineHeight}` : ''}`
+            )}
+          >
+            {splitText ?? text}
+          </p>
         );
       case 'body':
       case 'help':
@@ -202,13 +219,12 @@ export const Typography: React.FC<TypographyProps> = ({
           <p
             onClick={onClick}
             className={classNames(
-              `text-${fontSize ?? 'small'}`,
+              `${fontSize ? `text-${fontSize}` : ''}`,
               styles.getFontStyleByType(type, weight, underline, hover),
               className,
               `${align ? `text-${align}` : ''}`,
               `text-${color}`,
-              'font-body',
-              `leading-${lineHeight}`
+              `${lineHeight ? `leading-${lineHeight}` : ''}`
             )}
           >
             {splitText ?? text}
@@ -226,8 +242,8 @@ export const Typography: React.FC<TypographyProps> = ({
           `${align ? `text-${align}` : ''}`,
           `text-${color}`,
           'font-body',
-          `text-${fontSize}`,
-          `leading-${lineHeight}`
+          `${fontSize ? `text-${fontSize}` : ''}`,
+          `${lineHeight ? `leading-${lineHeight}` : ''}`
         )}
         onClick={onClick}
       ></div>

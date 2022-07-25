@@ -12,7 +12,7 @@ export type TypographyLineHeight =
   | 5
   | 6
   | '1.56';
-export type TypographyWeight = 'bold' | 'normal' | 'skinny' | 'bolder';
+export type TypographyWeight = 'bold' | 'normal' | 'skinny';
 export type TypographyType =
   | 'h1'
   | 'h2'
@@ -21,9 +21,10 @@ export type TypographyType =
   | 'h5'
   | 'h6'
   | 'body'
+  | 'button'
+  | 'buttonSmall'
   | 'help'
   | 'small'
   | 'span'
   | 'unspecified'
-  | 'dropText'
   | 'markdown';

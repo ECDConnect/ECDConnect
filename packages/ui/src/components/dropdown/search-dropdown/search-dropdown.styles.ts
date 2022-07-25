@@ -4,7 +4,7 @@ import { classNames } from '../../../utils/style-class.utils';
 export const menu = 'w-full';
 export const icon = 'h-6 w-6 pr-2';
 export const iconClear = 'h-6 w-6 mr-2';
-export const menuItems = 'rounded-md shadow-lg bg-white';
+export const menuItems = 'rounded-md bg-white shadow-card';
 export const menuItem = 'flex flex-row py-2 px-2 cursor-pointer h-12';
 export const menuItemWrapper = 'py-1';
 export const enter = 'transition ease-out duration-100';
@@ -18,7 +18,7 @@ export const overlay = (overlayTopOffset?: string) =>
   `absolute top-${
     overlayTopOffset || '177'
   } z-20 inset-0 bg-gray-500 bg-opacity-75`;
-export const infoWrapper = 'px-2 py-2 border-b border-uiBg';
+export const infoWrapper = 'px-4 py-3 border-b border-uiBg';
 export const getButtonStyles = (
   colour: Colours,
   open: boolean,
@@ -45,7 +45,7 @@ export const getButtonStyles = (
     );
   }
 
-  return classNames(baseStyles, 'border-uiBg', 'bg-white');
+  return classNames(baseStyles, 'border-secondary', 'bg-white');
 };
 
 export const getDropDownIcon = (colour: Colours, isSelected: boolean) => {

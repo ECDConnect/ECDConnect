@@ -341,7 +341,7 @@ export const EditPractitionerProfile: React.FC = () => {
           subTitle={label}
           onBack={onBack}
           onClose={exitPrompt}
-          backgroundColour={'uiBg'}
+          backgroundColour={'white'}
           displayOffline={!isOnline}
         >
           <div className={'px-4 pb-5'}>

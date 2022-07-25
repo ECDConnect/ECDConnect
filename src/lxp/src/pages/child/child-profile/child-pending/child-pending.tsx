@@ -133,7 +133,7 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
         />
 
         <Typography
-          weight="bolder"
+          weight="bold"
           type="body"
           color={'textMid'}
           text={`${deadlineDateText}`}

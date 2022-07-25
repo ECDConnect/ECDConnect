@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "bootstrap": "lerna bootstrap --force-local && lerna run tsc",
+    "build:ui": "lerna bootstrap --force-local && lerna run --scope @ecdlink/ui tsc",
     "portal": "cd ./src/admin-portal && yarn start",
     "fe": "cd ./src/lxp && yarn start",
     "build:portal": "yarn bootstrap && (cd ./src/admin-portal && yarn build)",
@@ -16,7 +17,17 @@
     "lint:watch:portal": "esw -w --clear ./src/admin-portal/src --ext .js,jsx,.ts,.tsx",
     "prepare": "husky install",
     "test:fe": "cd ./src/lxp && yarn test",
-    "codegen": "graphql-codegen --config codegen.yml"
+    "codegen": "graphql-codegen --config codegen.yml",
+    "watch_packages": "npm-watch build:ui"
+  },
+  "watch": {
+    "build:ui": {
+      "patterns": [
+        "./packages/ui/src"
+      ],
+      "extensions": "ts,tsx",
+      "quiet": false
+    }
   },
   "dependencies": {
     "@apollo/client": "^3.3.20",
@@ -125,6 +136,7 @@
     "husky": "^7.0.4",
     "lerna": "^4.0.0",
     "lint-staged": ">=10",
+    "npm-watch": "^0.11.0",
     "postcss": "^7.0.39",
     "prettier": "^2.6.2",
     "react-scripts": "^4.0.3",

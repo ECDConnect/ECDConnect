@@ -9,9 +9,9 @@ export const menuItemIconContainerDefault = 'bg-primary text-white';
 export const menuItemIcon = 'flex-shrink-0 h-6 w-6 ';
 export const menuTitle = 'text-sm font-medium text-primary truncate';
 export const menuSubTitle = 'flex pl-0.5 items-center text-sm text-textLight';
-export const menuChevron = 'h-5 w-5 text-textLight';
+export const menuChevron = 'h-6 w-6 text-primary';
 export const menulistItemContainer =
-  'bg-white block border border-r-0 border-l-0 border-solid border-color-textLight block hover:bg-uiLight cursor-pointer';
+  'bg-uiBg rounded-10 hover:bg-uiLight cursor-pointer';
 
 export const getColourByAlertSeverity = (type: AlertSeverityType): Colours => {
   switch (type) {

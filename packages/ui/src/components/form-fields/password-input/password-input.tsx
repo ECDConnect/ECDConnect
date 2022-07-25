@@ -12,6 +12,7 @@ import { FieldError } from 'react-hook-form';
 import { Path, UseFormRegister } from 'react-hook-form';
 import { PasswordStrength } from '../../password-strength-meter/models/PasswordStrength';
 import { FormFieldType, FormInput } from '../form-input/form-input';
+import Typography from '../../typography/typography';
 
 interface PasswordInputProps<T> extends ComponentBaseProps {
   label?: string;
@@ -29,6 +30,13 @@ interface PasswordInputProps<T> extends ComponentBaseProps {
 interface PasswordChangedEvent {
   type: PasswordStrength;
   message: string;
+}
+
+interface PasswordConstraints {
+  characterCount: boolean;
+  uppercase: boolean;
+  lowercase: boolean;
+  numeric: boolean;
 }
 
 export const PasswordInput = <T,>({
@@ -51,6 +59,13 @@ export const PasswordInput = <T,>({
   const [passwordMeterType, setPasswordMeterType] = useState<PasswordStrength>(
     PasswordStrength.none
   );
+  const [passwordConstraintMessage, setPasswordConstraintMessage] =
+    useState<PasswordConstraints>({
+      characterCount: false,
+      uppercase: false,
+      lowercase: false,
+      numeric: false,
+    });
 
   const [passwordMeterMessage, setPasswordMeterMessage] = useState<string>('');
   const [passwordMeterVisibility, setPasswordMeterVisibility] =
@@ -87,33 +102,43 @@ export const PasswordInput = <T,>({
 
     if (value.match(containsLowerCaseRegex)) {
       errorCount -= 1;
+      setPasswordConstraintMessage((curr) => ({ ...curr, lowercase: true }));
     } else {
       passwordMessage = 'Password must contain at least 1 lowercase character';
       setPasswordMeterMessage(passwordMessage);
+      setPasswordConstraintMessage((curr) => ({ ...curr, lowercase: false }));
     }
 
     if (value.match(containsUpperCaseRegex)) {
       errorCount -= 1;
+      setPasswordConstraintMessage((curr) => ({ ...curr, uppercase: true }));
       if (!passwordMessage) {
         setPasswordMeterMessage('');
       }
     } else {
       passwordMessage = 'Password must contain at least 1 uppercase character';
       setPasswordMeterMessage(passwordMessage);
+      setPasswordConstraintMessage((curr) => ({ ...curr, uppercase: false }));
     }
 
     if (value.match(containsNumericRegex)) {
       errorCount -= 1;
+      setPasswordConstraintMessage((curr) => ({ ...curr, numeric: true }));
       if (!passwordMessage) {
         setPasswordMeterMessage('');
       }
     } else {
       passwordMessage = 'Password must contain at least 1 numeric character';
       setPasswordMeterMessage(passwordMessage);
+      setPasswordConstraintMessage((curr) => ({ ...curr, numeric: false }));
     }
 
     if (value.length >= 8) {
       errorCount -= 1;
+      setPasswordConstraintMessage((curr) => ({
+        ...curr,
+        characterCount: true,
+      }));
       if (!passwordMessage) {
         setPasswordMeterMessage('');
       }
@@ -121,6 +146,10 @@ export const PasswordInput = <T,>({
       if (value.length > 0) {
         passwordMessage = 'Password must be at least 8 characters';
         setPasswordMeterMessage(passwordMessage);
+        setPasswordConstraintMessage((curr) => ({
+          ...curr,
+          characterCount: false,
+        }));
       }
     }
 
@@ -141,29 +170,74 @@ export const PasswordInput = <T,>({
   };
 
   return (
-    <div className={className} data-testid={testId}>
-      <FormInput<T>
-        className="mb-1"
-        visible={visible}
-        nameProp={nameProp}
-        register={register}
-        disabled={disabled}
-        error={error}
-        label={label}
-        placeholder={placeholder}
-        type={inputType}
-        suffixIcon={suffixIcon}
-        sufficIconColor={sufficIconColor}
-        suffixIconAction={() => {
-          updateIcon(inputType);
-        }}
-      ></FormInput>
-      {strengthMeterVisible && passwordMeterVisibility && value.length > 0 && (
-        <PasswordStrengthMeter
-          type={passwordMeterType}
-          message={passwordMeterMessage}
-        ></PasswordStrengthMeter>
-      )}
-    </div>
+    <>
+      {strengthMeterVisible &&
+        Object.values(passwordConstraintMessage).some((a) => !a) && (
+          <ul className="list-disc text-uiMidDark pl-5 mb-4 mt-4">
+            {!passwordConstraintMessage.characterCount && (
+              <li>
+                <Typography // TODO: Fix help text font-family
+                  text={'At least 8 characters'}
+                  type={'help'}
+                  color={'uiMidDark'}
+                />
+              </li>
+            )}
+            {!passwordConstraintMessage.numeric && (
+              <li>
+                <Typography
+                  text={'At least 1 number'}
+                  type={'help'}
+                  color={'uiMidDark'}
+                />
+              </li>
+            )}
+            {!passwordConstraintMessage.uppercase && (
+              <li>
+                <Typography
+                  text={'At least 1 capital letter'}
+                  type={'help'}
+                  color={'uiMidDark'}
+                />
+              </li>
+            )}
+            {!passwordConstraintMessage.lowercase && (
+              <li>
+                <Typography
+                  text={'At least 1 lowercase letter'}
+                  type={'help'}
+                  color={'uiMidDark'}
+                />
+              </li>
+            )}
+          </ul>
+        )}
+      <div className={className} data-testid={testId}>
+        <FormInput<T>
+          className="mb-1"
+          visible={visible}
+          nameProp={nameProp}
+          register={register}
+          disabled={disabled}
+          error={error}
+          label={label}
+          placeholder={placeholder}
+          type={inputType}
+          suffixIcon={suffixIcon}
+          sufficIconColor={sufficIconColor}
+          suffixIconAction={() => {
+            updateIcon(inputType);
+          }}
+        ></FormInput>
+        {strengthMeterVisible &&
+          passwordMeterVisibility &&
+          value.length > 0 && (
+            <PasswordStrengthMeter
+              type={passwordMeterType}
+              message={passwordMeterMessage}
+            ></PasswordStrengthMeter>
+          )}
+      </div>
+    </>
   );
 };
