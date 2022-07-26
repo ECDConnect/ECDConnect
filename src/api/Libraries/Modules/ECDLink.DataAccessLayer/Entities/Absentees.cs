@@ -23,8 +23,6 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public string Reason { get; set; }
         public DateTime AbsentDate { get; set; }
         public string LoggedBy { get; set; }
-        public string ReassignedClass { get; set; }
-        public string ReassignedToPractitioner { get; set; }
 
     }
 
