@@ -12,7 +12,7 @@ class ContentActivityService {
     const response = await apiInstance.post<any>(``, {
       query: `
         query GetAllActivity($locale: String) {
-          GetAllActivity(locale: $locale) {          
+          GetAllActivity(locale: $locale) {
             id
             name
             type
@@ -30,7 +30,7 @@ class ContentActivityService {
               id
               imageUrl
               name
-            }                
+            }
           }
         }
       `,
