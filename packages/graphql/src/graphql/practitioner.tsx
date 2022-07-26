@@ -84,36 +84,157 @@ export const GetPractitionerByIdNumber = gql`
   query GetPractitionerByIdNumber($idNumber: String) {
     GetPractitionerByIdNumber(idNumber: $idNumber) {
       id
-      user {
-        firstName
-        surname
-        email
-      }
-      siteAddress {
+      userName
+      email
+      isSouthAfricanCitizen
+      verifiedByHomeAffairs
+      dateOfBirth
+      idNumber
+      firstName
+      surname
+      fullName
+      contactPreference
+      genderId
+      phoneNumber
+      profileImageUrl
+      roles {
         id
-        province {
-          id
-          description
-        }
         name
-        addressLine1
-        addressLine2
-        addressLine3
-        postalCode
-        ward
       }
-      attendanceRegisterLink
-      maxChildren
-      consentForPhoto
-      parentFees
-      languageUsedInGroups
-      startDate
-      isPrincipal
-      isTrainee
-      isFundaAppAdmin
-      coachHierarchy
-      principalHierarchy
-      NotInvitedYet
+      nickFirstName
+      nickSurname
+      nickFullName
+      franchisorObjectData {
+        id
+        userId
+        siteAddressId
+        areaOfOperation
+        secondaryAreaOfOperation
+        startDate
+        siteAddress {
+          name
+          addressLine1
+          addressLine2
+          addressLine3
+          postalCode
+          ward
+          province {
+            description
+          }
+        }
+      }
+      coachObjectData {
+        id
+        userId
+        areaOfOperation
+        secondaryAreaOfOperation
+        startDate
+        siteAddress {
+          name
+          addressLine1
+          addressLine2
+          addressLine3
+          postalCode
+          ward
+          province {
+            description
+          }
+        }
+      }
+      principalObjectData {
+        id
+        userId
+        attendanceRegisterLink
+        maxChildren
+        parentFees
+        consentForPhoto
+        languageUsedInGroups
+        startDate
+        siteAddress {
+          name
+          addressLine1
+          addressLine2
+          addressLine3
+          postalCode
+          ward
+          province {
+            description
+          }
+        }
+        documents {
+          id
+          reference
+          documentType {
+            name
+            description
+            enumId
+          }
+        }
+        coachHierarchy
+        principalHierarchy
+        isPrincipal
+        isTrainee
+        isFundaAppAdmin
+        notInvitedYet
+        signature
+      }
+      practitionerObjectData {
+        id
+        userId
+        attendanceRegisterLink
+        maxChildren
+        parentFees
+        consentForPhoto
+        languageUsedInGroups
+        startDate
+        siteAddress {
+          name
+          addressLine1
+          addressLine2
+          addressLine3
+          postalCode
+          ward
+          province {
+            description
+          }
+        }
+        documents {
+          id
+          reference
+          documentType {
+            name
+            description
+            enumId
+          }
+        }
+        coachHierarchy
+        principalHierarchy
+        isPrincipal
+        isTrainee
+        isFundaAppAdmin
+        notInvitedYet
+        signature
+      }
+      childObjectData {
+        id
+        userId
+        caregiver {
+          firstName
+          surname
+        }
+        allergies
+        disabilities
+        otherHealthConditions
+        documents {
+          id
+          reference
+          documentType {
+            name
+            description
+            enumId
+          }
+        }
+      }
     }
   }
 `;

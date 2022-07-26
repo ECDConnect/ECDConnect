@@ -23,6 +23,7 @@ using ECDLink.DataAccessLayer.Context;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using ECDLink.Security.Extensions;
+using Microsoft.AspNetCore.Identity;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
@@ -53,6 +54,24 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
             return practitioner;
         }
+
+        public ApplicationUser GetPractitionerByIdNumber([Service] IHttpContextAccessor contextAccessor, 
+            [Service] UserManager<ApplicationUser> userManager,
+             [Service] RoleManager<IdentityRole> roleManager,
+            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+            [Service] IGenericRepositoryFactory repoFactory,
+            string idNumber)
+        {
+
+            var practionerUser = userManager.FindByNameAsync(idNumber).Result;//find practitioner by Username/Id number, if exists, add coach to practitioner
+
+            if (practionerUser != null)
+            {
+                return new UserQueryTypeExtension().GetUserById(userManager, roleManager, contextAccessor, dbFactory, repoFactory, practionerUser.Id);
+            }
+            return default(ApplicationUser);
+        }
+
         public async Task<FileModel> PractitionerExcelTemplateGenerator(
           [Service] IFileGenerationService fileService,
           [Service] IGenericRepositoryFactory repoFactory)

@@ -39,19 +39,37 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         {
             var user = userManager.FindByIdAsync(userId).Result;
 
-            //Franchisor
-            
-            user.franchisorObjectData = new FranchisorQueryExtension().GetFranchisorByUserId(contextAccessor, dbFactory,repoFactory, userId);
-            //Coach
-            user.coachObjectData = new CoachQueryExtension().GetCoachByUserId(contextAccessor, dbFactory, repoFactory, userId);
-            //Principal            
-            user.principalObjectData = new PrincipalQueryExtension().GetPrincipalByUserId(contextAccessor, dbFactory, repoFactory, userId);
-            //Practitioner
-            user.practitionerObjectData = new PractitionerQueryExtension().GetPractitionerByUserId(contextAccessor, dbFactory, repoFactory, userId);
-            //Child
-            user.childObjectData = new ChildQueryExtension().GetChildByUserId(contextAccessor, dbFactory, repoFactory, userId);
+            if (user != null)
+            {
+                //Franchisor            
+                if (userManager.IsInRoleAsync(user, "Franchisor").Result)
+                {
+                    user.franchisorObjectData = new FranchisorQueryExtension().GetFranchisorByUserId(contextAccessor, dbFactory, repoFactory, userId);
+                }
+                //Coach
+                if (userManager.IsInRoleAsync(user, "Coach").Result)
+                {
+                    user.coachObjectData = new CoachQueryExtension().GetCoachByUserId(contextAccessor, dbFactory, repoFactory, userId);
+                }
+                //Principal or Practitioner - Principal is just a Practitioner with IsPrincipal as true
+                if (userManager.IsInRoleAsync(user, "Principal").Result || userManager.IsInRoleAsync(user, "Practitioner").Result)
+                {
+                    var userData = new PractitionerQueryExtension().GetPractitionerByUserId(contextAccessor, dbFactory, repoFactory, userId);
+                    if ((bool)userData.IsPrincipal)
+                        user.principalObjectData = userData; //new PrincipalQueryExtension().GetPrincipalByUserId(contextAccessor, dbFactory, repoFactory, userId);
+                    else
+                        user.practitionerObjectData = userData;
+                }
+                //Child
+                if (userManager.IsInRoleAsync(user, "Child").Result)
+                {
+                    user.childObjectData = new ChildQueryExtension().GetChildByUserId(contextAccessor, dbFactory, repoFactory, userId);
+                }
 
-            return user.IsActive ? user : default(ApplicationUser);
+
+                return user.IsActive ? user : default(ApplicationUser);
+            }
+            return default(ApplicationUser);
         }
     }
 }
