@@ -19,7 +19,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using EcdLink.Api.CoreApi.GraphApi.Queries;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
@@ -33,31 +32,22 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     string firstName,
     string lastName,
     string idNumber,
-    string userId)
+    string PrincipalId)
         {
-            List<Practitioner> practitioners = new List<Practitioner>();
+            Practitioner practitioner = new Practitioner();
             //find the practitioner
-            var principal = userManager.FindByIdAsync(userId).Result;
+            var coach = userManager.FindByIdAsync(PrincipalId).Result;
 
-            var practionerUser = userManager.FindByNameAsync(idNumber).Result;//find practitioner by Username/Id number, if exists, add coach to practitioner
+            var practi = userManager.FindByNameAsync(idNumber).Result;//find practitioner by Username/Id number, if exists, add coach to practitioner
             using var scope = dbFactory.CreateDbContext();
             using var dbContextTransaction = scope.Database.BeginTransaction();
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            Practitioner practitioner = new PractitionerQueryExtension().GetPractitionerByUserId(contextAccessor, dbFactory, repoFactory, userId);
-            //practitioners = practitionerRepo.GetAll().Where(x => x.UserId.Equals(practionerUser.Id)).ToList();
-            if (practitioner != null)
-            {
-                practitioner.PrincipalHierarchy = userId;
-                var updateResult = practitionerRepo.Update(practitioner);
+            var userId = contextAccessor.HttpContext.GetUser().Id;
+            var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: userId);
+            practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId.Equals(practi.Id));
+            practitioner.PrincipalHierarchy = PrincipalId;
+            var updateResult = practitionerRepo.Update(practitioner);
 
-                return practitioner;
-            }
-            else
-            {
-                //TODO: create practitioner + user
-                return new Practitioner();
-            }
+            return practitioner;
         }
 
         public Practitioner DeletePractitionerForPrincipal([Service] IHttpContextAccessor contextAccessor,

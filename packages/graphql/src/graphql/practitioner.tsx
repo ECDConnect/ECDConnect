@@ -32,12 +32,7 @@ export const GetAllPractitioner = gql`
       parentFees
       languageUsedInGroups
       startDate
-      isPrincipal
-      isTrainee
-      isFundaAppAdmin
-      coachHierarchy
-      principalHierarchy
-      NotInvitedYet
+      monthSinceFranchisee
     }
   }
 `;
@@ -70,50 +65,7 @@ export const GetPractitionerById = gql`
       parentFees
       languageUsedInGroups
       startDate
-      isPrincipal
-      isTrainee
-      isFundaAppAdmin
-      coachHierarchy
-      principalHierarchy
-      NotInvitedYet
-    }
-  }
-`;
-
-export const GetPractitionerByIdNumber = gql`
-  query GetPractitionerByIdNumber($idNumber: String) {
-    GetPractitionerByIdNumber(idNumber: $idNumber) {
-      id
-      user {
-        firstName
-        surname
-        email
-      }
-      siteAddress {
-        id
-        province {
-          id
-          description
-        }
-        name
-        addressLine1
-        addressLine2
-        addressLine3
-        postalCode
-        ward
-      }
-      attendanceRegisterLink
-      maxChildren
-      consentForPhoto
-      parentFees
-      languageUsedInGroups
-      startDate
-      isPrincipal
-      isTrainee
-      isFundaAppAdmin
-      coachHierarchy
-      principalHierarchy
-      NotInvitedYet
+      monthSinceFranchisee
     }
   }
 `;

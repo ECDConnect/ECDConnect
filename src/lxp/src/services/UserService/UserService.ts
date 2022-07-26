@@ -12,162 +12,28 @@ class UserService {
     const apiInstance = await api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-      query userById($userId: String) {
-        userById(userId: $userId) {
-          id
-          userName
-          email
-          isSouthAfricanCitizen
-          verifiedByHomeAffairs
-          dateOfBirth
-          idNumber            
-          firstName
-          surname
-          fullName
-          contactPreference
-          genderId
-          phoneNumber
-          profileImageUrl
-          roles {
+        query userById($userId: String) {
+          userById(userId: $userId) {
             id
-            name
-          }
-          nickFirstName
-          nickSurname
-          nickFullName
-          franchisorObjectData {
+            userName
+            email
+            isSouthAfricanCitizen
+            verifiedByHomeAffairs
+            dateOfBirth
+            idNumber            
+            firstName
+            surname
+            fullName
+            contactPreference
+            genderId
+            phoneNumber
+            profileImageUrl
+            roles {
               id
-              userId
-              siteAddressId                
-              areaOfOperation
-              secondaryAreaOfOperation
-              startDate
-              siteAddress {
-                  name
-                  addressLine1
-                  addressLine2
-                  addressLine3
-                  postalCode
-                  ward
-                  province {
-                      description
-                  }
-              }
-          }
-          coachObjectData {
-              id
-              userId
-              areaOfOperation
-              secondaryAreaOfOperation
-              startDate
-              siteAddress {
-                  name
-                  addressLine1
-                  addressLine2
-                  addressLine3
-                  postalCode
-                  ward
-                  province {
-                      description
-                  }
-              }
-          }
-          principalObjectData {
-              id
-              userId
-              attendanceRegisterLink
-              maxChildren
-              parentFees
-              consentForPhoto
-              languageUsedInGroups
-              startDate
-              siteAddress {
-                  name
-                  addressLine1
-                  addressLine2
-                  addressLine3
-                  postalCode
-                  ward
-                  province {
-                      description
-                  }
-              }
-               documents {
-                  id
-                  reference
-                  documentType {
-                      name
-                      description
-                      enumId
-                  }                    
-              }  
-              coachHierarchy
-              principalHierarchy
-              isPrincipal
-              isTrainee
-              isFundaAppAdmin
-              notInvitedYet
-              signature  
-          }
-          practitionerObjectData {
-              id
-              userId
-              attendanceRegisterLink
-              maxChildren
-              parentFees
-              consentForPhoto
-              languageUsedInGroups
-              startDate
-              siteAddress {
-                  name
-                  addressLine1
-                  addressLine2
-                  addressLine3
-                  postalCode
-                  ward
-                  province {
-                      description
-                  }
-              }
-               documents {
-                  id
-                  reference
-                  documentType {
-                      name
-                      description
-                      enumId
-                  }                    
-              }  
-              coachHierarchy
-              principalHierarchy
-              isPrincipal
-              isTrainee
-              isFundaAppAdmin
-              notInvitedYet
-              signature
-          }
-          childObjectData {
-              id
-              userId
-              caregiver {
-                  firstName
-                  surname
-              }
-              allergies
-              disabilities
-              otherHealthConditions
-              documents {
-                  id
-                  reference
-                  documentType {
-                      name
-                      description
-                      enumId
-                  }                    
-              }                                
+              name
+            }            
           }
         }
-      }
       `,
       variables: {
         userId: userId,
