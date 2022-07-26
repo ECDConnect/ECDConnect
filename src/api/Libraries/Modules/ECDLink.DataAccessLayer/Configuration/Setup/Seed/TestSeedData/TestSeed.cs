@@ -551,7 +551,7 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
                 Id = TestSeedId.ClassroomId,
                 UserId = _practitionerId,
                 DoesOwnerTeach = true,
-                IsPrinciple = true,
+                IsPrincipal = true,
                 NumberOfAssistants = 1,
                 NumberOfOtherAssistants = 2,
                 NumberPractitioners = 3,

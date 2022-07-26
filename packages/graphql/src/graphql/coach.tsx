@@ -29,6 +29,16 @@ export const GetCoachById = gql`
   }
 `;
 
+export const GetCoachByUserId = gql`
+  query GetCoachByUserId($id: UUID) {
+    GetCoachByUserId(userId: $id) {
+      areaOfOperation
+      secondaryAreaOfOperation
+      startDate
+    }
+  }
+`;
+
 export const CreateCoach = gql`
   mutation createCoach($input: CoachInput) {
     createCoach(input: $input) {
