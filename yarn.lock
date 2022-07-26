@@ -3999,17 +3999,17 @@
   resolved "https://registry.npmjs.org/@types/scheduler/-/scheduler-0.16.2.tgz"
   integrity sha512-hppQEBDmlwhFAXKJX2KnWLYu5yMfi91yazPb2l+lbJiwW+wdo1gNeRA+3RgNSO39WYX2euey41KEwnqesU2Jew==
 
+"@types/signature_pad@*":
+  version "2.3.2"
+  resolved "https://registry.yarnpkg.com/@types/signature_pad/-/signature_pad-2.3.2.tgz#97121116570b945b7b8d70525ee5428b6ae17569"
+  integrity sha512-dDfWIgRcdzAaeVOpLRmLHIumGwc5inSD4Dj2Duis3yUEoSADZECLJHKkUQphbaANQ7kSC2bkf1JzyBPSmTlrPQ==
+
 "@types/set-cookie-parser@^2.4.0":
   version "2.4.2"
   resolved "https://registry.yarnpkg.com/@types/set-cookie-parser/-/set-cookie-parser-2.4.2.tgz#b6a955219b54151bfebd4521170723df5e13caad"
   integrity sha512-fBZgytwhYAUkj/jC/FAV4RQ5EerRup1YQsXQCh8rZfiHkc4UahC192oH0smGwsXol3cL3A5oETuAHeQHmhXM4w==
   dependencies:
     "@types/node" "*"
-
-"@types/signature_pad@*":
-  version "2.3.2"
-  resolved "https://registry.yarnpkg.com/@types/signature_pad/-/signature_pad-2.3.2.tgz#97121116570b945b7b8d70525ee5428b6ae17569"
-  integrity sha512-dDfWIgRcdzAaeVOpLRmLHIumGwc5inSD4Dj2Duis3yUEoSADZECLJHKkUQphbaANQ7kSC2bkf1JzyBPSmTlrPQ==
 
 "@types/source-list-map@*":
   version "0.1.2"
