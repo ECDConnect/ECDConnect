@@ -18,6 +18,19 @@ export interface ThemeColours extends DefaultThemeColors {
   uiMid: string;
   uiLight: string;
   uiBg: string;
+  modalBg: string;
+  errorMain: string;
+  errorDark: string;
+  errorBg: string;
+  alertMain: string;
+  alertDark: string;
+  alertBg: string;
+  successMain: string;
+  successDark: string;
+  successBg: string;
+  infoMain: string;
+  infoDark: string;
+  infoBb: string;
 }
 
 export const initialThemeColours: ThemeColours = {

@@ -196,7 +196,7 @@ export function Theme() {
           primaryAccent2: colors.primaryAccent2,
           secondary: colors.secondary,
           secondaryAccent1: colors.secondaryAccent1,
-          secondaryAccent: colors.secondaryAccent2,
+          secondaryAccent2: colors.secondaryAccent2,
           tertiary: colors.tertiary,
           tertiaryAccent1: colors.tertiaryAccent1,
           tertiaryAccent2: colors.tertiaryAccent2,
