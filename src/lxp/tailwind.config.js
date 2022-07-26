@@ -42,7 +42,8 @@ module.exports = {
         10: '10px',
       },
       boxShadow: {
-        card: '0px 10px 10px rgba(39, 56, 90, 0.2)'
+        card: '0px 10px 10px rgba(39, 56, 90, 0.2)',
+        button: '0px 10px 10px -5px rgba(39, 56, 90, 0.2)'
       },
       minWidth: {
         120: '120px',

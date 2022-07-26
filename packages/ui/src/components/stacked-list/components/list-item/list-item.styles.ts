@@ -13,7 +13,7 @@ export const container = (
   dividerType: DividerType,
   dividerColor: Colours
 ) =>
-  `flex flex-row justify-between items-center bg-${backgroundColor} cursor-pointer m-4 rounded-10 ${
+  `flex flex-row justify-between items-center bg-${backgroundColor} cursor-pointer rounded-10 ${
     withPaddingY ? 'py-4' : ''
   } ${withPaddingX ? 'px-4' : ''}
    ${showDivider ? `border-t border-${dividerColor} border-${dividerType}` : ''}
