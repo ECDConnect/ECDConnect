@@ -20,7 +20,7 @@ export const ActionListItem: React.FC<ActionListItemProps> = ({ item }) => {
     <div className={styles.actionListItemContainer}>
       <div className={styles.contentWrapper}>
         <div className={stackedListStyles.textRowsWrapper}>
-          <div className={classNames('pl-4', styles.actionParagraphWrapper)}>
+          <div className={classNames(styles.actionParagraphWrapper)}>
             <>
               <p
                 className={
