@@ -71,7 +71,7 @@ export const ChildLearningSupportForm: React.FC<
           type={'body'}
           text={helpingWithSkill?.name ?? ''}
           color={'textMid'}
-          weight={'bolder'}
+          weight={'bold'}
         />
       </div>
 

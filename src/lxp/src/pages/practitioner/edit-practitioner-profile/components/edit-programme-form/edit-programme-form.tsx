@@ -56,9 +56,9 @@ export const EditProgrammeForm: React.FC<EditProgrammeFormProps> = ({
   return (
     <div>
       <Typography
-        type={'h1'}
+        type={'h2'}
         text={'Set up your programme'}
-        color={'primary'}
+        color={'textDark'}
         className={'my-3'}
       />
       <div className="space-y-4">

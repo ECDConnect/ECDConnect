@@ -33,23 +33,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
             var careGiverRepo = repoFactory.CreateRepository<Caregiver>(userContext: uId);
             var practitionerrRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            List<Practitioner> practitioners = practitionerrRepo.GetAll().Where(x => x.UserId.Equals(practitionerId)).ToList();            
-            if (practitioners.Count>0)
+            List<Practitioner> practitioner = practitionerrRepo.GetAll().Where(x => x.UserId.Equals(practitionerId)).ToList();
+            List<Child> children = childRepo.GetAll().Where(x => x.Hierarchy.Contains(practitioner.FirstOrDefault().Hierarchy)).ToList();
+            List<Caregiver> caregivers = new List<Caregiver>();
+            foreach (var child in children)
             {
-                List<Child> children = childRepo.GetAll().Where(x => x.Hierarchy.Contains(practitioners.FirstOrDefault().Hierarchy)).ToList();
-                List<Caregiver> caregivers = new List<Caregiver>();
-                foreach (var child in children)
+                if (child.CaregiverId != null)
                 {
-                    if (child.CaregiverId != null)
-                    {
-                        Caregiver cg = careGiverRepo.GetById((Guid)child.CaregiverId);
-                        caregivers.Add(cg);
-                    }
+                    Caregiver cg = careGiverRepo.GetById((Guid)child.CaregiverId);
+                    caregivers.Add(cg);
                 }
-                return caregivers;
-            } else {
-                return careGiverRepo.GetAll().ToList();
             }
+            return caregivers;
         }
     }
 }

@@ -69,7 +69,7 @@ const baseNotificationListItem: ListItemProps = {
   showIcon: true,
   showSubTitleShape: true,
   showChevronIcon: true,
-  backgroundColor: 'white',
+  backgroundColor: 'uiBg',
   withPaddingX: true,
   withPaddingY: true,
   title: 'Message caregiver',
@@ -169,8 +169,8 @@ export const ChildProfile: React.FC = () => {
       buttonType: 'outlined',
       buttonIcon: 'EyeIcon',
       buttonText: 'View',
-      buttonTextColor: 'primary',
-      buttonColor: 'primary',
+      buttonTextColor: 'secondary',
+      buttonColor: 'secondaryAccent2',
       showButton: true,
       showDivider: true,
       dividerType: 'dashed',
@@ -204,11 +204,13 @@ export const ChildProfile: React.FC = () => {
       buttonType: 'outlined',
       buttonIcon: 'EyeIcon',
       buttonText: 'View',
-      buttonTextColor: 'primary',
-      buttonColor: 'primary',
+      buttonTextColor: 'secondary',
+      buttonColor: 'secondaryAccent2',
       showButton: true,
       showSubTitleShape: true,
       withPaddingY: true,
+      showDivider: true,
+      dividerType: 'dashed',
       onButtonClick: () => {
         history.push(ROUTES.CHILD_ATTENDANCE_REPORT, {
           childId: child?.id,
@@ -225,8 +227,8 @@ export const ChildProfile: React.FC = () => {
         buttonType: 'outlined',
         buttonIcon: 'EyeIcon',
         buttonText: 'View',
-        buttonTextColor: 'primary',
-        buttonColor: 'primary',
+        buttonTextColor: 'secondary',
+        buttonColor: 'secondaryAccent2',
         showButton: true,
         showDivider: true,
         dividerType: 'dashed',
@@ -341,8 +343,8 @@ export const ChildProfile: React.FC = () => {
         buttonType: 'filled',
         buttonIcon: 'PlusIcon',
         buttonText: 'Add',
-        buttonTextColor: 'white',
-        buttonColor: 'primary',
+        buttonTextColor: 'secondary',
+        buttonColor: 'secondaryAccent2',
         onButtonClick: () => setCreateChildNoteVisible(true),
       };
     } else {
@@ -352,8 +354,8 @@ export const ChildProfile: React.FC = () => {
         buttonType: 'outlined',
         buttonIcon: 'EyeIcon',
         buttonText: 'View',
-        buttonTextColor: 'primary',
-        buttonColor: 'primary',
+        buttonTextColor: 'secondary',
+        buttonColor: 'secondaryAccent2',
         showButton: true,
         showDivider: true,
         dividerType: 'dashed',
@@ -592,21 +594,21 @@ export const ChildProfile: React.FC = () => {
             />
           ))}
 
-          <Divider className={'mt-2'} />
+          <Divider dividerType="dashed" className="-mt-1.5" />
 
           <Button
-            className={styles.button}
+            className={styles.button.replace('mt-4', 'mt-3')}
             color={'primary'}
-            type="outlined"
+            type="filled"
             onClick={contactCaregivers}
           >
             {renderIcon('ChatAlt2Icon', styles.buttonIcon)}
-            <Typography type="body" text="Contact caregiver" color="primary" />
+            <Typography type="button" text="Contact caregiver" color="white" />
           </Button>
           <Button className={styles.button} color={'errorMain'} type="outlined">
             {renderIcon('TrashIcon', styles.buttonIcon)}
             <Typography
-              type="body"
+              type="button"
               text={`Remove ${childUser?.firstName}`}
               color="errorMain"
               onClick={() => setRemoveChildConfirmationVisible(true)}

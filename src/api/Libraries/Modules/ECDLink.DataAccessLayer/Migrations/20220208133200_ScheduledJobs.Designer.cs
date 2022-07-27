@@ -349,7 +349,7 @@ namespace ECDLink.DataAccessLayer.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
-                    b.Property<bool?>("IsPrincipal")
+                    b.Property<bool?>("IsPrinciple")
                         .HasColumnType("boolean");
 
                     b.Property<string>("Name")

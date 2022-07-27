@@ -62,27 +62,34 @@ function ThemeProvider({
     if (data && data.colors) {
       if (data.colors) {
         DefaultTheme.primary = data.colors.primary;
+        DefaultTheme.primaryAccent1 = data.colors.primaryAccent1;
+        DefaultTheme.primaryAccent2 = data.colors.primaryAccent2;
         DefaultTheme.secondary = data.colors.secondary;
+        DefaultTheme.secondaryAccent1 = data.colors.secondaryAccent1;
+        DefaultTheme.secondaryAccent2 = data.colors.secondaryAccent2;
         DefaultTheme.tertiary = data.colors.tertiary;
+        DefaultTheme.tertiaryAccent1 = data.colors.tertiaryAccent1;
+        DefaultTheme.tertiaryAccent2 = data.colors.tertiaryAccent2;
         DefaultTheme.textDark = data.colors.textDark;
-        DefaultTheme.textLight = data.colors.textLight;
         DefaultTheme.textMid = data.colors.textMid;
-        DefaultTheme.uiBg = data.colors.uiBg;
-        DefaultTheme.uiLight = data.colors.uiLight;
-        DefaultTheme.uiMid = data.colors.uiMid;
+        DefaultTheme.textLight = data.colors.textLight;
         DefaultTheme.uiMidDark = data.colors.uiMidDark;
-        DefaultTheme.alertBg = data.colors.alertBg;
-        DefaultTheme.alertDark = data.colors.alertDark;
-        DefaultTheme.alertMain = data.colors.alertMain;
-        DefaultTheme.errorBg = data.colors.errorBg;
-        DefaultTheme.errorDark = data.colors.errorDark;
+        DefaultTheme.uiMid = data.colors.uiMid;
+        DefaultTheme.uiLight = data.colors.uiLight;
+        DefaultTheme.uiBg = data.colors.uiBg;
+        DefaultTheme.modalBg = data.colors.modalBg;
         DefaultTheme.errorMain = data.colors.errorMain;
-        DefaultTheme.infoBb = data.colors.infoBb;
-        DefaultTheme.infoDark = data.colors.infoDark;
-        DefaultTheme.infoMain = data.colors.infoMain;
-        DefaultTheme.successBg = data.colors.successBg;
-        DefaultTheme.successDark = data.colors.successDark;
+        DefaultTheme.errorDark = data.colors.errorDark;
+        DefaultTheme.errorBg = data.colors.errorBg;
+        DefaultTheme.alertMain = data.colors.alertMain;
+        DefaultTheme.alertDark = data.colors.alertDark;
+        DefaultTheme.alertBg = data.colors.alertBg;
         DefaultTheme.successMain = data.colors.successMain;
+        DefaultTheme.successDark = data.colors.successDark;
+        DefaultTheme.successBg = data.colors.successBg;
+        DefaultTheme.infoMain = data.colors.infoMain;
+        DefaultTheme.infoDark = data.colors.infoDark;
+        DefaultTheme.infoBb = data.colors.infoBb;
       }
 
       if (data.images) {
@@ -107,27 +114,34 @@ function ThemeProvider({
 
   function setWhiteLabelTheme() {
     DefaultTheme.primary = WhiteLabelTheme.primary;
+    DefaultTheme.primaryAccent1 = WhiteLabelTheme.primaryAccent1;
+    DefaultTheme.primaryAccent2 = WhiteLabelTheme.primaryAccent2;
     DefaultTheme.secondary = WhiteLabelTheme.secondary;
+    DefaultTheme.secondaryAccent1 = WhiteLabelTheme.secondaryAccent1;
+    DefaultTheme.secondaryAccent2 = WhiteLabelTheme.secondaryAccent2;
     DefaultTheme.tertiary = WhiteLabelTheme.tertiary;
+    DefaultTheme.tertiaryAccent1 = WhiteLabelTheme.tertiaryAccent1;
+    DefaultTheme.tertiaryAccent2 = WhiteLabelTheme.tertiaryAccent2;
     DefaultTheme.textDark = WhiteLabelTheme.textDark;
-    DefaultTheme.textLight = WhiteLabelTheme.textLight;
     DefaultTheme.textMid = WhiteLabelTheme.textMid;
-    DefaultTheme.uiBg = WhiteLabelTheme.uiBg;
-    DefaultTheme.uiLight = WhiteLabelTheme.uiLight;
-    DefaultTheme.uiMid = WhiteLabelTheme.uiMid;
+    DefaultTheme.textLight = WhiteLabelTheme.textLight;
     DefaultTheme.uiMidDark = WhiteLabelTheme.uiMidDark;
-    DefaultTheme.alertBg = WhiteLabelTheme.alertBg;
-    DefaultTheme.alertDark = WhiteLabelTheme.alertDark;
-    DefaultTheme.alertMain = WhiteLabelTheme.alertMain;
-    DefaultTheme.errorBg = WhiteLabelTheme.errorBg;
-    DefaultTheme.errorDark = WhiteLabelTheme.errorDark;
+    DefaultTheme.uiMid = WhiteLabelTheme.uiMid;
+    DefaultTheme.uiLight = WhiteLabelTheme.uiLight;
+    DefaultTheme.uiBg = WhiteLabelTheme.uiBg;
+    DefaultTheme.modalBg = WhiteLabelTheme.modalBg;
     DefaultTheme.errorMain = WhiteLabelTheme.errorMain;
-    DefaultTheme.infoBb = WhiteLabelTheme.infoBb;
-    DefaultTheme.infoDark = WhiteLabelTheme.infoDark;
-    DefaultTheme.infoMain = WhiteLabelTheme.infoMain;
-    DefaultTheme.successBg = WhiteLabelTheme.successBg;
-    DefaultTheme.successDark = WhiteLabelTheme.successDark;
+    DefaultTheme.errorDark = WhiteLabelTheme.errorDark;
+    DefaultTheme.errorBg = WhiteLabelTheme.errorBg;
+    DefaultTheme.alertMain = WhiteLabelTheme.alertMain;
+    DefaultTheme.alertDark = WhiteLabelTheme.alertDark;
+    DefaultTheme.alertBg = WhiteLabelTheme.alertBg;
     DefaultTheme.successMain = WhiteLabelTheme.successMain;
+    DefaultTheme.successDark = WhiteLabelTheme.successDark;
+    DefaultTheme.successBg = WhiteLabelTheme.successBg;
+    DefaultTheme.infoMain = WhiteLabelTheme.infoMain;
+    DefaultTheme.infoDark = WhiteLabelTheme.infoDark;
+    DefaultTheme.infoBb = WhiteLabelTheme.infoBb;
     DefaultTheme.fontUrl = WhiteLabelTheme.fontUrl;
     DefaultTheme.mainHeadingOverrideFontUrl =
       WhiteLabelTheme.mainHeadingOverrideFontUrl;

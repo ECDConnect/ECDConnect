@@ -32,7 +32,7 @@ export const IconInformationIndicator: React.FC<
         fontSize="14"
       />
       {actions?.map((buttonProps) => (
-        <Button {...buttonProps} className="mt-4" />
+        <Button key={buttonProps.text} {...buttonProps} className="mt-4" />
       ))}
     </div>
   );

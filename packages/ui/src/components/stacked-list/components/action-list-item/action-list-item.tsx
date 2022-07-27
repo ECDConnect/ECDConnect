@@ -14,13 +14,13 @@ export const ActionListItem: React.FC<ActionListItemProps> = ({ item }) => {
     return renderIcon(iconType, styles.actionIcon);
   };
 
-  const buttonType = item.buttonType ?? 'outlined';
+  const buttonType = item.buttonType ?? 'filled';
 
   return (
     <div className={styles.actionListItemContainer}>
       <div className={styles.contentWrapper}>
         <div className={stackedListStyles.textRowsWrapper}>
-          <div className={classNames('pl-4', styles.actionParagraphWrapper)}>
+          <div className={classNames(styles.actionParagraphWrapper)}>
             <>
               <p
                 className={
@@ -46,11 +46,11 @@ export const ActionListItem: React.FC<ActionListItemProps> = ({ item }) => {
         {item.onActionClick && (
           <div onClick={() => item.onActionClick && item.onActionClick()}>
             {item.actionName && (
-              <Button type={buttonType} color="primary" size="small">
+              <Button type={buttonType} color="secondaryAccent2" size="small">
                 <Typography
                   className={'mr-1'}
-                  type={'small'}
-                  color={buttonType === 'outlined' ? 'primary' : 'white'}
+                  type={'buttonSmall'}
+                  color={'secondary'}
                   text={item.actionName}
                 ></Typography>
                 {item.actionIcon && getIcon(item.actionIcon)}

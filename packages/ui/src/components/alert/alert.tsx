@@ -9,7 +9,8 @@ export const Alert: React.FC<AlertProps> = ({
   message,
   list,
   className,
-  variant = 'outlined',
+  variant = 'flat',
+  listColor = 'black',
   button,
 }) => {
   const icon = styles.alertIcon(type);
@@ -29,8 +30,8 @@ export const Alert: React.FC<AlertProps> = ({
             {title && (
               <Typography
                 type={'help'}
-                weight="bolder"
                 text={title}
+                weight="normal"
                 className={styles.title}
                 color={styles.alertTextColor(type)}
               />
@@ -38,7 +39,6 @@ export const Alert: React.FC<AlertProps> = ({
             {message && (
               <Typography
                 type={'help'}
-                weight={'bold'}
                 hasMarkup
                 text={message}
                 className={styles.message(!!title)}
@@ -46,15 +46,20 @@ export const Alert: React.FC<AlertProps> = ({
               />
             )}
             {list && (
-              <ul className={styles.list}>
+              <ul
+                className={
+                  styles.list +
+                  `text-${listColor === 'black' ? 'textDark' : 'white'}`
+                }
+              >
                 {list.map((item: string, index: number) => (
                   <li key={index}>
                     <Typography
                       type={'help'}
                       hasMarkup
                       text={item}
-                      className={styles.message(!!title || !!message)}
-                      color={styles.alertTextColor(type)}
+                      className={'text-sm font-normal'}
+                      color={listColor === 'black' ? 'textDark' : 'white'}
                     />
                   </li>
                 ))}

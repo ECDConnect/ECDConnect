@@ -14,7 +14,7 @@ export const OfflineCard: React.FC = () => {
       <Typography
         text="Information not available when offline"
         type={'body'}
-        weight={'bolder'}
+        weight={'bold'}
         align="center"
         className="mt-2"
       />

@@ -150,16 +150,16 @@ export function SearchDropDown<T>({
             >
               <Typography
                 type={'help'}
-                lineHeight={'relaxed'}
                 color={
-                  open || !hasSelectedValue() || !touched ? 'textDark' : 'white'
+                  open || !hasSelectedValue() || !touched
+                    ? 'textLight'
+                    : 'white'
                 }
                 text={selectedLabel || placeholder || ''}
-                className={'h-5'}
               />
               {renderIcon(
                 !open ? 'ChevronDownIcon' : 'ChevronUpIcon',
-                styles.getButtonIcon('textDark', open, hasSelectedValue())
+                styles.getButtonIcon('primary', open, hasSelectedValue())
               )}
             </Menu.Button>
 
@@ -190,16 +190,14 @@ export function SearchDropDown<T>({
                       {info.name && (
                         <Typography
                           type="body"
-                          weight={'bold'}
-                          color={'black'}
+                          color={'textDark'}
                           text={info.name}
                         />
                       )}
                       {info.hint && (
                         <Typography
                           type="help"
-                          weight={'bold'}
-                          color={'textLight'}
+                          color={'textMid'}
                           text={info.hint || ''}
                         />
                       )}
@@ -222,11 +220,8 @@ export function SearchDropDown<T>({
                               )}
                               <Typography
                                 type={'body'}
-                                weight={'bold'}
                                 text={item.label}
-                                color={
-                                  optionSelected ? 'textDark' : 'textLight'
-                                }
+                                color={optionSelected ? 'textDark' : 'textMid'}
                               />
                             </div>
                           </Menu.Item>

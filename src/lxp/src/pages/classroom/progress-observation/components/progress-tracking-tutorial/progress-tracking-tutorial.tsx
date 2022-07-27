@@ -32,7 +32,7 @@ export const ProgressTrackingTutorial = ({
           <Typography
             color={'textDark'}
             type={'body'}
-            weight={'bolder'}
+            weight={'bold'}
             text={'When should you track each child’s progress?'}
           />
           <ul className={styles.listItems}>
@@ -69,7 +69,7 @@ export const ProgressTrackingTutorial = ({
             color={'textDark'}
             className={styles.spaceTop}
             type={'body'}
-            weight={'bolder'}
+            weight={'bold'}
             text={'When should you send reports to caregivers?'}
           />
           <Typography
@@ -108,7 +108,7 @@ export const ProgressTrackingTutorial = ({
           <Typography
             color={'textDark'}
             type={'body'}
-            weight={'bolder'}
+            weight={'bold'}
             text={'What should you do?'}
           />
           <IconTitleDescriptionTile
@@ -139,7 +139,7 @@ export const ProgressTrackingTutorial = ({
             color={'textDark'}
             className={styles.spaceTop}
             type={'body'}
-            weight={'bolder'}
+            weight={'bold'}
             text={'What do the levels mean?'}
           />
           <Typography

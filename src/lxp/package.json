@@ -9,6 +9,7 @@
   },
   "scripts": {
     "start": "craco start",
+    "start:mocks": "REACT_APP_RUN_MOCKS='run_msw' craco start",
     "build": "craco build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
@@ -31,5 +32,8 @@
       "last 1 safari version"
     ]
   },
-  "description": "An Ionic project"
+  "description": "An Ionic project",
+  "msw": {
+    "workerDirectory": "public"
+  }
 }

@@ -2,7 +2,7 @@ import * as styles from './banner-wrapper.styles';
 import {
   ArrowLeftIcon,
   XIcon,
-  MenuIcon,
+  MenuAlt2Icon,
   QuestionMarkCircleIcon,
 } from '@heroicons/react/solid';
 import { Colours, ComponentBaseProps } from '../../models';
@@ -93,8 +93,8 @@ export const BannerWrapper: React.FC<BannerWrapperProps> = ({
             />
           )}
           {showMenu && (
-            <MenuIcon
-              className={styles.icons}
+            <MenuAlt2Icon
+              className={classNames(styles.menuIcons)}
               width={25}
               height={30}
               onClick={() => setSidebarOpen(true)}
@@ -108,16 +108,20 @@ export const BannerWrapper: React.FC<BannerWrapperProps> = ({
               subTitle ? (
                 <div className={styles.titleSubWrapper}>
                   <Typography
-                    type="help"
+                    type="h4"
                     text={title}
                     color={'white'}
                     className="overflow-auto w-full truncate"
                   />
-                  <Typography type="small" text={subTitle} color={'white'} />
+                  <Typography
+                    type="help"
+                    text={subTitle}
+                    color={'primaryAccent2'}
+                  />
                 </div>
               ) : (
                 <Typography
-                  type="body"
+                  type="h4"
                   text={title}
                   color={'white'}
                   className="overflow-auto w-full truncate"
