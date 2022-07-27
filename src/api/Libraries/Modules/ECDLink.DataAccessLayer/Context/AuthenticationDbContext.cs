@@ -34,7 +34,7 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<ReasonForLeaving> ReasonsForLeaving { get; set; }
         public DbSet<ShortenUrlEntity> ShortUrls { get; set; }
         public DbSet<UserConsent> UserConsents { get; set; }
-        public DbSet<Signatures> Signatures { get; set; }
+        public DbSet<Absentees> Absents { get; set; }
 
         // Notes
         public DbSet<Note> Notes { get; set; }

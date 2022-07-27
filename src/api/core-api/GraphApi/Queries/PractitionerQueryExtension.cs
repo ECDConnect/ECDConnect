@@ -18,13 +18,60 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Context;
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using ECDLink.Security.Extensions;
+using Microsoft.AspNetCore.Identity;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
     [ExtendObjectType(OperationTypeNames.Query)]
     public class PractitionerQueryExtension
     {
+        public PractitionerQueryExtension()
+        {
+        }
+
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+
+        //[Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public Practitioner GetPractitionerByUserId([Service] IHttpContextAccessor contextAccessor,
+        [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+        [Service] IGenericRepositoryFactory repoFactory,
+        string userId)
+        {
+            using var scope = dbFactory.CreateDbContext();
+            using var dbContextTransaction = scope.Database.BeginTransaction();
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var practiRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+            Practitioner practitioner = new Practitioner();
+            List<Practitioner> practitioners = practiRepo.GetAll().Where(x => x.UserId.Contains(userId)).ToList();
+            if (practitioners.Count > 0) { 
+                practitioner = practitioners.FirstOrDefault(); 
+            }
+
+            return practitioner;
+        }
+
+        public ApplicationUser GetPractitionerByIdNumber([Service] IHttpContextAccessor contextAccessor, 
+            [Service] UserManager<ApplicationUser> userManager,
+             [Service] RoleManager<IdentityRole> roleManager,
+            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+            [Service] IGenericRepositoryFactory repoFactory,
+            string idNumber)
+        {
+
+            var practionerUser = userManager.FindByNameAsync(idNumber).Result;//find practitioner by Username/Id number, if exists, add coach to practitioner
+
+            if (practionerUser != null)
+            {
+                return new UserQueryTypeExtension().GetUserById(userManager, roleManager, contextAccessor, dbFactory, repoFactory, practionerUser.Id);
+            }
+            return default(ApplicationUser);
+        }
+
         public async Task<FileModel> PractitionerExcelTemplateGenerator(
           [Service] IFileGenerationService fileService,
           [Service] IGenericRepositoryFactory repoFactory)

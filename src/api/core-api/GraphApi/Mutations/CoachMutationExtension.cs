@@ -24,6 +24,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using EcdLink.Api.CoreApi.GraphApi.Queries;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
@@ -51,21 +52,32 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             string idNumber, 
             string coachId)
         {
-            Practitioner practitioner = new Practitioner();
+            //Practitioner practitioner = new Practitioner();
             //find the practitioner
             var coach = userManager.FindByIdAsync(coachId).Result;
-            
+            Practitioner practitioner = new Practitioner();
 
             var practi = userManager.FindByNameAsync(idNumber).Result;//find practitioner by Username/Id number, if exists, add coach to practitioner
             if (practi != null)
             {
                 using var scope = dbFactory.CreateDbContext();
                 using var dbContextTransaction = scope.Database.BeginTransaction();
-                var userId = contextAccessor.HttpContext.GetUser().Id;
-                var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: userId);
-                practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId.Equals(practi.Id));
-                practitioner.CoachHierarchy = coachId;
-                var updateResult = practitionerRepo.Update(practitioner);
+                var uId = contextAccessor.HttpContext.GetUser().Id;
+                var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+                //practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId.Equals(practi.Id));
+                practitioner = new PractitionerQueryExtension().GetPractitionerByUserId(contextAccessor, dbFactory, repoFactory, practi.Id);
+                if (practitioner != null)
+                {
+                    practitioner.CoachHierarchy = coachId;
+                    var updateResult = practitionerRepo.Update(practitioner);
+                    return practitioner;
+                }
+                else
+                {
+                    //TODO: create practitioner + user
+                    return practitioner;
+                }
+
                 ////update nicknames to user
                 //var userRepo = repoFactory.CreateRepository<ApplicationUser>(userContext: userId);
                 //ApplicationUser user = (ApplicationUser)userRepo.GetById(Guid.Parse(practitioner.UserId));
@@ -97,6 +109,48 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var updateResult = practitionerRepo.Update(practitioner);
 
             return practitioner;
+        }
+
+        public Coach DeletCoachForFranchisor([Service] IHttpContextAccessor contextAccessor,
+            [Service] UserManager<ApplicationUser> userManager,
+            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+            [Service] IGenericRepositoryFactory repoFactory,
+            string coachId, string franchisorId)
+        {
+
+            //find the practitioner
+            using var scope = dbFactory.CreateDbContext();
+            using var dbContextTransaction = scope.Database.BeginTransaction();
+            var userId = contextAccessor.HttpContext.GetUser().Id;
+            var dbRepo = repoFactory.CreateRepository<Coach>(userContext: userId);
+            Coach coach = new CoachQueryExtension().GetCoachByUserId(contextAccessor, dbFactory, repoFactory, coachId);
+            coach.FranchisorId = null;
+            var updateResult = dbRepo.Update(coach);
+
+            return coach;
+        }
+
+        public Coach AddCoachToFranchisor([Service] IHttpContextAccessor contextAccessor,
+            [Service] UserManager<ApplicationUser> userManager,
+            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+            [Service] IGenericRepositoryFactory repoFactory,
+            string coachId, string franchisorId)
+        {
+            using var scope = dbFactory.CreateDbContext();
+            using var dbContextTransaction = scope.Database.BeginTransaction();
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var dbRepo = repoFactory.CreateRepository<Coach>(userContext: uId);
+            Coach coach = new CoachQueryExtension().GetCoachByUserId(contextAccessor, dbFactory, repoFactory, coachId);
+            //Franchisor franchise = new FranchisorQueryExtension().GetFranchisorByUserId(contextAccessor, dbFactory, repoFactory, franchisorId);
+            //practitioners = practitionerRepo.GetAll().Where(x => x.UserId.Equals(practionerUser.Id)).ToList();
+            if (coach != null)
+            {
+                coach.FranchisorId = new Guid(franchisorId);
+                var updateResult = dbRepo.Update(coach);
+
+                return coach;
+            }
+            return coach;
         }
 
 
