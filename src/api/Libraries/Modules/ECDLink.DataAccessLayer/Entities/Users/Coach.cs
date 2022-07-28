@@ -16,7 +16,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
 
     public class Coach<TKey> : EntityBase<TKey>, 
         ApplicationUserJoin,
-        SiteAddressJoin<Guid?>//,FranchisorJoin<Guid?>
+        SiteAddressJoin<Guid?>
         where TKey : IEquatable<TKey>
     {
         [ForeignKey(nameof(UserId))]

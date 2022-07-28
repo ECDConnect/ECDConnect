@@ -36,16 +36,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     string userId)
         {
             List<Practitioner> practitioners = new List<Practitioner>();
-            //find the practitioner
+
             var principal = userManager.FindByIdAsync(userId).Result;
 
-            var practionerUser = userManager.FindByNameAsync(idNumber).Result;//find practitioner by Username/Id number, if exists, add coach to practitioner
+            var practionerUser = userManager.FindByNameAsync(idNumber).Result;//find practitioner by Username/Id number, if exists, add principal to practitioner
             using var scope = dbFactory.CreateDbContext();
             using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            Practitioner practitioner = new PractitionerQueryExtension().GetPractitionerByUserId(contextAccessor, dbFactory, repoFactory, userId);
-            //practitioners = practitionerRepo.GetAll().Where(x => x.UserId.Equals(practionerUser.Id)).ToList();
+            Practitioner practitioner = new PractitionerQueryExtension().GetPractitionerByUserId(contextAccessor, dbFactory, repoFactory, userId);            
             if (practitioner != null)
             {
                 practitioner.PrincipalHierarchy = userId;
@@ -55,8 +54,36 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             }
             else
             {
-                //TODO: create practitioner + user
-                return new Practitioner();
+                //Create basic user and practitioner
+                var pracRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+
+                var pOne = new ApplicationUser
+                {
+                    FirstName =firstName,
+                    Surname = lastName,
+                    FullName = firstName + " " + lastName,
+                    UserName = idNumber,
+                    IdNumber = idNumber,
+                    IsActive = true,
+                    NickFirstName = firstName,
+                    NickSurname = lastName,
+                    NickFullName = firstName + " " + lastName
+                };
+
+                var result = userManager.CreateAsync(pOne).Result;
+                string practitionerId = pOne.Id;
+
+                var passwordResult = userManager.AddPasswordAsync(pOne, idNumber).Result;
+
+                pracRepo.Insert(new Practitioner
+                {                    
+                    Id = Guid.NewGuid(),
+                    UserId = practitionerId,
+                    IsPrincipal = false,
+                    PrincipalHierarchy = userId,
+                    NotInvitedYet = true});
+
+                return new PractitionerQueryExtension().GetPractitionerByUserId(contextAccessor, dbFactory, repoFactory, practitionerId);
             }
         }
 

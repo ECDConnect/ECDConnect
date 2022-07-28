@@ -64,13 +64,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         [Service] IGenericRepositoryFactory repoFactory,
         string userId)
         {
-            //using var scope = dbFactory.CreateDbContext();
-            //using var dbContextTransaction = scope.Database.BeginTransaction();
-            //var userId = contextAccessor.HttpContext.GetUser().Id;
-            //var childRepo = repoFactory.CreateRepository<Child>(userContext: userId);
-            //List<Child> children = childRepo.GetAll().Where(x => x.Hierarchy.Contains(coach.)).ToList();
+            
+            using var scope = dbFactory.CreateDbContext();
+            using var dbContextTransaction = scope.Database.BeginTransaction();
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
+            var practitionerrRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+            List<Practitioner> practitioner = practitionerrRepo.GetAll().Where(x => x.UserId.Equals(userId)).ToList();
+            List<Child> children = childRepo.GetAll().Where(x => x.Hierarchy.Contains(practitioner.FirstOrDefault().Hierarchy)).ToList();
 
-            return new List<Child>();
+            return children;
         }
     }
 }
