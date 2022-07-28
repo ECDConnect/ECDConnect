@@ -203,9 +203,9 @@ export const upsertClassroom = createAsyncThunk<
           ClassroomImageUrl: classroom.classroomImageUrl,
           IsPrinciple: classroom.isPrinciple,
           NumberPractitioners: classroom.numberPractitioners,
-          NumberOfAssistants: classroom.numberOfAssistants,
           NumberOfOtherAssistants: classroom.numberOfOtherAssistants,
-          DoesOwnerTeach: classroom.doesOwnerTeach,
+          // NumberOfAssistants: classroom.numberOfAssistants,
+          // DoesOwnerTeach: classroom.doesOwnerTeach,
           IsActive: classroom.isActive === false ? false : true,
         };
 

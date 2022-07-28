@@ -1,6 +1,6 @@
 import { renderIcon } from '../../utils';
 import { AlertProps, AlertVariant } from './alert.types';
-export const wrapper = (style: string) => `rounded-10 p-4 `;
+export const wrapper = `rounded-10 p-4 `;
 export const innerWrapper = 'flex flex-row ';
 export const extendedContentWrapper = 'pl-3 mt-2 ';
 export const iconWrapper = 'flex-shrink-0';

@@ -1,11 +1,17 @@
-import { useDialog } from '@ecdlink/core';
+import { useDialog, useTheme } from '@ecdlink/core';
 import {
   ClassProgrammeDto,
   ClassroomDto,
   ClassroomGroupDto,
 } from '@ecdlink/core';
 import { IonContent } from '@ionic/react';
-import { ActionModal, BannerWrapper } from '@ecdlink/ui';
+import {
+  ActionModal,
+  BannerWrapper,
+  Button,
+  Card,
+  Typography,
+} from '@ecdlink/ui';
 import { DialogPosition } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -28,9 +34,12 @@ import { ProgrammeTypeEnum } from '@ecdlink/graphql';
 import { useStoreSetup } from '@hooks/useStoreSetup';
 import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
 import ROUTES from '@routes/routes';
+import EditMultiplePractitioners from './components/edit-multiple-practitioners/edit-multiple-practitioners';
+import { ReactComponent as Cebisa } from '@/assets/cebisa.svg';
 
 export const EditPractitionerProfile: React.FC = () => {
   const history = useHistory();
+  const { theme } = useTheme();
   const appDispatch = useAppDispatch();
   const dialog = useDialog();
   const { isOnline } = useOnlineStatus();
@@ -44,7 +53,7 @@ export const EditPractitionerProfile: React.FC = () => {
   const [playgroups, setPlaygroups] = useState<EditPlaygroupModel[]>();
   const [editPlaygroupAtIndex, setEditPlayGroupAtIndex] = useState<number>();
   const [activeStep, setActiveStep] = useState(
-    EditPractitionerSteps.setupProgramme
+    EditPractitionerSteps.welcomePage // TODO: revert to welcome page
   );
   const [addingPlaygroup, setAddingPlaygroup] = useState(false);
 
@@ -88,11 +97,11 @@ export const EditPractitionerProfile: React.FC = () => {
         numberPractitioners: programme?.smartStartPractitioners
           ? +programme?.smartStartPractitioners
           : 0,
-        numberOfAssistants: programme?.assistants ? +programme?.assistants : 0,
         numberOfOtherAssistants: programme?.nonSmartStartPractitioners
           ? +programme?.nonSmartStartPractitioners
           : 0,
-        doesOwnerTeach: programme?.isTeacher ?? false,
+        // numberOfAssistants: programme?.assistants ? +programme?.assistants : 0,
+        // doesOwnerTeach: programme?.isTeacher ?? false,
         id: classroomId,
         insertedDate: new Date().toISOString(),
         isActive: true,
@@ -193,29 +202,59 @@ export const EditPractitionerProfile: React.FC = () => {
 
   const steps = (step: EditPractitionerSteps) => {
     switch (step) {
-      case EditPractitionerSteps.setupProgramme:
-      default:
+      case EditPractitionerSteps.welcomePage:
         return (
-          <div>
-            <EditProgrammeForm
-              programme={programme}
-              onSubmit={(programme) => {
-                setProgramme(programme);
+          <div className="h-full pt-7">
+            <div className="flex flex-col gap-11">
+              <Typography
+                color="white"
+                type="h1"
+                text="Hello, my name is Cebisa and I'm here to help you!"
+              />
+              <div>
+                <Card
+                  className="bg-uiBg p-4 flex items-center flex-col gap-3"
+                  borderRaduis="lg"
+                  shadowSize="lg"
+                >
+                  <>
+                    <div className="">
+                      <Cebisa />
+                    </div>
+                    <Typography
+                      color="textDark"
+                      text="I'd like to get to know you."
+                      type={'h3'}
+                    />
+                    <Typography
+                      className="text-center"
+                      color="textMid"
+                      text="Please give me more information to make Funda App useful for you!"
+                      type={'body'}
+                    />
+                  </>
+                </Card>
+              </div>
+            </div>
 
-                const playgroupProgrammeType = programmeTypes.find(
-                  (x) => x.enumId === ProgrammeTypeEnum.Playgroup
-                );
-
-                if (programme.type === playgroupProgrammeType?.id) {
-                  setActiveStep(EditPractitionerSteps.setPlaygroupCount);
-                } else {
-                  setActiveStep(EditPractitionerSteps.addPhoto);
-                  setLabel(`step 3 of 3`);
-                }
-              }}
-            />
+            <div className="absolute bottom-0 left-0 right-0 p-4 max-h-20">
+              <Button
+                size="normal"
+                className="w-full"
+                type="filled"
+                color="primary"
+                text="Start"
+                textColor="white"
+                icon="ArrowCircleRightIcon"
+                onClick={() => {
+                  setActiveStep(EditPractitionerSteps.setupProgramme);
+                }}
+              />
+            </div>
           </div>
         );
+      case EditPractitionerSteps.setConfirmPractitioners:
+        return <EditMultiplePractitioners />;
       case EditPractitionerSteps.setPlaygroupCount:
         return (
           <EditPlaygroupCountForm
@@ -258,6 +297,30 @@ export const EditPractitionerProfile: React.FC = () => {
               onAllStepsComplete();
             }}
           />
+        );
+      case EditPractitionerSteps.setupProgramme:
+      default:
+        return (
+          <div>
+            <EditProgrammeForm
+              programme={programme}
+              onSubmit={(programme) => {
+                setProgramme(programme);
+                const playgroupProgrammeType = programmeTypes.find(
+                  (x) => x.enumId === ProgrammeTypeEnum.Playgroup
+                );
+
+                if (programme.isPrincipleOrLeader) {
+                  setActiveStep(EditPractitionerSteps.setConfirmPractitioners);
+                } else if (programme.type === playgroupProgrammeType?.id) {
+                  setActiveStep(EditPractitionerSteps.setPlaygroupCount);
+                } else {
+                  setActiveStep(EditPractitionerSteps.addPhoto);
+                  setLabel(`step 3 of 3`);
+                }
+              }}
+            />
+          </div>
         );
     }
   };
@@ -335,13 +398,26 @@ export const EditPractitionerProfile: React.FC = () => {
     <>
       <IonContent scrollY={true}>
         <BannerWrapper
-          size={'medium'}
+          size={
+            activeStep === EditPractitionerSteps.welcomePage
+              ? 'large'
+              : 'medium'
+          }
           renderBorder={true}
+          showBackground={activeStep === EditPractitionerSteps.welcomePage}
           title={'Edit Profile'}
           subTitle={label}
           onBack={onBack}
           onClose={exitPrompt}
           backgroundColour={'white'}
+          className={
+            activeStep === EditPractitionerSteps.welcomePage ? 'relative' : ''
+          }
+          backgroundUrl={
+            activeStep === EditPractitionerSteps.welcomePage
+              ? theme?.images.graphicOverlayUrl
+              : ''
+          }
           displayOffline={!isOnline}
         >
           <div className={'px-4 pb-5'}>

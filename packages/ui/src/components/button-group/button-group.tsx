@@ -14,6 +14,7 @@ export interface ButtonGroupProps<T> extends ComponentBaseProps {
   multiple?: boolean;
   color?: Colours;
   onOptionSelected: (option: T | T[]) => void;
+  inputRef?: any;
 }
 
 export const ButtonGroup = <T,>({
@@ -24,6 +25,7 @@ export const ButtonGroup = <T,>({
   color = 'primary',
   multiple,
   onOptionSelected,
+  inputRef,
 }: React.PropsWithChildren<ButtonGroupProps<T>>) => {
   const [selectedValues, setSelectedValues] = useState<T | T[] | undefined>(
     selectedOptions
@@ -74,6 +76,7 @@ export const ButtonGroup = <T,>({
         options.map((option, index) => {
           return (
             <div
+              ref={inputRef}
               key={`button-group-option-${index}`}
               onClick={() => {
                 if (option.disabled) return;

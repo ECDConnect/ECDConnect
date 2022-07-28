@@ -1,7 +1,9 @@
 export enum EditPractitionerSteps {
-  setupProgramme = 0,
-  setPlaygroupCount = 1,
-  setupPlaygroups = 2,
-  confirmPlaygroups = 3,
-  addPhoto = 4,
+  welcomePage = 0,
+  setupProgramme = 1,
+  setConfirmPractitioners = 2,
+  setPlaygroupCount = 3,
+  setupPlaygroups = 4,
+  confirmPlaygroups = 5,
+  addPhoto = 6,
 }

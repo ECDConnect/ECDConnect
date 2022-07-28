@@ -6,4 +6,5 @@ export interface ActionListDataItem extends ListItem {
   switchTextStyles?: boolean;
   actionIcon?: string;
   buttonType?: ButtonType;
+  containerStyle?: string;
 }

@@ -89,6 +89,7 @@ module.exports = {
         infoDark: 'var(--infoDark)',
         infoBb: 'var(--infoBb)',
         modalBg: 'var(--modalBg)',
+        quatenary: '#1DBADF',
         blue: {
           accent3: '#1DBADF',
         }

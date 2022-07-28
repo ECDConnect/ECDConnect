@@ -30,4 +30,5 @@ export type Colours =
   | 'infoBb'
   | 'white'
   | 'black'
-  | 'transparent';
+  | 'transparent'
+  | 'quatenary';

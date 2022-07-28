@@ -17,7 +17,12 @@ export const ActionListItem: React.FC<ActionListItemProps> = ({ item }) => {
   const buttonType = item.buttonType ?? 'filled';
 
   return (
-    <div className={styles.actionListItemContainer}>
+    <div
+      className={classNames(
+        item.containerStyle,
+        styles.actionListItemContainer
+      )}
+    >
       <div className={styles.contentWrapper}>
         <div className={stackedListStyles.textRowsWrapper}>
           <div className={classNames(styles.actionParagraphWrapper)}>
@@ -25,8 +30,8 @@ export const ActionListItem: React.FC<ActionListItemProps> = ({ item }) => {
               <p
                 className={
                   !item.switchTextStyles
-                    ? styles.actionTitle
-                    : styles.actionSubTitle
+                    ? classNames(item.titleStyle, styles.actionTitle)
+                    : classNames(item.titleStyle, styles.actionSubTitle)
                 }
               >
                 {item.title}
@@ -34,8 +39,8 @@ export const ActionListItem: React.FC<ActionListItemProps> = ({ item }) => {
               <p
                 className={
                   item.switchTextStyles
-                    ? styles.actionTitleInput
-                    : styles.actionSubTitle
+                    ? classNames(item.subTitleStyle, styles.actionTitleInput)
+                    : classNames(item.subTitleStyle, styles.actionSubTitle)
                 }
               >
                 <span className="truncate">{item.subTitle}</span>
