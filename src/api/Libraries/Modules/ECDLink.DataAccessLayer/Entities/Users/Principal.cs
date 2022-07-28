@@ -12,12 +12,12 @@ namespace ECDLink.DataAccessLayer.Entities.Users
 {
     [Table(nameof(Practitioner))]
     [EntityPermission(PermissionGroups.USER)]
-    public class Practitioner : Practitioner<Guid>
+    public class Principal : Practitioner<Guid>
     {
 
     }
 
-    public class Practitioner<TKey> : EntityBase<TKey>, 
+    public class Principal<TKey> : EntityBase<TKey>, 
         IDocumentQueryable, 
         SiteAddressJoin<Guid?>, 
         IUserType
@@ -50,7 +50,6 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         [ForeignKey(nameof(SiteAddressId))]
         public virtual SiteAddress SiteAddress { get; set; }
         public Guid? SiteAddressId { get; set; }
-
         public string CoachHierarchy { get; set; }
         public string PrincipalHierarchy { get; set; }
         public bool? IsPrincipal { get; set; }
@@ -61,10 +60,10 @@ namespace ECDLink.DataAccessLayer.Entities.Users
 
     }
 
-    public interface PractitionerJoin<TKey>
+    public interface PrincipalIdJoin<TKey>
     {
-        [ForeignKey(nameof(PractitionerId))]
-        public Practitioner Practitioner { get; set; }
-        public TKey PractitionerId { get; set; }
+        [ForeignKey(nameof(PrincipalId))]
+        public Principal Principal { get; set; }
+        public TKey PrincipalId { get; set; }
     }
 }

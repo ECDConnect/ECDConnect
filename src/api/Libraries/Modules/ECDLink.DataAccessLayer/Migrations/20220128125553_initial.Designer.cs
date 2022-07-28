@@ -99,6 +99,15 @@ namespace ECDLink.DataAccessLayer.Migrations
                     b.Property<string>("Surname")
                         .HasColumnType("text");
 
+                    b.Property<string>("NickFirstName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("NickSurname")
+                        .HasColumnType("text");
+
+                    b.Property<string>("NickFullName")
+                        .HasColumnType("text");
+
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("boolean");
 
@@ -346,7 +355,7 @@ namespace ECDLink.DataAccessLayer.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
-                    b.Property<bool?>("IsPrinciple")
+                    b.Property<bool?>("IsPrincipal")
                         .HasColumnType("boolean");
 
                     b.Property<string>("Name")

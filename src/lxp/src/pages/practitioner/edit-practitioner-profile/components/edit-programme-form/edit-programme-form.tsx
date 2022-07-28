@@ -42,7 +42,7 @@ export const EditProgrammeForm: React.FC<EditProgrammeFormProps> = ({
 
   const programData = useSelector(staticDataSelectors.getProgrammeTypes);
 
-  const { isPrincipleOrLeader, assistants, type } =
+  const { isPrincipalOrLeader, assistants, type } =
     useWatch<EditProgrammeModel>({
       control: programmeFormControl,
       defaultValue: {},
@@ -104,11 +104,11 @@ export const EditProgrammeForm: React.FC<EditProgrammeFormProps> = ({
             <ButtonGroup<boolean>
               options={yesNoOptions}
               onOptionSelected={(value: boolean | boolean[]) =>
-                setProgrammeFormValue('isPrincipleOrLeader', value as boolean, {
+                setProgrammeFormValue('isPrincipalOrLeader', value as boolean, {
                   shouldValidate: true,
                 })
               }
-              selectedOptions={[getProgrammeFormValues().isPrincipleOrLeader]}
+              selectedOptions={[getProgrammeFormValues().isPrincipalOrLeader]}
               color="secondary"
               type={ButtonGroupTypes.Button}
               className={'w-full'}
@@ -116,7 +116,7 @@ export const EditProgrammeForm: React.FC<EditProgrammeFormProps> = ({
           </div>
         </div>
 
-        {isPrincipleOrLeader !== false && (
+        {isPrincipalOrLeader !== false && (
           <>
             <FormInput<EditProgrammeModel>
               label={

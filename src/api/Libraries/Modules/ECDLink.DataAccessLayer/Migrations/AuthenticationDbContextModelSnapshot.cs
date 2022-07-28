@@ -347,7 +347,7 @@ namespace ECDLink.DataAccessLayer.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
-                    b.Property<bool?>("IsPrinciple")
+                    b.Property<bool?>("IsPrincipal")
                         .HasColumnType("boolean");
 
                     b.Property<string>("Name")
@@ -613,7 +613,7 @@ namespace ECDLink.DataAccessLayer.Migrations
                     b.ToTable("ProgrammeType");
                 });
 
-            modelBuilder.Entity("ECDLink.DataAccessLayer.Entities.Coach.Coach", b =>
+            modelBuilder.Entity("ECDLink.DataAccessLayer.Entities.Users.Coach", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -646,12 +646,59 @@ namespace ECDLink.DataAccessLayer.Migrations
                     b.Property<string>("UserId")
                         .HasColumnType("text");
 
+                    b.Property<Guid>("FranchisorId")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
 
                     b.HasIndex("UserId");
 
                     b.ToTable("Coach");
                 });
+
+            modelBuilder.Entity("ECDLink.DataAccessLayer.Entities.Users.Coach", b =>
+            {
+                b.Property<Guid>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("uuid");
+
+                b.Property<string>("AreaOfOperation")
+                    .HasColumnType("text");
+
+                b.Property<string>("Hierarchy")
+                    .HasColumnType("text");
+
+                b.Property<DateTime>("InsertedDate")
+                    .HasColumnType("timestamp without time zone");
+
+                b.Property<bool>("IsActive")
+                    .HasColumnType("boolean");
+
+                b.Property<string>("SecondaryAreaOfOperation")
+                    .HasColumnType("text");
+
+                b.Property<DateTime>("StartDate")
+                    .HasColumnType("timestamp without time zone");
+
+                b.Property<string>("UpdatedBy")
+                    .HasColumnType("text");
+
+                b.Property<DateTime>("UpdatedDate")
+                    .HasColumnType("timestamp without time zone");
+
+                b.Property<string>("UserId")
+                    .HasColumnType("text");
+
+                b.Property<Guid>("FranchisorId")
+                    .HasColumnType("uuid");
+
+                b.HasKey("Id");
+
+                b.HasIndex("UserId");
+
+                b.ToTable("Coach");
+            });
+
 
             modelBuilder.Entity("ECDLink.DataAccessLayer.Entities.Documents.Document", b =>
                 {
