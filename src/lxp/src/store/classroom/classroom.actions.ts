@@ -201,7 +201,7 @@ export const upsertClassroom = createAsyncThunk<
           SiteAddressId: classroom.siteAddressId,
           Name: classroom.name,
           ClassroomImageUrl: classroom.classroomImageUrl,
-          isPrinciple: classroom.isPrinciple,
+          IsPrinciple: classroom.isPrinciple,
           NumberPractitioners: classroom.numberPractitioners,
           NumberOfAssistants: classroom.numberOfAssistants,
           NumberOfOtherAssistants: classroom.numberOfOtherAssistants,
