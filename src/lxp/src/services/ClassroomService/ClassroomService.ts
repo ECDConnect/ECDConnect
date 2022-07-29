@@ -19,7 +19,7 @@ class ClassroomService {
             classroomImageUrl
             isActive
             userId
-            isPrincipal
+            isPrinciple
             numberPractitioners
             numberOfAssistants
             numberOfOtherAssistants

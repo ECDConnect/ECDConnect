@@ -11,7 +11,7 @@ export interface ClassroomDto extends EntityBase {
   siteAddress?: SiteAddressDto;
   classroomGroups?: ClassroomGroupDto[];
   name: string;
-  isPrincipal: boolean | null;
+  isPrinciple: boolean | null;
   numberPractitioners: number | null;
   numberOfAssistants: number | null;
   numberOfOtherAssistants: number | null;

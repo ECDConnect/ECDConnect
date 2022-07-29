@@ -3,7 +3,7 @@ import * as Yup from 'yup';
 export interface EditProgrammeModel {
   name: string;
   type: string;
-  isPrincipalOrLeader: boolean;
+  isPrincipleOrLeader: boolean;
   smartStartPractitioners: number;
   nonSmartStartPractitioners: number;
   assistants: number;
@@ -13,18 +13,18 @@ export interface EditProgrammeModel {
 export const editProgrammeSchema = Yup.object().shape({
   name: Yup.string().required(),
   type: Yup.string().required(),
-  isPrincipalOrLeader: Yup.boolean().required(),
-  smartStartPractitioners: Yup.string().when('isPrincipalOrLeader', {
+  isPrincipleOrLeader: Yup.boolean().required(),
+  smartStartPractitioners: Yup.string().when('isPrincipleOrLeader', {
     is: true,
     then: Yup.string().required(),
     otherwise: Yup.string(),
   }),
-  nonSmartStartPractitioners: Yup.string().when('isPrincipalOrLeader', {
+  nonSmartStartPractitioners: Yup.string().when('isPrincipleOrLeader', {
     is: true,
     then: Yup.string().required(),
     otherwise: Yup.string(),
   }),
-  assistants: Yup.string().when('isPrincipalOrLeader', {
+  assistants: Yup.string().when('isPrincipleOrLeader', {
     is: true,
     then: Yup.string().required(),
     otherwise: Yup.string(),

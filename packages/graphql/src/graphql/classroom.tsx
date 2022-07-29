@@ -33,7 +33,7 @@ export const GetAllClassroom = gql`
         }
       }
       userId
-      isPrincipal
+      isPrinciple
       numberPractitioners
       numberOfAssistants
       numberOfOtherAssistants
@@ -76,7 +76,7 @@ export const GetClassroomById = gql`
         }
       }
       userId
-      isPrincipal
+      isPrinciple
       numberPractitioners
       numberOfAssistants
       numberOfOtherAssistants
@@ -92,7 +92,7 @@ export const CreateClassroom = gql`
       id
       name
       userId
-      isPrincipal
+      isPrinciple
       numberPractitioners
       numberOfAssistants
       numberOfOtherAssistants

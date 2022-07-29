@@ -610,7 +610,7 @@ export type Classroom = {
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
-  isPrincipal?: Maybe<Scalars['Boolean']>;
+  isPrinciple?: Maybe<Scalars['Boolean']>;
   name?: Maybe<Scalars['String']>;
   numberOfAssistants?: Maybe<Scalars['Int']>;
   numberOfOtherAssistants?: Maybe<Scalars['Int']>;
@@ -632,7 +632,7 @@ export type ClassroomFilterInput = {
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
-  isPrincipal?: InputMaybe<BooleanOperationFilterInput>;
+  isPrinciple?: InputMaybe<BooleanOperationFilterInput>;
   name?: InputMaybe<StringOperationFilterInput>;
   numberOfAssistants?: InputMaybe<ComparableNullableOfInt32OperationFilterInput>;
   numberOfOtherAssistants?: InputMaybe<ComparableNullableOfInt32OperationFilterInput>;
@@ -699,7 +699,7 @@ export type ClassroomInput = {
   DoesOwnerTeach?: InputMaybe<Scalars['Boolean']>;
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
-  isPrincipal?: InputMaybe<Scalars['Boolean']>;
+  IsPrinciple?: InputMaybe<Scalars['Boolean']>;
   Name?: InputMaybe<Scalars['String']>;
   NumberOfAssistants?: InputMaybe<Scalars['Int']>;
   NumberOfOtherAssistants?: InputMaybe<Scalars['Int']>;

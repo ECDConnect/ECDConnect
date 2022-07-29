@@ -69,10 +69,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
-            var practitionerrRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            List<Practitioner> practitioner = practitionerrRepo.GetAll().Where(x => x.UserId.Equals(userId)).ToList();
-            List<Child> children = childRepo.GetAll().Where(x => x.Hierarchy.Contains(practitioner.FirstOrDefault().Hierarchy)).ToList();
 
+            List<Child> children = new List<Child>();
+            var practitionerrRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+            List<Practitioner> practitioners = practitionerrRepo.GetAll().Where(x => x.CoachHierarchy.Equals(userId)).ToList();
+            foreach (var practioner in practitioners)
+            {
+                List<Child> practitionerChildren = childRepo.GetAll().Where(x => x.Hierarchy.Contains(practioner.Hierarchy)).ToList();
+                children.AddRange(practitionerChildren);
+            }
             return children;
         }
     }
