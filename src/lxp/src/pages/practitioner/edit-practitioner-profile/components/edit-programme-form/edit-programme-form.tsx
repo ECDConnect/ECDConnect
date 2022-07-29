@@ -42,7 +42,7 @@ export const EditProgrammeForm: React.FC<EditProgrammeFormProps> = ({
 
   const programData = useSelector(staticDataSelectors.getProgrammeTypes);
 
-  const { isPrincipalOrLeader, assistants, type } =
+  const { isPrincipleOrLeader, assistants, type } =
     useWatch<EditProgrammeModel>({
       control: programmeFormControl,
       defaultValue: {},
@@ -116,7 +116,7 @@ export const EditProgrammeForm: React.FC<EditProgrammeFormProps> = ({
           </div>
         </div>
 
-        {isPrincipalOrLeader !== false && (
+        {isPrincipleOrLeader !== false && (
           <>
             <FormInput<EditProgrammeModel>
               label={
