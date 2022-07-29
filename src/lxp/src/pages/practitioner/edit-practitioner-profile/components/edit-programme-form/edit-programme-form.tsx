@@ -116,7 +116,7 @@ export const EditProgrammeForm: React.FC<EditProgrammeFormProps> = ({
           </div>
         </div>
 
-        {isPrincipleOrLeader !== false && (
+        {isPrincipalOrLeader !== false && (
           <>
             <FormInput<EditProgrammeModel>
               label={
