@@ -33,7 +33,8 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         
         [GraphQLIgnore]
         public string Hierarchy { get; set; }
-
+        [ForeignKey(nameof(FranchisorId))]
+        public virtual Franchisor Franchisor { get; set; }
         public Guid? FranchisorId { get; set; }
     }
 

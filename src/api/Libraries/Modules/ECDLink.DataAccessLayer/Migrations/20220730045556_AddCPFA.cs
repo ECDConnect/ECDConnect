@@ -61,13 +61,11 @@ namespace ECDLink.DataAccessLayer.Migrations
                 type: "text",
                 nullable: true);
 
-            migrationBuilder.AlterColumn<Guid>(
+            migrationBuilder.AddColumn<Guid>(
                 name: "FranchisorId",
                 table: "Coach",
                 type: "uuid",
-                nullable: true,
-                oldClrType: typeof(Guid),
-                oldType: "uuid");
+                nullable: true);
 
             migrationBuilder.AddColumn<string>(
                 name: "Signature",
@@ -214,6 +212,11 @@ namespace ECDLink.DataAccessLayer.Migrations
                 name: "IX_Franchisor_SiteAddressId",
                 table: "Franchisor",
                 column: "SiteAddressId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Coach_FranchisorId",
+                table: "Coach",
+                column: "FranchisorId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Franchisor_UserId",
