@@ -85,8 +85,8 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   }, [reportData]);
 
   return (
-    <div className="h-full w-full flex flex-col overflow-y-auto pb-32">
-      <div className={'flex flex-col p-4'}>
+    <div className="h-full w-full flex flex-col px-4 pt-4 overflow-y-auto pb-32">
+      <div className={'flex flex-col'}>
         <PointsSuccessCard
           visible={successMessageVisible}
           onClose={() => setSuccessMessageVisible(false)}
