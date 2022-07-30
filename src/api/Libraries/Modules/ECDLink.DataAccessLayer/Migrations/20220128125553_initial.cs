@@ -498,10 +498,7 @@ namespace ECDLink.DataAccessLayer.Migrations
                     FullName = table.Column<string>(type: "text", nullable: true),
                     ContactPreference = table.Column<string>(type: "text", nullable: true),
                     ProfileImageUrl = table.Column<string>(type: "text", nullable: true),
-                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
-                    NickFirstName = table.Column<string>(type: "text", nullable: true),
-                    NickSurname = table.Column<string>(type: "text", nullable: true),
-                    NickFullName = table.Column<string>(type: "text", nullable: true)
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -753,10 +750,7 @@ namespace ECDLink.DataAccessLayer.Migrations
                     AreaOfOperation = table.Column<string>(type: "text", nullable: true),
                     SecondaryAreaOfOperation = table.Column<string>(type: "text", nullable: true),
                     StartDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                    Hierarchy = table.Column<string>(type: "text", nullable: true),
-                    FranchisorId = table.Column<string>(type: "uuid", nullable: true),
-                    SiteAddressId = table.Column<Guid>(type: "uuid", nullable: true),
-
+                    Hierarchy = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -765,18 +759,6 @@ namespace ECDLink.DataAccessLayer.Migrations
                         name: "FK_Coach_AspNetUsers_UserId",
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Coach_SiteAddress_SiteAddressId",
-                        column: x => x.SiteAddressId,
-                        principalTable: "SiteAddress",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Coach_Franchisor_FranchisorId",
-                        column: x => x.SiteAddressId,
-                        principalTable: "Franchisor",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -831,13 +813,7 @@ namespace ECDLink.DataAccessLayer.Migrations
                     StartDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
                     MonthSinceFranchisee = table.Column<int>(type: "integer", nullable: true),
                     UserId = table.Column<string>(type: "text", nullable: true),
-                    SiteAddressId = table.Column<Guid>(type: "uuid", nullable: true),
-                    CoachHierarchy = table.Column<string>(type: "text", nullable: true),
-                    PrincipalHierarchy = table.Column<string>(type: "text", nullable: true),
-                    IsPrincipal = table.Column<bool>(type: "boolean", nullable: true),
-                    IsFundaAppAdmin = table.Column<bool>(type: "boolean", nullable: true),
-                    IsTrainee = table.Column<bool>(type: "boolean", nullable: true),
-                    NotInvitedYet = table.Column<bool>(type: "boolean", nullable: true)
+                    SiteAddressId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -1496,65 +1472,6 @@ namespace ECDLink.DataAccessLayer.Migrations
                 name: "IX_WorkflowStatus_WorkflowStatusTypeId",
                 table: "WorkflowStatus",
                 column: "WorkflowStatusTypeId");
-
-            migrationBuilder.CreateTable(
-                 name: "Franchisor",
-                 columns: table => new
-                 {
-                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                     IsActive = table.Column<bool>(type: "boolean", nullable: false),
-                     InsertedDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                     UpdatedDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                     UpdatedBy = table.Column<string>(type: "text", nullable: true),
-                     UserId = table.Column<string>(type: "text", nullable: true),
-                     AreaOfOperation = table.Column<string>(type: "text", nullable: true),
-                     SecondaryAreaOfOperation = table.Column<string>(type: "text", nullable: true),
-                     StartDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                     SiteAddressId = table.Column<Guid>(type: "uuid", nullable: true),
-                 },
-                 constraints: table =>
-                 {
-                     table.PrimaryKey("PK_Franchisor", x => x.Id);
-                     table.ForeignKey(
-                         name: "FK_Franchisor_AspNetUsers_UserId",
-                         column: x => x.UserId,
-                         principalTable: "AspNetUsers",
-                         principalColumn: "Id",
-                         onDelete: ReferentialAction.Restrict);
-                     table.ForeignKey(
-                            name: "FK_Franchisor_SiteAddress_SiteAddressId",
-                            column: x => x.SiteAddressId,
-                            principalTable: "SiteAddress",
-                            principalColumn: "Id",
-                            onDelete: ReferentialAction.Restrict);
-                 });
-
-              migrationBuilder.CreateTable(
-                    name: "Absentees",
-                    columns: table => new
-                    {
-                        Id = table.Column<Guid>(type: "uuid", nullable: false),
-                        IsActive = table.Column<bool>(type: "boolean", nullable: false),
-                        InsertedDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                        UpdatedDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                        UpdatedBy = table.Column<string>(type: "text", nullable: true),
-                        UserId = table.Column<string>(type: "text", nullable: true),
-                        Reason = table.Column<string>(type: "text", nullable: true),
-                        AbsentDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                        LoggedBy = table.Column<string>(type: "text", nullable: true),
-                        ReassignedClass = table.Column<string>(type: "text", nullable: true),
-                        ReassignedToPractitioner = table.Column<string>(type: "text", nullable: true),
-                    },
-                    constraints: table =>
-                    {
-                        table.PrimaryKey("PK_Absentees", x => x.Id);
-                        table.ForeignKey(
-                            name: "FK_Absentees_AspNetUsers_UserId",
-                            column: x => x.UserId,
-                            principalTable: "AspNetUsers",
-                            principalColumn: "Id",
-                            onDelete: ReferentialAction.Restrict);
-                    });
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -1708,10 +1625,6 @@ namespace ECDLink.DataAccessLayer.Migrations
 
             migrationBuilder.DropTable(
                 name: "Province");
-            migrationBuilder.DropTable(
-                name: "Franchisor");
-            migrationBuilder.DropTable(
-                name: "Absentees");
         }
     }
 }

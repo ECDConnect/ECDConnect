@@ -7,7 +7,7 @@ export interface Classroom extends EntityCacheBase {
   siteAddressId?: number;
   siteAddress?: SiteAddress;
   name: string;
-  isPrincipal?: boolean;
+  isPrinciple?: boolean;
   numberPractitioners?: number;
   numberOfAssistants?: number;
   numberOfOtherAssistants?: number;

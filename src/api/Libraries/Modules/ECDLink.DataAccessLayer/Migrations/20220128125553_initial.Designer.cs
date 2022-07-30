@@ -99,15 +99,6 @@ namespace ECDLink.DataAccessLayer.Migrations
                     b.Property<string>("Surname")
                         .HasColumnType("text");
 
-                    b.Property<string>("NickFirstName")
-                        .HasColumnType("text");
-
-                    b.Property<string>("NickSurname")
-                        .HasColumnType("text");
-
-                    b.Property<string>("NickFullName")
-                        .HasColumnType("text");
-
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("boolean");
 
