@@ -1,6 +1,10 @@
 import React from 'react';
 import { Typography, Divider, StackedList, Button } from '@ecdlink/ui';
-export default function EditMultiplePractitioners() {
+import { useSelector } from 'react-redux';
+import { userSelectors } from '@/store/user';
+export default function EditMultiplePractitioners({ onSubmit }: any) {
+  const user = useSelector(userSelectors.getUser);
+  console.log(user);
   return (
     <div className="pt-4">
       <div className="flex flex-col gap-4 pb-20">
@@ -22,7 +26,7 @@ export default function EditMultiplePractitioners() {
           <StackedList
             listItems={[
               {
-                title: 'Bulelwa Mahlangu',
+                title: user?.fullName ?? '',
                 subTitle: 'Principal/owner',
                 titleStyle:
                   'text-textDark font-body text-base font-semibold leading-snug ',
@@ -56,7 +60,7 @@ export default function EditMultiplePractitioners() {
           text="Confirm"
           textColor="white"
           icon="CheckCircleIcon"
-          onClick={() => console.log('confirm principle')}
+          onClick={() => onSubmit('sending data to the backend')}
         />
       </div>
     </div>

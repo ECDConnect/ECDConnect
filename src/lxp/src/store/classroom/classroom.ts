@@ -20,12 +20,16 @@ const initialState: ClassroomState = {
   classroomGroups: undefined,
   classroomProgrammes: undefined,
   classroomGroupLearners: undefined,
+  programmeType: undefined,
 };
 
 const classroomsSlice = createSlice({
   name: 'classrooms',
   initialState,
   reducers: {
+    setProgrammeType: (state, action: PayloadAction<string>) => {
+      state.programmeType = action.payload;
+    },
     resetClassroomState: (state) => {
       state.classroom = initialState.classroom;
       state.classroomGroups = initialState.classroomGroups;

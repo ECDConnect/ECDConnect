@@ -41,8 +41,6 @@ export const EditProgrammeForm: React.FC<EditProgrammeFormProps> = ({
 
   const programData = useSelector(staticDataSelectors.getProgrammeTypes);
 
-  console.log(getProgrammeFormValues());
-
   useEffect(() => {
     resetProgrammeFormValue(programme);
     // eslint-disable-next-line react-hooks/exhaustive-deps

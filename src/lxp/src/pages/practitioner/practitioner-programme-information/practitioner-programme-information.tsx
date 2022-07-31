@@ -222,7 +222,11 @@ export const PractitionerProgrammeInformation: React.FC = () => {
             hasConsent={true}
           />
         </div>
-        <StackedList listItems={listItems} type={'ActionList'}></StackedList>
+        <StackedList
+          className="px-4"
+          listItems={listItems}
+          type={'ActionList'}
+        ></StackedList>
       </BannerWrapper>
 
       <Dialog

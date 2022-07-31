@@ -20,6 +20,7 @@ export interface DropdownProps<T> extends ComponentBaseProps {
   textColor?: Colours;
   fullWidth?: boolean;
   onChange: (item: T) => void;
+  inputRef?: any;
 }
 
 export function Dropdown<T>({
@@ -34,6 +35,7 @@ export function Dropdown<T>({
   fillColor = 'uiBg',
   textColor = 'primary',
   className,
+  inputRef,
 }: DropdownProps<T>) {
   const [selectedLabel, setSelectedLabel] = useState('');
   const [touched, setTouched] = useState(false);
@@ -52,6 +54,9 @@ export function Dropdown<T>({
     if (selectedValue) {
       const filter = list.find((x) => x.value === selectedValue);
       setSelectedLabel(filter?.label ?? '');
+    } else {
+      setSelectedLabel('');
+      setTouched(false);
     }
   }, [selectedValue, list]);
 

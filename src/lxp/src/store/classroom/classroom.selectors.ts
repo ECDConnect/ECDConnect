@@ -4,6 +4,7 @@ import {
   ClassroomDto,
   ClassroomGroupDto,
   LearnerDto,
+  ProgrammeTypeDto,
 } from '@ecdlink/core';
 import { ProgrammeTypeEnum } from '@ecdlink/graphql';
 import { createSelector } from '@reduxjs/toolkit';
@@ -11,6 +12,16 @@ import { RootState } from '../types';
 
 export const getClassroom = (state: RootState): ClassroomDto | undefined =>
   state.classroomData.classroom;
+
+export const getProgrammeType = () =>
+  createSelector(
+    (state: RootState) => state,
+    (rootState: RootState): ProgrammeTypeDto | undefined => {
+      return rootState.staticData.programmeTypes?.find(
+        (x) => x.id === rootState.classroomData.programmeType
+      );
+    }
+  );
 
 export const getClassroomGroups = (state: RootState): ClassroomGroupDto[] =>
   state.classroomData.classroomGroups?.filter((x) => x.isActive) || [];

@@ -17,13 +17,13 @@ import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { useAppDispatch } from '@store';
-import { classroomsActions } from '@store/classroom';
+import { classroomsActions, classroomsSelectors } from '@store/classroom';
 import { staticDataSelectors } from '@store/static-data';
 import { userSelectors } from '@store/user';
 import { newGuid } from '@utils/common/uuid.utils';
 import { AddPhoto } from './components/add-photo/add-photo';
-import { ConfirmPlayGroups } from './components/confirm-playgroups/confirm-playgroups';
-import { EditMultiplePlayGroups } from './components/edit-mutliple-playgroups/edit-multiple-playgroups';
+// import { ConfirmPlayGroups } from './components/confirm-playgroups/confirm-playgroups';
+// import { EditMultiplePlayGroups } from './components/edit-mutliple-playgroups/edit-multiple-playgroups';
 import { EditPlaygroupModel } from '@schemas/practitioner/edit-playgroups';
 import { EditPlaygroupCountForm } from './components/edit-practitioner-playgroup-count-form/edit-playgroup-count-form';
 import { EditProgrammeForm } from './components/edit-programme-form/edit-programme-form';
@@ -36,6 +36,7 @@ import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
 import ROUTES from '@routes/routes';
 import EditMultiplePractitioners from './components/edit-multiple-practitioners/edit-multiple-practitioners';
 import { ReactComponent as Cebisa } from '@/assets/cebisa.svg';
+import { SetupClasses } from './components/setup-classes/setup-classes';
 
 export const EditPractitionerProfile: React.FC = () => {
   const history = useHistory();
@@ -46,6 +47,8 @@ export const EditPractitionerProfile: React.FC = () => {
   const { syncClassroom } = useStoreSetup();
   const user = useSelector(userSelectors.getUser);
   const programmeTypes = useSelector(staticDataSelectors.getProgrammeTypes);
+  const classroom = useSelector(classroomsSelectors.getClassroom);
+  const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
 
   const [label, setLabel] = useState('');
   const [playGroupCount, setPlayGroupCount] = useState<number>(0);
@@ -61,6 +64,12 @@ export const EditPractitionerProfile: React.FC = () => {
     setLabel(`step 1 of 3`);
   }, []);
 
+  useEffect(() => {
+    if (classroom?.id && classroomGroups.length) {
+      setActiveStep(EditPractitionerSteps.setupClasses);
+    }
+  }, [classroom?.id, classroomGroups.length]);
+
   const onPlayGroupsEdit = (
     playgroups: EditPlaygroupModel[],
     index: number,
@@ -69,7 +78,7 @@ export const EditPractitionerProfile: React.FC = () => {
     setPlaygroups(playgroups);
     setEditPlayGroupAtIndex(index);
     setAddingPlaygroup(addPlaygroup);
-    setActiveStep(EditPractitionerSteps.setupPlaygroups);
+    setActiveStep(EditPractitionerSteps.setupClasses);
   };
 
   const deletePlayGroup = async (playgroup: EditPlaygroupModel) => {
@@ -83,35 +92,64 @@ export const EditPractitionerProfile: React.FC = () => {
 
     setPlaygroups(updatedPlaygroups);
 
-    setActiveStep(EditPractitionerSteps.confirmPlaygroups);
+    setActiveStep(EditPractitionerSteps.confirmClasses);
+  };
+
+  const createClassroom = (
+    programme: EditProgrammeModel,
+    classroomId: string
+  ) => {
+    const classroomInputModel: ClassroomDto = {
+      userId: user?.id ?? '',
+      id: classroomId,
+      name: programme?.name ?? '',
+      isPrinciple: programme?.isPrincipleOrLeader ?? false,
+      numberPractitioners: programme?.smartStartPractitioners
+        ? +programme?.smartStartPractitioners
+        : 0,
+      numberOfOtherAssistants: programme?.nonSmartStartPractitioners
+        ? +programme?.nonSmartStartPractitioners
+        : 0,
+      insertedDate: new Date().toISOString(),
+      isActive: true,
+    };
+
+    console.log(classroomInputModel);
+    appDispatch(classroomsActions.createClassroom(classroomInputModel));
+    appDispatch(classroomsActions.setProgrammeType(programme.type));
   };
 
   const onAllStepsComplete = async () => {
     if (isOnline) {
       const classroomId = newGuid();
 
-      const classroomInputModel: ClassroomDto = {
-        userId: user?.id ?? '',
-        name: programme?.name ?? '',
-        isPrinciple: programme?.isPrincipleOrLeader ?? false,
-        numberPractitioners: programme?.smartStartPractitioners
-          ? +programme?.smartStartPractitioners
-          : 0,
-        numberOfOtherAssistants: programme?.nonSmartStartPractitioners
-          ? +programme?.nonSmartStartPractitioners
-          : 0,
-        // numberOfAssistants: programme?.assistants ? +programme?.assistants : 0,
-        // doesOwnerTeach: programme?.isTeacher ?? false,
-        id: classroomId,
-        insertedDate: new Date().toISOString(),
-        isActive: true,
-      };
+      if (programme) {
+        createClassroom(programme, classroomId);
+      }
 
-      appDispatch(classroomsActions.createClassroom(classroomInputModel));
+      // const classroomInputModel: ClassroomDto = {
+      //   userId: user?.id ?? '',
+      //   name: programme?.name ?? '',
+      //   isPrinciple: programme?.isPrincipleOrLeader ?? false,
+      //   numberPractitioners: programme?.smartStartPractitioners
+      //     ? +programme?.smartStartPractitioners
+      //     : 0,
+      //   numberOfOtherAssistants: programme?.nonSmartStartPractitioners
+      //     ? +programme?.nonSmartStartPractitioners
+      //     : 0,
+      //   // numberOfAssistants: programme?.assistants ? +programme?.assistants : 0,
+      //   // doesOwnerTeach: programme?.isTeacher ?? false,
+      //   id: classroomId,
+      //   insertedDate: new Date().toISOString(),
+      //   isActive: true,
+      // };
+
+      // appDispatch(classroomsActions.createClassroom(classroomInputModel));
 
       const programmeType = programmeTypes.find(
         (x) => x.enumId === ProgrammeTypeEnum.Playgroup
       );
+
       if (programme?.type === programmeType?.id && playgroups && classroomId) {
         for (const playGroup of playgroups) {
           const classroomGroupId = newGuid();
@@ -254,42 +292,54 @@ export const EditPractitionerProfile: React.FC = () => {
           </div>
         );
       case EditPractitionerSteps.setConfirmPractitioners:
-        return <EditMultiplePractitioners />;
+        return (
+          <EditMultiplePractitioners
+            onSubmit={(data: any) => {
+              console.log(data);
+              setActiveStep(EditPractitionerSteps.setupClasses);
+            }}
+          />
+        );
       case EditPractitionerSteps.setPlaygroupCount:
         return (
           <EditPlaygroupCountForm
             onSubmit={(value) => {
               setPlayGroupCount(value);
-              setActiveStep(EditPractitionerSteps.setupPlaygroups);
+              setActiveStep(EditPractitionerSteps.setupClasses);
               setLabel(`step 2 of 3`);
             }}
           />
         );
-      case EditPractitionerSteps.setupPlaygroups:
+      case EditPractitionerSteps.setupClasses:
         return (
-          <EditMultiplePlayGroups
-            numberOfPlaygroups={playGroupCount}
-            defaultPlayGroups={playgroups}
-            editPlaygroupAtIndex={editPlaygroupAtIndex}
-            onPlayGroupDelete={deletePlayGroup}
-            onSubmit={(value) => {
-              setPlaygroups(value);
-              setActiveStep(EditPractitionerSteps.confirmPlaygroups);
-            }}
-          />
-        );
-      case EditPractitionerSteps.confirmPlaygroups:
-        return (
-          <ConfirmPlayGroups
-            defaultPlayGroups={playgroups || []}
-            onEditPlaygroup={onPlayGroupsEdit}
-            onSubmit={(value) => {
-              setPlaygroups(value);
+          // <EditMultiplePlayGroups
+          //   numberOfPlaygroups={playGroupCount}
+          //   defaultPlayGroups={playgroups}
+          //   editPlaygroupAtIndex={editPlaygroupAtIndex}
+          //   onPlayGroupDelete={deletePlayGroup}
+          //   onSubmit={(value) => {
+          //     setPlaygroups(value);
+          //     setActiveStep(EditPractitionerSteps.confirmClasses);
+          //   }}
+          // />
+          <SetupClasses
+            onSubmit={() => {
               setActiveStep(EditPractitionerSteps.addPhoto);
-              setLabel(`step 3 of 3`);
             }}
           />
         );
+      // case EditPractitionerSteps.confirmClasses:
+      //   return (
+      //     <ConfirmPlayGroups
+      //       defaultPlayGroups={playgroups || []}
+      //       onEditPlaygroup={onPlayGroupsEdit}
+      //       onSubmit={(value) => {
+      //         setPlaygroups(value);
+      //         setActiveStep(EditPractitionerSteps.addPhoto);
+      //         setLabel(`step 3 of 3`);
+      //       }}
+      //     />
+      //   );
       case EditPractitionerSteps.addPhoto:
         return (
           <AddPhoto
@@ -306,6 +356,10 @@ export const EditPractitionerProfile: React.FC = () => {
               programme={programme}
               onSubmit={(programme) => {
                 setProgramme(programme);
+                const classroomId = newGuid();
+
+                createClassroom(programme, classroomId);
+
                 const playgroupProgrammeType = programmeTypes.find(
                   (x) => x.enumId === ProgrammeTypeEnum.Playgroup
                 );
@@ -369,30 +423,43 @@ export const EditPractitionerProfile: React.FC = () => {
       case EditPractitionerSteps.setupProgramme:
       default:
         return history.goBack();
-      case EditPractitionerSteps.setPlaygroupCount:
+      case EditPractitionerSteps.setupClasses:
         return setActiveStep(EditPractitionerSteps.setupProgramme);
-      case EditPractitionerSteps.setupPlaygroups:
-        if (addingPlaygroup) {
-          const _playGroups = playgroups && [...playgroups];
-          _playGroups?.pop();
-          setPlaygroups(_playGroups);
-          setAddingPlaygroup(false);
-          setActiveStep(EditPractitionerSteps.confirmPlaygroups);
-        } else {
-          setActiveStep(EditPractitionerSteps.setPlaygroupCount);
-          setPlaygroups(undefined);
-          setEditPlayGroupAtIndex(undefined);
-        }
-        return;
-      case EditPractitionerSteps.confirmPlaygroups:
-        setActiveStep(EditPractitionerSteps.setupPlaygroups);
-        setPlaygroups(undefined);
-        setEditPlayGroupAtIndex(undefined);
-        return;
+      case EditPractitionerSteps.confirmClasses:
+        return setActiveStep(EditPractitionerSteps.setupClasses);
       case EditPractitionerSteps.addPhoto:
-        return setActiveStep(EditPractitionerSteps.confirmPlaygroups);
+        return setActiveStep(EditPractitionerSteps.confirmClasses);
     }
   };
+  // const onBack = () => {
+  //   switch (activeStep) {
+  //     case EditPractitionerSteps.setupProgramme:
+  //     default:
+  //       return history.goBack();
+  //     case EditPractitionerSteps.setPlaygroupCount:
+  //       return setActiveStep(EditPractitionerSteps.setupProgramme);
+  //     case EditPractitionerSteps.setupClasses:
+  //       if (addingPlaygroup) {
+  //         const _playGroups = playgroups && [...playgroups];
+  //         _playGroups?.pop();
+  //         setPlaygroups(_playGroups);
+  //         setAddingPlaygroup(false);
+  //         setActiveStep(EditPractitionerSteps.confirmClasses);
+  //       } else {
+  //         setActiveStep(EditPractitionerSteps.setPlaygroupCount);
+  //         setPlaygroups(undefined);
+  //         setEditPlayGroupAtIndex(undefined);
+  //       }
+  //       return;
+  //     case EditPractitionerSteps.confirmClasses:
+  //       setActiveStep(EditPractitionerSteps.setupClasses);
+  //       setPlaygroups(undefined);
+  //       setEditPlayGroupAtIndex(undefined);
+  //       return;
+  //     case EditPractitionerSteps.addPhoto:
+  //       return setActiveStep(EditPractitionerSteps.confirmClasses);
+  //   }
+  // };
 
   return (
     <>

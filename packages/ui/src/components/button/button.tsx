@@ -52,7 +52,13 @@ export const Button: React.FC<ButtonProps> = ({
       {icon &&
         iconPosition === 'start' &&
         renderIcon(icon, `h-5 w-4 mr-2 text-${textColor}`)}
-      {text && <Typography type={'button'} color={textColor} text={text} />}
+      {text && (
+        <Typography
+          type={'button'}
+          color={disabled ? 'uiLight' : textColor}
+          text={text}
+        />
+      )}
       {icon &&
         iconPosition === 'end' &&
         renderIcon(icon, `h-5 w-4 ml-2 text-${textColor}`)}

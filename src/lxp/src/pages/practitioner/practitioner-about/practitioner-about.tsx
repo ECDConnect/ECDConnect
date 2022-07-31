@@ -268,7 +268,7 @@ export const PractitionerAbout: React.FC = () => {
           />
         </div>
         <StackedList
-          className={'bg-uiBg'}
+          className={'bg-uiBg px-4'}
           listItems={listItems}
           type={'ActionList'}
         ></StackedList>
