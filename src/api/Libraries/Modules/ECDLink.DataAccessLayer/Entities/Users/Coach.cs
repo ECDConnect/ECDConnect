@@ -29,7 +29,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         [ForeignKey(nameof(SiteAddressId))]
         public virtual SiteAddress SiteAddress { get; set; }
         public Guid? SiteAddressId { get; set; }
-        public string Signature { get; set; }
+        public string SigningSignature { get; set; }
         
         [GraphQLIgnore]
         public string Hierarchy { get; set; }

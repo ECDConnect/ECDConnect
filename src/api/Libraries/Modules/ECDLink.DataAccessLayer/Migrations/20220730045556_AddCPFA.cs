@@ -29,34 +29,32 @@ namespace ECDLink.DataAccessLayer.Migrations
                 name: "IsFundaAppAdmin",
                 table: "Practitioner",
                 type: "boolean",
-                nullable: true);
+                nullable: true,
+                defaultValue: false);
 
             migrationBuilder.AddColumn<bool>(
                 name: "IsPrincipal",
                 table: "Practitioner",
                 type: "boolean",
-                nullable: true);
+                nullable: true,
+                defaultValue: false);
 
             migrationBuilder.AddColumn<bool>(
                 name: "IsTrainee",
                 table: "Practitioner",
                 type: "boolean",
-                nullable: true);
+                nullable: true,
+                defaultValue: false);
 
             migrationBuilder.AddColumn<bool>(
                 name: "NotInvitedYet",
                 table: "Practitioner",
                 type: "boolean",
-                nullable: true);
+                nullable: true,
+                defaultValue: false);
 
             migrationBuilder.AddColumn<string>(
                 name: "PrincipalHierarchy",
-                table: "Practitioner",
-                type: "text",
-                nullable: true);
-
-            migrationBuilder.AddColumn<string>(
-                name: "Signature",
                 table: "Practitioner",
                 type: "text",
                 nullable: true);
@@ -65,12 +63,6 @@ namespace ECDLink.DataAccessLayer.Migrations
                 name: "FranchisorId",
                 table: "Coach",
                 type: "uuid",
-                nullable: true);
-
-            migrationBuilder.AddColumn<string>(
-                name: "Signature",
-                table: "Coach",
-                type: "text",
                 nullable: true);
 
             migrationBuilder.AddColumn<Guid>(
@@ -94,6 +86,19 @@ namespace ECDLink.DataAccessLayer.Migrations
             migrationBuilder.AddColumn<string>(
                 name: "NickSurname",
                 table: "AspNetUsers",
+                type: "text",
+                nullable: true);
+
+            migrationBuilder.AddColumn<string>(
+                name: "SigningSignature",
+                table: "Practitioner",
+                type: "text",
+                nullable: true);
+
+
+            migrationBuilder.AddColumn<string>(
+                name: "SigningSignature",
+                table: "Coach",
                 type: "text",
                 nullable: true);
 
@@ -151,7 +156,8 @@ namespace ECDLink.DataAccessLayer.Migrations
                     AreaOfOperation = table.Column<string>(type: "text", nullable: true),
                     SecondaryAreaOfOperation = table.Column<string>(type: "text", nullable: true),
                     StartDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                    SiteAddressId = table.Column<Guid>(type: "uuid", nullable: true)
+                    SiteAddressId = table.Column<Guid>(type: "uuid", nullable: true),
+                    SigningSignature = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
