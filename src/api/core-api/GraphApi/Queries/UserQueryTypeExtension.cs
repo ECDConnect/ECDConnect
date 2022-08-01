@@ -42,17 +42,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             if (user != null)
             {
                 //Franchisor            
-                if (userManager.IsInRoleAsync(user, "Franchisor").Result)
+               /* if (userManager.IsInRoleAsync(user, "Franchisor").Result == true)
                 {
                     user.franchisorObjectData = new FranchisorQueryExtension().GetFranchisorByUserId(contextAccessor, dbFactory, repoFactory, userId);
                 }
                 //Coach
-                if (userManager.IsInRoleAsync(user, "Coach").Result)
+                if (userManager.IsInRoleAsync(user, "Coach").Result == true)
                 {
                     user.coachObjectData = new CoachQueryExtension().GetCoachByUserId(contextAccessor, dbFactory, repoFactory, userId);
                 }
                 //Principal or Practitioner - Principal is just a Practitioner with IsPrincipal as true
-                if (userManager.IsInRoleAsync(user, "Principal").Result || userManager.IsInRoleAsync(user, "Practitioner").Result)
+                if (userManager.IsInRoleAsync(user, "Principal").Result == true || userManager.IsInRoleAsync(user, "Practitioner").Result == true)
                 {
                     var userData = new PractitionerQueryExtension().GetPractitionerByUserId(contextAccessor, dbFactory, repoFactory, userId);
                     if ((bool)userData.IsPrincipal)
@@ -61,11 +61,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                         user.practitionerObjectData = userData;
                 }
                 //Child
-                if (userManager.IsInRoleAsync(user, "Child").Result)
+                if (userManager.IsInRoleAsync(user, "Child").Result == true)
                 {
                     user.childObjectData = new ChildQueryExtension().GetChildByUserId(contextAccessor, dbFactory, repoFactory, userId);
                 }
-
+                */
 
                 return user.IsActive ? user : default(ApplicationUser);
             }

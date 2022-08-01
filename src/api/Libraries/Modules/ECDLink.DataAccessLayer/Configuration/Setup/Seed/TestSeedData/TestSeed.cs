@@ -90,7 +90,11 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
                 MaxChildren = 4,
                 Id = Guid.NewGuid(),
                 UserId = _practitionerId,
-                SiteAddressId = siteAddressId
+                SiteAddressId = siteAddressId,
+                IsPrincipal = true,
+                IsFundaAppAdmin = false,
+                IsTrainee = false,
+                NotInvitedYet = false
             });
 
             var pUser2 = new ApplicationUser
@@ -114,7 +118,12 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
                 MaxChildren = 4,
                 Id = Guid.NewGuid(),
                 UserId = pUser2.Id,
-                SiteAddressId = siteAddressId
+                SiteAddressId = siteAddressId,
+                PrincipalHierarchy = pUser2.Id,
+                IsPrincipal = false,
+                IsFundaAppAdmin = false,
+                IsTrainee = false,
+                NotInvitedYet = false
             });
         }
 
