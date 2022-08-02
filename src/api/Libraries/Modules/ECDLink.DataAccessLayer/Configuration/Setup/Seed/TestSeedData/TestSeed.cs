@@ -49,22 +49,100 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
             var userManager = serviceProvider.GetService<UserManager<ApplicationUser>>();
 
             var user = userManager.Users.FirstOrDefault();
-
+            Guid coachId = Guid.NewGuid();
             _userId = user.Id;
 
             var siteAddressId = SeedSiteAddress();
+            try {
+                //coachId = AddFranchisorCoach(userManager);
+            }
+            catch (Exception e) { }
 
-            AddPractitioners(userManager, siteAddressId);
+            try
+            {
+                
+                AddPractitioners(userManager, siteAddressId, coachId.ToString());
+            } catch (Exception e) { }
 
+            try { 
             var classroomId = SeedClassroom();
-            SeedClassProgrammes();
-            SeedAttendance(serviceProvider, _practitionerId);
+                SeedClassProgrammes();
+                SeedAttendance(serviceProvider, _practitionerId);
+            }
+            catch (Exception e) { }
 
-            SeedChildren(serviceProvider);
-            SeedChildAttendance(serviceProvider);
+            try { 
+                SeedChildren(serviceProvider);
+            }
+            catch (Exception e) { }
+
+            try { 
+                SeedChildAttendance(serviceProvider);
+            }
+            catch (Exception e) { }
         }
 
-        private void AddPractitioners(UserManager<ApplicationUser> userManager, Guid siteAddressId)
+        private Guid AddFranchisorCoach(UserManager<ApplicationUser> userManager)
+        {
+            var fraRepo = _repositoryFactory.CreateRepository<Franchisor>(userContext: _userId);
+            var coaRepo = _repositoryFactory.CreateRepository<Coach>(userContext: _userId);
+
+            var pUserFranchisor = new ApplicationUser
+            {
+                FirstName = "TestFranchisor",
+                Surname = "TestFranchisorSurname",
+                Email = "test@testfranchisor.com",
+                UserName = "00000054654111",
+                ContactPreference = MessageTypeConstants.SMS,
+                IdNumber = "00000054654111",
+                PhoneNumber = "06148808",
+                IsActive = true,
+            };
+
+            var result = userManager.CreateAsync(pUserFranchisor).Result;
+            var franchisorId = pUserFranchisor.Id;
+
+            var passwordResult = userManager.AddPasswordAsync(pUserFranchisor, "Hello123!").Result;
+            //var siteAddressId2 = SeedSiteAddress(new Guid(), "Franchise Coach Address");
+
+            fraRepo.Insert(new Franchisor
+            {
+                Id = Guid.NewGuid(),
+                UserId = _practitionerId,
+                //SiteAddressId = siteAddressId2,
+                AreaOfOperation = "Office"
+            });
+
+            var pUserCoach = new ApplicationUser
+            {
+                FirstName = "TestCoach",
+                Surname = "TestCoachSurname",
+                Email = "test@testcoachr.com",
+                UserName = "00000022111",
+                ContactPreference = MessageTypeConstants.SMS,
+                IdNumber = "00000022111",
+                PhoneNumber = "0614887314",
+                IsActive = true
+            };
+
+            var result2 = userManager.CreateAsync(pUserCoach).Result;
+            var coachId = pUserCoach.Id;
+
+            var passwordResult2 = userManager.AddPasswordAsync(pUserCoach, "Hello123!").Result;
+
+            coaRepo.Insert(new Coach
+            {
+                Id = Guid.NewGuid(),
+                UserId = pUserCoach.Id,
+                //SiteAddressId = siteAddressId2,
+                AreaOfOperation = "Office",
+                FranchisorId = Guid.Parse(franchisorId)
+            });
+
+            return Guid.Parse(coachId);
+        }
+
+        private void AddPractitioners(UserManager<ApplicationUser> userManager, Guid siteAddressId, string coachId)
         {
             var pracRepo = _repositoryFactory.CreateRepository<Practitioner>(userContext: _userId);
 
@@ -94,7 +172,8 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
                 IsPrincipal = true,
                 IsFundaAppAdmin = false,
                 IsTrainee = false,
-                NotInvitedYet = false
+                NotInvitedYet = false,
+                CoachHierarchy = coachId
             });
 
             var pUser2 = new ApplicationUser
@@ -123,7 +202,8 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
                 IsPrincipal = false,
                 IsFundaAppAdmin = false,
                 IsTrainee = false,
-                NotInvitedYet = false
+                NotInvitedYet = false,
+                CoachHierarchy = coachId
             });
         }
 
