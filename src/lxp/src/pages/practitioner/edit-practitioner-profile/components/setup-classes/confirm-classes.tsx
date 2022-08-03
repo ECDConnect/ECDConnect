@@ -18,12 +18,14 @@ export const ConfirmClasses = ({
   classroomGroups,
   addClass,
   editClass,
+  onSubmit,
 }: {
   title: string;
   classroomName: string;
   addClass: () => void;
   editClass: (classroom: EditClassModel) => void;
   classroomGroups: ClassroomGroupDto[];
+  onSubmit: () => void;
 }) => {
   const history = useHistory();
   const [actionList, setActionList] = useState<ActionListDataItem[]>([]);
@@ -138,7 +140,7 @@ export const ConfirmClasses = ({
             textColor="white"
             icon="SaveIcon"
             onClick={() => {
-              history.push(ROUTES.ROOT);
+              onSubmit();
             }}
           />
         </div>

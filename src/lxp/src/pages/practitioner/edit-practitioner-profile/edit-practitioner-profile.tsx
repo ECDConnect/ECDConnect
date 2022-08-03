@@ -127,97 +127,11 @@ export const EditPractitionerProfile: React.FC = () => {
         createClassroom(programme, classroomId);
       }
 
-      // const classroomInputModel: ClassroomDto = {
-      //   userId: user?.id ?? '',
-      //   name: programme?.name ?? '',
-      //   isPrinciple: programme?.isPrincipleOrLeader ?? false,
-      //   numberPractitioners: programme?.smartStartPractitioners
-      //     ? +programme?.smartStartPractitioners
-      //     : 0,
-      //   numberOfOtherAssistants: programme?.nonSmartStartPractitioners
-      //     ? +programme?.nonSmartStartPractitioners
-      //     : 0,
-      //   // numberOfAssistants: programme?.assistants ? +programme?.assistants : 0,
-      //   // doesOwnerTeach: programme?.isTeacher ?? false,
-      //   id: classroomId,
-      //   insertedDate: new Date().toISOString(),
-      //   isActive: true,
-      // };
-
-      // appDispatch(classroomsActions.createClassroom(classroomInputModel));
-
       const programmeType = programmeTypes.find(
         (x) => x.enumId === ProgrammeTypeEnum.Playgroup
       );
 
-      if (programme?.type === programmeType?.id && playgroups && classroomId) {
-        for (const playGroup of playgroups) {
-          const classroomGroupId = newGuid();
-          const classProgrammeInputModel: ClassroomGroupDto = {
-            id: classroomGroupId,
-            classroomId: classroomId,
-            name: playGroup.name,
-            programmeTypeId: programme?.type,
-            isActive: true,
-          };
-
-          appDispatch(
-            classroomsActions.createClassroomGroup(classProgrammeInputModel)
-          );
-
-          for (const meetingDay of playGroup.meetingDays) {
-            const classProgrammeId = newGuid();
-
-            const classProgrammeInputModel: ClassProgrammeDto = {
-              id: classProgrammeId,
-              classroomGroupId: classroomGroupId,
-              meetingDay: meetingDay,
-              isFullDay: playGroup?.isFullDay || false,
-              programmeStartDate: new Date().toISOString(),
-              isActive: true,
-            };
-
-            appDispatch(
-              classroomsActions.createClassroomProgramme(
-                classProgrammeInputModel
-              )
-            );
-          }
-        }
-      } else {
-        const classroomGroupId = newGuid();
-        const classProgrammeInputModel: ClassroomGroupDto = {
-          id: classroomGroupId,
-          classroomId: classroomId,
-          name: programme?.name ?? '',
-          programmeTypeId: programme?.type,
-          isActive: true,
-        };
-
-        appDispatch(
-          classroomsActions.createClassroomGroup(classProgrammeInputModel)
-        );
-
-        const weekDays = [1, 2, 3, 4, 5];
-        for (const meetingDay of weekDays) {
-          const classProgrammeId = newGuid();
-
-          const classProgrammeInputModel: ClassProgrammeDto = {
-            id: classProgrammeId,
-            classroomGroupId: classroomGroupId,
-            meetingDay: meetingDay,
-            isFullDay: true,
-            programmeStartDate: new Date().toISOString(),
-            isActive: true,
-          };
-
-          appDispatch(
-            classroomsActions.createClassroomProgramme(classProgrammeInputModel)
-          );
-        }
-      }
-
-      await syncClassroom();
+      // await syncClassroom();
       history.push(ROUTES.ROOT);
     } else {
       showOnlineOnly();
@@ -300,16 +214,16 @@ export const EditPractitionerProfile: React.FC = () => {
             }}
           />
         );
-      case EditPractitionerSteps.setPlaygroupCount:
-        return (
-          <EditPlaygroupCountForm
-            onSubmit={(value) => {
-              setPlayGroupCount(value);
-              setActiveStep(EditPractitionerSteps.setupClasses);
-              setLabel(`step 2 of 3`);
-            }}
-          />
-        );
+      // case EditPractitionerSteps.setPlaygroupCount:
+      //   return (
+      //     <EditPlaygroupCountForm
+      //       onSubmit={(value) => {
+      //         setPlayGroupCount(value);
+      //         setActiveStep(EditPractitionerSteps.setupClasses);
+      //         setLabel(`step 2 of 3`);
+      //       }}
+      //     />
+      //   );
       case EditPractitionerSteps.setupClasses:
         return (
           // <EditMultiplePlayGroups

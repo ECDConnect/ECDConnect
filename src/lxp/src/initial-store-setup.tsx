@@ -43,6 +43,7 @@ import { settingActions, settingThunkActions } from './store/settings';
 import { staticDataActions, staticDataThunkActions } from './store/static-data';
 import { userActions, userThunkActions } from './store/user';
 import { analyticsActions } from './store/analytics';
+import { practitionerThunkActions } from './store/practitioner';
 
 type IntialStoreSetupContextValues = {
   initloading: boolean;
@@ -129,6 +130,9 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     ).unwrap();
     await appDispatch(userThunkActions.getUser({})).unwrap();
     await appDispatch(userThunkActions.getUserConsents({})).unwrap();
+    await appDispatch(
+      practitionerThunkActions.getAllPractitioners({})
+    ).unwrap();
     await appDispatch(childrenThunkActions.getChildren({})).unwrap();
     await appDispatch(caregiverThunkActions.getCaregivers({})).unwrap();
     await appDispatch(documentThunkActions.getDocuments({})).unwrap();

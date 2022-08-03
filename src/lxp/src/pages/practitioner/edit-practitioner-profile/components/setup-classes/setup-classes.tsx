@@ -6,6 +6,7 @@ import { AddClassForm } from './add-class-form';
 import { ConfirmClasses } from './confirm-classes';
 import { EditClass } from './edit-class';
 import { EditClassModel } from '@/schemas/practitioner/edit-class';
+import { practitionerSelectors } from '@/store/practitioner';
 
 interface SetupClassesProps {
   title?: string;
@@ -73,6 +74,7 @@ export const SetupClasses = ({
       case SetupClassesPage.confirmClasses:
         return (
           <ConfirmClasses
+            onSubmit={onSubmit}
             title={currentTitle}
             classroomName={classroom?.name || 'your Classroom'}
             addClass={onAddClass}

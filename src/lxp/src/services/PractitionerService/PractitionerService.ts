@@ -56,6 +56,32 @@ class PractitionerService {
 
     return response.data.data.GetPractitionerById;
   }
+
+  async getAllPractitioners(): Promise<PractitionerDto[]> {
+    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      query GetAllPractitioners {
+        GetAllPractitioner {
+          id
+          isPrincipal
+          isFundaAppAdmin
+          isTrainee
+          user {
+            idNumber
+            fullName
+          }
+        }
+      }
+      `,
+    });
+
+    if (response.status !== 200) {
+      throw new Error('Get Practitioner Failed - Server connection error');
+    }
+
+    return response.data.data.GetAllPractitioner;
+  }
 }
 
 export default PractitionerService;

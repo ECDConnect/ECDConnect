@@ -1,7 +1,10 @@
 import { PractitionerDto } from '@ecdlink/core';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
-import { getPractitionerById } from './practitioner.actions';
+import {
+  getAllPractitioners,
+  getPractitionerById,
+} from './practitioner.actions';
 import { PractitionerState } from './practitioner.types';
 
 const initialState: PractitionerState = {};
@@ -18,10 +21,19 @@ const practitionerSlice = createSlice({
         state.practitioner = action.payload;
       }
     },
+    createPractitionersByPrincipal: (
+      state,
+      action: PayloadAction<PractitionerDto[]>
+    ) => {
+      state.principalPractitioners = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(getPractitionerById.fulfilled, (state, action) => {
       state.practitioner = action.payload;
+    });
+    builder.addCase(getAllPractitioners.fulfilled, (state, action) => {
+      state.practitioners = action.payload;
     });
   },
 });

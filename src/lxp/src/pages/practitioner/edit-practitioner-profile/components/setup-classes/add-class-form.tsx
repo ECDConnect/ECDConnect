@@ -22,11 +22,17 @@ import { yesNoOptions } from '../edit-programme-form/edit-programme-form.types';
 import { classroomsActions, classroomsSelectors } from '@store/classroom';
 import { newGuid } from '@/utils/common/uuid.utils';
 import { useSelector } from 'react-redux';
+import { practitionerSelectors } from '@/store/practitioner';
 
 export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const programmeType = useSelector(classroomsSelectors.getProgrammeType());
+  const practitioners = useSelector(practitionerSelectors.getPractitioners);
+
   const [classCount, setClassCount] = useState(1);
+  const [practitionersList, setPractitionersList] = useState<
+    { label: string; value: any }[]
+  >([]);
 
   const appDispatch = useAppDispatch();
   const {
@@ -74,6 +80,19 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
   useEffect(() => {
     setClassCount(classroomGroup.length + 1);
   }, [classroomGroup]);
+
+  useEffect(() => {
+    const _list = practitioners
+      ?.map((p) => {
+        if (p.id && p.user?.idNumber && p.user.fullName) {
+          return { label: p.user.fullName, value: p.id };
+        }
+        return undefined;
+      })
+      .filter(Boolean) as { label: string; value: any }[];
+
+    setPractitionersList(_list);
+  }, [practitioners]);
 
   const isFormValid = () => {
     const meetingDays = getClassFormValues().meetingDays;
@@ -155,10 +174,7 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
               <Dropdown<string>
                 inputRef={ref}
                 placeholder={'Select playgroup'}
-                list={[
-                  { label: 'Lesego Setsego', value: 'Lesego Setsego ID' },
-                  { label: 'Thandi Tembo', value: 'Thandi Tembo ID' },
-                ]}
+                list={practitionersList}
                 fillType="clear"
                 label={'Which Practitioner teaches this class?'}
                 fullWidth
