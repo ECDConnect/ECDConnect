@@ -114,6 +114,7 @@ export default function CoachAccount() {
         <StackedList
           listItems={stackedActionList}
           type={'ActionList'}
+          className={'px-4'}
         ></StackedList>
       </BannerWrapper>
       <Dialog

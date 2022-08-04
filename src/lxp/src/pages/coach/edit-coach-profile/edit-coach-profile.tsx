@@ -1,4 +1,10 @@
 import { ActionModal, BannerWrapper, DialogPosition } from '@ecdlink/ui';
+import { useDialog, UserDto } from '@ecdlink/core';
+import { useHistory } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { IonContent } from '@ionic/react';
+import { cloneDeep } from 'lodash';
 
 import { EditProfileForm } from './components/edit-profile-form/edit-profile-form';
 import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
@@ -6,12 +12,8 @@ import { EditProfileInformationModel } from '@schemas/coach/edit-profile';
 import { EditCoachSteps } from './edit-coach-profile.types';
 import { AddPhoto } from './components/add-photo/add-photo';
 import { coachActions, coachSelectors } from '@store/coach';
+import { userActions, userSelectors } from '@store/user';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import { useHistory } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { IonContent } from '@ionic/react';
-import { useDialog } from '@ecdlink/core';
 import { useAppDispatch } from '@store';
 import ROUTES from '@routes/routes';
 
@@ -24,6 +26,7 @@ export const EditCoachProfile: React.FC = () => {
   const dialog = useDialog();
 
   const coach = useSelector(coachSelectors.getCoach);
+  const user = useSelector(userSelectors.getUser);
 
   const [coachProfileInformation, setCoachProfileInformation] =
     useState<EditProfileInformationModel>({
@@ -40,14 +43,19 @@ export const EditCoachProfile: React.FC = () => {
 
   const onAllStepsComplete = async () => {
     if (isOnline) {
-      const newCoachObj = Object.assign({}, coach);
-      newCoachObj.siteAddress = coachProfileInformation.siteAddress;
-      newCoachObj.siteAddressId = coachProfileInformation.siteAddressId;
+      const coachCopy = cloneDeep(coach);
+      const userCopy = cloneDeep(user);
 
-      const user = Object.assign({}, newCoachObj.user);
-      user.email = coachProfileInformation.email;
+      if (coachCopy && userCopy) {
+        coachCopy.siteAddress = coachProfileInformation.siteAddress;
+        coachCopy.siteAddressId = coachProfileInformation.siteAddressId;
 
-      appDispatch(coachActions.updateCoach(newCoachObj));
+        userCopy.email = coachProfileInformation.email;
+        Object.assign(coachCopy.user as UserDto, userCopy);
+
+        appDispatch(coachActions.updateCoach(coachCopy));
+        appDispatch(userActions.updateUser(userCopy));
+      }
 
       history.push(ROUTES.ROOT);
     } else {
@@ -96,7 +104,7 @@ export const EditCoachProfile: React.FC = () => {
 
   const exitPrompt = () => {
     dialog({
-      position: DialogPosition.Bottom,
+      position: DialogPosition.Middle,
       render: (onSubmit, onCancel) => (
         <ActionModal
           icon={'XCircleIcon'}
@@ -153,7 +161,7 @@ export const EditCoachProfile: React.FC = () => {
           subTitle={label}
           onBack={onBack}
           onClose={exitPrompt}
-          backgroundColour={'uiBg'}
+          backgroundColour={'white'}
           displayOffline={!isOnline}
         >
           <div className={'px-4 pb-5'}>

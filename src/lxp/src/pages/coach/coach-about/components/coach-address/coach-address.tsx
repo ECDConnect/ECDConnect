@@ -40,8 +40,25 @@ export const CoachAddress: React.FC = () => {
   const franchisorAddress = coach?.franchisor?.siteAddress;
   const siteAddress = coach?.siteAddress;
 
-  const [isOfficeAddress, setIsOfficeAddress] = useState<boolean>(
-    coach?.siteAddressId === coach?.franchisor?.siteAddressId || false
+  /**
+   * Determination method to display the Franchisor
+   * address, other location or neither:
+   *
+   * 1. Site address exists and is equal to Franchisor Address - IS_AT_OFFICE
+   * 2. Site address exists and is NOT equal to Franchisor Address - IS_NOT_AT_OFFICE
+   * 3. Site address does not exist - IS_AT_OFFICE or NEITHER?
+   *
+   * NOTES: Coach MUST have a Franchisor, however at the moment, Franchisor can
+   * exist without an address; therefore:
+   * 4. Site address does not exist and Franchisor Address does not exist - IS_NOT_AT_OFFICE
+   */
+  const isAtOfficeOrCustomLocation =
+    (siteAddress !== null && isEqual(siteAddress, franchisorAddress)) ||
+    (siteAddress === null && franchisorAddress !== null) ||
+    !(siteAddress === null && franchisorAddress === null);
+
+  const [isOfficeAddress, setIsOfficeAddress] = useState(
+    isAtOfficeOrCustomLocation
   );
 
   useEffect(() => {
@@ -95,12 +112,24 @@ export const CoachAddress: React.FC = () => {
     control: coachAddressFormControl,
   });
 
+  // console.log(provinces);
+
   const handleFormSubmit = (): void => {
     if (isValid) {
       const newAddress = getCoachAddressFormValues();
       const copy = Object.assign({}, coach);
 
       if (!isEqual(copy.siteAddress, newAddress)) {
+        const provinceDescription = (id: string) =>
+          provinces.find((province) => province.id === id);
+
+        const newProvince: ProvinceDto = {
+          description: provinceDescription(newAddress.provinceId)!.description,
+          enumId: newAddress.provinceId,
+          id: newAddress.provinceId,
+        };
+
+        newAddress.province = newProvince;
         copy.siteAddress = newAddress;
 
         if (isOfficeAddress) {
@@ -121,10 +150,10 @@ export const CoachAddress: React.FC = () => {
       title="Profile edit"
       color={'primary'}
       onBack={() => history.push(ROUTES.COACH.ABOUT.ROOT)}
-      backgroundColour="uiBg"
+      backgroundColour={'white'}
       displayOffline={!isOnline}
     >
-      <div className="px-4 pb-5">
+      <div className="space-y-4 px-4 pb-20">
         <Typography
           type={'h1'}
           text={'Edit your Profile'}
@@ -137,21 +166,19 @@ export const CoachAddress: React.FC = () => {
             <label className={styles.label}>Where do you work?</label>
           </div>
 
-          {franchisorAddress && (
-            <div className="mt-1">
-              <ButtonGroup
-                options={isAtOfficeLocation}
-                onOptionSelected={(value: boolean | boolean[]) => {
-                  setIsOfficeAddress(value as boolean);
-                }}
-                selectedOptions={isOfficeAddress}
-                color="secondary"
-                type={ButtonGroupTypes.Button}
-                className={'w-full'}
-                multiple={false}
-              />
-            </div>
-          )}
+          <div className="mt-1">
+            <ButtonGroup
+              options={isAtOfficeLocation}
+              onOptionSelected={(value: boolean | boolean[]) => {
+                setIsOfficeAddress(value as boolean);
+              }}
+              selectedOptions={isOfficeAddress}
+              color="secondary"
+              type={ButtonGroupTypes.Button}
+              className={'w-full'}
+              multiple={false}
+            />
+          </div>
 
           {isOfficeAddress && franchisorAddress && (
             <>
@@ -170,7 +197,7 @@ export const CoachAddress: React.FC = () => {
             </>
           )}
 
-          {!isOfficeAddress && (
+          {!isOfficeAddress !== undefined && isOfficeAddress === false && (
             <>
               <FormInput<EditSiteAddressModel>
                 label={'Flat / unit / apartment number'}
@@ -237,18 +264,17 @@ export const CoachAddress: React.FC = () => {
             </>
           )}
 
-          <div className="mt-5 mb-2">
-            <Button
-              type="filled"
-              color="primary"
-              className={styles.button}
-              disabled={!isValid}
-              onClick={handleFormSubmit}
-            >
-              {renderIcon('SaveIcon', styles.icon)}
-              <Typography type={'help'} text={'Save'} color={'white'} />
-            </Button>
-          </div>
+          <Button
+            size="small"
+            type="filled"
+            color="primary"
+            className={styles.button}
+            disabled={!isValid}
+            onClick={handleFormSubmit}
+          >
+            {renderIcon('SaveIcon', styles.icon)}
+            <Typography type={'h6'} text={'Save'} color={'white'} />
+          </Button>
         </div>
       </div>
     </BannerWrapper>

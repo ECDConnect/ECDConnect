@@ -40,8 +40,8 @@ export const CoachSignature: React.FC = () => {
 
   const saveSignature = (signature: string) => {
     const copy = Object.assign({}, coach);
-    if (copy.signature !== signature) {
-      copy.signature = signature;
+    if (copy.signingSignature !== signature) {
+      copy.signingSignature = signature;
       appDispatch(coachActions.updateCoach(copy));
     }
   };

@@ -6,7 +6,7 @@ export interface CoachAboutModel {
   surname: string;
   cellphone: string;
   email: string;
-  signature?: string;
+  signingSignature?: string;
   address?: string;
 }
 
@@ -15,7 +15,7 @@ export const initialCoachAboutValues: CoachAboutModel = {
   surname: '',
   cellphone: '',
   email: '',
-  signature: '',
+  signingSignature: '',
   address: '',
 };
 
@@ -28,6 +28,6 @@ export const coachAboutModelSchema = Yup.object().shape({
   email: Yup.string()
     .email('Please enter a valid email address')
     .required('Email is required'),
-  signature: Yup.string().optional(),
+  signingSignature: Yup.string().optional(),
   address: Yup.string().optional(),
 });

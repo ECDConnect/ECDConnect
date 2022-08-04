@@ -1,6 +1,5 @@
-import { LocalStorageKeys, CoachDto, useTheme } from '@ecdlink/core';
+import { LocalStorageKeys, CoachDto, UserDto, useTheme } from '@ecdlink/core';
 import { FileTypeEnum } from '@ecdlink/graphql';
-import * as styles from './coach-about.styles';
 import {
   ActionListDataItem,
   BannerWrapper,
@@ -11,29 +10,34 @@ import {
   ProfileAvatar,
   renderIcon,
   StackedList,
-  // StatusChip,
+  StatusChip,
   Typography,
 } from '@ecdlink/ui';
-import {
-  initialCoachAboutValues,
-  CoachAboutModel,
-  coachAboutModelSchema,
-} from '@schemas/coach/coach-about';
+import { useHistory } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { useForm } from 'react-hook-form';
+import { cloneDeep } from 'lodash';
+
 import { PhotoPrompt } from '../../../components/photo-prompt/photo-prompt';
 import { DialogFormInput } from '@models/practitioner/DialogFormInput';
 import { setStorageItem } from '@utils/common/local-storage.utils';
 import { practitionerSelectors } from '@/store/practitioner';
 import { coachActions, coachSelectors } from '@store/coach';
+import { userActions, userSelectors } from '@/store/user';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { childrenSelectors } from '@/store/children';
 import { analyticsActions } from '@store/analytics';
 import { useDocuments } from '@hooks/useDocuments';
-import { useHistory } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { useForm } from 'react-hook-form';
+import * as styles from './coach-about.styles';
 import { useAppDispatch } from '@store';
 import ROUTES from '@routes/routes';
+import {
+  initialCoachAboutValues,
+  CoachAboutModel,
+  coachAboutModelSchema,
+} from '@schemas/coach/coach-about';
 
 export const CoachAbout: React.FC = () => {
   const [editProfilePictureVisible, setEditProfilePictureVisible] =
@@ -66,10 +70,10 @@ export const CoachAbout: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOnline]);
 
-  // const authUser = useSelector(authSelectors.getAuthUser);
+  const practitioners = useSelector(practitionerSelectors.getPractitioners);
+  const children = useSelector(childrenSelectors.getChildren);
   const coach = useSelector(coachSelectors.getCoach);
-  // const practitioners = useSelector(practitionerSelectors.getPractitioners);
-  // console.log(practitioners);
+  const user = useSelector(userSelectors.getUser);
 
   useEffect(() => {
     if (coach) setNewStackListItems(coach);
@@ -83,7 +87,7 @@ export const CoachAbout: React.FC = () => {
         surname: coach.user?.surname || '',
         cellphone: coach.user?.phoneNumber || '',
         email: coach.user?.email || '',
-        signature: coach.signature || '',
+        signingSignature: coach.signingSignature || '',
         address: coach.siteAddressId || '',
       };
 
@@ -104,8 +108,7 @@ export const CoachAbout: React.FC = () => {
   });
 
   const formatSiteAddressAsText = (user: CoachDto): string => {
-    if (!user || !user.siteAddressId || !user.siteAddress)
-      return 'Add a work address';
+    if (!user || !user.siteAddress) return 'Add a work address';
 
     const address = user.siteAddress.ward?.length
       ? `${user.siteAddress.ward}<br/>`
@@ -153,7 +156,7 @@ export const CoachAbout: React.FC = () => {
         switchTextStyles: true,
         actionName: currentUser?.user?.phoneNumber ? 'Edit' : 'Add',
         actionIcon: currentUser?.user?.phoneNumber ? 'PencilIcon' : 'PlusIcon',
-        buttonType: currentUser?.user?.phoneNumber ? 'outlined' : 'filled',
+        buttonType: currentUser?.user?.phoneNumber ? 'filled' : 'outlined',
         onActionClick: () => {
           editField({
             label: 'Cellphone Number',
@@ -168,7 +171,7 @@ export const CoachAbout: React.FC = () => {
         switchTextStyles: true,
         actionName: currentUser?.user?.email ? 'Edit' : 'Add',
         actionIcon: currentUser?.user?.email ? 'PencilIcon' : 'PlusIcon',
-        buttonType: currentUser?.user?.email ? 'outlined' : 'filled',
+        buttonType: currentUser?.user?.email ? 'filled' : 'outlined',
         onActionClick: () => {
           editField({
             label: 'Email Address',
@@ -179,10 +182,12 @@ export const CoachAbout: React.FC = () => {
       },
       {
         title: 'Signature',
-        subTitle: 'Add your signature',
+        subTitle: currentUser?.signingSignature
+          ? 'Replace your signature'
+          : 'Add your signature',
         switchTextStyles: true,
-        actionName: 'Add',
-        actionIcon: 'PlusIcon',
+        actionName: currentUser?.signingSignature ? 'Edit' : 'Add',
+        actionIcon: currentUser?.signingSignature ? 'PencilIcon' : 'PlusIcon',
         buttonType: 'filled',
         onActionClick: () => {
           history.push(ROUTES.COACH.ABOUT.SIGNATURE);
@@ -193,9 +198,9 @@ export const CoachAbout: React.FC = () => {
         subTitle: formatSiteAddressAsText(currentUser),
         switchTextStyles: true,
         hasMarkup: true,
-        actionName: currentUser?.siteAddressId ? 'Edit' : 'Add',
-        actionIcon: currentUser?.siteAddressId ? 'PencilIcon' : 'PlusIcon',
-        buttonType: currentUser?.siteAddressId ? 'outlined' : 'filled',
+        actionName: currentUser?.siteAddress ? 'Edit' : 'Add',
+        actionIcon: currentUser?.siteAddress ? 'PencilIcon' : 'PlusIcon',
+        buttonType: currentUser?.siteAddress ? 'filled' : 'outlined',
         onActionClick: () => {
           history.push(ROUTES.COACH.ABOUT.ADDRESS);
         },
@@ -237,10 +242,14 @@ export const CoachAbout: React.FC = () => {
   const deleteProfilePicture = () => {
     if (userProfilePicture) deleteDocument(userProfilePicture);
 
-    const copy = Object.assign({}, coach);
-    if (copy) {
-      copy.user!.profileImageUrl = '';
-      appDispatch(coachActions.updateCoach(copy));
+    const coachCopy = cloneDeep(coach);
+    const userCopy = cloneDeep(user);
+
+    if (coachCopy && userCopy) {
+      userCopy.profileImageUrl = '';
+      Object.assign(coachCopy.user as UserDto, userCopy);
+      appDispatch(coachActions.updateCoach(coachCopy));
+      appDispatch(userActions.updateUser(userCopy));
     }
 
     setEditProfilePictureVisible(!editProfilePictureVisible);
@@ -250,13 +259,14 @@ export const CoachAbout: React.FC = () => {
     setEditProfilePictureVisible(!editProfilePictureVisible);
     setStorageItem(imageBaseString, pictureStorageKey);
 
-    const copy = Object.assign({}, coach);
-    if (copy) {
-      const tmpUser = Object.assign({}, copy.user);
-      tmpUser.profileImageUrl = imageBaseString;
-      copy.user = tmpUser;
+    const coachCopy = cloneDeep(coach);
+    const userCopy = cloneDeep(user);
 
-      appDispatch(coachActions.updateCoach(copy));
+    if (coachCopy && userCopy) {
+      userCopy.profileImageUrl = imageBaseString;
+      Object.assign(coachCopy.user as UserDto, userCopy);
+      appDispatch(coachActions.updateCoach(coachCopy));
+      appDispatch(userActions.updateUser(userCopy));
     }
 
     if (!userProfilePicture) {
@@ -273,18 +283,22 @@ export const CoachAbout: React.FC = () => {
 
   const saveCoachUserData = () => {
     const coachForm = coachAboutFormGetValues();
-    const copy = Object.assign({}, coach);
-    if (copy) {
-      const tmpUser = Object.assign({}, copy.user);
-      tmpUser.firstName = coachForm.name;
-      tmpUser.surname = coachForm.surname;
-      tmpUser.phoneNumber = coachForm.cellphone;
-      tmpUser.email = coachForm.email;
 
-      copy.user = tmpUser;
+    const coachCopy = cloneDeep(coach);
+    const userCopy = cloneDeep(user);
 
-      appDispatch(coachActions.updateCoach(copy));
-      setNewStackListItems(copy);
+    if (coachCopy && userCopy) {
+      userCopy.firstName = coachForm.name;
+      userCopy.surname = coachForm.surname;
+      userCopy.phoneNumber = coachForm.cellphone;
+      userCopy.email = coachForm.email;
+      userCopy.fullName = `${userCopy.firstName} ${userCopy.surname}`;
+
+      Object.assign(coachCopy.user as UserDto, userCopy);
+
+      appDispatch(userActions.updateUser(userCopy));
+      appDispatch(coachActions.updateCoach(coachCopy));
+      setNewStackListItems(coachCopy);
     }
   };
 
@@ -298,39 +312,46 @@ export const CoachAbout: React.FC = () => {
         color={'primary'}
         size="medium"
         renderBorder={true}
-        renderOverflow={false}
+        renderOverflow={true}
         onBack={() => history.push(ROUTES.COACH.PROFILE.ROOT)}
         displayOffline={!isOnline}
+        backgroundColour={'white'}
       >
-        <div className={'w-full inline-flex justify-center pt-8'}>
-          <ProfileAvatar
-            dataUrl={userProfilePicture?.file || ''}
-            size={'header'}
-            onPressed={displayProfilePicturePrompt}
-            hasConsent={true}
-          />
+        <div className="px-4">
+          <div className={'w-full inline-flex justify-center pt-8'}>
+            <ProfileAvatar
+              dataUrl={userProfilePicture?.file || ''}
+              size={'header'}
+              onPressed={displayProfilePicturePrompt}
+              hasConsent={true}
+            />
+          </div>
+          <div className="flex my-4 justify-center">
+            {practitioners && (
+              <StatusChip
+                className="mr-2"
+                backgroundColour="infoDark"
+                textColour={'white'}
+                borderColour="infoDark"
+                text={`${practitioners?.length} practitioners`}
+              />
+            )}
+            {children && (
+              <StatusChip
+                className={'ml-2'}
+                backgroundColour="primary"
+                textColour={'white'}
+                borderColour="primary"
+                text={`${children.length} children`}
+              />
+            )}
+          </div>
+          <StackedList
+            className={'white'}
+            listItems={listItems}
+            type={'ActionList'}
+          ></StackedList>
         </div>
-        <div className="flex my-4 justify-center">
-          {/* <StatusChip
-            className="mr-2"
-            backgroundColour="infoDark"
-            textColour={'white'}
-            borderColour="infoDark"
-            text={'22 Practitioners'}
-          />
-          <StatusChip
-            className={'ml-2'}
-            backgroundColour="primary"
-            textColour={'white'}
-            borderColour="primary"
-            text={'4 Children'}
-          /> */}
-        </div>
-        <StackedList
-          className={'bg-uiBg'}
-          listItems={listItems}
-          type={'ActionList'}
-        ></StackedList>
       </BannerWrapper>
 
       <Dialog
@@ -380,7 +401,7 @@ export const CoachAbout: React.FC = () => {
           >
             {renderIcon('SaveIcon', styles.buttonIcon)}
             <Typography
-              type="help"
+              type="h6"
               className="mr-2"
               color="white"
               text={'Save'}

@@ -3,7 +3,6 @@ import {
   ButtonGroup,
   ButtonGroupOption,
   ButtonGroupTypes,
-  Divider,
   Dropdown,
   FormInput,
   Typography,
@@ -32,10 +31,7 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
   const franchisorAddress = coachProfileInformation?.franchisorAddress;
   const siteAddress = coachProfileInformation?.siteAddress;
 
-  const [isOfficeAddress, setIsOfficeAddress] = useState<boolean>(
-    coachProfileInformation?.siteAddressId ===
-      coachProfileInformation?.franchisorAddressId || false
-  );
+  const [isOfficeAddress, setIsOfficeAddress] = useState<boolean | undefined>();
 
   useEffect(() => {
     if (isOfficeAddress && franchisorAddress) {
@@ -87,8 +83,9 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
         {},
         coachProfileInformation
       );
+
       newCoachProfileInformation.siteAddress = {
-        name: profileFormValues.name,
+        name: isOfficeAddress ? profileFormValues.name : '',
         addressLine1: profileFormValues.addressLine1,
         addressLine2: profileFormValues.addressLine2,
         addressLine3: profileFormValues.addressLine3,
@@ -117,7 +114,7 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
         color={'primary'}
         className={'my-3'}
       />
-      <div className="space-y-4">
+      <div className="space-y-4 pb-16">
         <FormInput<EditCoachProfileModel>
           label={'Email address?'}
           register={coachProfileFormRegister}
@@ -143,7 +140,7 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
           </div>
         </div>
 
-        {isOfficeAddress && franchisorAddress && (
+        {isOfficeAddress === true && franchisorAddress && (
           <>
             <Typography
               type={'h5'}
@@ -160,7 +157,7 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
           </>
         )}
 
-        {!isOfficeAddress && (
+        {isOfficeAddress !== undefined && isOfficeAddress === false && (
           <>
             <FormInput<EditCoachProfileModel>
               label={'Flat / unit / apartment number'}
@@ -227,19 +224,22 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
           </>
         )}
 
-        <Divider />
-        <div className="mb-2">
-          <Button
-            type="filled"
-            color="primary"
-            className={styles.button}
-            disabled={!isValid}
-            onClick={handleFormSubmit}
-          >
-            {renderIcon('ArrowCircleRightIcon', styles.icon)}
-            <Typography type={'help'} text={'Next'} color={'white'} />
-          </Button>
-        </div>
+        <Button
+          size="small"
+          type="filled"
+          color="primary"
+          className={styles.button}
+          disabled={!isValid}
+          onClick={handleFormSubmit}
+        >
+          {renderIcon('ArrowCircleRightIcon', styles.icon)}
+          <Typography
+            type={'h6'}
+            text={'Next'}
+            color={'white'}
+            className="ml-2"
+          />
+        </Button>
       </div>
     </div>
   );

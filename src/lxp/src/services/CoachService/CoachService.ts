@@ -1,3 +1,4 @@
+import { CoachInput } from '@ecdlink/graphql';
 import { CoachDto } from '@ecdlink/core';
 import { Config } from '@ecdlink/core';
 import { api } from '../axios.helper';
@@ -50,6 +51,7 @@ class CoachService {
               addressLine3
               postalCode
               ward
+              isActive
             }
             franchisorId
             franchisor {
@@ -69,8 +71,8 @@ class CoachService {
                 ward
               }
             } 
-            startDate
-            signature
+            signingSignature
+            isActive
           }
         }
       `,
@@ -83,7 +85,30 @@ class CoachService {
       throw new Error('Get Coach Failed - Server connection error');
     }
 
-    return response.data.data.coachByUserId[0];
+    return response.data.data.coachByUserId;
+  }
+
+  async updateCoach(userId: string, coach: CoachInput): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        mutation updateCoach($id: String!, $input: CoachInput) {
+          updateCoach(id: $id, input: $input) {
+            id
+          }
+        }
+      `,
+      variables: {
+        id: userId,
+        input: coach,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error('Updating Coach failed - Server connection error');
+    }
+
+    return true;
   }
 }
 

@@ -5,12 +5,12 @@ export const initialCoachValues: CoachDto = {
   areaOfOperation: '',
   secondaryAreaOfOperation: '',
   startDate: undefined,
-  signature: undefined,
+  signingSignature: undefined,
 };
 
 export const coachSchema = Yup.object().shape({
   areaOfOperation: Yup.string(),
   secondaryAreaOfOperation: Yup.string(),
   startDate: Yup.date(),
-  signature: Yup.string(),
+  signingSignature: Yup.string(),
 });

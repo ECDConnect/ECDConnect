@@ -139,6 +139,7 @@ export const CoachProfile: React.FC = () => {
           <StackedList
             listItems={getStackedMenuList()}
             type={'MenuList'}
+            className={'-mt-0.5 px-4 flex flex-col gap-1'}
           ></StackedList>
         </div>
       ),
@@ -152,12 +153,10 @@ export const CoachProfile: React.FC = () => {
       title={`${coach?.user?.firstName} ${coach?.user?.surname}`}
       color={'primary'}
       onBack={() => history.push(ROUTES.ROOT)}
-      backgroundColour="uiBg"
+      backgroundColour="white"
       displayOffline={!isOnline}
     >
-      <div className="bg-white">
-        <TabList tabItems={tabItem} />
-      </div>
+      <TabList tabItems={tabItem} />
     </BannerWrapper>
   );
 };

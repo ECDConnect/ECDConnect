@@ -1,8 +1,6 @@
-import { EnhancedStore } from '@reduxjs/toolkit';
 import { differenceInMilliseconds } from 'date-fns';
-import { Message } from '@models/messages/messages';
-import { RootState } from '@store/types';
-import { NotificationValidator } from './NotificationService.types';
+import { EnhancedStore } from '@reduxjs/toolkit';
+
 import { ChildDocumentsNotificationValidator } from './validators/child-documents/childDocumentsNotificationValidator';
 import { ChildProgressReportNotificationValidator } from './validators/child-progess-report/childProgressReportNotificationValidator';
 import { IncompleteChildRegistrationNotificationValidator } from './validators/child-registration/incompleteChildRegistrationNotificationValidator';
@@ -10,6 +8,9 @@ import { IncompletePractitionerInformationNotificationValidator } from './valida
 import { IncompleteCoachInformationNotificationValidator } from './validators/coach-profile/incompleteCoachInformationNotificationValidator';
 import { ProgrammePlanningNotificationValidator } from './validators/programme-planning/programmePlanningNotificationValidator';
 import { IncompleteTrackAttendanceNotificationValidator } from './validators/track-attendance/incompleteTrackAttendanceNotificationValidator';
+import { NotificationValidator } from './NotificationService.types';
+import { Message } from '@models/messages/messages';
+import { RootState } from '@store/types';
 
 export class NotificationService {
   interval: number;

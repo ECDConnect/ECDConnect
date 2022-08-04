@@ -25,10 +25,24 @@ export class IncompleteCoachInformationNotificationValidator
 
     if (!userState) return [];
 
-    if (
-      !userState?.user ||
-      userState?.user?.roles?.some((role) => role.name === 'Coach')
-    ) {
+    /**
+     * Notification is returned when
+     * 1. The user is a coach
+     * 2. The user doesn't have a firstName
+     * 3. The user doesn't have a surname
+     * 4. The user doesn't have a phoneNumber
+     */
+    const isCoach = userState?.user?.roles?.some(
+      (role) => role.name === 'Coach'
+    );
+
+    const showNotification =
+      isCoach &&
+      (!userState?.user?.firstName ||
+        !userState?.user?.surname ||
+        !userState?.user?.phoneNumber);
+
+    if (!userState?.user || showNotification) {
       return [
         {
           reference: `coach-profile`,

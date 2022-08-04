@@ -11,7 +11,7 @@ export interface CoachDto extends EntityBase {
   startDate?: Date;
   siteAddress?: SiteAddressDto;
   siteAddressId?: string;
-  signature?: string;
+  signingSignature?: string;
   franchisorId?: string;
   franchisor?: FranchisorDto;
 }

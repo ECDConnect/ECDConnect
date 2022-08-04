@@ -26,6 +26,8 @@ import { settingSelectors } from '@store/settings';
 import { userSelectors } from '@store/user';
 import { analyticsActions } from '@store/analytics';
 import { DashboardItems } from './components/dashboard-items/dashboard-items';
+import { practitionerThunkActions } from '@/store/practitioner';
+import { childrenThunkActions } from '@/store/children';
 import * as styles from './dashboard.styles';
 import ROUTES from '@routes/routes';
 const { version } = require('../../../package.json');
@@ -42,20 +44,23 @@ export enum NavigationTypes {
 }
 
 export const Dashboard: React.FC = () => {
-  const history = useHistory();
-  const { theme } = useTheme();
+  const shouldUserSync = useSelector(settingSelectors.getShouldUserSync);
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const userData = useSelector(userSelectors.getUser);
-  const shouldUserSync = useSelector(settingSelectors.getShouldUserSync);
-  const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
+  const appDispatch = useAppDispatch();
+  const history = useHistory();
+  const { theme } = useTheme();
   const dialog = useDialog();
+
   const newNotificationCount = useSelector(
     notificationsSelectors.getNewNotificationCount
   );
+
   const dashboardNotification = useSelector(
     notificationsSelectors.getDashboardNotification
   );
+
   const { userProfilePicture } = useDocuments();
 
   useEffect(() => {
@@ -69,6 +74,25 @@ export const Dashboard: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOnline]);
+
+  /**
+   * Data loading for coaches:
+   * 1. Practitioners
+   * 2. Children of Practitioners
+   */
+  useEffect(() => {
+    if (userData?.roles?.some((role) => role.name === 'Coach')) {
+      (async () =>
+        await appDispatch(
+          practitionerThunkActions.getPractitionersForCoach({})
+        ).unwrap())();
+
+      (async () =>
+        await appDispatch(
+          childrenThunkActions.getChildrenForCoach({})
+        ).unwrap())();
+    }
+  }, []);
 
   const navigation: (NavigationRouteItem | NavigationDropdown)[] = [
     { name: NavigationTypes.Home, href: '/', icon: 'HomeIcon', current: true },
@@ -132,6 +156,7 @@ export const Dashboard: React.FC = () => {
         titleIcon: 'AcademicCapIcon',
         titleIconClassName: styles.smartStarterIcon,
         onActionClick: () => ({}),
+        classNames: 'bg-uiBg',
       },
       {
         title: 'Clubs',
@@ -146,6 +171,7 @@ export const Dashboard: React.FC = () => {
           },
           text: 'Coming soon',
         },
+        classNames: 'bg-uiBg',
       }
     );
   } else {
