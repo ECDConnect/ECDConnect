@@ -48,78 +48,24 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var absenteeRepo = repoFactory.CreateRepository<Absentees>(userContext: uId);
-            //Abse practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId.Equals(practitionerId));            
-            
-            //else return new Practitioner();
+
+            var absent = new Absentees
+            {
+                UserId = practitionerId,
+                Reason = reason,
+                AbsentDate = absentDate,
+                LoggedBy = loggedByUser,
+                ReassignedClass = classProgram,
+                ReassignedToPractitioner = reassignedToPractitioner
+            };
+
+            var updated = absenteeRepo.Insert(absent);
+
+            return updated;
 
 
             return new Absentees();
         }
-
-        public Practitioner DeletePractitionerForCoach([Service] IHttpContextAccessor contextAccessor,
-            [Service] UserManager<ApplicationUser> userManager,
-            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
-            [Service] IGenericRepositoryFactory repoFactory,
-            string practitionerId, string coachId)
-        {
-
-            //find the practitioner
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
-            var userId = contextAccessor.HttpContext.GetUser().Id;
-            var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: userId);
-            Practitioner practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId.Equals(practitionerId));
-            if (practitioner != null)
-            {
-                practitioner.CoachHierarchy = practitioner.CoachHierarchy.Replace(coachId, "");
-                var updateResult = practitionerRepo.Update(practitioner);
-            }
-
-            return practitioner;
-        }
-
-        public Coach DeletCoachForFranchisor([Service] IHttpContextAccessor contextAccessor,
-            [Service] UserManager<ApplicationUser> userManager,
-            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
-            [Service] IGenericRepositoryFactory repoFactory,
-            string coachId, string franchisorId)
-        {
-
-            //find the practitioner
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
-            var userId = contextAccessor.HttpContext.GetUser().Id;
-            var dbRepo = repoFactory.CreateRepository<Coach>(userContext: userId);
-            Coach coach = new CoachQueryExtension().GetCoachByUserId(contextAccessor, dbFactory, repoFactory, coachId);
-            coach.FranchisorId = null;
-            var updateResult = dbRepo.Update(coach);
-
-            return coach;
-        }
-
-        public Coach AddCoachToFranchisor([Service] IHttpContextAccessor contextAccessor,
-            [Service] UserManager<ApplicationUser> userManager,
-            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
-            [Service] IGenericRepositoryFactory repoFactory,
-            string coachId, string franchisorId)
-        {
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            var dbRepo = repoFactory.CreateRepository<Coach>(userContext: uId);
-            Coach coach = new CoachQueryExtension().GetCoachByUserId(contextAccessor, dbFactory, repoFactory, coachId);
-            //Franchisor franchise = new FranchisorQueryExtension().GetFranchisorByUserId(contextAccessor, dbFactory, repoFactory, franchisorId);
-            //practitioners = practitionerRepo.GetAll().Where(x => x.UserId.Equals(practionerUser.Id)).ToList();
-            if (coach != null)
-            {
-                coach.FranchisorId = new Guid(franchisorId);
-                var updateResult = dbRepo.Update(coach);
-
-                return coach;
-            }
-            return coach;
-        }
-
 
     }
 }
