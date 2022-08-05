@@ -799,14 +799,17 @@ export type ClassroomInput = {
 
 export type Coach = {
   __typename?: 'Coach';
+  areaOfOperation?: Maybe<Scalars['String']>;
   franchisor?: Maybe<Franchisor>;
   franchisorId?: Maybe<Scalars['UUID']>;
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
+  secondaryAreaOfOperation?: Maybe<Scalars['String']>;
   signingSignature?: Maybe<Scalars['String']>;
   siteAddress?: Maybe<SiteAddress>;
   siteAddressId?: Maybe<Scalars['UUID']>;
+  startDate: Scalars['DateTime'];
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
   user?: Maybe<ApplicationUser>;
@@ -815,15 +818,18 @@ export type Coach = {
 
 export type CoachFilterInput = {
   and?: InputMaybe<Array<CoachFilterInput>>;
+  areaOfOperation?: InputMaybe<StringOperationFilterInput>;
   franchisor?: InputMaybe<FranchisorFilterInput>;
   franchisorId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
   or?: InputMaybe<Array<CoachFilterInput>>;
+  secondaryAreaOfOperation?: InputMaybe<StringOperationFilterInput>;
   signingSignature?: InputMaybe<StringOperationFilterInput>;
   siteAddress?: InputMaybe<SiteAddressFilterInput>;
   siteAddressId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
+  startDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   user?: InputMaybe<ApplicationUserFilterInput>;
@@ -831,13 +837,16 @@ export type CoachFilterInput = {
 };
 
 export type CoachInput = {
+  AreaOfOperation?: InputMaybe<Scalars['String']>;
   Franchisor?: InputMaybe<FranchisorInput>;
   FranchisorId?: InputMaybe<Scalars['UUID']>;
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
+  SecondaryAreaOfOperation?: InputMaybe<Scalars['String']>;
   SigningSignature?: InputMaybe<Scalars['String']>;
   SiteAddress?: InputMaybe<SiteAddressInput>;
   SiteAddressId?: InputMaybe<Scalars['UUID']>;
+  StartDate: Scalars['DateTime'];
   UpdatedBy?: InputMaybe<Scalars['String']>;
   User?: InputMaybe<ApplicationUserInput>;
   UserId?: InputMaybe<Scalars['String']>;

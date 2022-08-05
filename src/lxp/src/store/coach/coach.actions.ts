@@ -1,8 +1,8 @@
-import { createAsyncThunk } from '@reduxjs/toolkit';
 import { CoachInput, SiteAddressInput } from '@ecdlink/graphql';
+import { CoachDto, SiteAddressDto } from '@ecdlink/core';
+import { createAsyncThunk } from '@reduxjs/toolkit';
 
 import { SiteAddressService } from '@/services/SiteAddressService';
-import { CoachDto, SiteAddressDto } from '@ecdlink/core';
 import { CoachService } from '@/services/CoachService';
 import { RootState, ThunkApiType } from '../types';
 
@@ -95,8 +95,11 @@ export const updateCoach = createAsyncThunk<
 );
 
 const mapCoach = (coach: Partial<CoachDto>): CoachInput => ({
+  SecondaryAreaOfOperation: coach.secondaryAreaOfOperation,
   SigningSignature: coach.signingSignature || undefined,
   SiteAddressId: coach.siteAddressId || undefined,
+  StartDate: coach.startDate || undefined,
+  AreaOfOperation: coach.areaOfOperation,
   IsActive: coach.isActive || false,
   FranchisorId: coach.franchisorId,
   UserId: coach.userId,
