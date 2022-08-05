@@ -54,7 +54,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return practitioner;
         }
 
-        public ApplicationUser GetPractitionerByIdNumber([Service] IHttpContextAccessor contextAccessor, 
+        public ApplicationUser GetPractitionerByIdNumber([Service] IServiceProvider serviceProvider,[Service] IHttpContextAccessor contextAccessor, 
             [Service] UserManager<ApplicationUser> userManager,
              [Service] RoleManager<IdentityRole> roleManager,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
@@ -66,7 +66,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
             if (practionerUser != null)
             {
-                return new UserQueryTypeExtension().GetUserById(userManager, roleManager, contextAccessor, dbFactory, repoFactory, practionerUser.Id);
+                return new UserQueryTypeExtension().GetUserById(serviceProvider, userManager, roleManager, contextAccessor, dbFactory, repoFactory, practionerUser.Id);
             }
             return default(ApplicationUser);
         }

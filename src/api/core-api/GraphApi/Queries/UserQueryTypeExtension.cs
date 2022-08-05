@@ -22,12 +22,13 @@ using ECDLink.DataAccessLayer.Repositories.Factories;
 using Microsoft.EntityFrameworkCore;
 using ECDLink.DataAccessLayer.Context;
 
+using ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData;
+
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
     [ExtendObjectType(OperationTypeNames.Query)]
     public class UserQueryTypeExtension
     {
-        private readonly IServiceProvider serviceProvider;
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public IEnumerable<ApplicationUser> GetUsers([Service] UserManager<ApplicationUser> userManager)
         {
@@ -35,8 +36,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public ApplicationUser GetUserById([Service] UserManager<ApplicationUser> userManager, [Service] RoleManager<IdentityRole> roleManager, [Service] IHttpContextAccessor contextAccessor, [Service] IDbContextFactory<AuthenticationDbContext> dbFactory, [Service] IGenericRepositoryFactory repoFactory, string userId)
+        public ApplicationUser GetUserById([Service] IServiceProvider serviceProvider,[Service] UserManager<ApplicationUser> userManager, [Service] RoleManager<IdentityRole> roleManager, [Service] IHttpContextAccessor contextAccessor, [Service] IDbContextFactory<AuthenticationDbContext> dbFactory, [Service] IGenericRepositoryFactory repoFactory, string userId)
         {
+            //new TestSeed(serviceProvider);
             var user = userManager.FindByIdAsync(userId).Result;
 
             var roles = new ObjectTypes.ApplicationUserExtension().GetRoles(user, roleManager, userManager);

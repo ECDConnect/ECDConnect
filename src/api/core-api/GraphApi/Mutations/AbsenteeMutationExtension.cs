@@ -29,42 +29,31 @@ using EcdLink.Api.CoreApi.GraphApi.Queries;
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
     [ExtendObjectType(OperationTypeNames.Mutation)]
-    public class CoachMutationExtension
+    public class AbsenteeMutationExtension
     {
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
 
-        public async Task<bool> SendCoachInviteToApplication(
-          [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
-          [Service] InvitationNotificationManager notificationManager,
-          [Service] UserManager<ApplicationUser> userManager,
-          string userId)
-        {
-            SendInvitationMutationExtension invite = new SendInvitationMutationExtension();
-            return await invite.SendInviteToApplication(invitationManager, notificationManager, userManager, userId);
-        }
-
-        public Practitioner AddPractitionerToCoach([Service] IHttpContextAccessor contextAccessor,
-            [Service] UserManager<ApplicationUser> userManager,
+        public Absentees AddAbsenteeForPractitioner([Service] IHttpContextAccessor contextAccessor, 
+            [Service] UserManager<ApplicationUser> userManager, 
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
-            string practitionerId,
-            string coachId)
+            string practitionerId, 
+            string reason,
+            DateTime absentDate,
+            string loggedByUser,
+            string classProgram,
+            string reassignedToPractitioner)
         {
             using var scope = dbFactory.CreateDbContext();
             using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
-            var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            Practitioner practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId.Equals(practitionerId));
-            if (practitioner != null)
-            {
-                practitioner.CoachHierarchy = coachId;
-                var updateResult = practitionerRepo.Update(practitioner);
-                return practitioner;
-            }
-            else return new Practitioner();
+            var absenteeRepo = repoFactory.CreateRepository<Absentees>(userContext: uId);
+            //Abse practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId.Equals(practitionerId));            
+            
+            //else return new Practitioner();
 
 
-            return practitioner;
+            return new Absentees();
         }
 
         public Practitioner DeletePractitionerForCoach([Service] IHttpContextAccessor contextAccessor,
