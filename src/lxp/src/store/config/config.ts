@@ -54,6 +54,7 @@ import {
   practitionerPersistConfig,
   practitionerReducer,
 } from '../practitioner/practitioner';
+import { coachPersistConfig, coachReducer } from '../coach/coach';
 import {
   programmePersistConfig,
   programmeReducer,
@@ -79,6 +80,7 @@ const persistedReducers = {
   caregivers: persistReducer(caregiverPersistConfig, caregiverReducer),
   children: persistReducer(childrenPersistConfig, childrenReducer),
   classroomData: persistReducer(classroomsPersistConfig, classroomsReducer),
+  coach: persistReducer(coachPersistConfig, coachReducer),
   contentConsentData: contentConsentReducer,
   contentReportData: persistReducer(
     contentReportPersistConfig,
