@@ -2,28 +2,38 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: apy-k8s-dev-fe-$branch
+  name: apy-k8s-dev-fe-@branch
   labels:
-    app: apy-k8s-dev-fe-$branch
-    application: fe-$branch
+    app: apy-k8s-dev-fe-@branch
+    application: fe-@branch
     cluster: 'true'
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: apy-k8s-dev-fe-$branch
+      app: apy-k8s-dev-fe-@branch
   template:
     metadata:
       labels:
-        app: apy-k8s-dev-fe-$branch
-        application: fe-$branch
+        app: apy-k8s-dev-fe-@branch
+        application: fe-@branch
         cluster: 'true'
     spec:
       containers:
-        - name: node-fe-$branch
-          image: apyecdreg.azurecr.io/ecdconnect-ef:$version
+        - name: node-fe-@branch
+          image: apyecdreg.azurecr.io/ecdconnect-ef:@version
+          imagePullPolicy: IfNotPresent
+          env:
+          - name: PROXY_EXTERNAL_URL
+            value: "@url"
+          - name: PROXY_LISTEN_PORT
+            value: "@listenport"
+          - name: PROXY_INTERNAL_PORT
+            value: "@internalport"
+          - name: THEME_URL
+            value: "@themeurl"
           ports:
-            - containerPort: 8080
+            - containerPort: @listenport
               name: http-fe
               protocol: TCP
           livenessProbe:
@@ -32,7 +42,7 @@ spec:
             periodSeconds: 10
             successThreshold: 1
             tcpSocket:
-              port: 8080
+              port: @listenport
             timeoutSeconds: 5
 
 ---
@@ -40,10 +50,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: apy-k8s-dev-fe-service-$branch
+  name: apy-k8s-dev-fe-service-@branch
   labels:
-    app: apy-k8s-dev-fe-$branch
-    application: fe-$branch
+    app: apy-k8s-dev-fe-@branch
+    application: fe-@branch
     cluster: 'true'
 spec:
   ports:
@@ -51,6 +61,6 @@ spec:
       protocol: TCP
       targetPort: http-fe
   selector:
-    app: apy-k8s-dev-fe-$branch
+    app: apy-k8s-dev-fe-@branch
   sessionAffinity: None
   type: LoadBalancer
