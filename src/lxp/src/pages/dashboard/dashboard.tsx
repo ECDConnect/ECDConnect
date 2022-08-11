@@ -34,7 +34,7 @@ export enum NavigationTypes {
   Attendance = 'Attendance',
   Children = 'Children',
   Programme = 'Programme',
-  Training = 'Training',
+  // Training = 'Training',
   Profile = 'Profile',
   Messages = 'Messages',
   Logout = 'Logout',
@@ -96,12 +96,12 @@ export const Dashboard: React.FC = () => {
         },
       ],
     },
-    {
-      name: NavigationTypes.Training,
-      href: ROUTES.TRAINING,
-      icon: 'AcademicCapIcon',
-      current: false,
-    },
+    // {
+    //   name: NavigationTypes.Training,
+    //   href: ROUTES.TRAINING,
+    //   icon: 'AcademicCapIcon',
+    //   current: false,
+    // },
     {
       name: NavigationTypes.Profile,
       href: ROUTES.PRACTITIONER.PROFILE.ROOT,
