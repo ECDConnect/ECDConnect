@@ -134,7 +134,7 @@ export const Login: React.FC = () => {
                 onClick={() => toggleIdAndpassport(idFieldVisible)}
               >
                 <Typography
-                  type="small"
+                  type="buttonSmall"
                   color="primary"
                   text={'Enter ID number instead'}
                 ></Typography>
@@ -150,7 +150,7 @@ export const Login: React.FC = () => {
                 onClick={() => toggleIdAndpassport(idFieldVisible)}
               >
                 <Typography
-                  type="small"
+                  type="buttonSmall"
                   color="primary"
                   text={'Enter passport number instead'}
                 ></Typography>
@@ -175,7 +175,7 @@ export const Login: React.FC = () => {
                 onClick={forgotPasswordClicked}
               >
                 <Typography
-                  type="small"
+                  type="buttonSmall"
                   color="primary"
                   text={'Forgot my password'}
                 ></Typography>

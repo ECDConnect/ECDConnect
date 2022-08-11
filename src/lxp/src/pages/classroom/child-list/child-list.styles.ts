@@ -13,8 +13,8 @@ export const searchTextWrapper =
   'flex flex-row items-center justify-between px-4 h-16';
 export const searchInput =
   'outline-none block w-full sm:text-sm text-black py-2 px-4 bg-white';
-export const overlay = 'flex-1 h-full bg-uiBg';
-export const stackedList = 'pb-180';
+export const overlay = 'flex-1 h-full bg-white px-4 pt-4';
+export const stackedList = 'flex flex-col gap-1 pb-180';
 export const fadButton = 'm-3 absolute bottom-14 right-0 z-10 px-3.5 py-2.5';
 export const dialogContent = 'h-full overflow-y-hidden';
 export const dialogContentStackedList = 'pb-180';

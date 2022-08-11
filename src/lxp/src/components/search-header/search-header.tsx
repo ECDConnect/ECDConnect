@@ -23,7 +23,7 @@ type SearchHeaderProps<T> = {
   className?: string;
 };
 
-const SeachHeader = <T extends {}>({
+const SearchHeader = <T extends {}>({
   children,
   onSearchChange,
   searchItems,
@@ -97,4 +97,4 @@ const SeachHeader = <T extends {}>({
   );
 };
 
-export default SeachHeader;
+export default SearchHeader;

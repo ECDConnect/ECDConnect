@@ -1,8 +1,10 @@
 using ECDLink.Security.Attributes;
 using ECDLink.DataAccessLayer.Entities.Base;
 using System;
+using HotChocolate;
 using System.ComponentModel.DataAnnotations.Schema;
 using ECDLink.Security;
+using ECDLink.DataAccessLayer.Entities.Classroom;
 
 namespace ECDLink.DataAccessLayer.Entities.Users
 {
@@ -23,6 +25,12 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public string Reason { get; set; }
         public DateTime AbsentDate { get; set; }
         public string LoggedBy { get; set; }
+        public string ReassignedClass { get; set; }
+        public string ReassignedToPractitioner { get; set; }
+
+        [GraphQLIgnore]
+        public virtual Practitioner Practitioner { get; set; }
+        public virtual Programme Program { get; set; }
 
     }
 

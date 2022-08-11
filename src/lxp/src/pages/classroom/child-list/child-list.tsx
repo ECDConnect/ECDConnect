@@ -20,7 +20,7 @@ import { useHistory } from 'react-router-dom';
 import { childrenSelectors } from '@store/children';
 import { classroomsSelectors } from '@store/classroom';
 import { getChildAlertModel } from '@utils/child/child-alert-message-util';
-import SeachHeader from '../../../components/search-header/search-header';
+import SearchHeader from '../../../components/search-header/search-header';
 import * as styles from './child-list.styles';
 import { attendanceSelectors } from '@store/attendance';
 import { documentSelectors } from '@store/document';
@@ -337,7 +337,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
   return (
     <>
       {children && children.length > 0 && (
-        <SeachHeader<UserAlertListDataItem>
+        <SearchHeader<UserAlertListDataItem>
           searchItems={filteredChildData || []}
           onScroll={handleListScroll}
           onSearchChange={onSearchChange}
@@ -356,9 +356,9 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
               placeholder={'Playgroups'}
               pluralSelectionText={'Playgroups'}
               multiple
-              color={'uiMidDark'}
+              color={'secondary'}
               info={{
-                name: `Filter by:${filterInfo?.filterName}`,
+                name: `Filter by: ${filterInfo?.filterName}`,
                 hint: filterInfo?.filterHint || '',
               }}
             />
@@ -375,12 +375,12 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
             }}
             placeholder={'Sort By'}
             multiple={false}
-            color={'uiMidDark'}
+            color={'secondary'}
             info={{
               name: `Sort By:`,
             }}
           />
-        </SeachHeader>
+        </SearchHeader>
       )}
 
       <div className={styles.overlay}>

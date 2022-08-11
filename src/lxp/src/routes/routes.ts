@@ -56,6 +56,17 @@ const ROUTES = {
     '/view-child-progress-observation-report',
   DOWNLOAD_CHILD_PROGRESS_OBSERVATION_REPORTS:
     '/download-child-progress-observation-reports',
+  COACH_REGISTRATION: '/coach-registration',
+  COACH: addPrefix('/coach', {
+    ABOUT: addPrefix('/about', {
+      SIGNATURE: '/signature',
+      ADDRESS: '/address',
+    }),
+    ACCOUNT: '/account',
+    PROFILE: addPrefix('/profile', {
+      EDIT: '/edit',
+    }),
+  }),
 };
 
 export default ROUTES;

@@ -3,7 +3,7 @@ export const wrapper =
 export const textWrapper = 'px-4 pt-1.5 flex flex-1 flex-col';
 export const button = 'mb-4 mt-4';
 export const overlayWrapper =
-  'overflow-x-hidden overflow-y-auto absolute bottom-0 z-50 items-endv w-full';
+  'overflow-x-hidden overflow-y-auto absolute left-0 right-0 bottom-0 z-50 items-end w-full';
 export const iconWrapper = 'pt-6';
 
 export const closeWrapper =

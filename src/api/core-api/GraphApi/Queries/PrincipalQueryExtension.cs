@@ -20,6 +20,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
     [ExtendObjectType(OperationTypeNames.Query)]
     public class PrincipalQueryExtension
     {
+        public PrincipalQueryExtension()
+        {
+        }
+
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public List<Practitioner> GetAllPrincipal([Service] IHttpContextAccessor contextAccessor,
         [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
@@ -35,7 +39,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public List<Practitioner> GetPrincipalByUserId([Service] IHttpContextAccessor contextAccessor,
+        public Practitioner GetPrincipalByUserId([Service] IHttpContextAccessor contextAccessor,
         [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
         [Service] IGenericRepositoryFactory repoFactory,
         string userId)
@@ -44,7 +48,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var principalRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            List<Practitioner> principal = principalRepo.GetAll().Where(x => x.UserId.Contains(userId)).ToList();
+            Practitioner principal = new Practitioner();
+            List<Practitioner> principals = principalRepo.GetAll().Where(x => x.UserId.Contains(userId)).ToList();
+            if (principals.Count > 0)
+            {
+                principal = principals.FirstOrDefault();
+            }
 
             return principal;
         }
@@ -68,15 +77,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         [Service] IGenericRepositoryFactory repoFactory,
         string userId)
         {
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
-            var practitionerrRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            List<Practitioner> practitioner = practitionerrRepo.GetAll().Where(x => x.UserId.Equals(userId)).ToList();
-            List<Child> children = childRepo.GetAll().Where(x => x.Hierarchy.Contains(practitioner.FirstOrDefault().Hierarchy)).ToList();
+            if (userId != null)
+            {
+                return new PractitionerQueryExtension().GetAllChildrenForPractitioner(contextAccessor, dbFactory, repoFactory, userId);
+            } else return new List<Child>();
 
-            return children;
         }
     }
 }

@@ -32,9 +32,6 @@ bld/
 [Rr]eleasePS/
 dlldata.c
 
-._*
-.idea
-
 *_i.c
 *_p.c
 *_i.h

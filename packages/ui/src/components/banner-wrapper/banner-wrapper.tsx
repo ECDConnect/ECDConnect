@@ -108,16 +108,20 @@ export const BannerWrapper: React.FC<BannerWrapperProps> = ({
               subTitle ? (
                 <div className={styles.titleSubWrapper}>
                   <Typography
-                    type="help"
+                    type="h4"
                     text={title}
                     color={'white'}
                     className="overflow-auto w-full truncate"
                   />
-                  <Typography type="small" text={subTitle} color={'white'} />
+                  <Typography
+                    type="help"
+                    text={subTitle}
+                    color={'primaryAccent2'}
+                  />
                 </div>
               ) : (
                 <Typography
-                  type="body"
+                  type="h4"
                   text={title}
                   color={'white'}
                   className="overflow-auto w-full truncate"

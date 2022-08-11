@@ -20,6 +20,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
     [ExtendObjectType(OperationTypeNames.Query)]
     public class CoachQueryExtension
     {
+        public CoachQueryExtension()
+        {
+        }
+
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public List<Practitioner> GetAllPractitionersForCoach([Service] IHttpContextAccessor contextAccessor,
          [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
@@ -36,7 +40,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public List<Coach> GetCoachByUserId([Service] IHttpContextAccessor contextAccessor,
+        public Coach GetCoachByUserId([Service] IHttpContextAccessor contextAccessor,
         [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
         [Service] IGenericRepositoryFactory repoFactory,
         string userId)
@@ -44,8 +48,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             using var scope = dbFactory.CreateDbContext();
             using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
-            var coachRepo = repoFactory.CreateRepository<Coach>(userContext: uId);
-            List<Coach> coach = coachRepo.GetAll().Where(x => x.UserId.Contains(userId)).ToList();
+            var dbRepo = repoFactory.CreateRepository<Coach>(userContext: uId);
+            Coach coach = new Coach();
+            List<Coach> coaches = dbRepo.GetAll().Where(x => x.UserId.Contains(userId)).ToList();
+            if (coaches.Count > 0)
+            {
+                coach = coaches.FirstOrDefault();
+            }
 
             return coach;
         }
@@ -55,13 +64,21 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         [Service] IGenericRepositoryFactory repoFactory,
         string userId)
         {
-            //using var scope = dbFactory.CreateDbContext();
-            //using var dbContextTransaction = scope.Database.BeginTransaction();
-            //var userId = contextAccessor.HttpContext.GetUser().Id;
-            //var childRepo = repoFactory.CreateRepository<Child>(userContext: userId);
-            //List<Child> children = childRepo.GetAll().Where(x => x.Hierarchy.Contains(coach.)).ToList();
+            
+            using var scope = dbFactory.CreateDbContext();
+            using var dbContextTransaction = scope.Database.BeginTransaction();
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
 
-            return new List<Child>();
+            List<Child> children = new List<Child>();
+            var practitionerrRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+            List<Practitioner> practitioners = practitionerrRepo.GetAll().Where(x => x.CoachHierarchy.Equals(userId)).ToList();
+            foreach (var practioner in practitioners)
+            {
+                List<Child> practitionerChildren = childRepo.GetAll().Where(x => x.Hierarchy.Contains(practioner.Hierarchy)).ToList();
+                children.AddRange(practitionerChildren);
+            }
+            return children;
         }
     }
 }

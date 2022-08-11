@@ -84,7 +84,7 @@ export const EditPractitionerProfile: React.FC = () => {
       const classroomInputModel: ClassroomDto = {
         userId: user?.id ?? '',
         name: programme?.name ?? '',
-        isPrinciple: programme?.isPrincipleOrLeader ?? false,
+        isPrinciple: programme?.isPrincipalOrLeader ?? false,
         numberPractitioners: programme?.smartStartPractitioners
           ? +programme?.smartStartPractitioners
           : 0,

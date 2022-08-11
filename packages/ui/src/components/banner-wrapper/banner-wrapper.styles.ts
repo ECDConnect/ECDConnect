@@ -9,7 +9,7 @@ export const titleWrapper =
 export const titleSubWrapper = 'inline-flex flex-col';
 export const iconWrapperLeft = 'w-4/12 flex justify-start';
 export const iconWrapperRight = 'w-4/12 flex justify-end';
-export const icons = 'cursor-pointer z-10 w-auto';
+export const icons = 'cursor-pointer z-10 w-auto primaryAccent2';
 export const menuIcons =
   'cursor-pointer z-10 rounded-10 bg-primaryAccent1 h-10 w-10 p-2';
 export const logo = 'text-center inline-block bg-logo w-28 h-8 bg-cover';

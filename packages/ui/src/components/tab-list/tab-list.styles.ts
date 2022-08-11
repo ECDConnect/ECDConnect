@@ -1,4 +1,4 @@
-export const navContainer = 'border-b border-uiLight';
+export const navContainer = '';
 export const navStyle = '-mb-px flex flex-1';
-export const tabScrollBar = 'overflow-x-auto max-h-16 bg-uiBg';
+export const tabScrollBar = 'overflow-x-auto max-h-16';
 export const fullWidth = 'flex-1';

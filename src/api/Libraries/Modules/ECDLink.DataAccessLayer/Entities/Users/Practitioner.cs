@@ -50,12 +50,13 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         [ForeignKey(nameof(SiteAddressId))]
         public virtual SiteAddress SiteAddress { get; set; }
         public Guid? SiteAddressId { get; set; }
+
         public string CoachHierarchy { get; set; }
         public string PrincipalHierarchy { get; set; }
         public bool? IsPrincipal { get; set; }
         public bool? IsFundaAppAdmin { get; set; }
         public bool? IsTrainee { get; set; }
-        public string Signature { get; set; }
+        public string SigningSignature { get; set; }
         public bool? NotInvitedYet { get; set; }
 
     }

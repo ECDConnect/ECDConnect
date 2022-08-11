@@ -3,6 +3,7 @@ using ECDLink.DataAccessLayer.Entities.Base;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using ECDLink.Security;
+using HotChocolate;
 
 namespace ECDLink.DataAccessLayer.Entities.Users
 {
@@ -15,7 +16,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
 
     public class Coach<TKey> : EntityBase<TKey>, 
         ApplicationUserJoin,
-        SiteAddressJoin<Guid?>//,IUserType
+        SiteAddressJoin<Guid?>
         where TKey : IEquatable<TKey>
     {
         [ForeignKey(nameof(UserId))]
@@ -28,9 +29,13 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         [ForeignKey(nameof(SiteAddressId))]
         public virtual SiteAddress SiteAddress { get; set; }
         public Guid? SiteAddressId { get; set; }
-        public string Signature { get; set; }
-        //[GraphQLIgnore]
-        //public string Hierarchy { get; set; }
+        public string SigningSignature { get; set; }
+        
+        [GraphQLIgnore]
+        public string Hierarchy { get; set; }
+        [ForeignKey(nameof(FranchisorId))]
+        public virtual Franchisor Franchisor { get; set; }
+        public Guid? FranchisorId { get; set; }
     }
 
     public interface CoachJoin<TKey>

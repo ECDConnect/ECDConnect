@@ -21,7 +21,7 @@ export interface ChildProgressReportAlertProps extends ComponentBaseProps {
 
 const baseProgressReportListItem: ListItemProps = {
   key: 'progress-report',
-  backgroundColor: 'white',
+  backgroundColor: 'uiBg',
   withPaddingX: true,
   withPaddingY: true,
   title: '',
@@ -34,7 +34,7 @@ const baseProgressReportListItem: ListItemProps = {
   showDivider: true,
   dividerColor: 'uiBg',
   dividerType: 'solid',
-  iconBackgroundColor: 'primary',
+  iconBackgroundColor: 'tertiary',
 };
 
 export const ChildProgressReportAlert: React.FC<
