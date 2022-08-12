@@ -19,11 +19,10 @@
       "@dashboard-p/*": ["./pages/dashboard/*"],
       "@messages-p/*": ["./pages/messages/*"],
       "@practitioner-p/*": ["./pages/practitioner/*"],
+      "@training-p/*": ["./pages/training/*"],
       "@schemas/*": ["./schemas/*"],
       "@services/*": ["./services/*"],
-      "@store/*": [
-        "./store/*", "./store"
-      ],
+      "@store/*": ["./store/*", "./store"],
       "@store": ["./store"],
       "@utils/*": ["./utils/*"],
       "@routes/*": ["./routes/*"],

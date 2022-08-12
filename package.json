@@ -155,6 +155,7 @@
     "node-forge": "^1.3.0",
     "react-scripts/**/chokidar/glob-parent": "^5.1.2",
     "ansi-html": "^0.0.8",
-    "**/postcss-functions/postcss": "^7.0.39"
+    "**/postcss-functions/postcss": "^7.0.39",
+    "@types/react": "17.0.43"
   }
 }
