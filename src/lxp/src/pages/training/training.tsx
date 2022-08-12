@@ -27,7 +27,7 @@ export const Training: React.FC = () => {
     } else {
       return (
         <iframe
-          src={`https://ecdconnect.appysites.co.za/login/index.php?service=moodle_mobile_app`}
+          src={`http://apy-ecd-d-vm-moodle-01.northeurope.cloudapp.azure.com?service=moodle_mobile_app`}
           title="ECD Moodle"
           height="800px"
           width="90%"
