@@ -38,7 +38,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return principals;
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public Practitioner GetPrincipalByUserId([Service] IHttpContextAccessor contextAccessor,
         [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
         [Service] IGenericRepositoryFactory repoFactory,
@@ -50,6 +49,25 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var principalRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
             Practitioner principal = new Practitioner();
             List<Practitioner> principals = principalRepo.GetAll().Where(x => x.UserId.Contains(userId)).ToList();
+            if (principals.Count > 0)
+            {
+                principal = principals.FirstOrDefault();
+            }
+
+            return principal;
+        }
+
+        public Practitioner GetPrincipalById([Service] IHttpContextAccessor contextAccessor,
+            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+            [Service] IGenericRepositoryFactory repoFactory,
+            string id)
+        {
+            using var scope = dbFactory.CreateDbContext();
+            using var dbContextTransaction = scope.Database.BeginTransaction();
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var principalRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+            Practitioner principal = new Practitioner();
+            List<Practitioner> principals = principalRepo.GetAll().Where(x => x.Id.Equals(id)).ToList();
             if (principals.Count > 0)
             {
                 principal = principals.FirstOrDefault();

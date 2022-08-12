@@ -1,0 +1,10 @@
+import { EntityBase } from '../entity-base';
+import { UserDto } from './user.dto';
+
+export interface FranchisorDto extends EntityBase {
+  user?: UserDto;
+  userId?: string;
+  areaOfOperation: string;
+  secondaryAreaOfOperation: string;
+  startDate?: Date;
+}
