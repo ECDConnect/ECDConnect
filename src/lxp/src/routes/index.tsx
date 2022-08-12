@@ -30,7 +30,6 @@ import { ChildProgressObservationPage } from '@progress-observation-p/child-prog
 import ProgressObservationCategory from '@progress-observation-p/progress-observation-category/progress-tracking-category';
 import Dashboard from '@dashboard-p/dashboard';
 import { Messages } from '@messages-p/messages';
-import { Training } from '@training-p/training';
 import { EditPractitionerProfile } from '@practitioner-p/edit-practitioner-profile/edit-practitioner-profile';
 import { PractitionerAbout } from '@practitioner-p/practitioner-about/practitioner-about';
 import PractitionerAccount from '@practitioner-p/practitioner-account/practitioner-account';
@@ -190,7 +189,6 @@ const AuthRoutes: React.FC = () => {
         component={DownloadChildProgressReport}
       />
       <Route path={ROUTES.MESSAGES} component={Messages} />
-      <Route path={ROUTES.TRAINING} component={Training} />
 
       <Route path={ROUTES.PROGRAMMES.THEME} component={ProgrammeTheme} />
       <Route path={ROUTES.PROGRAMMES.TIMING} component={ProgrammeTiming} />
