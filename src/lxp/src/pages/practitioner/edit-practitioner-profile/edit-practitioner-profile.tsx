@@ -92,7 +92,7 @@ export const EditPractitionerProfile: React.FC = () => {
 
     setPlaygroups(updatedPlaygroups);
 
-    setActiveStep(EditPractitionerSteps.confirmClasses);
+    setActiveStep(EditPractitionerSteps.confirmPlaygroups);
   };
 
   const createClassroom = (
@@ -103,7 +103,7 @@ export const EditPractitionerProfile: React.FC = () => {
       userId: user?.id ?? '',
       id: classroomId,
       name: programme?.name ?? '',
-      isPrinciple: programme?.isPrincipleOrLeader ?? false,
+      isPrinciple: programme?.isPrincipalOrLeader ?? false,
       numberPractitioners: programme?.smartStartPractitioners
         ? +programme?.smartStartPractitioners
         : 0,

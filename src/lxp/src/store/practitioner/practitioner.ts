@@ -4,10 +4,14 @@ import localForage from 'localforage';
 import {
   getAllPractitioners,
   getPractitionerById,
+  getPractitionersForCoach,
 } from './practitioner.actions';
 import { PractitionerState } from './practitioner.types';
 
-const initialState: PractitionerState = {};
+const initialState: PractitionerState = {
+  practitioner: undefined,
+  practitioners: undefined,
+};
 
 const practitionerSlice = createSlice({
   name: 'practitioner',
@@ -15,6 +19,7 @@ const practitionerSlice = createSlice({
   reducers: {
     resetPractitionerState: (state) => {
       state.practitioner = initialState.practitioner;
+      state.practitioners = initialState.practitioners;
     },
     updatePractitioner: (state, action: PayloadAction<PractitionerDto>) => {
       if (state.practitioner) {
@@ -31,6 +36,9 @@ const practitionerSlice = createSlice({
   extraReducers: (builder) => {
     builder.addCase(getPractitionerById.fulfilled, (state, action) => {
       state.practitioner = action.payload;
+    });
+    builder.addCase(getPractitionersForCoach.fulfilled, (state, action) => {
+      state.practitioners = action.payload;
     });
     builder.addCase(getAllPractitioners.fulfilled, (state, action) => {
       state.practitioners = action.payload;

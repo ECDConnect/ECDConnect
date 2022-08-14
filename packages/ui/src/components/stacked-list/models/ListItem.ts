@@ -4,4 +4,5 @@ export interface ListItem {
   subTitle?: string;
   subTitleStyle?: string;
   onActionClick?: () => void;
+  hasMarkup?: boolean;
 }

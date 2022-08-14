@@ -34,7 +34,7 @@ export const EditProgrammeForm: React.FC<EditProgrammeFormProps> = ({
   });
 
   const { isValid } = useFormState({ control: programmeFormControl });
-  const { isPrincipleOrLeader } = useWatch<EditProgrammeModel>({
+  const { isPrincipalOrLeader } = useWatch<EditProgrammeModel>({
     control: programmeFormControl,
     defaultValue: {},
   });

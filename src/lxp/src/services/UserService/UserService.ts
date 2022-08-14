@@ -1,6 +1,7 @@
 import { Config, UserConsentDto, UserDto } from '@ecdlink/core';
 import { UserConsentInput, UserModelInput } from '@ecdlink/graphql';
 import { api } from '../axios.helper';
+
 class UserService {
   _accessToken: string;
 
