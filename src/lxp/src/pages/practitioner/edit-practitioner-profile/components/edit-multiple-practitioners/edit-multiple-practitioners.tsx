@@ -10,7 +10,7 @@ import {
 } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { userSelectors } from '@/store/user';
-import { AddOrRenamePractitioner } from './add-practitioner';
+import { AddOrEditPractitioner } from './add-or-edit-practitioner';
 import { AddPractitionerModel } from '@/schemas/practitioner/add-practitioner';
 import { useAppDispatch } from '@/store';
 import {
@@ -18,31 +18,33 @@ import {
   practitionerSelectors,
 } from '@/store/practitioner';
 import { PractitionerDto } from '@ecdlink/core';
-
-enum SetupPractitionersPage {
-  confirmPractitioners = 1,
-  addPractitioners = 2,
-  editPractitioners = 3,
-}
+import { SetupPractitionersPage } from '../../edit-practitioner-profile';
 
 interface StackListItems extends ActionListDataItem {
-  id: string;
+  idNumber: string;
 }
 
-export default function EditMultiplePractitioners({ onSubmit }: any) {
+export default function EditMultiplePractitioners({
+  onSubmit,
+  page = SetupPractitionersPage.confirmPractitioners,
+}: {
+  onSubmit: any;
+  page: SetupPractitionersPage;
+}) {
   const appDispatch = useAppDispatch();
   const user = useSelector(userSelectors.getUser);
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
-  const [currentPage, setCurrentPage] = useState(
-    SetupPractitionersPage.confirmPractitioners
-  );
+  const [currentPage, setCurrentPage] = useState(page);
+  const [principalPractitioners, setPrincipalPractitioners] = useState<
+    { firstName: string; surname: string; id?: string; passport?: string }[]
+  >([]);
   const [allInFundaApp, setAllInFundaApp] = useState<boolean>();
   const [editPractitioner, setEditPractitioner] =
     useState<AddPractitionerModel>();
   const [listItems, setListItems] = useState<StackListItems[]>([
     {
       title: user?.fullName ?? '',
-      id: user?.idNumber ?? '',
+      idNumber: user?.idNumber ?? '',
       subTitle: 'Principal/owner',
       titleStyle:
         'text-textDark font-body text-base font-semibold leading-snug ',
@@ -51,10 +53,12 @@ export default function EditMultiplePractitioners({ onSubmit }: any) {
   ]);
 
   useEffect(() => {
-    const practitionerList = listItems.filter((i) => i.id !== user?.id);
+    const practitionerList = listItems.filter(
+      (i) => i.idNumber !== user?.idNumber
+    );
     const practitionerIds = practitioners?.map((p) => p.user?.idNumber);
     const inFundaApp = practitionerList.length
-      ? practitionerList.every((l) => practitionerIds?.includes(l.id))
+      ? practitionerList.every((l) => practitionerIds?.includes(l.idNumber))
       : undefined;
     setAllInFundaApp(inFundaApp);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -67,7 +71,7 @@ export default function EditMultiplePractitioners({ onSubmit }: any) {
       );
       return {
         title: `${data.firstName} ${data.surname}`,
-        id: data.id ?? data.passport,
+        idNumber: data.id ?? data.passport,
         subTitle: isInFundaApp ? 'Practitioner' : 'Not on Funda App',
         titleStyle:
           'text-textDark font-body text-base font-semibold leading-snug ',
@@ -88,25 +92,26 @@ export default function EditMultiplePractitioners({ onSubmit }: any) {
 
   const handleAddOrEditPractitionerSubmit = (data: AddPractitionerModel) => {
     const indexToEdit = listItems.findIndex(
-      (d) => d.id === editPractitioner?.id
+      (d) => d.idNumber === editPractitioner?.id
     );
 
     if (indexToEdit > -1) {
+      principalPractitioners.splice(indexToEdit, 1);
       listItems.splice(indexToEdit, 1);
     }
 
     listItems.push(createStackItem(data));
+    principalPractitioners.push(data);
 
+    setPrincipalPractitioners(principalPractitioners);
     setListItems(listItems);
     setCurrentPage(SetupPractitionersPage.confirmPractitioners);
   };
 
   const handleConfirmPractitionerSubmit = () => {
-    // const _l = listItems.map((l) => l.id);
-    // const practitionerList = practitioners?.filter((p) => p.user?.idNumber && _l.includes(p.user?.idNumber)) || [];
-
-    // appDispatch(practitionerActions.createPractitionersByPrincipal(practitionerList))
-    console.log('add selected practitioners to the root state');
+    appDispatch(
+      practitionerActions.addPrincipalPractitioners(principalPractitioners)
+    );
     onSubmit();
   };
 
@@ -115,8 +120,8 @@ export default function EditMultiplePractitioners({ onSubmit }: any) {
       case SetupPractitionersPage.confirmPractitioners:
       default:
         return (
-          <div className="pt-4">
-            <div className="flex flex-col gap-4 pb-20">
+          <div className="wrapper-with-sticky-button">
+            <div className="flex flex-col gap-4 pt-4">
               <div>
                 <Typography
                   type={'h2'}
@@ -186,10 +191,10 @@ export default function EditMultiplePractitioners({ onSubmit }: any) {
               </div>
             </div>
 
-            <div className="absolute bottom-0 left-0 right-0 p-4 max-h-20 bg-white">
+            <div className="self-end -mb-4">
               <Button
                 size="normal"
-                className="w-full"
+                className="w-full mb-4"
                 type="filled"
                 color="quatenary"
                 text="Confirm"
@@ -202,18 +207,17 @@ export default function EditMultiplePractitioners({ onSubmit }: any) {
         );
       case SetupPractitionersPage.editPractitioners:
         return (
-          <AddOrRenamePractitioner
+          <AddOrEditPractitioner
             onSubmit={handleAddOrEditPractitionerSubmit}
             formData={editPractitioner}
           />
         );
       case SetupPractitionersPage.addPractitioners:
         return (
-          <AddOrRenamePractitioner
-            onSubmit={handleAddOrEditPractitionerSubmit}
-          />
+          <AddOrEditPractitioner onSubmit={handleAddOrEditPractitionerSubmit} />
         );
     }
   };
+
   return renderPage(currentPage);
 }

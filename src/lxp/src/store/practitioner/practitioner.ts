@@ -6,7 +6,10 @@ import {
   getPractitionerById,
   getPractitionersForCoach,
 } from './practitioner.actions';
-import { PractitionerState } from './practitioner.types';
+import {
+  PractitionerState,
+  PrincipalPractitioners,
+} from './practitioner.types';
 
 const initialState: PractitionerState = {
   practitioner: undefined,
@@ -21,16 +24,16 @@ const practitionerSlice = createSlice({
       state.practitioner = initialState.practitioner;
       state.practitioners = initialState.practitioners;
     },
+    addPrincipalPractitioners: (
+      state,
+      action: PayloadAction<PrincipalPractitioners[]>
+    ) => {
+      state.principalPractitioners = action.payload;
+    },
     updatePractitioner: (state, action: PayloadAction<PractitionerDto>) => {
       if (state.practitioner) {
         state.practitioner = action.payload;
       }
-    },
-    createPractitionersByPrincipal: (
-      state,
-      action: PayloadAction<PractitionerDto[]>
-    ) => {
-      state.principalPractitioners = action.payload;
     },
   },
   extraReducers: (builder) => {

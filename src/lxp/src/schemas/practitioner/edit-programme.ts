@@ -7,12 +7,9 @@ export interface EditProgrammeModel {
   smartStartPractitioners: number;
   nonSmartStartPractitioners: number;
   isPrincipleOrOwnerSmartStarter: boolean;
-  // assistants: number;
-  // isTeacher: boolean;
 }
 
 export const editProgrammeSchema = Yup.object().shape({
-  isPrincipleOrLeader: Yup.boolean().required(),
   name: Yup.string().required(),
   type: Yup.string().required(),
   isPrincipalOrLeader: Yup.boolean().required(),

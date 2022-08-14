@@ -1,6 +1,6 @@
 import { ProgrammeTypeDto } from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Button, ButtonGroup, FormInput, Typography } from '@ecdlink/ui';
+import { Alert, Button, ButtonGroup, FormInput, Typography } from '@ecdlink/ui';
 import { ButtonGroupTypes } from '@ecdlink/ui';
 import { renderIcon } from '@ecdlink/ui';
 import { useEffect } from 'react';
@@ -54,6 +54,13 @@ export const EditProgrammeForm: React.FC<EditProgrammeFormProps> = ({
         color={'textDark'}
         className={'my-3'}
       />
+
+      <div className="my-4">
+        <Alert
+          type="info"
+          title="Each programme must have one principal or owner on Funda App."
+        />
+      </div>
       <div className="space-y-4">
         <div className={'w-full'}>
           <label className={styles.label}>
@@ -63,11 +70,11 @@ export const EditProgrammeForm: React.FC<EditProgrammeFormProps> = ({
             <ButtonGroup<boolean>
               options={yesNoOptions}
               onOptionSelected={(value: boolean | boolean[]) =>
-                setProgrammeFormValue('isPrincipleOrLeader', value as boolean, {
+                setProgrammeFormValue('isPrincipalOrLeader', value as boolean, {
                   shouldValidate: true,
                 })
               }
-              selectedOptions={[getProgrammeFormValues().isPrincipleOrLeader]}
+              selectedOptions={[getProgrammeFormValues().isPrincipalOrLeader]}
               color="secondary"
               type={ButtonGroupTypes.Button}
               className={'w-full'}
@@ -75,7 +82,7 @@ export const EditProgrammeForm: React.FC<EditProgrammeFormProps> = ({
           </div>
         </div>
 
-        {isPrincipleOrLeader === true && (
+        {isPrincipalOrLeader === true && (
           <>
             <FormInput<EditProgrammeModel>
               label={'What is the name of your programme?'}
@@ -137,7 +144,7 @@ export const EditProgrammeForm: React.FC<EditProgrammeFormProps> = ({
           </>
         )}
 
-        {isPrincipleOrLeader === false && (
+        {isPrincipalOrLeader === false && (
           <div className={'w-full'}>
             <label className={styles.label}>
               Is the principal/owner of your programme a SmartStarter?

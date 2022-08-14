@@ -20,8 +20,10 @@ import { buttonDays } from '../edit-playgroup-form/edit-playgroup.form.types';
 import { yesNoOptions } from '../edit-programme-form/edit-programme-form.types';
 import { classroomsActions, classroomsSelectors } from '@/store/classroom';
 import { useSelector } from 'react-redux';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { newGuid } from '@/utils/common/uuid.utils';
+import { userSelectors } from '@/store/user';
+import { practitionerSelectors } from '@/store/practitioner';
 
 export const EditClass = ({
   classToEdit,
@@ -33,6 +35,10 @@ export const EditClass = ({
   onSubmit: () => void;
 }) => {
   const appDispatch = useAppDispatch();
+  const practitioners = useSelector(
+    practitionerSelectors.getPrincipalPractitioners
+  );
+  const currentPractitioner = useSelector(userSelectors.getUser);
   const { setValue, getValues, formState, register, control, trigger } =
     useForm<EditClassModel>({
       defaultValues: {
@@ -43,6 +49,10 @@ export const EditClass = ({
       mode: 'onBlur',
       reValidateMode: 'onBlur',
     });
+  const [practitionersList, setPractitionersList] = useState<
+    { label: string; value: any }[]
+  >([]);
+
   const { isValid } = formState;
 
   const { name, meetEveryday, meetingDays, practitioner, isFullDay } = useWatch(
@@ -51,6 +61,27 @@ export const EditClass = ({
     }
   );
 
+  useEffect(() => {
+    const _list = practitioners
+      ?.map((p) => {
+        if (p.firstName && p.surname) {
+          return { label: `${p.firstName} ${p.surname}`, value: p.id };
+        }
+        return undefined;
+      })
+      .filter(Boolean) as { label: string; value: any }[];
+
+    _list.push({
+      label: currentPractitioner?.fullName || '',
+      value: currentPractitioner?.idNumber,
+    });
+
+    setPractitionersList(_list);
+  }, [
+    currentPractitioner?.fullName,
+    currentPractitioner?.idNumber,
+    practitioners,
+  ]);
   useEffect(() => {
     if (meetEveryday == null) return;
     if (meetEveryday) {
@@ -184,10 +215,7 @@ export const EditClass = ({
               <Dropdown<string>
                 inputRef={ref}
                 placeholder={'Select playgroup'}
-                list={[
-                  { label: 'Lesego Setsego', value: 'Lesego Setsego ID' },
-                  { label: 'Thandi Tembo', value: 'Thandi Tembo ID' },
-                ]}
+                list={practitionersList}
                 fillType="clear"
                 label={'Which Practitioner teaches this class?'}
                 fullWidth

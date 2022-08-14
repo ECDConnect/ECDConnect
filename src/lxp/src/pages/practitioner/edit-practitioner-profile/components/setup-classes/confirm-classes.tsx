@@ -1,5 +1,7 @@
 import ROUTES from '@/routes/routes';
 import { EditClassModel } from '@/schemas/practitioner/edit-class';
+import { practitionerSelectors } from '@/store/practitioner';
+import { userSelectors } from '@/store/user';
 import { getWeekdayValue } from '@/utils/practitioner/playgroups-utils';
 import { ClassProgrammeDto, ClassroomGroupDto } from '@ecdlink/core';
 import {
@@ -10,6 +12,7 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
 
 export const ConfirmClasses = ({
@@ -29,7 +32,10 @@ export const ConfirmClasses = ({
 }) => {
   const history = useHistory();
   const [actionList, setActionList] = useState<ActionListDataItem[]>([]);
-
+  const practitioners = useSelector(
+    practitionerSelectors.getPrincipalPractitioners
+  );
+  const currentPractitioner = useSelector(userSelectors.getUser);
   const formatMeetingDays = (programmes?: ClassProgrammeDto[]) => {
     const meetingDays = programmes
       ?.map((programme) => programme.meetingDay)
@@ -55,9 +61,18 @@ export const ConfirmClasses = ({
   useEffect(() => {
     const list = [];
     for (const classroomGroup of classroomGroups as any) {
+      const current =
+        currentPractitioner?.idNumber === classroomGroup.practitioner
+          ? currentPractitioner?.firstName
+          : 'Practitioner';
+      const _practitioner =
+        practitioners
+          ?.filter((a) => a.id === classroomGroup?.practitioner)
+          .at(0)?.firstName || current;
+
       list.push({
         title: classroomGroup.name,
-        subTitle: `${classroomGroup.practitioner}; ${formatMeetingDays(
+        subTitle: `${_practitioner}; ${formatMeetingDays(
           classroomGroup.classProgrammes
         )}`,
         switchTextStyles: true,

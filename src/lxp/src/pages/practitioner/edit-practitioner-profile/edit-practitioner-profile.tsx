@@ -38,6 +38,12 @@ import EditMultiplePractitioners from './components/edit-multiple-practitioners/
 import { ReactComponent as Cebisa } from '@/assets/cebisa.svg';
 import { SetupClasses } from './components/setup-classes/setup-classes';
 
+export enum SetupPractitionersPage {
+  confirmPractitioners = 1,
+  addPractitioners = 2,
+  editPractitioners = 3,
+}
+
 export const EditPractitionerProfile: React.FC = () => {
   const history = useHistory();
   const { theme } = useTheme();
@@ -56,7 +62,7 @@ export const EditPractitionerProfile: React.FC = () => {
   const [playgroups, setPlaygroups] = useState<EditPlaygroupModel[]>();
   const [editPlaygroupAtIndex, setEditPlayGroupAtIndex] = useState<number>();
   const [activeStep, setActiveStep] = useState(
-    EditPractitionerSteps.welcomePage // TODO: revert to welcome page
+    EditPractitionerSteps.welcomePage
   );
   const [addingPlaygroup, setAddingPlaygroup] = useState(false);
 
@@ -92,7 +98,7 @@ export const EditPractitionerProfile: React.FC = () => {
 
     setPlaygroups(updatedPlaygroups);
 
-    setActiveStep(EditPractitionerSteps.confirmPlaygroups);
+    setActiveStep(EditPractitionerSteps.confirmClasses);
   };
 
   const createClassroom = (
@@ -208,52 +214,21 @@ export const EditPractitionerProfile: React.FC = () => {
       case EditPractitionerSteps.setConfirmPractitioners:
         return (
           <EditMultiplePractitioners
+            page={SetupPractitionersPage.confirmPractitioners}
             onSubmit={(data: any) => {
               console.log(data);
               setActiveStep(EditPractitionerSteps.setupClasses);
             }}
           />
         );
-      // case EditPractitionerSteps.setPlaygroupCount:
-      //   return (
-      //     <EditPlaygroupCountForm
-      //       onSubmit={(value) => {
-      //         setPlayGroupCount(value);
-      //         setActiveStep(EditPractitionerSteps.setupClasses);
-      //         setLabel(`step 2 of 3`);
-      //       }}
-      //     />
-      //   );
       case EditPractitionerSteps.setupClasses:
         return (
-          // <EditMultiplePlayGroups
-          //   numberOfPlaygroups={playGroupCount}
-          //   defaultPlayGroups={playgroups}
-          //   editPlaygroupAtIndex={editPlaygroupAtIndex}
-          //   onPlayGroupDelete={deletePlayGroup}
-          //   onSubmit={(value) => {
-          //     setPlaygroups(value);
-          //     setActiveStep(EditPractitionerSteps.confirmClasses);
-          //   }}
-          // />
           <SetupClasses
             onSubmit={() => {
               setActiveStep(EditPractitionerSteps.addPhoto);
             }}
           />
         );
-      // case EditPractitionerSteps.confirmClasses:
-      //   return (
-      //     <ConfirmPlayGroups
-      //       defaultPlayGroups={playgroups || []}
-      //       onEditPlaygroup={onPlayGroupsEdit}
-      //       onSubmit={(value) => {
-      //         setPlaygroups(value);
-      //         setActiveStep(EditPractitionerSteps.addPhoto);
-      //         setLabel(`step 3 of 3`);
-      //       }}
-      //     />
-      //   );
       case EditPractitionerSteps.addPhoto:
         return (
           <AddPhoto
@@ -278,7 +253,7 @@ export const EditPractitionerProfile: React.FC = () => {
                   (x) => x.enumId === ProgrammeTypeEnum.Playgroup
                 );
 
-                if (programme.isPrincipleOrLeader) {
+                if (programme.isPrincipalOrLeader) {
                   setActiveStep(EditPractitionerSteps.setConfirmPractitioners);
                 } else if (programme.type === playgroupProgrammeType?.id) {
                   setActiveStep(EditPractitionerSteps.setPlaygroupCount);
@@ -334,46 +309,17 @@ export const EditPractitionerProfile: React.FC = () => {
 
   const onBack = () => {
     switch (activeStep) {
-      case EditPractitionerSteps.setupProgramme:
-      default:
-        return history.goBack();
       case EditPractitionerSteps.setupClasses:
         return setActiveStep(EditPractitionerSteps.setupProgramme);
       case EditPractitionerSteps.confirmClasses:
         return setActiveStep(EditPractitionerSteps.setupClasses);
       case EditPractitionerSteps.addPhoto:
         return setActiveStep(EditPractitionerSteps.confirmClasses);
+      case EditPractitionerSteps.setupProgramme:
+      default:
+        return history.goBack();
     }
   };
-  // const onBack = () => {
-  //   switch (activeStep) {
-  //     case EditPractitionerSteps.setupProgramme:
-  //     default:
-  //       return history.goBack();
-  //     case EditPractitionerSteps.setPlaygroupCount:
-  //       return setActiveStep(EditPractitionerSteps.setupProgramme);
-  //     case EditPractitionerSteps.setupClasses:
-  //       if (addingPlaygroup) {
-  //         const _playGroups = playgroups && [...playgroups];
-  //         _playGroups?.pop();
-  //         setPlaygroups(_playGroups);
-  //         setAddingPlaygroup(false);
-  //         setActiveStep(EditPractitionerSteps.confirmClasses);
-  //       } else {
-  //         setActiveStep(EditPractitionerSteps.setPlaygroupCount);
-  //         setPlaygroups(undefined);
-  //         setEditPlayGroupAtIndex(undefined);
-  //       }
-  //       return;
-  //     case EditPractitionerSteps.confirmClasses:
-  //       setActiveStep(EditPractitionerSteps.setupClasses);
-  //       setPlaygroups(undefined);
-  //       setEditPlayGroupAtIndex(undefined);
-  //       return;
-  //     case EditPractitionerSteps.addPhoto:
-  //       return setActiveStep(EditPractitionerSteps.confirmClasses);
-  //   }
-  // };
 
   return (
     <>
@@ -401,7 +347,7 @@ export const EditPractitionerProfile: React.FC = () => {
           }
           displayOffline={!isOnline}
         >
-          <div className={'px-4 pb-5'}>
+          <div className={'px-4'}>
             {steps(activeStep as EditPractitionerSteps)}
           </div>
         </BannerWrapper>

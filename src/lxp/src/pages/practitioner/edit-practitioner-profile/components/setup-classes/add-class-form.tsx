@@ -23,11 +23,15 @@ import { classroomsActions, classroomsSelectors } from '@store/classroom';
 import { newGuid } from '@/utils/common/uuid.utils';
 import { useSelector } from 'react-redux';
 import { practitionerSelectors } from '@/store/practitioner';
+import { userSelectors } from '@/store/user';
 
 export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const programmeType = useSelector(classroomsSelectors.getProgrammeType());
-  const practitioners = useSelector(practitionerSelectors.getPractitioners);
+  const practitioners = useSelector(
+    practitionerSelectors.getPrincipalPractitioners
+  );
+  const currentPractitioner = useSelector(userSelectors.getUser);
 
   const [classCount, setClassCount] = useState(1);
   const [practitionersList, setPractitionersList] = useState<
@@ -84,15 +88,24 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
   useEffect(() => {
     const _list = practitioners
       ?.map((p) => {
-        if (p.id && p.user?.idNumber && p.user.fullName) {
-          return { label: p.user.fullName, value: p.id };
+        if (p.firstName && p.surname) {
+          return { label: `${p.firstName} ${p.surname}`, value: p.id };
         }
         return undefined;
       })
       .filter(Boolean) as { label: string; value: any }[];
 
+    _list.push({
+      label: currentPractitioner?.fullName || '',
+      value: currentPractitioner?.idNumber,
+    });
+
     setPractitionersList(_list);
-  }, [practitioners]);
+  }, [
+    currentPractitioner?.fullName,
+    currentPractitioner?.idNumber,
+    practitioners,
+  ]);
 
   const isFormValid = () => {
     const meetingDays = getClassFormValues().meetingDays;
