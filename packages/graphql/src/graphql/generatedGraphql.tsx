@@ -33,7 +33,6 @@ export type Absentees = {
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
   loggedBy?: Maybe<Scalars['String']>;
-  practitioner?: Maybe<Practitioner>;
   program?: Maybe<Programme>;
   reason?: Maybe<Scalars['String']>;
   reassignedClass?: Maybe<Scalars['String']>;
@@ -52,7 +51,6 @@ export type AbsenteesFilterInput = {
   isActive?: InputMaybe<BooleanOperationFilterInput>;
   loggedBy?: InputMaybe<StringOperationFilterInput>;
   or?: InputMaybe<Array<AbsenteesFilterInput>>;
-  practitioner?: InputMaybe<PractitionerFilterInput>;
   program?: InputMaybe<ProgrammeFilterInput>;
   reason?: InputMaybe<StringOperationFilterInput>;
   reassignedClass?: InputMaybe<StringOperationFilterInput>;
@@ -68,7 +66,6 @@ export type AbsenteesInput = {
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
   LoggedBy?: InputMaybe<Scalars['String']>;
-  Practitioner?: InputMaybe<PractitionerInput>;
   Program?: InputMaybe<ProgrammeInput>;
   Reason?: InputMaybe<Scalars['String']>;
   ReassignedClass?: InputMaybe<Scalars['String']>;
@@ -1625,6 +1622,7 @@ export type MonthlyAttendanceReportModel = {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  addAbsenteeForPractitioner?: Maybe<Absentees>;
   addCoachToFranchisor?: Maybe<Coach>;
   addPermissionsToNavigation: Scalars['Boolean'];
   addPermissionsToRole: Scalars['Boolean'];
@@ -1824,6 +1822,15 @@ export type Mutation = {
   uploadChildProgressReport: Scalars['Boolean'];
 };
 
+export type MutationAddAbsenteeForPractitionerArgs = {
+  absentDate: Scalars['DateTime'];
+  classProgram?: InputMaybe<Scalars['String']>;
+  loggedByUser?: InputMaybe<Scalars['String']>;
+  practitionerId?: InputMaybe<Scalars['String']>;
+  reason?: InputMaybe<Scalars['String']>;
+  reassignedToPractitioner?: InputMaybe<Scalars['String']>;
+};
+
 export type MutationAddCoachToFranchisorArgs = {
   coachId?: InputMaybe<Scalars['String']>;
   franchisorId?: InputMaybe<Scalars['String']>;
@@ -1841,9 +1848,7 @@ export type MutationAddPermissionsToRoleArgs = {
 
 export type MutationAddPractitionerToCoachArgs = {
   coachId?: InputMaybe<Scalars['String']>;
-  firstName?: InputMaybe<Scalars['String']>;
-  idNumber?: InputMaybe<Scalars['String']>;
-  lastName?: InputMaybe<Scalars['String']>;
+  practitionerId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationAddPractitionerToPrincipalArgs = {
@@ -2247,12 +2252,12 @@ export type MutationDeletePractitionerArgs = {
 
 export type MutationDeletePractitionerForCoachArgs = {
   coachId?: InputMaybe<Scalars['String']>;
-  practitioner?: InputMaybe<PractitionerInput>;
+  practitionerId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationDeletePractitionerForPrincipalArgs = {
-  practitioner?: InputMaybe<PractitionerInput>;
   principalId?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationDeletePrincipalArgs = {
@@ -2396,7 +2401,7 @@ export type MutationDeleteWorkflowStatusTypeArgs = {
 };
 
 export type MutationDemotePractitionerAsPrincipalArgs = {
-  practitioner?: InputMaybe<PractitionerInput>;
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationFileUploadArgs = {
@@ -2424,7 +2429,7 @@ export type MutationPractitionerImportArgs = {
 };
 
 export type MutationPromotePractitionerToPrincipalArgs = {
-  practitioner?: InputMaybe<PractitionerInput>;
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationRefreshCaregiverChildTokenArgs = {

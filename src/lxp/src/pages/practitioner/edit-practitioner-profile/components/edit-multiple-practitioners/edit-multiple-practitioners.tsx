@@ -1,11 +1,10 @@
-import { SetStateAction, useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   Typography,
   Divider,
   StackedList,
   Button,
   ActionListDataItem,
-  Card,
   Alert,
 } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
@@ -34,9 +33,13 @@ export default function EditMultiplePractitioners({
   const appDispatch = useAppDispatch();
   const user = useSelector(userSelectors.getUser);
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
+  const practitionersForPrincipal = useSelector(
+    practitionerSelectors.getPrincipalPractitioners
+  );
+
   const [currentPage, setCurrentPage] = useState(page);
   const [principalPractitioners, setPrincipalPractitioners] = useState<
-    { firstName: string; surname: string; id?: string; passport?: string }[]
+    AddPractitionerModel[]
   >([]);
   const [allInFundaApp, setAllInFundaApp] = useState<boolean>();
   const [editPractitioner, setEditPractitioner] =
@@ -53,6 +56,28 @@ export default function EditMultiplePractitioners({
   ]);
 
   useEffect(() => {
+    console.log({ practitionersForPrincipal });
+    if (practitionersForPrincipal?.length) {
+      practitionersForPrincipal.forEach(
+        ({ firstName, surname, id, idNumber }) => {
+          listItems.push(
+            createStackItem({
+              firstName: firstName ?? '',
+              surname: surname ?? '',
+              idNumber: idNumber ?? '',
+              userId: id ?? '',
+              passport: '',
+              preferId: !!idNumber,
+            })
+          );
+          setListItems(listItems);
+        }
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
     const practitionerList = listItems.filter(
       (i) => i.idNumber !== user?.idNumber
     );
@@ -67,11 +92,11 @@ export default function EditMultiplePractitioners({
   const createStackItem = useCallback(
     (data: AddPractitionerModel): StackListItems => {
       const isInFundaApp = practitioners?.find(
-        (p) => p.user?.idNumber === data.id || data.passport
+        (p) => p.user?.idNumber === data.idNumber || data.passport
       );
       return {
         title: `${data.firstName} ${data.surname}`,
-        idNumber: data.id ?? data.passport,
+        idNumber: data.idNumber ?? data.passport,
         subTitle: isInFundaApp ? 'Practitioner' : 'Not on Funda App',
         titleStyle:
           'text-textDark font-body text-base font-semibold leading-snug ',
@@ -92,7 +117,7 @@ export default function EditMultiplePractitioners({
 
   const handleAddOrEditPractitionerSubmit = (data: AddPractitionerModel) => {
     const indexToEdit = listItems.findIndex(
-      (d) => d.idNumber === editPractitioner?.id
+      (d) => d.idNumber === editPractitioner?.idNumber
     );
 
     if (indexToEdit > -1) {
@@ -103,9 +128,10 @@ export default function EditMultiplePractitioners({
     listItems.push(createStackItem(data));
     principalPractitioners.push(data);
 
+    setCurrentPage(SetupPractitionersPage.confirmPractitioners);
+
     setPrincipalPractitioners(principalPractitioners);
     setListItems(listItems);
-    setCurrentPage(SetupPractitionersPage.confirmPractitioners);
   };
 
   const handleConfirmPractitionerSubmit = () => {
@@ -171,7 +197,6 @@ export default function EditMultiplePractitioners({
                 <Divider className="-my-1" dividerType="dashed" />
                 <StackedList<ActionListDataItem>
                   listItems={listItems}
-                  // onClick={() => console.log('clicked')}
                   type={'ActionList'}
                 />
               </div>

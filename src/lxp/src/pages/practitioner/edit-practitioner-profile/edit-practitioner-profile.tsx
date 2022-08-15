@@ -30,13 +30,19 @@ import { EditProgrammeForm } from './components/edit-programme-form/edit-program
 import { EditProgrammeModel } from '@schemas/practitioner/edit-programme';
 import { EditPractitionerSteps } from './edit-practitioner-profile.types';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import { ProgrammeTypeEnum } from '@ecdlink/graphql';
+import {
+  MutationAddPractitionerToPrincipalArgs,
+  ProgrammeTypeEnum,
+} from '@ecdlink/graphql';
 import { useStoreSetup } from '@hooks/useStoreSetup';
 import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
 import ROUTES from '@routes/routes';
 import EditMultiplePractitioners from './components/edit-multiple-practitioners/edit-multiple-practitioners';
 import { ReactComponent as Cebisa } from '@/assets/cebisa.svg';
 import { SetupClasses } from './components/setup-classes/setup-classes';
+import { practitionerSelectors } from '@/store/practitioner';
+import { PractitionerService } from '@/services/PractitionerService';
+import { authSelectors } from '@/store/auth';
 
 export enum SetupPractitionersPage {
   confirmPractitioners = 1,
@@ -51,10 +57,14 @@ export const EditPractitionerProfile: React.FC = () => {
   const dialog = useDialog();
   const { isOnline } = useOnlineStatus();
   const { syncClassroom } = useStoreSetup();
+  const userAuth = useSelector(authSelectors.getAuthUser);
   const user = useSelector(userSelectors.getUser);
   const programmeTypes = useSelector(staticDataSelectors.getProgrammeTypes);
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
+  const principalPractitioners = useSelector(
+    practitionerSelectors.getPrincipalPractitioners
+  );
 
   const [label, setLabel] = useState('');
   const [playGroupCount, setPlayGroupCount] = useState<number>(0);
@@ -71,10 +81,12 @@ export const EditPractitionerProfile: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (classroom?.id && classroomGroups.length) {
+    if (principalPractitioners?.length) {
       setActiveStep(EditPractitionerSteps.setupClasses);
+    } else if (classroom?.id && classroomGroups.length) {
+      setActiveStep(EditPractitionerSteps.setConfirmPractitioners);
     }
-  }, [classroom?.id, classroomGroups.length]);
+  }, [classroom?.id, classroomGroups.length, principalPractitioners?.length]);
 
   const onPlayGroupsEdit = (
     playgroups: EditPlaygroupModel[],
@@ -120,7 +132,6 @@ export const EditPractitionerProfile: React.FC = () => {
       isActive: true,
     };
 
-    console.log(classroomInputModel);
     appDispatch(classroomsActions.createClassroom(classroomInputModel));
     appDispatch(classroomsActions.setProgrammeType(programme.type));
   };
@@ -137,7 +148,44 @@ export const EditPractitionerProfile: React.FC = () => {
         (x) => x.enumId === ProgrammeTypeEnum.Playgroup
       );
 
-      // await syncClassroom();
+      // Update classroom data
+      await syncClassroom();
+
+      // Update the principal data
+
+      if (classroom?.isPrinciple) {
+        if (userAuth?.auth_token) {
+          const res = await new PractitionerService(
+            userAuth?.auth_token
+          ).PromotePractitionerToPrincipal(classroom.userId);
+          console.log('set practitioner to principal:', classroom.userId, res);
+        }
+      }
+
+      if (principalPractitioners?.length) {
+        if (userAuth?.auth_token) {
+          principalPractitioners.forEach(async (principalPractitioner) => {
+            if (
+              principalPractitioner.userId &&
+              principalPractitioner.idNumber &&
+              principalPractitioner.firstName &&
+              principalPractitioner.surname
+            ) {
+              const input: MutationAddPractitionerToPrincipalArgs = {
+                userId: principalPractitioner.userId,
+                idNumber: principalPractitioner.idNumber,
+                firstName: principalPractitioner.firstName,
+                lastName: principalPractitioner.surname,
+              };
+              const res = await new PractitionerService(
+                userAuth?.auth_token
+              ).AddPractitionerToPrincipal(input);
+              console.log('add practitioners to principal:', res);
+            }
+          });
+        }
+      }
+
       history.push(ROUTES.ROOT);
     } else {
       showOnlineOnly();
@@ -215,8 +263,7 @@ export const EditPractitionerProfile: React.FC = () => {
         return (
           <EditMultiplePractitioners
             page={SetupPractitionersPage.confirmPractitioners}
-            onSubmit={(data: any) => {
-              console.log(data);
+            onSubmit={() => {
               setActiveStep(EditPractitionerSteps.setupClasses);
             }}
           />

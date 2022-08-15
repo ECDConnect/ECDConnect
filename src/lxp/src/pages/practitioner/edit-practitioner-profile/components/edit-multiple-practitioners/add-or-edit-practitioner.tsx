@@ -6,7 +6,7 @@ import {
   SA_ID_REGEX,
   SA_PASSPORT_REGEX,
 } from '@ecdlink/ui';
-import { LoginModel } from '@/schemas/auth/login/login';
+import { UserDto } from '@ecdlink/core';
 import React, { useEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -18,8 +18,6 @@ import {
 import { PractitionerService } from '@/services/PractitionerService';
 import { useSelector } from 'react-redux';
 import { authSelectors } from '@/store/auth';
-import { Practitioner } from '@/../../../packages/graphql/lib';
-import { UserDto } from '@/../../../packages/core/lib';
 
 export const AddOrEditPractitioner = ({
   onSubmit,
@@ -44,15 +42,15 @@ export const AddOrEditPractitioner = ({
 
   const [isValidPractitioner, setIsValidPractitioner] = useState<boolean>();
 
-  const { preferId, id, passport } = useWatch({
+  const { preferId, idNumber, passport } = useWatch({
     control,
   });
 
   useEffect(() => {
     let validPassportOrIdNumber = false;
-    if (id) {
+    if (idNumber) {
       setIsValidPractitioner(undefined);
-      validPassportOrIdNumber = SA_ID_REGEX.test(id);
+      validPassportOrIdNumber = SA_ID_REGEX.test(idNumber);
     }
 
     if (passport) {
@@ -61,36 +59,43 @@ export const AddOrEditPractitioner = ({
     }
 
     if (validPassportOrIdNumber) {
-      validatePractitionerDetails().then((p) => {
-        console.log(p);
+      getPractitionerDetailsByIdNumber().then((p) => {
         setIsValidPractitioner(!!p?.idNumber);
       });
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, passport]);
+  }, [idNumber, passport]);
 
-  const validatePractitionerDetails = async () => {
+  const getPractitionerDetailsByIdNumber = async () => {
     // Check if the practitioner exists
     let _practitioner: UserDto = {} as UserDto;
 
-    if (userAuth && id) {
+    if (userAuth && idNumber) {
       _practitioner = await new PractitionerService(
         userAuth.auth_token
-      ).getPractitionerByIdNumber(id);
+      ).getPractitionerByIdNumber(idNumber);
     }
     return _practitioner;
   };
 
   const handleReset = () => {
-    reset({
-      firstName: '',
-      id: '',
-      passport: '',
-      preferId: true,
-      surname: '',
-    });
+    reset(initialAddPractitionerValues);
     setIsValidPractitioner(undefined);
+  };
+
+  const handleSubmit = async () => {
+    const { firstName, idNumber, passport, surname } = getValues();
+
+    const practitionerDetails = await getPractitionerDetailsByIdNumber();
+    onSubmit({
+      userId: practitionerDetails.id ?? '',
+      idNumber: idNumber || passport,
+      firstName: firstName,
+      surname: surname,
+      passport: '',
+      preferId: !!idNumber,
+    });
   };
   return (
     <div className="wrapper-with-sticky-button">
@@ -100,9 +105,9 @@ export const AddOrEditPractitioner = ({
             <FormInput<AddPractitionerModel>
               label={'ID number'}
               visible={true}
-              nameProp={'id'}
+              nameProp={'idNumber'}
               register={register}
-              error={errors['id']}
+              error={errors['idNumber']}
               placeholder={'E.g. 7601010338089'}
             />
           )}
@@ -111,8 +116,8 @@ export const AddOrEditPractitioner = ({
               <FormInput<AddPractitionerModel>
                 label={'Passport number'}
                 visible={true}
-                nameProp={'id'}
-                error={errors['id']}
+                nameProp={'passport'}
+                error={errors['passport']}
                 register={register}
               />
             )}
@@ -190,7 +195,7 @@ export const AddOrEditPractitioner = ({
           textColor="white"
           icon="SaveIcon"
           disabled={!isValid || isValidPractitioner === false}
-          onClick={() => onSubmit(getValues())}
+          onClick={handleSubmit}
         />
         {isValidPractitioner === false && (
           <Button

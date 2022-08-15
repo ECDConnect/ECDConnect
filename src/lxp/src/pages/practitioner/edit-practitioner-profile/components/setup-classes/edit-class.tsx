@@ -25,6 +25,7 @@ import { newGuid } from '@/utils/common/uuid.utils';
 import { userSelectors } from '@/store/user';
 import { practitionerSelectors } from '@/store/practitioner';
 
+// TODO: Refactor this into add-class component
 export const EditClass = ({
   classToEdit,
   onSubmit,
@@ -65,7 +66,7 @@ export const EditClass = ({
     const _list = practitioners
       ?.map((p) => {
         if (p.firstName && p.surname) {
-          return { label: `${p.firstName} ${p.surname}`, value: p.id };
+          return { label: `${p.firstName} ${p.surname}`, value: p.idNumber };
         }
         return undefined;
       })
@@ -75,13 +76,11 @@ export const EditClass = ({
       label: currentPractitioner?.fullName || '',
       value: currentPractitioner?.idNumber,
     });
+    console.log(_list);
 
     setPractitionersList(_list);
-  }, [
-    currentPractitioner?.fullName,
-    currentPractitioner?.idNumber,
-    practitioners,
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   useEffect(() => {
     if (meetEveryday == null) return;
     if (meetEveryday) {
@@ -214,7 +213,7 @@ export const EditClass = ({
             render={({ field: { onChange, value, ref } }) => (
               <Dropdown<string>
                 inputRef={ref}
-                placeholder={'Select playgroup'}
+                placeholder={'Select a practitioner'}
                 list={practitionersList}
                 fillType="clear"
                 label={'Which Practitioner teaches this class?'}

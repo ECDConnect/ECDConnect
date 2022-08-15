@@ -6,7 +6,6 @@ import { AddClassForm } from './add-class-form';
 import { ConfirmClasses } from './confirm-classes';
 import { EditClass } from './edit-class';
 import { EditClassModel } from '@/schemas/practitioner/edit-class';
-import { practitionerSelectors } from '@/store/practitioner';
 
 interface SetupClassesProps {
   title?: string;
@@ -41,6 +40,7 @@ export const SetupClasses = ({
   );
 
   useEffect(() => {
+    console.log('I am here now');
     if (classroomGroupsFromStore.length) {
       setCurrentTitle('Confirm Class');
       const _classroomGroups: ClassroomGroupDto[] = [];
@@ -60,10 +60,6 @@ export const SetupClasses = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [classroomGroupProgrammes, classroomGroupsFromStore.length]);
 
-  const onAddClass = () => {
-    setCurrentPage(SetupClassesPage.addClass);
-  };
-
   const onEditClass = (classroom: EditClassModel) => {
     setEditClassroom(classroom);
     setCurrentPage(SetupClassesPage.editClass);
@@ -77,7 +73,9 @@ export const SetupClasses = ({
             onSubmit={onSubmit}
             title={currentTitle}
             classroomName={classroom?.name || 'your Classroom'}
-            addClass={onAddClass}
+            addClass={() => {
+              setCurrentPage(SetupClassesPage.addClass);
+            }}
             editClass={onEditClass}
             classroomGroups={classroomGroups || []}
           />

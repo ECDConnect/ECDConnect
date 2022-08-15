@@ -2,7 +2,8 @@ import { SA_ID_REGEX, SA_PASSPORT_REGEX } from '@ecdlink/ui';
 import * as Yup from 'yup';
 
 export interface AddPractitionerModel {
-  id: string;
+  userId?: string;
+  idNumber: string;
   passport: string;
   firstName: string;
   surname: string;
@@ -13,12 +14,12 @@ export const initialAddPractitionerValues: AddPractitionerModel = {
   firstName: '',
   surname: '',
   preferId: true,
-  id: '',
+  idNumber: '',
   passport: '',
 };
 
 export const addPractitionerSchema = Yup.object().shape({
-  id: Yup.string().when('preferId', {
+  idNumber: Yup.string().when('preferId', {
     is: true,
     then: Yup.string()
       .required('Id number is required')
@@ -30,6 +31,5 @@ export const addPractitionerSchema = Yup.object().shape({
       .required('Passport number is required')
       .matches(SA_PASSPORT_REGEX, 'Please enter a valid Passport number'),
   }),
-
   surname: Yup.string().required(),
 });

@@ -67,7 +67,7 @@ export const ConfirmClasses = ({
           : 'Practitioner';
       const _practitioner =
         practitioners
-          ?.filter((a) => a.id === classroomGroup?.practitioner)
+          ?.filter((a) => a.idNumber === classroomGroup?.practitioner)
           .at(0)?.firstName || current;
 
       list.push({
@@ -97,6 +97,7 @@ export const ConfirmClasses = ({
     }
 
     setActionList(list);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [classroomGroups, editClass]);
 
   return (

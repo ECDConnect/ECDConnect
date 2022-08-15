@@ -1,5 +1,6 @@
 import { api } from '../axios.helper';
 import { Config, UserDto, PractitionerDto } from '@ecdlink/core';
+import { MutationAddPractitionerToPrincipalArgs } from '@ecdlink/graphql';
 
 class PractitionerService {
   _accessToken: string;
@@ -119,8 +120,6 @@ class PractitionerService {
             idNumber
             firstName
             surname
-            email
-            isActive
           }
         }
       `,
@@ -136,6 +135,65 @@ class PractitionerService {
     }
 
     return response.data.data.practitionerByIdNumber;
+  }
+
+  // promotePractitionerToPrincipal(userId: String): Practitioner
+  async PromotePractitionerToPrincipal(userId: string): Promise<UserDto> {
+    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        mutation promotePractitionerToPrincipal($userId: String) {
+          promotePractitionerToPrincipal(userId: $userId) {
+            id
+            userId
+            isPrincipal
+          }
+        }
+      `,
+      variables: {
+        userId,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Get Practitioner by ID number Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.promotePractitionerToPrincipal;
+  }
+
+  async AddPractitionerToPrincipal(
+    input: MutationAddPractitionerToPrincipalArgs
+  ): Promise<UserDto> {
+    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        mutation addPractitionerToPrincipal {
+          addPractitionerToPrincipal(
+            firstName:$firstName
+            idNumber:$idNumber
+            lastName:$surname
+            userId:$userId
+          ) {
+            userId
+            isActive
+          }
+        }
+      `,
+      variables: {
+        ...input,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Get Practitioner by ID number Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.addPractitionerToPrincipal;
   }
 }
 
