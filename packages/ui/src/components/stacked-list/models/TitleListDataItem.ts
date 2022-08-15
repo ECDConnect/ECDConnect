@@ -6,4 +6,5 @@ export interface TitleListDataItem {
   titleIconClassName?: string;
   chipConfig?: ChipConfig;
   onActionClick: () => void;
+  classNames?: string;
 }

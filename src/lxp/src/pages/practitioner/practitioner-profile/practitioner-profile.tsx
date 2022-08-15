@@ -47,15 +47,18 @@ export const PractitionerProfile: React.FC = () => {
   }, [isOnline]);
 
   const getStackedMenuList = (): MenuListDataItem[] => {
+    const titleStyle = 'text-textDark font-semibold text-base leading-snug';
+    const subTitleStyle = 'text-sm font-h1 font-normal text-textMid';
     const stackedMenuList: MenuListDataItem[] = [
       {
         title: `${user?.firstName} ${user?.surname}`,
+        titleStyle,
         subTitle: 'About me',
+        subTitleStyle,
         menuIconUrl: userProfilePicture?.file,
         menuIcon: 'UserIcon',
-        iconBackgroundColor: 'primary',
+        iconBackgroundColor: 'tertiary',
         iconColor: 'white',
-
         showIcon: userProfilePicture?.file === undefined,
         onActionClick: () => {
           history.push(ROUTES.PRACTITIONER.ABOUT);
@@ -63,11 +66,13 @@ export const PractitionerProfile: React.FC = () => {
       },
       {
         title: 'Programme information',
+        titleStyle,
         subTitle: classroom?.name,
+        subTitleStyle,
         menuIconUrl: classroomImage?.file,
         menuIcon: 'HeartIcon',
         menuIconClassName: 'text-white bg-primary',
-        iconBackgroundColor: 'primary',
+        iconBackgroundColor: 'tertiary',
         iconColor: 'white',
         showIcon: classroomImage?.file === undefined,
         onActionClick: () => {
@@ -118,10 +123,12 @@ export const PractitionerProfile: React.FC = () => {
       },
       {
         title: 'Account',
+        titleStyle,
+        subTitleStyle,
         subTitle: 'Password',
         menuIcon: 'ShieldCheckIcon',
         menuIconClassName: 'text-white bg-primary',
-        iconBackgroundColor: 'primary',
+        iconBackgroundColor: 'tertiary',
         showIcon: true,
         iconColor: 'white',
         onActionClick: () => {
@@ -130,10 +137,12 @@ export const PractitionerProfile: React.FC = () => {
       },
       {
         title: 'Sync App Data',
+        titleStyle,
+        subTitleStyle,
         subTitle: lastDataSyncDate,
         menuIcon: 'RefreshIcon',
         iconColor: 'white',
-        iconBackgroundColor: 'primary',
+        iconBackgroundColor: 'tertiary',
         showIcon: true,
         onActionClick: () => {
           dialog({
@@ -152,10 +161,12 @@ export const PractitionerProfile: React.FC = () => {
       },
       {
         title: 'Logout',
+        titleStyle,
+        subTitleStyle,
         subTitle: 'Logout & reset data',
         menuIcon: 'LogoutIcon',
         iconColor: 'white',
-        iconBackgroundColor: 'primary',
+        iconBackgroundColor: 'tertiary',
         showIcon: true,
         onActionClick: () => {
           dialog({
@@ -215,6 +226,7 @@ export const PractitionerProfile: React.FC = () => {
           <StackedList
             listItems={getStackedMenuList()}
             type={'MenuList'}
+            className={'flex flex-col gap-1 px-4 pt-1'}
           ></StackedList>
         </div>
       ),
@@ -228,11 +240,11 @@ export const PractitionerProfile: React.FC = () => {
       title={`${user?.firstName} ${user?.surname}`}
       color={'primary'}
       onBack={() => history.push(ROUTES.ROOT)}
-      backgroundColour="uiBg"
+      backgroundColour="white"
       displayOffline={!isOnline}
     >
       <div className="bg-white">
-        <TabList tabItems={tabItem} />
+        <TabList className="bg-white mb-1" tabItems={tabItem} />
       </div>
     </BannerWrapper>
   );

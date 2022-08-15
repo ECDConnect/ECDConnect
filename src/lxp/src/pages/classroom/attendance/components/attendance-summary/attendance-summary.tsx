@@ -296,19 +296,18 @@ export const AttendanceSummary: React.FC = () => {
 
   return (
     <>
-      <div className={'flex flex-1 h-full flex-col'}>
+      <div className={'flex flex-1 h-full flex-col px-4 pt-4 gap-4'}>
         {isValidAttendanceDay ? (
           <PointsSuccessCard
             visible={successMessageVisible}
             isSmartStartUser={isSmartStartUser}
             points={100}
             onClose={() => setSuccessMessageVisible(false)}
-            className={'pt-4 px-4'}
             message={getPointsMessage(isSmartStartUser)}
             icon={'SparklesIcon'}
           />
         ) : (
-          <div className={'px-4 pt-4'}>
+          <div>
             <Alert
               title={'Today is not a school day.'}
               message={
@@ -320,7 +319,7 @@ export const AttendanceSummary: React.FC = () => {
         )}
 
         {attendanceActionList.length > 0 && missedAttendanceGroups.length > 0 && (
-          <div className={'flex flex-1 flex-col pt-4 px-4'}>
+          <div className={'flex flex-col'}>
             <div className={'flex flex-row items-center'}>
               <div className={styles.iconRound}>
                 <Typography

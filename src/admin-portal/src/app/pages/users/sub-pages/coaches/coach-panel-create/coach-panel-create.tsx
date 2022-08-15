@@ -63,8 +63,10 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
     defaultValues: initialUserDetailsValues,
     mode: 'onBlur',
   });
+
   const { errors: userDetailFormErrors, isValid: isUserDetailValid } =
     userDetailFormState;
+
   // PASSWORD FORMS
   const {
     register: passwordRegister,
@@ -75,8 +77,9 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
     defaultValues: initialPasswordValue,
     mode: 'onBlur',
   });
-  const { errors: passwordFormErrors, isValid: isPasswordValid } =
-    passwordFormState;
+
+  const { errors: passwordFormErrors } = passwordFormState;
+
   // COACH FORMS
   const {
     register: coachRegister,
@@ -193,7 +196,7 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
   const getIsValid = () => {
     let isValid = isUserDetailValid;
     if (!isCoachValid) isValid = false;
-    return isValid && isPasswordValid ? true : false;
+    return isValid ? true : false;
   };
 
   const getComponent = () => {

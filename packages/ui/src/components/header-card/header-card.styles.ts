@@ -1,5 +1,5 @@
 export const card =
-  'bg-white shadow-lg drop-shadow-lg rounded-lg text-black w-headercard';
+  'bg-uiBg shadow-lg drop-shadow-lg rounded-15 text-black w-headercard';
 export const imageWrapper = 'h-bannerimage w-full';
 export const cardBanner = 'h-full w-full rounded-t-lg';
 export const cardTitle = 'text-2xl font-bold text-left font-h1 text-primary ';

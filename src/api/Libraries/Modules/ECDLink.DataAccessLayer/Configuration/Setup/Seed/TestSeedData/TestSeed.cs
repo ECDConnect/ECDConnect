@@ -19,15 +19,15 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
 {
     public static class TestSeedId
     {
-        public static Guid ClassroomId = Guid.Parse("a917d764-96eb-4400-9848-d43c3dbc897e");
-        public static Guid SiteAddressId = Guid.Parse("43eb37ae-3fbc-4381-be2f-7b95021a646d");
+        public static Guid ClassroomId = Guid.NewGuid();// Guid.Parse("a917d764-96eb-4400-9848-d43c3dbc897e");
+        public static Guid SiteAddressId = Guid.NewGuid();//Guid.Parse("43eb37ae-3fbc-4381-be2f-7b95021a646d");
 
-        public static Guid ClassgroupOne = Guid.Parse("7068f956-df68-4336-b39b-09363b0e441b");
-        public static Guid ClassgroupTwo = Guid.Parse("fbcd4ab4-5933-4034-8946-fe1251f431c6");
+        public static Guid ClassgroupOne = Guid.NewGuid();//Guid.Parse("7068f956-df68-4336-b39b-09363b0e441b");
+        public static Guid ClassgroupTwo = Guid.NewGuid();//Guid.Parse("fbcd4ab4-5933-4034-8946-fe1251f431c6");
 
-        public static Guid ProgrammeOne = Guid.Parse("ee193f81-fb1f-4c30-8b50-4607a68be563");
-        public static Guid ProgrammeTwo = Guid.Parse("2229f847-a390-4a12-bb67-e09b15ad427e");
-        public static Guid ProgrammeThree = Guid.Parse("49e220cf-75d8-4618-9502-fc8b2520bdd5");
+        public static Guid ProgrammeOne = Guid.NewGuid();//Guid.Parse("ee193f81-fb1f-4c30-8b50-4607a68be563");
+        public static Guid ProgrammeTwo = Guid.NewGuid();//Guid.Parse("2229f847-a390-4a12-bb67-e09b15ad427e");
+        public static Guid ProgrammeThree = Guid.NewGuid();//Guid.Parse("49e220cf-75d8-4618-9502-fc8b2520bdd5");
     }
 
     public class ChildrenTest
@@ -49,22 +49,100 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
             var userManager = serviceProvider.GetService<UserManager<ApplicationUser>>();
 
             var user = userManager.Users.FirstOrDefault();
-
+            Guid coachId = Guid.NewGuid();
             _userId = user.Id;
 
             var siteAddressId = SeedSiteAddress();
+            try {
+                coachId = AddFranchisorCoach(userManager);
+            }
+            catch (Exception e) { }
 
-            AddPractitioners(userManager, siteAddressId);
+            try
+            {
+                
+                AddPractitioners(userManager, siteAddressId, coachId.ToString());
+            } catch (Exception e) { }
 
+            try { 
             var classroomId = SeedClassroom();
-            SeedClassProgrammes();
-            SeedAttendance(serviceProvider, _practitionerId);
+                SeedClassProgrammes();
+                SeedAttendance(serviceProvider, _practitionerId);
+            }
+            catch (Exception e) { }
 
-            SeedChildren(serviceProvider);
-            SeedChildAttendance(serviceProvider);
+            try { 
+                SeedChildren(serviceProvider);
+            }
+            catch (Exception e) { }
+
+            try { 
+                SeedChildAttendance(serviceProvider);
+            }
+            catch (Exception e) { }
         }
 
-        private void AddPractitioners(UserManager<ApplicationUser> userManager, Guid siteAddressId)
+        private Guid AddFranchisorCoach(UserManager<ApplicationUser> userManager)
+        {
+            var fraRepo = _repositoryFactory.CreateRepository<Franchisor>(userContext: _userId);
+            var coaRepo = _repositoryFactory.CreateRepository<Coach>(userContext: _userId);
+
+            var pUserFranchisor = new ApplicationUser
+            {
+                FirstName = "TestFranchisor",
+                Surname = "TestFranchisorSurname",
+                Email = "test@testfranchisor.com",
+                UserName = "00000054654111",
+                ContactPreference = MessageTypeConstants.SMS,
+                IdNumber = "00000054654111",
+                PhoneNumber = "06148808",
+                IsActive = true,
+            };
+
+            var result = userManager.CreateAsync(pUserFranchisor).Result;
+            var franchisorId = pUserFranchisor.Id;
+
+            var passwordResult = userManager.AddPasswordAsync(pUserFranchisor, "Hello123!").Result;
+            //var siteAddressId2 = SeedSiteAddress(new Guid(), "Franchise Coach Address");
+
+            fraRepo.Insert(new Franchisor
+            {
+                Id = Guid.NewGuid(),
+                UserId = _practitionerId,
+                //SiteAddressId = siteAddressId2,
+                AreaOfOperation = "Office"
+            });
+
+            var pUserCoach = new ApplicationUser
+            {
+                FirstName = "TestCoach",
+                Surname = "TestCoachSurname",
+                Email = "test@testcoachr.com",
+                UserName = "00000022111",
+                ContactPreference = MessageTypeConstants.SMS,
+                IdNumber = "00000022111",
+                PhoneNumber = "0614887314",
+                IsActive = true
+            };
+
+            var result2 = userManager.CreateAsync(pUserCoach).Result;
+            var coachId = pUserCoach.Id;
+
+            var passwordResult2 = userManager.AddPasswordAsync(pUserCoach, "Hello123!").Result;
+
+            coaRepo.Insert(new Coach
+            {
+                Id = Guid.NewGuid(),
+                UserId = pUserCoach.Id,
+                //SiteAddressId = siteAddressId2,
+                AreaOfOperation = "Office",
+                FranchisorId = Guid.Parse(franchisorId)
+            });
+
+            return Guid.Parse(coachId);
+        }
+
+        private void AddPractitioners(UserManager<ApplicationUser> userManager, Guid siteAddressId, string coachId)
         {
             var pracRepo = _repositoryFactory.CreateRepository<Practitioner>(userContext: _userId);
 
@@ -90,7 +168,12 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
                 MaxChildren = 4,
                 Id = Guid.NewGuid(),
                 UserId = _practitionerId,
-                SiteAddressId = siteAddressId
+                SiteAddressId = siteAddressId,
+                IsPrincipal = true,
+                IsFundaAppAdmin = false,
+                IsTrainee = false,
+                NotInvitedYet = false,
+                CoachHierarchy = coachId
             });
 
             var pUser2 = new ApplicationUser
@@ -114,7 +197,13 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
                 MaxChildren = 4,
                 Id = Guid.NewGuid(),
                 UserId = pUser2.Id,
-                SiteAddressId = siteAddressId
+                SiteAddressId = siteAddressId,
+                PrincipalHierarchy = pUser2.Id,
+                IsPrincipal = false,
+                IsFundaAppAdmin = false,
+                IsTrainee = false,
+                NotInvitedYet = false,
+                CoachHierarchy = coachId
             });
         }
 

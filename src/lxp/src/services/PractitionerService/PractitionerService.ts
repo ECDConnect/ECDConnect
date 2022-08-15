@@ -1,11 +1,38 @@
 import { api } from '../axios.helper';
 import { Config } from '@ecdlink/core';
 import { PractitionerDto } from '@ecdlink/core';
+
 class PractitionerService {
   _accessToken: string;
 
   constructor(accessToken: string) {
     this._accessToken = accessToken;
+  }
+
+  async getPractitionersForCoach(userId: string): Promise<PractitionerDto[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        query allPractitionersForCoach($userId: String) {
+          allPractitionersForCoach(userId: $userId) {
+            id
+            userId
+          }
+        }
+      `,
+      variables: {
+        userId,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Get Practitioners For Coach Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.allPractitionersForCoach;
   }
 
   async getPractitionerById(id: number): Promise<PractitionerDto> {

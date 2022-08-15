@@ -16,8 +16,8 @@ export function Divider({
   return (
     <div
       className={classNames(
-        styles.dividerContainer,
-        className ? className : ''
+        className ? className : '',
+        styles.dividerContainer
       )}
     >
       <div className={styles.dividerWrapper}>

@@ -379,7 +379,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
               placeholder={'Playgroups'}
               pluralSelectionText={'Playgroups'}
               multiple
-              color={'uiMidDark'}
+              color={'secondary'}
               info={{
                 name: `Filter by: ${filterInfo?.filterName}`,
                 hint: filterInfo?.filterHint || '',
@@ -398,7 +398,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
             }}
             placeholder={'Sort By'}
             multiple={false}
-            color={'uiMidDark'}
+            color={'secondary'}
             info={{
               name: `Sort By:`,
             }}

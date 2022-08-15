@@ -20,7 +20,7 @@ namespace ECDLink.DataAccessLayer.Entities.Base
 
         [Column(Order = 98)]
         [GraphIgnoreInput]
-        public DateTime UpdatedDate { get; set; }
+        public DateTime UpdatedDate { get; set; } = DateTime.Now;
 
         [Column(Order = 99)]
         public string UpdatedBy { get; set; }

@@ -55,6 +55,32 @@ class ChildService {
     return response.data.data.GetAllChild;
   }
 
+  async getChildrenForCoach(userId: string): Promise<ChildDto[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        query allChildrenForCoach($userId: String) {
+          allChildrenForCoach(userId: $userId) {
+            id
+            userId
+          }
+        }    
+      `,
+      variables: {
+        userId,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Get Children For Coach Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.allChildrenForCoach;
+  }
+
   async updateChild(id: string, input: ChildInput): Promise<boolean> {
     const apiInstance = await api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {

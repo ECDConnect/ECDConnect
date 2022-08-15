@@ -22,7 +22,9 @@ export const getTabClass = (
   }
 
   if (isOnlyTab) {
-    tabClassName = tabClassName.replace('border-primary', 'border-uiLight');
+    tabClassName = tabClassName
+      .replace('border-primary', '')
+      .replace('border-b-2', '');
   }
 
   return tabClassName;

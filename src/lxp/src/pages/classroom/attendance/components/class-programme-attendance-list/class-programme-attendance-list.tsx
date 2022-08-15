@@ -123,7 +123,7 @@ export const ClassProgrammeAttendanceList: React.FC<
         <div className={'bg-uiBg flex flex-col items-start w-full px-4 py-1'}>
           <Typography
             type={'body'}
-            weight={'bolder'}
+            weight={'bold'}
             text={classroomGroup?.name}
             color={'black'}
           />

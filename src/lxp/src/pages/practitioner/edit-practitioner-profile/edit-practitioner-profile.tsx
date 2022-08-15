@@ -85,7 +85,7 @@ export const EditPractitionerProfile: React.FC = () => {
       const classroomInputModel: ClassroomDto = {
         userId: user?.id ?? '',
         name: programme?.name ?? '',
-        isPrinciple: programme?.isPrincipleOrLeader ?? false,
+        isPrinciple: programme?.isPrincipalOrLeader ?? false,
         numberPractitioners: programme?.smartStartPractitioners
           ? +programme?.smartStartPractitioners
           : 0,
@@ -359,7 +359,7 @@ export const EditPractitionerProfile: React.FC = () => {
           subTitle={label}
           onBack={onBack}
           onClose={exitPrompt}
-          backgroundColour={'uiBg'}
+          backgroundColour={'white'}
           displayOffline={!isOnline}
         >
           <div className={'px-4 pb-5'}>

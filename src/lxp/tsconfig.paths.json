@@ -9,6 +9,7 @@
       "@pages/*": ["./pages/*"],
       "@auth-p/*": ["./pages/auth/*"],
       "@child-p/*": ["./pages/child/*"],
+      "@coach-p/*": ["./pages/coach/*"],
       "@classroom-p/*": ["./pages/classroom/*"],
       "@attendance-p/*": ["./pages/classroom/attendance/*"],
       "@child-list-p/*": ["./pages/classroom/child-list/*"],

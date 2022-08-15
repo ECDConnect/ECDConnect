@@ -41,7 +41,7 @@ export const DashboardItems: React.FC<DashboardItemsProps> = ({
       )}
 
       <StackedList
-        className="w-full bg-white rounded-b-md -mt-0.5"
+        className="w-full rounded-2xl -mt-0.5 flex flex-col gap-1"
         type="TitleList"
         listItems={listItems}
       />

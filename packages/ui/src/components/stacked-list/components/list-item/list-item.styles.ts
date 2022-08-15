@@ -3,7 +3,7 @@ import { DividerType } from '../../../divider/models/Divider';
 import { SubTitleShape } from './models/list-item';
 
 export const subTitle = 'flex flex-row justify-start items-center';
-export const chevronIcon = 'h-5 w-5 text-textLight';
+export const chevronIcon = 'h-22 w-22 text-textLight';
 
 export const container = (
   backgroundColor: Colours,
@@ -13,8 +13,8 @@ export const container = (
   dividerType: DividerType,
   dividerColor: Colours
 ) =>
-  `w-full flex flex-row justify-between items-center bg-${backgroundColor} cursor-pointer ${
-    withPaddingY ? 'py-3' : ''
+  `flex flex-row justify-between items-center bg-${backgroundColor} cursor-pointer rounded-10 ${
+    withPaddingY ? 'py-4' : ''
   } ${withPaddingX ? 'px-4' : ''}
    ${showDivider ? `border-t border-${dividerColor} border-${dividerType}` : ''}
   `;

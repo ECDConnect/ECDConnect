@@ -69,7 +69,7 @@ export const PointsSuccessCard: React.FC<PointsSuccessCardProps> = ({
                         {points && (
                           <Typography
                             type={'body'}
-                            weight={'bolder'}
+                            weight={'bold'}
                             text={getPointsText()}
                             color={'white'}
                             className={'mr-1'}

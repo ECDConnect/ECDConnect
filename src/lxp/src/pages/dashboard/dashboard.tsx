@@ -6,7 +6,9 @@ import {
   BannerWrapper,
   DialogPosition,
   IconBadge,
-  NavigationItem,
+  NavigationRouteItem,
+  NavigationDropdown,
+  StackedListItemType,
   Typography,
   UserAvatar,
 } from '@ecdlink/ui';
@@ -24,35 +26,41 @@ import { settingSelectors } from '@store/settings';
 import { userSelectors } from '@store/user';
 import { analyticsActions } from '@store/analytics';
 import { DashboardItems } from './components/dashboard-items/dashboard-items';
+import { practitionerThunkActions } from '@/store/practitioner';
+import { childrenThunkActions } from '@/store/children';
 import * as styles from './dashboard.styles';
 import ROUTES from '@routes/routes';
 const { version } = require('../../../package.json');
 
 export enum NavigationTypes {
   Home = 'Home',
-  Classroom = 'Classroom',
+  ClientFolders = 'Client folders',
   Attendance = 'Attendance',
   Children = 'Children',
   Programme = 'Programme',
   Profile = 'Profile',
   Messages = 'Messages',
+  Logout = 'Logout',
 }
 
 export const Dashboard: React.FC = () => {
-  const history = useHistory();
-  const { theme } = useTheme();
+  const shouldUserSync = useSelector(settingSelectors.getShouldUserSync);
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const userData = useSelector(userSelectors.getUser);
-  const shouldUserSync = useSelector(settingSelectors.getShouldUserSync);
-  const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
+  const appDispatch = useAppDispatch();
+  const history = useHistory();
+  const { theme } = useTheme();
   const dialog = useDialog();
+
   const newNotificationCount = useSelector(
     notificationsSelectors.getNewNotificationCount
   );
+
   const dashboardNotification = useSelector(
     notificationsSelectors.getDashboardNotification
   );
+
   const { userProfilePicture } = useDocuments();
 
   useEffect(() => {
@@ -67,7 +75,26 @@ export const Dashboard: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOnline]);
 
-  const navigation: NavigationItem[] = [
+  /**
+   * Data loading for coaches:
+   * 1. Practitioners
+   * 2. Children of Practitioners
+   */
+  useEffect(() => {
+    if (userData?.roles?.some((role) => role.name === 'Coach')) {
+      (async () =>
+        await appDispatch(
+          practitionerThunkActions.getPractitionersForCoach({})
+        ).unwrap())();
+
+      (async () =>
+        await appDispatch(
+          childrenThunkActions.getChildrenForCoach({})
+        ).unwrap())();
+    }
+  }, []);
+
+  const navigation: (NavigationRouteItem | NavigationDropdown)[] = [
     {
       name: NavigationTypes.Home,
       href: ROUTES.ROOT,
@@ -75,45 +102,109 @@ export const Dashboard: React.FC = () => {
       current: true,
     },
     {
-      name: NavigationTypes.Classroom,
-      href: ROUTES.CLASSROOM,
+      name: NavigationTypes.ClientFolders,
       icon: 'AcademicCapIcon',
       current: false,
-    },
-    {
-      name: NavigationTypes.Attendance,
-      href: ROUTES.CLASSROOM,
-      params: { activeTabIndex: 0 },
-      current: false,
-    },
-    {
-      name: NavigationTypes.Children,
-      href: ROUTES.CLASSROOM,
-      params: { activeTabIndex: 1 },
-      current: false,
-    },
-    {
-      name: NavigationTypes.Programme,
-      href: ROUTES.CLASSROOM,
-      params: { activeTabIndex: 2 },
-      current: false,
+      nestedChildren: [
+        {
+          name: NavigationTypes.Attendance,
+          href: ROUTES.CLASSROOM,
+          params: { activeTabIndex: 0 },
+          current: false,
+        },
+        {
+          name: NavigationTypes.Children,
+          href: ROUTES.CLASSROOM,
+          params: { activeTabIndex: 1 },
+          current: false,
+        },
+        {
+          name: NavigationTypes.Programme,
+          href: ROUTES.CLASSROOM,
+          params: { activeTabIndex: 2 },
+          current: false,
+        },
+      ],
     },
     {
       name: NavigationTypes.Profile,
       href: ROUTES.PRACTITIONER.PROFILE.ROOT,
       icon: 'UserIcon',
       current: false,
+      showDivider: true,
     },
     {
       name: NavigationTypes.Messages,
       href: ROUTES.MESSAGES,
       icon: 'BellIcon',
       current: false,
+      showDivider: true,
       getNotificationCount: () => {
         return newNotificationCount;
       },
     },
+    {
+      name: NavigationTypes.Logout,
+      href: ROUTES.LOGIN,
+      icon: 'ExternalLinkIcon',
+      current: false,
+      showDivider: true,
+    },
   ];
+
+  const dashboardItems: StackedListItemType[] = [];
+
+  if (userData?.roles?.some((role) => role.name === 'Coach')) {
+    dashboardItems.push(
+      {
+        title: 'Smartstarters',
+        titleIcon: 'AcademicCapIcon',
+        titleIconClassName: styles.smartStarterIcon,
+        onActionClick: () => ({}),
+        classNames: 'bg-uiBg',
+      },
+      {
+        title: 'Clubs',
+        titleIcon: 'BriefcaseIcon',
+        titleIconClassName: styles.businessIcon,
+        onActionClick: () => ({}),
+        chipConfig: {
+          colorPalette: {
+            backgroundColour: 'white',
+            borderColour: 'errorMain',
+            textColour: 'errorMain',
+          },
+          text: 'Coming soon',
+        },
+        classNames: 'bg-uiBg',
+      }
+    );
+  } else {
+    dashboardItems.push(
+      {
+        title: 'Classroom',
+        titleIcon: 'AcademicCapIcon',
+        titleIconClassName: styles.classRoomIcon,
+        onActionClick: () => {
+          goToClassroom();
+        },
+      },
+      {
+        title: 'Business',
+        titleIcon: 'AcademicCapIcon',
+        titleIconClassName: styles.businessIcon,
+        onActionClick: () => ({}),
+        chipConfig: {
+          colorPalette: {
+            backgroundColour: 'white',
+            borderColour: 'errorMain',
+            textColour: 'errorMain',
+          },
+          text: 'Coming soon',
+        },
+      }
+    );
+  }
 
   useEffect(() => {
     if (shouldUserSync) {
@@ -144,7 +235,11 @@ export const Dashboard: React.FC = () => {
   }, [shouldUserSync]);
 
   const goToProfile = () => {
-    history.push(ROUTES.PRACTITIONER.PROFILE.ROOT);
+    const profileRoute = userData?.roles?.some((role) => role.name === 'Coach')
+      ? ROUTES.COACH.PROFILE.ROOT
+      : ROUTES.PRACTITIONER.PROFILE.ROOT;
+
+    history.push(profileRoute);
   };
 
   const goToClassroom = () => {
@@ -168,7 +263,7 @@ export const Dashboard: React.FC = () => {
   const showCompleteProfileBlockingDialog = () => {
     dialog({
       blocking: true,
-      position: DialogPosition.Bottom,
+      position: DialogPosition.Top,
       render: (onSubmit, onCancel) => {
         return (
           <ActionModal
@@ -211,7 +306,7 @@ export const Dashboard: React.FC = () => {
 
   return (
     <BannerWrapper
-      backgroundColour={'primary'}
+      backgroundColour={'white'}
       backgroundImageColour={'primary'}
       avatar={
         userProfilePicture?.file ? (
@@ -223,9 +318,9 @@ export const Dashboard: React.FC = () => {
         ) : (
           <UserAvatar
             size="sm-md"
-            color="transparent"
+            color="secondary"
             displayBorder
-            borderColour="white"
+            borderColour="secondary"
           />
         )
       }
@@ -257,38 +352,12 @@ export const Dashboard: React.FC = () => {
         type={'h1'}
         color="white"
         text={`Welcome ${userData && userData?.firstName}`}
-        lineHeight={'none'}
         className={styles.welcomeText}
       />
 
-      <div
-        className={`${!classroom ? styles.wrapper : 'bg-white rounded p-0.5'}`}
-      >
+      <div className={`${!classroom ? styles.wrapper : ''}`}>
         <DashboardItems
-          listItems={[
-            {
-              title: 'Classroom',
-              titleIcon: 'AcademicCapIcon',
-              titleIconClassName: styles.classRoomIcon,
-              onActionClick: () => {
-                goToClassroom();
-              },
-            },
-            {
-              title: 'Business',
-              titleIcon: 'AcademicCapIcon',
-              titleIconClassName: styles.businessIcon,
-              onActionClick: () => ({}),
-              chipConfig: {
-                colorPalette: {
-                  backgroundColour: 'white',
-                  borderColour: 'errorMain',
-                  textColour: 'errorMain',
-                },
-                text: 'Coming soon',
-              },
-            },
-          ]}
+          listItems={dashboardItems}
           notification={dashboardNotification}
         />
       </div>
