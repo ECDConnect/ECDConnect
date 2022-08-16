@@ -9,6 +9,7 @@ import {
   ChildBasicInfoModel,
 } from '@schemas/child/child-registration/child-basic-info';
 import { classroomsSelectors } from '@store/classroom';
+import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 
 export const ChildBasicInfo: React.FC<
   FormComponentProps<ChildBasicInfoModel>
@@ -25,7 +26,10 @@ export const ChildBasicInfo: React.FC<
 
   useEffect(() => {
     if (classrooms && classrooms.length > 0) {
-      setValue('playgroupId', classrooms[0].id ?? '', { shouldValidate: true });
+      const defaultPlaygroup =
+        classrooms.find((c) => c.name === NoPlaygroupClassroomType.name)?.id ||
+        (classrooms[0].id ?? '');
+      setValue('playgroupId', defaultPlaygroup, { shouldValidate: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [classrooms]);

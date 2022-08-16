@@ -67,7 +67,7 @@ const SearchHeader = <T extends {}>({
           <div
             className={`flex flex-col h-full flex-1 overflow-y-auto ${
               alternativeSearchItemRender ? 'px-4 pt-4 pb-24' : ''
-            }  `}
+            }`}
           >
             <Typography
               text={heading}

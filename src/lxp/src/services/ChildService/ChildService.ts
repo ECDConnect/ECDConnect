@@ -23,11 +23,11 @@ class ChildService {
           GetAllChild {
             id
             caregiverId
-            workflowStatusId            
+            workflowStatusId
             insertedDate
             userId
             user {
-              id        
+              id
               firstName
               surname
               email
@@ -37,14 +37,14 @@ class ChildService {
               isActive
               isSouthAfricanCitizen
               verifiedByHomeAffairs
-            }      
-            languageId    
+            }
+            languageId
             allergies
             disabilities
-            otherHealthConditions            
+            otherHealthConditions
             isActive
           }
-        }        
+        }
       `,
     });
 

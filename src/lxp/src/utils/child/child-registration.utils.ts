@@ -125,6 +125,7 @@ export const mapLearnerDto = (
     attendanceReasonId: childInformationForm?.reason?.id,
     otherAttendanceReason: childInformationForm?.otherReason ?? '',
     startedAttendance: new Date().toISOString(),
+    stoppedAttendance: null,
   };
 };
 
