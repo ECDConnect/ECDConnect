@@ -80,13 +80,9 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
     notesSelectors.getNotesByUserId(practitioner?.id.toString())
   );
 
-  const testFunc = () => {
-    navigator.clipboard.readText().then((clipText) => document.querySelector);
-  };
-
-  const onCreatePractitionerNoteBack = () => {
-    setCreatePractitionerdNoteVisible(false);
-  };
+  //   const onCreatePractitionerNoteBack = () => {
+  //     setCreatePractitionerdNoteVisible(false);
+  //   };
 
   return (
     <div className={styles.contentWrapper}>
