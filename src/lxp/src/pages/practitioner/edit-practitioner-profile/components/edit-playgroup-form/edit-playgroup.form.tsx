@@ -54,7 +54,7 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
   const dialog = useDialog();
   const {
     getValues: getPlaygroupFormValues,
-    formState: plagroupsFormState,
+    formState: playgroupsFormState,
     setValue: setPlaygroupFormValue,
     register: playgroupFormRegister,
     reset: resetPlaygroupFormValue,
@@ -71,12 +71,15 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
     defaultValue: playgroup,
   });
 
-  const { isValid } = plagroupsFormState;
+  const {
+    isValid,
+    errors: { name: playgroupName },
+  } = playgroupsFormState;
   const isFormValid = () => {
     return isValid && meetingDays && meetingDays?.length > 1;
   };
 
-  const getCannotDeletePlagroupRender = (submit: () => void) => {
+  const getCannotDeletePlaygroupRender = (submit: () => void) => {
     return (
       <ActionModal
         title={`Cannot delete this playgroup`}
@@ -156,7 +159,7 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
     if (!canDeleteGroup) {
       dialogOptionModel = {
         ...dialogOptionModel,
-        render: getCannotDeletePlagroupRender,
+        render: getCannotDeletePlaygroupRender,
       };
       displayDialog(dialogOptionModel);
       return;
@@ -215,6 +218,11 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
         register={playgroupFormRegister}
         nameProp={'name'}
         placeholder={'E.g. Tuesday Group'}
+      />
+      <Typography
+        text={playgroupName?.message || ''}
+        className="text-errorMain -mb-4"
+        type={'small'}
       />
       <div className="mt-5">
         <span className={styles.label}>{`When does ${

@@ -341,7 +341,7 @@ export const upsertClassroomGroupLearners = createAsyncThunk<
               OtherAttendanceReason: x.otherAttendanceReason,
               StartedAttendance: x.startedAttendance,
               StoppedAttendance: x.stoppedAttendance,
-              IsActive: x.isActive === false ? false : true,
+              IsActive: Boolean(x.isActive),
             };
 
             return await new ClassroomGroupLearnerService(

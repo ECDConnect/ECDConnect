@@ -8,6 +8,7 @@ import { authActions } from '@store/auth';
 import { childrenThunkActions } from '@store/children';
 import { CaregiverChildRegistration } from '../caregiver-child-registration/caregiver-child-registration';
 import { PractitionerChildRegistration } from '../practitioner-child-registration/practitioner-child-registration';
+import ROUTES from '@routes/routes';
 
 export const ChildRegistrationLanding: React.FC = () => {
   const location = useLocation();
@@ -37,7 +38,7 @@ export const ChildRegistrationLanding: React.FC = () => {
                 text: 'Ok',
                 textColour: 'white',
                 onClick: () => {
-                  history.push('/');
+                  history.push(ROUTES.ROOT);
                   onClose();
                 },
               },

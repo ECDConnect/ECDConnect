@@ -80,9 +80,10 @@ export const getLearnerClassGroupId = (userId?: string) =>
     (state: RootState) => state.classroomData.classroomGroupLearners,
     (classroomGroupLearners: LearnerDto[] | undefined) => {
       if (!classroomGroupLearners || !userId) return;
-
+      // TODO: this method filters out learners using stoppedAttendance date.
       const currentLearner = classroomGroupLearners.find(
-        (learner) => learner.userId === userId && !learner.stoppedAttendance
+        (learner) =>
+          learner.userId === userId && learner.stoppedAttendance == null
       );
       return currentLearner?.classroomGroupId;
     }

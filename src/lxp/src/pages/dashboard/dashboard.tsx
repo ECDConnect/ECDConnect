@@ -95,7 +95,12 @@ export const Dashboard: React.FC = () => {
   }, []);
 
   const navigation: (NavigationRouteItem | NavigationDropdown)[] = [
-    { name: NavigationTypes.Home, href: '/', icon: 'HomeIcon', current: true },
+    {
+      name: NavigationTypes.Home,
+      href: ROUTES.ROOT,
+      icon: 'HomeIcon',
+      current: true,
+    },
     {
       name: NavigationTypes.ClientFolders,
       icon: 'AcademicCapIcon',

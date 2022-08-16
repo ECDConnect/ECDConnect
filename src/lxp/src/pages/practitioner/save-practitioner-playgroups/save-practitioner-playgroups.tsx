@@ -18,6 +18,7 @@ import {
 import { staticDataSelectors } from '@store/static-data';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useStoreSetup } from '@hooks/useStoreSetup';
+import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 
 export const EditPlaygroups: React.FC = () => {
   const location = useLocation<EditPlaygroupsState>();
@@ -47,8 +48,11 @@ export const EditPlaygroups: React.FC = () => {
   useEffect(() => {
     if (classroomGroups && classProgrammes) {
       const groupedItems = [] as EditPlaygroupModel[];
+      const _filteredClassroomGroups = classroomGroups.filter(
+        (x) => x.name !== NoPlaygroupClassroomType.name
+      );
 
-      classroomGroups.forEach((groupedItem) => {
+      _filteredClassroomGroups.forEach((groupedItem) => {
         const filteredClassProgrammes = classProgrammes?.filter(
           (x) => x.classroomGroupId === groupedItem.id
         );

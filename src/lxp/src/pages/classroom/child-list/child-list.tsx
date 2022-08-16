@@ -14,6 +14,7 @@ import {
   SearchSortOptions,
   UserAlertListDataItem,
 } from '@ecdlink/ui';
+import { isBefore } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
@@ -30,6 +31,47 @@ import { WorkflowStatusEnum } from '@ecdlink/graphql';
 import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { IconInformationIndicator } from '../programme-planning/components/icon-information-indicator/icon-information-indicator';
+import ROUTES from '@/routes/routes';
+import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
+
+const filterInfo: FilterInfo = {
+  filterName: 'Playgroup',
+  filterHint: 'You can select multiple playgroups',
+};
+
+const sortOptions: SearchSortOptions = {
+  columns: [
+    {
+      id: '1',
+      label: 'Priority',
+      value: 'priority',
+    },
+    {
+      id: '2',
+      label: 'First Name',
+      value: 'firstName',
+    },
+    {
+      id: '3',
+      label: 'Surname',
+      value: 'surname',
+    },
+    {
+      id: '4',
+      label: 'Age',
+      value: 'age',
+    },
+    {
+      id: '5',
+      label: 'Attendance',
+      value: 'attendance',
+    },
+  ],
+  defaultSort: {
+    column: 'priority',
+    dir: 'asc',
+  },
+};
 
 export const ChildList: React.FC<ComponentBaseProps> = () => {
   const { isOnline } = useOnlineStatus();
@@ -68,53 +110,21 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
     SearchDropDownOption<string>[]
   >([]);
 
-  const filterInfo: FilterInfo = {
-    filterName: 'Playgroup',
-    filterHint: 'You can select multiple playgroups',
-  };
-
-  const sortOptions: SearchSortOptions = {
-    columns: [
-      {
-        id: '1',
-        label: 'Priority',
-        value: 'priority',
-      },
-      {
-        id: '2',
-        label: 'First Name',
-        value: 'firstName',
-      },
-      {
-        id: '3',
-        label: 'Surname',
-        value: 'surname',
-      },
-      {
-        id: '4',
-        label: 'Age',
-        value: 'age',
-      },
-      {
-        id: '5',
-        label: 'Attendance',
-        value: 'attendance',
-      },
-    ],
-    defaultSort: {
-      column: 'priority',
-      dir: 'asc',
-    },
-  };
-
   useEffect(() => {
     if (classroomGroups && classroomGroupLearners) {
       const groupedItems: SearchDropDownOption<string>[] = classroomGroups.map(
-        (groupedItem, idx) => ({
-          id: idx.toString(),
-          label: groupedItem.name,
-          value: groupedItem.id ?? '',
-        })
+        (groupedItem, idx) =>
+          groupedItem.name === NoPlaygroupClassroomType.name
+            ? {
+                id: idx.toString(),
+                label: NoPlaygroupClassroomType.title,
+                value: groupedItem.id ?? '',
+              }
+            : {
+                id: idx.toString(),
+                label: groupedItem.name,
+                value: groupedItem.id ?? '',
+              }
       );
 
       setUpdatedPlaygroups(groupedItems);
@@ -128,7 +138,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
 
       for (const child of children) {
         const learner = classroomGroupLearners.find(
-          (x) => x.userId === child.userId
+          (x) => x.userId === child.userId && x.stoppedAttendance == null
         );
         childListItem.push(mapUserListDataItem(child, learner));
       }
@@ -140,7 +150,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
   }, [classroomGroupLearners, children, pendingStatusId]);
 
   const onChildListItemAction = (childId: string) => {
-    history.push('child-profile', {
+    history.push(ROUTES.CHILD_PROFILE, {
       childId,
     });
   };
@@ -155,6 +165,8 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
           const learner = classroomGroupLearners.find(
             (x) =>
               x.userId === child.userId &&
+              /* ensures only children in a playgroup are shown and not those who stopped attending or changed playgroups */
+              x.stoppedAttendance == null &&
               selectedClassrooms.some((sc) => sc === x.classroomGroupId)
           );
           if (learner) {
@@ -163,8 +175,9 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
         }
       } else {
         for (const child of children) {
+          // TODO: change to display all children
           const learner = classroomGroupLearners.find(
-            (x) => x.userId === child.userId
+            (x) => x.userId === child.userId && x.stoppedAttendance == null
           );
           if (learner) {
             childListItem.push(mapUserListDataItem(child, learner));
@@ -188,7 +201,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
           (x) => x.userId === a.userId
         );
         const childLearnerTwo = classroomGroupLearners?.find(
-          (x) => x.userId === a.userId
+          (x) => x.userId === b.userId
         );
 
         switch (column) {
@@ -230,21 +243,31 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
             return childAlertOne.severity > childAlertTwo.severity ? 1 : -1;
           }
           case 'surname':
-            return (childUserOne !== undefined && childUserOne?.surname) >
-              (childUserTwo !== undefined && childUserTwo.surname)
+            return (childUserOne !== undefined &&
+              childUserOne?.surname.toUpperCase()) >
+              (childUserTwo !== undefined && childUserTwo.surname.toUpperCase())
               ? 1
               : -1;
           case 'age':
-            return (childUserOne !== undefined &&
-              childUserOne?.dateOfBirth !== undefined) >
-              (childUserTwo !== undefined &&
-                childUserTwo?.dateOfBirth !== undefined)
-              ? 1
-              : -1;
+            if (
+              childUserOne !== undefined &&
+              childUserOne?.dateOfBirth !== undefined &&
+              childUserTwo !== undefined &&
+              childUserTwo?.dateOfBirth !== undefined
+            ) {
+              return isBefore(
+                new Date(childUserOne.dateOfBirth),
+                new Date(childUserTwo.dateOfBirth)
+              )
+                ? 1
+                : -1;
+            } else return 1;
           case 'firstName':
           default:
-            return (childUserOne !== undefined && childUserOne.firstName) >
-              (childUserTwo !== undefined && childUserTwo.firstName)
+            return (childUserOne !== undefined &&
+              childUserOne.firstName.toUpperCase()) >
+              (childUserTwo !== undefined &&
+                childUserTwo.firstName.toUpperCase())
               ? 1
               : -1;
         }
@@ -290,9 +313,9 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
       profileDataUrl: childUser?.profileImageUrl,
       title: `${childUser?.firstName} ${childUser?.surname}`,
       subTitle: childAlert?.message ?? '',
-      profileText: `${childUser?.firstName && childUser?.firstName[0]}${
-        childUser?.surname && childUser?.surname[0]
-      }`,
+      profileText: `${
+        childUser?.firstName && childUser?.firstName[0]?.toUpperCase()
+      }${childUser?.surname && childUser?.surname[0]?.toUpperCase()}`,
       alertSeverity: childAlert.status as AlertSeverityType,
       avatarColor: getAvatarColor() || '',
       onActionClick: () => {
@@ -311,7 +334,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
 
   const registerNewChild = () => {
     if (isOnline) {
-      history.push('/child-registration-landing');
+      history.push(ROUTES.CHILD_REGISTRATION_LANDING);
     } else {
       showOnlineOnly();
     }
@@ -371,7 +394,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
             selectedOptions={activeSort}
             onChange={(selectedColumns) => {
               setActiveSort(selectedColumns);
-              onSortItemsChanges(selectedColumns[0].value);
+              onSortItemsChanges(selectedColumns[0]?.value);
             }}
             placeholder={'Sort By'}
             multiple={false}
@@ -396,7 +419,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
             listItems={childUserListData}
             type={'UserAlertList'}
             onScroll={(scrollTop: number) => handleListScroll(scrollTop)}
-          ></StackedList>
+          />
         ) : null}
         <FADButton
           title={'Add a child'}

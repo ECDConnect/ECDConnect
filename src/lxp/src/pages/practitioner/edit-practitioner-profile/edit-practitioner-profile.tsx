@@ -37,6 +37,7 @@ import {
 import { useStoreSetup } from '@hooks/useStoreSetup';
 import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
 import ROUTES from '@routes/routes';
+import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 import EditMultiplePractitioners from './components/edit-multiple-practitioners/edit-multiple-practitioners';
 import { ReactComponent as Cebisa } from '@/assets/cebisa.svg';
 import { SetupClasses } from './components/setup-classes/setup-classes';
@@ -113,6 +114,25 @@ export const EditPractitionerProfile: React.FC = () => {
 
       if (programme) {
         createClassroom(programme, classroomId);
+
+        const playGroupProgrammeType = programmeTypes.find(
+          (x) => x.enumId === ProgrammeTypeEnum.Playgroup
+        );
+
+        if (programme?.type === playGroupProgrammeType?.id && classroomId) {
+          const unsureClassProgrammeInputModel: ClassroomGroupDto = {
+            id: newGuid(),
+            classroomId: classroomId,
+            isActive: true,
+            programmeTypeId: programme?.type,
+            name: NoPlaygroupClassroomType.name,
+          };
+          appDispatch(
+            classroomsActions.createClassroomGroup(
+              unsureClassProgrammeInputModel
+            )
+          );
+        }
       }
 
       // Update classroom data

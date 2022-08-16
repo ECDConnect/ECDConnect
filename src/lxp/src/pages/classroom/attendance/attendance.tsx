@@ -21,13 +21,19 @@ import AttendanceList from './components/attendance-list/attendance-list';
 import { AttendanceReport } from './components/attendance-report/attendance-report';
 import { AttendanceSummary } from './components/attendance-summary/attendance-summary';
 import { isWorkingDay } from '@/utils/common/date.utils';
+import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 
 export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   const [attendanceComponentType, setAttendanceComponentType] =
     useState<AttendanceComponentType>();
 
   const classroom = useSelector(classroomsSelectors.getClassroom);
-  const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
+  const allClassroomGroups = useSelector(
+    classroomsSelectors.getClassroomGroups
+  );
+  const classroomGroups = allClassroomGroups.filter(
+    (x) => x.name !== NoPlaygroupClassroomType.name
+  );
   const children = useSelector(childrenSelectors.getChildren);
   const classProgrammes = useSelector(classroomsSelectors.getClassProgrammes);
   const publicHolidays = useSelector(staticDataSelectors.getHolidays);
