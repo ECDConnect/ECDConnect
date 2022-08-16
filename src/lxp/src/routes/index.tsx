@@ -50,6 +50,7 @@ import { CoachPractitionerClassroom } from '@/pages/coach/coach-practitioner-cla
 import CoachAccount from '@coach-p/coach-account/coach-account';
 
 import ROUTES from './routes';
+import CoachPractitionerChildList from '@/pages/coach/coach-practitioner-child-list/coach-practitioner-child-list';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -235,6 +236,11 @@ const AuthRoutes: React.FC = () => {
         exact
         path={ROUTES.COACH.PRACTITIONER_CLASSROOM}
         component={CoachPractitionerClassroom}
+      />
+      <Route
+        exact
+        path={ROUTES.COACH.PRACTITIONER_CHILD_LIST}
+        component={CoachPractitionerChildList}
       />
       <Route exact path={ROUTES.COACH.ABOUT.ADDRESS} component={CoachAddress} />
 

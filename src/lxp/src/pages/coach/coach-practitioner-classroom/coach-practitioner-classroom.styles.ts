@@ -18,9 +18,9 @@ export const buttonIconStyle = 'h-5 w-5 text-primary mr-1';
 export const infoWrapper =
   'mt-2 w-11/12 mx-auto flex justify-between items-center';
 export const contactButtons = 'flex justify-center mt-4';
-export const stackedList = 'pb-180 h-1/2 w-11/12';
+export const stackedList = 'pb-4 h-1/2 w-full';
 export const wrapper = 'flex flex-row justify-start items-center p-4';
-export const fullWrapper =
-  'flex flex-col justify-start items-start p-4 bg-uiMid w-11/12';
-export const iconWrapper =
-  'h-12 w-12 mr-4 rounded-full justify-center items-center flex';
+export const registeredChildrenCard =
+  'mt-2 w-11/12 mx-auto flex justify-between items-center bg-uiMid';
+export const attendanceCard = 'mt-4 w-11/12 mx-auto bg-uiBg';
+export const perAgeCard = 'mt-4 mb-4 w-11/12 mx-auto bg-uiBg';

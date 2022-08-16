@@ -1,14 +1,8 @@
-import {
-  Button,
-  StackedList,
-  Typography,
-  classNames,
-  renderIcon,
-  BannerWrapper,
-} from '@ecdlink/ui';
+import { StackedList, BannerWrapper } from '@ecdlink/ui';
 import { format } from 'date-fns';
 import { useHistory } from 'react-router-dom';
 import * as styles from './practitioner.styles';
+import ROUTES from '@routes/routes';
 
 // const mockedData = [
 //   {
@@ -88,7 +82,7 @@ export const Practitioners: React.FC = () => {
         title={`SmartStarters`}
         subTitle={format(new Date(), 'dd MMM yyyy')}
         color={'primary'}
-        onBack={history.goBack}
+        onBack={() => history.push(ROUTES.DASHBOARD)}
         // displayOffline={!isOnline}
       >
         {mockedData ? (

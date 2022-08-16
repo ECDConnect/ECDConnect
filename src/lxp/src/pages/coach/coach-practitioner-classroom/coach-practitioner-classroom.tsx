@@ -20,11 +20,6 @@ import { PractitionerProfileRouteState } from './coach-practitioner-classroom.ty
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import * as styles from './coach-practitioner-classroom.styles';
 import ROUTES from '@routes/routes';
-import {
-  ChevronRightIcon,
-  ExclamationCircleIcon,
-  PhoneIcon,
-} from '@heroicons/react/solid';
 // import { CreateNote } from '../components/create-note/create-note';
 import { NoteTypeEnum } from '@ecdlink/graphql';
 import { getLastNoteDate } from '@utils/child/child-profile-utils';
@@ -113,12 +108,16 @@ export const CoachPractitionerClassroom: React.FC = () => {
         color={'primary'}
         size="small"
         renderOverflow={false}
-        onBack={() => history.push(ROUTES.CLASSROOM)}
+        onBack={() =>
+          history.push(ROUTES.COACH.PRACTITIONER_PROFILE_INFO, {
+            practitionerId,
+          })
+        }
         displayOffline={!isOnline}
       ></BannerWrapper>
-      <>
+      <div className="w-full flex flex-wrap justify-center">
         {mockedData ? (
-          <div className="flex justify-center">
+          <div className="flex justify-center w-full">
             <StackedList
               className={styles.stackedList}
               listItems={mockedData}
@@ -126,185 +125,116 @@ export const CoachPractitionerClassroom: React.FC = () => {
             ></StackedList>
           </div>
         ) : null}
-        <Card
-          className={styles.fullWrapper}
-          borderRaduis={'md'}
-          shadowSize={'md'}
-        >
-          <div
-            className={styles.iconWrapper}
-            style={{ backgroundColor: '#808080' }}
-          ></div>
-          <Typography
-            className="mt-2"
-            text={'helloo1'}
-            type="body"
-            weight="bold"
-            lineHeight="snug"
-          />
-
-          <Typography
-            className="mt-2"
-            text={'hello'}
-            type="body"
-            lineHeight="snug"
-          />
-        </Card>
-        <div className={styles.infoWrapper}>
-          <div>
-            <Typography
-              text={'Cellphone number'}
-              type="h5"
-              color="textMid"
-              className={'mt-4'}
-            />
-            <Typography
-              text={practitioner?.phoneNumber}
-              type="h4"
-              color="textDark"
-              className={'mt-1'}
-            />
-          </div>
-          <div>
-            <Button
-              size="small"
-              shape="normal"
-              color="primary"
-              type="outlined"
-              onClick={() => {}}
-            >
-              <Typography type="help" color="primary" text="Edit" />
-              {renderIcon('PencilIcon', styles.buttonIcon)}
-            </Button>
-          </div>
-        </div>
-        <Divider dividerType="dashed" className="my-4" />
-        <div className={styles.infoWrapper}>
-          <div>
-            <Typography
-              text={'Email address'}
-              type="h5"
-              color="textMid"
-              className={'mt-1'}
-            />
-            <Typography
-              text={practitioner?.email}
-              type="h4"
-              color="textDark"
-              className={'mt-1'}
-            />
-          </div>
-          <div>
-            <Button
-              size="small"
-              shape="normal"
-              color="primary"
-              type="outlined"
-              onClick={() => {}}
-            >
-              <Typography type="help" color="primary" text="Edit" />
-              {renderIcon('PencilIcon', styles.buttonIcon)}
-            </Button>
-          </div>
-        </div>
-        <Divider dividerType="dashed" className="my-4" />
-        <div className={styles.infoWrapper}>
-          <div>
-            <Typography
-              text={'Your notes'}
-              type="h5"
-              color="textMid"
-              className={'mt-1'}
-            />
-            {notes.length > 0 ? (
+        <>
+          <Card
+            className={styles.registeredChildrenCard}
+            borderRaduis={'xl'}
+            shadowSize={'md'}
+          >
+            <div className="ml-4">
+              <div className="mt-4 mb-3 text-4xl font-semibold text-black">
+                30
+              </div>
               <Typography
-                text={getLastNoteDate(notes)}
-                type="h4"
-                color="textDark"
-                className={'mt-1'}
+                text={'Registered children'}
+                type="body"
+                className="mb-4"
               />
-            ) : (
-              <Typography
-                text={'Add a note'}
-                type="h4"
-                color="textDark"
-                className={'mt-1'}
-              />
-            )}
-          </div>
-          <div>
-            {notes?.length > 0 ? (
+            </div>
+            <div className="mr-4 mt-8 h-full">
               <Button
-                size="small"
-                shape="normal"
-                color="primary"
+                color="textMid"
                 type="filled"
-                onClick={
-                  () => {}
-                  //   history.push(ROUTES.PRACTITIONER_NOTES, { practitionerId })
+                size="small"
+                onClick={() =>
+                  history.push(ROUTES.COACH.PRACTITIONER_CHILD_LIST, {
+                    practitionerId,
+                  })
                 }
               >
-                {renderIcon('EyeIcon', styles.buttonIcon)}
-                <Typography
-                  type="help"
-                  color="white"
-                  text="View"
-                  className="ml-1"
-                />
+                {renderIcon('EyeIcon', 'w-5 h-5 text-white mr-1')}
+                <Typography color="white" text={'View all'} type="small" />
               </Button>
-            ) : (
-              <Button
-                size="small"
-                shape="normal"
-                color="primary"
-                type="filled"
-                onClick={() => setCreatePractitionerdNoteVisible(true)}
-              >
-                {renderIcon('PlusIcon', styles.buttonIcon)}
-                <Typography
-                  type="help"
-                  color="white"
-                  text="Add"
-                  className="ml-1"
-                />
-              </Button>
-            )}
-          </div>
-          <Dialog
-            fullScreen
-            visible={createPractitionerNoteVisible}
-            position={DialogPosition.Middle}
+            </div>
+          </Card>
+          <Card
+            className={styles.attendanceCard}
+            borderRaduis={'xl'}
+            shadowSize={'md'}
           >
-            {/* <div className={styles.dialogContent}>
-              <CreateNote
-                userId={practitioner?.id.toString() || ''}
-                noteType={NoteTypeEnum.Unknown}
-                titleText={`Add a note to ${practitioner?.title} profile`}
-                onBack={() => onCreatePractitionerNoteBack()}
-                onCreated={() => onCreatePractitionerNoteBack()}
+            <div className="ml-4 mt-4">
+              <Typography
+                text={'Attendance: June 2021'}
+                type="body"
+                className="mb-4"
               />
-            </div> */}
-          </Dialog>
-        </div>
-        <Divider dividerType="dashed" className="my-4" />
-        <div className="flex justify-center mx-auto mb-4">
-          <Button
-            onClick={() => {}}
-            className="w-11/12 rounded-2xl"
-            size="small"
-            color="primary"
-            type="filled"
+            </div>
+            <div className="flex justify-between">
+              <div className="ml-4">
+                <div className="mt-4 mb-3 text-4xl font-semibold text-successMain">
+                  45%
+                </div>
+                <Typography
+                  text={'Little Stars'}
+                  type="body"
+                  className="mb-4"
+                />
+              </div>
+              <div className="mr-12">
+                <div className="mt-4 mb-3 text-4xl font-semibold text-errorMain">
+                  85%
+                </div>
+                <Typography text={'Dolphins'} type="body" className="mb-4" />
+              </div>
+            </div>
+          </Card>
+          <Card
+            className={styles.perAgeCard}
+            borderRaduis={'xl'}
+            shadowSize={'md'}
           >
-            {renderIcon('TrashIcon', classNames('h-5 w-5 text-white'))}
-            <Typography
-              type="h5"
-              className="ml-2"
-              text={`Remove practitioner`}
-              color="white"
-            />
-          </Button>
-        </div>
-      </>
+            <div className="ml-4 mt-4">
+              <Typography
+                text={'Children per age group'}
+                type="body"
+                className="mb-4"
+              />
+            </div>
+            <div className="mx-6">
+              <div className="flex justify-between">
+                <div>
+                  <div className="mt-4 mb-3 text-4xl font-semibold text-black">
+                    1
+                  </div>
+                  <Typography text={'< 18 mths'} type="body" className="mb-4" />
+                </div>
+                <div>
+                  <div className="mt-4 mb-3 text-4xl font-semibold text-black">
+                    9
+                  </div>
+                  <Typography
+                    text={'18 mths - 3 years'}
+                    type="body"
+                    className="mb-4"
+                  />
+                </div>
+              </div>
+              <div>
+                <div>
+                  <div className="mt-4 mb-3 text-4xl font-semibold text-black">
+                    3
+                  </div>
+                  <Typography
+                    text={'3 - 5 years'}
+                    type="body"
+                    className="mb-4"
+                  />
+                </div>
+              </div>
+            </div>
+          </Card>
+        </>
+      </div>
     </div>
   );
 };
