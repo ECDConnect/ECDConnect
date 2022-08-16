@@ -44,6 +44,9 @@ import { CoachProfile } from '@coach-p/coach-profile/coach-profile';
 import { CoachAbout } from '@coach-p/coach-about/coach-about';
 import { CoachSignature } from '@/pages/coach/coach-about/components/coach-signature/coach-signature';
 import { CoachAddress } from '@coach-p/coach-about/components/coach-address/coach-address';
+import { Practitioners } from '@coach-p/practitioners/practitioners';
+import { CoachPractitionerProfileInfo } from '@/pages/coach/practitioner-profile-info/practitioner-profile-info';
+import { CoachPractitionerClassroom } from '@/pages/coach/coach-practitioner-classroom/coach-practitioner-classroom';
 import CoachAccount from '@coach-p/coach-account/coach-account';
 
 import ROUTES from './routes';
@@ -217,6 +220,21 @@ const AuthRoutes: React.FC = () => {
         exact
         path={ROUTES.COACH.ABOUT.SIGNATURE}
         component={CoachSignature}
+      />
+      <Route
+        exact
+        path={ROUTES.COACH.PRACTITIONERS}
+        component={Practitioners}
+      />
+      <Route
+        exact
+        path={ROUTES.COACH.PRACTITIONER_PROFILE_INFO}
+        component={CoachPractitionerProfileInfo}
+      />
+      <Route
+        exact
+        path={ROUTES.COACH.PRACTITIONER_CLASSROOM}
+        component={CoachPractitionerClassroom}
       />
       <Route exact path={ROUTES.COACH.ABOUT.ADDRESS} component={CoachAddress} />
 

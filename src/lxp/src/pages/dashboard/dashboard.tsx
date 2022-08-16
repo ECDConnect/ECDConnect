@@ -155,7 +155,7 @@ export const Dashboard: React.FC = () => {
         title: 'Smartstarters',
         titleIcon: 'AcademicCapIcon',
         titleIconClassName: styles.smartStarterIcon,
-        onActionClick: () => ({}),
+        onActionClick: () => history.push(ROUTES.COACH.PRACTITIONERS),
         classNames: 'bg-uiBg',
       },
       {

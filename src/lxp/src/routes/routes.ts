@@ -61,6 +61,9 @@ const ROUTES = {
       SIGNATURE: '/signature',
       ADDRESS: '/address',
     }),
+    PRACTITIONERS: '/practitioners',
+    PRACTITIONER_PROFILE_INFO: '/practitioner-profile-info',
+    PRACTITIONER_CLASSROOM: '/practitioner-classroom',
     ACCOUNT: '/account',
     PROFILE: addPrefix('/profile', {
       EDIT: '/edit',
