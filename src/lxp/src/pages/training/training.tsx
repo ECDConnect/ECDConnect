@@ -27,7 +27,7 @@ export const Training: React.FC = () => {
     } else {
       return (
         <iframe
-          src={`http://moodle.ecdlink.co.za/?service=moodle_mobile_app`}
+          src={`https://moodle.ecdlink.co.za/?service=moodle_mobile_app`}
           title="ECD Moodle"
           height="800px"
           width="90%"
