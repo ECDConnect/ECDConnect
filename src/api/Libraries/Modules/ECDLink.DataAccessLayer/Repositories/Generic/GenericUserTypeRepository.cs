@@ -125,13 +125,20 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                 return default;
             }
 
-            if (!string.IsNullOrWhiteSpace(castRecord.Hierarchy))
+            //if user is in a higher admin role (Principal, Practitioner, Coach, Franchisor, then skip the check as they need to be able to see anyone anywhere due to the shift in roles of Milestone 1.
+            var user = _userManager.FindByIdAsync(castRecord.UserId).Result;
+            var roles = _userManager.GetRolesAsync(user).Result;
+            var higherRoles = new[] { Roles.PRACTITIONER, Roles.COACH, Roles.ADMINISTRATOR, Roles.PRINCIPAL, Roles.FRANCHISOR };//
+            bool isHigherRole = higherRoles.Any(roles.Contains); //roles.contains(Roles.ADMINISTRATOR);
+            if (!isHigherRole)
             {
-                var hierarchy = _hierarchyEngine.GetUserHierarchy(_userId);
-
-                if (!castRecord.Hierarchy.StartsWith(hierarchy))
+                if (!string.IsNullOrWhiteSpace(castRecord.Hierarchy))
                 {
-                    return default;
+                    var hierarchy = _hierarchyEngine.GetUserHierarchy(_userId);
+                    if (!castRecord.Hierarchy.StartsWith(hierarchy))
+                    {
+                        return default;
+                    }
                 }
             }
 

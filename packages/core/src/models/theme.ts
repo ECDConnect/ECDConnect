@@ -20,8 +20,14 @@ export interface ThemeFontsModel {
 
 export interface ThemeColorsModel {
   primary: string;
+  primaryAccent1: string;
+  primaryAccent2: string;
   secondary: string;
+  secondaryAccent1: string;
+  secondaryAccent2: string;
   tertiary: string;
+  tertiaryAccent1: string;
+  tertiaryAccent2: string;
   textDark: string;
   textMid: string;
   textLight: string;
@@ -29,6 +35,7 @@ export interface ThemeColorsModel {
   uiMid: string;
   uiLight: string;
   uiBg: string;
+  modalBg: string;
   errorMain: string;
   errorDark: string;
   errorBg: string;

@@ -21,6 +21,7 @@ const ROUTES = {
   }),
   DASHBOARD: '/dashboard',
   CLASSROOM: '/classroom',
+  TRAINING: '/training',
   CHILD: addPrefix('/child', {
     INFORMATION: addPrefix('/information', {
       EDIT: '/edit',
