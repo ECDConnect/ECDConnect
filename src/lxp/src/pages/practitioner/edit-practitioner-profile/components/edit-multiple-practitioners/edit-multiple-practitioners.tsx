@@ -56,7 +56,6 @@ export default function EditMultiplePractitioners({
   ]);
 
   useEffect(() => {
-    console.log({ practitionersForPrincipal });
     if (practitionersForPrincipal?.length) {
       practitionersForPrincipal.forEach(
         ({ firstName, surname, id, idNumber }) => {
@@ -243,6 +242,5 @@ export default function EditMultiplePractitioners({
         );
     }
   };
-
   return renderPage(currentPage);
 }
