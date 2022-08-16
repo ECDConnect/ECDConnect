@@ -119,18 +119,19 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
              [Service] IGenericRepositoryFactory repoFactory,
              string userId)
         {
-             using var scope = dbFactory.CreateDbContext();
+            using var scope = dbFactory.CreateDbContext();
             using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            Practitioner practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId.Equals(userId));
-            if (practitioner != null)
+            List<Practitioner> practitioners = practitionerRepo.GetAll().Where(x => x.UserId.Equals(userId)).ToList();
+            Practitioner practitionerToPromote = new Practitioner();
+            if (practitioners.Count > 0)
             {
-                practitioner.IsPrincipal = true;
-                var updateResult = practitionerRepo.Update(practitioner);
+                practitionerToPromote = practitioners.FirstOrDefault();
+                practitionerToPromote.IsPrincipal = true;
+                var updateResult = practitionerRepo.Update(practitionerToPromote);
             }
-
-            return practitioner;
+            return practitionerToPromote;
         }
 
         public Practitioner DemotePractitionerAsPrincipal([Service] IHttpContextAccessor contextAccessor,
@@ -143,14 +144,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            Practitioner practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId.Equals(userId));
-            if (practitioner != null)
+            List<Practitioner> practitioners = practitionerRepo.GetAll().Where(x => x.UserId.Equals(userId)).ToList();
+            Practitioner practitionerToDemote = new Practitioner();
+            if (practitioners.Count > 0)
+
             {
-                practitioner.IsPrincipal = false;
-                var updateResult = practitionerRepo.Update(practitioner);
+                practitionerToDemote.IsPrincipal = false;
+                var updateResult = practitionerRepo.Update(practitionerToDemote);
             }
 
-            return practitioner;
+            return practitionerToDemote;
         }
 
         
