@@ -44,7 +44,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         }
 
         public Practitioner AddPractitionerToCoach([Service] IHttpContextAccessor contextAccessor,
-            [Service] UserManager<ApplicationUser> userManager,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
             string practitionerId,
@@ -67,8 +66,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return practitioner;
         }
 
-        public Practitioner DeletePractitionerForCoach([Service] IHttpContextAccessor contextAccessor,
-            [Service] UserManager<ApplicationUser> userManager,
+        public Practitioner DeletePractitionerForCoach([Service] IHttpContextAccessor contextAccessor,            
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
             string practitionerId, string coachId)
@@ -77,8 +75,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             //find the practitioner
             using var scope = dbFactory.CreateDbContext();
             using var dbContextTransaction = scope.Database.BeginTransaction();
-            var userId = contextAccessor.HttpContext.GetUser().Id;
-            var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: userId);
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
             Practitioner practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId.Equals(practitionerId));
             if (practitioner != null)
             {
@@ -89,7 +87,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return practitioner;
         }
 
-        public Coach DeletCoachForFranchisor([Service] IHttpContextAccessor contextAccessor,
+        public Coach DeleteCoachForFranchisor([Service] IHttpContextAccessor contextAccessor,
             [Service] UserManager<ApplicationUser> userManager,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
@@ -99,8 +97,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             //find the practitioner
             using var scope = dbFactory.CreateDbContext();
             using var dbContextTransaction = scope.Database.BeginTransaction();
-            var userId = contextAccessor.HttpContext.GetUser().Id;
-            var dbRepo = repoFactory.CreateRepository<Coach>(userContext: userId);
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var dbRepo = repoFactory.CreateRepository<Coach>(userContext: uId);
             Coach coach = new CoachQueryExtension().GetCoachByUserId(contextAccessor, dbFactory, repoFactory, coachId);
             coach.FranchisorId = null;
             var updateResult = dbRepo.Update(coach);
