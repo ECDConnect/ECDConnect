@@ -4,27 +4,20 @@ import { useTheme } from '@ecdlink/core';
 import {
   BannerWrapper,
   Button,
-  classNames,
-  Dialog,
-  DialogPosition,
-  Divider,
-  ProfileAvatar,
   renderIcon,
-  StatusChip,
   Typography,
   StackedList,
   Card,
 } from '@ecdlink/ui';
-import { getLogo, LogoSvgs } from '@utils/common/svg.utils';
 import { PractitionerProfileRouteState } from './coach-practitioner-classroom.types';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import * as styles from './coach-practitioner-classroom.styles';
 import ROUTES from '@routes/routes';
 // import { CreateNote } from '../components/create-note/create-note';
-import { NoteTypeEnum } from '@ecdlink/graphql';
-import { getLastNoteDate } from '@utils/child/child-profile-utils';
-import { notesSelectors } from '@store/notes';
-import { useSelector } from 'react-redux';
+// import { NoteTypeEnum } from '@ecdlink/graphql';
+// import { getLastNoteDate } from '@utils/child/child-profile-utils';
+// import { notesSelectors } from '@store/notes';
+// import { useSelector } from 'react-redux';
 
 export const CoachPractitionerClassroom: React.FC = () => {
   const mockedData = [
@@ -69,36 +62,36 @@ export const CoachPractitionerClassroom: React.FC = () => {
   );
   const { theme } = useTheme();
 
-  const handleClick = (practitionerId: number) => {
-    history.push('practitioner-profile-info', {
-      practitionerId,
-    });
-  };
+  // const handleClick = (practitionerId: number) => {
+  //   history.push('practitioner-profile-info', {
+  //     practitionerId,
+  //   });
+  // };
 
-  const handleChildProfile = () => {
-    history.push('practitioner-child-list');
-  };
-  const [createPractitionerNoteVisible, setCreatePractitionerdNoteVisible] =
-    useState<boolean>(false);
-  const notes = useSelector(
-    notesSelectors.getNotesByUserId(practitioner?.id.toString())
-  );
+  // const handleChildProfile = () => {
+  //   history.push('practitioner-child-list');
+  // };
+  // const [createPractitionerNoteVisible, setCreatePractitionerdNoteVisible] =
+  //   useState<boolean>(false);
+  // const notes = useSelector(
+  //   notesSelectors.getNotesByUserId(practitioner?.id.toString())
+  // );
 
-  const handleProgressSummary = (practitionerId: number) => {
-    history.push('practitioner-progress-summary', {
-      practitionerId,
-    });
-  };
+  // const handleProgressSummary = (practitionerId: number) => {
+  //   history.push('practitioner-progress-summary', {
+  //     practitionerId,
+  //   });
+  // };
 
-  const handleReassignClass = (practitionerId: number) => {
-    history.push('practitioner-reassign-class', {
-      practitionerId,
-    });
-  };
+  // const handleReassignClass = (practitionerId: number) => {
+  //   history.push('practitioner-reassign-class', {
+  //     practitionerId,
+  //   });
+  // };
 
-  const onCreatePractitionerNoteBack = () => {
-    setCreatePractitionerdNoteVisible(false);
-  };
+  // const onCreatePractitionerNoteBack = () => {
+  //   setCreatePractitionerdNoteVisible(false);
+  // };
 
   return (
     <div className={styles.contentWrapper}>

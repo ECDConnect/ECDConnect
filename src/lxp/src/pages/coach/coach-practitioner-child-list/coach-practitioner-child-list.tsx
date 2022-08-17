@@ -5,6 +5,7 @@ import {
   FADButton,
   SearchDropDown,
   StackedList,
+  BannerWrapper,
 } from '@ecdlink/ui';
 import {
   AlertSeverityType,
@@ -16,10 +17,11 @@ import {
 } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import { childrenSelectors } from '@store/children';
 import { classroomsSelectors } from '@store/classroom';
 import { getChildAlertModel } from '@utils/child/child-alert-message-util';
+import { PractitionerProfileRouteState } from './coach-practitioner-child-list.types';
 import SearchHeader from '../../../components/search-header/search-header';
 import * as styles from './coach-practitioner-child-list.styles';
 import { attendanceSelectors } from '@store/attendance';
@@ -29,9 +31,48 @@ import { useStaticData } from '@hooks/useStaticData';
 import { WorkflowStatusEnum } from '@ecdlink/graphql';
 import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
+import ROUTES from '@routes/routes';
 import { IconInformationIndicator } from '../../classroom/programme-planning/components/icon-information-indicator/icon-information-indicator';
 
 export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
+  const mockedData = [
+    {
+      id: 1,
+      title: 'John Buffalo',
+      subTitle: 'Progress report overdue',
+      avatarColor: '#6974af',
+      profileText: 'Jb',
+      alertSeverity: 'error',
+      phoneNumber: '2138471324',
+      email: 'johnbf@gmail.com',
+    },
+    {
+      id: 2,
+      title: 'Pedro Machado',
+      subTitle: 'Progress report overdue',
+      avatarColor: '#6974af',
+      profileText: 'Pm',
+      alertSeverity: 'error',
+      phoneNumber: '23984123490',
+      email: 'pedroM@gmail.com',
+    },
+    {
+      id: 3,
+      title: 'Carlos Vieira',
+      subTitle: 'Progress report overdue',
+      avatarColor: '#6974af',
+      profileText: 'Cv',
+      alertSeverity: 'error',
+      phoneNumber: '314874393',
+      email: 'carlosvieira1234@gmail.com',
+    },
+  ];
+
+  const location = useLocation<PractitionerProfileRouteState>();
+  const practitionerId = location.state.practitionerId;
+  const practitioner = mockedData?.find(
+    (practitioner) => practitioner?.id === practitionerId
+  );
   const { isOnline } = useOnlineStatus();
   const dialog = useDialog();
   const { getWorkflowStatusIdByEnum } = useStaticData();
@@ -336,60 +377,72 @@ export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
 
   return (
     <>
-      {children && children.length > 0 && (
-        <SearchHeader<UserAlertListDataItem>
-          searchItems={filteredChildData || []}
-          onScroll={handleListScroll}
-          onSearchChange={onSearchChange}
-          isTextSearchActive={searchTextActive}
-          onBack={() => setSearchTextActive(false)}
-          onSearchButtonClick={() => setSearchTextActive(true)}
-        >
-          {isPlaygroup && (
-            <SearchDropDown<string>
-              displayMenuOverlay={true}
-              menuItemClassName={styles.dropdownStyles}
-              className={'mr-1'}
-              options={updatedPlaygroups}
-              selectedOptions={activeFilters}
-              onChange={onFilterItemsChanges}
-              placeholder={'Playgroups'}
-              pluralSelectionText={'Playgroups'}
-              multiple
-              color={'secondary'}
-              info={{
-                name: `Filter by: ${filterInfo?.filterName}`,
-                hint: filterInfo?.filterHint || '',
-              }}
-            />
-          )}
-
+      <BannerWrapper
+        title={`Classroom`}
+        subTitle={`${practitioner?.title}`}
+        color={'primary'}
+        size="small"
+        renderOverflow={false}
+        onBack={() =>
+          history.push(ROUTES.COACH.PRACTITIONER_PROFILE_INFO, {
+            practitionerId,
+          })
+        }
+        displayOffline={!isOnline}
+      ></BannerWrapper>
+      {/* {children && children.length > 0 && ( */}
+      <SearchHeader<UserAlertListDataItem>
+        searchItems={filteredChildData || []}
+        onScroll={handleListScroll}
+        onSearchChange={onSearchChange}
+        isTextSearchActive={searchTextActive}
+        onBack={() => setSearchTextActive(false)}
+        onSearchButtonClick={() => setSearchTextActive(true)}
+      >
+        {isPlaygroup && (
           <SearchDropDown<string>
             displayMenuOverlay={true}
             menuItemClassName={styles.dropdownStyles}
-            options={sortOptions.columns}
-            selectedOptions={activeSort}
-            onChange={(selectedColumns) => {
-              setActiveSort(selectedColumns);
-              onSortItemsChanges(selectedColumns[0].value);
-            }}
-            placeholder={'Sort By'}
-            multiple={false}
+            className={'mr-1'}
+            options={updatedPlaygroups}
+            selectedOptions={activeFilters}
+            onChange={onFilterItemsChanges}
+            placeholder={'Playgroups'}
+            pluralSelectionText={'Playgroups'}
+            multiple
             color={'secondary'}
             info={{
-              name: `Sort By:`,
+              name: `Filter by: ${filterInfo?.filterName}`,
+              hint: filterInfo?.filterHint || '',
             }}
           />
-        </SearchHeader>
-      )}
+        )}
+
+        <SearchDropDown<string>
+          displayMenuOverlay={true}
+          menuItemClassName={styles.dropdownStyles}
+          options={sortOptions.columns}
+          selectedOptions={activeSort}
+          onChange={(selectedColumns) => {
+            setActiveSort(selectedColumns);
+            onSortItemsChanges(selectedColumns[0].value);
+          }}
+          placeholder={'Sort By'}
+          multiple={false}
+          color={'secondary'}
+          info={{
+            name: `Sort By:`,
+          }}
+        />
+      </SearchHeader>
 
       <div className={styles.overlay}>
-        {(!children || children.length === 0) && (
+        {/* {(!children || children.length === 0) && (
           <IconInformationIndicator
             title="You don't have any children yet!"
             subTitle="Tap the add a child button below to start"
           />
-        )}
+        )} */}
         {childUserListData ? (
           <StackedList
             className={styles.stackedList}
@@ -398,7 +451,7 @@ export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
             onScroll={(scrollTop: number) => handleListScroll(scrollTop)}
           ></StackedList>
         ) : null}
-        <FADButton
+        {/* <FADButton
           title={'Add a child'}
           icon={'PlusIcon'}
           iconDirection={'left'}
@@ -408,7 +461,7 @@ export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
           shape={'round'}
           className={styles.fadButton}
           click={registerNewChild}
-        />
+        /> */}
       </div>
     </>
   );
