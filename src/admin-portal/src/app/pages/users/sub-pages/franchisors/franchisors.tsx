@@ -8,7 +8,7 @@ import { useUser } from '../../../../hooks/useUser';
 import FranchisorPanelCreate from './franchisor-panel-create/franchisor-panel-create';
 import FranchisorPanelEdit from './franchisor-panel-edit/franchisor-panel-edit';
 
-export default function Franchisores() {
+export default function Franchisors() {
   const { hasPermission } = useUser();
   const { data, refetch } = useQuery(GetAllFranchisor, {
     fetchPolicy: 'cache-and-network',

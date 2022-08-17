@@ -162,6 +162,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 practitionerToPromote = practitioners.FirstOrDefault();
                 practitionerToPromote.IsPrincipal = true;
                 var updateResult = practitionerRepo.Update(practitionerToPromote);
+
+                //now update the users role
+
             }
             return practitionerToPromote;
         }
@@ -179,8 +182,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             List<Practitioner> practitioners = practitionerRepo.GetAll().Where(x => x.UserId.Equals(userId)).ToList();
             Practitioner practitionerToDemote = new Practitioner();
             if (practitioners.Count > 0)
-
             {
+                practitionerToDemote = practitioners.FirstOrDefault();
                 practitionerToDemote.IsPrincipal = false;
                 var updateResult = practitionerRepo.Update(practitionerToDemote);
             }

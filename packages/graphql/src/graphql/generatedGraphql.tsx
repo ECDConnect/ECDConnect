@@ -1259,6 +1259,8 @@ export enum FileTypeEnum {
   ClassroomProfile = 'CLASSROOM_PROFILE',
   Coach = 'COACH',
   Practitioner = 'PRACTITIONER',
+  Franchisor = 'FRANCHISOR',
+  Principlal = 'PRINCIPAL',
   ProfileImage = 'PROFILE_IMAGE',
   ProgressTrackingCategory = 'PROGRESS_TRACKING_CATEGORY',
   ProgressTrackingLevel = 'PROGRESS_TRACKING_LEVEL',
