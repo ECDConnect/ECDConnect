@@ -38,7 +38,11 @@ export const ClassProgrammeAttendanceList: React.FC<
   useEffect(() => {
     if (!classroomGroup) return;
     const filteredLearners = [];
-    for (const learner of allLearners) {
+    const _allLearners = allLearners.filter(
+      (x) => !Boolean(x.stoppedAttendance)
+    );
+
+    for (const learner of _allLearners) {
       if (learner.classroomGroupId !== classroomGroup.id) continue;
 
       const child = children?.find(
