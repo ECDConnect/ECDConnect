@@ -149,6 +149,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             if (practitioners.Count > 0)
 
             {
+                practitionerToDemote = practitioners.FirstOrDefault();
                 practitionerToDemote.IsPrincipal = false;
                 var updateResult = practitionerRepo.Update(practitionerToDemote);
             }
