@@ -24,6 +24,7 @@ import { newGuid } from '@/utils/common/uuid.utils';
 import { useSelector } from 'react-redux';
 import { practitionerSelectors } from '@/store/practitioner';
 import { userSelectors } from '@/store/user';
+import { isFullDayOptions } from '../../edit-practitioner-profile.types';
 
 export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
   const classroom = useSelector(classroomsSelectors.getClassroom);
@@ -207,7 +208,7 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
                 render={({ field: { onChange, value, ref } }) => (
                   <ButtonGroup<boolean>
                     inputRef={ref}
-                    options={yesNoOptions}
+                    options={isFullDayOptions}
                     onOptionSelected={onChange}
                     selectedOptions={value}
                     color="secondary"

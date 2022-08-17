@@ -145,8 +145,13 @@ class PractitionerService {
         mutation promotePractitionerToPrincipal($userId: String) {
           promotePractitionerToPrincipal(userId: $userId) {
             id
-            userId
             isPrincipal
+            user {
+              roles {
+                id
+                name
+              }
+            }
           }
         }
       `,
@@ -170,12 +175,12 @@ class PractitionerService {
     const apiInstance = await api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-        mutation addPractitionerToPrincipal {
+        mutation addPractitionerToPrincipal ($firstName: String, $idNumber: String, $lastName: String, $userId: String) {
           addPractitionerToPrincipal(
-            firstName:$firstName
-            idNumber:$idNumber
-            lastName:$surname
-            userId:$userId
+            firstName: $firstName
+            idNumber: $idNumber
+            lastName: $lastName
+            userId: $userId
           ) {
             userId
             isActive
@@ -183,7 +188,10 @@ class PractitionerService {
         }
       `,
       variables: {
-        ...input,
+        userId: input.userId,
+        idNumber: input.idNumber,
+        firstName: input.firstName,
+        lastName: input.lastName,
       },
     });
 

@@ -7,3 +7,8 @@ export enum EditPractitionerSteps {
   addPhoto = 5,
   setPlaygroupCount = 6,
 }
+
+export const isFullDayOptions = [
+  { value: false, text: 'Half Day' },
+  { value: true, text: 'Full Day' },
+];

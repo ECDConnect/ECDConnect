@@ -24,6 +24,7 @@ import { useEffect, useState } from 'react';
 import { newGuid } from '@/utils/common/uuid.utils';
 import { userSelectors } from '@/store/user';
 import { practitionerSelectors } from '@/store/practitioner';
+import { isFullDayOptions } from '../../edit-practitioner-profile.types';
 
 // TODO: Refactor this into add-class component
 export const EditClass = ({
@@ -237,7 +238,7 @@ export const EditClass = ({
                 render={({ field: { onChange, value, ref } }) => (
                   <ButtonGroup<boolean>
                     inputRef={ref}
-                    options={yesNoOptions}
+                    options={isFullDayOptions}
                     onOptionSelected={onChange}
                     selectedOptions={value}
                     color="secondary"

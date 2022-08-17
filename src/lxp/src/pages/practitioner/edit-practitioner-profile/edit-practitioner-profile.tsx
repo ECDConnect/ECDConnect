@@ -22,10 +22,6 @@ import { staticDataSelectors } from '@store/static-data';
 import { userSelectors } from '@store/user';
 import { newGuid } from '@utils/common/uuid.utils';
 import { AddPhoto } from './components/add-photo/add-photo';
-// import { ConfirmPlayGroups } from './components/confirm-playgroups/confirm-playgroups';
-// import { EditMultiplePlayGroups } from './components/edit-mutliple-playgroups/edit-multiple-playgroups';
-import { EditPlaygroupModel } from '@schemas/practitioner/edit-playgroups';
-import { EditPlaygroupCountForm } from './components/edit-practitioner-playgroup-count-form/edit-playgroup-count-form';
 import { EditProgrammeForm } from './components/edit-programme-form/edit-programme-form';
 import { EditProgrammeModel } from '@schemas/practitioner/edit-programme';
 import { EditPractitionerSteps } from './edit-practitioner-profile.types';
@@ -110,19 +106,15 @@ export const EditPractitionerProfile: React.FC = () => {
 
   const onAllStepsComplete = async () => {
     if (isOnline) {
-      const classroomId = newGuid();
-
       if (programme) {
-        createClassroom(programme, classroomId);
-
         const playGroupProgrammeType = programmeTypes.find(
           (x) => x.enumId === ProgrammeTypeEnum.Playgroup
         );
 
-        if (programme?.type === playGroupProgrammeType?.id && classroomId) {
+        if (programme?.type === playGroupProgrammeType?.id && classroom?.id) {
           const unsureClassProgrammeInputModel: ClassroomGroupDto = {
             id: newGuid(),
-            classroomId: classroomId,
+            classroomId: classroom?.id,
             isActive: true,
             programmeTypeId: programme?.type,
             name: NoPlaygroupClassroomType.name,
@@ -142,10 +134,9 @@ export const EditPractitionerProfile: React.FC = () => {
 
       if (classroom?.isPrinciple) {
         if (userAuth?.auth_token) {
-          const res = await new PractitionerService(
+          await new PractitionerService(
             userAuth?.auth_token
           ).PromotePractitionerToPrincipal(classroom.userId);
-          console.log('set practitioner to principal:', classroom.userId, res);
         }
       }
 
@@ -153,15 +144,14 @@ export const EditPractitionerProfile: React.FC = () => {
         if (userAuth?.auth_token) {
           principalPractitioners.forEach(async (principalPractitioner) => {
             const input: MutationAddPractitionerToPrincipalArgs = {
-              userId: principalPractitioner.userId,
+              userId: user?.id,
               idNumber: principalPractitioner.idNumber,
               firstName: principalPractitioner.firstName,
               lastName: principalPractitioner.surname,
             };
-            const res = await new PractitionerService(
+            await new PractitionerService(
               userAuth?.auth_token
             ).AddPractitionerToPrincipal(input);
-            console.log('add practitioners to principal:', res);
           });
         }
       }
