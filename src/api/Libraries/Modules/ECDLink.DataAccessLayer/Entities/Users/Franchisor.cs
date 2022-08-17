@@ -30,6 +30,8 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         [ForeignKey(nameof(SiteAddressId))]
         public virtual SiteAddress SiteAddress { get; set; }
         public Guid? SiteAddressId { get; set; }
+
+        public string SigningSignature { get; set; }
     }
 
     public interface FranchisorJoin<TKey>

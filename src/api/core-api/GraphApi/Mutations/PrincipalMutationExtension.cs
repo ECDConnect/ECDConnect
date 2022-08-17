@@ -26,8 +26,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class PrincipalMutationExtension
     {
-        public Practitioner AddPractitionerToPrincipal([Service] IHttpContextAccessor contextAccessor,
+
+        public Practitioner AddPractitionerToPrincipal([Service] IServiceProvider serviceProvider, [Service] IHttpContextAccessor contextAccessor,
     [Service] UserManager<ApplicationUser> userManager,
+    [Service] RoleManager<IdentityRole> roleManager,
     [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
     [Service] IGenericRepositoryFactory repoFactory,
     string firstName,
@@ -38,17 +40,20 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             List<Practitioner> practitioners = new List<Practitioner>();
 
             var principal = userManager.FindByIdAsync(userId).Result;
-
-            var practionerUser = userManager.FindByNameAsync(idNumber).Result;//find practitioner by Username/Id number, if exists, add principal to practitioner
+            
             using var scope = dbFactory.CreateDbContext();
             using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            Practitioner practitioner = new PractitionerQueryExtension().GetPractitionerByUserId(contextAccessor, dbFactory, repoFactory, userId);            
-            if (practitioner != null)
+            var practitionerUser = new PractitionerQueryExtension().GetPractitionerByIdNumber(serviceProvider, contextAccessor,userManager,roleManager,dbFactory, repoFactory, idNumber);            
+            if (practitionerUser != null)
             {
-                practitioner.PrincipalHierarchy = userId;
-                var updateResult = practitionerRepo.Update(practitioner);
+                Practitioner practitioner = (practitionerUser.practitionerObjectData != null ? practitionerUser.practitionerObjectData : practitionerUser.principalObjectData);
+                if (practitioner != null)
+                {
+                    practitioner.PrincipalHierarchy = userId;
+                    var updateResult = practitionerRepo.Update(practitioner);
+                }
 
                 return practitioner;
             }
@@ -91,16 +96,19 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             [Service] UserManager<ApplicationUser> userManager,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
-            Practitioner practitioner, string principalId)
+            string userId, string principalId)
         {
 
             //find the practitioner
             using var scope = dbFactory.CreateDbContext();
             using var dbContextTransaction = scope.Database.BeginTransaction();
-            var userId = contextAccessor.HttpContext.GetUser().Id;
-            var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: userId);
-            practitioner.CoachHierarchy = practitioner.PrincipalHierarchy.Replace(principalId, "");
-            var updateResult = practitionerRepo.Update(practitioner);
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+            Practitioner practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId.Equals(userId));
+            {
+                practitioner.CoachHierarchy = practitioner.PrincipalHierarchy.Replace(principalId, "");
+                var updateResult = practitionerRepo.Update(practitioner);
+            }
 
             return practitioner;
         }
@@ -109,32 +117,43 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
              [Service] UserManager<ApplicationUser> userManager,
              [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
              [Service] IGenericRepositoryFactory repoFactory,
-             Practitioner practitioner)
+             string userId)
         {
-             using var scope = dbFactory.CreateDbContext();
+            using var scope = dbFactory.CreateDbContext();
             using var dbContextTransaction = scope.Database.BeginTransaction();
-            var userId = contextAccessor.HttpContext.GetUser().Id;
-            var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: userId);
-            practitioner.IsPrincipal = true;
-            var updateResult = practitionerRepo.Update(practitioner);
-
-            return practitioner;
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+            List<Practitioner> practitioners = practitionerRepo.GetAll().Where(x => x.UserId.Equals(userId)).ToList();
+            Practitioner practitionerToPromote = new Practitioner();
+            if (practitioners.Count > 0)
+            {
+                practitionerToPromote = practitioners.FirstOrDefault();
+                practitionerToPromote.IsPrincipal = true;
+                var updateResult = practitionerRepo.Update(practitionerToPromote);
+            }
+            return practitionerToPromote;
         }
 
         public Practitioner DemotePractitionerAsPrincipal([Service] IHttpContextAccessor contextAccessor,
              [Service] UserManager<ApplicationUser> userManager,
              [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
              [Service] IGenericRepositoryFactory repoFactory,
-             Practitioner practitioner)
+             string userId)
         {
             using var scope = dbFactory.CreateDbContext();
             using var dbContextTransaction = scope.Database.BeginTransaction();
-            var userId = contextAccessor.HttpContext.GetUser().Id;
-            var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: userId);
-            practitioner.IsPrincipal = false;
-            var updateResult = practitionerRepo.Update(practitioner);
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+            List<Practitioner> practitioners = practitionerRepo.GetAll().Where(x => x.UserId.Equals(userId)).ToList();
+            Practitioner practitionerToDemote = new Practitioner();
+            if (practitioners.Count > 0)
 
-            return practitioner;
+            {
+                practitionerToDemote.IsPrincipal = false;
+                var updateResult = practitionerRepo.Update(practitionerToDemote);
+            }
+
+            return practitionerToDemote;
         }
 
         

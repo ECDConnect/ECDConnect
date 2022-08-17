@@ -28,6 +28,7 @@ import { ProgrammeTypeEnum } from '@ecdlink/graphql';
 import { useStoreSetup } from '@hooks/useStoreSetup';
 import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
 import ROUTES from '@routes/routes';
+import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 
 export const EditPractitionerProfile: React.FC = () => {
   const history = useHistory();
@@ -84,7 +85,7 @@ export const EditPractitionerProfile: React.FC = () => {
       const classroomInputModel: ClassroomDto = {
         userId: user?.id ?? '',
         name: programme?.name ?? '',
-        isPrinciple: programme?.isPrincipleOrLeader ?? false,
+        isPrinciple: programme?.isPrincipalOrLeader ?? false,
         numberPractitioners: programme?.smartStartPractitioners
           ? +programme?.smartStartPractitioners
           : 0,
@@ -100,10 +101,27 @@ export const EditPractitionerProfile: React.FC = () => {
 
       appDispatch(classroomsActions.createClassroom(classroomInputModel));
 
-      const programmeType = programmeTypes.find(
+      const playGroupProgrammeType = programmeTypes.find(
         (x) => x.enumId === ProgrammeTypeEnum.Playgroup
       );
-      if (programme?.type === programmeType?.id && playgroups && classroomId) {
+
+      if (
+        programme?.type === playGroupProgrammeType?.id &&
+        playgroups &&
+        classroomId
+      ) {
+        const unsureClassProgrammeInputModel: ClassroomGroupDto = {
+          id: newGuid(),
+          classroomId: classroomId,
+          isActive: true,
+          programmeTypeId: programme?.type,
+          name: NoPlaygroupClassroomType.name,
+        };
+
+        appDispatch(
+          classroomsActions.createClassroomGroup(unsureClassProgrammeInputModel)
+        );
+
         for (const playGroup of playgroups) {
           const classroomGroupId = newGuid();
           const classProgrammeInputModel: ClassroomGroupDto = {

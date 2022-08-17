@@ -38,7 +38,16 @@ export const ActionListItem: React.FC<ActionListItemProps> = ({ item }) => {
                     : styles.actionSubTitle
                 }
               >
-                <span className="truncate">{item.subTitle}</span>
+                {item.hasMarkup && (
+                  <span
+                    dangerouslySetInnerHTML={{ __html: item.subTitle || '' }}
+                    className="truncate"
+                  />
+                )}
+
+                {!item.hasMarkup && (
+                  <span className="truncate">{item.subTitle}</span>
+                )}
               </p>
             </>
           </div>

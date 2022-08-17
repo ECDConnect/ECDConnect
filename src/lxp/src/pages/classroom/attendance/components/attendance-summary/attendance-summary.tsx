@@ -37,6 +37,7 @@ import {
 } from '@utils/common/local-storage.utils';
 import EditAttendanceRegister from '../edit-attendance-register/edit-attendance-register';
 import * as styles from './attendance-summary.styles';
+import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 
 export const AttendanceSummary: React.FC = () => {
   const [displaySmartStartMessage, setDisplaySmartStartMessage] =
@@ -64,7 +65,12 @@ export const AttendanceSummary: React.FC = () => {
 
   const todayDate = new Date();
   const classProgrammes = useSelector(classroomsSelectors.getClassProgrammes);
-  const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
+  const allClassroomGroups = useSelector(
+    classroomsSelectors.getClassroomGroups
+  );
+  const classroomGroups = allClassroomGroups.filter(
+    (x) => x.name !== NoPlaygroupClassroomType.name
+  );
   const publicHolidays = useSelector(staticDataSelectors.getHolidays);
   const attendanceData = useSelector(attendanceSelectors.getAttendance);
 

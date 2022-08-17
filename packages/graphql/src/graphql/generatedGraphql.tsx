@@ -33,7 +33,6 @@ export type Absentees = {
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
   loggedBy?: Maybe<Scalars['String']>;
-  practitioner?: Maybe<Practitioner>;
   program?: Maybe<Programme>;
   reason?: Maybe<Scalars['String']>;
   reassignedClass?: Maybe<Scalars['String']>;
@@ -52,7 +51,6 @@ export type AbsenteesFilterInput = {
   isActive?: InputMaybe<BooleanOperationFilterInput>;
   loggedBy?: InputMaybe<StringOperationFilterInput>;
   or?: InputMaybe<Array<AbsenteesFilterInput>>;
-  practitioner?: InputMaybe<PractitionerFilterInput>;
   program?: InputMaybe<ProgrammeFilterInput>;
   reason?: InputMaybe<StringOperationFilterInput>;
   reassignedClass?: InputMaybe<StringOperationFilterInput>;
@@ -68,7 +66,6 @@ export type AbsenteesInput = {
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
   LoggedBy?: InputMaybe<Scalars['String']>;
-  Practitioner?: InputMaybe<PractitionerInput>;
   Program?: InputMaybe<ProgrammeInput>;
   Reason?: InputMaybe<Scalars['String']>;
   ReassignedClass?: InputMaybe<Scalars['String']>;
@@ -806,7 +803,7 @@ export type Coach = {
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
   secondaryAreaOfOperation?: Maybe<Scalars['String']>;
-  signature?: Maybe<Scalars['String']>;
+  signingSignature?: Maybe<Scalars['String']>;
   siteAddress?: Maybe<SiteAddress>;
   siteAddressId?: Maybe<Scalars['UUID']>;
   startDate: Scalars['DateTime'];
@@ -826,7 +823,7 @@ export type CoachFilterInput = {
   isActive?: InputMaybe<BooleanOperationFilterInput>;
   or?: InputMaybe<Array<CoachFilterInput>>;
   secondaryAreaOfOperation?: InputMaybe<StringOperationFilterInput>;
-  signature?: InputMaybe<StringOperationFilterInput>;
+  signingSignature?: InputMaybe<StringOperationFilterInput>;
   siteAddress?: InputMaybe<SiteAddressFilterInput>;
   siteAddressId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   startDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
@@ -843,7 +840,7 @@ export type CoachInput = {
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
   SecondaryAreaOfOperation?: InputMaybe<Scalars['String']>;
-  Signature?: InputMaybe<Scalars['String']>;
+  SigningSignature?: InputMaybe<Scalars['String']>;
   SiteAddress?: InputMaybe<SiteAddressInput>;
   SiteAddressId?: InputMaybe<Scalars['UUID']>;
   StartDate: Scalars['DateTime'];
@@ -1285,6 +1282,7 @@ export type Franchisor = {
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
   secondaryAreaOfOperation?: Maybe<Scalars['String']>;
+  signingSignature?: Maybe<Scalars['String']>;
   siteAddress?: Maybe<SiteAddress>;
   siteAddressId?: Maybe<Scalars['UUID']>;
   startDate: Scalars['DateTime'];
@@ -1302,6 +1300,7 @@ export type FranchisorFilterInput = {
   isActive?: InputMaybe<BooleanOperationFilterInput>;
   or?: InputMaybe<Array<FranchisorFilterInput>>;
   secondaryAreaOfOperation?: InputMaybe<StringOperationFilterInput>;
+  signingSignature?: InputMaybe<StringOperationFilterInput>;
   siteAddress?: InputMaybe<SiteAddressFilterInput>;
   siteAddressId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   startDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
@@ -1316,6 +1315,7 @@ export type FranchisorInput = {
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
   SecondaryAreaOfOperation?: InputMaybe<Scalars['String']>;
+  SigningSignature?: InputMaybe<Scalars['String']>;
   SiteAddress?: InputMaybe<SiteAddressInput>;
   SiteAddressId?: InputMaybe<Scalars['UUID']>;
   StartDate: Scalars['DateTime'];
@@ -1622,6 +1622,7 @@ export type MonthlyAttendanceReportModel = {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  addAbsenteeForPractitioner?: Maybe<Absentees>;
   addCoachToFranchisor?: Maybe<Coach>;
   addPermissionsToNavigation: Scalars['Boolean'];
   addPermissionsToRole: Scalars['Boolean'];
@@ -1675,7 +1676,6 @@ export type Mutation = {
   createReasonForLeaving?: Maybe<ReasonForLeaving>;
   createRelation?: Maybe<Relation>;
   createShortenUrlEntity?: Maybe<ShortenUrlEntity>;
-  createSignatures?: Maybe<Signatures>;
   createSiteAddress?: Maybe<SiteAddress>;
   createStoryBook?: Maybe<Scalars['String']>;
   createStoryBookPartQuestion?: Maybe<Scalars['String']>;
@@ -1736,7 +1736,6 @@ export type Mutation = {
   deleteRelation?: Maybe<Scalars['Boolean']>;
   deleteRole: Scalars['Boolean'];
   deleteShortenUrlEntity?: Maybe<Scalars['Boolean']>;
-  deleteSignatures?: Maybe<Scalars['Boolean']>;
   deleteSiteAddress?: Maybe<Scalars['Boolean']>;
   deleteStoryBook?: Maybe<Scalars['Boolean']>;
   deleteStoryBookPartQuestion?: Maybe<Scalars['Boolean']>;
@@ -1807,7 +1806,6 @@ export type Mutation = {
   updateRelation?: Maybe<Relation>;
   updateRole?: Maybe<IdentityRole>;
   updateShortenUrlEntity?: Maybe<ShortenUrlEntity>;
-  updateSignatures?: Maybe<Signatures>;
   updateSiteAddress?: Maybe<SiteAddress>;
   updateStoryBook?: Maybe<StoryBook>;
   updateStoryBookPartQuestion?: Maybe<StoryBookPartQuestion>;
@@ -1822,6 +1820,15 @@ export type Mutation = {
   updateWorkflowStatus?: Maybe<WorkflowStatus>;
   updateWorkflowStatusType?: Maybe<WorkflowStatusType>;
   uploadChildProgressReport: Scalars['Boolean'];
+};
+
+export type MutationAddAbsenteeForPractitionerArgs = {
+  absentDate: Scalars['DateTime'];
+  classProgram?: InputMaybe<Scalars['String']>;
+  loggedByUser?: InputMaybe<Scalars['String']>;
+  practitionerId?: InputMaybe<Scalars['String']>;
+  reason?: InputMaybe<Scalars['String']>;
+  reassignedToPractitioner?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationAddCoachToFranchisorArgs = {
@@ -1841,9 +1848,7 @@ export type MutationAddPermissionsToRoleArgs = {
 
 export type MutationAddPractitionerToCoachArgs = {
   coachId?: InputMaybe<Scalars['String']>;
-  firstName?: InputMaybe<Scalars['String']>;
-  idNumber?: InputMaybe<Scalars['String']>;
-  lastName?: InputMaybe<Scalars['String']>;
+  practitionerId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationAddPractitionerToPrincipalArgs = {
@@ -2066,10 +2071,6 @@ export type MutationCreateShortenUrlEntityArgs = {
   input?: InputMaybe<ShortenUrlEntityInput>;
 };
 
-export type MutationCreateSignaturesArgs = {
-  input?: InputMaybe<SignaturesInput>;
-};
-
 export type MutationCreateSiteAddressArgs = {
   input?: InputMaybe<SiteAddressInput>;
 };
@@ -2251,12 +2252,12 @@ export type MutationDeletePractitionerArgs = {
 
 export type MutationDeletePractitionerForCoachArgs = {
   coachId?: InputMaybe<Scalars['String']>;
-  practitioner?: InputMaybe<PractitionerInput>;
+  practitionerId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationDeletePractitionerForPrincipalArgs = {
-  practitioner?: InputMaybe<PractitionerInput>;
   principalId?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationDeletePrincipalArgs = {
@@ -2341,10 +2342,6 @@ export type MutationDeleteShortenUrlEntityArgs = {
   id?: InputMaybe<Scalars['UUID']>;
 };
 
-export type MutationDeleteSignaturesArgs = {
-  id?: InputMaybe<Scalars['UUID']>;
-};
-
 export type MutationDeleteSiteAddressArgs = {
   id?: InputMaybe<Scalars['UUID']>;
 };
@@ -2404,7 +2401,7 @@ export type MutationDeleteWorkflowStatusTypeArgs = {
 };
 
 export type MutationDemotePractitionerAsPrincipalArgs = {
-  practitioner?: InputMaybe<PractitionerInput>;
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationFileUploadArgs = {
@@ -2432,7 +2429,7 @@ export type MutationPractitionerImportArgs = {
 };
 
 export type MutationPromotePractitionerToPrincipalArgs = {
-  practitioner?: InputMaybe<PractitionerInput>;
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationRefreshCaregiverChildTokenArgs = {
@@ -2709,11 +2706,6 @@ export type MutationUpdateRoleArgs = {
 export type MutationUpdateShortenUrlEntityArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   input?: InputMaybe<ShortenUrlEntityInput>;
-};
-
-export type MutationUpdateSignaturesArgs = {
-  id?: InputMaybe<Scalars['UUID']>;
-  input?: InputMaybe<SignaturesInput>;
 };
 
 export type MutationUpdateSiteAddressArgs = {
@@ -3006,7 +2998,7 @@ export type Practitioner = {
   notInvitedYet?: Maybe<Scalars['Boolean']>;
   parentFees?: Maybe<Scalars['Decimal']>;
   principalHierarchy?: Maybe<Scalars['String']>;
-  signature?: Maybe<Scalars['String']>;
+  signingSignature?: Maybe<Scalars['String']>;
   siteAddress?: Maybe<SiteAddress>;
   siteAddressId?: Maybe<Scalars['UUID']>;
   startDate?: Maybe<Scalars['DateTime']>;
@@ -3039,7 +3031,7 @@ export type PractitionerFilterInput = {
   or?: InputMaybe<Array<PractitionerFilterInput>>;
   parentFees?: InputMaybe<ComparableNullableOfDecimalOperationFilterInput>;
   principalHierarchy?: InputMaybe<StringOperationFilterInput>;
-  signature?: InputMaybe<StringOperationFilterInput>;
+  signingSignature?: InputMaybe<StringOperationFilterInput>;
   siteAddress?: InputMaybe<SiteAddressFilterInput>;
   siteAddressId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   startDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
@@ -3065,7 +3057,7 @@ export type PractitionerInput = {
   NotInvitedYet?: InputMaybe<Scalars['Boolean']>;
   ParentFees?: InputMaybe<Scalars['Decimal']>;
   PrincipalHierarchy?: InputMaybe<Scalars['String']>;
-  Signature?: InputMaybe<Scalars['String']>;
+  SigningSignature?: InputMaybe<Scalars['String']>;
   SiteAddress?: InputMaybe<SiteAddressInput>;
   SiteAddressId?: InputMaybe<Scalars['UUID']>;
   StartDate?: InputMaybe<Scalars['DateTime']>;
@@ -3102,7 +3094,7 @@ export type Principal = {
   notInvitedYet?: Maybe<Scalars['Boolean']>;
   parentFees?: Maybe<Scalars['Decimal']>;
   principalHierarchy?: Maybe<Scalars['String']>;
-  signature?: Maybe<Scalars['String']>;
+  signingSignature?: Maybe<Scalars['String']>;
   siteAddress?: Maybe<SiteAddress>;
   siteAddressId?: Maybe<Scalars['UUID']>;
   startDate?: Maybe<Scalars['DateTime']>;
@@ -3135,7 +3127,7 @@ export type PrincipalFilterInput = {
   or?: InputMaybe<Array<PrincipalFilterInput>>;
   parentFees?: InputMaybe<ComparableNullableOfDecimalOperationFilterInput>;
   principalHierarchy?: InputMaybe<StringOperationFilterInput>;
-  signature?: InputMaybe<StringOperationFilterInput>;
+  signingSignature?: InputMaybe<StringOperationFilterInput>;
   siteAddress?: InputMaybe<SiteAddressFilterInput>;
   siteAddressId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   startDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
@@ -3161,7 +3153,7 @@ export type PrincipalInput = {
   NotInvitedYet?: InputMaybe<Scalars['Boolean']>;
   ParentFees?: InputMaybe<Scalars['Decimal']>;
   PrincipalHierarchy?: InputMaybe<Scalars['String']>;
-  Signature?: InputMaybe<Scalars['String']>;
+  SigningSignature?: InputMaybe<Scalars['String']>;
   SiteAddress?: InputMaybe<SiteAddressInput>;
   SiteAddressId?: InputMaybe<Scalars['UUID']>;
   StartDate?: InputMaybe<Scalars['DateTime']>;
@@ -3495,7 +3487,6 @@ export type Query = {
   GetAllReasonForLeaving?: Maybe<Array<Maybe<ReasonForLeaving>>>;
   GetAllRelation?: Maybe<Array<Maybe<Relation>>>;
   GetAllShortenUrlEntity?: Maybe<Array<Maybe<ShortenUrlEntity>>>;
-  GetAllSignatures?: Maybe<Array<Maybe<Signatures>>>;
   GetAllSiteAddress?: Maybe<Array<Maybe<SiteAddress>>>;
   GetAllStoryBook: Array<Maybe<StoryBook>>;
   GetAllStoryBookPartQuestion: Array<Maybe<StoryBookPartQuestion>>;
@@ -3548,7 +3539,6 @@ export type Query = {
   GetReasonForLeavingById?: Maybe<ReasonForLeaving>;
   GetRelationById?: Maybe<Relation>;
   GetShortenUrlEntityById?: Maybe<ShortenUrlEntity>;
-  GetSignaturesById?: Maybe<Signatures>;
   GetSiteAddressById?: Maybe<SiteAddress>;
   GetStoryBookById: Array<Maybe<StoryBook>>;
   GetStoryBookPartQuestionById: Array<Maybe<StoryBookPartQuestion>>;
@@ -3796,10 +3786,6 @@ export type QueryGetAllRelationArgs = {
 
 export type QueryGetAllShortenUrlEntityArgs = {
   where?: InputMaybe<ShortenUrlEntityFilterInput>;
-};
-
-export type QueryGetAllSignaturesArgs = {
-  where?: InputMaybe<SignaturesFilterInput>;
 };
 
 export type QueryGetAllSiteAddressArgs = {
@@ -4062,11 +4048,6 @@ export type QueryGetRelationByIdArgs = {
 export type QueryGetShortenUrlEntityByIdArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   where?: InputMaybe<ShortenUrlEntityFilterInput>;
-};
-
-export type QueryGetSignaturesByIdArgs = {
-  id?: InputMaybe<Scalars['UUID']>;
-  where?: InputMaybe<SignaturesFilterInput>;
 };
 
 export type QueryGetSiteAddressByIdArgs = {
@@ -4480,37 +4461,6 @@ export type ShortenUrlEntityInput = {
   IsActive: Scalars['Boolean'];
   MessageType?: InputMaybe<Scalars['String']>;
   URL?: InputMaybe<Scalars['String']>;
-  UpdatedBy?: InputMaybe<Scalars['String']>;
-  UserId?: InputMaybe<Scalars['String']>;
-};
-
-export type Signatures = {
-  __typename?: 'Signatures';
-  id: Scalars['UUID'];
-  insertedDate: Scalars['DateTime'];
-  isActive: Scalars['Boolean'];
-  signature?: Maybe<Scalars['String']>;
-  updatedBy?: Maybe<Scalars['String']>;
-  updatedDate: Scalars['DateTime'];
-  userId?: Maybe<Scalars['String']>;
-};
-
-export type SignaturesFilterInput = {
-  and?: InputMaybe<Array<SignaturesFilterInput>>;
-  id?: InputMaybe<ComparableGuidOperationFilterInput>;
-  insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
-  isActive?: InputMaybe<BooleanOperationFilterInput>;
-  or?: InputMaybe<Array<SignaturesFilterInput>>;
-  signature?: InputMaybe<StringOperationFilterInput>;
-  updatedBy?: InputMaybe<StringOperationFilterInput>;
-  updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
-  userId?: InputMaybe<StringOperationFilterInput>;
-};
-
-export type SignaturesInput = {
-  Id?: InputMaybe<Scalars['UUID']>;
-  IsActive: Scalars['Boolean'];
-  Signature?: InputMaybe<Scalars['String']>;
   UpdatedBy?: InputMaybe<Scalars['String']>;
   UserId?: InputMaybe<Scalars['String']>;
 };

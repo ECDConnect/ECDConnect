@@ -5,6 +5,7 @@ import {
   generateCaregiverChildToken,
   refreshCaregiverChildToken,
   openAccessAddChildDetail,
+  getChildrenForCoach,
   openAccessAddChild,
   getChildren,
   updateChild,
@@ -104,6 +105,9 @@ const childrenSlice = createSlice({
       refreshCaregiverChildToken.fulfilled,
       (state, action) => {}
     );
+    builder.addCase(getChildrenForCoach.fulfilled, (state, action) => {
+      state.children = action.payload;
+    });
     builder.addCase(openAccessAddChildDetail.fulfilled, (state, action) => {});
     builder.addCase(openAccessAddChild.fulfilled, (state, action) => {});
   },
