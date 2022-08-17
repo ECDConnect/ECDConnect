@@ -49,9 +49,9 @@ import { Practitioners } from '@coach-p/practitioners/practitioners';
 import { CoachPractitionerProfileInfo } from '@/pages/coach/practitioner-profile-info/practitioner-profile-info';
 import { CoachPractitionerClassroom } from '@/pages/coach/coach-practitioner-classroom/coach-practitioner-classroom';
 import CoachAccount from '@coach-p/coach-account/coach-account';
+import CoachPractitionerChildList from '@/pages/coach/coach-practitioner-child-list/coach-practitioner-child-list';
 
 import ROUTES from './routes';
-import CoachPractitionerChildList from '@/pages/coach/coach-practitioner-child-list/coach-practitioner-child-list';
 
 const PublicRoutes: React.FC = () => {
   return (

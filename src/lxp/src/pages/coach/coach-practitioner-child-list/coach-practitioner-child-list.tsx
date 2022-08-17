@@ -437,12 +437,12 @@ export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
       </SearchHeader>
 
       <div className={styles.overlay}>
-        {/* {(!children || children.length === 0) && (
+        {(!children || children.length === 0) && (
           <IconInformationIndicator
-            title="You don't have any children yet!"
-            subTitle="Tap the add a child button below to start"
+            title="This practitioner doesn't have any children yet!"
+            subTitle="Check with the practitioner!"
           />
-        )} */}
+        )}
         {childUserListData ? (
           <StackedList
             className={styles.stackedList}
