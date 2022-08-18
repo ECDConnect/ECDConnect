@@ -1,6 +1,6 @@
 import { ComponentBaseProps } from '../../models/ComponentBaseProps';
 import * as styles from './button-group.styles';
-import { getNotSelectedStyle, getOptionStyle } from './button-group.styles';
+import { getOptionStyle } from './button-group.styles';
 import { ButtonGroupOption } from './models/ButtonGroupOption';
 import { ButtonGroupTypes } from './models/ButtonGroupTypes';
 import { Colours } from '../../models/Colours';
@@ -86,7 +86,7 @@ export const ButtonGroup = <T,>({
               className={`${getOptionStyle(type, option.disabled)} ${
                 isOptionSelected(option)
                   ? styles.selected(color)
-                  : getNotSelectedStyle(type)
+                  : styles.notSelectedButtonOrChip
               }`}
             >
               {option.text}
