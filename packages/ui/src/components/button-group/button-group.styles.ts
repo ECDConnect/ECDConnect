@@ -7,21 +7,21 @@ export const buttonTypeWrapper =
 export const chipTypeWrapper = 'relative z-0 inline-flex flex-wrap';
 
 export const chip = (disabled?: boolean) => {
-  return `inline-flex items-center px-4 py-2 rounded-full text-sm font-medium mr-2 mb-4 border cursor-pointer ${
+  return `inline-flex items-center px-4 py-2 rounded-full text-sm font-medium mr-2 mb-4 cursor-pointer ${
     disabled ? 'bg-uiLight opacity-80' : ''
   }`;
 };
 
 const sharedButtonStyles = (disabled?: boolean) =>
-  `font-body p-3 border bg-primary text-sm font-medium rounded-10 items-center flex items-center justify-center ${
+  `font-body p-3 text-sm font-medium rounded-10 items-center flex items-center justify-center ${
     disabled ? 'bg-uiLight opacity-80' : ''
   }`;
 
-export const notSelectedChip = 'text-textLight border-textLight';
-export const notSelectedButton = 'text-secondary';
+export const notSelectedChip = 'text-secondary bg-secondaryAccent2';
+export const notSelectedButtonOrChip = 'text-secondary bg-secondaryAccent2';
 
 export const selected = (colour: Colours) => {
-  return `z-10 outline-none border-${colour} text-white bg-${colour}`;
+  return `z-10 outline-none text-white bg-${colour}`;
 };
 
 export const getOptionStyle = (type: ButtonGroupTypes, disabled?: boolean) => {
@@ -31,15 +31,5 @@ export const getOptionStyle = (type: ButtonGroupTypes, disabled?: boolean) => {
     case ButtonGroupTypes.Button:
     default:
       return classNames(sharedButtonStyles(disabled), `w-full`);
-  }
-};
-
-export const getNotSelectedStyle = (type: ButtonGroupTypes) => {
-  switch (type) {
-    case ButtonGroupTypes.Chip:
-      return notSelectedChip;
-    case ButtonGroupTypes.Button:
-    default:
-      return notSelectedButton;
   }
 };
