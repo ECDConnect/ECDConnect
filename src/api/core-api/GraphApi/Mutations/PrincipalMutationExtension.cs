@@ -52,7 +52,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 if (practitioner != null)
                 {
                     practitioner.PrincipalHierarchy = userId;
-                    var updateResult = practitionerRepo.Update(practitioner);
+                    var practitionerUpdateResult = practitionerRepo.Update(practitioner);
+
+                    //update users nicknames
+                    var user = userManager.FindByIdAsync(practitioner.UserId).Result;
+                    user.NickFirstName = firstName;
+                    user.NickSurname = lastName;
+                    user.NickFirstName = firstName + " " + lastName;
+
+                    var userUpdateResult = userManager.UpdateAsync(user).Result;
                 }
 
                 return practitioner;
@@ -104,7 +112,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            Practitioner practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId.Equals(userId));
+            Practitioner practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId.Equals(userId)).FirstOrDefault();
             {
                 practitioner.CoachHierarchy = practitioner.PrincipalHierarchy.Replace(principalId, "");
                 var updateResult = practitionerRepo.Update(practitioner);
@@ -130,6 +138,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 practitionerToPromote = practitioners.FirstOrDefault();
                 practitionerToPromote.IsPrincipal = true;
                 var updateResult = practitionerRepo.Update(practitionerToPromote);
+
+                //now add user to principal
+                var user = userManager.FindByIdAsync(userId).Result;
+                userManager.RemoveFromRoleAsync(user, Roles.PRACTITIONER);
+                userManager.AddToRoleAsync(user, Roles.PRINCIPAL);
             }
             return practitionerToPromote;
         }
@@ -147,19 +160,19 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             List<Practitioner> practitioners = practitionerRepo.GetAll().Where(x => x.UserId.Equals(userId)).ToList();
             Practitioner practitionerToDemote = new Practitioner();
             if (practitioners.Count > 0)
-
             {
                 practitionerToDemote = practitioners.FirstOrDefault();
                 practitionerToDemote.IsPrincipal = false;
                 var updateResult = practitionerRepo.Update(practitionerToDemote);
+
+                //now add user back to practitioner
+                var user = userManager.FindByIdAsync(userId).Result;
+                userManager.RemoveFromRoleAsync(user, Roles.PRINCIPAL);
+                userManager.AddToRoleAsync(user, Roles.PRACTITIONER);
             }
 
             return practitionerToDemote;
         }
-
-        
-
-
 
     }
 }
