@@ -117,8 +117,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var dbRepo = repoFactory.CreateRepository<Coach>(userContext: uId);
             Coach coach = new CoachQueryExtension().GetCoachByUserId(contextAccessor, dbFactory, repoFactory, coachId);
-            //Franchisor franchise = new FranchisorQueryExtension().GetFranchisorByUserId(contextAccessor, dbFactory, repoFactory, franchisorId);
-            //practitioners = practitionerRepo.GetAll().Where(x => x.UserId.Equals(practionerUser.Id)).ToList();
             if (coach != null)
             {
                 coach.FranchisorId = new Guid(franchisorId);

@@ -5,6 +5,7 @@ using ECDLink.ContentManagement.Entities;
 using ECDLink.ContentManagement.Repositories;
 using ECDLink.Core.Models.ContentManagement;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.EGraphQL.Enums;
@@ -123,7 +124,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return children;
         }
 
-        public List<Child> GetAllClassroomsForPractitioner([Service] IHttpContextAccessor contextAccessor,
+        public List<Classroom> GetAllClassroomsForPractitioner([Service] IHttpContextAccessor contextAccessor,
     [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
     [Service] IGenericRepositoryFactory repoFactory,
     string userId)
@@ -131,12 +132,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             using var scope = dbFactory.CreateDbContext();
             using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
-            var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
-            var practitionerrRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            List<Practitioner> practitioner = practitionerrRepo.GetAll().Where(x => x.UserId.Equals(userId)).ToList();
-            List<Child> children = childRepo.GetAll().Where(x => x.Hierarchy.Contains(practitioner.FirstOrDefault().Hierarchy)).ToList();
+            var classroomRepo = repoFactory.CreateRepository<Classroom>(userContext: uId);
 
-            return children;
+            List<Classroom> classes = classroomRepo.GetAll().Where(x => x.UserId.Equals(userId)).ToList();
+            return classes;            
         }
     }
 }

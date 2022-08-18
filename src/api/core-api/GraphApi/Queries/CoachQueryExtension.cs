@@ -1,6 +1,7 @@
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
@@ -81,7 +82,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return children;
         }
 
-        public List<Child> GetAllClassroomsForCoach([Service] IHttpContextAccessor contextAccessor,
+        public List<Classroom> GetAllClassroomsForCoach([Service] IHttpContextAccessor contextAccessor,
 [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
 [Service] IGenericRepositoryFactory repoFactory,
 string userId)
@@ -90,17 +91,17 @@ string userId)
             using var scope = dbFactory.CreateDbContext();
             using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
-            var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
+            var classRepo = repoFactory.CreateRepository<Classroom>(userContext: uId);
 
-            List<Child> children = new List<Child>();
+            List<Classroom> classrooms = new List<Classroom>();
             var practitionerrRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
             List<Practitioner> practitioners = practitionerrRepo.GetAll().Where(x => x.CoachHierarchy.Equals(userId)).ToList();
             foreach (var practioner in practitioners)
             {
-                List<Child> practitionerChildren = childRepo.GetAll().Where(x => x.Hierarchy.Contains(practioner.Hierarchy)).ToList();
-                children.AddRange(practitionerChildren);
+                List<Classroom> practitionerClasses = classRepo.GetAll().Where(x => x.UserId.Contains(practioner.UserId)).ToList();
+                classrooms.AddRange(practitionerClasses);
             }
-            return children;
+            return classrooms;
         }
     }
 }
