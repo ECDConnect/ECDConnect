@@ -1259,8 +1259,6 @@ export enum FileTypeEnum {
   ClassroomProfile = 'CLASSROOM_PROFILE',
   Coach = 'COACH',
   Practitioner = 'PRACTITIONER',
-  Franchisor = 'FRANCHISOR',
-  Principlal = 'PRINCIPAL',
   ProfileImage = 'PROFILE_IMAGE',
   ProgressTrackingCategory = 'PROGRESS_TRACKING_CATEGORY',
   ProgressTrackingLevel = 'PROGRESS_TRACKING_LEVEL',
@@ -1690,7 +1688,6 @@ export type Mutation = {
   createWorkflowStatus?: Maybe<WorkflowStatus>;
   createWorkflowStatusType?: Maybe<WorkflowStatusType>;
   dataIngestionImport: Scalars['Boolean'];
-  deletCoachForFranchisor?: Maybe<Coach>;
   deleteAbsentees?: Maybe<Scalars['Boolean']>;
   deleteActivity?: Maybe<Scalars['Boolean']>;
   deleteAuditLogType?: Maybe<Scalars['Boolean']>;
@@ -1701,6 +1698,7 @@ export type Mutation = {
   deleteClassroom?: Maybe<Scalars['Boolean']>;
   deleteClassroomGroup?: Maybe<Scalars['Boolean']>;
   deleteCoach?: Maybe<Scalars['Boolean']>;
+  deleteCoachForFranchisor?: Maybe<Coach>;
   deleteConsent?: Maybe<Scalars['Boolean']>;
   deleteContentDefinition: Scalars['Boolean'];
   deleteDailyProgramme?: Maybe<Scalars['Boolean']>;
@@ -1791,6 +1789,7 @@ export type Mutation = {
   updateNoteType?: Maybe<NoteType>;
   updatePermission?: Maybe<Permission>;
   updatePractitioner?: Maybe<Practitioner>;
+  updatePractitionerToTeachClassroom?: Maybe<Classroom>;
   updatePrincipal?: Maybe<Principal>;
   updateProgramme?: Maybe<Programme>;
   updateProgrammeAttendanceReason?: Maybe<ProgrammeAttendanceReason>;
@@ -2131,11 +2130,6 @@ export type MutationDataIngestionImportArgs = {
   file?: InputMaybe<Scalars['String']>;
 };
 
-export type MutationDeletCoachForFranchisorArgs = {
-  coachId?: InputMaybe<Scalars['String']>;
-  franchisorId?: InputMaybe<Scalars['String']>;
-};
-
 export type MutationDeleteAbsenteesArgs = {
   id?: InputMaybe<Scalars['UUID']>;
 };
@@ -2176,6 +2170,11 @@ export type MutationDeleteClassroomGroupArgs = {
 
 export type MutationDeleteCoachArgs = {
   id?: InputMaybe<Scalars['UUID']>;
+};
+
+export type MutationDeleteCoachForFranchisorArgs = {
+  coachId?: InputMaybe<Scalars['String']>;
+  franchisorId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationDeleteConsentArgs = {
@@ -2608,6 +2607,11 @@ export type MutationUpdatePermissionArgs = {
 export type MutationUpdatePractitionerArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   input?: InputMaybe<PractitionerInput>;
+};
+
+export type MutationUpdatePractitionerToTeachClassroomArgs = {
+  classroomId?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationUpdatePrincipalArgs = {
@@ -3557,6 +3561,8 @@ export type Query = {
   allChildrenForCoach?: Maybe<Array<Maybe<Child>>>;
   allChildrenForPractitioner?: Maybe<Array<Maybe<Child>>>;
   allChildrenForPrincipal?: Maybe<Array<Maybe<Child>>>;
+  allClassroomsForCoach?: Maybe<Array<Maybe<Classroom>>>;
+  allClassroomsForPractitioner?: Maybe<Array<Maybe<Classroom>>>;
   allCoachesForFranchisor?: Maybe<Array<Maybe<Coach>>>;
   allPractitionersForCoach?: Maybe<Array<Maybe<Practitioner>>>;
   allPractitionersForPrincipal?: Maybe<Array<Maybe<Practitioner>>>;
@@ -3590,6 +3596,7 @@ export type Query = {
   practitionerExcelTemplateGenerator?: Maybe<FileModel>;
   practitionerMetrics?: Maybe<PractitionerMetricReport>;
   practitionerNewSignupMetric: Scalars['Int'];
+  principalById?: Maybe<Practitioner>;
   principalByUserId?: Maybe<Practitioner>;
   roles?: Maybe<Array<Maybe<IdentityRole>>>;
   settings?: Maybe<SettingsType>;
@@ -4132,6 +4139,14 @@ export type QueryAllChildrenForPrincipalArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
+export type QueryAllClassroomsForCoachArgs = {
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryAllClassroomsForPractitionerArgs = {
+  userId?: InputMaybe<Scalars['String']>;
+};
+
 export type QueryAllCoachesForFranchisorArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
@@ -4240,6 +4255,10 @@ export type QueryPractitionerByUserIdArgs = {
 export type QueryPractitionerNewSignupMetricArgs = {
   fromDate: Scalars['DateTime'];
   toDate: Scalars['DateTime'];
+};
+
+export type QueryPrincipalByIdArgs = {
+  id?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryPrincipalByUserIdArgs = {
