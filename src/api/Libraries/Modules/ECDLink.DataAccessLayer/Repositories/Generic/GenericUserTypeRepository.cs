@@ -95,18 +95,20 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
 
             var user = _userManager.FindByIdAsync(_userId).Result;
             var roles = _userManager.GetRolesAsync(user).Result;
-            var isAdmin = roles.Contains(Roles.ADMINISTRATOR);
-
-            var hierarchy = _hierarchyEngine.GetUserHierarchy(_userId);
+            //var isAdmin = roles.Contains(Roles.ADMINISTRATOR);
+            //if user is in a higher admin role (Principal, Practitioner, Coach, Franchisor, then skip the check as they need to be able to see anyone anywhere due to the shift in roles of Milestone 1.
+            var higherRoles = new[] { Roles.PRACTITIONER, Roles.COACH, Roles.ADMINISTRATOR, Roles.PRINCIPAL, Roles.FRANCHISOR };//
+            bool isHigherRole = higherRoles.Any(roles.Contains);
 
             var query = entities.AsQueryable();
 
-            if (isAdmin)
+            if (isHigherRole)
             {
                 return query;
             }
             else
             {
+                var hierarchy = _hierarchyEngine.GetUserHierarchy(_userId);
                 return query.Where(x => ((IUserType)x).Hierarchy.StartsWith(hierarchy));
 
             }

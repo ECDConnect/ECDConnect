@@ -58,7 +58,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     var user = userManager.FindByIdAsync(practitioner.UserId).Result;
                     user.NickFirstName = firstName;
                     user.NickSurname = lastName;
-                    user.NickFirstName = firstName + " " + lastName;
+                    user.NickFullName = firstName + " " + lastName;
 
                     var userUpdateResult = userManager.UpdateAsync(user).Result;
                 }

@@ -15,8 +15,14 @@ export interface IMappedTheme {
 export const mapTheme = (variables: ITheme): IMappedTheme => {
   return {
     '--primary': variables.primary || '',
+    '--primaryAccent1': variables.primaryAccent1 || '',
+    '--primaryAccent2': variables.primaryAccent2 || '',
     '--secondary': variables.secondary || '',
+    '--secondaryAccent1': variables.secondaryAccent1 || '',
+    '--secondaryAccent2': variables.secondaryAccent2 || '',
     '--tertiary': variables.tertiary || '',
+    '--tertiaryAccent1': variables.tertiaryAccent1 || '',
+    '--tertiaryAccent2': variables.tertiaryAccent2 || '',
     '--textDark': variables.textDark || '',
     '--textMid': variables.textMid || '',
     '--textLight': variables.textLight || '',
@@ -27,6 +33,7 @@ export const mapTheme = (variables: ITheme): IMappedTheme => {
     '--errorMain': variables.errorMain || '',
     '--errorDark': variables.errorDark || '',
     '--errorBg': variables.errorBg || '',
+    '--modalBg': variables.modalBg || '',
     '--alertMain': variables.alertMain || '',
     '--alertDark': variables.alertDark || '',
     '--alertBg': variables.alertBg || '',
@@ -42,6 +49,7 @@ export const mapTheme = (variables: ITheme): IMappedTheme => {
     '--banner': variables.graphicOverlayUrl || '',
   };
 };
+
 export const applyTheme = (): void => {
   const themeObject: IMappedTheme = mapTheme(DefaultTheme);
   if (!themeObject) return;
