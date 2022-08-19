@@ -26,7 +26,7 @@ import { settingSelectors } from '@store/settings';
 import { userSelectors } from '@store/user';
 import { analyticsActions } from '@store/analytics';
 import { DashboardItems } from './components/dashboard-items/dashboard-items';
-import { practitionerThunkActions } from '@/store/practitioner';
+import { practitionerForCoachThunkActions } from '@/store/practitionerForCoach';
 import { childrenThunkActions } from '@/store/children';
 import * as styles from './dashboard.styles';
 import ROUTES from '@routes/routes';
@@ -84,7 +84,7 @@ export const Dashboard: React.FC = () => {
     if (userData?.roles?.some((role) => role.name === 'Coach')) {
       (async () =>
         await appDispatch(
-          practitionerThunkActions.getPractitionersForCoach({})
+          practitionerForCoachThunkActions.getPractitionersForCoach({})
         ).unwrap())();
 
       (async () =>

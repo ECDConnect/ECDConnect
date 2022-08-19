@@ -13,6 +13,10 @@ import { PractitionerProfileRouteState } from './coach-practitioner-classroom.ty
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import * as styles from './coach-practitioner-classroom.styles';
 import ROUTES from '@routes/routes';
+import { childrenSelectors } from '@store/children';
+import { practitionerSelectors } from '@/store/practitioner';
+import { useSelector } from 'react-redux';
+
 // import { CreateNote } from '../components/create-note/create-note';
 // import { NoteTypeEnum } from '@ecdlink/graphql';
 // import { getLastNoteDate } from '@utils/child/child-profile-utils';
@@ -23,31 +27,31 @@ export const CoachPractitionerClassroom: React.FC = () => {
   const mockedData = [
     {
       id: 1,
-      title: 'John Buffalo',
-      subTitle: 'Progress report overdue',
-      avatarColor: '#6974af',
-      profileText: 'Jb',
-      alertSeverity: 'error',
+      title: '75% attendance rate',
+      subTitle: 'Coming soon',
+      avatarColor: '#FF5C00',
+      profileText: 'CS',
+      alertSeverity: 'none',
       phoneNumber: '2138471324',
       email: 'johnbf@gmail.com',
     },
     {
       id: 2,
-      title: 'Pedro Machado',
-      subTitle: 'Progress report overdue',
-      avatarColor: '#6974af',
-      profileText: 'Pm',
-      alertSeverity: 'error',
+      title: '5 overdue progress reports',
+      subTitle: 'Coming soon',
+      avatarColor: '#FF5C00',
+      profileText: 'CS',
+      alertSeverity: 'none',
       phoneNumber: '23984123490',
       email: 'pedroM@gmail.com',
     },
     {
       id: 3,
-      title: 'Carlos Vieira',
-      subTitle: 'Progress report overdue',
-      avatarColor: '#6974af',
-      profileText: 'Cv',
-      alertSeverity: 'error',
+      title: "5 children haven't progressed",
+      subTitle: 'Coming soon',
+      avatarColor: '#FF5C00',
+      profileText: 'CS',
+      alertSeverity: 'none',
       phoneNumber: '314874393',
       email: 'carlosvieira1234@gmail.com',
     },
@@ -55,9 +59,11 @@ export const CoachPractitionerClassroom: React.FC = () => {
 
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
+  const children = useSelector(childrenSelectors.getChildren);
   const location = useLocation<PractitionerProfileRouteState>();
   const practitionerId = location.state.practitionerId;
-  const practitioner = mockedData?.find(
+  const practitioners = useSelector(practitionerSelectors.getPractitioners);
+  const practitioner = practitioners?.find(
     (practitioner) => practitioner?.id === practitionerId
   );
   const { theme } = useTheme();
@@ -97,7 +103,7 @@ export const CoachPractitionerClassroom: React.FC = () => {
     <div className={styles.contentWrapper}>
       <BannerWrapper
         title={`Classroom`}
-        subTitle={`${practitioner?.title}`}
+        subTitle={`${practitioner?.user?.firstName}`}
         color={'primary'}
         size="small"
         renderOverflow={false}
@@ -126,7 +132,7 @@ export const CoachPractitionerClassroom: React.FC = () => {
           >
             <div className="ml-4">
               <div className="mt-4 mb-3 text-4xl font-semibold text-black">
-                30
+                {children?.length}
               </div>
               <Typography
                 text={'Registered children'}

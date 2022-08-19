@@ -5,11 +5,11 @@ export interface ChildListLearner extends LearnerDto {
 }
 
 export interface PractitionerProfileRouteState {
-  practitionerId: number;
+  practitionerId: string;
 }
 
 export interface PractitionerDashboardModel {
-  id?: number | undefined;
+  id?: string | undefined;
   title?: string | undefined;
   subTitle?: string | undefined;
   avatarColor?: string | undefined;

@@ -2,6 +2,7 @@ import { PractitionerDto } from '@ecdlink/core';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import {
+  getAllPractitioner,
   getPractitionerById,
   getPractitionersForCoach,
 } from './practitioner.actions';
@@ -27,13 +28,40 @@ const practitionerSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
+    // builder.addCase(getCaregivers.fulfilled, (state, action) => {
+    //   if (!state.caregivers) {
+    //     const caregivers = Object.assign([], action.payload) as CaregiverDto[];
+
+    //     for (let i = 0; i < caregivers.length; i++) {
+    //       caregivers[i].isActive = true;
+    //     }
+
+    //     state.caregivers = caregivers;
+    //   }
+    builder.addCase(getAllPractitioner.fulfilled, (state, action) => {
+      console.log(action.payload);
+      if (!state.practitioners) {
+        const practitioners = Object.assign(
+          [],
+          action.payload
+        ) as PractitionerDto[];
+
+        // for (let i = 0; i < practitioners.length; i++) {
+        //   practitioners[i].isActive = true;
+        // }
+
+        // state.practitioners = action.payload;
+        state.practitioners = practitioners;
+      }
+    });
+
     builder.addCase(getPractitionerById.fulfilled, (state, action) => {
       state.practitioner = action.payload;
     });
 
-    builder.addCase(getPractitionersForCoach.fulfilled, (state, action) => {
-      state.practitioners = action.payload;
-    });
+    // builder.addCase(getPractitionersForCoach.fulfilled, (state, action) => {
+    //   state.practitioners = action.payload;
+    // });
   },
 });
 

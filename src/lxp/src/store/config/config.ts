@@ -54,6 +54,10 @@ import {
   practitionerPersistConfig,
   practitionerReducer,
 } from '../practitioner/practitioner';
+import {
+  practitionerForCoachPersistConfig,
+  practitionerForCoachReducer,
+} from '../practitionerForCoach/practitionerForCoach';
 import { coachPersistConfig, coachReducer } from '../coach/coach';
 import {
   programmePersistConfig,
@@ -90,6 +94,10 @@ const persistedReducers = {
   notesData: persistReducer(notesPersistConfig, notesReducer),
   notifications: persistReducer(notificationPersistConfig, notificationReducer),
   practitioner: persistReducer(practitionerPersistConfig, practitionerReducer),
+  practitionerForCoach: persistReducer(
+    practitionerForCoachPersistConfig,
+    practitionerForCoachReducer
+  ),
   programmeData: persistReducer(programmePersistConfig, programmeReducer),
   programmeRoutineData: persistReducer(
     programmeRoutinePersistConfig,

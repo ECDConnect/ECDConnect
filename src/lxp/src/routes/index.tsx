@@ -39,16 +39,18 @@ import { PractitionerProgrammeInformation } from '@practitioner-p/practitioner-p
 import { EditPlaygroups } from '@practitioner-p/save-practitioner-playgroups/save-practitioner-playgroups';
 import { ProgrammeSummaries } from '@programme-planning-p/programme-summaries/programme-summaries';
 import { ChildRegistrationBirthCertificate } from '@child-p/child-registration-birth-certificate/child-registration';
-import { CoachRegistration } from '@coach-p/coach-registation/coach-registation';
-import { EditCoachProfile } from '@coach-p/edit-coach-profile/edit-coach-profile';
-import { CoachProfile } from '@coach-p/coach-profile/coach-profile';
-import { CoachAbout } from '@coach-p/coach-about/coach-about';
+import { CoachRegistration } from '@/pages/coach/coach-registation/coach-registation';
+import { EditCoachProfile } from '@/pages/coach/edit-coach-profile/edit-coach-profile';
+import { CoachProfile } from '@/pages/coach/coach-profile/coach-profile';
+import { CoachAbout } from '@/pages/coach/coach-about/coach-about';
 import { CoachSignature } from '@/pages/coach/coach-about/components/coach-signature/coach-signature';
-import { CoachAddress } from '@coach-p/coach-about/components/coach-address/coach-address';
-import { Practitioners } from '@coach-p/practitioners/practitioners';
+import { CoachAddress } from '@/pages/coach/coach-about/components/coach-address/coach-address';
+import { Practitioners } from '@/pages/coach/practitioners/practitioners';
 import { CoachPractitionerProfileInfo } from '@/pages/coach/practitioner-profile-info/practitioner-profile-info';
 import { CoachPractitionerClassroom } from '@/pages/coach/coach-practitioner-classroom/coach-practitioner-classroom';
-import CoachAccount from '@coach-p/coach-account/coach-account';
+import { CoachProgrammeInformation } from '@/pages/coach/coach-programme-information/coach-programme-information';
+import { CoachChildProfile } from '@/pages/coach/coach-child-profile/coach-child-profile';
+import CoachAccount from '@/pages/coach/coach-account/coach-account';
 import CoachPractitionerChildList from '@/pages/coach/coach-practitioner-child-list/coach-practitioner-child-list';
 
 import ROUTES from './routes';
@@ -243,6 +245,16 @@ const AuthRoutes: React.FC = () => {
         exact
         path={ROUTES.COACH.PRACTITIONER_CHILD_LIST}
         component={CoachPractitionerChildList}
+      />
+      <Route
+        exact
+        path={ROUTES.COACH.PROGRAMME_INFORMATION}
+        component={CoachProgrammeInformation}
+      />
+      <Route
+        exact
+        path={ROUTES.COACH.CHILD_PROFILE}
+        component={CoachChildProfile}
       />
       <Route exact path={ROUTES.COACH.ABOUT.ADDRESS} component={CoachAddress} />
 

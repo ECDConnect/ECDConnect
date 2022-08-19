@@ -1786,6 +1786,7 @@ export type Mutation = {
   updateNoteType?: Maybe<NoteType>;
   updatePermission?: Maybe<Permission>;
   updatePractitioner?: Maybe<Practitioner>;
+  updatePractitionerToTeachClassroom?: Maybe<Classroom>;
   updatePrincipal?: Maybe<Principal>;
   updateProgramme?: Maybe<Programme>;
   updateProgrammeAttendanceReason?: Maybe<ProgrammeAttendanceReason>;
@@ -2603,6 +2604,11 @@ export type MutationUpdatePermissionArgs = {
 export type MutationUpdatePractitionerArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   input?: InputMaybe<PractitionerInput>;
+};
+
+export type MutationUpdatePractitionerToTeachClassroomArgs = {
+  classroomId?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationUpdatePrincipalArgs = {
@@ -3552,8 +3558,8 @@ export type Query = {
   allChildrenForCoach?: Maybe<Array<Maybe<Child>>>;
   allChildrenForPractitioner?: Maybe<Array<Maybe<Child>>>;
   allChildrenForPrincipal?: Maybe<Array<Maybe<Child>>>;
-  allClassroomsForCoach?: Maybe<Array<Maybe<Child>>>;
-  allClassroomsForPractitioner?: Maybe<Array<Maybe<Child>>>;
+  allClassroomsForCoach?: Maybe<Array<Maybe<Classroom>>>;
+  allClassroomsForPractitioner?: Maybe<Array<Maybe<Classroom>>>;
   allCoachesForFranchisor?: Maybe<Array<Maybe<Coach>>>;
   allPractitionersForCoach?: Maybe<Array<Maybe<Practitioner>>>;
   allPractitionersForPrincipal?: Maybe<Array<Maybe<Practitioner>>>;

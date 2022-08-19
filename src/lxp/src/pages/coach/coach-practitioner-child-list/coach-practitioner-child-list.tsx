@@ -32,6 +32,7 @@ import { WorkflowStatusEnum } from '@ecdlink/graphql';
 import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import ROUTES from '@routes/routes';
+import { practitionerSelectors } from '@/store/practitioner';
 import { IconInformationIndicator } from '../../classroom/programme-planning/components/icon-information-indicator/icon-information-indicator';
 
 export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
@@ -70,7 +71,8 @@ export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
 
   const location = useLocation<PractitionerProfileRouteState>();
   const practitionerId = location.state.practitionerId;
-  const practitioner = mockedData?.find(
+  const practitioners = useSelector(practitionerSelectors.getPractitioners);
+  const practitioner = practitioners?.find(
     (practitioner) => practitioner?.id === practitionerId
   );
   const { isOnline } = useOnlineStatus();
@@ -326,6 +328,8 @@ export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
       reports
     );
 
+    console.log({ childAlert });
+
     return {
       id: childRecord.id,
       profileDataUrl: childUser?.profileImageUrl,
@@ -379,7 +383,7 @@ export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
     <>
       <BannerWrapper
         title={`Classroom`}
-        subTitle={`${practitioner?.title}`}
+        subTitle={`${practitioner?.user?.firstName}`}
         color={'primary'}
         size="small"
         renderOverflow={false}
@@ -407,8 +411,8 @@ export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
             options={updatedPlaygroups}
             selectedOptions={activeFilters}
             onChange={onFilterItemsChanges}
-            placeholder={'Playgroups'}
-            pluralSelectionText={'Playgroups'}
+            placeholder={'Classes'}
+            pluralSelectionText={'Classes'}
             multiple
             color={'secondary'}
             info={{
