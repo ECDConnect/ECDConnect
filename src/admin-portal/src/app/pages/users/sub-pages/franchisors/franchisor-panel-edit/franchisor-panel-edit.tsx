@@ -1,36 +1,36 @@
 import { useMutation } from '@apollo/client';
 import {
-  CoachDto,
-  coachSchema,
-  initialCoachValues,
+  FranchisorDto,
+  franchisorSchema,
+  initialFranchisorValues,
   NOTIFICATION,
   useNotifications,
   siteAddressSchema,
   initialSiteAddressValues,
 } from '@ecdlink/core';
 import {
-  CoachInput,
+  FranchisorInput,
   CreateSiteAddress,
-  UpdateCoach,
+  UpdateFranchisor,
   SiteAddressInput,
   UpdateSiteAddress,
 } from '@ecdlink/graphql';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import CoachForm from '../../../components/coach-form/coach-form';
+import FranchisorForm from '../../../components/franchisor-form/franchisor-form';
 import SiteAddressForm from '../../../components/site-address-form/site-address-form';
 import UserPanelSave from '../../../components/user-panel-save/user-panel-save';
 
-export interface CoachPanelProps {
-  coach: CoachDto;
+export interface FranchisorPanelProps {
+  franchisor: FranchisorDto;
   closeDialog: (value: boolean) => void;
 }
 
-export default function CoachPanelEdit({
-  coach,
+export default function FranchisorPanelEdit({
+  franchisor,
   closeDialog,
-}: CoachPanelProps) {
+}: FranchisorPanelProps) {
   const { setNotification } = useNotifications();
 
   const emitCloseDialog = (value: boolean) => {
@@ -38,20 +38,21 @@ export default function CoachPanelEdit({
   };
 
   const [createSiteAddress] = useMutation(CreateSiteAddress);
-  const [updateCoach] = useMutation(UpdateCoach);
+  const [updateFranchisor] = useMutation(UpdateFranchisor);
   const [updateSiteAddress] = useMutation(UpdateSiteAddress);
 
   const {
-    register: coachRegister,
-    setValue: coachSetValue,
-    formState: coachFormState,
-    getValues: coachGetValues,
+    register: franchisorRegister,
+    setValue: franchisorSetValue,
+    formState: franchisorFormState,
+    getValues: franchisorGetValues,
   } = useForm({
-    resolver: yupResolver(coachSchema),
-    defaultValues: initialCoachValues,
+    resolver: yupResolver(franchisorSchema),
+    defaultValues: initialFranchisorValues,
     mode: 'onBlur',
   });
-  const { errors: coachFormErrors, isValid: isCoachValid } = coachFormState;
+  const { errors: franchisorFormErrors, isValid: isFranchisorValid } =
+    franchisorFormState;
 
   // SITE ADDRESS FORMS
   const {
@@ -63,60 +64,60 @@ export default function CoachPanelEdit({
     defaultValues: { ...initialSiteAddressValues, sendInvite: false },
     mode: 'onBlur',
   });
-  const { errors: siteAddressFormErrors } = coachFormState;
+  const { errors: siteAddressFormErrors } = franchisorFormState;
 
   useEffect(() => {
-    if (coach) {
-      coachSetValue('areaOfOperation', coach.areaOfOperation ?? '', {
+    if (franchisor) {
+      franchisorSetValue('areaOfOperation', franchisor.areaOfOperation ?? '', {
         shouldValidate: true,
       });
-      coachSetValue(
+      franchisorSetValue(
         'secondaryAreaOfOperation',
-        coach.secondaryAreaOfOperation ?? '',
+        franchisor.secondaryAreaOfOperation ?? '',
         {
           shouldValidate: true,
         }
       );
-      coachSetValue(
+      franchisorSetValue(
         'startDate',
-        coach.startDate ? new Date(coach.startDate) : undefined,
+        franchisor.startDate ? new Date(franchisor.startDate) : undefined,
         {
           shouldValidate: true,
         }
       );
     }
-  }, [coach, coachSetValue]);
+  }, [franchisor, franchisorSetValue]);
 
   const onSave = async () => {
-    if (isCoachValid) {
+    if (isFranchisorValid) {
       const siteAddressId = await saveSiteAddress();
-      await saveCoach(siteAddressId);
+      await saveFranchisor(siteAddressId);
       emitCloseDialog(true);
     }
   };
 
-  const saveCoach = async (siteAddressId?: string) => {
-    const coachForm = coachGetValues();
+  const saveFranchisor = async (siteAddressId?: string) => {
+    const franchisorForm = franchisorGetValues();
 
-    const coachInputModel: CoachInput = {
-      Id: coach.id,
-      UserId: coach.userId,
+    const franchisorInputModel: FranchisorInput = {
+      Id: franchisor.id,
+      UserId: franchisor.userId,
       SiteAddressId: siteAddressId,
-      AreaOfOperation: coachForm.areaOfOperation,
-      SecondaryAreaOfOperation: coachForm.secondaryAreaOfOperation,
-      StartDate: coachForm.startDate,
+      AreaOfOperation: franchisorForm.areaOfOperation,
+      SecondaryAreaOfOperation: franchisorForm.secondaryAreaOfOperation,
+      StartDate: franchisorForm.startDate,
       IsActive: true,
     };
 
-    await updateCoach({
+    await updateFranchisor({
       variables: {
-        id: coach.id,
-        input: { ...coachInputModel },
+        id: franchisor.id,
+        input: { ...franchisorInputModel },
       },
     });
 
     setNotification({
-      title: 'Successfully Updated Coach!',
+      title: 'Successfully Updated Franchisor!',
       variant: NOTIFICATION.SUCCESS,
     });
   };
@@ -124,7 +125,7 @@ export default function CoachPanelEdit({
   const saveSiteAddress = async (): Promise<string> => {
     const form = siteAddressGetValues();
     const siteAddressInputModel: SiteAddressInput = {
-      Id: coach.siteAddressId,
+      Id: franchisor.siteAddressId,
       Name: form.name,
       AddressLine1: form.addressLine1,
       AddressLine2: form.addressLine2,
@@ -136,14 +137,14 @@ export default function CoachPanelEdit({
     };
 
     let siteAddressId = '';
-    if (coach.siteAddressId) {
+    if (franchisor.siteAddressId) {
       await updateSiteAddress({
         variables: {
-          id: coach.siteAddressId,
+          id: franchisor.siteAddressId,
           input: { ...siteAddressInputModel },
         },
       });
-      siteAddressId = coach.siteAddressId;
+      siteAddressId = franchisor.siteAddressId;
     } else {
       const returnSiteAddress = await createSiteAddress({
         variables: {
@@ -154,7 +155,7 @@ export default function CoachPanelEdit({
     }
 
     setNotification({
-      title: 'Successfully Updated Coach Address!',
+      title: 'Successfully Updated Franchisor Address!',
       variant: NOTIFICATION.SUCCESS,
     });
 
@@ -167,13 +168,13 @@ export default function CoachPanelEdit({
         <div className="mt-5 bg-uiBg px-4 py-5 border-b border-gray-200 rounded-lg">
           <div className="pb-2">
             <h3 className="text-lg leading-6 font-medium text-uiMidDark">
-              Coach Detail
+              Franchisor Detail
             </h3>
           </div>
-          <CoachForm
-            formKey={`editcoach-${new Date().getTime()}-${coach.id}`}
-            register={coachRegister}
-            errors={coachFormErrors}
+          <FranchisorForm
+            formKey={`editcoach-${new Date().getTime()}-${franchisor.id}`}
+            register={franchisorRegister}
+            errors={franchisorFormErrors}
           />
         </div>
 
@@ -192,13 +193,12 @@ export default function CoachPanelEdit({
       </>
     );
   };
-
   return (
     <div className="flex flex-col min-w-0 flex-1 overflow-hidden">
       <article>
         <UserPanelSave
-          user={coach.user}
-          disabled={!isCoachValid}
+          user={franchisor.user}
+          disabled={!isFranchisorValid}
           onSave={onSave}
         />
 

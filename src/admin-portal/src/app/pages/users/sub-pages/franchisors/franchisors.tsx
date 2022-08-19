@@ -1,37 +1,24 @@
-import { useQuery, useMutation } from '@apollo/client';
-import {
-  CoachDto,
-  PermissionEnum,
-  usePanel,
-  useDialog,
-  useNotifications,
-  NOTIFICATION,
-} from '@ecdlink/core';
-import { GetAllCoach, SendInviteToApplication } from '@ecdlink/graphql';
-import { DialogPosition } from '@ecdlink/ui';
+import { useQuery } from '@apollo/client';
+import { FranchisorDto, PermissionEnum, usePanel } from '@ecdlink/core';
+import { GetAllFranchisor } from '@ecdlink/graphql';
 import { useEffect, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
-import AlertModal from '../../../../components/dialog-alert/dialog-alert';
 import UiTable from '../../../../components/ui-table';
 import { useUser } from '../../../../hooks/useUser';
-import CoachPanelCreate from './coach-panel-create/coach-panel-create';
-import CoachPanelEdit from './coach-panel-edit/coach-panel-edit';
+import FranchisorPanelCreate from './franchisor-panel-create/franchisor-panel-create';
+import FranchisorPanelEdit from './franchisor-panel-edit/franchisor-panel-edit';
 
-export default function Coaches() {
+export default function Franchisors() {
   const { hasPermission } = useUser();
-  const { setNotification } = useNotifications();
-  const dialog = useDialog();
-  const { data, refetch } = useQuery(GetAllCoach, {
+  const { data, refetch } = useQuery(GetAllFranchisor, {
     fetchPolicy: 'cache-and-network',
   });
 
   const [tableData, setTableData] = useState<any[]>([]);
 
-  const [sendInviteToApplication] = useMutation(SendInviteToApplication);
-
   useEffect(() => {
-    if (data && data.GetAllCoach) {
-      const copyItems = data.GetAllCoach.map((item: CoachDto) => ({
+    if (data && data.GetAllFranchisor) {
+      const copyItems = data.GetAllFranchisor.map((item: FranchisorDto) => ({
         ...item,
         fullName: `${item.user?.firstName} ${item.user?.surname}`,
         isActive: item.user?.isActive,
@@ -48,10 +35,10 @@ export default function Coaches() {
   const displayPanel = () => {
     panel({
       noPadding: true,
-      title: 'Create Coach',
+      title: 'Create Franchisor',
       render: (onSubmit: any) => (
-        <CoachPanelCreate
-          key={`coachPanelCreate`}
+        <FranchisorPanelCreate
+          key={`franchisorPanelCreate`}
           closeDialog={(userCreated: boolean) => {
             onSubmit();
 
@@ -64,46 +51,20 @@ export default function Coaches() {
     });
   };
 
-  const displayEditPanel = (coach: CoachDto) => {
+  const displayEditPanel = (franchisor: FranchisorDto) => {
     panel({
       noPadding: true,
-      title: 'Edit Coach',
+      title: 'Edit Franchisor',
       render: (onSubmit: any) => (
-        <CoachPanelEdit
-          coach={coach}
-          key={`coachPanelEdit`}
+        <FranchisorPanelEdit
+          franchisor={franchisor}
+          key={`franchisorPanelEdit`}
           closeDialog={(userCreated: boolean) => {
             onSubmit();
 
             if (userCreated) {
               refetch();
             }
-          }}
-        />
-      ),
-    });
-  };
-
-  const sendInvite = async (coach: CoachDto) => {
-    dialog({
-      position: DialogPosition.Middle,
-      render: (onSubmit: any, onCancel: any) => (
-        <AlertModal
-          title="Practitioner Invite"
-          message={`You are about to send an invite to ${coach.user.firstName} ${coach.user.surname}`}
-          onCancel={onCancel}
-          onSubmit={() => {
-            onSubmit();
-            sendInviteToApplication({
-              variables: {
-                userId: coach.userId,
-              },
-            }).then(() => {
-              setNotification({
-                title: 'Successfully Sent Coach Invite!',
-                variant: NOTIFICATION.SUCCESS,
-              });
-            });
           }}
         />
       ),
@@ -123,7 +84,7 @@ export default function Coaches() {
                   type="button"
                   className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-uiMid hover:bg-uiLight focus:outline-none focus:ring-2 focus:ring-offset-2"
                 >
-                  Create Coach
+                  Create Franchisor
                 </button>
               )}
             </div>
@@ -142,9 +103,6 @@ export default function Coaches() {
                   editRow={
                     hasPermission(PermissionEnum.update_user) &&
                     displayEditPanel
-                  }
-                  sendRow={
-                    hasPermission(PermissionEnum.update_user) && sendInvite
                   }
                 />
               </div>

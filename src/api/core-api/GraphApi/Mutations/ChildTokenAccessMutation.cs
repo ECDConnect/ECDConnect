@@ -123,11 +123,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 x.ClassroomGroupId == tokenModel.ClassroomGroupId
                 && string.Equals(x.UserId, tokenModel.ChildUserId)
             ).Result;
-
-            if (exists)
-            {
-                return;
-            }
+            //learners are allowed to be swopped back to classroomgroups
+            //if (exists)
+            //{
+                //return;
+            //}
 
             context.Learners.Add(new Learner
             {

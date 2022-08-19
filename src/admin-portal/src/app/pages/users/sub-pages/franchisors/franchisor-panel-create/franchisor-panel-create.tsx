@@ -1,8 +1,8 @@
 import { useMutation, useQuery } from '@apollo/client';
 import {
   AddUsersToRole,
-  CoachInput,
-  CreateCoach,
+  FranchisorInput,
+  CreateFranchisor,
   CreateUser,
   RoleList,
   UserModelInput,
@@ -13,8 +13,8 @@ import {
 import { NOTIFICATION, useNotifications } from '@ecdlink/core';
 import { RoleDto } from '@ecdlink/core';
 import {
-  coachSchema,
-  initialCoachValues,
+  franchisorSchema,
+  initialFranchisorValues,
   initialPasswordValue,
   initialUserDetailsValues,
   passwordSchema,
@@ -25,7 +25,7 @@ import {
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import CoachForm from '../../../components/coach-form/coach-form';
+import FranchisorForm from '../../../components/franchisor-form/franchisor-form';
 import SiteAddressForm from '../../../components/site-address-form/site-address-form';
 import PasswordForm from '../../../components/password-form/password-form';
 import UserDetailsForm from '../../../components/user-details-form/user-details-form';
@@ -33,7 +33,7 @@ import UserPanelSave from '../../../components/user-panel-save/user-panel-save';
 import { UserPanelCreateProps } from '../../../components/users';
 import { newGuid } from '../../../../../utils/uuid.utils';
 
-export default function CoachPanelCreate(props: UserPanelCreateProps) {
+export default function FranchisorPanelCreate(props: UserPanelCreateProps) {
   const { setNotification } = useNotifications();
   const emitCloseDialog = (value: boolean) => {
     props.closeDialog(value);
@@ -51,10 +51,9 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
   }, [roleData]);
 
   const [createUser] = useMutation(CreateUser);
-  const [createCoach] = useMutation(CreateCoach);
+  const [createFranchisor] = useMutation(CreateFranchisor);
   const [createSiteAddress] = useMutation(CreateSiteAddress);
   const [addRolesToUser] = useMutation(AddUsersToRole);
-  const [sendInviteToApplication] = useMutation(SendInviteToApplication);
 
   const [selectedUserRoles, setUserRoles] = useState<RoleDto[]>([]);
 
@@ -71,10 +70,8 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
     defaultValues: initialUserDetailsValues,
     mode: 'onBlur',
   });
-
   const { errors: userDetailFormErrors, isValid: isUserDetailValid } =
     userDetailFormState;
-
   // PASSWORD FORMS
   const {
     register: passwordRegister,
@@ -85,20 +82,20 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
     defaultValues: initialPasswordValue,
     mode: 'onBlur',
   });
-
-  const { errors: passwordFormErrors } = passwordFormState;
-
+  const { errors: passwordFormErrors, isValid: isPasswordValid } =
+    passwordFormState;
   // COACH FORMS
   const {
-    register: coachRegister,
-    formState: coachFormState,
-    getValues: coachGetValues,
+    register: franchisorRegister,
+    formState: franchisorFormState,
+    getValues: franchisorGetValues,
   } = useForm({
-    resolver: yupResolver(coachSchema),
-    defaultValues: initialCoachValues,
+    resolver: yupResolver(franchisorSchema),
+    defaultValues: initialFranchisorValues,
     mode: 'onBlur',
   });
-  const { errors: coachFormErrors, isValid: isCoachValid } = coachFormState;
+  const { errors: franchisorFormErrors, isValid: isFranchisorValid } =
+    franchisorFormState;
 
   // SITE ADDRESS FORMS
   const { register: siteAddressRegister, getValues: siteAddressGetValues } =
@@ -107,8 +104,7 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
       defaultValues: { ...initialSiteAddressValues, sendInvite: false },
       mode: 'onBlur',
     });
-  const { errors: siteAddressFormErrors } = coachFormState;
-
+  const { errors: siteAddressFormErrors } = franchisorFormState;
   // END FORMS
 
   const onSave = async () => {
@@ -148,34 +144,34 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
 
         const userId = response.data.addUser.id;
         await saveRoles(userId);
-        //await saveCoach(userId);
         await saveSiteAddress(userId);
+        //await saveFranchisor(userId);
       })
       .catch((error) => {
         console.log(error);
       });
   };
 
-  const saveCoach = async (userId: string, siteAddressId?: string) => {
-    const coachForm = coachGetValues();
-    const coachInputModel: CoachInput = {
+  const saveFranchisor = async (userId: string, siteAddressId?: string) => {
+    const franchisorForm = franchisorGetValues();
+    const franchisorInputModel: FranchisorInput = {
       Id: undefined,
       UserId: userId,
-      AreaOfOperation: coachForm.areaOfOperation,
-      SecondaryAreaOfOperation: coachForm.secondaryAreaOfOperation,
-      StartDate: coachForm.startDate,
+      AreaOfOperation: franchisorForm.areaOfOperation,
+      SecondaryAreaOfOperation: franchisorForm.secondaryAreaOfOperation,
+      StartDate: franchisorForm.startDate,
       IsActive: true,
       SiteAddressId: siteAddressId,
     };
 
-    await createCoach({
+    await createFranchisor({
       variables: {
-        input: { ...coachInputModel },
+        input: { ...franchisorInputModel },
       },
     });
 
     setNotification({
-      title: 'Successfully Created Coach!',
+      title: 'Successfully Created Franchisor!',
       variant: NOTIFICATION.SUCCESS,
     });
   };
@@ -213,9 +209,8 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
       }
     }
 
-    await saveCoach(userId, siteAddressId);
+    await saveFranchisor(userId, siteAddressId);
   };
-
   const saveRoles = async (userId: string) => {
     const rolesToAdd: string[] = [];
     selectedUserRoles.forEach((x) => {
@@ -240,7 +235,9 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
   };
 
   const addUserRole = () => {
-    const role = roleData.roles.find((role: RoleDto) => role.name === 'Coach');
+    const role = roleData.roles.find(
+      (role: RoleDto) => role.name === 'Franchisor'
+    );
 
     const copy = [...selectedUserRoles];
     if (!copy.some((x) => x.id === role.id)) {
@@ -251,8 +248,8 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
 
   const getIsValid = () => {
     let isValid = isUserDetailValid;
-    if (!isCoachValid) isValid = false;
-    return isValid ? true : false;
+    if (!isFranchisorValid) isValid = false;
+    return isValid && isPasswordValid ? true : false;
   };
 
   const getComponent = () => {
@@ -277,16 +274,15 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
         <div className="mt-5 bg-uiBg px-4 py-5 border-b border-gray-200 rounded-lg">
           <div className="pb-2">
             <h3 className="text-lg leading-6 font-medium text-uiMidDark">
-              Coach Detail
+              Franchisor Detail
             </h3>
           </div>
 
-          <CoachForm
-            formKey={`createCoach-${new Date().getTime()}`}
-            register={coachRegister}
-            errors={coachFormErrors}
+          <FranchisorForm
+            formKey={`createFranchisor-${new Date().getTime()}`}
+            register={franchisorRegister}
+            errors={franchisorFormErrors}
           />
-
           <div className="mt-5 bg-uiBg px-4 py-5 border-b border-gray-200 rounded-lg">
             <div className="pb-2">
               <h3 className="text-lg leading-6 font-medium text-uiMidDark">
