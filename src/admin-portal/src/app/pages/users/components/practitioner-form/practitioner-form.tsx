@@ -90,7 +90,7 @@ const PractitionerForm: React.FC<PractitionerFormProps> = ({
               options={
                 data &&
                 data.GetAllCoach &&
-                data.GetAllFranGetAllCoachchisor.map((x: CoachDto) => {
+                data.GetAllCoach.map((x: CoachDto) => {
                   return { key: x.userId, value: x.user.fullName };
                 })
               }

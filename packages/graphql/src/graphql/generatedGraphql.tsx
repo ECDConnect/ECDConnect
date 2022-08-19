@@ -3475,7 +3475,7 @@ export type Query = {
   GetAllNoteType?: Maybe<Array<Maybe<NoteType>>>;
   GetAllPermission?: Maybe<Array<Maybe<Permission>>>;
   GetAllPractitioner?: Maybe<Array<Maybe<Practitioner>>>;
-  GetAllPrincipal?: Maybe<Array<Maybe<Practitioner>>>;
+  GetAllPrincipal?: Maybe<Array<Maybe<Principal>>>;
   GetAllProgramme?: Maybe<Array<Maybe<Programme>>>;
   GetAllProgrammeAttendanceReason?: Maybe<
     Array<Maybe<ProgrammeAttendanceReason>>
@@ -3567,6 +3567,7 @@ export type Query = {
   allPractitionersForCoach?: Maybe<Array<Maybe<Practitioner>>>;
   allPractitionersForPrincipal?: Maybe<Array<Maybe<Practitioner>>>;
   allPrincipal?: Maybe<Array<Maybe<Practitioner>>>;
+  allPrincipals?: Maybe<Array<Maybe<Principal>>>;
   attendance?: Maybe<Array<Maybe<Attendance>>>;
   childAttendanceReport?: Maybe<ChildAttendanceReportModel>;
   childByUserId?: Maybe<Child>;
@@ -3585,6 +3586,7 @@ export type Query = {
   hasContentTypeBeenTranslated: Scalars['Boolean'];
   holidaysByMonth?: Maybe<Array<Maybe<Holiday>>>;
   holidaysByYear?: Maybe<Array<Maybe<Holiday>>>;
+  mapPractitionerToPrincipal?: Maybe<Principal>;
   monthlyAttendanceRecordCSV?: Maybe<FileModel>;
   monthlyAttendanceReport?: Maybe<Array<Maybe<MonthlyAttendanceReportModel>>>;
   openAccessAddChildDetail?: Maybe<ChildTokenAccessModel>;
@@ -4220,6 +4222,10 @@ export type QueryHolidaysByMonthArgs = {
 
 export type QueryHolidaysByYearArgs = {
   year: Scalars['Int'];
+};
+
+export type QueryMapPractitionerToPrincipalArgs = {
+  practitioner?: InputMaybe<PractitionerInput>;
 };
 
 export type QueryMonthlyAttendanceRecordCsvArgs = {

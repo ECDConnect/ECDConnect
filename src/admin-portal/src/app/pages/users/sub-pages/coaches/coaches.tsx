@@ -100,7 +100,7 @@ export default function Coaches() {
               },
             }).then(() => {
               setNotification({
-                title: 'Successfully Sent Practitioner Invite!',
+                title: 'Successfully Sent Coach Invite!',
                 variant: NOTIFICATION.SUCCESS,
               });
             });

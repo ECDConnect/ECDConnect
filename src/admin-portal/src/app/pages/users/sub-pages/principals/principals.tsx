@@ -1,4 +1,4 @@
-import { useLazyQuery, useMutation, useQuery } from '@apollo/client';
+import { useMutation, useQuery } from '@apollo/client';
 import {
   NOTIFICATION,
   PermissionEnum,
