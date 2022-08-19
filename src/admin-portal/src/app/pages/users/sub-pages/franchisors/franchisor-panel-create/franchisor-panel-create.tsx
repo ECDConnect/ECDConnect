@@ -6,6 +6,9 @@ import {
   CreateUser,
   RoleList,
   UserModelInput,
+  SiteAddressInput,
+  SendInviteToApplication,
+  CreateSiteAddress,
 } from '@ecdlink/graphql';
 import { NOTIFICATION, useNotifications } from '@ecdlink/core';
 import { RoleDto } from '@ecdlink/core';
@@ -16,11 +19,14 @@ import {
   initialUserDetailsValues,
   passwordSchema,
   userSchema,
+  siteAddressSchema,
+  initialSiteAddressValues,
 } from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import FranchisorForm from '../../../components/franchisor-form/franchisor-form';
+import SiteAddressForm from '../../../components/site-address-form/site-address-form';
 import PasswordForm from '../../../components/password-form/password-form';
 import UserDetailsForm from '../../../components/user-details-form/user-details-form';
 import UserPanelSave from '../../../components/user-panel-save/user-panel-save';
@@ -46,6 +52,7 @@ export default function FranchisorPanelCreate(props: UserPanelCreateProps) {
 
   const [createUser] = useMutation(CreateUser);
   const [createFranchisor] = useMutation(CreateFranchisor);
+  const [createSiteAddress] = useMutation(CreateSiteAddress);
   const [addRolesToUser] = useMutation(AddUsersToRole);
 
   const [selectedUserRoles, setUserRoles] = useState<RoleDto[]>([]);
@@ -89,6 +96,15 @@ export default function FranchisorPanelCreate(props: UserPanelCreateProps) {
   });
   const { errors: franchisorFormErrors, isValid: isFranchisorValid } =
     franchisorFormState;
+
+  // SITE ADDRESS FORMS
+  const { register: siteAddressRegister, getValues: siteAddressGetValues } =
+    useForm({
+      resolver: yupResolver(siteAddressSchema),
+      defaultValues: { ...initialSiteAddressValues, sendInvite: false },
+      mode: 'onBlur',
+    });
+  const { errors: siteAddressFormErrors } = franchisorFormState;
   // END FORMS
 
   const onSave = async () => {
@@ -128,14 +144,15 @@ export default function FranchisorPanelCreate(props: UserPanelCreateProps) {
 
         const userId = response.data.addUser.id;
         await saveRoles(userId);
-        await saveFranchisor(userId);
+        await saveSiteAddress(userId);
+        //await saveFranchisor(userId);
       })
       .catch((error) => {
         console.log(error);
       });
   };
 
-  const saveFranchisor = async (userId: string) => {
+  const saveFranchisor = async (userId: string, siteAddressId?: string) => {
     const franchisorForm = franchisorGetValues();
     const franchisorInputModel: FranchisorInput = {
       Id: undefined,
@@ -144,6 +161,7 @@ export default function FranchisorPanelCreate(props: UserPanelCreateProps) {
       SecondaryAreaOfOperation: franchisorForm.secondaryAreaOfOperation,
       StartDate: franchisorForm.startDate,
       IsActive: true,
+      SiteAddressId: siteAddressId,
     };
 
     await createFranchisor({
@@ -158,6 +176,41 @@ export default function FranchisorPanelCreate(props: UserPanelCreateProps) {
     });
   };
 
+  const saveSiteAddress = async (userId: string) => {
+    const form = siteAddressGetValues();
+    const siteAddressInputModel: SiteAddressInput = {
+      Id: undefined,
+      Name: form.name ?? '',
+      AddressLine1: form.addressLine1 ?? '',
+      AddressLine2: form.addressLine2 ?? '',
+      AddressLine3: form.addressLine3 ?? '',
+      PostalCode: form.postalCode ?? '',
+      ProvinceId: form.provinceId ?? '',
+      Ward: form.ward ?? '',
+      IsActive: true,
+    };
+
+    let siteAddressId = null;
+
+    if (form.provinceId) {
+      const returnSiteAddress = await createSiteAddress({
+        variables: {
+          input: { ...siteAddressInputModel },
+        },
+      });
+
+      if (returnSiteAddress && returnSiteAddress.data) {
+        setNotification({
+          title: 'Successfully Created Address!',
+          variant: NOTIFICATION.SUCCESS,
+        });
+
+        siteAddressId = returnSiteAddress?.data?.createSiteAddress?.id ?? '';
+      }
+    }
+
+    await saveFranchisor(userId, siteAddressId);
+  };
   const saveRoles = async (userId: string) => {
     const rolesToAdd: string[] = [];
     selectedUserRoles.forEach((x) => {
@@ -230,6 +283,18 @@ export default function FranchisorPanelCreate(props: UserPanelCreateProps) {
             register={franchisorRegister}
             errors={franchisorFormErrors}
           />
+          <div className="mt-5 bg-uiBg px-4 py-5 border-b border-gray-200 rounded-lg">
+            <div className="pb-2">
+              <h3 className="text-lg leading-6 font-medium text-uiMidDark">
+                Address Detail
+              </h3>
+            </div>
+            <SiteAddressForm
+              formKey={`createSiteAddress-${new Date().getTime()}`}
+              register={siteAddressRegister}
+              errors={siteAddressFormErrors}
+            />
+          </div>
         </div>
 
         <div className="mt-5 bg-uiBg px-4 py-5 border-b border-gray-200 rounded-lg">

@@ -3475,7 +3475,7 @@ export type Query = {
   GetAllNoteType?: Maybe<Array<Maybe<NoteType>>>;
   GetAllPermission?: Maybe<Array<Maybe<Permission>>>;
   GetAllPractitioner?: Maybe<Array<Maybe<Practitioner>>>;
-  GetAllPrincipal?: Maybe<Array<Maybe<Principal>>>;
+  GetAllPrincipal?: Maybe<Array<Maybe<Practitioner>>>;
   GetAllProgramme?: Maybe<Array<Maybe<Programme>>>;
   GetAllProgrammeAttendanceReason?: Maybe<
     Array<Maybe<ProgrammeAttendanceReason>>

@@ -38,6 +38,25 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return principals;
         }
 
+        public List<Principal> GetAllPrincipals([Service] IHttpContextAccessor contextAccessor,
+[Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+[Service] IGenericRepositoryFactory repoFactory)
+        {
+            using var scope = dbFactory.CreateDbContext();
+            using var dbContextTransaction = scope.Database.BeginTransaction();
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var principalRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+            List<Practitioner> principals = principalRepo.GetAll().Where(x => x.IsPrincipal == true).ToList();
+
+            List<Principal> list = new List<Principal>();
+            foreach (var principal in principals)
+            {
+                list.Add(MapPractitionerToPrincipal(principal));
+            }
+
+            return list;
+        }
+
         public Practitioner GetPrincipalByUserId([Service] IHttpContextAccessor contextAccessor,
         [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
         [Service] IGenericRepositoryFactory repoFactory,
@@ -100,6 +119,38 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 return new PractitionerQueryExtension().GetAllChildrenForPractitioner(contextAccessor, dbFactory, repoFactory, userId);
             } else return new List<Child>();
 
+        }
+
+        public Principal MapPractitionerToPrincipal(Practitioner practitioner)
+        {
+            Principal userToMap = new Principal()
+            {
+                Id = practitioner.Id,
+                IsActive = practitioner.IsActive,
+                InsertedDate = practitioner.InsertedDate,
+                UpdatedBy = practitioner.UpdatedBy,
+                UpdatedDate = practitioner.UpdatedDate,
+                Hierarchy = practitioner.Hierarchy,
+                AttendanceRegisterLink = practitioner.AttendanceRegisterLink,
+                MaxChildren = practitioner.MaxChildren,
+                ConsentForPhoto = practitioner.ConsentForPhoto,
+                ParentFees = practitioner?.ParentFees,
+                LanguageUsedInGroups = practitioner?.LanguageUsedInGroups,
+                StartDate = practitioner.StartDate,
+                MonthSinceFranchisee = practitioner?.MonthSinceFranchisee,
+                UserId = practitioner.UserId,
+                SiteAddressId = practitioner?.SiteAddressId,
+                IsPrincipal = true,
+                CoachHierarchy = practitioner?.CoachHierarchy,
+                IsFundaAppAdmin = practitioner?.IsFundaAppAdmin,
+                IsTrainee = practitioner?.IsTrainee,
+                SigningSignature = practitioner?.SigningSignature
+                //NotInvitedYet = practitioner.NotInvitedYet,
+                //Signature = practitioner.Signature,
+                //PrincipalHierarchy = practitioner?.PrincipalHierarchy,           
+            };
+
+            return userToMap;
         }
     }
 }

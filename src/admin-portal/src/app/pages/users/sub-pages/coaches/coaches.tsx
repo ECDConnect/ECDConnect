@@ -1,8 +1,17 @@
-import { useQuery } from '@apollo/client';
-import { CoachDto, PermissionEnum, usePanel } from '@ecdlink/core';
-import { GetAllCoach } from '@ecdlink/graphql';
+import { useQuery, useMutation } from '@apollo/client';
+import {
+  CoachDto,
+  PermissionEnum,
+  usePanel,
+  useDialog,
+  useNotifications,
+  NOTIFICATION,
+} from '@ecdlink/core';
+import { GetAllCoach, SendInviteToApplication } from '@ecdlink/graphql';
+import { DialogPosition } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
+import AlertModal from '../../../../components/dialog-alert/dialog-alert';
 import UiTable from '../../../../components/ui-table';
 import { useUser } from '../../../../hooks/useUser';
 import CoachPanelCreate from './coach-panel-create/coach-panel-create';
@@ -10,11 +19,15 @@ import CoachPanelEdit from './coach-panel-edit/coach-panel-edit';
 
 export default function Coaches() {
   const { hasPermission } = useUser();
+  const { setNotification } = useNotifications();
+  const dialog = useDialog();
   const { data, refetch } = useQuery(GetAllCoach, {
     fetchPolicy: 'cache-and-network',
   });
 
   const [tableData, setTableData] = useState<any[]>([]);
+
+  const [sendInviteToApplication] = useMutation(SendInviteToApplication);
 
   useEffect(() => {
     if (data && data.GetAllCoach) {
@@ -71,6 +84,32 @@ export default function Coaches() {
     });
   };
 
+  const sendInvite = async (coach: CoachDto) => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (onSubmit: any, onCancel: any) => (
+        <AlertModal
+          title="Practitioner Invite"
+          message={`You are about to send an invite to ${coach.user.firstName} ${coach.user.surname}`}
+          onCancel={onCancel}
+          onSubmit={() => {
+            onSubmit();
+            sendInviteToApplication({
+              variables: {
+                userId: coach.userId,
+              },
+            }).then(() => {
+              setNotification({
+                title: 'Successfully Sent Practitioner Invite!',
+                variant: NOTIFICATION.SUCCESS,
+              });
+            });
+          }}
+        />
+      ),
+    });
+  };
+
   if (tableData) {
     return (
       <div>
@@ -103,6 +142,9 @@ export default function Coaches() {
                   editRow={
                     hasPermission(PermissionEnum.update_user) &&
                     displayEditPanel
+                  }
+                  sendRow={
+                    hasPermission(PermissionEnum.update_user) && sendInvite
                   }
                 />
               </div>

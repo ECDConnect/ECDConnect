@@ -1,5 +1,9 @@
+import { useQuery } from '@apollo/client';
 import { UseFormRegister } from 'react-hook-form';
 import FormField from '../../../../components/form-field/form-field';
+import FormSelectorField from '../../../../components/form-selector-field/form-selector-field';
+import { GetAllCoach } from '@ecdlink/graphql';
+import { CoachDto, PractitionerDto } from '@ecdlink/core';
 
 export interface PractitionerFormProps {
   formKey: string;
@@ -12,6 +16,7 @@ const PractitionerForm: React.FC<PractitionerFormProps> = ({
   errors,
   register,
 }) => {
+  const { data } = useQuery(GetAllCoach, { fetchPolicy: 'cache-and-network' });
   return (
     <form key={formKey} className="space-y-8 divide-y divide-gray-200">
       <div className="space-y-8 divide-y divide-gray-200">
@@ -75,6 +80,21 @@ const PractitionerForm: React.FC<PractitionerFormProps> = ({
               type="checkbox"
               register={register}
               error={errors.consentForPhoto?.message}
+            />
+          </div>
+          <div className="sm:col-span-3">
+            <FormSelectorField
+              label="Coach *"
+              nameProp={'franchisorId'}
+              register={register}
+              options={
+                data &&
+                data.GetAllCoach &&
+                data.GetAllFranGetAllCoachchisor.map((x: CoachDto) => {
+                  return { key: x.userId, value: x.user.fullName };
+                })
+              }
+              error={errors.programTypeId?.message}
             />
           </div>
           <div className="sm:col-span-3">

@@ -2,7 +2,44 @@ import { gql } from '@apollo/client';
 
 export const GetAllPrincipal = gql`
   {
-    GetAllPrincipal {
+    allPrincipal {
+      id
+      userId
+      user {
+        firstName
+        surname
+        email
+        isActive
+        idNumber
+      }
+      siteAddressId
+      siteAddress {
+        id
+        province {
+          id
+          description
+        }
+        name
+        addressLine1
+        addressLine2
+        addressLine3
+        postalCode
+        ward
+      }
+      attendanceRegisterLink
+      maxChildren
+      consentForPhoto
+      parentFees
+      languageUsedInGroups
+      startDate
+      monthSinceFranchisee
+    }
+  }
+`;
+
+export const allPrincipal = gql`
+  {
+    allPrincipal {
       id
       userId
       user {

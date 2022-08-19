@@ -27,6 +27,8 @@ import ApplicationUsers from './pages/users/sub-pages/application-users/applicat
 import Children from './pages/users/sub-pages/children/children';
 import Coaches from './pages/users/sub-pages/coaches/coaches';
 import Practitioners from './pages/users/sub-pages/practitioners/practitioners';
+import Franchisors from './pages/users/sub-pages/franchisors/franchisors';
+import Principals from './pages/users/sub-pages/principals/principals';
 import Users from './pages/users/users';
 
 const PublicRoutes: React.FC = () => {
@@ -76,9 +78,11 @@ const UserRoutes: React.FC = () => {
   return (
     <Switch>
       <Route path={`/users/application`} component={ApplicationUsers}></Route>
+      <Route path={`/users/franchisors`} component={Franchisors}></Route>
       <Route path={`/users/coaches`} component={Coaches}></Route>
-      <Route path={`/users/children`} component={Children}></Route>
+      <Route path={`/users/principals`} component={Principals}></Route>
       <Route path={`/users/practitioners`} component={Practitioners}></Route>
+      <Route path={`/users/children`} component={Children}></Route>
     </Switch>
   );
 };
