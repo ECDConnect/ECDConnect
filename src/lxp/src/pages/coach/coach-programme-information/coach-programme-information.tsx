@@ -209,7 +209,14 @@ export const CoachProgrammeInformation: React.FC = () => {
               />
             </div>
           </div>
-          <ChevronRightIcon className={styles.rightArrowIcon} />
+          <ChevronRightIcon
+            className={styles.rightArrowIcon}
+            onClick={() =>
+              history.push(ROUTES.COACH.CLASSES_REASSIGNED, {
+                practitionerId,
+              })
+            }
+          />
         </div>
       </div>
       <div className="flex justify-center my-6">

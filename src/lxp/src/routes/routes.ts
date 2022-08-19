@@ -67,6 +67,7 @@ const ROUTES = {
     PRACTITIONER_CLASSROOM: '/practitioner-classroom',
     PRACTITIONER_CHILD_LIST: '/practitioner-childlist',
     PROGRAMME_INFORMATION: '/programme-information',
+    CLASSES_REASSIGNED: '/classes-reassigned',
     CHILD_PROFILE: '/child-profile',
     ACCOUNT: '/account',
     PROFILE: addPrefix('/profile', {

@@ -1,9 +1,8 @@
 import { ChildDto } from '@ecdlink/core';
 import { ComponentBaseProps, ListItem, ListItemProps } from '@ecdlink/ui';
-import { addDays } from 'date-fns';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
-import { childRegistrationConstants } from '@/constants/Child';
+// import { childRegistrationConstants } from '@/constants/Child';
 import { DateFormats } from '@/constants/Dates';
 import { contentReportSelectors } from '@store/content/report';
 import {

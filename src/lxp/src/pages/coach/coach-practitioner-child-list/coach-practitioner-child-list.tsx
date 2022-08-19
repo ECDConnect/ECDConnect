@@ -185,6 +185,7 @@ export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
   const onChildListItemAction = (childId: string) => {
     history.push('child-profile', {
       childId,
+      practitionerId,
     });
   };
 

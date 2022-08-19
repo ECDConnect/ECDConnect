@@ -72,6 +72,7 @@ export const CoachChildProfile: React.FC = () => {
   const appDispatch = useAppDispatch();
   const location = useLocation<ChildProfileRouteState>();
   const childId = location.state.childId;
+  const practitionerId = location.state.practitionerId;
 
   const { getDocumentTypeIdByEnum, getWorkflowStatusIdByEnum } =
     useStaticData();
@@ -150,23 +151,6 @@ export const CoachChildProfile: React.FC = () => {
   const [notifications, setNotifications] = useState<ListItemProps[]>([]);
   const [profileOptions, setProfileOptions] = useState<ListItemProps[]>([
     {
-      key: 'personal-information',
-      title: 'Personal Information',
-      subTitle: 'Child & caregiver information',
-      buttonType: 'outlined',
-      buttonIcon: 'EyeIcon',
-      buttonText: 'View',
-      buttonTextColor: 'secondary',
-      buttonColor: 'secondaryAccent2',
-      showButton: true,
-      showDivider: true,
-      dividerType: 'dashed',
-      withPaddingY: true,
-      onButtonClick: () => {
-        history.push(ROUTES.CHILD.INFORMATION.EDIT, { childId });
-      },
-    },
-    {
       key: 'progress',
       title: 'Progress',
       subTitle: 'See observations & reports',
@@ -184,6 +168,23 @@ export const CoachChildProfile: React.FC = () => {
         //   childId: child?.id,
         //   reportingDate: reportDate,
         // });
+      },
+    },
+    {
+      key: 'personal-information',
+      title: 'Personal Information',
+      subTitle: 'Child & caregiver information',
+      buttonType: 'outlined',
+      buttonIcon: 'EyeIcon',
+      buttonText: 'View',
+      buttonTextColor: 'secondary',
+      buttonColor: 'secondaryAccent2',
+      showButton: true,
+      showDivider: true,
+      dividerType: 'dashed',
+      withPaddingY: true,
+      onButtonClick: () => {
+        history.push(ROUTES.CHILD.INFORMATION.EDIT, { childId });
       },
     },
   ]);
@@ -483,7 +484,9 @@ export const CoachChildProfile: React.FC = () => {
         size="medium"
         renderBorder={true}
         renderOverflow={false}
-        onBack={() => history.push(ROUTES.COACH.PRACTITIONER_CHILD_LIST)}
+        onBack={() =>
+          history.push(ROUTES.COACH.PRACTITIONER_CHILD_LIST, { practitionerId })
+        }
         displayOffline={!isOnline}
       >
         <div className={styles.avatarWrapper}>
