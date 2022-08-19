@@ -252,7 +252,7 @@ export const EditClass = ({
         )}
 
         <div>
-          <span>{`When does  ${classToEdit.name} class meet everyday?`}</span>
+          <span>{`Does ${classToEdit.name} class meet everyday?`}</span>
           <div className="mt-2">
             <Controller
               name={'meetEveryday'}
@@ -276,7 +276,7 @@ export const EditClass = ({
           <div>
             <span>{`When does ${
               name ? `"${name}"` : 'the'
-            } playgroup meet?`}</span>
+            } playgroup meet? `}</span>
             <span>You must choose at least 2 days</span>
             <div className="mt-2 -mb-4">
               <Controller
