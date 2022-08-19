@@ -18,7 +18,7 @@ export const Alert: React.FC<AlertProps> = ({
   return (
     <div
       className={classNames(
-        styles.wrapper(variant),
+        styles.wrapper,
         styles.alertColor(type, variant),
         className
       )}

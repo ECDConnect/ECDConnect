@@ -1,6 +1,12 @@
-import { PractitionerDto } from '@ecdlink/core';
+import { PractitionerDto, UserDto } from '@ecdlink/core';
 
+export type PrincipalPractitioners = Partial<
+  Pick<UserDto, 'firstName' | 'surname' | 'idNumber' | 'id'> & {
+    userId: string;
+  }
+>;
 export interface PractitionerState {
   practitioner?: PractitionerDto | undefined;
   practitioners?: PractitionerDto[] | undefined;
+  principalPractitioners?: PrincipalPractitioners[];
 }

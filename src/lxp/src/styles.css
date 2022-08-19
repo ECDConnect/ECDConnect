@@ -58,3 +58,10 @@ input::-webkit-inner-spin-button {
 ion-content {
   --keyboard-offset: 0 !important;
 }
+
+.wrapper-with-sticky-button {
+  height: calc(100vh - 80px);
+  display: grid;
+  grid-template-rows: min-content 1fr;
+  gap: 16px;
+}

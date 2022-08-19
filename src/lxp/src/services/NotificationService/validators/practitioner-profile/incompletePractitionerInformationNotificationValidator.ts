@@ -6,6 +6,7 @@ import {
   NotificationPriority,
   NotificationValidator,
 } from '../../NotificationService.types';
+import ROUTES from '@/routes/routes';
 
 export class IncompletePractitionerInformationNotificationValidator
   implements NotificationValidator
@@ -31,14 +32,19 @@ export class IncompletePractitionerInformationNotificationValidator
      * 1. The user is a practitioner
      * 2. The user doesn't have a classroom
      * 3. The user doesn't have a classroom ID
+     * 4. There are no classes setup
      */
     const isPractitioner = userState?.user?.roles?.some(
       (role) => role.name === 'Practitioner'
     );
 
+    const classes = classroomState.classroomGroups?.length || 0;
+
     const showNotification =
       isPractitioner &&
-      (!classroomState?.classroom || !classroomState?.classroom?.id);
+      (!classroomState?.classroom ||
+        !classroomState?.classroom?.id ||
+        classes < 1);
 
     if (showNotification) {
       return [
@@ -46,7 +52,7 @@ export class IncompletePractitionerInformationNotificationValidator
           reference: `practitioner-profile`,
           title: 'Complete your profile',
           message:
-            'We suggest connecting to a wifi network to complete this process. After syncing your data, the Funda App will continue to work offline.',
+            'Share more information about your programme to make Funda App useful for you.',
           dateCreated: new Date().toISOString(),
           priority: NotificationPriority.lower,
           viewOnDashboard: true,
@@ -56,7 +62,7 @@ export class IncompletePractitionerInformationNotificationValidator
           actionText: 'Complete your profile',
           viewType: 'Hub',
           routeConfig: {
-            route: '/practitioner/profile/edit/',
+            route: ROUTES.PRACTITIONER.PROFILE.EDIT,
           },
         },
       ];

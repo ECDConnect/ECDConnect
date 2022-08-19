@@ -51,8 +51,8 @@ class ClassroomGroupService {
             programmeType {
               id
               description
-            }            
-            isActive                 
+            }
+            isActive
           }
         }
           `,
