@@ -33,7 +33,7 @@ const baseProgressReportListItem: ListItemProps = {
   showDivider: true,
   dividerColor: 'uiBg',
   dividerType: 'solid',
-  iconBackgroundColor: 'tertiary',
+  iconBackgroundColor: 'alertMain',
 };
 
 export const CoachChildProgressReportAlert: React.FC<

@@ -1,14 +1,11 @@
 import { useHistory, useLocation } from 'react-router';
-import { useState } from 'react';
 import { renderIcon } from '@ecdlink/ui';
-import { useTheme } from '@ecdlink/core';
 import { BannerWrapper, Button, Typography, Alert } from '@ecdlink/ui';
 import { PhoneIcon } from '@heroicons/react/solid';
 import { PractitionerProfileRouteState } from './coach-classes-reassigned.types';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import * as styles from './coach-classes-reassigned.styles';
 import ROUTES from '@routes/routes';
-import { childrenSelectors } from '@store/children';
 import { practitionerSelectors } from '@/store/practitioner';
 import { useSelector } from 'react-redux';
 import { getLogo, LogoSvgs } from '@utils/common/svg.utils';
@@ -20,50 +17,15 @@ import { getLogo, LogoSvgs } from '@utils/common/svg.utils';
 // import { useSelector } from 'react-redux';
 
 export const CoachClassesReassigned: React.FC = () => {
-  const mockedData = [
-    {
-      id: 1,
-      title: '75% attendance rate',
-      subTitle: 'Coming soon',
-      avatarColor: '#FF5C00',
-      profileText: 'CS',
-      alertSeverity: 'none',
-      phoneNumber: '2138471324',
-      email: 'johnbf@gmail.com',
-    },
-    {
-      id: 2,
-      title: '5 overdue progress reports',
-      subTitle: 'Coming soon',
-      avatarColor: '#FF5C00',
-      profileText: 'CS',
-      alertSeverity: 'none',
-      phoneNumber: '23984123490',
-      email: 'pedroM@gmail.com',
-    },
-    {
-      id: 3,
-      title: "5 children haven't progressed",
-      subTitle: 'Coming soon',
-      avatarColor: '#FF5C00',
-      profileText: 'CS',
-      alertSeverity: 'none',
-      phoneNumber: '314874393',
-      email: 'carlosvieira1234@gmail.com',
-    },
-  ];
-
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
-  const children = useSelector(childrenSelectors.getChildren);
   const location = useLocation<PractitionerProfileRouteState>();
   const practitionerId = location.state.practitionerId;
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const practitioner = practitioners?.find(
-    (practitioner) => practitioner?.id === practitionerId
+    (practitioner) => practitioner?.userId === practitionerId
   );
   const reassignedGroups = false;
-  const { theme } = useTheme();
 
   return (
     <div className={styles.contentWrapper}>

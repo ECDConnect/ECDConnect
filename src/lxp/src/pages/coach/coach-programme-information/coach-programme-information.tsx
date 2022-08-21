@@ -1,11 +1,8 @@
 import { useHistory, useLocation } from 'react-router';
-import { useState } from 'react';
 import { useTheme } from '@ecdlink/core';
 import {
   BannerWrapper,
   Button,
-  Dialog,
-  DialogPosition,
   Divider,
   ProfileAvatar,
   renderIcon,
@@ -19,17 +16,14 @@ import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import * as styles from './coach-programme-information.styles';
 import ROUTES from '@routes/routes';
 import {
-  AcademicCapIcon,
-  CheckCircleIcon,
   ChevronRightIcon,
   ExclamationIcon,
-  InformationCircleIcon,
   PhoneIcon,
 } from '@heroicons/react/solid';
 // import { CreateNote } from '../../components/create-note/create-note';
-import { NoteTypeEnum } from '@ecdlink/graphql';
-import { getLastNoteDate } from '@utils/child/child-profile-utils';
-import { notesSelectors } from '@store/notes';
+// import { NoteTypeEnum } from '@ecdlink/graphql';
+// import { getLastNoteDate } from '@utils/child/child-profile-utils';
+// import { notesSelectors } from '@store/notes';
 import { useSelector } from 'react-redux';
 import { practitionerSelectors } from '@/store/practitioner';
 import { practitionerForCoachSelectors } from '@/store/practitionerForCoach';
@@ -48,7 +42,7 @@ export const CoachProgrammeInformation: React.FC = () => {
     practitionersForCoach?.find((item2) => item.id === item2.id)
   );
   const practitioner = practitioners?.find(
-    (practitioner) => practitioner?.id === practitionerId
+    (practitioner) => practitioner?.userId === practitionerId
   );
   const practitionersForCoachListItems = practitionersList?.map((item) => {
     const titleStyle = 'text-textMid';
@@ -65,7 +59,13 @@ export const CoachProgrammeInformation: React.FC = () => {
     };
   });
 
-  console.log({ practitionersForCoachListItems });
+  const call = () => {
+    window.open(`tel:${practitioner?.user?.phoneNumber}`);
+  };
+
+  const whatsapp = () => {
+    window.open(`https://wa.me/${practitioner?.user?.phoneNumber}`);
+  };
 
   const handleClick = (practitionerId: string) => {
     if (isCoach) {
@@ -78,7 +78,7 @@ export const CoachProgrammeInformation: React.FC = () => {
       });
     }
   };
-  console.log({ practitionerId });
+
   const { theme } = useTheme();
   const hasClasses = true;
 
@@ -133,7 +133,7 @@ export const CoachProgrammeInformation: React.FC = () => {
             type={'outlined'}
             className={'mr-4 rounded-xl'}
             size={'small'}
-            onClick={() => {}}
+            onClick={call}
           >
             <PhoneIcon
               className="h-6 w-5 text-primary mx-2"
@@ -145,7 +145,7 @@ export const CoachProgrammeInformation: React.FC = () => {
             type={'outlined'}
             className={'mr-4 rounded-xl'}
             size={'small'}
-            onClick={() => {}}
+            onClick={whatsapp}
           >
             <img
               src={getLogo(LogoSvgs.whatsapp)}
@@ -173,7 +173,7 @@ export const CoachProgrammeInformation: React.FC = () => {
                 <Typography
                   type={'body'}
                   weight={'bold'}
-                  text={'SmartSpace check required'}
+                  text={'Cooming soon'}
                   color={'textMid'}
                 />
               </div>

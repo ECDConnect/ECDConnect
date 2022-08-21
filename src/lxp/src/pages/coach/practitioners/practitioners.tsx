@@ -51,7 +51,7 @@ export const Practitioners: React.FC = () => {
       profileText:
         item?.user?.firstName.substring(0, 1)! +
         item?.user?.surname.substring(0, 1),
-      onActionClick: () => handleClick(item.id!),
+      onActionClick: () => handleClick(item.userId!),
     };
   });
 

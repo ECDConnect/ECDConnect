@@ -5,11 +5,7 @@ import {
   Document,
   ContentConsentTypeEnum,
 } from '@ecdlink/core';
-import {
-  FileTypeEnum,
-  NoteTypeEnum,
-  WorkflowStatusEnum,
-} from '@ecdlink/graphql';
+import { FileTypeEnum, WorkflowStatusEnum } from '@ecdlink/graphql';
 import {
   Alert,
   BannerWrapper,
@@ -41,11 +37,9 @@ import { CaregiverContactReason } from '@store/caregiver/caregiver.types';
 import { childrenActions, childrenSelectors } from '@store/children';
 import { classroomsSelectors } from '@store/classroom';
 import { documentActions, documentSelectors } from '@store/document';
-import { notesSelectors } from '@store/notes';
 import {
   getAge,
   getChildAttendancePercentageAtPlaygroup,
-  getLastNoteDate,
 } from '@utils/child/child-profile-utils';
 import {
   getColor,
@@ -96,7 +90,7 @@ export const CoachChildProfile: React.FC = () => {
   const childUser = useSelector(
     childrenSelectors.getChildUserById(child?.userId)
   );
-  const notes = useSelector(notesSelectors.getNotesByUserId(child?.userId));
+  // const notes = useSelector(notesSelectors.getNotesByUserId(child?.userId));
   const attendanceData = useSelector(attendanceSelectors.getAttendance);
   const authUser = useSelector(authSelectors.getAuthUser);
   const childDocuments = useSelector(
@@ -132,8 +126,8 @@ export const CoachChildProfile: React.FC = () => {
     )
   );
 
-  const [createChildNoteVisible, setCreateChildNoteVisible] =
-    useState<boolean>(false);
+  // const [createChildNoteVisible, setCreateChildNoteVisible] =
+  //   useState<boolean>(false);
   const [editProfilePictureVisible, setEditProfilePictureVisible] =
     useState(false);
 
@@ -164,10 +158,10 @@ export const CoachChildProfile: React.FC = () => {
       dividerType: 'dashed',
       withPaddingY: true,
       onButtonClick: () => {
-        // history.push(ROUTES.CHILD_PROGRESS_OBSERVATION, {
-        //   childId: child?.id,
-        //   reportingDate: reportDate,
-        // });
+        history.push(ROUTES.CHILD_PROGRESS_OBSERVATION, {
+          childId: child?.id,
+          reportingDate: new Date(),
+        });
       },
     },
     {
@@ -259,13 +253,12 @@ export const CoachChildProfile: React.FC = () => {
 
   useEffect(() => {
     // if (!attendanceData || !child || !playGroup) return;
-    console.log('testeeeeee');
+
     const childBirthDate = childUser?.dateOfBirth
       ? new Date(childUser?.dateOfBirth)
       : currentDate;
 
     const ageOfChild = getAge(childBirthDate);
-    console.log({ ageOfChild });
     setChildAge(ageOfChild);
 
     new AttendanceService(authUser?.auth_token ?? '')
@@ -365,9 +358,9 @@ export const CoachChildProfile: React.FC = () => {
     return;
   };
 
-  const onCreateChildNoteBack = () => {
-    setCreateChildNoteVisible(false);
-  };
+  // const onCreateChildNoteBack = () => {
+  //   setCreateChildNoteVisible(false);
+  // };
 
   const viewChildProgressObservationReports = () => {
     history.push(ROUTES.COMPLETED_CHILD_PROGRESS_OBSERVATION_REPORTS, {
@@ -375,9 +368,9 @@ export const CoachChildProfile: React.FC = () => {
     });
   };
 
-  const onNoteCreated = () => {
-    setCreateChildNoteVisible(false);
-  };
+  // const onNoteCreated = () => {
+  //   setCreateChildNoteVisible(false);
+  // };
 
   const goToRemoveChild = () => {
     history.push(ROUTES.REMOVE_CHILD, { childId: child?.id });

@@ -19,50 +19,48 @@ import * as styles from './practitioner-profile-info.styles';
 import ROUTES from '@routes/routes';
 import {
   AcademicCapIcon,
-  CheckCircleIcon,
   ChevronRightIcon,
   InformationCircleIcon,
   PhoneIcon,
 } from '@heroicons/react/solid';
 // import { CreateNote } from '../../components/create-note/create-note';
-import { NoteTypeEnum } from '@ecdlink/graphql';
 import { getLastNoteDate } from '@utils/child/child-profile-utils';
 import { notesSelectors } from '@store/notes';
 import { useSelector } from 'react-redux';
 import { practitionerSelectors } from '@/store/practitioner';
 
-const mockedData = [
-  {
-    id: 1,
-    title: 'John Buffalo',
-    subTitle: 'Progress report overdue',
-    avatarColor: '#6974af',
-    profileText: 'Jb',
-    alertSeverity: 'error',
-    phoneNumber: '2138471324',
-    email: 'johnbf@gmail.com',
-  },
-  {
-    id: 2,
-    title: 'Pedro Machado',
-    subTitle: 'Progress report overdue',
-    avatarColor: '#6974af',
-    profileText: 'Pm',
-    alertSeverity: 'error',
-    phoneNumber: '23984123490',
-    email: 'pedroM@gmail.com',
-  },
-  {
-    id: 3,
-    title: 'Carlos Vieira',
-    subTitle: 'Progress report overdue',
-    avatarColor: '#6974af',
-    profileText: 'Cv',
-    alertSeverity: 'error',
-    phoneNumber: '314874393',
-    email: 'carlosvieira1234@gmail.com',
-  },
-];
+// const mockedData = [
+//   {
+//     id: 1,
+//     title: 'John Buffalo',
+//     subTitle: 'Progress report overdue',
+//     avatarColor: '#6974af',
+//     profileText: 'Jb',
+//     alertSeverity: 'error',
+//     phoneNumber: '2138471324',
+//     email: 'johnbf@gmail.com',
+//   },
+//   {
+//     id: 2,
+//     title: 'Pedro Machado',
+//     subTitle: 'Progress report overdue',
+//     avatarColor: '#6974af',
+//     profileText: 'Pm',
+//     alertSeverity: 'error',
+//     phoneNumber: '23984123490',
+//     email: 'pedroM@gmail.com',
+//   },
+//   {
+//     id: 3,
+//     title: 'Carlos Vieira',
+//     subTitle: 'Progress report overdue',
+//     avatarColor: '#6974af',
+//     profileText: 'Cv',
+//     alertSeverity: 'error',
+//     phoneNumber: '314874393',
+//     email: 'carlosvieira1234@gmail.com',
+//   },
+// ];
 
 export const CoachPractitionerProfileInfo: React.FC = () => {
   const history = useHistory();
@@ -71,14 +69,13 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
   const practitionerId = location.state.practitionerId;
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const practitioner = practitioners?.find(
-    (practitioner) => practitioner?.id === practitionerId
+    (practitioner) => practitioner?.userId === practitionerId
   );
-  console.log({ practitionerId });
+
   const { theme } = useTheme();
   const hasClasses = true;
 
-  const [createPractitionerNoteVisible, setCreatePractitionerdNoteVisible] =
-    useState<boolean>(false);
+  const [createPractitionerNoteVisible] = useState<boolean>(false);
   const notes = useSelector(notesSelectors.getNotesByUserId(practitioner?.id));
 
   //   const onCreatePractitionerNoteBack = () => {
@@ -332,7 +329,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
               />
             ) : (
               <Typography
-                text={'Add a note'}
+                text={''}
                 type="h4"
                 color="textDark"
                 className={'mt-1'}

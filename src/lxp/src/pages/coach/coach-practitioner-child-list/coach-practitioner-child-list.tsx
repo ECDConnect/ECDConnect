@@ -1,12 +1,6 @@
-import { ChildDto, LearnerDto, useDialog } from '@ecdlink/core';
+import { ChildDto, LearnerDto } from '@ecdlink/core';
 import { getAvatarColor } from '@ecdlink/core';
-import {
-  DialogPosition,
-  FADButton,
-  SearchDropDown,
-  StackedList,
-  BannerWrapper,
-} from '@ecdlink/ui';
+import { SearchDropDown, StackedList, BannerWrapper } from '@ecdlink/ui';
 import {
   AlertSeverityType,
   ComponentBaseProps,
@@ -29,54 +23,20 @@ import { documentSelectors } from '@store/document';
 import { contentReportSelectors } from '@store/content/report';
 import { useStaticData } from '@hooks/useStaticData';
 import { WorkflowStatusEnum } from '@ecdlink/graphql';
-import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import ROUTES from '@routes/routes';
 import { practitionerSelectors } from '@/store/practitioner';
+import { childrenForPractitionerSelectors } from '@/store/childrenForPractitioner';
 import { IconInformationIndicator } from '../../classroom/programme-planning/components/icon-information-indicator/icon-information-indicator';
 
 export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
-  const mockedData = [
-    {
-      id: 1,
-      title: 'John Buffalo',
-      subTitle: 'Progress report overdue',
-      avatarColor: '#6974af',
-      profileText: 'Jb',
-      alertSeverity: 'error',
-      phoneNumber: '2138471324',
-      email: 'johnbf@gmail.com',
-    },
-    {
-      id: 2,
-      title: 'Pedro Machado',
-      subTitle: 'Progress report overdue',
-      avatarColor: '#6974af',
-      profileText: 'Pm',
-      alertSeverity: 'error',
-      phoneNumber: '23984123490',
-      email: 'pedroM@gmail.com',
-    },
-    {
-      id: 3,
-      title: 'Carlos Vieira',
-      subTitle: 'Progress report overdue',
-      avatarColor: '#6974af',
-      profileText: 'Cv',
-      alertSeverity: 'error',
-      phoneNumber: '314874393',
-      email: 'carlosvieira1234@gmail.com',
-    },
-  ];
-
   const location = useLocation<PractitionerProfileRouteState>();
   const practitionerId = location.state.practitionerId;
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const practitioner = practitioners?.find(
-    (practitioner) => practitioner?.id === practitionerId
+    (practitioner) => practitioner?.userId === practitionerId
   );
   const { isOnline } = useOnlineStatus();
-  const dialog = useDialog();
   const { getWorkflowStatusIdByEnum } = useStaticData();
   const pendingStatusId = getWorkflowStatusIdByEnum(
     WorkflowStatusEnum.ChildPending
@@ -84,6 +44,9 @@ export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
   const history = useHistory();
   const attendanceData = useSelector(attendanceSelectors.getAttendance);
   const children = useSelector(childrenSelectors.getChildren);
+  const childrenForPractitioner = useSelector(
+    childrenForPractitionerSelectors.getChildrenForPractitioner
+  );
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const classroomGroupProgrammes = useSelector(
     classroomsSelectors.getClassProgrammes
@@ -97,6 +60,7 @@ export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
     classroomsSelectors.getClassroomGroupLearners
   );
   const isPlaygroup = useSelector(classroomsSelectors.isPlaygroup());
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [addChildButtonExpanded, setAddChildButtonExpanded] =
     useState<boolean>(true);
   const [searchTextActive, setSearchTextActive] = useState(false);
@@ -110,6 +74,19 @@ export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
   const [updatedPlaygroups, setUpdatedPlaygroups] = useState<
     SearchDropDownOption<string>[]
   >([]);
+
+  const childrenForPractitionerList = children?.filter((item) =>
+    childrenForPractitioner?.find((item2) => item.id === item2.id)
+  );
+
+  // useEffect(() => {
+  //   (async () =>
+  //     await appDispatch(
+  //       childrenForPractitionerThunkActions.getChildrenForPractitioner({
+  //         id: practitionerId,
+  //       })
+  //     ).unwrap())();
+  // }, [appDispatch, practitionerId]);
 
   const filterInfo: FilterInfo = {
     filterName: 'Playgroup',
@@ -166,10 +143,14 @@ export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
   }, [classroomGroups, classroomGroupLearners]);
 
   useEffect(() => {
-    if (classroomGroupLearners && children && pendingStatusId) {
+    if (
+      classroomGroupLearners &&
+      childrenForPractitionerList &&
+      pendingStatusId
+    ) {
       const childListItem: UserAlertListDataItem[] = [];
 
-      for (const child of children) {
+      for (const child of childrenForPractitionerList) {
         const learner = classroomGroupLearners.find(
           (x) => x.userId === child.userId
         );
@@ -180,7 +161,7 @@ export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
       setFilteredChildData(childListItem);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [classroomGroupLearners, children, pendingStatusId]);
+  }, [classroomGroupLearners, pendingStatusId]);
 
   const onChildListItemAction = (childId: string) => {
     history.push('child-profile', {
@@ -193,9 +174,9 @@ export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
     setActiveFilters(value);
     const selectedClassrooms = value.map((x) => x.value);
     const childListItem: UserAlertListDataItem[] = [];
-    if (children && classroomGroupLearners) {
+    if (childrenForPractitionerList && classroomGroupLearners) {
       if (value && value.length > 0) {
-        for (const child of children) {
+        for (const child of childrenForPractitionerList) {
           const learner = classroomGroupLearners.find(
             (x) =>
               x.userId === child.userId &&
@@ -206,7 +187,7 @@ export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
           }
         }
       } else {
-        for (const child of children) {
+        for (const child of childrenForPractitionerList) {
           const learner = classroomGroupLearners.find(
             (x) => x.userId === child.userId
           );
@@ -221,8 +202,8 @@ export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
   };
 
   const onSortItemsChanges = (column: string) => {
-    if (children && classroomGroupLearners) {
-      const filteredChildren = children.filter((child) =>
+    if (childrenForPractitionerList && classroomGroupLearners) {
+      const filteredChildren = childrenForPractitionerList.filter((child) =>
         childUserListData?.some((x) => x.id === child.id)
       );
       const sorted = [...filteredChildren].sort((a: ChildDto, b: ChildDto) => {
@@ -329,8 +310,6 @@ export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
       reports
     );
 
-    console.log({ childAlert });
-
     return {
       id: childRecord.id,
       profileDataUrl: childUser?.profileImageUrl,
@@ -355,14 +334,6 @@ export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
     }
   };
 
-  const registerNewChild = () => {
-    if (isOnline) {
-      history.push('/child-registration-landing');
-    } else {
-      showOnlineOnly();
-    }
-  };
-
   const onSearchChange = (value: string) => {
     setFilteredChildData(
       childUserListData?.filter((x) =>
@@ -371,14 +342,14 @@ export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
     );
   };
 
-  const showOnlineOnly = () => {
-    dialog({
-      position: DialogPosition.Bottom,
-      render: (onSubmit) => {
-        return <OnlineOnlyModal onSubmit={onSubmit}></OnlineOnlyModal>;
-      },
-    });
-  };
+  // const showOnlineOnly = () => {
+  //   dialog({
+  //     position: DialogPosition.Bottom,
+  //     render: (onSubmit) => {
+  //       return <OnlineOnlyModal onSubmit={onSubmit}></OnlineOnlyModal>;
+  //     },
+  //   });
+  // };
 
   return (
     <>
@@ -395,7 +366,7 @@ export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
         }
         displayOffline={!isOnline}
       ></BannerWrapper>
-      {/* {children && children.length > 0 && ( */}
+      {/* {childrenForPractitionerList && childrenForPractitionerList.length > 0 && ( */}
       <SearchHeader<UserAlertListDataItem>
         searchItems={filteredChildData || []}
         onScroll={handleListScroll}
@@ -442,7 +413,8 @@ export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
       </SearchHeader>
 
       <div className={styles.overlay}>
-        {(!children || children.length === 0) && (
+        {(!childrenForPractitionerList ||
+          childrenForPractitionerList.length === 0) && (
           <IconInformationIndicator
             title="This practitioner doesn't have any children yet!"
             subTitle="Check with the practitioner!"

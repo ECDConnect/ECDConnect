@@ -30,7 +30,7 @@ export const getPractitionersForCoach = createAsyncThunk<
         } else {
           return rejectWithValue('no access token, profile check required');
         }
-        console.log({ practitionersForCoach });
+
         return practitionersForCoach;
       } catch (err) {
         return rejectWithValue(err);

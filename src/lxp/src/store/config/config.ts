@@ -75,6 +75,10 @@ import {
 import { syncReducer } from '../sync';
 import { userPersistConfig, userReducer } from '../user/user';
 import type { RootState } from './types';
+import {
+  childrenForPractitionerPersistConfig,
+  childrenForPractitionerReducer,
+} from '../childrenForPractitioner/childrenForPractitioner';
 
 const persistedReducers = {
   activityData: persistReducer(activityPersistConfig, activityReducer),
@@ -83,6 +87,10 @@ const persistedReducers = {
   auth: persistReducer(authPersistConfig, authReducer),
   caregivers: persistReducer(caregiverPersistConfig, caregiverReducer),
   children: persistReducer(childrenPersistConfig, childrenReducer),
+  childrenForPractitioner: persistReducer(
+    childrenForPractitionerPersistConfig,
+    childrenForPractitionerReducer
+  ),
   classroomData: persistReducer(classroomsPersistConfig, classroomsReducer),
   coach: persistReducer(coachPersistConfig, coachReducer),
   contentConsentData: contentConsentReducer,

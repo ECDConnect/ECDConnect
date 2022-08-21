@@ -1,6 +1,5 @@
 import { useHistory, useLocation } from 'react-router';
-import { useState } from 'react';
-import { useTheme } from '@ecdlink/core';
+import { useEffect } from 'react';
 import {
   BannerWrapper,
   Button,
@@ -16,6 +15,12 @@ import ROUTES from '@routes/routes';
 import { childrenSelectors } from '@store/children';
 import { practitionerSelectors } from '@/store/practitioner';
 import { useSelector } from 'react-redux';
+import { useAppDispatch } from '@store';
+import {
+  childrenForPractitionerSelectors,
+  childrenForPractitionerThunkActions,
+} from '@/store/childrenForPractitioner';
+import { ChildrenPerAgeGroup } from './components/childrenPerAgeGroup/childrenPerAgeGroup';
 
 // import { CreateNote } from '../components/create-note/create-note';
 // import { NoteTypeEnum } from '@ecdlink/graphql';
@@ -57,16 +62,32 @@ export const CoachPractitionerClassroom: React.FC = () => {
     },
   ];
 
+  const appDispatch = useAppDispatch();
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
   const children = useSelector(childrenSelectors.getChildren);
+  const childrenForPractitioner = useSelector(
+    childrenForPractitionerSelectors.getChildrenForPractitioner
+  );
   const location = useLocation<PractitionerProfileRouteState>();
   const practitionerId = location.state.practitionerId;
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const practitioner = practitioners?.find(
-    (practitioner) => practitioner?.id === practitionerId
+    (practitioner) => practitioner?.userId === practitionerId
   );
-  const { theme } = useTheme();
+
+  const childrenForPractitionerList = children?.filter((item) =>
+    childrenForPractitioner?.find((item2) => item.id === item2.id)
+  );
+
+  useEffect(() => {
+    (async () =>
+      await appDispatch(
+        childrenForPractitionerThunkActions.getChildrenForPractitioner({
+          id: practitionerId,
+        })
+      ).unwrap())();
+  }, [appDispatch, practitionerId]);
 
   // const handleClick = (practitionerId: number) => {
   //   history.push('practitioner-profile-info', {
@@ -132,7 +153,7 @@ export const CoachPractitionerClassroom: React.FC = () => {
           >
             <div className="ml-4">
               <div className="mt-4 mb-3 text-4xl font-semibold text-black">
-                {children?.length}
+                {childrenForPractitionerList?.length}
               </div>
               <Typography
                 text={'Registered children'}
@@ -187,51 +208,11 @@ export const CoachPractitionerClassroom: React.FC = () => {
               </div>
             </div>
           </Card>
-          <Card
-            className={styles.perAgeCard}
-            borderRaduis={'xl'}
-            shadowSize={'md'}
-          >
-            <div className="ml-4 mt-4">
-              <Typography
-                text={'Children per age group'}
-                type="body"
-                className="mb-4"
-              />
-            </div>
-            <div className="mx-6">
-              <div className="flex justify-between">
-                <div>
-                  <div className="mt-4 mb-3 text-4xl font-semibold text-black">
-                    1
-                  </div>
-                  <Typography text={'< 18 mths'} type="body" className="mb-4" />
-                </div>
-                <div>
-                  <div className="mt-4 mb-3 text-4xl font-semibold text-black">
-                    9
-                  </div>
-                  <Typography
-                    text={'18 mths - 3 years'}
-                    type="body"
-                    className="mb-4"
-                  />
-                </div>
-              </div>
-              <div>
-                <div>
-                  <div className="mt-4 mb-3 text-4xl font-semibold text-black">
-                    3
-                  </div>
-                  <Typography
-                    text={'3 - 5 years'}
-                    type="body"
-                    className="mb-4"
-                  />
-                </div>
-              </div>
-            </div>
-          </Card>
+          <div className="w-full">
+            <ChildrenPerAgeGroup
+              childrenForPractitionerList={childrenForPractitionerList}
+            />
+          </div>
         </>
       </div>
     </div>
