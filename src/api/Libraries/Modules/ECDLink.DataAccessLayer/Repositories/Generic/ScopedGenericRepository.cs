@@ -6,6 +6,9 @@ using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using System;
 using System.Linq;
+using Microsoft.AspNetCore.Identity;
+using ECDLink.DataAccessLayer.Entities;
+using ECDLink.Security;
 
 namespace ECDLink.DataAccessLayer.Repositories.Generic
 {
@@ -13,7 +16,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
       where T : EntityBase<Guid>
     {
         private readonly HierarchyEngine _hierarchyEngine;
-
+        private readonly UserManager<ApplicationUser> _userManager;
         private string Hierarchy
         {
             get
@@ -23,12 +26,14 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
         }
 
         public ScopedGenericRepository(
-            AuthenticationDbContext context, 
+            AuthenticationDbContext context,
+            UserManager<ApplicationUser> userManager,
             HierarchyEngine hierarchyEngine,
             IDomainEventService domainEventService)
           : base(context, domainEventService)
         {
             _hierarchyEngine = hierarchyEngine;
+            _userManager = userManager;
         }
 
         public override IQueryable<T> GetAll()
@@ -40,12 +45,27 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
 
             var all = base.GetAll();
 
-            var hierarchy = _hierarchyEngine.GetUserHierarchy(_userId);
+            //CB Added to bypass hierarchy
+            var user = _userManager.FindByIdAsync(_userId).Result;
+            var roles = _userManager.GetRolesAsync(user).Result;
+            //if user is in a higher admin role (Principal, Practitioner, Coach, Franchisor, then skip the check as they need to be able to see anyone anywhere due to the shift in roles of Milestone 1.
+            var higherRoles = new[] { Roles.PRACTITIONER, Roles.COACH, Roles.ADMINISTRATOR, Roles.PRINCIPAL, Roles.FRANCHISOR };//
+            bool isHigherRole = higherRoles.Any(roles.Contains);
 
-            // Change this to an LTree at some point
-            return entities
-              .Where(x => ((IUserScoped)x).Hierarchy.StartsWith(hierarchy))
-              .AsQueryable();
+            if (isHigherRole)
+            {
+                return entities.AsQueryable();
+            }
+            else
+            {
+
+                var hierarchy = _hierarchyEngine.GetUserHierarchy(_userId);
+
+                // Change this to an LTree at some point
+                return entities
+                  .Where(x => ((IUserScoped)x).Hierarchy.StartsWith(hierarchy))
+                  .AsQueryable();
+            }
         }
 
         public override T GetById(Guid id)
@@ -63,12 +83,19 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             {
                 return default;
             }
-
-            if (!string.IsNullOrWhiteSpace(castRecord.Hierarchy))
+            //if user is in a higher admin role (Principal, Practitioner, Coach, Franchisor, then skip the check as they need to be able to see anyone anywhere due to the shift in roles of Milestone 1.
+            var user = _userManager.FindByIdAsync(_userId).Result;
+            var roles = _userManager.GetRolesAsync(user).Result;
+            var higherRoles = new[] { Roles.PRACTITIONER, Roles.COACH, Roles.ADMINISTRATOR, Roles.PRINCIPAL, Roles.FRANCHISOR };//
+            bool isHigherRole = higherRoles.Any(roles.Contains); //roles.contains(Roles.ADMINISTRATOR);
+            if (!isHigherRole)
             {
-                if (!castRecord.Hierarchy.StartsWith(Hierarchy))
+                if (!string.IsNullOrWhiteSpace(castRecord.Hierarchy))
                 {
-                    return default;
+                    if (!castRecord.Hierarchy.StartsWith(Hierarchy))
+                    {
+                        return default;
+                    }
                 }
             }
 
