@@ -9,8 +9,16 @@ const navigation = [
     href: '/users/application',
   },
   {
+    name: 'Franchisors',
+    href: '/users/franchisors',
+  },
+  {
     name: 'Coaches',
     href: '/users/coaches',
+  },
+  {
+    name: 'Principals',
+    href: '/users/principals',
   },
   {
     name: 'Practitioners',

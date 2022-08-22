@@ -3,4 +3,5 @@ export interface ComponentBaseProps {
   className?: string;
   testId?: string;
   onClick?: () => void;
+  inputRef?: any;
 }

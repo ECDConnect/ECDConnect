@@ -38,6 +38,7 @@ export const Typography: React.FC<TypographyProps> = ({
   hover = false,
   className,
   onClick,
+  inputRef,
 }) => {
   const getTag = (type: TypographyType, text?: string) => {
     let splitText;
@@ -53,6 +54,7 @@ export const Typography: React.FC<TypographyProps> = ({
       case 'markdown':
         return (
           <article
+            ref={inputRef}
             onClick={onClick}
             className="prose"
             dangerouslySetInnerHTML={{ __html: text || '' }}
@@ -61,6 +63,7 @@ export const Typography: React.FC<TypographyProps> = ({
       case 'h1':
         return (
           <h1
+            ref={inputRef}
             onClick={onClick}
             className={classNames(
               styles.getFontStyleByType(type, weight),
@@ -76,6 +79,7 @@ export const Typography: React.FC<TypographyProps> = ({
       case 'h2':
         return (
           <h2
+            ref={inputRef}
             onClick={onClick}
             className={classNames(
               styles.getFontStyleByType(type, weight),
@@ -93,6 +97,7 @@ export const Typography: React.FC<TypographyProps> = ({
       case 'h3':
         return (
           <h3
+            ref={inputRef}
             onClick={onClick}
             className={classNames(
               styles.getFontStyleByType(type),
@@ -110,6 +115,7 @@ export const Typography: React.FC<TypographyProps> = ({
       case 'h4':
         return (
           <h4
+            ref={inputRef}
             onClick={onClick}
             className={classNames(
               styles.getFontStyleByType(type),
@@ -144,6 +150,7 @@ export const Typography: React.FC<TypographyProps> = ({
       case 'h6':
         return (
           <h6
+            ref={inputRef}
             onClick={onClick}
             className={classNames(
               styles.getFontStyleByType(type),
@@ -161,6 +168,7 @@ export const Typography: React.FC<TypographyProps> = ({
       case 'span':
         return (
           <span
+            ref={inputRef}
             onClick={onClick}
             className={classNames(
               styles.getFontStyleByType(type, weight, underline, hover),
@@ -178,6 +186,7 @@ export const Typography: React.FC<TypographyProps> = ({
       case 'unspecified':
         return (
           <div
+            ref={inputRef}
             onClick={onClick}
             className={classNames(
               className,
@@ -196,6 +205,7 @@ export const Typography: React.FC<TypographyProps> = ({
       case 'button':
         return (
           <p
+            ref={inputRef}
             onClick={onClick}
             className={classNames(
               `${fontSize ? `text-${fontSize}` : ''}`,
@@ -217,6 +227,7 @@ export const Typography: React.FC<TypographyProps> = ({
       default:
         return (
           <p
+            ref={inputRef}
             onClick={onClick}
             className={classNames(
               `${fontSize ? `text-${fontSize}` : ''}`,
@@ -236,6 +247,7 @@ export const Typography: React.FC<TypographyProps> = ({
   if (hasMarkup) {
     return (
       <div
+        ref={inputRef}
         dangerouslySetInnerHTML={{ __html: text || '' }}
         className={classNames(
           className,

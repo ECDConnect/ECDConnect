@@ -7,4 +7,5 @@ export interface ActionListDataItem extends ListItem {
   hasMarkup?: boolean;
   actionIcon?: string;
   buttonType?: ButtonType;
+  containerStyle?: string;
 }

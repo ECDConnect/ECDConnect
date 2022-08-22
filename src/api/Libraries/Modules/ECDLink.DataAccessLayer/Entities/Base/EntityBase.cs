@@ -11,7 +11,7 @@ namespace ECDLink.DataAccessLayer.Entities.Base
         [Column(Order = 1)]
         public TKey Id { get; set; }
 
-        [Column(Order = 96)]        
+        [Column(Order = 96)]
         public bool IsActive { get; set; } = true;
 
         [Column(Order = 97)]

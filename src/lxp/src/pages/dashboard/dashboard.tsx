@@ -185,6 +185,7 @@ export const Dashboard: React.FC = () => {
         title: 'Classroom',
         titleIcon: 'AcademicCapIcon',
         titleIconClassName: styles.classRoomIcon,
+        classNames: 'bg-uiBg',
         onActionClick: () => {
           goToClassroom();
         },
@@ -194,6 +195,7 @@ export const Dashboard: React.FC = () => {
         titleIcon: 'AcademicCapIcon',
         titleIconClassName: styles.businessIcon,
         onActionClick: () => ({}),
+        classNames: 'bg-uiBg',
         chipConfig: {
           colorPalette: {
             backgroundColour: 'white',

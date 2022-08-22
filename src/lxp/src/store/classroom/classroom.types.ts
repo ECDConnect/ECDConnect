@@ -10,6 +10,7 @@ export type ClassroomState = {
   classroomGroups: ClassroomGroupDto[] | undefined;
   classroomProgrammes: ClassProgrammeDto[] | undefined;
   classroomGroupLearners: LearnerDto[] | undefined;
+  programmeType: string | undefined; //TODO Fix this
 };
 
 export type ClassroomUpdateParams = {

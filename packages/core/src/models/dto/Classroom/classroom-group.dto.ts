@@ -12,4 +12,5 @@ export interface ClassroomGroupDto extends EntityBase {
   learners?: LearnerDto[];
   classProgrammes?: ClassProgrammeDto[];
   name: string;
+  practitioner?: string;
 }

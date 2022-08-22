@@ -1,5 +1,9 @@
+import { useQuery } from '@apollo/client';
+import { FranchisorDto } from '@ecdlink/core';
 import { UseFormRegister } from 'react-hook-form';
 import FormField from '../../../../components/form-field/form-field';
+import FormSelectorField from '../../../../components/form-selector-field/form-selector-field';
+import { GetAllFranchisor } from '@ecdlink/graphql';
 export interface CoachFormProps {
   formKey: string;
   errors: any;
@@ -7,6 +11,9 @@ export interface CoachFormProps {
 }
 
 const CoachForm: React.FC<CoachFormProps> = ({ formKey, errors, register }) => {
+  const { data } = useQuery(GetAllFranchisor, {
+    fetchPolicy: 'cache-and-network',
+  });
   return (
     <form key={formKey} className="space-y-8 divide-y divide-gray-200">
       <div className="space-y-8 divide-y divide-gray-200">
@@ -35,6 +42,30 @@ const CoachForm: React.FC<CoachFormProps> = ({ formKey, errors, register }) => {
               type="date"
               register={register}
               error={errors.startDate?.message}
+            />
+          </div>
+          <div className="sm:col-span-3">
+            <FormSelectorField
+              label="Franchisor *"
+              nameProp={'franchisorId'}
+              register={register}
+              options={
+                data &&
+                data.GetAllFranchisor &&
+                data.GetAllFranchisor.map((x: FranchisorDto) => {
+                  return { key: x.userId, value: x.user.fullName };
+                })
+              }
+              error={errors.programTypeId?.message}
+            />
+          </div>
+          <div className="sm:col-span-3">
+            <FormField
+              label={'Send Invite'}
+              nameProp={'sendInvite'}
+              type="checkbox"
+              register={register}
+              error={errors.sendInvite?.message}
             />
           </div>
         </div>

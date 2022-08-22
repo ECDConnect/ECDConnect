@@ -61,10 +61,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             var updated = absenteeRepo.Insert(absent);
 
-            return updated;
-
-
-            return new Absentees();
+            return updated;            
         }
 
     }

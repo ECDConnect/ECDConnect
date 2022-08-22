@@ -21,9 +21,7 @@ class ClassroomService {
             userId
             isPrinciple
             numberPractitioners
-            numberOfAssistants
             numberOfOtherAssistants
-            doesOwnerTeach
             insertedDate
           }
         }
