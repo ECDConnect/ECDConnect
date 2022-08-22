@@ -91,7 +91,10 @@ const PractitionerForm: React.FC<PractitionerFormProps> = ({
                 data &&
                 data.GetAllCoach &&
                 data.GetAllCoach.map((x: CoachDto) => {
-                  return { key: x.userId, value: x.user.fullName };
+                  return {
+                    key: x.userId,
+                    value: x.user.firstName + ' ' + x.user.surname,
+                  };
                 })
               }
               error={errors.programTypeId?.message}

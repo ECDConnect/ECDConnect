@@ -53,7 +53,10 @@ const CoachForm: React.FC<CoachFormProps> = ({ formKey, errors, register }) => {
                 data &&
                 data.GetAllFranchisor &&
                 data.GetAllFranchisor.map((x: FranchisorDto) => {
-                  return { key: x.userId, value: x.user.fullName };
+                  return {
+                    key: x.userId,
+                    value: x.user.firstName + ' ' + x.user.surname,
+                  };
                 })
               }
               error={errors.programTypeId?.message}
