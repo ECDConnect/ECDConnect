@@ -125,9 +125,15 @@ class PractitionerService {
           isPrincipal
           isFundaAppAdmin
           isTrainee
+          userId
           user {
             idNumber
             fullName
+            firstName
+            surname
+            email
+            isActive
+            phoneNumber
           }
         }
       }

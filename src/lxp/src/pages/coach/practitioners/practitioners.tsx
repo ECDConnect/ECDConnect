@@ -43,6 +43,7 @@ export const Practitioners: React.FC = () => {
     practitionersForCoach?.find((item2) => item.id === item2.id)
   );
   const practitionersForCoachListItems = practitionersList?.map((item) => {
+    console.log({ item });
     return {
       title: item.user?.firstName + ' ' + item?.user?.surname,
       subtitle: 'Progress report overdue',

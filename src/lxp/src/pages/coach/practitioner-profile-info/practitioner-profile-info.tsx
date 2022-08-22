@@ -71,7 +71,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
   const practitioner = practitioners?.find(
     (practitioner) => practitioner?.userId === practitionerId
   );
-
+  console.log({ practitionerId });
   const { theme } = useTheme();
   const hasClasses = true;
 

@@ -57,6 +57,35 @@ class ClassroomService {
 
     return true;
   }
+
+  async getAllClassroomForCoach(userId: string): Promise<ClassroomDto[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      query allClassroomsForCoach($userId: String) {
+        allClassroomsForCoach(userId: $userId) {
+          id
+          userId
+          name
+          classroomImageUrl
+          isPrinciple
+        }
+      }
+      `,
+      variables: {
+        userId,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Get Practitioners For Coach Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.allClassroomsForCoach;
+  }
 }
 
 export default ClassroomService;

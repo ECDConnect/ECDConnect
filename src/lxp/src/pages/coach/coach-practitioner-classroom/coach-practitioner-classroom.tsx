@@ -79,7 +79,7 @@ export const CoachPractitionerClassroom: React.FC = () => {
   const childrenForPractitionerList = children?.filter((item) =>
     childrenForPractitioner?.find((item2) => item.id === item2.id)
   );
-
+  console.log({ practitionerId });
   useEffect(() => {
     (async () =>
       await appDispatch(

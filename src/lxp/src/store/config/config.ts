@@ -30,6 +30,10 @@ import {
   classroomsPersistConfig,
   classroomsReducer,
 } from '../classroom/classroom';
+import {
+  classroomsForCoachPersistConfig,
+  classroomsForCoachReducer,
+} from '../classroomForCoach/classroomForCoach';
 import { activityReducer } from '../content/activity';
 import { activityPersistConfig } from '../content/activity/activity';
 import { contentConsentReducer } from '../content/consent/consent';
@@ -92,6 +96,10 @@ const persistedReducers = {
     childrenForPractitionerReducer
   ),
   classroomData: persistReducer(classroomsPersistConfig, classroomsReducer),
+  classroomForCoachData: persistReducer(
+    classroomsForCoachPersistConfig,
+    classroomsForCoachReducer
+  ),
   coach: persistReducer(coachPersistConfig, coachReducer),
   contentConsentData: contentConsentReducer,
   contentReportData: persistReducer(
