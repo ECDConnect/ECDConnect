@@ -69,7 +69,9 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.SeedFunctions
                 "Administrator",
                 "Coach",
                 "Practitioner",
-                "Child"
+                "Child",
+                "Principal",
+                "Franchisor"
             };
 
             foreach (var role in roles)
