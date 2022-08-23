@@ -27,6 +27,8 @@ import {
 import { useSelector } from 'react-redux';
 import { practitionerSelectors } from '@/store/practitioner';
 import { practitionerForCoachSelectors } from '@/store/practitionerForCoach';
+import { classroomsSelectors } from '@/store/classroom';
+import { classroomsForCoachSelectors } from '@/store/classroomForCoach';
 
 export const CoachProgrammeInformation: React.FC = () => {
   const history = useHistory();
@@ -60,6 +62,20 @@ export const CoachProgrammeInformation: React.FC = () => {
       onActionClick: () => handleClick(item.id!),
     };
   });
+
+  const coachClassrooms = useSelector(
+    classroomsForCoachSelectors.getClassroomForCoach
+  );
+  const practitionerClassroom = coachClassrooms?.find(
+    (item) => item.userId === practitionerId
+  );
+  const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
+  const practitionerClassroomGroups = classroomGroups.filter(
+    (item) => item.classroomId === practitionerClassroom?.id
+  );
+
+  console.log({ practitionerClassroom });
+  console.log({ practitionerClassroomGroups });
 
   const call = () => {
     window.open(`tel:${practitioner?.user?.phoneNumber}`);
@@ -247,7 +263,7 @@ export const CoachProgrammeInformation: React.FC = () => {
               className={'mt-4'}
             />
             <Typography
-              text={'Angels Daycare'}
+              text={practitionerClassroom?.name}
               type="h4"
               color="textDark"
               className={'mt-1'}
@@ -361,7 +377,7 @@ export const CoachProgrammeInformation: React.FC = () => {
               <Typography
                 type={'body'}
                 weight={'bold'}
-                text={'4'}
+                text={String(practitionersForCoachListItems?.length!)}
                 color={'white'}
               />
             </div>

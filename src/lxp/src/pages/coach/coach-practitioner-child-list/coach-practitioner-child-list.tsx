@@ -79,15 +79,6 @@ export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
     childrenForPractitioner?.find((item2) => item.id === item2.id)
   );
 
-  // useEffect(() => {
-  //   (async () =>
-  //     await appDispatch(
-  //       childrenForPractitionerThunkActions.getChildrenForPractitioner({
-  //         id: practitionerId,
-  //       })
-  //     ).unwrap())();
-  // }, [appDispatch, practitionerId]);
-
   const filterInfo: FilterInfo = {
     filterName: 'Class',
     filterHint: 'You can select multiple classes',
@@ -366,7 +357,6 @@ export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
         }
         displayOffline={!isOnline}
       ></BannerWrapper>
-      {/* {childrenForPractitionerList && childrenForPractitionerList.length > 0 && ( */}
       <SearchHeader<UserAlertListDataItem>
         searchItems={filteredChildData || []}
         onScroll={handleListScroll}

@@ -22,6 +22,9 @@ import {
   childrenForPractitionerThunkActions,
 } from '@/store/childrenForPractitioner';
 import { ChildrenPerAgeGroup } from './components/childrenPerAgeGroup/childrenPerAgeGroup';
+import { classroomsSelectors } from '@/store/classroom';
+import { classroomsForCoachSelectors } from '@/store/classroomForCoach';
+import { ClassroomAttendance } from './components/classroom-attendance/classroom-attendance';
 
 // import { CreateNote } from '../components/create-note/create-note';
 // import { NoteTypeEnum } from '@ecdlink/graphql';
@@ -76,7 +79,21 @@ export const CoachPractitionerClassroom: React.FC = () => {
   const practitioner = practitioners?.find(
     (practitioner) => practitioner?.userId === practitionerId
   );
-
+  const coachClassrooms = useSelector(
+    classroomsForCoachSelectors.getClassroomForCoach
+  );
+  const practitionerClassroom = coachClassrooms?.find(
+    (item) => item.userId === practitionerId
+  );
+  const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
+  const practitionerClassroomGroups = classroomGroups.filter(
+    (item) => item.classroomId === practitionerClassroom?.id
+  );
+  console.log({ practitionerId });
+  console.log({ coachClassrooms });
+  console.log({ classroomGroups });
+  console.log({ practitionerClassroom });
+  console.log({ practitionerClassroomGroups });
   const childrenForPractitionerList = children?.filter((item) =>
     childrenForPractitioner?.find((item2) => item.id === item2.id)
   );
@@ -97,37 +114,6 @@ export const CoachPractitionerClassroom: React.FC = () => {
       childrenForPractitionerActions.resetChildrenForPractitionerState()
     );
   };
-
-  // const handleClick = (practitionerId: number) => {
-  //   history.push('practitioner-profile-info', {
-  //     practitionerId,
-  //   });
-  // };
-
-  // const handleChildProfile = () => {
-  //   history.push('practitioner-child-list');
-  // };
-  // const [createPractitionerNoteVisible, setCreatePractitionerdNoteVisible] =
-  //   useState<boolean>(false);
-  // const notes = useSelector(
-  //   notesSelectors.getNotesByUserId(practitioner?.id.toString())
-  // );
-
-  // const handleProgressSummary = (practitionerId: number) => {
-  //   history.push('practitioner-progress-summary', {
-  //     practitionerId,
-  //   });
-  // };
-
-  // const handleReassignClass = (practitionerId: number) => {
-  //   history.push('practitioner-reassign-class', {
-  //     practitionerId,
-  //   });
-  // };
-
-  // const onCreatePractitionerNoteBack = () => {
-  //   setCreatePractitionerdNoteVisible(false);
-  // };
 
   return (
     <div className={styles.contentWrapper}>
@@ -186,37 +172,9 @@ export const CoachPractitionerClassroom: React.FC = () => {
               </Button>
             </div>
           </Card>
-          <Card
-            className={styles.attendanceCard}
-            borderRaduis={'xl'}
-            shadowSize={'md'}
-          >
-            <div className="ml-4 mt-4">
-              <Typography
-                text={'Attendance: June 2021'}
-                type="body"
-                className="mb-4"
-              />
-            </div>
-            <div className="flex justify-between">
-              <div className="ml-4">
-                <div className="mt-4 mb-3 text-4xl font-semibold text-successMain">
-                  45%
-                </div>
-                <Typography
-                  text={'Little Stars'}
-                  type="body"
-                  className="mb-4"
-                />
-              </div>
-              <div className="mr-12">
-                <div className="mt-4 mb-3 text-4xl font-semibold text-errorMain">
-                  85%
-                </div>
-                <Typography text={'Dolphins'} type="body" className="mb-4" />
-              </div>
-            </div>
-          </Card>
+          <ClassroomAttendance
+            practitionerClassroomGroups={practitionerClassroomGroups}
+          />
           <div className="w-full">
             <ChildrenPerAgeGroup
               childrenForPractitionerList={childrenForPractitionerList}

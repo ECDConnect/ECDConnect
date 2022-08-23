@@ -1,12 +1,20 @@
-import { StackedList, BannerWrapper } from '@ecdlink/ui';
+import { useState } from 'react';
+import {
+  StackedList,
+  BannerWrapper,
+  SearchSortOptions,
+  UserAlertListDataItem,
+  SearchDropDown,
+} from '@ecdlink/ui';
+import SearchHeader from '../../../components/search-header/search-header';
 import { format } from 'date-fns';
 import { useHistory } from 'react-router-dom';
-import * as styles from './practitioner.styles';
+import * as styles from './practitioners.styles';
 import ROUTES from '@routes/routes';
 import { useSelector } from 'react-redux';
 import { practitionerForCoachSelectors } from '@/store/practitionerForCoach';
 import { practitionerSelectors } from '@/store/practitioner';
-import { IconInformationIndicator } from '../../classroom/programme-planning/components/icon-information-indicator/icon-information-indicator';
+import { EmptyPractitioners } from './components/empty-practitioners/empty-practitioners';
 
 // const mockedData = [
 //   {
@@ -55,6 +63,18 @@ export const Practitioners: React.FC = () => {
       onActionClick: () => handleClick(item.userId!),
     };
   });
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [childUserListData, setChildUserListData] =
+    useState<UserAlertListDataItem[]>();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [addChildButtonExpanded, setAddChildButtonExpanded] =
+    useState<boolean>(true);
+  const [searchTextActive, setSearchTextActive] = useState(false);
+  // const [activeFilters, setActiveFilters] = useState<any[]>([]);
+  const [activeSort, setActiveSort] = useState<any[]>([]);
+  const [filteredChildData, setFilteredChildData] = useState<
+    UserAlertListDataItem[]
+  >([]);
 
   const handleClick = (practitionerId: string) => {
     if (isCoach) {
@@ -67,6 +87,47 @@ export const Practitioners: React.FC = () => {
       });
     }
   };
+
+  const sortOptions: SearchSortOptions = {
+    columns: [
+      {
+        id: '1',
+        label: 'task 1',
+        value: 'task 1',
+      },
+      {
+        id: '2',
+        label: 'task 2',
+        value: 'task 2',
+      },
+      {
+        id: '3',
+        label: 'task 4',
+        value: 'task 4',
+      },
+    ],
+    defaultSort: {
+      column: 'priority',
+      dir: 'asc',
+    },
+  };
+
+  const handleListScroll = (scrollTop: number) => {
+    if (scrollTop < 30) {
+      setAddChildButtonExpanded(true);
+    } else {
+      setAddChildButtonExpanded(false);
+    }
+  };
+
+  const onSearchChange = (value: string) => {
+    setFilteredChildData(
+      childUserListData?.filter((x) =>
+        x.title.toLowerCase().includes(value.toLowerCase())
+      ) || []
+    );
+  };
+
   // const mockedData = [
   //   {
   //     id: 1,
@@ -108,7 +169,33 @@ export const Practitioners: React.FC = () => {
         onBack={() => history.push(ROUTES.DASHBOARD)}
         // displayOffline={!isOnline}
       >
-        {practitionersForCoachListItems?.length! > 0 ? (
+        <SearchHeader<UserAlertListDataItem>
+          searchItems={filteredChildData || []}
+          onScroll={handleListScroll}
+          onSearchChange={onSearchChange}
+          isTextSearchActive={searchTextActive}
+          onBack={() => setSearchTextActive(false)}
+          onSearchButtonClick={() => setSearchTextActive(true)}
+        >
+          <SearchDropDown<string>
+            displayMenuOverlay={true}
+            menuItemClassName={styles.dropdownStyles}
+            options={sortOptions.columns}
+            selectedOptions={activeSort}
+            onChange={(selectedColumns) => {
+              setActiveSort(selectedColumns);
+              // onSortItemsChanges(selectedColumns[0].value);
+            }}
+            placeholder={'Task'}
+            multiple={false}
+            color={'secondary'}
+            info={{
+              name: `Task`,
+            }}
+          />
+        </SearchHeader>
+        {practitionersForCoachListItems?.length! > 0 ||
+        practitionersForCoachListItems !== undefined ? (
           <div className="flex justify-center">
             <StackedList
               className={styles.stackedList}
@@ -117,10 +204,7 @@ export const Practitioners: React.FC = () => {
             ></StackedList>
           </div>
         ) : (
-          <IconInformationIndicator
-            title="This practitioner doesn't have any children yet!"
-            subTitle="Check with the practitioner!"
-          />
+          <EmptyPractitioners />
         )}
       </BannerWrapper>
     </>
