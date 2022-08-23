@@ -3576,6 +3576,7 @@ export type Query = {
     Array<Maybe<ChildProgressReportSummaryModel>>
   >;
   childrenAttendedVsAbsentMetrics?: Maybe<Array<Maybe<MetricReportStatItem>>>;
+  childrenByClassroomId?: Maybe<Array<Maybe<Child>>>;
   childrenMetrics?: Maybe<ChildrenMetricReport>;
   coachByUserId?: Maybe<Coach>;
   contentDefinitions?: Maybe<Array<Maybe<ContentDefinitionModel>>>;
@@ -4190,6 +4191,10 @@ export type QueryChildProgressReportSummaryArgs = {
 export type QueryChildrenAttendedVsAbsentMetricsArgs = {
   fromDate: Scalars['DateTime'];
   toDate: Scalars['DateTime'];
+};
+
+export type QueryChildrenByClassroomIdArgs = {
+  classroomId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryCoachByUserIdArgs = {
