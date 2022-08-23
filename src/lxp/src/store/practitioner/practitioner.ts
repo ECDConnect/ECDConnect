@@ -4,7 +4,6 @@ import localForage from 'localforage';
 import {
   getAllPractitioners,
   getPractitionerById,
-  getPractitionersForCoach,
 } from './practitioner.actions';
 import {
   PractitionerState,

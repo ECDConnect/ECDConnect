@@ -1,17 +1,26 @@
 import { getAge } from '@/utils/child/child-profile-utils';
 import { Typography, Card } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { childrenSelectors } from '@store/children';
+import { childrenForPractitionerSelectors } from '@/store/childrenForPractitioner';
 import * as styles from './childrenPerAgeGroup.styles';
 import { ChildrenPerAgeGroupProps } from './childrenperAgeGroup.types';
 
 export const ChildrenPerAgeGroup: React.FC<ChildrenPerAgeGroupProps> = ({
-  childrenForPractitionerList,
+  practitionerId,
 }) => {
+  const children = useSelector(childrenSelectors.getChildren);
+  const childrenForPractitioner = useSelector(
+    childrenForPractitionerSelectors.getChildrenForPractitioner
+  );
+
+  const childrenForPractitionerList = children?.filter((item) =>
+    childrenForPractitioner?.find((item2) => item.id === item2.id)
+  );
   const [ageGroup1, setAgeGroup1] = useState(0);
   const [ageGroup2, setAgeGroup2] = useState(0);
   const [ageGroup3, setAgeGroup3] = useState(0);
-
-  console.log(ageGroup3);
 
   const handleAgeGroups = (childAge: any) => {
     if (childAge?.years < 2 && childAge?.months < 7) {
@@ -31,8 +40,8 @@ export const ChildrenPerAgeGroup: React.FC<ChildrenPerAgeGroupProps> = ({
   useEffect(() => {
     // eslint-disable-next-line array-callback-return
     if (childrenForPractitionerList) {
+      // eslint-disable-next-line array-callback-return
       childrenForPractitionerList?.map((item) => {
-        console.log('entrou');
         const childBirthDate = item?.user?.dateOfBirth
           ? new Date(item?.user?.dateOfBirth)
           : undefined;
@@ -40,6 +49,11 @@ export const ChildrenPerAgeGroup: React.FC<ChildrenPerAgeGroupProps> = ({
         const childAge = getAge(childBirthDate);
         handleAgeGroups(childAge);
       });
+      return () => {
+        setAgeGroup1(0);
+        setAgeGroup2(0);
+        setAgeGroup3(0);
+      };
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [childrenForPractitionerList]);

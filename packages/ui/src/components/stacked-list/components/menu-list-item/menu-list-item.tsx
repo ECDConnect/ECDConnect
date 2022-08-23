@@ -44,7 +44,7 @@ export const MenuListItem: React.FC<MenuListItemProps> = ({ item }) => {
               <p
                 className={classNames(styles.menuSubTitle, item.subTitleStyle)}
               >
-                <span className="truncate">{item.subTitle}</span>
+                <span>{item.subTitle}</span>
               </p>
             </div>
           </div>

@@ -17,6 +17,7 @@ import { practitionerSelectors } from '@/store/practitioner';
 import { useSelector } from 'react-redux';
 import { useAppDispatch } from '@store';
 import {
+  childrenForPractitionerActions,
   childrenForPractitionerSelectors,
   childrenForPractitionerThunkActions,
 } from '@/store/childrenForPractitioner';
@@ -79,15 +80,23 @@ export const CoachPractitionerClassroom: React.FC = () => {
   const childrenForPractitionerList = children?.filter((item) =>
     childrenForPractitioner?.find((item2) => item.id === item2.id)
   );
-  console.log({ practitionerId });
+
   useEffect(() => {
+    resetChildrenForPractitioner();
     (async () =>
       await appDispatch(
         childrenForPractitionerThunkActions.getChildrenForPractitioner({
           id: practitionerId,
         })
       ).unwrap())();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appDispatch, practitionerId]);
+
+  const resetChildrenForPractitioner = () => {
+    appDispatch(
+      childrenForPractitionerActions.resetChildrenForPractitionerState()
+    );
+  };
 
   // const handleClick = (practitionerId: number) => {
   //   history.push('practitioner-profile-info', {
@@ -211,6 +220,7 @@ export const CoachPractitionerClassroom: React.FC = () => {
           <div className="w-full">
             <ChildrenPerAgeGroup
               childrenForPractitionerList={childrenForPractitionerList}
+              practitionerId={practitionerId}
             />
           </div>
         </>

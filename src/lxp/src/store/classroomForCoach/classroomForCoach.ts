@@ -131,9 +131,7 @@ const classroomsSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder.addCase(getClassroomForCoach.fulfilled, (state, action) => {
-      console.log('teste1');
       if (action.payload) {
-        console.log('teste2');
         state.classroomForCoach = action.payload;
       }
     });

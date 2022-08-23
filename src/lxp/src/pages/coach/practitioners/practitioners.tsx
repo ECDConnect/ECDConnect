@@ -6,6 +6,7 @@ import ROUTES from '@routes/routes';
 import { useSelector } from 'react-redux';
 import { practitionerForCoachSelectors } from '@/store/practitionerForCoach';
 import { practitionerSelectors } from '@/store/practitioner';
+import { IconInformationIndicator } from '../../classroom/programme-planning/components/icon-information-indicator/icon-information-indicator';
 
 // const mockedData = [
 //   {
@@ -43,12 +44,11 @@ export const Practitioners: React.FC = () => {
     practitionersForCoach?.find((item2) => item.id === item2.id)
   );
   const practitionersForCoachListItems = practitionersList?.map((item) => {
-    console.log({ item });
     return {
       title: item.user?.firstName + ' ' + item?.user?.surname,
       subtitle: 'Progress report overdue',
       avatarColor: '#6974af',
-      alertSeverity: 'error',
+      alertSeverity: 'none',
       profileText:
         item?.user?.firstName.substring(0, 1)! +
         item?.user?.surname.substring(0, 1),
@@ -108,7 +108,7 @@ export const Practitioners: React.FC = () => {
         onBack={() => history.push(ROUTES.DASHBOARD)}
         // displayOffline={!isOnline}
       >
-        {practitionersForCoachListItems ? (
+        {practitionersForCoachListItems?.length! > 0 ? (
           <div className="flex justify-center">
             <StackedList
               className={styles.stackedList}
@@ -116,13 +116,12 @@ export const Practitioners: React.FC = () => {
               type={'UserAlertList'}
             ></StackedList>
           </div>
-        ) : null}
-
-        {/* {mockedData
-          ? mockedData.map((practitioner) => {
-              return <PractitionersListItem />;
-            })
-          : null} */}
+        ) : (
+          <IconInformationIndicator
+            title="This practitioner doesn't have any children yet!"
+            subTitle="Check with the practitioner!"
+          />
+        )}
       </BannerWrapper>
     </>
   );

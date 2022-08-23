@@ -25,6 +25,7 @@ export const CoachClassesReassigned: React.FC = () => {
   const practitioner = practitioners?.find(
     (practitioner) => practitioner?.userId === practitionerId
   );
+
   const reassignedGroups = false;
 
   return (

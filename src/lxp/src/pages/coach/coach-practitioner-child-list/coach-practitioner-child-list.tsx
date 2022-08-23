@@ -89,8 +89,8 @@ export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
   // }, [appDispatch, practitionerId]);
 
   const filterInfo: FilterInfo = {
-    filterName: 'Playgroup',
-    filterHint: 'You can select multiple playgroups',
+    filterName: 'Class',
+    filterHint: 'You can select multiple classes',
   };
 
   const sortOptions: SearchSortOptions = {
@@ -360,7 +360,7 @@ export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
         size="small"
         renderOverflow={false}
         onBack={() =>
-          history.push(ROUTES.COACH.PRACTITIONER_PROFILE_INFO, {
+          history.push(ROUTES.COACH.PRACTITIONER_CLASSROOM, {
             practitionerId,
           })
         }

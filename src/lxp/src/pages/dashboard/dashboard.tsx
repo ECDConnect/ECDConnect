@@ -20,10 +20,7 @@ import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { OfflineSyncModal } from '../../modals';
 import OfflineSyncTimeExceeded from '../../modals/offline-sync/offline-sync-time-exceeded';
 import { useAppDispatch } from '@store';
-import {
-  classroomsForCoachActions,
-  classroomsForCoachThunkActions,
-} from '../../store/classroomForCoach';
+import { classroomsForCoachThunkActions } from '../../store/classroomForCoach';
 import { classroomsSelectors } from '@store/classroom';
 import { notificationsSelectors } from '@store/notifications';
 import { settingSelectors } from '@store/settings';

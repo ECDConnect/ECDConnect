@@ -3,7 +3,7 @@ import {
   ClassroomGroupDto,
   ProgrammeTypeDto,
 } from '@ecdlink/core';
-import { ProgrammeTypeEnum } from '@ecdlink/graphql';
+// import { ProgrammeTypeEnum } from '@ecdlink/graphql';
 import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from '../types';
 

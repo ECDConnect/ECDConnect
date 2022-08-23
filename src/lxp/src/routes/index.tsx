@@ -55,6 +55,7 @@ import CoachPractitionerChildList from '@/pages/coach/coach-practitioner-child-l
 
 import ROUTES from './routes';
 import { CoachClassesReassigned } from '@/pages/coach/coach-classes-reassigned/coach-classes-reassigned';
+import { CoachNotes } from '@/pages/coach/practitioner-profile-info/components/coach-notes/coach-notes';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -242,6 +243,7 @@ const AuthRoutes: React.FC = () => {
         path={ROUTES.COACH.PRACTITIONER_CLASSROOM}
         component={CoachPractitionerClassroom}
       />
+      <Route path={ROUTES.COACH.NOTES} component={CoachNotes} />
       <Route
         exact
         path={ROUTES.COACH.PRACTITIONER_CHILD_LIST}

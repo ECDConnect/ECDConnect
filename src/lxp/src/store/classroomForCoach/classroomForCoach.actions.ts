@@ -2,15 +2,12 @@ import {
   // ClassProgrammeDto,
   ClassroomDto,
   ClassroomGroupDto,
-  LearnerDto,
 } from '@ecdlink/core';
-import {
-  // ClassProgrammeInput,
-  // ClassroomGroupInput,
-  // ClassroomInput,
-  LearnerInput,
-  // WorkflowStatusEnum,
-} from '@ecdlink/graphql';
+import // ClassProgrammeInput,
+// ClassroomGroupInput,
+// ClassroomInput,
+// WorkflowStatusEnum,
+'@ecdlink/graphql';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 // import { ClassroomGroupLearnerService } from '@services/ClassroomGroupLearnerService';
 // import { ClassroomGroupProgrammesService } from '@services/ClassroomGroupProgrammesService';
@@ -30,24 +27,22 @@ export const getClassroomForCoach = createAsyncThunk<
   async ({ id }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       classroomForCoachData: { classroomForCoach: classroomsForCoachCache },
     } = getState();
 
     let classroomsForCoach: ClassroomDto[] | undefined;
 
     if (userAuth?.auth_token) {
-      console.log('testesssss token');
       classroomsForCoach = await new ClassroomService(
         userAuth?.auth_token
       ).getAllClassroomForCoach(id);
     } else {
       return rejectWithValue('no access token, profile check required');
     }
-    console.log('11', classroomsForCoach);
     if (!classroomsForCoach) {
       return rejectWithValue('Error getting Classrooms');
     }
-    console.log({ classroomsForCoach });
     return classroomsForCoach;
   }
 );
@@ -408,13 +403,13 @@ export const getClassroomGroups = createAsyncThunk<
 //   }
 // });
 
-const mapLearnerInput = (learnerDto: Partial<LearnerDto>): LearnerInput => ({
-  Id: learnerDto.id,
-  UserId: learnerDto.userId,
-  ClassroomGroupId: learnerDto.classroomGroupId,
-  ProgrammeAttendanceReasonId: learnerDto.attendanceReasonId,
-  OtherAttendanceReason: learnerDto.otherAttendanceReason,
-  StartedAttendance: learnerDto.startedAttendance,
-  StoppedAttendance: learnerDto.stoppedAttendance,
-  IsActive: learnerDto.isActive === false ? false : true,
-});
+// const mapLearnerInput = (learnerDto: Partial<LearnerDto>): LearnerInput => ({
+//   Id: learnerDto.id,
+//   UserId: learnerDto.userId,
+//   ClassroomGroupId: learnerDto.classroomGroupId,
+//   ProgrammeAttendanceReasonId: learnerDto.attendanceReasonId,
+//   OtherAttendanceReason: learnerDto.otherAttendanceReason,
+//   StartedAttendance: learnerDto.startedAttendance,
+//   StoppedAttendance: learnerDto.stoppedAttendance,
+//   IsActive: learnerDto.isActive === false ? false : true,
+// });

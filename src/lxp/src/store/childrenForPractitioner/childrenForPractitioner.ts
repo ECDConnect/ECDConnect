@@ -13,11 +13,14 @@ const childrenForPractitionerSlice = createSlice({
   name: 'childrenForPractitioner',
   initialState,
   reducers: {
-    resetPractitionerState: (state) => {
+    resetChildrenForPractitionerState: (state) => {
       state.childForPractitioner = initialState.childForPractitioner;
       state.childrenForPractitioner = initialState.childrenForPractitioner;
     },
-    updatePractitioner: (state, action: PayloadAction<ChildDto>) => {
+    updateChildrenForPractitionerPractitioner: (
+      state,
+      action: PayloadAction<ChildDto>
+    ) => {
       if (state.childForPractitioner) {
         state.childForPractitioner = action.payload;
       }

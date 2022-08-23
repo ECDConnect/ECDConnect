@@ -38,9 +38,11 @@ export const CoachProgrammeInformation: React.FC = () => {
   const practitionersForCoach = useSelector(
     practitionerForCoachSelectors.getPractitionersForCoach
   );
+
   const practitionersList = practitioners?.filter((item) =>
     practitionersForCoach?.find((item2) => item.id === item2.id)
   );
+
   const practitioner = practitioners?.find(
     (practitioner) => practitioner?.userId === practitionerId
   );
@@ -51,7 +53,7 @@ export const CoachProgrammeInformation: React.FC = () => {
       titleStyle,
       subTitle: 'Practitioner',
       avatarColor: '#6974af',
-      alertSeverity: 'error',
+      alertSeverity: 'none',
       profileText:
         item?.user?.firstName.substring(0, 1)! +
         item?.user?.surname.substring(0, 1),

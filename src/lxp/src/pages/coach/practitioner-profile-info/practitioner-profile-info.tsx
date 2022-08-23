@@ -11,19 +11,16 @@ import {
   renderIcon,
   StatusChip,
   Typography,
+  StackedList,
 } from '@ecdlink/ui';
+import { NoteTypeEnum } from '@ecdlink/graphql';
 import { getLogo, LogoSvgs } from '@utils/common/svg.utils';
 import { PractitionerProfileRouteState } from './practitioner-profile-info.types';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import * as styles from './practitioner-profile-info.styles';
 import ROUTES from '@routes/routes';
-import {
-  AcademicCapIcon,
-  ChevronRightIcon,
-  InformationCircleIcon,
-  PhoneIcon,
-} from '@heroicons/react/solid';
-// import { CreateNote } from '../../components/create-note/create-note';
+import { PhoneIcon } from '@heroicons/react/solid';
+import { CreateNote } from './components/create-note/create-note';
 import { getLastNoteDate } from '@utils/child/child-profile-utils';
 import { notesSelectors } from '@store/notes';
 import { useSelector } from 'react-redux';
@@ -71,16 +68,67 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
   const practitioner = practitioners?.find(
     (practitioner) => practitioner?.userId === practitionerId
   );
-  console.log({ practitionerId });
+
   const { theme } = useTheme();
-  const hasClasses = true;
 
-  const [createPractitionerNoteVisible] = useState<boolean>(false);
-  const notes = useSelector(notesSelectors.getNotesByUserId(practitioner?.id));
+  const [createPractitionerNoteVisible, setCreatePractitionerdNoteVisible] =
+    useState<boolean>(false);
+  const notes = useSelector(notesSelectors.getNotesByUserId(practitionerId));
 
-  //   const onCreatePractitionerNoteBack = () => {
-  //     setCreatePractitionerdNoteVisible(false);
-  //   };
+  const listItems = [
+    {
+      title: 'Classroom',
+      titleStyle: 'text-textDark font-semibold text-base leading-snug',
+      subTitle: 'Children, progress & attendance',
+      subTitleStyle:
+        'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
+      menuIcon: 'AcademicCapIcon',
+      menuIconClassName: 'bg-secondary text-white',
+      showIcon: true,
+      iconBackgroundColor: 'secondary',
+      chipConfig: {
+        colorPalette: {
+          backgroundColour: 'white',
+          borderColour: 'errorMain',
+          textColour: 'errorMain',
+        },
+      },
+      text: '1',
+      onActionClick: () =>
+        history.push(ROUTES.COACH.PRACTITIONER_CLASSROOM, {
+          practitionerId,
+        }),
+      classNames: 'bg-uiBg',
+    },
+    {
+      title: 'Programme Information',
+      titleStyle: 'text-textDark font-semibold text-base leading-snug',
+      subTitle: 'Location, playgroups & staff',
+      subTitleStyle:
+        'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
+      menuIcon: 'InformationCircleIcon',
+      menuIconClassName: 'bg-secondary text-white',
+      showIcon: true,
+      iconBackgroundColor: 'secondary',
+      chipConfig: {
+        colorPalette: {
+          backgroundColour: 'white',
+          borderColour: 'errorMain',
+          textColour: 'errorMain',
+        },
+      },
+      text: '1',
+      onActionClick: () =>
+        history.push(ROUTES.COACH.PROGRAMME_INFORMATION, {
+          practitionerId,
+        }),
+      classNames: 'bg-uiBg',
+    },
+  ];
+
+  const onCreatePractitionerNoteBack = () => {
+    setCreatePractitionerdNoteVisible(false);
+  };
 
   return (
     <div className={styles.contentWrapper}>
@@ -150,88 +198,16 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
           </Button>
         </div>
       </BannerWrapper>
-      {hasClasses && (
-        <div className={styles.listItemFirst}>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className={styles.circleIconDiv}>
-                <AcademicCapIcon className={styles.circleIcon} />
-              </div>
-              <div className="w-9/12">
-                <Typography
-                  type={'h4'}
-                  weight={'bold'}
-                  text={'Classroom'}
-                  color={'textMid'}
-                  className="w-8/12"
-                />
-                <Typography
-                  type={'body'}
-                  weight={'bold'}
-                  text={'Children, progress & attendance'}
-                  color={'textMid'}
-                />
-              </div>
-              <div className="rounded-full bg-alertMain mr-4 w-8 h-6 grid place-items-center">
-                <Typography
-                  type={'body'}
-                  weight={'bold'}
-                  text={'1'}
-                  color={'white'}
-                />
-              </div>
-              <ChevronRightIcon
-                className={styles.rightArrowIcon}
-                onClick={() =>
-                  history.push(ROUTES.COACH.PRACTITIONER_CLASSROOM, {
-                    practitionerId,
-                  })
-                }
-              />
-            </div>
-          </div>
-        </div>
-      )}
-      <div className={styles.listItem}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className={styles.circleIconDiv}>
-              <InformationCircleIcon className={styles.circleIcon} />
-            </div>
-            <div className="w-9/12">
-              <Typography
-                type={'h4'}
-                weight={'bold'}
-                text={'Programme information'}
-                color={'textMid'}
-                className="w-8/12"
-              />
-              <Typography
-                type={'body'}
-                weight={'bold'}
-                text={'Location, playgroups & staff'}
-                color={'textMid'}
-              />
-            </div>
-            <div className="rounded-full bg-alertMain mr-4 w-8 h-6 grid place-items-center">
-              <Typography
-                type={'body'}
-                weight={'bold'}
-                text={'1'}
-                color={'white'}
-              />
-            </div>
-          </div>
-          <ChevronRightIcon
-            className={styles.rightArrowIcon}
-            onClick={() =>
-              history.push(ROUTES.COACH.PROGRAMME_INFORMATION, {
-                practitionerId,
-              })
-            }
+      <div className="flex justify-center mt-4">
+        <div className="w-11/12">
+          <StackedList
+            className="w-full rounded-2xl -mt-0.5 flex flex-col gap-1"
+            type="MenuList"
+            listItems={listItems}
           />
         </div>
       </div>
+
       <>
         <div className={styles.infoWrapper}>
           <div>
@@ -342,7 +318,10 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
               shape="normal"
               color="primary"
               type="filled"
-              onClick={() => {}}
+              onClick={
+                () => history.push(ROUTES.COACH.NOTES, { practitionerId })
+                // setCreatePractitionerdNoteVisible(true)
+              }
             >
               {renderIcon('EyeIcon', styles.buttonIcon)}
               <Typography
@@ -359,13 +338,13 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
             position={DialogPosition.Middle}
           >
             <div className={styles.dialogContent}>
-              {/* <CreateNote
-                userId={practitioner?.id.toString() || ''}
+              <CreateNote
+                userId={practitionerId || ''}
                 noteType={NoteTypeEnum.Unknown}
-                titleText={`Add a note to ${practitioner?.title} profile`}
+                titleText={`Add a note to ${practitioner?.user?.firstName} profile`}
                 onBack={() => onCreatePractitionerNoteBack()}
                 onCreated={() => onCreatePractitionerNoteBack()}
-              /> */}
+              />
             </div>
           </Dialog>
         </div>
