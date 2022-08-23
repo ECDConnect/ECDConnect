@@ -261,7 +261,7 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
 
   const addUserRole = () => {
     const role = roleData.roles.find(
-      (role: RoleDto) => role.name === 'Practitioner'
+      (role: RoleDto) => role.name === 'Principal'
     );
 
     const copy = [...selectedUserRoles];

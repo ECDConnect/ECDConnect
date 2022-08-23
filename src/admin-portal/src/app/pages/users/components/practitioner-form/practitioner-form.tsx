@@ -57,7 +57,7 @@ const PractitionerForm: React.FC<PractitionerFormProps> = ({
           </div>
           <div className="sm:col-span-3">
             <FormField
-              label={'Month Since Franchisee'}
+              label={'Month Since Start'}
               nameProp={'monthSinceFranchisee'}
               type="number"
               register={register}
@@ -83,9 +83,36 @@ const PractitionerForm: React.FC<PractitionerFormProps> = ({
             />
           </div>
           <div className="sm:col-span-3">
+            <FormField
+              label={'Principal'}
+              nameProp={'isPrincipal'}
+              type="checkbox"
+              register={register}
+              error={errors.isPrincipal?.message}
+            />
+          </div>
+          <div className="sm:col-span-3">
+            <FormField
+              label={'Trainee'}
+              nameProp={'isTrainee'}
+              type="checkbox"
+              register={register}
+              error={errors.isTrainee?.message}
+            />
+          </div>
+          <div className="sm:col-span-3">
+            <FormField
+              label={'Is Funda App Admin'}
+              nameProp={'isFundaAppAdmin'}
+              type="checkbox"
+              register={register}
+              error={errors.isFundaAppAdmin?.message}
+            />
+          </div>
+          <div className="sm:col-span-3">
             <FormSelectorField
               label="Coach *"
-              nameProp={'franchisorId'}
+              nameProp={'coachHierarchy'}
               register={register}
               options={
                 data &&

@@ -1,9 +1,9 @@
 import { useQuery } from '@apollo/client';
-import { FranchisorDto } from '@ecdlink/core';
+import { FranchisorDto, PractitionerDto } from '@ecdlink/core';
 import { UseFormRegister } from 'react-hook-form';
 import FormField from '../../../../components/form-field/form-field';
 import FormSelectorField from '../../../../components/form-selector-field/form-selector-field';
-import { GetAllFranchisor } from '@ecdlink/graphql';
+import { GetAllFranchisor, GetAllPractitioner } from '@ecdlink/graphql';
 export interface CoachFormProps {
   formKey: string;
   errors: any;
@@ -30,7 +30,6 @@ const CoachForm: React.FC<CoachFormProps> = ({ formKey, errors, register }) => {
             <FormField
               label={'Secondary Area Of Operation'}
               nameProp={'secondaryAreaOfOperation'}
-              type="number"
               register={register}
               error={errors.secondaryAreaOfOperation?.message}
             />
@@ -53,6 +52,24 @@ const CoachForm: React.FC<CoachFormProps> = ({ formKey, errors, register }) => {
                 data &&
                 data.GetAllFranchisor &&
                 data.GetAllFranchisor.map((x: FranchisorDto) => {
+                  return {
+                    key: x.userId,
+                    value: x.user.firstName + ' ' + x.user.surname,
+                  };
+                })
+              }
+              error={errors.programTypeId?.message}
+            />
+          </div>
+          <div className="sm:col-span-3">
+            <FormSelectorField
+              label="Franchisor *"
+              nameProp={'franchisorId'}
+              register={register}
+              options={
+                data &&
+                data.GetAllPractitioner &&
+                data.GetAllPractitioner.map((x: PractitionerDto) => {
                   return {
                     key: x.userId,
                     value: x.user.firstName + ' ' + x.user.surname,
