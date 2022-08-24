@@ -111,7 +111,7 @@ export default function CoachPanelEdit({
         });
       }
     }
-  }, [coach, coachSetValue]);
+  }, [coach]);
 
   const onSave = async () => {
     if (isCoachValid) {

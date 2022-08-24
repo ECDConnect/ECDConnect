@@ -60,13 +60,17 @@ string classroomId)
             var classroomGrooupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
             var learnerRepo = repoFactory.CreateRepository<Learner>(userContext: uId);
             List<Child> children = new List<Child>();
-            List<ClassroomGroup> group = classroomGrooupRepo.GetAll().Where(x => x.ClassroomId.Equals(classroomId)).ToList();
+            List<ClassroomGroup> groupAll = classroomGrooupRepo.GetAll().ToList();
+            List<ClassroomGroup> group = classroomGrooupRepo.GetAll().Where(x => x.Classroom.Id.Equals(classroomId)).ToList();
             foreach (var groupItem in group)
             {
-                foreach (var item in groupItem.Learners)
+                if (groupItem.Learners.Any())
                 {
-                    List<Child> learnerChildren = dbRepo.GetAll().Where(x => x.UserId.Contains(item.UserId)).ToList();
-                    children.AddRange(learnerChildren);
+                    foreach (var item in groupItem.Learners)
+                    {
+                        List<Child> learnerChildren = dbRepo.GetAll().Where(x => x.UserId.Contains(item.UserId)).ToList();
+                        children.AddRange(learnerChildren);
+                    }
                 }
             }
 

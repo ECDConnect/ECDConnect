@@ -16,7 +16,9 @@ const PractitionerForm: React.FC<PractitionerFormProps> = ({
   errors,
   register,
 }) => {
-  const { data } = useQuery(GetAllCoach, { fetchPolicy: 'cache-and-network' });
+  const { data: coachData } = useQuery(GetAllCoach, {
+    fetchPolicy: 'cache-and-network',
+  });
   return (
     <form key={formKey} className="space-y-8 divide-y divide-gray-200">
       <div className="space-y-8 divide-y divide-gray-200">
@@ -115,9 +117,9 @@ const PractitionerForm: React.FC<PractitionerFormProps> = ({
               nameProp={'coachHierarchy'}
               register={register}
               options={
-                data &&
-                data.GetAllCoach &&
-                data.GetAllCoach.map((x: CoachDto) => {
+                coachData &&
+                coachData.GetAllCoach &&
+                coachData.GetAllCoach.map((x: CoachDto) => {
                   return {
                     key: x.userId,
                     value: x.user.firstName + ' ' + x.user.surname,

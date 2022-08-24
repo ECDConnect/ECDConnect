@@ -11,9 +11,13 @@ export interface CoachFormProps {
 }
 
 const CoachForm: React.FC<CoachFormProps> = ({ formKey, errors, register }) => {
-  const { data } = useQuery(GetAllFranchisor, {
+  const { data: franchisorData } = useQuery(GetAllFranchisor, {
     fetchPolicy: 'cache-and-network',
   });
+  const { data: practiData } = useQuery(GetAllPractitioner, {
+    fetchPolicy: 'cache-and-network',
+  });
+
   return (
     <form key={formKey} className="space-y-8 divide-y divide-gray-200">
       <div className="space-y-8 divide-y divide-gray-200">
@@ -49,27 +53,9 @@ const CoachForm: React.FC<CoachFormProps> = ({ formKey, errors, register }) => {
               nameProp={'franchisorId'}
               register={register}
               options={
-                data &&
-                data.GetAllFranchisor &&
-                data.GetAllFranchisor.map((x: FranchisorDto) => {
-                  return {
-                    key: x.userId,
-                    value: x.user.firstName + ' ' + x.user.surname,
-                  };
-                })
-              }
-              error={errors.programTypeId?.message}
-            />
-          </div>
-          <div className="sm:col-span-3">
-            <FormSelectorField
-              label="Franchisor *"
-              nameProp={'franchisorId'}
-              register={register}
-              options={
-                data &&
-                data.GetAllPractitioner &&
-                data.GetAllPractitioner.map((x: PractitionerDto) => {
+                franchisorData &&
+                franchisorData.GetAllFranchisor &&
+                franchisorData.GetAllFranchisor.map((x: FranchisorDto) => {
                   return {
                     key: x.userId,
                     value: x.user.firstName + ' ' + x.user.surname,
@@ -86,6 +72,27 @@ const CoachForm: React.FC<CoachFormProps> = ({ formKey, errors, register }) => {
               type="checkbox"
               register={register}
               error={errors.sendInvite?.message}
+            />
+          </div>
+          <br />
+          <div className="sm:col-span-3">
+            <FormSelectorField
+              label="Practitioners"
+              nameProp={'practitioners'}
+              register={register}
+              options={
+                practiData &&
+                practiData.GetAllPractitioner &&
+                practiData.GetAllPractitioner.filter(
+                  (v) => v.user !== null
+                ).map((y: PractitionerDto) => {
+                  return {
+                    key: y.userId,
+                    value: y.user.firstName + ' ' + y.user.surname,
+                  };
+                })
+              }
+              multiple
             />
           </div>
         </div>
