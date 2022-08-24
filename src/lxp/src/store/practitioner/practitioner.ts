@@ -4,7 +4,6 @@ import localForage from 'localforage';
 import {
   getAllPractitioners,
   getPractitionerById,
-  getPractitionersForCoach,
 } from './practitioner.actions';
 import {
   PractitionerState,
@@ -40,9 +39,9 @@ const practitionerSlice = createSlice({
     builder.addCase(getPractitionerById.fulfilled, (state, action) => {
       state.practitioner = action.payload;
     });
-    builder.addCase(getPractitionersForCoach.fulfilled, (state, action) => {
-      state.practitioners = action.payload;
-    });
+    // builder.addCase(getPractitionersForCoach.fulfilled, (state, action) => {
+    //   state.practitioners = action.payload;
+    // });
     builder.addCase(getAllPractitioners.fulfilled, (state, action) => {
       state.practitioners = action.payload;
     });
