@@ -26,7 +26,10 @@ import { settingSelectors } from '@store/settings';
 import { userSelectors } from '@store/user';
 import { analyticsActions } from '@store/analytics';
 import { DashboardItems } from './components/dashboard-items/dashboard-items';
-import { practitionerThunkActions } from '@/store/practitioner';
+import {
+  practitionerSelectors,
+  practitionerThunkActions,
+} from '@/store/practitioner';
 import { childrenThunkActions } from '@/store/children';
 import * as styles from './dashboard.styles';
 import ROUTES from '@routes/routes';
@@ -47,6 +50,7 @@ export const Dashboard: React.FC = () => {
   const shouldUserSync = useSelector(settingSelectors.getShouldUserSync);
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const userData = useSelector(userSelectors.getUser);
+  const practitionerData = useSelector(practitionerSelectors.getPractitioners);
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
   const history = useHistory();
@@ -91,6 +95,22 @@ export const Dashboard: React.FC = () => {
         await appDispatch(
           childrenThunkActions.getChildrenForCoach({})
         ).unwrap())();
+    }
+
+    if (userData?.roles?.some((role) => role.name === 'Practitioner')) {
+      const currentPrincipal = practitionerData?.filter(
+        (x) => x?.user?.id === userData.id
+      );
+      const _current = currentPrincipal?.at(0);
+
+      if (_current) {
+        (async () =>
+          await appDispatch(
+            practitionerThunkActions.getPractitionerById({
+              id: _current?.id || '',
+            })
+          ).unwrap())();
+      }
     }
   }, []);
 

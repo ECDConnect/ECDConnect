@@ -16,4 +16,6 @@ export interface PrincipalDto extends EntityBase {
   startDate?: Date;
   monthSinceFranchisee?: number;
   documents?: DocumentDto[];
+  isPrincipal?: boolean;
+  signingSignature?: string;
 }

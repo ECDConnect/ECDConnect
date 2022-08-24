@@ -22,26 +22,27 @@ export class IncompletePractitionerInformationNotificationValidator
   }
 
   getNotifications = (): Message[] => {
-    const { classroomData: classroomState } = this.store.getState();
-    const { user: userState } = this.store.getState();
+    const {
+      user: userState,
+      classroomData: classroomState,
+      practitioner: practitionerState,
+    } = this.store.getState();
 
     if (!classroomState || !userState) return [];
 
     /**
      * Notification is returned when
      * 1. The user is a practitioner
-     * 2. The user doesn't have a classroom
-     * 3. The user doesn't have a classroom ID
+     * 2. The practitioner object is in the state
      */
 
     // TODO: change conditions for when to show the page
-    const isPractitioner = userState?.user?.roles?.some(
-      (role) => role.name === 'Practitioner'
-    );
+    const isPractitioner =
+      userState?.user?.roles?.some((role) => role.name === 'Practitioner') &&
+      Boolean(practitionerState?.practitioner?.isPrincipal) === false;
 
     const showNotification =
-      isPractitioner &&
-      (!classroomState?.classroom || !classroomState?.classroom?.id);
+      isPractitioner && !Boolean(practitionerState.practitioner?.siteAddress);
 
     if (showNotification) {
       return [

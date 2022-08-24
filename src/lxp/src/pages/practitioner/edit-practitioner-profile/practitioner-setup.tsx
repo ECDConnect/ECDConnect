@@ -10,20 +10,13 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
+import { useSelector } from 'react-redux';
 import { yesNoOptions } from './components/edit-programme-form/edit-programme-form.types';
 import { setupPractitioner } from '@/schemas/practitioner/add-practitioner';
-import { useSelector } from 'react-redux';
-import {
-  practitionerSelectors,
-  practitionerThunkActions,
-} from '@/store/practitioner';
-import { useAppDispatch } from '@/store';
+import { practitionerSelectors } from '@/store/practitioner';
 import { userSelectors } from '@/store/user';
-import { PractitionerService } from '@/services/PractitionerService';
-import { UserService } from '@/services/UserService';
-import { authSelectors } from '@/store/auth';
 
 export const PractitionerSetup = ({ onSubmit }: { onSubmit: () => void }) => {
   const [principalName, setPrincipalName] = useState<string>();
@@ -49,7 +42,7 @@ export const PractitionerSetup = ({ onSubmit }: { onSubmit: () => void }) => {
       );
 
       if (principal?.length) {
-        setPrincipalName(principal[0].user?.fullName);
+        setPrincipalName(principal[0].user?.fullName ?? 'Practitioner'); // TODO This page should be visible only when there is a principal
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -106,15 +99,6 @@ export const PractitionerSetup = ({ onSubmit }: { onSubmit: () => void }) => {
               ></Controller>
             </div>
           </div>
-
-          {practitionerToProgramme && (
-            <Alert
-              type={'warning'}
-              title={
-                'Ask the principal of the programme to add your details to their programme on Funda App.'
-              }
-            />
-          )}
 
           {practitionerToProgramme !== undefined && (
             <Alert

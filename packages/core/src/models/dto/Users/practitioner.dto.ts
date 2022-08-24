@@ -17,4 +17,9 @@ export interface PractitionerDto extends EntityBase {
   monthSinceFranchisee?: number;
   documents?: DocumentDto[];
   principalHierarchy?: string;
+  isPrincipal?: boolean;
+  isFundaAppAdmin?: boolean;
+  isTrainee?: boolean;
+  signingSignature?: string;
+  coachHierarchy?: string;
 }

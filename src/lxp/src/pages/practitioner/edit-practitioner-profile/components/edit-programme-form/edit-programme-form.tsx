@@ -4,7 +4,11 @@ import { Alert, Button, ButtonGroup, FormInput, Typography } from '@ecdlink/ui';
 import { ButtonGroupTypes } from '@ecdlink/ui';
 import { renderIcon } from '@ecdlink/ui';
 import { useEffect } from 'react';
-import { useForm, useFormState, useWatch, Controller } from 'react-hook-form';
+import {
+  useForm,
+  /*useFormState, */ useWatch,
+  Controller,
+} from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import { staticDataSelectors } from '@store/static-data';
 import * as styles from '../../edit-practitioner-profile.styles';
@@ -33,11 +37,12 @@ export const EditProgrammeForm: React.FC<EditProgrammeFormProps> = ({
     mode: 'onChange',
   });
 
-  const { isValid } = useFormState({ control: programmeFormControl });
-  const { isPrincipalOrLeader } = useWatch<EditProgrammeModel>({
-    control: programmeFormControl,
-    defaultValue: {},
-  });
+  // const { isValid } = useFormState({ control: programmeFormControl });
+  const { isPrincipalOrLeader, isPrincipleOrOwnerSmartStarter } =
+    useWatch<EditProgrammeModel>({
+      control: programmeFormControl,
+      defaultValue: {},
+    });
 
   const programData = useSelector(staticDataSelectors.getProgrammeTypes);
 
@@ -55,12 +60,15 @@ export const EditProgrammeForm: React.FC<EditProgrammeFormProps> = ({
         className={'my-3'}
       />
 
-      <div className="my-4">
-        <Alert
-          type="info"
-          title="Each programme must have one principal or owner on Funda App."
-        />
-      </div>
+      {isPrincipalOrLeader === true && (
+        <div className="my-4">
+          <Alert
+            type="info"
+            title="Each programme must have one principal or owner on Funda App."
+          />
+        </div>
+      )}
+
       <div className="space-y-4">
         <div className={'w-full'}>
           <label className={styles.label}>
@@ -169,12 +177,21 @@ export const EditProgrammeForm: React.FC<EditProgrammeFormProps> = ({
           </div>
         )}
 
+        {isPrincipleOrOwnerSmartStarter === true && (
+          <div className="my-4">
+            <Alert
+              type="warning"
+              title="Ask the principal of the programme to add your details to their programme on Funda App."
+            />
+          </div>
+        )}
+
         <div className="mb-2">
           <Button
             type="filled"
             color="primary"
             className={styles.button}
-            disabled={!isValid}
+            disabled={isPrincipleOrOwnerSmartStarter === false} // TODO: change this to isValid, disabling the NO answer as it is not fixed
             onClick={() => onSubmit(getProgrammeFormValues())} // Navigate to a different page if it is principle
           >
             {renderIcon('ArrowCircleRightIcon', styles.icon)}
