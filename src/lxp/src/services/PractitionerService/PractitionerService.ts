@@ -35,11 +35,11 @@ class PractitionerService {
     return response.data.data.allPractitionersForCoach;
   }
 
-  async getPractitionerById(id: number): Promise<PractitionerDto> {
+  async getPractitionerById(id: string): Promise<PractitionerDto> {
     const apiInstance = await api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-        query GetPractitionerById($id: Int) {
+        query GetPractitionerById($id: UUID) {
           GetPractitionerById(id: $id) {
             id
             user {
@@ -88,18 +88,24 @@ class PractitionerService {
     const apiInstance = await api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-      query GetAllPractitioners {
-        GetAllPractitioner {
-          id
-          isPrincipal
-          isFundaAppAdmin
-          isTrainee
-          user {
-            idNumber
-            fullName
+        query GetAllPractitioners {
+          GetAllPractitioner {
+            id
+            userId
+            isPrincipal
+            isFundaAppAdmin
+            isTrainee
+            principalHierarchy
+            isActive
+            coachHierarchy
+            notInvitedYet
+            user {
+              idNumber
+              fullName
+              id
+            }
           }
         }
-      }
       `,
     });
 

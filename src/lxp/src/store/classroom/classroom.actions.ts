@@ -205,8 +205,6 @@ export const upsertClassroom = createAsyncThunk<
           NumberPractitioners: classroom.numberPractitioners,
           NumberOfOtherAssistants: classroom.numberOfOtherAssistants,
           IsActive: classroom.isActive === false ? false : true,
-          // NumberOfAssistants: classroom.numberOfAssistants,
-          // DoesOwnerTeach: classroom.doesOwnerTeach,
         };
 
         const result = await new ClassroomService(

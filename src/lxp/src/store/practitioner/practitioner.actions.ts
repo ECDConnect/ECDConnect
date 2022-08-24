@@ -41,7 +41,7 @@ export const getPractitionersForCoach = createAsyncThunk<
 
 export const getPractitionerById = createAsyncThunk<
   PractitionerDto,
-  { id: number },
+  { id: string },
   ThunkApiType<RootState>
 >(
   'getPractitionerById',

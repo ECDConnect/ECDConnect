@@ -18,6 +18,11 @@ export const initialAddPractitionerValues: AddPractitionerModel = {
   passport: '',
 };
 
+export const setupPractitioner = Yup.object().shape({
+  practitionerToProgramme: Yup.boolean().required(),
+  allowPermissions: Yup.mixed().oneOf([true]).required(),
+});
+
 export const addPractitionerSchema = Yup.object().shape({
   idNumber: Yup.string().when('preferId', {
     is: true,

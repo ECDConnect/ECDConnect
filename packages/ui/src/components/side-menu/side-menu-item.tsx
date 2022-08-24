@@ -14,9 +14,7 @@ export default function SideMenuItem({ item, onNavigation }) {
   return (
     <Fragment key={item.name}>
       <div className={`group items-center w-full`}>
-        {item.showDivider && (
-          <Divider className="bg-primaryAccent1" dividerType="dashed" />
-        )}
+        {item.showDivider && <Divider dividerType="dashed" />}
         <div
           onClick={() => onNavigation(item)}
           className={classNames(

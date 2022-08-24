@@ -222,7 +222,7 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
         )}
 
         <div>
-          <span>{`Does  ${
+          <span>{`Does ${
             name ? `${name}` : 'this'
           } class meet everyday?`}</span>
           <div className="mt-2">

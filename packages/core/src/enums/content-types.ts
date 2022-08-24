@@ -7,6 +7,7 @@ export enum ContentConsentTypeEnum {
   IndemnityAgreement = 'IndemnityAgreement',
   PhotoPermissions = 'PhotoPermissions',
   LearningThroughPlay = 'LearningThroughPlay',
+  PermissionToShare = 'PermissionToShare',
 }
 
 export enum ContentTypeEnum {

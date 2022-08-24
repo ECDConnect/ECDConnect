@@ -32,19 +32,16 @@ export class IncompletePractitionerInformationNotificationValidator
      * 1. The user is a practitioner
      * 2. The user doesn't have a classroom
      * 3. The user doesn't have a classroom ID
-     * 4. There are no classes setup
      */
+
+    // TODO: change conditions for when to show the page
     const isPractitioner = userState?.user?.roles?.some(
       (role) => role.name === 'Practitioner'
     );
 
-    const classes = classroomState.classroomGroups?.length || 0;
-
     const showNotification =
       isPractitioner &&
-      (!classroomState?.classroom ||
-        !classroomState?.classroom?.id ||
-        classes < 1);
+      (!classroomState?.classroom || !classroomState?.classroom?.id);
 
     if (showNotification) {
       return [

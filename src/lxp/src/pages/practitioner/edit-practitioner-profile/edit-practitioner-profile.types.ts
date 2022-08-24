@@ -1,11 +1,12 @@
 export enum EditPractitionerSteps {
   welcomePage = 0,
   setupProgramme = 1,
-  setConfirmPractitioners = 2,
-  setupClasses = 3,
+  setupPrincipalPractitioners = 2,
+  setupPractitioner = 3,
+  setupClasses = 4,
   confirmClasses = 4,
-  addPhoto = 5,
-  setPlaygroupCount = 6,
+  addPhoto = 6,
+  setPlaygroupCount = 7,
 }
 
 export const isFullDayOptions = [
