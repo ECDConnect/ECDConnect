@@ -17,10 +17,6 @@ const navigation = [
     href: '/users/coaches',
   },
   {
-    name: 'Principals',
-    href: '/users/principals',
-  },
-  {
     name: 'Practitioners',
     href: '/users/practitioners',
   },

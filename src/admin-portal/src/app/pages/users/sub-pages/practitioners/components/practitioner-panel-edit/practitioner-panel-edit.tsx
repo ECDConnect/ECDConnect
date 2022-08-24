@@ -179,6 +179,9 @@ export default function PractitionerPanelEdit({
         practitionerForm.monthSinceFranchisee &&
         +practitionerForm.monthSinceFranchisee,
       IsActive: true,
+      IsPrincipal: practitionerForm.isPrincipal,
+      IsTrainee: practitionerForm.isTrainee,
+      IsFundaAppAdmin: practitionerForm.isFundaAppAdmin,
     };
 
     await updatePractitioner({

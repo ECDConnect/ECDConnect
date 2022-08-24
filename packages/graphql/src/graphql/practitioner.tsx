@@ -29,11 +29,16 @@ export const GetAllPractitioner = gql`
       }
       attendanceRegisterLink
       maxChildren
+      isPrincipal
+      isFundaAppAdmin
+      notInvitedYet
+      isTrainee
       consentForPhoto
       parentFees
       languageUsedInGroups
       startDate
       monthSinceFranchisee
+      signingSignature
     }
   }
 `;
@@ -67,6 +72,11 @@ export const GetPractitionerById = gql`
       languageUsedInGroups
       startDate
       monthSinceFranchisee
+      isPrincipal
+      isFundaAppAdmin
+      notInvitedYet
+      isTrainee
+      signingSignature
     }
   }
 `;

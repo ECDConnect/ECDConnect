@@ -7,7 +7,6 @@ import {
   RoleList,
   UserModelInput,
   SiteAddressInput,
-  SendInviteToApplication,
   CreateSiteAddress,
 } from '@ecdlink/graphql';
 import { NOTIFICATION, useNotifications } from '@ecdlink/core';
