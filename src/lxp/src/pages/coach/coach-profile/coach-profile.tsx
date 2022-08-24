@@ -43,13 +43,17 @@ export const CoachProfile: React.FC = () => {
   }, [isOnline]);
 
   const getStackedMenuList = (): MenuListDataItem[] => {
+    const titleStyle = 'text-textDark font-semibold text-base leading-snug';
+    const subTitleStyle = 'text-sm font-h1 font-normal text-textMid';
     const stackedMenuList: MenuListDataItem[] = [
       {
         title: `${coach?.user?.firstName} ${coach?.user?.surname}`,
+        titleStyle,
         subTitle: 'About me',
+        subTitleStyle,
         menuIconUrl: userProfilePicture?.file,
         menuIcon: 'UserIcon',
-        iconBackgroundColor: 'primary',
+        iconBackgroundColor: 'tertiary',
         iconColor: 'white',
 
         showIcon: userProfilePicture?.file === undefined,
@@ -59,10 +63,12 @@ export const CoachProfile: React.FC = () => {
       },
       {
         title: 'Account',
+        titleStyle,
         subTitle: 'Password',
+        subTitleStyle,
         menuIcon: 'ShieldCheckIcon',
         menuIconClassName: 'text-white bg-primary',
-        iconBackgroundColor: 'primary',
+        iconBackgroundColor: 'tertiary',
         showIcon: true,
         iconColor: 'white',
         onActionClick: () => {
@@ -71,10 +77,12 @@ export const CoachProfile: React.FC = () => {
       },
       {
         title: 'Logout',
+        titleStyle,
         subTitle: 'Logout & reset data',
+        subTitleStyle,
         menuIcon: 'LogoutIcon',
         iconColor: 'white',
-        iconBackgroundColor: 'primary',
+        iconBackgroundColor: 'tertiary',
         showIcon: true,
         onActionClick: () => {
           dialog({
@@ -127,7 +135,8 @@ export const CoachProfile: React.FC = () => {
   const isProfileComplete =
     !!coach?.user?.firstName &&
     !!coach?.user?.surname &&
-    !!coach?.user?.phoneNumber;
+    !!coach?.user?.phoneNumber &&
+    !!coach?.siteAddress;
 
   const tabItem: TabItem[] = [
     {

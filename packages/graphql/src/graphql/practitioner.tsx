@@ -11,6 +11,7 @@ export const GetAllPractitioner = gql`
         email
         isActive
         idNumber
+        phoneNumber
       }
       siteAddressId
       siteAddress {

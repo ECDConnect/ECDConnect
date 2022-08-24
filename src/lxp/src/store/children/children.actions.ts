@@ -392,7 +392,6 @@ const mapUserInput = (child: Partial<UserDto>): UserModelInput => ({
   email: child.email,
   profileImageUrl: child.profileImageUrl,
 });
-
 export const getChildrenForCoach = createAsyncThunk<
   ChildDto[],
   // eslint-disable-next-line @typescript-eslint/ban-types

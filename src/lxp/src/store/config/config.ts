@@ -30,6 +30,10 @@ import {
   classroomsPersistConfig,
   classroomsReducer,
 } from '../classroom/classroom';
+import {
+  classroomsForCoachPersistConfig,
+  classroomsForCoachReducer,
+} from '../classroomForCoach/classroomForCoach';
 import { activityReducer } from '../content/activity';
 import { activityPersistConfig } from '../content/activity/activity';
 import { contentConsentReducer } from '../content/consent/consent';
@@ -54,6 +58,10 @@ import {
   practitionerPersistConfig,
   practitionerReducer,
 } from '../practitioner/practitioner';
+import {
+  practitionerForCoachPersistConfig,
+  practitionerForCoachReducer,
+} from '../practitionerForCoach/practitionerForCoach';
 import { coachPersistConfig, coachReducer } from '../coach/coach';
 import {
   programmePersistConfig,
@@ -71,6 +79,10 @@ import {
 import { syncReducer } from '../sync';
 import { userPersistConfig, userReducer } from '../user/user';
 import type { RootState } from './types';
+import {
+  childrenForPractitionerPersistConfig,
+  childrenForPractitionerReducer,
+} from '../childrenForPractitioner/childrenForPractitioner';
 
 const persistedReducers = {
   activityData: persistReducer(activityPersistConfig, activityReducer),
@@ -79,7 +91,15 @@ const persistedReducers = {
   auth: persistReducer(authPersistConfig, authReducer),
   caregivers: persistReducer(caregiverPersistConfig, caregiverReducer),
   children: persistReducer(childrenPersistConfig, childrenReducer),
+  childrenForPractitioner: persistReducer(
+    childrenForPractitionerPersistConfig,
+    childrenForPractitionerReducer
+  ),
   classroomData: persistReducer(classroomsPersistConfig, classroomsReducer),
+  classroomForCoachData: persistReducer(
+    classroomsForCoachPersistConfig,
+    classroomsForCoachReducer
+  ),
   coach: persistReducer(coachPersistConfig, coachReducer),
   contentConsentData: contentConsentReducer,
   contentReportData: persistReducer(
@@ -90,6 +110,10 @@ const persistedReducers = {
   notesData: persistReducer(notesPersistConfig, notesReducer),
   notifications: persistReducer(notificationPersistConfig, notificationReducer),
   practitioner: persistReducer(practitionerPersistConfig, practitionerReducer),
+  practitionerForCoach: persistReducer(
+    practitionerForCoachPersistConfig,
+    practitionerForCoachReducer
+  ),
   programmeData: persistReducer(programmePersistConfig, programmeReducer),
   programmeRoutineData: persistReducer(
     programmeRoutinePersistConfig,

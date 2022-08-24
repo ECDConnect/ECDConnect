@@ -43,9 +43,15 @@ import { settingActions, settingThunkActions } from './store/settings';
 import { staticDataActions, staticDataThunkActions } from './store/static-data';
 import { userActions, userThunkActions } from './store/user';
 import { coachActions, coachThunkActions } from './store/coach';
-import { practitionerActions } from './store/practitioner';
+import {
+  practitionerActions,
+  practitionerThunkActions,
+} from './store/practitioner';
+import {
+  practitionerForCoachActions,
+  practitionerForCoachThunkActions,
+} from './store/practitionerForCoach';
 import { analyticsActions } from './store/analytics';
-import { practitionerThunkActions } from './store/practitioner';
 
 type IntialStoreSetupContextValues = {
   initloading: boolean;
@@ -103,6 +109,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     await appDispatch(userActions.resetUserState());
     await appDispatch(coachActions.resetCoachState());
     await appDispatch(practitionerActions.resetPractitionerState());
+    await appDispatch(practitionerForCoachActions.resetPractitionerState());
     await appDispatch(childrenActions.resetChildrenState());
     await appDispatch(caregiverActions.resetCaregiverState());
     await appDispatch(documentActions.resetDocumentsState());
@@ -135,6 +142,9 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     await appDispatch(userThunkActions.getUser({})).unwrap();
     await appDispatch(userThunkActions.getUserConsents({})).unwrap();
     await appDispatch(coachThunkActions.getCoachByUserId({})).unwrap();
+    await appDispatch(
+      practitionerForCoachThunkActions.getPractitionersForCoach({})
+    ).unwrap();
     await appDispatch(
       practitionerThunkActions.getAllPractitioners({})
     ).unwrap();
