@@ -164,8 +164,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            Practitioner practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId.Equals(practitionerId)).Where(y => y.PrincipalHierarchy.Contains(principalId)).FirstOrDefault();
-            //Practitioner practitioner = (Practitioner)practitionerRepo.GetByUserId(practitionerId);
+            Practitioner practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId.Equals(practitionerId)).Where(y => y.PrincipalHierarchy.Contains(principalId)).FirstOrDefault();            
             {
                 practitioner.ShareInfo = true;
                 var updateResult = practitionerRepo.Update(practitioner);

@@ -124,7 +124,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return children;
         }    
 
-        public List<Classroom> GetAllClassroomGroupsForPractitioner([Service] IHttpContextAccessor contextAccessor,
+        public List<Classroom> GetAllClassroomsForPractitioner([Service] IHttpContextAccessor contextAccessor,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
             string practitionerId, string principalId)
