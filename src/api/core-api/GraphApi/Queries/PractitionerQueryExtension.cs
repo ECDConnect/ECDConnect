@@ -48,14 +48,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var practiRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
             Practitioner practitioner = new Practitioner();
             List<Practitioner> practitioners = practiRepo.GetAll().Where(x => x.UserId.Contains(userId)).ToList();
-            if (practitioners.Count > 0) { 
-                practitioner = practitioners.FirstOrDefault(); 
+            if (practitioners.Count > 0) {
+                practitioner = practitioners.FirstOrDefault();
             }
 
             return practitioner;
         }
 
-        public ApplicationUser GetPractitionerByIdNumber([Service] IServiceProvider serviceProvider,[Service] IHttpContextAccessor contextAccessor, 
+        public ApplicationUser GetPractitionerByIdNumber([Service] IServiceProvider serviceProvider, [Service] IHttpContextAccessor contextAccessor,
             [Service] UserManager<ApplicationUser> userManager,
              [Service] RoleManager<IdentityRole> roleManager,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
@@ -122,20 +122,28 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             List<Child> children = childRepo.GetAll().Where(x => x.Hierarchy.Contains(practitioner.FirstOrDefault().Hierarchy)).ToList();
 
             return children;
-        }
+        }    
 
         public List<Classroom> GetAllClassroomsForPractitioner([Service] IHttpContextAccessor contextAccessor,
-    [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
-    [Service] IGenericRepositoryFactory repoFactory,
-    string userId)
+            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+            [Service] IGenericRepositoryFactory repoFactory,
+            string practitionerId, string principalId)
         {
             using var scope = dbFactory.CreateDbContext();
             using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var classroomRepo = repoFactory.CreateRepository<Classroom>(userContext: uId);
+            var classroomGroupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
 
-            List<Classroom> classes = classroomRepo.GetAll().Where(x => x.UserId.Equals(userId)).ToList();
-            return classes;            
+            List<ClassroomGroup> groups = new List<ClassroomGroup>();
+            List<Classroom> classes = classroomRepo.GetAll().Where(x => x.UserId.Equals(principalId)).ToList();
+                foreach (var classroom in classes)
+                {
+                    List<ClassroomGroup> classRooms = classroomGroupRepo.GetAll().Where(x => x.ClassroomId.Equals(classroom.Id)).Where(y => y.UserId.Equals(practitionerId)).ToList();
+                    classroom.ClassroomGroups = classRooms; //filter the data for practitioner specific
+                }
+            return classes;
         }
     }
+
 }
