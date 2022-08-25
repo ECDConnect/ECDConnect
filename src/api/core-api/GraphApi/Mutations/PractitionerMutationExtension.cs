@@ -160,17 +160,22 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             string practitionerId, string principalId)
         
         {
+            bool bReturn = false;
             using var scope = dbFactory.CreateDbContext();
             using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            Practitioner practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId.Equals(practitionerId)).Where(y => y.PrincipalHierarchy.Contains(principalId)).FirstOrDefault();            
+            Practitioner practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId.Equals(practitionerId)).FirstOrDefault();
             {
-                practitioner.ShareInfo = true;
-                var updateResult = practitionerRepo.Update(practitioner);
+                if (practitioner != null)
+                {
+                    practitioner.ShareInfo = true;
+                    var updateResult = practitionerRepo.Update(practitioner);
+                    return true;
+                }
             }
 
-            return true;
+            return bReturn;
         }
     }
 }

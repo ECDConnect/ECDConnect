@@ -61,9 +61,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 return practitioner;
             }
             else return new Practitioner();
-
-
-            return practitioner;
         }
 
         public Practitioner DeletePractitionerForCoach([Service] IHttpContextAccessor contextAccessor,            
