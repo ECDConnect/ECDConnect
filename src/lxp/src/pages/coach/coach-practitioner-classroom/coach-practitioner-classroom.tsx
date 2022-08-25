@@ -89,11 +89,6 @@ export const CoachPractitionerClassroom: React.FC = () => {
   const practitionerClassroomGroups = classroomGroups.filter(
     (item) => item.classroomId === practitionerClassroom?.id
   );
-  console.log({ practitionerId });
-  console.log({ coachClassrooms });
-  console.log({ classroomGroups });
-  console.log({ practitionerClassroom });
-  console.log({ practitionerClassroomGroups });
   const childrenForPractitionerList = children?.filter((item) =>
     childrenForPractitioner?.find((item2) => item.id === item2.id)
   );

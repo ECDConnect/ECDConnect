@@ -27,10 +27,6 @@ const childrenForPractitionerSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    // builder.addCase(getPractitionerById.fulfilled, (state, action) => {
-    //   state.childForPractitioner = action.payload;
-    // });
-
     builder.addCase(getChildrenForPractitioner.fulfilled, (state, action) => {
       if (!state.childrenForPractitioner) {
         const childrenForPractitioner = Object.assign(
@@ -40,7 +36,6 @@ const childrenForPractitionerSlice = createSlice({
 
         state.childrenForPractitioner = childrenForPractitioner;
       }
-      // state.practitionersForCoach = action.payload;
     });
   },
 });

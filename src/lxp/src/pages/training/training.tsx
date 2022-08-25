@@ -38,7 +38,6 @@ export const Training: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, loading]);
 
-  console.log({ renderIframe });
   return (
     <BannerWrapper
       size="medium"
