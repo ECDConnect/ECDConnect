@@ -15,15 +15,7 @@ import { PractitionerProfileRouteState } from './coach-programme-information.typ
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import * as styles from './coach-programme-information.styles';
 import ROUTES from '@routes/routes';
-import {
-  ChevronRightIcon,
-  ExclamationIcon,
-  PhoneIcon,
-} from '@heroicons/react/solid';
-// import { CreateNote } from '../../components/create-note/create-note';
-// import { NoteTypeEnum } from '@ecdlink/graphql';
-// import { getLastNoteDate } from '@utils/child/child-profile-utils';
-// import { notesSelectors } from '@store/notes';
+import { PhoneIcon } from '@heroicons/react/solid';
 import { useSelector } from 'react-redux';
 import { practitionerSelectors } from '@/store/practitioner';
 import { practitionerForCoachSelectors } from '@/store/practitionerForCoach';
@@ -40,6 +32,7 @@ export const CoachProgrammeInformation: React.FC = () => {
   const practitionersForCoach = useSelector(
     practitionerForCoachSelectors.getPractitionersForCoach
   );
+  const isFromProgrammeView = true;
 
   const listItems = [
     {
@@ -107,9 +100,14 @@ export const CoachProgrammeInformation: React.FC = () => {
       profileText:
         item?.user?.firstName.substring(0, 1)! +
         item?.user?.surname.substring(0, 1),
-      onActionClick: () => handleClick(item.id!),
+      onActionClick: () => handleClick(item.userId!),
+      id: item?.userId,
     };
   });
+
+  const otherPractitionersOnSite = practitionersForCoachListItems?.filter(
+    (item) => item.id !== practitionerId
+  );
 
   const coachClassrooms = useSelector(
     classroomsForCoachSelectors.getClassroomForCoach
@@ -137,6 +135,7 @@ export const CoachProgrammeInformation: React.FC = () => {
     if (isCoach) {
       history.push('practitioner-profile-info', {
         practitionerId,
+        isFromProgrammeView,
       });
     } else {
       history.push('practitioner-info-dashboard', {
@@ -184,13 +183,6 @@ export const CoachProgrammeInformation: React.FC = () => {
             textColour={'white'}
             className={'mr-2 px-3 py-1.5'}
           />
-          {/* <StatusChip
-            backgroundColour="tertiary"
-            borderColour="tertiary"
-            text={`Owner`}
-            textColour={'white'}
-            className={'mr-2 px-3 py-1.5'}
-          /> */}
         </div>
         <div className={styles.contactButtons}>
           <Button
@@ -382,7 +374,7 @@ export const CoachProgrammeInformation: React.FC = () => {
               <div className="w-11/12 flex justify-center">
                 <StackedList
                   className={styles.stackedList}
-                  listItems={practitionersForCoachListItems!}
+                  listItems={otherPractitionersOnSite!}
                   type={'UserAlertList'}
                 ></StackedList>
               </div>

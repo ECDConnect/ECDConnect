@@ -64,6 +64,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
   const { isOnline } = useOnlineStatus();
   const location = useLocation<PractitionerProfileRouteState>();
   const practitionerId = location.state.practitionerId;
+  const isFromProgrammeView = location.state.isFromProgrammeView;
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const practitioner = practitioners?.find(
     (practitioner) => practitioner?.userId === practitionerId
@@ -140,7 +141,11 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
         size="medium"
         renderBorder={true}
         renderOverflow={false}
-        onBack={() => history.push(ROUTES.COACH.PRACTITIONERS)}
+        onBack={() =>
+          isFromProgrammeView
+            ? history.goBack()
+            : history.push(ROUTES.COACH.PRACTITIONERS)
+        }
         displayOffline={!isOnline}
       >
         <div className={styles.avatarWrapper}>
