@@ -124,7 +124,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return children;
         }    
 
-        public List<ClassroomGroup> GetAllClassroomGroupsForPractitioner([Service] IHttpContextAccessor contextAccessor,
+        public List<Classroom> GetAllClassroomGroupsForPractitioner([Service] IHttpContextAccessor contextAccessor,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
             string practitionerId, string principalId)
@@ -140,9 +140,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 foreach (var classroom in classes)
                 {
                     List<ClassroomGroup> classRooms = classroomGroupRepo.GetAll().Where(x => x.ClassroomId.Equals(classroom.Id)).Where(y => y.UserId.Equals(practitionerId)).ToList();
-                    groups.AddRange(classRooms);
+                    classroom.ClassroomGroups = classRooms; //filter the data for practitioner specific
                 }
-            return groups;
+            return classes;
         }
     }
 
