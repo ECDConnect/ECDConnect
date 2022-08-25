@@ -209,6 +209,9 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
         practitionerForm.monthSinceFranchisee &&
         +practitionerForm.monthSinceFranchisee,
       IsActive: true,
+      IsPrincipal: practitionerForm.isPrincipal,
+      IsFundaAppAdmin: practitionerForm.isFundaAppAdmin,
+      IsTrainee: practitionerForm.isTrainee,
     };
 
     await createPractitioner({

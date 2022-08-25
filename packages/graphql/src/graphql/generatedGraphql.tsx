@@ -17,12 +17,9 @@ export type Scalars = {
   Boolean: boolean;
   Int: number;
   Float: number;
-  /** The `DateTime` scalar represents an ISO-8601 compliant date time type. */
   DateTime: any;
-  /** The built-in `Decimal` scalar type. */
   Decimal: any;
   UUID: any;
-  /** The `Upload` scalar type represents a file upload. */
   Upload: any;
 };
 
@@ -3576,6 +3573,7 @@ export type Query = {
     Array<Maybe<ChildProgressReportSummaryModel>>
   >;
   childrenAttendedVsAbsentMetrics?: Maybe<Array<Maybe<MetricReportStatItem>>>;
+  childrenByClassroomId?: Maybe<Array<Maybe<Child>>>;
   childrenMetrics?: Maybe<ChildrenMetricReport>;
   coachByUserId?: Maybe<Coach>;
   contentDefinitions?: Maybe<Array<Maybe<ContentDefinitionModel>>>;
@@ -4190,6 +4188,10 @@ export type QueryChildProgressReportSummaryArgs = {
 export type QueryChildrenAttendedVsAbsentMetricsArgs = {
   fromDate: Scalars['DateTime'];
   toDate: Scalars['DateTime'];
+};
+
+export type QueryChildrenByClassroomIdArgs = {
+  classroomId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryCoachByUserIdArgs = {

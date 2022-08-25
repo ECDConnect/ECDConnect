@@ -22,7 +22,7 @@ import { cloneDeep } from 'lodash';
 import { PhotoPrompt } from '../../../components/photo-prompt/photo-prompt';
 import { DialogFormInput } from '@models/practitioner/DialogFormInput';
 import { setStorageItem } from '@utils/common/local-storage.utils';
-import { practitionerSelectors } from '@/store/practitioner';
+import { practitionerForCoachSelectors } from '@/store/practitionerForCoach';
 import { coachActions, coachSelectors } from '@store/coach';
 import { userActions, userSelectors } from '@/store/user';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
@@ -70,7 +70,9 @@ export const CoachAbout: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOnline]);
 
-  const practitioners = useSelector(practitionerSelectors.getPractitioners);
+  const practitioners = useSelector(
+    practitionerForCoachSelectors.getPractitionersForCoach
+  );
   const children = useSelector(childrenSelectors.getChildren);
   const coach = useSelector(coachSelectors.getCoach);
   const user = useSelector(userSelectors.getUser);

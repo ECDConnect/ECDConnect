@@ -20,12 +20,14 @@ import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { OfflineSyncModal } from '../../modals';
 import OfflineSyncTimeExceeded from '../../modals/offline-sync/offline-sync-time-exceeded';
 import { useAppDispatch } from '@store';
+import { classroomsForCoachThunkActions } from '../../store/classroomForCoach';
 import { classroomsSelectors } from '@store/classroom';
 import { notificationsSelectors } from '@store/notifications';
 import { settingSelectors } from '@store/settings';
 import { userSelectors } from '@store/user';
 import { analyticsActions } from '@store/analytics';
 import { DashboardItems } from './components/dashboard-items/dashboard-items';
+import { practitionerForCoachThunkActions } from '@/store/practitionerForCoach';
 import {
   practitionerSelectors,
   practitionerThunkActions,
@@ -88,7 +90,14 @@ export const Dashboard: React.FC = () => {
     if (userData?.roles?.some((role) => role.name === 'Coach')) {
       (async () =>
         await appDispatch(
-          practitionerThunkActions.getPractitionersForCoach({})
+          practitionerForCoachThunkActions.getPractitionersForCoach({})
+        ).unwrap())();
+
+      (async (id) =>
+        await appDispatch(
+          classroomsForCoachThunkActions.getClassroomForCoach({
+            id: userData?.id!,
+          })
         ).unwrap())();
 
       (async () =>
@@ -180,7 +189,7 @@ export const Dashboard: React.FC = () => {
         title: 'Smartstarters',
         titleIcon: 'AcademicCapIcon',
         titleIconClassName: styles.smartStarterIcon,
-        onActionClick: () => ({}),
+        onActionClick: () => history.push(ROUTES.COACH.PRACTITIONERS),
         classNames: 'bg-uiBg',
       },
       {

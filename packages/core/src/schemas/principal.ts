@@ -9,6 +9,10 @@ export const initialPrincipalValues: PrincipalDto = {
   monthSinceFranchisee: 0,
   startDate: new Date(),
   consentForPhoto: false,
+  isPrincipal: true,
+  isFundaAppAdmin: false,
+  isTrainee: false,
+  signingSignature: '',
 };
 
 export const principalSchema = Yup.object().shape({
@@ -20,4 +24,8 @@ export const principalSchema = Yup.object().shape({
   startDate: Yup.date(),
   consentForPhoto: Yup.bool(),
   sendInvite: Yup.bool(),
+  isPrincipal: Yup.bool(),
+  isFundaAppAdmin: Yup.bool(),
+  isTrainee: Yup.bool(),
+  signingSignature: Yup.string(),
 });

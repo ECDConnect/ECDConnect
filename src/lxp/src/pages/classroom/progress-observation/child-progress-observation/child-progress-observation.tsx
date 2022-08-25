@@ -196,9 +196,15 @@ export const ChildProgressObservationPage: React.FC = () => {
     <>
       <BannerWrapper
         size={'small'}
-        onBack={() =>
-          history.push(ROUTES.CHILD_PROFILE, { childId: routeState.childId })
-        }
+        onBack={() => {
+          if (practitionerUser?.roles?.some((role) => role.name === 'Coach')) {
+            history.push(ROUTES.COACH.CHILD_PROFILE, {
+              childId: routeState.childId,
+            });
+          } else {
+            history.push(ROUTES.CHILD_PROFILE, { childId: routeState.childId });
+          }
+        }}
         title={`Track ${childUser?.firstName}'s progress`}
         data-testId={'child-progress-observation-banner-wrapper'}
         renderOverflow
