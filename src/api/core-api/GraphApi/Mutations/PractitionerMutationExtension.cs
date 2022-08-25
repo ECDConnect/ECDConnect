@@ -143,12 +143,32 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             }
 
             var importerUserId = httpContextAccessor.HttpContext.GetUser().Id;
-            //var context = dbFactory.CreateDbContext();
             var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: importerUserId);
 
             foreach (var prac in templist)
             {
                 var addedPractitioner = practitionerRepo.Insert(prac);
+            }
+
+            return true;
+        }
+
+        public bool UpdatePractitionerShareInfo([Service] IHttpContextAccessor contextAccessor,
+            [Service] UserManager<ApplicationUser> userManager,
+            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+            [Service] IGenericRepositoryFactory repoFactory,
+            string practitionerId, string principalId)
+        
+        {
+            using var scope = dbFactory.CreateDbContext();
+            using var dbContextTransaction = scope.Database.BeginTransaction();
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+            //Practitioner practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId.Equals(practitionerId)).Where(y => y.PrincipalHierarchy.Contains(principalId)).FirstOrDefault();
+            Practitioner practitioner = (Practitioner)practitionerRepo.GetByUserId(practitionerId);
+            {
+                practitioner.ShareInfo = true;
+                var updateResult = practitionerRepo.Update(practitioner);
             }
 
             return true;
