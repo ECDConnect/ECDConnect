@@ -196,19 +196,16 @@ export const CoachProgrammeInformation: React.FC = () => {
           <Button
             color={'primary'}
             type={'outlined'}
-            className={'mr-4 rounded-xl'}
+            className={'rounded-2xl'}
             size={'small'}
             onClick={call}
           >
-            <PhoneIcon
-              className="h-6 w-5 text-primary mx-1"
-              aria-hidden="true"
-            />
+            <PhoneIcon className="h-5 w-5 text-primary" aria-hidden="true" />
           </Button>
           <Button
             color={'primary'}
             type={'outlined'}
-            className={'rounded-xl'}
+            className={'rounded-2xl'}
             size={'small'}
             onClick={whatsapp}
           >
