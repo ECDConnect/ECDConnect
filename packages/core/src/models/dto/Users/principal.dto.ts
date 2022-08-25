@@ -20,4 +20,5 @@ export interface PrincipalDto extends EntityBase {
   isFundaAppAdmin?: boolean;
   isTrainee?: boolean;
   signingSignature: string;
+  shareInfo?: boolean;
 }
