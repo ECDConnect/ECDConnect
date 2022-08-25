@@ -48,7 +48,7 @@ export default function CoachPanelEdit({
     getValues: coachGetValues,
   } = useForm({
     resolver: yupResolver(coachSchema),
-    defaultValues: initialCoachValues,
+    defaultValues: { ...initialCoachValues, sendInvite: false },
     mode: 'onBlur',
   });
   const { errors: coachFormErrors, isValid: isCoachValid } = coachFormState;
@@ -84,8 +84,34 @@ export default function CoachPanelEdit({
           shouldValidate: true,
         }
       );
+      coachSetValue('franchisorId', coach.franchisorId ?? '', {
+        shouldValidate: true,
+      });
+      if (coach.siteAddress) {
+        siteAddressSetValue('name', coach.siteAddress.name, {
+          shouldValidate: true,
+        });
+        siteAddressSetValue('addressLine1', coach.siteAddress.addressLine1, {
+          shouldValidate: true,
+        });
+        siteAddressSetValue('addressLine2', coach.siteAddress.addressLine2, {
+          shouldValidate: true,
+        });
+        siteAddressSetValue('addressLine3', coach.siteAddress.addressLine3, {
+          shouldValidate: true,
+        });
+        siteAddressSetValue('ward', coach.siteAddress.ward, {
+          shouldValidate: true,
+        });
+        siteAddressSetValue('provinceId', coach.siteAddress.province.id, {
+          shouldValidate: true,
+        });
+        siteAddressSetValue('postalCode', coach.siteAddress.postalCode, {
+          shouldValidate: true,
+        });
+      }
     }
-  }, [coach, coachSetValue]);
+  }, [coach]);
 
   const onSave = async () => {
     if (isCoachValid) {

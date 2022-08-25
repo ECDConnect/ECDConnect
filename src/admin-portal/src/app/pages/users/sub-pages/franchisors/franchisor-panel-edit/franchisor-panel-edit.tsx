@@ -61,7 +61,7 @@ export default function FranchisorPanelEdit({
     getValues: siteAddressGetValues,
   } = useForm({
     resolver: yupResolver(siteAddressSchema),
-    defaultValues: { ...initialSiteAddressValues, sendInvite: false },
+    defaultValues: { ...initialSiteAddressValues },
     mode: 'onBlur',
   });
   const { errors: siteAddressFormErrors } = franchisorFormState;
@@ -85,8 +85,44 @@ export default function FranchisorPanelEdit({
           shouldValidate: true,
         }
       );
+
+      if (franchisor.siteAddress) {
+        siteAddressSetValue('name', franchisor.siteAddress.name, {
+          shouldValidate: true,
+        });
+        siteAddressSetValue(
+          'addressLine1',
+          franchisor.siteAddress.addressLine1,
+          {
+            shouldValidate: true,
+          }
+        );
+        siteAddressSetValue(
+          'addressLine2',
+          franchisor.siteAddress.addressLine2,
+          {
+            shouldValidate: true,
+          }
+        );
+        siteAddressSetValue(
+          'addressLine3',
+          franchisor.siteAddress.addressLine3,
+          {
+            shouldValidate: true,
+          }
+        );
+        siteAddressSetValue('ward', franchisor.siteAddress.ward, {
+          shouldValidate: true,
+        });
+        siteAddressSetValue('provinceId', franchisor.siteAddress.province.id, {
+          shouldValidate: true,
+        });
+        siteAddressSetValue('postalCode', franchisor.siteAddress.postalCode, {
+          shouldValidate: true,
+        });
+      }
     }
-  }, [franchisor, franchisorSetValue]);
+  }, [franchisor]);
 
   const onSave = async () => {
     if (isFranchisorValid) {

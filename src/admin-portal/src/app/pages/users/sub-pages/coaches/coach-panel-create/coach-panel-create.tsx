@@ -95,7 +95,7 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
     getValues: coachGetValues,
   } = useForm({
     resolver: yupResolver(coachSchema),
-    defaultValues: initialCoachValues,
+    defaultValues: { ...initialCoachValues, sendInvite: false },
     mode: 'onBlur',
   });
   const { errors: coachFormErrors, isValid: isCoachValid } = coachFormState;
@@ -148,36 +148,11 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
 
         const userId = response.data.addUser.id;
         await saveRoles(userId);
-        //await saveCoach(userId);
         await saveSiteAddress(userId);
       })
       .catch((error) => {
         console.log(error);
       });
-  };
-
-  const saveCoach = async (userId: string, siteAddressId?: string) => {
-    const coachForm = coachGetValues();
-    const coachInputModel: CoachInput = {
-      Id: undefined,
-      UserId: userId,
-      AreaOfOperation: coachForm.areaOfOperation,
-      SecondaryAreaOfOperation: coachForm.secondaryAreaOfOperation,
-      StartDate: coachForm.startDate,
-      IsActive: true,
-      SiteAddressId: siteAddressId,
-    };
-
-    await createCoach({
-      variables: {
-        input: { ...coachInputModel },
-      },
-    });
-
-    setNotification({
-      title: 'Successfully Created Coach!',
-      variant: NOTIFICATION.SUCCESS,
-    });
   };
 
   const saveSiteAddress = async (userId: string) => {
@@ -214,6 +189,44 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
     }
 
     await saveCoach(userId, siteAddressId);
+  };
+
+  const saveCoach = async (userId: string, siteAddressId?: string) => {
+    const coachForm = coachGetValues();
+    const coachInputModel: CoachInput = {
+      Id: undefined,
+      UserId: userId,
+      AreaOfOperation: coachForm.areaOfOperation,
+      SecondaryAreaOfOperation: coachForm.secondaryAreaOfOperation,
+      StartDate: coachForm.startDate,
+      IsActive: true,
+      SiteAddressId: siteAddressId,
+      FranchisorId: coachForm.franchisorId,
+    };
+
+    await createCoach({
+      variables: {
+        input: { ...coachInputModel },
+      },
+    });
+
+    setNotification({
+      title: 'Successfully Created Coach!',
+      variant: NOTIFICATION.SUCCESS,
+    });
+
+    if (coachForm.sendInvite) {
+      await sendInviteToApplication({
+        variables: {
+          userId: userId,
+        },
+      });
+
+      setNotification({
+        title: 'Successfully Sent Coach Invite!',
+        variant: NOTIFICATION.SUCCESS,
+      });
+    }
   };
 
   const saveRoles = async (userId: string) => {

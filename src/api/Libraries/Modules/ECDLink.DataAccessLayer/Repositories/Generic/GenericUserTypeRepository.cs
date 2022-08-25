@@ -2,6 +2,7 @@ using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Base;
 using ECDLink.DataAccessLayer.Entities.Interfaces;
+using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Events;
 using ECDLink.DataAccessLayer.Helpers;
 using ECDLink.DataAccessLayer.Hierarchy;
@@ -95,22 +96,28 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
 
             var user = _userManager.FindByIdAsync(_userId).Result;
             var roles = _userManager.GetRolesAsync(user).Result;
-            //var isAdmin = roles.Contains(Roles.ADMINISTRATOR);
             //if user is in a higher admin role (Principal, Practitioner, Coach, Franchisor, then skip the check as they need to be able to see anyone anywhere due to the shift in roles of Milestone 1.
-            var higherRoles = new[] { Roles.PRACTITIONER, Roles.COACH, Roles.ADMINISTRATOR, Roles.PRINCIPAL, Roles.FRANCHISOR };//
+            var higherRoles = new[] { Roles.PRACTITIONER, Roles.COACH, Roles.ADMINISTRATOR, Roles.PRINCIPAL, Roles.FRANCHISOR };//            
             bool isHigherRole = higherRoles.Any(roles.Contains);
+            var isAdmin = roles.Contains(Roles.ADMINISTRATOR);                        
+            var excludingEntities = new[] { typeof(Practitioner), typeof(Principal), typeof(Coach), typeof(Franchisor) };//
+            bool isExcluded = excludingEntities.Contains(typeof(T));
 
             var query = entities.AsQueryable();
 
-            if (isHigherRole)
+            if (isAdmin)
             {
                 return query;
             }
             else
             {
-                var hierarchy = _hierarchyEngine.GetUserHierarchy(_userId);
-                return query.Where(x => ((IUserType)x).Hierarchy.StartsWith(hierarchy));
-
+                if (isExcluded && isHigherRole)
+                {
+                    return query;
+                } else {                 
+                    var hierarchy = _hierarchyEngine.GetUserHierarchy(_userId);
+                    return query.Where(x => ((IUserType)x).Hierarchy.StartsWith(hierarchy));
+                }
             }
 
             // Change this to an LTree at some point            
@@ -131,7 +138,8 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             var user = _userManager.FindByIdAsync(castRecord.UserId).Result;
             var roles = _userManager.GetRolesAsync(user).Result;
             var higherRoles = new[] { Roles.PRACTITIONER, Roles.COACH, Roles.ADMINISTRATOR, Roles.PRINCIPAL, Roles.FRANCHISOR };//
-            bool isHigherRole = higherRoles.Any(roles.Contains); //roles.contains(Roles.ADMINISTRATOR);
+            bool isHigherRole = higherRoles.Any(roles.Contains);
+
             if (!isHigherRole)
             {
                 if (!string.IsNullOrWhiteSpace(castRecord.Hierarchy))

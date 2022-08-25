@@ -9,6 +9,7 @@ using System.Linq;
 using Microsoft.AspNetCore.Identity;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.Security;
+using ECDLink.DataAccessLayer.Entities.Users;
 
 namespace ECDLink.DataAccessLayer.Repositories.Generic
 {
@@ -51,14 +52,16 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             //if user is in a higher admin role (Principal, Practitioner, Coach, Franchisor, then skip the check as they need to be able to see anyone anywhere due to the shift in roles of Milestone 1.
             var higherRoles = new[] { Roles.PRACTITIONER, Roles.COACH, Roles.ADMINISTRATOR, Roles.PRINCIPAL, Roles.FRANCHISOR };//
             bool isHigherRole = higherRoles.Any(roles.Contains);
+            var excludingEntities = new[] { typeof(Practitioner), typeof(Principal), typeof(Coach), typeof(Franchisor) };//
+            bool isExcluded = excludingEntities.Contains(typeof(T));
 
-            if (isHigherRole)
+            //if (isHigherRole)
+            if (isExcluded && isHigherRole) //if the user requesting is of a higher role and requestion data in the excluded type list, then return as is, otehrwise return hiearchied data
             {
                 return entities.AsQueryable();
             }
             else
             {
-
                 var hierarchy = _hierarchyEngine.GetUserHierarchy(_userId);
 
                 // Change this to an LTree at some point

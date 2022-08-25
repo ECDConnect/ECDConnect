@@ -6,6 +6,7 @@ export const initialCoachValues: CoachDto = {
   secondaryAreaOfOperation: '',
   startDate: undefined,
   signingSignature: undefined,
+  franchisorId: '',
 };
 
 export const coachSchema = Yup.object().shape({
@@ -13,4 +14,6 @@ export const coachSchema = Yup.object().shape({
   secondaryAreaOfOperation: Yup.string(),
   startDate: Yup.date(),
   signingSignature: Yup.string(),
+  sendInvite: Yup.bool(),
+  franchisorId: Yup.string(),
 });

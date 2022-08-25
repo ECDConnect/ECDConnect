@@ -89,7 +89,7 @@ export default function Coaches() {
       position: DialogPosition.Middle,
       render: (onSubmit: any, onCancel: any) => (
         <AlertModal
-          title="Practitioner Invite"
+          title="Coach Invite"
           message={`You are about to send an invite to ${coach.user.firstName} ${coach.user.surname}`}
           onCancel={onCancel}
           onSubmit={() => {

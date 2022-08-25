@@ -27,7 +27,6 @@ const FranchisorForm: React.FC<FranchisorFormProps> = ({
             <FormField
               label={'Secondary Area Of Operation'}
               nameProp={'secondaryAreaOfOperation'}
-              type="number"
               register={register}
               error={errors.secondaryAreaOfOperation?.message}
             />

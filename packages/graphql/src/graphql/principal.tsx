@@ -28,11 +28,16 @@ export const GetAllPrincipal = gql`
       }
       attendanceRegisterLink
       maxChildren
+      isPrincipal
+      isFundaAppAdmin
+      notInvitedYet
+      isTrainee
       consentForPhoto
       parentFees
       languageUsedInGroups
       startDate
       monthSinceFranchisee
+      signingSignature
     }
   }
 `;
@@ -65,6 +70,9 @@ export const allPrincipal = gql`
       }
       attendanceRegisterLink
       maxChildren
+      isPrincipal
+      isFundaAppAdmin
+      notInvitedYet
       consentForPhoto
       parentFees
       languageUsedInGroups
@@ -103,6 +111,11 @@ export const GetPrincipalById = gql`
       languageUsedInGroups
       startDate
       monthSinceFranchisee
+      isPrincipal
+      isFundaAppAdmin
+      notInvitedYet
+      isTrainee
+      signingSignature
     }
   }
 `;
