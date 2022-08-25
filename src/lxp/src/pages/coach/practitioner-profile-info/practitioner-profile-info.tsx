@@ -104,7 +104,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
     {
       title: 'Programme Information',
       titleStyle: 'text-textDark font-semibold text-base leading-snug',
-      subTitle: 'Location, playgroups & staff',
+      subTitle: 'Location, classes & staff',
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       menuIcon: 'InformationCircleIcon',

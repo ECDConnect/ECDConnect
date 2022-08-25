@@ -57,9 +57,9 @@ export const CoachProgrammeInformation: React.FC = () => {
       classNames: 'bg-uiBg',
     },
     {
-      title: 'Playgroups reassigned',
+      title: 'Classes reassigned',
       titleStyle: 'text-textDark font-semibold text-base leading-snug',
-      subTitle: 'Playgroups have been assigned to a different practitioner',
+      subTitle: 'Classes have been assigned to a different practitioner',
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       menuIcon: 'ExclamationIcon',
@@ -278,7 +278,7 @@ export const CoachProgrammeInformation: React.FC = () => {
               className={'mt-1'}
             />
             <Typography
-              text={'Playgroups'}
+              text={'Playgroup'}
               type="h4"
               color="textDark"
               className={'mt-1'}
