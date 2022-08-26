@@ -43,6 +43,15 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
             return entities.SingleOrDefault(s => s.Id == id);
         }
 
+        public virtual T GetByUserId(string id)
+        {
+            Type type = typeof(T);
+            if (type.GetProperty("UserId") != null)
+            {                
+                return entities.SingleOrDefault(s => s.GetType().GetProperty("UserId").GetValue(s, null).Equals(id));
+            } else return entities.SingleOrDefault(s => s.Id.Equals(id));
+        }
+
         public virtual T Insert(T entity)
         {
             if (entity == null) throw new ArgumentNullException("entity");

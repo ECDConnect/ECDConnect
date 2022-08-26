@@ -39,6 +39,8 @@ export const GetAllPractitioner = gql`
       startDate
       monthSinceFranchisee
       signingSignature
+      coachHierarchy
+      principalHierarchy
     }
   }
 `;
@@ -77,6 +79,8 @@ export const GetPractitionerById = gql`
       notInvitedYet
       isTrainee
       signingSignature
+      coachHierarchy
+      principalHierarchy
     }
   }
 `;

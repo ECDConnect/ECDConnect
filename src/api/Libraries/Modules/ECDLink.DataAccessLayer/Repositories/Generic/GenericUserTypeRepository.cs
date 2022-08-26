@@ -155,6 +155,48 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             return record;
         }
 
+        public override T GetByUserId(string id)
+        {
+            if (string.IsNullOrEmpty(_userId))
+            {
+                throw new UnauthorizedAccessException("User does not have access to this data");
+            }
+
+            Type type = typeof(T);
+            if (type.GetProperty("UserId") != null)
+            {
+
+                var record = base.GetAll().Where(s => s.GetType().GetProperty("UserId").GetValue(s, null).Equals(id));
+
+                var castRecord = record as IUserType;
+
+                if (castRecord == default)
+                {
+                    return default;
+                }
+
+                //if user is in a higher admin role (Principal, Practitioner, Coach, Franchisor, then skip the check as they need to be able to see anyone anywhere due to the shift in roles of Milestone 1.
+                var user = _userManager.FindByIdAsync(castRecord.UserId).Result;
+                var roles = _userManager.GetRolesAsync(user).Result;
+                var higherRoles = new[] { Roles.PRACTITIONER, Roles.COACH, Roles.ADMINISTRATOR, Roles.PRINCIPAL, Roles.FRANCHISOR };//
+                bool isHigherRole = higherRoles.Any(roles.Contains);
+
+                if (!isHigherRole)
+                {
+                    if (!string.IsNullOrWhiteSpace(castRecord.Hierarchy))
+                    {
+                        var hierarchy = _hierarchyEngine.GetUserHierarchy(_userId);
+                        if (!castRecord.Hierarchy.StartsWith(hierarchy))
+                        {
+                            return default;
+                        }
+                    }
+                }
+
+                return (T)record;
+            } else return this.GetById(Guid.Parse(id));//default to getting just by id
+        }
+
         public override T Insert(T entity)
         {
             var typedEntity = entity as IUserType;
