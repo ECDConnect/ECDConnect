@@ -4,11 +4,7 @@ import { Alert, Button, ButtonGroup, FormInput, Typography } from '@ecdlink/ui';
 import { ButtonGroupTypes } from '@ecdlink/ui';
 import { renderIcon } from '@ecdlink/ui';
 import { useEffect } from 'react';
-import {
-  useForm,
-  /*useFormState, */ useWatch,
-  Controller,
-} from 'react-hook-form';
+import { useForm, useFormState, useWatch, Controller } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import { staticDataSelectors } from '@store/static-data';
 import * as styles from '../../edit-practitioner-profile.styles';
@@ -37,7 +33,7 @@ export const EditProgrammeForm: React.FC<EditProgrammeFormProps> = ({
     mode: 'onChange',
   });
 
-  // const { isValid } = useFormState({ control: programmeFormControl });
+  const { isValid } = useFormState({ control: programmeFormControl });
   const { isPrincipalOrLeader, isPrincipleOrOwnerSmartStarter } =
     useWatch<EditProgrammeModel>({
       control: programmeFormControl,
@@ -191,7 +187,7 @@ export const EditProgrammeForm: React.FC<EditProgrammeFormProps> = ({
             type="filled"
             color="primary"
             className={styles.button}
-            disabled={isPrincipleOrOwnerSmartStarter === false} // TODO: change this to isValid, disabling the NO answer as it is not fixed
+            disabled={!isValid}
             onClick={() => onSubmit(getProgrammeFormValues())} // Navigate to a different page if it is principle
           >
             {renderIcon('ArrowCircleRightIcon', styles.icon)}

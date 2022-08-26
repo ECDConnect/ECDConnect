@@ -2,6 +2,7 @@ import { SA_ID_REGEX, SA_PASSPORT_REGEX } from '@ecdlink/ui';
 import * as Yup from 'yup';
 
 export interface AddPractitionerModel {
+  id?: string;
   userId?: string;
   idNumber: string;
   passport: string;

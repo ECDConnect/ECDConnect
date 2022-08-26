@@ -6,8 +6,8 @@ import {
   SA_ID_REGEX,
   SA_PASSPORT_REGEX,
 } from '@ecdlink/ui';
-import { UserDto } from '@ecdlink/core';
-import React, { useEffect, useState } from 'react';
+import { PractitionerDto, UserDto } from '@ecdlink/core';
+import { useEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
@@ -87,9 +87,17 @@ export const AddOrEditPractitioner = ({
   const handleSubmit = async () => {
     const { firstName, idNumber, passport, surname } = getValues();
 
-    const practitionerDetails = await getPractitionerDetailsByIdNumber();
+    const practitionerUserDetails = await getPractitionerDetailsByIdNumber();
+    let practitionerDetails = {} as PractitionerDto;
+    if (practitionerUserDetails.id && userAuth) {
+      practitionerDetails = await new PractitionerService(
+        userAuth?.auth_token ?? ''
+      ).getPractitionerByUserId(practitionerUserDetails.id);
+    }
+
     onSubmit({
-      userId: practitionerDetails.id ?? '',
+      id: practitionerDetails.id ?? '',
+      userId: practitionerUserDetails.id ?? '',
       idNumber: idNumber || passport,
       firstName: firstName,
       surname: surname,
@@ -97,6 +105,7 @@ export const AddOrEditPractitioner = ({
       preferId: !!idNumber,
     });
   };
+
   return (
     <div className="wrapper-with-sticky-button">
       <div className="flex flex-col gap-4 mt-4">

@@ -34,15 +34,17 @@ export class IncompletePractitionerInformationNotificationValidator
      * Notification is returned when
      * 1. The user is a practitioner
      * 2. The practitioner object is in the state
+     * 3. The practitioner is not a principal yet
      */
 
     // TODO: change conditions for when to show the page
-    const isPractitioner =
-      userState?.user?.roles?.some((role) => role.name === 'Practitioner') &&
-      Boolean(practitionerState?.practitioner?.isPrincipal) === false;
+    const hasPractitionerRole = userState?.user?.roles?.some(
+      (role) => role.name === 'Practitioner'
+    );
+    const isPrincipalNotSet =
+      practitionerState.practitioner?.isPrincipal === null;
 
-    const showNotification =
-      isPractitioner && !Boolean(practitionerState.practitioner?.siteAddress);
+    const showNotification = hasPractitionerRole && isPrincipalNotSet;
 
     if (showNotification) {
       return [

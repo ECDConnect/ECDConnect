@@ -45,6 +45,7 @@ class PractitionerService {
             user {
               firstName
               surname
+              fullName
               email
               isSouthAfricanCitizen
               verifiedByHomeAffairs
@@ -62,6 +63,8 @@ class PractitionerService {
               postalCode
               ward
             }
+            isPrincipal
+            principalHierarchy
             attendanceRegisterLink
             maxChildren
             consentForPhoto
@@ -82,6 +85,58 @@ class PractitionerService {
     }
 
     return response.data.data.GetPractitionerById;
+  }
+
+  async getPractitionerByUserId(userId: string): Promise<PractitionerDto> {
+    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        query GetPractitionerByUserId($userId: String) {
+          practitionerByUserId(userId: $userId) {
+            id
+            user {
+              firstName
+              surname
+              fullName
+              email
+              isSouthAfricanCitizen
+              verifiedByHomeAffairs
+            }
+            siteAddress {
+              id
+              province {
+                id
+                description
+              }
+              name
+              addressLine1
+              addressLine2
+              addressLine3
+              postalCode
+              ward
+            }
+            isPrincipal
+            principalHierarchy
+            attendanceRegisterLink
+            maxChildren
+            consentForPhoto
+            parentFees
+            languageUsedInGroups
+            startDate
+            monthSinceFranchisee
+          }
+        }
+      `,
+      variables: {
+        userId,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error('Get Practitioner Failed - Server connection error');
+    }
+
+    return response.data.data.practitionerByUserId;
   }
 
   async getAllPractitioners(): Promise<PractitionerDto[]> {

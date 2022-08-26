@@ -122,9 +122,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             List<Child> children = childRepo.GetAll().Where(x => x.Hierarchy.Contains(practitioner.FirstOrDefault().Hierarchy)).ToList();
 
             return children;
-        }    
+        }
 
-        public List<Classroom> GetAllClassroomsForPractitioner([Service] IHttpContextAccessor contextAccessor,
+        public Classroom GetAllClassroomsForPractitioner([Service] IHttpContextAccessor contextAccessor,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
             string practitionerId, string principalId)
@@ -135,14 +135,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var classroomRepo = repoFactory.CreateRepository<Classroom>(userContext: uId);
             var classroomGroupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
 
-            List<ClassroomGroup> groups = new List<ClassroomGroup>();
-            List<Classroom> classes = classroomRepo.GetAll().Where(x => x.UserId.Equals(principalId)).ToList();
-                foreach (var classroom in classes)
-                {
-                    List<ClassroomGroup> classRooms = classroomGroupRepo.GetAll().Where(x => x.ClassroomId.Equals(classroom.Id)).Where(y => y.UserId.Equals(practitionerId)).ToList();
-                    classroom.ClassroomGroups = classRooms; //filter the data for practitioner specific
-                }
-            return classes;
+            Classroom classroom = classroomRepo.GetAll().Where(x => x.UserId.Equals(principalId)).FirstOrDefault();
+            List<ClassroomGroup> classroomGroups = classroomGroupRepo.GetAll().Where(x => x.ClassroomId.Equals(classroom.Id)).Where(y => y.UserId.Equals(practitionerId)).ToList();
+            classroom.ClassroomGroups = classroomGroups; //filter the data for practitioner specific
+
+            return classroom;
         }
     }
 

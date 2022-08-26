@@ -1,4 +1,5 @@
-import { ClassroomDto, Config } from '@ecdlink/core';
+import { PrincipalDto } from './../../../../../packages/core/src/models/dto/Users/principal.dto';
+import { ClassroomDto, Config, ClassroomGroupDto } from '@ecdlink/core';
 import { ClassroomInput } from '@ecdlink/graphql';
 import { api } from '../axios.helper';
 class ClassroomService {
@@ -85,6 +86,79 @@ class ClassroomService {
     }
 
     return response.data.data.allClassroomsForCoach;
+  }
+
+  async getClassroomsForPractitioner(
+    practitionerId: string,
+    principalId: string
+  ): Promise<{
+    classroom: ClassroomDto;
+    principal: PrincipalDto;
+    classroomGroups: ClassroomGroupDto[];
+  }> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        query GetClassroomForPractitioner(
+          $practitionerId: String
+          $principalId: String
+        ) {
+          classroom: allClassroomsForPractitioner(
+            practitionerId: $practitionerId
+            principalId: $principalId
+          ) {
+            id
+            name
+            classroomImageUrl
+            isActive
+            userId
+            isPrinciple
+            numberPractitioners
+            numberOfOtherAssistants
+            insertedDate
+          }
+          principal: allClassroomsForPractitioner(
+            practitionerId: $practitionerId
+            principalId: $principalId
+          ) {
+            user {
+              firstName
+              surname
+              fullName
+            }
+          }
+          classroomGroups: allClassroomsForPractitioner(
+            practitionerId: $practitionerId
+            principalId: $principalId
+          ) {
+            classroomGroups {
+              id
+              classroomId
+              name
+              programmeTypeId
+              programmeType {
+                id
+                description
+              }
+              isActive
+            }
+          }
+        }
+      `,
+      variables: {
+        practitionerId,
+        principalId,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Get Practitioners For Coach Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.allClassroomsForPractitioner;
   }
 }
 

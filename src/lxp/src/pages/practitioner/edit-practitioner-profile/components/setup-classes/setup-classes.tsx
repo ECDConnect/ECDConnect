@@ -40,7 +40,6 @@ export const SetupClasses = ({
   );
 
   useEffect(() => {
-    console.log('I am here now');
     if (classroomGroupsFromStore.length) {
       setCurrentTitle('Confirm Class');
       const _classroomGroups: ClassroomGroupDto[] = [];

@@ -30,7 +30,6 @@ export const ConfirmClasses = ({
   classroomGroups: ClassroomGroupDto[];
   onSubmit: () => void;
 }) => {
-  const history = useHistory();
   const [actionList, setActionList] = useState<ActionListDataItem[]>([]);
   const practitioners = useSelector(
     practitionerSelectors.getPrincipalPractitioners
@@ -84,7 +83,7 @@ export const ConfirmClasses = ({
             classroomId: classroomGroup?.classroom?.id,
             name: classroomGroup.name,
             meetEveryday: classroomGroup.classProgrammes?.length === 5,
-            practitioner: classroomGroup.practitioner ?? '',
+            practitionerId: classroomGroup.practitionerId ?? '',
             meetingDays:
               classroomGroup.classProgrammes?.map(
                 (a: { meetingDay: any }) => a.meetingDay

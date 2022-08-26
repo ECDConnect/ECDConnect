@@ -78,14 +78,6 @@ export const EditPractitionerProfile: React.FC = () => {
     );
   }, [activeStep]);
 
-  // useEffect(() => {
-  //   if (principalPractitioners?.length) {
-  //     setActiveStep(EditPractitionerSteps.setupClasses);
-  //   } else if (classroom?.id && classroomGroups.length) {
-  //     setActiveStep(EditPractitionerSteps.setupPrincipalPractitioners);
-  //   }
-  // }, [classroom?.id, classroomGroups.length, principalPractitioners?.length]);
-
   const createClassroom = (
     programme: EditProgrammeModel,
     classroomId: string
@@ -123,6 +115,7 @@ export const EditPractitionerProfile: React.FC = () => {
             isActive: true,
             programmeTypeId: programme?.type,
             name: NoPlaygroupClassroomType.name,
+            practitionerId: user?.id, // Unsure classroom will belong to the principal
           };
           appDispatch(
             classroomsActions.createClassroomGroup(
@@ -131,6 +124,13 @@ export const EditPractitionerProfile: React.FC = () => {
           );
         }
       }
+
+      // Update classroom number of practitioners
+      appDispatch(
+        classroomsActions.updateClassroomNumberPractitioners({
+          numberPractitioners: principalPractitioners?.length ?? 0,
+        })
+      );
 
       // Update classroom data
       await syncClassroom();

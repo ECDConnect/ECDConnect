@@ -1,3 +1,5 @@
+import { PrincipalInput } from './../../../../../packages/graphql/src/graphql/generatedGraphql';
+import { PrincipalDto } from './../../../../../packages/core/lib/models/dto/Users/principal.dto.d';
 import {
   ClassProgrammeDto,
   ClassroomDto,
@@ -55,6 +57,62 @@ export const getClassroom = createAsyncThunk<
       }
     } else {
       return classroomsCache;
+    }
+  }
+);
+
+export const getClassroomsForPractitioner = createAsyncThunk<
+  {
+    classroom: ClassroomDto;
+    classroomGroups?: ClassroomGroupDto[];
+    principal?: PrincipalDto;
+  },
+  { practitionerId: string; principalId: string },
+  ThunkApiType<RootState>
+>(
+  'getClassroomsForPractitioner',
+  // eslint-disable-next-line no-empty-pattern
+  async ({ practitionerId, principalId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      classroomData: {
+        classroom: classroomsCache,
+        classroomGroups: classroomGroupsData,
+      },
+    } = getState();
+
+    if (!classroomsCache) {
+      try {
+        let classrooms:
+          | {
+              classroom: ClassroomDto;
+              principal: PrincipalDto;
+              classroomGroups: ClassroomGroupDto[];
+            }
+          | undefined;
+
+        if (userAuth?.auth_token) {
+          classrooms = await new ClassroomService(
+            userAuth?.auth_token
+          ).getClassroomsForPractitioner(practitionerId, principalId);
+        } else {
+          return rejectWithValue('no access token, profile check required');
+        }
+
+        if (!classrooms) {
+          return rejectWithValue('Error getting Classrooms for Practitioner');
+        }
+
+        return classrooms;
+      } catch (err) {
+        return rejectWithValue(err);
+      }
+    } else {
+      return {
+        classroom: classroomsCache,
+        principal: undefined,
+        classroomGroups: classroomGroupsData,
+      };
     }
   }
 );
@@ -245,6 +303,7 @@ export const upsertClassroomGroups = createAsyncThunk<
             ProgrammeTypeId: x.programmeTypeId,
             Name: x.name,
             IsActive: x.isActive === false ? false : true,
+            UserId: x.practitionerId,
           };
 
           return await new ClassroomGroupService(

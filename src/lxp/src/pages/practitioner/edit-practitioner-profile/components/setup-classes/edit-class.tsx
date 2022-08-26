@@ -57,11 +57,10 @@ export const EditClass = ({
 
   const { isValid } = formState;
 
-  const { name, meetEveryday, meetingDays, practitioner, isFullDay } = useWatch(
-    {
+  const { name, meetEveryday, meetingDays, practitionerId, isFullDay } =
+    useWatch({
       control,
-    }
-  );
+    });
 
   useEffect(() => {
     const _list = practitioners
@@ -77,7 +76,6 @@ export const EditClass = ({
       label: currentPractitioner?.fullName || '',
       value: currentPractitioner?.idNumber,
     });
-    console.log(_list);
 
     setPractitionersList(_list);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -114,7 +112,7 @@ export const EditClass = ({
         classroomId: editClassroomId,
         programmeTypeId: programmeType?.id,
         isActive: true,
-        practitioner: practitioner,
+        practitionerId: practitionerId,
       })
     );
 
@@ -208,7 +206,7 @@ export const EditClass = ({
 
         <div>
           <Controller
-            name={'practitioner'}
+            name={'practitionerId'}
             control={control}
             defaultValue={''}
             render={({ field: { onChange, value, ref } }) => (
