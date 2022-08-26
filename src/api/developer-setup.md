@@ -53,12 +53,15 @@ Press `F5` and run the API (the tasks.json and lauch.json files have been includ
 Now you must create the actual tenant database.
 
 From the api folder run the following command `dotnet-ef database update  --project ./core-api/EcdLink.Api.CoreApi.csproj --content=AuthenticationDbContext`  
+Then run
+`dotnet ef database update --verbose --project ./core-api/EcdLink.Api.CoreApi.csproj --context=ContentManagementDbContext`
+Alternatively run the attached sql file that inserts the CMS tables and seed data.
 
 If you look now, you will see an `ecdconnect` database which contains a lot of domain-familiar tables. These tables are empty, so we need to seed them with test data.
 
 If you look at `TenancyController` you'll see we have created a method called `seedTenant` which is triggered by the `GET` verb. The method is also anonymous. THIS METHOD MUST NOT BE AVAILABLE IN PRODUCTION!
 
-As it is a `GET` method use either Insominia or such client or your browser to execute `localhost:5001/api/tenancy/seedTenant`. This will seed the database with test data.
+As it is a `GET` method use either Insominia or such client or your browser to execute `localhost:5001/api/tenancy/seedTenant`. This will seed the database with test data. * Note, remember to comment out the [BasicAuth] on the TenancyController, Line 28
 
 You can now confirm that all is good with the API by POSTing payload
 ```
