@@ -122,7 +122,7 @@ export const CoachClassesReassigned: React.FC = () => {
             >
               <div className="flex justify-center items-center">
                 <PhoneIcon
-                  className="h-6 w-5 text-primary mx-2"
+                  className="h-6 w-5 text-primary mr-2"
                   aria-hidden="true"
                 />
                 <Typography
