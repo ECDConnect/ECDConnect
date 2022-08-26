@@ -100,28 +100,27 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             }
         }
 
-        public Practitioner DeletePractitionerForPrincipal([Service] IHttpContextAccessor contextAccessor,
+        public Practitioner DeletePractitionerFromPrincipal([Service] IHttpContextAccessor contextAccessor,
             [Service] UserManager<ApplicationUser> userManager,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
             string userId, string principalId)
         {
-
-            //find the practitioner
             using var scope = dbFactory.CreateDbContext();
             using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            Practitioner practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId.Equals(userId)).FirstOrDefault();
+            Practitioner practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId.Equals(userId)).Where(y => y.PrincipalHierarchy.Contains(principalId)).FirstOrDefault();
             {
                 practitioner.CoachHierarchy = practitioner.PrincipalHierarchy.Replace(principalId, "");
+                practitioner.ShareInfo = false;
                 var updateResult = practitionerRepo.Update(practitioner);
             }
 
             return practitioner;
         }
 
-        public Practitioner PromotePractitionerToPrincipal([Service] IHttpContextAccessor contextAccessor,
+        public Principal PromotePractitionerToPrincipal([Service] IHttpContextAccessor contextAccessor,
              [Service] UserManager<ApplicationUser> userManager,
              [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
              [Service] IGenericRepositoryFactory repoFactory,
@@ -144,7 +143,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 userManager.RemoveFromRoleAsync(user, Roles.PRACTITIONER);
                 userManager.AddToRoleAsync(user, Roles.PRINCIPAL);
             }
-            return practitionerToPromote;
+            return this.MapPractitionerToPrincipal(practitionerToPromote);
         }
 
         public Practitioner DemotePractitionerAsPrincipal([Service] IHttpContextAccessor contextAccessor,
@@ -172,6 +171,38 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             }
 
             return practitionerToDemote;
+        }
+        public Principal MapPractitionerToPrincipal(Practitioner practitioner)
+        {
+            Principal userToMap = new Principal()
+            {
+                Id = practitioner.Id,
+                IsActive = practitioner.IsActive,
+                InsertedDate = practitioner.InsertedDate,
+                UpdatedBy = practitioner.UpdatedBy,
+                UpdatedDate = practitioner.UpdatedDate,
+                Hierarchy = practitioner.Hierarchy,
+                AttendanceRegisterLink = practitioner.AttendanceRegisterLink,
+                MaxChildren = practitioner.MaxChildren,
+                ConsentForPhoto = practitioner.ConsentForPhoto,
+                ParentFees = practitioner?.ParentFees,
+                LanguageUsedInGroups = practitioner?.LanguageUsedInGroups,
+                StartDate = practitioner.StartDate,
+                MonthSinceFranchisee = practitioner?.MonthSinceFranchisee,
+                UserId = practitioner.UserId,
+                SiteAddressId = practitioner?.SiteAddressId,
+                IsPrincipal = true,
+                CoachHierarchy = practitioner?.CoachHierarchy,
+                IsFundaAppAdmin = practitioner?.IsFundaAppAdmin,
+                IsTrainee = practitioner?.IsTrainee,
+                SigningSignature = practitioner?.SigningSignature,
+                ShareInfo = practitioner?.ShareInfo,
+                //NotInvitedYet = practitioner.NotInvitedYet,
+                //Signature = practitioner.Signature,
+                //PrincipalHierarchy = practitioner?.PrincipalHierarchy,           
+            };
+
+            return userToMap;
         }
 
     }
