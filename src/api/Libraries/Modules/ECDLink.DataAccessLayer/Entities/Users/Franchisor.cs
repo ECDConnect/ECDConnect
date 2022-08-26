@@ -14,7 +14,9 @@ namespace ECDLink.DataAccessLayer.Entities.Users
     {
     }
 
-    public class Franchisor<TKey> : EntityBase<TKey>, ApplicationUserJoin//, IUserType
+    public class Franchisor<TKey> : EntityBase<TKey>, 
+        IUserElevatedScoped, 
+        ApplicationUserJoin, IUserType
         where TKey : IEquatable<TKey>
     {
         [ForeignKey(nameof(UserId))]
@@ -25,7 +27,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public DateTime StartDate { get; set; }
 
         //[GraphQLIgnore]
-        //public string Hierarchy { get; set; }
+        public string Hierarchy { get; set; }
 
         [ForeignKey(nameof(SiteAddressId))]
         public virtual SiteAddress SiteAddress { get; set; }

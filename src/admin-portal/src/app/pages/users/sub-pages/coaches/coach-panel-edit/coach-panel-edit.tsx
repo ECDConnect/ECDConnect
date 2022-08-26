@@ -87,6 +87,7 @@ export default function CoachPanelEdit({
       coachSetValue('franchisorId', coach.franchisorId ?? '', {
         shouldValidate: true,
       });
+
       if (coach.siteAddress) {
         siteAddressSetValue('name', coach.siteAddress.name, {
           shouldValidate: true,
@@ -132,6 +133,7 @@ export default function CoachPanelEdit({
       SecondaryAreaOfOperation: coachForm.secondaryAreaOfOperation,
       StartDate: coachForm.startDate,
       IsActive: true,
+      FranchisorId: coachForm.franchisorId,
     };
 
     await updateCoach({
