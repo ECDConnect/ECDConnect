@@ -15,6 +15,7 @@ export const initialPractitionerValues: PractitionerDto = {
   isTrainee: false,
   signingSignature: '',
   coachHierarchy: '',
+  principalHierarchy: '',
 };
 
 export const practitionerSchema = Yup.object().shape({
@@ -31,4 +32,5 @@ export const practitionerSchema = Yup.object().shape({
   isTrainee: Yup.bool(),
   signingSignature: Yup.string(),
   coachHierarchy: Yup.string(),
+  principalHierarchy: Yup.string(),
 });

@@ -129,6 +129,13 @@ export default function PractitionerPanelEdit({
           shouldValidate: true,
         }
       );
+      practitionerSetValue(
+        'principalHierarchy',
+        practitioner.principalHierarchy ?? '',
+        {
+          shouldValidate: true,
+        }
+      );
 
       if (practitioner.siteAddress) {
         siteAddressSetValue('name', practitioner.siteAddress.name, {
@@ -203,6 +210,7 @@ export default function PractitionerPanelEdit({
       IsTrainee: practitionerForm.isTrainee,
       IsFundaAppAdmin: practitionerForm.isFundaAppAdmin,
       CoachHierarchy: practitionerForm.coachHierarchy,
+      PrincipalHierarchy: practitionerForm.principalHierarchy,
     };
 
     await updatePractitioner({

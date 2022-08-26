@@ -213,6 +213,7 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
       IsFundaAppAdmin: practitionerForm.isFundaAppAdmin,
       IsTrainee: practitionerForm.isTrainee,
       CoachHierarchy: practitionerForm.coachHierarchy,
+      PrincipalHierarchy: practitionerForm.principalHierarchy,
     };
 
     await createPractitioner({

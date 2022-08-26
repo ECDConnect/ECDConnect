@@ -2,7 +2,7 @@ import { useQuery } from '@apollo/client';
 import { UseFormRegister } from 'react-hook-form';
 import FormField from '../../../../components/form-field/form-field';
 import FormSelectorField from '../../../../components/form-selector-field/form-selector-field';
-import { GetAllCoach } from '@ecdlink/graphql';
+import { GetAllCoach, GetAllPractitioner } from '@ecdlink/graphql';
 import { CoachDto, PractitionerDto } from '@ecdlink/core';
 
 export interface PractitionerFormProps {
@@ -17,6 +17,9 @@ const PractitionerForm: React.FC<PractitionerFormProps> = ({
   register,
 }) => {
   const { data: coachData } = useQuery(GetAllCoach, {
+    fetchPolicy: 'cache-and-network',
+  });
+  const { data: principalData } = useQuery(GetAllPractitioner, {
     fetchPolicy: 'cache-and-network',
   });
   return (
@@ -126,7 +129,23 @@ const PractitionerForm: React.FC<PractitionerFormProps> = ({
                   };
                 })
               }
-              error={errors.programTypeId?.message}
+            />
+          </div>
+          <div className="sm:col-span-3">
+            <FormSelectorField
+              label="Principal *"
+              nameProp={'principalHierarchy'}
+              register={register}
+              options={
+                principalData &&
+                principalData.GetAllPractitioner &&
+                principalData.GetAllPractitioner.map((x: PractitionerDto) => {
+                  return {
+                    key: x.userId,
+                    value: x.user.firstName + ' ' + x.user.surname,
+                  };
+                })
+              }
             />
           </div>
           <div className="sm:col-span-3">
