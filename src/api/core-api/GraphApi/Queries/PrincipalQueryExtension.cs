@@ -1,6 +1,7 @@
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
@@ -144,13 +145,28 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 CoachHierarchy = practitioner?.CoachHierarchy,
                 IsFundaAppAdmin = practitioner?.IsFundaAppAdmin,
                 IsTrainee = practitioner?.IsTrainee,
-                SigningSignature = practitioner?.SigningSignature
+                SigningSignature = practitioner?.SigningSignature,
+                ShareInfo = practitioner?.ShareInfo,
                 //NotInvitedYet = practitioner.NotInvitedYet,
                 //Signature = practitioner.Signature,
                 //PrincipalHierarchy = practitioner?.PrincipalHierarchy,           
             };
 
             return userToMap;
+        }
+
+        public List<Classroom> GetAllClassroomsForPrincipal([Service] IHttpContextAccessor contextAccessor,
+            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+            [Service] IGenericRepositoryFactory repoFactory,
+            string userId)
+        {
+            using var scope = dbFactory.CreateDbContext();
+            using var dbContextTransaction = scope.Database.BeginTransaction();
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var classroomRepo = repoFactory.CreateRepository<Classroom>(userContext: uId);
+
+            List<Classroom> classes = classroomRepo.GetAll().Where(x => x.UserId.Equals(userId)).ToList();
+            return classes;
         }
     }
 }
