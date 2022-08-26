@@ -36,6 +36,7 @@ namespace ECDLink.DataAccessLayer.Entities.Classroom
         public string Name { get; set; }
         [GraphQLIgnore]
         public string Hierarchy { get; set; }
+        public string UserId { get; set; }
     }
 
     public interface ClassroomGroupJoin<TKey>
