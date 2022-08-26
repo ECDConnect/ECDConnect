@@ -139,10 +139,12 @@ const PractitionerForm: React.FC<PractitionerFormProps> = ({
               options={
                 principalData &&
                 principalData.GetAllPractitioner &&
-                principalData.GetAllPractitioner.map((x: PractitionerDto) => {
+                principalData.GetAllPractitioner.filter(
+                  (v) => v.user !== null
+                ).map((y: PractitionerDto) => {
                   return {
-                    key: x.userId,
-                    value: x.user.firstName + ' ' + x.user.surname,
+                    key: y.userId,
+                    value: y.user.firstName + ' ' + y.user.surname,
                   };
                 })
               }
