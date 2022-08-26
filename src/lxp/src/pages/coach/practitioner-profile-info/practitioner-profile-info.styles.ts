@@ -16,10 +16,10 @@ export const listItem =
 export const listItemFirst =
   'w-11/12 mt-6 mx-auto z-10 px-3.5 py-3 bg-white text-textMid rounded-lg bg-uiBg';
 export const fadButton = 'm-3 bottom-14 z-10 px-3.5 py-2.5';
-export const buttonIconStyle = 'h-5 w-5 text-primary mr-1';
+export const buttonIconStyle = 'h-5 w-5 text-primary';
 export const infoWrapper =
   'mt-2 w-11/12 mx-auto flex justify-between items-center';
-export const contactButtons = 'flex justify-center mt-4';
+export const contactButtons = 'flex justify-center mt-4 gap-3';
 export const rightArrowIcon = 'h-8 w-8';
 export const circleIcon = 'h-5 w-5 bg-trasparent text-white';
 export const circleIconDiv =

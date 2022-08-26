@@ -33,36 +33,68 @@ import { ClassroomAttendance } from './components/classroom-attendance/classroom
 // import { useSelector } from 'react-redux';
 
 export const CoachPractitionerClassroom: React.FC = () => {
-  const mockedData = [
+  const listItems = [
     {
-      id: 1,
       title: '75% attendance rate',
-      subTitle: 'Coming soon',
-      avatarColor: '#FF5C00',
-      profileText: 'CS',
-      alertSeverity: 'none',
-      phoneNumber: '2138471324',
-      email: 'johnbf@gmail.com',
+      titleStyle: 'text-textDark font-semibold text-base leading-snug',
+      subTitle: 'Little stars - June 2021',
+      subTitleStyle:
+        'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
+      menuIcon: 'ExclamationIcon',
+      menuIconClassName: 'bg-secondary text-white',
+      showIcon: true,
+      iconBackgroundColor: 'alertMain',
+      chipConfig: {
+        colorPalette: {
+          backgroundColour: 'white',
+          borderColour: 'errorMain',
+          textColour: 'errorMain',
+        },
+      },
+      text: '1',
+      onActionClick: () => {},
+      classNames: 'bg-uiBg',
     },
     {
-      id: 2,
       title: '5 overdue progress reports',
-      subTitle: 'Coming soon',
-      avatarColor: '#FF5C00',
-      profileText: 'CS',
-      alertSeverity: 'none',
-      phoneNumber: '23984123490',
-      email: 'pedroM@gmail.com',
+      titleStyle: 'text-textDark font-semibold text-base leading-snug',
+      subTitle: 'January to June 2021',
+      subTitleStyle:
+        'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
+      menuIcon: 'ExclamationIcon',
+      menuIconClassName: 'bg-secondary text-white',
+      showIcon: true,
+      iconBackgroundColor: 'alertMain',
+      chipConfig: {
+        colorPalette: {
+          backgroundColour: 'white',
+          borderColour: 'errorMain',
+          textColour: 'errorMain',
+        },
+      },
+      text: '1',
+      onActionClick: () => {},
     },
     {
-      id: 3,
       title: "5 children haven't progressed",
-      subTitle: 'Coming soon',
-      avatarColor: '#FF5C00',
-      profileText: 'CS',
-      alertSeverity: 'none',
-      phoneNumber: '314874393',
-      email: 'carlosvieira1234@gmail.com',
+      titleStyle: 'text-textDark font-semibold text-base leading-snug',
+      subTitle: 'For 2 reporting periods',
+      subTitleStyle:
+        'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
+      menuIcon: 'ExclamationIcon',
+      menuIconClassName: 'bg-secondary text-white',
+      showIcon: true,
+      iconBackgroundColor: 'alertMain',
+      chipConfig: {
+        colorPalette: {
+          backgroundColour: 'white',
+          borderColour: 'errorMain',
+          textColour: 'errorMain',
+        },
+      },
+      text: '1',
+      onActionClick: () => {},
+      classNames: 'bg-uiBg',
     },
   ];
 
@@ -131,12 +163,12 @@ export const CoachPractitionerClassroom: React.FC = () => {
         displayOffline={!isOnline}
       ></BannerWrapper>
       <div className="w-full flex flex-wrap justify-center">
-        {mockedData ? (
-          <div className="flex justify-center w-full">
+        {listItems ? (
+          <div className="flex justify-center w-11/12 mt-4">
             <StackedList
               className={styles.stackedList}
-              listItems={mockedData}
-              type={'UserAlertList'}
+              listItems={listItems}
+              type={'MenuList'}
             ></StackedList>
           </div>
         ) : null}
