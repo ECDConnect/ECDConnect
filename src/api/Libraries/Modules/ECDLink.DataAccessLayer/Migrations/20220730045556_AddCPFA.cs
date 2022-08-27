@@ -102,6 +102,19 @@ namespace ECDLink.DataAccessLayer.Migrations
                 type: "text",
                 nullable: true);
 
+            migrationBuilder.AddColumn<string>(
+                name: "UserId",
+                table: "ClassroomGroup",
+                type: "text",
+                nullable: true);
+
+            migrationBuilder.AddColumn<bool>(
+                name: "ShareInfo",
+                table: "Practitioner",
+                type: "boolean",
+                nullable: true,
+                defaultValue: false);
+
             migrationBuilder.CreateTable(
                 name: "Absentees",
                 columns: table => new
@@ -117,8 +130,8 @@ namespace ECDLink.DataAccessLayer.Migrations
                     LoggedBy = table.Column<string>(type: "text", nullable: true),
                     ReassignedClass = table.Column<string>(type: "text", nullable: true),
                     ReassignedToPractitioner = table.Column<string>(type: "text", nullable: true),
-                    PractitionerId = table.Column<Guid>(type: "uuid", nullable: true),
-                    ProgramId = table.Column<Guid>(type: "uuid", nullable: true)
+                    PractitionerId = table.Column<Guid>(type: "text", nullable: true),
+                    ProgramId = table.Column<Guid>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -144,6 +157,37 @@ namespace ECDLink.DataAccessLayer.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "ClassroomHistory",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    InsertedDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    UpdatedBy = table.Column<string>(type: "text", nullable: true),                    
+                    ReassignedClass = table.Column<string>(type: "text", nullable: true),
+                    ToPractitionerId = table.Column<string>(type: "text", nullable: true),
+                    FromPractitionerId = table.Column<Guid>(type: "text", nullable: true),
+                    ProgramId = table.Column<Guid>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ClassroomHistory", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ClassroomHistory_FromPractitionerId_Practitioner_PractitionerId",
+                        column: x => x.FromPractitionerId,
+                        principalTable: "Practitioner",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_ClassroomHistory_ToPractitionerId_Practitioner_PractitionerId",
+                        column: x => x.ToPractitionerId,
+                        principalTable: "Practitioner",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Franchisor",
                 columns: table => new
                 {
@@ -157,7 +201,8 @@ namespace ECDLink.DataAccessLayer.Migrations
                     SecondaryAreaOfOperation = table.Column<string>(type: "text", nullable: true),
                     StartDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     SiteAddressId = table.Column<Guid>(type: "uuid", nullable: true),
-                    SigningSignature = table.Column<string>(type: "text", nullable: true)
+                    SigningSignature = table.Column<string>(type: "text", nullable: true),
+                    Hierarchy = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {

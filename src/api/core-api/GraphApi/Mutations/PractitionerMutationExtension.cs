@@ -154,10 +154,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         }
 
         public bool UpdatePractitionerShareInfo([Service] IHttpContextAccessor contextAccessor,
-            [Service] UserManager<ApplicationUser> userManager,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
-            string practitionerId, string principalId)
+            string practitionerId)
         
         {
             bool bReturn = false;
@@ -177,5 +176,78 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             return bReturn;
         }
+
+        public bool UpdatePractitionerNotInvitedYet([Service] IHttpContextAccessor contextAccessor,
+            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+            [Service] IGenericRepositoryFactory repoFactory,
+            string practitionerId)
+
+        {
+            bool bReturn = false;
+            using var scope = dbFactory.CreateDbContext();
+            using var dbContextTransaction = scope.Database.BeginTransaction();
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+            Practitioner practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId.Equals(practitionerId)).FirstOrDefault();
+            {
+                if (practitioner != null)
+                {
+                    practitioner.NotInvitedYet = false;
+                    var updateResult = practitionerRepo.Update(practitioner);
+                    return true;
+                }
+            }
+
+            return bReturn;
+        }
+
+        public bool UpdatePractitionerIsFundaAppAdmin([Service] IHttpContextAccessor contextAccessor,
+            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+            [Service] IGenericRepositoryFactory repoFactory,
+            string practitionerId)
+
+        {
+            bool bReturn = false;
+            using var scope = dbFactory.CreateDbContext();
+            using var dbContextTransaction = scope.Database.BeginTransaction();
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+            Practitioner practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId.Equals(practitionerId)).FirstOrDefault();
+            {
+                if (practitioner != null)
+                {
+                    practitioner.IsFundaAppAdmin = true;
+                    var updateResult = practitionerRepo.Update(practitioner);
+                    return true;
+                }
+            }
+
+            return bReturn;
+        }
+
+        public bool UpdatePractitionerIsTrainee([Service] IHttpContextAccessor contextAccessor,
+            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+            [Service] IGenericRepositoryFactory repoFactory,
+            string practitionerId)
+
+        {
+            bool bReturn = false;
+            using var scope = dbFactory.CreateDbContext();
+            using var dbContextTransaction = scope.Database.BeginTransaction();
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+            Practitioner practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId.Equals(practitionerId)).FirstOrDefault();
+            {
+                if (practitioner != null)
+                {
+                    practitioner.IsTrainee = true;
+                    var updateResult = practitionerRepo.Update(practitioner);
+                    return true;
+                }
+            }
+
+            return bReturn;
+        }
+
     }
 }

@@ -4,6 +4,8 @@ using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using ECDLink.Security;
 using HotChocolate;
+using ECDLink.DataAccessLayer.Entities.Interfaces;
+using System.Collections.Generic;
 
 namespace ECDLink.DataAccessLayer.Entities.Users
 {
@@ -15,7 +17,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
     }
 
     public class Coach<TKey> : EntityBase<TKey>, 
-        ApplicationUserJoin,
+        ApplicationUserJoin, IUserType, IUserElevatedScoped,
         SiteAddressJoin<Guid?>
         where TKey : IEquatable<TKey>
     {
@@ -36,6 +38,8 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         [ForeignKey(nameof(FranchisorId))]
         public virtual Franchisor Franchisor { get; set; }
         public Guid? FranchisorId { get; set; }
+
+        //public virtual List<Practitioner> Practitioners { get; set; }
     }
 
     public interface CoachJoin<TKey>

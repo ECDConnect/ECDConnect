@@ -14,7 +14,7 @@ using ECDLink.DataAccessLayer.Entities.Classroom;
 
 namespace ECDLink.DataAccessLayer.Repositories.Generic
 {
-    public class ScopedGenericRepository<T> : GenericRepositoryBase<T>
+    public class ElevatedScopedGenericRepository<T> : GenericRepositoryBase<T>
       where T : EntityBase<Guid>
     {
         private readonly HierarchyEngine _hierarchyEngine;
@@ -27,7 +27,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             }
         }
 
-        public ScopedGenericRepository(
+        public ElevatedScopedGenericRepository(
             AuthenticationDbContext context,
             UserManager<ApplicationUser> userManager,
             HierarchyEngine hierarchyEngine,
@@ -104,47 +104,6 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             }
 
             return record;
-        }
-
-        public T GetByUserId(Guid id)
-        {
-            if (string.IsNullOrEmpty(_userId))
-            {
-                throw new UnauthorizedAccessException("User does not have access to this data");
-            }
-
-            Type type = typeof(T);
-            if (type.GetProperty("UserId") != null)
-            {
-
-                var record = base.GetAll().Where(s => s.GetType().GetProperty("UserId").GetValue(s, null).Equals(id));
-
-
-                var castRecord = record as IUserScoped;
-
-                if (castRecord == default)
-                {
-                    return default;
-                }
-                //if user is in a higher admin role (Principal, Practitioner, Coach, Franchisor, then skip the check as they need to be able to see anyone anywhere due to the shift in roles of Milestone 1.
-                var user = _userManager.FindByIdAsync(_userId).Result;
-                var roles = _userManager.GetRolesAsync(user).Result;
-                var higherRoles = new[] { Roles.PRACTITIONER, Roles.COACH, Roles.ADMINISTRATOR, Roles.PRINCIPAL, Roles.FRANCHISOR };//
-                bool isHigherRole = higherRoles.Any(roles.Contains); //roles.contains(Roles.ADMINISTRATOR);
-                if (!isHigherRole)
-                {
-                    if (!string.IsNullOrWhiteSpace(castRecord.Hierarchy))
-                    {
-                        if (!castRecord.Hierarchy.StartsWith(Hierarchy))
-                        {
-                            return default;
-                        }
-                    }
-                }
-
-                return (T)record;
-            }
-            else return this.GetById(id);//default to getting just by id
         }
 
         public override T Insert(T entity)

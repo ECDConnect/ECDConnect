@@ -21,4 +21,5 @@ export interface PractitionerDto extends EntityBase {
   isTrainee?: boolean;
   signingSignature: string;
   coachHierarchy: string;
+  principalHierarchy: string;
 }
