@@ -197,11 +197,13 @@ export const Practitioners: React.FC = () => {
         {practitionersForCoachListItems?.length! > 0 ||
         practitionersForCoachListItems !== undefined ? (
           <div className="flex justify-center">
-            <StackedList
-              className={styles.stackedList}
-              listItems={practitionersForCoachListItems!}
-              type={'UserAlertList'}
-            ></StackedList>
+            <div className="w-11/12">
+              <StackedList
+                className={styles.stackedList}
+                listItems={practitionersForCoachListItems!}
+                type={'UserAlertList'}
+              ></StackedList>
+            </div>
           </div>
         ) : (
           <EmptyPractitioners />
