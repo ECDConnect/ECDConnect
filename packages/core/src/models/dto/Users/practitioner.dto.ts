@@ -23,4 +23,5 @@ export interface PractitionerDto extends EntityBase {
   signingSignature?: string;
   coachHierarchy?: string;
   shareInfo?: boolean;
+  notInvitedYet?: boolean;
 }

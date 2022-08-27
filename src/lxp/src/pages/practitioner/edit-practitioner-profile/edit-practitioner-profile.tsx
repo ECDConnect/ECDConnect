@@ -246,7 +246,11 @@ export const EditPractitionerProfile: React.FC = () => {
                 textColor="white"
                 icon="ArrowCircleRightIcon"
                 onClick={() => {
-                  setActiveStep(EditPractitionerSteps.setupProgramme);
+                  if (currentPractitioner?.principalHierarchy) {
+                    setActiveStep(EditPractitionerSteps.setupPractitioner);
+                  } else {
+                    setActiveStep(EditPractitionerSteps.setupProgramme);
+                  }
                 }}
               />
             </div>

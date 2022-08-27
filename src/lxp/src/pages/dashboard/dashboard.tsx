@@ -126,12 +126,14 @@ export const Dashboard: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (practitioner) {
-      const { principalHierarchy: principalId, id } = practitioner;
+    if (
+      (practitioner && practitioner.isPrincipal === false,
+      practitioner?.principalHierarchy)
+    ) {
       appDispatch(
         classroomsThunkActions.getClassroomsForPractitioner({
-          principalId: principalId ?? '',
-          practitionerId: id ?? '',
+          principalId: practitioner.principalHierarchy ?? '',
+          practitionerId: practitioner.id ?? '',
         })
       );
     }

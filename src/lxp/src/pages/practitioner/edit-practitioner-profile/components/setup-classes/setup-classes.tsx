@@ -80,7 +80,13 @@ export const SetupClasses = ({
           />
         );
       case SetupClassesPage.addClass:
-        return <AddClassForm onSubmit={onSubmit} />;
+        return (
+          <AddClassForm
+            onSubmit={() => {
+              setCurrentPage(SetupClassesPage.confirmClasses);
+            }}
+          />
+        );
       case SetupClassesPage.editClass:
         return (
           <EditClass

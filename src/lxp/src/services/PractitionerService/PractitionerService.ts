@@ -42,6 +42,7 @@ class PractitionerService {
         query GetPractitionerById($id: UUID) {
           GetPractitionerById(id: $id) {
             id
+            userId
             user {
               firstName
               surname
@@ -64,6 +65,7 @@ class PractitionerService {
               ward
             }
             isPrincipal
+            notInvitedYet
             principalHierarchy
             attendanceRegisterLink
             maxChildren
@@ -95,7 +97,9 @@ class PractitionerService {
         query GetPractitionerByUserId($userId: String) {
           practitionerByUserId(userId: $userId) {
             id
+            userId
             user {
+              id
               firstName
               surname
               fullName
@@ -117,6 +121,7 @@ class PractitionerService {
               ward
             }
             isPrincipal
+            notInvitedYet
             principalHierarchy
             attendanceRegisterLink
             maxChildren
@@ -234,6 +239,38 @@ class PractitionerService {
   }
 
   async UpdatePractitionerShareInfo(
+    practitionerId: string,
+    principalId: string
+  ): Promise<boolean> {
+    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        mutation updatePractitionerShareInfo(
+          $practitionerId: String
+          $principalId: String
+        ) {
+          updatePractitionerShareInfo(
+            practitionerId: $practitionerId
+            principalId: $principalId
+          )
+        }
+      `,
+      variables: {
+        practitionerId,
+        principalId,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Get Practitioner by ID number Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.updatePractitionerShareInfo;
+  }
+
+  async UpdatePractitionerNotInvitedYet(
     practitionerId: string,
     principalId: string
   ): Promise<boolean> {

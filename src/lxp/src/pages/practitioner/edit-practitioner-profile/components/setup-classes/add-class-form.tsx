@@ -92,7 +92,7 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
     const _list = practitioners
       ?.map((p) => {
         if (p.firstName && p.surname) {
-          return { label: `${p.firstName} ${p.surname}`, value: p.id };
+          return { label: `${p.firstName} ${p.surname}`, value: p.userId };
         }
         return undefined;
       })
@@ -100,8 +100,10 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
 
     _list.push({
       label: currentPractitioner?.user?.fullName || '',
-      value: currentPractitioner?.id,
+      value: currentPractitioner?.userId,
     });
+
+    console.log({ _list });
 
     setPractitionersList(_list);
     // eslint-disable-next-line react-hooks/exhaustive-deps

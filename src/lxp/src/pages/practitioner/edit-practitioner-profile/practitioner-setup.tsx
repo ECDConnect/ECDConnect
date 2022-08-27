@@ -39,8 +39,10 @@ export const PractitionerSetup = ({ onSubmit }: { onSubmit: () => void }) => {
 
   useEffect(() => {
     const { user } = principal;
-    setPrincipalName(user?.fullName || ''); // TODO This page should be visible only when there is a principal
-    setProgramName(classroom?.name || '');
+    if (user) {
+      setPrincipalName(user?.fullName || ''); // TODO This page should be visible only when there is a principal
+      setProgramName(classroom?.name || '');
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [principal]);
 

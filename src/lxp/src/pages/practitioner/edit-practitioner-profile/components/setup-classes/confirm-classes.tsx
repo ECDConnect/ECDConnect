@@ -13,7 +13,6 @@ import {
 } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useHistory } from 'react-router';
 
 export const ConfirmClasses = ({
   title,
@@ -34,7 +33,9 @@ export const ConfirmClasses = ({
   const practitioners = useSelector(
     practitionerSelectors.getPrincipalPractitioners
   );
-  const currentPractitioner = useSelector(userSelectors.getUser);
+  const currentPractitioner = useSelector(
+    practitionerSelectors.getPractitioner
+  );
   const formatMeetingDays = (programmes?: ClassProgrammeDto[]) => {
     const meetingDays = programmes
       ?.map((programme) => programme.meetingDay)
@@ -59,14 +60,14 @@ export const ConfirmClasses = ({
 
   useEffect(() => {
     const list = [];
-    for (const classroomGroup of classroomGroups as any) {
+    for (const classroomGroup of classroomGroups as ClassroomGroupDto[]) {
       const current =
-        currentPractitioner?.idNumber === classroomGroup.practitioner
-          ? currentPractitioner?.firstName
+        currentPractitioner?.userId === classroomGroup.practitionerId
+          ? currentPractitioner?.user?.firstName
           : 'Practitioner';
       const _practitioner =
         practitioners
-          ?.filter((a) => a.idNumber === classroomGroup?.practitioner)
+          ?.filter((a) => a.userId === classroomGroup?.practitionerId)
           .at(0)?.firstName || current;
 
       list.push({
@@ -79,7 +80,7 @@ export const ConfirmClasses = ({
         actionIcon: 'PencilIcon',
         onActionClick: () => {
           editClass({
-            id: classroomGroup.id,
+            id: classroomGroup?.id || '',
             classroomId: classroomGroup?.classroom?.id,
             name: classroomGroup.name,
             meetEveryday: classroomGroup.classProgrammes?.length === 5,
