@@ -1,5 +1,6 @@
 export interface PractitionerProfileRouteState {
   practitionerId: string;
+  isFromProgrammeView: boolean;
 }
 
 export interface PractitionerDashboardModel {

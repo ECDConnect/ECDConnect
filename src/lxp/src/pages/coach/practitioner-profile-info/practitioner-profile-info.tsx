@@ -64,6 +64,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
   const { isOnline } = useOnlineStatus();
   const location = useLocation<PractitionerProfileRouteState>();
   const practitionerId = location.state.practitionerId;
+  const isFromProgrammeView = location.state.isFromProgrammeView;
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const practitioner = practitioners?.find(
     (practitioner) => practitioner?.userId === practitionerId
@@ -103,7 +104,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
     {
       title: 'Programme Information',
       titleStyle: 'text-textDark font-semibold text-base leading-snug',
-      subTitle: 'Location, playgroups & staff',
+      subTitle: 'Location, classes & staff',
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       menuIcon: 'InformationCircleIcon',
@@ -140,7 +141,11 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
         size="medium"
         renderBorder={true}
         renderOverflow={false}
-        onBack={() => history.push(ROUTES.COACH.PRACTITIONERS)}
+        onBack={() =>
+          isFromProgrammeView
+            ? history.goBack()
+            : history.push(ROUTES.COACH.PRACTITIONERS)
+        }
         displayOffline={!isOnline}
       >
         <div className={styles.avatarWrapper}>
@@ -160,7 +165,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
             borderColour="primary"
             text={'SmartStarter'}
             textColour={'white'}
-            className={'mr-2 px-3 py-1.5'}
+            className={'px-3 py-1.5'}
           />
           {/* <StatusChip
             backgroundColour="tertiary"
@@ -174,19 +179,16 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
           <Button
             color={'primary'}
             type={'outlined'}
-            className={'mr-4 rounded-xl'}
+            className={'rounded-2xl'}
             size={'small'}
             onClick={() => {}}
           >
-            <PhoneIcon
-              className="h-6 w-5 text-primary mx-2"
-              aria-hidden="true"
-            />
+            <PhoneIcon className="h-5 w-5 text-primary" aria-hidden="true" />
           </Button>
           <Button
             color={'primary'}
             type={'outlined'}
-            className={'mr-4 rounded-xl'}
+            className={'rounded-2xl'}
             size={'small'}
             onClick={() => {}}
           >
