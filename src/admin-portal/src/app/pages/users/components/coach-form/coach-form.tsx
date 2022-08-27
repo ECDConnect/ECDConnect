@@ -93,6 +93,7 @@ const CoachForm: React.FC<CoachFormProps> = ({ formKey, errors, register }) => {
                 })
               }
               multiple
+              disabled
             />
           </div>
         </div>
