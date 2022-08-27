@@ -51,10 +51,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var dbRepo = repoFactory.CreateRepository<Coach>(userContext: uId);
             Coach coach = new Coach();
-            List<Coach> coaches = dbRepo.GetAll().Where(x => x.UserId.Contains(userId)).ToList();
+            List<Coach> coaches = dbRepo.GetAll().ToList();
             if (coaches.Count > 0)
             {
-                coach = coaches.FirstOrDefault();
+                coach = coaches.Where(x => x.UserId.Contains(userId)).FirstOrDefault();
             }
 
             return coach;
