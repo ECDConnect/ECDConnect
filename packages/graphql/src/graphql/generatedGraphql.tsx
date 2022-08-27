@@ -1281,6 +1281,7 @@ export type FileTypeEnumOperationFilterInput = {
 export type Franchisor = {
   __typename?: 'Franchisor';
   areaOfOperation?: Maybe<Scalars['String']>;
+  hierarchy?: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
@@ -1298,6 +1299,7 @@ export type Franchisor = {
 export type FranchisorFilterInput = {
   and?: InputMaybe<Array<FranchisorFilterInput>>;
   areaOfOperation?: InputMaybe<StringOperationFilterInput>;
+  hierarchy?: InputMaybe<StringOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
@@ -1315,6 +1317,7 @@ export type FranchisorFilterInput = {
 
 export type FranchisorInput = {
   AreaOfOperation?: InputMaybe<Scalars['String']>;
+  Hierarchy?: InputMaybe<Scalars['String']>;
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
   SecondaryAreaOfOperation?: InputMaybe<Scalars['String']>;

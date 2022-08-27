@@ -1,6 +1,7 @@
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Base;
+using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Events;
@@ -99,8 +100,8 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             //if user is in a higher admin role (Principal, Practitioner, Coach, Franchisor, then skip the check as they need to be able to see anyone anywhere due to the shift in roles of Milestone 1.
             var higherRoles = new[] { Roles.PRACTITIONER, Roles.COACH, Roles.ADMINISTRATOR, Roles.PRINCIPAL, Roles.FRANCHISOR };//            
             bool isHigherRole = higherRoles.Any(roles.Contains);
-            var isAdmin = roles.Contains(Roles.ADMINISTRATOR);                        
-            var excludingEntities = new[] { typeof(Practitioner), typeof(Principal), typeof(Coach), typeof(Franchisor) };//
+            var isAdmin = roles.Contains(Roles.ADMINISTRATOR);
+            var excludingEntities = new[] { typeof(Practitioner), typeof(Principal), typeof(Coach), typeof(Franchisor), typeof(Classroom), typeof(ClassroomGroup), typeof(Child), typeof(Programme) };//remove teh last three for normal functionlity
             bool isExcluded = excludingEntities.Contains(typeof(T));
 
             var query = entities.AsQueryable();
