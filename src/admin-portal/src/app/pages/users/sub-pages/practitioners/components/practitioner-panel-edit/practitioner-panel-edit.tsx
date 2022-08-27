@@ -109,6 +109,33 @@ export default function PractitionerPanelEdit({
           shouldValidate: true,
         }
       );
+      practitionerSetValue('isTrainee', practitioner.isTrainee ?? false, {
+        shouldValidate: true,
+      });
+      practitionerSetValue(
+        'isFundaAppAdmin',
+        practitioner.isFundaAppAdmin ?? false,
+        {
+          shouldValidate: true,
+        }
+      );
+      practitionerSetValue('isPrincipal', practitioner.isPrincipal ?? false, {
+        shouldValidate: true,
+      });
+      practitionerSetValue(
+        'coachHierarchy',
+        practitioner.coachHierarchy ?? '',
+        {
+          shouldValidate: true,
+        }
+      );
+      practitionerSetValue(
+        'principalHierarchy',
+        practitioner.principalHierarchy ?? '',
+        {
+          shouldValidate: true,
+        }
+      );
 
       if (practitioner.siteAddress) {
         siteAddressSetValue('name', practitioner.siteAddress.name, {
@@ -182,6 +209,8 @@ export default function PractitionerPanelEdit({
       IsPrincipal: practitionerForm.isPrincipal,
       IsTrainee: practitionerForm.isTrainee,
       IsFundaAppAdmin: practitionerForm.isFundaAppAdmin,
+      CoachHierarchy: practitionerForm.coachHierarchy,
+      PrincipalHierarchy: practitionerForm.principalHierarchy,
     };
 
     await updatePractitioner({

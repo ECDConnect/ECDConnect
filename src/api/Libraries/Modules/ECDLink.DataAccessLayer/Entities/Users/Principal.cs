@@ -20,7 +20,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
     public class Principal<TKey> : EntityBase<TKey>, 
         IDocumentQueryable, 
         SiteAddressJoin<Guid?>, 
-        IUserType
+        IUserType, IUserElevatedScoped
          where TKey : IEquatable<TKey>
     {
         [GraphQLIgnore]
@@ -57,6 +57,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public bool? IsTrainee { get; set; }
         public string SigningSignature { get; set; }
         public bool? NotInvitedYet { get; set; }
+        public bool? ShareInfo { get; set; }
 
     }
 

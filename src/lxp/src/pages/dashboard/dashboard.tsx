@@ -58,6 +58,7 @@ export const Dashboard: React.FC = () => {
   const history = useHistory();
   const { theme } = useTheme();
   const dialog = useDialog();
+  const isCoach = userData?.roles?.some((role) => role.name === 'Coach');
 
   const newNotificationCount = useSelector(
     notificationsSelectors.getNewNotificationCount
@@ -87,7 +88,7 @@ export const Dashboard: React.FC = () => {
    * 2. Children of Practitioners
    */
   useEffect(() => {
-    if (userData?.roles?.some((role) => role.name === 'Coach')) {
+    if (isCoach) {
       (async () =>
         await appDispatch(
           practitionerForCoachThunkActions.getPractitionersForCoach({})
@@ -157,7 +158,9 @@ export const Dashboard: React.FC = () => {
     },
     {
       name: NavigationTypes.Profile,
-      href: ROUTES.PRACTITIONER.PROFILE.ROOT,
+      href: isCoach
+        ? ROUTES.COACH.PROFILE.ROOT
+        : ROUTES.PRACTITIONER.PROFILE.ROOT,
       icon: 'UserIcon',
       current: false,
       showDivider: true,
@@ -183,7 +186,7 @@ export const Dashboard: React.FC = () => {
 
   const dashboardItems: StackedListItemType[] = [];
 
-  if (userData?.roles?.some((role) => role.name === 'Coach')) {
+  if (isCoach) {
     dashboardItems.push(
       {
         title: 'Smartstarters',

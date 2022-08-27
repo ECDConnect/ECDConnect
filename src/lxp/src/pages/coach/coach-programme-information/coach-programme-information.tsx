@@ -15,15 +15,7 @@ import { PractitionerProfileRouteState } from './coach-programme-information.typ
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import * as styles from './coach-programme-information.styles';
 import ROUTES from '@routes/routes';
-import {
-  ChevronRightIcon,
-  ExclamationIcon,
-  PhoneIcon,
-} from '@heroicons/react/solid';
-// import { CreateNote } from '../../components/create-note/create-note';
-// import { NoteTypeEnum } from '@ecdlink/graphql';
-// import { getLastNoteDate } from '@utils/child/child-profile-utils';
-// import { notesSelectors } from '@store/notes';
+import { PhoneIcon } from '@heroicons/react/solid';
 import { useSelector } from 'react-redux';
 import { practitionerSelectors } from '@/store/practitioner';
 import { practitionerForCoachSelectors } from '@/store/practitionerForCoach';
@@ -40,6 +32,55 @@ export const CoachProgrammeInformation: React.FC = () => {
   const practitionersForCoach = useSelector(
     practitionerForCoachSelectors.getPractitionersForCoach
   );
+  const isFromProgrammeView = true;
+
+  const listItems = [
+    {
+      title: 'Programme location updated',
+      titleStyle: 'text-textDark font-semibold text-base leading-snug',
+      subTitle: 'SmartSpace check required',
+      subTitleStyle:
+        'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
+      menuIcon: 'ExclamationIcon',
+      menuIconClassName: 'bg-secondary text-white',
+      showIcon: true,
+      iconBackgroundColor: 'alertMain',
+      chipConfig: {
+        colorPalette: {
+          backgroundColour: 'white',
+          borderColour: 'errorMain',
+          textColour: 'errorMain',
+        },
+      },
+      text: '1',
+      onActionClick: () => {},
+      classNames: 'bg-uiBg',
+    },
+    {
+      title: 'Classes reassigned',
+      titleStyle: 'text-textDark font-semibold text-base leading-snug',
+      subTitle: 'Classes have been assigned to a different practitioner',
+      subTitleStyle:
+        'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
+      menuIcon: 'ExclamationIcon',
+      menuIconClassName: 'bg-secondary text-white',
+      showIcon: true,
+      iconBackgroundColor: 'alertMain',
+      chipConfig: {
+        colorPalette: {
+          backgroundColour: 'white',
+          borderColour: 'errorMain',
+          textColour: 'errorMain',
+        },
+      },
+      text: '1',
+      onActionClick: () =>
+        history.push(ROUTES.COACH.CLASSES_REASSIGNED, {
+          practitionerId,
+        }),
+      classNames: 'bg-uiBg',
+    },
+  ];
 
   const practitionersList = practitioners?.filter((item) =>
     practitionersForCoach?.find((item2) => item.id === item2.id)
@@ -59,9 +100,14 @@ export const CoachProgrammeInformation: React.FC = () => {
       profileText:
         item?.user?.firstName.substring(0, 1)! +
         item?.user?.surname.substring(0, 1),
-      onActionClick: () => handleClick(item.id!),
+      onActionClick: () => handleClick(item.userId!),
+      id: item?.userId,
     };
   });
+
+  const otherPractitionersOnSite = practitionersForCoachListItems?.filter(
+    (item) => item.id !== practitionerId
+  );
 
   const coachClassrooms = useSelector(
     classroomsForCoachSelectors.getClassroomForCoach
@@ -89,6 +135,7 @@ export const CoachProgrammeInformation: React.FC = () => {
     if (isCoach) {
       history.push('practitioner-profile-info', {
         practitionerId,
+        isFromProgrammeView,
       });
     } else {
       history.push('practitioner-info-dashboard', {
@@ -98,7 +145,6 @@ export const CoachProgrammeInformation: React.FC = () => {
   };
 
   const { theme } = useTheme();
-  const hasClasses = true;
 
   return (
     <div className={styles.contentWrapper}>
@@ -137,31 +183,21 @@ export const CoachProgrammeInformation: React.FC = () => {
             textColour={'white'}
             className={'mr-2 px-3 py-1.5'}
           />
-          {/* <StatusChip
-            backgroundColour="tertiary"
-            borderColour="tertiary"
-            text={`Owner`}
-            textColour={'white'}
-            className={'mr-2 px-3 py-1.5'}
-          /> */}
         </div>
         <div className={styles.contactButtons}>
           <Button
             color={'primary'}
             type={'outlined'}
-            className={'mr-4 rounded-xl'}
+            className={'rounded-2xl'}
             size={'small'}
             onClick={call}
           >
-            <PhoneIcon
-              className="h-6 w-5 text-primary mx-2"
-              aria-hidden="true"
-            />
+            <PhoneIcon className="h-5 w-5 text-primary" aria-hidden="true" />
           </Button>
           <Button
             color={'primary'}
             type={'outlined'}
-            className={'mr-4 rounded-xl'}
+            className={'rounded-2xl'}
             size={'small'}
             onClick={whatsapp}
           >
@@ -173,67 +209,12 @@ export const CoachProgrammeInformation: React.FC = () => {
           </Button>
         </div>
       </BannerWrapper>
-      {hasClasses && (
-        <div className={styles.listItemFirst}>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className={styles.circleIconDiv}>
-                <ExclamationIcon className={styles.circleIcon} />
-              </div>
-              <div className="w-9/12">
-                <Typography
-                  type={'h4'}
-                  weight={'bold'}
-                  text={'Programme location updated'}
-                  color={'textMid'}
-                  className="w-9/12"
-                />
-                <Typography
-                  type={'body'}
-                  weight={'bold'}
-                  text={'Cooming soon'}
-                  color={'textMid'}
-                />
-              </div>
-              <ChevronRightIcon
-                className={styles.rightArrowIcon}
-                onClick={() => {}}
-              />
-            </div>
-          </div>
-        </div>
-      )}
-      <div className={styles.listItem}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className={styles.circleIconDiv}>
-              <ExclamationIcon className={styles.circleIcon} />
-            </div>
-            <div className="w-9/12">
-              <Typography
-                type={'h4'}
-                weight={'bold'}
-                text={'Playgroups reassigned'}
-                color={'textMid'}
-                className="w-9/12"
-              />
-              <Typography
-                type={'body'}
-                weight={'bold'}
-                text={
-                  'Playgroups have been assigned to a different practitioner'
-                }
-                color={'textMid'}
-              />
-            </div>
-          </div>
-          <ChevronRightIcon
-            className={styles.rightArrowIcon}
-            onClick={() =>
-              history.push(ROUTES.COACH.CLASSES_REASSIGNED, {
-                practitionerId,
-              })
-            }
+      <div className="flex justify-center mt-4">
+        <div className="w-11/12">
+          <StackedList
+            className="w-full rounded-2xl -mt-0.5 flex flex-col gap-1"
+            type="MenuList"
+            listItems={listItems}
           />
         </div>
       </div>
@@ -297,7 +278,7 @@ export const CoachProgrammeInformation: React.FC = () => {
               className={'mt-1'}
             />
             <Typography
-              text={'Playgroups'}
+              text={'Playgroup'}
               type="h4"
               color="textDark"
               className={'mt-1'}
@@ -390,10 +371,10 @@ export const CoachProgrammeInformation: React.FC = () => {
           </div>
           {practitionersForCoachListItems ? (
             <div className="flex justify-center">
-              <div className="w-11/12">
+              <div className="w-11/12 flex justify-center">
                 <StackedList
                   className={styles.stackedList}
-                  listItems={practitionersForCoachListItems!}
+                  listItems={otherPractitionersOnSite!}
                   type={'UserAlertList'}
                 ></StackedList>
               </div>
