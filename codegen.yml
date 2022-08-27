@@ -1,5 +1,5 @@
 overwrite: true
-schema: 'http://localhost:5000/graphql'
+schema: 'https://localhost:44384/graphql'
 generates:
   packages/graphql/src/graphql/generatedGraphql.tsx:
     plugins:
