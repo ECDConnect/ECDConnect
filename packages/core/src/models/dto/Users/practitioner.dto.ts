@@ -22,4 +22,5 @@ export interface PractitionerDto extends EntityBase {
   principalHierarchy?: string;
   signingSignature?: string;
   coachHierarchy?: string;
+  shareInfo?: boolean;
 }

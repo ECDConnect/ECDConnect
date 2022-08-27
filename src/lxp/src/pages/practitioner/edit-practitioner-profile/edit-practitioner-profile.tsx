@@ -60,11 +60,15 @@ export const EditPractitionerProfile: React.FC = () => {
   const programmeTypes = useSelector(staticDataSelectors.getProgrammeTypes);
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
+  const currentPractitioner = useSelector(
+    practitionerSelectors.getPractitioner
+  );
   const principalPractitioners = useSelector(
     practitionerSelectors.getPrincipalPractitioners
   );
 
   const [label, setLabel] = useState('');
+  const [practitionerSetup, setPractitionerSetup] = useState(false);
   const [programme, setProgramme] = useState<EditProgrammeModel>();
   const [activeStep, setActiveStep] = useState(
     EditPractitionerSteps.welcomePage
@@ -133,15 +137,28 @@ export const EditPractitionerProfile: React.FC = () => {
       );
 
       // Update classroom data
-      await syncClassroom();
-
-      // Update the principal data
-
-      if (classroom?.isPrinciple) {
-        if (userAuth?.auth_token) {
+      if (practitionerSetup) {
+        if (
+          userAuth?.auth_token &&
+          currentPractitioner?.userId &&
+          currentPractitioner?.principalHierarchy
+        )
           await new PractitionerService(
             userAuth?.auth_token
-          ).PromotePractitionerToPrincipal(classroom.userId);
+          ).UpdatePractitionerShareInfo(
+            currentPractitioner?.userId,
+            currentPractitioner?.principalHierarchy
+          );
+      } else {
+        await syncClassroom();
+      }
+      // Update the principal data
+
+      if (currentPractitioner?.isPrincipal) {
+        if (userAuth?.auth_token && currentPractitioner?.userId) {
+          await new PractitionerService(
+            userAuth?.auth_token
+          ).PromotePractitionerToPrincipal(currentPractitioner?.userId);
         }
       }
 
@@ -260,6 +277,7 @@ export const EditPractitionerProfile: React.FC = () => {
           <PractitionerSetup
             onSubmit={() => {
               setActiveStep(EditPractitionerSteps.addPhoto);
+              setPractitionerSetup(true);
             }}
           />
         );

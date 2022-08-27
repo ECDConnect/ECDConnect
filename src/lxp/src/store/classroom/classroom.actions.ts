@@ -78,6 +78,7 @@ export const getClassroomsForPractitioner = createAsyncThunk<
       classroomData: {
         classroom: classroomsCache,
         classroomGroups: classroomGroupsData,
+        principal: principalData,
       },
     } = getState();
 
@@ -110,7 +111,7 @@ export const getClassroomsForPractitioner = createAsyncThunk<
     } else {
       return {
         classroom: classroomsCache,
-        principal: undefined,
+        principal: principalData,
         classroomGroups: classroomGroupsData,
       };
     }

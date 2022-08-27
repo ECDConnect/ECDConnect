@@ -72,6 +72,7 @@ class PractitionerService {
             languageUsedInGroups
             startDate
             monthSinceFranchisee
+            shareInfo
           }
         }
       `,
@@ -124,6 +125,7 @@ class PractitionerService {
             languageUsedInGroups
             startDate
             monthSinceFranchisee
+            shareInfo
           }
         }
       `,
@@ -154,6 +156,7 @@ class PractitionerService {
             isActive
             coachHierarchy
             notInvitedYet
+            shareInfo
             user {
               idNumber
               fullName
@@ -228,6 +231,38 @@ class PractitionerService {
     }
 
     return response.data.data.promotePractitionerToPrincipal;
+  }
+
+  async UpdatePractitionerShareInfo(
+    practitionerId: string,
+    principalId: string
+  ): Promise<boolean> {
+    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        mutation updatePractitionerShareInfo(
+          $practitionerId: String
+          $principalId: String
+        ) {
+          updatePractitionerShareInfo(
+            practitionerId: $practitionerId
+            principalId: $principalId
+          )
+        }
+      `,
+      variables: {
+        practitionerId,
+        principalId,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Get Practitioner by ID number Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.updatePractitionerShareInfo;
   }
 
   async AddPractitionerToPrincipal(

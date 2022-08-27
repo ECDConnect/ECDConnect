@@ -41,10 +41,9 @@ export class IncompletePractitionerInformationNotificationValidator
     const hasPractitionerRole = userState?.user?.roles?.some(
       (role) => role.name === 'Practitioner'
     );
-    const isPrincipalNotSet =
-      practitionerState.practitioner?.isPrincipal === null;
+    const shareInfoNotSet = practitionerState.practitioner?.shareInfo === null;
 
-    const showNotification = hasPractitionerRole && isPrincipalNotSet;
+    const showNotification = hasPractitionerRole && shareInfoNotSet;
 
     if (showNotification) {
       return [

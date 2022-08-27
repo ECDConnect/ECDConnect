@@ -21,7 +21,7 @@ import { OfflineSyncModal } from '../../modals';
 import OfflineSyncTimeExceeded from '../../modals/offline-sync/offline-sync-time-exceeded';
 import { useAppDispatch } from '@store';
 import { classroomsForCoachThunkActions } from '../../store/classroomForCoach';
-import { classroomsSelectors } from '@store/classroom';
+import { classroomsSelectors, classroomsThunkActions } from '@store/classroom';
 import { notificationsSelectors } from '@store/notifications';
 import { settingSelectors } from '@store/settings';
 import { userSelectors } from '@store/user';
@@ -53,6 +53,7 @@ export const Dashboard: React.FC = () => {
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const userData = useSelector(userSelectors.getUser);
   const practitionerData = useSelector(practitionerSelectors.getPractitioners);
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
   const history = useHistory();
@@ -123,6 +124,18 @@ export const Dashboard: React.FC = () => {
       }
     }
   }, []);
+
+  useEffect(() => {
+    if (practitioner) {
+      const { principalHierarchy: principalId, id } = practitioner;
+      appDispatch(
+        classroomsThunkActions.getClassroomsForPractitioner({
+          principalId: principalId ?? '',
+          practitionerId: id ?? '',
+        })
+      );
+    }
+  }, [practitioner]);
 
   const navigation: (NavigationRouteItem | NavigationDropdown)[] = [
     {

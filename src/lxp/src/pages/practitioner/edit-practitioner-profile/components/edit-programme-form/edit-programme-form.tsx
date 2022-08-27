@@ -98,7 +98,7 @@ export const EditProgrammeForm: React.FC<EditProgrammeFormProps> = ({
 
             <div className={'w-full'}>
               <label className={styles.label}>
-                What type of programme are you running of planning to run?
+                What type of programme are you running or planning to run?
               </label>
               <div className="mt-1">
                 <Controller
