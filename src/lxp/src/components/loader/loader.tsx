@@ -7,7 +7,7 @@ import ROUTES from '@routes/routes';
 
 const Loader = ({ loadingMessage = 'Loading . . .' }) => {
   const history = useHistory();
-  const { resetAuth, resetAppStaticStores } = useStoreSetup();
+  const { resetAuth, resetAppStore } = useStoreSetup();
 
   const [showIssue, setShowIssue] = useState<boolean>(false);
 
@@ -48,7 +48,7 @@ const Loader = ({ loadingMessage = 'Loading . . .' }) => {
                 size="small"
                 onClick={async () => {
                   await resetAuth();
-                  await resetAppStaticStores();
+                  await resetAppStore();
                   history.push(ROUTES.LOGIN);
                 }}
               >

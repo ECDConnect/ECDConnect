@@ -32,7 +32,7 @@ const OfflineSyncModal: React.FC<OfflineSyncModalProps> = ({
   const { isOnline } = useOnlineStatus();
   const dispatch = useAppDispatch();
   const [unableToSync, setUnableToSync] = useState(false);
-  const { resetAppStaticStores, initStoreSetup } = useStoreSetup();
+  const { resetAppStore, initStoreSetup } = useStoreSetup();
   const history = useHistory();
 
   const { status, error, currentAction, currentStep, stepTotal } =
@@ -40,6 +40,7 @@ const OfflineSyncModal: React.FC<OfflineSyncModalProps> = ({
 
   const handleSync = () => {
     dispatch(syncThunkActions.syncOfflineData({}));
+    // TODO: is it okay that we set this even if the sync isn't successful yet? BTW we already do this inside initStoreSetup()
     dispatch(settingActions.setLastDataSync());
   };
 
@@ -51,8 +52,8 @@ const OfflineSyncModal: React.FC<OfflineSyncModalProps> = ({
 
   const handleSyncSuccess = async () => {
     onSubmit();
-    await dispatch(syncActions.clearSyncState());
-    await resetAppStaticStores();
+    await dispatch(syncActions.resetSyncState());
+    await resetAppStore();
     await initStoreSetup();
     if (!avoidNavigation) history.push(ROUTES.ROOT);
   };

@@ -24,7 +24,7 @@ import { useStoreSetup } from '@hooks/useStoreSetup';
 
 export const NewPassword: React.FC = () => {
   const appDispatch = useAppDispatch();
-  const { resetAppStaticStores, resetAuth } = useStoreSetup();
+  const { resetAppStore, resetAuth } = useStoreSetup();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [displayError, setDisplayError] = useState<boolean>(false);
   const [displaySuccess, setDisplaySuccess] = useState<boolean>(false);
@@ -54,8 +54,8 @@ export const NewPassword: React.FC = () => {
   }, [isValid]);
 
   useEffect(() => {
-    if (resetAppStaticStores) {
-      resetAppStaticStores(false);
+    if (resetAppStore) {
+      resetAppStore(false);
       resetAuth();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
