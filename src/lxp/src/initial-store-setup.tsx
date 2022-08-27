@@ -141,7 +141,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     ).unwrap();
     await appDispatch(userThunkActions.getUser({})).unwrap();
     await appDispatch(userThunkActions.getUserConsents({})).unwrap();
-    await appDispatch(coachThunkActions.getCoachByUserId({})).unwrap();
+    // await appDispatch(coachThunkActions.getCoachByUserId({})).unwrap();
     await appDispatch(
       practitionerForCoachThunkActions.getPractitionersForCoach({})
     ).unwrap();
