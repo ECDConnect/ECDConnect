@@ -67,8 +67,8 @@ export const ChildBasicInfo: React.FC<
         <Dropdown<string>
           fullWidth
           className="mt-4"
-          label="Which playgroup will the child attend?"
-          placeholder="Select playgroup"
+          label="Which class will the child attend?"
+          placeholder="Select class"
           selectedValue={getSelectedClassroom()}
           list={classrooms.map((x) => ({ label: x.name, value: x.id || '' }))}
           onChange={(classroomId: string) => {

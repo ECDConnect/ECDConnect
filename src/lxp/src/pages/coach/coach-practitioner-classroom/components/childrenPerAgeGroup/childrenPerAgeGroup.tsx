@@ -21,6 +21,7 @@ export const ChildrenPerAgeGroup: React.FC<ChildrenPerAgeGroupProps> = ({
   const [ageGroup1, setAgeGroup1] = useState(0);
   const [ageGroup2, setAgeGroup2] = useState(0);
   const [ageGroup3, setAgeGroup3] = useState(0);
+  const [ageGroup4, setAgeGroup4] = useState(0);
 
   const handleAgeGroups = (childAge: any) => {
     if (childAge?.years < 2 && childAge?.months < 7) {
@@ -31,10 +32,12 @@ export const ChildrenPerAgeGroup: React.FC<ChildrenPerAgeGroupProps> = ({
       setAgeGroup2((prevState) => prevState + 1);
       return;
     }
-    if (childAge?.years >= 3) {
+    if (childAge?.years >= 3 && childAge?.years < 6) {
       setAgeGroup3((prevState) => prevState + 1);
       return;
     }
+    if (childAge?.years >= 6 && childAge?.years < 10)
+      setAgeGroup4((prevState) => prevState + 1);
   };
 
   useEffect(() => {
@@ -53,6 +56,7 @@ export const ChildrenPerAgeGroup: React.FC<ChildrenPerAgeGroupProps> = ({
         setAgeGroup1(0);
         setAgeGroup2(0);
         setAgeGroup3(0);
+        setAgeGroup4(0);
       };
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -87,12 +91,18 @@ export const ChildrenPerAgeGroup: React.FC<ChildrenPerAgeGroupProps> = ({
               />
             </div>
           </div>
-          <div>
+          <div className="flex justify-between">
             <div className="pb-2">
               <div className="mt-4 mb-3 text-4xl font-semibold text-black">
                 {ageGroup3}
               </div>
               <Typography text={'3 - 5 years'} type="body" className="mb-4" />
+            </div>
+            <div className="pb-2 mr-10">
+              <div className="mt-4 mb-3 text-4xl font-semibold text-black">
+                {ageGroup4}
+              </div>
+              <Typography text={'6 - 10 years'} type="body" className="mb-4" />
             </div>
           </div>
         </div>

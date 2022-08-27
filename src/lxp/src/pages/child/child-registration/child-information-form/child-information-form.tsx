@@ -403,10 +403,10 @@ const PractitionerForm: React.FC<any> = ({
         placeholder={'Surname/family name'}
       />
       <Dropdown<string>
-        placeholder={'Select playgroup'}
+        placeholder={'Select class'}
         list={updatedPlaygroups}
         fillType="clear"
-        label={'Which playgroup will the child attend?'}
+        label={'Which class will the child attend?'}
         fullWidth
         className={'mt-3 w-full'}
         selectedValue={getChildInformationFormValues().playgroupId}

@@ -9,6 +9,7 @@ using ECDLink.Security;
 using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
+using HotChocolate.Utilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -57,6 +58,25 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 coach = coaches.Where(x => x.UserId.Contains(userId)).FirstOrDefault();
             }
 
+            return coach;
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public Coach GetCoachByPractitionerId([Service] IHttpContextAccessor contextAccessor,
+         [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+         [Service] IGenericRepositoryFactory repoFactory,
+         string practitionerId)
+        {
+            using var scope = dbFactory.CreateDbContext();
+            using var dbContextTransaction = scope.Database.BeginTransaction();
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+            List<Practitioner> practitioners = practitionerRepo.GetAll().Where(x => x.UserId.Contains(practitionerId)).ToList();
+            Coach coach = new Coach();
+            if (practitioners.Count > 0)
+            {
+                coach = this.GetCoachByUserId(contextAccessor,dbFactory,repoFactory, practitioners.FirstOrDefault().CoachHierarchy);
+            }
             return coach;
         }
 
