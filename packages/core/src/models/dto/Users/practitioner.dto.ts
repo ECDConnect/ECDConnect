@@ -1,6 +1,7 @@
 import { DocumentDto } from '../Documents';
 import { EntityBase } from '../entity-base';
 import { SiteAddressDto } from '../SiteAddress';
+import { CoachDto } from './coach.dto';
 import { UserDto } from './user.dto';
 
 export interface PractitionerDto extends EntityBase {
@@ -21,5 +22,7 @@ export interface PractitionerDto extends EntityBase {
   isTrainee?: boolean;
   signingSignature: string;
   coachHierarchy: string;
+  coach?: CoachDto;
   principalHierarchy: string;
+  principal?: PractitionerDto;
 }

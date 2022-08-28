@@ -173,7 +173,7 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
                 IsFundaAppAdmin = false,
                 IsTrainee = false,
                 NotInvitedYet = false,
-                CoachHierarchy = coachId
+                CoachHierarchy = Guid.Parse(coachId)
             });
 
             var pUser2 = new ApplicationUser
@@ -198,12 +198,12 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
                 Id = Guid.NewGuid(),
                 UserId = pUser2.Id,
                 SiteAddressId = siteAddressId,
-                PrincipalHierarchy = pUser2.Id,
+                PrincipalHierarchy = Guid.Parse(pUser2.Id),
                 IsPrincipal = false,
                 IsFundaAppAdmin = false,
                 IsTrainee = false,
                 NotInvitedYet = false,
-                CoachHierarchy = coachId
+                CoachHierarchy = Guid.Parse(coachId)
             });
         }
 
