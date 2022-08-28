@@ -373,7 +373,10 @@ export const CoachChildProfile: React.FC = () => {
   // };
 
   const goToRemoveChild = () => {
-    history.push(ROUTES.REMOVE_CHILD, { childId: child?.id });
+    history.push(ROUTES.REMOVE_CHILD, {
+      childId: child?.id,
+      practitionerId: practitionerId,
+    });
   };
 
   const contactAttendanceCaregiver = (
