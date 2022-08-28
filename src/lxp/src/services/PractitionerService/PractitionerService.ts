@@ -165,7 +165,11 @@ class PractitionerService {
             user {
               idNumber
               fullName
+              firstName
+              surname
               id
+              email
+              phoneNumber
             }
           }
         }
