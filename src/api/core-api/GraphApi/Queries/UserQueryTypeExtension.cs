@@ -53,7 +53,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 //Coach
                 if (roles.Any(x => x.Name.Contains("Coach")))
                     {
-                    user.coachObjectData = new CoachQueryExtension().GetCoachByUserId(contextAccessor, dbFactory, repoFactory, userId);
+                    user.coachObjectData = new CoachQueryExtension().GetCoachByCoachUserId(contextAccessor, dbFactory, repoFactory, userId);
                 }
                 //Principal or Practitioner - Principal is just a Practitioner with IsPrincipal as true
                 if (roles.Any(x => x.Name.Contains("Principal") || x.Name.Contains("Practitioner")))
