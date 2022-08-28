@@ -39,7 +39,7 @@ const { version } = require('../../../package.json');
 
 export enum NavigationTypes {
   Home = 'Home',
-  ClientFolders = 'Client folders',
+  ClientFolders = 'Classroom',
   Attendance = 'Attendance',
   Children = 'Children',
   Programme = 'Programme',
@@ -130,6 +130,7 @@ export const Dashboard: React.FC = () => {
       (practitioner && practitioner.isPrincipal === false,
       practitioner?.principalHierarchy)
     ) {
+      console.log('teste practitioner');
       appDispatch(
         classroomsThunkActions.getClassroomsForPractitioner({
           principalId: practitioner.principalHierarchy ?? '',
