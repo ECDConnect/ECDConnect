@@ -42,10 +42,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public Coach GetCoachByUserId([Service] IHttpContextAccessor contextAccessor,
-        [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
-        [Service] IGenericRepositoryFactory repoFactory,
-        string userId)
+        public Coach GetCoachByCoachUserId([Service] IHttpContextAccessor contextAccessor,
+[Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+[Service] IGenericRepositoryFactory repoFactory,
+string userId)
         {
             using var scope = dbFactory.CreateDbContext();
             using var dbContextTransaction = scope.Database.BeginTransaction();
@@ -62,6 +62,27 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public Coach GetCoachByUserId([Service] IHttpContextAccessor contextAccessor,
+        [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+        [Service] IGenericRepositoryFactory repoFactory,
+        string userId)
+        {
+            //this was used wrong in FE, so adjust to align with FE
+            //using var scope = dbFactory.CreateDbContext();
+            //using var dbContextTransaction = scope.Database.BeginTransaction();
+            //var uId = contextAccessor.HttpContext.GetUser().Id;
+            //var dbRepo = repoFactory.CreateRepository<Coach>(userContext: uId);
+            //Coach coach = new Coach();
+            //List<Coach> coaches = dbRepo.GetAll().ToList();
+            //if (coaches.Count > 0)
+            //{
+            //    coach = coaches.Where(x => x.UserId.Contains(userId)).FirstOrDefault();
+            //}
+
+            return GetCoachByPractitionerId(contextAccessor,dbFactory, repoFactory, userId);
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public Coach GetCoachByPractitionerId([Service] IHttpContextAccessor contextAccessor,
          [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
          [Service] IGenericRepositoryFactory repoFactory,
@@ -75,7 +96,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             Coach coach = new Coach();
             if (practitioners.Count > 0)
             {
-                coach = this.GetCoachByUserId(contextAccessor,dbFactory,repoFactory, practitioners.FirstOrDefault().CoachHierarchy);
+                coach = this.GetCoachByCoachUserId(contextAccessor,dbFactory,repoFactory, practitioners.FirstOrDefault().CoachHierarchy);
             }
             return coach;
         }
