@@ -28,10 +28,13 @@ import { staticDataSelectors } from '@store/static-data';
 import { analyticsActions } from '@store/analytics';
 import * as styles from './remove-child.styles';
 import { RemoveChildRouteState } from './remove-child.types';
+import { userSelectors } from '@store/user';
 import ROUTES from '@routes/routes';
 
 export const RemoveChild: React.FC = () => {
   const location = useLocation<RemoveChildRouteState>();
+  const practitionerId = location.state.practitionerId;
+  const userData = useSelector(userSelectors.getUser);
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
   const childId = location.state.childId;
@@ -43,6 +46,8 @@ export const RemoveChild: React.FC = () => {
     staticDataSelectors.getReasonsForLeaving
   );
   const history = useHistory();
+
+  const isCoach = userData?.roles?.some((role) => role.name === 'Coach');
 
   useEffect(() => {
     if (!isOnline) {
@@ -81,7 +86,10 @@ export const RemoveChild: React.FC = () => {
     appDispatch(
       classroomsActions.deactivateClassroomGroupLearner(updatedChild)
     );
-
+    if (isCoach) {
+      history.push(ROUTES.COACH.PRACTITIONER_CHILD_LIST, { practitionerId });
+      return;
+    }
     history.replace(ROUTES.CLASSROOM);
   };
 
