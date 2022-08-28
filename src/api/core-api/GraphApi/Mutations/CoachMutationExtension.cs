@@ -32,7 +32,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     public class CoachMutationExtension
     {
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
-
         public async Task<bool> SendCoachInviteToApplication(
           [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
           [Service] InvitationNotificationManager notificationManager,
@@ -41,6 +40,98 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         {
             SendInvitationMutationExtension invite = new SendInvitationMutationExtension();
             return await invite.SendInviteToApplication(invitationManager, notificationManager, userManager, userId);
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
+        public Coach UpdateCoach([Service] IHttpContextAccessor contextAccessor,
+          [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+          [Service] IGenericRepositoryFactory repoFactory,
+          [Service] UserManager<ApplicationUser> userManager,
+          string id,
+          Coach input)
+        {
+            using var scope = dbFactory.CreateDbContext();
+            using var dbContextTransaction = scope.Database.BeginTransaction();
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var dbRepo = repoFactory.CreateRepository<Coach>(userContext: uId);
+            
+            Coach coach = (Coach)dbRepo.GetAll().Where(x => x.Id.Equals(input.Id)).FirstOrDefault();
+            {
+                if (coach != null)
+                {
+                    if (input.FranchisorId != null)
+                        coach.FranchisorId = input.FranchisorId;
+                    if (input.StartDate != null)
+                        coach.StartDate = input.StartDate;
+                    if (input.AreaOfOperation != null)
+                        coach.AreaOfOperation = input.AreaOfOperation;
+                    if (input.SiteAddressId != null) {
+                        var addressRepo = repoFactory.CreateRepository<SiteAddress>(userContext: uId);
+                        SiteAddress address = (SiteAddress)addressRepo.GetAll().Where(x => x.Id.Equals(input.SiteAddressId)).FirstOrDefault();
+                        if (input.SiteAddress.Ward != null)
+                            address.Ward = input.SiteAddress.Ward;
+                        if (input.SiteAddress.AddressLine1 != null)
+                            address.AddressLine1 = input.SiteAddress.AddressLine1;
+                        if (input.SiteAddress.AddressLine2 != null)
+                            address.AddressLine2 = input.SiteAddress.AddressLine2;
+                        if (input.SiteAddress.AddressLine3 != null)
+                            address.AddressLine3 = input.SiteAddress.AddressLine3;
+                        if (input.SiteAddress.PostalCode != null)
+                            address.PostalCode = input.SiteAddress.PostalCode;
+                        if (input.SiteAddress.ProvinceId != null)
+                            address.ProvinceId = input.SiteAddress.ProvinceId;
+                        var updateAddressResult = addressRepo.Update(address);
+                        //TODO: create address if not exists, but it really should
+                    }
+
+                    var updateResult = dbRepo.Update(coach);
+                }
+                return coach;
+            }
+
+            //input.Id = Guid.Parse(id);
+
+            //if (user == default(Coach))
+            //{
+            //    return AddCoach(userManager, input);
+            //}
+
+            //user.PhoneNumber = input.PhoneNumber;
+            //user.IdNumber = input.IdNumber;
+            //user.IsSouthAfricanCitizen = input.IsSouthAfricanCitizen;
+            //user.VerifiedByHomeAffairs = input.VerifiedByHomeAffairs;
+            //user.DateOfBirth = input.DateOfBirth;
+            //user.GenderId = input.GenderId;
+            //user.RaceId = input.RaceId;
+            //user.FirstName = input.FirstName;
+            //user.Surname = input.Surname;
+            //user.FullName = $"{input.FirstName} {input.Surname}";
+            //user.ContactPreference = input.ContactPreference;
+
+            //if (!string.IsNullOrWhiteSpace(input.IdNumber))
+            //{
+            //    user.UserName = input.IdNumber;
+            //}
+
+            //if (!string.IsNullOrWhiteSpace(input.Email))
+            //{
+            //    user.Email = input.Email;
+            //}
+
+            //if (!string.IsNullOrWhiteSpace(input.ProfileImageUrl))
+            //{
+            //    user.ProfileImageUrl = input.ProfileImageUrl;
+            //}
+
+            //var updateResult = userManager.UpdateAsync(user).Result;
+
+            //if (!updateResult.Succeeded)
+            //{
+            //    throw new Exception(updateResult.Errors.First().Description);
+            //}
+
+            //return user;
+            return input;
         }
 
         public Practitioner AddPractitionerToCoach([Service] IHttpContextAccessor contextAccessor,
