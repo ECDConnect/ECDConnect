@@ -40,7 +40,9 @@ export const EditClass = ({
   const practitioners = useSelector(
     practitionerSelectors.getPrincipalPractitioners
   );
-  const currentPractitioner = useSelector(userSelectors.getUser);
+  const currentPractitioner = useSelector(
+    practitionerSelectors.getPractitioner
+  );
   const { setValue, getValues, formState, register, control, trigger } =
     useForm<EditClassModel>({
       defaultValues: {
@@ -57,31 +59,30 @@ export const EditClass = ({
 
   const { isValid } = formState;
 
-  const { name, meetEveryday, meetingDays, practitioner, isFullDay } = useWatch(
-    {
+  const { name, meetEveryday, meetingDays, practitionerId, isFullDay } =
+    useWatch({
       control,
-    }
-  );
+    });
 
   useEffect(() => {
     const _list = practitioners
       ?.map((p) => {
         if (p.firstName && p.surname) {
-          return { label: `${p.firstName} ${p.surname}`, value: p.idNumber };
+          return { label: `${p.firstName} ${p.surname}`, value: p.userId };
         }
         return undefined;
       })
       .filter(Boolean) as { label: string; value: any }[];
 
     _list.push({
-      label: currentPractitioner?.fullName || '',
-      value: currentPractitioner?.idNumber,
+      label: currentPractitioner?.user?.fullName || '',
+      value: currentPractitioner?.userId,
     });
-    console.log(_list);
 
     setPractitionersList(_list);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
   useEffect(() => {
     if (meetEveryday == null) return;
     if (meetEveryday) {
@@ -114,7 +115,7 @@ export const EditClass = ({
         classroomId: editClassroomId,
         programmeTypeId: programmeType?.id,
         isActive: true,
-        practitioner: practitioner,
+        practitionerId: practitionerId,
       })
     );
 
@@ -179,10 +180,19 @@ export const EditClass = ({
   const deleteClassroom = () => {
     appDispatch(
       classroomsActions.deleteClassroomGroup({
-        classroomId: editClassroomId,
+        id: classToEdit.id,
         name: classToEdit.name ?? '',
+        classroomId: editClassroomId,
       })
     );
+
+    classProgrammes.forEach((prog) => {
+      appDispatch(
+        classroomsActions.deleteClassroomProgramme({
+          ...prog,
+        })
+      );
+    });
 
     onSubmit();
   };
@@ -208,7 +218,7 @@ export const EditClass = ({
 
         <div>
           <Controller
-            name={'practitioner'}
+            name={'practitionerId'}
             control={control}
             defaultValue={''}
             render={({ field: { onChange, value, ref } }) => (

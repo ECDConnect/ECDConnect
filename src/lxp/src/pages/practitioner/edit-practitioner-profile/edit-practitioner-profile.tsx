@@ -40,6 +40,7 @@ import { SetupClasses } from './components/setup-classes/setup-classes';
 import { practitionerSelectors } from '@/store/practitioner';
 import { PractitionerService } from '@/services/PractitionerService';
 import { authSelectors } from '@/store/auth';
+import { PractitionerSetup } from './practitioner-setup';
 
 export enum SetupPractitionersPage {
   confirmPractitioners = 1,
@@ -59,27 +60,27 @@ export const EditPractitionerProfile: React.FC = () => {
   const programmeTypes = useSelector(staticDataSelectors.getProgrammeTypes);
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
+  const currentPractitioner = useSelector(
+    practitionerSelectors.getPractitioner
+  );
   const principalPractitioners = useSelector(
     practitionerSelectors.getPrincipalPractitioners
   );
 
   const [label, setLabel] = useState('');
+  const [practitionerSetup, setPractitionerSetup] = useState(false);
   const [programme, setProgramme] = useState<EditProgrammeModel>();
   const [activeStep, setActiveStep] = useState(
     EditPractitionerSteps.welcomePage
   );
 
   useEffect(() => {
-    setLabel(`step 1 of 3`);
-  }, []);
-
-  useEffect(() => {
-    if (principalPractitioners?.length) {
-      setActiveStep(EditPractitionerSteps.setupClasses);
-    } else if (classroom?.id && classroomGroups.length) {
-      setActiveStep(EditPractitionerSteps.setConfirmPractitioners);
-    }
-  }, [classroom?.id, classroomGroups.length, principalPractitioners?.length]);
+    setLabel(
+      `step ${activeStep} of ${
+        Object.values(EditPractitionerSteps).filter(Number).length
+      }`
+    );
+  }, [activeStep]);
 
   const createClassroom = (
     programme: EditProgrammeModel,
@@ -118,6 +119,7 @@ export const EditPractitionerProfile: React.FC = () => {
             isActive: true,
             programmeTypeId: programme?.type,
             name: NoPlaygroupClassroomType.name,
+            practitionerId: user?.id, // Unsure classroom will belong to the principal
           };
           appDispatch(
             classroomsActions.createClassroomGroup(
@@ -127,16 +129,36 @@ export const EditPractitionerProfile: React.FC = () => {
         }
       }
 
+      // Update classroom number of practitioners
+      appDispatch(
+        classroomsActions.updateClassroomNumberPractitioners({
+          numberPractitioners: principalPractitioners?.length ?? 0,
+        })
+      );
+
       // Update classroom data
-      await syncClassroom();
-
-      // Update the principal data
-
-      if (classroom?.isPrinciple) {
-        if (userAuth?.auth_token) {
+      if (practitionerSetup) {
+        if (
+          userAuth?.auth_token &&
+          currentPractitioner?.userId &&
+          currentPractitioner?.principalHierarchy
+        )
           await new PractitionerService(
             userAuth?.auth_token
-          ).PromotePractitionerToPrincipal(classroom.userId);
+          ).UpdatePractitionerShareInfo(
+            currentPractitioner?.userId,
+            currentPractitioner?.principalHierarchy
+          );
+      } else {
+        await syncClassroom();
+      }
+      // Update the principal data
+
+      if (currentPractitioner?.isPrincipal) {
+        if (userAuth?.auth_token && currentPractitioner?.userId) {
+          await new PractitionerService(
+            userAuth?.auth_token
+          ).PromotePractitionerToPrincipal(currentPractitioner?.userId);
         }
       }
 
@@ -224,7 +246,11 @@ export const EditPractitionerProfile: React.FC = () => {
                 textColor="white"
                 icon="ArrowCircleRightIcon"
                 onClick={() => {
-                  setActiveStep(EditPractitionerSteps.setupProgramme);
+                  if (currentPractitioner?.principalHierarchy) {
+                    setActiveStep(EditPractitionerSteps.setupPractitioner);
+                  } else {
+                    setActiveStep(EditPractitionerSteps.setupProgramme);
+                  }
                 }}
               />
             </div>
@@ -237,27 +263,29 @@ export const EditPractitionerProfile: React.FC = () => {
               programme={programme}
               onSubmit={(programme) => {
                 setProgramme(programme);
-                const classroomId = newGuid();
-
-                createClassroom(programme, classroomId);
-
-                const playgroupProgrammeType = programmeTypes.find(
-                  (x) => x.enumId === ProgrammeTypeEnum.Playgroup
-                );
-
                 if (programme.isPrincipalOrLeader) {
-                  setActiveStep(EditPractitionerSteps.setConfirmPractitioners);
-                } else if (programme.type === playgroupProgrammeType?.id) {
-                  setActiveStep(EditPractitionerSteps.setPlaygroupCount);
+                  const classroomId = newGuid();
+                  createClassroom(programme, classroomId);
+                  setActiveStep(
+                    EditPractitionerSteps.setupPrincipalPractitioners
+                  );
                 } else {
-                  setActiveStep(EditPractitionerSteps.addPhoto);
-                  setLabel(`step 3 of 3`);
+                  setActiveStep(EditPractitionerSteps.setupPractitioner);
                 }
               }}
             />
           </div>
         );
-      case EditPractitionerSteps.setConfirmPractitioners:
+      case EditPractitionerSteps.setupPractitioner:
+        return (
+          <PractitionerSetup
+            onSubmit={() => {
+              setActiveStep(EditPractitionerSteps.addPhoto);
+              setPractitionerSetup(true);
+            }}
+          />
+        );
+      case EditPractitionerSteps.setupPrincipalPractitioners:
         return (
           <EditMultiplePractitioners
             page={SetupPractitionersPage.confirmPractitioners}
@@ -331,10 +359,12 @@ export const EditPractitionerProfile: React.FC = () => {
         return history.goBack();
       case EditPractitionerSteps.setupProgramme:
         return setActiveStep(EditPractitionerSteps.welcomePage);
-      case EditPractitionerSteps.setConfirmPractitioners:
+      case EditPractitionerSteps.setupPrincipalPractitioners:
+        return setActiveStep(EditPractitionerSteps.setupProgramme);
+      case EditPractitionerSteps.setupPractitioner:
         return setActiveStep(EditPractitionerSteps.setupProgramme);
       case EditPractitionerSteps.setupClasses:
-        return setActiveStep(EditPractitionerSteps.setConfirmPractitioners);
+        return setActiveStep(EditPractitionerSteps.setupPrincipalPractitioners);
       case EditPractitionerSteps.confirmClasses:
         return setActiveStep(EditPractitionerSteps.setupClasses);
       case EditPractitionerSteps.addPhoto:

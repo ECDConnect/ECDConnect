@@ -34,10 +34,11 @@ export const EditProgrammeForm: React.FC<EditProgrammeFormProps> = ({
   });
 
   const { isValid } = useFormState({ control: programmeFormControl });
-  const { isPrincipalOrLeader } = useWatch<EditProgrammeModel>({
-    control: programmeFormControl,
-    defaultValue: {},
-  });
+  const { isPrincipalOrLeader, isPrincipleOrOwnerSmartStarter } =
+    useWatch<EditProgrammeModel>({
+      control: programmeFormControl,
+      defaultValue: {},
+    });
 
   const programData = useSelector(staticDataSelectors.getProgrammeTypes);
 
@@ -55,12 +56,15 @@ export const EditProgrammeForm: React.FC<EditProgrammeFormProps> = ({
         className={'my-3'}
       />
 
-      <div className="my-4">
-        <Alert
-          type="info"
-          title="Each programme must have one principal or owner on Funda App."
-        />
-      </div>
+      {isPrincipalOrLeader === true && (
+        <div className="my-4">
+          <Alert
+            type="info"
+            title="Each programme must have one principal or owner on Funda App."
+          />
+        </div>
+      )}
+
       <div className="space-y-4">
         <div className={'w-full'}>
           <label className={styles.label}>
@@ -94,7 +98,7 @@ export const EditProgrammeForm: React.FC<EditProgrammeFormProps> = ({
 
             <div className={'w-full'}>
               <label className={styles.label}>
-                What type of programme are you running of planning to run?
+                What type of programme are you running or planning to run?
               </label>
               <div className="mt-1">
                 <Controller
@@ -166,6 +170,15 @@ export const EditProgrammeForm: React.FC<EditProgrammeFormProps> = ({
                 )}
               />
             </div>
+          </div>
+        )}
+
+        {isPrincipleOrOwnerSmartStarter === true && (
+          <div className="my-4">
+            <Alert
+              type="warning"
+              title="Ask the principal of the programme to add your details to their programme on Funda App."
+            />
           </div>
         )}
 

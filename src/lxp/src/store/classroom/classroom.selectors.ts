@@ -4,6 +4,7 @@ import {
   ClassroomDto,
   ClassroomGroupDto,
   LearnerDto,
+  PrincipalDto,
   ProgrammeTypeDto,
 } from '@ecdlink/core';
 import { ProgrammeTypeEnum } from '@ecdlink/graphql';
@@ -25,6 +26,9 @@ export const getProgrammeType = () =>
 
 export const getClassroomGroups = (state: RootState): ClassroomGroupDto[] =>
   state.classroomData.classroomGroups?.filter((x) => x.isActive) || [];
+
+export const getPrincipal = (state: RootState): PrincipalDto =>
+  state.classroomData.principal || ({} as PrincipalDto);
 
 export const getClassroomGroupById = (id?: string) =>
   createSelector(

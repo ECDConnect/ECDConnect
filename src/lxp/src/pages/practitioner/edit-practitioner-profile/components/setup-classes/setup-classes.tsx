@@ -40,7 +40,6 @@ export const SetupClasses = ({
   );
 
   useEffect(() => {
-    console.log('I am here now');
     if (classroomGroupsFromStore.length) {
       setCurrentTitle('Confirm Class');
       const _classroomGroups: ClassroomGroupDto[] = [];
@@ -81,7 +80,13 @@ export const SetupClasses = ({
           />
         );
       case SetupClassesPage.addClass:
-        return <AddClassForm onSubmit={onSubmit} />;
+        return (
+          <AddClassForm
+            onSubmit={() => {
+              setCurrentPage(SetupClassesPage.confirmClasses);
+            }}
+          />
+        );
       case SetupClassesPage.editClass:
         return (
           <EditClass

@@ -10,9 +10,19 @@ export interface EditProgrammeModel {
 }
 
 export const editProgrammeSchema = Yup.object().shape({
-  name: Yup.string().required(),
-  type: Yup.string().required(),
   isPrincipalOrLeader: Yup.boolean().required(),
+  isPrincipleOrOwnerSmartStarter: Yup.boolean().when('isPrincipalOrLeader', {
+    is: false,
+    then: Yup.boolean().required(),
+  }),
+  name: Yup.string().when('isPrincipalOrLeader', {
+    is: true,
+    then: Yup.string().required(),
+  }),
+  type: Yup.string().when('isPrincipalOrLeader', {
+    is: true,
+    then: Yup.string().required(),
+  }),
   smartStartPractitioners: Yup.string().when('isPrincipalOrLeader', {
     is: true,
     then: Yup.string().required(),
@@ -22,9 +32,5 @@ export const editProgrammeSchema = Yup.object().shape({
     is: true,
     then: Yup.string().required(),
     otherwise: Yup.string(),
-  }),
-  isPrincipleOrOwnerSmartStarter: Yup.boolean().when('isPrincipalOrLeader', {
-    is: false,
-    then: Yup.boolean().required(),
   }),
 });

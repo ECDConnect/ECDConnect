@@ -19,7 +19,9 @@ export interface PractitionerDto extends EntityBase {
   isPrincipal?: boolean;
   isFundaAppAdmin?: boolean;
   isTrainee?: boolean;
-  signingSignature: string;
-  coachHierarchy: string;
-  principalHierarchy: string;
+  principalHierarchy?: string;
+  signingSignature?: string;
+  coachHierarchy?: string;
+  shareInfo?: boolean;
+  notInvitedYet?: boolean;
 }

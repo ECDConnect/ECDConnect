@@ -9,37 +9,6 @@ class PractitionerService {
     this._accessToken = accessToken;
   }
 
-  async getAllPractitioner(): Promise<PractitionerDto[]> {
-    const apiInstance = api(Config.graphQlApi, this._accessToken);
-
-    const response = await apiInstance.post<any>(``, {
-      query: `
-      query GetAllPractitioner {
-        GetAllPractitioner {
-            id
-            userId
-            user {
-              firstName
-              surname
-              email
-              isActive
-              idNumber
-              phoneNumber
-            }
-            startDate
-          }
-        }
-      `,
-      variables: {},
-    });
-
-    if (response.status !== 200) {
-      throw new Error('Get all Practitioners Failed - Server connection error');
-    }
-
-    return response.data.data.GetAllPractitioner;
-  }
-
   async getPractitionersForCoach(userId: string): Promise<PractitionerDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
 
@@ -66,16 +35,18 @@ class PractitionerService {
     return response.data.data.allPractitionersForCoach;
   }
 
-  async getPractitionerById(id: number): Promise<PractitionerDto> {
+  async getPractitionerById(id: string): Promise<PractitionerDto> {
     const apiInstance = await api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-        query GetPractitionerById($id: Int) {
+        query GetPractitionerById($id: UUID) {
           GetPractitionerById(id: $id) {
             id
+            userId
             user {
               firstName
               surname
+              fullName
               email
               isSouthAfricanCitizen
               verifiedByHomeAffairs
@@ -93,6 +64,9 @@ class PractitionerService {
               postalCode
               ward
             }
+            isPrincipal
+            notInvitedYet
+            principalHierarchy
             attendanceRegisterLink
             maxChildren
             consentForPhoto
@@ -100,6 +74,7 @@ class PractitionerService {
             languageUsedInGroups
             startDate
             monthSinceFranchisee
+            shareInfo
           }
         }
       `,
@@ -115,28 +90,85 @@ class PractitionerService {
     return response.data.data.GetPractitionerById;
   }
 
+  async getPractitionerByUserId(userId: string): Promise<PractitionerDto> {
+    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        query GetPractitionerByUserId($userId: String) {
+          practitionerByUserId(userId: $userId) {
+            id
+            userId
+            user {
+              id
+              firstName
+              surname
+              fullName
+              email
+              isSouthAfricanCitizen
+              verifiedByHomeAffairs
+            }
+            siteAddress {
+              id
+              province {
+                id
+                description
+              }
+              name
+              addressLine1
+              addressLine2
+              addressLine3
+              postalCode
+              ward
+            }
+            isPrincipal
+            notInvitedYet
+            principalHierarchy
+            attendanceRegisterLink
+            maxChildren
+            consentForPhoto
+            parentFees
+            languageUsedInGroups
+            startDate
+            monthSinceFranchisee
+            shareInfo
+          }
+        }
+      `,
+      variables: {
+        userId,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error('Get Practitioner Failed - Server connection error');
+    }
+
+    return response.data.data.practitionerByUserId;
+  }
+
   async getAllPractitioners(): Promise<PractitionerDto[]> {
     const apiInstance = await api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-      query GetAllPractitioners {
-        GetAllPractitioner {
-          id
-          isPrincipal
-          isFundaAppAdmin
-          isTrainee
-          userId
-          user {
-            idNumber
-            fullName
-            firstName
-            surname
-            email
+        query GetAllPractitioners {
+          GetAllPractitioner {
+            id
+            userId
+            isPrincipal
+            isFundaAppAdmin
+            isTrainee
+            principalHierarchy
             isActive
-            phoneNumber
+            coachHierarchy
+            notInvitedYet
+            shareInfo
+            user {
+              idNumber
+              fullName
+              id
+            }
           }
         }
-      }
       `,
     });
 
@@ -204,6 +236,70 @@ class PractitionerService {
     }
 
     return response.data.data.promotePractitionerToPrincipal;
+  }
+
+  async UpdatePractitionerShareInfo(
+    practitionerId: string,
+    principalId: string
+  ): Promise<boolean> {
+    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        mutation updatePractitionerShareInfo(
+          $practitionerId: String
+          $principalId: String
+        ) {
+          updatePractitionerShareInfo(
+            practitionerId: $practitionerId
+            principalId: $principalId
+          )
+        }
+      `,
+      variables: {
+        practitionerId,
+        principalId,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Get Practitioner by ID number Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.updatePractitionerShareInfo;
+  }
+
+  async UpdatePractitionerNotInvitedYet(
+    practitionerId: string,
+    principalId: string
+  ): Promise<boolean> {
+    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        mutation updatePractitionerShareInfo(
+          $practitionerId: String
+          $principalId: String
+        ) {
+          updatePractitionerShareInfo(
+            practitionerId: $practitionerId
+            principalId: $principalId
+          )
+        }
+      `,
+      variables: {
+        practitionerId,
+        principalId,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Get Practitioner by ID number Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.updatePractitionerShareInfo;
   }
 
   async AddPractitionerToPrincipal(

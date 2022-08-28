@@ -13,6 +13,7 @@ import {
 const initialState: PractitionerState = {
   practitioner: undefined,
   practitioners: undefined,
+  principalPractitioners: undefined,
 };
 
 const practitionerSlice = createSlice({
@@ -22,6 +23,7 @@ const practitionerSlice = createSlice({
     resetPractitionerState: (state) => {
       state.practitioner = initialState.practitioner;
       state.practitioners = initialState.practitioners;
+      state.principalPractitioners = initialState.principalPractitioners;
     },
     addPrincipalPractitioners: (
       state,
@@ -39,9 +41,6 @@ const practitionerSlice = createSlice({
     builder.addCase(getPractitionerById.fulfilled, (state, action) => {
       state.practitioner = action.payload;
     });
-    // builder.addCase(getPractitionersForCoach.fulfilled, (state, action) => {
-    //   state.practitioners = action.payload;
-    // });
     builder.addCase(getAllPractitioners.fulfilled, (state, action) => {
       state.practitioners = action.payload;
     });
