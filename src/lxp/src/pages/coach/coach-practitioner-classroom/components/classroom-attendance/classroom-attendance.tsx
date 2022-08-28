@@ -1,3 +1,4 @@
+import { format } from 'date-fns';
 import { Typography, Card } from '@ecdlink/ui';
 import * as styles from './classroom-attendance.styles';
 import { ClassroomAttendanceProps } from './classroom-attendance.types';
@@ -14,7 +15,7 @@ export const ClassroomAttendance: React.FC<ClassroomAttendanceProps> = ({
       >
         <div className="ml-4 mt-4">
           <Typography
-            text={'Attendance: June 2021'}
+            text={`Attendance: ${format(new Date(), 'LLLL yyyy')}`}
             type="body"
             className="mb-4"
           />
