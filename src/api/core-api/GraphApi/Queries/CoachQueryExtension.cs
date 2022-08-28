@@ -68,17 +68,6 @@ string userId)
         string userId)
         {
             //this was used wrong in FE, so adjust to align with FE
-            //using var scope = dbFactory.CreateDbContext();
-            //using var dbContextTransaction = scope.Database.BeginTransaction();
-            //var uId = contextAccessor.HttpContext.GetUser().Id;
-            //var dbRepo = repoFactory.CreateRepository<Coach>(userContext: uId);
-            //Coach coach = new Coach();
-            //List<Coach> coaches = dbRepo.GetAll().ToList();
-            //if (coaches.Count > 0)
-            //{
-            //    coach = coaches.Where(x => x.UserId.Contains(userId)).FirstOrDefault();
-            //}
-
             return GetCoachByPractitionerId(contextAccessor,dbFactory, repoFactory, userId);
         }
 
