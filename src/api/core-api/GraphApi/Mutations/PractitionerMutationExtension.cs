@@ -156,7 +156,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         public bool UpdatePractitionerShareInfo([Service] IHttpContextAccessor contextAccessor,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
-            string practitionerId)
+            string practitionerId, string principalId)
         
         {
             bool bReturn = false;

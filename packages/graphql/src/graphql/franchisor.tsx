@@ -12,6 +12,20 @@ export const GetAllFranchisor = gql`
         isActive
         idNumber
       }
+      siteAddressId
+      siteAddress {
+        id
+        province {
+          id
+          description
+        }
+        name
+        addressLine1
+        addressLine2
+        addressLine3
+        postalCode
+        ward
+      }
       areaOfOperation
       secondaryAreaOfOperation
       startDate
@@ -22,9 +36,28 @@ export const GetAllFranchisor = gql`
 export const GetFranchisorById = gql`
   query GetFranchisorById($id: UUID) {
     GetFranchisorById(id: $id) {
+      id
       areaOfOperation
       secondaryAreaOfOperation
       startDate
+      user {
+        firstName
+        surname
+        email
+      }
+      siteAddress {
+        id
+        province {
+          id
+          description
+        }
+        name
+        addressLine1
+        addressLine2
+        addressLine3
+        postalCode
+        ward
+      }
     }
   }
 `;

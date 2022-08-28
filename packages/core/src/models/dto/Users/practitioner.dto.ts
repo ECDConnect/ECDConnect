@@ -24,5 +24,5 @@ export interface PractitionerDto extends EntityBase {
   coachHierarchy: string;
   coach?: CoachDto;
   principalHierarchy: string;
-  principal?: PractitionerDto;
+  //principal?: PractitionerDto;
 }
