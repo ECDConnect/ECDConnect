@@ -36,15 +36,28 @@ export const PractitionerSetup = ({ onSubmit }: { onSubmit: () => void }) => {
 
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const principal = useSelector(classroomsSelectors.getPrincipal);
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  const practitioners = useSelector(practitionerSelectors.getPractitioners);
+  console.log({ practitioners });
+
+  const principalPractitioner = practitioners?.find(
+    (item) => item.userId === practitioner?.principalHierarchy
+  );
+
+  console.log({ classroom });
+  console.log({ practitioner });
+  console.log({ programName });
+  console.log({ principalPractitioner });
 
   useEffect(() => {
     const { user } = principal;
-    if (user) {
-      setPrincipalName(user?.fullName || ''); // TODO This page should be visible only when there is a principal
-      setProgramName(classroom?.name || '');
-    }
+    setProgramName(classroom?.name || '');
+    setPrincipalName(principalPractitioner?.user?.fullName || '');
+    // if (user) {
+    //   setPrincipalName(principalPractitioner?.user?.fullName || ''); // TODO This page should be visible only when there is a principal
+    // }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [principal]);
+  }, [principal, classroom]);
 
   const { practitionerToProgramme, allowPermissions } = watch();
 

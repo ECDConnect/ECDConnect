@@ -130,6 +130,7 @@ export const Dashboard: React.FC = () => {
       (practitioner && practitioner.isPrincipal === false,
       practitioner?.principalHierarchy)
     ) {
+      console.log('teste practitioner');
       appDispatch(
         classroomsThunkActions.getClassroomsForPractitioner({
           principalId: practitioner.principalHierarchy ?? '',
