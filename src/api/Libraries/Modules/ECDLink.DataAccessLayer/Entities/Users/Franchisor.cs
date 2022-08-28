@@ -15,7 +15,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
     }
 
     public class Franchisor<TKey> : EntityBase<TKey>, 
-        IUserElevatedScoped, 
+        IUserElevatedScoped, SiteAddressJoin<Guid?>,
         ApplicationUserJoin, IUserType
         where TKey : IEquatable<TKey>
     {
