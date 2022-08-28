@@ -53,14 +53,15 @@ export const Practitioners: React.FC = () => {
   );
   const practitionersForCoachListItems = practitionersList?.map((item) => {
     return {
-      title: item.user?.firstName + ' ' + item?.user?.surname,
+      title: item.user?.fullName,
       subtitle: 'Progress report overdue',
       avatarColor: '#6974af',
       alertSeverity: 'none',
       profileText:
-        item?.user?.firstName.substring(0, 1)! +
-        item?.user?.surname.substring(0, 1),
-      onActionClick: () => handleClick(item.userId!),
+        item?.user?.fullName?.substring(0, 1) +
+        item?.user?.fullName?.split(' ')[1].substring(0, 1)!,
+      // item?.user?.surname?.substring(0, 1),
+      onActionClick: () => handleClick(item?.userId!),
     };
   });
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -87,7 +88,9 @@ export const Practitioners: React.FC = () => {
       });
     }
   };
-
+  console.log({ practitioners });
+  console.log({ practitionersForCoach });
+  console.log({ practitionersList });
   const sortOptions: SearchSortOptions = {
     columns: [
       {
