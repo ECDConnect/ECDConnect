@@ -33,70 +33,71 @@ import { ClassroomAttendance } from './components/classroom-attendance/classroom
 // import { useSelector } from 'react-redux';
 
 export const CoachPractitionerClassroom: React.FC = () => {
-  const listItems = [
-    {
-      title: '75% attendance rate',
-      titleStyle: 'text-textDark font-semibold text-base leading-snug',
-      subTitle: 'Little stars - June 2021',
-      subTitleStyle:
-        'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
-      menuIcon: 'ExclamationIcon',
-      menuIconClassName: 'bg-secondary text-white',
-      showIcon: true,
-      iconBackgroundColor: 'alertMain',
-      chipConfig: {
-        colorPalette: {
-          backgroundColour: 'white',
-          borderColour: 'errorMain',
-          textColour: 'errorMain',
-        },
-      },
-      text: '1',
-      onActionClick: () => {},
-      classNames: 'bg-uiBg',
-    },
-    {
-      title: '5 overdue progress reports',
-      titleStyle: 'text-textDark font-semibold text-base leading-snug',
-      subTitle: 'January to June 2021',
-      subTitleStyle:
-        'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
-      menuIcon: 'ExclamationIcon',
-      menuIconClassName: 'bg-secondary text-white',
-      showIcon: true,
-      iconBackgroundColor: 'alertMain',
-      chipConfig: {
-        colorPalette: {
-          backgroundColour: 'white',
-          borderColour: 'errorMain',
-          textColour: 'errorMain',
-        },
-      },
-      text: '1',
-      onActionClick: () => {},
-    },
-    {
-      title: "5 children haven't progressed",
-      titleStyle: 'text-textDark font-semibold text-base leading-snug',
-      subTitle: 'For 2 reporting periods',
-      subTitleStyle:
-        'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
-      menuIcon: 'ExclamationIcon',
-      menuIconClassName: 'bg-secondary text-white',
-      showIcon: true,
-      iconBackgroundColor: 'alertMain',
-      chipConfig: {
-        colorPalette: {
-          backgroundColour: 'white',
-          borderColour: 'errorMain',
-          textColour: 'errorMain',
-        },
-      },
-      text: '1',
-      onActionClick: () => {},
-      classNames: 'bg-uiBg',
-    },
-  ];
+  const listItems = [];
+  // const listItems = [
+  //   {
+  //     title: '75% attendance rate',
+  //     titleStyle: 'text-textDark font-semibold text-base leading-snug',
+  //     subTitle: 'Little stars - June 2021',
+  //     subTitleStyle:
+  //       'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
+  //     menuIcon: 'ExclamationIcon',
+  //     menuIconClassName: 'bg-secondary text-white',
+  //     showIcon: true,
+  //     iconBackgroundColor: 'alertMain',
+  //     chipConfig: {
+  //       colorPalette: {
+  //         backgroundColour: 'white',
+  //         borderColour: 'errorMain',
+  //         textColour: 'errorMain',
+  //       },
+  //     },
+  //     text: '1',
+  //     onActionClick: () => {},
+  //     classNames: 'bg-uiBg',
+  //   },
+  //   {
+  //     title: '5 overdue progress reports',
+  //     titleStyle: 'text-textDark font-semibold text-base leading-snug',
+  //     subTitle: 'January to June 2021',
+  //     subTitleStyle:
+  //       'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
+  //     menuIcon: 'ExclamationIcon',
+  //     menuIconClassName: 'bg-secondary text-white',
+  //     showIcon: true,
+  //     iconBackgroundColor: 'alertMain',
+  //     chipConfig: {
+  //       colorPalette: {
+  //         backgroundColour: 'white',
+  //         borderColour: 'errorMain',
+  //         textColour: 'errorMain',
+  //       },
+  //     },
+  //     text: '1',
+  //     onActionClick: () => {},
+  //   },
+  //   {
+  //     title: "5 children haven't progressed",
+  //     titleStyle: 'text-textDark font-semibold text-base leading-snug',
+  //     subTitle: 'For 2 reporting periods',
+  //     subTitleStyle:
+  //       'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
+  //     menuIcon: 'ExclamationIcon',
+  //     menuIconClassName: 'bg-secondary text-white',
+  //     showIcon: true,
+  //     iconBackgroundColor: 'alertMain',
+  //     chipConfig: {
+  //       colorPalette: {
+  //         backgroundColour: 'white',
+  //         borderColour: 'errorMain',
+  //         textColour: 'errorMain',
+  //       },
+  //     },
+  //     text: '1',
+  //     onActionClick: () => {},
+  //     classNames: 'bg-uiBg',
+  //   },
+  // ];
 
   const appDispatch = useAppDispatch();
   const history = useHistory();
@@ -158,7 +159,7 @@ export const CoachPractitionerClassroom: React.FC = () => {
         displayOffline={!isOnline}
       ></BannerWrapper>
       <div className="w-full flex flex-wrap justify-center">
-        {listItems ? (
+        {/* {listItems.length > 0 ? (
           <div className="flex justify-center w-11/12 mt-4">
             <StackedList
               className={styles.stackedList}
@@ -166,7 +167,7 @@ export const CoachPractitionerClassroom: React.FC = () => {
               type={'MenuList'}
             ></StackedList>
           </div>
-        ) : null}
+        ) : null} */}
         <>
           <Card
             className={styles.registeredChildrenCard}
@@ -200,7 +201,7 @@ export const CoachPractitionerClassroom: React.FC = () => {
             </div>
           </Card>
           <ClassroomAttendance
-            practitionerClassroomGroups={practitionerClassroomGroups}
+          // practitionerClassroomGroups={practitionerClassroomGroups}
           />
           <div className="w-full">
             <ChildrenPerAgeGroup
