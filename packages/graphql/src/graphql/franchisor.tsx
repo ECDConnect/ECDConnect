@@ -12,6 +12,20 @@ export const GetAllFranchisor = gql`
         isActive
         idNumber
       }
+      siteAddressId
+      siteAddress {
+        id
+        province {
+          id
+          description
+        }
+        name
+        addressLine1
+        addressLine2
+        addressLine3
+        postalCode
+        ward
+      }
       areaOfOperation
       secondaryAreaOfOperation
       startDate
@@ -25,6 +39,20 @@ export const GetFranchisorById = gql`
       areaOfOperation
       secondaryAreaOfOperation
       startDate
+      siteAddressId
+      siteAddress {
+        id
+        province {
+          id
+          description
+        }
+        name
+        addressLine1
+        addressLine2
+        addressLine3
+        postalCode
+        ward
+      }
     }
   }
 `;
