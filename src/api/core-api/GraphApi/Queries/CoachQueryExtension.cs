@@ -42,10 +42,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public Coach GetCoachByUserId([Service] IHttpContextAccessor contextAccessor,
-        [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
-        [Service] IGenericRepositoryFactory repoFactory,
-        string userId)
+        public Coach GetCoachByCoachUserId([Service] IHttpContextAccessor contextAccessor,
+[Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+[Service] IGenericRepositoryFactory repoFactory,
+string userId)
         {
             using var scope = dbFactory.CreateDbContext();
             using var dbContextTransaction = scope.Database.BeginTransaction();
@@ -62,6 +62,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public Coach GetCoachByUserId([Service] IHttpContextAccessor contextAccessor,
+        [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+        [Service] IGenericRepositoryFactory repoFactory,
+        string userId)
+        {
+            //this was used wrong in FE, so adjust to align with FE
+            return GetCoachByPractitionerId(contextAccessor,dbFactory, repoFactory, userId);
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public Coach GetCoachByPractitionerId([Service] IHttpContextAccessor contextAccessor,
          [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
          [Service] IGenericRepositoryFactory repoFactory,
@@ -75,7 +85,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             Coach coach = new Coach();
             if (practitioners.Count > 0)
             {
-                coach = this.GetCoachByUserId(contextAccessor,dbFactory,repoFactory, practitioners.FirstOrDefault().CoachHierarchy);
+                coach = this.GetCoachByCoachUserId(contextAccessor,dbFactory,repoFactory, practitioners.FirstOrDefault().CoachHierarchy);
             }
             return coach;
         }

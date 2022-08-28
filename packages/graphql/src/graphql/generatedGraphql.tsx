@@ -17,12 +17,9 @@ export type Scalars = {
   Boolean: boolean;
   Int: number;
   Float: number;
-  /** The `DateTime` scalar represents an ISO-8601 compliant date time type. */
   DateTime: any;
-  /** The built-in `Decimal` scalar type. */
   Decimal: any;
   UUID: any;
-  /** The `Upload` scalar type represents a file upload. */
   Upload: any;
 };
 
@@ -1796,6 +1793,9 @@ export type Mutation = {
   updateNoteType?: Maybe<NoteType>;
   updatePermission?: Maybe<Permission>;
   updatePractitioner?: Maybe<Practitioner>;
+  updatePractitionerIsFundaAppAdmin: Scalars['Boolean'];
+  updatePractitionerIsTrainee: Scalars['Boolean'];
+  updatePractitionerNotInvitedYet: Scalars['Boolean'];
   updatePractitionerShareInfo: Scalars['Boolean'];
   updatePractitionerToTeachClassroom?: Maybe<Classroom>;
   updatePrincipal?: Maybe<Principal>;
@@ -2621,9 +2621,20 @@ export type MutationUpdatePractitionerArgs = {
   input?: InputMaybe<PractitionerInput>;
 };
 
+export type MutationUpdatePractitionerIsFundaAppAdminArgs = {
+  practitionerId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationUpdatePractitionerIsTraineeArgs = {
+  practitionerId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationUpdatePractitionerNotInvitedYetArgs = {
+  practitionerId?: InputMaybe<Scalars['String']>;
+};
+
 export type MutationUpdatePractitionerShareInfoArgs = {
   practitionerId?: InputMaybe<Scalars['String']>;
-  principalId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationUpdatePractitionerToTeachClassroomArgs = {
@@ -3602,6 +3613,7 @@ export type Query = {
   childrenAttendedVsAbsentMetrics?: Maybe<Array<Maybe<MetricReportStatItem>>>;
   childrenByClassroomId?: Maybe<Array<Maybe<Child>>>;
   childrenMetrics?: Maybe<ChildrenMetricReport>;
+  coachByPractitionerId?: Maybe<Coach>;
   coachByUserId?: Maybe<Coach>;
   contentDefinitions?: Maybe<Array<Maybe<ContentDefinitionModel>>>;
   contentDefinitionsExcelTemplateGenerator?: Maybe<FileModel>;
@@ -4224,6 +4236,10 @@ export type QueryChildrenAttendedVsAbsentMetricsArgs = {
 
 export type QueryChildrenByClassroomIdArgs = {
   classroomId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryCoachByPractitionerIdArgs = {
+  practitionerId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryCoachByUserIdArgs = {
