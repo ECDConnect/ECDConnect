@@ -105,7 +105,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var principalRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            List<Practitioner> practitioners = principalRepo.GetAll().Where(x => x.PrincipalHierarchy.Contains(userId)).ToList();
+            List<Practitioner> practitioners = principalRepo.GetAll().Where(x => x.PrincipalHierarchy.Equals(userId)).ToList();
 
             return practitioners;
         }

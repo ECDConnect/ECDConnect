@@ -36,7 +36,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            List<Practitioner> practitioners = practitionerRepo.GetAll().Where(x => x.CoachHierarchy.Contains(userId)).ToList();
+            List<Practitioner> practitioners = practitionerRepo.GetAll().Where(x => x.CoachHierarchy.Equals(userId)).ToList();
 
             return practitioners;
         }
@@ -85,7 +85,7 @@ string userId)
             Coach coach = new Coach();
             if (practitioners.Count > 0)
             {
-                coach = this.GetCoachByCoachUserId(contextAccessor,dbFactory,repoFactory, practitioners.FirstOrDefault().CoachHierarchy);
+                coach = this.GetCoachByCoachUserId(contextAccessor,dbFactory,repoFactory, practitioners.FirstOrDefault().CoachHierarchy.ToString());
             }
             return coach;
         }
