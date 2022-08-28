@@ -24,9 +24,9 @@ export const getCoachByUserId = createAsyncThunk<
         let coach: CoachDto | undefined;
 
         if (userAuth?.auth_token) {
-          coach = await new CoachService(userAuth?.auth_token).getCoachByUserId(
-            userAuth.id
-          );
+          coach = await new CoachService(
+            userAuth?.auth_token
+          ).getCoachByCoachId(userAuth.id);
         } else {
           return rejectWithValue('no access token, profile check required');
         }
@@ -34,7 +34,43 @@ export const getCoachByUserId = createAsyncThunk<
         if (!coach) {
           return rejectWithValue('Error getting coach');
         }
+        return coach;
+      } catch (err) {
+        return rejectWithValue(err);
+      }
+    } else {
+      return coachCache;
+    }
+  }
+);
 
+export const getCoachByCoachId = createAsyncThunk<
+  CoachDto,
+  {},
+  ThunkApiType<RootState>
+>(
+  'getCoachByCoachId',
+  // eslint-disable-next-line no-empty-pattern
+  async ({}, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      coach: { coach: coachCache },
+    } = getState();
+    console.log(userAuth?.id!);
+    if (!coachCache) {
+      try {
+        let coach: CoachDto | undefined;
+
+        if (userAuth?.auth_token) {
+          coach = await new CoachService(
+            userAuth?.auth_token
+          ).getCoachByCoachId(userAuth.id);
+        } else {
+          return rejectWithValue('no access token, profile check required');
+        }
+        if (!coach) {
+          return rejectWithValue('Error getting coach');
+        }
         return coach;
       } catch (err) {
         return rejectWithValue(err);
@@ -57,14 +93,14 @@ export const updateCoach = createAsyncThunk<
       auth: { userAuth },
       coach: { coach },
     } = getState();
-
+    console.log({ coach });
     try {
       let update: boolean | undefined;
 
       if (userAuth?.auth_token && coach) {
         const coachModelInput: CoachInput = mapCoach(coach);
 
-        if (coach.siteAddress) {
+        if (coach.siteAddress?.id) {
           const addressInput = mapSiteAddress(coach.siteAddress);
 
           await new SiteAddressService(userAuth?.auth_token).updateSiteAddress(

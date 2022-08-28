@@ -85,10 +85,14 @@ const InitialStoreSetup: React.FC = ({ children }) => {
 
   useEffect(() => {
     if (userData) {
-      (async () =>
-        await appDispatch(coachThunkActions.getCoachByUserId({})).unwrap())();
+      if (isCoach) {
+        (async () =>
+          await appDispatch(
+            coachThunkActions.getCoachByCoachId({})
+          ).unwrap())();
+      }
     }
-  }, [appDispatch, userData]);
+  }, [appDispatch, isCoach, userData]);
 
   const resetAppStaticStores = async (showLoading = true) => {
     if (showLoading) {
@@ -152,6 +156,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     ).unwrap();
     await appDispatch(userThunkActions.getUser({})).unwrap();
     await appDispatch(userThunkActions.getUserConsents({})).unwrap();
+    // await appDispatch(coachThunkActions.getCoachByCoachId({})).unwrap();
     // await appDispatch(coachThunkActions.getCoachByUserId({})).unwrap();
     await appDispatch(
       practitionerForCoachThunkActions.getPractitionersForCoach({})

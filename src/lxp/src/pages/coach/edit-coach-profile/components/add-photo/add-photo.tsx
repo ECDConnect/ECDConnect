@@ -1,6 +1,6 @@
 import { PhotoPrompt } from '../../../../../components/photo-prompt/photo-prompt';
 import { FileTypeEnum } from '@ecdlink/graphql';
-import { coachActions, coachSelectors } from '@store/coach';
+import { coachActions, coachSelectors, coachThunkActions } from '@store/coach';
 import * as styles from '../../edit-coach-profile.styles';
 import { useDocuments } from '@hooks/useDocuments';
 import { AddPhotoProps } from './add-photo.types';
@@ -44,6 +44,7 @@ export const AddPhoto: React.FC<AddPhotoProps> = ({ onSubmit }) => {
       copy.user = tmpUser;
 
       appDispatch(coachActions.updateCoach(copy));
+      appDispatch(coachThunkActions.updateCoach(copy));
     }
 
     if (!userProfilePicture) {
