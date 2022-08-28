@@ -52,8 +52,8 @@ import {
   practitionerForCoachThunkActions,
 } from './store/practitionerForCoach';
 import { analyticsActions } from './store/analytics';
-// import { userSelectors } from '@store/user';
-// import { useSelector } from 'react-redux';
+import { userSelectors } from '@store/user';
+import { useSelector } from 'react-redux';
 
 type IntialStoreSetupContextValues = {
   initloading: boolean;
@@ -74,14 +74,21 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   const { isOnline } = useOnlineStatus();
   const [initloading, setInitLoading] = useState(false);
   const [staticDataLoading, setStaticDataLoading] = useState(false);
-  // const userData = useSelector(userSelectors.getUser);
-  // const isCoach = userData?.roles?.some((role) => role.name === 'Coach');
+  const userData = useSelector(userSelectors.getUser);
+  const isCoach = userData?.roles?.some((role) => role.name === 'Coach');
 
   const [otherLoading, setOtherLoading] = useState(false);
 
   const resetAuth = async () => {
     await appDispatch(authActions.resetAuthState());
   };
+
+  useEffect(() => {
+    if (userData) {
+      (async () =>
+        await appDispatch(coachThunkActions.getCoachByUserId({})).unwrap())();
+    }
+  }, [appDispatch, userData]);
 
   const resetAppStaticStores = async (showLoading = true) => {
     if (showLoading) {
@@ -145,7 +152,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     ).unwrap();
     await appDispatch(userThunkActions.getUser({})).unwrap();
     await appDispatch(userThunkActions.getUserConsents({})).unwrap();
-    await appDispatch(coachThunkActions.getCoachByUserId({})).unwrap();
+    // await appDispatch(coachThunkActions.getCoachByUserId({})).unwrap();
     await appDispatch(
       practitionerForCoachThunkActions.getPractitionersForCoach({})
     ).unwrap();
