@@ -78,7 +78,8 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
             if (Exists(entity.Id))
             {
                 entity.InsertedDate = entity.InsertedDate;//do not update inserted date to Now                
-                entity.UpdatedDate = DateTime.Now;                
+                entity.UpdatedDate = DateTime.Now;
+                entity.UpdatedBy = _userId;
                 entities.Update(entity);
                 _domainEventService.NotifyUpdate<T>(_userId, entity);
             }
@@ -95,10 +96,15 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
         public virtual void Delete(Guid id)
         {
             T entity = entities.SingleOrDefault(s => s.Id == id);
-            entities.Remove(entity);
-            context.SaveChanges();
+            //entities.Remove(entity);
+            //context.SaveChanges();
+            //softdelete
+            entities.Update(entity);
+            entity.IsActive = false;
+            entities.Update(entity);
+            _domainEventService.NotifyUpdate<T>(_userId, entity);
 
-            _domainEventService.NotifyDelete<T>(_userId, entity);
+            //_domainEventService.NotifyDelete<T>(_userId, entity);
         }
 
         public virtual bool Exists(Guid id)

@@ -2530,7 +2530,7 @@ export type MutationUpdateClassroomGroupArgs = {
 };
 
 export type MutationUpdateCoachArgs = {
-  id?: InputMaybe<Scalars['UUID']>;
+  id?: InputMaybe<Scalars['String']>;
   input?: InputMaybe<CoachInput>;
 };
 
@@ -2562,7 +2562,7 @@ export type MutationUpdateEducationArgs = {
 };
 
 export type MutationUpdateFranchisorArgs = {
-  id?: InputMaybe<Scalars['UUID']>;
+  id?: InputMaybe<Scalars['String']>;
   input?: InputMaybe<FranchisorInput>;
 };
 
@@ -2635,6 +2635,7 @@ export type MutationUpdatePractitionerNotInvitedYetArgs = {
 
 export type MutationUpdatePractitionerShareInfoArgs = {
   practitionerId?: InputMaybe<Scalars['String']>;
+  principalId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationUpdatePractitionerToTeachClassroomArgs = {
@@ -3596,7 +3597,7 @@ export type Query = {
   allChildrenForPractitioner?: Maybe<Array<Maybe<Child>>>;
   allChildrenForPrincipal?: Maybe<Array<Maybe<Child>>>;
   allClassroomsForCoach?: Maybe<Array<Maybe<Classroom>>>;
-  allClassroomsForPractitioner?: Maybe<Array<Maybe<Classroom>>>;
+  allClassroomsForPractitioner?: Maybe<Classroom>;
   allClassroomsForPrincipal?: Maybe<Array<Maybe<Classroom>>>;
   allCoachesForFranchisor?: Maybe<Array<Maybe<Coach>>>;
   allPractitionersForCoach?: Maybe<Array<Maybe<Practitioner>>>;
@@ -3613,6 +3614,7 @@ export type Query = {
   childrenAttendedVsAbsentMetrics?: Maybe<Array<Maybe<MetricReportStatItem>>>;
   childrenByClassroomId?: Maybe<Array<Maybe<Child>>>;
   childrenMetrics?: Maybe<ChildrenMetricReport>;
+  coachByCoachUserId?: Maybe<Coach>;
   coachByPractitionerId?: Maybe<Coach>;
   coachByUserId?: Maybe<Coach>;
   contentDefinitions?: Maybe<Array<Maybe<ContentDefinitionModel>>>;
@@ -4236,6 +4238,10 @@ export type QueryChildrenAttendedVsAbsentMetricsArgs = {
 
 export type QueryChildrenByClassroomIdArgs = {
   classroomId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryCoachByCoachUserIdArgs = {
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryCoachByPractitionerIdArgs = {
