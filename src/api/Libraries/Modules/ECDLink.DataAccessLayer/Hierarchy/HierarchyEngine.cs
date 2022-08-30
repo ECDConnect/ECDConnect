@@ -27,6 +27,7 @@ namespace ECDLink.DataAccessLayer.Hierarchy
     {
         private readonly ICacheService<ITenantCache> _cacheService;
         private readonly IGenericRepositoryFactory _repoFactory;
+        //private readonly IDbContextFactory<AuthenticationDbContext> _dbFactory;
 
         private IEnumerable<HierarchyEntity> HierarchyCache
         {
@@ -118,9 +119,9 @@ namespace ECDLink.DataAccessLayer.Hierarchy
 
             //repo = _provider.GetService<ElevatedScopedGenericRepository<T>>();
             //case on type, and depending on type, iterate through different levels of collecting a list of hierarchies to use
-            var franchisorRepo = _repoFactory.CreateRepository<Franchisor>(userContext: requestingUser);
-            var coachRepo = _repoFactory.CreateRepository<Coach>(userContext: requestingUser);
-            var practRepo = _repoFactory.CreateRepository<Practitioner>(userContext: requestingUser);
+            var franchisorRepo = _repoFactory.CreateGenericRepository<Franchisor>(userContext: requestingUser);
+            var coachRepo = _repoFactory.CreateGenericRepository<Coach>(userContext: requestingUser);
+            var practRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: requestingUser);
             var user = _userManager.FindByIdAsync(requestingUser).Result;
             var roles = _userManager.GetRolesAsync(user).Result;
             //object userObject = roles.Contains(Roles.FRANCHISOR) ? typeof(Franchisor) : (roles.Contains(Roles.COACH) ? typeof(Franchisor) : (roles.Contains(Roles.PRINCIPAL) ? typeof(Principal) : (roles.Contains(Roles.PRACTITIONER) ? typeof(Practitioner) : null)));
@@ -144,7 +145,7 @@ namespace ECDLink.DataAccessLayer.Hierarchy
                         hierarchyList.Add(this.GetUserHierarchy(c.UserId));
 
                         //2nd run principal and practitioners where coachhierarchy is set - irrelevant whetther 
-                        List<Practitioner> franchisorsPractitioners = practRepo.GetAll().Where(p => p.CoachHierarchy.Equals(c.UserId)).ToList();
+                        List<Practitioner> franchisorsPractitioners = practRepo.GetAll().ToList();
                         if (franchisorsPractitioners.Count > 0)
                         {
                             foreach (var p in franchisorsPractitioners)
@@ -157,7 +158,8 @@ namespace ECDLink.DataAccessLayer.Hierarchy
             } else if (isCoach) {
                 //case var cl when typeof(T) == typeof(Coach):
                 //1st run principal and practitioners where coachhierarchy is set - irrelevant whetther 
-                List<Practitioner> coachPractitioners = practRepo.GetAll().Where(p => p.CoachHierarchy.Equals(userId)).ToList();
+                List<Practitioner> coachPractitioners = practRepo.GetAll().Where(c => c.CoachHierarchy.HasValue).ToList();
+                coachPractitioners = coachPractitioners.Where(c => c.CoachHierarchy.ToString() == userId).ToList();
                 if (coachPractitioners.Count > 0)
                 {
                     foreach (var p in coachPractitioners)
@@ -165,11 +167,11 @@ namespace ECDLink.DataAccessLayer.Hierarchy
                         hierarchyList.Add(this.GetUserHierarchy(p.UserId));
                     }
                 }
-            } else if (isPrincipal || isPractitioner) {
+            } else if (isPrincipal) {
                 // case var cl when typeof(T) == typeof(Practitioner):
                 //case var clA when typeof(T) == typeof(Principal):
                 //1st run principal and practitioners where coachhierarchy is set - irrelevant whetther 
-                List<Practitioner> principalPractitioners = practRepo.GetAll().Where(p => p.PrincipalHierarchy.Equals(userId)).ToList();
+                List<Practitioner> principalPractitioners = practRepo.GetAll().Where(c => c.PrincipalHierarchy.Equals(userId)).ToList();
                 if (principalPractitioners.Count > 0)
                 {
                     foreach (var p in principalPractitioners)

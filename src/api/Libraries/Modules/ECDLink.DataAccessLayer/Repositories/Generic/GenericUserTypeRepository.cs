@@ -111,11 +111,11 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             //bool isExcluded = excludingEntities.Contains(typeof(T));
             List<T> queryList = new List<T>();
             
-            //var query = entities.AsQueryable();
+            var query = entities.AsQueryable();
             //var returnQuery = entities.AsQueryable();
             if (isAdmin)
             {
-                var query = entities.AsQueryable();
+                //var query = entities.AsQueryable();
                 return query;
             }
             else
@@ -128,13 +128,14 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
 
                 //return query.Where(x => ((IUserType)x).Hierarchy.StartsWith(hierarchy));
                 var hh = _hierarchyEngine.GetHierarchyByParentList(_userManager, _userId, _userId);
-
+                //var query = entities.AsQueryable().;  
+                //query = null;
                 foreach (var h in hh)
                 {                    
-                    queryList.AddRange(entities.AsQueryable().Where(x => ((IUserType)x).Hierarchy.StartsWith(h)));                    
+
+                    query.Union(entities.AsQueryable().Where(x => ((IUserType)x).Hierarchy.StartsWith(h)));                    
                 }
-                return queryList.AsQueryable();
-                //}
+                return query;
             }
 
             // Change this to an LTree at some point            
