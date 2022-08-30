@@ -93,7 +93,7 @@ export const updateCoach = createAsyncThunk<
       auth: { userAuth },
       coach: { coach },
     } = getState();
-    console.log({ coach });
+
     try {
       let update: boolean | undefined;
 
@@ -134,6 +134,7 @@ const mapCoach = (coach: Partial<CoachDto>): CoachInput => ({
   SecondaryAreaOfOperation: coach.secondaryAreaOfOperation,
   SigningSignature: coach.signingSignature || undefined,
   SiteAddressId: coach.siteAddressId || undefined,
+  SiteAddress: mapSiteAddress(coach.siteAddress!),
   StartDate: coach.startDate || undefined,
   AreaOfOperation: coach.areaOfOperation,
   IsActive: coach.isActive || false,
