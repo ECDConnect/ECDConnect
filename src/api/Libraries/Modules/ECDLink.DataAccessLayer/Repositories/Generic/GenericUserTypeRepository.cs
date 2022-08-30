@@ -12,6 +12,7 @@ using ECDLink.Security;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace ECDLink.DataAccessLayer.Repositories.Generic
@@ -98,27 +99,42 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             var user = _userManager.FindByIdAsync(_userId).Result;
             var roles = _userManager.GetRolesAsync(user).Result;
             //if user is in a higher admin role (Principal, Practitioner, Coach, Franchisor, then skip the check as they need to be able to see anyone anywhere due to the shift in roles of Milestone 1.
-            var higherRoles = new[] { Roles.PRACTITIONER, Roles.COACH, Roles.ADMINISTRATOR, Roles.PRINCIPAL, Roles.FRANCHISOR };//            
-            bool isHigherRole = higherRoles.Any(roles.Contains);
+            //var higherRoles = new[] { Roles.PRACTITIONER, Roles.COACH, Roles.ADMINISTRATOR, Roles.PRINCIPAL, Roles.FRANCHISOR };//            
+            //bool isHigherRole = higherRoles.Any(roles.Contains);
             var isAdmin = roles.Contains(Roles.ADMINISTRATOR);
-            var excludingEntities = new[] { typeof(Practitioner), typeof(Principal), typeof(Coach), typeof(Franchisor), typeof(Classroom), typeof(ClassroomGroup), typeof(Child), typeof(Programme) };//remove teh last three for normal functionlity
-            bool isExcluded = excludingEntities.Contains(typeof(T));
-
-            var query = entities.AsQueryable();
-
+            //T userObject = roles.Contains(Roles.FRANCHISOR)?typeof(Franchisor):(roles.Contains(Roles.COACH)? typeof(Franchisor): (roles.Contains(Roles.PRINCIPAL)? typeof(Principal) : (roles.Contains(Roles.PRACTITIONER) ? typeof(Practitioner): null)));
+            //var isFranchisor = roles.Contains(Roles.FRANCHISOR);
+            //var isCoach = roles.Contains(Roles.COACH);
+            //var isPrincipal = roles.Contains(Roles.PRINCIPAL);
+            //var isPractitioner = roles.Contains(Roles.PRACTITIONER);
+            //var excludingEntities = new[] { typeof(Practitioner), typeof(Principal), typeof(Coach), typeof(Franchisor), typeof(Classroom), typeof(ClassroomGroup), typeof(Child), typeof(Programme) };//remove teh last three for normal functionlity
+            //bool isExcluded = excludingEntities.Contains(typeof(T));
+            List<T> queryList = new List<T>();
+            
+            //var query = entities.AsQueryable();
+            //var returnQuery = entities.AsQueryable();
             if (isAdmin)
             {
+                var query = entities.AsQueryable();
                 return query;
             }
             else
             {
-                if (isExcluded && isHigherRole)
-                {
-                    return query;
-                } else {                 
-                    var hierarchy = _hierarchyEngine.GetUserHierarchy(_userId);
-                    return query.Where(x => ((IUserType)x).Hierarchy.StartsWith(hierarchy));
+                //if (isExcluded && isHigherRole)
+                //{
+                //    return query;
+                //} else {                 
+                //var hierarchy = _hierarchyEngine.GetUserHierarchy(_userId);
+
+                //return query.Where(x => ((IUserType)x).Hierarchy.StartsWith(hierarchy));
+                var hh = _hierarchyEngine.GetHierarchyByParentList(_userManager, _userId, _userId);
+
+                foreach (var h in hh)
+                {                    
+                    queryList.AddRange(entities.AsQueryable().Where(x => ((IUserType)x).Hierarchy.StartsWith(h)));                    
                 }
+                return queryList.AsQueryable();
+                //}
             }
 
             // Change this to an LTree at some point            
