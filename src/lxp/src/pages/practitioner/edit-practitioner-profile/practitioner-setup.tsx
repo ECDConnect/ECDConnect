@@ -44,13 +44,8 @@ export const PractitionerSetup = ({ onSubmit }: { onSubmit: () => void }) => {
     (item) => item.userId === practitioner?.principalHierarchy
   );
 
-  console.log({ classroom });
-  console.log({ practitioner });
-  console.log({ programName });
-  console.log({ principalPractitioner });
-
   useEffect(() => {
-    const { user } = principal;
+    // const { user } = principal;
     setProgramName(classroom?.name || '');
     setPrincipalName(principalPractitioner?.user?.fullName || '');
     // if (user) {
