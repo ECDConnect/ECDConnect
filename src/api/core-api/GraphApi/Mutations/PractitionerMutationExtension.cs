@@ -35,7 +35,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         // 6 = Parent Fees
         // 7 = StartDate
         // 8 = MaxChildren
-        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]        
         public bool PractitionerImport(
           //[Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
           [Service] IGenericRepositoryFactory repoFactory,
@@ -48,11 +48,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             using MemoryStream fileStream = new MemoryStream(bytes);
 
             var workbook = WorkbookFactory.Create(fileStream);
-
+                
             var sheet = workbook.GetSheetAt(0);
 
             var languages = localeService.GetAvailableLocale().ToList();
-
+            
             List<PractitionerImportItem> practitionerImportList = new List<PractitionerImportItem>();
             var headerRow = sheet.GetRow(0);
 
@@ -75,7 +75,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     var dob = ExcelHelper.GetCellValue(currentRow.GetCell(9));
 
                     if (idNumber != null)
-                    {
+                    {                        
                         var languageEntity = languages.Where(x => x.Description == language).FirstOrDefault();
                         if (languageEntity == null)
                         {
@@ -114,15 +114,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         Id = userId.ToString(),
                         PhoneNumber = practitioner.PhoneNumber,
                         UserName = practitioner?.IDNumber,
-                        IdNumber = practitioner?.IDNumber,
+                        IdNumber = practitioner?.IDNumber,                        
                         IsSouthAfricanCitizen = true,
                         VerifiedByHomeAffairs = true,
-                        DateOfBirth = practitioner.Dob,
+                        DateOfBirth = practitioner.Dob,                                                
                         FirstName = practitioner.FirstName,
                         Surname = practitioner.Surname,
                         FullName = $"{practitioner.FirstName} {practitioner.Surname}",
                         ContactPreference = "sms",
-                        IsActive = true
+                        IsActive = true                        
                     };
 
                     var userCreatedResult = userManager.CreateAsync(newUser).Result;
@@ -157,13 +157,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
             string practitionerId, string principalId)
+        
         {
             bool bReturn = false;
             using var scope = dbFactory.CreateDbContext();
             using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            Practitioner practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.Id.Equals(practitionerId)).FirstOrDefault();
+            Practitioner practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId.Equals(practitionerId)).FirstOrDefault();
             {
                 if (practitioner != null)
                 {
