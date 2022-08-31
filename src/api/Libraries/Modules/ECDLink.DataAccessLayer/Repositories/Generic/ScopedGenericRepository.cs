@@ -11,6 +11,7 @@ using ECDLink.DataAccessLayer.Entities;
 using ECDLink.Security;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Classroom;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace ECDLink.DataAccessLayer.Repositories.Generic
 {
@@ -45,31 +46,58 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                 throw new UnauthorizedAccessException("User does not have access to this data");
             }
 
-            var all = base.GetAll();
+            //var all = base.GetAll();
 
             //CB Added to bypass hierarchy
             var user = _userManager.FindByIdAsync(_userId).Result;
             var roles = _userManager.GetRolesAsync(user).Result;
             //if user is in a higher admin role (Principal, Practitioner, Coach, Franchisor, then skip the check as they need to be able to see anyone anywhere due to the shift in roles of Milestone 1.
-            var higherRoles = new[] { Roles.PRACTITIONER, Roles.COACH, Roles.ADMINISTRATOR, Roles.PRINCIPAL, Roles.FRANCHISOR };//
-            bool isHigherRole = higherRoles.Any(roles.Contains);
-            var excludingEntities = new[] { typeof(Practitioner), typeof(Principal), typeof(Coach), typeof(Franchisor), typeof(Classroom), typeof(ClassroomGroup), typeof(Child), typeof(Programme) };//remove teh last three for normal functionlity
-            bool isExcluded = excludingEntities.Contains(typeof(T));
+            //var higherRoles = new[] { Roles.PRACTITIONER, Roles.COACH, Roles.ADMINISTRATOR, Roles.PRINCIPAL, Roles.FRANCHISOR };//
+            //bool isHigherRole = higherRoles.Any(roles.Contains);
+            //var excludingEntities = new[] { typeof(Practitioner), typeof(Principal), typeof(Coach), typeof(Franchisor), typeof(Classroom), typeof(ClassroomGroup), typeof(Child), typeof(Programme) };//remove teh last three for normal functionlity
+            //bool isExcluded = excludingEntities.Contains(typeof(T));
+            var isAdmin = roles.Contains(Roles.ADMINISTRATOR);
 
             //if (isHigherRole)
-            if (isExcluded && isHigherRole) //if the user requesting is of a higher role and requestion data in the excluded type list, then return as is, otehrwise return hiearchied data
+            var query = entities.AsQueryable();
+            if (isAdmin) //if the user requesting is of a higher role and requestion data in the excluded type list, then return as is, otehrwise return hiearchied data
             {
-                return entities.AsQueryable();
+                return query;
             }
             else
             {
-                var hierarchy = _hierarchyEngine.GetUserHierarchy(_userId);
+                /*var hierarchy = _hierarchyEngine.GetUserHierarchy(_userId);
 
                 // Change this to an LTree at some point
                 return entities
                   .Where(x => ((IUserScoped)x).Hierarchy.StartsWith(hierarchy))
                   .AsQueryable();
+                */
+                var hh = _hierarchyEngine.GetHierarchyByParentList(_userManager, _userId, _userId);
+                if (hh != null)
+                {
+                    var ll1 = entities.AsQueryable().Where(x => ((IUserType)x).Hierarchy.StartsWith(hh[0]));
+                    foreach (var h in hh)
+                    {
+
+                        var ll = entities.AsQueryable().Where(x => ((IUserType)x).Hierarchy.StartsWith(h));
+                        if (ll.AsQueryable().Count() > 0)
+                        {
+                            if (ll1.Count() == 0)
+                            {
+                                ll1 = ll.AsQueryable();
+                            }
+                            if (ll.Count() > 0 && ll1.Count() > 0)
+                            {
+                                ll1.Concat(ll).AsQueryable();
+                            }
+                        }
+
+                    }
+                    return ll1;
+                }
             }
+            return query.Take(0);//if neither of these are true, rather return nothing that all
         }
 
         public override T GetById(Guid id)

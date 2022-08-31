@@ -127,14 +127,14 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                             }
                             if (ll.Count() > 0 && ll1.Count()>0)
                             {
-                                ll1.Append(ll);
+                                ll1.Concat(ll).AsQueryable();
                             }
                         }
                         
                     }
                     return ll1;
                 }
-                return query;
+                return query.Take(0);//if neither of these are true, rather return nothing that all
             }           
         }
 
