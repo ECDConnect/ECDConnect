@@ -94,7 +94,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                 throw new UnauthorizedAccessException("User does not have access to this data");
             }
 
-            var all = base.GetAll();
+            //var all = base.GetAll();
 
             var user = _userManager.FindByIdAsync(_userId).Result;
             var roles = _userManager.GetRolesAsync(user).Result;
@@ -102,43 +102,40 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             //var higherRoles = new[] { Roles.PRACTITIONER, Roles.COACH, Roles.ADMINISTRATOR, Roles.PRINCIPAL, Roles.FRANCHISOR };//            
             //bool isHigherRole = higherRoles.Any(roles.Contains);
             var isAdmin = roles.Contains(Roles.ADMINISTRATOR);
-            //T userObject = roles.Contains(Roles.FRANCHISOR)?typeof(Franchisor):(roles.Contains(Roles.COACH)? typeof(Franchisor): (roles.Contains(Roles.PRINCIPAL)? typeof(Principal) : (roles.Contains(Roles.PRACTITIONER) ? typeof(Practitioner): null)));
-            //var isFranchisor = roles.Contains(Roles.FRANCHISOR);
-            //var isCoach = roles.Contains(Roles.COACH);
-            //var isPrincipal = roles.Contains(Roles.PRINCIPAL);
-            //var isPractitioner = roles.Contains(Roles.PRACTITIONER);
             //var excludingEntities = new[] { typeof(Practitioner), typeof(Principal), typeof(Coach), typeof(Franchisor), typeof(Classroom), typeof(ClassroomGroup), typeof(Child), typeof(Programme) };//remove teh last three for normal functionlity
             //bool isExcluded = excludingEntities.Contains(typeof(T));
-            List<T> queryList = new List<T>();
             
             var query = entities.AsQueryable();
-            //var returnQuery = entities.AsQueryable();
             if (isAdmin)
             {
-                //var query = entities.AsQueryable();
                 return query;
             }
             else
             {
-                //if (isExcluded && isHigherRole)
-                //{
-                //    return query;
-                //} else {                 
-                //var hierarchy = _hierarchyEngine.GetUserHierarchy(_userId);
-
-                //return query.Where(x => ((IUserType)x).Hierarchy.StartsWith(hierarchy));
                 var hh = _hierarchyEngine.GetHierarchyByParentList(_userManager, _userId, _userId);
-                //var query = entities.AsQueryable().;  
-                //query = null;
-                foreach (var h in hh)
-                {                    
+                if (hh != null) {
+                    var ll1 = entities.AsQueryable().Where(x => ((IUserType)x).Hierarchy.StartsWith(hh[0]));
+                    foreach (var h in hh)
+                    {
 
-                    query.Union(entities.AsQueryable().Where(x => ((IUserType)x).Hierarchy.StartsWith(h)));                    
+                        var ll = entities.AsQueryable().Where(x => ((IUserType)x).Hierarchy.StartsWith(h));
+                        if (ll.AsQueryable().Count()>0)
+                        {
+                            if (ll1.Count() == 0)
+                            {
+                                ll1 = ll.AsQueryable();
+                            }
+                            if (ll.Count() > 0 && ll1.Count()>0)
+                            {
+                                ll1.Append(ll);
+                            }
+                        }
+                        
+                    }
+                    return ll1;
                 }
                 return query;
-            }
-
-            // Change this to an LTree at some point            
+            }           
         }
 
         public override T GetById(Guid id)
