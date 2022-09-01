@@ -172,7 +172,7 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
                 IsPrincipal = true,
                 IsFundaAppAdmin = false,
                 IsTrainee = false,
-                NotInvitedYet = false,
+                IsRegistered = false,
                 CoachHierarchy = Guid.Parse(coachId)
             });
 
@@ -202,7 +202,7 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
                 IsPrincipal = false,
                 IsFundaAppAdmin = false,
                 IsTrainee = false,
-                NotInvitedYet = false,
+                IsRegistered = false,
                 CoachHierarchy = Guid.Parse(coachId)
             });
         }

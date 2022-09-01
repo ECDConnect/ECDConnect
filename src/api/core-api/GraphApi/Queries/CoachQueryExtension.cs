@@ -140,5 +140,28 @@ string userId)
             }
             return classrooms;
         }
+
+        public List<ClassroomGroup> GetAllClassroomGroupsForCoach([Service] IHttpContextAccessor contextAccessor,
+[Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+[Service] IGenericRepositoryFactory repoFactory,
+string userId)
+        {
+
+            using var scope = dbFactory.CreateDbContext();
+            using var dbContextTransaction = scope.Database.BeginTransaction();
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var classRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
+
+            List<ClassroomGroup> classrooms = new List<ClassroomGroup>();
+            var dbRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+            List<Practitioner> practitioners = dbRepo.GetAll().Where(x => x.CoachHierarchy.HasValue).ToList();
+            practitioners.Where(x => x.CoachHierarchy.Equals(userId)).ToList();
+            foreach (var practioner in practitioners)
+            {
+                List<ClassroomGroup> practitionerClasses = classRepo.GetAll().Where(x => x.UserId.Contains(practioner.UserId)).ToList();
+                classrooms.AddRange(practitionerClasses);
+            }
+            return classrooms;
+        }
     }
 }

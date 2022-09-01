@@ -56,7 +56,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public bool? IsFundaAppAdmin { get; set; }
         public bool? IsTrainee { get; set; }
         public string SigningSignature { get; set; }
-        public bool? NotInvitedYet { get; set; }
+        public bool? IsRegistered { get; set; }
         public bool? ShareInfo { get; set; }
 
     }

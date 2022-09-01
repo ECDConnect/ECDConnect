@@ -94,7 +94,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     UserId = practitionerId,
                     IsPrincipal = false,
                     PrincipalHierarchy = Guid.Parse(userId),
-                    NotInvitedYet = true});
+                    IsRegistered = true});
 
                 return new PractitionerQueryExtension().GetPractitionerByUserId(contextAccessor, dbFactory, repoFactory, practitionerId);
             }
@@ -197,7 +197,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 IsTrainee = practitioner?.IsTrainee,
                 SigningSignature = practitioner?.SigningSignature,
                 ShareInfo = practitioner?.ShareInfo,
-                //NotInvitedYet = practitioner.NotInvitedYet,
+                IsRegistered = practitioner.IsRegistered,
                 //Signature = practitioner.Signature,
                 //PrincipalHierarchy = practitioner?.PrincipalHierarchy,           
             };

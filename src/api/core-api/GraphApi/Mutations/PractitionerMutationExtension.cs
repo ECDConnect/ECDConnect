@@ -177,7 +177,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return bReturn;
         }
 
-        public bool UpdatePractitionerNotInvitedYet([Service] IHttpContextAccessor contextAccessor,
+        public bool UpdatePractitionerRegistered([Service] IHttpContextAccessor contextAccessor,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
             string practitionerId, bool status = false)
@@ -192,7 +192,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             {
                 if (practitioner != null)
                 {
-                    practitioner.NotInvitedYet = status;
+                    practitioner.IsRegistered = status;
                     var updateResult = practitionerRepo.Update(practitioner);
                     return true;
                 }
