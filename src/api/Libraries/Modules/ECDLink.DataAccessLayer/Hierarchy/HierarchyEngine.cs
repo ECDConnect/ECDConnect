@@ -101,9 +101,8 @@ namespace ECDLink.DataAccessLayer.Hierarchy
             return newHierarchy;
         }
 
-        public List<string> GetHierarchyByParentList(
+        public List<string> GetHierarchyByParentList<T>(
         UserManager<ApplicationUser> _userManager,
-        string requestingUser, 
         string userId)
         {
             List<string> hierarchyList = new List<string>();
@@ -112,15 +111,16 @@ namespace ECDLink.DataAccessLayer.Hierarchy
                 throw new Exception("No user specified");
             }
             //case on type, and depending on type, iterate through different levels of collecting a list of hierarchies to use
-            var franchisorRepo = _repoFactory.CreateGenericRepository<Franchisor>(userContext: requestingUser);
-            var coachRepo = _repoFactory.CreateGenericRepository<Coach>(userContext: requestingUser);
-            var practRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: requestingUser);
-            var user = _userManager.FindByIdAsync(requestingUser).Result;
+            var franchisorRepo = _repoFactory.CreateGenericRepository<Franchisor>(userContext: userId);
+            var coachRepo = _repoFactory.CreateGenericRepository<Coach>(userContext: userId);
+            var practRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: userId);
+            var user = _userManager.FindByIdAsync(userId).Result;
             var roles = _userManager.GetRolesAsync(user).Result;            
             var isFranchisor = roles.Contains(Roles.FRANCHISOR);
             var isCoach = roles.Contains(Roles.COACH);
             var isPrincipal = roles.Contains(Roles.PRINCIPAL);
             var isPractitioner = roles.Contains(Roles.PRACTITIONER);
+            //var isChild = roles.Contains(Roles.CHILD);
             hierarchyList.Add(this.GetUserHierarchy(userId));
             if (isFranchisor) {
                 List<Coach> coachesF = coachRepo.GetAll().Where(c => c.FranchisorId.Equals(userId)).ToList();
@@ -140,7 +140,8 @@ namespace ECDLink.DataAccessLayer.Hierarchy
                     }
                 }
             } else if (isCoach) {
-                List<Practitioner> coachPractitioners = practRepo.GetAll().Where(c => c.CoachHierarchy.HasValue).ToList();
+                List<Practitioner> coachPractitioners = practRepo.GetAll().ToList();
+                coachPractitioners = coachPractitioners.Where(c => c.CoachHierarchy.HasValue).ToList();
                 coachPractitioners = coachPractitioners.Where(c => c.CoachHierarchy.ToString() == userId).ToList();
                 if (coachPractitioners.Count > 0)
                 {
@@ -149,7 +150,7 @@ namespace ECDLink.DataAccessLayer.Hierarchy
                         hierarchyList.Add(this.GetUserHierarchy(p.UserId));
                     }
                 }
-            } else if (isPrincipal) {
+            } else if (isPrincipal || isPractitioner) {
                 List<Practitioner> principalPractitioners = practRepo.GetAll().Where(c => c.PrincipalHierarchy.Equals(userId)).ToList();
                 if (principalPractitioners.Count > 0)
                 {
@@ -159,6 +160,22 @@ namespace ECDLink.DataAccessLayer.Hierarchy
                     }
                 }
             }
+            //in some cases liek a child, we need to get the relevant children hierarchy in addition for the generic repository selectionlist
+            if (typeof(T) == typeof(Child))
+            {
+                var childRepo = _repoFactory.CreateGenericRepository<Child>(userContext: userId);
+                //use the parent list to determine
+                List<string> childHierarchyList = hierarchyList.Copy();
+                foreach (var hierarchy in childHierarchyList)
+                {
+                    List<string> childHierarchy = childRepo.GetAll().Where(c => c.Hierarchy.StartsWith(hierarchy)).Select(p => p.Hierarchy).ToList();
+                    if (childHierarchy.Any())
+                    {
+                        hierarchyList.AddRange(childHierarchy);
+                    }
+                }
+            }
+
 
             return hierarchyList;
         }
