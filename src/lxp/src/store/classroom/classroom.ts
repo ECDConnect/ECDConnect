@@ -99,6 +99,20 @@ const classroomsSlice = createSlice({
       if (!state.classroomGroupLearners) state.classroomGroupLearners = [];
       state.classroomGroupLearners?.push(action.payload);
     },
+    removeClassroomGroupOnEdit: (
+      state,
+      action: PayloadAction<Pick<ClassroomGroupDto, 'id'>>
+    ) => {
+      const index = state.classroomGroups?.findIndex(
+        (c) => c.id === action.payload.id
+      );
+      if (index && index > -1) {
+        state.classroomGroups?.splice(index, 1);
+        state.classroomProgrammes = state.classroomProgrammes?.filter(
+          (programme) => programme.classroomGroupId !== action.payload.id
+        );
+      }
+    },
     deleteClassroomGroup: (state, action: PayloadAction<ClassroomGroupDto>) => {
       if (action.payload.id) {
         if (state.classroomGroups) {
