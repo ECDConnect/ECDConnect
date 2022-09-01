@@ -180,10 +180,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         public bool UpdatePractitionerNotInvitedYet([Service] IHttpContextAccessor contextAccessor,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
-            string practitionerId)
+            string practitionerId, bool status = false)
 
         {
-            bool bReturn = false;
+
             using var scope = dbFactory.CreateDbContext();
             using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
@@ -192,13 +192,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             {
                 if (practitioner != null)
                 {
-                    practitioner.NotInvitedYet = false;
+                    practitioner.NotInvitedYet = status;
                     var updateResult = practitionerRepo.Update(practitioner);
                     return true;
                 }
             }
 
-            return bReturn;
+            return status;
         }
 
         public bool UpdatePractitionerIsFundaAppAdmin([Service] IHttpContextAccessor contextAccessor,

@@ -122,18 +122,20 @@ const PractitionerForm: React.FC<PractitionerFormProps> = ({
               options={
                 coachData &&
                 coachData.GetAllCoach &&
-                coachData.GetAllCoach.map((x: CoachDto) => {
-                  return {
-                    key: x.userId,
-                    value: x.user.firstName + ' ' + x.user.surname,
-                  };
-                })
+                coachData.GetAllCoach.filter((v) => v.user !== null).map(
+                  (x: CoachDto) => {
+                    return {
+                      key: x.userId,
+                      value: x.user.firstName + ' ' + x.user.surname,
+                    };
+                  }
+                )
               }
             />
           </div>
           <div className="sm:col-span-3">
             <FormSelectorField
-              label="Principal *"
+              label="Principal"
               nameProp={'principalHierarchy'}
               register={register}
               options={

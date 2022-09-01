@@ -76,6 +76,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
 
         public override T GetById(Guid id)
         {
+            //TODO CB: build userhierarchy permissions list in to GetById
             if (string.IsNullOrEmpty(_userId))
             {
                 throw new UnauthorizedAccessException("User does not have access to this data");
@@ -110,6 +111,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
 
         public T GetByUserId(Guid id)
         {
+            //TODO CB: build userhierarchy permissions list in to GetById
             if (string.IsNullOrEmpty(_userId))
             {
                 throw new UnauthorizedAccessException("User does not have access to this data");
@@ -119,7 +121,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             if (type.GetProperty("UserId") != null)
             {
 
-                var record = base.GetAll().Where(s => s.GetType().GetProperty("UserId").GetValue(s, null).Equals(id));
+                var record = base.GetAll().Where(s => s.GetType().GetProperty("UserId").GetValue(type, null).Equals(id));
 
 
                 var castRecord = record as IUserScoped;
