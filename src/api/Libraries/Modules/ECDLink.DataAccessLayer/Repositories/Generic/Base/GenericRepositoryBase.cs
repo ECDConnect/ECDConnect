@@ -51,7 +51,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
             IQueryable<T> query = entities.AsQueryable();
             if (type.GetProperty("UserId") != null)
             {
-                var result = entities.AsQueryable().Where(x => x.GetType().GetProperty("UserId").GetValue(x,null).Equals(id));
+                var result = entities.AsQueryable().Where(x => x.GetType().GetProperty("UserId").GetValue(type,null).Equals(id));
                 return (T)result.AsQueryable().FirstOrDefault();
             } else return entities.SingleOrDefault(s => s.Id.Equals(id));
         }
