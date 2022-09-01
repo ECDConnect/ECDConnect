@@ -4,7 +4,9 @@ using ECDLink.DataAccessLayer.Events;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
+using Namotion.Reflection;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
@@ -44,11 +46,13 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
         }
 
         public virtual T GetByUserId(string id)
-        {
+        {            
             Type type = typeof(T);
+            IQueryable<T> query = entities.AsQueryable();
             if (type.GetProperty("UserId") != null)
-            {                
-                return entities.SingleOrDefault(s => s.GetType().GetProperty("UserId").GetValue(s, null).Equals(id));
+            {
+                var result = entities.AsQueryable().Where(x => x.GetType().GetProperty("UserId").GetValue(x,null).Equals(id));
+                return (T)result.AsQueryable().FirstOrDefault();
             } else return entities.SingleOrDefault(s => s.Id.Equals(id));
         }
 

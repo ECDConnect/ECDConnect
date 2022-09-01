@@ -50,15 +50,16 @@ string userId)
             using var scope = dbFactory.CreateDbContext();
             using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
-            var dbRepo = repoFactory.CreateRepository<Coach>(userContext: uId);
-            Coach coach = new Coach();
-            List<Coach> coaches = dbRepo.GetAll().ToList();
-            if (coaches.Count > 0)
-            {
-                coach = coaches.Where(x => x.UserId.Contains(userId)).FirstOrDefault();
-            }
+            var dbRepo = repoFactory.CreateGenericRepository<Coach>(userContext: uId);
+            //Coach coach = new Coach();
+            //List<Coach> coaches = dbRepo.GetAll().ToList();
+            //if (coaches.Count > 0)
+            //{
+            //    coach = coaches.Where(x => x.UserId.Contains(userId)).FirstOrDefault();
+            //}
 
-            return coach;
+            //return coach;
+            return dbRepo.GetByUserId(userId);
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
