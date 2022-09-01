@@ -55,14 +55,14 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             }
             else
             {
-                var hh = _hierarchyEngine.GetHierarchyByParentList(_userManager, _userId, _userId);
+                var hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId);
                 if (hh != null)
                 {
-                    var ll1 = entities.AsQueryable().Where(x => ((IUserType)x).Hierarchy.StartsWith(hh[0]));
+                    var ll1 = entities.AsQueryable().Where(x => ((IUserScoped)x).Hierarchy.StartsWith(hh[0]));
                     foreach (var h in hh)
                     {
 
-                        var ll = entities.AsQueryable().Where(x => ((IUserType)x).Hierarchy.StartsWith(h));
+                        var ll = entities.AsQueryable().Where(x => ((IUserScoped)x).Hierarchy.StartsWith(h));
                         if (ll.AsQueryable().Count() > 0)
                         {
                             if (ll1.Count() == 0)
