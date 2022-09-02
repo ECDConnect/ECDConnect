@@ -148,7 +148,6 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
         });
 
         const userId = response.data.addUser.id;
-        await saveRoles(userId);
         await saveSiteAddress(userId);
       })
       .catch((error) => {
@@ -212,8 +211,14 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
       IsPrincipal: practitionerForm.isPrincipal,
       IsFundaAppAdmin: practitionerForm.isFundaAppAdmin,
       IsTrainee: practitionerForm.isTrainee,
-      CoachHierarchy: practitionerForm.coachHierarchy,
-      PrincipalHierarchy: practitionerForm.principalHierarchy,
+      CoachHierarchy:
+        practitionerForm.coachHierarchy !== ''
+          ? practitionerForm.coachHierarchy
+          : null,
+      PrincipalHierarchy:
+        practitionerForm.principalHierarchy !== ''
+          ? practitionerForm.principalHierarchy
+          : null,
     };
 
     await createPractitioner({
@@ -221,6 +226,8 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
         input: { ...practInputModel },
       },
     });
+
+    await saveRoles(userId, practitionerForm.isPrincipal);
 
     setNotification({
       title: 'Successfully Created Practitioner!',
@@ -241,10 +248,11 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
     }
   };
 
-  const saveRoles = async (userId: string) => {
+  const saveRoles = async (userId: string, isPrincipal: boolean) => {
     const rolesToAdd: string[] = [];
+    let principalRole = 'Principal';
     selectedUserRoles.forEach((x) => {
-      rolesToAdd.push(x.name);
+      rolesToAdd.push(isPrincipal ? principalRole : x.name);
     });
 
     await addRolesToUser({
