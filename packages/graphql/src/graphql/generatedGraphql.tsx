@@ -1795,7 +1795,7 @@ export type Mutation = {
   updatePractitioner?: Maybe<Practitioner>;
   updatePractitionerIsFundaAppAdmin: Scalars['Boolean'];
   updatePractitionerIsTrainee: Scalars['Boolean'];
-  updatePractitionerNotInvitedYet: Scalars['Boolean'];
+  updatePractitionerRegistered: Scalars['Boolean'];
   updatePractitionerShareInfo: Scalars['Boolean'];
   updatePractitionerToTeachClassroom?: Maybe<Classroom>;
   updatePrincipal?: Maybe<Principal>;
@@ -2629,8 +2629,9 @@ export type MutationUpdatePractitionerIsTraineeArgs = {
   practitionerId?: InputMaybe<Scalars['String']>;
 };
 
-export type MutationUpdatePractitionerNotInvitedYetArgs = {
+export type MutationUpdatePractitionerRegisteredArgs = {
   practitionerId?: InputMaybe<Scalars['String']>;
+  status?: InputMaybe<Scalars['Boolean']>;
 };
 
 export type MutationUpdatePractitionerShareInfoArgs = {
@@ -3030,7 +3031,7 @@ export type Practitioner = {
   languageUsedInGroups?: Maybe<Scalars['String']>;
   maxChildren?: Maybe<Scalars['Int']>;
   monthSinceFranchisee?: Maybe<Scalars['Int']>;
-  notInvitedYet?: Maybe<Scalars['Boolean']>;
+  isRegistered?: Maybe<Scalars['Boolean']>;
   parentFees?: Maybe<Scalars['Decimal']>;
   principalHierarchy?: Maybe<Scalars['String']>;
   shareInfo?: Maybe<Scalars['Boolean']>;
@@ -3063,7 +3064,7 @@ export type PractitionerFilterInput = {
   languageUsedInGroups?: InputMaybe<StringOperationFilterInput>;
   maxChildren?: InputMaybe<ComparableNullableOfInt32OperationFilterInput>;
   monthSinceFranchisee?: InputMaybe<ComparableNullableOfInt32OperationFilterInput>;
-  notInvitedYet?: InputMaybe<BooleanOperationFilterInput>;
+  isRegistered?: InputMaybe<BooleanOperationFilterInput>;
   or?: InputMaybe<Array<PractitionerFilterInput>>;
   parentFees?: InputMaybe<ComparableNullableOfDecimalOperationFilterInput>;
   principalHierarchy?: InputMaybe<StringOperationFilterInput>;
@@ -3091,7 +3092,7 @@ export type PractitionerInput = {
   LanguageUsedInGroups?: InputMaybe<Scalars['String']>;
   MaxChildren?: InputMaybe<Scalars['Int']>;
   MonthSinceFranchisee?: InputMaybe<Scalars['Int']>;
-  NotInvitedYet?: InputMaybe<Scalars['Boolean']>;
+  IsRegistered?: InputMaybe<Scalars['Boolean']>;
   ParentFees?: InputMaybe<Scalars['Decimal']>;
   PrincipalHierarchy?: InputMaybe<Scalars['String']>;
   ShareInfo?: InputMaybe<Scalars['Boolean']>;
@@ -3129,7 +3130,7 @@ export type Principal = {
   languageUsedInGroups?: Maybe<Scalars['String']>;
   maxChildren?: Maybe<Scalars['Int']>;
   monthSinceFranchisee?: Maybe<Scalars['Int']>;
-  notInvitedYet?: Maybe<Scalars['Boolean']>;
+  isRegistered?: Maybe<Scalars['Boolean']>;
   parentFees?: Maybe<Scalars['Decimal']>;
   principalHierarchy?: Maybe<Scalars['String']>;
   shareInfo?: Maybe<Scalars['Boolean']>;
@@ -3162,7 +3163,7 @@ export type PrincipalFilterInput = {
   languageUsedInGroups?: InputMaybe<StringOperationFilterInput>;
   maxChildren?: InputMaybe<ComparableNullableOfInt32OperationFilterInput>;
   monthSinceFranchisee?: InputMaybe<ComparableNullableOfInt32OperationFilterInput>;
-  notInvitedYet?: InputMaybe<BooleanOperationFilterInput>;
+  isRegistered?: InputMaybe<BooleanOperationFilterInput>;
   or?: InputMaybe<Array<PrincipalFilterInput>>;
   parentFees?: InputMaybe<ComparableNullableOfDecimalOperationFilterInput>;
   principalHierarchy?: InputMaybe<StringOperationFilterInput>;
@@ -3190,7 +3191,7 @@ export type PrincipalInput = {
   LanguageUsedInGroups?: InputMaybe<Scalars['String']>;
   MaxChildren?: InputMaybe<Scalars['Int']>;
   MonthSinceFranchisee?: InputMaybe<Scalars['Int']>;
-  NotInvitedYet?: InputMaybe<Scalars['Boolean']>;
+  IsRegistered?: InputMaybe<Scalars['Boolean']>;
   ParentFees?: InputMaybe<Scalars['Decimal']>;
   PrincipalHierarchy?: InputMaybe<Scalars['String']>;
   ShareInfo?: InputMaybe<Scalars['Boolean']>;

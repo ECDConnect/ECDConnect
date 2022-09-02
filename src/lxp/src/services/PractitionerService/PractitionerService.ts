@@ -65,7 +65,7 @@ class PractitionerService {
               ward
             }
             isPrincipal
-            notInvitedYet
+            isRegistered
             principalHierarchy
             attendanceRegisterLink
             maxChildren
@@ -121,7 +121,7 @@ class PractitionerService {
               ward
             }
             isPrincipal
-            notInvitedYet
+            isRegistered
             principalHierarchy
             attendanceRegisterLink
             maxChildren
@@ -160,7 +160,7 @@ class PractitionerService {
             principalHierarchy
             isActive
             coachHierarchy
-            notInvitedYet
+            isRegistered
             shareInfo
             user {
               idNumber
@@ -274,7 +274,7 @@ class PractitionerService {
     return response.data.data.updatePractitionerShareInfo;
   }
 
-  async UpdatePractitionerNotInvitedYet(
+  async UpdatePractitionerRegistered(
     practitionerId: string,
     principalId: string
   ): Promise<boolean> {
