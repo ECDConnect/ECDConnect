@@ -11,6 +11,7 @@ using ECDLink.DataAccessLayer.Entities;
 using ECDLink.Security;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Classroom;
+using System.Collections.Generic;
 
 namespace ECDLink.DataAccessLayer.Repositories.Generic
 {
@@ -104,21 +105,33 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             var roles = _userManager.GetRolesAsync(user).Result;
             var higherRoles = new[] { Roles.PRACTITIONER, Roles.COACH, Roles.ADMINISTRATOR, Roles.PRINCIPAL, Roles.FRANCHISOR };//
             bool isHigherRole = higherRoles.Any(roles.Contains); //roles.contains(Roles.ADMINISTRATOR);
-            if (!isHigherRole)
+            var isAdmin = roles.Contains(Roles.ADMINISTRATOR);
+
+            if (!isAdmin)
             {
                 if (!string.IsNullOrWhiteSpace(castRecord.Hierarchy))
                 {
-                    if (!castRecord.Hierarchy.StartsWith(Hierarchy))
+                    List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId);
+                    if (hh != null)
                     {
-                        return default;
+                        if (!hh.Contains(castRecord.Hierarchy))
+                        {
+                            return default;
+                        }
                     }
+
+                    //var hierarchy = _hierarchyEngine.GetUserHierarchy(_userId);
+                    //if (!castRecord.Hierarchy.StartsWith(hierarchy))
+                    //{
+                    //    return default;
+                    //}
                 }
             }
 
             return record;
         }
 
-        public T GetByUserId(Guid id)
+        public T GetByUserId(string id)
         //TODO CB: build userhierarchy permissions list in to GetById
         {
             if (string.IsNullOrEmpty(_userId))
@@ -130,35 +143,59 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             if (type.GetProperty("UserId") != null)
             {
 
-                var record = base.GetAll().Where(s => s.GetType().GetProperty("UserId").GetValue(type, null).Equals(id));
-
-
-                var castRecord = record as IUserScoped;
+                //var record = query.Where(s => ) //base.GetAll().Where(s => s.GetType().GetProperty("UserId").GetValue(s, null).Equals(id));
+                var record = base.GetByUserId(id);
+                var castRecord = record as IUserType;
 
                 if (castRecord == default)
                 {
                     return default;
                 }
+
                 //if user is in a higher admin role (Principal, Practitioner, Coach, Franchisor, then skip the check as they need to be able to see anyone anywhere due to the shift in roles of Milestone 1.
+                //var user = _userManager.FindByIdAsync(castRecord.UserId).Result;
+                //var roles = _userManager.GetRolesAsync(user).Result;
+                //var higherRoles = new[] { Roles.PRACTITIONER, Roles.COACH, Roles.ADMINISTRATOR, Roles.PRINCIPAL, Roles.FRANCHISOR };//
+                //bool isHigherRole = higherRoles.Any(roles.Contains);
+                //if (!isHigherRole)
+                //{
+                //    if (!string.IsNullOrWhiteSpace(castRecord.Hierarchy))
+                //    {
+                //        var hierarchy = _hierarchyEngine.GetUserHierarchy(_userId);
+                //        if (!castRecord.Hierarchy.StartsWith(hierarchy))
+                //        {
+                //            return default;
+                //        }
+                //    }
+                //}
+
+                //hierarchy confirmation allowing this to be viewed
                 var user = _userManager.FindByIdAsync(_userId).Result;
                 var roles = _userManager.GetRolesAsync(user).Result;
-                var higherRoles = new[] { Roles.PRACTITIONER, Roles.COACH, Roles.ADMINISTRATOR, Roles.PRINCIPAL, Roles.FRANCHISOR };//
-                bool isHigherRole = higherRoles.Any(roles.Contains);
-                //TODO CB: build userhierarchy permissions list in to GetById
-                if (!isHigherRole)
+                var isAdmin = roles.Contains(Roles.ADMINISTRATOR);
+
+                if (!isAdmin)
                 {
-                    if (!string.IsNullOrWhiteSpace(castRecord.Hierarchy))
+                    try
                     {
-                        if (!castRecord.Hierarchy.StartsWith(Hierarchy))
+                        List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId);
+                        if (hh != null)
                         {
-                            return default;
+                            if (!hh.Contains(castRecord.Hierarchy))
+                            {
+                                return default;
+                            }
                         }
                     }
-                }
+                    catch (Exception e)
+                    {
+                        return null;
+                    }
 
+                }
                 return (T)record;
             }
-            else return this.GetById(id);//default to getting just by id
+            else return null;//default to getting just by id
         }
 
         public override T Insert(T entity)

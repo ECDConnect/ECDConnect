@@ -119,12 +119,11 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                     return null;
                 }
             }
-            return query.Take(0);//if neither of these are true, rather return nothing
+            return query.Take(0);
         }
 
         public override T GetById(Guid id)
         {
-            //TODO CB: build userhierarchy permissions list in to GetById
             var record = base.GetById(id);
 
             var castRecord = record as IUserType;
@@ -137,18 +136,30 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             //if user is in a higher admin role (Principal, Practitioner, Coach, Franchisor, then skip the check as they need to be able to see anyone anywhere due to the shift in roles of Milestone 1.
             var user = _userManager.FindByIdAsync(castRecord.UserId).Result;
             var roles = _userManager.GetRolesAsync(user).Result;
-            var higherRoles = new[] { Roles.PRACTITIONER, Roles.COACH, Roles.ADMINISTRATOR, Roles.PRINCIPAL, Roles.FRANCHISOR };//
-            bool isHigherRole = higherRoles.Any(roles.Contains);
+            //var higherRoles = new[] { Roles.PRACTITIONER, Roles.COACH, Roles.ADMINISTRATOR, Roles.PRINCIPAL, Roles.FRANCHISOR };//
+            //bool isHigherRole = higherRoles.Any(roles.Contains);
 
-            if (!isHigherRole)
+            ///if (!isHigherRole)
+            var isAdmin = roles.Contains(Roles.ADMINISTRATOR);
+
+            if (!isAdmin)
             {
                 if (!string.IsNullOrWhiteSpace(castRecord.Hierarchy))
                 {
-                    var hierarchy = _hierarchyEngine.GetUserHierarchy(_userId);
-                    if (!castRecord.Hierarchy.StartsWith(hierarchy))
+                    List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId);
+                    if (hh != null)
                     {
-                        return default;
+                        if (!hh.Contains(castRecord.Hierarchy))
+                        {
+                            return default;
+                        }
                     }
+
+                    //var hierarchy = _hierarchyEngine.GetUserHierarchy(_userId);
+                    //if (!castRecord.Hierarchy.StartsWith(hierarchy))
+                    //{
+                    //    return default;
+                    //}
                 }
             }
 
@@ -176,16 +187,11 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                     return default;
                 }
 
-                //TOD CB Make sure user is allowe dto see this
-
                 //if user is in a higher admin role (Principal, Practitioner, Coach, Franchisor, then skip the check as they need to be able to see anyone anywhere due to the shift in roles of Milestone 1.
                 //var user = _userManager.FindByIdAsync(castRecord.UserId).Result;
                 //var roles = _userManager.GetRolesAsync(user).Result;
                 //var higherRoles = new[] { Roles.PRACTITIONER, Roles.COACH, Roles.ADMINISTRATOR, Roles.PRINCIPAL, Roles.FRANCHISOR };//
                 //bool isHigherRole = higherRoles.Any(roles.Contains);
-
-
-
                 //if (!isHigherRole)
                 //{
                 //    if (!string.IsNullOrWhiteSpace(castRecord.Hierarchy))
@@ -198,7 +204,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                 //    }
                 //}
 
-
+                //hierarchy confirmation allowing this to be viewed
                 var user = _userManager.FindByIdAsync(_userId).Result;
                 var roles = _userManager.GetRolesAsync(user).Result;
                 var isAdmin = roles.Contains(Roles.ADMINISTRATOR);
@@ -214,7 +220,6 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                             {
                                 return default;
                             }
-                            //return query.Where(x => hh.Contains(((IUserType)x).Hierarchy));
                         }
                     }
                     catch (Exception e)
