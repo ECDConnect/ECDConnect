@@ -209,8 +209,14 @@ export default function PractitionerPanelEdit({
       IsPrincipal: practitionerForm.isPrincipal,
       IsTrainee: practitionerForm.isTrainee,
       IsFundaAppAdmin: practitionerForm.isFundaAppAdmin,
-      CoachHierarchy: practitionerForm.coachHierarchy,
-      PrincipalHierarchy: practitionerForm.principalHierarchy,
+      CoachHierarchy:
+        practitionerForm.coachHierarchy !== ''
+          ? practitionerForm.coachHierarchy
+          : null,
+      PrincipalHierarchy:
+        practitionerForm.principalHierarchy !== ''
+          ? practitionerForm.principalHierarchy
+          : null,
     };
 
     await updatePractitioner({
