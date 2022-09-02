@@ -73,7 +73,6 @@ namespace ECDLink.DataAccessLayer.Hierarchy
             var userHierarchyRepo = _repoFactory.CreateRepository<UserHierarchyEntity>();
 
             UserHierarchyEntity parentEntity = default;
-            // Potentially use Guid on the userHierarchy here instead of the the name
 
             if (hierarchyType.ParentId != default)
             {
@@ -120,7 +119,7 @@ namespace ECDLink.DataAccessLayer.Hierarchy
             var isCoach = roles.Contains(Roles.COACH);
             var isPrincipal = roles.Contains(Roles.PRINCIPAL);
             var isPractitioner = roles.Contains(Roles.PRACTITIONER);
-            //var isChild = roles.Contains(Roles.CHILD);
+
             hierarchyList.Add(this.GetUserHierarchy(userId));
             if (isFranchisor) {
                 List<Coach> coachesF = coachRepo.GetAll().Where(c => c.FranchisorId.Equals(userId)).ToList();
@@ -175,7 +174,6 @@ namespace ECDLink.DataAccessLayer.Hierarchy
                     }
                 }
             }
-
 
             return hierarchyList;
         }
