@@ -47,7 +47,7 @@ namespace ECDLink.DataAccessLayer.Migrations
                 defaultValue: false);
 
             migrationBuilder.AddColumn<bool>(
-                name: "NotInvitedYet",
+                name: "IsRegistered",
                 table: "Practitioner",
                 type: "boolean",
                 nullable: true,
@@ -329,7 +329,7 @@ namespace ECDLink.DataAccessLayer.Migrations
                 table: "Practitioner");
 
             migrationBuilder.DropColumn(
-                name: "NotInvitedYet",
+                name: "IsRegistered",
                 table: "Practitioner");
 
             migrationBuilder.DropColumn(

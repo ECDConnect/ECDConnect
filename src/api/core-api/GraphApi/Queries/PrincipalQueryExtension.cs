@@ -147,7 +147,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 IsTrainee = practitioner?.IsTrainee,
                 SigningSignature = practitioner?.SigningSignature,
                 ShareInfo = practitioner?.ShareInfo,
-                //NotInvitedYet = practitioner.NotInvitedYet,
+                IsRegistered = practitioner.IsRegistered,
                 //Signature = practitioner.Signature,
                 //PrincipalHierarchy = practitioner?.PrincipalHierarchy,           
             };

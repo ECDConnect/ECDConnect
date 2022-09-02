@@ -1619,7 +1619,7 @@ namespace ECDLink.DataAccessLayer.Migrations
                     b.Property<int?>("MonthSinceFranchisee")
                         .HasColumnType("integer");
 
-                    b.Property<bool?>("NotInvitedYet")
+                    b.Property<bool?>("IsRegistered")
                         .HasColumnType("boolean");
 
                     b.Property<decimal?>("ParentFees")
