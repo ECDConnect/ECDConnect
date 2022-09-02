@@ -45,23 +45,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public Coach GetCoachByCoachUserId([Service] IHttpContextAccessor contextAccessor,
-[Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
-[Service] IGenericRepositoryFactory repoFactory,
-string userId)
+            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+            [Service] IGenericRepositoryFactory repoFactory,
+            string userId)
         {
             using var scope = dbFactory.CreateDbContext();
             using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var dbRepo = repoFactory.CreateGenericRepository<Coach>(userContext: uId);
-            Coach coach = new Coach();
-            List<Coach> coaches = dbRepo.GetAll().ToList();
-            if (coaches.Count > 0)
-            {
-                coach = coaches.Where(x => x.UserId.Contains(userId)).FirstOrDefault();
-            }
-
-            return coach;
-            //return dbRepo.GetByUserId(userId);
+            return dbRepo.GetByUserId(userId);
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
@@ -85,14 +77,21 @@ string userId)
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var dbRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
 
-            List<Practitioner> practitioners = dbRepo.GetAll().Where(x => x.CoachHierarchy.HasValue).ToList();
-            practitioners = practitioners.Where(x => x.UserId.Contains(practitionerId)).ToList();
+            //List<Practitioner> practitioners = dbRepo.GetAll().Where(x => x.CoachHierarchy.HasValue).ToList();
+            Practitioner pract = dbRepo.GetByUserId(practitionerId);
+            if (pract != null && pract.CoachHierarchy.HasValue)
+            {
+                var coachRepo = repoFactory.CreateRepository<Coach>(userContext: uId);
+                return coachRepo.GetByUserId(pract.CoachHierarchy.ToString());
+            }
+            else return null;
+            /*practitioners = practitioners.Where(x => x.UserId.Contains(practitionerId)).ToList();
             Coach coach = new Coach();
             if (practitioners.Count > 0)
             {
                 coach = this.GetCoachByCoachUserId(contextAccessor,dbFactory,repoFactory, practitioners.FirstOrDefault().CoachHierarchy.ToString());
             }
-            return coach;
+            return coach;*/
         }
 
         public List<Child> GetAllChildrenForCoach([Service] IHttpContextAccessor contextAccessor,

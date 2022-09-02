@@ -1,6 +1,7 @@
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities.Base;
 using ECDLink.DataAccessLayer.Events;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -48,11 +49,11 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
         public virtual T GetByUserId(string id)
         {            
             Type type = typeof(T);
-            IQueryable<T> query = entities.AsQueryable();
             if (type.GetProperty("UserId") != null)
             {
-                var result = entities.AsQueryable().Where(x => x.GetType().GetProperty("UserId").GetValue(type,null).Equals(id));
-                return (T)result.AsQueryable().FirstOrDefault();
+                //var val = entities.AsQueryable().Where(x => x.GetType().GetProperty("UserId").GetValue(type,null).Equals(id)).FirstOrDefault();                
+                var qq = entities.FromSqlRaw("SELECT * FROM \"" + type.Name + "\" WHERE \"UserId\" = '" + id + "'").ToList();
+                return qq.FirstOrDefault();
             } else return entities.SingleOrDefault(s => s.Id.Equals(id));
         }
 

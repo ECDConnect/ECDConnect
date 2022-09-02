@@ -30,7 +30,7 @@ export const GetAllPrincipal = gql`
       maxChildren
       isPrincipal
       isFundaAppAdmin
-      notInvitedYet
+      isRegistered
       isTrainee
       consentForPhoto
       parentFees
@@ -72,7 +72,7 @@ export const allPrincipal = gql`
       maxChildren
       isPrincipal
       isFundaAppAdmin
-      notInvitedYet
+      isRegistered
       consentForPhoto
       parentFees
       languageUsedInGroups
@@ -113,7 +113,7 @@ export const GetPrincipalById = gql`
       monthSinceFranchisee
       isPrincipal
       isFundaAppAdmin
-      notInvitedYet
+      isRegistered
       isTrainee
       signingSignature
     }

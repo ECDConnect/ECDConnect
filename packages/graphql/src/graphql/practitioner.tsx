@@ -31,7 +31,7 @@ export const GetAllPractitioner = gql`
       maxChildren
       isPrincipal
       isFundaAppAdmin
-      notInvitedYet
+      isRegistered
       isTrainee
       consentForPhoto
       parentFees
@@ -76,7 +76,7 @@ export const GetPractitionerById = gql`
       monthSinceFranchisee
       isPrincipal
       isFundaAppAdmin
-      notInvitedYet
+      isRegistered
       isTrainee
       signingSignature
       coachHierarchy
