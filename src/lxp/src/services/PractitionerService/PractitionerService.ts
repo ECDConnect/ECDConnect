@@ -187,12 +187,17 @@ class PractitionerService {
     const apiInstance = await api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-        query GetPractitionerByIdNumber($idNumber: String) {
+       query GetPractitionerByIdNumber($idNumber: String) {
           practitionerByIdNumber(idNumber: $idNumber) {
             id
             idNumber
             firstName
             surname
+            userName
+            practitionerObjectData {
+              isRegistered
+              id
+            }
           }
         }
       `,

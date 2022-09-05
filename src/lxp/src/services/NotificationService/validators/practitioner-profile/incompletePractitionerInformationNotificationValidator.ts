@@ -42,11 +42,41 @@ export class IncompletePractitionerInformationNotificationValidator
       (role) => role.name === 'Practitioner'
     );
 
-    const isRegistered = practitionerState.practitioner?.isRegistered !== false;
+    const notRegistered = !Boolean(
+      practitionerState.practitioner?.isRegistered
+    );
+    const addedByPrincipal = Boolean(
+      practitionerState.practitioner?.principalHierarchy
+    );
 
-    const showNotification = hasPractitionerRole && isRegistered;
+    const showNotificationForPractitionerFlow =
+      hasPractitionerRole && notRegistered && addedByPrincipal;
+    const showNotificationForPrincipalFlow =
+      hasPractitionerRole && notRegistered && !addedByPrincipal;
 
-    if (showNotification) {
+    if (showNotificationForPrincipalFlow) {
+      return [
+        {
+          reference: `practitioner-profile`,
+          title: 'Complete your profile',
+          message:
+            'Share more information about your programme to make Funda App useful for you.',
+          dateCreated: new Date().toISOString(),
+          priority: NotificationPriority.lower,
+          viewOnDashboard: true,
+          area: 'practitioner',
+          icon: 'SwitchVerticalIcon',
+          color: 'primary',
+          actionText: 'Complete your profile',
+          viewType: 'Hub',
+          routeConfig: {
+            route: ROUTES.PRINCIPAL.SETUP_PROFILE,
+          },
+        },
+      ];
+    }
+
+    if (showNotificationForPractitionerFlow) {
       return [
         {
           reference: `practitioner-profile`,

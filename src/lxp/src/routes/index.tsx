@@ -57,7 +57,6 @@ import ROUTES from './routes';
 import { CoachClassesReassigned } from '@/pages/coach/coach-classes-reassigned/coach-classes-reassigned';
 import { CoachNotes } from '@/pages/coach/practitioner-profile-info/components/coach-notes/coach-notes';
 import { SetupPrincipal } from '@/pages/principal/setup-principal/setup-principal';
-import { SetupProfileWelcomePage } from '@/pages/setup-profile/setup-profile';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -148,11 +147,6 @@ const AuthRoutes: React.FC = () => {
         exact
         path={ROUTES.PRACTITIONER.PROFILE.EDIT}
         component={EditPractitionerProfile}
-      />
-      <Route
-        exact
-        path={ROUTES.SETUP_PROFILE}
-        component={SetupProfileWelcomePage}
       />
       <Route
         exact
