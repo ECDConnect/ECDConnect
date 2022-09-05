@@ -55,7 +55,9 @@ const CoachForm: React.FC<CoachFormProps> = ({ formKey, errors, register }) => {
               options={
                 franchisorData &&
                 franchisorData.GetAllFranchisor &&
-                franchisorData.GetAllFranchisor.map((x: FranchisorDto) => {
+                franchisorData.GetAllFranchisor.filter(
+                  (v) => v.user !== null
+                ).map((x: FranchisorDto) => {
                   return {
                     key: x.userId,
                     value: x.user.firstName + ' ' + x.user.surname,

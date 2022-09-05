@@ -8,5 +8,6 @@ namespace ECDLink.DataAccessLayer.Repositories.Factories
     public interface IGenericRepositoryFactory
     {
         IGenericRepository<T, Guid> CreateRepository<T>(AuthenticationDbContext CustomScope = null, string userContext = null) where T : EntityBase<Guid>;
+        IGenericRepository<T, Guid> CreateGenericRepository<T>(AuthenticationDbContext CustomScope = null, string userContext = null) where T : EntityBase<Guid>;
     }
 }

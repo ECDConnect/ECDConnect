@@ -51,13 +51,18 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public virtual SiteAddress SiteAddress { get; set; }
         public Guid? SiteAddressId { get; set; }
 
-        public string CoachHierarchy { get; set; }
-        public string PrincipalHierarchy { get; set; }
+        [ForeignKey(nameof(CoachHierarchy))]
+        public virtual Coach Coach { get; set; }
+        public Guid? CoachHierarchy { get; set; }
+
+        [ForeignKey(nameof(PrincipalHierarchy))]
+        public virtual Practitioner Principal { get; set; }
+        public Guid? PrincipalHierarchy { get; set; }
         public bool? IsPrincipal { get; set; }
         public bool? IsFundaAppAdmin { get; set; }
         public bool? IsTrainee { get; set; }
         public string SigningSignature { get; set; }
-        public bool? NotInvitedYet { get; set; }
+        public bool? IsRegistered { get; set; }
         public bool? ShareInfo { get; set; }
 
     }

@@ -36,10 +36,15 @@ export const GetAllFranchisor = gql`
 export const GetFranchisorById = gql`
   query GetFranchisorById($id: UUID) {
     GetFranchisorById(id: $id) {
+      id
       areaOfOperation
       secondaryAreaOfOperation
       startDate
-      siteAddressId
+      user {
+        firstName
+        surname
+        email
+      }
       siteAddress {
         id
         province {

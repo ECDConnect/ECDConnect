@@ -11,6 +11,9 @@ using ECDLink.DataAccessLayer.Entities;
 using ECDLink.Security;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Classroom;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using System.Linq.Expressions;
+using Org.BouncyCastle.Math.EC.Rfc7748;
 
 namespace ECDLink.DataAccessLayer.Repositories.Generic
 {
@@ -45,35 +48,35 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                 throw new UnauthorizedAccessException("User does not have access to this data");
             }
 
-            var all = base.GetAll();
-
-            //CB Added to bypass hierarchy
             var user = _userManager.FindByIdAsync(_userId).Result;
             var roles = _userManager.GetRolesAsync(user).Result;
-            //if user is in a higher admin role (Principal, Practitioner, Coach, Franchisor, then skip the check as they need to be able to see anyone anywhere due to the shift in roles of Milestone 1.
-            var higherRoles = new[] { Roles.PRACTITIONER, Roles.COACH, Roles.ADMINISTRATOR, Roles.PRINCIPAL, Roles.FRANCHISOR };//
-            bool isHigherRole = higherRoles.Any(roles.Contains);
-            var excludingEntities = new[] { typeof(Practitioner), typeof(Principal), typeof(Coach), typeof(Franchisor), typeof(Classroom), typeof(ClassroomGroup), typeof(Child), typeof(Programme) };//remove teh last three for normal functionlity
-            bool isExcluded = excludingEntities.Contains(typeof(T));
 
-            //if (isHigherRole)
-            if (isExcluded && isHigherRole) //if the user requesting is of a higher role and requestion data in the excluded type list, then return as is, otehrwise return hiearchied data
+            var isAdmin = roles.Contains(Roles.ADMINISTRATOR);
+
+            var query = entities.AsQueryable();
+            if (isAdmin)
             {
-                return entities.AsQueryable();
+                return query;
             }
             else
             {
-                var hierarchy = _hierarchyEngine.GetUserHierarchy(_userId);
-
-                // Change this to an LTree at some point
-                return entities
-                  .Where(x => ((IUserScoped)x).Hierarchy.StartsWith(hierarchy))
-                  .AsQueryable();
+                try {
+                    var hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId);
+                    if (hh != null)
+                    {
+                        return query.Where(x => hh.Contains(((IUserScoped)x).Hierarchy));
+                    }
+                }
+                catch (Exception e) {
+                    return null;
+                }
             }
+            return query.Take(0);
         }
 
         public override T GetById(Guid id)
         {
+            //TODO CB: build userhierarchy permissions list in to GetById
             if (string.IsNullOrEmpty(_userId))
             {
                 throw new UnauthorizedAccessException("User does not have access to this data");
@@ -108,6 +111,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
 
         public T GetByUserId(Guid id)
         {
+            //TODO CB: build userhierarchy permissions list in to GetById
             if (string.IsNullOrEmpty(_userId))
             {
                 throw new UnauthorizedAccessException("User does not have access to this data");
@@ -117,7 +121,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             if (type.GetProperty("UserId") != null)
             {
 
-                var record = base.GetAll().Where(s => s.GetType().GetProperty("UserId").GetValue(s, null).Equals(id));
+                var record = base.GetAll().Where(s => s.GetType().GetProperty("UserId").GetValue(type, null).Equals(id));
 
 
                 var castRecord = record as IUserScoped;
