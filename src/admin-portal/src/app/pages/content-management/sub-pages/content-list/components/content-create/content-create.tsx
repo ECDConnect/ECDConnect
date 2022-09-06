@@ -101,6 +101,7 @@ export default function ContentCreate({
       },
       optionDefinition: optionDefinition,
       selectedLanguageId: selectedLanguageId,
+      dataLinkName: field?.dataLinkName,
     };
 
     return returnField;

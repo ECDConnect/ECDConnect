@@ -3,6 +3,7 @@ using EcdLink.Api.CoreApi.Documents;
 using EcdLink.Api.CoreApi.GraphApi.AccessValidators;
 using EcdLink.Api.CoreApi.GraphApi.Interceptors;
 using EcdLink.Api.CoreApi.Managers.Notifications;
+using EcdLink.Api.CoreApi.Managers.Users;
 using EcdLink.Api.CoreApi.Security.Managers;
 using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
 using EcdLink.Api.CoreApi.Services;
@@ -103,6 +104,9 @@ namespace EcdLink.Api.CoreApi
 
             services.AddTransient<SecurityNotificationManager>();
             services.AddTransient<InvitationNotificationManager>();
+            services.AddTransient<HealthCareWorkerManager>();
+            services.AddTransient<MotherManager>();
+            services.AddTransient<InfantManager>();
             services.AddTransient<IClaimsManager, ClaimsManager>();
             services.AddTransient<IAuthorizationManager, AuthorizationManager>();
             services.AddTransient<IUserInterceptHandler, UserInterceptHandler>();

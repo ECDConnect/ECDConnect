@@ -13,7 +13,7 @@ namespace ECDLink.DataAccessLayer.Entities.Caregiver
     {
     }
 
-    public class Caregiver<TKey> : EntityBase<TKey>, SiteAddressJoin<Guid?>, RelationJoin<Guid?>, EducationJoin<Guid?>
+    public class Caregiver<TKey> : EntityBase<TKey>, SiteAddressJoin<Guid?>, RelationJoin<Guid?>, EducationJoin<Guid?>, HealthCareWorkerJoin<Guid?>
          where TKey : IEquatable<TKey>
     {
         public string IdNumber { get; set; }
@@ -42,6 +42,10 @@ namespace ECDLink.DataAccessLayer.Entities.Caregiver
 
         public bool Contribution { get; set; }
 
+        public string Age { get; set; }
+
+        public string WhatsAppNumber { get; set; }
+
         public virtual ICollection<Grant> Grants { get; set; }
 
         [ForeignKey(nameof(SiteAddressId))]
@@ -57,6 +61,10 @@ namespace ECDLink.DataAccessLayer.Entities.Caregiver
         [ForeignKey(nameof(EducationId))]
         public virtual Education Education { get; set; }
         public Guid? EducationId { get; set; }
+
+        [ForeignKey(nameof(HealthCareWorkerId))]
+        public virtual HealthCareWorker HealthCareWorker { get; set; }
+        public Guid? HealthCareWorkerId { get; set; }
     }
 
     public interface CaregiverJoin<TKey>

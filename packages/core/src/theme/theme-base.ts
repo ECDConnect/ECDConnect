@@ -48,6 +48,7 @@ export type DefaultThemeColors = Omit<
   | 'logoUrl'
 >;
 
+// TODO: (Tenancy) these values can't be hardcoded
 export const WhiteLabelTheme: DefaultThemeType = {
   primary: '#583f99',
   primaryAccent1: '#9484BD',
@@ -65,7 +66,7 @@ export const WhiteLabelTheme: DefaultThemeType = {
   uiMid: '#827c93',
   uiLight: '#cac5d8',
   uiBg: '#F3F1F9',
-  modalBg: 'rgba(148, 132, 189, 0.7)',
+  modalBg: '#cac5d8',
   errorMain: '#ED1414',
   errorDark: '#D20000',
   errorBg: '#FFEEF6',
@@ -104,7 +105,7 @@ export const DefaultTheme: DefaultThemeType = {
   uiMid: '#827c93',
   uiLight: '#cac5d8',
   uiBg: '#f3f1f9',
-  modalBg: 'rgba(148, 132, 189, 0.7)',
+  modalBg: '#cac5d8',
   errorMain: '#e74035',
   errorDark: '#99231b',
   errorBg: '#fef2f2',

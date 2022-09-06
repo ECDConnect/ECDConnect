@@ -4,6 +4,7 @@ import GADashboard from './components/dashboard-qa/dashboard-qa';
 import PractitionerDashboard from './components/dashboard-practitioner/dashboard-practitioner';
 import ChildrenDashboard from './components/dashboard-children/dashboard-children';
 
+// TODO: (Tenancy) This can't be hardcoded as it will be different for each tenant
 export default function Dashboard() {
   const tabItems: TabItem[] = [
     {

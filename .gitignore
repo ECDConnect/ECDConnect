@@ -156,6 +156,8 @@ testem.log
 # System Files
 .DS_Store
 Thumbs.db
+._*
+.idea
 
 packages/*/bin
 packages/*/obj

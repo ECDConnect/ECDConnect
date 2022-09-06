@@ -45,5 +45,6 @@ export * from './siteInformation';
 export * from './franchisor';
 export * from './principal';
 export * from './navigation';
-export * from './franchisor';
-export * from './principal';
+export * from './health-care-worker';
+export * from './mother';
+export * from './infant';

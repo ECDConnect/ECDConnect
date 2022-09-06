@@ -33,6 +33,7 @@ export interface ThemeColours extends DefaultThemeColors {
   infoBb: string;
 }
 
+//TODO: (Tenancy) we can't have these hardcoded for multiple tenenats
 export const initialThemeColours: ThemeColours = {
   primary: '#583f99',
   primaryAccent1: '#9484BD',
@@ -50,7 +51,7 @@ export const initialThemeColours: ThemeColours = {
   uiMid: '#827c93',
   uiLight: '#cac5d8',
   uiBg: '#F3F1F9',
-  modalBg: 'rgba(148, 132, 189, 0.7)',
+  modalBg: '#cac5d8',
   errorMain: '#ED1414',
   errorDark: '#D20000',
   errorBg: '#FFEEF6',

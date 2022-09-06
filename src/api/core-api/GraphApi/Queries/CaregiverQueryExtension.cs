@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
@@ -50,6 +49,27 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             } else {
                 return careGiverRepo.GetAll().ToList();
             }
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public List<Caregiver> GetAllCaregiversForHealthCareWorker([Service] IHttpContextAccessor contextAccessor,
+            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+            [Service] IGenericRepositoryFactory repoFactory,
+            string id)
+        {
+            using var scope = dbFactory.CreateDbContext();
+            using var dbContextTransaction = scope.Database.BeginTransaction();
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var careGiverRepo = repoFactory.CreateRepository<Caregiver>(userContext: uId);
+            var healthCareWorkerRepo = repoFactory.CreateRepository<HealthCareWorker>(userContext: uId);
+            var healthCareWorker = healthCareWorkerRepo.GetAll().Where(x => x.UserId.Equals(uId)).FirstOrDefault();
+
+            if(healthCareWorker == null)
+            {
+                return new List<Caregiver>();
+            }
+
+            return careGiverRepo.GetAll().Where(x => x.HealthCareWorkerId.Equals(healthCareWorker.Id)).ToList();
         }
     }
 }

@@ -1,0 +1,54 @@
+using ECDLink.Security.Attributes;
+using ECDLink.DataAccessLayer.Entities.Base;
+using ECDLink.DataAccessLayer.Entities.Documents;
+using ECDLink.DataAccessLayer.Entities.Interfaces;
+using ECDLink.Security;
+using HotChocolate;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace ECDLink.DataAccessLayer.Entities.Users
+{
+    [Table(nameof(Mother))]
+    [EntityPermission(PermissionGroups.USER)]
+    public class Mother : Mother<Guid>
+    {
+
+    }
+
+    public class Mother<TKey> : EntityBase<TKey>,
+        IDocumentQueryable,
+        SiteAddressJoin<Guid?>,
+        HealthCareWorkerJoin<Guid?>,
+        ApplicationUserJoin
+         where TKey : IEquatable<TKey>
+    {
+        [ForeignKey(nameof(SiteAddressId))]
+        public virtual SiteAddress SiteAddress { get; set; }
+        public Guid? SiteAddressId { get; set; }
+
+        [ForeignKey(nameof(HealthCareWorkerId))]
+        public virtual HealthCareWorker HealthCareWorker { get; set; }
+        public Guid? HealthCareWorkerId { get; set; }
+
+        [ForeignKey(nameof(UserId))]
+        public virtual ApplicationUser User { get; set; }
+        public string UserId { get; set; }
+
+        public DateTime? ExpectedDateOfDelivery { get; set; }
+
+        public string Age { get; set; }
+
+        public string WhatsAppNumber { get; set; }
+
+        public virtual ICollection<Document> Documents { get; set; }
+    }
+
+    public interface MotherJoin<TKey>
+    {
+        [ForeignKey(nameof(MotherId))]
+        public Mother Mother { get; set; }
+        public TKey MotherId { get; set; }
+    }
+}
