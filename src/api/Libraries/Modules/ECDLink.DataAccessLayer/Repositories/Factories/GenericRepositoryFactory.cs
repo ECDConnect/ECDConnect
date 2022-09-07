@@ -26,10 +26,13 @@ namespace ECDLink.DataAccessLayer.Repositories.Factories
                     repo = _provider.GetService<GenericUserTypeRepository<T>>();
                     break;
                 case var cls when typeof(IUserElevatedScoped).IsAssignableFrom(typeof(T)):
+                    //repo = _provider.GetService<GenericRepository<T>>();
                     repo = _provider.GetService<ElevatedScopedGenericRepository<T>>();
                     break;
                 case var cls when typeof(IUserScoped).IsAssignableFrom(typeof(T)):
                     repo = _provider.GetService<ScopedGenericRepository<T>>();
+                    //if elevated scope, the filtering would be done on userhierachy level, so generic queries will be sufficient
+
                     break;
                 default:
                     repo = _provider.GetService<GenericRepository<T>>();
@@ -46,6 +49,12 @@ namespace ECDLink.DataAccessLayer.Repositories.Factories
                 repo.SetUserContext(userContext);
             }
 
+            return repo;
+        }
+        public IGenericRepository<T, Guid> CreateGenericRepository<T>(AuthenticationDbContext CustomScope = null, string userContext = null)
+          where T : EntityBase<Guid>
+        {
+            IGenericRepository<T, Guid> repo = _provider.GetService<GenericRepository<T>>();            
             return repo;
         }
     }

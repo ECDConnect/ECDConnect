@@ -42,7 +42,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return await invite.SendInviteToApplication(invitationManager, notificationManager, userManager, userId);
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
+        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public Coach UpdateCoach([Service] IHttpContextAccessor contextAccessor,
           [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
           [Service] IGenericRepositoryFactory repoFactory,
@@ -147,7 +147,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             Practitioner practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId.Equals(practitionerId));
             if (practitioner != null)
             {
-                practitioner.CoachHierarchy = coachId;
+                practitioner.CoachHierarchy = Guid.Parse(coachId);
                 var updateResult = practitionerRepo.Update(practitioner);
                 return practitioner;
             }
@@ -168,7 +168,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             Practitioner practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId.Equals(practitionerId));
             if (practitioner != null)
             {
-                practitioner.CoachHierarchy = practitioner.CoachHierarchy.Replace(coachId, "");
+                practitioner.CoachHierarchy = null;
                 var updateResult = practitionerRepo.Update(practitioner);
             }
 

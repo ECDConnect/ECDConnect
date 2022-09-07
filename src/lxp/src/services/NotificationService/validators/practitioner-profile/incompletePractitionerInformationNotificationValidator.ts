@@ -42,10 +42,9 @@ export class IncompletePractitionerInformationNotificationValidator
       (role) => role.name === 'Practitioner'
     );
 
-    const notInvitedYet =
-      practitionerState.practitioner?.notInvitedYet !== false;
+    const isRegistered = practitionerState.practitioner?.isRegistered !== false;
 
-    const showNotification = hasPractitionerRole && notInvitedYet;
+    const showNotification = hasPractitionerRole && isRegistered;
 
     if (showNotification) {
       return [

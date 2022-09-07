@@ -72,6 +72,57 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return default(ApplicationUser);
         }
 
+        public List<Child> GetAllChildrenForPractitioner([Service] IHttpContextAccessor contextAccessor,
+[Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+[Service] IGenericRepositoryFactory repoFactory,
+string userId)
+        {
+
+            using var scope = dbFactory.CreateDbContext();
+            using var dbContextTransaction = scope.Database.BeginTransaction();
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
+
+            List<Child> children = new List<Child>();
+            var dbRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+            List<Practitioner> practitioners = dbRepo.GetAll().Where(x => x.UserId == userId).ToList();
+            practitioners.Where(x => x.UserId.Equals(userId)).ToList();
+            foreach (var practioner in practitioners)
+            {
+                List<Child> practitionerChildren = childRepo.GetAll().Where(x => x.Hierarchy.Contains(practioner.Hierarchy)).ToList();
+                children.AddRange(practitionerChildren);
+            }
+            return children;
+        }
+
+        public List<Classroom> GetAllClassroomsForPractitioner([Service] IHttpContextAccessor contextAccessor,
+[Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+[Service] IGenericRepositoryFactory repoFactory,
+string userId)
+        {
+
+            using var scope = dbFactory.CreateDbContext();
+            using var dbContextTransaction = scope.Database.BeginTransaction();
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var classRepo = repoFactory.CreateRepository<Classroom>(userContext: uId);
+
+            return classRepo.GetAll().Where(x => x.UserId.Contains(userId)).ToList();
+        }
+
+        public List<ClassroomGroup> GetAllClassroomGroupsForPractitioner([Service] IHttpContextAccessor contextAccessor,
+[Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+[Service] IGenericRepositoryFactory repoFactory,
+string userId)
+        {
+
+            using var scope = dbFactory.CreateDbContext();
+            using var dbContextTransaction = scope.Database.BeginTransaction();
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var classRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
+
+            return classRepo.GetAll().Where(x => x.UserId.Contains(userId)).ToList();
+        }
+
         public async Task<FileModel> PractitionerExcelTemplateGenerator(
           [Service] IFileGenerationService fileService,
           [Service] IGenericRepositoryFactory repoFactory)
@@ -108,22 +159,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return await fileService.FieldsToExcelTemplate(fieldList, fieldDefinitionList, languageList, reportName);
         }
 
-        public List<Child> GetAllChildrenForPractitioner([Service] IHttpContextAccessor contextAccessor,
-            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
-            [Service] IGenericRepositoryFactory repoFactory,
-            string userId)
-        {
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
-            var practitionerrRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            List<Practitioner> practitioner = practitionerrRepo.GetAll().Where(x => x.UserId.Equals(userId)).ToList();
-            List<Child> children = childRepo.GetAll().Where(x => x.Hierarchy.Contains(practitioner.FirstOrDefault().Hierarchy)).ToList();
-
-            return children;
-        }
-
         public Classroom GetAllClassroomsForPractitioner([Service] IHttpContextAccessor contextAccessor,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
@@ -141,6 +176,55 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
             return classroom;
         }
+
+        public PrincipalClassroom GetClassroomDetailsForPractitioner([Service] IHttpContextAccessor contextAccessor,
+    [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+    [Service] IGenericRepositoryFactory repoFactory,
+    string userId)
+        {
+            using var scope = dbFactory.CreateDbContext();
+            using var dbContextTransaction = scope.Database.BeginTransaction();
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var classroomGroupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
+            var classroomRepo = repoFactory.CreateRepository<Classroom>(userContext: uId);
+            var practiRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+            PrincipalClassroom principalClassroom = new PrincipalClassroom();
+            List<Classroom> classes = classroomRepo.GetAll().Where(x => x.UserId.Equals(userId)).ToList();
+            foreach (var classroom in classes)
+            {
+                List<ClassroomGroup> classrooms = classroomGroupRepo.GetAll().Where(x => x.ClassroomId.Equals(classroom.Id)).ToList();
+                foreach (var classroomGroup in classrooms)
+                {
+                    Practitioner principal = practiRepo.GetByUserId(userId);
+                    if (principal != null)
+                    {
+                        principalClassroom.ClassroomName = classroomGroup.Name;
+                        principalClassroom.PrincipalName = principal.User.FirstName + " " + principal.User.Surname;
+
+                    }
+                }
+            }
+
+            return principalClassroom;
+        }
+        
+
+
+        //    public List<Attendance> GetAllAttendanceForPractitioner([Service] IHttpContextAccessor contextAccessor,
+        //[Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+        //[Service] IGenericRepositoryFactory repoFactory,
+        //string userId)
+        //    {
+        //        List<Attendance> attendances = new List<Attendance>();
+        //        using var scope = dbFactory.CreateDbContext();
+        //        using var dbContextTransaction = scope.Database.BeginTransaction();
+        //        var uId = contextAccessor.HttpContext.GetUser().Id;
+        //        var dbRepo = repoFactory.CreateRepository<Attendance>(userContext: uId);
+
+        //        attendances = dbRepo.GetAll().Where(x => x.UserId.Equals(userId)).Where(y => y.UserId.Equals(userId)).ToList();
+
+        //        return attendances;
+        //    }
     }
 
 }

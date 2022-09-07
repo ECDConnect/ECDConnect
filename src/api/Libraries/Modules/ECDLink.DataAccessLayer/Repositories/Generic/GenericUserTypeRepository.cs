@@ -12,7 +12,10 @@ using ECDLink.Security;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using ECDLink.Core.Extensions;
+using Microsoft.Extensions.Azure;
 
 namespace ECDLink.DataAccessLayer.Repositories.Generic
 {
@@ -93,35 +96,30 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                 throw new UnauthorizedAccessException("User does not have access to this data");
             }
 
-            var all = base.GetAll();
-
             var user = _userManager.FindByIdAsync(_userId).Result;
             var roles = _userManager.GetRolesAsync(user).Result;
-            //if user is in a higher admin role (Principal, Practitioner, Coach, Franchisor, then skip the check as they need to be able to see anyone anywhere due to the shift in roles of Milestone 1.
-            var higherRoles = new[] { Roles.PRACTITIONER, Roles.COACH, Roles.ADMINISTRATOR, Roles.PRINCIPAL, Roles.FRANCHISOR };//            
-            bool isHigherRole = higherRoles.Any(roles.Contains);
             var isAdmin = roles.Contains(Roles.ADMINISTRATOR);
-            var excludingEntities = new[] { typeof(Practitioner), typeof(Principal), typeof(Coach), typeof(Franchisor), typeof(Classroom), typeof(ClassroomGroup), typeof(Child), typeof(Programme) };//remove teh last three for normal functionlity
-            bool isExcluded = excludingEntities.Contains(typeof(T));
-
+            
             var query = entities.AsQueryable();
-
             if (isAdmin)
             {
                 return query;
             }
             else
             {
-                if (isExcluded && isHigherRole)
+                try { 
+                    List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId);
+                    if (hh != null)
+                    {
+                        return query.Where(x => hh.Contains(((IUserType)x).Hierarchy));
+                    }
+                }
+                catch (Exception e)
                 {
-                    return query;
-                } else {                 
-                    var hierarchy = _hierarchyEngine.GetUserHierarchy(_userId);
-                    return query.Where(x => ((IUserType)x).Hierarchy.StartsWith(hierarchy));
+                    return null;
                 }
             }
-
-            // Change this to an LTree at some point            
+            return query.Take(0);
         }
 
         public override T GetById(Guid id)
@@ -138,18 +136,30 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             //if user is in a higher admin role (Principal, Practitioner, Coach, Franchisor, then skip the check as they need to be able to see anyone anywhere due to the shift in roles of Milestone 1.
             var user = _userManager.FindByIdAsync(castRecord.UserId).Result;
             var roles = _userManager.GetRolesAsync(user).Result;
-            var higherRoles = new[] { Roles.PRACTITIONER, Roles.COACH, Roles.ADMINISTRATOR, Roles.PRINCIPAL, Roles.FRANCHISOR };//
-            bool isHigherRole = higherRoles.Any(roles.Contains);
+            //var higherRoles = new[] { Roles.PRACTITIONER, Roles.COACH, Roles.ADMINISTRATOR, Roles.PRINCIPAL, Roles.FRANCHISOR };//
+            //bool isHigherRole = higherRoles.Any(roles.Contains);
 
-            if (!isHigherRole)
+            ///if (!isHigherRole)
+            var isAdmin = roles.Contains(Roles.ADMINISTRATOR);
+
+            if (!isAdmin)
             {
                 if (!string.IsNullOrWhiteSpace(castRecord.Hierarchy))
                 {
-                    var hierarchy = _hierarchyEngine.GetUserHierarchy(_userId);
-                    if (!castRecord.Hierarchy.StartsWith(hierarchy))
+                    List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId);
+                    if (hh != null)
                     {
-                        return default;
+                        if (!hh.Contains(castRecord.Hierarchy))
+                        {
+                            return default;
+                        }
                     }
+
+                    //var hierarchy = _hierarchyEngine.GetUserHierarchy(_userId);
+                    //if (!castRecord.Hierarchy.StartsWith(hierarchy))
+                    //{
+                    //    return default;
+                    //}
                 }
             }
 
@@ -158,6 +168,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
 
         public override T GetByUserId(string id)
         {
+            //TODO CB: build userhierarchy permissions list in to GetById
             if (string.IsNullOrEmpty(_userId))
             {
                 throw new UnauthorizedAccessException("User does not have access to this data");
@@ -167,8 +178,8 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             if (type.GetProperty("UserId") != null)
             {
 
-                var record = base.GetAll().Where(s => s.GetType().GetProperty("UserId").GetValue(s, null).Equals(id));
-
+                //var record = query.Where(s => ) //base.GetAll().Where(s => s.GetType().GetProperty("UserId").GetValue(s, null).Equals(id));
+                var record = base.GetByUserId(id);
                 var castRecord = record as IUserType;
 
                 if (castRecord == default)
@@ -177,25 +188,49 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                 }
 
                 //if user is in a higher admin role (Principal, Practitioner, Coach, Franchisor, then skip the check as they need to be able to see anyone anywhere due to the shift in roles of Milestone 1.
-                var user = _userManager.FindByIdAsync(castRecord.UserId).Result;
-                var roles = _userManager.GetRolesAsync(user).Result;
-                var higherRoles = new[] { Roles.PRACTITIONER, Roles.COACH, Roles.ADMINISTRATOR, Roles.PRINCIPAL, Roles.FRANCHISOR };//
-                bool isHigherRole = higherRoles.Any(roles.Contains);
+                //var user = _userManager.FindByIdAsync(castRecord.UserId).Result;
+                //var roles = _userManager.GetRolesAsync(user).Result;
+                //var higherRoles = new[] { Roles.PRACTITIONER, Roles.COACH, Roles.ADMINISTRATOR, Roles.PRINCIPAL, Roles.FRANCHISOR };//
+                //bool isHigherRole = higherRoles.Any(roles.Contains);
+                //if (!isHigherRole)
+                //{
+                //    if (!string.IsNullOrWhiteSpace(castRecord.Hierarchy))
+                //    {
+                //        var hierarchy = _hierarchyEngine.GetUserHierarchy(_userId);
+                //        if (!castRecord.Hierarchy.StartsWith(hierarchy))
+                //        {
+                //            return default;
+                //        }
+                //    }
+                //}
 
-                if (!isHigherRole)
+                //hierarchy confirmation allowing this to be viewed
+                var user = _userManager.FindByIdAsync(_userId).Result;
+                var roles = _userManager.GetRolesAsync(user).Result;
+                var isAdmin = roles.Contains(Roles.ADMINISTRATOR);
+
+                if (!isAdmin)
                 {
-                    if (!string.IsNullOrWhiteSpace(castRecord.Hierarchy))
+                    try
                     {
-                        var hierarchy = _hierarchyEngine.GetUserHierarchy(_userId);
-                        if (!castRecord.Hierarchy.StartsWith(hierarchy))
+                        List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId);
+                        if (hh != null)
                         {
-                            return default;
+                            if (!hh.Contains(castRecord.Hierarchy))
+                            {
+                                return default;
+                            }
                         }
                     }
-                }
+                    catch (Exception e)
+                    {
+                        return null;
+                    }
 
+                }
                 return (T)record;
-            } else return this.GetById(Guid.Parse(id));//default to getting just by id
+            }
+            return null;
         }
 
         public override T Insert(T entity)

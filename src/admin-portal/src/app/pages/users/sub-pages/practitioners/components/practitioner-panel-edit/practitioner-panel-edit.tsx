@@ -194,7 +194,7 @@ export default function PractitionerPanelEdit({
     const practInputModel: PractitionerInput = {
       Id: practitioner.id,
       UserId: practitioner.userId,
-      SiteAddressId: siteAddressId,
+      SiteAddressId: siteAddressId !== '' ? siteAddressId : null,
       AttendanceRegisterLink: practitionerForm.attendanceRegisterLink,
       MaxChildren:
         practitionerForm.maxChildren && +practitionerForm.maxChildren,
@@ -209,8 +209,14 @@ export default function PractitionerPanelEdit({
       IsPrincipal: practitionerForm.isPrincipal,
       IsTrainee: practitionerForm.isTrainee,
       IsFundaAppAdmin: practitionerForm.isFundaAppAdmin,
-      CoachHierarchy: practitionerForm.coachHierarchy,
-      PrincipalHierarchy: practitionerForm.principalHierarchy,
+      CoachHierarchy:
+        practitionerForm.coachHierarchy !== ''
+          ? practitionerForm.coachHierarchy
+          : null,
+      PrincipalHierarchy:
+        practitionerForm.principalHierarchy !== ''
+          ? practitionerForm.principalHierarchy
+          : null,
     };
 
     await updatePractitioner({
@@ -241,7 +247,7 @@ export default function PractitionerPanelEdit({
     };
 
     let siteAddressId = '';
-    if (practitioner.siteAddressId) {
+    if (practitioner.siteAddressId && siteAddressInputModel.ProvinceId !== '') {
       await updateSiteAddress({
         variables: {
           id: practitioner.siteAddressId,
@@ -250,12 +256,14 @@ export default function PractitionerPanelEdit({
       });
       siteAddressId = practitioner.siteAddressId;
     } else {
-      const returnSiteAddress = await createSiteAddress({
-        variables: {
-          input: { ...siteAddressInputModel },
-        },
-      });
-      siteAddressId = returnSiteAddress?.data?.createSiteAddress?.id ?? '';
+      if (siteAddressInputModel.ProvinceId !== '') {
+        const returnSiteAddress = await createSiteAddress({
+          variables: {
+            input: { ...siteAddressInputModel },
+          },
+        });
+        siteAddressId = returnSiteAddress?.data?.createSiteAddress?.id ?? '';
+      }
     }
 
     setNotification({

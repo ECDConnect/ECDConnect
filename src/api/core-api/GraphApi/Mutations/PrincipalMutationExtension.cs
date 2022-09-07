@@ -51,7 +51,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 Practitioner practitioner = (practitionerUser.practitionerObjectData != null ? practitionerUser.practitionerObjectData : practitionerUser.principalObjectData);
                 if (practitioner != null)
                 {
-                    practitioner.PrincipalHierarchy = userId;
+                    practitioner.PrincipalHierarchy = Guid.Parse(userId);
                     var practitionerUpdateResult = practitionerRepo.Update(practitioner);
 
                     //update users nicknames
@@ -93,8 +93,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     Id = Guid.NewGuid(),
                     UserId = practitionerId,
                     IsPrincipal = false,
-                    PrincipalHierarchy = userId,
-                    NotInvitedYet = true});
+                    PrincipalHierarchy = Guid.Parse(userId),
+                    IsRegistered = true});
 
                 return new PractitionerQueryExtension().GetPractitionerByUserId(contextAccessor, dbFactory, repoFactory, practitionerId);
             }
@@ -110,9 +110,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            Practitioner practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId.Equals(userId)).Where(y => y.PrincipalHierarchy.Contains(principalId)).FirstOrDefault();
+            Practitioner practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId.Equals(userId)).Where(y => y.PrincipalHierarchy.Equals(principalId)).FirstOrDefault();
             {
-                practitioner.CoachHierarchy = practitioner.PrincipalHierarchy.Replace(principalId, "");
+                practitioner.PrincipalHierarchy = null;
                 practitioner.ShareInfo = false;
                 var updateResult = practitionerRepo.Update(practitioner);
             }
@@ -197,7 +197,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 IsTrainee = practitioner?.IsTrainee,
                 SigningSignature = practitioner?.SigningSignature,
                 ShareInfo = practitioner?.ShareInfo,
-                //NotInvitedYet = practitioner.NotInvitedYet,
+                IsRegistered = practitioner.IsRegistered,
                 //Signature = practitioner.Signature,
                 //PrincipalHierarchy = practitioner?.PrincipalHierarchy,           
             };
