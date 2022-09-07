@@ -48,7 +48,9 @@ export default function ApplicationUsers() {
       );
     }
 
-    setTableData(allUsers.map(mapUserTableItem));
+    setTableData(
+      allUsers.filter((v) => v.isActive === true).map(mapUserTableItem)
+    );
   }, [selectedRoleFilter]);
 
   const displayUserPanel = () => {

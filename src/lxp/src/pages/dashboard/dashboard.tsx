@@ -47,6 +47,7 @@ export enum NavigationTypes {
   Profile = 'Profile',
   Messages = 'Messages',
   Logout = 'Logout',
+  Practitioners = 'Practitioners',
 }
 
 export const Dashboard: React.FC = () => {
@@ -135,7 +136,7 @@ export const Dashboard: React.FC = () => {
     },
     {
       name: NavigationTypes.ClientFolders,
-      icon: 'AcademicCapIcon',
+      icon: 'UsersIcon',
       current: false,
       nestedChildren: [
         {
@@ -186,12 +187,53 @@ export const Dashboard: React.FC = () => {
     },
   ];
 
+  const navigationForCoach: (NavigationRouteItem | NavigationDropdown)[] = [
+    {
+      name: NavigationTypes.Home,
+      href: ROUTES.ROOT,
+      icon: 'HomeIcon',
+      current: true,
+    },
+    {
+      name: NavigationTypes.Practitioners,
+      icon: 'AcademicCapIcon',
+      current: false,
+      href: ROUTES.COACH.PRACTITIONERS,
+    },
+    {
+      name: NavigationTypes.Profile,
+      href: isCoach
+        ? ROUTES.COACH.PROFILE.ROOT
+        : ROUTES.PRACTITIONER.PROFILE.ROOT,
+      icon: 'UserIcon',
+      current: false,
+      showDivider: true,
+    },
+    {
+      name: NavigationTypes.Messages,
+      href: ROUTES.MESSAGES,
+      icon: 'BellIcon',
+      current: false,
+      showDivider: true,
+      getNotificationCount: () => {
+        return newNotificationCount;
+      },
+    },
+    {
+      name: NavigationTypes.Logout,
+      href: ROUTES.LOGIN,
+      icon: 'ExternalLinkIcon',
+      current: false,
+      showDivider: true,
+    },
+  ];
+
   const dashboardItems: StackedListItemType[] = [];
 
   if (isCoach) {
     dashboardItems.push(
       {
-        title: 'Smartstarters',
+        title: 'SmartStarters',
         titleIcon: 'AcademicCapIcon',
         titleIconClassName: styles.smartStarterIcon,
         onActionClick: () => history.push(ROUTES.COACH.PRACTITIONERS),
@@ -360,7 +402,7 @@ export const Dashboard: React.FC = () => {
           />
         )
       }
-      menuItems={navigation}
+      menuItems={isCoach ? navigationForCoach : navigation}
       onNavigation={onNavigation}
       menuLogoUrl={theme?.images.logoUrl}
       notificationRender={() => {

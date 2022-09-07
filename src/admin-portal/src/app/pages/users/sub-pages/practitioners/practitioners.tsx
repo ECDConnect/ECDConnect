@@ -77,17 +77,18 @@ export default function Practitioners() {
 
   useEffect(() => {
     if (data && data.GetAllPractitioner) {
-      const copyItems = data.GetAllPractitioner.map(
-        (item: PractitionerDto) => ({
-          ...item,
-          fullName: `${item.user?.firstName} ${item.user?.surname}`,
-          isActive: item.user?.isActive,
-          idNumber: item.user?.idNumber,
-          _view: undefined,
-          _edit: undefined,
-          _url: undefined,
-        })
-      );
+      const copyItems = data.GetAllPractitioner.filter(
+        (v) => v.user !== null && v.user.isActive === true
+      ).map((item: PractitionerDto) => ({
+        ...item,
+        fullName: `${item.user?.firstName} ${item.user?.surname}`,
+        isActive: item.user?.isActive,
+        isPrinicpal: item?.isPrincipal,
+        idNumber: item.user?.idNumber,
+        _view: undefined,
+        _edit: undefined,
+        _url: undefined,
+      }));
       setTableData(copyItems);
     }
   }, [data]);
@@ -275,6 +276,7 @@ export default function Practitioners() {
                     { field: 'idNumber', use: 'id / Passport' },
                     { field: 'fullName', use: 'name' },
                     { field: 'isActive', use: 'Active' },
+                    { field: 'isPrincipal', use: 'Principal' },
                   ]}
                   rows={tableData}
                   editRow={
