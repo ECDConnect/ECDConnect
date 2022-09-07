@@ -61,63 +61,6 @@ export const getClassroom = createAsyncThunk<
   }
 );
 
-export const getClassroomsForPractitioner = createAsyncThunk<
-  {
-    classroom: ClassroomDto;
-    classroomGroups?: ClassroomGroupDto[];
-    principal?: PrincipalDto;
-  },
-  { practitionerId: string; principalId: string },
-  ThunkApiType<RootState>
->(
-  'getClassroomsForPractitioner',
-  // eslint-disable-next-line no-empty-pattern
-  async ({ practitionerId, principalId }, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-      classroomData: {
-        classroom: classroomsCache,
-        classroomGroups: classroomGroupsData,
-        principal: principalData,
-      },
-    } = getState();
-
-    if (!classroomsCache) {
-      try {
-        let classrooms:
-          | {
-              classroom: ClassroomDto;
-              principal: PrincipalDto;
-              classroomGroups: ClassroomGroupDto[];
-            }
-          | undefined;
-
-        if (userAuth?.auth_token) {
-          classrooms = await new ClassroomService(
-            userAuth?.auth_token
-          ).getClassroomsForPractitioner(practitionerId, principalId);
-        } else {
-          return rejectWithValue('no access token, profile check required');
-        }
-
-        if (!classrooms) {
-          return rejectWithValue('Error getting Classrooms for Practitioner');
-        }
-
-        return classrooms;
-      } catch (err) {
-        return rejectWithValue(err);
-      }
-    } else {
-      return {
-        classroom: classroomsCache,
-        principal: principalData,
-        classroomGroups: classroomGroupsData,
-      };
-    }
-  }
-);
-
 export const getClassroomGroups = createAsyncThunk<
   ClassroomGroupDto[],
   // eslint-disable-next-line @typescript-eslint/ban-types

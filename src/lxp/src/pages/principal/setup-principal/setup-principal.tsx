@@ -54,6 +54,7 @@ export const SetupPrincipal: React.FC = () => {
   const user = useSelector(userSelectors.getUser);
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const programmeType = useSelector(classroomsSelectors.getProgrammeType());
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const principalPractitioners = useSelector(
     practitionerSelectors.getPrincipalPractitioners
   );
@@ -117,6 +118,10 @@ export const SetupPrincipal: React.FC = () => {
       await new PractitionerService(
         userAuth?.auth_token
       ).PromotePractitionerToPrincipal(user?.id);
+
+      await new PractitionerService(
+        userAuth.auth_token
+      ).UpdatePractitionerRegistered(user.id, true);
     }
 
     if (principalPractitioners?.length) {

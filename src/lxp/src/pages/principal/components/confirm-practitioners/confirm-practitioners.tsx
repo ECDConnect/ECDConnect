@@ -23,7 +23,6 @@ import {
   PractitionerSetupSteps,
   RegisterPractitioner,
 } from '../../setup-principal/setup-principal.types';
-import { SetupPractitionersPage } from '@/pages/practitioner/edit-practitioner-profile/edit-practitioner-profile';
 
 interface StackListItems extends ActionListDataItem {
   idNumber: string;

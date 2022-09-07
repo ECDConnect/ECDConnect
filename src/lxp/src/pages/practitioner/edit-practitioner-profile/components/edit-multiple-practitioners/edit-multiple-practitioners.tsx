@@ -16,7 +16,7 @@ import {
   practitionerActions,
   practitionerSelectors,
 } from '@/store/practitioner';
-import { SetupPractitionersPage } from '../../edit-practitioner-profile';
+import { SetupPractitionersPage } from '../../edit-practitioner-profile.types';
 
 interface StackListItems extends ActionListDataItem {
   idNumber: string;
