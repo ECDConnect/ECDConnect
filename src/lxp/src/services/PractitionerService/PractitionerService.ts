@@ -187,12 +187,17 @@ class PractitionerService {
     const apiInstance = await api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-        query GetPractitionerByIdNumber($idNumber: String) {
+       query GetPractitionerByIdNumber($idNumber: String) {
           practitionerByIdNumber(idNumber: $idNumber) {
             id
             idNumber
             firstName
             surname
+            userName
+            practitionerObjectData {
+              isRegistered
+              id
+            }
           }
         }
       `,
@@ -242,6 +247,33 @@ class PractitionerService {
     return response.data.data.promotePractitionerToPrincipal;
   }
 
+  async getClassroomDetailsForPractitioner(
+    userId: string
+  ): Promise<{ principalName: string; classroomName: string }> {
+    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        query getClassroomDetailsForPractitioner($userId: String) {
+          getClassroomDetailsForPractitioner(userId: $userId) {
+            principalName
+            classroomName
+          }
+        }
+      `,
+      variables: {
+        userId,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Get Practitioner by ID number Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.getClassroomDetailsForPractitioner;
+  }
+
   async UpdatePractitionerShareInfo(
     practitionerId: string,
     principalId: string
@@ -276,24 +308,24 @@ class PractitionerService {
 
   async UpdatePractitionerRegistered(
     practitionerId: string,
-    principalId: string
+    status: boolean = true
   ): Promise<boolean> {
     const apiInstance = await api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-        mutation updatePractitionerShareInfo(
+        mutation UpdatePractitionerRegistered(
           $practitionerId: String
-          $principalId: String
+          $status: Boolean
         ) {
-          updatePractitionerShareInfo(
+          updatePractitionerRegistered(
             practitionerId: $practitionerId
-            principalId: $principalId
+            status: $status
           )
         }
       `,
       variables: {
         practitionerId,
-        principalId,
+        status,
       },
     });
 
@@ -303,7 +335,7 @@ class PractitionerService {
       );
     }
 
-    return response.data.data.updatePractitionerShareInfo;
+    return response.data.data.updatePractitionerRegistered;
   }
 
   async AddPractitionerToPrincipal(

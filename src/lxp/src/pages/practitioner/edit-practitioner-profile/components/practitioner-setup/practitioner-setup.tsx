@@ -13,15 +13,23 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useSelector } from 'react-redux';
-import { yesNoOptions } from './components/edit-programme-form/edit-programme-form.types';
+import { yesNoOptions } from '../edit-programme-form/edit-programme-form.types';
 import { setupPractitioner } from '@/schemas/practitioner/add-practitioner';
-import { practitionerSelectors } from '@/store/practitioner';
 import { userSelectors } from '@/store/user';
-import { classroomsSelectors, classroomsThunkActions } from '@/store/classroom';
 import { useAppDispatch } from '@/store';
+import { authSelectors } from '@/store/auth';
+import { PractitionerService } from '@/services/PractitionerService';
+import { OnNext } from '@/pages/principal/setup-principal/setup-principal.types';
+import { PractitionerFormData } from '../../edit-practitioner-profile.types';
 
-export const PractitionerSetup = ({ onSubmit }: { onSubmit: () => void }) => {
-  const appDispatch = useAppDispatch();
+export const PractitionerSetup = ({
+  onSubmit,
+}: {
+  onSubmit: ({
+    practitionerToProgramme,
+    allowPermissions,
+  }: PractitionerFormData) => void;
+}) => {
   const [principalName, setPrincipalName] = useState<string>('Principal');
   const [programName, setProgramName] = useState<string>('Programme');
   const [viewPermissionToShare, setViewPermissionToShare] =
@@ -34,25 +42,23 @@ export const PractitionerSetup = ({ onSubmit }: { onSubmit: () => void }) => {
     },
   });
 
-  const classroom = useSelector(classroomsSelectors.getClassroom);
-  const principal = useSelector(classroomsSelectors.getPrincipal);
-  const practitioner = useSelector(practitionerSelectors.getPractitioner);
-  const practitioners = useSelector(practitionerSelectors.getPractitioners);
-  console.log({ practitioners });
-
-  const principalPractitioner = practitioners?.find(
-    (item) => item.userId === practitioner?.principalHierarchy
-  );
+  const userAuth = useSelector(authSelectors.getAuthUser);
+  const user = useSelector(userSelectors.getUser);
 
   useEffect(() => {
-    // const { user } = principal;
-    setProgramName(classroom?.name || '');
-    setPrincipalName(principalPractitioner?.user?.fullName || '');
-    // if (user) {
-    //   setPrincipalName(principalPractitioner?.user?.fullName || ''); // TODO This page should be visible only when there is a principal
-    // }
+    const getClassroomDetails = async () => {
+      const res = await new PractitionerService(
+        userAuth?.auth_token || ''
+      ).getClassroomDetailsForPractitioner(user?.id || '');
+      return res;
+    };
+
+    getClassroomDetails().then((data) => {
+      setProgramName(data?.classroomName || '');
+      setPrincipalName(data?.principalName || '');
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [principal, classroom]);
+  }, []);
 
   const { practitionerToProgramme, allowPermissions } = watch();
 
@@ -154,7 +160,10 @@ export const PractitionerSetup = ({ onSubmit }: { onSubmit: () => void }) => {
             icon="ArrowCircleRightIcon"
             disabled={!(practitionerToProgramme != null && allowPermissions)}
             onClick={() => {
-              onSubmit();
+              onSubmit({
+                practitionerToProgramme: !!practitionerToProgramme,
+                allowPermissions: !!allowPermissions,
+              });
             }}
           />
         </div>

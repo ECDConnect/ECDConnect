@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { SetStateAction, useCallback, useEffect, useState } from 'react';
 import {
   Typography,
   Divider,
@@ -16,33 +16,40 @@ import {
   practitionerActions,
   practitionerSelectors,
 } from '@/store/practitioner';
-import { SetupPractitionersPage } from '../../edit-practitioner-profile.types';
+import { PractitionerDto } from '@ecdlink/core';
+import {
+  ConfirmPractitionersSteps,
+  OnNext,
+  PractitionerSetupSteps,
+  RegisterPractitioner,
+} from '../../setup-principal/setup-principal.types';
 
 interface StackListItems extends ActionListDataItem {
   idNumber: string;
 }
 
-export default function EditMultiplePractitioners({
-  onSubmit,
-  page = SetupPractitionersPage.confirmPractitioners,
+export default function ConfirmPractitioners({
+  onNext,
+  page,
+  setConfirmPractitionerPage,
 }: {
-  onSubmit: any;
-  page: SetupPractitionersPage;
+  onNext: OnNext;
+  page: ConfirmPractitionersSteps;
+  setConfirmPractitionerPage: React.Dispatch<
+    React.SetStateAction<ConfirmPractitionersSteps>
+  >;
 }) {
   const appDispatch = useAppDispatch();
   const user = useSelector(userSelectors.getUser);
-  const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const practitionersForPrincipal = useSelector(
     practitionerSelectors.getPrincipalPractitioners
   );
-
-  const [currentPage, setCurrentPage] = useState(page);
   const [principalPractitioners, setPrincipalPractitioners] = useState<
-    AddPractitionerModel[]
+    RegisterPractitioner[]
   >([]);
   const [allInFundaApp, setAllInFundaApp] = useState<boolean>();
   const [editPractitioner, setEditPractitioner] =
-    useState<AddPractitionerModel>();
+    useState<RegisterPractitioner>();
   const [listItems, setListItems] = useState<StackListItems[]>([
     {
       title: user?.fullName ?? '',
@@ -56,8 +63,9 @@ export default function EditMultiplePractitioners({
 
   useEffect(() => {
     if (practitionersForPrincipal?.length) {
-      practitionersForPrincipal.forEach(
-        ({ firstName, surname, id, idNumber }) => {
+      const _practitionersList: SetStateAction<RegisterPractitioner[]> = [];
+      (practitionersForPrincipal as unknown as RegisterPractitioner[]).forEach(
+        ({ firstName, surname, id, idNumber, isRegistered, userId }) => {
           listItems.push(
             createStackItem({
               firstName: firstName ?? '',
@@ -66,54 +74,55 @@ export default function EditMultiplePractitioners({
               userId: id ?? '',
               passport: '',
               preferId: !!idNumber,
+              isRegistered: Boolean(isRegistered),
             })
           );
           setListItems(listItems);
+
+          _practitionersList.push({
+            firstName: firstName ?? '',
+            surname: surname ?? '',
+            idNumber: idNumber ?? '',
+            id: id ?? '',
+            userId: userId,
+            passport: '',
+            preferId: !!idNumber,
+            isRegistered: Boolean(isRegistered),
+          });
         }
       );
+      setPrincipalPractitioners(_practitionersList);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    const practitionerList = listItems.filter(
-      (i) => i.idNumber !== user?.idNumber
-    );
-    const practitionerIds = practitioners?.map((p) => p.user?.idNumber);
-    const inFundaApp = practitionerList.length
-      ? practitionerList.every((l) => practitionerIds?.includes(l.idNumber))
-      : undefined;
-    setAllInFundaApp(inFundaApp);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, listItems.length]);
+  }, [practitionersForPrincipal]);
 
   const createStackItem = useCallback(
-    (data: AddPractitionerModel): StackListItems => {
-      const isInFundaApp = practitioners?.find(
-        (p) => p.user?.idNumber === data.idNumber || data.passport
-      );
+    (data: RegisterPractitioner): StackListItems => {
       return {
         title: `${data.firstName} ${data.surname}`,
         idNumber: data.idNumber ?? data.passport,
-        subTitle: isInFundaApp ? 'Practitioner' : 'Not on Funda App',
+        subTitle: data.isRegistered ? 'Practitioner' : 'Not on Funda App',
         titleStyle:
           'text-textDark font-body text-base font-semibold leading-snug ',
         subTitleStyle: `${
-          isInFundaApp ? 'text-textMid' : 'text-alertDark'
+          data.isRegistered ? 'text-textMid' : 'text-alertDark'
         } font-body text-sm leading-5 `,
         actionName: 'Edit',
         actionIcon: 'PencilIcon',
         buttonType: 'filled',
         onActionClick() {
           setEditPractitioner(data);
-          setCurrentPage(SetupPractitionersPage.editPractitioners);
+          setConfirmPractitionerPage(
+            ConfirmPractitionersSteps.EDIT_PRACTITIONER
+          );
         },
       };
     },
-    [practitioners]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
   );
 
-  const handleAddOrEditPractitionerSubmit = (data: AddPractitionerModel) => {
+  const handleAddOrEditPractitionerSubmit = (data: RegisterPractitioner) => {
     const indexToEdit = listItems.findIndex(
       (d) => d.idNumber === editPractitioner?.idNumber
     );
@@ -125,23 +134,27 @@ export default function EditMultiplePractitioners({
 
     listItems.push(createStackItem(data));
     principalPractitioners.push(data);
-
-    setCurrentPage(SetupPractitionersPage.confirmPractitioners);
-
     setPrincipalPractitioners(principalPractitioners);
     setListItems(listItems);
+
+    const allInFunda = principalPractitioners.every(
+      (l) => l.isRegistered === true
+    );
+    setAllInFundaApp(allInFunda);
+
+    setConfirmPractitionerPage(ConfirmPractitionersSteps.CONFIRM_PRACTITIONERS);
   };
 
   const handleConfirmPractitionerSubmit = () => {
     appDispatch(
       practitionerActions.addPrincipalPractitioners(principalPractitioners)
     );
-    onSubmit();
+    onNext(PractitionerSetupSteps.CONFIRM_CLASSES);
   };
 
-  const renderPage = (page: SetupPractitionersPage) => {
+  const renderPage = (page: ConfirmPractitionersSteps) => {
     switch (page) {
-      case SetupPractitionersPage.confirmPractitioners:
+      case ConfirmPractitionersSteps.CONFIRM_PRACTITIONERS:
       default:
         return (
           <div className="wrapper-with-sticky-button">
@@ -208,7 +221,9 @@ export default function EditMultiplePractitioners({
                   textColor="white"
                   icon="PlusIcon"
                   onClick={() =>
-                    setCurrentPage(SetupPractitionersPage.addPractitioners)
+                    setConfirmPractitionerPage(
+                      ConfirmPractitionersSteps.ADD_PRACTITIONER
+                    )
                   }
                 />
               </div>
@@ -228,18 +243,18 @@ export default function EditMultiplePractitioners({
             </div>
           </div>
         );
-      case SetupPractitionersPage.editPractitioners:
+      case ConfirmPractitionersSteps.EDIT_PRACTITIONER:
         return (
           <AddOrEditPractitioner
             onSubmit={handleAddOrEditPractitionerSubmit}
             formData={editPractitioner}
           />
         );
-      case SetupPractitionersPage.addPractitioners:
+      case ConfirmPractitionersSteps.ADD_PRACTITIONER:
         return (
           <AddOrEditPractitioner onSubmit={handleAddOrEditPractitionerSubmit} />
         );
     }
   };
-  return renderPage(currentPage);
+  return renderPage(page);
 }

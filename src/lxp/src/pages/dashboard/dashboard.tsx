@@ -21,7 +21,7 @@ import { OfflineSyncModal } from '../../modals';
 import OfflineSyncTimeExceeded from '../../modals/offline-sync/offline-sync-time-exceeded';
 import { useAppDispatch } from '@store';
 import { classroomsForCoachThunkActions } from '../../store/classroomForCoach';
-import { classroomsSelectors, classroomsThunkActions } from '@store/classroom';
+import { classroomsSelectors } from '@store/classroom';
 import { notificationsSelectors } from '@store/notifications';
 import { settingSelectors } from '@store/settings';
 import { userSelectors } from '@store/user';
@@ -29,6 +29,7 @@ import { analyticsActions } from '@store/analytics';
 import { DashboardItems } from './components/dashboard-items/dashboard-items';
 import { practitionerForCoachThunkActions } from '@/store/practitionerForCoach';
 import {
+  practitionerActions,
   practitionerSelectors,
   practitionerThunkActions,
 } from '@/store/practitioner';
@@ -125,21 +126,6 @@ export const Dashboard: React.FC = () => {
       }
     }
   }, []);
-
-  useEffect(() => {
-    if (
-      (practitioner && practitioner.isPrincipal === false,
-      practitioner?.principalHierarchy)
-    ) {
-      console.log('teste practitioner');
-      appDispatch(
-        classroomsThunkActions.getClassroomsForPractitioner({
-          principalId: practitioner.principalHierarchy ?? '',
-          practitionerId: practitioner.id ?? '',
-        })
-      );
-    }
-  }, [practitioner]);
 
   const navigation: (NavigationRouteItem | NavigationDropdown)[] = [
     {

@@ -1,4 +1,4 @@
-import { ClassroomGroupDto } from '@ecdlink/core';
+import { ClassProgrammeDto, ClassroomGroupDto } from '@ecdlink/core';
 import { EditPlaygroupModel } from '@schemas/practitioner/edit-playgroups';
 import { newGuid } from '../common/uuid.utils';
 
@@ -56,4 +56,26 @@ export const canDeleteClassroomGroup = (classroomGroup: ClassroomGroupDto) => {
   return classroomGroup.learners.every(
     (learner) => !!learner.stoppedAttendance
   );
+};
+
+export const formatMeetingDays = (programmes?: ClassProgrammeDto[]) => {
+  const meetingDays = programmes
+    ?.map((programme) => programme.meetingDay)
+    .sort();
+  let str = '';
+
+  if (meetingDays?.length === 5) {
+    str = 'Every Weekday';
+  } else {
+    for (const meetingDay of meetingDays || []) {
+      const _day = getWeekdayValue(meetingDay).substring(0, 3);
+      if (meetingDay === meetingDays?.at(-1)) {
+        str = str.concat(_day);
+      } else {
+        str = str.concat(_day + ', ');
+      }
+    }
+  }
+
+  return str;
 };
