@@ -4,7 +4,7 @@ import { RelationDto, EducationLevelDto, GrantDto } from '../StaticData';
 
 export interface CaregiverDto extends EntityBase {
   phoneNumber: string;
-  idNumber: string;
+  idNumber?: string;
   firstName: string;
   surname: string;
   fullName?: string;
@@ -16,13 +16,13 @@ export interface CaregiverDto extends EntityBase {
   relationId?: string;
   education?: EducationLevelDto;
   educationId?: string;
-  emergencyContactFirstName: string;
-  emergencyContactSurname: string;
-  emergencyContactPhoneNumber: string;
-  additionalFirstName: string;
-  additionalSurname: string;
-  additionalPhoneNumber: string;
-  joinReferencePanel: boolean;
-  contribution: boolean;
+  emergencyContactFirstName?: string;
+  emergencyContactSurname?: string;
+  emergencyContactPhoneNumber?: string;
+  additionalFirstName?: string;
+  additionalSurname?: string;
+  additionalPhoneNumber?: string;
+  joinReferencePanel?: boolean;
+  contribution?: boolean;
   grants?: GrantDto[];
 }

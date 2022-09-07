@@ -6,6 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Collections.Generic;
 using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.Interfaces;
+using ECDLink.DataAccessLayer.Entities.Caregiver;
 
 namespace ECDLink.DataAccessLayer.Entities.Users
 {
@@ -37,7 +38,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public string UserId { get; set; }
 
         [ForeignKey(nameof(CaregiverId))]
-        public virtual Caregiver Caregiver { get; set; }
+        public virtual Caregiver.Caregiver Caregiver { get; set; }
         public Guid? CaregiverId { get; set; }
 
         public decimal? WeightAtBirth { get; set; }

@@ -355,6 +355,7 @@ export type Caregiver = {
   additionalFirstName?: Maybe<Scalars['String']>;
   additionalPhoneNumber?: Maybe<Scalars['String']>;
   additionalSurname?: Maybe<Scalars['String']>;
+  age?: Maybe<Scalars['String']>;
   contribution: Scalars['Boolean'];
   education?: Maybe<Education>;
   educationId?: Maybe<Scalars['UUID']>;
@@ -364,6 +365,8 @@ export type Caregiver = {
   firstName?: Maybe<Scalars['String']>;
   fullName?: Maybe<Scalars['String']>;
   grants?: Maybe<Array<Maybe<Grant>>>;
+  healthCareWorker?: Maybe<HealthCareWorker>;
+  healthCareWorkerId?: Maybe<Scalars['UUID']>;
   id: Scalars['UUID'];
   idNumber?: Maybe<Scalars['String']>;
   insertedDate: Scalars['DateTime'];
@@ -377,12 +380,14 @@ export type Caregiver = {
   surname?: Maybe<Scalars['String']>;
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
+  whatsAppNumber?: Maybe<Scalars['String']>;
 };
 
 export type CaregiverFilterInput = {
   additionalFirstName?: InputMaybe<StringOperationFilterInput>;
   additionalPhoneNumber?: InputMaybe<StringOperationFilterInput>;
   additionalSurname?: InputMaybe<StringOperationFilterInput>;
+  age?: InputMaybe<StringOperationFilterInput>;
   and?: InputMaybe<Array<CaregiverFilterInput>>;
   contribution?: InputMaybe<BooleanOperationFilterInput>;
   education?: InputMaybe<EducationFilterInput>;
@@ -393,6 +398,8 @@ export type CaregiverFilterInput = {
   firstName?: InputMaybe<StringOperationFilterInput>;
   fullName?: InputMaybe<StringOperationFilterInput>;
   grants?: InputMaybe<ListFilterInputTypeOfGrantFilterInput>;
+  healthCareWorker?: InputMaybe<HealthCareWorkerFilterInput>;
+  healthCareWorkerId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   idNumber?: InputMaybe<StringOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
@@ -407,12 +414,14 @@ export type CaregiverFilterInput = {
   surname?: InputMaybe<StringOperationFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  whatsAppNumber?: InputMaybe<StringOperationFilterInput>;
 };
 
 export type CaregiverInput = {
   AdditionalFirstName?: InputMaybe<Scalars['String']>;
   AdditionalPhoneNumber?: InputMaybe<Scalars['String']>;
   AdditionalSurname?: InputMaybe<Scalars['String']>;
+  Age?: InputMaybe<Scalars['String']>;
   Contribution: Scalars['Boolean'];
   Education?: InputMaybe<EducationInput>;
   EducationId?: InputMaybe<Scalars['UUID']>;
@@ -422,6 +431,8 @@ export type CaregiverInput = {
   FirstName?: InputMaybe<Scalars['String']>;
   FullName?: InputMaybe<Scalars['String']>;
   Grants?: InputMaybe<Array<InputMaybe<GrantInput>>>;
+  HealthCareWorker?: InputMaybe<HealthCareWorkerInput>;
+  HealthCareWorkerId?: InputMaybe<Scalars['UUID']>;
   Id?: InputMaybe<Scalars['UUID']>;
   IdNumber?: InputMaybe<Scalars['String']>;
   IsActive: Scalars['Boolean'];
@@ -433,6 +444,19 @@ export type CaregiverInput = {
   SiteAddressId?: InputMaybe<Scalars['UUID']>;
   Surname?: InputMaybe<Scalars['String']>;
   UpdatedBy?: InputMaybe<Scalars['String']>;
+  WhatsAppNumber?: InputMaybe<Scalars['String']>;
+};
+
+export type CaregiverModelInput = {
+  age?: InputMaybe<Scalars['String']>;
+  firstName?: InputMaybe<Scalars['String']>;
+  healthCareWorkerId?: InputMaybe<Scalars['UUID']>;
+  phoneNumber?: InputMaybe<Scalars['String']>;
+  relationId?: InputMaybe<Scalars['UUID']>;
+  siteAddress?: InputMaybe<SiteAddressInput>;
+  siteAddressId?: InputMaybe<Scalars['UUID']>;
+  surname?: InputMaybe<Scalars['String']>;
+  whatsAppNumber?: InputMaybe<Scalars['String']>;
 };
 
 export type CategoryTask = {
@@ -1393,6 +1417,73 @@ export enum GraphActionEnum {
   View = 'VIEW',
 }
 
+export type HealthCareWorker = {
+  __typename?: 'HealthCareWorker';
+  consentForPhoto: Scalars['Boolean'];
+  emergancyContactNumber?: Maybe<Scalars['String']>;
+  emergancyContactPerson?: Maybe<Scalars['String']>;
+  id: Scalars['UUID'];
+  insertedDate: Scalars['DateTime'];
+  isActive: Scalars['Boolean'];
+  language?: Maybe<Language>;
+  languageId?: Maybe<Scalars['UUID']>;
+  siteAddress?: Maybe<SiteAddress>;
+  siteAddressId?: Maybe<Scalars['UUID']>;
+  teamLead?: Maybe<ApplicationUser>;
+  teamLeadId?: Maybe<Scalars['String']>;
+  updatedBy?: Maybe<Scalars['String']>;
+  updatedDate: Scalars['DateTime'];
+  user?: Maybe<ApplicationUser>;
+  userId?: Maybe<Scalars['String']>;
+};
+
+export type HealthCareWorkerFilterInput = {
+  and?: InputMaybe<Array<HealthCareWorkerFilterInput>>;
+  consentForPhoto?: InputMaybe<BooleanOperationFilterInput>;
+  emergancyContactNumber?: InputMaybe<StringOperationFilterInput>;
+  emergancyContactPerson?: InputMaybe<StringOperationFilterInput>;
+  id?: InputMaybe<ComparableGuidOperationFilterInput>;
+  insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  isActive?: InputMaybe<BooleanOperationFilterInput>;
+  language?: InputMaybe<LanguageFilterInput>;
+  languageId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
+  or?: InputMaybe<Array<HealthCareWorkerFilterInput>>;
+  siteAddress?: InputMaybe<SiteAddressFilterInput>;
+  siteAddressId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
+  teamLead?: InputMaybe<ApplicationUserFilterInput>;
+  teamLeadId?: InputMaybe<StringOperationFilterInput>;
+  updatedBy?: InputMaybe<StringOperationFilterInput>;
+  updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  user?: InputMaybe<ApplicationUserFilterInput>;
+  userId?: InputMaybe<StringOperationFilterInput>;
+};
+
+export type HealthCareWorkerInput = {
+  ConsentForPhoto: Scalars['Boolean'];
+  EmergancyContactNumber?: InputMaybe<Scalars['String']>;
+  EmergancyContactPerson?: InputMaybe<Scalars['String']>;
+  Id?: InputMaybe<Scalars['UUID']>;
+  IsActive: Scalars['Boolean'];
+  Language?: InputMaybe<LanguageInput>;
+  LanguageId?: InputMaybe<Scalars['UUID']>;
+  SiteAddress?: InputMaybe<SiteAddressInput>;
+  SiteAddressId?: InputMaybe<Scalars['UUID']>;
+  TeamLead?: InputMaybe<ApplicationUserInput>;
+  TeamLeadId?: InputMaybe<Scalars['String']>;
+  UpdatedBy?: InputMaybe<Scalars['String']>;
+  User?: InputMaybe<ApplicationUserInput>;
+  UserId?: InputMaybe<Scalars['String']>;
+};
+
+export type HealthCareWorkerModelInput = {
+  langaugeId?: InputMaybe<Scalars['UUID']>;
+  siteAddress?: InputMaybe<SiteAddressInput>;
+  siteAddressId?: InputMaybe<Scalars['UUID']>;
+  teamLeadId?: InputMaybe<Scalars['String']>;
+  user?: InputMaybe<ApplicationUserInput>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
 export type HierarchyEntity = {
   __typename?: 'HierarchyEntity';
   id: Scalars['UUID'];
@@ -1439,6 +1530,80 @@ export type IdentityRole = {
   name?: Maybe<Scalars['String']>;
   normalizedName?: Maybe<Scalars['String']>;
   permissions?: Maybe<Array<Maybe<Permission>>>;
+};
+
+export type Infant = {
+  __typename?: 'Infant';
+  caregiver?: Maybe<Caregiver>;
+  caregiverId?: Maybe<Scalars['UUID']>;
+  documents?: Maybe<Array<Maybe<Document>>>;
+  filterDocumentsByType?: Maybe<Array<Maybe<Document>>>;
+  gender?: Maybe<Gender>;
+  genderId?: Maybe<Scalars['UUID']>;
+  id: Scalars['UUID'];
+  insertedDate: Scalars['DateTime'];
+  isActive: Scalars['Boolean'];
+  lengthAtBirth?: Maybe<Scalars['Decimal']>;
+  mother?: Maybe<Mother>;
+  motherId?: Maybe<Scalars['UUID']>;
+  updatedBy?: Maybe<Scalars['String']>;
+  updatedDate: Scalars['DateTime'];
+  user?: Maybe<ApplicationUser>;
+  userId?: Maybe<Scalars['String']>;
+  weightAtBirth?: Maybe<Scalars['Decimal']>;
+};
+
+export type InfantFilterDocumentsByTypeArgs = {
+  type: FileTypeEnum;
+};
+
+export type InfantFilterInput = {
+  and?: InputMaybe<Array<InfantFilterInput>>;
+  caregiver?: InputMaybe<CaregiverFilterInput>;
+  caregiverId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
+  documents?: InputMaybe<ListFilterInputTypeOfDocumentFilterInput>;
+  gender?: InputMaybe<GenderFilterInput>;
+  genderId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
+  id?: InputMaybe<ComparableGuidOperationFilterInput>;
+  insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  isActive?: InputMaybe<BooleanOperationFilterInput>;
+  lengthAtBirth?: InputMaybe<ComparableNullableOfDecimalOperationFilterInput>;
+  mother?: InputMaybe<MotherFilterInput>;
+  motherId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
+  or?: InputMaybe<Array<InfantFilterInput>>;
+  updatedBy?: InputMaybe<StringOperationFilterInput>;
+  updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  user?: InputMaybe<ApplicationUserFilterInput>;
+  userId?: InputMaybe<StringOperationFilterInput>;
+  weightAtBirth?: InputMaybe<ComparableNullableOfDecimalOperationFilterInput>;
+};
+
+export type InfantInput = {
+  Caregiver?: InputMaybe<CaregiverInput>;
+  CaregiverId?: InputMaybe<Scalars['UUID']>;
+  Documents?: InputMaybe<Array<InputMaybe<DocumentInput>>>;
+  Gender?: InputMaybe<GenderInput>;
+  GenderId?: InputMaybe<Scalars['UUID']>;
+  Id?: InputMaybe<Scalars['UUID']>;
+  IsActive: Scalars['Boolean'];
+  LengthAtBirth?: InputMaybe<Scalars['Decimal']>;
+  Mother?: InputMaybe<MotherInput>;
+  MotherId?: InputMaybe<Scalars['UUID']>;
+  UpdatedBy?: InputMaybe<Scalars['String']>;
+  User?: InputMaybe<ApplicationUserInput>;
+  UserId?: InputMaybe<Scalars['String']>;
+  WeightAtBirth?: InputMaybe<Scalars['Decimal']>;
+};
+
+export type InfantModelInput = {
+  caregiver?: InputMaybe<CaregiverModelInput>;
+  caregiverId?: InputMaybe<Scalars['UUID']>;
+  dateOfBirth: Scalars['DateTime'];
+  firstName?: InputMaybe<Scalars['String']>;
+  genderId?: InputMaybe<Scalars['UUID']>;
+  lengthAtBirth?: InputMaybe<Scalars['Decimal']>;
+  userId?: InputMaybe<Scalars['String']>;
+  weightAtBirth?: InputMaybe<Scalars['Decimal']>;
 };
 
 export type Language = {
@@ -1626,10 +1791,89 @@ export type MonthlyAttendanceReportModel = {
   year: Scalars['Int'];
 };
 
+export type Mother = {
+  __typename?: 'Mother';
+  age?: Maybe<Scalars['String']>;
+  documents?: Maybe<Array<Maybe<Document>>>;
+  expectedDateOfDelivery?: Maybe<Scalars['DateTime']>;
+  filterDocumentsByType?: Maybe<Array<Maybe<Document>>>;
+  healthCareWorker?: Maybe<HealthCareWorker>;
+  healthCareWorkerId?: Maybe<Scalars['UUID']>;
+  id: Scalars['UUID'];
+  insertedDate: Scalars['DateTime'];
+  isActive: Scalars['Boolean'];
+  siteAddress?: Maybe<SiteAddress>;
+  siteAddressId?: Maybe<Scalars['UUID']>;
+  updatedBy?: Maybe<Scalars['String']>;
+  updatedDate: Scalars['DateTime'];
+  user?: Maybe<ApplicationUser>;
+  userId?: Maybe<Scalars['String']>;
+  whatsAppNumber?: Maybe<Scalars['String']>;
+};
+
+export type MotherFilterDocumentsByTypeArgs = {
+  type: FileTypeEnum;
+};
+
+export type MotherFilterInput = {
+  age?: InputMaybe<StringOperationFilterInput>;
+  and?: InputMaybe<Array<MotherFilterInput>>;
+  documents?: InputMaybe<ListFilterInputTypeOfDocumentFilterInput>;
+  expectedDateOfDelivery?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
+  healthCareWorker?: InputMaybe<HealthCareWorkerFilterInput>;
+  healthCareWorkerId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
+  id?: InputMaybe<ComparableGuidOperationFilterInput>;
+  insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  isActive?: InputMaybe<BooleanOperationFilterInput>;
+  or?: InputMaybe<Array<MotherFilterInput>>;
+  siteAddress?: InputMaybe<SiteAddressFilterInput>;
+  siteAddressId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
+  updatedBy?: InputMaybe<StringOperationFilterInput>;
+  updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  user?: InputMaybe<ApplicationUserFilterInput>;
+  userId?: InputMaybe<StringOperationFilterInput>;
+  whatsAppNumber?: InputMaybe<StringOperationFilterInput>;
+};
+
+export type MotherInput = {
+  Age?: InputMaybe<Scalars['String']>;
+  Documents?: InputMaybe<Array<InputMaybe<DocumentInput>>>;
+  ExpectedDateOfDelivery?: InputMaybe<Scalars['DateTime']>;
+  HealthCareWorker?: InputMaybe<HealthCareWorkerInput>;
+  HealthCareWorkerId?: InputMaybe<Scalars['UUID']>;
+  Id?: InputMaybe<Scalars['UUID']>;
+  IsActive: Scalars['Boolean'];
+  SiteAddress?: InputMaybe<SiteAddressInput>;
+  SiteAddressId?: InputMaybe<Scalars['UUID']>;
+  UpdatedBy?: InputMaybe<Scalars['String']>;
+  User?: InputMaybe<ApplicationUserInput>;
+  UserId?: InputMaybe<Scalars['String']>;
+  WhatsAppNumber?: InputMaybe<Scalars['String']>;
+};
+
+export type MotherModelInput = {
+  age?: InputMaybe<Scalars['String']>;
+  dateOfBirth?: InputMaybe<Scalars['DateTime']>;
+  expectedDateOfDelivery?: InputMaybe<Scalars['DateTime']>;
+  firstName?: InputMaybe<Scalars['String']>;
+  healthCareWorkerId?: InputMaybe<Scalars['UUID']>;
+  phoneNumber?: InputMaybe<Scalars['String']>;
+  relation?: InputMaybe<RelationInput>;
+  relationId?: InputMaybe<Scalars['UUID']>;
+  siteAddress?: InputMaybe<SiteAddressInput>;
+  siteAddressId?: InputMaybe<Scalars['UUID']>;
+  surname?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+  whatsAppNumber?: InputMaybe<Scalars['String']>;
+};
+
 export type Mutation = {
   __typename?: 'Mutation';
   addAbsenteeForPractitioner?: Maybe<Absentees>;
   addCoachToFranchisor?: Maybe<Coach>;
+  addHealthCareWorker?: Maybe<HealthCareWorker>;
+  addInfant?: Maybe<Infant>;
+  addMother?: Maybe<Mother>;
   addPermissionsToNavigation: Scalars['Boolean'];
   addPermissionsToRole: Scalars['Boolean'];
   addPractitionerToCoach?: Maybe<Practitioner>;
@@ -1657,10 +1901,13 @@ export type Mutation = {
   createFranchisor?: Maybe<Franchisor>;
   createGender?: Maybe<Gender>;
   createGrant?: Maybe<Grant>;
+  createHealthCareWorker?: Maybe<HealthCareWorker>;
   createHierarchyEntity?: Maybe<HierarchyEntity>;
+  createInfant?: Maybe<Infant>;
   createLanguage?: Maybe<Language>;
   createLearner?: Maybe<Learner>;
   createMessageTemplate?: Maybe<MessageTemplate>;
+  createMother?: Maybe<Mother>;
   createNavigation?: Maybe<Navigation>;
   createNote?: Maybe<Note>;
   createNoteType?: Maybe<NoteType>;
@@ -1714,10 +1961,13 @@ export type Mutation = {
   deleteFranchisor?: Maybe<Scalars['Boolean']>;
   deleteGender?: Maybe<Scalars['Boolean']>;
   deleteGrant?: Maybe<Scalars['Boolean']>;
+  deleteHealthCareWorker?: Maybe<Scalars['Boolean']>;
   deleteHierarchyEntity?: Maybe<Scalars['Boolean']>;
+  deleteInfant?: Maybe<Scalars['Boolean']>;
   deleteLanguage?: Maybe<Scalars['Boolean']>;
   deleteLearner?: Maybe<Scalars['Boolean']>;
   deleteMessageTemplate?: Maybe<Scalars['Boolean']>;
+  deleteMother?: Maybe<Scalars['Boolean']>;
   deleteNavigation?: Maybe<Scalars['Boolean']>;
   deleteNote?: Maybe<Scalars['Boolean']>;
   deleteNoteType?: Maybe<Scalars['Boolean']>;
@@ -1787,10 +2037,13 @@ export type Mutation = {
   updateFranchisor?: Maybe<Franchisor>;
   updateGender?: Maybe<Gender>;
   updateGrant?: Maybe<Grant>;
+  updateHealthCareWorker?: Maybe<HealthCareWorker>;
   updateHierarchyEntity?: Maybe<HierarchyEntity>;
+  updateInfant?: Maybe<Infant>;
   updateLanguage?: Maybe<Language>;
   updateLearner?: Maybe<Learner>;
   updateMessageTemplate?: Maybe<MessageTemplate>;
+  updateMother?: Maybe<Mother>;
   updateNavigation?: Maybe<Navigation>;
   updateNote?: Maybe<Note>;
   updateNoteType?: Maybe<NoteType>;
@@ -1846,6 +2099,18 @@ export type MutationAddAbsenteeForPractitionerArgs = {
 export type MutationAddCoachToFranchisorArgs = {
   coachId?: InputMaybe<Scalars['String']>;
   franchisorId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationAddHealthCareWorkerArgs = {
+  input?: InputMaybe<HealthCareWorkerModelInput>;
+};
+
+export type MutationAddInfantArgs = {
+  input?: InputMaybe<InfantModelInput>;
+};
+
+export type MutationAddMotherArgs = {
+  input?: InputMaybe<MotherModelInput>;
 };
 
 export type MutationAddPermissionsToNavigationArgs = {
@@ -1969,8 +2234,16 @@ export type MutationCreateGrantArgs = {
   input?: InputMaybe<GrantInput>;
 };
 
+export type MutationCreateHealthCareWorkerArgs = {
+  input?: InputMaybe<HealthCareWorkerInput>;
+};
+
 export type MutationCreateHierarchyEntityArgs = {
   input?: InputMaybe<HierarchyEntityInput>;
+};
+
+export type MutationCreateInfantArgs = {
+  input?: InputMaybe<InfantInput>;
 };
 
 export type MutationCreateLanguageArgs = {
@@ -1983,6 +2256,10 @@ export type MutationCreateLearnerArgs = {
 
 export type MutationCreateMessageTemplateArgs = {
   input?: InputMaybe<MessageTemplateInput>;
+};
+
+export type MutationCreateMotherArgs = {
+  input?: InputMaybe<MotherInput>;
 };
 
 export type MutationCreateNavigationArgs = {
@@ -2226,7 +2503,15 @@ export type MutationDeleteGrantArgs = {
   id?: InputMaybe<Scalars['UUID']>;
 };
 
+export type MutationDeleteHealthCareWorkerArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+};
+
 export type MutationDeleteHierarchyEntityArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+};
+
+export type MutationDeleteInfantArgs = {
   id?: InputMaybe<Scalars['UUID']>;
 };
 
@@ -2239,6 +2524,10 @@ export type MutationDeleteLearnerArgs = {
 };
 
 export type MutationDeleteMessageTemplateArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+};
+
+export type MutationDeleteMotherArgs = {
   id?: InputMaybe<Scalars['UUID']>;
 };
 
@@ -2579,9 +2868,19 @@ export type MutationUpdateGrantArgs = {
   input?: InputMaybe<GrantInput>;
 };
 
+export type MutationUpdateHealthCareWorkerArgs = {
+  id?: InputMaybe<Scalars['String']>;
+  input?: InputMaybe<HealthCareWorkerModelInput>;
+};
+
 export type MutationUpdateHierarchyEntityArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   input?: InputMaybe<HierarchyEntityInput>;
+};
+
+export type MutationUpdateInfantArgs = {
+  id?: InputMaybe<Scalars['String']>;
+  input?: InputMaybe<InfantModelInput>;
 };
 
 export type MutationUpdateLanguageArgs = {
@@ -2597,6 +2896,11 @@ export type MutationUpdateLearnerArgs = {
 export type MutationUpdateMessageTemplateArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   input?: InputMaybe<MessageTemplateInput>;
+};
+
+export type MutationUpdateMotherArgs = {
+  id?: InputMaybe<Scalars['String']>;
+  input?: InputMaybe<MotherModelInput>;
 };
 
 export type MutationUpdateNavigationArgs = {
@@ -3517,10 +3821,13 @@ export type Query = {
   GetAllFranchisor?: Maybe<Array<Maybe<Franchisor>>>;
   GetAllGender?: Maybe<Array<Maybe<Gender>>>;
   GetAllGrant?: Maybe<Array<Maybe<Grant>>>;
+  GetAllHealthCareWorker?: Maybe<Array<Maybe<HealthCareWorker>>>;
   GetAllHierarchyEntity?: Maybe<Array<Maybe<HierarchyEntity>>>;
+  GetAllInfant?: Maybe<Array<Maybe<Infant>>>;
   GetAllLanguage?: Maybe<Array<Maybe<Language>>>;
   GetAllLearner?: Maybe<Array<Maybe<Learner>>>;
   GetAllMessageTemplate?: Maybe<Array<Maybe<MessageTemplate>>>;
+  GetAllMother?: Maybe<Array<Maybe<Mother>>>;
   GetAllNavigation?: Maybe<Array<Maybe<Navigation>>>;
   GetAllNote?: Maybe<Array<Maybe<Note>>>;
   GetAllNoteType?: Maybe<Array<Maybe<NoteType>>>;
@@ -3571,10 +3878,13 @@ export type Query = {
   GetFranchisorById?: Maybe<Franchisor>;
   GetGenderById?: Maybe<Gender>;
   GetGrantById?: Maybe<Grant>;
+  GetHealthCareWorkerById?: Maybe<HealthCareWorker>;
   GetHierarchyEntityById?: Maybe<HierarchyEntity>;
+  GetInfantById?: Maybe<Infant>;
   GetLanguageById?: Maybe<Language>;
   GetLearnerById?: Maybe<Learner>;
   GetMessageTemplateById?: Maybe<MessageTemplate>;
+  GetMotherById?: Maybe<Mother>;
   GetNavigationById?: Maybe<Navigation>;
   GetNoteById?: Maybe<Note>;
   GetNoteTypeById?: Maybe<NoteType>;
@@ -3609,6 +3919,7 @@ export type Query = {
   GetWorkflowStatusTypeById?: Maybe<WorkflowStatusType>;
   absenteeByUserId?: Maybe<Array<Maybe<Absentees>>>;
   allCaregiverByPractitioner?: Maybe<Array<Maybe<Caregiver>>>;
+  allCaregiversForHealthCareWorker?: Maybe<Array<Maybe<Caregiver>>>;
   allChildrenForCoach?: Maybe<Array<Maybe<Child>>>;
   allChildrenForPractitioner?: Maybe<Array<Maybe<Child>>>;
   allChildrenForPrincipal?: Maybe<Array<Maybe<Child>>>;
@@ -3617,6 +3928,11 @@ export type Query = {
   allClassroomsForPractitioner?: Maybe<Classroom>;
   allClassroomsForPrincipal?: Maybe<Array<Maybe<Classroom>>>;
   allCoachesForFranchisor?: Maybe<Array<Maybe<Coach>>>;
+  allHealthCareWorkers?: Maybe<Array<Maybe<HealthCareWorker>>>;
+  allInfants?: Maybe<Array<Maybe<Infant>>>;
+  allInfantsForHealthCareWorker?: Maybe<Array<Maybe<Infant>>>;
+  allMothers?: Maybe<Array<Maybe<Mother>>>;
+  allMothersForHealthCareWorker?: Maybe<Array<Maybe<Mother>>>;
   allPractitionersForCoach?: Maybe<Array<Maybe<Practitioner>>>;
   allPractitionersForPrincipal?: Maybe<Array<Maybe<Practitioner>>>;
   allPrincipal?: Maybe<Array<Maybe<Practitioner>>>;
@@ -3640,11 +3956,13 @@ export type Query = {
   franchisorByUserId?: Maybe<Franchisor>;
   generateChildProgressReport?: Maybe<Scalars['String']>;
   hasContentTypeBeenTranslated: Scalars['Boolean'];
+  healthCareWorkerByUserId?: Maybe<HealthCareWorker>;
   holidaysByMonth?: Maybe<Array<Maybe<Holiday>>>;
   holidaysByYear?: Maybe<Array<Maybe<Holiday>>>;
   mapPractitionerToPrincipal?: Maybe<Principal>;
   monthlyAttendanceRecordCSV?: Maybe<FileModel>;
   monthlyAttendanceReport?: Maybe<Array<Maybe<MonthlyAttendanceReportModel>>>;
+  motherById?: Maybe<Infant>;
   openAccessAddChildDetail?: Maybe<ChildTokenAccessModel>;
   openConsent: Array<Maybe<Consent>>;
   openLanguage: Array<Maybe<Language>>;
@@ -3748,8 +4066,16 @@ export type QueryGetAllGrantArgs = {
   where?: InputMaybe<GrantFilterInput>;
 };
 
+export type QueryGetAllHealthCareWorkerArgs = {
+  where?: InputMaybe<HealthCareWorkerFilterInput>;
+};
+
 export type QueryGetAllHierarchyEntityArgs = {
   where?: InputMaybe<HierarchyEntityFilterInput>;
+};
+
+export type QueryGetAllInfantArgs = {
+  where?: InputMaybe<InfantFilterInput>;
 };
 
 export type QueryGetAllLanguageArgs = {
@@ -3762,6 +4088,10 @@ export type QueryGetAllLearnerArgs = {
 
 export type QueryGetAllMessageTemplateArgs = {
   where?: InputMaybe<MessageTemplateFilterInput>;
+};
+
+export type QueryGetAllMotherArgs = {
+  where?: InputMaybe<MotherFilterInput>;
 };
 
 export type QueryGetAllNavigationArgs = {
@@ -3985,9 +4315,19 @@ export type QueryGetGrantByIdArgs = {
   where?: InputMaybe<GrantFilterInput>;
 };
 
+export type QueryGetHealthCareWorkerByIdArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  where?: InputMaybe<HealthCareWorkerFilterInput>;
+};
+
 export type QueryGetHierarchyEntityByIdArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   where?: InputMaybe<HierarchyEntityFilterInput>;
+};
+
+export type QueryGetInfantByIdArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  where?: InputMaybe<InfantFilterInput>;
 };
 
 export type QueryGetLanguageByIdArgs = {
@@ -4003,6 +4343,11 @@ export type QueryGetLearnerByIdArgs = {
 export type QueryGetMessageTemplateByIdArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   where?: InputMaybe<MessageTemplateFilterInput>;
+};
+
+export type QueryGetMotherByIdArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  where?: InputMaybe<MotherFilterInput>;
 };
 
 export type QueryGetNavigationByIdArgs = {
@@ -4185,6 +4530,10 @@ export type QueryAllCaregiverByPractitionerArgs = {
   practitionerId?: InputMaybe<Scalars['String']>;
 };
 
+export type QueryAllCaregiversForHealthCareWorkerArgs = {
+  id?: InputMaybe<Scalars['String']>;
+};
+
 export type QueryAllChildrenForCoachArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
@@ -4216,6 +4565,14 @@ export type QueryAllClassroomsForPrincipalArgs = {
 
 export type QueryAllCoachesForFranchisorArgs = {
   userId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryAllInfantsForHealthCareWorkerArgs = {
+  id?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryAllMothersForHealthCareWorkerArgs = {
+  id?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryAllPractitionersForCoachArgs = {
@@ -4292,6 +4649,10 @@ export type QueryHasContentTypeBeenTranslatedArgs = {
   localeId: Scalars['UUID'];
 };
 
+export type QueryHealthCareWorkerByUserIdArgs = {
+  userId?: InputMaybe<Scalars['String']>;
+};
+
 export type QueryHolidaysByMonthArgs = {
   endMonth: Scalars['DateTime'];
   startMonth: Scalars['DateTime'];
@@ -4316,6 +4677,10 @@ export type QueryMonthlyAttendanceReportArgs = {
   endMonth: Scalars['DateTime'];
   startMonth: Scalars['DateTime'];
   userId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryMotherByIdArgs = {
+  id?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryOpenAccessAddChildDetailArgs = {
@@ -4578,9 +4943,10 @@ export type SiteAddress = {
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
   name?: Maybe<Scalars['String']>;
+  phoneNumber?: Maybe<Scalars['String']>;
   postalCode?: Maybe<Scalars['String']>;
   province?: Maybe<Province>;
-  provinceId: Scalars['UUID'];
+  provinceId?: Maybe<Scalars['UUID']>;
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
   ward?: Maybe<Scalars['String']>;
@@ -4596,9 +4962,10 @@ export type SiteAddressFilterInput = {
   isActive?: InputMaybe<BooleanOperationFilterInput>;
   name?: InputMaybe<StringOperationFilterInput>;
   or?: InputMaybe<Array<SiteAddressFilterInput>>;
+  phoneNumber?: InputMaybe<StringOperationFilterInput>;
   postalCode?: InputMaybe<StringOperationFilterInput>;
   province?: InputMaybe<ProvinceFilterInput>;
-  provinceId?: InputMaybe<ComparableGuidOperationFilterInput>;
+  provinceId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   ward?: InputMaybe<StringOperationFilterInput>;
@@ -4611,9 +4978,10 @@ export type SiteAddressInput = {
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
   Name?: InputMaybe<Scalars['String']>;
+  PhoneNumber?: InputMaybe<Scalars['String']>;
   PostalCode?: InputMaybe<Scalars['String']>;
   Province?: InputMaybe<ProvinceInput>;
-  ProvinceId: Scalars['UUID'];
+  ProvinceId?: InputMaybe<Scalars['UUID']>;
   UpdatedBy?: InputMaybe<Scalars['String']>;
   Ward?: InputMaybe<Scalars['String']>;
 };

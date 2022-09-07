@@ -4,6 +4,7 @@ using ECDLink.Security;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using ECDLink.DataAccessLayer.Entities.Users;
 
 namespace ECDLink.DataAccessLayer.Entities.Caregiver
 {
