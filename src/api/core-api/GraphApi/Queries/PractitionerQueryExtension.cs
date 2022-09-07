@@ -208,23 +208,6 @@ string userId)
             return principalClassroom;
         }
         
-
-
-        //    public List<Attendance> GetAllAttendanceForPractitioner([Service] IHttpContextAccessor contextAccessor,
-        //[Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
-        //[Service] IGenericRepositoryFactory repoFactory,
-        //string userId)
-        //    {
-        //        List<Attendance> attendances = new List<Attendance>();
-        //        using var scope = dbFactory.CreateDbContext();
-        //        using var dbContextTransaction = scope.Database.BeginTransaction();
-        //        var uId = contextAccessor.HttpContext.GetUser().Id;
-        //        var dbRepo = repoFactory.CreateRepository<Attendance>(userContext: uId);
-
-        //        attendances = dbRepo.GetAll().Where(x => x.UserId.Equals(userId)).Where(y => y.UserId.Equals(userId)).ToList();
-
-        //        return attendances;
-        //    }
     }
 
 }
