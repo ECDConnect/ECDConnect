@@ -3159,6 +3159,12 @@ export type PrincipalFilterDocumentsByTypeArgs = {
   type: FileTypeEnum;
 };
 
+export type PrincipalClassroom = {
+  __typename?: 'PrincipalClassroom';
+  classroomName?: Maybe<Scalars['String']>;
+  principalName?: Maybe<Scalars['String']>;
+};
+
 export type PrincipalFilterInput = {
   and?: InputMaybe<Array<PrincipalFilterInput>>;
   attendanceRegisterLink?: InputMaybe<StringOperationFilterInput>;
@@ -3613,10 +3619,12 @@ export type Query = {
   allChildrenForPractitioner?: Maybe<Array<Maybe<Child>>>;
   allChildrenForPrincipal?: Maybe<Array<Maybe<Child>>>;
   allClassroomGroupsForCoach?: Maybe<Array<Maybe<ClassroomGroup>>>;
+  allClassroomGroupsForPractitioner?: Maybe<Array<Maybe<ClassroomGroup>>>;
   allClassroomsForCoach?: Maybe<Array<Maybe<Classroom>>>;
-  allClassroomsForPractitioner?: Maybe<Classroom>;
+  allClassroomsForPractitioner?: Maybe<Array<Maybe<Classroom>>>;
   allClassroomsForPrincipal?: Maybe<Array<Maybe<Classroom>>>;
   allCoachesForFranchisor?: Maybe<Array<Maybe<Coach>>>;
+  allDocument?: Maybe<Array<Maybe<Document>>>;
   allPractitionersForCoach?: Maybe<Array<Maybe<Practitioner>>>;
   allPractitionersForPrincipal?: Maybe<Array<Maybe<Practitioner>>>;
   allPrincipal?: Maybe<Array<Maybe<Practitioner>>>;
@@ -3631,6 +3639,7 @@ export type Query = {
   childrenAttendedVsAbsentMetrics?: Maybe<Array<Maybe<MetricReportStatItem>>>;
   childrenByClassroomId?: Maybe<Array<Maybe<Child>>>;
   childrenMetrics?: Maybe<ChildrenMetricReport>;
+  classroomDetailsForPractitioner?: Maybe<Array<Maybe<PrincipalClassroom>>>;
   coachByCoachUserId?: Maybe<Coach>;
   coachByPractitionerId?: Maybe<Coach>;
   coachByUserId?: Maybe<Coach>;
@@ -4201,13 +4210,16 @@ export type QueryAllClassroomGroupsForCoachArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
+export type QueryAllClassroomGroupsForPractitionerArgs = {
+  userId?: InputMaybe<Scalars['String']>;
+};
+
 export type QueryAllClassroomsForCoachArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryAllClassroomsForPractitionerArgs = {
-  practitionerId?: InputMaybe<Scalars['String']>;
-  principalId?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryAllClassroomsForPrincipalArgs = {
@@ -4215,6 +4227,10 @@ export type QueryAllClassroomsForPrincipalArgs = {
 };
 
 export type QueryAllCoachesForFranchisorArgs = {
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryAllDocumentArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
@@ -4259,6 +4275,10 @@ export type QueryChildrenAttendedVsAbsentMetricsArgs = {
 
 export type QueryChildrenByClassroomIdArgs = {
   classroomId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryClassroomDetailsForPractitionerArgs = {
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryCoachByCoachUserIdArgs = {
