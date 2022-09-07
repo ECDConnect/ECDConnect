@@ -42,7 +42,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return await invite.SendInviteToApplication(invitationManager, notificationManager, userManager, userId);
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
+        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public Coach UpdateCoach([Service] IHttpContextAccessor contextAccessor,
           [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
           [Service] IGenericRepositoryFactory repoFactory,

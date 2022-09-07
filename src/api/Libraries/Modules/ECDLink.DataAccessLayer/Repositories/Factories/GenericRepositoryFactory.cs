@@ -26,8 +26,8 @@ namespace ECDLink.DataAccessLayer.Repositories.Factories
                     repo = _provider.GetService<GenericUserTypeRepository<T>>();
                     break;
                 case var cls when typeof(IUserElevatedScoped).IsAssignableFrom(typeof(T)):
-                    repo = _provider.GetService<GenericRepository<T>>();
-                    //repo = _provider.GetService<ElevatedScopedGenericRepository<T>>();
+                    //repo = _provider.GetService<GenericRepository<T>>();
+                    repo = _provider.GetService<ElevatedScopedGenericRepository<T>>();
                     break;
                 case var cls when typeof(IUserScoped).IsAssignableFrom(typeof(T)):
                     repo = _provider.GetService<ScopedGenericRepository<T>>();
