@@ -41,7 +41,7 @@ export const Practitioners: React.FC = () => {
   const [filteredChildData, setFilteredChildData] = useState<
     UserAlertListDataItem[]
   >([]);
-  console.log({ childUserListData });
+
   const handleClick = (practitionerId: string) => {
     if (isCoach) {
       history.push('practitioner-profile-info', {
@@ -53,9 +53,6 @@ export const Practitioners: React.FC = () => {
       });
     }
   };
-  // console.log({ practitioners });
-  // console.log({ practitionersForCoach });
-  console.log({ practitionersList });
 
   const sortOptions: SearchSortOptions = {
     columns: [
@@ -179,7 +176,7 @@ export const Practitioners: React.FC = () => {
           }
         }
       );
-      console.log({ sorted });
+
       const practitionerListItem: UserAlertListDataItem[] = [];
       for (const practitioner of sorted) {
         practitionerListItem.push(mapUserListDataItem(practitioner));
