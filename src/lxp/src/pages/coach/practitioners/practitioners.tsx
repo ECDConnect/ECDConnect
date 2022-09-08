@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   StackedList,
   BannerWrapper,
@@ -6,6 +6,7 @@ import {
   UserAlertListDataItem,
   SearchDropDown,
 } from '@ecdlink/ui';
+import { getAvatarColor } from '@ecdlink/core';
 import SearchHeader from '../../../components/search-header/search-header';
 import { format } from 'date-fns';
 import { useHistory } from 'react-router-dom';
@@ -15,31 +16,7 @@ import { useSelector } from 'react-redux';
 import { practitionerForCoachSelectors } from '@/store/practitionerForCoach';
 import { practitionerSelectors } from '@/store/practitioner';
 import { EmptyPractitioners } from './components/empty-practitioners/empty-practitioners';
-
-// const mockedData = [
-//   {
-//     title: 'John Buffalo',
-//     subTitle: 'Progress report overdue',
-//     avatarColor: '#6974af',
-//     profileText: 'Jb',
-//     alertSeverity: 'error',
-//     onActionClick: () handleClick => {}
-//   },
-//   {
-//     title: 'Pedro Machado',
-//     subTitle: 'Progress report overdue',
-//     avatarColor: '#6974af',
-//     profileText: 'Pm',
-//     alertSeverity: 'error',
-//   },
-//   {
-//     title: 'Carlos Vieira',
-//     subTitle: 'Progress report overdue',
-//     avatarColor: '#6974af',
-//     profileText: 'Cv',
-//     alertSeverity: 'error',
-//   },
-// ];
+import { PractitionerDto } from '@/../../../packages/core/lib';
 
 export const Practitioners: React.FC = () => {
   const history = useHistory();
@@ -51,19 +28,7 @@ export const Practitioners: React.FC = () => {
   const practitionersList = practitioners?.filter((item) =>
     practitionersForCoach?.find((item2) => item.id === item2.id)
   );
-  const practitionersForCoachListItems = practitionersList?.map((item) => {
-    return {
-      title: item.user?.fullName,
-      subtitle: 'Progress report overdue',
-      avatarColor: '#6974af',
-      alertSeverity: 'none',
-      profileText:
-        item?.user?.fullName?.substring(0, 1) +
-        item?.user?.fullName?.split(' ')[1].substring(0, 1)!,
-      // item?.user?.surname?.substring(0, 1),
-      onActionClick: () => handleClick(item?.userId!),
-    };
-  });
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [childUserListData, setChildUserListData] =
     useState<UserAlertListDataItem[]>();
@@ -88,25 +53,23 @@ export const Practitioners: React.FC = () => {
       });
     }
   };
-  console.log({ practitioners });
-  console.log({ practitionersForCoach });
-  console.log({ practitionersList });
+
   const sortOptions: SearchSortOptions = {
     columns: [
       {
         id: '1',
-        label: 'task 1',
-        value: 'task 1',
+        label: 'Priority',
+        value: 'priority',
       },
       {
         id: '2',
-        label: 'task 2',
-        value: 'task 2',
+        label: 'First Name',
+        value: 'firstName',
       },
       {
         id: '3',
-        label: 'task 4',
-        value: 'task 4',
+        label: 'Surname',
+        value: 'surname',
       },
     ],
     defaultSort: {
@@ -114,6 +77,18 @@ export const Practitioners: React.FC = () => {
       dir: 'asc',
     },
   };
+
+  useEffect(() => {
+    if (practitionersList && practitionersList?.length > 0) {
+      const practitionerListItem: UserAlertListDataItem[] = [];
+      for (const practitioner of practitionersList) {
+        practitionerListItem.push(mapUserListDataItem(practitioner));
+      }
+      setChildUserListData(practitionerListItem);
+      setFilteredChildData(practitionerListItem);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleListScroll = (scrollTop: number) => {
     if (scrollTop < 30) {
@@ -131,35 +106,117 @@ export const Practitioners: React.FC = () => {
     );
   };
 
-  // const mockedData = [
-  //   {
-  //     id: 1,
-  //     title: 'John Buffalo',
-  //     subTitle: 'Progress report overdue',
-  //     avatarColor: '#6974af',
-  //     profileText: 'Jb',
-  //     alertSeverity: 'error',
-  //     onActionClick: () => handleClick(1),
-  //   },
-  //   {
-  //     id: 2,
-  //     title: 'Pedro Machado',
-  //     subTitle: 'Progress report overdue',
-  //     avatarColor: '#6974af',
-  //     profileText: 'Pm',
-  //     alertSeverity: 'error',
-  //     onActionClick: () => handleClick(2),
-  //   },
-  //   {
-  //     id: 3,
-  //     title: 'Carlos Vieira',
-  //     subTitle: 'Progress report overdue',
-  //     avatarColor: '#6974af',
-  //     profileText: 'Cv',
-  //     alertSeverity: 'error',
-  //     onActionClick: () => handleClick(3),
-  //   },
-  // ];
+  const onSortItemsChanges = (column: string) => {
+    if (practitionersList && practitionersList.length > 0) {
+      // const filteredPractitioners = practitionersList.filter((practitioner) =>
+      //   childUserListData?.some((x) => x.id === practitioner.id)
+      // );
+      const sorted = [...practitionersList].sort(
+        (a: PractitionerDto, b: PractitionerDto) => {
+          const practitionerOne = practitioners?.find(
+            (x) => x.userId === a.userId
+          );
+          const practitionerTwo = practitioners?.find(
+            (x) => x.userId === b.userId
+          );
+
+          switch (column) {
+            // case 'priority': {
+            //   const childUserDocumentsOne = documents?.filter(
+            //     (x) => x.userId === a.userId
+            //   );
+            //   const childReportsOne = childReportSummaries?.filter(
+            //     (x) => x.childId === a?.id
+            //   );
+            //   const childAlertOne = getChildAlertModel(
+            //     childLearnerOne,
+            //     pendingStatusId,
+            //     childUserOne,
+            //     a,
+            //     childUserDocumentsOne,
+            //     attendanceData,
+            //     classroomGroups,
+            //     classroomGroupProgrammes,
+            //     childReportsOne
+            //   );
+            //   const childUserDocumentsTwo = documents?.filter(
+            //     (x) => x.userId === b.userId
+            //   );
+            //   const childReportsTwo = childReportSummaries?.filter(
+            //     (x) => x.childId === b?.id
+            //   );
+            //   const childAlertTwo = getChildAlertModel(
+            //     childLearnerTwo,
+            //     pendingStatusId,
+            //     childUserTwo,
+            //     b,
+            //     childUserDocumentsTwo,
+            //     attendanceData,
+            //     classroomGroups,
+            //     classroomGroupProgrammes,
+            //     childReportsTwo
+            //   );
+            //   return childAlertOne.severity > childAlertTwo.severity ? 1 : -1;
+            // }
+            case 'surname':
+              return (practitionerOne !== undefined &&
+                practitionerOne?.user?.surname!) >
+                (practitionerTwo !== undefined &&
+                  practitionerTwo?.user?.surname!)
+                ? 1
+                : -1;
+            case 'firstName':
+            default:
+              return (practitionerOne !== undefined &&
+                practitionerOne.user?.firstName!) >
+                (practitionerTwo !== undefined &&
+                  practitionerTwo.user?.firstName!)
+                ? 1
+                : -1;
+          }
+        }
+      );
+
+      const practitionerListItem: UserAlertListDataItem[] = [];
+      for (const practitioner of sorted) {
+        practitionerListItem.push(mapUserListDataItem(practitioner));
+      }
+      setChildUserListData(practitionerListItem || []);
+    }
+  };
+
+  const mapUserListDataItem = (
+    practitionerRecord: PractitionerDto
+  ): UserAlertListDataItem => {
+    const practitioner = practitionersList?.find(
+      (x) => x.userId === practitionerRecord.userId
+    );
+
+    // const childAlert = getChildAlertModel(
+    //   childLearner,
+    //   pendingStatusId,
+    //   childUser,
+    //   childRecord,
+    //   childDocuments,
+    //   attendanceData,
+    //   classroomGroups,
+    //   classroomGroupProgrammes,
+    //   reports
+    // );
+
+    return {
+      id: practitioner?.id,
+      profileDataUrl: practitioner?.user?.profileImageUrl,
+      title: `${practitioner?.user?.firstName} ${practitioner?.user?.surname}`,
+      subTitle: '',
+      profileText: `${
+        practitioner?.user?.firstName && practitioner?.user?.firstName[0]
+      }${practitioner?.user?.surname && practitioner?.user?.surname[0]}`,
+      alertSeverity: 'none',
+      avatarColor: getAvatarColor() || '',
+      onActionClick: () => handleClick(practitioner?.userId!),
+    };
+  };
 
   return (
     <>
@@ -187,23 +244,22 @@ export const Practitioners: React.FC = () => {
             selectedOptions={activeSort}
             onChange={(selectedColumns) => {
               setActiveSort(selectedColumns);
-              // onSortItemsChanges(selectedColumns[0].value);
+              onSortItemsChanges(selectedColumns[0].value);
             }}
-            placeholder={'Task'}
+            placeholder={'Sort'}
             multiple={false}
             color={'secondary'}
             info={{
-              name: `Task`,
+              name: `Sort`,
             }}
           />
         </SearchHeader>
-        {practitionersForCoachListItems?.length! > 0 ||
-        practitionersForCoachListItems !== undefined ? (
+        {practitionersList?.length! > 0 || practitionersList !== undefined ? (
           <div className="flex justify-center">
             <div className="w-11/12">
               <StackedList
                 className={styles.stackedList}
-                listItems={practitionersForCoachListItems!}
+                listItems={childUserListData ? childUserListData : []}
                 type={'UserAlertList'}
               ></StackedList>
             </div>
