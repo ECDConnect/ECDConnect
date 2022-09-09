@@ -6,6 +6,9 @@ import {
   CreateUser,
   RoleList,
   UserModelInput,
+  SiteAddressInput,
+  SendInviteToApplication,
+  CreateSiteAddress,
 } from '@ecdlink/graphql';
 import { NOTIFICATION, useNotifications } from '@ecdlink/core';
 import { RoleDto } from '@ecdlink/core';
@@ -16,11 +19,14 @@ import {
   initialUserDetailsValues,
   passwordSchema,
   userSchema,
+  siteAddressSchema,
+  initialSiteAddressValues,
 } from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import CoachForm from '../../../components/coach-form/coach-form';
+import SiteAddressForm from '../../../components/site-address-form/site-address-form';
 import PasswordForm from '../../../components/password-form/password-form';
 import UserDetailsForm from '../../../components/user-details-form/user-details-form';
 import UserPanelSave from '../../../components/user-panel-save/user-panel-save';
@@ -46,7 +52,9 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
 
   const [createUser] = useMutation(CreateUser);
   const [createCoach] = useMutation(CreateCoach);
+  const [createSiteAddress] = useMutation(CreateSiteAddress);
   const [addRolesToUser] = useMutation(AddUsersToRole);
+  const [sendInviteToApplication] = useMutation(SendInviteToApplication);
 
   const [selectedUserRoles, setUserRoles] = useState<RoleDto[]>([]);
 
@@ -63,8 +71,10 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
     defaultValues: initialUserDetailsValues,
     mode: 'onBlur',
   });
+
   const { errors: userDetailFormErrors, isValid: isUserDetailValid } =
     userDetailFormState;
+
   // PASSWORD FORMS
   const {
     register: passwordRegister,
@@ -75,8 +85,9 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
     defaultValues: initialPasswordValue,
     mode: 'onBlur',
   });
-  const { errors: passwordFormErrors, isValid: isPasswordValid } =
-    passwordFormState;
+
+  const { errors: passwordFormErrors } = passwordFormState;
+
   // COACH FORMS
   const {
     register: coachRegister,
@@ -84,10 +95,20 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
     getValues: coachGetValues,
   } = useForm({
     resolver: yupResolver(coachSchema),
-    defaultValues: initialCoachValues,
+    defaultValues: { ...initialCoachValues, sendInvite: false },
     mode: 'onBlur',
   });
   const { errors: coachFormErrors, isValid: isCoachValid } = coachFormState;
+
+  // SITE ADDRESS FORMS
+  const { register: siteAddressRegister, getValues: siteAddressGetValues } =
+    useForm({
+      resolver: yupResolver(siteAddressSchema),
+      defaultValues: { ...initialSiteAddressValues, sendInvite: false },
+      mode: 'onBlur',
+    });
+  const { errors: siteAddressFormErrors } = coachFormState;
+
   // END FORMS
 
   const onSave = async () => {
@@ -127,14 +148,50 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
 
         const userId = response.data.addUser.id;
         await saveRoles(userId);
-        await saveCoach(userId);
+        await saveSiteAddress(userId);
       })
       .catch((error) => {
         console.log(error);
       });
   };
 
-  const saveCoach = async (userId: string) => {
+  const saveSiteAddress = async (userId: string) => {
+    const form = siteAddressGetValues();
+    const siteAddressInputModel: SiteAddressInput = {
+      Id: undefined,
+      Name: form.name ?? '',
+      AddressLine1: form.addressLine1 ?? '',
+      AddressLine2: form.addressLine2 ?? '',
+      AddressLine3: form.addressLine3 ?? '',
+      PostalCode: form.postalCode ?? '',
+      ProvinceId: form.provinceId ?? '',
+      Ward: form.ward ?? '',
+      IsActive: true,
+    };
+
+    let siteAddressId = null;
+
+    if (form.provinceId) {
+      const returnSiteAddress = await createSiteAddress({
+        variables: {
+          input: { ...siteAddressInputModel },
+        },
+      });
+
+      if (returnSiteAddress && returnSiteAddress.data) {
+        setNotification({
+          title: 'Successfully Created Address!',
+          variant: NOTIFICATION.SUCCESS,
+        });
+
+        siteAddressId = returnSiteAddress?.data?.createSiteAddress?.id ?? '';
+      }
+    }
+
+    await saveCoach(userId, siteAddressId);
+  };
+
+  const saveCoach = async (userId: string, siteAddressId?: string) => {
     const coachForm = coachGetValues();
     const coachInputModel: CoachInput = {
       Id: undefined,
@@ -143,6 +200,8 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
       SecondaryAreaOfOperation: coachForm.secondaryAreaOfOperation,
       StartDate: coachForm.startDate,
       IsActive: true,
+      SiteAddressId: siteAddressId,
+      FranchisorId: coachForm.franchisorId,
     };
 
     await createCoach({
@@ -155,6 +214,19 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
       title: 'Successfully Created Coach!',
       variant: NOTIFICATION.SUCCESS,
     });
+
+    if (coachForm.sendInvite) {
+      await sendInviteToApplication({
+        variables: {
+          userId: userId,
+        },
+      });
+
+      setNotification({
+        title: 'Successfully Sent Coach Invite!',
+        variant: NOTIFICATION.SUCCESS,
+      });
+    }
   };
 
   const saveRoles = async (userId: string) => {
@@ -193,7 +265,7 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
   const getIsValid = () => {
     let isValid = isUserDetailValid;
     if (!isCoachValid) isValid = false;
-    return isValid && isPasswordValid ? true : false;
+    return isValid ? true : false;
   };
 
   const getComponent = () => {
@@ -227,6 +299,19 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
             register={coachRegister}
             errors={coachFormErrors}
           />
+
+          <div className="mt-5 bg-uiBg px-4 py-5 border-b border-gray-200 rounded-lg">
+            <div className="pb-2">
+              <h3 className="text-lg leading-6 font-medium text-uiMidDark">
+                Address Detail
+              </h3>
+            </div>
+            <SiteAddressForm
+              formKey={`createSiteAddress-${new Date().getTime()}`}
+              register={siteAddressRegister}
+              errors={siteAddressFormErrors}
+            />
+          </div>
         </div>
 
         <div className="mt-5 bg-uiBg px-4 py-5 border-b border-gray-200 rounded-lg">

@@ -13,9 +13,9 @@ export interface ClassroomDto extends EntityBase {
   name: string;
   isPrinciple: boolean | null;
   numberPractitioners: number | null;
-  numberOfAssistants: number | null;
   numberOfOtherAssistants: number | null;
-  doesOwnerTeach: boolean | null;
+  // numberOfAssistants: number | null;
+  // doesOwnerTeach: boolean | null;
   attendance?: AttendanceDto[];
   classroomImageUrl?: string;
 }

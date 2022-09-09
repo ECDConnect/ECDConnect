@@ -4,6 +4,8 @@ import {
   ClassroomDto,
   ClassroomGroupDto,
   LearnerDto,
+  PrincipalDto,
+  ProgrammeTypeDto,
 } from '@ecdlink/core';
 import { ProgrammeTypeEnum } from '@ecdlink/graphql';
 import { createSelector } from '@reduxjs/toolkit';
@@ -12,8 +14,21 @@ import { RootState } from '../types';
 export const getClassroom = (state: RootState): ClassroomDto | undefined =>
   state.classroomData.classroom;
 
+export const getProgrammeType = () =>
+  createSelector(
+    (state: RootState) => state,
+    (rootState: RootState): ProgrammeTypeDto | undefined => {
+      return rootState.staticData.programmeTypes?.find(
+        (x) => x.id === rootState.classroomData.programmeType
+      );
+    }
+  );
+
 export const getClassroomGroups = (state: RootState): ClassroomGroupDto[] =>
   state.classroomData.classroomGroups?.filter((x) => x.isActive) || [];
+
+export const getPrincipal = (state: RootState): PrincipalDto =>
+  state.classroomData.principal || ({} as PrincipalDto);
 
 export const getClassroomGroupById = (id?: string) =>
   createSelector(
@@ -35,17 +50,44 @@ export const getChildLearner = (child?: ChildDto) =>
       learners.find((learner) => learner.userId === child?.userId)
   );
 
+export const getChildLearnerByClassroom = (
+  classroomGroupId: string,
+  child?: ChildDto
+) =>
+  createSelector(
+    (state: RootState) => state.classroomData.classroomGroupLearners || [],
+    (learners: LearnerDto[]) =>
+      learners.find(
+        (learner) =>
+          learner.userId === child?.userId &&
+          learner.classroomGroupId === classroomGroupId
+      )
+  );
+
 export const getClassProgrammes = (state: RootState): ClassProgrammeDto[] =>
   state.classroomData.classroomProgrammes?.filter((x) => x.isActive) || [];
 
-export const getLearnerClassgroupId = (userId?: string) =>
+export const getClassProgrammesByClassGroupId = (classGroupId?: string) =>
+  createSelector(
+    (state: RootState) => state.classroomData.classroomProgrammes,
+    (classroomProgrammes: ClassProgrammeDto[] | undefined) => {
+      return (
+        classroomProgrammes?.filter(
+          (x) => x.isActive && x.classroomGroupId === classGroupId
+        ) || []
+      );
+    }
+  );
+
+export const getLearnerClassGroupId = (userId?: string) =>
   createSelector(
     (state: RootState) => state.classroomData.classroomGroupLearners,
     (classroomGroupLearners: LearnerDto[] | undefined) => {
       if (!classroomGroupLearners || !userId) return;
-
+      // TODO: this method filters out learners using stoppedAttendance date.
       const currentLearner = classroomGroupLearners.find(
-        (learner) => learner.userId === userId && !learner.stoppedAttendance
+        (learner) =>
+          learner.userId === userId && learner.stoppedAttendance == null
       );
       return currentLearner?.classroomGroupId;
     }

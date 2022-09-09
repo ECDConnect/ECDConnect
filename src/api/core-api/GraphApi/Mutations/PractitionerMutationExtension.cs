@@ -143,7 +143,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             }
 
             var importerUserId = httpContextAccessor.HttpContext.GetUser().Id;
-            //var context = dbFactory.CreateDbContext();
             var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: importerUserId);
 
             foreach (var prac in templist)
@@ -153,5 +152,102 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             return true;
         }
+
+        public bool UpdatePractitionerShareInfo([Service] IHttpContextAccessor contextAccessor,
+            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+            [Service] IGenericRepositoryFactory repoFactory,
+            string practitionerId, string principalId)
+        
+        {
+            bool bReturn = false;
+            using var scope = dbFactory.CreateDbContext();
+            using var dbContextTransaction = scope.Database.BeginTransaction();
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+            Practitioner practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId.Equals(practitionerId)).FirstOrDefault();
+            {
+                if (practitioner != null)
+                {
+                    practitioner.ShareInfo = true;
+                    var updateResult = practitionerRepo.Update(practitioner);
+                    return true;
+                }
+            }
+
+            return bReturn;
+        }
+
+        public bool UpdatePractitionerRegistered([Service] IHttpContextAccessor contextAccessor,
+            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+            [Service] IGenericRepositoryFactory repoFactory,
+            string practitionerId, bool status = false)
+
+        {
+
+            using var scope = dbFactory.CreateDbContext();
+            using var dbContextTransaction = scope.Database.BeginTransaction();
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+            Practitioner practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId.Equals(practitionerId)).FirstOrDefault();
+            {
+                if (practitioner != null)
+                {
+                    practitioner.IsRegistered = status;
+                    var updateResult = practitionerRepo.Update(practitioner);
+                    return true;
+                }
+            }
+
+            return status;
+        }
+
+        public bool UpdatePractitionerIsFundaAppAdmin([Service] IHttpContextAccessor contextAccessor,
+            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+            [Service] IGenericRepositoryFactory repoFactory,
+            string practitionerId)
+
+        {
+            bool bReturn = false;
+            using var scope = dbFactory.CreateDbContext();
+            using var dbContextTransaction = scope.Database.BeginTransaction();
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+            Practitioner practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId.Equals(practitionerId)).FirstOrDefault();
+            {
+                if (practitioner != null)
+                {
+                    practitioner.IsFundaAppAdmin = true;
+                    var updateResult = practitionerRepo.Update(practitioner);
+                    return true;
+                }
+            }
+
+            return bReturn;
+        }
+
+        public bool UpdatePractitionerIsTrainee([Service] IHttpContextAccessor contextAccessor,
+            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+            [Service] IGenericRepositoryFactory repoFactory,
+            string practitionerId)
+
+        {
+            bool bReturn = false;
+            using var scope = dbFactory.CreateDbContext();
+            using var dbContextTransaction = scope.Database.BeginTransaction();
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+            Practitioner practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId.Equals(practitionerId)).FirstOrDefault();
+            {
+                if (practitioner != null)
+                {
+                    practitioner.IsTrainee = true;
+                    var updateResult = practitionerRepo.Update(practitioner);
+                    return true;
+                }
+            }
+
+            return bReturn;
+        }
+
     }
 }

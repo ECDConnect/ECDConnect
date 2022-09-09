@@ -155,7 +155,7 @@ export const ClassDashboard: React.FC = () => {
         displayOffline={!isOnline}
       >
         <TabList
-          className="bg-white"
+          className="bg-uiBg"
           tabItems={tabItems}
           setSelectedIndex={selectedTabIndex}
           tabSelected={(tab: TabItem, tabIndex: number) =>

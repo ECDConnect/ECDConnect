@@ -21,6 +21,7 @@ const ROUTES = {
   }),
   DASHBOARD: '/dashboard',
   CLASSROOM: '/classroom',
+  TRAINING: '/training',
   CHILD: addPrefix('/child', {
     INFORMATION: addPrefix('/information', {
       EDIT: '/edit',
@@ -55,6 +56,25 @@ const ROUTES = {
     '/view-child-progress-observation-report',
   DOWNLOAD_CHILD_PROGRESS_OBSERVATION_REPORTS:
     '/download-child-progress-observation-reports',
+  COACH_REGISTRATION: '/coach-registration',
+  COACH: addPrefix('/coach', {
+    ABOUT: addPrefix('/about', {
+      SIGNATURE: '/signature',
+      ADDRESS: '/address',
+    }),
+    PRACTITIONERS: '/practitioners',
+    PRACTITIONER_PROFILE_INFO: '/practitioner-profile-info',
+    PRACTITIONER_CLASSROOM: '/practitioner-classroom',
+    PRACTITIONER_CHILD_LIST: '/practitioner-childlist',
+    PROGRAMME_INFORMATION: '/programme-information',
+    CLASSES_REASSIGNED: '/classes-reassigned',
+    CHILD_PROFILE: '/child-profile',
+    NOTES: '/notes',
+    ACCOUNT: '/account',
+    PROFILE: addPrefix('/profile', {
+      EDIT: '/edit',
+    }),
+  }),
 };
 
 export default ROUTES;

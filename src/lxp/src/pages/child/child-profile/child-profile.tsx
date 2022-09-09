@@ -63,13 +63,14 @@ import { ChildProgressReportAlert } from './components/progress-report-alert/pro
 import { contentReportSelectors } from '@store/content/report';
 import { analyticsActions } from '@store/analytics';
 import ROUTES from '@routes/routes';
+import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 
 const baseNotificationListItem: ListItemProps = {
   key: 'message-caregiver',
   showIcon: true,
   showSubTitleShape: true,
   showChevronIcon: true,
-  backgroundColor: 'white',
+  backgroundColor: 'uiBg',
   withPaddingX: true,
   withPaddingY: true,
   title: 'Message caregiver',
@@ -99,13 +100,13 @@ export const ChildProfile: React.FC = () => {
   );
   const child = useSelector(childrenSelectors.getChildById(childId));
   const classGroupId = useSelector(
-    classroomsSelectors.getLearnerClassgroupId(child?.userId)
+    classroomsSelectors.getLearnerClassGroupId(child?.userId)
   );
   const user = useSelector(userSelectors.getUser);
   const playGroup = useSelector(
     classroomsSelectors.getClassroomGroupById(classGroupId)
   );
-  const classProgrames = useSelector(classroomsSelectors.getClassProgrammes);
+  const classProgrammes = useSelector(classroomsSelectors.getClassProgrammes);
   const childUser = useSelector(
     childrenSelectors.getChildUserById(child?.userId)
   );
@@ -169,8 +170,8 @@ export const ChildProfile: React.FC = () => {
       buttonType: 'outlined',
       buttonIcon: 'EyeIcon',
       buttonText: 'View',
-      buttonTextColor: 'primary',
-      buttonColor: 'primary',
+      buttonTextColor: 'secondary',
+      buttonColor: 'secondaryAccent2',
       showButton: true,
       showDivider: true,
       dividerType: 'dashed',
@@ -182,6 +183,8 @@ export const ChildProfile: React.FC = () => {
   ]);
   const [attendanceReport, setAttendanceReport] =
     useState<ChildAttendanceReportModel>();
+  const [belongsToNoPlaygroup, setBelongsToNoPlaygroup] =
+    useState<boolean>(false);
 
   useEffect(() => {
     if (!isOnline) {
@@ -196,6 +199,10 @@ export const ChildProfile: React.FC = () => {
   }, [isOnline]);
 
   useEffect(() => {
+    if (playGroup?.name === NoPlaygroupClassroomType.name) {
+      setBelongsToNoPlaygroup(true);
+    }
+
     const profileOptionsCopy = [...profileOptions];
 
     profileOptionsCopy.unshift({
@@ -204,11 +211,13 @@ export const ChildProfile: React.FC = () => {
       buttonType: 'outlined',
       buttonIcon: 'EyeIcon',
       buttonText: 'View',
-      buttonTextColor: 'primary',
-      buttonColor: 'primary',
+      buttonTextColor: 'secondary',
+      buttonColor: 'secondaryAccent2',
       showButton: true,
       showSubTitleShape: true,
       withPaddingY: true,
+      showDivider: true,
+      dividerType: 'dashed',
       onButtonClick: () => {
         history.push(ROUTES.CHILD_ATTENDANCE_REPORT, {
           childId: child?.id,
@@ -225,8 +234,8 @@ export const ChildProfile: React.FC = () => {
         buttonType: 'outlined',
         buttonIcon: 'EyeIcon',
         buttonText: 'View',
-        buttonTextColor: 'primary',
-        buttonColor: 'primary',
+        buttonTextColor: 'secondary',
+        buttonColor: 'secondaryAccent2',
         showButton: true,
         showDivider: true,
         dividerType: 'dashed',
@@ -300,12 +309,7 @@ export const ChildProfile: React.FC = () => {
 
   useEffect(() => {
     if (!attendanceReport) return;
-
-    const attendancePercentage =
-      (attendanceReport.totalActualAttendance /
-        (attendanceReport.totalExpectedAttendance || 1)) *
-      100;
-    setAttendancePercentage(attendancePercentage);
+    setAttendancePercentage(attendanceReport.attendancePercentage);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [attendanceReport]);
 
@@ -346,8 +350,8 @@ export const ChildProfile: React.FC = () => {
         buttonType: 'filled',
         buttonIcon: 'PlusIcon',
         buttonText: 'Add',
-        buttonTextColor: 'white',
-        buttonColor: 'primary',
+        buttonTextColor: 'secondary',
+        buttonColor: 'secondaryAccent2',
         onButtonClick: () => setCreateChildNoteVisible(true),
       };
     } else {
@@ -357,8 +361,8 @@ export const ChildProfile: React.FC = () => {
         buttonType: 'outlined',
         buttonIcon: 'EyeIcon',
         buttonText: 'View',
-        buttonTextColor: 'primary',
-        buttonColor: 'primary',
+        buttonTextColor: 'secondary',
+        buttonColor: 'secondaryAccent2',
         showButton: true,
         showDivider: true,
         dividerType: 'dashed',
@@ -379,7 +383,7 @@ export const ChildProfile: React.FC = () => {
       childUserId,
       attendance,
       classroomGroupCacheId,
-      classProgrames
+      classProgrammes
     );
 
     // Check when the child was register and determine wether attendance should have been recorded
@@ -403,7 +407,7 @@ export const ChildProfile: React.FC = () => {
   };
 
   const viewChildProgressObservationReports = () => {
-    history.push('/completed-child-progress-observation-reports', {
+    history.push(ROUTES.COMPLETED_CHILD_PROGRESS_OBSERVATION_REPORTS, {
       childId: child?.id,
     });
   };
@@ -413,7 +417,7 @@ export const ChildProfile: React.FC = () => {
   };
 
   const goToRemoveChild = () => {
-    history.push('remove-child', { childId: child?.id });
+    history.push(ROUTES.REMOVE_CHILD, { childId: child?.id });
   };
 
   const contactAttendanceCaregiver = (
@@ -434,7 +438,7 @@ export const ChildProfile: React.FC = () => {
     setEditProfilePictureVisible(false);
   };
 
-  const picturePromtOnAction = async (imageBaseString: string) => {
+  const picturePromptOnAction = async (imageBaseString: string) => {
     const copy = Object.assign({}, childUser);
     if (copy) {
       copy.profileImageUrl = imageBaseString;
@@ -473,7 +477,7 @@ export const ChildProfile: React.FC = () => {
   };
 
   const contactCaregivers = () => {
-    history.push('/child-caregivers', { childId: child?.id });
+    history.push(ROUTES.CHILD_CAREGIVERS, { childId: child?.id });
   };
 
   const showCertificateError = (): boolean => {
@@ -535,7 +539,7 @@ export const ChildProfile: React.FC = () => {
           <StatusChip
             backgroundColour="infoDark"
             borderColour="infoDark"
-            text={playGroup?.name || 'No Playgroup'}
+            text={playGroup?.name || NoPlaygroupClassroomType.title}
             textColour={'white'}
             className={'mr-2'}
           />
@@ -549,6 +553,39 @@ export const ChildProfile: React.FC = () => {
             className={'mr-2'}
           />
         </div>
+
+        {belongsToNoPlaygroup && (
+          <Alert
+            className="m-4"
+            title={`${
+              childUser?.firstName || 'This child'
+            } does not have a playgroup`}
+            list={[
+              `Add ${childUser?.firstName || 'this child'} to a playgroup now`,
+            ]}
+            type="error"
+            button={
+              <Button
+                color="textMid"
+                type="filled"
+                size="small"
+                onClick={() => {
+                  history.push(ROUTES.CHILD.INFORMATION.EDIT, {
+                    childId: child?.id,
+                    playgroupEdit: true,
+                  });
+                }}
+              >
+                {renderIcon('PlusIcon', 'w-5 h-5 text-white mr-1')}
+                <Typography
+                  color="white"
+                  text="Add to a Playgroup"
+                  type="small"
+                />
+              </Button>
+            }
+          />
+        )}
 
         {showCertificateError() && (
           <Alert
@@ -566,7 +603,7 @@ export const ChildProfile: React.FC = () => {
                 type="filled"
                 size="small"
                 onClick={() => {
-                  history.push('/child-registration-birth-certificate', {
+                  history.push(ROUTES.CHILD_REGISTRATION_BIRTH_CERTIFICATE, {
                     childId: child?.id,
                   });
                 }}
@@ -597,21 +634,21 @@ export const ChildProfile: React.FC = () => {
             />
           ))}
 
-          <Divider className={'mt-2'} />
+          <Divider dividerType="dashed" className="-mt-1.5" />
 
           <Button
-            className={styles.button}
+            className={styles.button.replace('mt-4', 'mt-3')}
             color={'primary'}
-            type="outlined"
+            type="filled"
             onClick={contactCaregivers}
           >
             {renderIcon('ChatAlt2Icon', styles.buttonIcon)}
-            <Typography type="body" text="Contact caregiver" color="primary" />
+            <Typography type="button" text="Contact caregiver" color="white" />
           </Button>
           <Button className={styles.button} color={'errorMain'} type="outlined">
             {renderIcon('TrashIcon', styles.buttonIcon)}
             <Typography
-              type="body"
+              type="button"
               text={`Remove ${childUser?.firstName}`}
               color="errorMain"
               onClick={() => setRemoveChildConfirmationVisible(true)}
@@ -655,7 +692,7 @@ export const ChildProfile: React.FC = () => {
           <PhotoPrompt
             title="Profile Photo"
             onClose={() => setEditProfilePictureVisible(false)}
-            onAction={picturePromtOnAction}
+            onAction={picturePromptOnAction}
             onDelete={profilePicture?.file ? deleteProfileImage : undefined}
           ></PhotoPrompt>
         </div>

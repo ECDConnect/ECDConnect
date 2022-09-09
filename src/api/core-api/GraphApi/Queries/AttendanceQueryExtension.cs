@@ -30,7 +30,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         {
             var userId = httpContextAccessor.HttpContext.GetUser().Id;
 
-            var attendance = trackingRepository.GetAllAttedancesByParentId(userId)
+            var attendance = trackingRepository.GetAllAttendancesByParentId(userId)
               .Where(x => x.Year == year);
 
             if (monthOfYear != null)

@@ -113,7 +113,7 @@ export default function ContentView({
       <div className="mb-2">
         <Typography
           type={'body'}
-          weight={'bolder'}
+          weight={'bold'}
           color={'uiMidDark'}
           text={`${camelCaseToSentanceCase(field?.fieldName ?? '')}:`}
         />

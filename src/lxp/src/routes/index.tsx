@@ -29,6 +29,7 @@ import { ChildProgressObservationReport } from '@progress-observation-p/child-pr
 import { ChildProgressObservationPage } from '@progress-observation-p/child-progress-observation/child-progress-observation';
 import ProgressObservationCategory from '@progress-observation-p/progress-observation-category/progress-tracking-category';
 import Dashboard from '@dashboard-p/dashboard';
+import { Training } from '@/pages/training/training';
 import { Messages } from '@messages-p/messages';
 import { EditPractitionerProfile } from '@practitioner-p/edit-practitioner-profile/edit-practitioner-profile';
 import { PractitionerAbout } from '@practitioner-p/practitioner-about/practitioner-about';
@@ -38,7 +39,23 @@ import { PractitionerProgrammeInformation } from '@practitioner-p/practitioner-p
 import { EditPlaygroups } from '@practitioner-p/save-practitioner-playgroups/save-practitioner-playgroups';
 import { ProgrammeSummaries } from '@programme-planning-p/programme-summaries/programme-summaries';
 import { ChildRegistrationBirthCertificate } from '@child-p/child-registration-birth-certificate/child-registration';
+import { CoachRegistration } from '@/pages/coach/coach-registation/coach-registation';
+import { EditCoachProfile } from '@/pages/coach/edit-coach-profile/edit-coach-profile';
+import { CoachProfile } from '@/pages/coach/coach-profile/coach-profile';
+import { CoachAbout } from '@/pages/coach/coach-about/coach-about';
+import { CoachSignature } from '@/pages/coach/coach-about/components/coach-signature/coach-signature';
+import { CoachAddress } from '@/pages/coach/coach-about/components/coach-address/coach-address';
+import { Practitioners } from '@/pages/coach/practitioners/practitioners';
+import { CoachPractitionerProfileInfo } from '@/pages/coach/practitioner-profile-info/practitioner-profile-info';
+import { CoachPractitionerClassroom } from '@/pages/coach/coach-practitioner-classroom/coach-practitioner-classroom';
+import { CoachProgrammeInformation } from '@/pages/coach/coach-programme-information/coach-programme-information';
+import { CoachChildProfile } from '@/pages/coach/coach-child-profile/coach-child-profile';
+import CoachAccount from '@/pages/coach/coach-account/coach-account';
+import CoachPractitionerChildList from '@/pages/coach/coach-practitioner-child-list/coach-practitioner-child-list';
+
 import ROUTES from './routes';
+import { CoachClassesReassigned } from '@/pages/coach/coach-classes-reassigned/coach-classes-reassigned';
+import { CoachNotes } from '@/pages/coach/practitioner-profile-info/components/coach-notes/coach-notes';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -52,6 +69,11 @@ const PublicRoutes: React.FC = () => {
       />
       <Route path={ROUTES.NEW_PASSWORD} component={NewPassword} exact={true} />
       <Route path={ROUTES.SIGN_UP} component={SignUp} exact={true} />
+      <Route
+        path={ROUTES.COACH_REGISTRATION}
+        component={CoachRegistration}
+        exact={true}
+      />
       <Route
         path={ROUTES.VERIFY_PHONE}
         component={VerifyPhoneNumber}
@@ -85,6 +107,7 @@ const AuthRoutes: React.FC = () => {
 
       <Route path={ROUTES.ROOT} component={Dashboard} exact={true} />
       <Route path={ROUTES.DASHBOARD} component={Dashboard} exact={true} />
+      <Route path={ROUTES.TRAINING} component={Training} exact={true} />
       <Route
         exact
         path={ROUTES.PRACTITIONER.ABOUT}
@@ -193,6 +216,57 @@ const AuthRoutes: React.FC = () => {
         path={ROUTES.PROGRAMMES.TUTORIAL.DAILY_ROUTINE}
         component={ProgrammePlanningDailyRoutine}
       />
+      <Route exact path={ROUTES.COACH.PROFILE.ROOT} component={CoachProfile} />
+      <Route
+        exact
+        path={ROUTES.COACH.PROFILE.EDIT}
+        component={EditCoachProfile}
+      />
+      <Route exact path={ROUTES.COACH.ABOUT.ROOT} component={CoachAbout} />
+      <Route
+        exact
+        path={ROUTES.COACH.ABOUT.SIGNATURE}
+        component={CoachSignature}
+      />
+      <Route
+        exact
+        path={ROUTES.COACH.PRACTITIONERS}
+        component={Practitioners}
+      />
+      <Route
+        exact
+        path={ROUTES.COACH.PRACTITIONER_PROFILE_INFO}
+        component={CoachPractitionerProfileInfo}
+      />
+      <Route
+        exact
+        path={ROUTES.COACH.PRACTITIONER_CLASSROOM}
+        component={CoachPractitionerClassroom}
+      />
+      <Route path={ROUTES.COACH.NOTES} component={CoachNotes} />
+      <Route
+        exact
+        path={ROUTES.COACH.PRACTITIONER_CHILD_LIST}
+        component={CoachPractitionerChildList}
+      />
+      <Route
+        exact
+        path={ROUTES.COACH.PROGRAMME_INFORMATION}
+        component={CoachProgrammeInformation}
+      />
+      <Route
+        exact
+        path={ROUTES.COACH.CLASSES_REASSIGNED}
+        component={CoachClassesReassigned}
+      />
+      <Route
+        exact
+        path={ROUTES.COACH.CHILD_PROFILE}
+        component={CoachChildProfile}
+      />
+      <Route exact path={ROUTES.COACH.ABOUT.ADDRESS} component={CoachAddress} />
+
+      <Route exact path={ROUTES.COACH.ACCOUNT} component={CoachAccount} />
     </Switch>
   );
 };

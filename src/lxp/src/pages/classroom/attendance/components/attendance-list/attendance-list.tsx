@@ -28,6 +28,12 @@ import {
 import ClassProgrammeAttendanceList from '../class-programme-attendance-list/class-programme-attendance-list';
 import * as styles from './attendance-list.styles';
 import { AttendanceListProps, AttendanceState } from './attendance-list.types';
+import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
+
+const filterInfo: FilterInfo = {
+  filterName: 'Playgroup',
+  filterHint: 'You can select multiple playgroups',
+};
 
 export const AttendanceList: React.FC<AttendanceListProps> = ({
   submitText = '',
@@ -46,13 +52,13 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
     ClassroomGroupDto[]
   >([]);
 
-  const filterInfo: FilterInfo = {
-    filterName: 'Playgroup',
-    filterHint: 'You can select multiple playgroups',
-  };
-
   const user = useSelector(userSelectors.getUser);
-  const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
+  const allClassroomGroups = useSelector(
+    classroomsSelectors.getClassroomGroups
+  );
+  const classroomGroups = allClassroomGroups.filter(
+    (x) => x.name !== NoPlaygroupClassroomType.name
+  );
   const classProgrammes = useSelector(classroomsSelectors.getClassProgrammes);
   const isPlaygroup = useSelector(classroomsSelectors.isPlaygroup());
   const primaryClassProgramme = classProgrammes.find(

@@ -38,6 +38,7 @@ import { userSelectors } from '@store/user';
 import { analyticsActions } from '@store/analytics';
 import * as styles from './practitioner-programme-information.styles';
 import ROUTES from '@routes/routes';
+import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 
 export const PractitionerProgrammeInformation: React.FC = () => {
   const history = useHistory();
@@ -164,7 +165,10 @@ export const PractitionerProgrammeInformation: React.FC = () => {
     if (programmeType?.enumId === ProgrammeTypeEnum.Playgroup) {
       stackedActionList.push({
         title: 'Groups',
-        subTitle: classroomGroups?.map((x) => x.name).join(','),
+        subTitle: classroomGroups
+          ?.filter((x) => x.name !== NoPlaygroupClassroomType.name)
+          .map((x) => x.name)
+          .join(','),
         switchTextStyles: true,
         actionName: 'Edit',
         actionIcon: 'PencilIcon',
@@ -222,7 +226,11 @@ export const PractitionerProgrammeInformation: React.FC = () => {
             hasConsent={true}
           />
         </div>
-        <StackedList listItems={listItems} type={'ActionList'}></StackedList>
+        <StackedList
+          className="px-4"
+          listItems={listItems}
+          type={'ActionList'}
+        ></StackedList>
       </BannerWrapper>
 
       <Dialog

@@ -12,6 +12,7 @@ import {
   getClassroomGroupLearners,
   getClassroomGroups,
   getClassroomProgrammes,
+  getClassroomsForPractitioner,
 } from './classroom.actions';
 import { ClassroomState } from './classroom.types';
 
@@ -20,20 +21,34 @@ const initialState: ClassroomState = {
   classroomGroups: undefined,
   classroomProgrammes: undefined,
   classroomGroupLearners: undefined,
+  programmeType: undefined,
+  principal: undefined,
 };
 
 const classroomsSlice = createSlice({
   name: 'classrooms',
   initialState,
   reducers: {
+    setProgrammeType: (state, action: PayloadAction<string>) => {
+      state.programmeType = action.payload;
+    },
     resetClassroomState: (state) => {
       state.classroom = initialState.classroom;
       state.classroomGroups = initialState.classroomGroups;
       state.classroomProgrammes = initialState.classroomProgrammes;
       state.classroomGroupLearners = initialState.classroomGroupLearners;
+      state.principal = initialState.principal;
     },
     updateClassroom: (state, action: PayloadAction<ClassroomDto>) => {
       state.classroom = action.payload;
+    },
+    updateClassroomNumberPractitioners: (
+      state,
+      action: PayloadAction<Pick<ClassroomDto, 'numberPractitioners'>>
+    ) => {
+      if (state.classroom)
+        state.classroom.numberPractitioners =
+          action.payload.numberPractitioners;
     },
     updateClassroomGroup: (state, action: PayloadAction<ClassroomGroupDto>) => {
       if (state.classroomGroups) {
@@ -162,6 +177,13 @@ const classroomsSlice = createSlice({
     builder.addCase(getClassroomGroupLearners.fulfilled, (state, action) => {
       if (action.payload) {
         state.classroomGroupLearners = action.payload;
+      }
+    });
+    builder.addCase(getClassroomsForPractitioner.fulfilled, (state, action) => {
+      if (action.payload) {
+        state.classroom = action.payload.classroom;
+        state.classroomGroups = action.payload.classroomGroups;
+        state.principal = action.payload.principal;
       }
     });
   },

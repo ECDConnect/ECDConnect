@@ -42,7 +42,18 @@ import {
 import { settingActions, settingThunkActions } from './store/settings';
 import { staticDataActions, staticDataThunkActions } from './store/static-data';
 import { userActions, userThunkActions } from './store/user';
+import { coachActions, coachThunkActions } from './store/coach';
+import {
+  practitionerActions,
+  practitionerThunkActions,
+} from './store/practitioner';
+import {
+  practitionerForCoachActions,
+  practitionerForCoachThunkActions,
+} from './store/practitionerForCoach';
 import { analyticsActions } from './store/analytics';
+import { userSelectors } from '@store/user';
+import { useSelector } from 'react-redux';
 
 type IntialStoreSetupContextValues = {
   initloading: boolean;
@@ -63,12 +74,25 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   const { isOnline } = useOnlineStatus();
   const [initloading, setInitLoading] = useState(false);
   const [staticDataLoading, setStaticDataLoading] = useState(false);
+  const userData = useSelector(userSelectors.getUser);
+  const isCoach = userData?.roles?.some((role) => role.name === 'Coach');
 
   const [otherLoading, setOtherLoading] = useState(false);
 
   const resetAuth = async () => {
     await appDispatch(authActions.resetAuthState());
   };
+
+  useEffect(() => {
+    if (userData) {
+      if (isCoach) {
+        (async () =>
+          await appDispatch(
+            coachThunkActions.getCoachByCoachId({})
+          ).unwrap())();
+      }
+    }
+  }, [appDispatch, isCoach, userData]);
 
   const resetAppStaticStores = async (showLoading = true) => {
     if (showLoading) {
@@ -98,6 +122,9 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     await appDispatch(notesActions.resetNotesState());
     await appDispatch(classroomsActions.resetClassroomState());
     await appDispatch(userActions.resetUserState());
+    await appDispatch(coachActions.resetCoachState());
+    await appDispatch(practitionerActions.resetPractitionerState());
+    await appDispatch(practitionerForCoachActions.resetPractitionerState());
     await appDispatch(childrenActions.resetChildrenState());
     await appDispatch(caregiverActions.resetCaregiverState());
     await appDispatch(documentActions.resetDocumentsState());
@@ -129,6 +156,14 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     ).unwrap();
     await appDispatch(userThunkActions.getUser({})).unwrap();
     await appDispatch(userThunkActions.getUserConsents({})).unwrap();
+    // await appDispatch(coachThunkActions.getCoachByCoachId({})).unwrap();
+    // await appDispatch(coachThunkActions.getCoachByUserId({})).unwrap();
+    await appDispatch(
+      practitionerForCoachThunkActions.getPractitionersForCoach({})
+    ).unwrap();
+    await appDispatch(
+      practitionerThunkActions.getAllPractitioners({})
+    ).unwrap();
     await appDispatch(childrenThunkActions.getChildren({})).unwrap();
     await appDispatch(caregiverThunkActions.getCaregivers({})).unwrap();
     await appDispatch(documentThunkActions.getDocuments({})).unwrap();

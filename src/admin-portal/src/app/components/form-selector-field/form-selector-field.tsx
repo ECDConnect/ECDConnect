@@ -7,6 +7,7 @@ export interface FormSelectorFieldProps {
   error?: string;
   disabled?: boolean;
   isColor?: boolean;
+  multiple?: boolean;
   register: UseFormRegister<any>;
 }
 
@@ -22,6 +23,7 @@ const FormSelectorField: React.FC<FormSelectorFieldProps> = ({
   options,
   disabled = false,
   isColor = false,
+  multiple = false,
   register,
 }) => {
   return (
@@ -37,6 +39,7 @@ const FormSelectorField: React.FC<FormSelectorFieldProps> = ({
           disabled={disabled}
           {...register(nameProp)}
           className={error ? errorStyle : defaultInputStyle}
+          multiple={multiple}
         >
           {options &&
             options.map((option) => {

@@ -8,4 +8,5 @@ export enum LocalStorageKeys {
   hasClosedAttendanceSmartStartPointsMessage = 'HasClosedAttendanceSmartStartPointsMessage',
   HasTrackedChildProgressBefore = 'HasTrackedChildProgressBefore',
   isSmartStartUser = 'IsSmartStartUser',
+  coachProfilePicture = 'CoachProfilePicture',
 }

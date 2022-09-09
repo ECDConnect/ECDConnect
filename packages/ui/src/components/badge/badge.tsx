@@ -13,7 +13,7 @@ export const Badge: React.FC<BadgeProps> = ({
     <span
       className={classNames(
         className,
-        'inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none rounded-full',
+        'inline-flex items-center justify-center px-3 py-1 text-xs font-bold leading-none rounded-full',
         `bg-${color}`
       )}
     >

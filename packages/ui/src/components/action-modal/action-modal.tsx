@@ -75,9 +75,10 @@ export const ActionModal: React.FC<ActionModalProps> = ({
         >
           <Typography
             type="unspecified"
-            fontSize="16"
+            fontSize="18"
             hasMarkup
             text={importantText}
+            className={'leading-snug font-semibold'}
             color="textDark"
           />
         </div>
@@ -87,7 +88,7 @@ export const ActionModal: React.FC<ActionModalProps> = ({
           className={styles.textWrapper(textAlignment)}
           data-testid="detail-wrapper"
         >
-          <Typography type={'body'} text={detailText} color={'textLight'} />
+          <Typography type={'body'} text={detailText} color={'textMid'} />
         </div>
       )}
       {paragraphs?.length > 0 &&
@@ -136,7 +137,7 @@ export const ActionModal: React.FC<ActionModalProps> = ({
                 `text-${button.textColour} h-4 w-4 mr-2`
               )}
             <Typography
-              type="body"
+              type="button"
               color={button.textColour}
               text={button.text}
             ></Typography>

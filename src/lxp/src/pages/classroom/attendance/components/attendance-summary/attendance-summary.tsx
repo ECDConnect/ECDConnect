@@ -37,6 +37,7 @@ import {
 } from '@utils/common/local-storage.utils';
 import EditAttendanceRegister from '../edit-attendance-register/edit-attendance-register';
 import * as styles from './attendance-summary.styles';
+import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 
 export const AttendanceSummary: React.FC = () => {
   const [displaySmartStartMessage, setDisplaySmartStartMessage] =
@@ -64,7 +65,12 @@ export const AttendanceSummary: React.FC = () => {
 
   const todayDate = new Date();
   const classProgrammes = useSelector(classroomsSelectors.getClassProgrammes);
-  const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
+  const allClassroomGroups = useSelector(
+    classroomsSelectors.getClassroomGroups
+  );
+  const classroomGroups = allClassroomGroups.filter(
+    (x) => x.name !== NoPlaygroupClassroomType.name
+  );
   const publicHolidays = useSelector(staticDataSelectors.getHolidays);
   const attendanceData = useSelector(attendanceSelectors.getAttendance);
 
@@ -142,7 +148,11 @@ export const AttendanceSummary: React.FC = () => {
             startOfWeekDate,
             classProgramme.meetingDay - 1
           );
-          if (dayDate.valueOf() < new Date().valueOf()) {
+          const theDate = dayDate.valueOf();
+          const programmeStartDate = new Date(
+            classProgramme.programmeStartDate
+          ).valueOf();
+          if (theDate < new Date().valueOf() && theDate > programmeStartDate) {
             actionListToDisplayWrapper.push({
               date: dayDate,
               group: group,
@@ -286,19 +296,18 @@ export const AttendanceSummary: React.FC = () => {
 
   return (
     <>
-      <div className={'flex flex-1 h-full flex-col'}>
+      <div className={'flex flex-1 h-full flex-col px-4 pt-4 gap-4'}>
         {isValidAttendanceDay ? (
           <PointsSuccessCard
             visible={successMessageVisible}
             isSmartStartUser={isSmartStartUser}
             points={100}
             onClose={() => setSuccessMessageVisible(false)}
-            className={'pt-4 px-4'}
             message={getPointsMessage(isSmartStartUser)}
             icon={'SparklesIcon'}
           />
         ) : (
-          <div className={'px-4 pt-4'}>
+          <div>
             <Alert
               title={'Today is not a school day.'}
               message={
@@ -310,7 +319,7 @@ export const AttendanceSummary: React.FC = () => {
         )}
 
         {attendanceActionList.length > 0 && missedAttendanceGroups.length > 0 && (
-          <div className={'flex flex-1 flex-col pt-4 px-4'}>
+          <div className={'flex flex-col'}>
             <div className={'flex flex-row items-center'}>
               <div className={styles.iconRound}>
                 <Typography

@@ -43,7 +43,7 @@ export const UserAlertListItem: React.FC<UserAlertListItemProps> = ({
             <div>
               <Typography
                 className="truncate"
-                type="body"
+                type="h4"
                 weight="bold"
                 color="textMid"
                 text={item.title}
@@ -56,7 +56,7 @@ export const UserAlertListItem: React.FC<UserAlertListItemProps> = ({
                 ></div>
                 <Typography
                   className="pl-1 truncate"
-                  type="small"
+                  type="help"
                   weight="skinny"
                   color={styles.getColourByAlertSeverity(item.alertSeverity)}
                   text={item.subTitle ?? ''}

@@ -3,31 +3,34 @@ import * as Yup from 'yup';
 export interface EditProgrammeModel {
   name: string;
   type: string;
-  isPrincipleOrLeader: boolean;
+  isPrincipalOrLeader: boolean;
   smartStartPractitioners: number;
   nonSmartStartPractitioners: number;
-  assistants: number;
-  isTeacher: boolean;
+  isPrincipleOrOwnerSmartStarter: boolean;
 }
 
 export const editProgrammeSchema = Yup.object().shape({
-  name: Yup.string().required(),
-  type: Yup.string().required(),
-  isPrincipleOrLeader: Yup.boolean().required(),
-  smartStartPractitioners: Yup.string().when('isPrincipleOrLeader', {
+  isPrincipalOrLeader: Yup.boolean().required(),
+  isPrincipleOrOwnerSmartStarter: Yup.boolean().when('isPrincipalOrLeader', {
+    is: false,
+    then: Yup.boolean().required(),
+  }),
+  name: Yup.string().when('isPrincipalOrLeader', {
+    is: true,
+    then: Yup.string().required(),
+  }),
+  type: Yup.string().when('isPrincipalOrLeader', {
+    is: true,
+    then: Yup.string().required(),
+  }),
+  smartStartPractitioners: Yup.string().when('isPrincipalOrLeader', {
     is: true,
     then: Yup.string().required(),
     otherwise: Yup.string(),
   }),
-  nonSmartStartPractitioners: Yup.string().when('isPrincipleOrLeader', {
+  nonSmartStartPractitioners: Yup.string().when('isPrincipalOrLeader', {
     is: true,
     then: Yup.string().required(),
     otherwise: Yup.string(),
   }),
-  assistants: Yup.string().when('isPrincipleOrLeader', {
-    is: true,
-    then: Yup.string().required(),
-    otherwise: Yup.string(),
-  }),
-  isTeacher: Yup.boolean(),
 });

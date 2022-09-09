@@ -1,10 +1,13 @@
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities.Base;
 using ECDLink.DataAccessLayer.Events;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
+using Namotion.Reflection;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
@@ -43,6 +46,17 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
             return entities.SingleOrDefault(s => s.Id == id);
         }
 
+        public virtual T GetByUserId(string id)
+        {            
+            Type type = typeof(T);
+            if (type.GetProperty("UserId") != null)
+            {
+                //var val = entities.AsQueryable().Where(x => x.GetType().GetProperty("UserId").GetValue(type,null).Equals(id)).FirstOrDefault();                
+                var qq = entities.FromSqlRaw("SELECT * FROM \"" + type.Name + "\" WHERE \"UserId\" = '" + id + "'").ToList();
+                return qq.FirstOrDefault();
+            } else return entities.SingleOrDefault(s => s.Id.Equals(id));
+        }
+
         public virtual T Insert(T entity)
         {
             if (entity == null) throw new ArgumentNullException("entity");
@@ -68,6 +82,9 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
 
             if (Exists(entity.Id))
             {
+                entity.InsertedDate = entity.InsertedDate;//do not update inserted date to Now                
+                entity.UpdatedDate = DateTime.Now;
+                entity.UpdatedBy = _userId;
                 entities.Update(entity);
                 _domainEventService.NotifyUpdate<T>(_userId, entity);
             }
@@ -84,10 +101,15 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
         public virtual void Delete(Guid id)
         {
             T entity = entities.SingleOrDefault(s => s.Id == id);
-            entities.Remove(entity);
-            context.SaveChanges();
+            //entities.Remove(entity);
+            //context.SaveChanges();
+            //softdelete
+            entities.Update(entity);
+            entity.IsActive = false;
+            entities.Update(entity);
+            _domainEventService.NotifyUpdate<T>(_userId, entity);
 
-            _domainEventService.NotifyDelete<T>(_userId, entity);
+            //_domainEventService.NotifyDelete<T>(_userId, entity);
         }
 
         public virtual bool Exists(Guid id)

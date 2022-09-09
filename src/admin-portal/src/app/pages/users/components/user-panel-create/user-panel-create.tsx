@@ -44,7 +44,11 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
     if (roleData && roleData.roles) {
       const tempRoles = roleData.roles.filter(
         (x: RoleDto) =>
-          x.name !== 'Practitioner' && x.name !== 'Coach' && x.name !== 'Child'
+          x.name !== 'Practitioner' &&
+          x.name !== 'Coach' &&
+          x.name !== 'Child' &&
+          x.name !== 'Principal' &&
+          x.name !== 'Franchisor'
       );
 
       setFilteredRoles(tempRoles);

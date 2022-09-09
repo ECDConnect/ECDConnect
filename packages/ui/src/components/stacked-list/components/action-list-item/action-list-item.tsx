@@ -14,19 +14,24 @@ export const ActionListItem: React.FC<ActionListItemProps> = ({ item }) => {
     return renderIcon(iconType, styles.actionIcon);
   };
 
-  const buttonType = item.buttonType ?? 'outlined';
+  const buttonType = item.buttonType ?? 'filled';
 
   return (
-    <div className={styles.actionListItemContainer}>
+    <div
+      className={classNames(
+        item.containerStyle,
+        styles.actionListItemContainer
+      )}
+    >
       <div className={styles.contentWrapper}>
         <div className={stackedListStyles.textRowsWrapper}>
-          <div className={classNames('pl-4', styles.actionParagraphWrapper)}>
+          <div className={classNames(styles.actionParagraphWrapper)}>
             <>
               <p
                 className={
                   !item.switchTextStyles
-                    ? styles.actionTitle
-                    : styles.actionSubTitle
+                    ? classNames(item.titleStyle, styles.actionTitle)
+                    : classNames(item.titleStyle, styles.actionSubTitle)
                 }
               >
                 {item.title}
@@ -34,11 +39,20 @@ export const ActionListItem: React.FC<ActionListItemProps> = ({ item }) => {
               <p
                 className={
                   item.switchTextStyles
-                    ? styles.actionTitleInput
-                    : styles.actionSubTitle
+                    ? classNames(item.subTitleStyle, styles.actionTitleInput)
+                    : classNames(item.subTitleStyle, styles.actionSubTitle)
                 }
               >
-                <span className="truncate">{item.subTitle}</span>
+                {item.hasMarkup && (
+                  <span
+                    dangerouslySetInnerHTML={{ __html: item.subTitle || '' }}
+                    className="truncate"
+                  />
+                )}
+
+                {!item.hasMarkup && (
+                  <span className="truncate">{item.subTitle}</span>
+                )}
               </p>
             </>
           </div>
@@ -46,11 +60,11 @@ export const ActionListItem: React.FC<ActionListItemProps> = ({ item }) => {
         {item.onActionClick && (
           <div onClick={() => item.onActionClick && item.onActionClick()}>
             {item.actionName && (
-              <Button type={buttonType} color="primary" size="small">
+              <Button type={buttonType} color="secondaryAccent2" size="small">
                 <Typography
                   className={'mr-1'}
-                  type={'small'}
-                  color={buttonType === 'outlined' ? 'primary' : 'white'}
+                  type={'buttonSmall'}
+                  color={'secondary'}
                   text={item.actionName}
                 ></Typography>
                 {item.actionIcon && getIcon(item.actionIcon)}

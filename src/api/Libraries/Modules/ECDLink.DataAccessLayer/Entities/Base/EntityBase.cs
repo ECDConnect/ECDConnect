@@ -11,7 +11,7 @@ namespace ECDLink.DataAccessLayer.Entities.Base
         [Column(Order = 1)]
         public TKey Id { get; set; }
 
-        [Column(Order = 96)]        
+        [Column(Order = 96)]
         public bool IsActive { get; set; } = true;
 
         [Column(Order = 97)]
@@ -20,7 +20,7 @@ namespace ECDLink.DataAccessLayer.Entities.Base
 
         [Column(Order = 98)]
         [GraphIgnoreInput]
-        public DateTime UpdatedDate { get; set; }
+        public DateTime UpdatedDate { get; set; } = DateTime.Now;
 
         [Column(Order = 99)]
         public string UpdatedBy { get; set; }

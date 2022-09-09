@@ -54,7 +54,7 @@ export const Checkbox = <T,>({
                 type="checkbox"
                 className={classNames(
                   styles.checkboxInput,
-                  `text-${checkboxColor}`
+                  `border-${checkboxColor}`
                 )}
                 {...register(nameProp)}
               />
@@ -66,7 +66,7 @@ export const Checkbox = <T,>({
                 type="checkbox"
                 className={classNames(
                   styles.checkboxInput,
-                  `text-${checkboxColor}`
+                  `border-${checkboxColor}`
                 )}
                 checked={checked}
                 onChange={(e) => checkboxChange(e)}

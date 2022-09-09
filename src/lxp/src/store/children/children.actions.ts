@@ -392,3 +392,38 @@ const mapUserInput = (child: Partial<UserDto>): UserModelInput => ({
   email: child.email,
   profileImageUrl: child.profileImageUrl,
 });
+export const getChildrenForCoach = createAsyncThunk<
+  ChildDto[],
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  {},
+  ThunkApiType<RootState>
+>(
+  'getChildrenForCoach',
+  // eslint-disable-next-line no-empty-pattern
+  async ({}, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      children: { children: childrenCache },
+    } = getState();
+
+    if (!childrenCache) {
+      try {
+        let children: ChildDto[] | undefined;
+
+        if (userAuth?.auth_token) {
+          children = await new ChildService(
+            userAuth?.auth_token
+          ).getChildrenForCoach(userAuth?.id);
+        } else {
+          return rejectWithValue('no access token, profile check required');
+        }
+
+        return children;
+      } catch (err) {
+        return rejectWithValue(err);
+      }
+    } else {
+      return childrenCache;
+    }
+  }
+);

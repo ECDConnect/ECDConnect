@@ -109,6 +109,33 @@ export default function PractitionerPanelEdit({
           shouldValidate: true,
         }
       );
+      practitionerSetValue('isTrainee', practitioner.isTrainee ?? false, {
+        shouldValidate: true,
+      });
+      practitionerSetValue(
+        'isFundaAppAdmin',
+        practitioner.isFundaAppAdmin ?? false,
+        {
+          shouldValidate: true,
+        }
+      );
+      practitionerSetValue('isPrincipal', practitioner.isPrincipal ?? false, {
+        shouldValidate: true,
+      });
+      practitionerSetValue(
+        'coachHierarchy',
+        practitioner.coachHierarchy ?? '',
+        {
+          shouldValidate: true,
+        }
+      );
+      practitionerSetValue(
+        'principalHierarchy',
+        practitioner.principalHierarchy ?? '',
+        {
+          shouldValidate: true,
+        }
+      );
 
       if (practitioner.siteAddress) {
         siteAddressSetValue('name', practitioner.siteAddress.name, {
@@ -167,7 +194,7 @@ export default function PractitionerPanelEdit({
     const practInputModel: PractitionerInput = {
       Id: practitioner.id,
       UserId: practitioner.userId,
-      SiteAddressId: siteAddressId,
+      SiteAddressId: siteAddressId !== '' ? siteAddressId : null,
       AttendanceRegisterLink: practitionerForm.attendanceRegisterLink,
       MaxChildren:
         practitionerForm.maxChildren && +practitionerForm.maxChildren,
@@ -179,6 +206,17 @@ export default function PractitionerPanelEdit({
         practitionerForm.monthSinceFranchisee &&
         +practitionerForm.monthSinceFranchisee,
       IsActive: true,
+      IsPrincipal: practitionerForm.isPrincipal,
+      IsTrainee: practitionerForm.isTrainee,
+      IsFundaAppAdmin: practitionerForm.isFundaAppAdmin,
+      CoachHierarchy:
+        practitionerForm.coachHierarchy !== ''
+          ? practitionerForm.coachHierarchy
+          : null,
+      PrincipalHierarchy:
+        practitionerForm.principalHierarchy !== ''
+          ? practitionerForm.principalHierarchy
+          : null,
     };
 
     await updatePractitioner({
@@ -209,7 +247,7 @@ export default function PractitionerPanelEdit({
     };
 
     let siteAddressId = '';
-    if (practitioner.siteAddressId) {
+    if (practitioner.siteAddressId && siteAddressInputModel.ProvinceId !== '') {
       await updateSiteAddress({
         variables: {
           id: practitioner.siteAddressId,
@@ -218,12 +256,14 @@ export default function PractitionerPanelEdit({
       });
       siteAddressId = practitioner.siteAddressId;
     } else {
-      const returnSiteAddress = await createSiteAddress({
-        variables: {
-          input: { ...siteAddressInputModel },
-        },
-      });
-      siteAddressId = returnSiteAddress?.data?.createSiteAddress?.id ?? '';
+      if (siteAddressInputModel.ProvinceId !== '') {
+        const returnSiteAddress = await createSiteAddress({
+          variables: {
+            input: { ...siteAddressInputModel },
+          },
+        });
+        siteAddressId = returnSiteAddress?.data?.createSiteAddress?.id ?? '';
+      }
     }
 
     setNotification({

@@ -27,7 +27,7 @@ export const StatusChip: React.FC<StatusChipProps> = ({
   textColour,
   backgroundColour,
   text,
-  textType = 'small',
+  textType = 'buttonSmall',
   textWeight = 'bold',
   icon,
   iconPosition,
@@ -53,6 +53,7 @@ export const StatusChip: React.FC<StatusChipProps> = ({
         color={textColour}
         text={text}
         lineHeight={4}
+        className="text-center"
       />
       {children}
       {iconPosition === 'end' &&

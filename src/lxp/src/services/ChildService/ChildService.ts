@@ -23,11 +23,11 @@ class ChildService {
           GetAllChild {
             id
             caregiverId
-            workflowStatusId            
+            workflowStatusId
             insertedDate
             userId
             user {
-              id        
+              id
               firstName
               surname
               email
@@ -37,14 +37,14 @@ class ChildService {
               isActive
               isSouthAfricanCitizen
               verifiedByHomeAffairs
-            }      
-            languageId    
+            }
+            languageId
             allergies
             disabilities
-            otherHealthConditions            
+            otherHealthConditions
             isActive
           }
-        }        
+        }
       `,
     });
 
@@ -53,6 +53,58 @@ class ChildService {
     }
 
     return response.data.data.GetAllChild;
+  }
+
+  async getChildrenForCoach(userId: string): Promise<ChildDto[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        query allChildrenForCoach($userId: String) {
+          allChildrenForCoach(userId: $userId) {
+            id
+            userId
+          }
+        }    
+      `,
+      variables: {
+        userId,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Get Children For Coach Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.allChildrenForCoach;
+  }
+
+  async getChildrenForPractitioner(userId: string): Promise<ChildDto[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        query allChildrenForPractitioner($userId: String) {
+          allChildrenForPractitioner(userId: $userId) {
+            id
+            userId
+          }
+        }    
+      `,
+      variables: {
+        userId,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Get Children For Practitioner Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.allChildrenForPractitioner;
   }
 
   async updateChild(id: string, input: ChildInput): Promise<boolean> {

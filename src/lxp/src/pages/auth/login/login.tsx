@@ -65,8 +65,8 @@ export const Login: React.FC = () => {
           ) {
             appDispatch(settingActions.setApplicationVersion(version));
             appDispatch(authActions.setUserExpired());
-            history.push(ROUTES.DASHBOARD);
             setIsLoading(false);
+            history.push(ROUTES.DASHBOARD);
           } else {
             setDisplayError(true);
             setIsLoading(false);
@@ -134,7 +134,7 @@ export const Login: React.FC = () => {
                 onClick={() => toggleIdAndpassport(idFieldVisible)}
               >
                 <Typography
-                  type="small"
+                  type="buttonSmall"
                   color="primary"
                   text={'Enter ID number instead'}
                 ></Typography>
@@ -150,7 +150,7 @@ export const Login: React.FC = () => {
                 onClick={() => toggleIdAndpassport(idFieldVisible)}
               >
                 <Typography
-                  type="small"
+                  type="buttonSmall"
                   color="primary"
                   text={'Enter passport number instead'}
                 ></Typography>
@@ -175,7 +175,7 @@ export const Login: React.FC = () => {
                 onClick={forgotPasswordClicked}
               >
                 <Typography
-                  type="small"
+                  type="buttonSmall"
                   color="primary"
                   text={'Forgot my password'}
                 ></Typography>

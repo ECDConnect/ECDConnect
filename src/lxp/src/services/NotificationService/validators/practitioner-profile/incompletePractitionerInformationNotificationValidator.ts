@@ -6,6 +6,7 @@ import {
   NotificationPriority,
   NotificationValidator,
 } from '../../NotificationService.types';
+import ROUTES from '@/routes/routes';
 
 export class IncompletePractitionerInformationNotificationValidator
   implements NotificationValidator
@@ -21,17 +22,37 @@ export class IncompletePractitionerInformationNotificationValidator
   }
 
   getNotifications = (): Message[] => {
-    const { classroomData: classroomState } = this.store.getState();
+    const {
+      user: userState,
+      classroomData: classroomState,
+      practitioner: practitionerState,
+    } = this.store.getState();
 
-    if (!classroomState) return [];
+    if (!classroomState || !userState) return [];
 
-    if (!classroomState?.classroom || !classroomState?.classroom?.id) {
+    /**
+     * Notification is returned when
+     * 1. The user is a practitioner
+     * 2. The practitioner object is in the state
+     * 3. The practitioner is not a principal yet
+     */
+
+    // TODO: change conditions for when to show the page
+    const hasPractitionerRole = userState?.user?.roles?.some(
+      (role) => role.name === 'Practitioner'
+    );
+
+    const isRegistered = practitionerState.practitioner?.isRegistered !== false;
+
+    const showNotification = hasPractitionerRole && isRegistered;
+
+    if (showNotification) {
       return [
         {
           reference: `practitioner-profile`,
           title: 'Complete your profile',
           message:
-            'We suggest connecting to a wifi network to complete this process. After syncing your data, the Funda App will continue to work offline.',
+            'Share more information about your programme to make Funda App useful for you.',
           dateCreated: new Date().toISOString(),
           priority: NotificationPriority.lower,
           viewOnDashboard: true,
@@ -41,7 +62,7 @@ export class IncompletePractitionerInformationNotificationValidator
           actionText: 'Complete your profile',
           viewType: 'Hub',
           routeConfig: {
-            route: '/practitioner/profile/edit/',
+            route: ROUTES.PRACTITIONER.PROFILE.EDIT,
           },
         },
       ];

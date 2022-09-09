@@ -80,9 +80,9 @@ class AttendanceService {
       `,
       variables: {
         userId: userId,
-        classgroupId: classroomId,
-        startDate: startDate,
-        endDate: endDate,
+        classroomId: classroomId,
+        startMonth: startDate,
+        endMonth: endDate,
       },
     });
 
@@ -108,7 +108,8 @@ class AttendanceService {
           $userId: String
           $classgroupId: UUID!
           $startDate: DateTime!
-          $endDate: DateTime!) {
+          $endDate: DateTime!
+        ) {
             childAttendanceReport(
               userId: $userId
               classgroupId: $classgroupId
@@ -117,17 +118,20 @@ class AttendanceService {
             ) {
               totalExpectedAttendance
               totalActualAttendance
+              attendancePercentage
               classGroupAttendance {
                 classroomGroupId
                 classroomGroupName
                 startDate
                 endDate
                 expectedAttendance
+                attendancePercentage
                 monthlyAttendance {
                   month
                   monthNumber
                   actualAttendance
                   expectedAttendance
+                  attendancePercentage
                 }
               }
             }

@@ -8,6 +8,14 @@ import reportWebVitals from './reportWebVitals';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import './styles.css';
 
+if (
+  process.env.NODE_ENV === 'development' &&
+  process.env?.REACT_APP_RUN_MOCKS === 'run_msw'
+) {
+  const { worker } = require('./mocks/browser');
+  worker.start();
+}
+
 ReactDOM.render(
   <OnlineStatusProvider>
     <ConfigProvider>

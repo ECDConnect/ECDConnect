@@ -1,9 +1,16 @@
 import * as Yup from 'yup';
+import { DefaultThemeColors } from '@ecdlink/core';
 
-export interface ThemeColours {
+export interface ThemeColours extends DefaultThemeColors {
   primary: string;
+  primaryAccent1: string;
+  primaryAccent2: string;
   secondary: string;
+  secondaryAccent1: string;
+  secondaryAccent2: string;
   tertiary: string;
+  tertiaryAccent1: string;
+  tertiaryAccent2: string;
   textDark: string;
   textMid: string;
   textLight: string;
@@ -11,19 +18,51 @@ export interface ThemeColours {
   uiMid: string;
   uiLight: string;
   uiBg: string;
+  modalBg: string;
+  errorMain: string;
+  errorDark: string;
+  errorBg: string;
+  alertMain: string;
+  alertDark: string;
+  alertBg: string;
+  successMain: string;
+  successDark: string;
+  successBg: string;
+  infoMain: string;
+  infoDark: string;
+  infoBb: string;
 }
 
 export const initialThemeColours: ThemeColours = {
   primary: '#583f99',
-  secondary: '#ed145b',
-  tertiary: '#00c0f3',
-  textDark: '#1f192e',
-  textMid: '#483e63',
-  textLight: '#635b74',
+  primaryAccent1: '#9484BD',
+  primaryAccent2: '#D7D1E6',
+  secondary: '#00B0E0',
+  secondaryAccent1: '#66D0EC',
+  secondaryAccent2: '#C2ECF8',
+  tertiary: '#ED145B',
+  tertiaryAccent1: '#F4729D',
+  tertiaryAccent2: '#FBC7D8',
+  textDark: '#1F192E',
+  textMid: '#483E63',
+  textLight: '#9B96A6',
   uiMidDark: '#5e557a',
   uiMid: '#827c93',
   uiLight: '#cac5d8',
-  uiBg: '#f3f1f9',
+  uiBg: '#F3F1F9',
+  modalBg: 'rgba(148, 132, 189, 0.7)',
+  errorMain: '#ED1414',
+  errorDark: '#D20000',
+  errorBg: '#FFEEF6',
+  alertMain: '#FF5C00',
+  alertDark: '#E43802',
+  alertBg: '#FFEEE4',
+  successMain: '#83BB26',
+  successDark: '#5A8F02',
+  successBg: '#E6F1D4',
+  infoMain: '#1D67D5',
+  infoDark: '#1752AB',
+  infoBb: '#EBF3FF',
 };
 
 export const themeColoursScheme = Yup.object().shape({
