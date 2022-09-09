@@ -70,7 +70,45 @@ export const handlers = [
   //   );
   // }),
 
-  graphql.query('GetClassroomForPractitioner', (req, res, ctx) => {
+  // graphql.query('GetClassroomForPractitioner', (req, res, ctx) => {
+  //   if (isAuthorized(req)) {
+  //     return res(
+  //       ctx.errors([
+  //         {
+  //           message: 'Not authenticated',
+  //           errorType: 'AuthenticationError',
+  //         },
+  //       ])
+  //     );
+  //   }
+
+  //   // When authenticated, respond with a query payload
+  //   return res(
+  //     ctx.status(200),
+  //     ctx.data({
+  //       allClassroomsForPractitioner: {
+  //         classroom: {
+  //           id: '81b990b2-30a6-4e8f-90e6-3073be5bd8f5',
+  //           userId: '2da4532b-b3c7-41d8-a44f-2a80f388a07a',
+  //           name: 'Mountain Dew',
+  //         },
+  //         principal: {
+  //           id: req.body?.variables?.principalId,
+  //           user: {
+  //             fullName: 'Bryce Cee',
+  //           },
+  //         },
+  //         classroomGroups: [
+  //           {
+  //             id: '81b990b3-30a6-4e8f-90e6-3073be5bd8f5',
+  //           },
+  //         ],
+  //       },
+  //     })
+  //   );
+  // }),
+
+  graphql.query('getClassroomDetailsForPractitioner', (req, res, ctx) => {
     if (isAuthorized(req)) {
       return res(
         ctx.errors([
@@ -86,21 +124,9 @@ export const handlers = [
     return res(
       ctx.status(200),
       ctx.data({
-        allClassroomsForPractitioner: {
-          classroom: {
-            id: '81b990b2-30a6-4e8f-90e6-3073be5bd8f5',
-            userId: "2da4532b-b3c7-41d8-a44f-2a80f388a07a",
-            name: "Mountain Dew",
-          },
-          principal: {
-            id: req.body?.variables?.principalId,
-            user: {
-              fullName: "Bryce Cee"
-            }
-          },
-          classroomGroups: [{
-            id: "81b990b3-30a6-4e8f-90e6-3073be5bd8f5"
-          }],
+        getClassroomDetailsForPractitioner: {
+          classroomName: 'Angel Day Care Two',
+          principalName: 'Bryce Mbaadi',
         },
       })
     );

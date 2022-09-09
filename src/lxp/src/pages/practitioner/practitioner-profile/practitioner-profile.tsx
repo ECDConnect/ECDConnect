@@ -22,10 +22,12 @@ import { userSelectors } from '@store/user';
 import { analyticsActions } from '@store/analytics';
 import CompleteProfile from '../edit-practitioner-profile/components/complete-profile/complete-profile';
 import ROUTES from '@routes/routes';
+import { practitionerSelectors } from '@/store/practitioner';
 
 export const PractitionerProfile: React.FC = () => {
   const { resetAuth, resetAppStaticStores } = useStoreSetup();
   const user = useSelector(userSelectors.getUser);
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const lastDataSyncDate = useSelector(settingSelectors.getLastDataSync);
   const appDispatch = useAppDispatch();
@@ -222,7 +224,7 @@ export const PractitionerProfile: React.FC = () => {
       initActive: true,
       child: (
         <div>
-          {classroom ? null : <CompleteProfile />}
+          {practitioner?.isRegistered ? null : <CompleteProfile />}
           <StackedList
             listItems={getStackedMenuList()}
             type={'MenuList'}

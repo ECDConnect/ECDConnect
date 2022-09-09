@@ -49,31 +49,27 @@ export const getPractitionerById = createAsyncThunk<
   async ({ id }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
-      practitioner: { practitioner: practitionerCache },
     } = getState();
 
-    if (!practitionerCache) {
-      try {
-        let practitioner: PractitionerDto | undefined;
+    try {
+      let practitioner: PractitionerDto | undefined;
 
-        if (userAuth?.auth_token) {
-          practitioner = await new PractitionerService(
-            userAuth?.auth_token
-          ).getPractitionerById(id);
-        } else {
-          return rejectWithValue('no access token, profile check required');
-        }
-
-        if (!practitioner) {
-          return rejectWithValue('Error getting practitioner');
-        }
-
-        return practitioner;
-      } catch (err) {
-        return rejectWithValue(err);
+      if (userAuth?.auth_token) {
+        practitioner = await new PractitionerService(
+          userAuth?.auth_token
+        ).getPractitionerById(id);
+      } else {
+        return rejectWithValue('no access token, profile check required');
       }
-    } else {
-      return practitionerCache;
+
+      if (!practitioner) {
+        return rejectWithValue('Error getting practitioner');
+      }
+
+      console.log(practitioner);
+      return practitioner;
+    } catch (err) {
+      return rejectWithValue(err);
     }
   }
 );
