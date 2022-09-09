@@ -43,7 +43,6 @@ export const Typography: React.FC<TypographyProps> = ({
   const getTag = (type: TypographyType, text?: string) => {
     let splitText;
     if (text && text.includes('\n')) {
-      console.log(text);
       splitText = text.split('\n').map((str, ix) =>
         str ? (
           <span

@@ -23,13 +23,10 @@ const useBackgroundSync = () => {
 
       const hasStateChanged = stateHash !== hash(rest);
 
-      console.log(stateHash, hash(rest));
-
       hasStateChanged &&
         isOnline &&
         dispatch(syncThunkActions.syncOfflineData({}));
-    }, 0.05 * 60 * 1000);
-    // }, 30 * 60 * 1000);
+    }, 30 * 60 * 1000);
 
     return () => clearInterval(interval);
   }, [isOnline, dispatch, rest]);
