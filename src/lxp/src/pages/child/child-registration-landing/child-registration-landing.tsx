@@ -12,7 +12,7 @@ import ROUTES from '@routes/routes';
 
 export const ChildRegistrationLanding: React.FC = () => {
   const location = useLocation();
-  const { resetAppStaticStores, resetAuth } = useStoreSetup();
+  const { resetAppStore, resetAuth } = useStoreSetup();
   const queryParams = useQueryParams(location.search);
   const authToken = queryParams.getValue('token');
   const [loading, setLoading] = useState(true);
@@ -51,8 +51,8 @@ export const ChildRegistrationLanding: React.FC = () => {
 
   useEffect(() => {
     const getChildDetails = async () => {
-      if (resetAppStaticStores) {
-        await resetAppStaticStores(false);
+      if (resetAppStore) {
+        await resetAppStore(false);
         await resetAuth();
       }
       const response = await dispatch(

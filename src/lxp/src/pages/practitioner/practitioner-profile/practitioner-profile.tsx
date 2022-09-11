@@ -25,7 +25,7 @@ import ROUTES from '@routes/routes';
 import { practitionerSelectors } from '@/store/practitioner';
 
 export const PractitionerProfile: React.FC = () => {
-  const { resetAuth, resetAppStaticStores } = useStoreSetup();
+  const { resetAuth, resetAppStore } = useStoreSetup();
   const user = useSelector(userSelectors.getUser);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const classroom = useSelector(classroomsSelectors.getClassroom);
@@ -191,7 +191,7 @@ export const PractitionerProfile: React.FC = () => {
                       onClick: async () => {
                         onSubmit();
                         await resetAuth();
-                        await resetAppStaticStores();
+                        await resetAppStore();
                         history.push('/');
                       },
                       type: 'filled',

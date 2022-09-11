@@ -21,7 +21,7 @@ import {
 } from '@ecdlink/ui';
 
 export const CoachProfile: React.FC = () => {
-  const { resetAuth, resetAppStaticStores } = useStoreSetup();
+  const { resetAuth, resetAppStore } = useStoreSetup();
   const { userProfilePicture } = useDocuments();
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
@@ -105,7 +105,7 @@ export const CoachProfile: React.FC = () => {
                       onClick: async () => {
                         onSubmit();
                         await resetAuth();
-                        await resetAppStaticStores();
+                        await resetAppStore();
                         history.push('/');
                       },
                       type: 'filled',

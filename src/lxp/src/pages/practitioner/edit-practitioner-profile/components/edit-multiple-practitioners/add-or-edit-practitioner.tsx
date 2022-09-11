@@ -1,7 +1,6 @@
 import {
   FormInput,
   Button,
-  Typography,
   Alert,
   SA_ID_REGEX,
   SA_PASSPORT_REGEX,
