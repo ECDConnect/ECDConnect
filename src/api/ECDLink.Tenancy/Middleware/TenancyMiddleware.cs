@@ -41,6 +41,7 @@ namespace ECDLink.Tenancy.Middleware
 
         private TenantModel GetTenant(HttpContext context, ITenantService tenancyService)
         {
+            TenantModel tenant = new TenantModel();
             var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
 
             var claim = context.User.Claims
@@ -50,9 +51,10 @@ namespace ECDLink.Tenancy.Middleware
             // If there is a jwt, automatically just use it
             if (!string.IsNullOrEmpty(claim?.Value))
             {
-                var tenant = tenancyService.GetTenantById(claim.Value);
-
-                return tenant;
+                var idTenant = tenancyService.GetTenantById(claim.Value);
+                if (idTenant != null && idTenant != default(TenantModel))
+                    tenant = idTenant;
+                //return tenant;
             }
 
             // Check url making request
@@ -62,9 +64,10 @@ namespace ECDLink.Tenancy.Middleware
             {
                 var urlTenant = tenancyService.GetTenantByUrl(refererUrl);
 
-                if (urlTenant != default(TenantModel))
+                if (urlTenant != null && urlTenant != default(TenantModel))
                 {
-                    return urlTenant;
+                    //return urlTenant;
+                    tenant = urlTenant;
                 }
             }
 
@@ -76,7 +79,7 @@ namespace ECDLink.Tenancy.Middleware
                 return host;
             }
 
-            return new TenantModel();
+            return (tenant!=null?tenant:new TenantModel());
         }
     }
 }
