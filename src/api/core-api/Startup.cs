@@ -125,11 +125,11 @@ namespace EcdLink.Api.CoreApi
 
                 app.UseDeveloperExceptionPage();
 
-                using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
-                {
-                    serviceScope.ServiceProvider.GetRequiredService<PostgresTenancyContext>().Database.Migrate();
-                    serviceScope.ServiceProvider.GetRequiredService<PostgresTenantSeedService>().Seed();
-                }
+                //using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
+                //{
+                //    serviceScope.ServiceProvider.GetRequiredService<PostgresTenancyContext>().Database.Migrate();
+                //    serviceScope.ServiceProvider.GetRequiredService<PostgresTenantSeedService>().Seed();
+                //}
             }
 
             app.UseCors("CorsPolicy");

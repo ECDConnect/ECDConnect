@@ -131,7 +131,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             return record;
         }
 
-        public T GetByUserId(string id)
+        public override T GetByUserId(string id)
         //TODO CB: build userhierarchy permissions list in to GetById
         {
             if (string.IsNullOrEmpty(_userId))
@@ -142,8 +142,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             Type type = typeof(T);
             if (type.GetProperty("UserId") != null)
             {
-
-                //var record = query.Where(s => ) //base.GetAll().Where(s => s.GetType().GetProperty("UserId").GetValue(s, null).Equals(id));
+                
                 var record = base.GetByUserId(id);
                 var castRecord = record as IUserType;
 
@@ -151,23 +150,6 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                 {
                     return default;
                 }
-
-                //if user is in a higher admin role (Principal, Practitioner, Coach, Franchisor, then skip the check as they need to be able to see anyone anywhere due to the shift in roles of Milestone 1.
-                //var user = _userManager.FindByIdAsync(castRecord.UserId).Result;
-                //var roles = _userManager.GetRolesAsync(user).Result;
-                //var higherRoles = new[] { Roles.PRACTITIONER, Roles.COACH, Roles.ADMINISTRATOR, Roles.PRINCIPAL, Roles.FRANCHISOR };//
-                //bool isHigherRole = higherRoles.Any(roles.Contains);
-                //if (!isHigherRole)
-                //{
-                //    if (!string.IsNullOrWhiteSpace(castRecord.Hierarchy))
-                //    {
-                //        var hierarchy = _hierarchyEngine.GetUserHierarchy(_userId);
-                //        if (!castRecord.Hierarchy.StartsWith(hierarchy))
-                //        {
-                //            return default;
-                //        }
-                //    }
-                //}
 
                 //hierarchy confirmation allowing this to be viewed
                 var user = _userManager.FindByIdAsync(_userId).Result;

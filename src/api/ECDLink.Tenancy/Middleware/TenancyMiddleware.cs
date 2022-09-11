@@ -56,7 +56,7 @@ namespace ECDLink.Tenancy.Middleware
             }
 
             // Check url making request
-            var refererUrl = context?.Request?.GetTypedHeaders()?.Referer?.AbsoluteUri ?? string.Empty;
+            var refererUrl = context?.Request?.GetTypedHeaders()?.Referer?.AbsoluteUri ?? context.Request.Host.Host ?? String.Empty;
             
             if (!string.IsNullOrWhiteSpace(refererUrl))
             {
