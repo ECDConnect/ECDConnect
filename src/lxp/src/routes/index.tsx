@@ -58,6 +58,8 @@ import { CoachClassesReassigned } from '@/pages/coach/coach-classes-reassigned/c
 import { CoachNotes } from '@/pages/coach/practitioner-profile-info/components/coach-notes/coach-notes';
 import { SetupPrincipal } from '@/pages/principal/setup-principal/setup-principal';
 import { PrincipalPractitionerProfileInfo } from '@/pages/classroom/class-dashboard/practitioners/principal-practitioner-profile/principal-practitioner-profile';
+import { PrincipalPractitionerChildList } from '@/pages/classroom/class-dashboard/practitioners/principal-practitioner-child-list/principal-practitioner-child-list';
+import { PrincipalNotes } from '@/pages/classroom/class-dashboard/practitioners/principal-practitioner-profile/components/principal-notes/principal-notes';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -159,6 +161,12 @@ const AuthRoutes: React.FC = () => {
         path={ROUTES.PRINCIPAL.PRACTITIONER_PROFILE}
         component={PrincipalPractitionerProfileInfo}
       />
+      <Route
+        exact
+        path={ROUTES.PRINCIPAL.PRACTITIONER_CHILD_LIST}
+        component={PrincipalPractitionerChildList}
+      />
+      <Route exact path={ROUTES.PRINCIPAL.NOTES} component={PrincipalNotes} />
       <Route path={ROUTES.CLASSROOM} component={ClassDashboard} />
       <Route path={ROUTES.CHILD_REGISTRATION} component={ChildRegistration} />
       <Route

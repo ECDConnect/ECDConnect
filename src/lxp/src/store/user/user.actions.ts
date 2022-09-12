@@ -199,6 +199,45 @@ export const updateUser = createAsyncThunk<
   }
 );
 
+// export const updateUserById = createAsyncThunk<
+//   boolean[],
+//   {},
+//   ThunkApiType<RootState>
+// >(
+//   'updateUserById',
+//   // eslint-disable-next-line no-empty-pattern
+//   async ({}, { getState, rejectWithValue }) => {
+//     const {
+//       auth: { userAuth },
+//       user: { user },
+//     } = getState();
+
+//     try {
+//       let update: boolean | undefined;
+
+//       if (userAuth?.auth_token && user) {
+//         const userModelInput: UserModelInput = mapUser(user);
+//         const id: string = '';
+
+//         update = await new UserService(userAuth?.auth_token).updateUser(
+//           id,
+//           userModelInput
+//         );
+//       } else {
+//         return rejectWithValue('no access token, profile check required');
+//       }
+
+//       if (!update) {
+//         return rejectWithValue('Error updating user');
+//       }
+
+//       return [update];
+//     } catch (err) {
+//       return rejectWithValue(err);
+//     }
+//   }
+// );
+
 type AddUserRequest = {
   user: UserDto;
 };

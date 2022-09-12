@@ -14,13 +14,13 @@ import { useLocation } from 'react-router-dom';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { notesSelectors } from '@store/notes';
 import { CreateNote } from '../create-note/create-note';
-import * as styles from './coach-notes.styles';
-import { ChildNotesRouteState } from './coach-notes.types';
+import * as styles from './principal-notes.styles';
+import { ChildNotesRouteState } from './principal-notes.types';
 import NotesList from './components/notes-list/notes-list';
 import { ViewNote } from './components/view-note/view-note';
 import { practitionerSelectors } from '@/store/practitioner';
 
-export const CoachNotes: React.FC = () => {
+export const PrincipalNotes: React.FC = () => {
   const history = useHistory();
   const location = useLocation<ChildNotesRouteState>();
   const [createChildNoteVisible, setCreateChildNoteVisible] =

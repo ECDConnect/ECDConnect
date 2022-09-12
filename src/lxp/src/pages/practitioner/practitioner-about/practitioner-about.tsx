@@ -27,7 +27,7 @@ import {
   practitionerAboutModelSchema,
 } from '@schemas/practitioner/practitioner-about';
 import { useAppDispatch } from '@store';
-import { userActions, userSelectors } from '@store/user';
+import { userActions, userSelectors, userThunkActions } from '@store/user';
 import { analyticsActions } from '@store/analytics';
 import { setStorageItem } from '@utils/common/local-storage.utils';
 import * as styles from './practitioner-about.styles';
@@ -62,6 +62,7 @@ export const PractitionerAbout: React.FC = () => {
   }, [isOnline]);
 
   const user = useSelector(userSelectors.getUser);
+  console.log({ user });
 
   const pictureStorageKey = LocalStorageKeys.practitionerProfilePicture;
   const [listItems, setListItems] = useState<ActionListDataItem[]>([]);
@@ -216,6 +217,7 @@ export const PractitionerAbout: React.FC = () => {
     if (copy) {
       copy.profileImageUrl = imageBaseString;
       appDispatch(userActions.updateUser(copy));
+      // appDispatch(userThunkActions.updateUser(copy));
     }
 
     if (!userProfilePicture) {
@@ -240,6 +242,7 @@ export const PractitionerAbout: React.FC = () => {
       copy.email = practitionerForm.email;
 
       appDispatch(userActions.updateUser(copy));
+      appDispatch(userThunkActions.updateUser(copy));
 
       setNewStackListItems(copy);
     }
@@ -261,7 +264,7 @@ export const PractitionerAbout: React.FC = () => {
       >
         <div className={'w-full inline-flex justify-center pt-8'}>
           <ProfileAvatar
-            dataUrl={userProfilePicture?.file || ''}
+            dataUrl={userProfilePicture?.file || user?.profileImageUrl}
             size={'header'}
             onPressed={displayProfilePicturePrompt}
             hasConsent={true}
