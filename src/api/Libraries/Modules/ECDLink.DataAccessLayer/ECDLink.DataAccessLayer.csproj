@@ -40,6 +40,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\ECDLink.AzureStorage\ECDLink.AzureStorage.csproj" />
+    <ProjectReference Include="..\..\..\ECDLink.Tenancy\ECDLink.Tenancy.csproj" />
     <ProjectReference Include="..\ECDLink.Abstractrions\ECDLink.Abstractrions.csproj" />
     <ProjectReference Include="..\ECDLink.Core\ECDLink.Core.csproj" />
     <ProjectReference Include="..\ECDLink.Security\ECDLink.Security.csproj" />

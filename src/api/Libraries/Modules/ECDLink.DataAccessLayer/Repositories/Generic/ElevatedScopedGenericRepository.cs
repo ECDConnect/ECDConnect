@@ -12,6 +12,7 @@ using ECDLink.Security;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using System.Collections.Generic;
+using ECDLink.Tenancy.Context;
 
 namespace ECDLink.DataAccessLayer.Repositories.Generic
 {
@@ -45,11 +46,12 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             {
                 throw new UnauthorizedAccessException("User does not have access to this data");
             }
+            Guid tenantId = TenantExecutionContext.Tenant.Id;
             var user = _userManager.FindByIdAsync(_userId).Result;
             var roles = _userManager.GetRolesAsync(user).Result;
             var isAdmin = roles.Contains(Roles.ADMINISTRATOR);
 
-            var query = entities.AsQueryable();
+            var query = entities.Where(e => e.TenantId.Equals(tenantId)).AsQueryable();
             if (isAdmin) 
             {
                 return query;

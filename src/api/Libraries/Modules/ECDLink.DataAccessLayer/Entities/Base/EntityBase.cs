@@ -24,5 +24,7 @@ namespace ECDLink.DataAccessLayer.Entities.Base
 
         [Column(Order = 99)]
         public string UpdatedBy { get; set; }
+        [Column(Order = 101)]
+        public Guid? TenantId { get; set; }
     }
 }

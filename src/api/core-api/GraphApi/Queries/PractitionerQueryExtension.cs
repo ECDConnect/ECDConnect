@@ -179,38 +179,6 @@ string userId)
             return classroom;
         }
 
-        //        public PrincipalClassroom GetClassroomDetailsForPractitioner([Service] IHttpContextAccessor contextAccessor,
-        //    [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
-        //    [Service] IGenericRepositoryFactory repoFactory,
-        //[Service] UserManager<ApplicationUser> userManager,
-        //    string userId)
-        //        {
-        //            using var scope = dbFactory.CreateDbContext();
-        //            using var dbContextTransaction = scope.Database.BeginTransaction();
-        //            var uId = contextAccessor.HttpContext.GetUser().Id;
-        //            var classroomGroupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
-        //            var classroomRepo = repoFactory.CreateRepository<Classroom>(userContext: uId);
-        //            var practiRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-        //            PrincipalClassroom principalClassroom = new PrincipalClassroom();
-        //            List<Classroom> classes = classroomRepo.GetAll().Where(x => x.UserId.Equals(userId)).ToList();
-        //            foreach (var classroom in classes)
-        //            {
-        //                List<ClassroomGroup> classrooms = classroomGroupRepo.GetAll().Where(x => x.ClassroomId.Equals(classroom.Id)).ToList();
-        //                foreach (var classroomGroup in classrooms)
-        //                {
-        //                    Practitioner principal = practiRepo.GetByUserId(userId);
-        //                    if (principal != null)
-        //                    {
-        //                        principalClassroom.ClassroomName = classroomGroup.Name;
-        //                        principalClassroom.PrincipalName = principal.User.FirstName + " " + principal.User.Surname;
-
-        //                    }
-        //                }
-        //            }
-
-        //            return principalClassroom;
-        //        }
-
         public PrincipalClassroom GetClassroomDetailsForPractitioner([Service] IHttpContextAccessor contextAccessor,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
@@ -227,7 +195,7 @@ string userId)
             ClassroomGroup classroomGroup = classroomGroupRepo.GetByUserId(userId);
             if (classroomGroup != null)
             {
-                Classroom classroom = classroomRepo.GetById(classroomGroup.Id);
+                Classroom classroom = classroomRepo.GetById(classroomGroup.ClassroomId);
                 var principal = practitionerRepo.GetByUserId(classroom.UserId);
                 if (principal != null)
                 {
