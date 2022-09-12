@@ -31,6 +31,7 @@ const ROUTES = {
   CHILD_REGISTRATION_BIRTH_CERTIFICATE: '/child-registration-birth-certificate',
   PRINCIPAL: addPrefix('/principal', {
     SETUP_PROFILE: '/setup-profile',
+    PRACTITIONER_PROFILE: '/practitioner-profile',
   }),
   PRACTITIONER: addPrefix('/practitioner', {
     ABOUT: '/about',

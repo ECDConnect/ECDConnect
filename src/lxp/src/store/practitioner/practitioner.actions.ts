@@ -66,7 +66,6 @@ export const getPractitionerById = createAsyncThunk<
         return rejectWithValue('Error getting practitioner');
       }
 
-      console.log(practitioner);
       return practitioner;
     } catch (err) {
       return rejectWithValue(err);

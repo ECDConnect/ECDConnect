@@ -7,7 +7,7 @@ export const CompleteProfile: React.FC = () => {
   return (
     <div className="px-4">
       <NotificationHeaderCard
-        header={'Complete your profile'}
+        header={'Tell us more about you!'}
         message={
           'Share more information about your programme to make Funda App useful for you.'
         }

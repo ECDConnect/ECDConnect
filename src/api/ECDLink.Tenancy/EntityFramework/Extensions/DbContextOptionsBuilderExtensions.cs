@@ -16,7 +16,7 @@ namespace ECDLink.Tenancy.EntityFramework.Extensions
         public static void UseNpgsqlTenancy(this DbContextOptionsBuilder builder, IServiceProvider provider, string MigrationAssembly)
         {
             builder.AddInterceptors(new PostgresTenantDbConnectionInterceptor());            
-            builder.UseNpgsql("Server=localhost;Port=5432;Database=ecdconnect;User Id=postgres;Password=admin");            
+            builder.UseNpgsql("Server=localhost;Port=5432;Database=SmartStart;User Id=postgres;Password=admin");            
         }
     }
 }

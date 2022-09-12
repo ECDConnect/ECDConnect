@@ -17,12 +17,9 @@ export type Scalars = {
   Boolean: boolean;
   Int: number;
   Float: number;
-  /** The `DateTime` scalar represents an ISO-8601 compliant date time type. */
   DateTime: any;
-  /** The built-in `Decimal` scalar type. */
   Decimal: any;
   UUID: any;
-  /** The `Upload` scalar type represents a file upload. */
   Upload: any;
 };
 

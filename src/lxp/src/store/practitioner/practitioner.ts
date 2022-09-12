@@ -43,6 +43,7 @@ const practitionerSlice = createSlice({
       state.practitioner = action.payload;
     });
     builder.addCase(getAllPractitioners.fulfilled, (state, action) => {
+      console.log(action.payload);
       state.practitioners = action.payload;
     });
   },

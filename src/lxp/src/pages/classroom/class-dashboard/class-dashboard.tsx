@@ -9,6 +9,7 @@ import {
 } from '@ecdlink/ui';
 import format from 'date-fns/format';
 import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useAppDispatch } from '@store';
@@ -24,6 +25,13 @@ import ProgrammeDashboard from '../programme-planning/programme-dashboard/progra
 import * as styles from './class-dashboard.styles';
 import { ClassDashboardRouteState } from './class-dashboard.types';
 import ROUTES from '@routes/routes';
+import { userSelectors } from '@store/user';
+import {
+  practitionerActions,
+  practitionerSelectors,
+  practitionerThunkActions,
+} from '@/store/practitioner';
+import PractitionersList from './practitioners/practitioners-list/practitioners-list';
 
 export const ClassDashboard: React.FC = () => {
   const history = useHistory();
@@ -40,10 +48,15 @@ export const ClassDashboard: React.FC = () => {
   const [previousTabIndex, setPreviousTabIndex] = useState<number>();
   const [currentTab, setCurrentTab] = useState<TabItem>();
   const { isOnline } = useOnlineStatus();
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
   const backToDashboard = () => {
     history.push('/');
   };
+
+  const principal: any = practitioner;
+
+  const isPrincipal = principal?.isPrincipal === true;
 
   useEffect(() => {
     const isTutorialComplete = getStorageItem<boolean>(
@@ -79,6 +92,38 @@ export const ClassDashboard: React.FC = () => {
       title: 'Attendance',
       initActive: false,
       child: <AttendanceComponent />,
+    },
+    {
+      title: 'Children',
+      initActive: false,
+      child: <ChildList />,
+    },
+    {
+      title: 'Programme',
+      initActive: false,
+      child: <ProgrammeDashboard />,
+    },
+    {
+      title: 'Resources',
+      initActive: false,
+      child: (
+        <div className={'p-4'}>
+          <Typography type={'body'} color="textDark" text={'Coming soon'} />
+        </div>
+      ),
+    },
+  ];
+
+  const tabItemsForPrincipal: TabItem[] = [
+    {
+      title: 'Attendance',
+      initActive: false,
+      child: <AttendanceComponent />,
+    },
+    {
+      title: 'Practitioners',
+      initActive: false,
+      child: <PractitionersList />,
     },
     {
       title: 'Children',
@@ -156,7 +201,7 @@ export const ClassDashboard: React.FC = () => {
       >
         <TabList
           className="bg-uiBg"
-          tabItems={tabItems}
+          tabItems={isPrincipal ? tabItemsForPrincipal : tabItems}
           setSelectedIndex={selectedTabIndex}
           tabSelected={(tab: TabItem, tabIndex: number) =>
             setTabSelected(tab, tabIndex)

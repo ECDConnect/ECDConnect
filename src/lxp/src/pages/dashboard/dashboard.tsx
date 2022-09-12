@@ -110,7 +110,7 @@ export const Dashboard: React.FC = () => {
         ).unwrap())();
     }
 
-    if (userData?.roles?.some((role) => role.name === 'Practitioner')) {
+    if (userData?.roles?.some((role) => role.name === 'Principal')) {
       const currentPrincipal = practitionerData?.filter(
         (x) => x?.user?.id === userData.id
       );
@@ -274,9 +274,24 @@ export const Dashboard: React.FC = () => {
         classNames: 'bg-uiBg',
         chipConfig: {
           colorPalette: {
-            backgroundColour: 'white',
-            borderColour: 'errorMain',
-            textColour: 'errorMain',
+            backgroundColour: 'alertMain',
+            borderColour: 'alertMain',
+            textColour: 'white',
+          },
+          text: 'Coming soon',
+        },
+      },
+      {
+        title: 'Calendar',
+        titleIcon: 'CalendarIcon',
+        titleIconClassName: styles.businessIcon,
+        onActionClick: () => ({}),
+        classNames: 'bg-uiBg',
+        chipConfig: {
+          colorPalette: {
+            backgroundColour: 'alertMain',
+            borderColour: 'alertMain',
+            textColour: 'white',
           },
           text: 'Coming soon',
         },

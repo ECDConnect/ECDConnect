@@ -170,6 +170,7 @@ class PractitionerService {
               id
               email
               phoneNumber
+              profileImageUrl
             }
           }
         }
@@ -253,8 +254,8 @@ class PractitionerService {
     const apiInstance = await api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-        query getClassroomDetailsForPractitioner($userId: String) {
-          getClassroomDetailsForPractitioner(userId: $userId) {
+        query classroomDetailsForPractitioner($userId: String) {
+          classroomDetailsForPractitioner(userId: $userId) {
             principalName
             classroomName
           }
