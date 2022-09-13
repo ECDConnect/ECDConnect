@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ECDLink.Tenancy.Context;
 using ECDLink.Tenancy.Cache;
+using Microsoft.Azure.Documents.SystemFunctions;
 
 namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
 {
@@ -46,7 +47,8 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
         public virtual IQueryable<T> GetAll()
         {
             Guid tenantId = TenantExecutionContext.Tenant.Id;
-            return entities.Where(e => e.TenantId.Equals(tenantId)).AsQueryable();
+            //return entities.Where(e => e.TenantId.Equals(tenantId)).AsQueryable();
+            return entities.Where(e => e.TenantId == null || e.TenantId.Equals(tenantId)).AsQueryable();
         }
 
         public virtual T GetById(Guid id)
@@ -62,7 +64,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
             {
                 //var val = entities.AsQueryable().Where(x => x.GetType().GetProperty("UserId").GetValue(type,null).Equals(id)).FirstOrDefault();
                 Guid tenantId = TenantExecutionContext.Tenant.Id;
-                var qq = entities.FromSqlRaw("SELECT * FROM \"" + type.Name + "\" WHERE \"UserId\" = '" + id + "' AND TenantId = '" + tenantId + "'").ToList();
+                var qq = entities.FromSqlRaw("SELECT * FROM \"" + type.Name + "\" WHERE \"UserId\" = '" + id + "' AND \"TenantId\" = '" + tenantId + "'").ToList();
                 return qq.FirstOrDefault();
             } else return default;        
         }

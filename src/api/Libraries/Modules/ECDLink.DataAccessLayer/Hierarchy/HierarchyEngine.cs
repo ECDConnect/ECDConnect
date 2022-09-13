@@ -162,7 +162,7 @@ namespace ECDLink.DataAccessLayer.Hierarchy
                     }
                 }
             }
-            //in some cases liek a child, we need to get the relevant children hierarchy in addition for the generic repository selectionlist
+            //in some cases like a child, we need to get the relevant children hierarchy in addition for the generic repository selectionlist
             if (typeof(T) == typeof(Child))
             {
                 var childRepo = _repoFactory.CreateGenericRepository<Child>(userContext: userId);
