@@ -26,7 +26,7 @@ const useBackgroundSync = () => {
       hasStateChanged &&
         isOnline &&
         dispatch(syncThunkActions.syncOfflineData({}));
-    }, 0.5 * 60 * 1000);
+    }, 15 * 60 * 1000);
 
     return () => clearInterval(interval);
   }, [isOnline, dispatch, rest]);
