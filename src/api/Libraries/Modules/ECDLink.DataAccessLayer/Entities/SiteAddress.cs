@@ -27,8 +27,6 @@ namespace ECDLink.DataAccessLayer.Entities
 
         public string Ward { get; set; }
 
-        public string PhoneNumber { get; set; }
-
         [ForeignKey(nameof(ProvinceId))]
         public virtual Province Province { get; set; }
         public Guid? ProvinceId { get; set; }
