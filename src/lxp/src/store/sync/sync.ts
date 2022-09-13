@@ -24,7 +24,7 @@ const syncSlice = createSlice({
     setError: (state, action) => {
       state.error = action.payload;
     },
-    clearSyncState: () => initialState,
+    resetSyncState: () => initialState,
   },
   extraReducers: (builder) => {
     builder.addCase(syncOfflineData.fulfilled, (state, action) => {
