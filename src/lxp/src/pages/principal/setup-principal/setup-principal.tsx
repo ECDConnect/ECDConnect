@@ -1,0 +1,293 @@
+import { useTheme, useDialog, ClassroomGroupDto } from '@ecdlink/core';
+import {
+  ActionModal,
+  BannerWrapper,
+  Button,
+  Card,
+  DialogPosition,
+  Typography,
+} from '@ecdlink/ui';
+import {
+  MutationAddPractitionerToPrincipalArgs,
+  ProgrammeTypeEnum,
+} from '@ecdlink/graphql';
+import { label } from '@/pages/child/child-notes/child-notes.styles';
+import { IonContent } from '@ionic/react';
+import React, { useEffect, useState } from 'react';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { useAppDispatch } from '@/store';
+import { authSelectors } from '@/store/auth';
+import { classroomsActions, classroomsSelectors } from '@/store/classroom';
+import { useSelector } from 'react-redux';
+import { useHistory } from 'react-router';
+import { ReactComponent as Cebisa } from '@/assets/cebisa.svg';
+import { AddProgrammeForm } from '../components/add-programme-form/add-programme-form';
+import ConfirmPractitioners from '../components/confirm-practitioners/confirm-practitioners';
+import {
+  PractitionerSetupSteps,
+  ConfirmPractitionersSteps,
+  ConfirmClassesSteps,
+} from './setup-principal.types';
+import { AddPractitionerModel } from '@/schemas/practitioner/add-practitioner';
+import { practitionerSelectors } from '@/store/practitioner';
+import { SetupClasses } from '../components/setup-classes/setup-classes';
+import { AddPhoto } from '@/pages/practitioner/edit-practitioner-profile/components/add-photo/add-photo';
+import { WelcomePage } from '@/components/welcome-page';
+import { staticDataSelectors } from '@/store/static-data';
+import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
+import { newGuid } from '@/utils/common/uuid.utils';
+import { userSelectors } from '@/store/user';
+import { useStoreSetup } from '@/hooks/useStoreSetup';
+import { PractitionerService } from '@/services/PractitionerService';
+import ROUTES from '@/routes/routes';
+
+export const SetupPrincipal: React.FC = () => {
+  const history = useHistory();
+  const { theme } = useTheme();
+  const appDispatch = useAppDispatch();
+  const dialog = useDialog();
+  const { isOnline } = useOnlineStatus();
+  const { syncClassroom } = useStoreSetup();
+  const userAuth = useSelector(authSelectors.getAuthUser);
+  const programmeTypes = useSelector(staticDataSelectors.getProgrammeTypes);
+  const classroom = useSelector(classroomsSelectors.getClassroom);
+  const user = useSelector(userSelectors.getUser);
+  const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
+  const programmeType = useSelector(classroomsSelectors.getProgrammeType());
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  const principalPractitioners = useSelector(
+    practitionerSelectors.getPrincipalPractitioners
+  );
+
+  const [label, setLabel] = useState('Welcome');
+  const [page, setPage] = useState<PractitionerSetupSteps>(
+    PractitionerSetupSteps.WELCOME
+  );
+
+  const [confirmPractitionerPage, setConfirmPractitionerPage] =
+    useState<ConfirmPractitionersSteps>(
+      ConfirmPractitionersSteps.CONFIRM_PRACTITIONERS
+    );
+  const [classesPage, setClassesPage] = useState<ConfirmClassesSteps>(
+    ConfirmClassesSteps.CONFIRM_CLASSES
+  );
+
+  useEffect(() => {
+    if (page === PractitionerSetupSteps.WELCOME) {
+      setLabel('Welcome');
+    } else {
+      setLabel(
+        `step ${page} of ${
+          Object.values(PractitionerSetupSteps).filter(Number).length
+        }`
+      );
+    }
+  }, [page]);
+
+  const onAllStepsComplete = async () => {
+    const playGroupProgrammeType = programmeTypes.find(
+      (x) => x.enumId === ProgrammeTypeEnum.Playgroup
+    );
+
+    if (programmeType?.id === playGroupProgrammeType?.id && classroom?.id) {
+      const unsureClassProgrammeInputModel: ClassroomGroupDto = {
+        id: newGuid(),
+        classroomId: classroom?.id,
+        isActive: true,
+        programmeTypeId: programmeType?.id,
+        name: NoPlaygroupClassroomType.name,
+        practitionerId: user?.id, // Unsure classroom will belong to the principal
+      };
+      appDispatch(
+        classroomsActions.createClassroomGroup(unsureClassProgrammeInputModel)
+      );
+    }
+
+    // Update classroom number of practitioners
+    appDispatch(
+      classroomsActions.updateClassroomNumberPractitioners({
+        numberPractitioners: principalPractitioners?.length ?? 0,
+      })
+    );
+
+    // Update classroom data
+    await syncClassroom();
+
+    // Update the principal data
+    if (userAuth?.auth_token && user?.id) {
+      await new PractitionerService(
+        userAuth?.auth_token
+      ).PromotePractitionerToPrincipal(user?.id);
+
+      await new PractitionerService(
+        userAuth.auth_token
+      ).UpdatePractitionerRegistered(user.id, true);
+    }
+
+    if (principalPractitioners?.length) {
+      if (userAuth?.auth_token) {
+        principalPractitioners.forEach(async (principalPractitioner) => {
+          const input: MutationAddPractitionerToPrincipalArgs = {
+            userId: user?.id,
+            idNumber: principalPractitioner.idNumber,
+            firstName: principalPractitioner.firstName,
+            lastName: principalPractitioner.surname,
+          };
+          await new PractitionerService(
+            userAuth?.auth_token
+          ).AddPractitionerToPrincipal(input);
+        });
+      }
+    }
+
+    history.push(ROUTES.ROOT);
+  };
+
+  const exitPrompt = () => {
+    dialog({
+      position: DialogPosition.Bottom,
+      render: (onSubmit, onCancel) => (
+        <ActionModal
+          icon={'XCircleIcon'}
+          iconColor={'alertMain'}
+          iconBorderColor="alertBg"
+          importantText={
+            'Please complete the process otherwise you will lose your changes.'
+          }
+          actionButtons={[
+            {
+              colour: 'primary',
+              text: 'Exit',
+              onClick: () => {
+                onSubmit();
+                history.goBack();
+              },
+              textColour: 'white',
+              type: 'filled',
+              leadingIcon: 'LoginIcon',
+            },
+            {
+              colour: 'primary',
+              text: 'Continue editing',
+              onClick: () => {
+                onCancel();
+              },
+              textColour: 'primary',
+              type: 'outlined',
+              leadingIcon: 'PencilIcon',
+            },
+          ]}
+        />
+      ),
+    });
+  };
+
+  const renderStep = (step: PractitionerSetupSteps) => {
+    switch (step) {
+      case PractitionerSetupSteps.WELCOME:
+        return (
+          <WelcomePage
+            onNext={() => {
+              setPage(PractitionerSetupSteps.SETUP_PROGRAMME);
+            }}
+          />
+        );
+
+      case PractitionerSetupSteps.SETUP_PROGRAMME:
+        return <AddProgrammeForm onNext={setPage} />;
+
+      case PractitionerSetupSteps.CONFIRM_PRACTITIONERS:
+        return (
+          <ConfirmPractitioners
+            page={confirmPractitionerPage}
+            setConfirmPractitionerPage={setConfirmPractitionerPage}
+            onNext={setPage}
+          />
+        );
+
+      case PractitionerSetupSteps.CONFIRM_CLASSES:
+        return (
+          <SetupClasses
+            page={classesPage}
+            setClassesPage={setClassesPage}
+            onNext={setPage}
+          />
+        );
+
+      case PractitionerSetupSteps.ADD_PHOTO:
+        return (
+          <AddPhoto
+            onSubmit={() => {
+              onAllStepsComplete();
+            }}
+          />
+        );
+
+      default:
+        return <></>;
+    }
+  };
+
+  const onBack = () => {
+    switch (page) {
+      case PractitionerSetupSteps.SETUP_PROGRAMME:
+        return setPage(PractitionerSetupSteps.WELCOME);
+
+      case PractitionerSetupSteps.CONFIRM_PRACTITIONERS:
+        if (
+          confirmPractitionerPage ===
+            ConfirmPractitionersSteps.EDIT_PRACTITIONER ||
+          confirmPractitionerPage === ConfirmPractitionersSteps.ADD_PRACTITIONER
+        ) {
+          return setConfirmPractitionerPage(
+            ConfirmPractitionersSteps.CONFIRM_PRACTITIONERS
+          );
+        }
+        return setPage(PractitionerSetupSteps.SETUP_PROGRAMME);
+
+      case PractitionerSetupSteps.CONFIRM_CLASSES:
+        if (
+          classesPage === ConfirmClassesSteps.EDIT_CLASS ||
+          classesPage === ConfirmClassesSteps.ADD_CLASS
+        ) {
+          return setClassesPage(ConfirmClassesSteps.CONFIRM_CLASSES);
+        }
+        setConfirmPractitionerPage(
+          ConfirmPractitionersSteps.CONFIRM_PRACTITIONERS
+        );
+        return setPage(PractitionerSetupSteps.CONFIRM_PRACTITIONERS);
+
+      case PractitionerSetupSteps.ADD_PHOTO:
+        setClassesPage(ConfirmClassesSteps.CONFIRM_CLASSES);
+        return setPage(PractitionerSetupSteps.CONFIRM_CLASSES);
+
+      case PractitionerSetupSteps.WELCOME:
+      default:
+        return history.goBack();
+    }
+  };
+
+  return (
+    <IonContent scrollY={true}>
+      <BannerWrapper
+        size={page === PractitionerSetupSteps.WELCOME ? 'large' : 'medium'}
+        renderBorder={true}
+        showBackground={page === PractitionerSetupSteps.WELCOME}
+        title={'Edit Profile'}
+        subTitle={label}
+        onBack={onBack}
+        onClose={exitPrompt}
+        backgroundColour={'white'}
+        className={page === PractitionerSetupSteps.WELCOME ? 'relative' : ''}
+        backgroundUrl={
+          page === PractitionerSetupSteps.WELCOME
+            ? theme?.images.graphicOverlayUrl
+            : ''
+        }
+        displayOffline={!isOnline}
+      >
+        <div className={'px-4'}>{renderStep(page)}</div>
+      </BannerWrapper>
+    </IonContent>
+  );
+};

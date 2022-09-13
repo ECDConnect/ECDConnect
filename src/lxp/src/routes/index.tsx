@@ -56,11 +56,16 @@ import CoachPractitionerChildList from '@/pages/coach/coach-practitioner-child-l
 import ROUTES from './routes';
 import { CoachClassesReassigned } from '@/pages/coach/coach-classes-reassigned/coach-classes-reassigned';
 import { CoachNotes } from '@/pages/coach/practitioner-profile-info/components/coach-notes/coach-notes';
+import { SetupPrincipal } from '@/pages/principal/setup-principal/setup-principal';
 
 const PublicRoutes: React.FC = () => {
   return (
     <Switch>
-      <Route exact path={ROUTES.ROOT} render={() => <Redirect to="/login" />} />
+      <Route
+        exact
+        path={ROUTES.ROOT}
+        render={() => <Redirect to={ROUTES.LOGIN} />}
+      />
       <Route path={ROUTES.LOGIN} component={Login} exact={true} />
       <Route
         path={ROUTES.PASSWORD_RESET}
@@ -83,6 +88,7 @@ const PublicRoutes: React.FC = () => {
         path={ROUTES.CHILD_REGISTRATION_LANDING}
         component={ChildRegistrationLanding}
       />
+      <Route render={() => <Redirect to={ROUTES.LOGIN} />} />
     </Switch>
   );
 };
@@ -141,6 +147,11 @@ const AuthRoutes: React.FC = () => {
         exact
         path={ROUTES.PRACTITIONER.PROFILE.EDIT}
         component={EditPractitionerProfile}
+      />
+      <Route
+        exact
+        path={ROUTES.PRINCIPAL.SETUP_PROFILE}
+        component={SetupPrincipal}
       />
       <Route path={ROUTES.CLASSROOM} component={ClassDashboard} />
       <Route path={ROUTES.CHILD_REGISTRATION} component={ChildRegistration} />
@@ -267,6 +278,7 @@ const AuthRoutes: React.FC = () => {
       <Route exact path={ROUTES.COACH.ABOUT.ADDRESS} component={CoachAddress} />
 
       <Route exact path={ROUTES.COACH.ACCOUNT} component={CoachAccount} />
+      <Route render={() => <Redirect to={ROUTES.DASHBOARD} />} />
     </Switch>
   );
 };

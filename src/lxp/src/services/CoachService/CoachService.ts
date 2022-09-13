@@ -92,7 +92,68 @@ class CoachService {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-      query coachByCoachUserId($userId: String) {          coachByCoachUserId(userId: $userId) {            id            user {              id              userName              email              isSouthAfricanCitizen              verifiedByHomeAffairs              dateOfBirth              idNumber                          firstName              surname              fullName              contactPreference              genderId              phoneNumber              profileImageUrl              roles {                id                name              }            }            siteAddressId            siteAddress {              id              provinceId              province {                id                description              }              name              addressLine1              addressLine2              addressLine3              postalCode              ward              isActive            }            franchisorId            franchisor {              siteAddressId              siteAddress {                id                provinceId                province {                  id                  description                }                name                addressLine1                addressLine2                addressLine3                postalCode                ward              }            }             signingSignature            isActive          }        }
+      query coachByCoachUserId($userId: String) { 
+              coachByCoachUserId(userId: $userId) { 
+               id       
+               startDate     
+               user { 
+                 id 
+                 userName 
+                 email 
+                 isSouthAfricanCitizen 
+                  verifiedByHomeAffairs     
+                  dateOfBirth       
+                  idNumber   
+                  firstName    
+                  surname   
+                  fullName       
+                  contactPreference    
+                  genderId   
+                  phoneNumber 
+                  profileImageUrl 
+                  roles { 
+                   id 
+                   name 
+                  }
+                 } 
+                 siteAddressId
+                 siteAddress { 
+                   id 
+                   provinceId 
+                   province { 
+                     id 
+                     description 
+                    } 
+                     name 
+                     addressLine1
+                     addressLine2
+                     addressLine3
+                     postalCode
+                     ward
+                     isActive
+                   } 
+                   franchisorId 
+                   franchisor { 
+                     siteAddressId 
+                     siteAddress { 
+                       id 
+                       provinceId 
+                       province {
+                         id 
+                         description 
+                        }
+                       name 
+                       addressLine1
+                        addressLine2
+                        addressLine3
+                        postalCode
+                        ward
+                       } 
+                     } 
+                     signingSignature
+                     isActive
+                   }
+                 }
       `,
       variables: {
         userId: userId,

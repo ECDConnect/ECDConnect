@@ -38,34 +38,67 @@ export class IncompletePractitionerInformationNotificationValidator
      */
 
     // TODO: change conditions for when to show the page
-    const hasPractitionerRole = userState?.user?.roles?.some(
-      (role) => role.name === 'Practitioner'
-    );
 
-    const isRegistered = practitionerState.practitioner?.isRegistered !== false;
+    if (practitionerState.practitioner) {
+      const hasPractitionerRole = userState?.user?.roles?.some(
+        (role) => role.name === 'Practitioner'
+      );
 
-    const showNotification = hasPractitionerRole && isRegistered;
+      const notRegistered = !Boolean(
+        practitionerState.practitioner?.isRegistered
+      );
+      const addedByPrincipal =
+        Boolean(practitionerState.practitioner?.principalHierarchy) &&
+        !practitionerState.practitioner?.isPrincipal;
 
-    if (showNotification) {
-      return [
-        {
-          reference: `practitioner-profile`,
-          title: 'Complete your profile',
-          message:
-            'Share more information about your programme to make Funda App useful for you.',
-          dateCreated: new Date().toISOString(),
-          priority: NotificationPriority.lower,
-          viewOnDashboard: true,
-          area: 'practitioner',
-          icon: 'SwitchVerticalIcon',
-          color: 'primary',
-          actionText: 'Complete your profile',
-          viewType: 'Hub',
-          routeConfig: {
-            route: ROUTES.PRACTITIONER.PROFILE.EDIT,
+      const showNotificationForPractitionerFlow =
+        hasPractitionerRole && notRegistered && addedByPrincipal;
+      const showNotificationForPrincipalFlow =
+        hasPractitionerRole && notRegistered && !addedByPrincipal;
+
+      if (showNotificationForPrincipalFlow) {
+        return [
+          {
+            reference: `practitioner-profile`,
+            title: 'Complete your profile',
+            message:
+              'Share more information about your programme to make Funda App useful for you.',
+            dateCreated: new Date().toISOString(),
+            priority: NotificationPriority.lower,
+            viewOnDashboard: true,
+            area: 'practitioner',
+            icon: 'SwitchVerticalIcon',
+            color: 'primary',
+            actionText: 'Complete your profile',
+            viewType: 'Hub',
+            routeConfig: {
+              route: ROUTES.PRINCIPAL.SETUP_PROFILE,
+            },
           },
-        },
-      ];
+        ];
+      }
+
+      if (showNotificationForPractitionerFlow) {
+        return [
+          {
+            reference: `practitioner-profile`,
+            title: 'Complete your profile',
+            message:
+              'Share more information about your programme to make Funda App useful for you.',
+            dateCreated: new Date().toISOString(),
+            priority: NotificationPriority.lower,
+            viewOnDashboard: true,
+            area: 'practitioner',
+            icon: 'SwitchVerticalIcon',
+            color: 'primary',
+            actionText: 'Complete your profile',
+            viewType: 'Hub',
+            routeConfig: {
+              route: ROUTES.PRACTITIONER.PROFILE.EDIT,
+            },
+          },
+        ];
+      }
     }
 
     return [];

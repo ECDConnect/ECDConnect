@@ -12,7 +12,6 @@ import {
   getClassroomGroupLearners,
   getClassroomGroups,
   getClassroomProgrammes,
-  getClassroomsForPractitioner,
 } from './classroom.actions';
 import { ClassroomState } from './classroom.types';
 
@@ -99,6 +98,20 @@ const classroomsSlice = createSlice({
       if (!state.classroomGroupLearners) state.classroomGroupLearners = [];
       state.classroomGroupLearners?.push(action.payload);
     },
+    removeClassroomGroupOnEdit: (
+      state,
+      action: PayloadAction<Pick<ClassroomGroupDto, 'id'>>
+    ) => {
+      const index = state.classroomGroups?.findIndex(
+        (c) => c.id === action.payload.id
+      );
+      if (index && index > -1) {
+        state.classroomGroups?.splice(index, 1);
+        state.classroomProgrammes = state.classroomProgrammes?.filter(
+          (programme) => programme.classroomGroupId !== action.payload.id
+        );
+      }
+    },
     deleteClassroomGroup: (state, action: PayloadAction<ClassroomGroupDto>) => {
       if (action.payload.id) {
         if (state.classroomGroups) {
@@ -177,13 +190,6 @@ const classroomsSlice = createSlice({
     builder.addCase(getClassroomGroupLearners.fulfilled, (state, action) => {
       if (action.payload) {
         state.classroomGroupLearners = action.payload;
-      }
-    });
-    builder.addCase(getClassroomsForPractitioner.fulfilled, (state, action) => {
-      if (action.payload) {
-        state.classroom = action.payload.classroom;
-        state.classroomGroups = action.payload.classroomGroups;
-        state.principal = action.payload.principal;
       }
     });
   },

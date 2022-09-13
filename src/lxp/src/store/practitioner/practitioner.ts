@@ -39,6 +39,7 @@ const practitionerSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder.addCase(getPractitionerById.fulfilled, (state, action) => {
+      console.log(action.payload);
       state.practitioner = action.payload;
     });
     builder.addCase(getAllPractitioners.fulfilled, (state, action) => {

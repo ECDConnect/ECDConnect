@@ -29,10 +29,10 @@ export const syncOfflineData = createAsyncThunk<
       title: 'Practitioner',
       action: userThunkActions.updateUser,
     },
-    {
-      title: 'Coach',
-      action: coachThunkActions.updateCoach,
-    },
+    // {
+    //   title: 'Coach',
+    //   action: coachThunkActions.updateCoach,
+    // },
     {
       title: 'Care givers',
       action: caregiverThunkActions.upsertCareGivers,

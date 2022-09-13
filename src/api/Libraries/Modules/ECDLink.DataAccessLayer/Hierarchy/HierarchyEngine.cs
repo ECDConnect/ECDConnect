@@ -122,10 +122,11 @@ namespace ECDLink.DataAccessLayer.Hierarchy
 
             hierarchyList.Add(this.GetUserHierarchy(userId));
             if (isFranchisor) {
-                List<Coach> coachesF = coachRepo.GetAll().Where(c => c.FranchisorId.Equals(userId)).ToList();
-                if (coachesF.Count > 0)
+                List<Coach> franchisorCoaches = coachRepo.GetAll().ToList();
+                franchisorCoaches = franchisorCoaches.Where(c => c.FranchisorId.Equals(userId)).ToList();
+                if (franchisorCoaches.Count > 0)
                 {
-                    foreach (var c in coachesF)
+                    foreach (var c in franchisorCoaches)
                     {
                         hierarchyList.Add(this.GetUserHierarchy(c.UserId));
                         List<Practitioner> franchisorsPractitioners = practRepo.GetAll().ToList();
@@ -150,7 +151,9 @@ namespace ECDLink.DataAccessLayer.Hierarchy
                     }
                 }
             } else if (isPrincipal || isPractitioner) {
-                List<Practitioner> principalPractitioners = practRepo.GetAll().Where(c => c.PrincipalHierarchy.Equals(userId)).ToList();
+                List<Practitioner> principalPractitioners = practRepo.GetAll().ToList();
+                principalPractitioners = principalPractitioners.Where(c => c.PrincipalHierarchy.HasValue).ToList();
+                principalPractitioners = principalPractitioners.Where(c => c.PrincipalHierarchy.ToString() == userId).ToList();
                 if (principalPractitioners.Count > 0)
                 {
                     foreach (var p in principalPractitioners)
@@ -159,7 +162,7 @@ namespace ECDLink.DataAccessLayer.Hierarchy
                     }
                 }
             }
-            //in some cases liek a child, we need to get the relevant children hierarchy in addition for the generic repository selectionlist
+            //in some cases like a child, we need to get the relevant children hierarchy in addition for the generic repository selectionlist
             if (typeof(T) == typeof(Child))
             {
                 var childRepo = _repoFactory.CreateGenericRepository<Child>(userContext: userId);

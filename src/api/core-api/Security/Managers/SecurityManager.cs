@@ -106,9 +106,9 @@ namespace EcdLink.Api.CoreApi.Security.Managers
                     new Claim(SecurityConstants.Strings.JwtClaimIdentifiers.Rol, string.Join(',', roles))
                 );
 
-            if (!string.IsNullOrEmpty(TenantExecutionContext.Tenant?.Id))
+            if (!string.IsNullOrEmpty(TenantExecutionContext.Tenant.Id.ToString()))
             {
-                claimIdentity.AddClaim(new Claim(TenancyConstants.Jwt.TenantJwtClaim, TenantExecutionContext.Tenant.Id));
+                claimIdentity.AddClaim(new Claim(TenancyConstants.Jwt.TenantJwtClaim, TenantExecutionContext.Tenant.Id.ToString()));
             }
 
             var jwt = await _jwtTokenManager.GenerateJwt(claimIdentity, user.Id, jwtType);

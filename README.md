@@ -107,6 +107,7 @@ technology leverages the strengths of React and .NET and is hosted on Azure infr
 - [Yarn](https://yarnpkg.com/) as an optional alternative to NPM, `npm install --global yarn`
 - [.Net Core 3.1](https://dotnet.microsoft.com/en-us/download/dotnet/3.1)
 - [PostgreSQL Server](https://www.postgresql.org/) - installed on your local PC as a database server
+- Alternatively run the db from a docker container with `./run-db.sh`. After that's done restore the db with `docker exec ecdconnect-db-1 pg_restore --dbname=ecdconnect --username=postgres --schema=public /tmp/dump-public-202208171017.backup`. Copy the restore to the root of the project and replace the filename in above command.
 
 # How to run the projects
 

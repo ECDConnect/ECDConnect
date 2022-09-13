@@ -42,7 +42,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return await invite.SendInviteToApplication(invitationManager, notificationManager, userManager, userId);
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
+        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public Coach UpdateCoach([Service] IHttpContextAccessor contextAccessor,
           [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
           [Service] IGenericRepositoryFactory repoFactory,
@@ -88,50 +88,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 }
                 return coach;
             }
-
-            //input.Id = Guid.Parse(id);
-
-            //if (user == default(Coach))
-            //{
-            //    return AddCoach(userManager, input);
-            //}
-
-            //user.PhoneNumber = input.PhoneNumber;
-            //user.IdNumber = input.IdNumber;
-            //user.IsSouthAfricanCitizen = input.IsSouthAfricanCitizen;
-            //user.VerifiedByHomeAffairs = input.VerifiedByHomeAffairs;
-            //user.DateOfBirth = input.DateOfBirth;
-            //user.GenderId = input.GenderId;
-            //user.RaceId = input.RaceId;
-            //user.FirstName = input.FirstName;
-            //user.Surname = input.Surname;
-            //user.FullName = $"{input.FirstName} {input.Surname}";
-            //user.ContactPreference = input.ContactPreference;
-
-            //if (!string.IsNullOrWhiteSpace(input.IdNumber))
-            //{
-            //    user.UserName = input.IdNumber;
-            //}
-
-            //if (!string.IsNullOrWhiteSpace(input.Email))
-            //{
-            //    user.Email = input.Email;
-            //}
-
-            //if (!string.IsNullOrWhiteSpace(input.ProfileImageUrl))
-            //{
-            //    user.ProfileImageUrl = input.ProfileImageUrl;
-            //}
-
-            //var updateResult = userManager.UpdateAsync(user).Result;
-
-            //if (!updateResult.Succeeded)
-            //{
-            //    throw new Exception(updateResult.Errors.First().Description);
-            //}
-
-            //return user;
-            return input;
         }
 
         public Practitioner AddPractitionerToCoach([Service] IHttpContextAccessor contextAccessor,

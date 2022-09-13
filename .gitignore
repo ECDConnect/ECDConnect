@@ -167,3 +167,5 @@ packages/*/obj
 
 packages/.vscode/settings.json
 /*.code-workspace
+
+_data
