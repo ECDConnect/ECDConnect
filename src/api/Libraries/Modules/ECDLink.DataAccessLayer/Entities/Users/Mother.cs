@@ -18,7 +18,6 @@ namespace ECDLink.DataAccessLayer.Entities.Users
     }
 
     public class Mother<TKey> : EntityBase<TKey>,
-        IDocumentQueryable,
         SiteAddressJoin<Guid?>,
         HealthCareWorkerJoin<Guid?>,
         ApplicationUserJoin
@@ -41,8 +40,6 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public string Age { get; set; }
 
         public string WhatsAppNumber { get; set; }
-
-        public virtual ICollection<Document> Documents { get; set; }
     }
 
     public interface MotherJoin<TKey>

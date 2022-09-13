@@ -18,7 +18,6 @@ namespace ECDLink.DataAccessLayer.Entities.Users
     }
 
     public class Infant<TKey> : EntityBase<TKey>,
-        IDocumentQueryable,
         MotherJoin<Guid?>,
         GenderJoin<Guid?>,
         CaregiverJoin<Guid?>,
@@ -44,7 +43,5 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public decimal? WeightAtBirth { get; set; }
 
         public decimal? LengthAtBirth { get; set; }
-
-        public virtual ICollection<Document> Documents { get; set; }
     }
 }
