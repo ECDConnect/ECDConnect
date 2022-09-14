@@ -51,7 +51,7 @@ namespace ECDLink.PostgresTenancy.Services
         public TenantModel GetTenantByUrl(string url)
         {
             var tenant = _repository.GetAll()
-                            .Where(x => url.Contains(x.SiteAddress) || url.Contains(x.AdminSiteAddress))
+                            .Where(x => url == x.SiteAddress || url == x.AdminSiteAddress)
                             .FirstOrDefault();
 
             if (tenant == null)
