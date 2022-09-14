@@ -11,6 +11,8 @@ namespace ECDLink.Tenancy.Model
 
         public string SiteAddress { get; set; }
 
+        public string AdminSiteAddress { get; set; }
+
         public string ApplicationName { get; set; }
 
         public string OrganisationName { get; set; }
