@@ -70,9 +70,9 @@ namespace ECDLink.PostgresTenancy.Caching
         }
 
         public TenantModel GetTenantByUrl(string url)
-        {
+        {            
             return Tenants
-                    .Where(x => url.Contains(x.SiteAddress) || url.Contains(x.AdminSiteAddress))
+                    .Where(x => url == x.SiteAddress || url == x.AdminSiteAddress)
                     .FirstOrDefault();
         }
 
