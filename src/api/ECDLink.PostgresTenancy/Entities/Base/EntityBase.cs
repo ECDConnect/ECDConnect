@@ -11,7 +11,8 @@ namespace ECDLink.PostgresTenancy.Entities.Base
         [Key]
         [Column(Order = 1)]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; set; }
+        public Guid Id { get; set; }
+        //public int Id { get; set; }
 
         [Column(Order = 97)]
         public DateTime InsertedDate { get; set; }

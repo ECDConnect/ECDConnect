@@ -20,23 +20,16 @@ function ConfigProvider({ children }: { children: ReactNode }): JSX.Element {
 
   const getData = () => {
     setLoading(true);
-    fetch(`${window.location.origin}/settings.json`)
-      .then(function (res) {
-        return res.json();
-      })
-      .then(function (data) {
-        if (data) {
-          Config.authApi = data.authApi;
-          Config.graphQlApi = data.graphQlApi;
-          Config.themeUrl = data.themeUrl;
-        }
 
-        setLoading(false);
-      })
-      .catch(function (err) {
-        console.log(err, ' error');
-        setLoading(false);
-      });
+    const GRAPHQL_API = process.env.REACT_APP_GRAPHQL_API;
+    const AUTH_API = process.env.REACT_APP_AUTH_API;
+    const THEME_URL = process.env.REACT_APP_THEME_URL;
+
+    AUTH_API && (Config.authApi = AUTH_API);
+    GRAPHQL_API && (Config.graphQlApi = GRAPHQL_API);
+    THEME_URL && (Config.themeUrl = THEME_URL);
+
+    setLoading(false);
   };
 
   useEffect(() => {

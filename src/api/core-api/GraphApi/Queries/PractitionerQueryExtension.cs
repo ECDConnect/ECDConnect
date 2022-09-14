@@ -25,6 +25,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using ECDLink.Security.Extensions;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Azure.Documents;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
@@ -48,7 +49,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var practiRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
             Practitioner practitioner = new Practitioner();
             List<Practitioner> practitioners = practiRepo.GetAll().Where(x => x.UserId.Contains(userId)).ToList();
-            if (practitioners.Count > 0) {
+            if (practitioners.Count > 0)
+            {
                 practitioner = practitioners.FirstOrDefault();
             }
 
@@ -178,36 +180,33 @@ string userId)
         }
 
         public PrincipalClassroom GetClassroomDetailsForPractitioner([Service] IHttpContextAccessor contextAccessor,
-    [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
-    [Service] IGenericRepositoryFactory repoFactory,
-    string userId)
+            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+            [Service] IGenericRepositoryFactory repoFactory,
+            string userId)
         {
             using var scope = dbFactory.CreateDbContext();
             using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var classroomGroupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
             var classroomRepo = repoFactory.CreateRepository<Classroom>(userContext: uId);
-            var practiRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+            var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+            var userRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
             PrincipalClassroom principalClassroom = new PrincipalClassroom();
-            List<Classroom> classes = classroomRepo.GetAll().Where(x => x.UserId.Equals(userId)).ToList();
-            foreach (var classroom in classes)
+            ClassroomGroup classroomGroup = classroomGroupRepo.GetByUserId(userId);
+            if (classroomGroup != null)
             {
-                List<ClassroomGroup> classrooms = classroomGroupRepo.GetAll().Where(x => x.ClassroomId.Equals(classroom.Id)).ToList();
-                foreach (var classroomGroup in classrooms)
+                Classroom classroom = classroomRepo.GetById(classroomGroup.ClassroomId);
+                var principal = practitionerRepo.GetByUserId(classroom.UserId);
+                if (principal != null)
                 {
-                    Practitioner principal = practiRepo.GetByUserId(userId);
-                    if (principal != null)
-                    {
-                        principalClassroom.ClassroomName = classroomGroup.Name;
-                        principalClassroom.PrincipalName = principal.User.FirstName + " " + principal.User.Surname;
 
-                    }
+                    principalClassroom.PrincipalName = principal.User.FirstName + " " + principal.User.Surname;
+                    principalClassroom.ClassroomName = classroom.Name;
                 }
-            }
 
+            }
             return principalClassroom;
         }
-        
     }
 
-}
+    }

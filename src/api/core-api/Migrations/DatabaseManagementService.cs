@@ -10,6 +10,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
+using ECDLink.Core.Extensions;
 
 namespace EcdLink.Api.CoreApi.Migrations
 {
@@ -21,6 +23,7 @@ namespace EcdLink.Api.CoreApi.Migrations
         private readonly ContentMangementSeedService _contentManagementSeed;
         private readonly ILogger<DatabaseManagementService> _logger;
         private readonly IServiceProvider _serviceProvider;
+        private readonly IConfiguration _config;
 
         public DatabaseManagementService(
             PostgresDataSeed postgresSeed,
@@ -100,11 +103,12 @@ namespace EcdLink.Api.CoreApi.Migrations
 
         private void BuildDbStructure(TenantModel tenant)
         {
-            var authDbContextOptions = GetOptions<AuthenticationDbContext>(tenant.ConnectionString, "ECDLink.DataAccessLayer");
+            var franchisor = _config.GetSection<FranchisorConfiguration>(TenancyConstants.Configuration.TenantSettings);
+            var authDbContextOptions = GetOptions<AuthenticationDbContext>(franchisor.ConnectionString, "ECDLink.DataAccessLayer");//tenant.ConnectionString, "ECDLink.DataAccessLayer");
             var authDbContext = new AuthenticationDbContext(authDbContextOptions.Options);
             authDbContext.Database.Migrate();
 
-            var contentManagementDbContextOptions = GetOptions<ContentManagementDbContext>(tenant.ConnectionString, "ECDLink.ContentManagement");
+            var contentManagementDbContextOptions = GetOptions<ContentManagementDbContext>(franchisor.ConnectionString, "ECDLink.ContentManagement");//tenant.ConnectionString, "ECDLink.ContentManagement");
             var contentManagementDbContext = new ContentManagementDbContext(contentManagementDbContextOptions.Options);
             contentManagementDbContext.Database.Migrate();
         }

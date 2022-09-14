@@ -1,6 +1,9 @@
+using ECDLink.Abstractrions.Services;
+using ECDLink.Core.Caching;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities.Base;
 using ECDLink.DataAccessLayer.Events;
+
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -9,6 +12,9 @@ using Namotion.Reflection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ECDLink.Tenancy.Context;
+using ECDLink.Tenancy.Cache;
+using Microsoft.Azure.Documents.SystemFunctions;
 
 namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
 {
@@ -24,6 +30,8 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
 
         protected string errorMessage = string.Empty;
 
+        private readonly ICacheService<IGlobalCache> _cacheService;
+
         public GenericRepositoryBase(AuthenticationDbContext context, IDomainEventService domainEventService)
         {
             SetCustomScope(context);
@@ -38,12 +46,15 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
 
         public virtual IQueryable<T> GetAll()
         {
-            return entities.AsQueryable();
+            Guid tenantId = TenantExecutionContext.Tenant.Id;
+            //return entities.Where(e => e.TenantId.Equals(tenantId)).AsQueryable();
+            return entities.Where(e => e.TenantId == null || e.TenantId.Equals(tenantId)).AsQueryable();
         }
 
         public virtual T GetById(Guid id)
         {
-            return entities.SingleOrDefault(s => s.Id == id);
+            Guid tenantId = TenantExecutionContext.Tenant.Id;
+            return entities.Where(e => e.TenantId.Equals(tenantId)).SingleOrDefault(s => s.Id == id);
         }
 
         public virtual T GetByUserId(string id)
@@ -51,20 +62,23 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
             Type type = typeof(T);
             if (type.GetProperty("UserId") != null)
             {
-                //var val = entities.AsQueryable().Where(x => x.GetType().GetProperty("UserId").GetValue(type,null).Equals(id)).FirstOrDefault();                
-                var qq = entities.FromSqlRaw("SELECT * FROM \"" + type.Name + "\" WHERE \"UserId\" = '" + id + "'").ToList();
+                //var val = entities.AsQueryable().Where(x => x.GetType().GetProperty("UserId").GetValue(type,null).Equals(id)).FirstOrDefault();
+                Guid tenantId = TenantExecutionContext.Tenant.Id;
+                var qq = entities.FromSqlRaw("SELECT * FROM \"" + type.Name + "\" WHERE \"UserId\" = '" + id + "' AND \"TenantId\" = '" + tenantId + "'").ToList();
                 return qq.FirstOrDefault();
-            } else return entities.SingleOrDefault(s => s.Id.Equals(id));
+            } else return default;        
         }
 
         public virtual T Insert(T entity)
         {
             if (entity == null) throw new ArgumentNullException("entity");
 
+            Guid tenantId = TenantExecutionContext.Tenant.Id;
             if (entity.Id == default(Guid))
             {
                 entity.Id = Guid.NewGuid();
             }
+            entity.TenantId = tenantId; //always insert teh tenantId for all data
 
             entities.Add(entity);
             context.SaveChanges();
@@ -79,12 +93,13 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
             {
                 throw new ArgumentNullException("entity");
             }
-
+            Guid tenantId = TenantExecutionContext.Tenant.Id;
             if (Exists(entity.Id))
             {
                 entity.InsertedDate = entity.InsertedDate;//do not update inserted date to Now                
                 entity.UpdatedDate = DateTime.Now;
                 entity.UpdatedBy = _userId;
+                entity.TenantId = tenantId;
                 entities.Update(entity);
                 _domainEventService.NotifyUpdate<T>(_userId, entity);
             }
@@ -100,7 +115,8 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
 
         public virtual void Delete(Guid id)
         {
-            T entity = entities.SingleOrDefault(s => s.Id == id);
+            Guid tenantId = TenantExecutionContext.Tenant.Id;
+            T entity = entities.Where(e => e.TenantId == tenantId).SingleOrDefault(s => s.Id == id);
             //entities.Remove(entity);
             //context.SaveChanges();
             //softdelete

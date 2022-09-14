@@ -19,7 +19,6 @@ namespace ECDLink.DataAccessLayer.Entities
     }
 
     public interface ProvinceJoin<TKey>
-        where TKey : IEquatable<TKey>
     {
         [ForeignKey(nameof(ProvinceId))]
         public Province Province { get; set; }

@@ -3,6 +3,7 @@ import { useHistory } from 'react-router-dom';
 import { UserRoutes } from '../../app.routes';
 import SubNavigationLink from '../../components/sub-navigation-link/sub-navigation-link';
 
+// TODO: (Tenancy) This can't be hardcoded as it will be different for each tenant
 const navigation = [
   {
     name: 'Application Users',

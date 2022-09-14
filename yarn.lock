@@ -11203,6 +11203,11 @@ latest-version@5.1.0:
   dependencies:
     package-json "^6.3.0"
 
+learna@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/learna/-/learna-1.0.1.tgz#c70c320bf60a0f6cc350e77feb4774f7bc0209c0"
+  integrity sha512-ZOHYqqcbEIAZcB/lcOnnkKFkUKY2F50f9Sm164H2SemtIvJuA0XnrERUBF6zurJxq+8MOwoF4iEoD3tQqNJTsQ==
+
 lerna@^4.0.0:
   version "4.0.0"
   resolved "https://registry.npmjs.org/lerna/-/lerna-4.0.0.tgz"

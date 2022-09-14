@@ -37,6 +37,7 @@ namespace ECDLink.PostgresTenancy.Configuration.Setup.Seed
 
             _tenantCache.AddTenant(new TenantModel
             {
+                Id = Guid.NewGuid(),
                 ApplicationName = franchisor.Application,
                 OrganisationName = franchisor.Organisation,
                 SiteAddress = franchisor.SiteAddress,

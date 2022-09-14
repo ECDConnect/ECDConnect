@@ -12,7 +12,7 @@ namespace ECDLink.DataAccessLayer.Entities
     {
     }
 
-    public class SiteAddress<TKey> : EntityBase<TKey>, ProvinceJoin<TKey>
+    public class SiteAddress<TKey> : EntityBase<TKey>, ProvinceJoin<Guid?>
          where TKey : IEquatable<TKey>
     {
         public string Name { get; set; }
@@ -29,7 +29,7 @@ namespace ECDLink.DataAccessLayer.Entities
 
         [ForeignKey(nameof(ProvinceId))]
         public virtual Province Province { get; set; }
-        public TKey ProvinceId { get; set; }
+        public Guid? ProvinceId { get; set; }
     }
 
     public interface SiteAddressJoin<TKey>

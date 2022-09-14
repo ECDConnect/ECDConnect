@@ -27,14 +27,14 @@ namespace ECDLink.Tenancy.Context
 
             var currentTenant = tenant.Value;
 
-            if (string.IsNullOrWhiteSpace(currentTenant?.Id))
+            if (string.IsNullOrWhiteSpace(currentTenant?.Id.ToString()))
             {
                 tenant.Value = value;
 
                 return;
             }
 
-            if (string.Equals(currentTenant.Id, value.Id, StringComparison.InvariantCulture))
+            if (string.Equals(currentTenant.Id.ToString(), value.Id.ToString(), StringComparison.InvariantCulture))
             {
                 // If trying to readd the same tenant, do nothing
                 return;
