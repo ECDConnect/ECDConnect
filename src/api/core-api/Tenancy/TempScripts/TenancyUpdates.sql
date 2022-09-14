@@ -7,6 +7,7 @@
 CREATE TABLE public."Tenant" (
 	"ApplicationName" text NULL,
 	"SiteAddress" text NULL,
+	"AdminSiteAddress" text NULL,
 	"OrganisationName" text NULL,
 	"Server" text NULL,
 	"DbProvider" text NULL,
@@ -25,8 +26,8 @@ CREATE TABLE public."Tenant" (
 
 INSERT INTO public."Tenant" ("ApplicationName","SiteAddress","OrganisationName","Server","DbProvider","DatabaseName","ConnectionString","TenantType","InsertedDate","UpdatedDate","UpdatedBy","Id","ThemePathVar","Var1","Var2") VALUES
 	 ('ECD Connect','NonMatchingPlaceholderName','DGMT','','postgressql','',NULL,0,'2022-01-30 18:31:59.357339','2022-01-30 18:31:59.357408',NULL,'64e657c9-67cf-4769-84eb-a5a7d819dda8',NULL,NULL,NULL),
-	 ('Funda','ecdconnect','SmartStart','ecd-connect.postgres.database.azure.com','postgressql','SmartStart','Server=ecd-connect.postgres.database.azure.com;Database=SmartStart;Port=5432;User Id=ecdconnectadmin;Password=8BHaK%U9@$15;Ssl Mode=Require;',1,'2022-01-30 18:37:47.58168','2022-01-30 18:37:47.581701',NULL,'258a15e6-3736-45ea-875c-48d9377de4c8',NULL,NULL,NULL),
-	 ('GrowGreat','growgreat','GrowGreat','ecd-connect.postgres.database.azure.com','postgressql','SmartStart','Server=ecd-connect.postgres.database.azure.com;Database=SmartStart;Port=5432;User Id=ecdconnectadmin;Password=8BHaK%U9@$15;Ssl Mode=Require;',1,'2022-01-30 18:37:47.581','2022-01-30 18:37:47.581',NULL,'39077d0e-e443-4076-aaf2-978dc6805aa0',NULL,NULL,NULL);
+	 ('Funda','ecdconnect','SmartStart','ecd-connect.postgres.database.azure.com','ecd-connect.postgres.database.azure.com','postgressql','SmartStart','Server=ecd-connect.postgres.database.azure.com;Database=SmartStart;Port=5432;User Id=ecdconnectadmin;Password=8BHaK%U9@$15;Ssl Mode=Require;',1,'2022-01-30 18:37:47.58168','2022-01-30 18:37:47.581701',NULL,'258a15e6-3736-45ea-875c-48d9377de4c8',NULL,NULL,NULL),
+	 ('GrowGreat','growgreat','GrowGreat','ecd-connect.postgres.database.azure.com','ecd-connect.postgres.database.azure.com','postgressql','SmartStart','Server=ecd-connect.postgres.database.azure.com;Database=SmartStart;Port=5432;User Id=ecdconnectadmin;Password=8BHaK%U9@$15;Ssl Mode=Require;',1,'2022-01-30 18:37:47.581','2022-01-30 18:37:47.581',NULL,'39077d0e-e443-4076-aaf2-978dc6805aa0',NULL,NULL,NULL);
 
 	
 INSERT INTO public."AspNetUsers" ("Id","UserName","NormalizedUserName","Email","NormalizedEmail","EmailConfirmed","PasswordHash","SecurityStamp","ConcurrencyStamp","PhoneNumber","PhoneNumberConfirmed","TwoFactorEnabled","LockoutEnd","LockoutEnabled","AccessFailedCount", "IsSouthAfricanCitizen","VerifiedByHomeAffairs", "DateOfBirth", "IsActive"   ) VALUES
@@ -180,4 +181,5 @@ update public."WorkflowStatusType" set "TenantId" = null;
 -- now prepare the base values for ecdconnect but insert no TenantId, leave null
 
 
-update "Tenant" set "SiteAddress" = 'localhost' where "ApplicationName" = 'Funda';
+--update "Tenant" set "SiteAddress" = 'localhost' where "ApplicationName" = 'Funda';
+--update "Tenant" set "AdminSiteAddress" = 'localhost' where "ApplicationName" = 'Funda';
