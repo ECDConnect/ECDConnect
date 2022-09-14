@@ -196,12 +196,13 @@ string userId)
             if (classroomGroup != null)
             {
                 Classroom classroom = classroomRepo.GetById(classroomGroup.ClassroomId);
+                principalClassroom.ClassroomName = classroom.Name;
                 var principal = practitionerRepo.GetByUserId(classroom.UserId);
                 if (principal != null)
                 {
 
                     principalClassroom.PrincipalName = principal.User.FirstName + " " + principal.User.Surname;
-                    principalClassroom.ClassroomName = classroom.Name;
+                    
                 }
 
             }
