@@ -62,17 +62,13 @@ namespace ECDLink.PostgresTenancy.Caching
         public TenantModel GetTenantById(string id)
         {
             var tenant = Tenants.Where(x => x.Id == Guid.Parse(id));
-            //var tenant = Tenants.Where(x => x.Id.Equals(Guid.Parse(id)));// string.Equals(id, x.Id));
-            //return Tenants
-            //        .Where(x => string.Equals(id, x.Id))
-            //        .FirstOrDefault();
             return tenant.FirstOrDefault();
         }
 
         public TenantModel GetTenantByUrl(string url)
         {            
             return Tenants
-                    .Where(x => url == x.SiteAddress || url == x.AdminSiteAddress)
+                    .Where(x => url.Contains(x.SiteAddress) || url.Contains(x.AdminSiteAddress))
                     .FirstOrDefault();
         }
 
