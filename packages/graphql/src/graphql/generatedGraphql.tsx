@@ -1536,8 +1536,6 @@ export type Infant = {
   __typename?: 'Infant';
   caregiver?: Maybe<Caregiver>;
   caregiverId?: Maybe<Scalars['UUID']>;
-  documents?: Maybe<Array<Maybe<Document>>>;
-  filterDocumentsByType?: Maybe<Array<Maybe<Document>>>;
   gender?: Maybe<Gender>;
   genderId?: Maybe<Scalars['UUID']>;
   id: Scalars['UUID'];
@@ -1553,15 +1551,10 @@ export type Infant = {
   weightAtBirth?: Maybe<Scalars['Decimal']>;
 };
 
-export type InfantFilterDocumentsByTypeArgs = {
-  type: FileTypeEnum;
-};
-
 export type InfantFilterInput = {
   and?: InputMaybe<Array<InfantFilterInput>>;
   caregiver?: InputMaybe<CaregiverFilterInput>;
   caregiverId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
-  documents?: InputMaybe<ListFilterInputTypeOfDocumentFilterInput>;
   gender?: InputMaybe<GenderFilterInput>;
   genderId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
@@ -1581,7 +1574,6 @@ export type InfantFilterInput = {
 export type InfantInput = {
   Caregiver?: InputMaybe<CaregiverInput>;
   CaregiverId?: InputMaybe<Scalars['UUID']>;
-  Documents?: InputMaybe<Array<InputMaybe<DocumentInput>>>;
   Gender?: InputMaybe<GenderInput>;
   GenderId?: InputMaybe<Scalars['UUID']>;
   Id?: InputMaybe<Scalars['UUID']>;
@@ -1794,9 +1786,7 @@ export type MonthlyAttendanceReportModel = {
 export type Mother = {
   __typename?: 'Mother';
   age?: Maybe<Scalars['String']>;
-  documents?: Maybe<Array<Maybe<Document>>>;
   expectedDateOfDelivery?: Maybe<Scalars['DateTime']>;
-  filterDocumentsByType?: Maybe<Array<Maybe<Document>>>;
   healthCareWorker?: Maybe<HealthCareWorker>;
   healthCareWorkerId?: Maybe<Scalars['UUID']>;
   id: Scalars['UUID'];
@@ -1811,14 +1801,9 @@ export type Mother = {
   whatsAppNumber?: Maybe<Scalars['String']>;
 };
 
-export type MotherFilterDocumentsByTypeArgs = {
-  type: FileTypeEnum;
-};
-
 export type MotherFilterInput = {
   age?: InputMaybe<StringOperationFilterInput>;
   and?: InputMaybe<Array<MotherFilterInput>>;
-  documents?: InputMaybe<ListFilterInputTypeOfDocumentFilterInput>;
   expectedDateOfDelivery?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   healthCareWorker?: InputMaybe<HealthCareWorkerFilterInput>;
   healthCareWorkerId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
@@ -1837,7 +1822,6 @@ export type MotherFilterInput = {
 
 export type MotherInput = {
   Age?: InputMaybe<Scalars['String']>;
-  Documents?: InputMaybe<Array<InputMaybe<DocumentInput>>>;
   ExpectedDateOfDelivery?: InputMaybe<Scalars['DateTime']>;
   HealthCareWorker?: InputMaybe<HealthCareWorkerInput>;
   HealthCareWorkerId?: InputMaybe<Scalars['UUID']>;
@@ -3985,6 +3969,7 @@ export type Query = {
   principalByUserId?: Maybe<Practitioner>;
   roles?: Maybe<Array<Maybe<IdentityRole>>>;
   settings?: Maybe<SettingsType>;
+  tenantContext?: Maybe<TenantModel>;
   totalDaysAbsent: Scalars['Int'];
   userById?: Maybe<ApplicationUser>;
   users?: Maybe<Array<Maybe<ApplicationUser>>>;
@@ -4963,7 +4948,6 @@ export type SiteAddress = {
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
   name?: Maybe<Scalars['String']>;
-  phoneNumber?: Maybe<Scalars['String']>;
   postalCode?: Maybe<Scalars['String']>;
   province?: Maybe<Province>;
   provinceId?: Maybe<Scalars['UUID']>;
@@ -4982,7 +4966,6 @@ export type SiteAddressFilterInput = {
   isActive?: InputMaybe<BooleanOperationFilterInput>;
   name?: InputMaybe<StringOperationFilterInput>;
   or?: InputMaybe<Array<SiteAddressFilterInput>>;
-  phoneNumber?: InputMaybe<StringOperationFilterInput>;
   postalCode?: InputMaybe<StringOperationFilterInput>;
   province?: InputMaybe<ProvinceFilterInput>;
   provinceId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
@@ -4998,7 +4981,6 @@ export type SiteAddressInput = {
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
   Name?: InputMaybe<Scalars['String']>;
-  PhoneNumber?: InputMaybe<Scalars['String']>;
   PostalCode?: InputMaybe<Scalars['String']>;
   Province?: InputMaybe<ProvinceInput>;
   ProvinceId?: InputMaybe<Scalars['UUID']>;
@@ -5112,6 +5094,24 @@ export type SystemSettingInput = {
   UpdatedBy?: InputMaybe<Scalars['String']>;
   Value?: InputMaybe<Scalars['String']>;
 };
+
+export type TenantModel = {
+  __typename?: 'TenantModel';
+  adminSiteAddress?: Maybe<Scalars['String']>;
+  applicationName?: Maybe<Scalars['String']>;
+  id: Scalars['UUID'];
+  organisationName?: Maybe<Scalars['String']>;
+  siteAddress?: Maybe<Scalars['String']>;
+  tenantType: TenantType;
+  themePathVar?: Maybe<Scalars['String']>;
+  var1?: Maybe<Scalars['String']>;
+  var2?: Maybe<Scalars['String']>;
+};
+
+export enum TenantType {
+  Host = 'HOST',
+  Tenant = 'TENANT',
+}
 
 export type Theme = {
   __typename?: 'Theme';
