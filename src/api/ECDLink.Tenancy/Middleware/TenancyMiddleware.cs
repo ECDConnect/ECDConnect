@@ -41,6 +41,7 @@ namespace ECDLink.Tenancy.Middleware
 
         private TenantModel GetTenant(HttpContext context, ITenantService tenancyService)
         {
+            string path = "";
             TenantModel tenant = new TenantModel();
             var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
 
@@ -54,6 +55,7 @@ namespace ECDLink.Tenancy.Middleware
                 var idTenant = tenancyService.GetTenantById(claim.Value);
                 if (idTenant != null && idTenant != default(TenantModel))
                     tenant = idTenant;
+                path = "JWT:" + claim?.Value;
                     
             }
 
@@ -67,6 +69,7 @@ namespace ECDLink.Tenancy.Middleware
                     if (urlTenant != null && urlTenant != default(TenantModel))
                     {
                         tenant = urlTenant;
+                        path = "URL:" + refererUrl;
                     }
                 }
                 else
@@ -76,10 +79,11 @@ namespace ECDLink.Tenancy.Middleware
                     if (host != default(TenantModel))
                     {
                         tenant = host;
+                        path = "Host:" + context.Request.Host.Value;
                     }
                 }
             }
-            tenant.Var1 = context?.Request?.GetTypedHeaders()?.Referer?.AbsoluteUri;
+            tenant.Var1 = path;
             tenant.Var2 = context.Request.Host.Value;
 
             return (tenant!=null?tenant:new TenantModel());
