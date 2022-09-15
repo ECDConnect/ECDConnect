@@ -102,7 +102,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             var roles = _userManager.GetRolesAsync(user).Result;
             var isAdmin = roles.Contains(Roles.ADMINISTRATOR);
             
-            var query = entities.Where(e => e.TenantId.Equals(tenantId)).AsQueryable();
+            var query = entities.AsQueryable();//.Where(e => e.TenantId.Equals(tenantId))
             if (isAdmin)
             {
                 return query;

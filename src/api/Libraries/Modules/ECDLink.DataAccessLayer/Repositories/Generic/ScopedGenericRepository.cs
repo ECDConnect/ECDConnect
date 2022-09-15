@@ -62,9 +62,12 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             {
                 try {
                     var hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId);
-                    if (hh != null)
+                    if (hh.Count > 0)
                     {
-                        return query.Where(x => hh.Contains(((IUserScoped)x).Hierarchy));
+                        if (!hh.Contains(null)) //dont run any null values through teh check, nothing should be null
+                        {
+                            return query.Where(x => hh.Contains(((IUserScoped)x).Hierarchy));
+                        }
                     }
                 }
                 catch (Exception e) {
