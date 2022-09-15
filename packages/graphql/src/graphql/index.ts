@@ -48,3 +48,4 @@ export * from './navigation';
 export * from './health-care-worker';
 export * from './mother';
 export * from './infant';
+export * from './tenant';
