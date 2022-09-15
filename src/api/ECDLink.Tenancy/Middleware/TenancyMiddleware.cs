@@ -41,23 +41,26 @@ namespace ECDLink.Tenancy.Middleware
 
         private TenantModel GetTenant(HttpContext context, ITenantService tenancyService)
         {
+            string path = "";
             TenantModel tenant = new TenantModel();
             var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
 
             var claim = context.User.Claims
                                 .Where(x => string.Equals(x.Type, TenancyConstants.Jwt.TenantJwtClaim))
                                 .FirstOrDefault();
-
+            
             // If there is a jwt, automatically just use it
             if (!string.IsNullOrEmpty(claim?.Value))
             {
                 var idTenant = tenancyService.GetTenantById(claim.Value);
                 if (idTenant != null && idTenant != default(TenantModel))
                     tenant = idTenant;
+                path = "JWT:" + claim?.Value;
+                    
             }
 
             if (tenant.OrganisationName == null) {  //means we dont have a tenant from the JWt            
-                // Check url making request
+                                                    // Check url making request
                 var refererUrl = context?.Request?.GetTypedHeaders()?.Referer?.AbsoluteUri ?? context.Request.Host.Host ?? String.Empty;
 
                 if (!string.IsNullOrWhiteSpace(refererUrl))
@@ -66,6 +69,7 @@ namespace ECDLink.Tenancy.Middleware
                     if (urlTenant != null && urlTenant != default(TenantModel))
                     {
                         tenant = urlTenant;
+                        path = "URL:" + refererUrl;
                     }
                 }
                 else
@@ -75,9 +79,12 @@ namespace ECDLink.Tenancy.Middleware
                     if (host != default(TenantModel))
                     {
                         tenant = host;
+                        path = "Host:" + context.Request.Host.Value;
                     }
                 }
             }
+            tenant.Var1 = path;
+            tenant.Var2 = context.Request.Host.Value;
 
             return (tenant!=null?tenant:new TenantModel());
         }

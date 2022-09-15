@@ -43,7 +43,7 @@ namespace ECDLink.Tenancy.Context
             if (tenant.Value.TenantType == Enums.TenantType.Host)
             {
                 // Unique tenant context swap when admin needs to create a DB
-                tenant.Value = value;
+                tenant.Value = value;                
                 return;
             }
 
