@@ -59,7 +59,7 @@ namespace ECDLink.Tenancy.Middleware
                     
             }
 
-            if (tenant.OrganisationName == null) {  //means we dont have a tenant from the JWt            
+            if (claim?.Value == "00000000-0000-0000-0000-000000000000") {  //means we dont have a tenant from the JWt            
                                                     // Check url making request
                 var refererUrl = context?.Request?.GetTypedHeaders()?.Referer?.AbsoluteUri ?? context.Request.Host.Host ?? String.Empty;
 
