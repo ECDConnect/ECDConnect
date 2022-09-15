@@ -54,29 +54,29 @@ namespace ECDLink.Tenancy.Middleware
                 var idTenant = tenancyService.GetTenantById(claim.Value);
                 if (idTenant != null && idTenant != default(TenantModel))
                     tenant = idTenant;
-                //return tenant;
             }
-
-            // Check url making request
-            var refererUrl = context?.Request?.GetTypedHeaders()?.Referer?.AbsoluteUri ?? context.Request.Host.Host ?? String.Empty;
-            
-            if (!string.IsNullOrWhiteSpace(refererUrl))
+            else
             {
-                var urlTenant = tenancyService.GetTenantByUrl(refererUrl);
+                // Check url making request
+                var refererUrl = context?.Request?.GetTypedHeaders()?.Referer?.AbsoluteUri ?? context.Request.Host.Host ?? String.Empty;
 
-                if (urlTenant != null && urlTenant != default(TenantModel))
+                if (!string.IsNullOrWhiteSpace(refererUrl))
                 {
-                    //return urlTenant;
-                    tenant = urlTenant;
+                    var urlTenant = tenancyService.GetTenantByUrl(refererUrl);
+                    if (urlTenant != null && urlTenant != default(TenantModel))
+                    {
+                        tenant = urlTenant;
+                    }
                 }
-            }
-
-            // If no url making the request, check the server the request was made to
-            var host = tenancyService.GetTenantByUrl(context.Request.Host.Value);
-
-            if (host != default(TenantModel))
-            {
-                return host;
+                else
+                {
+                    // If no url making the request, check the server the request was made to            
+                    var host = tenancyService.GetTenantByUrl(context.Request.Host.Value);
+                    if (host != default(TenantModel))
+                    {
+                        tenant = host;
+                    }
+                }
             }
 
             return (tenant!=null?tenant:new TenantModel());

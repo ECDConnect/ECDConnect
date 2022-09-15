@@ -51,7 +51,7 @@ namespace ECDLink.PostgresTenancy.Services
         public TenantModel GetTenantByUrl(string url)
         {
             var tenant = _repository.GetAll()
-                            .Where(x => url == x.SiteAddress || url == x.AdminSiteAddress)
+                            .Where(x => url.Contains(x.SiteAddress) || url.Contains(x.AdminSiteAddress))
                             .FirstOrDefault();
 
             if (tenant == null)
@@ -83,6 +83,7 @@ namespace ECDLink.PostgresTenancy.Services
                 UpdatedDate = DateTime.UtcNow,
                 OrganisationName = tenant.OrganisationName,
                 SiteAddress = tenant.SiteAddress,
+                AdminSiteAddress = tenant.AdminSiteAddress,
                 //DatabaseName = connection["Database"]?.ToString() ?? string.Empty,
                 //Server = connection["Server"]?.ToString() ?? string.Empty,
                 //ConnectionString = tenant.ConnectionString,
@@ -101,10 +102,11 @@ namespace ECDLink.PostgresTenancy.Services
                 OrganisationName = tenantEntity.OrganisationName,
                 ApplicationName = tenantEntity.ApplicationName,
                 SiteAddress = tenantEntity.SiteAddress,
-                //ConnectionString = (tenantEntity.TenantType == TenantType.Host) 
-                //                    ? string.Empty 
-                //                    : string.Format(tenantEntity.ConnectionString),
-                TenantType = tenantEntity.TenantType
+                AdminSiteAddress = tenantEntity.AdminSiteAddress,
+                TenantType = tenantEntity.TenantType,
+                ThemePathVar = tenantEntity.ThemePathVar,
+                Var1 = tenantEntity.Var1,
+                Var2 = tenantEntity.Var2
             };
         }
     }
