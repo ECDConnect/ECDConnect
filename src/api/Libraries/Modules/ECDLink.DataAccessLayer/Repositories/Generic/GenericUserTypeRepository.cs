@@ -111,9 +111,12 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             {
                 try { 
                     List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId);
-                    if (hh != null)
+                    if (hh.Count>0)
                     {
-                        return query.Where(x => hh.Contains(((IUserType)x).Hierarchy));
+                        if (!hh.Contains(null)) //dont run any null values through teh check, nothing should be null
+                        {
+                            return query.Where(x => hh.Contains(((IUserType)x).Hierarchy));
+                        }
                     }
                 }
                 catch (Exception e)
