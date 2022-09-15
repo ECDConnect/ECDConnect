@@ -83,7 +83,7 @@ const UserRoutes: React.FC = () => {
       <Route path={`/users/application`} component={ApplicationUsers}></Route>
       <Route path={`/users/franchisors`} component={Franchisors}></Route>
       <Route path={`/users/coaches`} component={Coaches}></Route>
-      <Route path={`/users/principals`} component={Principals}></Route>
+      <Route path={`/users/practitioners`} component={Practitioners}></Route>
       <Route
         path={`/users/health-care-worker`}
         component={HealthCareWorkers}
