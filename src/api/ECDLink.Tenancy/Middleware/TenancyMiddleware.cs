@@ -47,17 +47,18 @@ namespace ECDLink.Tenancy.Middleware
             var claim = context.User.Claims
                                 .Where(x => string.Equals(x.Type, TenancyConstants.Jwt.TenantJwtClaim))
                                 .FirstOrDefault();
-
+            
             // If there is a jwt, automatically just use it
             if (!string.IsNullOrEmpty(claim?.Value))
             {
                 var idTenant = tenancyService.GetTenantById(claim.Value);
                 if (idTenant != null && idTenant != default(TenantModel))
                     tenant = idTenant;
+                    
             }
 
             if (tenant.OrganisationName == null) {  //means we dont have a tenant from the JWt            
-                // Check url making request
+                                                    // Check url making request
                 var refererUrl = context?.Request?.GetTypedHeaders()?.Referer?.AbsoluteUri ?? context.Request.Host.Host ?? String.Empty;
 
                 if (!string.IsNullOrWhiteSpace(refererUrl))
@@ -78,6 +79,8 @@ namespace ECDLink.Tenancy.Middleware
                     }
                 }
             }
+            tenant.Var1 = context?.Request?.GetTypedHeaders()?.Referer?.AbsoluteUri;
+            tenant.Var2 = context.Request.Host.Value;
 
             return (tenant!=null?tenant:new TenantModel());
         }
