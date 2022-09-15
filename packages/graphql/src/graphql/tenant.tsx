@@ -1,6 +1,6 @@
 import { gql } from '@apollo/client';
 
-export const TenantContext = gql`
+export const GetTenantContext = gql`
   {
     tenantContext {
       id

@@ -3,9 +3,17 @@ import { useState } from 'react';
 import GADashboard from './components/dashboard-qa/dashboard-qa';
 import PractitionerDashboard from './components/dashboard-practitioner/dashboard-practitioner';
 import ChildrenDashboard from './components/dashboard-children/dashboard-children';
-import { TenantContext } from '@ecdlink/graphql';
+import { useQuery } from '@apollo/client/react/hooks/useQuery';
+import { GetTenantContext } from '@ecdlink/graphql';
 
+// TODO: (Tenancy) This can't be hardcoded as it will be different for each tenant
 export default function Dashboard() {
+  const { data } = useQuery(GetTenantContext, {
+    fetchPolicy: 'cache-and-network',
+  });
+
+  console.log(data);
+
   const tabItems: TabItem[] = [
     {
       title: 'Analytics',
