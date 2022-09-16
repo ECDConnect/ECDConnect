@@ -179,11 +179,7 @@ string userId)
             return classroom;
         }
 
-<<<<<<< HEAD
 public PrincipalClassroom GetClassroomDetailsForPractitioner([Service] IHttpContextAccessor contextAccessor,
-=======
-        public PrincipalClassroom GetClassroomDetailsForPractitioner([Service] IHttpContextAccessor contextAccessor,
->>>>>>> develop
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
             string userId)
@@ -200,24 +196,12 @@ public PrincipalClassroom GetClassroomDetailsForPractitioner([Service] IHttpCont
             if (classroomGroup != null)
             {
                 Classroom classroom = classroomRepo.GetById(classroomGroup.ClassroomId);
-<<<<<<< HEAD
                 var principal = practitionerRepo.GetByUserId(classroom.UserId);
                 if (principal != null)
                 {
                     principalClassroom.PrincipalName = principal.User.FirstName + " " + principal.User.Surname;
                     principalClassroom.ClassroomName = classroom.Name;
                 }
-=======
-                principalClassroom.ClassroomName = classroom.Name;
-                var principal = practitionerRepo.GetByUserId(classroom.UserId);
-                if (principal != null)
-                {
-
-                    principalClassroom.PrincipalName = principal.User.FirstName + " " + principal.User.Surname;
-                    
-                }
-
->>>>>>> develop
             }
             return principalClassroom;
         }
