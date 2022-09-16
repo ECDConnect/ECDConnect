@@ -41,42 +41,52 @@ namespace ECDLink.Tenancy.Middleware
 
         private TenantModel GetTenant(HttpContext context, ITenantService tenancyService)
         {
+            string path = "";
+            TenantModel tenant = new TenantModel();
             var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
 
             var claim = context.User.Claims
                                 .Where(x => string.Equals(x.Type, TenancyConstants.Jwt.TenantJwtClaim))
                                 .FirstOrDefault();
-
+            
             // If there is a jwt, automatically just use it
             if (!string.IsNullOrEmpty(claim?.Value))
             {
-                var tenant = tenancyService.GetTenantById(claim.Value);
-
-                return tenant;
+                var idTenant = tenancyService.GetTenantById(claim.Value);
+                if (idTenant != null && idTenant != default(TenantModel))
+                    tenant = idTenant;
+                path = "JWT:" + claim?.Value;
+                    
             }
 
-            // Check url making request
-            var refererUrl = context?.Request?.GetTypedHeaders()?.Referer?.AbsoluteUri ?? string.Empty;
-            
-            if (!string.IsNullOrWhiteSpace(refererUrl))
-            {
-                var urlTenant = tenancyService.GetTenantByUrl(refererUrl);
+            if (claim?.Value == "00000000-0000-0000-0000-000000000000") {  //means we dont have a tenant from the JWt            
+                                                    // Check url making request
+                var refererUrl = context?.Request?.GetTypedHeaders()?.Referer?.AbsoluteUri ?? context.Request.Host.Host ?? String.Empty;
 
-                if (urlTenant != default(TenantModel))
+                if (!string.IsNullOrWhiteSpace(refererUrl))
                 {
-                    return urlTenant;
+                    var urlTenant = tenancyService.GetTenantByUrl(refererUrl);
+                    if (urlTenant != null && urlTenant != default(TenantModel))
+                    {
+                        tenant = urlTenant;
+                        path = "URL:" + refererUrl;
+                    }
+                }
+                else
+                {
+                    // If no url making the request, check the server the request was made to            
+                    var host = tenancyService.GetTenantByUrl(context.Request.Host.Value);
+                    if (host != default(TenantModel))
+                    {
+                        tenant = host;
+                        path = "Host:" + context.Request.Host.Value;
+                    }
                 }
             }
+            tenant.Var1 = path;
+            tenant.Var2 = context.Request.Host.Value;
 
-            // If no url making the request, check the server the request was made to
-            var host = tenancyService.GetTenantByUrl(context.Request.Host.Value);
-
-            if (host != default(TenantModel))
-            {
-                return host;
-            }
-
-            return new TenantModel();
+            return (tenant!=null?tenant:new TenantModel());
         }
     }
 }

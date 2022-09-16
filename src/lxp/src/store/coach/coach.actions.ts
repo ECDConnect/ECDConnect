@@ -125,6 +125,9 @@ export const updateCoach = createAsyncThunk<
 
       return [update];
     } catch (err) {
+      if (err instanceof Error) {
+        return rejectWithValue(err.message);
+      }
       return rejectWithValue(err);
     }
   }

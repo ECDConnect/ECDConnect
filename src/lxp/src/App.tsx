@@ -16,7 +16,7 @@ import InitialStoreSetup from './initial-store-setup';
 import { LoginModal } from './pages/auth/login-modal/login-modal';
 import { authSelectors } from './store/auth';
 import { settingSelectors } from './store/settings';
-import { userSelectors } from '@store/user';
+import BackgroundSync from './components/background-sync/background-sync';
 
 const App: React.FC = () => {
   const dialog = useDialog();
@@ -25,8 +25,7 @@ const App: React.FC = () => {
   const applicationSettings = useSelector(
     settingSelectors.getApplicationSettings
   );
-  const userData = useSelector(userSelectors.getUser);
-  console.log({ user });
+
   useEffect(() => {
     if (applicationSettings && applicationSettings.Google) {
       if (applicationSettings.Google.GoogleAnalyticsTag) {
@@ -65,6 +64,7 @@ const App: React.FC = () => {
           <DialogServiceProvider>
             <InitialNotificationSetup>
               <AuthRoutes />
+              <BackgroundSync />
             </InitialNotificationSetup>
           </DialogServiceProvider>
         </InitialStoreSetup>

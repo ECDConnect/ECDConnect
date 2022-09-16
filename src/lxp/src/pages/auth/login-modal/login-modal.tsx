@@ -36,7 +36,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ loginSuccessful }) => {
   const [displayError, setDisplayError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [idFieldVisible, setIdFieldVisible] = useState(true);
-  const { resetAppStaticStores } = useStoreSetup();
+  const { resetAppStore } = useStoreSetup();
 
   const { isOnline, Offline } = useOnlineStatus();
 
@@ -199,7 +199,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ loginSuccessful }) => {
             color="alertMain"
             onClick={async () => {
               appDispatch(authActions.resetAuthState());
-              resetAppStaticStores && (await resetAppStaticStores());
+              resetAppStore && (await resetAppStore());
               history && history.push(ROUTES.LOGIN);
             }}
           >

@@ -25,6 +25,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using ECDLink.Security.Extensions;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Azure.Documents;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
@@ -48,7 +49,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var practiRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
             Practitioner practitioner = new Practitioner();
             List<Practitioner> practitioners = practiRepo.GetAll().Where(x => x.UserId.Contains(userId)).ToList();
-            if (practitioners.Count > 0) {
+            if (practitioners.Count > 0)
+            {
                 practitioner = practitioners.FirstOrDefault();
             }
 
@@ -177,7 +179,11 @@ string userId)
             return classroom;
         }
 
+<<<<<<< HEAD
 public PrincipalClassroom GetClassroomDetailsForPractitioner([Service] IHttpContextAccessor contextAccessor,
+=======
+        public PrincipalClassroom GetClassroomDetailsForPractitioner([Service] IHttpContextAccessor contextAccessor,
+>>>>>>> develop
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
             string userId)
@@ -194,16 +200,27 @@ public PrincipalClassroom GetClassroomDetailsForPractitioner([Service] IHttpCont
             if (classroomGroup != null)
             {
                 Classroom classroom = classroomRepo.GetById(classroomGroup.ClassroomId);
+<<<<<<< HEAD
                 var principal = practitionerRepo.GetByUserId(classroom.UserId);
                 if (principal != null)
                 {
                     principalClassroom.PrincipalName = principal.User.FirstName + " " + principal.User.Surname;
                     principalClassroom.ClassroomName = classroom.Name;
                 }
+=======
+                principalClassroom.ClassroomName = classroom.Name;
+                var principal = practitionerRepo.GetByUserId(classroom.UserId);
+                if (principal != null)
+                {
+
+                    principalClassroom.PrincipalName = principal.User.FirstName + " " + principal.User.Surname;
+                    
+                }
+
+>>>>>>> develop
             }
             return principalClassroom;
         }
-        
     }
 
-}
+    }

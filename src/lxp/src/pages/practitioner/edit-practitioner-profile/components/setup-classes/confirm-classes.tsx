@@ -1,4 +1,3 @@
-import ROUTES from '@/routes/routes';
 import { EditClassModel } from '@/schemas/practitioner/edit-class';
 import { practitionerSelectors } from '@/store/practitioner';
 import { userSelectors } from '@/store/user';

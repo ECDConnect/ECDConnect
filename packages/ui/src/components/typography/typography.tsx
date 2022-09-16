@@ -43,11 +43,16 @@ export const Typography: React.FC<TypographyProps> = ({
   const getTag = (type: TypographyType, text?: string) => {
     let splitText;
     if (text && text.includes('\n')) {
-      splitText = text.split('\n').map((str, ix) => (
-        <p key={`paragraph-${ix}`} className={`mt-${ix !== 0 ? '3' : '0'}`}>
-          {str}
-        </p>
-      ));
+      splitText = text.split('\n').map((str, ix) =>
+        str ? (
+          <span
+            key={`paragraph-${ix}`}
+            className={`mt-${ix !== 0 ? '3' : '0'} block`}
+          >
+            {str}
+          </span>
+        ) : null
+      );
     }
 
     switch (type) {

@@ -2,7 +2,7 @@ import { getYear, getMonth, getWeek } from 'date-fns';
 import React, { useEffect, useState } from 'react';
 import Loader from './components/loader/loader';
 import { useOnlineStatus } from './hooks/useOnlineStatus';
-import { useAppDispatch } from './store';
+import { useAppDispatch, useAppSelector } from './store';
 import { attendanceActions, attendanceThunkActions } from './store/attendance';
 import { authActions } from './store/auth';
 import { caregiverActions, caregiverThunkActions } from './store/caregiver';
@@ -52,13 +52,15 @@ import {
   practitionerForCoachThunkActions,
 } from './store/practitionerForCoach';
 import { analyticsActions } from './store/analytics';
+import localforage from 'localforage';
+import hash from 'object-hash';
 import { userSelectors } from '@store/user';
 import { useSelector } from 'react-redux';
 
 type IntialStoreSetupContextValues = {
   initloading: boolean;
   initStoreSetup: () => Promise<void>;
-  resetAppStaticStores: (showLoading?: boolean) => Promise<void>;
+  resetAppStore: (showLoading?: boolean) => Promise<void>;
   resetAuth: () => Promise<void>;
   getLoadingMessage: () => string;
   syncClassroom: () => Promise<void>;
@@ -79,6 +81,12 @@ const InitialStoreSetup: React.FC = ({ children }) => {
 
   const [otherLoading, setOtherLoading] = useState(false);
 
+  const [shouldSaveStateHash, setShouldSaveStateHash] = useState(false);
+
+  const { sync, analytics, settings, notifications, ...state } = useAppSelector(
+    (state) => state
+  );
+
   const resetAuth = async () => {
     await appDispatch(authActions.resetAuthState());
   };
@@ -94,7 +102,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     }
   }, [appDispatch, isCoach, userData]);
 
-  const resetAppStaticStores = async (showLoading = true) => {
+  const resetAppStore = async (showLoading = true) => {
     if (showLoading) {
       setInitLoading(true);
     }
@@ -139,8 +147,16 @@ const InitialStoreSetup: React.FC = ({ children }) => {
       await initAdditionalStoreSetup();
       await appDispatch(settingActions.setLastDataSync());
       setInitLoading(false);
+      setShouldSaveStateHash(true);
     }
   };
+
+  useEffect(() => {
+    if (shouldSaveStateHash) {
+      localforage.setItem('state:hash', hash(state));
+      setShouldSaveStateHash(false);
+    }
+  }, [state, shouldSaveStateHash]);
 
   const initAdditionalStoreSetup = async () => {
     // SPECIFIC DATA
@@ -275,7 +291,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   const values = {
     initloading,
     initStoreSetup,
-    resetAppStaticStores,
+    resetAppStore,
     resetAuth,
     getLoadingMessage,
     syncClassroom,

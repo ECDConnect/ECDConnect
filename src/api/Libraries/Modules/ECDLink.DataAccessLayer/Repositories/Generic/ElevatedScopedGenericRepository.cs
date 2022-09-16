@@ -12,6 +12,7 @@ using ECDLink.Security;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using System.Collections.Generic;
+using ECDLink.Tenancy.Context;
 
 namespace ECDLink.DataAccessLayer.Repositories.Generic
 {
@@ -45,11 +46,12 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             {
                 throw new UnauthorizedAccessException("User does not have access to this data");
             }
+            Guid tenantId = TenantExecutionContext.Tenant.Id;
             var user = _userManager.FindByIdAsync(_userId).Result;
             var roles = _userManager.GetRolesAsync(user).Result;
             var isAdmin = roles.Contains(Roles.ADMINISTRATOR);
 
-            var query = entities.AsQueryable();
+            var query = entities.Where(e => e.TenantId.Equals(tenantId)).AsQueryable();
             if (isAdmin) 
             {
                 return query;
@@ -131,7 +133,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             return record;
         }
 
-        public T GetByUserId(string id)
+        public override T GetByUserId(string id)
         //TODO CB: build userhierarchy permissions list in to GetById
         {
             if (string.IsNullOrEmpty(_userId))
@@ -142,8 +144,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             Type type = typeof(T);
             if (type.GetProperty("UserId") != null)
             {
-
-                //var record = query.Where(s => ) //base.GetAll().Where(s => s.GetType().GetProperty("UserId").GetValue(s, null).Equals(id));
+                
                 var record = base.GetByUserId(id);
                 var castRecord = record as IUserType;
 
@@ -151,23 +152,6 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                 {
                     return default;
                 }
-
-                //if user is in a higher admin role (Principal, Practitioner, Coach, Franchisor, then skip the check as they need to be able to see anyone anywhere due to the shift in roles of Milestone 1.
-                //var user = _userManager.FindByIdAsync(castRecord.UserId).Result;
-                //var roles = _userManager.GetRolesAsync(user).Result;
-                //var higherRoles = new[] { Roles.PRACTITIONER, Roles.COACH, Roles.ADMINISTRATOR, Roles.PRINCIPAL, Roles.FRANCHISOR };//
-                //bool isHigherRole = higherRoles.Any(roles.Contains);
-                //if (!isHigherRole)
-                //{
-                //    if (!string.IsNullOrWhiteSpace(castRecord.Hierarchy))
-                //    {
-                //        var hierarchy = _hierarchyEngine.GetUserHierarchy(_userId);
-                //        if (!castRecord.Hierarchy.StartsWith(hierarchy))
-                //        {
-                //            return default;
-                //        }
-                //    }
-                //}
 
                 //hierarchy confirmation allowing this to be viewed
                 var user = _userManager.FindByIdAsync(_userId).Result;

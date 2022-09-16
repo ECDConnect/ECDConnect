@@ -47,7 +47,7 @@ import * as styles from './coach-registration.styles';
 
 export const CoachRegistration: React.FC = () => {
   const appDispatch = useAppDispatch();
-  const { resetAppStaticStores, resetAuth } = useStoreSetup();
+  const { resetAppStore, resetAuth } = useStoreSetup();
 
   const headerSlide: HeaderSlide = {
     status: ChipStatus.ComingSoon,
@@ -75,8 +75,8 @@ export const CoachRegistration: React.FC = () => {
 
   useEffect(() => {
     async function init() {
-      if (resetAppStaticStores) {
-        await resetAppStaticStores(false);
+      if (resetAppStore) {
+        await resetAppStore(false);
         await resetAuth();
       }
 

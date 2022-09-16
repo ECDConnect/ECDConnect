@@ -30,6 +30,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Factories
                     repo = _provider.GetService<ElevatedScopedGenericRepository<T>>();
                     break;
                 case var cls when typeof(IUserScoped).IsAssignableFrom(typeof(T)):
+                    //repo = _provider.GetService<GenericUserTypeRepository<T>>();
                     repo = _provider.GetService<ScopedGenericRepository<T>>();
                     //if elevated scope, the filtering would be done on userhierachy level, so generic queries will be sufficient
 

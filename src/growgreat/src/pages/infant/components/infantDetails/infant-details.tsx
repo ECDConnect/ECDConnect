@@ -1,0 +1,202 @@
+import { yupResolver } from '@hookform/resolvers/yup';
+import {
+  Button,
+  Divider,
+  Typography,
+  ButtonGroup,
+  ButtonGroupTypes,
+  FormInput,
+  Alert,
+} from '@ecdlink/ui';
+import { useForm, useFormState } from 'react-hook-form';
+import { useState, useEffect } from 'react';
+import { EditInfantDetailsProps } from './infant-details.types';
+import {
+  InfantDetailsModel,
+  infantDetailsModelSchema,
+} from '@/schemas/infant/infant-details';
+import { intervalToDuration } from 'date-fns';
+import DatePicker from 'react-datepicker';
+// import { getGenders } from '@/store/static-data/static-data.selectors';
+import { useSelector } from 'react-redux';
+import { staticDataSelectors } from '@store/static-data';
+
+export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
+  onSubmit,
+  numberOfChildren,
+  multipleChildrenCount,
+}) => {
+  const {
+    watch,
+    getValues: getInfantDetailsFormValues,
+    // formState: InfantDetailsFormState,
+    setValue: setInfantDetailsFormValue,
+    register: infantFormRegister,
+    // reset: resetInfantDetailsFormValue,
+    control: infantDetailsFormControl,
+  } = useForm<InfantDetailsModel>({
+    resolver: yupResolver(infantDetailsModelSchema),
+    mode: 'onBlur',
+    reValidateMode: 'onChange',
+  });
+  const genders = useSelector(staticDataSelectors.getGenders);
+  const currentDate = new Date();
+  console.log({ multipleChildrenCount });
+
+  const genderOptionsUpdated = genders
+    ?.filter((gender) => gender?.description !== 'Other')
+    .map((item) => {
+      return {
+        text: item?.description,
+        value: String(item?.id),
+      };
+    });
+
+  const [myMonth, setMyMonth] = useState(currentDate);
+  const [myYear, setMyYear] = useState(currentDate);
+  const [myDay, setMyDay] = useState(currentDate);
+
+  const minDate = new Date(myYear.getFullYear(), myMonth.getMonth(), 1);
+  const maxDate = new Date(myYear.getFullYear(), myMonth.getMonth() + 1, 0);
+  const { years, months } = intervalToDuration({
+    start: myDay,
+    end: currentDate,
+  });
+  const { isValid } = useFormState({ control: infantDetailsFormControl });
+
+  console.log(getInfantDetailsFormValues());
+
+  useEffect(() => {
+    setMyDay(new Date(myYear.getFullYear(), myMonth.getMonth(), 1));
+  }, [myMonth, myYear, setMyDay]);
+
+  useEffect(() => {
+    if (myDay) {
+      setInfantDetailsFormValue('dateOfBirth', myDay);
+    }
+  }, [myDay, setInfantDetailsFormValue]);
+
+  const renderDayContents = (day: any, date: any) => {
+    if (date < minDate || date > maxDate) {
+      return <span></span>;
+    }
+    return <span>{date.getDate()}</span>;
+  };
+
+  console.log(watch());
+  return (
+    <div className="h-screen ">
+      <div>
+        <Typography
+          type="h2"
+          color={'textDark'}
+          text={
+            numberOfChildren! > 1 ? `Child ${multipleChildrenCount}` : 'Child'
+          }
+          className="z-50 pt-6"
+        />
+        <Typography
+          type="h4"
+          color={'textMid'}
+          text={'Details'}
+          className="z-50 pt-2 w-11/12"
+        />
+      </div>
+      <div className="flex justify-center w-11/12 text-red-400">
+        <Divider dividerType="dashed" />
+      </div>
+      <>
+        <FormInput<InfantDetailsModel>
+          label={'First name'}
+          register={infantFormRegister}
+          nameProp={'firstName'}
+          placeholder={'First name'}
+          type={'text'}
+          className="mt-4"
+        ></FormInput>
+      </>
+      <div className="mt-4">
+        <Typography
+          type="h4"
+          color={'textMid'}
+          text={'Date of birth:'}
+          className="z-50 pt-2 w-11/12"
+        />
+        <div className="flex items-center gap-1">
+          <DatePicker
+            placeholderText={'Please select a date'}
+            className="mt-1 w-full text-textMid bg-uiBg border-none rounded-md text-lg focus:border-primary focus:ring-primary shadow-sm"
+            selected={myDay}
+            onChange={(date: Date) => setMyDay(date)}
+            dateFormat="dd"
+            renderDayContents={renderDayContents}
+            renderCustomHeader={({ date }) => <div></div>}
+          />
+          <DatePicker
+            placeholderText={'Please select a date'}
+            className="mt-1 w-full text-primtextMidary bg-uiBg border-none rounded-md text-lg focus:border-primary focus:ring-primary shadow-sm"
+            selected={myMonth}
+            onChange={(date: Date) => setMyMonth(date)}
+            renderCustomHeader={({ date }) => <div></div>}
+            dateFormat="MMMM"
+            showMonthYearPicker
+            showPopperArrow={true}
+          />
+          <DatePicker
+            placeholderText={'Please select a date'}
+            className="mt-1 w-full bg-uiBg text-textMid border-none rounded-md text-lg focus:border-primary focus:ring-primary shadow-sm"
+            selected={myYear}
+            onChange={(date: Date) => setMyYear(date)}
+            dateFormat="yyyy"
+            showYearPicker
+          />
+        </div>
+        <div className="flex justify-start mt-6 w-full">
+          <Alert
+            type={'info'}
+            message={`${years} years and ${months} months old`}
+            className="w-full"
+          ></Alert>
+        </div>
+      </div>
+      <div>
+        <Typography
+          type="h3"
+          color={'textDark'}
+          text={'Sex'}
+          className="z-50 pt-2 w-11/12"
+        />
+        <div className="mt-2">
+          <ButtonGroup<string>
+            options={genderOptionsUpdated}
+            onOptionSelected={(value: string | string[]) => {
+              setInfantDetailsFormValue('genderId', value as string, {
+                shouldValidate: true,
+              });
+            }}
+            color="secondary"
+            type={ButtonGroupTypes.Button}
+            className={'w-full'}
+          />
+        </div>
+      </div>
+      <div className="flex w-full h-full align-bottom">
+        <div className={'mt-10 w-11/12 flex justify-center align-bottom'}>
+          <Button
+            type={'filled'}
+            color={'primary'}
+            className={'mt-2 ml-6 w-11/12 max-h-10 absolute bottom-10'}
+            textColor={'white'}
+            text={`Next`}
+            icon={'ArrowCircleRightIcon'}
+            iconPosition={'start'}
+            onClick={() => {
+              onSubmit(getInfantDetailsFormValues());
+            }}
+            disabled={!isValid}
+          />
+        </div>
+      </div>
+    </div>
+  );
+};

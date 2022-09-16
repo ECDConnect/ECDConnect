@@ -60,7 +60,7 @@ export const SignUp: React.FC = () => {
     mode: 'onChange',
   });
   const { errors } = useFormState({ control });
-  const { resetAppStaticStores, resetAuth } = useStoreSetup();
+  const { resetAppStore, resetAuth } = useStoreSetup();
   const [preferId, setPreferId] = useState<boolean>(true);
   const [contentConsentTypeEnum, setContentConsentTypeEnum] =
     useState<ContentConsentTypeEnum>();
@@ -79,8 +79,8 @@ export const SignUp: React.FC = () => {
 
   useEffect(() => {
     async function init() {
-      if (resetAppStaticStores) {
-        await resetAppStaticStores(false);
+      if (resetAppStore) {
+        await resetAppStore(false);
         await resetAuth();
       }
 

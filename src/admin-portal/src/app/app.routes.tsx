@@ -26,6 +26,9 @@ import RelationsView from './pages/static-data/sub-pages/relations/relations';
 import ApplicationUsers from './pages/users/sub-pages/application-users/application-users';
 import Children from './pages/users/sub-pages/children/children';
 import Coaches from './pages/users/sub-pages/coaches/coaches';
+import HealthCareWorkers from './pages/users/sub-pages/health-care-worker/health-care-worker';
+import Infants from './pages/users/sub-pages/infant/infant';
+import Mothers from './pages/users/sub-pages/mother/mother';
 import Practitioners from './pages/users/sub-pages/practitioners/practitioners';
 import Franchisors from './pages/users/sub-pages/franchisors/franchisors';
 import Principals from './pages/users/sub-pages/principals/principals';
@@ -80,8 +83,13 @@ const UserRoutes: React.FC = () => {
       <Route path={`/users/application`} component={ApplicationUsers}></Route>
       <Route path={`/users/franchisors`} component={Franchisors}></Route>
       <Route path={`/users/coaches`} component={Coaches}></Route>
-      <Route path={`/users/principals`} component={Principals}></Route>
       <Route path={`/users/practitioners`} component={Practitioners}></Route>
+      <Route
+        path={`/users/health-care-worker`}
+        component={HealthCareWorkers}
+      ></Route>
+      <Route path={`/users/mother`} component={Mothers}></Route>
+      <Route path={`/users/infant`} component={Infants}></Route>
       <Route path={`/users/children`} component={Children}></Route>
     </Switch>
   );

@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ECDLink.Core.Extensions;
 using Microsoft.Extensions.Azure;
+using ECDLink.Tenancy.Context;
 
 namespace ECDLink.DataAccessLayer.Repositories.Generic
 {
@@ -91,6 +92,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
 
         public override IQueryable<T> GetAll()
         {
+            Guid tenantId = TenantExecutionContext.Tenant.Id;
             if (string.IsNullOrEmpty(_userId))
             {
                 throw new UnauthorizedAccessException("User does not have access to this data");
@@ -100,7 +102,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             var roles = _userManager.GetRolesAsync(user).Result;
             var isAdmin = roles.Contains(Roles.ADMINISTRATOR);
             
-            var query = entities.AsQueryable();
+            var query = entities.AsQueryable();//.Where(e => e.TenantId.Equals(tenantId))
             if (isAdmin)
             {
                 return query;
@@ -109,9 +111,12 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             {
                 try { 
                     List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId);
-                    if (hh != null)
+                    if (hh.Count>0)
                     {
-                        return query.Where(x => hh.Contains(((IUserType)x).Hierarchy));
+                        if (!hh.Contains(null)) //dont run any null values through teh check, nothing should be null
+                        {
+                            return query.Where(x => hh.Contains(((IUserType)x).Hierarchy));
+                        }
                     }
                 }
                 catch (Exception e)
@@ -124,6 +129,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
 
         public override T GetById(Guid id)
         {
+            Guid tenantId = TenantExecutionContext.Tenant.Id;
             var record = base.GetById(id);
 
             var castRecord = record as IUserType;
@@ -168,7 +174,6 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
 
         public override T GetByUserId(string id)
         {
-            //TODO CB: build userhierarchy permissions list in to GetById
             if (string.IsNullOrEmpty(_userId))
             {
                 throw new UnauthorizedAccessException("User does not have access to this data");
@@ -177,8 +182,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             Type type = typeof(T);
             if (type.GetProperty("UserId") != null)
             {
-
-                //var record = query.Where(s => ) //base.GetAll().Where(s => s.GetType().GetProperty("UserId").GetValue(s, null).Equals(id));
+                
                 var record = base.GetByUserId(id);
                 var castRecord = record as IUserType;
 
@@ -186,23 +190,6 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                 {
                     return default;
                 }
-
-                //if user is in a higher admin role (Principal, Practitioner, Coach, Franchisor, then skip the check as they need to be able to see anyone anywhere due to the shift in roles of Milestone 1.
-                //var user = _userManager.FindByIdAsync(castRecord.UserId).Result;
-                //var roles = _userManager.GetRolesAsync(user).Result;
-                //var higherRoles = new[] { Roles.PRACTITIONER, Roles.COACH, Roles.ADMINISTRATOR, Roles.PRINCIPAL, Roles.FRANCHISOR };//
-                //bool isHigherRole = higherRoles.Any(roles.Contains);
-                //if (!isHigherRole)
-                //{
-                //    if (!string.IsNullOrWhiteSpace(castRecord.Hierarchy))
-                //    {
-                //        var hierarchy = _hierarchyEngine.GetUserHierarchy(_userId);
-                //        if (!castRecord.Hierarchy.StartsWith(hierarchy))
-                //        {
-                //            return default;
-                //        }
-                //    }
-                //}
 
                 //hierarchy confirmation allowing this to be viewed
                 var user = _userManager.FindByIdAsync(_userId).Result;
@@ -236,6 +223,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
         public override T Insert(T entity)
         {
             var typedEntity = entity as IUserType;
+            Guid tenantId = TenantExecutionContext.Tenant.Id;
 
             var hierarchyEntity = _hierarchyEngine.AddHierarchyEntity<T>(_userId, typedEntity.UserId);
 
@@ -246,6 +234,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                 throw new ArgumentNullException("entity");
             }
 
+            entity.TenantId = tenantId; 
             entities.Add(entity);
 
             context.SaveChanges();
@@ -257,6 +246,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
 
         public override T Update(T entity)
         {
+            Guid tenantId = TenantExecutionContext.Tenant.Id;
             if (entity == null)
             {
                 throw new ArgumentNullException("entity");
@@ -270,6 +260,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             }
             else
             {
+                entity.TenantId = tenantId;
                 ((IUserType)entity).Hierarchy = ((IUserType)dbEntity).Hierarchy;
                 context.Entry(dbEntity).CurrentValues.SetValues(entity);
                 _domainEventService.NotifyUpdate<T>(_userId, entity);

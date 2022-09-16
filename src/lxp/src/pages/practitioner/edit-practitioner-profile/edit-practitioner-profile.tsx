@@ -1,5 +1,9 @@
 import { useDialog, useTheme } from '@ecdlink/core';
-
+import {
+  ClassProgrammeDto,
+  ClassroomDto,
+  ClassroomGroupDto,
+} from '@ecdlink/core';
 import { IonContent } from '@ionic/react';
 import { ActionModal, BannerWrapper } from '@ecdlink/ui';
 import { DialogPosition } from '@ecdlink/ui';

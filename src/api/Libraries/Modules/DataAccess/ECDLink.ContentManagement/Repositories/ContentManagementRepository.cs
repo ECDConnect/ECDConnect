@@ -28,6 +28,11 @@ namespace ECDLink.ContentManagement.Repositories
               .Where(x => x.Id == contentTypeId)
               .FirstOrDefault();
 
+            if(contentType == null)
+            {
+                return new List<object>();
+            }
+
             var dynamicContentList = new List<object>();
 
             foreach (var item in contentType.Content.OrderBy(x => x.Id).Where(x => x.IsActive))

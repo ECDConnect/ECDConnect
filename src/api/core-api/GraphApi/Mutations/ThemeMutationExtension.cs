@@ -18,6 +18,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         [Permission(PermissionGroups.SYSTEM, GraphActionEnum.Update)]
         public async Task<bool> UpdateTenantTheme([Service] IFileService _fileService, string theme)
         {
+            // TODO: (Tenancy) This can't be hardcoded as it will be different for each tenant
             using MemoryStream fileStream = new MemoryStream(Encoding.UTF8.GetBytes(theme));
             await _fileService.UploadFileStream(fileStream, "smartstart.json", FileTypeEnum.Theme);
             fileStream.Dispose();

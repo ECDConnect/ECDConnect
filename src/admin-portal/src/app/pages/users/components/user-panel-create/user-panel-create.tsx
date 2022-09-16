@@ -10,7 +10,9 @@ import {
 } from '@ecdlink/core';
 import {
   AddUsersToRole,
+  CreateHealthCareWorker,
   CreateUser,
+  HealthCareWorkerModelInput,
   RoleList,
   UserModelInput,
 } from '@ecdlink/graphql';
@@ -36,6 +38,7 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
 
   const [createUser] = useMutation(CreateUser);
   const [addRolesToUser] = useMutation(AddUsersToRole);
+  const [addHealthCareWorker] = useMutation(CreateHealthCareWorker);
 
   const [selectedUserRoles, setUserRoles] = useState<RoleDto[]>([]);
   const [filteredRoles, setFilteredRoles] = useState<RoleDto[]>([]);
@@ -119,6 +122,7 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
 
         const userId = response.data.addUser.id;
         await saveRoles(userId);
+        await saveHealthCareWorker(userId);
       })
       .catch((error) => {
         console.log(error);
@@ -146,6 +150,37 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
       .catch((error) => {
         console.log(error);
       });
+  };
+
+  // TODO: Temp workaround until we have a UI for creating Health care workers.
+  const saveHealthCareWorker = async (userId: string) => {
+    let isHealthCareWorker = false;
+    selectedUserRoles.forEach((x) => {
+      if (x.name == 'Health Care Worker') {
+        isHealthCareWorker = true;
+      }
+    });
+
+    if (isHealthCareWorker) {
+      const healthCareWorkerModelInput: HealthCareWorkerModelInput = {
+        userId: userId,
+      };
+
+      await addHealthCareWorker({
+        variables: {
+          input: { ...healthCareWorkerModelInput },
+        },
+      })
+        .then((response: any) => {
+          setNotification({
+            title: 'Successfully created Health Care Worker!',
+            variant: NOTIFICATION.SUCCESS,
+          });
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    }
   };
 
   const getIsValid = () => {
