@@ -110,7 +110,7 @@ export const Dashboard: React.FC = () => {
         ).unwrap())();
     }
 
-    if (userData?.roles?.some((role) => role.name === 'Principal')) {
+    if (userData?.roles?.some((role) => role.name === 'Practitioner')) {
       const currentPrincipal = practitionerData?.filter(
         (x) => x?.user?.id === userData.id
       );

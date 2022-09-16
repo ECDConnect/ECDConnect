@@ -54,9 +54,7 @@ export const ClassDashboard: React.FC = () => {
     history.push('/');
   };
 
-  const principal: any = practitioner;
-
-  const isPrincipal = principal?.isPrincipal === true;
+  const isPrincipal = practitioner?.isPrincipal === true;
 
   useEffect(() => {
     const isTutorialComplete = getStorageItem<boolean>(
