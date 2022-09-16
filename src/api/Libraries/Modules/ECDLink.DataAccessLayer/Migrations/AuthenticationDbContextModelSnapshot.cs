@@ -71,6 +71,15 @@ namespace ECDLink.DataAccessLayer.Migrations
                     b.Property<DateTimeOffset?>("LockoutEnd")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("NickFirstName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("NickFullName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("NickSurname")
+                        .HasColumnType("text");
+
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
@@ -611,46 +620,6 @@ namespace ECDLink.DataAccessLayer.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("ProgrammeType");
-                });
-
-            modelBuilder.Entity("ECDLink.DataAccessLayer.Entities.Coach.Coach", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("AreaOfOperation")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Hierarchy")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("InsertedDate")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("SecondaryAreaOfOperation")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("StartDate")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<string>("UserId")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Coach");
                 });
 
             modelBuilder.Entity("ECDLink.DataAccessLayer.Entities.Documents.Document", b =>
@@ -1371,6 +1340,59 @@ namespace ECDLink.DataAccessLayer.Migrations
                     b.ToTable("SystemSetting");
                 });
 
+            modelBuilder.Entity("ECDLink.DataAccessLayer.Entities.Users.Absentees", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("AbsentDate")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime>("InsertedDate")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("LoggedBy")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("PractitionerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("ProgramId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Reason")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ReassignedClass")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ReassignedToPractitioner")
+                        .HasColumnType("text");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PractitionerId");
+
+                    b.HasIndex("ProgramId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Absentees");
+                });
+
             modelBuilder.Entity("ECDLink.DataAccessLayer.Entities.Users.Child", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1424,12 +1446,110 @@ namespace ECDLink.DataAccessLayer.Migrations
 
                     b.HasIndex("ReasonForLeavingId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId")
+                        .IsUnique();
 
                     b.HasIndex("WorkflowStatusId");
 
                     b.ToTable("Child");
                 });
+
+            modelBuilder.Entity("ECDLink.DataAccessLayer.Entities.Users.Franchisor", b =>
+            {
+                b.Property<Guid>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("uuid");
+
+                b.Property<string>("AreaOfOperation")
+                    .HasColumnType("text");
+
+                b.Property<DateTime>("InsertedDate")
+                    .HasColumnType("timestamp without time zone");
+
+                b.Property<bool>("IsActive")
+                    .HasColumnType("boolean");
+
+                b.Property<string>("SecondaryAreaOfOperation")
+                    .HasColumnType("text");
+
+                b.Property<Guid?>("SiteAddressId")
+                    .HasColumnType("uuid");
+
+                b.Property<DateTime>("StartDate")
+                    .HasColumnType("timestamp without time zone");
+
+                b.Property<string>("UpdatedBy")
+                    .HasColumnType("text");
+
+                b.Property<DateTime>("UpdatedDate")
+                    .HasColumnType("timestamp without time zone");
+
+                b.Property<string>("UserId")
+                    .HasColumnType("text");
+
+                b.HasKey("Id");
+
+                b.HasIndex("SiteAddressId");
+
+                b.HasIndex("UserId")
+                    .IsUnique();
+
+                b.ToTable("Franchisor");
+            });
+
+            modelBuilder.Entity("ECDLink.DataAccessLayer.Entities.Users.Coach", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AreaOfOperation")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("FranchisorId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Hierarchy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("InsertedDate")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("SecondaryAreaOfOperation")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Signature")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("SiteAddressId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SiteAddressId");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("Coach");
+                });
+
+
 
             modelBuilder.Entity("ECDLink.DataAccessLayer.Entities.Users.Mapping.CareGiverGrant", b =>
                 {
@@ -1466,6 +1586,9 @@ namespace ECDLink.DataAccessLayer.Migrations
                     b.Property<string>("AttendanceRegisterLink")
                         .HasColumnType("text");
 
+                    b.Property<string>("CoachHierarchy")
+                        .HasColumnType("text");
+
                     b.Property<bool?>("ConsentForPhoto")
                         .HasColumnType("boolean");
 
@@ -1478,6 +1601,15 @@ namespace ECDLink.DataAccessLayer.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
+                    b.Property<bool?>("IsFundaAppAdmin")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool?>("IsPrincipal")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool?>("IsTrainee")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("LanguageUsedInGroups")
                         .HasColumnType("text");
 
@@ -1487,8 +1619,17 @@ namespace ECDLink.DataAccessLayer.Migrations
                     b.Property<int?>("MonthSinceFranchisee")
                         .HasColumnType("integer");
 
+                    b.Property<bool?>("IsRegistered")
+                        .HasColumnType("boolean");
+
                     b.Property<decimal?>("ParentFees")
                         .HasColumnType("numeric");
+
+                    b.Property<string>("PrincipalHierarchy")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Signature")
+                        .HasColumnType("text");
 
                     b.Property<Guid?>("SiteAddressId")
                         .HasColumnType("uuid");
@@ -1509,7 +1650,8 @@ namespace ECDLink.DataAccessLayer.Migrations
 
                     b.HasIndex("SiteAddressId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId")
+                        .IsUnique();
 
                     b.ToTable("Practitioner");
                 });
@@ -1966,15 +2108,6 @@ namespace ECDLink.DataAccessLayer.Migrations
                     b.Navigation("Classroom");
                 });
 
-            modelBuilder.Entity("ECDLink.DataAccessLayer.Entities.Coach.Coach", b =>
-                {
-                    b.HasOne("ECDLink.DataAccessLayer.Entities.ApplicationUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("ECDLink.DataAccessLayer.Entities.Documents.Document", b =>
                 {
                     b.HasOne("ECDLink.DataAccessLayer.Entities.Users.Child", null)
@@ -2100,6 +2233,27 @@ namespace ECDLink.DataAccessLayer.Migrations
                     b.Navigation("Province");
                 });
 
+            modelBuilder.Entity("ECDLink.DataAccessLayer.Entities.Users.Absentees", b =>
+                {
+                    b.HasOne("ECDLink.DataAccessLayer.Entities.Users.Practitioner", "Practitioner")
+                        .WithMany()
+                        .HasForeignKey("PractitionerId");
+
+                    b.HasOne("ECDLink.DataAccessLayer.Entities.Classroom.Programme", "Program")
+                        .WithMany()
+                        .HasForeignKey("ProgramId");
+
+                    b.HasOne("ECDLink.DataAccessLayer.Entities.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("Practitioner");
+
+                    b.Navigation("Program");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("ECDLink.DataAccessLayer.Entities.Users.Child", b =>
                 {
                     b.HasOne("ECDLink.DataAccessLayer.Entities.Caregiver.Caregiver", "Caregiver")
@@ -2115,8 +2269,8 @@ namespace ECDLink.DataAccessLayer.Migrations
                         .HasForeignKey("ReasonForLeavingId");
 
                     b.HasOne("ECDLink.DataAccessLayer.Entities.ApplicationUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId");
+                        .WithOne("childObjectData")
+                        .HasForeignKey("ECDLink.DataAccessLayer.Entities.Users.Child", "UserId");
 
                     b.HasOne("ECDLink.DataAccessLayer.Entities.Workflow.WorkflowStatus", "WorkflowStatus")
                         .WithMany()
@@ -2131,6 +2285,36 @@ namespace ECDLink.DataAccessLayer.Migrations
                     b.Navigation("User");
 
                     b.Navigation("WorkflowStatus");
+                });
+
+            modelBuilder.Entity("ECDLink.DataAccessLayer.Entities.Users.Coach", b =>
+                {
+                    b.HasOne("ECDLink.DataAccessLayer.Entities.SiteAddress", "SiteAddress")
+                        .WithMany()
+                        .HasForeignKey("SiteAddressId");
+
+                    b.HasOne("ECDLink.DataAccessLayer.Entities.ApplicationUser", "User")
+                        .WithOne("coachObjectData")
+                        .HasForeignKey("ECDLink.DataAccessLayer.Entities.Users.Coach", "UserId");
+
+                    b.Navigation("SiteAddress");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("ECDLink.DataAccessLayer.Entities.Users.Franchisor", b =>
+                {
+                    b.HasOne("ECDLink.DataAccessLayer.Entities.SiteAddress", "SiteAddress")
+                        .WithMany()
+                        .HasForeignKey("SiteAddressId");
+
+                    b.HasOne("ECDLink.DataAccessLayer.Entities.ApplicationUser", "User")
+                        .WithOne("franchisorObjectData")
+                        .HasForeignKey("ECDLink.DataAccessLayer.Entities.Users.Franchisor", "UserId");
+
+                    b.Navigation("SiteAddress");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("ECDLink.DataAccessLayer.Entities.Users.Mapping.CareGiverGrant", b =>
@@ -2162,8 +2346,8 @@ namespace ECDLink.DataAccessLayer.Migrations
                         .HasForeignKey("SiteAddressId");
 
                     b.HasOne("ECDLink.DataAccessLayer.Entities.ApplicationUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId");
+                        .WithOne("practitionerObjectData")
+                        .HasForeignKey("ECDLink.DataAccessLayer.Entities.Users.Practitioner", "UserId");
 
                     b.Navigation("SiteAddress");
 
@@ -2252,9 +2436,17 @@ namespace ECDLink.DataAccessLayer.Migrations
 
             modelBuilder.Entity("ECDLink.DataAccessLayer.Entities.ApplicationUser", b =>
                 {
+                    b.Navigation("childObjectData");
+
+                    b.Navigation("coachObjectData");
+
                     b.Navigation("Documents");
 
+                    b.Navigation("franchisorObjectData");
+
                     b.Navigation("Notes");
+
+                    b.Navigation("practitionerObjectData");
                 });
 
             modelBuilder.Entity("ECDLink.DataAccessLayer.Entities.Caregiver.Caregiver", b =>

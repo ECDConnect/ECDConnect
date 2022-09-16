@@ -5,12 +5,21 @@ import {
   initialCoachValues,
   NOTIFICATION,
   useNotifications,
+  siteAddressSchema,
+  initialSiteAddressValues,
 } from '@ecdlink/core';
-import { CoachInput, UpdateCoach } from '@ecdlink/graphql';
+import {
+  CoachInput,
+  CreateSiteAddress,
+  UpdateCoach,
+  SiteAddressInput,
+  UpdateSiteAddress,
+} from '@ecdlink/graphql';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import CoachForm from '../../../components/coach-form/coach-form';
+import SiteAddressForm from '../../../components/site-address-form/site-address-form';
 import UserPanelSave from '../../../components/user-panel-save/user-panel-save';
 
 export interface CoachPanelProps {
@@ -28,7 +37,9 @@ export default function CoachPanelEdit({
     closeDialog(value);
   };
 
+  const [createSiteAddress] = useMutation(CreateSiteAddress);
   const [updateCoach] = useMutation(UpdateCoach);
+  const [updateSiteAddress] = useMutation(UpdateSiteAddress);
 
   const {
     register: coachRegister,
@@ -37,10 +48,22 @@ export default function CoachPanelEdit({
     getValues: coachGetValues,
   } = useForm({
     resolver: yupResolver(coachSchema),
-    defaultValues: initialCoachValues,
+    defaultValues: { ...initialCoachValues, sendInvite: false },
     mode: 'onBlur',
   });
   const { errors: coachFormErrors, isValid: isCoachValid } = coachFormState;
+
+  // SITE ADDRESS FORMS
+  const {
+    register: siteAddressRegister,
+    setValue: siteAddressSetValue,
+    getValues: siteAddressGetValues,
+  } = useForm({
+    resolver: yupResolver(siteAddressSchema),
+    defaultValues: { ...initialSiteAddressValues, sendInvite: false },
+    mode: 'onBlur',
+  });
+  const { errors: siteAddressFormErrors } = coachFormState;
 
   useEffect(() => {
     if (coach) {
@@ -61,26 +84,56 @@ export default function CoachPanelEdit({
           shouldValidate: true,
         }
       );
+      coachSetValue('franchisorId', coach.franchisorId ?? '', {
+        shouldValidate: true,
+      });
+
+      if (coach.siteAddress) {
+        siteAddressSetValue('name', coach.siteAddress.name, {
+          shouldValidate: true,
+        });
+        siteAddressSetValue('addressLine1', coach.siteAddress.addressLine1, {
+          shouldValidate: true,
+        });
+        siteAddressSetValue('addressLine2', coach.siteAddress.addressLine2, {
+          shouldValidate: true,
+        });
+        siteAddressSetValue('addressLine3', coach.siteAddress.addressLine3, {
+          shouldValidate: true,
+        });
+        siteAddressSetValue('ward', coach.siteAddress.ward, {
+          shouldValidate: true,
+        });
+        siteAddressSetValue('provinceId', coach.siteAddress.province.id, {
+          shouldValidate: true,
+        });
+        siteAddressSetValue('postalCode', coach.siteAddress.postalCode, {
+          shouldValidate: true,
+        });
+      }
     }
-  }, [coach, coachSetValue]);
+  }, [coach]);
 
   const onSave = async () => {
     if (isCoachValid) {
-      await saveCoach();
+      const siteAddressId = await saveSiteAddress();
+      await saveCoach(siteAddressId);
       emitCloseDialog(true);
     }
   };
 
-  const saveCoach = async () => {
+  const saveCoach = async (siteAddressId?: string) => {
     const coachForm = coachGetValues();
 
     const coachInputModel: CoachInput = {
       Id: coach.id,
       UserId: coach.userId,
+      SiteAddressId: siteAddressId,
       AreaOfOperation: coachForm.areaOfOperation,
       SecondaryAreaOfOperation: coachForm.secondaryAreaOfOperation,
       StartDate: coachForm.startDate,
       IsActive: true,
+      FranchisorId: coachForm.franchisorId,
     };
 
     await updateCoach({
@@ -96,13 +149,75 @@ export default function CoachPanelEdit({
     });
   };
 
+  const saveSiteAddress = async (): Promise<string> => {
+    const form = siteAddressGetValues();
+    const siteAddressInputModel: SiteAddressInput = {
+      Id: coach.siteAddressId,
+      Name: form.name,
+      AddressLine1: form.addressLine1,
+      AddressLine2: form.addressLine2,
+      AddressLine3: form.addressLine3,
+      PostalCode: form.postalCode,
+      ProvinceId: form.provinceId ?? null,
+      Ward: form.ward,
+      IsActive: true,
+    };
+
+    let siteAddressId = '';
+    if (coach.siteAddressId) {
+      await updateSiteAddress({
+        variables: {
+          id: coach.siteAddressId,
+          input: { ...siteAddressInputModel },
+        },
+      });
+      siteAddressId = coach.siteAddressId;
+    } else {
+      const returnSiteAddress = await createSiteAddress({
+        variables: {
+          input: { ...siteAddressInputModel },
+        },
+      });
+      siteAddressId = returnSiteAddress?.data?.createSiteAddress?.id ?? '';
+    }
+
+    setNotification({
+      title: 'Successfully Updated Coach Address!',
+      variant: NOTIFICATION.SUCCESS,
+    });
+
+    return siteAddressId;
+  };
+
   const getComponent = () => {
     return (
-      <CoachForm
-        formKey={`editcoach-${new Date().getTime()}-${coach.id}`}
-        register={coachRegister}
-        errors={coachFormErrors}
-      />
+      <>
+        <div className="mt-5 bg-uiBg px-4 py-5 border-b border-gray-200 rounded-lg">
+          <div className="pb-2">
+            <h3 className="text-lg leading-6 font-medium text-uiMidDark">
+              Coach Detail
+            </h3>
+          </div>
+          <CoachForm
+            formKey={`editcoach-${new Date().getTime()}-${coach.id}`}
+            register={coachRegister}
+            errors={coachFormErrors}
+          />
+        </div>
+
+        <div className="mt-5 bg-uiBg px-4 py-5 border-b border-gray-200 rounded-lg">
+          <div className="pb-2">
+            <h3 className="text-lg leading-6 font-medium text-uiMidDark">
+              Address Detail
+            </h3>
+          </div>
+          <SiteAddressForm
+            formKey={`createSiteAddress-${new Date().getTime()}`}
+            register={siteAddressRegister}
+            errors={siteAddressFormErrors}
+          />
+        </div>
+      </>
     );
   };
 

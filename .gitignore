@@ -164,3 +164,6 @@ packages/*/obj
 .vscode/settings.json
 
 packages/.vscode/settings.json
+/*.code-workspace
+
+_data

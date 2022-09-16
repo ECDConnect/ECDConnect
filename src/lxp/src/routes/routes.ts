@@ -21,6 +21,7 @@ const ROUTES = {
   }),
   DASHBOARD: '/dashboard',
   CLASSROOM: '/classroom',
+  TRAINING: '/training',
   CHILD: addPrefix('/child', {
     INFORMATION: addPrefix('/information', {
       EDIT: '/edit',
@@ -28,6 +29,9 @@ const ROUTES = {
   }),
   CHILD_REGISTRATION: '/child-registration',
   CHILD_REGISTRATION_BIRTH_CERTIFICATE: '/child-registration-birth-certificate',
+  PRINCIPAL: addPrefix('/principal', {
+    SETUP_PROFILE: '/setup-profile',
+  }),
   PRACTITIONER: addPrefix('/practitioner', {
     ABOUT: '/about',
     ACCOUNT: '/account',
@@ -44,7 +48,7 @@ const ROUTES = {
   CHILD_ATTENDANCE_REPORT: '/child-attendance-report',
   CHILD_PROGRESS_ASSESSMENT: '/child-progress-assessment',
   REMOVE_CHILD: '/remove-child',
-  MESSAGE: '/message',
+  MESSAGES: '/messages',
   PROGRESS_TRACKING_CATEGORY: '/progress-tracking-category',
   CHILD_PROGRESS_OBSERVATION: '/child-progress-observation',
   CHILD_PROGRESS_OBSERVATION_NOTE: '/child-progress-observation-note',
@@ -55,6 +59,25 @@ const ROUTES = {
     '/view-child-progress-observation-report',
   DOWNLOAD_CHILD_PROGRESS_OBSERVATION_REPORTS:
     '/download-child-progress-observation-reports',
+  COACH_REGISTRATION: '/coach-registration',
+  COACH: addPrefix('/coach', {
+    ABOUT: addPrefix('/about', {
+      SIGNATURE: '/signature',
+      ADDRESS: '/address',
+    }),
+    PRACTITIONERS: '/practitioners',
+    PRACTITIONER_PROFILE_INFO: '/practitioner-profile-info',
+    PRACTITIONER_CLASSROOM: '/practitioner-classroom',
+    PRACTITIONER_CHILD_LIST: '/practitioner-childlist',
+    PROGRAMME_INFORMATION: '/programme-information',
+    CLASSES_REASSIGNED: '/classes-reassigned',
+    CHILD_PROFILE: '/child-profile',
+    NOTES: '/notes',
+    ACCOUNT: '/account',
+    PROFILE: addPrefix('/profile', {
+      EDIT: '/edit',
+    }),
+  }),
 };
 
 export default ROUTES;

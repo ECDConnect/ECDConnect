@@ -1,3 +1,5 @@
+import { PrincipalInput } from './../../../../../packages/graphql/src/graphql/generatedGraphql';
+import { PrincipalDto } from './../../../../../packages/core/lib/models/dto/Users/principal.dto.d';
 import {
   ClassProgrammeDto,
   ClassroomDto,
@@ -203,9 +205,7 @@ export const upsertClassroom = createAsyncThunk<
           ClassroomImageUrl: classroom.classroomImageUrl,
           IsPrinciple: classroom.isPrinciple,
           NumberPractitioners: classroom.numberPractitioners,
-          NumberOfAssistants: classroom.numberOfAssistants,
           NumberOfOtherAssistants: classroom.numberOfOtherAssistants,
-          DoesOwnerTeach: classroom.doesOwnerTeach,
           IsActive: classroom.isActive === false ? false : true,
         };
 
@@ -247,6 +247,7 @@ export const upsertClassroomGroups = createAsyncThunk<
             ProgrammeTypeId: x.programmeTypeId,
             Name: x.name,
             IsActive: x.isActive === false ? false : true,
+            UserId: x.practitionerId,
           };
 
           return await new ClassroomGroupService(
@@ -341,7 +342,7 @@ export const upsertClassroomGroupLearners = createAsyncThunk<
               OtherAttendanceReason: x.otherAttendanceReason,
               StartedAttendance: x.startedAttendance,
               StoppedAttendance: x.stoppedAttendance,
-              IsActive: x.isActive === false ? false : true,
+              IsActive: Boolean(x.isActive),
             };
 
             return await new ClassroomGroupLearnerService(

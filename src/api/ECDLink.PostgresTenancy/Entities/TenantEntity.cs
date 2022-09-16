@@ -26,5 +26,9 @@ namespace ECDLink.PostgresTenancy.Entities
         public string ConnectionString { get; set; }
 
         public TenantType TenantType { get; set; }
+        public string AdminSiteAddress { get; set; }
+        public string ThemePathVar { get; set; }
+        public string Var1 { get; set; }
+        public string Var2 { get; set; }
     }
 }

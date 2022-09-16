@@ -53,7 +53,7 @@ export const CoreRadioGroup: React.FC<CoreRadioGroupProps> = ({
                 text={option.label}
                 type={'body'}
                 color={checked ? 'textDark' : 'textMid'}
-                weight={checked ? 'bolder' : 'normal'}
+                weight={checked ? 'bold' : 'normal'}
               />
             </div>
           )}

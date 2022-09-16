@@ -9,7 +9,7 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { useHistory, useLocation } from 'react-router-dom';
 import * as styles from './new-password.styles';
 import {
@@ -24,7 +24,7 @@ import { useStoreSetup } from '@hooks/useStoreSetup';
 
 export const NewPassword: React.FC = () => {
   const appDispatch = useAppDispatch();
-  const { resetAppStaticStores, resetAuth } = useStoreSetup();
+  const { resetAppStore, resetAuth } = useStoreSetup();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [displayError, setDisplayError] = useState<boolean>(false);
   const [displaySuccess, setDisplaySuccess] = useState<boolean>(false);
@@ -37,11 +37,14 @@ export const NewPassword: React.FC = () => {
     register: newPasswordRegister,
     formState: newPasswordFormState,
     getValues: newPasswordFormGetValues,
+    control: newPasswordFormControl,
   } = useForm({
     resolver: yupResolver(newPasswordSchema),
     defaultValues: initialNewPasswordValues,
     mode: 'onChange',
   });
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { password } = useWatch({ control: newPasswordFormControl });
   const { isValid } = newPasswordFormState;
   useEffect(() => {
     if (!hasSubmitted) {
@@ -51,8 +54,8 @@ export const NewPassword: React.FC = () => {
   }, [isValid]);
 
   useEffect(() => {
-    if (resetAppStaticStores) {
-      resetAppStaticStores(false);
+    if (resetAppStore) {
+      resetAppStore(false);
       resetAuth();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

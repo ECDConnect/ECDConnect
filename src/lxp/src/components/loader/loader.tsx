@@ -3,17 +3,19 @@ import { useEffect, useState } from 'react';
 import { useHistory } from 'react-router';
 import LoadingRocket from '../../assets/gifs/rocketclear.gif';
 import { useStoreSetup } from '@hooks/useStoreSetup';
+import ROUTES from '@routes/routes';
 
 const Loader = ({ loadingMessage = 'Loading . . .' }) => {
   const history = useHistory();
-  const { resetAuth, resetAppStaticStores } = useStoreSetup();
+  const { resetAuth, resetAppStore } = useStoreSetup();
 
   const [showIssue, setShowIssue] = useState<boolean>(false);
 
   useEffect(() => {
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       setShowIssue(true);
-    }, 15000);
+    }, 20000);
+    return () => clearTimeout(timer);
   }, []);
 
   return (
@@ -46,8 +48,8 @@ const Loader = ({ loadingMessage = 'Loading . . .' }) => {
                 size="small"
                 onClick={async () => {
                   await resetAuth();
-                  await resetAppStaticStores();
-                  history.push('/login');
+                  await resetAppStore();
+                  history.push(ROUTES.LOGIN);
                 }}
               >
                 <Typography

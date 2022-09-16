@@ -116,7 +116,7 @@ export const getReportingPeriodNumber = (date: Date): number => {
   return 11;
 };
 
-export const getChildsAttendancePercentageAtPlaygroup = (
+export const getChildAttendancePercentageAtPlaygroup = (
   childUserId: string,
   attendance: AttendanceDto[],
   classroomGroupId: string,
@@ -127,6 +127,7 @@ export const getChildsAttendancePercentageAtPlaygroup = (
   );
   const filteredProgrammesIds = filteredProgrammes.map((x) => x.id);
 
+  // TODO: figure out how the attendance is created
   let attendanceRecords = attendance.filter(
     (x) =>
       filteredProgrammesIds.includes(x.classroomProgrammeId) &&

@@ -1,16 +1,10 @@
 import { ProgrammeTypeDto } from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
-import {
-  Button,
-  ButtonGroup,
-  Divider,
-  FormInput,
-  Typography,
-} from '@ecdlink/ui';
+import { Alert, Button, ButtonGroup, FormInput, Typography } from '@ecdlink/ui';
 import { ButtonGroupTypes } from '@ecdlink/ui';
 import { renderIcon } from '@ecdlink/ui';
 import { useEffect } from 'react';
-import { useForm, useFormState, useWatch } from 'react-hook-form';
+import { useForm, useFormState, useWatch, Controller } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import { staticDataSelectors } from '@store/static-data';
 import * as styles from '../../edit-practitioner-profile.styles';
@@ -35,18 +29,18 @@ export const EditProgrammeForm: React.FC<EditProgrammeFormProps> = ({
     control: programmeFormControl,
   } = useForm<EditProgrammeModel>({
     resolver: yupResolver(editProgrammeSchema),
+    shouldUnregister: true,
     mode: 'onChange',
   });
 
   const { isValid } = useFormState({ control: programmeFormControl });
-
-  const programData = useSelector(staticDataSelectors.getProgrammeTypes);
-
-  const { isPrincipleOrLeader, assistants, type } =
+  const { isPrincipalOrLeader, isPrincipleOrOwnerSmartStarter } =
     useWatch<EditProgrammeModel>({
       control: programmeFormControl,
       defaultValue: {},
     });
+
+  const programData = useSelector(staticDataSelectors.getProgrammeTypes);
 
   useEffect(() => {
     resetProgrammeFormValue(programme);
@@ -56,46 +50,22 @@ export const EditProgrammeForm: React.FC<EditProgrammeFormProps> = ({
   return (
     <div>
       <Typography
-        type={'h1'}
+        type={'h2'}
         text={'Set up your programme'}
-        color={'primary'}
+        color={'textDark'}
         className={'my-3'}
       />
-      <div className="space-y-4">
-        <FormInput<EditProgrammeModel>
-          label={'What is the name of your programme?'}
-          register={programmeFormRegister}
-          nameProp={'name'}
-          placeholder={'E.g. Little Lambs Preschool'}
-          type={'text'}
-        ></FormInput>
 
-        <div className={'w-full'}>
-          <label className={styles.label}>
-            What type of programme are you running of planning to run?
-          </label>
-          <div className="mt-1">
-            <ButtonGroup<string>
-              options={
-                (programData &&
-                  programData.map((x: ProgrammeTypeDto) => {
-                    return { text: x.description, value: x.id ?? '' };
-                  })) ||
-                []
-              }
-              onOptionSelected={(value: string | string[]) => {
-                setProgrammeFormValue('type', value as string, {
-                  shouldValidate: true,
-                });
-              }}
-              selectedOptions={type}
-              color="secondary"
-              type={ButtonGroupTypes.Button}
-              className={'w-full'}
-            />
-          </div>
+      {isPrincipalOrLeader === true && (
+        <div className="my-4">
+          <Alert
+            type="info"
+            title="Each programme must have one principal or owner on Funda App."
+          />
         </div>
+      )}
 
+      <div className="space-y-4">
         <div className={'w-full'}>
           <label className={styles.label}>
             Are you the principal or leader of the programme?
@@ -104,11 +74,11 @@ export const EditProgrammeForm: React.FC<EditProgrammeFormProps> = ({
             <ButtonGroup<boolean>
               options={yesNoOptions}
               onOptionSelected={(value: boolean | boolean[]) =>
-                setProgrammeFormValue('isPrincipleOrLeader', value as boolean, {
+                setProgrammeFormValue('isPrincipalOrLeader', value as boolean, {
                   shouldValidate: true,
                 })
               }
-              selectedOptions={[getProgrammeFormValues().isPrincipleOrLeader]}
+              selectedOptions={[getProgrammeFormValues().isPrincipalOrLeader]}
               color="secondary"
               type={ButtonGroupTypes.Button}
               className={'w-full'}
@@ -116,8 +86,45 @@ export const EditProgrammeForm: React.FC<EditProgrammeFormProps> = ({
           </div>
         </div>
 
-        {isPrincipleOrLeader !== false && (
+        {isPrincipalOrLeader === true && (
           <>
+            <FormInput<EditProgrammeModel>
+              label={'What is the name of your programme?'}
+              register={programmeFormRegister}
+              nameProp={'name'}
+              placeholder={'E.g. Little Lambs Preschool'}
+              type={'text'}
+            ></FormInput>
+
+            <div className={'w-full'}>
+              <label className={styles.label}>
+                What type of programme are you running or planning to run?
+              </label>
+              <div className="mt-1">
+                <Controller
+                  name={'type'}
+                  control={programmeFormControl}
+                  render={({ field: { onChange, value, ref } }) => (
+                    <ButtonGroup<string>
+                      inputRef={ref}
+                      options={
+                        (programData &&
+                          programData.map((x: ProgrammeTypeDto) => {
+                            return { text: x.description, value: x.id ?? '' };
+                          })) ||
+                        []
+                      }
+                      onOptionSelected={onChange}
+                      selectedOptions={value}
+                      color="secondary"
+                      type={ButtonGroupTypes.Button}
+                      className={'w-full'}
+                    />
+                  )}
+                ></Controller>
+              </div>
+            </div>
+
             <FormInput<EditProgrammeModel>
               label={
                 'How many other SmartStart practitioners work at your site?'
@@ -138,49 +145,50 @@ export const EditProgrammeForm: React.FC<EditProgrammeFormProps> = ({
               placeholder={'Enter a number'}
               type={'number'}
             ></FormInput>
+          </>
+        )}
 
-            <FormInput<EditProgrammeModel>
-              label={
-                'How many other assistants do you have, not counting the assistants above?'
-              }
-              register={programmeFormRegister}
-              nameProp={'assistants'}
-              placeholder={'Enter a number'}
-              type={'number'}
-            ></FormInput>
-
-            {assistants && assistants > 0 && (
-              <div className={'w-full'}>
-                <label className={styles.label}>
-                  Do you teach any classes yourself?
-                </label>
-                <div className="mt-1">
+        {isPrincipalOrLeader === false && (
+          <div className={'w-full'}>
+            <label className={styles.label}>
+              Is the principal/owner of your programme a SmartStarter?
+            </label>
+            <div className="mt-1">
+              <Controller
+                name="isPrincipleOrOwnerSmartStarter"
+                control={programmeFormControl}
+                render={({ field: { onChange, value, ref } }) => (
                   <ButtonGroup<boolean>
+                    inputRef={ref}
                     options={yesNoOptions}
-                    onOptionSelected={(value: boolean | boolean[]) =>
-                      setProgrammeFormValue('isTeacher', value as boolean, {
-                        shouldValidate: true,
-                      })
-                    }
-                    selectedOptions={[getProgrammeFormValues().isTeacher]}
+                    onOptionSelected={onChange}
+                    selectedOptions={value}
                     color="secondary"
                     type={ButtonGroupTypes.Button}
                     className={'w-full'}
                   />
-                </div>
-              </div>
-            )}
-          </>
+                )}
+              />
+            </div>
+          </div>
         )}
 
-        <Divider />
+        {isPrincipleOrOwnerSmartStarter === true && (
+          <div className="my-4">
+            <Alert
+              type="warning"
+              title="Ask the principal of the programme to add your details to their programme on Funda App."
+            />
+          </div>
+        )}
+
         <div className="mb-2">
           <Button
             type="filled"
             color="primary"
             className={styles.button}
             disabled={!isValid}
-            onClick={() => onSubmit(getProgrammeFormValues())}
+            onClick={() => onSubmit(getProgrammeFormValues())} // Navigate to a different page if it is principle
           >
             {renderIcon('ArrowCircleRightIcon', styles.icon)}
             <Typography type={'help'} text={'Next'} color={'white'} />

@@ -11,6 +11,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
         void SetUserContext(string userId);
         IQueryable<T> GetAll();
         T GetById(TKey id);
+        T GetByUserId(string id);
         T Insert(T entity);
         T Update(T entity);
         void Delete(TKey id);

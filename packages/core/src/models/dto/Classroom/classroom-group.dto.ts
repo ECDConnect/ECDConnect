@@ -6,6 +6,7 @@ import { ProgrammeTypeDto } from './programme-type.dto';
 
 export interface ClassroomGroupDto extends EntityBase {
   classroomId: string;
+  practitionerId?: string;
   classroom?: ClassroomDto;
   programType?: ProgrammeTypeDto;
   programmeTypeId?: string;

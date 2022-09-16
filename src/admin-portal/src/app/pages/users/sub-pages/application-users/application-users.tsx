@@ -48,7 +48,9 @@ export default function ApplicationUsers() {
       );
     }
 
-    setTableData(allUsers.map(mapUserTableItem));
+    setTableData(
+      allUsers.filter((v) => v.isActive === true).map(mapUserTableItem)
+    );
   }, [selectedRoleFilter]);
 
   const displayUserPanel = () => {
@@ -102,6 +104,7 @@ export default function ApplicationUsers() {
 
   const deleteUserAndRefresh = async (user: any) => {
     dialog({
+      blocking: true,
       position: DialogPosition.Middle,
       render: (onSubmit: any, onCancel: any) => (
         <AlertModal

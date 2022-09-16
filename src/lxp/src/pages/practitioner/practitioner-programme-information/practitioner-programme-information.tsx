@@ -29,10 +29,16 @@ import {
   programmeNameSchema,
 } from '@schemas/practitioner/practitioner-programme-information';
 import { useAppDispatch } from '@store';
-import { classroomsActions, classroomsSelectors } from '@store/classroom';
+import {
+  classroomsActions,
+  classroomsSelectors,
+  classroomsThunkActions,
+} from '@store/classroom';
 import { userSelectors } from '@store/user';
 import { analyticsActions } from '@store/analytics';
 import * as styles from './practitioner-programme-information.styles';
+import ROUTES from '@routes/routes';
+import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 
 export const PractitionerProgrammeInformation: React.FC = () => {
   const history = useHistory();
@@ -44,8 +50,8 @@ export const PractitionerProgrammeInformation: React.FC = () => {
 
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
-  const programeType = useSelector(
-    classroomsSelectors.getClassroomProgrameType()
+  const programmeType = useSelector(
+    classroomsSelectors.getClassroomProgrammeType()
   );
 
   const { createNewDocument, classroomImage, updateDocument, deleteDocument } =
@@ -91,7 +97,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
       setProgrammeNameValue('name', classroom?.name || '');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [classroom, classroomGroups, programeType]);
+  }, [classroom, classroomGroups, programmeType]);
 
   const displayProfilePicturePrompt = () => {
     setEditProfilePictureVisible(!editProfilePictureVisible);
@@ -151,21 +157,24 @@ export const PractitionerProgrammeInformation: React.FC = () => {
       },
       {
         title: 'Type of ECD service',
-        subTitle: programeType?.description,
+        subTitle: programmeType?.description,
         switchTextStyles: true,
       },
     ];
 
-    if (programeType?.enumId === ProgrammeTypeEnum.Playgroup) {
+    if (programmeType?.enumId === ProgrammeTypeEnum.Playgroup) {
       stackedActionList.push({
         title: 'Groups',
-        subTitle: classroomGroups?.map((x) => x.name).join(','),
+        subTitle: classroomGroups
+          ?.filter((x) => x.name !== NoPlaygroupClassroomType.name)
+          .map((x) => x.name)
+          .join(','),
         switchTextStyles: true,
         actionName: 'Edit',
         actionIcon: 'PencilIcon',
         onActionClick: () => {
-          history.push('/practitioner/profile/playgroups', {
-            returnRoute: '/practitioner/programme-information',
+          history.push(ROUTES.PRACTITIONER.PROFILE.PLAYGROUPS, {
+            returnRoute: ROUTES.PRACTITIONER.PROGRAMME_INFORMATION,
           });
         },
       });
@@ -183,11 +192,15 @@ export const PractitionerProgrammeInformation: React.FC = () => {
     }
   };
 
-  const setUpdatedClassroom = (classroomDto: ClassroomDto) => {
+  const setUpdatedClassroom = async (classroomDto: ClassroomDto) => {
     const copy = Object.assign({}, classroomDto);
     if (copy) {
       copy.name = updatedProgrammeName as string;
       appDispatch(classroomsActions.updateClassroom(copy));
+      isOnline &&
+        (await appDispatch(
+          classroomsThunkActions.upsertClassroom({})
+        ).unwrap());
     }
   };
 
@@ -202,7 +215,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
         title={classroom?.name}
         color={'primary'}
         renderOverflow={false}
-        onBack={() => history.push('/practitioner/profile')}
+        onBack={() => history.push(ROUTES.PRACTITIONER.PROFILE.ROOT)}
         displayOffline={!isOnline}
       >
         <div className={'w-full inline-flex justify-center pt-8'}>
@@ -213,7 +226,11 @@ export const PractitionerProgrammeInformation: React.FC = () => {
             hasConsent={true}
           />
         </div>
-        <StackedList listItems={listItems} type={'ActionList'}></StackedList>
+        <StackedList
+          className="px-4"
+          listItems={listItems}
+          type={'ActionList'}
+        ></StackedList>
       </BannerWrapper>
 
       <Dialog

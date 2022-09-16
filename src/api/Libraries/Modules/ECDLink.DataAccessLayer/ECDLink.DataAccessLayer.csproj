@@ -26,6 +26,10 @@
     <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="5.0.7" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.7" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.7">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.Identity.Core" Version="5.0.13" />    
     <PackageReference Include="NJsonSchema.CodeGeneration" Version="10.4.4" />
@@ -36,6 +40,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\ECDLink.AzureStorage\ECDLink.AzureStorage.csproj" />
+    <ProjectReference Include="..\..\..\ECDLink.Tenancy\ECDLink.Tenancy.csproj" />
     <ProjectReference Include="..\ECDLink.Abstractrions\ECDLink.Abstractrions.csproj" />
     <ProjectReference Include="..\ECDLink.Core\ECDLink.Core.csproj" />
     <ProjectReference Include="..\ECDLink.Security\ECDLink.Security.csproj" />

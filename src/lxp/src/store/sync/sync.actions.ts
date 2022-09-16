@@ -11,6 +11,7 @@ import { notesThunkActions } from '../notes';
 import { programmeThunkActions } from '../programme';
 import { RootState, ThunkApiType } from '../types';
 import { userThunkActions } from '../user';
+import { coachThunkActions } from '../coach';
 
 import { SyncOfflineDataProps, SyncOfflineDataReturnType } from './sync.types';
 
@@ -28,6 +29,10 @@ export const syncOfflineData = createAsyncThunk<
       title: 'Practitioner',
       action: userThunkActions.updateUser,
     },
+    // {
+    //   title: 'Coach',
+    //   action: coachThunkActions.updateCoach,
+    // },
     {
       title: 'Care givers',
       action: caregiverThunkActions.upsertCareGivers,

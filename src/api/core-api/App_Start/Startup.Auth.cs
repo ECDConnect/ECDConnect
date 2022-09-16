@@ -9,22 +9,23 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System.Linq;
+using Microsoft.Extensions.Configuration;
 
 namespace EcdLink.Api.CoreApi
 {
     public partial class Startup
     {
-        private void ConfigureAuthContext(IServiceCollection services)
+        private void ConfigureAuthContext(IServiceCollection services, IConfiguration config)
         {
             services.AddDbContextFactory<AuthenticationDbContext>((serviceProvider, options) =>
             {
-                options.UseNpgsqlTenancy(serviceProvider, "ECDLink.DataAccessLayer");
+                options.UseNpgsqlTenancy(serviceProvider, "ECDLink.DataAccessLayer", config);
                 options.UseLazyLoadingProxies();
             });
 
             services.AddDbContext<ContentManagementDbContext>((serviceProvider, options) =>
             {
-                options.UseNpgsqlTenancy(serviceProvider, "ECDLink.ContentManagement");
+                options.UseNpgsqlTenancy(serviceProvider, "ECDLink.ContentManagement", config);
             });
 
             services.AddScoped<AuthenticationDbContext>(p =>

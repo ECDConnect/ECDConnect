@@ -1,5 +1,6 @@
 export interface EditChildInformationLocationParams {
   childId: string;
+  playgroupEdit?: boolean;
 }
 
 export type ChildInformationViewType =

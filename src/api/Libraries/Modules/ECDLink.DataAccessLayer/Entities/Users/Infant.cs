@@ -1,0 +1,47 @@
+using ECDLink.Security.Attributes;
+using ECDLink.DataAccessLayer.Entities.Base;
+using ECDLink.Security;
+using System;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Collections.Generic;
+using ECDLink.DataAccessLayer.Entities.Documents;
+using ECDLink.DataAccessLayer.Entities.Interfaces;
+using ECDLink.DataAccessLayer.Entities.Caregiver;
+
+namespace ECDLink.DataAccessLayer.Entities.Users
+{
+    [Table(nameof(Infant))]
+    [EntityPermission(PermissionGroups.USER)]
+    public class Infant : Infant<Guid>
+    {
+
+    }
+
+    public class Infant<TKey> : EntityBase<TKey>,
+        MotherJoin<Guid?>,
+        GenderJoin<Guid?>,
+        CaregiverJoin<Guid?>,
+        ApplicationUserJoin
+         where TKey : IEquatable<TKey>
+    {
+        [ForeignKey(nameof(MotherId))]
+        public virtual Mother Mother { get; set; }
+        public Guid? MotherId { get; set; }
+
+        [ForeignKey(nameof(GenderId))]
+        public virtual Gender Gender { get; set; }
+        public Guid? GenderId { get; set; }
+
+        [ForeignKey(nameof(UserId))]
+        public virtual ApplicationUser User { get; set; }
+        public string UserId { get; set; }
+
+        [ForeignKey(nameof(CaregiverId))]
+        public virtual Caregiver.Caregiver Caregiver { get; set; }
+        public Guid? CaregiverId { get; set; }
+
+        public decimal? WeightAtBirth { get; set; }
+
+        public decimal? LengthAtBirth { get; set; }
+    }
+}

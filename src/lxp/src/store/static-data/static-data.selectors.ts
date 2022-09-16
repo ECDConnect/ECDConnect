@@ -14,6 +14,7 @@ import {
   RelationDto,
   WorkflowStatusDto,
 } from '@ecdlink/core';
+import { ProgrammeTypeEnum } from '@ecdlink/graphql';
 import { createSelector } from 'reselect';
 import { RootState } from '../types';
 
@@ -22,6 +23,16 @@ export const getRelations = (state: RootState): RelationDto[] =>
 
 export const getProgrammeTypes = (state: RootState): ProgrammeTypeDto[] =>
   state.staticData.programmeTypes || [];
+
+export const getPlaygroupProgrammeType = (
+  state: RootState
+): ProgrammeTypeDto => {
+  const types = state.staticData.programmeTypes || [];
+  const [PlayGroupType] = types.filter(
+    (x) => x?.enumId === ProgrammeTypeEnum.Playgroup
+  );
+  return PlayGroupType;
+};
 
 export const getProgrammeAttendanceReasons = (
   state: RootState

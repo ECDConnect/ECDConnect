@@ -38,17 +38,29 @@ import { useAppDispatch } from '@store';
 import { staticDataThunkActions } from '@store/static-data';
 import * as styles from './sign-up.styles';
 
+const headerSlide: HeaderSlide = {
+  status: ChipStatus.Available,
+  title: 'Manage your classroom',
+  text: 'Take attendance, track progress, and plan your programme',
+  image: '../../../assets/banner-ss.jpg',
+};
+
 export const SignUp: React.FC = () => {
   const appDispatch = useAppDispatch();
-  const { resetAppStaticStores, resetAuth } = useStoreSetup();
-
-  const headerSlide: HeaderSlide = {
-    status: ChipStatus.Available,
-    title: 'Manage your classroom',
-    text: 'Take attendance, track progress, and plan your programme',
-    image: '../../../assets/banner-ss.jpg',
-  };
-
+  const {
+    watch,
+    register: signUpRegister,
+    setValue: signUpSetValue,
+    getValues: signUpFormGetValues,
+    handleSubmit,
+    control,
+  } = useForm<SignUpModel>({
+    resolver: yupResolver(signUpSchema),
+    defaultValues: initialRegisterValues,
+    mode: 'onChange',
+  });
+  const { errors } = useFormState({ control });
+  const { resetAppStore, resetAuth } = useStoreSetup();
   const [preferId, setPreferId] = useState<boolean>(true);
   const [contentConsentTypeEnum, setContentConsentTypeEnum] =
     useState<ContentConsentTypeEnum>();
@@ -67,8 +79,8 @@ export const SignUp: React.FC = () => {
 
   useEffect(() => {
     async function init() {
-      if (resetAppStaticStores) {
-        await resetAppStaticStores(false);
+      if (resetAppStore) {
+        await resetAppStore(false);
         await resetAuth();
       }
 
@@ -78,22 +90,11 @@ export const SignUp: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const {
-    register: signUpRegister,
-    setValue: signUpSetValue,
-    getValues: signUpFormGetValues,
-    handleSubmit,
-    control,
-  } = useForm<SignUpModel>({
-    resolver: yupResolver(signUpSchema),
-    defaultValues: initialRegisterValues,
-    mode: 'onChange',
-  });
-
-  const { errors } = useFormState({ control });
   const errorStrings = Object.keys(errors).map(
     (x: string) => (errors as any)[x].message
   );
+
+  watch();
 
   const submitForm = async (formValue: SignUpModel) => {
     const valid = await signUpSchema.isValid(formValue);
@@ -172,7 +173,7 @@ export const SignUp: React.FC = () => {
       >
         <HeaderCard className={'mt-4'} slide={headerSlide} />
         <SliderPagination totalItems={1} activeIndex={0} className={'p-4'} />
-        <form className={styles.formStyle}>
+        <form style={{ maxWidth: '442px' }} className={styles.formStyle}>
           {preferId && (
             <FormInput<SignUpModel>
               label={'ID Number'}
@@ -216,6 +217,7 @@ export const SignUp: React.FC = () => {
             type={'text'}
             register={signUpRegister}
           />
+
           <PasswordInput<SignUpModel>
             label={'Password'}
             nameProp={'password'}
@@ -223,38 +225,8 @@ export const SignUp: React.FC = () => {
             value={signUpFormGetValues().password}
             register={signUpRegister}
             strengthMeterVisible={true}
+            className="mb-9"
           />
-          <ul className={styles.listStyles}>
-            <li>
-              <Typography
-                text={'At least 8 characters'}
-                type={'help'}
-                color={'uiMidDark'}
-              />
-            </li>
-            <li>
-              <Typography
-                text={'At least 1 number'}
-                type={'help'}
-                color={'uiMidDark'}
-              />
-            </li>
-            <li>
-              <Typography
-                text={'At least 1 capital letter'}
-                type={'help'}
-                color={'uiMidDark'}
-              />
-            </li>
-          </ul>
-
-          <Divider />
-
-          <Alert
-            className={classNames(styles.marginBottom, styles.marginTop)}
-            type={'info'}
-            message={'You need to accept both agreements below to continue'}
-          ></Alert>
 
           <Typography
             type={'body'}
@@ -269,9 +241,21 @@ export const SignUp: React.FC = () => {
             <Checkbox<SignUpModel>
               register={signUpRegister}
               nameProp={'termsAndConditionsAccepted'}
-              checkboxColor={'secondary'}
+              checkboxColor={
+                errors.termsAndConditionsAccepted?.message
+                  ? 'errorDark'
+                  : 'primaryAccent2'
+              }
             ></Checkbox>
-            <Typography text={'I accept the'} type="help" color={'black'} />
+            <Typography
+              text={'I accept the'}
+              type="help"
+              color={
+                errors.termsAndConditionsAccepted?.message
+                  ? 'errorDark'
+                  : 'textMid'
+              }
+            />
             &nbsp;
             <div
               onClick={() => {
@@ -286,7 +270,11 @@ export const SignUp: React.FC = () => {
                 text={'terms and conditions'}
                 type="help"
                 underline={true}
-                color={'primary'}
+                color={
+                  errors.termsAndConditionsAccepted?.message
+                    ? 'errorDark'
+                    : 'secondary'
+                }
               />
             </div>
           </div>
@@ -294,9 +282,22 @@ export const SignUp: React.FC = () => {
             <Checkbox<SignUpModel>
               register={signUpRegister}
               nameProp={'dataPermissionAgreementAccepted'}
-              checkboxColor={'secondary'}
+              checkboxColor={
+                errors.dataPermissionAgreementAccepted?.message
+                  ? 'errorDark'
+                  : 'primaryAccent2'
+              }
             ></Checkbox>
-            <Typography text={'I accept the'} type="help" color={'black'} />
+            <Typography
+              text={'I accept the'}
+              type="help"
+              color={
+                errors.dataPermissionAgreementAccepted?.message
+                  ? 'errorDark'
+                  : 'textMid'
+              }
+              weight="bold"
+            />
             &nbsp;
             <Typography
               onClick={() => {
@@ -309,7 +310,11 @@ export const SignUp: React.FC = () => {
               text={'data permissions agreement'}
               underline={true}
               type="help"
-              color={'primary'}
+              color={
+                errors.dataPermissionAgreementAccepted?.message
+                  ? 'errorDark'
+                  : 'secondary'
+              }
             />
           </div>
           {errorStrings.length > 0 && (

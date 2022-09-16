@@ -3,6 +3,7 @@ using EcdLink.Api.CoreApi.Documents;
 using EcdLink.Api.CoreApi.GraphApi.AccessValidators;
 using EcdLink.Api.CoreApi.GraphApi.Interceptors;
 using EcdLink.Api.CoreApi.Managers.Notifications;
+using EcdLink.Api.CoreApi.Managers.Users;
 using EcdLink.Api.CoreApi.Security.Managers;
 using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
 using EcdLink.Api.CoreApi.Services;
@@ -34,6 +35,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
 using System.Diagnostics;
+using ECDLink.Tenancy.EntityFramework.Extensions;
 
 namespace EcdLink.Api.CoreApi
 {
@@ -51,7 +53,7 @@ namespace EcdLink.Api.CoreApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            ConfigureAuthContext(services);
+            ConfigureAuthContext(services, Configuration);
             SetIdentityUser(services);
             ConfigureTenancy(services);
 
@@ -103,6 +105,9 @@ namespace EcdLink.Api.CoreApi
 
             services.AddTransient<SecurityNotificationManager>();
             services.AddTransient<InvitationNotificationManager>();
+            services.AddTransient<HealthCareWorkerManager>();
+            services.AddTransient<MotherManager>();
+            services.AddTransient<InfantManager>();
             services.AddTransient<IClaimsManager, ClaimsManager>();
             services.AddTransient<IAuthorizationManager, AuthorizationManager>();
             services.AddTransient<IUserInterceptHandler, UserInterceptHandler>();
@@ -124,11 +129,11 @@ namespace EcdLink.Api.CoreApi
 
                 app.UseDeveloperExceptionPage();
 
-                using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
-                {
-                    serviceScope.ServiceProvider.GetRequiredService<PostgresTenancyContext>().Database.Migrate();
-                    serviceScope.ServiceProvider.GetRequiredService<PostgresTenantSeedService>().Seed();
-                }
+                //using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
+                //{
+                //    serviceScope.ServiceProvider.GetRequiredService<PostgresTenancyContext>().Database.Migrate();
+                //    serviceScope.ServiceProvider.GetRequiredService<PostgresTenantSeedService>().Seed();
+                //}
             }
 
             app.UseCors("CorsPolicy");

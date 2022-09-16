@@ -22,6 +22,7 @@ import { useAppDispatch } from '@store';
 import { authActions, authThunkActions } from '@store/auth';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { settingActions } from '@store/settings';
+import ROUTES from '@routes/routes';
 const { version } = require('../../../../package.json');
 
 export const Login: React.FC = () => {
@@ -64,8 +65,8 @@ export const Login: React.FC = () => {
           ) {
             appDispatch(settingActions.setApplicationVersion(version));
             appDispatch(authActions.setUserExpired());
-            history.push('/dashboard');
             setIsLoading(false);
+            history.push(ROUTES.DASHBOARD);
           } else {
             setDisplayError(true);
             setIsLoading(false);
@@ -79,7 +80,7 @@ export const Login: React.FC = () => {
   };
 
   const forgotPasswordClicked = () => {
-    history.push('/password-reset');
+    history.push(ROUTES.PASSWORD_RESET);
   };
 
   const toggleIdAndpassport = (visible: boolean) => {
@@ -133,7 +134,7 @@ export const Login: React.FC = () => {
                 onClick={() => toggleIdAndpassport(idFieldVisible)}
               >
                 <Typography
-                  type="small"
+                  type="buttonSmall"
                   color="primary"
                   text={'Enter ID number instead'}
                 ></Typography>
@@ -149,7 +150,7 @@ export const Login: React.FC = () => {
                 onClick={() => toggleIdAndpassport(idFieldVisible)}
               >
                 <Typography
-                  type="small"
+                  type="buttonSmall"
                   color="primary"
                   text={'Enter passport number instead'}
                 ></Typography>
@@ -174,7 +175,7 @@ export const Login: React.FC = () => {
                 onClick={forgotPasswordClicked}
               >
                 <Typography
-                  type="small"
+                  type="buttonSmall"
                   color="primary"
                   text={'Forgot my password'}
                 ></Typography>

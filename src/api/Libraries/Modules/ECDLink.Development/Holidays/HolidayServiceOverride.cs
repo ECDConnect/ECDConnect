@@ -12,25 +12,25 @@ namespace ECDLink.Development.Holidays
         {
             var dateStrings = new[]
             {
-        $"January 01, {DateTime.Now.Year}",
-        $"March 21, {DateTime.Now.Year}",
-        $"March 22, {DateTime.Now.Year}",
-        $"April 02, {DateTime.Now.Year}",
-        $"April 04, {DateTime.Now.Year}",
-        $"April 05, {DateTime.Now.Year}",
-        $"April 27, {DateTime.Now.Year}",
-        $"May 01, {DateTime.Now.Year}",
-        $"May 09, {DateTime.Now.Year}",
-        $"June 16, {DateTime.Now.Year}",
-        $"June 20, {DateTime.Now.Year}",
-        $"July 18, {DateTime.Now.Year}",
-        $"August 09, {DateTime.Now.Year}",
-        $"September 24, {DateTime.Now.Year}",
-        $"December 16, {DateTime.Now.Year}",
-        $"December 25, {DateTime.Now.Year}",
-        $"December 26, {DateTime.Now.Year}",
-        $"December 27, {DateTime.Now.Year}",
-      };
+                $"January 01, {DateTime.Now.Year}",
+                $"March 21, {DateTime.Now.Year}",
+                $"March 22, {DateTime.Now.Year}",
+                $"April 02, {DateTime.Now.Year}",
+                $"April 04, {DateTime.Now.Year}",
+                $"April 05, {DateTime.Now.Year}",
+                $"April 27, {DateTime.Now.Year}",
+                $"May 01, {DateTime.Now.Year}",
+                $"May 09, {DateTime.Now.Year}",
+                $"June 16, {DateTime.Now.Year}",
+                $"June 20, {DateTime.Now.Year}",
+                $"July 18, {DateTime.Now.Year}",
+                $"August 09, {DateTime.Now.Year}",
+                $"September 24, {DateTime.Now.Year}",
+                $"December 16, {DateTime.Now.Year}",
+                $"December 25, {DateTime.Now.Year}",
+                $"December 26, {DateTime.Now.Year}",
+                $"December 27, {DateTime.Now.Year}",
+            };
 
             var holidayList = new List<Holiday>();
 

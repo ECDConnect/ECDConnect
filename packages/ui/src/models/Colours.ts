@@ -1,8 +1,14 @@
 export type Colours =
   | 'textMid'
   | 'primary'
+  | 'primaryAccent1'
+  | 'primaryAccent2'
   | 'secondary'
+  | 'secondaryAccent1'
+  | 'secondaryAccent2'
   | 'tertiary'
+  | 'tertiaryAccent1'
+  | 'tertiaryAccent2'
   | 'textDark'
   | 'textLight'
   | 'uiMidDark'
@@ -24,4 +30,5 @@ export type Colours =
   | 'infoBb'
   | 'white'
   | 'black'
-  | 'transparent';
+  | 'transparent'
+  | 'quatenary';

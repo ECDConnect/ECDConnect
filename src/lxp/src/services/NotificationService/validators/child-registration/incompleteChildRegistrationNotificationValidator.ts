@@ -25,8 +25,15 @@ export class IncompleteChildRegistrationNotificationValidator
   }
 
   getNotifications = (): Message[] => {
-    const { children: childrenState, staticData: staticDataState } =
-      this.store.getState();
+    const {
+      children: childrenState,
+      staticData: staticDataState,
+      user: userState,
+    } = this.store.getState();
+
+    const isCoach = userState?.user?.roles?.some(
+      (role) => role.name === 'Coach'
+    );
 
     if (!childrenState || !staticDataState) return [];
 
@@ -58,33 +65,37 @@ export class IncompleteChildRegistrationNotificationValidator
 
       if (!childUser) continue;
 
-      notifications.push({
-        reference: `${child.id || childUser.firstName}-reg`,
-        title: `${childUser.firstName}'s registration incomplete`,
-        message: `If you do not complete ${
-          childUser.firstName
-        }'s registration form, ${
-          childUser.firstName
-        }'s profile will be removed on ${addDays(
-          new Date(child.insertedDate || 0),
-          20
-        ).toLocaleString('en-za', DateFormats.dayWithShortMonthName)}`,
-        dateCreated: new Date().toISOString(),
-        priority: NotificationPriority.lowest,
-        viewOnDashboard: true,
-        area: 'child-registration',
-        icon: 'XCircleIcon',
-        color: 'errorMain',
-        viewType: 'Both',
-        actionText: 'Finish registration',
-        routeConfig: {
-          route: '/child-registration',
-          params: {
-            step: 6,
-            childId: child.id,
-          },
-        },
-      });
+      // if (!isCoach) {
+      //   notifications.push({
+      //     reference: `${child.id || childUser?.firstName}-reg`,
+      //     title: `${childUser?.firstName}'s registration incomplete`,
+      //     message: `If you do not complete ${
+      //       childUser?.firstName
+      //     }'s registration form, ${
+      //       childUser?.firstName
+      //     }'s profile will be removed on ${addDays(
+      //       new Date(child.insertedDate || 0),
+      //       20
+      //     ).toLocaleString('en-za', DateFormats.dayWithShortMonthName)}`,
+      //     dateCreated: new Date().toISOString(),
+      //     priority: NotificationPriority.lowest,
+      //     viewOnDashboard: true,
+      //     area: 'child-registration',
+      //     icon: 'XCircleIcon',
+      //     color: 'errorMain',
+      //     viewType: 'Both',
+      //     actionText: 'Finish registration',
+      //     routeConfig: {
+      //       route: '/child-registration',
+      //       params: {
+      //         step: 6,
+      //         childId: child.id,
+      //       },
+      //     },
+      //   });
+      // } else {
+      //   return [];
+      // }
     }
 
     return notifications;

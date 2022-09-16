@@ -12,7 +12,7 @@ import {
 } from '@ecdlink/ui/';
 import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import SeachHeader, {
+import SearchHeader, {
   SearchHeaderAlternativeRenderItem,
 } from '../../../../../../../components/search-header/search-header';
 import { StoryBookTypes } from '@enums/ProgrammeRoutineType';
@@ -269,7 +269,7 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
         onBack={onClose}
         displayOffline={!isOnline}
       >
-        <SeachHeader<any>
+        <SearchHeader<any>
           searchItems={filteredStories}
           onSearchChange={onSearchChange}
           isTextSearchActive={searchTextActive}
@@ -327,8 +327,8 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
               name: `Type:`,
             }}
           />
-        </SeachHeader>
-        <div className="h-full px-4 pt-2 mb-32">
+        </SearchHeader>
+        <div className="px-4 pt-2">
           {!selectedStory && (
             <>
               {hasActiveFilters && filteredStories.length === 0 && (
@@ -362,7 +362,7 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
 
           <Button
             type="filled"
-            className="w-full"
+            className="w-full mb-32"
             color="primary"
             icon="SaveIcon"
             text={submitButtonText}

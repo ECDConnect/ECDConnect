@@ -21,10 +21,13 @@ import { settingSelectors } from '@store/settings';
 import { userSelectors } from '@store/user';
 import { analyticsActions } from '@store/analytics';
 import CompleteProfile from '../edit-practitioner-profile/components/complete-profile/complete-profile';
+import ROUTES from '@routes/routes';
+import { practitionerSelectors } from '@/store/practitioner';
 
 export const PractitionerProfile: React.FC = () => {
-  const { resetAuth, resetAppStaticStores } = useStoreSetup();
+  const { resetAuth, resetAppStore } = useStoreSetup();
   const user = useSelector(userSelectors.getUser);
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const lastDataSyncDate = useSelector(settingSelectors.getLastDataSync);
   const appDispatch = useAppDispatch();
@@ -46,32 +49,37 @@ export const PractitionerProfile: React.FC = () => {
   }, [isOnline]);
 
   const getStackedMenuList = (): MenuListDataItem[] => {
+    const titleStyle = 'text-textDark font-semibold text-base leading-snug';
+    const subTitleStyle = 'text-sm font-h1 font-normal text-textMid';
     const stackedMenuList: MenuListDataItem[] = [
       {
         title: `${user?.firstName} ${user?.surname}`,
+        titleStyle,
         subTitle: 'About me',
+        subTitleStyle,
         menuIconUrl: userProfilePicture?.file,
         menuIcon: 'UserIcon',
-        iconBackgroundColor: 'primary',
+        iconBackgroundColor: 'tertiary',
         iconColor: 'white',
-
         showIcon: userProfilePicture?.file === undefined,
         onActionClick: () => {
-          history.push('/practitioner/about');
+          history.push(ROUTES.PRACTITIONER.ABOUT);
         },
       },
       {
         title: 'Programme information',
+        titleStyle,
         subTitle: classroom?.name,
+        subTitleStyle,
         menuIconUrl: classroomImage?.file,
         menuIcon: 'HeartIcon',
         menuIconClassName: 'text-white bg-primary',
-        iconBackgroundColor: 'primary',
+        iconBackgroundColor: 'tertiary',
         iconColor: 'white',
         showIcon: classroomImage?.file === undefined,
         onActionClick: () => {
           if (classroom && classroom.id) {
-            history.push('/practitioner/programme-information');
+            history.push(ROUTES.PRACTITIONER.PROGRAMME_INFORMATION);
           } else {
             dialog({
               render: (onSubmit, onCancel) => {
@@ -93,7 +101,7 @@ export const PractitionerProfile: React.FC = () => {
                         leadingIcon: 'ArrowCircleRightIcon',
                         onClick: async () => {
                           onSubmit();
-                          history.push('/practitioner/profile/edit/');
+                          history.push(ROUTES.PRACTITIONER.PROFILE.EDIT);
                         },
                       },
                       {
@@ -117,22 +125,26 @@ export const PractitionerProfile: React.FC = () => {
       },
       {
         title: 'Account',
+        titleStyle,
+        subTitleStyle,
         subTitle: 'Password',
         menuIcon: 'ShieldCheckIcon',
         menuIconClassName: 'text-white bg-primary',
-        iconBackgroundColor: 'primary',
+        iconBackgroundColor: 'tertiary',
         showIcon: true,
         iconColor: 'white',
         onActionClick: () => {
-          history.push('/practitioner/account');
+          history.push(ROUTES.PRACTITIONER.ACCOUNT);
         },
       },
       {
         title: 'Sync App Data',
+        titleStyle,
+        subTitleStyle,
         subTitle: lastDataSyncDate,
         menuIcon: 'RefreshIcon',
         iconColor: 'white',
-        iconBackgroundColor: 'primary',
+        iconBackgroundColor: 'tertiary',
         showIcon: true,
         onActionClick: () => {
           dialog({
@@ -151,10 +163,12 @@ export const PractitionerProfile: React.FC = () => {
       },
       {
         title: 'Logout',
+        titleStyle,
+        subTitleStyle,
         subTitle: 'Logout & reset data',
         menuIcon: 'LogoutIcon',
         iconColor: 'white',
-        iconBackgroundColor: 'primary',
+        iconBackgroundColor: 'tertiary',
         showIcon: true,
         onActionClick: () => {
           dialog({
@@ -177,7 +191,7 @@ export const PractitionerProfile: React.FC = () => {
                       onClick: async () => {
                         onSubmit();
                         await resetAuth();
-                        await resetAppStaticStores();
+                        await resetAppStore();
                         history.push('/');
                       },
                       type: 'filled',
@@ -210,10 +224,11 @@ export const PractitionerProfile: React.FC = () => {
       initActive: true,
       child: (
         <div>
-          {classroom ? null : <CompleteProfile />}
+          {practitioner?.isRegistered ? null : <CompleteProfile />}
           <StackedList
             listItems={getStackedMenuList()}
             type={'MenuList'}
+            className={'flex flex-col gap-1 px-4 pt-1'}
           ></StackedList>
         </div>
       ),
@@ -226,12 +241,12 @@ export const PractitionerProfile: React.FC = () => {
       renderBorder={true}
       title={`${user?.firstName} ${user?.surname}`}
       color={'primary'}
-      onBack={() => history.push('/')}
-      backgroundColour="uiBg"
+      onBack={() => history.push(ROUTES.ROOT)}
+      backgroundColour="white"
       displayOffline={!isOnline}
     >
       <div className="bg-white">
-        <TabList tabItems={tabItem} />
+        <TabList className="bg-white mb-1" tabItems={tabItem} />
       </div>
     </BannerWrapper>
   );

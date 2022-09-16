@@ -29,8 +29,8 @@ export const Typography: React.FC<TypographyProps> = ({
   type,
   text,
   color = 'black',
-  weight = 'normal',
-  lineHeight = 'normal',
+  weight,
+  lineHeight,
   align,
   fontSize,
   hasMarkup = false,
@@ -38,21 +38,28 @@ export const Typography: React.FC<TypographyProps> = ({
   hover = false,
   className,
   onClick,
+  inputRef,
 }) => {
   const getTag = (type: TypographyType, text?: string) => {
     let splitText;
     if (text && text.includes('\n')) {
-      splitText = text.split('\n').map((str, ix) => (
-        <p key={`paragraph-${ix}`} className={`mt-${ix !== 0 ? '3' : '0'}`}>
-          {str}
-        </p>
-      ));
+      splitText = text.split('\n').map((str, ix) =>
+        str ? (
+          <span
+            key={`paragraph-${ix}`}
+            className={`mt-${ix !== 0 ? '3' : '0'} block`}
+          >
+            {str}
+          </span>
+        ) : null
+      );
     }
 
     switch (type) {
       case 'markdown':
         return (
           <article
+            ref={inputRef}
             onClick={onClick}
             className="prose"
             dangerouslySetInnerHTML={{ __html: text || '' }}
@@ -61,13 +68,14 @@ export const Typography: React.FC<TypographyProps> = ({
       case 'h1':
         return (
           <h1
+            ref={inputRef}
             onClick={onClick}
             className={classNames(
-              styles.h1,
+              styles.getFontStyleByType(type, weight),
               className,
               `${align ? `text-${align}` : ''}`,
               `text-${color}`,
-              `leading-${lineHeight}`
+              `${lineHeight ? `leading-${lineHeight}` : ''}`
             )}
           >
             {splitText ?? text}
@@ -76,6 +84,7 @@ export const Typography: React.FC<TypographyProps> = ({
       case 'h2':
         return (
           <h2
+            ref={inputRef}
             onClick={onClick}
             className={classNames(
               styles.getFontStyleByType(type, weight),
@@ -83,8 +92,8 @@ export const Typography: React.FC<TypographyProps> = ({
               `${align ? `text-${align}` : ''}`,
               `text-${color}`,
               'font-body',
-              `text-${fontSize}`,
-              `leading-${lineHeight}`
+              `${fontSize ? `text-${fontSize}` : ''}`,
+              `${lineHeight ? `leading-${lineHeight}` : ''}`
             )}
           >
             {text}
@@ -93,6 +102,7 @@ export const Typography: React.FC<TypographyProps> = ({
       case 'h3':
         return (
           <h3
+            ref={inputRef}
             onClick={onClick}
             className={classNames(
               styles.getFontStyleByType(type),
@@ -100,8 +110,8 @@ export const Typography: React.FC<TypographyProps> = ({
               `${align ? `text-${align}` : ''}`,
               `text-${color}`,
               'font-body',
-              `text-${fontSize}`,
-              `leading-${lineHeight}`
+              `${fontSize ? `text-${fontSize}` : ''}`,
+              `${lineHeight ? `leading-${lineHeight}` : ''}`
             )}
           >
             {splitText ?? text}
@@ -110,6 +120,7 @@ export const Typography: React.FC<TypographyProps> = ({
       case 'h4':
         return (
           <h4
+            ref={inputRef}
             onClick={onClick}
             className={classNames(
               styles.getFontStyleByType(type),
@@ -117,8 +128,8 @@ export const Typography: React.FC<TypographyProps> = ({
               `${align ? `text-${align}` : ''}`,
               `text-${color}`,
               'font-body',
-              `text-${fontSize}`,
-              `leading-${lineHeight}`
+              `${fontSize ? `text-${fontSize}` : ''}`,
+              `${lineHeight ? `leading-${lineHeight}` : ''}`
             )}
           >
             {splitText ?? text}
@@ -134,9 +145,8 @@ export const Typography: React.FC<TypographyProps> = ({
               `${align ? `text-${align}` : ''}`,
               `text-${color}`,
               'font-body',
-              `text-${fontSize}`,
-
-              `leading-${lineHeight}`
+              `${fontSize ? `text-${fontSize}` : ''}`,
+              `${lineHeight ? `leading-${lineHeight}` : ''}`
             )}
           >
             {splitText ?? text}
@@ -145,6 +155,7 @@ export const Typography: React.FC<TypographyProps> = ({
       case 'h6':
         return (
           <h6
+            ref={inputRef}
             onClick={onClick}
             className={classNames(
               styles.getFontStyleByType(type),
@@ -152,8 +163,8 @@ export const Typography: React.FC<TypographyProps> = ({
               `${align ? `text-${align}` : ''}`,
               `text-${color}`,
               'font-body',
-              `text-${fontSize}`,
-              `leading- ${lineHeight}`
+              `${fontSize ? `text-${fontSize}` : ''}`,
+              `${lineHeight ? `leading-${lineHeight}` : ''}`
             )}
           >
             {splitText ?? text}
@@ -162,6 +173,7 @@ export const Typography: React.FC<TypographyProps> = ({
       case 'span':
         return (
           <span
+            ref={inputRef}
             onClick={onClick}
             className={classNames(
               styles.getFontStyleByType(type, weight, underline, hover),
@@ -169,8 +181,8 @@ export const Typography: React.FC<TypographyProps> = ({
               `${align ? `text-${align}` : ''}`,
               `text-${color}`,
               'font-body',
-              `text-${fontSize}`,
-              `leading-${lineHeight}`
+              `${fontSize ? `text-${fontSize}` : ''}`,
+              `${lineHeight ? `leading-${lineHeight}` : ''}`
             )}
           >
             {splitText ?? text}
@@ -179,6 +191,7 @@ export const Typography: React.FC<TypographyProps> = ({
       case 'unspecified':
         return (
           <div
+            ref={inputRef}
             onClick={onClick}
             className={classNames(
               className,
@@ -187,11 +200,30 @@ export const Typography: React.FC<TypographyProps> = ({
               `${align ? `text-${align}` : ''}`,
               `text-${color}`,
               'font-body',
-              `leading-${lineHeight}`
+              `${lineHeight ? `leading-${lineHeight}` : ''}`
             )}
           >
             {splitText ?? stripPTag(text)}
           </div>
+        );
+      case 'buttonSmall':
+      case 'button':
+        return (
+          <p
+            ref={inputRef}
+            onClick={onClick}
+            className={classNames(
+              `${fontSize ? `text-${fontSize}` : ''}`,
+              styles.getFontStyleByType(type, weight, underline, hover),
+              className,
+              `${align ? `text-${align}` : ''}`,
+              `text-${color}`,
+              'font-body',
+              `${lineHeight ? `leading-${lineHeight}` : ''}`
+            )}
+          >
+            {splitText ?? text}
+          </p>
         );
       case 'body':
       case 'help':
@@ -200,15 +232,15 @@ export const Typography: React.FC<TypographyProps> = ({
       default:
         return (
           <p
+            ref={inputRef}
             onClick={onClick}
             className={classNames(
-              `text-${fontSize ?? 'small'}`,
+              `${fontSize ? `text-${fontSize}` : ''}`,
               styles.getFontStyleByType(type, weight, underline, hover),
               className,
               `${align ? `text-${align}` : ''}`,
               `text-${color}`,
-              'font-body',
-              `leading-${lineHeight}`
+              `${lineHeight ? `leading-${lineHeight}` : ''}`
             )}
           >
             {splitText ?? text}
@@ -220,14 +252,15 @@ export const Typography: React.FC<TypographyProps> = ({
   if (hasMarkup) {
     return (
       <div
+        ref={inputRef}
         dangerouslySetInnerHTML={{ __html: text || '' }}
         className={classNames(
           className,
           `${align ? `text-${align}` : ''}`,
           `text-${color}`,
           'font-body',
-          `text-${fontSize}`,
-          `leading-${lineHeight}`
+          `${fontSize ? `text-${fontSize}` : ''}`,
+          `${lineHeight ? `leading-${lineHeight}` : ''}`
         )}
         onClick={onClick}
       ></div>

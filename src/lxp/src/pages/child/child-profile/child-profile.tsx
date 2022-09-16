@@ -44,7 +44,7 @@ import { documentActions, documentSelectors } from '@store/document';
 import { notesSelectors } from '@store/notes';
 import {
   getAge,
-  getChildsAttendancePercentageAtPlaygroup,
+  getChildAttendancePercentageAtPlaygroup,
   getLastNoteDate,
 } from '@utils/child/child-profile-utils';
 import {
@@ -62,13 +62,15 @@ import { PhotoPrompt } from '../../../components/photo-prompt/photo-prompt';
 import { ChildProgressReportAlert } from './components/progress-report-alert/progress-report-alert';
 import { contentReportSelectors } from '@store/content/report';
 import { analyticsActions } from '@store/analytics';
+import ROUTES from '@routes/routes';
+import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 
 const baseNotificationListItem: ListItemProps = {
   key: 'message-caregiver',
   showIcon: true,
   showSubTitleShape: true,
   showChevronIcon: true,
-  backgroundColor: 'white',
+  backgroundColor: 'uiBg',
   withPaddingX: true,
   withPaddingY: true,
   title: 'Message caregiver',
@@ -98,13 +100,13 @@ export const ChildProfile: React.FC = () => {
   );
   const child = useSelector(childrenSelectors.getChildById(childId));
   const classGroupId = useSelector(
-    classroomsSelectors.getLearnerClassgroupId(child?.userId)
+    classroomsSelectors.getLearnerClassGroupId(child?.userId)
   );
   const user = useSelector(userSelectors.getUser);
   const playGroup = useSelector(
     classroomsSelectors.getClassroomGroupById(classGroupId)
   );
-  const classProgrames = useSelector(classroomsSelectors.getClassProgrammes);
+  const classProgrammes = useSelector(classroomsSelectors.getClassProgrammes);
   const childUser = useSelector(
     childrenSelectors.getChildUserById(child?.userId)
   );
@@ -168,19 +170,21 @@ export const ChildProfile: React.FC = () => {
       buttonType: 'outlined',
       buttonIcon: 'EyeIcon',
       buttonText: 'View',
-      buttonTextColor: 'primary',
-      buttonColor: 'primary',
+      buttonTextColor: 'secondary',
+      buttonColor: 'secondaryAccent2',
       showButton: true,
       showDivider: true,
       dividerType: 'dashed',
       withPaddingY: true,
       onButtonClick: () => {
-        history.push('/child/information/edit', { childId });
+        history.push(ROUTES.CHILD.INFORMATION.EDIT, { childId });
       },
     },
   ]);
-  const [attendaceReport, setAttendanceReport] =
+  const [attendanceReport, setAttendanceReport] =
     useState<ChildAttendanceReportModel>();
+  const [belongsToNoPlaygroup, setBelongsToNoPlaygroup] =
+    useState<boolean>(false);
 
   useEffect(() => {
     if (!isOnline) {
@@ -195,6 +199,10 @@ export const ChildProfile: React.FC = () => {
   }, [isOnline]);
 
   useEffect(() => {
+    if (playGroup?.name === NoPlaygroupClassroomType.name) {
+      setBelongsToNoPlaygroup(true);
+    }
+
     const profileOptionsCopy = [...profileOptions];
 
     profileOptionsCopy.unshift({
@@ -203,13 +211,15 @@ export const ChildProfile: React.FC = () => {
       buttonType: 'outlined',
       buttonIcon: 'EyeIcon',
       buttonText: 'View',
-      buttonTextColor: 'primary',
-      buttonColor: 'primary',
+      buttonTextColor: 'secondary',
+      buttonColor: 'secondaryAccent2',
       showButton: true,
       showSubTitleShape: true,
       withPaddingY: true,
+      showDivider: true,
+      dividerType: 'dashed',
       onButtonClick: () => {
-        history.push('/child-attendance-report', {
+        history.push(ROUTES.CHILD_ATTENDANCE_REPORT, {
           childId: child?.id,
           classroomGroupId: playGroup?.id,
         });
@@ -224,8 +234,8 @@ export const ChildProfile: React.FC = () => {
         buttonType: 'outlined',
         buttonIcon: 'EyeIcon',
         buttonText: 'View',
-        buttonTextColor: 'primary',
-        buttonColor: 'primary',
+        buttonTextColor: 'secondary',
+        buttonColor: 'secondaryAccent2',
         showButton: true,
         showDivider: true,
         dividerType: 'dashed',
@@ -283,7 +293,7 @@ export const ChildProfile: React.FC = () => {
 
     const applicableNotifications: ListItemProps[] = [];
 
-    const attendanceNotification = getAttendanceNotication(
+    const attendanceNotification = getAttendanceNotification(
       child.userId || '',
       attendanceData,
       playGroup.id || ''
@@ -298,15 +308,10 @@ export const ChildProfile: React.FC = () => {
   }, [attendanceData, child, playGroup]);
 
   useEffect(() => {
-    if (!attendaceReport) return;
-
-    const attendancePercentage =
-      (attendaceReport.totalActualAttendance /
-        (attendaceReport.totalExpectedAttendance || 1)) *
-      100;
-    setAttendancePercentage(attendancePercentage);
+    if (!attendanceReport) return;
+    setAttendancePercentage(attendanceReport.attendancePercentage);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [attendaceReport]);
+  }, [attendanceReport]);
 
   useEffect(() => {
     if (!attendancePercentage) return;
@@ -345,8 +350,8 @@ export const ChildProfile: React.FC = () => {
         buttonType: 'filled',
         buttonIcon: 'PlusIcon',
         buttonText: 'Add',
-        buttonTextColor: 'white',
-        buttonColor: 'primary',
+        buttonTextColor: 'secondary',
+        buttonColor: 'secondaryAccent2',
         onButtonClick: () => setCreateChildNoteVisible(true),
       };
     } else {
@@ -356,30 +361,32 @@ export const ChildProfile: React.FC = () => {
         buttonType: 'outlined',
         buttonIcon: 'EyeIcon',
         buttonText: 'View',
-        buttonTextColor: 'primary',
-        buttonColor: 'primary',
+        buttonTextColor: 'secondary',
+        buttonColor: 'secondaryAccent2',
         showButton: true,
         showDivider: true,
         dividerType: 'dashed',
         withPaddingY: true,
-        onButtonClick: () => history.push('/child-notes', { childId }),
+        onButtonClick: () => history.push(ROUTES.CHILD_NOTES, { childId }),
       };
     }
 
     return baseNotesOptions;
   };
 
-  const getAttendanceNotication = (
+  const getAttendanceNotification = (
     childUserId: string,
     attendance: AttendanceDto[],
     classroomGroupCacheId: string
   ): ListItemProps | undefined => {
-    const childAttendancePercentage = getChildsAttendancePercentageAtPlaygroup(
+    const childAttendancePercentage = getChildAttendancePercentageAtPlaygroup(
       childUserId,
       attendance,
       classroomGroupCacheId,
-      classProgrames
+      classProgrammes
     );
+
+    // Check when the child was register and determine wether attendance should have been recorded
 
     if (childAttendancePercentage.percentage < 50 && !caregiverHasBeenContacted)
       return {
@@ -400,7 +407,7 @@ export const ChildProfile: React.FC = () => {
   };
 
   const viewChildProgressObservationReports = () => {
-    history.push('/completed-child-progress-observation-reports', {
+    history.push(ROUTES.COMPLETED_CHILD_PROGRESS_OBSERVATION_REPORTS, {
       childId: child?.id,
     });
   };
@@ -410,14 +417,14 @@ export const ChildProfile: React.FC = () => {
   };
 
   const goToRemoveChild = () => {
-    history.push('remove-child', { childId: child?.id });
+    history.push(ROUTES.REMOVE_CHILD, { childId: child?.id });
   };
 
   const contactAttendanceCaregiver = (
     actualDaysAttended: number,
     expectedDaysAttended: number
   ) => {
-    history.push('/child-attendance-caregiver', {
+    history.push(ROUTES.CHILD_ATTENDANCE_CAREGIVER, {
       actualDaysAttended,
       expectedDaysAttended,
       childId: child?.id,
@@ -431,7 +438,7 @@ export const ChildProfile: React.FC = () => {
     setEditProfilePictureVisible(false);
   };
 
-  const picturePromtOnAction = async (imageBaseString: string) => {
+  const picturePromptOnAction = async (imageBaseString: string) => {
     const copy = Object.assign({}, childUser);
     if (copy) {
       copy.profileImageUrl = imageBaseString;
@@ -470,7 +477,7 @@ export const ChildProfile: React.FC = () => {
   };
 
   const contactCaregivers = () => {
-    history.push('/child-caregivers', { childId: child?.id });
+    history.push(ROUTES.CHILD_CAREGIVERS, { childId: child?.id });
   };
 
   const showCertificateError = (): boolean => {
@@ -514,7 +521,7 @@ export const ChildProfile: React.FC = () => {
         size="medium"
         renderBorder={true}
         renderOverflow={false}
-        onBack={() => history.push('/classroom')}
+        onBack={() => history.push(ROUTES.CLASSROOM)}
         displayOffline={!isOnline}
       >
         <div className={styles.avatarWrapper}>
@@ -532,7 +539,7 @@ export const ChildProfile: React.FC = () => {
           <StatusChip
             backgroundColour="infoDark"
             borderColour="infoDark"
-            text={playGroup?.name || 'No Playgroup'}
+            text={playGroup?.name || NoPlaygroupClassroomType.title}
             textColour={'white'}
             className={'mr-2'}
           />
@@ -547,12 +554,14 @@ export const ChildProfile: React.FC = () => {
           />
         </div>
 
-        {showCertificateError() && (
+        {belongsToNoPlaygroup && (
           <Alert
             className="m-4"
-            title={'Problem with birth certificate or clinic card'}
+            title={`${
+              childUser?.firstName || 'This child'
+            } does not have a playgroup`}
             list={[
-              `SmartStart found a problem with Themba's document. Please upload a new birth certificate or clinic card now.`,
+              `Add ${childUser?.firstName || 'this child'} to a playgroup now`,
             ]}
             type="error"
             button={
@@ -561,7 +570,40 @@ export const ChildProfile: React.FC = () => {
                 type="filled"
                 size="small"
                 onClick={() => {
-                  history.push('/child-registration-birth-certificate', {
+                  history.push(ROUTES.CHILD.INFORMATION.EDIT, {
+                    childId: child?.id,
+                    playgroupEdit: true,
+                  });
+                }}
+              >
+                {renderIcon('PlusIcon', 'w-5 h-5 text-white mr-1')}
+                <Typography
+                  color="white"
+                  text="Add to a Playgroup"
+                  type="small"
+                />
+              </Button>
+            }
+          />
+        )}
+
+        {showCertificateError() && (
+          <Alert
+            className="m-4"
+            title={'Problem with birth certificate or clinic card'}
+            list={[
+              `SmartStart found a problem with ${
+                childUser?.firstName || 'this child'
+              }'s document. Please upload a new birth certificate or clinic card now.`,
+            ]}
+            type="error"
+            button={
+              <Button
+                color="textMid"
+                type="filled"
+                size="small"
+                onClick={() => {
+                  history.push(ROUTES.CHILD_REGISTRATION_BIRTH_CERTIFICATE, {
                     childId: child?.id,
                   });
                 }}
@@ -575,35 +617,38 @@ export const ChildProfile: React.FC = () => {
 
         {notifications && child && (
           <div className={styles.notificationsStacklist}>
-            {notifications.map((notication, idx) => (
+            {notifications.map((notification) => (
               <ListItem
-                {...notication}
-                key={`child-profile-notification-${idx}`}
+                {...notification}
+                key={`child-profile-notification-${notification.key}`}
               />
             ))}
             <ChildProgressReportAlert child={child} />
           </div>
         )}
         <div className={styles.profileOptionsWrapper}>
-          {profileOptions.map((options, idx) => (
-            <ListItem {...options} key={`child-profile-option-${idx}`} />
+          {profileOptions.map((options) => (
+            <ListItem
+              {...options}
+              key={`child-profile-option-${options.key}`}
+            />
           ))}
 
-          <Divider className={'mt-2'} />
+          <Divider dividerType="dashed" className="-mt-1.5" />
 
           <Button
-            className={styles.button}
+            className={styles.button.replace('mt-4', 'mt-3')}
             color={'primary'}
-            type="outlined"
+            type="filled"
             onClick={contactCaregivers}
           >
             {renderIcon('ChatAlt2Icon', styles.buttonIcon)}
-            <Typography type="body" text="Contact caregiver" color="primary" />
+            <Typography type="button" text="Contact caregiver" color="white" />
           </Button>
           <Button className={styles.button} color={'errorMain'} type="outlined">
             {renderIcon('TrashIcon', styles.buttonIcon)}
             <Typography
-              type="body"
+              type="button"
               text={`Remove ${childUser?.firstName}`}
               color="errorMain"
               onClick={() => setRemoveChildConfirmationVisible(true)}
@@ -614,7 +659,7 @@ export const ChildProfile: React.FC = () => {
       <Dialog
         fullScreen
         visible={createChildNoteVisible}
-        position={DialogPosition.Top}
+        position={DialogPosition.Middle}
       >
         <div className={styles.dialogContent}>
           <CreateNote
@@ -647,7 +692,7 @@ export const ChildProfile: React.FC = () => {
           <PhotoPrompt
             title="Profile Photo"
             onClose={() => setEditProfilePictureVisible(false)}
-            onAction={picturePromtOnAction}
+            onAction={picturePromptOnAction}
             onDelete={profilePicture?.file ? deleteProfileImage : undefined}
           ></PhotoPrompt>
         </div>

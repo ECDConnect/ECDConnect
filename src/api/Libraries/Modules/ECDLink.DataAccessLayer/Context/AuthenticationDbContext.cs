@@ -3,7 +3,6 @@ using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.AuditLog;
 using ECDLink.DataAccessLayer.Entities.Caregiver;
 using ECDLink.DataAccessLayer.Entities.Classroom;
-using ECDLink.DataAccessLayer.Entities.Coach;
 using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.Navigation;
 using ECDLink.DataAccessLayer.Entities.Notes;
@@ -35,7 +34,7 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<ReasonForLeaving> ReasonsForLeaving { get; set; }
         public DbSet<ShortenUrlEntity> ShortUrls { get; set; }
         public DbSet<UserConsent> UserConsents { get; set; }
-
+        public DbSet<Absentees> Absents { get; set; }
 
         // Notes
         public DbSet<Note> Notes { get; set; }
@@ -68,6 +67,10 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<Practitioner> Practitioners { get; set; }
         public DbSet<Coach> Coaches { get; set; }
         public DbSet<Caregiver> Caregivers { get; set; }
+        public DbSet<Franchisor> Franchisors { get; set; }
+        public DbSet<HealthCareWorker> HealthCareWorkers { get; set; }
+        public DbSet<Mother> Mothers { get; set; }
+        public DbSet<Infant> Infants { get; set; }
 
         //Reports
         public DbSet<ChildProgressReport> ChildProgressReports { get; set; }

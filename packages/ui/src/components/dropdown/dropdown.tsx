@@ -6,6 +6,7 @@ import { DropDownFillType, DropDownOption } from './models/DropDownOption';
 import { renderIcon } from '../../utils';
 import { Colours, ComponentBaseProps } from '../../models';
 import { classNames } from '../../utils/style-class.utils';
+import { CheckCircleIcon } from '@heroicons/react/solid';
 
 export interface DropdownProps<T> extends ComponentBaseProps {
   placeholder?: string;
@@ -19,6 +20,7 @@ export interface DropdownProps<T> extends ComponentBaseProps {
   textColor?: Colours;
   fullWidth?: boolean;
   onChange: (item: T) => void;
+  inputRef?: any;
 }
 
 export function Dropdown<T>({
@@ -30,9 +32,10 @@ export function Dropdown<T>({
   disabled = false,
   fillType = 'filled',
   fullWidth = false,
-  fillColor = 'white',
+  fillColor = 'uiBg',
   textColor = 'primary',
   className,
+  inputRef,
 }: DropdownProps<T>) {
   const [selectedLabel, setSelectedLabel] = useState('');
   const [touched, setTouched] = useState(false);
@@ -51,6 +54,9 @@ export function Dropdown<T>({
     if (selectedValue) {
       const filter = list.find((x) => x.value === selectedValue);
       setSelectedLabel(filter?.label ?? '');
+    } else {
+      setSelectedLabel('');
+      setTouched(false);
     }
   }, [selectedValue, list]);
 
@@ -70,9 +76,8 @@ export function Dropdown<T>({
               disabled={disabled}
             >
               <Typography
-                type={'dropText'}
+                type={'body'}
                 color={touched ? 'textDark' : 'textLight'}
-                weight={touched ? 'normal' : 'skinny'}
                 text={selectedLabel ? selectedLabel : placeholder}
                 className={styles.title}
               />
@@ -110,7 +115,22 @@ export function Dropdown<T>({
                             }
                             onClick={() => handler(item)}
                           >
-                            {item.label}
+                            <div
+                              className={`flex flex-row gap-2.5 text-${
+                                item.label === selectedLabel
+                                  ? 'dark font-medium'
+                                  : 'textMid font-normal'
+                              }`}
+                            >
+                              <CheckCircleIcon
+                                className={`cursor-pointer h-22 w-22 text-${
+                                  item.label === selectedLabel
+                                    ? 'blue-accent3'
+                                    : 'primaryAccent2'
+                                }`}
+                              />
+                              {item.label}
+                            </div>
                           </div>
                         </Menu.Item>
                       </div>

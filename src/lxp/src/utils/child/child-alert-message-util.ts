@@ -1,3 +1,4 @@
+import { NoPlaygroupClassroomType } from './../../enums/ProgrammeType';
 import {
   AttendanceDto,
   ChildDto,
@@ -8,9 +9,9 @@ import {
   LearnerDto,
   UserDto,
 } from '@ecdlink/core';
-import { isPracitionerAttendanceMissingForLearner } from '../classroom/attendance/track-attendance-utils';
+import { isPractitionerAttendanceMissingForLearner } from '../classroom/attendance/track-attendance-utils';
 import {
-  getChildsAttendancePercentageAtPlaygroup,
+  getChildAttendancePercentageAtPlaygroup,
   isMatchingReportingPeriods,
 } from './child-profile-utils';
 
@@ -29,9 +30,18 @@ export const getChildAlertModel = (
   let alert = 'success';
   let alertMessage = 'All information captured';
 
-  const userBirthDocument = userDocuments?.find(
-    (x) => x.name.includes('clinicCard') || x.name.includes('clinicCard')
-  );
+  if (classroomGroups && learner) {
+    const classroomGroup = classroomGroups.find(
+      (x) => x.id === learner?.classroomGroupId
+    );
+
+    if (classroomGroup?.name === NoPlaygroupClassroomType.name) {
+      alert = 'error';
+      alertMessage = 'No playgroup assigned';
+
+      return { status: alert, message: alertMessage, severity: 1 };
+    }
+  }
 
   if (
     !childUser?.firstName ||
@@ -56,6 +66,10 @@ export const getChildAlertModel = (
     return { status: alert, message: alertMessage, severity: 1 };
   }
 
+  const userBirthDocument = userDocuments?.find(
+    (x) => x.name.includes('clinicCard') || x.name.includes('birthCertificate')
+  );
+
   if (userBirthDocument) {
     alert = 'error';
     alertMessage = 'Child document missing';
@@ -64,7 +78,7 @@ export const getChildAlertModel = (
   }
 
   if (classroomGroups && attendance) {
-    const missedAttendance = isPracitionerAttendanceMissingForLearner(
+    const missedAttendance = isPractitionerAttendanceMissingForLearner(
       classroomGroups,
       classProgrammes || [],
       learner,
@@ -85,7 +99,7 @@ export const getChildAlertModel = (
       (x) => x.id === learner?.classroomGroupId
     );
 
-    const childAttendancePercentage = getChildsAttendancePercentageAtPlaygroup(
+    const childAttendancePercentage = getChildAttendancePercentageAtPlaygroup(
       child?.userId ?? '',
       attendance,
       classroomGroup?.id ?? '',

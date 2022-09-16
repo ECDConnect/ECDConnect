@@ -30,6 +30,10 @@ import {
   classroomsPersistConfig,
   classroomsReducer,
 } from '../classroom/classroom';
+import {
+  classroomsForCoachPersistConfig,
+  classroomsForCoachReducer,
+} from '../classroomForCoach/classroomForCoach';
 import { activityReducer } from '../content/activity';
 import { activityPersistConfig } from '../content/activity/activity';
 import { contentConsentReducer } from '../content/consent/consent';
@@ -55,6 +59,11 @@ import {
   practitionerReducer,
 } from '../practitioner/practitioner';
 import {
+  practitionerForCoachPersistConfig,
+  practitionerForCoachReducer,
+} from '../practitionerForCoach/practitionerForCoach';
+import { coachPersistConfig, coachReducer } from '../coach/coach';
+import {
   programmePersistConfig,
   programmeReducer,
 } from '../programme/programme';
@@ -70,39 +79,56 @@ import {
 import { syncReducer } from '../sync';
 import { userPersistConfig, userReducer } from '../user/user';
 import type { RootState } from './types';
+import {
+  childrenForPractitionerPersistConfig,
+  childrenForPractitionerReducer,
+} from '../childrenForPractitioner/childrenForPractitioner';
 
 const persistedReducers = {
-  auth: persistReducer(authPersistConfig, authReducer),
-  settings: persistReducer(settingPersistConfig, settingReducer),
-  staticData: persistReducer(staticDataPersistConfig, staticDataReducer),
-  classroomData: persistReducer(classroomsPersistConfig, classroomsReducer),
-  user: persistReducer(userPersistConfig, userReducer),
-  children: persistReducer(childrenPersistConfig, childrenReducer),
-  caregivers: persistReducer(caregiverPersistConfig, caregiverReducer),
+  activityData: persistReducer(activityPersistConfig, activityReducer),
+  analytics: persistReducer(analyticsPersistConfig, analyticsReducer),
   attendanceData: persistReducer(attendancePersistConfig, attendanceReducer),
-  contentConsentData: contentConsentReducer,
-  documents: persistReducer(documentPersistConfig, documentReducer),
-  progressTracking: persistReducer(
-    progressTrackingPersistConfig,
-    progressTrackingReducer
+  auth: persistReducer(authPersistConfig, authReducer),
+  caregivers: persistReducer(caregiverPersistConfig, caregiverReducer),
+  children: persistReducer(childrenPersistConfig, childrenReducer),
+  childrenForPractitioner: persistReducer(
+    childrenForPractitionerPersistConfig,
+    childrenForPractitionerReducer
   ),
+  classroomData: persistReducer(classroomsPersistConfig, classroomsReducer),
+  classroomForCoachData: persistReducer(
+    classroomsForCoachPersistConfig,
+    classroomsForCoachReducer
+  ),
+  coach: persistReducer(coachPersistConfig, coachReducer),
+  contentConsentData: contentConsentReducer,
   contentReportData: persistReducer(
     contentReportPersistConfig,
     contentReportReducer
   ),
+  documents: persistReducer(documentPersistConfig, documentReducer),
   notesData: persistReducer(notesPersistConfig, notesReducer),
+  notifications: persistReducer(notificationPersistConfig, notificationReducer),
   practitioner: persistReducer(practitionerPersistConfig, practitionerReducer),
-  activityData: persistReducer(activityPersistConfig, activityReducer),
-  programmeThemeData: programmeThemeReducer,
-  storyBookData: persistReducer(storyBookPersistConfig, storyBookReducer),
+  practitionerForCoach: persistReducer(
+    practitionerForCoachPersistConfig,
+    practitionerForCoachReducer
+  ),
+  programmeData: persistReducer(programmePersistConfig, programmeReducer),
   programmeRoutineData: persistReducer(
     programmeRoutinePersistConfig,
     programmeRoutineReducer
   ),
-  programmeData: persistReducer(programmePersistConfig, programmeReducer),
-  notifications: persistReducer(notificationPersistConfig, notificationReducer),
-  analytics: persistReducer(analyticsPersistConfig, analyticsReducer),
+  programmeThemeData: programmeThemeReducer,
+  progressTracking: persistReducer(
+    progressTrackingPersistConfig,
+    progressTrackingReducer
+  ),
+  settings: persistReducer(settingPersistConfig, settingReducer),
+  staticData: persistReducer(staticDataPersistConfig, staticDataReducer),
+  storyBookData: persistReducer(storyBookPersistConfig, storyBookReducer),
   sync: syncReducer,
+  user: persistReducer(userPersistConfig, userReducer),
 };
 
 const rootReducer = combineReducers(persistedReducers);

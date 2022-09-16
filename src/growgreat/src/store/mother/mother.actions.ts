@@ -1,0 +1,171 @@
+import { MotherDto, SiteAddressDto } from '@ecdlink/core';
+import { MotherModelInput, SiteAddressInput } from '@ecdlink/graphql';
+
+import { createAsyncThunk } from '@reduxjs/toolkit';
+import { MotherService } from '@services/MotherService';
+import { SiteAddressService } from '@services/SiteAddressService';
+import { RootState, ThunkApiType } from '../types';
+
+export const MotherActions = {
+  GET_MOTHERS: 'getMothers',
+};
+
+export const getMothers = createAsyncThunk<
+  MotherDto[],
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  {},
+  ThunkApiType<RootState>
+>(
+  MotherActions.GET_MOTHERS,
+  // eslint-disable-next-line no-empty-pattern
+  async ({}, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      mothers: { mothers: mothersCache },
+    } = getState();
+
+    if (!mothersCache) {
+      try {
+        let mothers: MotherDto[] | undefined;
+
+        if (userAuth?.auth_token) {
+          mothers = await new MotherService(userAuth?.auth_token).getMothers(
+            userAuth.id
+          );
+        } else {
+          return rejectWithValue('no access token, profile check required');
+        }
+
+        if (!mothers) {
+          return rejectWithValue('Error getting mothers');
+        }
+
+        return mothers;
+      } catch (err) {
+        return rejectWithValue(err);
+      }
+    } else {
+      return mothersCache;
+    }
+  }
+);
+
+export const upsertMothers = createAsyncThunk<
+  boolean[],
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  {},
+  ThunkApiType<RootState>
+>(
+  'upsertMothers',
+  // eslint-disable-next-line no-empty-pattern
+  async ({}, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      mothers: { mothers },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token && mothers) {
+        for (const mother of mothers) {
+          const input = mapMother(mother);
+
+          if (mother.siteAddress) {
+            const addressInput = mapSiteAddress(mother.siteAddress);
+            await new SiteAddressService(
+              userAuth?.auth_token
+            ).updateSiteAddress(mother.siteAddress.id ?? '', addressInput);
+
+            input.siteAddressId = addressInput.Id;
+          }
+
+          await new MotherService(userAuth?.auth_token).updateMother(
+            mother.id ?? '',
+            input
+          );
+        }
+      }
+      return [true];
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+type CreateMotherRequest = {
+  mother: MotherDto;
+};
+
+export const addMother = createAsyncThunk<
+  MotherDto,
+  CreateMotherRequest,
+  ThunkApiType<RootState>
+>('addMother', async ({ mother }, { getState, rejectWithValue }) => {
+  const {
+    auth: { userAuth },
+  } = getState();
+  try {
+    let mappedMotherInput = mapMother(mother);
+
+    if (userAuth?.auth_token) {
+      return await new MotherService(userAuth?.auth_token).addMother(
+        mappedMotherInput
+      );
+    } else {
+      return rejectWithValue('no access token, profile check required');
+    }
+  } catch (err) {
+    return rejectWithValue(err);
+  }
+});
+
+export type UpdateMotherRequest = {
+  id: string;
+  mother: MotherDto;
+};
+
+export const updateMother = createAsyncThunk<
+  MotherDto,
+  UpdateMotherRequest,
+  ThunkApiType<RootState>
+>('updateMother', async ({ mother, id }, { getState, rejectWithValue }) => {
+  const {
+    auth: { userAuth },
+  } = getState();
+  try {
+    let mappedMotherInput = mapMother(mother);
+
+    if (userAuth?.auth_token) {
+      return await new MotherService(userAuth?.auth_token).updateMother(
+        id,
+        mappedMotherInput
+      );
+    } else {
+      return rejectWithValue('no access token, profile check required');
+    }
+  } catch (err) {
+    return rejectWithValue(err);
+  }
+});
+
+const mapMother = (x: Partial<MotherDto>): MotherModelInput => ({
+  age: x.age,
+  expectedDateOfDelivery: x.expectedDateOfDelivery,
+  firstName: x.firstName,
+  surname: x.surname,
+  healthCareWorkerId: x.healthCareWorkerId,
+  phoneNumber: x.phoneNumber,
+  whatsAppNumber: x.whatsAppNumber,
+  siteAddress: mapSiteAddress(x.siteAddress!),
+});
+
+const mapSiteAddress = (x: Partial<SiteAddressDto>): SiteAddressInput => ({
+  Id: x.id,
+  AddressLine1: x.addressLine1,
+  AddressLine2: x.addressLine2,
+  AddressLine3: x.addressLine3,
+  Name: x.name,
+  PostalCode: x.postalCode,
+  ProvinceId: x.provinceId,
+  Ward: x.ward,
+  IsActive: x.isActive === false ? false : true,
+});

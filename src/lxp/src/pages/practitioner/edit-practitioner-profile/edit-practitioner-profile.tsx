@@ -1,4 +1,4 @@
-import { useDialog, useStepNavigation } from '@ecdlink/core';
+import { useDialog, useTheme } from '@ecdlink/core';
 import {
   ClassProgrammeDto,
   ClassroomDto,
@@ -10,164 +10,72 @@ import { DialogPosition } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
-import { useAppDispatch } from '@store';
-import { classroomsActions } from '@store/classroom';
-import { staticDataSelectors } from '@store/static-data';
 import { userSelectors } from '@store/user';
-import { newGuid } from '@utils/common/uuid.utils';
 import { AddPhoto } from './components/add-photo/add-photo';
-import { ConfirmPlayGroups } from './components/confirm-playgroups/confirm-playgroups';
-import { EditMultiplePlayGroups } from './components/edit-mutliple-playgroups/edit-multiple-playgroups';
-import { EditPlaygroupModel } from '@schemas/practitioner/edit-playgroups';
-import { EditPlaygroupCountForm } from './components/edit-practitioner-playgroup-count-form/edit-playgroup-count-form';
-import { EditProgrammeForm } from './components/edit-programme-form/edit-programme-form';
-import { EditProgrammeModel } from '@schemas/practitioner/edit-programme';
-import { EditPractitionerSteps } from './edit-practitioner-profile.types';
+import {
+  EditPractitionerSteps,
+  PractitionerFormData,
+} from './edit-practitioner-profile.types';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import { ProgrammeTypeEnum } from '@ecdlink/graphql';
-import { useStoreSetup } from '@hooks/useStoreSetup';
 import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
+import { authSelectors } from '@/store/auth';
+import { PractitionerSetup } from './components/practitioner-setup/practitioner-setup';
+import { WelcomePage } from '@/components/welcome-page';
+import { PractitionerService } from '@/services/PractitionerService';
+import { practitionerSelectors } from '@/store/practitioner';
+import ROUTES from '@/routes/routes';
 
 export const EditPractitionerProfile: React.FC = () => {
   const history = useHistory();
-  const appDispatch = useAppDispatch();
+  const { theme } = useTheme();
   const dialog = useDialog();
   const { isOnline } = useOnlineStatus();
-  const { syncClassroom } = useStoreSetup();
+
+  const userAuth = useSelector(authSelectors.getAuthUser);
   const user = useSelector(userSelectors.getUser);
-  const programmeTypes = useSelector(staticDataSelectors.getProgrammeTypes);
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
   const [label, setLabel] = useState('');
-  const [playGroupCount, setPlayGroupCount] = useState<number>(0);
-  const [programme, setProgramme] = useState<EditProgrammeModel>();
-  const [playgroups, setPlaygroups] = useState<EditPlaygroupModel[]>();
-  const [editPlaygroupAtIndex, setEditPlayGroupAtIndex] = useState<number>();
-
-  const { activeStepKey, goBackOneStep, canGoBack, goToStep } =
-    useStepNavigation(EditPractitionerSteps.setupProgramme);
+  const [activeStep, setActiveStep] = useState(EditPractitionerSteps.WELCOME);
+  const [formData, setFormData] = useState<PractitionerFormData>({
+    practitionerToProgramme: false,
+    allowPermissions: false,
+  });
 
   useEffect(() => {
-    setLabel(`step 1 of 3`);
-  }, []);
-
-  const onPlayGroupsEdit = (
-    playgroups: EditPlaygroupModel[],
-    index: number
-  ) => {
-    setPlaygroups(playgroups);
-    setEditPlayGroupAtIndex(index);
-    goToStep(EditPractitionerSteps.setupPlaygroups);
-  };
-
-  const deletePlayGroup = async (playgroup: EditPlaygroupModel) => {
-    if (!playgroups) return;
-    const updatedPlaygroups = [...playgroups];
-
-    const index = updatedPlaygroups.findIndex(
-      (pg) => pg.classroomGroupId === playgroup.classroomGroupId
-    );
-    updatedPlaygroups.splice(index, 1);
-
-    setPlaygroups(updatedPlaygroups);
-
-    goToStep(EditPractitionerSteps.confirmPlaygroups);
-  };
+    if (activeStep === EditPractitionerSteps.WELCOME) {
+      setLabel('Welcome');
+    } else {
+      setLabel(
+        `step ${activeStep} of ${
+          Object.values(EditPractitionerSteps).filter(Number).length
+        }`
+      );
+    }
+  }, [activeStep]);
 
   const onAllStepsComplete = async () => {
     if (isOnline) {
-      const classroomId = newGuid();
-
-      const classroomInputModel: ClassroomDto = {
-        userId: user?.id ?? '',
-        name: programme?.name ?? '',
-        isPrinciple: programme?.isPrincipleOrLeader ?? false,
-        numberPractitioners: programme?.smartStartPractitioners
-          ? +programme?.smartStartPractitioners
-          : 0,
-        numberOfAssistants: programme?.assistants ? +programme?.assistants : 0,
-        numberOfOtherAssistants: programme?.nonSmartStartPractitioners
-          ? +programme?.nonSmartStartPractitioners
-          : 0,
-        doesOwnerTeach: programme?.isTeacher ?? false,
-        id: classroomId,
-        insertedDate: new Date().toISOString(),
-        isActive: true,
-      };
-
-      appDispatch(classroomsActions.createClassroom(classroomInputModel));
-
-      const programmeType = programmeTypes.find(
-        (x) => x.enumId === ProgrammeTypeEnum.Playgroup
-      );
-      if (programme?.type === programmeType?.id && playgroups && classroomId) {
-        for (const playGroup of playgroups) {
-          const classroomGroupId = newGuid();
-          const classProgrammeInputModel: ClassroomGroupDto = {
-            id: classroomGroupId,
-            classroomId: classroomId,
-            name: playGroup.name,
-            programmeTypeId: programme?.type,
-            isActive: true,
-          };
-
-          appDispatch(
-            classroomsActions.createClassroomGroup(classProgrammeInputModel)
+      if (
+        userAuth?.auth_token &&
+        user?.id &&
+        practitioner?.principalHierarchy
+      ) {
+        if (formData.allowPermissions) {
+          // explicitly checking that the user concent to share info
+          await new PractitionerService(
+            userAuth.auth_token
+          ).UpdatePractitionerShareInfo(
+            user.id,
+            practitioner.principalHierarchy
           );
-
-          for (const meetingDay of playGroup.meetingDays) {
-            const classProgrammeId = newGuid();
-
-            const classProgrammeInputModel: ClassProgrammeDto = {
-              id: classProgrammeId,
-              classroomGroupId: classroomGroupId,
-              meetingDay: meetingDay,
-              isFullDay: playGroup?.isFullDay || false,
-              programmeStartDate: new Date().toISOString(),
-              isActive: true,
-            };
-
-            appDispatch(
-              classroomsActions.createClassroomProgramme(
-                classProgrammeInputModel
-              )
-            );
-          }
+          await new PractitionerService(
+            userAuth.auth_token
+          ).UpdatePractitionerRegistered(user.id, true);
         }
-      } else {
-        const classroomGroupId = newGuid();
-        const classProgrammeInputModel: ClassroomGroupDto = {
-          id: classroomGroupId,
-          classroomId: classroomId,
-          name: programme?.name ?? '',
-          programmeTypeId: programme?.type,
-          isActive: true,
-        };
 
-        appDispatch(
-          classroomsActions.createClassroomGroup(classProgrammeInputModel)
-        );
-
-        const weekDays = [1, 2, 3, 4, 5];
-        for (const meetingDay of weekDays) {
-          const classProgrammeId = newGuid();
-
-          const classProgrammeInputModel: ClassProgrammeDto = {
-            id: classProgrammeId,
-            classroomGroupId: classroomGroupId,
-            meetingDay: meetingDay,
-            isFullDay: true,
-            programmeStartDate: new Date().toISOString(),
-            isActive: true,
-          };
-
-          appDispatch(
-            classroomsActions.createClassroomProgramme(classProgrammeInputModel)
-          );
-        }
+        history.push(ROUTES.ROOT);
       }
-
-      await syncClassroom();
-      history.push('/');
     } else {
       showOnlineOnly();
     }
@@ -189,70 +97,32 @@ export const EditPractitionerProfile: React.FC = () => {
 
   const steps = (step: EditPractitionerSteps) => {
     switch (step) {
-      case EditPractitionerSteps.setupProgramme:
-      default:
+      case EditPractitionerSteps.SETUP_PRACTITIONER:
         return (
-          <div>
-            <EditProgrammeForm
-              programme={programme}
-              onSubmit={(programme) => {
-                setProgramme(programme);
+          <PractitionerSetup
+            onSubmit={(form: PractitionerFormData) => {
+              setFormData(form);
+              setActiveStep(EditPractitionerSteps.ADD_PHOTO);
+            }}
+          />
+        );
 
-                const playgroupProgrammeType = programmeTypes.find(
-                  (x) => x.enumId === ProgrammeTypeEnum.Playgroup
-                );
-
-                if (programme.type === playgroupProgrammeType?.id) {
-                  goToStep(EditPractitionerSteps.setPlaygroupCount);
-                } else {
-                  goToStep(EditPractitionerSteps.addPhoto);
-                  setLabel(`step 3 of 3`);
-                }
-              }}
-            />
-          </div>
-        );
-      case EditPractitionerSteps.setPlaygroupCount:
-        return (
-          <EditPlaygroupCountForm
-            onSubmit={(value) => {
-              setPlayGroupCount(value);
-              goToStep(EditPractitionerSteps.setupPlaygroups);
-              setLabel(`step 2 of 3`);
-            }}
-          />
-        );
-      case EditPractitionerSteps.setupPlaygroups:
-        return (
-          <EditMultiplePlayGroups
-            numberOfPlaygroups={playGroupCount}
-            defaultPlayGroups={playgroups}
-            editPlaygroupAtIndex={editPlaygroupAtIndex}
-            onPlayGroupDelete={deletePlayGroup}
-            onSubmit={(value) => {
-              setPlaygroups(value);
-              goToStep(EditPractitionerSteps.confirmPlaygroups);
-            }}
-          />
-        );
-      case EditPractitionerSteps.confirmPlaygroups:
-        return (
-          <ConfirmPlayGroups
-            defaultPlayGroups={playgroups || []}
-            onEditPlaygroup={onPlayGroupsEdit}
-            onSubmit={(value) => {
-              setPlaygroups(value);
-              goToStep(EditPractitionerSteps.addPhoto);
-              setLabel(`step 3 of 3`);
-            }}
-          />
-        );
-      case EditPractitionerSteps.addPhoto:
+      case EditPractitionerSteps.ADD_PHOTO:
         return (
           <AddPhoto
             onSubmit={() => {
               onAllStepsComplete();
             }}
+          />
+        );
+
+      case EditPractitionerSteps.WELCOME:
+      default:
+        return (
+          <WelcomePage
+            onNext={() =>
+              setActiveStep(EditPractitionerSteps.SETUP_PRACTITIONER)
+            }
           />
         );
     }
@@ -297,26 +167,44 @@ export const EditPractitionerProfile: React.FC = () => {
     });
   };
 
+  const onBack = () => {
+    switch (activeStep) {
+      case EditPractitionerSteps.WELCOME:
+      default:
+        return history.goBack();
+      case EditPractitionerSteps.SETUP_PRACTITIONER:
+        return setActiveStep(EditPractitionerSteps.WELCOME);
+      case EditPractitionerSteps.ADD_PHOTO:
+        return setActiveStep(EditPractitionerSteps.SETUP_PRACTITIONER);
+    }
+  };
+
   return (
     <>
       <IonContent scrollY={true}>
         <BannerWrapper
-          size={'medium'}
+          size={
+            activeStep === EditPractitionerSteps.WELCOME ? 'large' : 'medium'
+          }
           renderBorder={true}
+          showBackground={activeStep === EditPractitionerSteps.WELCOME}
           title={'Edit Profile'}
           subTitle={label}
-          onBack={() => {
-            if (canGoBack()) goBackOneStep();
-            else {
-              history.goBack();
-            }
-          }}
+          onBack={onBack}
           onClose={exitPrompt}
-          backgroundColour={'uiBg'}
+          backgroundColour={'white'}
+          className={
+            activeStep === EditPractitionerSteps.WELCOME ? 'relative' : ''
+          }
+          backgroundUrl={
+            activeStep === EditPractitionerSteps.WELCOME
+              ? theme?.images.graphicOverlayUrl
+              : ''
+          }
           displayOffline={!isOnline}
         >
-          <div className={'px-4 pb-5'}>
-            {steps(activeStepKey as EditPractitionerSteps)}
+          <div className={'px-4'}>
+            {steps(activeStep as EditPractitionerSteps)}
           </div>
         </BannerWrapper>
       </IonContent>

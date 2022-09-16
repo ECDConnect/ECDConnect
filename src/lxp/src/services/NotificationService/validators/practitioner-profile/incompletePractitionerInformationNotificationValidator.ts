@@ -6,6 +6,7 @@ import {
   NotificationPriority,
   NotificationValidator,
 } from '../../NotificationService.types';
+import ROUTES from '@/routes/routes';
 
 export class IncompletePractitionerInformationNotificationValidator
   implements NotificationValidator
@@ -21,30 +22,83 @@ export class IncompletePractitionerInformationNotificationValidator
   }
 
   getNotifications = (): Message[] => {
-    const { classroomData: classroomState } = this.store.getState();
+    const {
+      user: userState,
+      classroomData: classroomState,
+      practitioner: practitionerState,
+    } = this.store.getState();
 
-    if (!classroomState) return [];
+    if (!classroomState || !userState) return [];
 
-    if (!classroomState?.classroom || !classroomState?.classroom?.id) {
-      return [
-        {
-          reference: `practitioner-profile`,
-          title: 'Complete your profile',
-          message:
-            'We suggest connecting to a wifi network to complete this process. After syncing your data, the Funda App will continue to work offline.',
-          dateCreated: new Date().toISOString(),
-          priority: NotificationPriority.lower,
-          viewOnDashboard: true,
-          area: 'practitioner',
-          icon: 'SwitchVerticalIcon',
-          color: 'primary',
-          actionText: 'Complete your profile',
-          viewType: 'Hub',
-          routeConfig: {
-            route: '/practitioner/profile/edit/',
+    /**
+     * Notification is returned when
+     * 1. The user is a practitioner
+     * 2. The practitioner object is in the state
+     * 3. The practitioner is not a principal yet
+     */
+
+    // TODO: change conditions for when to show the page
+
+    if (practitionerState.practitioner) {
+      const hasPractitionerRole = userState?.user?.roles?.some(
+        (role) => role.name === 'Practitioner'
+      );
+
+      const notRegistered = !Boolean(
+        practitionerState.practitioner?.isRegistered
+      );
+      const addedByPrincipal =
+        Boolean(practitionerState.practitioner?.principalHierarchy) &&
+        !practitionerState.practitioner?.isPrincipal;
+
+      const showNotificationForPractitionerFlow =
+        hasPractitionerRole && notRegistered && addedByPrincipal;
+      const showNotificationForPrincipalFlow =
+        hasPractitionerRole && notRegistered && !addedByPrincipal;
+
+      if (showNotificationForPrincipalFlow) {
+        return [
+          {
+            reference: `practitioner-profile`,
+            title: 'Complete your profile',
+            message:
+              'Share more information about your programme to make Funda App useful for you.',
+            dateCreated: new Date().toISOString(),
+            priority: NotificationPriority.lower,
+            viewOnDashboard: true,
+            area: 'practitioner',
+            icon: 'SwitchVerticalIcon',
+            color: 'primary',
+            actionText: 'Complete your profile',
+            viewType: 'Hub',
+            routeConfig: {
+              route: ROUTES.PRINCIPAL.SETUP_PROFILE,
+            },
           },
-        },
-      ];
+        ];
+      }
+
+      if (showNotificationForPractitionerFlow) {
+        return [
+          {
+            reference: `practitioner-profile`,
+            title: 'Complete your profile',
+            message:
+              'Share more information about your programme to make Funda App useful for you.',
+            dateCreated: new Date().toISOString(),
+            priority: NotificationPriority.lower,
+            viewOnDashboard: true,
+            area: 'practitioner',
+            icon: 'SwitchVerticalIcon',
+            color: 'primary',
+            actionText: 'Complete your profile',
+            viewType: 'Hub',
+            routeConfig: {
+              route: ROUTES.PRACTITIONER.PROFILE.EDIT,
+            },
+          },
+        ];
+      }
     }
 
     return [];

@@ -5,10 +5,15 @@ export const initialCoachValues: CoachDto = {
   areaOfOperation: '',
   secondaryAreaOfOperation: '',
   startDate: undefined,
+  signingSignature: undefined,
+  franchisorId: '',
 };
 
 export const coachSchema = Yup.object().shape({
   areaOfOperation: Yup.string(),
   secondaryAreaOfOperation: Yup.string(),
   startDate: Yup.date(),
+  signingSignature: Yup.string(),
+  sendInvite: Yup.bool(),
+  franchisorId: Yup.string(),
 });

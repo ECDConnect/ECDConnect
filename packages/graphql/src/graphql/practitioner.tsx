@@ -11,6 +11,7 @@ export const GetAllPractitioner = gql`
         email
         isActive
         idNumber
+        phoneNumber
       }
       siteAddressId
       siteAddress {
@@ -28,11 +29,18 @@ export const GetAllPractitioner = gql`
       }
       attendanceRegisterLink
       maxChildren
+      isPrincipal
+      isFundaAppAdmin
+      isRegistered
+      isTrainee
       consentForPhoto
       parentFees
       languageUsedInGroups
       startDate
       monthSinceFranchisee
+      signingSignature
+      coachHierarchy
+      principalHierarchy
     }
   }
 `;
@@ -66,6 +74,13 @@ export const GetPractitionerById = gql`
       languageUsedInGroups
       startDate
       monthSinceFranchisee
+      isPrincipal
+      isFundaAppAdmin
+      isRegistered
+      isTrainee
+      signingSignature
+      coachHierarchy
+      principalHierarchy
     }
   }
 `;

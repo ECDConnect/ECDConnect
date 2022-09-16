@@ -3,9 +3,45 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import { PractitionerService } from '@services/PractitionerService';
 import { RootState, ThunkApiType } from '../types';
 
+export const getPractitionersForCoach = createAsyncThunk<
+  PractitionerDto[],
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  {},
+  ThunkApiType<RootState>
+>(
+  'getPractitionersForCoach',
+  // eslint-disable-next-line no-empty-pattern
+  async ({}, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      practitioner: { practitioners: practitionersCache },
+    } = getState();
+
+    if (!practitionersCache) {
+      try {
+        let practitioners: PractitionerDto[] | undefined;
+
+        if (userAuth?.auth_token) {
+          practitioners = await new PractitionerService(
+            userAuth?.auth_token
+          ).getPractitionersForCoach(userAuth?.id);
+        } else {
+          return rejectWithValue('no access token, profile check required');
+        }
+
+        return practitioners;
+      } catch (err) {
+        return rejectWithValue(err);
+      }
+    } else {
+      return practitionersCache;
+    }
+  }
+);
+
 export const getPractitionerById = createAsyncThunk<
   PractitionerDto,
-  { id: number },
+  { id: string },
   ThunkApiType<RootState>
 >(
   'getPractitionerById',
@@ -13,31 +49,61 @@ export const getPractitionerById = createAsyncThunk<
   async ({ id }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
-      practitioner: { practitioner: practitionerCache },
     } = getState();
 
-    if (!practitionerCache) {
-      try {
-        let practitioner: PractitionerDto | undefined;
+    try {
+      let practitioner: PractitionerDto | undefined;
 
-        if (userAuth?.auth_token) {
-          practitioner = await new PractitionerService(
-            userAuth?.auth_token
-          ).getPractitionerById(id);
-        } else {
-          return rejectWithValue('no access token, profile check required');
-        }
-
-        if (!practitioner) {
-          return rejectWithValue('Error getting practitioner');
-        }
-
-        return practitioner;
-      } catch (err) {
-        return rejectWithValue(err);
+      if (userAuth?.auth_token) {
+        practitioner = await new PractitionerService(
+          userAuth?.auth_token
+        ).getPractitionerById(id);
+      } else {
+        return rejectWithValue('no access token, profile check required');
       }
-    } else {
-      return practitionerCache;
+
+      if (!practitioner) {
+        return rejectWithValue('Error getting practitioner');
+      }
+
+      console.log(practitioner);
+      return practitioner;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getAllPractitioners = createAsyncThunk<
+  PractitionerDto[],
+  {},
+  ThunkApiType<RootState>
+>(
+  'getAllPractitioners',
+  // eslint-disable-next-line no-empty-pattern
+  async ({}, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      let practitioners: PractitionerDto[] | undefined;
+
+      if (userAuth?.auth_token) {
+        practitioners = await new PractitionerService(
+          userAuth?.auth_token
+        ).getAllPractitioners();
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      if (!practitioners) {
+        return rejectWithValue('Error getting practitioner');
+      }
+
+      return practitioners;
+    } catch (err) {
+      return rejectWithValue(err);
     }
   }
 );

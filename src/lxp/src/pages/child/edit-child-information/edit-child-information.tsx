@@ -60,9 +60,11 @@ export const EditChildInformation: React.FC = () => {
   const { theme } = useTheme();
   const location = useLocation<EditChildInformationLocationParams>();
   const childId = location.state.childId;
+  const playgroupEdit = location.state.playgroupEdit;
   const user = useSelector(userSelectors.getUser);
   const languages = useSelector(staticDataSelectors.getLanguages);
   const currentChild = useSelector(childrenSelectors.getChildById(childId));
+  const isPlaygroup = useSelector(classroomsSelectors.isPlaygroup());
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const classroomGroupLearners = useSelector(
     classroomsSelectors.getClassroomGroupLearners
@@ -138,6 +140,12 @@ export const EditChildInformation: React.FC = () => {
   });
 
   useEffect(() => {
+    if (playgroupEdit) {
+      setChangeClassroomGroupPromptVisible(playgroupEdit);
+    }
+  }, [playgroupEdit]);
+
+  useEffect(() => {
     if (classroomGroups) {
       const classRoomGroupDownDownList: DropDownOption<string>[] =
         classroomGroups.map((x) => {
@@ -159,7 +167,7 @@ export const EditChildInformation: React.FC = () => {
   useEffect(() => {
     if (currentChild && classroomGroupLearners) {
       const currentChildL = classroomGroupLearners.find(
-        (x) => !x.stoppedAttendance && x.userId === currentChild.userId
+        (x) => x.userId === currentChild.userId && x.stoppedAttendance == null
       );
       setCurrentChildLearnerRecord(currentChildL);
     }
@@ -294,16 +302,18 @@ export const EditChildInformation: React.FC = () => {
         switchTextStyles: true,
       });
 
-      list.push({
-        title: 'Playgroup',
-        subTitle: learnerClassroomGroup?.name || '',
-        switchTextStyles: true,
-        actionName: 'Edit',
-        actionIcon: 'PencilIcon',
-        onActionClick: () => {
-          setChangeClassroomGroupPromptVisible(true);
-        },
-      });
+      if (isPlaygroup) {
+        list.push({
+          title: 'Playgroup',
+          subTitle: learnerClassroomGroup?.name || '',
+          switchTextStyles: true,
+          actionName: 'Edit',
+          actionIcon: 'PencilIcon',
+          onActionClick: () => {
+            setChangeClassroomGroupPromptVisible(true);
+          },
+        });
+      }
 
       if (caregiver) {
         list.push({
@@ -448,9 +458,11 @@ export const EditChildInformation: React.FC = () => {
       attendanceReasonId: currentChildLearnerRecord?.attendanceReasonId,
       otherAttendanceReason:
         currentChildLearnerRecord?.otherAttendanceReason ?? '',
-      startedAttendance: new Date().toISOString(),
+      startedAttendance: currentChildLearnerRecord?.startedAttendance ?? '',
       stoppedAttendance: new Date().toISOString(),
+      isActive: currentChildLearnerRecord?.isActive,
     };
+
     appDispatch(
       classroomsActions.updateClassroomGroupLearner(learnerInputModel)
     );
@@ -463,6 +475,8 @@ export const EditChildInformation: React.FC = () => {
       otherAttendanceReason:
         currentChildLearnerRecord?.otherAttendanceReason ?? '',
       startedAttendance: new Date().toISOString(),
+      stoppedAttendance: null,
+      isActive: currentChildLearnerRecord?.isActive,
     };
 
     appDispatch(classroomsActions.createClassroomGroupLearner(newLearnerModel));
@@ -658,7 +672,7 @@ export const EditChildInformation: React.FC = () => {
             onPressed={displayProfilePicturePrompt}
           />
           <StackedList
-            className={'bg-uiBg w-full'}
+            className={'bg-white w-full px-4'}
             listItems={listItems}
             type={'ActionList'}
           />
@@ -712,7 +726,7 @@ export const EditChildInformation: React.FC = () => {
               color="textDark"
               text={'Edit Playgroup'}
               weight="bold"
-            ></Typography>
+            />
             <div onClick={closeEditField}>
               {renderIcon('XIcon', 'h-6 w-6 text-uiLight')}
             </div>
@@ -742,7 +756,7 @@ export const EditChildInformation: React.FC = () => {
                 className="mr-2"
                 color="white"
                 text={'Save'}
-              ></Typography>
+              />
             </Button>
           </div>
         </div>

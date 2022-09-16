@@ -21,6 +21,7 @@ import { ProgrammePlanningHeader } from '../components/programme-planning-header
 import { ProgrammeHistory } from './components/programme-history/programme-history';
 import { ProgrammeSummaryListItem } from './components/programme-summary-list-item/programme-summary-list-item';
 import { ProgrammeSummaryProps } from './programme-summary.types';
+import ROUTES from '@routes/routes';
 
 const ProgrammeSummary: React.FC<ProgrammeSummaryProps> = ({
   programme,
@@ -61,21 +62,21 @@ const ProgrammeSummary: React.FC<ProgrammeSummaryProps> = ({
     );
 
     if (firstInCompleteWeekIndex > -1) {
-      history.push('/programmes/routine', {
+      history.push(ROUTES.PROGRAMMES.ROUTINE, {
         programmeId: programme?.id,
         weekIndex: firstInCompleteWeekIndex,
       });
       return;
     }
 
-    history.push('/programmes/routine', {
+    history.push(ROUTES.PROGRAMMES.ROUTINE, {
       programmeId: programme?.id,
       weekIndex: 0,
     });
   };
 
   const handleBackToClassroom = () => {
-    history.replace('/classroom', { activeTabIndex: 1 });
+    history.replace(ROUTES.CLASSROOM, { activeTabIndex: 1 });
   };
 
   const showOnlineOnly = () => {
@@ -93,11 +94,11 @@ const ProgrammeSummary: React.FC<ProgrammeSummaryProps> = ({
       return;
     }
 
-    history.push('/programmes/theme');
+    history.push(ROUTES.PROGRAMMES.THEME);
   };
 
   const handleWeekSelected = (weekIndex: number) => {
-    history.push('/programmes/routine', {
+    history.push(ROUTES.PROGRAMMES.ROUTINE, {
       programmeId: programme?.id,
       weekIndex,
     });
@@ -253,7 +254,7 @@ const ProgrammeSummary: React.FC<ProgrammeSummaryProps> = ({
           <div className={'mt-4'}>
             <ProgrammeHistory
               onViewItem={(programme) =>
-                history.push('/programmes/summary', {
+                history.push(ROUTES.PROGRAMMES.SUMMARY, {
                   programmeId: programme.id,
                   variation: 'update',
                 })

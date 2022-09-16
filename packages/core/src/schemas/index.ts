@@ -1,6 +1,7 @@
 export * from './coach';
 export * from './password';
 export * from './practitioner';
+export * from './health-care-worker';
 export * from './user';
 export * from './programme-attendance-reason';
 export * from './education-level';
@@ -25,3 +26,5 @@ export * from './settings';
 export * from './navigation';
 export * from './reason-for-leaving';
 export * from './relation';
+export * from './franchisor';
+export * from './principal';

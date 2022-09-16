@@ -1161,7 +1161,7 @@ namespace ECDLink.DataAccessLayer.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Learner", x => new { x.ClassroomGroupId, x.UserId });
+                    table.PrimaryKey("PK_Learner", x => new { x.ClassroomGroupId, x.UserId, x.Id });
                     table.ForeignKey(
                         name: "FK_Learner_AspNetUsers_UserId",
                         column: x => x.UserId,

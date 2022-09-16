@@ -16,6 +16,7 @@ export type Message = {
     | 'data-sync'
     | 'inactive'
     | 'practitioner'
+    | 'coach'
     | 'tracking-attendance'
     | 'child-registration'
     | 'programme-planning'

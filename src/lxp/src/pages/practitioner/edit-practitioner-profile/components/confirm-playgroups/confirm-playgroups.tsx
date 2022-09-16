@@ -9,8 +9,13 @@ import * as styles from '../../edit-practitioner-profile.styles';
 import { ConfirmPlayGroupListItem } from '../edit-playgroup-form/components/confirm-playgroup-list-item/confirm-playgroup-list-item';
 interface ConfirmPlayGroupsProps extends FormComponentProps<any | void> {
   defaultPlayGroups: EditPlaygroupModel[];
-  onEditPlaygroup: (playgroups: EditPlaygroupModel[], index: number) => void;
+  onEditPlaygroup: (
+    playgroups: EditPlaygroupModel[],
+    index: number,
+    addingPlayGroup?: boolean
+  ) => void;
   title?: string;
+  isLoading?: boolean;
 }
 
 export const ConfirmPlayGroups: React.FC<ConfirmPlayGroupsProps> = ({
@@ -18,13 +23,13 @@ export const ConfirmPlayGroups: React.FC<ConfirmPlayGroupsProps> = ({
   onSubmit,
   onEditPlaygroup,
   title = 'Confirm Playgroups',
+  isLoading,
 }) => {
   const [playgroups, setPlayGroups] =
     useState<EditPlaygroupModel[]>(defaultPlayGroups);
-
   const onAddNewPlaygroup = () => {
     playgroups.push({ meetingDays: [], name: '', classroomGroupId: newGuid() });
-    onEditPlaygroup(playgroups, playgroups.length - 1);
+    onEditPlaygroup(playgroups, playgroups.length - 1, true);
   };
 
   useEffect(() => {
@@ -80,11 +85,13 @@ export const ConfirmPlayGroups: React.FC<ConfirmPlayGroupsProps> = ({
         type="filled"
         color="primary"
         className={'w-full my-3'}
+        isLoading={isLoading}
+        disabled={isLoading}
         onClick={() => {
           onSubmit(playgroups);
         }}
       >
-        {renderIcon('CheckCircleIcon', styles.icon)}
+        {!isLoading && renderIcon('CheckCircleIcon', styles.icon)}
         <Typography type={'help'} text={'Confirm'} color={'white'} />
       </Button>
     </>

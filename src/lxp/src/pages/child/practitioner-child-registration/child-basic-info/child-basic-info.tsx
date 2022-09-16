@@ -9,6 +9,7 @@ import {
   ChildBasicInfoModel,
 } from '@schemas/child/child-registration/child-basic-info';
 import { classroomsSelectors } from '@store/classroom';
+import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 
 export const ChildBasicInfo: React.FC<
   FormComponentProps<ChildBasicInfoModel>
@@ -25,7 +26,10 @@ export const ChildBasicInfo: React.FC<
 
   useEffect(() => {
     if (classrooms && classrooms.length > 0) {
-      setValue('playgroupId', classrooms[0].id ?? '', { shouldValidate: true });
+      const defaultPlaygroup =
+        classrooms.find((c) => c.name === NoPlaygroupClassroomType.name)?.id ||
+        (classrooms[0].id ?? '');
+      setValue('playgroupId', defaultPlaygroup, { shouldValidate: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [classrooms]);
@@ -41,9 +45,9 @@ export const ChildBasicInfo: React.FC<
   };
 
   return (
-    <div className="bg-uiBg p-4 flex flex-col h-full w-full">
-      <Typography type="h1" color="primary" text="Child" />
-      <Typography type={'h2'} text="Basic details" color={'textMid'} />
+    <div className="bg-white p-4 flex flex-col h-full w-full">
+      <Typography type="h2" color="textDark" text="Child" />
+      <Typography type={'h4'} text="Basic details" color={'textMid'} />
 
       <FormInput<ChildBasicInfoModel>
         className="mt-4"
@@ -63,8 +67,8 @@ export const ChildBasicInfo: React.FC<
         <Dropdown<string>
           fullWidth
           className="mt-4"
-          label="Which playgroup will the child attend?"
-          placeholder="Select playgroup"
+          label="Which class will the child attend?"
+          placeholder="Select class"
           selectedValue={getSelectedClassroom()}
           list={classrooms.map((x) => ({ label: x.name, value: x.id || '' }))}
           onChange={(classroomId: string) => {

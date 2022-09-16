@@ -17,7 +17,10 @@ namespace ECDLink.DataAccessLayer.Entities.Users
 
     }
 
-    public class Practitioner<TKey> : EntityBase<TKey>, IDocumentQueryable, SiteAddressJoin<Guid?>, IUserType
+    public class Practitioner<TKey> : EntityBase<TKey>, 
+        IDocumentQueryable, 
+        SiteAddressJoin<Guid?>, 
+        IUserType
          where TKey : IEquatable<TKey>
     {
         [GraphQLIgnore]
@@ -47,6 +50,21 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         [ForeignKey(nameof(SiteAddressId))]
         public virtual SiteAddress SiteAddress { get; set; }
         public Guid? SiteAddressId { get; set; }
+
+        [ForeignKey(nameof(CoachHierarchy))]
+        public virtual Coach Coach { get; set; }
+        public Guid? CoachHierarchy { get; set; }
+
+        [ForeignKey(nameof(PrincipalHierarchy))]
+        public virtual Practitioner Principal { get; set; }
+        public Guid? PrincipalHierarchy { get; set; }
+        public bool? IsPrincipal { get; set; }
+        public bool? IsFundaAppAdmin { get; set; }
+        public bool? IsTrainee { get; set; }
+        public string SigningSignature { get; set; }
+        public bool? IsRegistered { get; set; }
+        public bool? ShareInfo { get; set; }
+
     }
 
     public interface PractitionerJoin<TKey>

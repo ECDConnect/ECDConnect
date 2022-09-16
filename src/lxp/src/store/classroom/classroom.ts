@@ -20,20 +20,34 @@ const initialState: ClassroomState = {
   classroomGroups: undefined,
   classroomProgrammes: undefined,
   classroomGroupLearners: undefined,
+  programmeType: undefined,
+  principal: undefined,
 };
 
 const classroomsSlice = createSlice({
   name: 'classrooms',
   initialState,
   reducers: {
+    setProgrammeType: (state, action: PayloadAction<string>) => {
+      state.programmeType = action.payload;
+    },
     resetClassroomState: (state) => {
       state.classroom = initialState.classroom;
       state.classroomGroups = initialState.classroomGroups;
       state.classroomProgrammes = initialState.classroomProgrammes;
       state.classroomGroupLearners = initialState.classroomGroupLearners;
+      state.principal = initialState.principal;
     },
     updateClassroom: (state, action: PayloadAction<ClassroomDto>) => {
       state.classroom = action.payload;
+    },
+    updateClassroomNumberPractitioners: (
+      state,
+      action: PayloadAction<Pick<ClassroomDto, 'numberPractitioners'>>
+    ) => {
+      if (state.classroom)
+        state.classroom.numberPractitioners =
+          action.payload.numberPractitioners;
     },
     updateClassroomGroup: (state, action: PayloadAction<ClassroomGroupDto>) => {
       if (state.classroomGroups) {
@@ -83,6 +97,20 @@ const classroomsSlice = createSlice({
     createClassroomGroupLearner: (state, action: PayloadAction<LearnerDto>) => {
       if (!state.classroomGroupLearners) state.classroomGroupLearners = [];
       state.classroomGroupLearners?.push(action.payload);
+    },
+    removeClassroomGroupOnEdit: (
+      state,
+      action: PayloadAction<Pick<ClassroomGroupDto, 'id'>>
+    ) => {
+      const index = state.classroomGroups?.findIndex(
+        (c) => c.id === action.payload.id
+      );
+      if (index && index > -1) {
+        state.classroomGroups?.splice(index, 1);
+        state.classroomProgrammes = state.classroomProgrammes?.filter(
+          (programme) => programme.classroomGroupId !== action.payload.id
+        );
+      }
     },
     deleteClassroomGroup: (state, action: PayloadAction<ClassroomGroupDto>) => {
       if (action.payload.id) {

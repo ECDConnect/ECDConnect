@@ -11,6 +11,7 @@ import { childrenSelectors } from '@store/children';
 import { classroomsSelectors } from '@store/classroom';
 import * as styles from './class-programme-attendance-list.styles';
 import { ClassProgrammeAttendanceListProps } from './class-programme-attendance-list.types';
+import { isBefore, isAfter, isSameDay } from 'date-fns';
 
 export const ClassProgrammeAttendanceList: React.FC<
   ClassProgrammeAttendanceListProps
@@ -32,11 +33,16 @@ export const ClassProgrammeAttendanceList: React.FC<
   const attendance = useSelector(
     attendanceSelectors.getClassroomProgrammeAttendanceFor(attendanceDate)
   );
+  const classProgrammes = useSelector(classroomsSelectors.getClassProgrammes);
 
   useEffect(() => {
     if (!classroomGroup) return;
     const filteredLearners = [];
-    for (const learner of allLearners) {
+    const _allLearners = allLearners.filter(
+      (x) => !Boolean(x.stoppedAttendance)
+    );
+
+    for (const learner of _allLearners) {
       if (learner.classroomGroupId !== classroomGroup.id) continue;
 
       const child = children?.find(
@@ -44,11 +50,26 @@ export const ClassProgrammeAttendanceList: React.FC<
       );
       const childUser = childUsers?.find((y) => y.id === learner.userId);
 
+      const [currentClassProgramme] = classProgrammes.filter(
+        (x) => x.classroomGroupId === learner.classroomGroupId
+      );
+      const programStartDate =
+        typeof currentClassProgramme?.programmeStartDate != 'undefined'
+          ? new Date(currentClassProgramme?.programmeStartDate)
+          : new Date();
+      const startedAttendanceDate = new Date(learner.startedAttendance);
+      const showChildInRegister =
+        (isBefore(startedAttendanceDate, attendanceDate) ||
+          isSameDay(startedAttendanceDate, attendanceDate)) &&
+        (isAfter(startedAttendanceDate, programStartDate) ||
+          isSameDay(startedAttendanceDate, attendanceDate));
+
       if (
         child &&
         child?.caregiverId &&
         childUser?.firstName &&
-        childUser?.surname
+        childUser?.surname &&
+        showChildInRegister
       ) {
         filteredLearners.push(learner);
       }
@@ -72,7 +93,7 @@ export const ClassProgrammeAttendanceList: React.FC<
 
         return {
           title: `${childUser?.firstName} ${childUser?.surname}`,
-          profileText: profileTextString,
+          profileText: profileTextString.toLocaleUpperCase(),
           attenendeeId: childUser?.id || index.toString(),
           avatarColor: getAvatarColor(),
           status: existingAttendanceRecord
@@ -102,7 +123,7 @@ export const ClassProgrammeAttendanceList: React.FC<
         <div className={'bg-uiBg flex flex-col items-start w-full px-4 py-1'}>
           <Typography
             type={'body'}
-            weight={'bolder'}
+            weight={'bold'}
             text={classroomGroup?.name}
             color={'black'}
           />

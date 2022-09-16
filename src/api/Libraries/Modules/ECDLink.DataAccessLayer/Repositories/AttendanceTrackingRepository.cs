@@ -37,7 +37,7 @@ namespace ECDLink.DataAccessLayer.Repositories
             return true;
         }
 
-        public IQueryable<Attendance> GetAllAttedancesByParentId(string userId)
+        public IQueryable<Attendance> GetAllAttendancesByParentId(string userId)
         {
             if (string.IsNullOrWhiteSpace(userId))
             {

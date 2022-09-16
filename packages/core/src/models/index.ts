@@ -8,6 +8,7 @@ export * from './file-model';
 export * from './login';
 export * from './document';
 export * from './entity-document-extend';
+export * from './tenant';
 // INDEX
 export * from './dto/Activity';
 export * from './dto/Classroom';

@@ -51,7 +51,7 @@ namespace ECDLink.PostgresTenancy.Services
         public TenantModel GetTenantByUrl(string url)
         {
             var tenant = _repository.GetAll()
-                            .Where(x => url.Contains(x.SiteAddress))
+                            .Where(x => url.Contains(x.SiteAddress) || url.Contains(x.AdminSiteAddress))
                             .FirstOrDefault();
 
             if (tenant == null)
@@ -69,12 +69,12 @@ namespace ECDLink.PostgresTenancy.Services
                 return default;
             }
 
-            if (string.IsNullOrWhiteSpace(tenant.ConnectionString) && tenant.TenantType == Tenancy.Enums.TenantType.Tenant)
-            {
-                throw new InvalidOperationException("No connection string provided");
-            }
+            //if (string.IsNullOrWhiteSpace(tenant.ConnectionString) && tenant.TenantType == Tenancy.Enums.TenantType.Tenant)
+            //{
+            //    throw new InvalidOperationException("No connection string provided");
+            //}
 
-            var connection = new NpgsqlConnectionStringBuilder(tenant.ConnectionString);
+            //var connection = new NpgsqlConnectionStringBuilder(tenant.ConnectionString);
 
             var entity =_repository.Insert(new TenantEntity
             {
@@ -83,9 +83,10 @@ namespace ECDLink.PostgresTenancy.Services
                 UpdatedDate = DateTime.UtcNow,
                 OrganisationName = tenant.OrganisationName,
                 SiteAddress = tenant.SiteAddress,
-                DatabaseName = connection["Database"]?.ToString() ?? string.Empty,
-                Server = connection["Server"]?.ToString() ?? string.Empty,
-                ConnectionString = tenant.ConnectionString,
+                AdminSiteAddress = tenant.AdminSiteAddress,
+                //DatabaseName = connection["Database"]?.ToString() ?? string.Empty,
+                //Server = connection["Server"]?.ToString() ?? string.Empty,
+                //ConnectionString = tenant.ConnectionString,
                 DbProvider = "postgressql",
                 TenantType = tenant.TenantType
             });
@@ -97,14 +98,15 @@ namespace ECDLink.PostgresTenancy.Services
         {
             return new TenantModel
             {
-                Id = tenantEntity.Id.ToString(),
+                Id = tenantEntity.Id,
                 OrganisationName = tenantEntity.OrganisationName,
                 ApplicationName = tenantEntity.ApplicationName,
                 SiteAddress = tenantEntity.SiteAddress,
-                ConnectionString = (tenantEntity.TenantType == TenantType.Host) 
-                                    ? string.Empty 
-                                    : string.Format(tenantEntity.ConnectionString),
-                TenantType = tenantEntity.TenantType
+                AdminSiteAddress = tenantEntity.AdminSiteAddress,
+                TenantType = tenantEntity.TenantType,
+                ThemePathVar = tenantEntity.ThemePathVar,
+                Var1 = tenantEntity.Var1,
+                Var2 = tenantEntity.Var2
             };
         }
     }
