@@ -23,6 +23,7 @@ using Microsoft.EntityFrameworkCore;
 using ECDLink.DataAccessLayer.Context;
 
 using ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData;
+using ECDLink.Tenancy.Context;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
@@ -32,7 +33,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public IEnumerable<ApplicationUser> GetUsers([Service] UserManager<ApplicationUser> userManager)
         {
-            return userManager.Users;
+            Guid tenantId = TenantExecutionContext.Tenant.Id;
+            return userManager.Users.Where(x => x.TenantId.Equals(tenantId));
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
