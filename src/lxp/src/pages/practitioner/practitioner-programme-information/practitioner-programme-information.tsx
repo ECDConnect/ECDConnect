@@ -156,15 +156,37 @@ export const PractitionerProgrammeInformation: React.FC = () => {
         },
       },
       {
+        title: 'Location - N/A',
+        subTitle: 'N/A',
+        switchTextStyles: true,
+        actionName: 'Add',
+        actionIcon: 'PlusIcon',
+        onActionClick: () => {
+          setEditFieldVisible(true);
+        },
+      },
+      {
         title: 'Type of ECD service',
         subTitle: programmeType?.description,
         switchTextStyles: true,
+      },
+      {
+        title: 'Other participants on the site',
+        subTitle: 'Participants list*',
+        switchTextStyles: true,
+        actionName: 'Edit',
+        actionIcon: 'PencilIcon',
+        onActionClick: () => {
+          history.push(ROUTES.PRINCIPAL.PRACTITIONER_LIST, {
+            returnRoute: ROUTES.PRACTITIONER.PROGRAMME_INFORMATION,
+          });
+        },
       },
     ];
 
     if (programmeType?.enumId === ProgrammeTypeEnum.Playgroup) {
       stackedActionList.push({
-        title: 'Groups',
+        title: 'Classes',
         subTitle: classroomGroups
           ?.filter((x) => x.name !== NoPlaygroupClassroomType.name)
           .map((x) => x.name)
@@ -173,9 +195,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
         actionName: 'Edit',
         actionIcon: 'PencilIcon',
         onActionClick: () => {
-          history.push(ROUTES.PRACTITIONER.PROFILE.PLAYGROUPS, {
-            returnRoute: ROUTES.PRACTITIONER.PROGRAMME_INFORMATION,
-          });
+          history.push(ROUTES.PRACTITIONER.PROFILE.PLAYGROUPS);
         },
       });
     }

@@ -171,6 +171,10 @@ class PractitionerService {
               email
               phoneNumber
               profileImageUrl
+              roles {
+                id
+                name
+              }
             }
           }
         }

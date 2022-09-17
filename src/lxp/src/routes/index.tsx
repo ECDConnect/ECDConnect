@@ -60,6 +60,7 @@ import { SetupPrincipal } from '@/pages/principal/setup-principal/setup-principa
 import { PrincipalPractitionerProfileInfo } from '@/pages/classroom/class-dashboard/practitioners/principal-practitioner-profile/principal-practitioner-profile';
 import { PrincipalPractitionerChildList } from '@/pages/classroom/class-dashboard/practitioners/principal-practitioner-child-list/principal-practitioner-child-list';
 import { PrincipalNotes } from '@/pages/classroom/class-dashboard/practitioners/principal-practitioner-profile/components/principal-notes/principal-notes';
+import { PractitionerList } from '@/pages/practitioner/practitioner-programme-information/practitioner-list/practitioner-list';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -160,6 +161,11 @@ const AuthRoutes: React.FC = () => {
         exact
         path={ROUTES.PRINCIPAL.PRACTITIONER_PROFILE}
         component={PrincipalPractitionerProfileInfo}
+      />
+      <Route
+        exact
+        path={ROUTES.PRINCIPAL.PRACTITIONER_LIST}
+        component={PractitionerList}
       />
       <Route
         exact

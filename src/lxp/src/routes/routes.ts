@@ -32,6 +32,7 @@ const ROUTES = {
   PRINCIPAL: addPrefix('/principal', {
     SETUP_PROFILE: '/setup-profile',
     PRACTITIONER_PROFILE: '/practitioner-profile',
+    PRACTITIONER_LIST: '/practitioner-list',
     PRACTITIONER_CHILD_LIST: '/practitioner-child-list',
     NOTES: '/notes',
   }),
