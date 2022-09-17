@@ -47,7 +47,6 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
         public virtual IQueryable<T> GetAll()
         {
             Guid tenantId = TenantExecutionContext.Tenant.Id;
-            //return entities.Where(e => e.TenantId.Equals(tenantId)).AsQueryable();
             return entities.Where(e => e.TenantId == null || e.TenantId.Equals(tenantId)).AsQueryable();
         }
 

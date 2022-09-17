@@ -100,6 +100,29 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             }
         }
 
+        public ApplicationUser UpdatePractitionerContactInfo([Service] IHttpContextAccessor contextAccessor,
+            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+            [Service] UserManager<ApplicationUser> userManager,
+            [Service] IGenericRepositoryFactory repoFactory,
+            string practitionerId, string firstName, string lastName, string phoneNumber, string email)
+        {
+            bool bReturn = false;
+            using var scope = dbFactory.CreateDbContext();
+            using var dbContextTransaction = scope.Database.BeginTransaction();
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            //update users nicknames
+            var user = userManager.FindByIdAsync(practitionerId).Result;
+            user.NickFirstName = firstName;
+            user.NickSurname = lastName;
+            user.NickFullName = firstName + " " + lastName;    
+            user.PhoneNumber = phoneNumber;
+            user.Email = email;
+
+            var userUpdateResult = userManager.UpdateAsync(user).Result;
+
+            return user;
+        }
+
         public Practitioner DeletePractitionerFromPrincipal([Service] IHttpContextAccessor contextAccessor,
             [Service] UserManager<ApplicationUser> userManager,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,

@@ -89,9 +89,12 @@ namespace ECDLink.Core.Services
 
             foreach (var group in settings.GroupBy(x => x.Grouping))
             {
-                var groupedSettings = group.ToDictionary(k => k.Name, v => v.Value);
 
-                cacheToAdd.Add(group.Key, JsonConvert.SerializeObject(groupedSettings));
+                var groupedSettings = group.ToDictionary(k => k.Name, v => v.Value);
+                if (!cacheToAdd.Keys.Contains(group.Key))
+                {
+                    cacheToAdd.Add(group.Key, JsonConvert.SerializeObject(groupedSettings));
+                }
             }
 
             _cacheService.SetCacheItem(CacheKeyConstants.SystemSettingCache, cacheToAdd);

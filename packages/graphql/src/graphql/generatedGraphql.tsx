@@ -184,6 +184,7 @@ export type ApplicationUser = {
   raceId?: Maybe<Scalars['UUID']>;
   roles?: Maybe<Array<Maybe<IdentityRole>>>;
   surname?: Maybe<Scalars['String']>;
+  tenantId?: Maybe<Scalars['UUID']>;
   twoFactorEnabled: Scalars['Boolean'];
   userName?: Maybe<Scalars['String']>;
   verifiedByHomeAffairs: Scalars['Boolean'];
@@ -223,6 +224,7 @@ export type ApplicationUserFilterInput = {
   race?: InputMaybe<RaceFilterInput>;
   raceId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   surname?: InputMaybe<StringOperationFilterInput>;
+  tenantId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   twoFactorEnabled?: InputMaybe<BooleanOperationFilterInput>;
   userName?: InputMaybe<StringOperationFilterInput>;
   verifiedByHomeAffairs?: InputMaybe<BooleanOperationFilterInput>;
@@ -260,6 +262,7 @@ export type ApplicationUserInput = {
   race?: InputMaybe<RaceInput>;
   raceId?: InputMaybe<Scalars['UUID']>;
   surname?: InputMaybe<Scalars['String']>;
+  tenantId?: InputMaybe<Scalars['UUID']>;
   twoFactorEnabled: Scalars['Boolean'];
   userName?: InputMaybe<Scalars['String']>;
   verifiedByHomeAffairs: Scalars['Boolean'];
@@ -2030,6 +2033,7 @@ export type Mutation = {
   updateNoteType?: Maybe<NoteType>;
   updatePermission?: Maybe<Permission>;
   updatePractitioner?: Maybe<Practitioner>;
+  updatePractitionerContactInfo?: Maybe<ApplicationUser>;
   updatePractitionerIsFundaAppAdmin: Scalars['Boolean'];
   updatePractitionerIsTrainee: Scalars['Boolean'];
   updatePractitionerRegistered: Scalars['Boolean'];
@@ -2907,6 +2911,14 @@ export type MutationUpdatePermissionArgs = {
 export type MutationUpdatePractitionerArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   input?: InputMaybe<PractitionerInput>;
+};
+
+export type MutationUpdatePractitionerContactInfoArgs = {
+  email?: InputMaybe<Scalars['String']>;
+  firstName?: InputMaybe<Scalars['String']>;
+  lastName?: InputMaybe<Scalars['String']>;
+  phoneNumber?: InputMaybe<Scalars['String']>;
+  practitionerId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationUpdatePractitionerIsFundaAppAdminArgs = {
