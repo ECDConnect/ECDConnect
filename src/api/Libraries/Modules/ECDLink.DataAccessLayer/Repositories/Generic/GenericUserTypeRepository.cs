@@ -102,7 +102,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             var roles = _userManager.GetRolesAsync(user).Result;
             var isAdmin = roles.Contains(Roles.ADMINISTRATOR);
             
-            var query = entities.AsQueryable();//.Where(e => e.TenantId.Equals(tenantId))
+            var query = entities.Where(e => e.TenantId == null || e.TenantId.Equals(tenantId)).AsQueryable();//.Where(e => e.TenantId.Equals(tenantId))
             if (isAdmin)
             {
                 return query;
@@ -138,14 +138,10 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             {
                 return default;
             }
-
-            //if user is in a higher admin role (Principal, Practitioner, Coach, Franchisor, then skip the check as they need to be able to see anyone anywhere due to the shift in roles of Milestone 1.
+            
             var user = _userManager.FindByIdAsync(castRecord.UserId).Result;
             var roles = _userManager.GetRolesAsync(user).Result;
-            //var higherRoles = new[] { Roles.PRACTITIONER, Roles.COACH, Roles.ADMINISTRATOR, Roles.PRINCIPAL, Roles.FRANCHISOR };//
-            //bool isHigherRole = higherRoles.Any(roles.Contains);
 
-            ///if (!isHigherRole)
             var isAdmin = roles.Contains(Roles.ADMINISTRATOR);
 
             if (!isAdmin)
@@ -160,12 +156,6 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                             return default;
                         }
                     }
-
-                    //var hierarchy = _hierarchyEngine.GetUserHierarchy(_userId);
-                    //if (!castRecord.Hierarchy.StartsWith(hierarchy))
-                    //{
-                    //    return default;
-                    //}
                 }
             }
 

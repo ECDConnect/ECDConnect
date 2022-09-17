@@ -50,16 +50,17 @@ namespace ECDLink.Tenancy.Middleware
                                 .FirstOrDefault();
             
             // If there is a jwt, automatically just use it
-            if (!string.IsNullOrEmpty(claim?.Value))
+            if (!string.IsNullOrEmpty(claim?.Value) && claim?.Value != "00000000-0000-0000-0000-000000000000")
             {
                 var idTenant = tenancyService.GetTenantById(claim.Value);
                 if (idTenant != null && idTenant != default(TenantModel))
                     tenant = idTenant;
+                
                 path = "JWT:" + claim?.Value;
                     
-            }
+            } else { 
 
-            if (claim?.Value == "00000000-0000-0000-0000-000000000000") {  //means we dont have a tenant from the JWt            
+            //if (tenant == default(TenantModel)) {  //means we dont have a tenant from the JWt            
                                                     // Check url making request
                 var refererUrl = context?.Request?.GetTypedHeaders()?.Referer?.AbsoluteUri ?? context.Request.Host.Host ?? String.Empty;
 
