@@ -303,7 +303,9 @@ export const PractitionersList: React.FC = () => {
       onActionClick: () => handleClick(practitioner?.userId!),
     };
   };
-
+  console.log(
+    practitionersList?.length! > 0 || practitionersList !== undefined
+  );
   return (
     <>
       {/* <SearchHeader<UserAlertListDataItem>

@@ -29,102 +29,16 @@ import { practitionerSelectors } from '@/store/practitioner';
 import { childrenForPractitionerSelectors } from '@/store/childrenForPractitioner';
 import { IconInformationIndicator } from '../../../../classroom/programme-planning/components/icon-information-indicator/icon-information-indicator';
 
-const practitionersList: PractitionerDto[] = [
-  {
-    id: '4efb5692-11fe-4c39-967c-a02670551406',
-    userId: '59c4b252-b42e-4c9a-892c-214830a2c1b9',
-    isPrincipal: true,
-    isFundaAppAdmin: false,
-    isTrainee: false,
-    principalHierarchy: '',
-    isActive: true,
-    coachHierarchy: '23afbf4f-d5f5-473a-943c-67f674ea7f1e',
-    isRegistered: true,
-    shareInfo: true,
-    languageUsedInGroups: '',
-    attendanceRegisterLink: '',
-    user: {
-      idNumber: '8707255800080',
-      fullName: 'Practitioner00001 Test0001',
-      firstName: 'Practitioner00001',
-      surname: 'Test0001',
-      id: '59c4b252-b42e-4c9a-892c-214830a2c1b9',
-      email: 'practitioner00001@gmail.com',
-      phoneNumber: '+27875502599',
-      profileImageUrl: '',
-      isSouthAfricanCitizen: true,
-      verifiedByHomeAffairs: true,
-      contactPreference: '',
-    },
-  },
-  {
-    id: '974e06ab-c3d0-4520-8d8d-bb9aed891176',
-    userId: '81d0da8a-9089-4f28-b734-71e9b7803180',
-    isPrincipal: false,
-    isFundaAppAdmin: false,
-    isTrainee: false,
-    principalHierarchy: '59c4b252-b42e-4c9a-892c-214830a2c1b9',
-    isActive: true,
-    coachHierarchy: '23afbf4f-d5f5-473a-943c-67f674ea7f1e',
-    isRegistered: true,
-    shareInfo: true,
-    languageUsedInGroups: '',
-    attendanceRegisterLink: '',
-    user: {
-      idNumber: '9011255800086',
-      fullName: 'Practitioner00002 Test00002',
-      firstName: 'Practitioner00002',
-      surname: 'Test00002',
-      id: '81d0da8a-9089-4f28-b734-71e9b7803180',
-      email: 'practitioner00002@gmail.com',
-      phoneNumber: '+27875502599',
-      profileImageUrl: '',
-      isSouthAfricanCitizen: true,
-      verifiedByHomeAffairs: true,
-      contactPreference: '',
-    },
-  },
-  {
-    id: 'f7bbea13-af5d-4180-8c35-cdb797ccc419',
-    userId: '3c1036b5-8ffa-4a42-a13c-79ccd7a56aa6',
-    isPrincipal: false,
-    isFundaAppAdmin: false,
-    isTrainee: false,
-    principalHierarchy: '59c4b252-b42e-4c9a-892c-214830a2c1b9',
-    isActive: true,
-    coachHierarchy: '23afbf4f-d5f5-473a-943c-67f674ea7f1e',
-    isRegistered: true,
-    shareInfo: true,
-    languageUsedInGroups: '',
-    attendanceRegisterLink: '',
-    user: {
-      idNumber: '9204155800088',
-      fullName: 'Practitioner00003 Test00003',
-      firstName: 'Practitioner00003',
-      surname: 'Test00003',
-      id: '3c1036b5-8ffa-4a42-a13c-79ccd7a56aa6',
-      email: 'practitioner00003@gmail.com',
-      phoneNumber: '+27875502599',
-      profileImageUrl: '',
-      isSouthAfricanCitizen: true,
-      verifiedByHomeAffairs: true,
-      contactPreference: '',
-    },
-  },
-];
-
 export const PrincipalPractitionerChildList: React.FC<
   ComponentBaseProps
 > = () => {
   const location = useLocation<PractitionerProfileRouteState>();
   const practitionerId = location.state.practitionerId;
-  // const practitioners = useSelector(practitionerSelectors.getPractitioners);
-  // const practitioner = practitioners?.find(
-  //   (practitioner) => practitioner?.userId === practitionerId
-  // );
-  const practitioner = practitionersList?.find(
+  const practitioners = useSelector(practitionerSelectors.getPractitioners);
+  const practitioner = practitioners?.find(
     (practitioner) => practitioner?.userId === practitionerId
   );
+
   const { isOnline } = useOnlineStatus();
   const { getWorkflowStatusIdByEnum } = useStaticData();
   const pendingStatusId = getWorkflowStatusIdByEnum(
