@@ -124,6 +124,7 @@ export const PractitionerList: React.FC<PractitionerListProps> = ({
                 color="primary"
                 className={'w-full'}
                 onClick={() => {}}
+                disabled={true}
               >
                 {renderIcon('SaveIcon', styles.buttonIcon)}
                 <Typography

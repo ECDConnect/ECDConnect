@@ -39,6 +39,7 @@ import { analyticsActions } from '@store/analytics';
 import * as styles from './practitioner-programme-information.styles';
 import ROUTES from '@routes/routes';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
+import { practitionerSelectors } from '@/store/practitioner';
 
 export const PractitionerProgrammeInformation: React.FC = () => {
   const history = useHistory();
@@ -52,6 +53,11 @@ export const PractitionerProgrammeInformation: React.FC = () => {
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const programmeType = useSelector(
     classroomsSelectors.getClassroomProgrammeType()
+  );
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  const practitioners = useSelector(practitionerSelectors.getPractitioners);
+  const practitionersList = practitioners?.filter(
+    (item) => item.userId !== practitioner?.userId
   );
 
   const { createNewDocument, classroomImage, updateDocument, deleteDocument } =
@@ -161,9 +167,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
         switchTextStyles: true,
         actionName: 'Add',
         actionIcon: 'PlusIcon',
-        onActionClick: () => {
-          setEditFieldVisible(true);
-        },
+        onActionClick: () => {},
       },
       {
         title: 'Type of ECD service',
@@ -172,7 +176,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
       },
       {
         title: 'Other participants on the site',
-        subTitle: 'Participants list*',
+        subTitle: practitionersList?.map((x) => x?.user?.firstName).join(', '),
         switchTextStyles: true,
         actionName: 'Edit',
         actionIcon: 'PencilIcon',
@@ -184,18 +188,18 @@ export const PractitionerProgrammeInformation: React.FC = () => {
       },
     ];
 
-    if (programmeType?.enumId === ProgrammeTypeEnum.Playgroup) {
+    if (classroomGroups.length > 0) {
       stackedActionList.push({
         title: 'Classes',
         subTitle: classroomGroups
           ?.filter((x) => x.name !== NoPlaygroupClassroomType.name)
           .map((x) => x.name)
-          .join(','),
+          .join(', '),
         switchTextStyles: true,
         actionName: 'Edit',
         actionIcon: 'PencilIcon',
         onActionClick: () => {
-          history.push(ROUTES.PRACTITIONER.PROFILE.PLAYGROUPS);
+          history.push(ROUTES.PRACTITIONER.PROFILE.PLAYGROUPS, { a: 'hello' });
         },
       });
     }
