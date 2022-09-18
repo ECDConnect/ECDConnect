@@ -2,6 +2,7 @@
 using ECDLink.Core.Caching;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Hierarchy.Entities;
@@ -151,15 +152,39 @@ namespace ECDLink.DataAccessLayer.Hierarchy
                     }
                 }
             } else if (isPrincipal || isPractitioner) {
-                List<Practitioner> principalPractitioners = practRepo.GetAll().ToList();
-                principalPractitioners = principalPractitioners.Where(c => c.PrincipalHierarchy.HasValue).ToList();
-                principalPractitioners = principalPractitioners.Where(c => c.PrincipalHierarchy.ToString() == userId).ToList();
+                List<Practitioner> practitioners = practRepo.GetAll().ToList();
+                practitioners = practitioners.Where(c => c.PrincipalHierarchy.HasValue || c.IsPrincipal == true).ToList(); // some practitioners can be principal as owner with only themselves as owner
+                var principalPractitioners = practitioners.Where(c => c.PrincipalHierarchy.ToString() == userId).ToList();
                 if (principalPractitioners.Count > 0)
                 {
                     foreach (var p in principalPractitioners)
                     {
                         hierarchyList.Add(this.GetUserHierarchy(p.UserId));
                     }
+                }
+                if (isPractitioner && (typeof(T) == typeof(Classroom) || typeof(T) == typeof(ClassroomGroup)))
+                {
+                    //in the event of classrooms and classroomgroups, a reverse hierarchy need sto be performed if the user is a practitioner as they need to see teh reverse hierarchy to return the ownership of classes and programmes to determine who assigned the classroom to them, valis for classroomDetailsForPractitioner, absenteeism and reassigning classes to different practitioners
+                    //var practitionerPrincipal = practitioners.Where(c => c.PrincipalHierarchy.HasValue || c.IsPrincipal == true).ToList();
+                    if (practitioners.Count > 0)
+                    {
+                        foreach (var p in practitioners.Where(p => p.UserId == userId))
+                        {
+                            Practitioner practitionerPrincipal = practRepo.GetByUserId(p.PrincipalHierarchy.ToString());
+                            if (practitionerPrincipal != null) 
+                                hierarchyList.Add(this.GetUserHierarchy(practitionerPrincipal.UserId));
+                            if (p.CoachHierarchy != null)
+                            {
+                                Coach principalCoach = coachRepo.GetByUserId(p.CoachHierarchy.ToString());
+                                if (principalCoach != null)
+                                    hierarchyList.Add(this.GetUserHierarchy(principalCoach.UserId));
+                                if (principalCoach.FranchisorId != null)
+                                    hierarchyList.Add(this.GetUserHierarchy(principalCoach.FranchisorId.ToString()));
+                            }
+
+                        }
+                    }
+
                 }
             }
             //in some cases like a child, we need to get the relevant children hierarchy in addition for the generic repository selectionlist
@@ -177,8 +202,9 @@ namespace ECDLink.DataAccessLayer.Hierarchy
                     }
                 }
             }
+            
 
-            return hierarchyList;
+                return hierarchyList;
         }
 
         public string GetHierarchy<TChild>(string parentId, string childId)
