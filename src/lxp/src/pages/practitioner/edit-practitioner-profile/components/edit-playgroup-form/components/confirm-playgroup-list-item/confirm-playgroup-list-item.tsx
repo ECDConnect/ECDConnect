@@ -22,7 +22,7 @@ export const ConfirmPlayGroupListItem: React.FC<
         <Typography
           type="body"
           color={'textMid'}
-          text={`Playgroup ${index + 1}: ${playGroup.name}`}
+          text={`Class ${index + 1}: ${playGroup.name}`}
           weight={'bold'}
         />
         <div>

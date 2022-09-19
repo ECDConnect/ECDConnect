@@ -249,8 +249,8 @@ export const PrincipalPractitionerChildList: React.FC<
             return childAlertOne.severity > childAlertTwo.severity ? 1 : -1;
           }
           case 'surname':
-            return (childUserOne !== undefined && childUserOne?.surname) >
-              (childUserTwo !== undefined && childUserTwo.surname)
+            return (childUserOne !== undefined && childUserOne?.surname!) >
+              (childUserTwo !== undefined && childUserTwo.surname!)
               ? 1
               : -1;
           case 'age':
@@ -262,8 +262,8 @@ export const PrincipalPractitionerChildList: React.FC<
               : -1;
           case 'firstName':
           default:
-            return (childUserOne !== undefined && childUserOne.firstName) >
-              (childUserTwo !== undefined && childUserTwo.firstName)
+            return (childUserOne !== undefined && childUserOne.firstName!) >
+              (childUserTwo !== undefined && childUserTwo.firstName!)
               ? 1
               : -1;
         }

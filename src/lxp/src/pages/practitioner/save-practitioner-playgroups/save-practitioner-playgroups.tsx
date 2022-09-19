@@ -248,7 +248,7 @@ export const EditPlaygroups: React.FC = () => {
           <ConfirmPlayGroups
             defaultPlayGroups={updatedPlaygroups || []}
             onEditPlaygroup={onPlayGroupsEdit}
-            title="Edit Playgroups"
+            title="Edit classes"
             isLoading={isLoading}
             onSubmit={(value) => {
               confirmPlaygroups(value);
@@ -312,7 +312,7 @@ export const EditPlaygroups: React.FC = () => {
 
   return (
     <BannerWrapper
-      title={'Edit playgroups'}
+      title={'Edit classes'}
       onBack={onBack}
       onClose={exitPrompt}
       size="medium"

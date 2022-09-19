@@ -72,7 +72,7 @@ export const ConfirmPlayGroups: React.FC<ConfirmPlayGroupsProps> = ({
           {renderIcon('PlusSmIcon', styles.icon)}
           <Typography
             className="mx-2"
-            text="Add playgroup"
+            text="Add class"
             type="help"
             color="white"
           />

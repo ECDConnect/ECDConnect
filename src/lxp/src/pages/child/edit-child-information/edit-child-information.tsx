@@ -724,7 +724,7 @@ export const EditChildInformation: React.FC = () => {
               type="body"
               className=""
               color="textDark"
-              text={'Edit Playgroup'}
+              text={'Edit Classes'}
               weight="bold"
             />
             <div onClick={closeEditField}>
@@ -732,7 +732,7 @@ export const EditChildInformation: React.FC = () => {
             </div>
           </div>
           <Dropdown<string>
-            placeholder={'Select playgroup'}
+            placeholder={'Select class'}
             list={classRoomGroupsList}
             fillType="clear"
             fullWidth

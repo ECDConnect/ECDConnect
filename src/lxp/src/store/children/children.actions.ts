@@ -164,7 +164,7 @@ export const upsertChildUsers = createAsyncThunk<
             const input: UserModelInput = {
               isSouthAfricanCitizen: x.isSouthAfricanCitizen ?? false,
               idNumber: x.idNumber && x.idNumber.length > 0 ? x.idNumber : null,
-              verifiedByHomeAffairs: x.verifiedByHomeAffairs,
+              verifiedByHomeAffairs: x.verifiedByHomeAffairs!,
               dateOfBirth: x.dateOfBirth,
               genderId: x.genderId && x.genderId.length > 0 ? x.genderId : null,
               raceId: x.raceId && x.raceId.length > 0 ? x.raceId : null,

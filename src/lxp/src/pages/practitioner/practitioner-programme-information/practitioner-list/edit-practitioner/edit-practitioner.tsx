@@ -11,12 +11,18 @@ import {
   editPractitionerSchema,
   initialEditPractitionerValues,
 } from '@/schemas/practitioner/edit-practitioner';
+import { useAppDispatch } from '@store';
+import {
+  practitionerActions,
+  practitionerThunkActions,
+} from '@/store/practitioner';
 
 export const EditPractitioner: React.FC<EditPractitionerProps> = ({
   setEditiPractitionerVisible,
 }) => {
   const [practitionerInfo, setPractitionerInfo] = useState({});
   const { isOnline } = useOnlineStatus();
+  const appDispatch = useAppDispatch();
 
   const {
     getValues: getPractitionerInfoFormValues,
@@ -32,10 +38,29 @@ export const EditPractitioner: React.FC<EditPractitionerProps> = ({
     reValidateMode: 'onChange',
   });
 
-  const { firstName } = useWatch({ control: practitionerInfoFormControl });
-  console.log({ firstName });
+  // const { firstName, surname } = useWatch({
+  //   control: practitionerInfoFormControl,
+  // });
 
-  console.log(getPractitionerInfoFormValues());
+  // const handleChangePractitionerInfo = () => {
+  //   const editPractitionerModel: PractitionerDto = {
+  //     user: {
+  //       firstName: firstName ?? '',
+  //       surname: surname ?? '',
+  //     },
+  //   };
+
+  //   appDispatch(
+  //     practitionerThunkActions.updatePractitionerById({
+  //       id: 'c87a3c8a-e247-4899-a757-6e5be5657206',
+  //       input: editPractitionerModel,
+  //     })
+  //   );
+  //   setEditiPractitionerVisible(false);
+  //   // appDispatch(practitionerThunkActions.)
+  // };
+
+  // console.log(getPractitionerInfoFormValues());
   return (
     <div>
       <BannerWrapper

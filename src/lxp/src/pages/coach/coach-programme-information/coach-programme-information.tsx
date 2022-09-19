@@ -98,8 +98,8 @@ export const CoachProgrammeInformation: React.FC = () => {
       avatarColor: '#6974af',
       alertSeverity: 'none',
       profileText:
-        item?.user?.firstName.substring(0, 1)! +
-        item?.user?.surname.substring(0, 1),
+        item?.user?.firstName?.substring(0, 1)! +
+        item?.user?.surname?.substring(0, 1),
       onActionClick: () => handleClick(item.userId!),
       id: item?.userId,
     };

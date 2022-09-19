@@ -80,7 +80,7 @@ export const PractitionerAbout: React.FC = () => {
         name: user.firstName || '',
         surname: user.surname || '',
         cellphone: user.phoneNumber || '',
-        email: user.email,
+        email: user?.email! || '',
       };
       return tempPractitioner;
     } else {

@@ -13,7 +13,7 @@ export const icons = 'cursor-pointer z-10 w-auto primaryAccent2';
 export const menuIcons =
   'cursor-pointer z-10 rounded-10 bg-primaryAccent1 h-10 w-10 p-2';
 export const logo =
-  'text-center inline-block bg-logo mt-14 w-24 h-24 bg-contain';
+  'text-center inline-block bg-logo mt-14 w-24 h-7 mb-12 bg-contain';
 export const overlayImage = 'w-full';
 
 export const header = (
