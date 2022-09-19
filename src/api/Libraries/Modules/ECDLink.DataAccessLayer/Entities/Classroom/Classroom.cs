@@ -15,7 +15,7 @@ namespace ECDLink.DataAccessLayer.Entities.Classroom
     {
     }
 
-    public class Classroom<TKey> : EntityBase<TKey>, IUserScoped, SiteAddressJoin<Guid?>, ApplicationUserJoin
+    public class Classroom<TKey> : EntityBase<TKey>, IUserScoped, IReversedHierarchy,  SiteAddressJoin<Guid?>, ApplicationUserJoin
         where TKey : IEquatable<TKey>
     {
         [ForeignKey(nameof(UserId))]

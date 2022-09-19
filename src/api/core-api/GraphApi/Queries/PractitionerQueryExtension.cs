@@ -187,10 +187,9 @@ string userId)
             using var scope = dbFactory.CreateDbContext();
             using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
-            var classroomGroupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
-            var classroomRepo = repoFactory.CreateRepository<Classroom>(userContext: uId);
-            var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            var userRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+            var classroomGroupRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);
+            var classroomRepo = repoFactory.CreateGenericRepository<Classroom>(userContext: uId);
+            var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId); //BYPASS USERHIERARCHY TO SEE UP THE CHAIN
             PrincipalClassroom principalClassroom = new PrincipalClassroom();
             ClassroomGroup classroomGroup = classroomGroupRepo.GetByUserId(userId);
             if (classroomGroup != null)
