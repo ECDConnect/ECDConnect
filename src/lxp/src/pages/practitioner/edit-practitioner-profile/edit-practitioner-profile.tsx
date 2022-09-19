@@ -34,7 +34,7 @@ export const EditPractitionerProfile: React.FC = () => {
   const userAuth = useSelector(authSelectors.getAuthUser);
   const user = useSelector(userSelectors.getUser);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
-
+  console.log({ practitioner });
   const [label, setLabel] = useState('');
   const [activeStep, setActiveStep] = useState(EditPractitionerSteps.WELCOME);
   const [formData, setFormData] = useState<PractitionerFormData>({

@@ -276,7 +276,7 @@ class PractitionerService {
       );
     }
 
-    return response.data.data.getClassroomDetailsForPractitioner;
+    return response.data.data.classroomDetailsForPractitioner;
   }
 
   async UpdatePractitionerShareInfo(

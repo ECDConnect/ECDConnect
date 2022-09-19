@@ -50,10 +50,6 @@
     <ProjectReference Include="..\Libraries\Modules\ECDLink.UrlShortner\ECDLink.UrlShortner.csproj" />
   </ItemGroup>
   
-  <ItemGroup>
-    <Folder Include="Tenancy\TempScripts\" />
-  </ItemGroup>
-  
   <ProjectExtensions><VisualStudio><UserProperties appsettings_1development_1json__JsonSchema="https://download.stackhawk.com/hawk/jsonconfig/hawkconfig.json" /></VisualStudio></ProjectExtensions>
   
 </Project>
