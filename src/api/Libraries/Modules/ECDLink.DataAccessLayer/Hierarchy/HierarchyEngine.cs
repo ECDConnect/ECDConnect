@@ -162,30 +162,30 @@ namespace ECDLink.DataAccessLayer.Hierarchy
                         hierarchyList.Add(this.GetUserHierarchy(p.UserId));
                     }
                 }
-                if (isPractitioner && (typeof(T) == typeof(Classroom) || typeof(T) == typeof(ClassroomGroup)))
-                {
-                    //in the event of classrooms and classroomgroups, a reverse hierarchy need sto be performed if the user is a practitioner as they need to see teh reverse hierarchy to return the ownership of classes and programmes to determine who assigned the classroom to them, valis for classroomDetailsForPractitioner, absenteeism and reassigning classes to different practitioners
-                    //var practitionerPrincipal = practitioners.Where(c => c.PrincipalHierarchy.HasValue || c.IsPrincipal == true).ToList();
-                    if (practitioners.Count > 0)
-                    {
-                        foreach (var p in practitioners.Where(p => p.UserId == userId))
-                        {
-                            Practitioner practitionerPrincipal = practRepo.GetByUserId(p.PrincipalHierarchy.ToString());
-                            if (practitionerPrincipal != null) 
-                                hierarchyList.Add(this.GetUserHierarchy(practitionerPrincipal.UserId));
-                            if (p.CoachHierarchy != null)
-                            {
-                                Coach principalCoach = coachRepo.GetByUserId(p.CoachHierarchy.ToString());
-                                if (principalCoach != null)
-                                    hierarchyList.Add(this.GetUserHierarchy(principalCoach.UserId));
-                                if (principalCoach.FranchisorId != null)
-                                    hierarchyList.Add(this.GetUserHierarchy(principalCoach.FranchisorId.ToString()));
-                            }
+                //if (isPractitioner && (typeof(T) == typeof(Classroom) || typeof(T) == typeof(ClassroomGroup)))
+                //{
+                //    //in the event of classrooms and classroomgroups, a reverse hierarchy need sto be performed if the user is a practitioner as they need to see teh reverse hierarchy to return the ownership of classes and programmes to determine who assigned the classroom to them, valis for classroomDetailsForPractitioner, absenteeism and reassigning classes to different practitioners
+                //    //var practitionerPrincipal = practitioners.Where(c => c.PrincipalHierarchy.HasValue || c.IsPrincipal == true).ToList();
+                //    if (practitioners.Count > 0)
+                //    {
+                //        foreach (var p in practitioners.Where(p => p.UserId == userId))
+                //        {
+                //            Practitioner practitionerPrincipal = practRepo.GetByUserId(p.PrincipalHierarchy.ToString());
+                //            if (practitionerPrincipal != null) 
+                //                hierarchyList.Add(this.GetUserHierarchy(practitionerPrincipal.UserId));
+                //            if (p.CoachHierarchy != null)
+                //            {
+                //                Coach principalCoach = coachRepo.GetByUserId(p.CoachHierarchy.ToString());
+                //                if (principalCoach != null)
+                //                    hierarchyList.Add(this.GetUserHierarchy(principalCoach.UserId));
+                //                if (principalCoach.FranchisorId != null)
+                //                    hierarchyList.Add(this.GetUserHierarchy(principalCoach.FranchisorId.ToString()));
+                //            }
 
-                        }
-                    }
+                //        }
+                //    }
 
-                }
+                //}
             }
             //in some cases like a child, we need to get the relevant children hierarchy in addition for the generic repository selectionlist
             if (typeof(T) == typeof(Child))
