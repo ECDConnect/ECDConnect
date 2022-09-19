@@ -3,19 +3,39 @@ import { PractitionerDto, UserDto } from '@ecdlink/core';
 import { useEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import {
-  AddPractitionerModel,
-  addPractitionerSchema,
-  initialAddPractitionerValues,
-} from '@/schemas/practitioner/add-practitioner';
 import { PractitionerService } from '@/services/PractitionerService';
 import { EditPractitionerProps } from './edit-practitioner.types';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
+import {
+  EditPractitionerModel,
+  editPractitionerSchema,
+  initialEditPractitionerValues,
+} from '@/schemas/practitioner/edit-practitioner';
 
 export const EditPractitioner: React.FC<EditPractitionerProps> = ({
   setEditiPractitionerVisible,
 }) => {
+  const [practitionerInfo, setPractitionerInfo] = useState({});
   const { isOnline } = useOnlineStatus();
+
+  const {
+    getValues: getPractitionerInfoFormValues,
+    formState: practitionerInfoFormState,
+    setValue: setPractitionerInfoFormValue,
+    register: practitionerInfoFormRegister,
+    reset: resetPractitionerFormValue,
+    control: practitionerInfoFormControl,
+  } = useForm({
+    resolver: yupResolver(editPractitionerSchema),
+    defaultValues: initialEditPractitionerValues,
+    mode: 'onBlur',
+    reValidateMode: 'onChange',
+  });
+
+  const { firstName } = useWatch({ control: practitionerInfoFormControl });
+  console.log({ firstName });
+
+  console.log(getPractitionerInfoFormValues());
   return (
     <div>
       <BannerWrapper
@@ -31,19 +51,21 @@ export const EditPractitioner: React.FC<EditPractitionerProps> = ({
         <div className="flex justify-center w-full">
           <div className="flex flex-wrap justify-center">
             <div className="flex flex-col justify-center gap-4 mt-4 w-full">
-              <FormInput<AddPractitionerModel>
+              <FormInput<EditPractitionerModel>
                 label={'First name'}
                 visible={true}
                 nameProp={'firstName'}
                 placeholder="First Name"
                 className="w-full"
+                register={practitionerInfoFormRegister}
               />
-              <FormInput<AddPractitionerModel>
+              <FormInput<EditPractitionerModel>
                 label={'Surname'}
                 placeholder="Surname/Family name"
                 visible={true}
                 nameProp={'surname'}
                 className="w-full"
+                register={practitionerInfoFormRegister}
               />
             </div>
             <div className="self-end -mb-4 w-full">
