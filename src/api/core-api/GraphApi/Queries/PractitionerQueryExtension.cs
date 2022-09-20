@@ -194,6 +194,7 @@ public PrincipalClassroom GetClassroomDetailsForPractitioner([Service] IHttpCont
             ClassroomGroup classroomGroup = classroomGroupRepo.GetByUserId(userId);
             if (classroomGroup != null)
             {
+                principalClassroom.ClassroomName = classroomGroup.Name;
                 Classroom classroom = classroomRepo.GetById(classroomGroup.ClassroomId);
                 var principal = practitionerRepo.GetByUserId(classroom.UserId);
                 if (principal != null)

@@ -173,6 +173,7 @@ namespace ECDLink.DataAccessLayer.Hierarchy
                         }
                     }
                 }
+                //reverse userhierarchy is not needed until its needed again, do not uncomment
                 //if (isPractitioner && (typeof(T) == typeof(Classroom) || typeof(T) == typeof(ClassroomGroup)))
                 //{
                 //    //in the event of classrooms and classroomgroups, a reverse hierarchy need sto be performed if the user is a practitioner as they need to see teh reverse hierarchy to return the ownership of classes and programmes to determine who assigned the classroom to them, valis for classroomDetailsForPractitioner, absenteeism and reassigning classes to different practitioners
