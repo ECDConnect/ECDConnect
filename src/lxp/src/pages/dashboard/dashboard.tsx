@@ -127,6 +127,14 @@ export const Dashboard: React.FC = () => {
     }
   }, []);
 
+  useEffect(() => {
+    (async () =>
+      await appDispatch(
+        practitionerThunkActions.getAllPractitioners({})
+      ).unwrap())();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const navigation: (NavigationRouteItem | NavigationDropdown)[] = [
     {
       name: NavigationTypes.Home,

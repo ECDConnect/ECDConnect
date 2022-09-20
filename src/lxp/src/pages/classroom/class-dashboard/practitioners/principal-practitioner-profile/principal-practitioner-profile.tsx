@@ -27,6 +27,7 @@ import { notesSelectors } from '@store/notes';
 import { useSelector } from 'react-redux';
 import { practitionerSelectors } from '@/store/practitioner';
 import { PractitionerDto } from '@/../../../packages/core/lib';
+import { classroomsSelectors } from '@/store/classroom';
 
 // const practitionersList: PractitionerDto[] = [
 //   {
@@ -119,11 +120,15 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const location = useLocation<PractitionerProfileRouteState>();
   const practitionerId = location.state.practitionerId;
   const isFromProgrammeView = location.state.isFromProgrammeView;
+  const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const practitioner = practitioners?.find(
     (practitioner) => practitioner?.userId === practitionerId
   );
-  console.log({ practitioner });
+  const classroomGroup = classroomGroups?.find((item: any) => {
+    return item?.userId === practitionerId;
+  });
+
   const { theme } = useTheme();
 
   const [createPractitionerNoteVisible, setCreatePractitionerdNoteVisible] =
@@ -250,7 +255,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
         <Card className={styles.absentCard}>
           <Typography
             type={'h1'}
-            text={'Class name*'}
+            text={classroomGroup?.name}
             color={'textMid'}
             className={styles.absentCardTitle}
           />

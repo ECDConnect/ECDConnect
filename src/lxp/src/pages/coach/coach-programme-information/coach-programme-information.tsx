@@ -120,9 +120,6 @@ export const CoachProgrammeInformation: React.FC = () => {
     (item) => item.classroomId === practitionerClassroom?.id
   );
 
-  console.log({ practitionerClassroom });
-  console.log({ practitionerClassroomGroups });
-
   const call = () => {
     window.open(`tel:${practitioner?.user?.phoneNumber}`);
   };

@@ -56,7 +56,7 @@ export const getCoachByCoachId = createAsyncThunk<
       auth: { userAuth },
       coach: { coach: coachCache },
     } = getState();
-    console.log(userAuth?.id!);
+
     if (!coachCache) {
       try {
         let coach: CoachDto | undefined;

@@ -57,8 +57,6 @@ export const PractitionerList: React.FC<PractitionerListProps> = ({
   const [editPractitionerVisible, setEditiPractitionerVisible] =
     useState(false);
 
-  console.log({ classroom });
-
   const stackedListItems: ActionListDataItem[] = practitionersList
     ? practitionersList?.map((item) => {
         return {
