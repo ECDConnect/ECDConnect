@@ -198,12 +198,7 @@ public PrincipalClassroom GetClassroomDetailsForPractitioner([Service] IHttpCont
                 var principal = practitionerRepo.GetByUserId(classroom.UserId);
                 if (principal != null)
                 {
-<<<<<<< HEAD
-                    principalClassroom.PrincipalName = principal.User.FirstName + " " + principal.User.Surname;
-                    principalClassroom.ClassroomName = classroom.Name;
-=======
                     principalClassroom.PrincipalName = principal.User.FirstName + " " + principal.User.Surname;   
->>>>>>> develop
                 }
             }
             return principalClassroom;

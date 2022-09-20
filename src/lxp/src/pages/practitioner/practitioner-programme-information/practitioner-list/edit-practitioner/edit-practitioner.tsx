@@ -39,7 +39,7 @@ export const EditPractitioner: React.FC<EditPractitionerProps> = ({
   });
 
   // const { firstName, surname } = useWatch({
-  //   control: practitionerInfoFormControl,
+  //   control: practitionerInfoFormControl,git checkout develop
   // });
 
   // const handleChangePractitionerInfo = () => {
