@@ -68,6 +68,19 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
             } else return default;        
         }
 
+        public virtual List<T> GetListByUserId(string id)
+        {
+            Type type = typeof(T);
+            if (type.GetProperty("UserId") != null)
+            {
+                //var val = entities.AsQueryable().Where(x => x.GetType().GetProperty("UserId").GetValue(type,null).Equals(id)).FirstOrDefault();
+                Guid tenantId = TenantExecutionContext.Tenant.Id;
+                var qq = entities.FromSqlRaw("SELECT * FROM \"" + type.Name + "\" WHERE \"UserId\" = '" + id + "' AND \"TenantId\" = '" + tenantId + "'").ToList();
+                return qq.ToList();
+            }
+            else return default;
+        }
+
         public virtual T Insert(T entity)
         {
             if (entity == null) throw new ArgumentNullException("entity");
