@@ -31,7 +31,6 @@ export const Login: React.FC = () => {
   const [displayError, setDisplayError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [idFieldVisible, setIdFieldVisible] = useState(true);
-
   const { isOnline, Offline } = useOnlineStatus();
 
   const {

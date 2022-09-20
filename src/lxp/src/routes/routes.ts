@@ -3,6 +3,7 @@ import addPrefix from './withParentPrefix';
 const ROUTES = {
   ROOT: '/',
   LOGIN: '/login',
+  LOGOUT: '/logout',
   PASSWORD_RESET: '/password-reset',
   NEW_PASSWORD: '/new-password',
   SIGN_UP: '/sign-up',

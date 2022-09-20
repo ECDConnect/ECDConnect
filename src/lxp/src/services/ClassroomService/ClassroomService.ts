@@ -88,6 +88,45 @@ class ClassroomService {
     return response.data.data.allClassroomsForCoach;
   }
 
+  async getClassroomGroupClassroomsForPractitioner(
+    userId: string
+  ): Promise<ClassroomDto[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      query classroomGroupClassroomsForPractitioner($userId: String) 
+      {
+                classroomGroupClassroomsForPractitioner(userId: $userId) 
+                {          
+                  userId
+                  id
+                  name
+                  classroom 
+                  { 
+                    id
+                    name
+                    userId
+                   } 
+                   programmeType
+                    { 
+                      id
+                     } 
+                    }   
+                     }
+      `,
+      variables: {
+        userId,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error('Get Classroom Failed - Server connection error');
+    }
+
+    return response.data.data.classroomGroupClassroomsForPractitioner;
+  }
+
   async getClassroomsForPractitioner(
     practitionerId: string,
     principalId: string

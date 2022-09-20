@@ -62,7 +62,7 @@ export const Dashboard: React.FC = () => {
   const { theme } = useTheme();
   const dialog = useDialog();
   const isCoach = userData?.roles?.some((role) => role.name === 'Coach');
-
+  const logoutSet = true;
   const newNotificationCount = useSelector(
     notificationsSelectors.getNewNotificationCount
   );
@@ -188,7 +188,7 @@ export const Dashboard: React.FC = () => {
     },
     {
       name: NavigationTypes.Logout,
-      href: ROUTES.LOGIN,
+      href: ROUTES.LOGOUT,
       icon: 'ExternalLinkIcon',
       current: false,
       showDivider: true,
@@ -229,7 +229,7 @@ export const Dashboard: React.FC = () => {
     },
     {
       name: NavigationTypes.Logout,
-      href: ROUTES.LOGIN,
+      href: ROUTES.LOGOUT,
       icon: 'ExternalLinkIcon',
       current: false,
       showDivider: true,
