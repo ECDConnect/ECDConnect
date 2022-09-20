@@ -89,7 +89,7 @@ export const ClassProgrammeAttendanceList: React.FC<
           (att) => att.userId === learner.userId
         );
         const profileTextString =
-          childUser?.firstName[0] ?? '' + childUser?.surname[0] ?? '';
+          childUser?.firstName![0] ?? '' + childUser?.surname![0] ?? '';
 
         return {
           title: `${childUser?.firstName} ${childUser?.surname}`,

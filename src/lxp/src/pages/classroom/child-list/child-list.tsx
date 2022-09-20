@@ -244,8 +244,9 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
           }
           case 'surname':
             return (childUserOne !== undefined &&
-              childUserOne?.surname.toUpperCase()) >
-              (childUserTwo !== undefined && childUserTwo.surname.toUpperCase())
+              childUserOne?.surname?.toUpperCase()!) >
+              (childUserTwo !== undefined &&
+                childUserTwo.surname?.toUpperCase()!)
               ? 1
               : -1;
           case 'age':
@@ -265,9 +266,9 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
           case 'firstName':
           default:
             return (childUserOne !== undefined &&
-              childUserOne.firstName.toUpperCase()) >
+              childUserOne.firstName?.toUpperCase()!) >
               (childUserTwo !== undefined &&
-                childUserTwo.firstName.toUpperCase())
+                childUserTwo.firstName?.toUpperCase()!)
               ? 1
               : -1;
         }

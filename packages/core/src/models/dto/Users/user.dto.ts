@@ -6,18 +6,18 @@ import { RaceDto } from '../StaticData/race.dto';
 export interface UserDto extends EntityBase {
   // APPLICATION USER
   userName?: string;
-  email: string;
-  phoneNumber: string;
+  email?: string;
+  phoneNumber?: string;
   roles?: RoleDto[];
   // EXTENSION
-  isSouthAfricanCitizen: boolean;
-  idNumber: string;
-  verifiedByHomeAffairs: boolean;
+  isSouthAfricanCitizen?: boolean;
+  idNumber?: string;
+  verifiedByHomeAffairs?: boolean;
   dateOfBirth?: Date | string;
-  firstName: string;
-  surname: string;
+  firstName?: string;
+  surname?: string;
   fullName?: string;
-  contactPreference: string;
+  contactPreference?: string;
   gender?: GenderDto;
   genderId?: string;
   isActive?: boolean;

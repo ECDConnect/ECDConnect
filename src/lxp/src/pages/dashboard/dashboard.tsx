@@ -127,6 +127,14 @@ export const Dashboard: React.FC = () => {
     }
   }, []);
 
+  useEffect(() => {
+    (async () =>
+      await appDispatch(
+        practitionerThunkActions.getAllPractitioners({})
+      ).unwrap())();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const navigation: (NavigationRouteItem | NavigationDropdown)[] = [
     {
       name: NavigationTypes.Home,
@@ -274,9 +282,24 @@ export const Dashboard: React.FC = () => {
         classNames: 'bg-uiBg',
         chipConfig: {
           colorPalette: {
-            backgroundColour: 'white',
-            borderColour: 'errorMain',
-            textColour: 'errorMain',
+            backgroundColour: 'alertMain',
+            borderColour: 'alertMain',
+            textColour: 'white',
+          },
+          text: 'Coming soon',
+        },
+      },
+      {
+        title: 'Calendar',
+        titleIcon: 'CalendarIcon',
+        titleIconClassName: styles.businessIcon,
+        onActionClick: () => ({}),
+        classNames: 'bg-uiBg',
+        chipConfig: {
+          colorPalette: {
+            backgroundColour: 'alertMain',
+            borderColour: 'alertMain',
+            textColour: 'white',
           },
           text: 'Coming soon',
         },
@@ -387,9 +410,9 @@ export const Dashboard: React.FC = () => {
       backgroundColour={'white'}
       backgroundImageColour={'primary'}
       avatar={
-        userProfilePicture?.file ? (
+        userProfilePicture?.file || userData?.profileImageUrl ? (
           <Avatar
-            dataUrl={userProfilePicture?.file}
+            dataUrl={userProfilePicture?.file || userData?.profileImageUrl!}
             size={'sm'}
             displayBorder={true}
           />

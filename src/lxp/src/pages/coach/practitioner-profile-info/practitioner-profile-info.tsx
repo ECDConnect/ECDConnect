@@ -152,7 +152,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
           <ProfileAvatar
             hasConsent={true}
             canChangeImage={false}
-            dataUrl={''}
+            dataUrl={practitioner?.user?.profileImageUrl || ''}
             size={'header'}
             // eslint-disable-next-line @typescript-eslint/no-empty-function
             onPressed={() => {}}

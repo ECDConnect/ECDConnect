@@ -8,11 +8,11 @@ export interface PractitionerDto extends EntityBase {
   userId?: string;
   siteAddress?: SiteAddressDto;
   siteAddressId?: string;
-  attendanceRegisterLink: string;
+  attendanceRegisterLink?: string;
   maxChildren?: number;
   consentForPhoto?: boolean;
   parentFees?: number;
-  languageUsedInGroups: string;
+  languageUsedInGroups?: string;
   startDate?: Date;
   monthSinceFranchisee?: number;
   documents?: DocumentDto[];

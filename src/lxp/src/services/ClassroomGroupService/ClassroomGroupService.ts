@@ -47,6 +47,7 @@ class ClassroomGroupService {
             id
             classroomId
             name
+            userId
             programmeTypeId
             programmeType {
               id

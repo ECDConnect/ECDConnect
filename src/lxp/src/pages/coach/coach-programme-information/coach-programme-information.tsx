@@ -98,8 +98,8 @@ export const CoachProgrammeInformation: React.FC = () => {
       avatarColor: '#6974af',
       alertSeverity: 'none',
       profileText:
-        item?.user?.firstName.substring(0, 1)! +
-        item?.user?.surname.substring(0, 1),
+        item?.user?.firstName?.substring(0, 1)! +
+        item?.user?.surname?.substring(0, 1),
       onActionClick: () => handleClick(item.userId!),
       id: item?.userId,
     };
@@ -119,9 +119,6 @@ export const CoachProgrammeInformation: React.FC = () => {
   const practitionerClassroomGroups = classroomGroups.filter(
     (item) => item.classroomId === practitionerClassroom?.id
   );
-
-  console.log({ practitionerClassroom });
-  console.log({ practitionerClassroomGroups });
 
   const call = () => {
     window.open(`tel:${practitioner?.user?.phoneNumber}`);

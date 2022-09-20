@@ -1,6 +1,9 @@
 import { api } from '../axios.helper';
 import { Config, UserDto, PractitionerDto } from '@ecdlink/core';
-import { MutationAddPractitionerToPrincipalArgs } from '@ecdlink/graphql';
+import {
+  MutationAddPractitionerToPrincipalArgs,
+  MutationUpdatePractitionerContactInfoArgs,
+} from '@ecdlink/graphql';
 
 class PractitionerService {
   _accessToken: string;
@@ -170,6 +173,11 @@ class PractitionerService {
               id
               email
               phoneNumber
+              profileImageUrl
+              roles {
+                id
+                name
+              }
             }
           }
         }
@@ -253,8 +261,8 @@ class PractitionerService {
     const apiInstance = await api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-        query getClassroomDetailsForPractitioner($userId: String) {
-          getClassroomDetailsForPractitioner(userId: $userId) {
+        query classroomDetailsForPractitioner($userId: String) {
+          classroomDetailsForPractitioner(userId: $userId) {
             principalName
             classroomName
           }
@@ -271,7 +279,7 @@ class PractitionerService {
       );
     }
 
-    return response.data.data.getClassroomDetailsForPractitioner;
+    return response.data.data.classroomDetailsForPractitioner;
   }
 
   async UpdatePractitionerShareInfo(
@@ -371,6 +379,39 @@ class PractitionerService {
     }
 
     return response.data.data.addPractitionerToPrincipal;
+  }
+
+  async UpdatePractitionerByid(
+    practitionerId: string,
+    input: MutationUpdatePractitionerContactInfoArgs
+  ): Promise<PractitionerDto> {
+    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      mutation updatePractitionerContactInfo($practitionerId: String, $firstName: String, $lastName: String, $phoneNumber: String, $email: String) {
+        updatePractitionerContactInfo(practitionerId: $practitionerId, firstName: $firstName, lastName: $lastName, phoneNumber: $phoneNumber, email: $email) {
+            id
+            idNumber
+            firstName
+            nickFirstName
+            nickSurname
+              email
+            phoneNumber
+        }
+      }
+      `,
+      variables: {
+        practitionerId,
+        input,
+      },
+    });
+    if (response.status !== 200) {
+      throw new Error(
+        'Update Practitioner by ID number Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.updatePractitionerContactInfo;
   }
 }
 

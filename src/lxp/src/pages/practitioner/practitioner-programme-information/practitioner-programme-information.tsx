@@ -39,6 +39,7 @@ import { analyticsActions } from '@store/analytics';
 import * as styles from './practitioner-programme-information.styles';
 import ROUTES from '@routes/routes';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
+import { practitionerSelectors } from '@/store/practitioner';
 
 export const PractitionerProgrammeInformation: React.FC = () => {
   const history = useHistory();
@@ -52,6 +53,11 @@ export const PractitionerProgrammeInformation: React.FC = () => {
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const programmeType = useSelector(
     classroomsSelectors.getClassroomProgrammeType()
+  );
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  const practitioners = useSelector(practitionerSelectors.getPractitioners);
+  const practitionersList = practitioners?.filter(
+    (item) => item.userId !== practitioner?.userId
   );
 
   const { createNewDocument, classroomImage, updateDocument, deleteDocument } =
@@ -156,26 +162,44 @@ export const PractitionerProgrammeInformation: React.FC = () => {
         },
       },
       {
+        title: 'Location - N/A',
+        subTitle: 'N/A',
+        switchTextStyles: true,
+        actionName: 'Add',
+        actionIcon: 'PlusIcon',
+        onActionClick: () => {},
+      },
+      {
         title: 'Type of ECD service',
         subTitle: programmeType?.description,
         switchTextStyles: true,
       },
-    ];
-
-    if (programmeType?.enumId === ProgrammeTypeEnum.Playgroup) {
-      stackedActionList.push({
-        title: 'Groups',
-        subTitle: classroomGroups
-          ?.filter((x) => x.name !== NoPlaygroupClassroomType.name)
-          .map((x) => x.name)
-          .join(','),
+      {
+        title: 'Other participants on the site',
+        subTitle: practitionersList?.map((x) => x?.user?.firstName).join(', '),
         switchTextStyles: true,
         actionName: 'Edit',
         actionIcon: 'PencilIcon',
         onActionClick: () => {
-          history.push(ROUTES.PRACTITIONER.PROFILE.PLAYGROUPS, {
+          history.push(ROUTES.PRINCIPAL.PRACTITIONER_LIST, {
             returnRoute: ROUTES.PRACTITIONER.PROGRAMME_INFORMATION,
           });
+        },
+      },
+    ];
+
+    if (classroomGroups.length > 0) {
+      stackedActionList.push({
+        title: 'Classes',
+        subTitle: classroomGroups
+          ?.filter((x) => x.name !== NoPlaygroupClassroomType.name)
+          .map((x) => x.name)
+          .join(', '),
+        switchTextStyles: true,
+        actionName: 'Edit',
+        actionIcon: 'PencilIcon',
+        onActionClick: () => {
+          history.push(ROUTES.PRACTITIONER.PROFILE.PLAYGROUPS, { a: 'hello' });
         },
       });
     }
