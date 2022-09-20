@@ -4,6 +4,7 @@ using ECDLink.DataAccessLayer;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
+using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Identity;
@@ -20,6 +21,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
           [Service] UserManager<ApplicationUser> userManager,
           UserModel input)
         {
+            Guid tenantId = TenantExecutionContext.Tenant.Id;
             var newUser = new ApplicationUser
             {
                 Id = input.Id,
@@ -37,7 +39,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 FullName = $"{input.FirstName} {input.Surname}",
                 ContactPreference = input.ContactPreference,
                 IsActive = true,
-                ProfileImageUrl = input.ProfileImageUrl
+                ProfileImageUrl = input.ProfileImageUrl,
+                TenantId = tenantId
             };
 
             var userCreatedResult = userManager.CreateAsync(newUser).Result;
@@ -68,7 +71,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
           UserModel input)
         {
             var user = userManager.FindByIdAsync(id).Result;
-
+            Guid tenantId = TenantExecutionContext.Tenant.Id;
             input.Id = id;
 
             if (user == default(ApplicationUser))
@@ -87,6 +90,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             user.Surname = input.Surname;
             user.FullName = $"{input.FirstName} {input.Surname}";
             user.ContactPreference = input.ContactPreference;
+            user.TenantId = tenantId;
 
             if (!string.IsNullOrWhiteSpace(input.IdNumber))
             {

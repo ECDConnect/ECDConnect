@@ -25,16 +25,6 @@ namespace EcdLink.Api.CoreApi.Tenancy.Context
         ConnectionEventData eventData,
         InterceptionResult result)
         {
-            //We are no longer setting individual DB contexts for different Tenants,
-            //TODO: Remove Code for cleanup
-            //var franchisor = _config.GetSection<FranchisorConfiguration>(TenancyConstants.Configuration.TenantSettings);
-            //if (TenantExecutionContext.Tenant != default(TenantModel))
-            //{
-            //    //if (!string.IsNullOrWhiteSpace(franchisor.ConnectionString))//TenantExecutionContext.Tenant.ConnectionString))
-            //    //{
-            //    //    //connection.ConnectionString = franchisor.ConnectionString;//TenantExecutionContext.Tenant.ConnectionString;
-            //    //}
-            //}
 
             return result;
         }
@@ -45,16 +35,6 @@ namespace EcdLink.Api.CoreApi.Tenancy.Context
             InterceptionResult result,
             CancellationToken cancellationToken = default)
         {
-            //We are no longer setting individual DB contexts for different Tenants,
-            //TODO: Remove Code for cleanup
-            //var franchisor = _config.GetSection<FranchisorConfiguration>(TenancyConstants.Configuration.TenantSettings);
-            //if (TenantExecutionContext.Tenant != default(TenantModel))
-            //{
-            //    //if (!string.IsNullOrWhiteSpace(franchisor.ConnectionString))//TenantExecutionContext.Tenant.ConnectionString))
-            //    //{
-            //    //    //connection.ConnectionString = franchisor.ConnectionString;//TenantExecutionContext.Tenant.ConnectionString;
-            //    //}
-            //}
 
             return result;
         }
