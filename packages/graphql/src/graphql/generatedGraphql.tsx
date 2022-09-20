@@ -17,9 +17,12 @@ export type Scalars = {
   Boolean: boolean;
   Int: number;
   Float: number;
+  /** The `DateTime` scalar represents an ISO-8601 compliant date time type. */
   DateTime: any;
+  /** The built-in `Decimal` scalar type. */
   Decimal: any;
   UUID: any;
+  /** The `Upload` scalar type represents a file upload. */
   Upload: any;
 };
 
@@ -3949,6 +3952,7 @@ export type Query = {
   childrenByClassroomId?: Maybe<Array<Maybe<Child>>>;
   childrenMetrics?: Maybe<ChildrenMetricReport>;
   classroomDetailsForPractitioner?: Maybe<PrincipalClassroom>;
+  classroomGroupClassroomsForPractitioner?: Maybe<Array<Maybe<ClassroomGroup>>>;
   coachByCoachUserId?: Maybe<Coach>;
   coachByPractitionerId?: Maybe<Coach>;
   coachByUserId?: Maybe<Coach>;
@@ -4629,6 +4633,10 @@ export type QueryChildrenByClassroomIdArgs = {
 };
 
 export type QueryClassroomDetailsForPractitionerArgs = {
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryClassroomGroupClassroomsForPractitionerArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 

@@ -14,6 +14,8 @@ namespace ECDLink.EGraphQL.Services
                     return $"Get{contentType.NoSpace()}ById";
                 case GraphFieldTypeEnum.GetByUserId:
                     return $"Get{contentType.NoSpace()}ByUserId";
+                case GraphFieldTypeEnum.GetListByUserId:
+                    return $"Get{contentType.NoSpace()}ListByUserId";
                 case GraphFieldTypeEnum.GetAll:
                     return $"GetAll{contentType.NoSpace()}";
                 case GraphFieldTypeEnum.Create:
