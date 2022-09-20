@@ -41,6 +41,7 @@ namespace ECDLink.PostgresTenancy.Configuration.Setup.Seed
                 ApplicationName = franchisor.Application,
                 OrganisationName = franchisor.Organisation,
                 SiteAddress = franchisor.SiteAddress,
+                AdminSiteAddress = franchisor.SiteAddress,
                 TenantType = Tenancy.Enums.TenantType.Host
             });
 

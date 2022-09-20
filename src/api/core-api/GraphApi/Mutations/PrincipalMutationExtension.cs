@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using EcdLink.Api.CoreApi.GraphApi.Queries;
+using ECDLink.Tenancy.Context;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
@@ -40,7 +41,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             List<Practitioner> practitioners = new List<Practitioner>();
 
             var principal = userManager.FindByIdAsync(userId).Result;
-            
+            Guid tenantId = TenantExecutionContext.Tenant.Id;
             using var scope = dbFactory.CreateDbContext();
             using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
@@ -80,7 +81,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     IsActive = true,
                     NickFirstName = firstName,
                     NickSurname = lastName,
-                    NickFullName = firstName + " " + lastName
+                    NickFullName = firstName + " " + lastName,
+                    TenantId = tenantId
                 };
 
                 var result = userManager.CreateAsync(pOne).Result;
@@ -94,7 +96,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     UserId = practitionerId,
                     IsPrincipal = false,
                     PrincipalHierarchy = Guid.Parse(userId),
-                    IsRegistered = true});
+                    IsRegistered = true, 
+                    TenantId = tenantId});
 
                 return new PractitionerQueryExtension().GetPractitionerByUserId(contextAccessor, dbFactory, repoFactory, practitionerId);
             }

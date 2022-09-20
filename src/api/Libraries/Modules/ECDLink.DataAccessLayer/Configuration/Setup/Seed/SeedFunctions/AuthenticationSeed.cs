@@ -17,6 +17,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using ECDLink.Tenancy.Context;
 
 namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.SeedFunctions
 {
@@ -38,6 +39,7 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.SeedFunctions
 
         private void SeedUsers()
         {
+            Guid tenantId = TenantExecutionContext.Tenant.Id;
             var userManager = serviceProvider.GetService<UserManager<ApplicationUser>>();
 
             var newUser = new ApplicationUser
@@ -49,7 +51,8 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.SeedFunctions
                 FirstName = "Admin",
                 Surname = "Admin",
                 PhoneNumber = "0614887313",
-                IsActive = true
+                IsActive = true,
+                TenantId = tenantId,
             };
 
             var result = userManager.CreateAsync(newUser).Result;
