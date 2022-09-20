@@ -4,6 +4,7 @@ namespace ECDLink.EGraphQL.Enums
     {
         GetById,
         GetByUserId,
+        GetListByUserId,
         GetAll,
         Create,
         Update,

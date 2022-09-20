@@ -209,6 +209,54 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             }
             return null;
         }
+        public override List<T> GetListByUserId(string id)
+        {
+            if (string.IsNullOrEmpty(_userId))
+            {
+                throw new UnauthorizedAccessException("User does not have access to this data");
+            }
+
+            Type type = typeof(T);
+            if (type.GetProperty("UserId") != null)
+            {
+
+                var record = base.GetListByUserId(id);
+                var castRecord = record as IUserType;
+
+                if (castRecord == default)
+                {
+                    return default;
+                }
+
+                //hierarchy confirmation allowing this to be viewed
+                var user = _userManager.FindByIdAsync(_userId).Result;
+                var roles = _userManager.GetRolesAsync(user).Result;
+                var isAdmin = roles.Contains(Roles.ADMINISTRATOR);
+
+                if (!isAdmin)
+                {
+                    try
+                    {
+                        List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId);
+                        if (hh != null)
+                        {
+                            if (!hh.Contains(castRecord.Hierarchy))
+                            {
+                                return default;
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        return null;
+                    }
+
+                }
+                return (List<T>)record;
+            }
+            return null;
+        }
+
 
         public override T Insert(T entity)
         {
