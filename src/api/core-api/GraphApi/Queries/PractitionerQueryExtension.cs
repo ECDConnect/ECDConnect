@@ -46,7 +46,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             using var scope = dbFactory.CreateDbContext();
             using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
-            var practiRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+            var practiRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
             Practitioner practitioner = new Practitioner();
             List<Practitioner> practitioners = practiRepo.GetAll().Where(x => x.UserId.Contains(userId)).ToList();
             if (practitioners.Count > 0)
@@ -198,8 +198,12 @@ public PrincipalClassroom GetClassroomDetailsForPractitioner([Service] IHttpCont
                 var principal = practitionerRepo.GetByUserId(classroom.UserId);
                 if (principal != null)
                 {
+<<<<<<< HEAD
                     principalClassroom.PrincipalName = principal.User.FirstName + " " + principal.User.Surname;
                     principalClassroom.ClassroomName = classroom.Name;
+=======
+                    principalClassroom.PrincipalName = principal.User.FirstName + " " + principal.User.Surname;   
+>>>>>>> develop
                 }
             }
             return principalClassroom;

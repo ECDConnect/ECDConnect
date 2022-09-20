@@ -10,6 +10,7 @@ using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
+using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -54,7 +55,7 @@ namespace ECDLink.DataAccessLayer.Hierarchy
         public UserHierarchyEntity AddHierarchyEntity<TChild>(string parentId, string childId)
         {
             var childType = typeof(TChild).FullName;
-
+            Guid tenantId = TenantExecutionContext.Tenant.Id;
             // Only one hierarchy type allowed for now
             // Multiple to be added in the future
             var hierarchyType = HierarchyCache
@@ -89,7 +90,8 @@ namespace ECDLink.DataAccessLayer.Hierarchy
                 NamedTypePath = HierarchyHelper.AppendHierarchy(parentEntity?.NamedTypePath ?? "System.", hierarchyType.Type),
                 ParentId = parentId,
                 UserId = childId,
-                UserType = hierarchyType.Type
+                UserType = hierarchyType.Type,
+                TenantId = tenantId
             };
 
             var newHierarchy = userHierarchyRepo.Insert(childHierarchyEntity);
@@ -135,7 +137,10 @@ namespace ECDLink.DataAccessLayer.Hierarchy
                         {
                             foreach (var p in franchisorsPractitioners)
                             {
-                                hierarchyList.Add(this.GetUserHierarchy(p.UserId));
+                                if (p.User != null)
+                                {
+                                    hierarchyList.Add(this.GetUserHierarchy(p.UserId));
+                                }
                             }
                         }
                     }
@@ -148,7 +153,10 @@ namespace ECDLink.DataAccessLayer.Hierarchy
                 {
                     foreach (var p in coachPractitioners)
                     {
-                        hierarchyList.Add(this.GetUserHierarchy(p.UserId));
+                        if (p.User != null)
+                        {
+                            hierarchyList.Add(this.GetUserHierarchy(p.UserId));
+                        }
                     }
                 }
             } else if (isPrincipal || isPractitioner) {
@@ -159,7 +167,10 @@ namespace ECDLink.DataAccessLayer.Hierarchy
                 {
                     foreach (var p in principalPractitioners)
                     {
-                        hierarchyList.Add(this.GetUserHierarchy(p.UserId));
+                        if (p.User != null)
+                        {
+                            hierarchyList.Add(this.GetUserHierarchy(p.UserId));
+                        }
                     }
                 }
                 //if (isPractitioner && (typeof(T) == typeof(Classroom) || typeof(T) == typeof(ClassroomGroup)))
