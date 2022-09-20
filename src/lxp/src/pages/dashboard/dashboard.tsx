@@ -21,7 +21,7 @@ import { OfflineSyncModal } from '../../modals';
 import OfflineSyncTimeExceeded from '../../modals/offline-sync/offline-sync-time-exceeded';
 import { useAppDispatch } from '@store';
 import { classroomsForCoachThunkActions } from '../../store/classroomForCoach';
-import { classroomsSelectors } from '@store/classroom';
+import { classroomsSelectors, classroomsThunkActions } from '@store/classroom';
 import { notificationsSelectors } from '@store/notifications';
 import { settingSelectors } from '@store/settings';
 import { userSelectors } from '@store/user';
@@ -62,7 +62,6 @@ export const Dashboard: React.FC = () => {
   const { theme } = useTheme();
   const dialog = useDialog();
   const isCoach = userData?.roles?.some((role) => role.name === 'Coach');
-  const logoutSet = true;
   const newNotificationCount = useSelector(
     notificationsSelectors.getNewNotificationCount
   );
@@ -131,6 +130,16 @@ export const Dashboard: React.FC = () => {
     (async () =>
       await appDispatch(
         practitionerThunkActions.getAllPractitioners({})
+      ).unwrap())();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    (async () =>
+      await appDispatch(
+        classroomsThunkActions.getClassroomGroupClassroomsForPractitioner({
+          userId: userData?.id!,
+        })
       ).unwrap())();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

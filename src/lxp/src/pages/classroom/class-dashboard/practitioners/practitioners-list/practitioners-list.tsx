@@ -42,7 +42,6 @@ export const PractitionersList: React.FC = () => {
     useState<boolean>(true);
 
   const handleClick = (practitionerId: string) => {
-    console.log({ practitionerId });
     history.push(ROUTES.PRINCIPAL.PRACTITIONER_PROFILE, {
       practitionerId,
     });
