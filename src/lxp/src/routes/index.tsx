@@ -61,6 +61,7 @@ import { PrincipalPractitionerProfileInfo } from '@/pages/classroom/class-dashbo
 import { PrincipalPractitionerChildList } from '@/pages/classroom/class-dashboard/practitioners/principal-practitioner-child-list/principal-practitioner-child-list';
 import { PrincipalNotes } from '@/pages/classroom/class-dashboard/practitioners/principal-practitioner-profile/components/principal-notes/principal-notes';
 import { PractitionerList } from '@/pages/practitioner/practitioner-programme-information/practitioner-list/practitioner-list';
+import { Logout } from '@/pages/auth/logout/logout';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -114,6 +115,7 @@ const AuthRoutes: React.FC = () => {
         component={VerifyPhoneNumber}
         exact={true}
       />
+      <Route path={ROUTES.LOGOUT} component={Logout} exact={true} />
 
       <Route path={ROUTES.ROOT} component={Dashboard} exact={true} />
       <Route path={ROUTES.DASHBOARD} component={Dashboard} exact={true} />

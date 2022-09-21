@@ -54,6 +54,10 @@ export const PractitionerProgrammeInformation: React.FC = () => {
   const programmeType = useSelector(
     classroomsSelectors.getClassroomProgrammeType()
   );
+  const classroomsForPractitioner = useSelector(
+    classroomsSelectors.getClassroom
+  );
+  const classroomForPractitionerAnyType: any = classroomsForPractitioner;
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const practitionersList = practitioners?.filter(
@@ -153,13 +157,17 @@ export const PractitionerProgrammeInformation: React.FC = () => {
     const stackedActionList: ActionListDataItem[] = [
       {
         title: 'Programme name',
-        subTitle: classroom?.name,
+        subTitle:
+          classroomsForPractitioner && practitioner?.isPrincipal !== true
+            ? classroomForPractitionerAnyType?.classroom?.name
+            : classroom?.name,
         switchTextStyles: true,
         actionName: 'Edit',
         actionIcon: 'PencilIcon',
-        onActionClick: () => {
-          setEditFieldVisible(true);
-        },
+        onActionClick:
+          classroomsForPractitioner && practitioner?.isPrincipal !== true
+            ? () => {}
+            : () => setEditFieldVisible(true),
       },
       {
         title: 'Location - N/A',

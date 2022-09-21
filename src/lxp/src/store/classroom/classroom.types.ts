@@ -13,6 +13,7 @@ export type ClassroomState = {
   classroomGroupLearners: LearnerDto[] | undefined;
   programmeType: string | undefined; //TODO Fix this
   principal: PrincipalDto | undefined;
+  classrooGroupsForPractitioner: any | undefined;
 };
 
 export type ClassroomUpdateParams = {

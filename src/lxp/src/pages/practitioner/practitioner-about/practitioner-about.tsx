@@ -62,7 +62,6 @@ export const PractitionerAbout: React.FC = () => {
   }, [isOnline]);
 
   const user = useSelector(userSelectors.getUser);
-  console.log({ user });
 
   const pictureStorageKey = LocalStorageKeys.practitionerProfilePicture;
   const [listItems, setListItems] = useState<ActionListDataItem[]>([]);
