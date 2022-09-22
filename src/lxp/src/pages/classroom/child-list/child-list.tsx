@@ -35,8 +35,8 @@ import ROUTES from '@/routes/routes';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 
 const filterInfo: FilterInfo = {
-  filterName: 'Playgroup',
-  filterHint: 'You can select multiple playgroups',
+  filterName: 'Class',
+  filterHint: 'You can select multiple classes',
 };
 
 const sortOptions: SearchSortOptions = {
@@ -377,8 +377,8 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
               options={updatedPlaygroups}
               selectedOptions={activeFilters}
               onChange={onFilterItemsChanges}
-              placeholder={'Playgroups'}
-              pluralSelectionText={'Playgroups'}
+              placeholder={'Classes'}
+              pluralSelectionText={'Classes'}
               multiple
               color={'secondary'}
               info={{
