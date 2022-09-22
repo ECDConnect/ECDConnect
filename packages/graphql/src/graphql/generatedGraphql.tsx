@@ -821,6 +821,13 @@ export type ClassroomInput = {
   UserId?: InputMaybe<Scalars['String']>;
 };
 
+export type ClassroomMetricReport = {
+  __typename?: 'ClassroomMetricReport';
+  attendancePercentage: Scalars['Int'];
+  childCount: Scalars['Int'];
+  classroomId: Scalars['UUID'];
+};
+
 export type Coach = {
   __typename?: 'Coach';
   areaOfOperation?: Maybe<Scalars['String']>;
@@ -3259,6 +3266,17 @@ export type NoteTypeInput = {
   UpdatedBy?: InputMaybe<Scalars['String']>;
 };
 
+export type NotificationDisplay = {
+  __typename?: 'NotificationDisplay';
+  color?: Maybe<Scalars['String']>;
+  icon?: Maybe<Scalars['String']>;
+  message?: Maybe<Scalars['String']>;
+  notes?: Maybe<Scalars['String']>;
+  subject?: Maybe<Scalars['String']>;
+  userId: Scalars['UUID'];
+  userType?: Maybe<Scalars['String']>;
+};
+
 export type ObservationCategory = {
   __typename?: 'ObservationCategory';
   achievedLevelId: Scalars['Int'];
@@ -3948,6 +3966,7 @@ export type Query = {
   childrenAttendedVsAbsentMetrics?: Maybe<Array<Maybe<MetricReportStatItem>>>;
   childrenByClassroomId?: Maybe<Array<Maybe<Child>>>;
   childrenMetrics?: Maybe<ChildrenMetricReport>;
+  classAttendanceMetrics?: Maybe<Array<Maybe<ClassroomMetricReport>>>;
   classroomDetailsForPractitioner?: Maybe<PrincipalClassroom>;
   classroomGroupClassroomsForPractitioner?: Maybe<Array<Maybe<ClassroomGroup>>>;
   coachByCoachUserId?: Maybe<Coach>;
@@ -3956,6 +3975,7 @@ export type Query = {
   contentDefinitions?: Maybe<Array<Maybe<ContentDefinitionModel>>>;
   contentDefinitionsExcelTemplateGenerator?: Maybe<FileModel>;
   contentTypes?: Maybe<Array<Maybe<ContentType>>>;
+  displayMetrics?: Maybe<Array<Maybe<NotificationDisplay>>>;
   franchisorByUserId?: Maybe<Franchisor>;
   generateChildProgressReport?: Maybe<Scalars['String']>;
   hasContentTypeBeenTranslated: Scalars['Boolean'];
@@ -4651,6 +4671,12 @@ export type QueryCoachByUserIdArgs = {
 
 export type QueryContentDefinitionsExcelTemplateGeneratorArgs = {
   contentTypeId: Scalars['Int'];
+};
+
+export type QueryDisplayMetricsArgs = {
+  fromDate: Scalars['DateTime'];
+  toDate: Scalars['DateTime'];
+  type?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryFranchisorByUserIdArgs = {
