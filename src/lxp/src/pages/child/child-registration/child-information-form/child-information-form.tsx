@@ -69,7 +69,7 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
   const [updatedPlaygroups, setUpdatedPlaygroups] = useState<
     DropDownOption<string>[]
   >([]);
-  console.log({ updatedPlaygroups });
+
   const classroomsForPractitioner = useSelector(
     classroomsSelectors.getClassroom
   );

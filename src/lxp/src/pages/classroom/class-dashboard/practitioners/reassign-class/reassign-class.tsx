@@ -25,6 +25,10 @@ import {
   practitionerSelectors,
 } from '@/store/practitioner';
 import { useSelector } from 'react-redux';
+import { ClassroomGroupService } from '@/services/ClassroomGroupService';
+import { authSelectors } from '@/store/auth';
+import { userSelectors } from '@store/user';
+import { classroomsSelectors } from '@/store/classroom';
 
 const mockedData = [
   {
@@ -79,9 +83,12 @@ const absentInfo = [
 ];
 
 export const ReassignClass: React.FC<ComponentBaseProps> = () => {
+  const userAuth = useSelector(authSelectors.getAuthUser);
+  const userData = useSelector(userSelectors.getUser);
   const history = useHistory();
   const { state: routeState } = useLocation<ReassignClassPageState>();
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
+  const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const reportingDate = routeState?.reportingDate
     ? new Date(routeState?.reportingDate)
     : new Date();
@@ -89,7 +96,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
   const formattedDate = reportingDate
     ? format(reportingDate, 'EEEE, d LLLL')
     : '';
-  console.log({ practitionerId });
+
   const {
     control,
     // register: reassignClassRegister,
@@ -105,12 +112,16 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
   const [practitionersList, setPractitionersList] = useState<
     { label: string; value: any }[]
   >([]);
+  const [classroomGroupsList, setClassroomGroupsList] = useState<
+    { label: string; value: any }[]
+  >([]);
 
   const {
     date: selectedDate,
     practitioner,
     reason,
     practitioner2,
+    reassignedClass,
   } = useWatch({
     control: control,
   });
@@ -118,9 +129,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
   const practitionerAbsentName = useMemo(() => {
     return practitioners?.find((item) => {
       if (item?.userId === practitioner) {
-        const userName = item?.user?.fullName;
-        console.log({ userName });
-        return userName;
+        return item?.user?.fullName;
       } else return null;
     });
   }, [practitioner, practitioners]);
@@ -128,20 +137,18 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
   const practitionerPresentName = useMemo(() => {
     return practitioners?.find((item) => {
       if (item?.userId === practitioner2) {
-        console.log({ item });
         return item?.user?.fullName;
       } else return null;
     });
   }, [practitioner2, practitioners]);
 
-  console.log({
-    practitionerAbsentName,
-    practitionerPresentName,
-    practitionerId,
-  });
-
-  console.log({ practitioners });
-  console.log({ selectedDate, practitioner, reason, practitioner2 });
+  const reassignedClassName = useMemo(() => {
+    return classroomGroups?.find((item) => {
+      if (item?.id === reassignedClass) {
+        return item?.name;
+      } else return null;
+    });
+  }, [classroomGroups, reassignedClass]);
 
   useEffect(() => {
     const _list = practitioners
@@ -161,11 +168,52 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
     //   value: currentPractitioner?.userId,
     // });
 
-    console.log({ _list });
-
     setPractitionersList(_list);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    const _list = classroomGroups
+      ?.map((p) => {
+        if (p?.name) {
+          return {
+            label: `${p?.name}`,
+            value: p.id,
+          };
+        }
+        return undefined;
+      })
+      .filter(Boolean) as { label: string; value: any }[];
+
+    // _list.push({
+    //   label: currentPractitioner?.user?.fullName || '',
+    //   value: currentPractitioner?.userId,
+    // });
+
+    setClassroomGroupsList(_list);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const submitReassignClass = async () => {
+    if (
+      userAuth?.auth_token &&
+      selectedDate &&
+      userData?.id &&
+      reassignedClass
+    ) {
+      await new ClassroomGroupService(
+        userAuth.auth_token
+      ).updateReassignClassroomGroup(
+        practitioner,
+        practitioner2,
+        reason,
+        new Date(selectedDate),
+        userData?.id,
+        reassignedClass
+      );
+    }
+    history.push(ROUTES.PRINCIPAL.PRACTITIONER_PROFILE, { practitionerId });
+  };
 
   return (
     <>
@@ -224,6 +272,18 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
             />
           )}
           <Dropdown
+            placeholder={'Select the class'}
+            list={(classroomGroupsList && classroomGroupsList) || []}
+            fillType="clear"
+            label={'Which class needs the assignment?'}
+            fullWidth
+            className={'mt-3 w-11/12'}
+            selectedValue={reassignedClass}
+            onChange={(item: any) => {
+              setReassignClassValue('reassignedClass', item);
+            }}
+          />
+          <Dropdown
             placeholder={'Select practitioner'}
             list={(practitionersList && practitionersList) || []}
             fillType="clear"
@@ -273,8 +333,8 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
                 type="body"
                 color="textMid"
                 text={`You are reassigning ${
-                  practitionerPresentName?.user?.fullName
-                } class (Elephants) to ${
+                  practitionerAbsentName?.user?.fullName
+                } class ${reassignedClassName?.name} to ${
                   practitionerPresentName?.user?.fullName
                 } for ${format(new Date(selectedDate), 'EEEE, d LLLL')}.`}
                 className="mr-1"
@@ -285,7 +345,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
             type="filled"
             color="primary"
             className={'w-11/12 mx-auto mt-4 rounded-xl'}
-            onClick={() => {}}
+            onClick={submitReassignClass}
           >
             {renderIcon('SaveIcon', styles.buttonIcon)}
             <Typography

@@ -23,6 +23,7 @@ import {
   PractitionerSetupSteps,
   RegisterPractitioner,
 } from '../../setup-principal/setup-principal.types';
+import { useHistory } from 'react-router';
 
 interface StackListItems extends ActionListDataItem {
   idNumber: string;
@@ -32,18 +33,22 @@ export default function ConfirmPractitioners({
   onNext,
   page,
   setConfirmPractitionerPage,
+  redirectedFromPractitionersList,
 }: {
   onNext: OnNext;
   page: ConfirmPractitionersSteps;
   setConfirmPractitionerPage: React.Dispatch<
     React.SetStateAction<ConfirmPractitionersSteps>
   >;
+  redirectedFromPractitionersList: boolean;
 }) {
+  const history = useHistory();
   const appDispatch = useAppDispatch();
   const user = useSelector(userSelectors.getUser);
   const practitionersForPrincipal = useSelector(
     practitionerSelectors.getPrincipalPractitioners
   );
+  const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const [principalPractitioners, setPrincipalPractitioners] = useState<
     RegisterPractitioner[]
   >([]);
@@ -96,6 +101,25 @@ export default function ConfirmPractitioners({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [practitionersForPrincipal]);
 
+  useEffect(() => {
+    if (practitioners?.length) {
+      practitioners.forEach((item) => {
+        listItems.push(
+          createStackItem({
+            firstName: item?.user?.firstName ?? '',
+            surname: item?.user?.surname ?? '',
+            idNumber: item?.user?.idNumber ?? '',
+            userId: item?.user?.id ?? '',
+            passport: '',
+            preferId: !!item?.user?.idNumber,
+          })
+        );
+        setListItems(listItems);
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [practitioners]);
+
   const createStackItem = useCallback(
     (data: RegisterPractitioner): StackListItems => {
       return {
@@ -146,6 +170,10 @@ export default function ConfirmPractitioners({
   };
 
   const handleConfirmPractitionerSubmit = () => {
+    if (redirectedFromPractitionersList) {
+      history.push('/classroom');
+      return;
+    }
     appDispatch(
       practitionerActions.addPrincipalPractitioners(principalPractitioners)
     );
