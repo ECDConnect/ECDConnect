@@ -25,6 +25,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using EcdLink.Api.CoreApi.GraphApi.Queries;
+using ECDLink.DataAccessLayer.Entities.Classroom;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
@@ -33,11 +34,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     {
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
 
-        public Absentees AddAbsenteeForPractitioner([Service] IHttpContextAccessor contextAccessor, 
-            [Service] UserManager<ApplicationUser> userManager, 
+        public Absentees AddAbsenteeForPractitioner([Service] IHttpContextAccessor contextAccessor,
+            [Service] UserManager<ApplicationUser> userManager,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
-            string practitionerId, 
+            string practitionerId,
             string reason,
             DateTime absentDate,
             string loggedByUser,
@@ -60,6 +61,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             };
 
             var updated = absenteeRepo.Insert(absent);
+
+            //reassign classroom
+            var classroomGroupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
+            var classroom = classroomGroupRepo.GetByUserId(practitionerId);
+            if (classroom != null && reassignedToPractitioner!= null) {
+                classroom.UserId = reassignedToPractitioner;
+                classroomGroupRepo.Update(classroom);
+            }
+
+            //Save the history so it can be reassigned
 
             return updated;            
         }
