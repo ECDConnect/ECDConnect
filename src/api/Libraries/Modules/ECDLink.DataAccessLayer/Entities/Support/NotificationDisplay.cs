@@ -18,9 +18,12 @@ namespace ECDLink.DataAccessLayer.Entities
         public string Icon { get; set; }
         public string Color { get; set; }
         public string Message { get; set; }
+        public string Notes { get; set; }
+
+        public Guid UserId { get; set; }
+        public string UserType { get; set; }
 
         //TODO: CB Map userId to display
-        //public Guid UserId { get; set; }
         //public string RoleType { get; set; }
     }
 }
