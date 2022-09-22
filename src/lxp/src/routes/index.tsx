@@ -62,6 +62,7 @@ import { PrincipalPractitionerChildList } from '@/pages/classroom/class-dashboar
 import { PrincipalNotes } from '@/pages/classroom/class-dashboard/practitioners/principal-practitioner-profile/components/principal-notes/principal-notes';
 import { PractitionerList } from '@/pages/practitioner/practitioner-programme-information/practitioner-list/practitioner-list';
 import { Logout } from '@/pages/auth/logout/logout';
+import ReassignClass from '@/pages/classroom/class-dashboard/practitioners/reassign-class/reassign-class';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -168,6 +169,11 @@ const AuthRoutes: React.FC = () => {
         exact
         path={ROUTES.PRINCIPAL.PRACTITIONER_LIST}
         component={PractitionerList}
+      />
+      <Route
+        exact
+        path={ROUTES.PRINCIPAL.PRACTITIONER_REASSIGN_CLASS}
+        component={ReassignClass}
       />
       <Route
         exact
