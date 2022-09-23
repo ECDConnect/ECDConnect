@@ -173,7 +173,7 @@ export default function FranchisorPanelEdit({
     };
 
     let siteAddressId = '';
-    if (franchisor.siteAddressId) {
+    if (franchisor.siteAddressId && siteAddressInputModel.ProvinceId !== '') {
       await updateSiteAddress({
         variables: {
           id: franchisor.siteAddressId,
@@ -182,12 +182,14 @@ export default function FranchisorPanelEdit({
       });
       siteAddressId = franchisor.siteAddressId;
     } else {
-      const returnSiteAddress = await createSiteAddress({
-        variables: {
-          input: { ...siteAddressInputModel },
-        },
-      });
-      siteAddressId = returnSiteAddress?.data?.createSiteAddress?.id ?? '';
+      if (siteAddressInputModel.ProvinceId !== '') {
+        const returnSiteAddress = await createSiteAddress({
+          variables: {
+            input: { ...siteAddressInputModel },
+          },
+        });
+        siteAddressId = returnSiteAddress?.data?.createSiteAddress?.id ?? '';
+      }
     }
 
     setNotification({
