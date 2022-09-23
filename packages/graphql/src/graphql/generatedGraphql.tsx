@@ -708,6 +708,58 @@ export type ClassProgrammeInput = {
   UpdatedBy?: InputMaybe<Scalars['String']>;
 };
 
+export type ClassReassignmentHistory = {
+  __typename?: 'ClassReassignmentHistory';
+  id: Scalars['UUID'];
+  insertedDate: Scalars['DateTime'];
+  isActive: Scalars['Boolean'];
+  loggedBy?: Maybe<Scalars['String']>;
+  reason?: Maybe<Scalars['String']>;
+  reassignedBackDate: Scalars['DateTime'];
+  reassignedBackToUserId?: Maybe<Scalars['String']>;
+  reassignedClass?: Maybe<Scalars['String']>;
+  reassignedDate: Scalars['DateTime'];
+  reassignedToUser?: Maybe<Scalars['String']>;
+  updatedBy?: Maybe<Scalars['String']>;
+  updatedDate: Scalars['DateTime'];
+  user?: Maybe<ApplicationUser>;
+  userId?: Maybe<Scalars['String']>;
+};
+
+export type ClassReassignmentHistoryFilterInput = {
+  and?: InputMaybe<Array<ClassReassignmentHistoryFilterInput>>;
+  id?: InputMaybe<ComparableGuidOperationFilterInput>;
+  insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  isActive?: InputMaybe<BooleanOperationFilterInput>;
+  loggedBy?: InputMaybe<StringOperationFilterInput>;
+  or?: InputMaybe<Array<ClassReassignmentHistoryFilterInput>>;
+  reason?: InputMaybe<StringOperationFilterInput>;
+  reassignedBackDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  reassignedBackToUserId?: InputMaybe<StringOperationFilterInput>;
+  reassignedClass?: InputMaybe<StringOperationFilterInput>;
+  reassignedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  reassignedToUser?: InputMaybe<StringOperationFilterInput>;
+  updatedBy?: InputMaybe<StringOperationFilterInput>;
+  updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  user?: InputMaybe<ApplicationUserFilterInput>;
+  userId?: InputMaybe<StringOperationFilterInput>;
+};
+
+export type ClassReassignmentHistoryInput = {
+  Id?: InputMaybe<Scalars['UUID']>;
+  IsActive: Scalars['Boolean'];
+  LoggedBy?: InputMaybe<Scalars['String']>;
+  Reason?: InputMaybe<Scalars['String']>;
+  ReassignedBackDate: Scalars['DateTime'];
+  ReassignedBackToUserId?: InputMaybe<Scalars['String']>;
+  ReassignedClass?: InputMaybe<Scalars['String']>;
+  ReassignedDate: Scalars['DateTime'];
+  ReassignedToUser?: InputMaybe<Scalars['String']>;
+  UpdatedBy?: InputMaybe<Scalars['String']>;
+  User?: InputMaybe<ApplicationUserInput>;
+  UserId?: InputMaybe<Scalars['String']>;
+};
+
 export type Classroom = {
   __typename?: 'Classroom';
   classroomGroups?: Maybe<Array<Maybe<ClassroomGroup>>>;
@@ -1880,6 +1932,7 @@ export type Mutation = {
   createChild?: Maybe<Child>;
   createChildProgressReport?: Maybe<ChildProgressReport>;
   createClassProgramme?: Maybe<ClassProgramme>;
+  createClassReassignmentHistory?: Maybe<ClassReassignmentHistory>;
   createClassroom?: Maybe<Classroom>;
   createClassroomGroup?: Maybe<ClassroomGroup>;
   createCoach?: Maybe<Coach>;
@@ -1939,6 +1992,7 @@ export type Mutation = {
   deleteChild?: Maybe<Scalars['Boolean']>;
   deleteChildProgressReport?: Maybe<Scalars['Boolean']>;
   deleteClassProgramme?: Maybe<Scalars['Boolean']>;
+  deleteClassReassignmentHistory?: Maybe<Scalars['Boolean']>;
   deleteClassroom?: Maybe<Scalars['Boolean']>;
   deleteClassroomGroup?: Maybe<Scalars['Boolean']>;
   deleteCoach?: Maybe<Scalars['Boolean']>;
@@ -2002,6 +2056,7 @@ export type Mutation = {
   openAccessAddChild: Scalars['Boolean'];
   practitionerImport: Scalars['Boolean'];
   promotePractitionerToPrincipal?: Maybe<Principal>;
+  reassignClassroomsFromHistory: Scalars['Boolean'];
   refreshCaregiverChildToken?: Maybe<Scalars['String']>;
   removePermissionsFromNavigation: Scalars['Boolean'];
   removePermissionsFromRole: Scalars['Boolean'];
@@ -2017,6 +2072,7 @@ export type Mutation = {
   updateChild?: Maybe<Child>;
   updateChildProgressReport?: Maybe<ChildProgressReport>;
   updateClassProgramme?: Maybe<ClassProgramme>;
+  updateClassReassignmentHistory?: Maybe<ClassReassignmentHistory>;
   updateClassroom?: Maybe<Classroom>;
   updateClassroomGroup?: Maybe<ClassroomGroup>;
   updateCoach?: Maybe<Coach>;
@@ -2174,6 +2230,10 @@ export type MutationCreateChildProgressReportArgs = {
 
 export type MutationCreateClassProgrammeArgs = {
   input?: InputMaybe<ClassProgrammeInput>;
+};
+
+export type MutationCreateClassReassignmentHistoryArgs = {
+  input?: InputMaybe<ClassReassignmentHistoryInput>;
 };
 
 export type MutationCreateClassroomArgs = {
@@ -2437,6 +2497,10 @@ export type MutationDeleteChildProgressReportArgs = {
 };
 
 export type MutationDeleteClassProgrammeArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+};
+
+export type MutationDeleteClassReassignmentHistoryArgs = {
   id?: InputMaybe<Scalars['UUID']>;
 };
 
@@ -2729,6 +2793,10 @@ export type MutationPromotePractitionerToPrincipalArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
+export type MutationReassignClassroomsFromHistoryArgs = {
+  userId?: InputMaybe<Scalars['String']>;
+};
+
 export type MutationRefreshCaregiverChildTokenArgs = {
   childId: Scalars['UUID'];
   classgroupId: Scalars['UUID'];
@@ -2801,6 +2869,11 @@ export type MutationUpdateChildProgressReportArgs = {
 export type MutationUpdateClassProgrammeArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   input?: InputMaybe<ClassProgrammeInput>;
+};
+
+export type MutationUpdateClassReassignmentHistoryArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  input?: InputMaybe<ClassReassignmentHistoryInput>;
 };
 
 export type MutationUpdateClassroomArgs = {
@@ -3827,6 +3900,9 @@ export type Query = {
   GetAllChild?: Maybe<Array<Maybe<Child>>>;
   GetAllChildProgressReport?: Maybe<Array<Maybe<ChildProgressReport>>>;
   GetAllClassProgramme?: Maybe<Array<Maybe<ClassProgramme>>>;
+  GetAllClassReassignmentHistory?: Maybe<
+    Array<Maybe<ClassReassignmentHistory>>
+  >;
   GetAllClassroom?: Maybe<Array<Maybe<Classroom>>>;
   GetAllClassroomGroup?: Maybe<Array<Maybe<ClassroomGroup>>>;
   GetAllCoach?: Maybe<Array<Maybe<Coach>>>;
@@ -3884,6 +3960,7 @@ export type Query = {
   GetChildById?: Maybe<Child>;
   GetChildProgressReportById?: Maybe<ChildProgressReport>;
   GetClassProgrammeById?: Maybe<ClassProgramme>;
+  GetClassReassignmentHistoryById?: Maybe<ClassReassignmentHistory>;
   GetClassroomById?: Maybe<Classroom>;
   GetClassroomGroupById?: Maybe<ClassroomGroup>;
   GetCoachById?: Maybe<Coach>;
@@ -4043,6 +4120,10 @@ export type QueryGetAllChildProgressReportArgs = {
 
 export type QueryGetAllClassProgrammeArgs = {
   where?: InputMaybe<ClassProgrammeFilterInput>;
+};
+
+export type QueryGetAllClassReassignmentHistoryArgs = {
+  where?: InputMaybe<ClassReassignmentHistoryFilterInput>;
 };
 
 export type QueryGetAllClassroomArgs = {
@@ -4281,6 +4362,11 @@ export type QueryGetChildProgressReportByIdArgs = {
 export type QueryGetClassProgrammeByIdArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   where?: InputMaybe<ClassProgrammeFilterInput>;
+};
+
+export type QueryGetClassReassignmentHistoryByIdArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  where?: InputMaybe<ClassReassignmentHistoryFilterInput>;
 };
 
 export type QueryGetClassroomByIdArgs = {
@@ -4674,8 +4760,6 @@ export type QueryContentDefinitionsExcelTemplateGeneratorArgs = {
 };
 
 export type QueryDisplayMetricsArgs = {
-  fromDate: Scalars['DateTime'];
-  toDate: Scalars['DateTime'];
   type?: InputMaybe<Scalars['String']>;
 };
 

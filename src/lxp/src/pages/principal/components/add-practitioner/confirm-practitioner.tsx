@@ -9,7 +9,7 @@ import {
 } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { userSelectors } from '@/store/user';
-import { AddOrEditPractitioner } from './add-or-edit-practitioner';
+import { AddPractitioner } from './add-practitioner';
 import { AddPractitionerModel } from '@/schemas/practitioner/add-practitioner';
 import { useAppDispatch } from '@/store';
 import {
@@ -28,7 +28,7 @@ interface StackListItems extends ActionListDataItem {
   idNumber: string;
 }
 
-export default function ConfirmPractitioners({
+export default function ConfirmPractitioner({
   onNext,
   page,
   setConfirmPractitionerPage,
@@ -245,15 +245,13 @@ export default function ConfirmPractitioners({
         );
       case ConfirmPractitionersSteps.EDIT_PRACTITIONER:
         return (
-          <AddOrEditPractitioner
+          <AddPractitioner
             onSubmit={handleAddOrEditPractitionerSubmit}
             formData={editPractitioner}
           />
         );
       case ConfirmPractitionersSteps.ADD_PRACTITIONER:
-        return (
-          <AddOrEditPractitioner onSubmit={handleAddOrEditPractitionerSubmit} />
-        );
+        return <AddPractitioner onSubmit={handleAddOrEditPractitionerSubmit} />;
     }
   };
   return renderPage(page);
