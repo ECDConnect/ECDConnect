@@ -369,24 +369,22 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
           onBack={() => setSearchTextActive(false)}
           onSearchButtonClick={() => setSearchTextActive(true)}
         >
-          {isPlaygroup && (
-            <SearchDropDown<string>
-              displayMenuOverlay={true}
-              menuItemClassName={styles.dropdownStyles}
-              className={'mr-1'}
-              options={updatedPlaygroups}
-              selectedOptions={activeFilters}
-              onChange={onFilterItemsChanges}
-              placeholder={'Classes'}
-              pluralSelectionText={'Classes'}
-              multiple
-              color={'secondary'}
-              info={{
-                name: `Filter by: ${filterInfo?.filterName}`,
-                hint: filterInfo?.filterHint || '',
-              }}
-            />
-          )}
+          <SearchDropDown<string>
+            displayMenuOverlay={true}
+            menuItemClassName={styles.dropdownStyles}
+            className={'mr-1'}
+            options={updatedPlaygroups}
+            selectedOptions={activeFilters}
+            onChange={onFilterItemsChanges}
+            placeholder={'Classes'}
+            pluralSelectionText={'Classes'}
+            multiple
+            color={'secondary'}
+            info={{
+              name: `Filter by: ${filterInfo?.filterName}`,
+              hint: filterInfo?.filterHint || '',
+            }}
+          />
 
           <SearchDropDown<string>
             displayMenuOverlay={true}
