@@ -139,6 +139,12 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
     setCreatePractitionerdNoteVisible(false);
   };
 
+  const handleReassignClass = (practitionerId: string) => {
+    history.push('practitioner-reassign-class', {
+      practitionerId,
+    });
+  };
+
   return (
     <div className={styles.contentWrapper}>
       <BannerWrapper
@@ -235,8 +241,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                 type="filled"
                 color="primary"
                 className={'w-11/12 mt-6 mb-6'}
-                onClick={() => {}}
-                disabled={true}
+                onClick={() => handleReassignClass(practitionerId)}
               >
                 {renderIcon(
                   'PencilAltIcon',

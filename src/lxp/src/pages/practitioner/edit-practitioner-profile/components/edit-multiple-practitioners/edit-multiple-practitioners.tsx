@@ -113,6 +113,47 @@ export default function EditMultiplePractitioners({
     [practitioners]
   );
 
+  useEffect(() => {
+    if (practitioners?.length) {
+      practitioners.forEach((item) => {
+        listItems.push(
+          createStackItem({
+            firstName: item?.user?.firstName ?? '',
+            surname: item?.user?.surname ?? '',
+            idNumber: item?.user?.idNumber ?? '',
+            userId: item?.user?.id ?? '',
+            passport: '',
+            preferId: !!item?.user?.idNumber,
+          })
+        );
+        setListItems(listItems);
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [practitioners]);
+
+  // useEffect(() => {
+  //   if(practitioners) {
+  //     const practitionersFormatted: StackListItems = practitioners?.map(item => {
+  //       return {
+  //         title: `${item?.user?.firstName} ${item?.user?.surname}`,
+  //         idNumber: String(item?.user?.idNumber),
+  //         subTitle: 'Practitioner',
+  //         titleStyle:
+  //           'text-textDark font-body text-base font-semibold leading-snug ',
+  //         subTitleStyle: 'text-textMid font-body text-sm leading-5',
+  //         actionName: 'Edit',
+  //         actionIcon: 'PencilIcon',
+  //         buttonType: 'filled',
+  //         onActionClick() {
+  //           // setEditPractitioner(item);
+  //           setCurrentPage(SetupPractitionersPage.editPractitioners);
+  //         },
+  //       }
+  //     })
+  //     setListItems(practitionersFormatted)
+  // }, [practitioners])
+
   const handleAddOrEditPractitionerSubmit = (data: AddPractitionerModel) => {
     const indexToEdit = listItems.findIndex(
       (d) => d.idNumber === editPractitioner?.idNumber

@@ -27,6 +27,7 @@ import {
   PractitionerSetupSteps,
   ConfirmPractitionersSteps,
   ConfirmClassesSteps,
+  RegisterPractitioner,
 } from './setup-principal.types';
 import { AddPractitionerModel } from '@/schemas/practitioner/add-practitioner';
 import { practitionerSelectors } from '@/store/practitioner';
@@ -39,14 +40,18 @@ import { newGuid } from '@/utils/common/uuid.utils';
 import { userSelectors } from '@/store/user';
 import { useStoreSetup } from '@/hooks/useStoreSetup';
 import { PractitionerService } from '@/services/PractitionerService';
+import { useLocation } from 'react-router-dom';
 import ROUTES from '@/routes/routes';
 
 export const SetupPrincipal: React.FC = () => {
   const history = useHistory();
   const { theme } = useTheme();
   const appDispatch = useAppDispatch();
+  const location = useLocation<RegisterPractitioner>();
   const dialog = useDialog();
   const { isOnline } = useOnlineStatus();
+  const redirectedFromPractitionersList =
+    location?.state?.redirectedFromPractitionersList;
   const { syncClassroom } = useStoreSetup();
   const userAuth = useSelector(authSelectors.getAuthUser);
   const programmeTypes = useSelector(staticDataSelectors.getProgrammeTypes);
@@ -83,6 +88,13 @@ export const SetupPrincipal: React.FC = () => {
       );
     }
   }, [page]);
+
+  useEffect(() => {
+    if (redirectedFromPractitionersList) {
+      setPage(PractitionerSetupSteps.CONFIRM_PRACTITIONERS);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const onAllStepsComplete = async () => {
     const playGroupProgrammeType = programmeTypes.find(
@@ -141,6 +153,11 @@ export const SetupPrincipal: React.FC = () => {
     }
 
     history.push(ROUTES.ROOT);
+  };
+
+  const handleBackOnAddRemovePractitioner = () => {
+    history.push('/classroom');
+    return;
   };
 
   const exitPrompt = () => {
@@ -202,6 +219,7 @@ export const SetupPrincipal: React.FC = () => {
             page={confirmPractitionerPage}
             setConfirmPractitionerPage={setConfirmPractitionerPage}
             onNext={setPage}
+            redirectedFromPractitionersList={redirectedFromPractitionersList!}
           />
         );
 
@@ -275,7 +293,11 @@ export const SetupPrincipal: React.FC = () => {
         showBackground={page === PractitionerSetupSteps.WELCOME}
         title={'Edit Profile'}
         subTitle={label}
-        onBack={onBack}
+        onBack={
+          redirectedFromPractitionersList
+            ? handleBackOnAddRemovePractitioner
+            : onBack
+        }
         onClose={exitPrompt}
         backgroundColour={'white'}
         className={page === PractitionerSetupSteps.WELCOME ? 'relative' : ''}
