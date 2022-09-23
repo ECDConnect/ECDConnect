@@ -141,6 +141,46 @@ export const getClassroomProgrammes = createAsyncThunk<
   }
 );
 
+export const getClassroomGroupClassroomsForPractitioner = createAsyncThunk<
+  ClassroomDto,
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  { userId: string },
+  ThunkApiType<RootState>
+>(
+  'getClassroomGroupClassroomsForPractitioner',
+  // eslint-disable-next-line no-empty-pattern
+  async ({ userId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      classroomData: { classrooGroupsForPractitioner: classroomsCache },
+    } = getState();
+
+    if (!classroomsCache) {
+      try {
+        let classroomsforPractitioner: any[] | undefined;
+
+        if (userAuth?.auth_token) {
+          classroomsforPractitioner = await new ClassroomService(
+            userAuth?.auth_token
+          ).getClassroomGroupClassroomsForPractitioner(userId);
+        } else {
+          return rejectWithValue('no access token, profile check required');
+        }
+
+        if (!classroomsforPractitioner) {
+          return rejectWithValue('Error getting Classrooms');
+        }
+
+        return classroomsforPractitioner[0];
+      } catch (err) {
+        return rejectWithValue(err);
+      }
+    } else {
+      return classroomsCache;
+    }
+  }
+);
+
 export const getClassroomGroupLearners = createAsyncThunk<
   LearnerDto[],
   // eslint-disable-next-line @typescript-eslint/ban-types

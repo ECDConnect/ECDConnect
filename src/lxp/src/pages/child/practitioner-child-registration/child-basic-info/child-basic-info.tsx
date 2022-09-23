@@ -1,7 +1,11 @@
-import { FormComponentProps } from '@ecdlink/core';
+import {
+  FormComponentProps,
+  PractitionerDto,
+  practitionerSchema,
+} from '@ecdlink/core';
 import { Divider, Dropdown, FormInput, Typography, Button } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import {
@@ -10,19 +14,34 @@ import {
 } from '@schemas/child/child-registration/child-basic-info';
 import { classroomsSelectors } from '@store/classroom';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
+import { practitionerSelectors } from '@/store/practitioner';
 
 export const ChildBasicInfo: React.FC<
   FormComponentProps<ChildBasicInfoModel>
 > = ({ onSubmit }) => {
   const classrooms = useSelector(classroomsSelectors.getClassroomGroups);
-  const isPlaygroup = useSelector(classroomsSelectors.isPlaygroup());
+  const classroomsForPractitioner = useSelector(
+    classroomsSelectors.getClassroom
+  );
+  const [
+    classroomsForPractitionerAnyType,
+    setClassroomsForPractitionerAnyType,
+  ] = useState<any>([]);
 
+  const isPlaygroup = useSelector(classroomsSelectors.isPlaygroup());
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const { getValues, setValue, register, formState } =
     useForm<ChildBasicInfoModel>({
       resolver: yupResolver(childBasicInfoFormSchema),
       mode: 'onBlur',
       defaultValues: {},
     });
+
+  useEffect(() => {
+    if (classroomsForPractitioner) {
+      setClassroomsForPractitionerAnyType([classroomsForPractitioner]);
+    }
+  }, [classroomsForPractitioner]);
 
   useEffect(() => {
     if (classrooms && classrooms.length > 0) {
@@ -63,19 +82,26 @@ export const ChildBasicInfo: React.FC<
         label="Surname"
         placeholder="Surname/Family name"
       />
-      {isPlaygroup && (
-        <Dropdown<string>
-          fullWidth
-          className="mt-4"
-          label="Which class will the child attend?"
-          placeholder="Select class"
-          selectedValue={getSelectedClassroom()}
-          list={classrooms.map((x) => ({ label: x.name, value: x.id || '' }))}
-          onChange={(classroomId: string) => {
-            setValue('playgroupId', classroomId, { shouldValidate: true });
-          }}
-        />
-      )}
+
+      <Dropdown<string>
+        fullWidth
+        className="mt-4"
+        label="Which class will the child attend?"
+        placeholder="Select class"
+        selectedValue={getSelectedClassroom()}
+        list={
+          practitioner?.isPrincipal !== true &&
+          classroomsForPractitionerAnyType.length > 0
+            ? classroomsForPractitionerAnyType.map((x: any) => ({
+                label: x.name,
+                value: x.id || '',
+              }))
+            : classrooms.map((x) => ({ label: x.name, value: x.id || '' }))
+        }
+        onChange={(classroomId: string) => {
+          setValue('playgroupId', classroomId, { shouldValidate: true });
+        }}
+      />
 
       <Divider dividerType="solid" className="my-3" />
       <Button

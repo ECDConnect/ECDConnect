@@ -167,7 +167,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
           <StatusChip
             backgroundColour="primary"
             borderColour="primary"
-            text={'Class'}
+            text={`${classroomGroup?.name}` || 'No class'}
             textColour={'white'}
             className={'px-3 py-1.5'}
           />
