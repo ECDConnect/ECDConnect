@@ -150,6 +150,8 @@ const PractitionerForm: React.FC<PractitionerFormProps> = ({
                   };
                 })
               }
+              multiple
+              disabled
             />
           </div>
           <div className="sm:col-span-3">
