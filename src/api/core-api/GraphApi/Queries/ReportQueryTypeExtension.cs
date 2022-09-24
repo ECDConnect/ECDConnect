@@ -172,10 +172,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var attendaceRepo = attendanceRepo.GetAllByDateRange(fromDate, toDate);
 
             var attendanceAttended = attendaceRepo.Where(x => x.Attended).Count();
-            var attendanceUnAttended = attendaceRepo.Where(x => !x.Attended).Count();
+            //var attendanceUnAttended = attendaceRepo.Where(x => !x.Attended).Count();
 
             attendedVsAbsent.Add(new MetricReportStatItem() { Name = "Attended", Value = attendanceAttended.ToString() });
-            attendedVsAbsent.Add(new MetricReportStatItem() { Name = "Absent", Value = attendanceUnAttended.ToString() });
+            //attendedVsAbsent.Add(new MetricReportStatItem() { Name = "Absent", Value = attendanceUnAttended.ToString() });
             List<ClassroomMetricReport> metrics = new List<ClassroomMetricReport>();
             var classRepo = repoFactory.CreateRepository<Classroom>(userContext: uId);
             var classes = classRepo.GetAll(); //get all classrooms assigned to user
@@ -224,6 +224,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     var children = childRepo.GetAll();
                     foreach (var user in children)
                     {
+                        //get attendance
+
+
+
+
+
                         NotificationDisplay display = new NotificationDisplay()
                         {
                             Subject = "Child Information missing",

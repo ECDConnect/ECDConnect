@@ -42,8 +42,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             var principal = userManager.FindByIdAsync(userId).Result;
             Guid tenantId = TenantExecutionContext.Tenant.Id;
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
             var practitionerUser = new PractitionerQueryExtension().GetPractitionerByIdNumber(serviceProvider, contextAccessor,userManager,roleManager,dbFactory, repoFactory, idNumber);            
