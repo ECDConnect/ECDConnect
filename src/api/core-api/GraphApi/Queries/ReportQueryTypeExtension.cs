@@ -172,10 +172,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var attendaceRepo = attendanceRepo.GetAllByDateRange(fromDate, toDate);
 
             var attendanceAttended = attendaceRepo.Where(x => x.Attended).Count();
-            //var attendanceUnAttended = attendaceRepo.Where(x => !x.Attended).Count();
+            var attendanceUnAttended = attendaceRepo.Where(x => !x.Attended).Count();
 
             attendedVsAbsent.Add(new MetricReportStatItem() { Name = "Attended", Value = attendanceAttended.ToString() });
-            //attendedVsAbsent.Add(new MetricReportStatItem() { Name = "Absent", Value = attendanceUnAttended.ToString() });
+            attendedVsAbsent.Add(new MetricReportStatItem() { Name = "Absent", Value = attendanceUnAttended.ToString() });
             List<ClassroomMetricReport> metrics = new List<ClassroomMetricReport>();
             var classRepo = repoFactory.CreateRepository<Classroom>(userContext: uId);
             var classes = classRepo.GetAll(); //get all classrooms assigned to user
@@ -193,84 +193,88 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         public List<NotificationDisplay> GetDisplayMetrics([Service] IHttpContextAccessor contextAccessor, 
             [Service] AttendanceTrackingRepository attendanceRepo,
             [Service] IGenericRepositoryFactory repoFactory,
-            string type,
-            DateTime fromDate,
-            DateTime toDate)
+            string type)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
 
             var notificationList = new List<NotificationDisplay>();
 
-
-            //var attendanceAttended = attendaceRepo.Where(x => x.Attended).Count();
-            //var attendanceUnAttended = attendaceRepo.Where(x => !x.Attended).Count();
-
-            //attendedVsAbsent.Add(new MetricReportStatItem() { Name = "Attended", Value = attendanceAttended.ToString() });
-            //attendedVsAbsent.Add(new MetricReportStatItem() { Name = "Absent", Value = attendanceUnAttended.ToString() });
-            /*Do logic for weighting - loop through each user then
-            1: Get all not registered
-            2: Get all progress reports overdue
-            3: Get all incomplete registers (for practitioners/principals)
-            4: Get Days absent (for practitioners/principals)
-            5: Get Child attendance for each
-
-            Add weighting to each subject, and weigh up for each user what the messages are and use weighting to push the most relevant message up to the top, and assign colour, icon and Message to each
-            return list to FE for each user
-            */
-            switch (type)
+            //loop for last 12 months
+            for (int idx = 1; idx <= 12; idx++)
             {
-                case "child":
-                    var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
-                    var children = childRepo.GetAll();
-                    foreach (var user in children)
-                    {
-                        //get attendance
+                DateTime reference = DateTime.Now;
+                var fromDate = new DateTime(reference.Year, reference.Month, 1);
+                fromDate = fromDate.AddMonths(-idx);
+                var toDate = reference.AddMonths(-idx).AddDays(-1);//decrement
 
+                //var attendanceAttended = attendaceRepo.Where(x => x.Attended).Count();
+                //var attendanceUnAttended = attendaceRepo.Where(x => !x.Attended).Count();
 
+                //attendedVsAbsent.Add(new MetricReportStatItem() { Name = "Attended", Value = attendanceAttended.ToString() });
+                //attendedVsAbsent.Add(new MetricReportStatItem() { Name = "Absent", Value = attendanceUnAttended.ToString() });
+                /*Do logic for weighting - loop through each user then
+                1: Get all not registered
+                2: Get all progress reports overdue
+                3: Get all incomplete registers (for practitioners/principals)
+                4: Get Days absent (for practitioners/principals)
+                5: Get Child attendance for each
 
-
-
-                        NotificationDisplay display = new NotificationDisplay()
+                Add weighting to each subject, and weigh up for each user what the messages are and use weighting to push the most relevant message up to the top, and assign colour, icon and Message to each
+                return list to FE for each user
+                */
+                switch (type)
+                {
+                    case "child":
+                        var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
+                        var children = childRepo.GetAll();
+                        foreach (var user in children)
                         {
-                            Subject = "Child Information missing",
-                            Icon = "redicon",
-                            Color = "red",
-                            Message = "",
-                            Notes = "",
-                            UserId = Guid.Parse(user.UserId),
-                            UserType = "child"
-                           
-                        };
-                        //var attendaceRepo = attendanceRepo.GetAllByDateRange(fromDate, toDate);
+                            NotificationDisplay display = new NotificationDisplay()
+                            {
+                                Subject = "Child Information missing",
+                                Icon = "redicon",
+                                Color = "red",
+                                Message = "",
+                                Notes = "",
+                                UserId = Guid.Parse(user.UserId),
+                                UserType = "child"
 
-                        notificationList.Add(display);
-                    }
-                    break;
-                case "practitioner": //practitioners and principals
-                    var practRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-                    var practitioners = practRepo.GetAll();
-                    foreach (var user in practitioners)
-                    {
-                        NotificationDisplay display = new NotificationDisplay()
+                            };
+                            //var attendaceRepo = attendanceRepo.GetAllByDateRange(fromDate, toDate);
+
+                            notificationList.Add(display);
+                        }
+                        break;
+                    case "practitioner": //practitioners and principals
+                        var practRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+                        var absenteeRepo = repoFactory.CreateRepository<Absentees>(userContext: uId);
+                        var practitioners = practRepo.GetAll();
+                        foreach (var user in practitioners)
                         {
-                            Subject = "0 days absent last month",
-                            Icon = "greenicon",
-                            Color = "green",
-                            Message = "",
-                            Notes = "",
-                            UserId = Guid.Parse(user.UserId),
-                            UserType = "practitioner"
-                        };
-                        //var attendaceRepo = attendanceRepo.GetAllByDateRange(fromDate, toDate);
+                            //get absent days
+                            int daysAbsent = 0;
+                            NotificationDisplay display = new NotificationDisplay()
+                            {
+                                Subject = "0 days absent last month",
+                                Icon = "greenicon",
+                                Color = "green",
+                                Message = "",
+                                Notes = "",
+                                UserId = Guid.Parse(user.UserId),
+                                UserType = "practitioner"
+                            };
+                            //var attendaceRepo = attendanceRepo.GetAllByDateRange(fromDate, toDate);
 
-                        notificationList.Add(display);
-                    }
-                    break;
+                            notificationList.Add(display);
+                        }
+                        break;
+                }
             }
 
 
 
             return notificationList;
         }
+
     }
 }
