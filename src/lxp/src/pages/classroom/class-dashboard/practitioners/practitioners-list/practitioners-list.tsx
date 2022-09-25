@@ -147,11 +147,7 @@ export const PractitionersList: React.FC = () => {
               type="outlined"
               color="primary"
               className={'w-full mt-6 mb-6'}
-              onClick={() =>
-                history.push(ROUTES.PRINCIPAL.SETUP_PROFILE, {
-                  redirectedFromPractitionersList,
-                })
-              }
+              onClick={() => history.push(ROUTES.PRINCIPAL.ADD_PRACTITIONER)}
             >
               {renderIcon(
                 'UsersIcon',
@@ -161,7 +157,7 @@ export const PractitionersList: React.FC = () => {
                 type="body"
                 className="mr-4"
                 color="primary"
-                text={'Add or remove practitioners'}
+                text={'Add practitioners'}
               ></Typography>
             </Button>
           </div>

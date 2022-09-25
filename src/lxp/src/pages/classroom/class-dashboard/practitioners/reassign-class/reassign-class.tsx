@@ -66,18 +66,26 @@ const mockedData = [
 const absentInfo = [
   {
     id: 1,
-    name: 'Sick',
+    name: 'Sick day',
   },
   {
-    id: 1,
-    name: 'Traveling',
+    id: 2,
+    name: 'Clinic appointment',
   },
   {
-    id: 1,
-    name: 'Another class',
+    id: 3,
+    name: 'Funeral at home',
   },
   {
-    id: 1,
+    id: 4,
+    name: 'Family commitments',
+  },
+  {
+    id: 4,
+    name: 'No reason given',
+  },
+  {
+    id: 4,
     name: 'Other',
   },
 ];
