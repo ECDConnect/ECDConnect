@@ -69,7 +69,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var classroomGroupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
             var classroom = classroomGroupRepo.GetByUserId(practitionerId);
             if (classroom != null && reassignedToPractitioner!= null) {
-                classroom.UserId = reassignedToPractitioner;
+                classroom.UserId = Guid.Parse(reassignedToPractitioner);
                 classroomGroupRepo.Update(classroom);
             }
 
@@ -110,7 +110,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     var classroom = classroomGroupRepo.GetByUserId(historyItem.ReassignedToUser);
                     if (classroom != null)
                     {
-                        classroom.UserId = historyItem.UserId;
+                        classroom.UserId = Guid.Parse(historyItem.UserId);
                         classroomGroupRepo.Update(classroom);
                     }
                 }

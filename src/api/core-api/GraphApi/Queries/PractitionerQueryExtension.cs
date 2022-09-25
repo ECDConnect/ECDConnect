@@ -43,33 +43,35 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         [Service] IGenericRepositoryFactory repoFactory,
         string userId)
         {
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practiRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
-            Practitioner practitioner = new Practitioner();
-            List<Practitioner> practitioners = practiRepo.GetAll().Where(x => x.UserId.Contains(userId)).ToList();
-            if (practitioners.Count > 0)
+            Practitioner practitioner = practiRepo.GetByUserId(userId);
+            if (practitioner != null)
             {
-                practitioner = practitioners.FirstOrDefault();
+                return practitioner;
             }
 
-            return practitioner;
+            return null;
         }
 
-        public ApplicationUser GetPractitionerByIdNumber([Service] IServiceProvider serviceProvider, [Service] IHttpContextAccessor contextAccessor,
+        public ApplicationUser GetPractitionerByIdNumber([Service] IServiceProvider serviceProvider, 
+            [Service] IHttpContextAccessor contextAccessor,
             [Service] UserManager<ApplicationUser> userManager,
-             [Service] RoleManager<IdentityRole> roleManager,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
             string idNumber)
         {
-
-            var practionerUser = userManager.FindByNameAsync(idNumber).Result;//find practitioner by Username/Id number, if exists, add coach to practitioner
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var practionerUser = userManager.FindByNameAsync(idNumber).Result;
 
             if (practionerUser != null)
             {
-                return new UserQueryTypeExtension().GetUserById(serviceProvider, userManager, roleManager, contextAccessor, dbFactory, repoFactory, practionerUser.Id);
+                var practiRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
+                var practitioner = practiRepo.GetByUserId(practionerUser.Id);
+                if (practitioner != null)
+                {
+                    return practitioner.User;
+                }
             }
             return default(ApplicationUser);
         }
@@ -79,9 +81,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 [Service] IGenericRepositoryFactory repoFactory,
 string userId)
         {
-
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
 
@@ -104,11 +103,10 @@ string userId)
         {
 
             using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var classRepo = repoFactory.CreateRepository<Classroom>(userContext: uId);
 
-            return classRepo.GetAll().Where(x => x.UserId.Contains(userId)).ToList();
+            return classRepo.GetListByUserId(userId);
         }
 
         public List<ClassroomGroup> GetAllClassroomGroupsForPractitioner([Service] IHttpContextAccessor contextAccessor,
@@ -122,7 +120,7 @@ string userId)
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var classRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
 
-            return classRepo.GetAll().Where(x => x.UserId.Contains(userId)).ToList();
+            return classRepo.GetAll().Where(x => x.UserId.Equals(userId)).ToList();
         }
 
         public async Task<FileModel> PractitionerExcelTemplateGenerator(
@@ -166,8 +164,6 @@ string userId)
             [Service] IGenericRepositoryFactory repoFactory,
             string practitionerId, string principalId)
         {
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var classroomRepo = repoFactory.CreateRepository<Classroom>(userContext: uId);
             var classroomGroupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
@@ -179,7 +175,7 @@ string userId)
             return classroom;
         }
 
-public PrincipalClassroom GetClassroomDetailsForPractitioner([Service] IHttpContextAccessor contextAccessor,
+        public PrincipalClassroom GetClassroomDetailsForPractitioner([Service] IHttpContextAccessor contextAccessor,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
             string userId)

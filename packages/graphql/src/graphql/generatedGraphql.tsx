@@ -819,7 +819,7 @@ export type ClassroomGroup = {
   programmeTypeId?: Maybe<Scalars['UUID']>;
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
-  userId?: Maybe<Scalars['String']>;
+  userId?: Maybe<Scalars['UUID']>;
 };
 
 export type ClassroomGroupFilterInput = {
@@ -837,7 +837,7 @@ export type ClassroomGroupFilterInput = {
   programmeTypeId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
-  userId?: InputMaybe<StringOperationFilterInput>;
+  userId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
 };
 
 export type ClassroomGroupInput = {
@@ -851,7 +851,7 @@ export type ClassroomGroupInput = {
   ProgrammeType?: InputMaybe<ProgrammeTypeInput>;
   ProgrammeTypeId?: InputMaybe<Scalars['UUID']>;
   UpdatedBy?: InputMaybe<Scalars['String']>;
-  UserId?: InputMaybe<Scalars['String']>;
+  UserId?: InputMaybe<Scalars['UUID']>;
 };
 
 export type ClassroomInput = {
@@ -2052,6 +2052,7 @@ export type Mutation = {
   demotePractitionerAsPrincipal?: Maybe<Practitioner>;
   fileUpload?: Maybe<DocumentModel>;
   generateCaregiverChildToken?: Maybe<Scalars['String']>;
+  importAll: Scalars['Boolean'];
   mapPractitionerToPrincipal?: Maybe<Principal>;
   openAccessAddChild: Scalars['Boolean'];
   practitionerImport: Scalars['Boolean'];
@@ -2101,7 +2102,7 @@ export type Mutation = {
   updatePractitionerIsTrainee: Scalars['Boolean'];
   updatePractitionerRegistered: Scalars['Boolean'];
   updatePractitionerShareInfo: Scalars['Boolean'];
-  updatePractitionerToTeachClassroom?: Maybe<Classroom>;
+  updatePractitionerToTeachClassroom?: Maybe<ClassroomGroup>;
   updatePrincipal?: Maybe<Principal>;
   updateProgramme?: Maybe<Programme>;
   updateProgrammeAttendanceReason?: Maybe<ProgrammeAttendanceReason>;
@@ -2773,6 +2774,10 @@ export type MutationGenerateCaregiverChildTokenArgs = {
   surname?: InputMaybe<Scalars['String']>;
 };
 
+export type MutationImportAllArgs = {
+  file?: InputMaybe<Scalars['String']>;
+};
+
 export type MutationMapPractitionerToPrincipalArgs = {
   practitioner?: InputMaybe<PractitionerInput>;
 };
@@ -2882,7 +2887,7 @@ export type MutationUpdateClassroomArgs = {
 };
 
 export type MutationUpdateClassroomGroupArgs = {
-  id?: InputMaybe<Scalars['UUID']>;
+  id: Scalars['UUID'];
   input?: InputMaybe<ClassroomGroupInput>;
 };
 
