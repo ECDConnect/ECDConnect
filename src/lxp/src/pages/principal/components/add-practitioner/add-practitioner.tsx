@@ -7,6 +7,7 @@ import {
   SA_PASSPORT_REGEX,
   BannerWrapper,
 } from '@ecdlink/ui';
+import { MutationAddPractitionerToPrincipalArgs } from '@ecdlink/graphql';
 import { useHistory } from 'react-router-dom';
 import { PractitionerDto, UserDto } from '@ecdlink/core';
 import { useEffect, useState } from 'react';
@@ -23,6 +24,10 @@ import { useSelector } from 'react-redux';
 import { authSelectors } from '@/store/auth';
 import { RegisterPractitioner } from '../../setup-principal/setup-principal.types';
 import ROUTES from '@/routes/routes';
+import {
+  AddPractitinerInitialState,
+  AddNewPractitionerModel,
+} from './add-practitioner.types';
 
 type UserWithPractitionerData = UserDto & {
   practitionerObjectData?: PractitionerDto;
@@ -53,6 +58,8 @@ export const AddPractitioner = ({
   const [isValidPractitioner, setIsValidPractitioner] = useState<boolean>();
   const [isPractitionerRegistered, setIsPractitionerRegistered] =
     useState<boolean>();
+  const [newPractitioner, setNewPractitioner] =
+    useState<AddNewPractitionerModel>(AddPractitinerInitialState);
 
   const { preferId, idNumber, passport } = useWatch({
     control,
@@ -72,16 +79,31 @@ export const AddPractitioner = ({
 
     if (validPassportOrIdNumber) {
       getPractitionerDetailsByIdNumber().then((p: any) => {
-        if (p?.isRegister === false || p?.isRegister === null) {
-          setIsPractitionerRegistered(true);
+        if (
+          p?.practitionerObjectData?.isRegistered === false ||
+          p?.practitionerObjectData?.isRegistered === null
+        ) {
+          setIsPractitionerRegistered(false);
+        }
+        if (p?.practitionerObjectData?.isRegistered === true) {
+          setIsPractitionerRegistered(false);
         }
         console.log({ p });
         setIsValidPractitioner(!!p?.idNumber);
+        setNewPractitioner({
+          firstName: p?.firstName,
+          surname: p?.surname,
+          idNumber: p?.idNumber,
+          userId: p?.id,
+        });
       });
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idNumber, passport]);
+
+  console.log({ isPractitionerRegistered });
+  console.log({ newPractitioner });
 
   const getPractitionerDetailsByIdNumber = async () => {
     // Check if the practitioner exists
@@ -100,26 +122,40 @@ export const AddPractitioner = ({
     setIsValidPractitioner(undefined);
   };
 
-  const handleSubmit = async () => {
-    const { firstName, idNumber, passport, surname } = getValues();
+  // const handleSubmit = async () => {
+  //   const { firstName, idNumber, passport, surname } = getValues();
 
-    const practitionerUserDetails: UserWithPractitionerData =
-      await getPractitionerDetailsByIdNumber();
+  //   const practitionerUserDetails: UserWithPractitionerData =
+  //     await getPractitionerDetailsByIdNumber();
 
-    onSubmit({
-      id: practitionerUserDetails?.practitionerObjectData?.id ?? '',
-      userId: practitionerUserDetails.id ?? '',
-      idNumber: idNumber || passport,
-      firstName: firstName,
-      surname: surname,
-      passport: '',
-      preferId: !!idNumber,
-      isRegistered: Boolean(
-        practitionerUserDetails.practitionerObjectData?.isRegistered
-      ),
-    });
+  //   onSubmit({
+  //     id: practitionerUserDetails?.practitionerObjectData?.id ?? '',
+  //     userId: practitionerUserDetails.id ?? '',
+  //     idNumber: idNumber || passport,
+  //     firstName: firstName,
+  //     surname: surname,
+  //     passport: '',
+  //     preferId: !!idNumber,
+  //     isRegistered: Boolean(
+  //       practitionerUserDetails.practitionerObjectData?.isRegistered
+  //     ),
+  //   });
 
-    history.push(ROUTES.PRINCIPAL.CONFIRM_PRACTITIONER);
+  //   history.push(ROUTES.PRINCIPAL.CONFIRM_PRACTITIONER);
+  // };
+
+  const onSubmitAddPractitioner = async () => {
+    const input: MutationAddPractitionerToPrincipalArgs = {
+      userId: newPractitioner?.userId,
+      idNumber: idNumber,
+      firstName: newPractitioner?.firstName,
+      lastName: newPractitioner?.surname,
+    };
+    await new PractitionerService(
+      userAuth?.auth_token!
+    ).AddPractitionerToPrincipal(input);
+
+    history.push(ROUTES.PRINCIPAL.PRACTITIONER_LIST);
   };
 
   return (
@@ -225,13 +261,13 @@ export const AddPractitioner = ({
                   type={isPractitionerRegistered ? 'success' : 'error'}
                   title={
                     isPractitionerRegistered
-                      ? 'All practitioners at your programme are registered on Funda app.'
-                      : 'One or more of your practitioners are not registered on Funda App. Ask all of your SmartStart practitioners to register.'
+                      ? 'This practitioner is registered on Funda app.'
+                      : 'This practitioner is not registered on Funda App. Ask all of your SmartStart practitioners to register.'
                   }
                   list={[
                     isPractitionerRegistered
-                      ? 'Practitioners have been notified.'
-                      : 'If your practitioners need help, please contact the SmartStart call centre.',
+                      ? 'Practitioner has been notified.'
+                      : 'If your practitioner needs help, please contact the SmartStart call centre.',
                   ]}
                   button={
                     !isPractitionerRegistered ? (
@@ -260,7 +296,7 @@ export const AddPractitioner = ({
               textColor="white"
               icon="SaveIcon"
               disabled={!isValid || isValidPractitioner === false}
-              onClick={handleSubmit}
+              onClick={onSubmitAddPractitioner}
             />
             {isValidPractitioner === false && (
               <Button

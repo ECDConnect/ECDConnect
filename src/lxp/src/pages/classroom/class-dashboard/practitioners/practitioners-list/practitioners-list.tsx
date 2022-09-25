@@ -148,7 +148,6 @@ export const PractitionersList: React.FC = () => {
               color="primary"
               className={'w-full mt-6 mb-6'}
               onClick={() => history.push(ROUTES.PRINCIPAL.ADD_PRACTITIONER)}
-              disabled={true}
             >
               {renderIcon(
                 'UsersIcon',

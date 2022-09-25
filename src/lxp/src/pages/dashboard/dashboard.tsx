@@ -114,7 +114,6 @@ export const Dashboard: React.FC = () => {
         (x) => x?.user?.id === userData.id
       );
       const _current = currentPrincipal?.at(0);
-
       if (_current) {
         (async () =>
           await appDispatch(
@@ -124,7 +123,7 @@ export const Dashboard: React.FC = () => {
           ).unwrap())();
       }
     }
-  }, []);
+  }, [userData]);
 
   useEffect(() => {
     (async () =>
