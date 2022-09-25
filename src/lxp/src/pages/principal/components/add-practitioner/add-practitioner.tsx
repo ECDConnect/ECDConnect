@@ -6,6 +6,9 @@ import {
   SA_ID_REGEX,
   SA_PASSPORT_REGEX,
   BannerWrapper,
+  Dialog,
+  DialogPosition,
+  ActionModal,
 } from '@ecdlink/ui';
 import { MutationAddPractitionerToPrincipalArgs } from '@ecdlink/graphql';
 import { useHistory } from 'react-router-dom';
@@ -60,6 +63,8 @@ export const AddPractitioner = ({
     useState<boolean>();
   const [newPractitioner, setNewPractitioner] =
     useState<AddNewPractitionerModel>(AddPractitinerInitialState);
+  const [presentCellNumberMismatch, setPresentCellNumberMismatch] =
+    useState<boolean>(false);
 
   const { preferId, idNumber, passport } = useWatch({
     control,
@@ -246,6 +251,7 @@ export const AddPractitioner = ({
                       type={'filled'}
                       color={'primary'}
                       textColor={'white'}
+                      onClick={() => setPresentCellNumberMismatch(true)}
                     />
                   }
                 />
@@ -274,6 +280,7 @@ export const AddPractitioner = ({
                         type={'filled'}
                         color={'primary'}
                         textColor={'white'}
+                        onClick={() => setPresentCellNumberMismatch(true)}
                       />
                     ) : (
                       <></>
@@ -309,6 +316,41 @@ export const AddPractitioner = ({
             )}
           </div>
         </div>
+        <Dialog
+          visible={presentCellNumberMismatch}
+          position={DialogPosition.Middle}
+        >
+          <ActionModal
+            icon={'InformationCircleIcon'}
+            iconColor={'alertMain'}
+            importantText={`SmartStart has a different cellphone number for you:`}
+            detailText={
+              'Please check you have entered the correct cellphone number or call our toll free number to have it changed.'
+            }
+            actionButtons={[
+              {
+                colour: 'primary',
+                text: 'Edit cellphone number',
+                textColour: 'white',
+                leadingIcon: 'PencilIcon',
+                onClick: () => {
+                  setPresentCellNumberMismatch(false);
+                },
+                type: 'filled',
+              },
+              {
+                colour: 'primary',
+                text: 'Call 0800 014 817',
+                textColour: 'primary',
+                leadingIcon: 'PhoneIcon',
+                onClick: () => {
+                  setPresentCellNumberMismatch(false);
+                },
+                type: 'outlined',
+              },
+            ]}
+          />
+        </Dialog>
       </div>
     </div>
   );
