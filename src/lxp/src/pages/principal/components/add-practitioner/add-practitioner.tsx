@@ -63,8 +63,6 @@ export const AddPractitioner = ({
     useState<boolean>();
   const [newPractitioner, setNewPractitioner] =
     useState<AddNewPractitionerModel>(AddPractitinerInitialState);
-  const [presentCellNumberMismatch, setPresentCellNumberMismatch] =
-    useState<boolean>(false);
 
   const { preferId, idNumber, passport } = useWatch({
     control,
@@ -160,6 +158,10 @@ export const AddPractitioner = ({
     history.push(ROUTES.PRINCIPAL.PRACTITIONER_LIST);
   };
 
+  const callForHelp = () => {
+    window.open('tel:+27800014817');
+  };
+
   return (
     <div>
       <BannerWrapper
@@ -251,7 +253,7 @@ export const AddPractitioner = ({
                       type={'filled'}
                       color={'primary'}
                       textColor={'white'}
-                      onClick={() => setPresentCellNumberMismatch(true)}
+                      onClick={() => callForHelp()}
                     />
                   }
                 />
@@ -280,7 +282,7 @@ export const AddPractitioner = ({
                         type={'filled'}
                         color={'primary'}
                         textColor={'white'}
-                        onClick={() => setPresentCellNumberMismatch(true)}
+                        onClick={() => callForHelp()}
                       />
                     ) : (
                       <></>
@@ -316,41 +318,6 @@ export const AddPractitioner = ({
             )}
           </div>
         </div>
-        <Dialog
-          visible={presentCellNumberMismatch}
-          position={DialogPosition.Middle}
-        >
-          <ActionModal
-            icon={'InformationCircleIcon'}
-            iconColor={'alertMain'}
-            importantText={`SmartStart has a different cellphone number for you:`}
-            detailText={
-              'Please check you have entered the correct cellphone number or call our toll free number to have it changed.'
-            }
-            actionButtons={[
-              {
-                colour: 'primary',
-                text: 'Edit cellphone number',
-                textColour: 'white',
-                leadingIcon: 'PencilIcon',
-                onClick: () => {
-                  setPresentCellNumberMismatch(false);
-                },
-                type: 'filled',
-              },
-              {
-                colour: 'primary',
-                text: 'Call 0800 014 817',
-                textColour: 'primary',
-                leadingIcon: 'PhoneIcon',
-                onClick: () => {
-                  setPresentCellNumberMismatch(false);
-                },
-                type: 'outlined',
-              },
-            ]}
-          />
-        </Dialog>
       </div>
     </div>
   );
