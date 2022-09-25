@@ -120,7 +120,7 @@ string userId)
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var classRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
 
-            return classRepo.GetAll().Where(x => x.UserId.Contains(userId)).ToList();
+            return classRepo.GetAll().Where(x => x.UserId.Equals(userId)).ToList();
         }
 
         public async Task<FileModel> PractitionerExcelTemplateGenerator(
