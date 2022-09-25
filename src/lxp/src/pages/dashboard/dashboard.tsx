@@ -133,15 +133,15 @@ export const Dashboard: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    (async () =>
-      await appDispatch(
-        classroomsThunkActions.getClassroomGroupClassroomsForPractitioner({
-          userId: userData?.id!,
-        })
-      ).unwrap())();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // useEffect(() => {
+  //   (async () =>
+  //     await appDispatch(
+  //       classroomsThunkActions.getClassroomGroupClassroomsForPractitioner({
+  //         userId: userData?.id!,
+  //       })
+  //     ).unwrap())();
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, []);
 
   const navigation: (NavigationRouteItem | NavigationDropdown)[] = [
     {

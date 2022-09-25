@@ -29,9 +29,9 @@ import {
   AddNewPractitionerModel,
 } from './add-practitioner.types';
 
-type UserWithPractitionerData = UserDto & {
-  practitionerObjectData?: PractitionerDto;
-};
+// type UserWithPractitionerData = UserDto & {
+//   practitionerObjectData?: PractitionerDto;
+// };
 
 export const AddPractitioner = ({
   onSubmit,
@@ -88,7 +88,7 @@ export const AddPractitioner = ({
         if (p?.practitionerObjectData?.isRegistered === true) {
           setIsPractitionerRegistered(false);
         }
-        console.log({ p });
+
         setIsValidPractitioner(!!p?.idNumber);
         setNewPractitioner({
           firstName: p?.firstName,
@@ -101,9 +101,6 @@ export const AddPractitioner = ({
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idNumber, passport]);
-
-  console.log({ isPractitionerRegistered });
-  console.log({ newPractitioner });
 
   const getPractitionerDetailsByIdNumber = async () => {
     // Check if the practitioner exists

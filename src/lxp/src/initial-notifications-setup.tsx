@@ -33,8 +33,6 @@ const InitialNotificationSetup: React.FC = ({ children }) => {
   );
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
-  console.log({ notificationServiceRef });
-
   useEffect(() => {
     initializeServices();
     return () => {
@@ -45,7 +43,6 @@ const InitialNotificationSetup: React.FC = ({ children }) => {
 
   const onNotificationsRecieved = useCallback(
     (messages: Message[]) => {
-      console.log({ messages });
       const newMessages = messages.filter(
         (message) =>
           !notifications.some(
@@ -53,9 +50,7 @@ const InitialNotificationSetup: React.FC = ({ children }) => {
               notification.message.reference === message.reference
           )
       );
-      console.log({ newMessages });
       if (newMessages.length > 0) {
-        console.log('testeeeeeeeee');
         dispatch(notificationActions.addNotifications(newMessages));
       }
     },

@@ -281,15 +281,16 @@ export const upsertClassroomGroups = createAsyncThunk<
 
       if (userAuth?.auth_token && classroomGroups) {
         promises = classroomGroups.map(async (x) => {
+          console.log({ classroomGroups });
           const input: ClassroomGroupInput = {
             Id: x.id,
             ClassroomId: x.classroomId,
             ProgrammeTypeId: x.programmeTypeId,
             Name: x.name,
             IsActive: x.isActive === false ? false : true,
-            UserId: x.practitionerId,
+            UserId: x.userId,
           };
-
+          console.log({ input });
           return await new ClassroomGroupService(
             userAuth?.auth_token
           ).updateClassroomGroup(x.id ?? '', input);

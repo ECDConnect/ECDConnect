@@ -180,8 +180,6 @@ export default function EditMultiplePractitioners({
     onSubmit();
   };
 
-  console.log({ principalPractitioners });
-
   const renderPage = (page: SetupPractitionersPage) => {
     switch (page) {
       case SetupPractitionersPage.confirmPractitioners:
