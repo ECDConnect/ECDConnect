@@ -27,6 +27,7 @@ import {
   PractitionerSetupSteps,
   ConfirmPractitionersSteps,
   ConfirmClassesSteps,
+  RegisterPractitioner,
 } from './setup-principal.types';
 import { AddPractitionerModel } from '@/schemas/practitioner/add-practitioner';
 import { practitionerSelectors } from '@/store/practitioner';

@@ -33,6 +33,7 @@ export const PractitionersList: React.FC = () => {
   const practitionersList = practitioners?.filter(
     (item) => item.userId !== practitioner?.userId
   );
+  const redirectedFromPractitionersList = true;
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [practitionerListData, setPractitionerListData] =
@@ -91,9 +92,7 @@ export const PractitionersList: React.FC = () => {
       onActionClick: () => handleClick(practitioner?.userId!),
     };
   };
-  console.log(
-    practitionersList?.length! > 0 || practitionersList !== undefined
-  );
+
   return (
     <>
       {practitionersList?.length! > 0 || practitionersList !== undefined ? (
@@ -148,8 +147,7 @@ export const PractitionersList: React.FC = () => {
               type="outlined"
               color="primary"
               className={'w-full mt-6 mb-6'}
-              onClick={() => {}}
-              disabled={true}
+              onClick={() => history.push(ROUTES.PRINCIPAL.ADD_PRACTITIONER)}
             >
               {renderIcon(
                 'UsersIcon',
@@ -159,7 +157,7 @@ export const PractitionersList: React.FC = () => {
                 type="body"
                 className="mr-4"
                 color="primary"
-                text={'Add or remove practitioners'}
+                text={'Add practitioners'}
               ></Typography>
             </Button>
           </div>

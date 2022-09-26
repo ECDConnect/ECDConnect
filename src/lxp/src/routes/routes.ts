@@ -31,10 +31,13 @@ const ROUTES = {
   CHILD_REGISTRATION: '/child-registration',
   CHILD_REGISTRATION_BIRTH_CERTIFICATE: '/child-registration-birth-certificate',
   PRINCIPAL: addPrefix('/principal', {
+    ADD_PRACTITIONER: '/add-practitioner',
+    CONFIRM_PRACTITIONER: 'confirm-practitioner',
     SETUP_PROFILE: '/setup-profile',
     PRACTITIONER_PROFILE: '/practitioner-profile',
     PRACTITIONER_LIST: '/practitioner-list',
     PRACTITIONER_CHILD_LIST: '/practitioner-child-list',
+    PRACTITIONER_REASSIGN_CLASS: '/practitioner-reassign-class',
     NOTES: '/notes',
   }),
   PRACTITIONER: addPrefix('/practitioner', {

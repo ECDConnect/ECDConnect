@@ -103,8 +103,6 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
       value: currentPractitioner?.userId,
     });
 
-    console.log({ _list });
-
     setPractitionersList(_list);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

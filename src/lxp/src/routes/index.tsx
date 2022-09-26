@@ -62,6 +62,9 @@ import { PrincipalPractitionerChildList } from '@/pages/classroom/class-dashboar
 import { PrincipalNotes } from '@/pages/classroom/class-dashboard/practitioners/principal-practitioner-profile/components/principal-notes/principal-notes';
 import { PractitionerList } from '@/pages/practitioner/practitioner-programme-information/practitioner-list/practitioner-list';
 import { Logout } from '@/pages/auth/logout/logout';
+import ReassignClass from '@/pages/classroom/class-dashboard/practitioners/reassign-class/reassign-class';
+import { AddPractitioner } from '@/pages/principal/components/add-practitioner/add-practitioner';
+import ConfirmPractitioner from '@/pages/principal/components/add-practitioner/confirm-practitioner';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -161,6 +164,16 @@ const AuthRoutes: React.FC = () => {
       />
       <Route
         exact
+        path={ROUTES.PRINCIPAL.ADD_PRACTITIONER}
+        component={AddPractitioner}
+      />
+      <Route
+        exact
+        path={ROUTES.PRINCIPAL.CONFIRM_PRACTITIONER}
+        component={ConfirmPractitioner}
+      />
+      <Route
+        exact
         path={ROUTES.PRINCIPAL.PRACTITIONER_PROFILE}
         component={PrincipalPractitionerProfileInfo}
       />
@@ -168,6 +181,11 @@ const AuthRoutes: React.FC = () => {
         exact
         path={ROUTES.PRINCIPAL.PRACTITIONER_LIST}
         component={PractitionerList}
+      />
+      <Route
+        exact
+        path={ROUTES.PRINCIPAL.PRACTITIONER_REASSIGN_CLASS}
+        component={ReassignClass}
       />
       <Route
         exact
