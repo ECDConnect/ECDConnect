@@ -187,15 +187,25 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             var languages = localeService.GetAvailableLocale().ToList();
 
-            List<PractitionerImportItem> practitionerImportList = new List<PractitionerImportItem>();
+            List<ImportAllStaffItem> practitionerImportList = new List<ImportAllStaffItem>();
             var headerRow = sheet.GetRow(0);
 
             for (var row = 1; row <= sheet.LastRowNum; row++)
             {
                 var currentRow = sheet.GetRow(row);
 
+                //set sharedinfo needed between rows
+                bool matchWithSite = false;
+                string siteIndicator = "";
+                Guid? parentId = null;
+
+
                 if (currentRow != null)
                 {
+                    //check the indicator of what type of staff the row is - Franchisee(practitioner)/Principal/Coach/Franchisor/FAA(FundaAppAdmin)
+                    var roleType = ExcelHelper.GetCellValue(currentRow.GetCell(1));
+                    matchWithSite = (ExcelHelper.GetCellValue(currentRow.GetCell(0))=="YES"?true:false);
+
                     var firstName = ExcelHelper.GetCellValue(currentRow.GetCell(0));
                     var surename = ExcelHelper.GetCellValue(currentRow.GetCell(1));
                     var cellphone = ExcelHelper.GetCellValue(currentRow.GetCell(2));
@@ -219,7 +229,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
                         var startDateInt = int.Parse(startDate);
                         var dobDateInt = int.Parse(dob);
-                        var item = currentItem != null ? currentItem : new PractitionerImportItem();
+                        var item = currentItem != null ? currentItem : new ImportAllStaffItem();
                         item.FirstName = firstName;
                         item.Surname = surename;
                         item.PhoneNumber = cellphone;
@@ -294,7 +304,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
             string practitionerId, string principalId)
-        
         {
             bool bReturn = false;
             using var scope = dbFactory.CreateDbContext();

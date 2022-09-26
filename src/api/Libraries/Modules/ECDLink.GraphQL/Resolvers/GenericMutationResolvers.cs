@@ -15,7 +15,7 @@ namespace ECDLink.EGraphQL.Resolvers
         {
             Guid tenantId = TenantExecutionContext.Tenant.Id;
             var repository = repositoryFactory.CreateRepository<T>();
-
+            input.UpdatedDate = DateTime.Now;
             input.Id = id;
             input.TenantId = tenantId;
 
