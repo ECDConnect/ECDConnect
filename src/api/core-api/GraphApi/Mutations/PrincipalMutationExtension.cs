@@ -38,12 +38,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     string idNumber,
     string userId)
         {
-            List<Practitioner> practitioners = new List<Practitioner>();
-
-            var principal = userManager.FindByIdAsync(userId).Result;
             Guid tenantId = TenantExecutionContext.Tenant.Id;
             var uId = contextAccessor.HttpContext.GetUser().Id;
-            var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+            var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
             var practitionerUser = new PractitionerQueryExtension().GetPractitionerByIdNumber(serviceProvider, contextAccessor,userManager,dbFactory, repoFactory, idNumber);            
             if (practitionerUser != null)
             {
