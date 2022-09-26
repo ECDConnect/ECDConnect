@@ -159,6 +159,58 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return new ClassroomGroup();
         }
 
+        public ClassProgramme UpdateClassProgramme([Service] IHttpContextAccessor contextAccessor,
+    [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+    [Service] IGenericRepositoryFactory repoFactory,
+    [Service] HierarchyEngine engine,
+    Guid id,
+    ClassProgramme input)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var classRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);
+            ClassroomGroup classRoom = (ClassroomGroup)classRepo.GetAll().Where(x => x.Id.Equals(input.ClassroomGroupId)).FirstOrDefault();
+            var hierarchy = engine.GetUserHierarchy((classRoom.UserId != null ? classRoom.UserId.ToString() : uId));
+            if (classRoom != null)
+            {
+                if (!string.IsNullOrEmpty(hierarchy))
+                {
+                    var programmeRepo = repoFactory.CreateGenericRepository<ClassProgramme>(userContext: uId);
+                    var existingProgramme = programmeRepo.GetById(id);
+
+                    if (existingProgramme == null)
+                    {
+                        //create new classroomgroup
+                        ClassProgramme classRoomCreate = new ClassProgramme()
+                        {
+                            Id = input.Id,
+                            ClassroomGroupId = input.ClassroomGroupId,
+                            IsActive = true,
+                            UpdatedBy = uId.ToString(),
+                            ProgrammeStartDate = input.ProgrammeStartDate,
+                            MeetingDay = input.MeetingDay,
+                            IsFullDay = input.IsFullDay,
+                            UpdatedDate = DateTime.Now,
+                            Hierarchy = hierarchy
+                        };
+
+                        return programmeRepo.Insert(classRoomCreate);
+                    } else
+                    {
+                        existingProgramme.UpdatedDate = DateTime.Now;
+                        existingProgramme.ClassroomGroupId = input.ClassroomGroupId;
+                        existingProgramme.Hierarchy = hierarchy;
+                        existingProgramme.MeetingDay = input.MeetingDay;
+                        existingProgramme.IsFullDay = input.IsFullDay;
+                        existingProgramme.IsActive = input.IsActive;
+
+                        return programmeRepo.Update(existingProgramme);
+                    }
+                }
+            }
+          
+            return new ClassProgramme();
+        }
+
         private bool UpdateClassProgrammeForPractitioner([Service] IHttpContextAccessor contextAccessor,
     [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
     [Service] IGenericRepositoryFactory repoFactory, Guid classroomId,  string newHierarchy)
@@ -172,7 +224,23 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             {
                 classProgramme.Hierarchy = newHierarchy;
                 classProgrammeRepo.Update(classProgramme);
-            }
+            } //else
+            //{
+            //    ClassProgramme classRoomCreate = new ClassProgramme()
+            //    {
+            //        Id = input.Id,
+            //        ClassroomGroupId = input.ClassroomGroupId,
+            //        IsActive = true,
+            //        UpdatedBy = uId.ToString(),
+            //        ProgrammeStartDate = input.ProgrammeStartDate,
+            //        MeetingDay = input.MeetingDay,
+            //        IsFullDay = input.IsFullDay,
+            //        UpdatedDate = DateTime.Now,
+            //        Hierarchy = hierarchy
+            //    };
+
+            //    return programmeRepo.Insert(classRoomCreate);
+            //}
             return updated;
         }
     }
