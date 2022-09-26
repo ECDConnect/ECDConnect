@@ -59,7 +59,8 @@ export const SetupPrincipal: React.FC = () => {
   const principalPractitioners = useSelector(
     practitionerSelectors.getPrincipalPractitioners
   );
-
+  const [isNotPrincipal, setIsNotPrincipal] = useState(false);
+  const [isFundaAppAdmin, setIsFundaAppAdmin] = useState(false);
   const [label, setLabel] = useState('Welcome');
   const [page, setPage] = useState<PractitionerSetupSteps>(
     PractitionerSetupSteps.WELCOME
@@ -86,6 +87,11 @@ export const SetupPrincipal: React.FC = () => {
   }, [page]);
 
   const onAllStepsComplete = async () => {
+    if (isNotPrincipal === true) {
+      history.push(ROUTES.ROOT);
+      return;
+    }
+
     const playGroupProgrammeType = programmeTypes.find(
       (x) => x.enumId === ProgrammeTypeEnum.Playgroup
     );
@@ -97,7 +103,7 @@ export const SetupPrincipal: React.FC = () => {
         isActive: true,
         programmeTypeId: programmeType?.id,
         name: NoPlaygroupClassroomType.name,
-        practitionerId: user?.id, // Unsure classroom will belong to the principal
+        userId: user?.id, // Unsure classroom will belong to the principal
       };
       appDispatch(
         classroomsActions.createClassroomGroup(unsureClassProgrammeInputModel)
@@ -195,7 +201,14 @@ export const SetupPrincipal: React.FC = () => {
         );
 
       case PractitionerSetupSteps.SETUP_PROGRAMME:
-        return <AddProgrammeForm onNext={setPage} />;
+        return (
+          <AddProgrammeForm
+            onNext={setPage}
+            setIsNotPrincipal={setIsNotPrincipal}
+            isFundaAppAdmin={isFundaAppAdmin}
+            setIsFundaAppAdmin={setIsFundaAppAdmin}
+          />
+        );
 
       case PractitionerSetupSteps.CONFIRM_PRACTITIONERS:
         return (
@@ -276,7 +289,11 @@ export const SetupPrincipal: React.FC = () => {
         showBackground={page === PractitionerSetupSteps.WELCOME}
         title={'Edit Profile'}
         subTitle={label}
-        onBack={onBack}
+        onBack={
+          !isFundaAppAdmin && isNotPrincipal
+            ? () => setPage(PractitionerSetupSteps.SETUP_PROGRAMME)
+            : onBack
+        }
         onClose={exitPrompt}
         backgroundColour={'white'}
         className={page === PractitionerSetupSteps.WELCOME ? 'relative' : ''}

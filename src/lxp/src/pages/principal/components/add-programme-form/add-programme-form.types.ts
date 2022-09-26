@@ -9,4 +9,5 @@ export const yesNoOptions = [
 export interface EditProgrammeFormProps
   extends FormComponentProps<EditProgrammeModel> {
   programme?: EditProgrammeModel;
+  setIsNotPrincipal?: any;
 }
