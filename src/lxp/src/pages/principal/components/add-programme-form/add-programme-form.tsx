@@ -21,8 +21,14 @@ import {
   OnNext,
   PractitionerSetupSteps,
 } from '../../setup-principal/setup-principal.types';
+import { useEffect } from 'react';
 
-export const AddProgrammeForm: React.FC<{ onNext: OnNext }> = ({ onNext }) => {
+export const AddProgrammeForm: React.FC<{
+  onNext: OnNext;
+  setIsNotPrincipal: any;
+  isFundaAppAdmin: any;
+  setIsFundaAppAdmin: any;
+}> = ({ onNext, setIsNotPrincipal, isFundaAppAdmin, setIsFundaAppAdmin }) => {
   const user = useSelector(userSelectors.getUser);
   const appDispatch = useAppDispatch();
 
@@ -39,14 +45,29 @@ export const AddProgrammeForm: React.FC<{ onNext: OnNext }> = ({ onNext }) => {
   });
 
   const { isValid } = useFormState({ control: programmeFormControl });
-  const { isPrincipalOrLeader, isPrincipleOrOwnerSmartStarter } =
-    useWatch<EditProgrammeModel>({
-      control: programmeFormControl,
-      defaultValue: {},
-    });
+  const {
+    isPrincipalOrLeader,
+    isPrincipleOrOwnerSmartStarter,
+    name,
+    type,
+    nonSmartStartPractitioners,
+    smartStartPractitioners,
+  } = useWatch<EditProgrammeModel>({
+    control: programmeFormControl,
+    defaultValue: {},
+  });
 
   const programData = useSelector(staticDataSelectors.getProgrammeTypes);
 
+  const validationForFundaAdmin =
+    name !== undefined &&
+    name !== null &&
+    type !== undefined &&
+    type !== null &&
+    nonSmartStartPractitioners !== undefined &&
+    nonSmartStartPractitioners !== null &&
+    smartStartPractitioners !== undefined &&
+    smartStartPractitioners !== null;
   const createClassroom = (
     programme: EditProgrammeModel,
     classroomId: string
@@ -71,10 +92,29 @@ export const AddProgrammeForm: React.FC<{ onNext: OnNext }> = ({ onNext }) => {
   };
 
   const onSubmit = (e: EditProgrammeModel) => {
+    if (!isFundaAppAdmin && isPrincipleOrOwnerSmartStarter === true) {
+      setIsNotPrincipal(true);
+      onNext(PractitionerSetupSteps.ADD_PHOTO);
+      return;
+    }
     const classroomId = newGuid();
     createClassroom(e, classroomId);
     onNext(PractitionerSetupSteps.CONFIRM_PRACTITIONERS);
   };
+
+  useEffect(() => {
+    if (
+      isPrincipalOrLeader === false &&
+      isPrincipleOrOwnerSmartStarter === false
+    ) {
+      setIsFundaAppAdmin(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    isPrincipalOrLeader,
+    isPrincipleOrOwnerSmartStarter,
+    setProgrammeFormValue,
+  ]);
 
   return (
     <div>
@@ -95,28 +135,47 @@ export const AddProgrammeForm: React.FC<{ onNext: OnNext }> = ({ onNext }) => {
       )}
 
       <div className="space-y-4">
-        <div className={'w-full'}>
-          <label className={styles.label}>
-            Are you the principal or leader of the programme?
-          </label>
-          <div className="mt-1">
-            <ButtonGroup<boolean>
-              options={yesNoOptions}
-              onOptionSelected={(value: boolean | boolean[]) =>
-                setProgrammeFormValue('isPrincipalOrLeader', value as boolean, {
-                  shouldValidate: true,
-                })
-              }
-              selectedOptions={[getProgrammeFormValues().isPrincipalOrLeader]}
-              color="secondary"
-              type={ButtonGroupTypes.Button}
-              className={'w-full'}
-            />
+        {!(
+          isPrincipleOrOwnerSmartStarter === false &&
+          isPrincipalOrLeader === false
+        ) && (
+          <div className={'w-full'}>
+            <label className={styles.label}>
+              Are you the principal or leader of the programme?
+            </label>
+            <div className="mt-1">
+              <ButtonGroup<boolean>
+                options={yesNoOptions}
+                onOptionSelected={(value: boolean | boolean[]) =>
+                  setProgrammeFormValue(
+                    'isPrincipalOrLeader',
+                    value as boolean,
+                    {
+                      shouldValidate: true,
+                    }
+                  )
+                }
+                selectedOptions={[getProgrammeFormValues().isPrincipalOrLeader]}
+                color="secondary"
+                type={ButtonGroupTypes.Button}
+                className={'w-full'}
+              />
+            </div>
           </div>
-        </div>
+        )}
 
-        {isPrincipalOrLeader === true && (
+        {(isPrincipalOrLeader === true ||
+          (isFundaAppAdmin === true && isPrincipalOrLeader === false)) && (
           <>
+            {isPrincipalOrLeader === false && isFundaAppAdmin === true && (
+              <div className="my-4">
+                <Alert
+                  type="info"
+                  title="Each programme must have one person responsible for administration tasks on Funda App."
+                  message={`• Since the principal at your programme is not a SmartStarter, you will be required to fill this administration role on Funda App.`}
+                />
+              </div>
+            )}
             <FormInput<EditProgrammeModel>
               label={'What is the name of your programme?'}
               register={programmeFormRegister}
@@ -177,46 +236,50 @@ export const AddProgrammeForm: React.FC<{ onNext: OnNext }> = ({ onNext }) => {
           </>
         )}
 
-        {isPrincipalOrLeader === false && (
+        {isPrincipalOrLeader === false && !isFundaAppAdmin && (
           <div className={'w-full'}>
             <label className={styles.label}>
               Is the principal/owner of your programme a SmartStarter?
             </label>
             <div className="mt-1">
-              <Controller
-                name="isPrincipleOrOwnerSmartStarter"
-                control={programmeFormControl}
-                render={({ field: { onChange, value, ref } }) => (
-                  <ButtonGroup<boolean>
-                    inputRef={ref}
-                    options={yesNoOptions}
-                    onOptionSelected={onChange}
-                    selectedOptions={value}
-                    color="secondary"
-                    type={ButtonGroupTypes.Button}
-                    className={'w-full'}
-                  />
-                )}
+              <ButtonGroup<boolean>
+                options={yesNoOptions}
+                onOptionSelected={(value: boolean | boolean[]) =>
+                  setProgrammeFormValue(
+                    'isPrincipleOrOwnerSmartStarter',
+                    value as boolean,
+                    {
+                      shouldValidate: true,
+                    }
+                  )
+                }
+                selectedOptions={[
+                  getProgrammeFormValues().isPrincipleOrOwnerSmartStarter,
+                ]}
+                color="secondary"
+                type={ButtonGroupTypes.Button}
+                className={'w-full'}
               />
             </div>
           </div>
         )}
 
-        {isPrincipleOrOwnerSmartStarter === true && (
-          <div className="my-4">
-            <Alert
-              type="warning"
-              title="Ask the principal of the programme to add your details to their programme on Funda App."
-            />
-          </div>
-        )}
+        {isPrincipleOrOwnerSmartStarter === true &&
+          isPrincipalOrLeader === false && (
+            <div className="my-4">
+              <Alert
+                type="warning"
+                title="Ask the principal of the programme to add your details to their programme on Funda App."
+              />
+            </div>
+          )}
 
         <div className="mb-2">
           <Button
             type="filled"
             color="primary"
             className={styles.button}
-            disabled={!isValid}
+            disabled={isFundaAppAdmin ? !validationForFundaAdmin : !isValid}
             onClick={handleSubmit(onSubmit)} // Navigate to a different page if it is principle
           >
             {renderIcon('ArrowCircleRightIcon', styles.icon)}
