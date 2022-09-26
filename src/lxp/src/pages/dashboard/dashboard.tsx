@@ -53,6 +53,7 @@ export enum NavigationTypes {
 export const Dashboard: React.FC = () => {
   const shouldUserSync = useSelector(settingSelectors.getShouldUserSync);
   const classroom = useSelector(classroomsSelectors.getClassroom);
+  const classroomGroup = useSelector(classroomsSelectors.getClassroomGroups);
   const userData = useSelector(userSelectors.getUser);
   const practitionerData = useSelector(practitionerSelectors.getPractitioners);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
@@ -352,7 +353,7 @@ export const Dashboard: React.FC = () => {
   };
 
   const goToClassroom = () => {
-    if (classroom && classroom.id) {
+    if ((classroom && classroom.id) || classroomGroup) {
       history.push(ROUTES.CLASSROOM, { activeTabIndex: 1 });
     } else {
       showCompleteProfileBlockingDialog();
