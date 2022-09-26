@@ -115,7 +115,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                     {
                         if (!hh.Contains(null)) //dont run any null values through teh check, nothing should be null
                         {
-                            return query.Where(x => hh.Contains(((IUserType)x).Hierarchy));
+                            return query.Where(x => hh.Contains(((IUserType)x).Hierarchy));//.OrderByDescending(y => y.InsertedDate);
                         }
                     }
                 }
@@ -252,7 +252,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                     }
 
                 }
-                return (List<T>)record;
+                return (List<T>)record;//.OrderByDescending(y => y.InsertedDate);
             }
             return null;
         }
