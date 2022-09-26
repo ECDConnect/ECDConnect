@@ -101,8 +101,6 @@ string userId)
 [Service] IGenericRepositoryFactory repoFactory,
 string userId)
         {
-
-            using var scope = dbFactory.CreateDbContext();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var classRepo = repoFactory.CreateRepository<Classroom>(userContext: uId);
 
@@ -206,18 +204,15 @@ string userId)
             [Service] IGenericRepositoryFactory repoFactory,
             string userId)
         {
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            var classroomGroupRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);
-            var classroomRepo = repoFactory.CreateGenericRepository<Classroom>(userContext: uId);
-            var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId); //BYPASS USERHIERARCHY TO SEE UP THE CHAIN
-            List<ClassroomGroup> classroomGroup = classroomGroupRepo.GetListByUserId(userId);
-            if (classroomGroup != null)
-            {
-                return classroomGroup;
-            }
-            return null;
+            return this.GetAllClassroomGroupsForPractitioner(contextAccessor, dbFactory, repoFactory, userId);
+            //var uId = contextAccessor.HttpContext.GetUser().Id;
+            //var classroomGroupRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);            
+            //List<ClassroomGroup> classroomGroup = classroomGroupRepo.GetListByUserId(userId);
+            //if (classroomGroup != null)
+            //{
+            //    return classroomGroup;
+            //}
+            //return null;
         }
     }
 
