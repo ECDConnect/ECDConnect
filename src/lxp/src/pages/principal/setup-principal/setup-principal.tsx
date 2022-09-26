@@ -103,7 +103,7 @@ export const SetupPrincipal: React.FC = () => {
         isActive: true,
         programmeTypeId: programmeType?.id,
         name: NoPlaygroupClassroomType.name,
-        practitionerId: user?.id, // Unsure classroom will belong to the principal
+        userId: user?.id, // Unsure classroom will belong to the principal
       };
       appDispatch(
         classroomsActions.createClassroomGroup(unsureClassProgrammeInputModel)

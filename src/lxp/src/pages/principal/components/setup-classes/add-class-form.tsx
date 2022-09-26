@@ -121,7 +121,7 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
         name: data?.name ?? '',
         programmeTypeId: programmeType?.id ?? '',
         isActive: true,
-        practitionerId: data?.practitionerId,
+        userId: data?.practitionerId,
       };
 
       appDispatch(classroomsActions.createClassroomGroup(classroomGroupModel));
