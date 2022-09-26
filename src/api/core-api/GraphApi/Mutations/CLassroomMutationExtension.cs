@@ -170,7 +170,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var classRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);
             ClassroomGroup classRoom = (ClassroomGroup)classRepo.GetAll().Where(x => x.Id.Equals(input.ClassroomGroupId)).FirstOrDefault();
             var hierarchy = engine.GetUserHierarchy((classRoom.UserId != null ? classRoom.UserId.ToString() : uId));
-            if (classRoom == null)
+            if (classRoom != null)
             {
                 if (!string.IsNullOrEmpty(hierarchy))
                 {
