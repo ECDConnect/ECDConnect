@@ -61,15 +61,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 if (roles.Any(x => x.Name.Contains("Principal") || x.Name.Contains("Practitioner")))
                 {
                     var userData = new PractitionerQueryExtension().GetPractitionerByUserId(contextAccessor, dbFactory, repoFactory, userId);
-                    if (userData.IsPrincipal.HasValue && userData.IsPrincipal == true)
+                    if (userData != null)
                     {
-                        user.practitionerObjectData = null;
-                        user.principalObjectData = userData;
-                    }
-                    else
-                    {
-                        user.principalObjectData = null;
-                        user.practitionerObjectData = userData;
+                        if (userData.IsPrincipal.HasValue && userData.IsPrincipal == true)
+                        {
+                            user.practitionerObjectData = null;
+                            user.principalObjectData = userData;
+                        }
+                        else
+                        {
+                            user.principalObjectData = null;
+                            user.practitionerObjectData = userData;
+                        }
                     }
                 }
                 //Child
