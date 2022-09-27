@@ -29,6 +29,7 @@ export const PractitionerProfile: React.FC = () => {
   const user = useSelector(userSelectors.getUser);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const classroom = useSelector(classroomsSelectors.getClassroom);
+  const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const lastDataSyncDate = useSelector(settingSelectors.getLastDataSync);
   const appDispatch = useAppDispatch();
   const { userProfilePicture, classroomImage } = useDocuments();
@@ -78,7 +79,7 @@ export const PractitionerProfile: React.FC = () => {
         iconColor: 'white',
         showIcon: classroomImage?.file === undefined,
         onActionClick: () => {
-          if (classroom && classroom.id) {
+          if ((classroom && classroom.id) || classroomGroups) {
             history.push(ROUTES.PRACTITIONER.PROGRAMME_INFORMATION);
           } else {
             dialog({
