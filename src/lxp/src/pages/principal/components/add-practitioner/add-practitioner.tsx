@@ -1,18 +1,14 @@
 import {
   FormInput,
   Button,
-  Typography,
   Alert,
   SA_ID_REGEX,
   SA_PASSPORT_REGEX,
   BannerWrapper,
-  Dialog,
-  DialogPosition,
-  ActionModal,
 } from '@ecdlink/ui';
 import { MutationAddPractitionerToPrincipalArgs } from '@ecdlink/graphql';
 import { useHistory } from 'react-router-dom';
-import { PractitionerDto, UserDto } from '@ecdlink/core';
+import { UserDto } from '@ecdlink/core';
 import { useEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -31,6 +27,7 @@ import {
   AddPractitinerInitialState,
   AddNewPractitionerModel,
 } from './add-practitioner.types';
+import { userSelectors } from '@store/user';
 
 // type UserWithPractitionerData = UserDto & {
 //   practitionerObjectData?: PractitionerDto;
@@ -48,7 +45,7 @@ export const AddPractitioner = ({
     register,
     control,
     formState: { errors, isValid },
-    getValues,
+    // getValues,
     setValue,
     reset,
   } = useForm({
@@ -63,6 +60,7 @@ export const AddPractitioner = ({
     useState<boolean>();
   const [newPractitioner, setNewPractitioner] =
     useState<AddNewPractitionerModel>(AddPractitinerInitialState);
+  const userData = useSelector(userSelectors.getUser);
 
   const { preferId, idNumber, passport } = useWatch({
     control,
@@ -122,31 +120,9 @@ export const AddPractitioner = ({
     setIsValidPractitioner(undefined);
   };
 
-  // const handleSubmit = async () => {
-  //   const { firstName, idNumber, passport, surname } = getValues();
-
-  //   const practitionerUserDetails: UserWithPractitionerData =
-  //     await getPractitionerDetailsByIdNumber();
-
-  //   onSubmit({
-  //     id: practitionerUserDetails?.practitionerObjectData?.id ?? '',
-  //     userId: practitionerUserDetails.id ?? '',
-  //     idNumber: idNumber || passport,
-  //     firstName: firstName,
-  //     surname: surname,
-  //     passport: '',
-  //     preferId: !!idNumber,
-  //     isRegistered: Boolean(
-  //       practitionerUserDetails.practitionerObjectData?.isRegistered
-  //     ),
-  //   });
-
-  //   history.push(ROUTES.PRINCIPAL.CONFIRM_PRACTITIONER);
-  // };
-
   const onSubmitAddPractitioner = async () => {
     const input: MutationAddPractitionerToPrincipalArgs = {
-      userId: newPractitioner?.userId,
+      userId: userData?.id,
       idNumber: idNumber,
       firstName: newPractitioner?.firstName,
       lastName: newPractitioner?.surname,
@@ -155,7 +131,7 @@ export const AddPractitioner = ({
       userAuth?.auth_token!
     ).AddPractitionerToPrincipal(input);
 
-    history.push(ROUTES.PRINCIPAL.PRACTITIONER_LIST);
+    history.push(ROUTES.CLASSROOM);
   };
 
   const callForHelp = () => {
