@@ -353,7 +353,10 @@ export const Dashboard: React.FC = () => {
   };
 
   const goToClassroom = () => {
-    if ((classroom && classroom.id) || classroomGroup) {
+    if (
+      (classroom && classroom.id) ||
+      (classroomGroup && classroomGroup.length > 0)
+    ) {
       history.push(ROUTES.CLASSROOM, { activeTabIndex: 1 });
     } else {
       showCompleteProfileBlockingDialog();
