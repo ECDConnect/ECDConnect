@@ -2872,7 +2872,7 @@ export type MutationUpdateChildProgressReportArgs = {
 };
 
 export type MutationUpdateClassProgrammeArgs = {
-  id?: InputMaybe<Scalars['UUID']>;
+  id: Scalars['UUID'];
   input?: InputMaybe<ClassProgrammeInput>;
 };
 
@@ -3445,6 +3445,15 @@ export type Practitioner = {
 
 export type PractitionerFilterDocumentsByTypeArgs = {
   type: FileTypeEnum;
+};
+
+export type PractitionerClassroomName = {
+  __typename?: 'PractitionerClassroomName';
+  classRoomId: Scalars['UUID'];
+  classroomGroupId: Scalars['UUID'];
+  classroomName?: Maybe<Scalars['String']>;
+  coachName?: Maybe<Scalars['String']>;
+  principalName?: Maybe<Scalars['String']>;
 };
 
 export type PractitionerFilterInput = {
@@ -4051,6 +4060,9 @@ export type Query = {
   classAttendanceMetrics?: Maybe<Array<Maybe<ClassroomMetricReport>>>;
   classroomDetailsForPractitioner?: Maybe<PrincipalClassroom>;
   classroomGroupClassroomsForPractitioner?: Maybe<Array<Maybe<ClassroomGroup>>>;
+  classroomNamesForPractitioner?: Maybe<
+    Array<Maybe<PractitionerClassroomName>>
+  >;
   coachByCoachUserId?: Maybe<Coach>;
   coachByPractitionerId?: Maybe<Coach>;
   coachByUserId?: Maybe<Coach>;
@@ -4745,6 +4757,10 @@ export type QueryClassroomDetailsForPractitionerArgs = {
 };
 
 export type QueryClassroomGroupClassroomsForPractitionerArgs = {
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryClassroomNamesForPractitionerArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
