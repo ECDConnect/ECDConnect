@@ -1,5 +1,5 @@
 import { useMutation } from '@apollo/client';
-import { practitionerImport } from '@ecdlink/graphql';
+import { importAll } from '@ecdlink/graphql';
 import { useForm } from 'react-hook-form';
 import FormFileInput from '../../../../../../components/form-file-input/form-file-input';
 
@@ -14,13 +14,13 @@ export default function UploadAllTemplate({
 }: UploadAllTemplateProps) {
   const { setValue, handleSubmit } = useForm();
 
-  const [importAll] = useMutation(importAll);
+  const [allImport] = useMutation(importAll);
 
   const onSubmit = async (values: any) => {
     const model = { ...values };
 
     if (model.templateFile?.file) {
-      await importAll({
+      await allImport({
         variables: {
           file: model.templateFile?.file,
         },
