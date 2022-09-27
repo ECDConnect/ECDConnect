@@ -24,6 +24,7 @@ import { useUser } from '../../../../hooks/useUser';
 import PractitionerPanelCreate from './components/practitioner-panel-create/practitioner-panel-create';
 import PractitionerPanelEdit from './components/practitioner-panel-edit/practitioner-panel-edit';
 import UploadPractitionerTemplate from './components/upload-template/upload-template';
+import UploadAllImportTemplate from './components/upload-import-template/upload-import-template';
 
 export default function Practitioners() {
   const { hasPermission } = useUser();
@@ -77,18 +78,18 @@ export default function Practitioners() {
 
   useEffect(() => {
     if (data && data.GetAllPractitioner) {
-      const copyItems = data.GetAllPractitioner.filter(
-        (v) => v.user !== null && v.user.isActive === true
-      ).map((item: PractitionerDto) => ({
-        ...item,
-        fullName: `${item.user?.firstName} ${item.user?.surname}`,
-        isActive: item.user?.isActive,
-        isPrinicpal: item?.isPrincipal,
-        idNumber: item.user?.idNumber,
-        _view: undefined,
-        _edit: undefined,
-        _url: undefined,
-      }));
+      const copyItems = data.GetAllPractitioner.sort
+        .filter((v) => v.user !== null && v.user.isActive === true)
+        .map((item: PractitionerDto) => ({
+          ...item,
+          fullName: `${item.user?.firstName} ${item.user?.surname}`,
+          isActive: item.user?.isActive,
+          isPrinicpal: item?.isPrincipal,
+          idNumber: item.user?.idNumber,
+          _view: undefined,
+          _edit: undefined,
+          _url: undefined,
+        }));
       setTableData(copyItems);
     }
   }, [data]);
@@ -181,6 +182,24 @@ export default function Practitioners() {
     });
   };
 
+  const UploadContentImport = () => {
+    panel({
+      noPadding: true,
+      title: `Upload Data Import`,
+      render: (onSubmit: any) => (
+        <UploadAllImportTemplate
+          closeDialog={(created: boolean) => {
+            onSubmit();
+
+            if (created) {
+              refetch();
+            }
+          }}
+        />
+      ),
+    });
+  };
+
   if (tableData) {
     return (
       <div>
@@ -254,6 +273,18 @@ export default function Practitioners() {
                                       aria-hidden="true"
                                     />
                                     Upload template
+                                  </div>
+                                </Menu.Item>
+                                <Menu.Item>
+                                  <div
+                                    onClick={() => UploadContentImport()}
+                                    className="text-gray-700 flex px-4 py-2 text-sm cursor-pointer"
+                                  >
+                                    <UploadIcon
+                                      className="mr-3 h-5 w-5 text-gray-400"
+                                      aria-hidden="true"
+                                    />
+                                    Upload Import
                                   </div>
                                 </Menu.Item>
                               </div>
