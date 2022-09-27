@@ -26,6 +26,7 @@ using Microsoft.EntityFrameworkCore;
 using ECDLink.Security.Extensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Azure.Documents;
+using EcdLink.Api.CoreApi.GraphApi.Models;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
@@ -39,7 +40,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
 
         public Practitioner GetPractitionerByUserId([Service] IHttpContextAccessor contextAccessor,
-        [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
         [Service] IGenericRepositoryFactory repoFactory,
         string userId)
         {
@@ -54,10 +54,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return null;
         }
 
-        public ApplicationUser GetPractitionerByIdNumber([Service] IServiceProvider serviceProvider, 
+        public ApplicationUser GetPractitionerByIdNumber(
             [Service] IHttpContextAccessor contextAccessor,
             [Service] UserManager<ApplicationUser> userManager,
-            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
             string idNumber)
         {
@@ -77,7 +76,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
 
         public List<Child> GetAllChildrenForPractitioner([Service] IHttpContextAccessor contextAccessor,
-[Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
 [Service] IGenericRepositoryFactory repoFactory,
 string userId)
         {
@@ -97,7 +95,6 @@ string userId)
         }
 
         public List<Classroom> GetAllClassroomsForPractitioner([Service] IHttpContextAccessor contextAccessor,
-[Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
 [Service] IGenericRepositoryFactory repoFactory,
 string userId)
         {
@@ -108,13 +105,9 @@ string userId)
         }
 
         public List<ClassroomGroup> GetAllClassroomGroupsForPractitioner([Service] IHttpContextAccessor contextAccessor,
-[Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
 [Service] IGenericRepositoryFactory repoFactory,
 string userId)
         {
-
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var classRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
 
@@ -174,12 +167,9 @@ string userId)
         }
 
         public PrincipalClassroom GetClassroomDetailsForPractitioner([Service] IHttpContextAccessor contextAccessor,
-            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
             string userId)
         {
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var classroomGroupRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);
             var classroomRepo = repoFactory.CreateGenericRepository<Classroom>(userContext: uId);
@@ -200,19 +190,56 @@ string userId)
         }
 
         public List<ClassroomGroup> GetClassroomGroupClassroomsForPractitioner([Service] IHttpContextAccessor contextAccessor,
-            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
             string userId)
         {
-            return this.GetAllClassroomGroupsForPractitioner(contextAccessor, dbFactory, repoFactory, userId);
-            //var uId = contextAccessor.HttpContext.GetUser().Id;
-            //var classroomGroupRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);            
-            //List<ClassroomGroup> classroomGroup = classroomGroupRepo.GetListByUserId(userId);
-            //if (classroomGroup != null)
-            //{
-            //    return classroomGroup;
-            //}
-            //return null;
+            //return this.GetAllClassroomGroupsForPractitioner(contextAccessor, repoFactory, userId);
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var classroomGroupRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);
+            List<ClassroomGroup> classroomGroup = classroomGroupRepo.GetListByUserId(userId);
+            if (classroomGroup != null)
+            {
+                return classroomGroup;
+            }
+            return null;
+        }
+
+        public List<PractitionerClassroomName> GetClassroomNamesForPractitioner([Service] IHttpContextAccessor contextAccessor,
+    [Service] IGenericRepositoryFactory repoFactory,
+    string userId)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var classroomGroupRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);
+            var classroomRepo = repoFactory.CreateGenericRepository<Classroom>(userContext: uId);
+            var coachRepo = repoFactory.CreateGenericRepository<Coach>(userContext: uId);
+            var practiRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
+            List<PractitionerClassroomName> classrooms = new List<PractitionerClassroomName>();
+            List<ClassroomGroup> classroomGroup = classroomGroupRepo.GetListByUserId(userId);
+            if (classroomGroup.Count>0)
+            {
+                foreach (var group in classroomGroup)
+                {
+                    string coachName = null;
+                    var practitioner = practiRepo.GetByUserId(userId);
+                    if (practitioner != null) {
+                        if (practitioner.CoachHierarchy != null) {
+                            var coach = coachRepo.GetByUserId(practitioner.CoachHierarchy.ToString());
+                            if (coach != null)
+                            {
+                                coachName = coach.User.FullName;
+                            }
+                        }
+                    }
+                    Classroom classroom = classroomRepo.GetById(group.ClassroomId);
+                    if (classroom != null)
+                    {
+                        var pcn = new PractitionerClassroomName() { ClassroomGroupId = group.Id, ClassRoomId = classroom.Id, ClassroomName = classroom.Name, CoachName = coachName };
+                        classrooms.Add(pcn);
+                    }
+                }
+            }
+
+            return classrooms;
         }
     }
 

@@ -113,6 +113,12 @@ export const practitionerImport = gql`
   }
 `;
 
+export const importAll = gql`
+  mutation importAll($file: String) {
+    importAll(file: $file)
+  }
+`;
+
 export const practitionerExcelTemplateGenerator = gql`
   query {
     practitionerExcelTemplateGenerator {

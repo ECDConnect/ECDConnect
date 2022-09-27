@@ -41,7 +41,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             Guid tenantId = TenantExecutionContext.Tenant.Id;
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
-            var practitionerUser = new PractitionerQueryExtension().GetPractitionerByIdNumber(serviceProvider, contextAccessor,userManager,dbFactory, repoFactory, idNumber);            
+            var practitionerUser = new PractitionerQueryExtension().GetPractitionerByIdNumber(contextAccessor,userManager, repoFactory, idNumber);            
             if (practitionerUser != null)
             {
                 Practitioner practitioner = (practitionerUser.practitionerObjectData != null ? practitionerUser.practitionerObjectData : practitionerUser.principalObjectData);
@@ -94,7 +94,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     IsRegistered = true, 
                     TenantId = tenantId});
 
-                return new PractitionerQueryExtension().GetPractitionerByUserId(contextAccessor, dbFactory, repoFactory, practitionerId);
+                return new PractitionerQueryExtension().GetPractitionerByUserId(contextAccessor, repoFactory, practitionerId);
             }
         }
 

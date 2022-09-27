@@ -117,7 +117,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         {
             if (userId != null)
             {
-                return new PractitionerQueryExtension().GetAllChildrenForPractitioner(contextAccessor, dbFactory, repoFactory, userId);
+                return new PractitionerQueryExtension().GetAllChildrenForPractitioner(contextAccessor, repoFactory, userId);
             } else return new List<Child>();
 
         }
