@@ -38,9 +38,7 @@ export const EditClass = ({
   onSubmit: () => void;
 }) => {
   const appDispatch = useAppDispatch();
-  const practitioners = useSelector(
-    practitionerSelectors.getPrincipalPractitioners
-  );
+  const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const currentPractitioner = useSelector(
     practitionerSelectors.getPractitioner
   );
@@ -64,12 +62,15 @@ export const EditClass = ({
     useWatch({
       control,
     });
-
+  console.log({ practitioners });
   useEffect(() => {
     const _list = practitioners
       ?.map((p) => {
-        if (p.firstName && p.surname) {
-          return { label: `${p.firstName} ${p.surname}`, value: p.userId };
+        if (p?.user?.firstName && p?.user?.surname) {
+          return {
+            label: `${p?.user?.firstName} ${p?.user?.surname}`,
+            value: p.userId,
+          };
         }
         return undefined;
       })
