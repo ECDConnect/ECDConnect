@@ -31,7 +31,6 @@ import Infants from './pages/users/sub-pages/infant/infant';
 import Mothers from './pages/users/sub-pages/mother/mother';
 import Practitioners from './pages/users/sub-pages/practitioners/practitioners';
 import Franchisors from './pages/users/sub-pages/franchisors/franchisors';
-import Principals from './pages/users/sub-pages/principals/principals';
 import Users from './pages/users/users';
 
 const PublicRoutes: React.FC = () => {

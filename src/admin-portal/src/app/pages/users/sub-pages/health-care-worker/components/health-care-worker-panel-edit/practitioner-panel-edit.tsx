@@ -4,7 +4,6 @@ import {
   initialPractitionerValues,
   initialSiteAddressValues,
   NOTIFICATION,
-  PractitionerDto,
   practitionerSchema,
   siteAddressSchema,
   useNotifications,

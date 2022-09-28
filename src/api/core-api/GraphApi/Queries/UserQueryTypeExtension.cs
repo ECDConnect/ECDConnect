@@ -24,6 +24,7 @@ using ECDLink.DataAccessLayer.Context;
 
 using ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData;
 using ECDLink.Tenancy.Context;
+using HotChocolate.Data.Sorting.Expressions;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
@@ -34,7 +35,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         public IEnumerable<ApplicationUser> GetUsers([Service] UserManager<ApplicationUser> userManager)
         {
             Guid tenantId = TenantExecutionContext.Tenant.Id;
-            return userManager.Users.Where(x => x.TenantId.Equals(tenantId));
+            return userManager.Users.Where(x => x.TenantId.Equals(tenantId)).OrderBy(y => y.FirstName);
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]

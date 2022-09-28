@@ -156,7 +156,7 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
   const saveHealthCareWorker = async (userId: string) => {
     let isHealthCareWorker = false;
     selectedUserRoles.forEach((x) => {
-      if (x.name == 'Health Care Worker') {
+      if (x.name === 'Health Care Worker') {
         isHealthCareWorker = true;
       }
     });
