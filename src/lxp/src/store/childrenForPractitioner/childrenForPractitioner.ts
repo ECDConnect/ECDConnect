@@ -28,14 +28,12 @@ const childrenForPractitionerSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder.addCase(getChildrenForPractitioner.fulfilled, (state, action) => {
-      if (!state.childrenForPractitioner) {
-        const childrenForPractitioner = Object.assign(
-          [],
-          action.payload
-        ) as ChildDto[];
+      const childrenForPractitioner = Object.assign(
+        [],
+        action.payload
+      ) as ChildDto[];
 
-        state.childrenForPractitioner = childrenForPractitioner;
-      }
+      state.childrenForPractitioner = childrenForPractitioner;
     });
   },
 });

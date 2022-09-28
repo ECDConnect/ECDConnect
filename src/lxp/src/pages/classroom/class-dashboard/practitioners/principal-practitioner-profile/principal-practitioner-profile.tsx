@@ -1,5 +1,5 @@
 import { useHistory, useLocation } from 'react-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTheme } from '@ecdlink/core';
 import {
   BannerWrapper,
@@ -25,9 +25,18 @@ import { CreateNote } from './components/create-note/create-note';
 import { getLastNoteDate } from '@utils/child/child-profile-utils';
 import { notesSelectors } from '@store/notes';
 import { useSelector } from 'react-redux';
-import { practitionerSelectors } from '@/store/practitioner';
+import {
+  practitionerSelectors,
+  practitionerThunkActions,
+} from '@/store/practitioner';
 import { PractitionerDto } from '@/../../../packages/core/lib';
 import { classroomsSelectors } from '@/store/classroom';
+import { childrenSelectors, childrenThunkActions } from '@store/children';
+import { useAppDispatch } from '@store';
+import {
+  childrenForPractitionerSelectors,
+  childrenForPractitionerThunkActions,
+} from '@/store/childrenForPractitioner';
 
 // const practitionersList: PractitionerDto[] = [
 //   {
@@ -116,6 +125,7 @@ import { classroomsSelectors } from '@/store/classroom';
 
 export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const history = useHistory();
+  const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
   const location = useLocation<PractitionerProfileRouteState>();
   const practitionerId = location.state.practitionerId;
@@ -125,10 +135,12 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const practitioner = practitioners?.find(
     (practitioner) => practitioner?.userId === practitionerId
   );
+  const childrenForPractitioner = useSelector(
+    childrenForPractitionerSelectors.getChildrenForPractitioner
+  );
   const classroomGroup = classroomGroups?.find((item: any) => {
     return item?.userId === practitionerId;
   });
-
   const { theme } = useTheme();
 
   const [createPractitionerNoteVisible, setCreatePractitionerdNoteVisible] =
@@ -143,6 +155,23 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
     history.push('practitioner-reassign-class', {
       practitionerId,
     });
+  };
+
+  useEffect(() => {
+    (async () =>
+      await appDispatch(
+        childrenForPractitionerThunkActions.getChildrenForPractitioner({
+          id: practitionerId,
+        })
+      ).unwrap())();
+  }, [appDispatch, practitionerId]);
+
+  const callForHelp = () => {
+    window.open(`tel:${practitioner?.user?.phoneNumber}`);
+  };
+
+  const whatsapp = () => {
+    window.open(`https://wa.me/${practitioner?.user?.phoneNumber}`);
   };
 
   return (
@@ -180,7 +209,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
           <StatusChip
             backgroundColour="secondary"
             borderColour="secondary"
-            text={`0 children`}
+            text={`${childrenForPractitioner?.length} children`}
             textColour={'white'}
             className={'mr-2 px-3 py-1.5'}
           />
@@ -191,7 +220,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
             type={'outlined'}
             className={'rounded-2xl'}
             size={'small'}
-            onClick={() => {}}
+            onClick={callForHelp}
           >
             <PhoneIcon className="h-5 w-5 text-primary" aria-hidden="true" />
           </Button>
@@ -200,7 +229,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
             type={'outlined'}
             className={'rounded-2xl'}
             size={'small'}
-            onClick={() => {}}
+            onClick={whatsapp}
           >
             <img
               src={getLogo(LogoSvgs.whatsapp)}
@@ -270,7 +299,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                 <div className="flex items-center w-full">
                   <Typography
                     type={'h2'}
-                    text={'N/A'}
+                    text={`${childrenForPractitioner?.length}`}
                     color={'textDark'}
                     className="mt-2"
                   />
