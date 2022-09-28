@@ -68,6 +68,7 @@ export const SetupPrincipal: React.FC = () => {
   const [page, setPage] = useState<PractitionerSetupSteps>(
     PractitionerSetupSteps.WELCOME
   );
+  const [isLoading, setIsLoading] = useState(false);
 
   const [confirmPractitionerPage, setConfirmPractitionerPage] =
     useState<ConfirmPractitionersSteps>(
@@ -94,7 +95,7 @@ export const SetupPrincipal: React.FC = () => {
       history.push(ROUTES.ROOT);
       return;
     }
-
+    setIsLoading(true);
     const playGroupProgrammeType = programmeTypes.find(
       (x) => x.enumId === ProgrammeTypeEnum.Playgroup
     );
@@ -152,7 +153,7 @@ export const SetupPrincipal: React.FC = () => {
         ).unwrap();
       }
     }
-
+    setIsLoading(false);
     history.push(ROUTES.ROOT);
   };
 
@@ -240,6 +241,7 @@ export const SetupPrincipal: React.FC = () => {
             onSubmit={() => {
               onAllStepsComplete();
             }}
+            isLoading={isLoading}
           />
         );
 

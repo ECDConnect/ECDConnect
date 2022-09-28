@@ -107,6 +107,7 @@ export const EditPlaygroups: React.FC = () => {
       name: playgroup.name,
       programmeTypeId: playGroupType?.id ?? '',
       isActive: true,
+      userId: playgroup?.userId,
     };
 
     appDispatch(
