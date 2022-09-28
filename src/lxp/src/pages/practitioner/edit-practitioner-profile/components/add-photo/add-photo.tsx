@@ -17,7 +17,7 @@ import { userActions, userSelectors } from '@store/user';
 import * as styles from '../../edit-practitioner-profile.styles';
 import { AddPhotoProps } from './add-photo.types';
 
-export const AddPhoto: React.FC<AddPhotoProps> = ({ onSubmit }) => {
+export const AddPhoto: React.FC<AddPhotoProps> = ({ onSubmit, isLoading }) => {
   const user = useSelector(userSelectors.getUser);
   const appDispatch = useAppDispatch();
   const {
@@ -97,6 +97,7 @@ export const AddPhoto: React.FC<AddPhotoProps> = ({ onSubmit }) => {
         onClick={() => {
           onSubmit(userProfilePicture?.file ? '' : undefined);
         }}
+        isLoading={isLoading}
       >
         {renderIcon(
           userProfilePicture?.file ? 'SaveIcon' : 'ClockIcon',

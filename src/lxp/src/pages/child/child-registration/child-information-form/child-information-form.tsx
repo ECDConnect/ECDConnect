@@ -153,7 +153,6 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
       const groupedItems: DropDownOption<string>[] = [];
 
       classroomsForPractitionerAnyType.forEach((groupedItem: any) => {
-        console.log(groupedItem);
         groupedItems.push({
           label: groupedItem.name,
           value: groupedItem.id ?? '',
