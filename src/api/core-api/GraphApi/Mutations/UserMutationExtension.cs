@@ -3,6 +3,8 @@ using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.EGraphQL.Authorization;
+using ECDLink.Moodle.Managers;
+using ECDLink.Moodle.Models;
 using ECDLink.Security;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
@@ -18,6 +20,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     {
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public ApplicationUser AddUser(
+          [Service] MoodleManager moodleManager,
           [Service] UserManager<ApplicationUser> userManager,
           UserModel input)
         {
@@ -60,12 +63,26 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 }
             }
 
+            // create the moodle user
+            var moodleUser = new MoodleUser()
+            {
+                UserName = newUser.UserName,
+                Password = input.Password,
+                IdNumber = newUser.IdNumber,
+                Firstname = newUser.FirstName,
+                Lastname = newUser.Surname,
+                Email = newUser.Email,
+                Phone1 = newUser.PhoneNumber,
+            };
+            moodleManager.CreateUserAsync(moodleUser).Wait();
+
             // Returns a new user, which just so happens to be an instance of the ApplicationUserInputType
             return newUser;
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
         public ApplicationUser UpdateUser(
+          [Service] MoodleManager moodleManager,
           [Service] UserManager<ApplicationUser> userManager,
           string id,
           UserModel input)
@@ -76,7 +93,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             if (user == default(ApplicationUser))
             {
-                return AddUser(userManager, input);
+                return AddUser(moodleManager, userManager, input);
             }
 
             user.PhoneNumber = input.PhoneNumber;
