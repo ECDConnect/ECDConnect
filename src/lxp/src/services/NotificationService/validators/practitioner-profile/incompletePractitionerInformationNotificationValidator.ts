@@ -60,7 +60,7 @@ export class IncompletePractitionerInformationNotificationValidator
         return [
           {
             reference: `practitioner-profile`,
-            title: 'Complete your profile',
+            title: 'Tell us more about you!',
             message:
               'Share more information about your programme to make Funda App useful for you.',
             dateCreated: new Date().toISOString(),
@@ -82,7 +82,7 @@ export class IncompletePractitionerInformationNotificationValidator
         return [
           {
             reference: `practitioner-profile`,
-            title: 'Complete your profile',
+            title: 'Tell us more about you!',
             message:
               'Share more information about your programme to make Funda App useful for you.',
             dateCreated: new Date().toISOString(),

@@ -89,7 +89,7 @@ export const PractitionerProfile: React.FC = () => {
                     icon="ExclamationCircleIcon"
                     iconBorderColor="alertBg"
                     iconColor="alertMain"
-                    title="Complete your profile!"
+                    title="Tell us more about you!"
                     paragraphs={[
                       `Please Complete your profile to unlock the classroom feature`,
                     ]}

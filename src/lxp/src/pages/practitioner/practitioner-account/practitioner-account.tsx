@@ -116,6 +116,7 @@ export default function PractitionerAccount() {
         <StackedList
           listItems={stackedActionList}
           type={'ActionList'}
+          className={'px-4'}
         ></StackedList>
       </BannerWrapper>
       <Dialog

@@ -72,7 +72,7 @@ export const EditPractitioner: React.FC<EditPractitionerProps> = ({
         backgroundColour={'uiBg'}
         displayOffline={!isOnline}
       ></BannerWrapper>
-      <div className="w-11/12 wrapper-with-sticky-button">
+      <div className="w-12/12 px-4 wrapper-with-sticky-button">
         <div className="flex justify-center w-full">
           <div className="flex flex-wrap justify-center">
             <div className="flex flex-col justify-center gap-4 mt-4 w-full">
