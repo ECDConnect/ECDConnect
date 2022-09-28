@@ -7,7 +7,7 @@ export interface UploadAllTemplateProps {
   closeDialog: (value: boolean) => void;
 }
 
-const acceptedFormats = ['xlsx'];
+const acceptedFormats = ['xls'];
 
 export default function UploadAllTemplate({
   closeDialog,
