@@ -79,7 +79,7 @@ export const CoachSignature: React.FC = () => {
           ></Typography>
         </div>
         <IconTitleDescriptionTile
-          title="You can use this app to sign forms on the app."
+          title="You can use this signature to sign forms on the app."
           subTitle="You can access and change your signature through your Funda App profile in future."
           icon="InformationCircleIcon"
           iconColour={'infoDark'}

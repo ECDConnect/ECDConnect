@@ -160,7 +160,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
         subTitle:
           classroomsForPractitioner && practitioner?.isPrincipal !== true
             ? classroomForPractitionerAnyType?.classroom?.name
-            : classroom?.name,
+            : classroom?.name || 'N/A',
         switchTextStyles: true,
         actionName: 'Edit',
         actionIcon: 'PencilIcon',
@@ -183,8 +183,9 @@ export const PractitionerProgrammeInformation: React.FC = () => {
         switchTextStyles: true,
       },
       {
-        title: 'Other participants on the site',
-        subTitle: practitionersList?.map((x) => x?.user?.firstName).join(', '),
+        title: 'Other practitioners on site',
+        subTitle:
+          practitionersList?.map((x) => x?.user?.firstName).join(', ') || 'N/A',
         switchTextStyles: true,
         actionName: 'Edit',
         actionIcon: 'PencilIcon',

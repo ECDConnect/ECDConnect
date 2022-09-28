@@ -30,7 +30,7 @@ export const CompleteProfile: React.FC = () => {
         message={
           'Share more information about your programme to make Funda App useful for you.'
         }
-        actionText={'Complete your profile'}
+        actionText={'Tell us more about you!'}
         onActioned={
           showNotificationForPractitionerFlow
             ? () => history.push(ROUTES.PRACTITIONER.PROFILE.EDIT)

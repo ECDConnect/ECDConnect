@@ -61,7 +61,11 @@ export const PractitionerList: React.FC<PractitionerListProps> = ({
     ? practitionersList?.map((item) => {
         return {
           title: item?.user?.fullName ? item?.user?.fullName : '',
-          subTitle: item?.user?.roles ? item?.user?.roles[0]?.name : '',
+          subTitle: item?.isPrincipal
+            ? 'Principal / owner'
+            : item?.user?.roles
+            ? item?.user?.roles[0]?.name
+            : '',
           switchTextStyles: true,
           actionName: 'Edit',
           actionIcon: 'PencilIcon',
@@ -96,7 +100,7 @@ export const PractitionerList: React.FC<PractitionerListProps> = ({
               showBackground={true}
               backgroundUrl={theme?.images.graphicOverlayUrl}
               backgroundImageColour={'primary'}
-              title={`${classroomName}`}
+              title={`Edit Practitioners`}
               color={'primary'}
               size="medium"
               renderBorder={true}
@@ -106,7 +110,11 @@ export const PractitionerList: React.FC<PractitionerListProps> = ({
             ></BannerWrapper>
           </div>
           <div className="ml-4 mt-4">
-            <Typography type={'h2'} text={'Practitioners'} color={'textDark'} />
+            <Typography
+              type={'h2'}
+              text={'Edit Practitioners'}
+              color={'textDark'}
+            />
             {stackedListItems && (
               <StackedList
                 className="pr-4"
