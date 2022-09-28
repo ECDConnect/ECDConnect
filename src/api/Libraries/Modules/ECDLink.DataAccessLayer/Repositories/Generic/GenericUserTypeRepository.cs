@@ -105,7 +105,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             var query = entities.Where(e => e.TenantId == null || e.TenantId.Equals(tenantId)).AsQueryable();//.Where(e => e.TenantId.Equals(tenantId))
             if (isAdmin)
             {
-                return query;
+                return query.OrderByDescending(x => x.InsertedDate);
             }
             else
             {
@@ -115,7 +115,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                     {
                         if (!hh.Contains(null)) //dont run any null values through teh check, nothing should be null
                         {
-                            return query.Where(x => hh.Contains(((IUserType)x).Hierarchy));//.OrderByDescending(y => y.InsertedDate);
+                            return query.Where(x => hh.Contains(((IUserType)x).Hierarchy)).OrderByDescending(y => y.InsertedDate);
                         }
                     }
                 }
