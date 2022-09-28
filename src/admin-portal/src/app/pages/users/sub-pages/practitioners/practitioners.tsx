@@ -78,8 +78,10 @@ export default function Practitioners() {
 
   useEffect(() => {
     if (data && data.GetAllPractitioner) {
-      const copyItems = data.GetAllPractitioner.sort
-        .filter((v) => v.user !== null && v.user.isActive === true)
+      const copyItems = data.GetAllPractitioner.filter(
+        (v) => v.user !== null && v.user.isActive === true
+      )
+        .sort((q) => q.user.firstName)
         .map((item: PractitionerDto) => ({
           ...item,
           fullName: `${item.user?.firstName} ${item.user?.surname}`,

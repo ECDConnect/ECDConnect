@@ -16,7 +16,6 @@ import {
   CreateHealthCareWorker,
   CreateSiteAddress,
   CreateUser,
-  HealthCareWorkerInput,
   HealthCareWorkerModelInput,
   RoleList,
   SendInviteToApplication,

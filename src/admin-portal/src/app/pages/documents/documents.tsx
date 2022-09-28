@@ -34,6 +34,10 @@ export default function Documents() {
             : 'System',
           type: item.documentType?.name,
           status: item.workflowStatus?.description,
+          createddate:
+            item.insertedDate !== null
+              ? new Date(item.insertedDate).toISOString()
+              : '',
           _view: undefined,
           _edit: undefined,
           _url: undefined,
@@ -84,6 +88,7 @@ export default function Documents() {
                     { field: 'fullName', use: 'user' },
                     { field: 'name', use: 'name' },
                     { field: 'type', use: 'type' },
+                    { field: 'createddate', use: 'date' },
                     { field: 'status', use: 'status' },
                   ]}
                   rows={tableData}

@@ -23,6 +23,7 @@ export const DocumentList = gql`
         name
         description
       }
+      insertedDate
     }
   }
 `;

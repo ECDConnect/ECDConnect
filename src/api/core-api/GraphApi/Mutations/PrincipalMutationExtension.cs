@@ -38,64 +38,75 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     string idNumber,
     string userId)
         {
+            //ensure only principals or FAAs can be assigned to be a parent of another practitioner, so they cannot be joined to themselves or unrelated users
             Guid tenantId = TenantExecutionContext.Tenant.Id;
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
-            var practitionerUser = new PractitionerQueryExtension().GetPractitionerByIdNumber(contextAccessor,userManager, repoFactory, idNumber);            
-            if (practitionerUser != null)
+            var practitionerUser = new PractitionerQueryExtension().GetPractitionerByIdNumber(contextAccessor,userManager, repoFactory, idNumber);
+            var principalUser = practitionerRepo.GetByUserId(userId);
+            if (principalUser != null && (principalUser.IsPrincipal == true || principalUser.IsFundaAppAdmin == true)) //make sure the principal user exists and is a principal or a FAA
             {
-                Practitioner practitioner = (practitionerUser.practitionerObjectData != null ? practitionerUser.practitionerObjectData : practitionerUser.principalObjectData);
-                if (practitioner != null)
+                if (practitionerUser != null)
                 {
-                    practitioner.PrincipalHierarchy = Guid.Parse(userId);
-                    var practitionerUpdateResult = practitionerRepo.Update(practitioner);
+                    Practitioner practitioner = practitionerRepo.GetByUserId(practitionerUser.Id);
+                    if (practitioner != null && principalUser != null)
+                    {
+                        if (principalUser.UserId != practitioner.UserId)//only assign principals and fundaapadmins to another practitioner as a parent
+                        {
+                            practitioner.PrincipalHierarchy = Guid.Parse(principalUser.UserId);
+                            var practitionerUpdateResult = practitionerRepo.Update(practitioner);
 
-                    //update users nicknames
-                    var user = userManager.FindByIdAsync(practitioner.UserId).Result;
-                    user.NickFirstName = firstName;
-                    user.NickSurname = lastName;
-                    user.NickFullName = firstName + " " + lastName;
+                            //update users nicknames
+                            var user = userManager.FindByIdAsync(practitioner.UserId).Result;
+                            user.NickFirstName = firstName;
+                            user.NickSurname = lastName;
+                            user.NickFullName = firstName + " " + lastName;
 
-                    var userUpdateResult = userManager.UpdateAsync(user).Result;
+                            var userUpdateResult = userManager.UpdateAsync(user).Result;
+                        }
+                        else return null;
+                    }
+                    else return null;
+
+                    return practitioner;
                 }
-
-                return practitioner;
-            }
-            else
-            {
-                //Create basic user and practitioner
-                var pracRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-
-                var pOne = new ApplicationUser
+                else
                 {
-                    FirstName =firstName,
-                    Surname = lastName,
-                    FullName = firstName + " " + lastName,
-                    UserName = idNumber,
-                    IdNumber = idNumber,
-                    IsActive = true,
-                    NickFirstName = firstName,
-                    NickSurname = lastName,
-                    NickFullName = firstName + " " + lastName,
-                    TenantId = tenantId
-                };
+                    //Create basic user and practitioner
+                    var pracRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
 
-                var result = userManager.CreateAsync(pOne).Result;
-                string practitionerId = pOne.Id;
+                    var pOne = new ApplicationUser
+                    {
+                        FirstName = firstName,
+                        Surname = lastName,
+                        FullName = firstName + " " + lastName,
+                        UserName = idNumber,
+                        IdNumber = idNumber,
+                        IsActive = true,
+                        NickFirstName = firstName,
+                        NickSurname = lastName,
+                        NickFullName = firstName + " " + lastName,
+                        TenantId = tenantId
+                    };
 
-                var passwordResult = userManager.AddPasswordAsync(pOne, idNumber).Result;
+                    var result = userManager.CreateAsync(pOne).Result;
+                    string practitionerId = pOne.Id;
 
-                pracRepo.Insert(new Practitioner
-                {                    
-                    Id = Guid.NewGuid(),
-                    UserId = practitionerId,
-                    IsPrincipal = false,
-                    PrincipalHierarchy = Guid.Parse(userId),
-                    IsRegistered = true, 
-                    TenantId = tenantId});
+                    var passwordResult = userManager.AddPasswordAsync(pOne, idNumber).Result;
 
-                return new PractitionerQueryExtension().GetPractitionerByUserId(contextAccessor, repoFactory, practitionerId);
-            }
+                    pracRepo.Insert(new Practitioner
+                    {
+                        Id = Guid.NewGuid(),
+                        UserId = practitionerId,
+                        IsPrincipal = false,
+                        PrincipalHierarchy = Guid.Parse(principalUser.UserId),
+                        IsRegistered = true,
+                        TenantId = tenantId
+                    });
+
+                    return new PractitionerQueryExtension().GetPractitionerByUserId(contextAccessor, repoFactory, practitionerId);
+                }
+            } else return null;
         }
 
         public ApplicationUser UpdatePractitionerContactInfo([Service] IHttpContextAccessor contextAccessor,
