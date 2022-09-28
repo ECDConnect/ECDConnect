@@ -194,7 +194,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             //set sharedinfo needed between rows
             bool matchWithSite = false;
             string siteIndicator = "";
-            Guid? parentId = null;
+            Guid? parentUserId = null;
 
             var uId = httpContextAccessor.HttpContext.GetUser().Id;
 
@@ -213,8 +213,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     
                     siteIndicator = ExcelHelper.GetCellValue(currentRow.GetCell(1));
                     
-                    var programme_indicator = ExcelHelper.GetCellValue(currentRow.GetCell(2));
-                    var prograammeArr = programme_indicator.Split("_");
+                    //var programme_indicator = ExcelHelper.GetCellValue(currentRow.GetCell(2));
+                    //var prograammeArr = programme_indicator.Split("_");
 
                     var fullname = ExcelHelper.GetCellValue(currentRow.GetCell(3));
                     var nameArr = fullname.Split(" ");
@@ -257,11 +257,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         //var startDateInt = int.Parse(startDate);
                         //var dobDateInt = int.Parse(dob);
                         var item = currentItem != null ? currentItem : new ImportAllStaffItem();
+                        item.MatchWithSite = matchWithSite;
+                        item.SiteIndicator = siteIndicator;
+                        item.ParentUserId = parentUserId;
+
                         item.FirstName = firstname;
                         item.Surname = surname;
                         item.FullName = fullname;
                         item.PhoneNumber = cellnumber;
                         item.IDNumber = idNumber;
+
+
                         //item.ConsentForPhoto = consentForPhoto == "Yes" ? true : false;
                         //item.ParentFees = int.Parse(parentFees);
                         //item.StartDate = DateTime.Now;
@@ -329,13 +335,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         }
 
         public bool UpdatePractitionerShareInfo([Service] IHttpContextAccessor contextAccessor,
-            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
-            string practitionerId, string principalId)
+            string practitionerId)
         {
             bool bReturn = false;
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
+  
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
             Practitioner practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId.Equals(practitionerId)).FirstOrDefault();
@@ -352,14 +356,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         }
 
         public bool UpdatePractitionerRegistered([Service] IHttpContextAccessor contextAccessor,
-            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
             string practitionerId, bool status = false)
 
         {
-
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
             Practitioner practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId.Equals(practitionerId)).FirstOrDefault();
@@ -376,14 +376,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         }
 
         public bool UpdatePractitionerIsFundaAppAdmin([Service] IHttpContextAccessor contextAccessor,
-            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
             string practitionerId)
-
         {
             bool bReturn = false;
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
             Practitioner practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId.Equals(practitionerId)).FirstOrDefault();
@@ -400,14 +396,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         }
 
         public bool UpdatePractitionerIsTrainee([Service] IHttpContextAccessor contextAccessor,
-            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
             string practitionerId)
 
         {
             bool bReturn = false;
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
             Practitioner practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId.Equals(practitionerId)).FirstOrDefault();
@@ -422,8 +415,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             return bReturn;
         }
-
-
 
     }
 }
