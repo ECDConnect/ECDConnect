@@ -52,9 +52,6 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
   const [classroomGroup, setClassroomGroup] =
     useState<RecursivePartial<ClassroomGroupDto>>();
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
-  const currentPractitioner = useSelector(
-    practitionerSelectors.getPractitioner
-  );
 
   const { isOnline } = useOnlineStatus();
 
@@ -103,11 +100,6 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
       })
       .filter(Boolean) as { label: string; value: any }[];
 
-    _list?.push({
-      label: currentPractitioner?.user?.fullName || '',
-      value: currentPractitioner?.userId,
-    });
-
     setPractitionersList(_list);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [practitioners]);
@@ -143,7 +135,7 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
       <ActionModal
         title={`Delete ${playgroup?.name}.`}
         paragraphs={[
-          `Are you sure you want to delete ${playgroup?.name} playgroup?`,
+          `Are you sure you want to delete ${playgroup?.name} class?`,
         ]}
         actionButtons={[
           {
@@ -254,7 +246,7 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
       />
       <div>
         <Controller
-          name={'practitionerId'}
+          name={'userId'}
           control={playgroupFormControl}
           defaultValue={undefined}
           render={({ field: { onChange, value, ref } }) => (

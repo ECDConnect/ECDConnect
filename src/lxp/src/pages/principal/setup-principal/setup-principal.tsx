@@ -29,8 +29,11 @@ import {
   ConfirmClassesSteps,
   RegisterPractitioner,
 } from './setup-principal.types';
+import {
+  practitionerSelectors,
+  practitionerThunkActions,
+} from '@/store/practitioner';
 import { AddPractitionerModel } from '@/schemas/practitioner/add-practitioner';
-import { practitionerSelectors } from '@/store/practitioner';
 import { SetupClasses } from '../components/setup-classes/setup-classes';
 import { AddPhoto } from '@/pages/practitioner/edit-practitioner-profile/components/add-photo/add-photo';
 import { WelcomePage } from '@/components/welcome-page';
@@ -65,6 +68,7 @@ export const SetupPrincipal: React.FC = () => {
   const [page, setPage] = useState<PractitionerSetupSteps>(
     PractitionerSetupSteps.WELCOME
   );
+  const [isLoading, setIsLoading] = useState(false);
 
   const [confirmPractitionerPage, setConfirmPractitionerPage] =
     useState<ConfirmPractitionersSteps>(
@@ -91,7 +95,7 @@ export const SetupPrincipal: React.FC = () => {
       history.push(ROUTES.ROOT);
       return;
     }
-
+    setIsLoading(true);
     const playGroupProgrammeType = programmeTypes.find(
       (x) => x.enumId === ProgrammeTypeEnum.Playgroup
     );
@@ -144,9 +148,12 @@ export const SetupPrincipal: React.FC = () => {
             userAuth?.auth_token
           ).AddPractitionerToPrincipal(input);
         });
+        await appDispatch(
+          practitionerThunkActions.getAllPractitioners({})
+        ).unwrap();
       }
     }
-
+    setIsLoading(false);
     history.push(ROUTES.ROOT);
   };
 
@@ -234,6 +241,7 @@ export const SetupPrincipal: React.FC = () => {
             onSubmit={() => {
               onAllStepsComplete();
             }}
+            isLoading={isLoading}
           />
         );
 
