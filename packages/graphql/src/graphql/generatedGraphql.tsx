@@ -1957,6 +1957,7 @@ export type Mutation = {
   createNoteType?: Maybe<NoteType>;
   createPermission?: Maybe<Permission>;
   createPractitioner?: Maybe<Practitioner>;
+  createPractitionerOwner?: Maybe<PractitionerOwner>;
   createPrincipal?: Maybe<Principal>;
   createProgramme?: Maybe<Programme>;
   createProgrammeAttendanceReason?: Maybe<ProgrammeAttendanceReason>;
@@ -2020,6 +2021,7 @@ export type Mutation = {
   deletePractitioner?: Maybe<Scalars['Boolean']>;
   deletePractitionerForCoach?: Maybe<Practitioner>;
   deletePractitionerFromPrincipal?: Maybe<Practitioner>;
+  deletePractitionerOwner?: Maybe<Scalars['Boolean']>;
   deletePrincipal?: Maybe<Scalars['Boolean']>;
   deleteProgramme?: Maybe<Scalars['Boolean']>;
   deleteProgrammeAttendanceReason?: Maybe<Scalars['Boolean']>;
@@ -2059,6 +2061,7 @@ export type Mutation = {
   promotePractitionerToPrincipal?: Maybe<Principal>;
   reassignClassroomsFromHistory: Scalars['Boolean'];
   refreshCaregiverChildToken?: Maybe<Scalars['String']>;
+  remapPrincipalToPrincipal?: Maybe<Practitioner>;
   removePermissionsFromNavigation: Scalars['Boolean'];
   removePermissionsFromRole: Scalars['Boolean'];
   removeUserFromRoles: Scalars['Boolean'];
@@ -2100,10 +2103,12 @@ export type Mutation = {
   updatePractitionerContactInfo?: Maybe<ApplicationUser>;
   updatePractitionerIsFundaAppAdmin: Scalars['Boolean'];
   updatePractitionerIsTrainee: Scalars['Boolean'];
+  updatePractitionerOwner?: Maybe<PractitionerOwner>;
   updatePractitionerRegistered: Scalars['Boolean'];
   updatePractitionerShareInfo: Scalars['Boolean'];
   updatePractitionerToTeachClassroom?: Maybe<ClassroomGroup>;
   updatePrincipal?: Maybe<Principal>;
+  updatePrincipalInvitation?: Maybe<Practitioner>;
   updateProgramme?: Maybe<Programme>;
   updateProgrammeAttendanceReason?: Maybe<ProgrammeAttendanceReason>;
   updateProgrammeRoutine?: Maybe<ProgrammeRoutine>;
@@ -2333,6 +2338,10 @@ export type MutationCreatePermissionArgs = {
 
 export type MutationCreatePractitionerArgs = {
   input?: InputMaybe<PractitionerInput>;
+};
+
+export type MutationCreatePractitionerOwnerArgs = {
+  input?: InputMaybe<PractitionerOwnerInput>;
 };
 
 export type MutationCreatePrincipalArgs = {
@@ -2618,6 +2627,10 @@ export type MutationDeletePractitionerFromPrincipalArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
+export type MutationDeletePractitionerOwnerArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+};
+
 export type MutationDeletePrincipalArgs = {
   id?: InputMaybe<Scalars['UUID']>;
 };
@@ -2805,6 +2818,11 @@ export type MutationReassignClassroomsFromHistoryArgs = {
 export type MutationRefreshCaregiverChildTokenArgs = {
   childId: Scalars['UUID'];
   classgroupId: Scalars['UUID'];
+};
+
+export type MutationRemapPrincipalToPrincipalArgs = {
+  newPrincipalId?: InputMaybe<Scalars['String']>;
+  oldPrincipalId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationRemovePermissionsFromNavigationArgs = {
@@ -3014,6 +3032,11 @@ export type MutationUpdatePractitionerIsTraineeArgs = {
   practitionerId?: InputMaybe<Scalars['String']>;
 };
 
+export type MutationUpdatePractitionerOwnerArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  input?: InputMaybe<PractitionerOwnerInput>;
+};
+
 export type MutationUpdatePractitionerRegisteredArgs = {
   practitionerId?: InputMaybe<Scalars['String']>;
   status?: Scalars['Boolean'];
@@ -3021,7 +3044,6 @@ export type MutationUpdatePractitionerRegisteredArgs = {
 
 export type MutationUpdatePractitionerShareInfoArgs = {
   practitionerId?: InputMaybe<Scalars['String']>;
-  principalId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationUpdatePractitionerToTeachClassroomArgs = {
@@ -3032,6 +3054,12 @@ export type MutationUpdatePractitionerToTeachClassroomArgs = {
 export type MutationUpdatePrincipalArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   input?: InputMaybe<PrincipalInput>;
+};
+
+export type MutationUpdatePrincipalInvitationArgs = {
+  accepted: Scalars['Boolean'];
+  practitionerId?: InputMaybe<Scalars['String']>;
+  principalId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationUpdateProgrammeArgs = {
@@ -3525,6 +3553,61 @@ export type PractitionerMetricReport = {
   statusData?: Maybe<Array<Maybe<MetricReportStatItem>>>;
 };
 
+export type PractitionerOwner = {
+  __typename?: 'PractitionerOwner';
+  dateAccepted?: Maybe<Scalars['DateTime']>;
+  dateLinked?: Maybe<Scalars['DateTime']>;
+  dateToBeRemoved?: Maybe<Scalars['DateTime']>;
+  id: Scalars['UUID'];
+  insertedDate: Scalars['DateTime'];
+  isActive: Scalars['Boolean'];
+  practitionerId?: Maybe<Scalars['UUID']>;
+  principalHierarchy?: Maybe<Scalars['UUID']>;
+  principalOwnerId?: Maybe<Scalars['UUID']>;
+  updatedBy?: Maybe<Scalars['String']>;
+  updatedDate: Scalars['DateTime'];
+  user?: Maybe<ApplicationUser>;
+  userId?: Maybe<Scalars['String']>;
+};
+
+export type PractitionerOwnerFilterInput = {
+  and?: InputMaybe<Array<PractitionerOwnerFilterInput>>;
+  dateAccepted?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
+  dateLinked?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
+  dateToBeRemoved?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
+  id?: InputMaybe<ComparableGuidOperationFilterInput>;
+  insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  isActive?: InputMaybe<BooleanOperationFilterInput>;
+  or?: InputMaybe<Array<PractitionerOwnerFilterInput>>;
+  practitionerId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
+  principalHierarchy?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
+  principalOwnerId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
+  updatedBy?: InputMaybe<StringOperationFilterInput>;
+  updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  user?: InputMaybe<ApplicationUserFilterInput>;
+  userId?: InputMaybe<StringOperationFilterInput>;
+};
+
+export type PractitionerOwnerInput = {
+  DateAccepted?: InputMaybe<Scalars['DateTime']>;
+  DateLinked?: InputMaybe<Scalars['DateTime']>;
+  DateToBeRemoved?: InputMaybe<Scalars['DateTime']>;
+  Id?: InputMaybe<Scalars['UUID']>;
+  IsActive: Scalars['Boolean'];
+  PractitionerId?: InputMaybe<Scalars['UUID']>;
+  PrincipalHierarchy?: InputMaybe<Scalars['UUID']>;
+  PrincipalOwnerId?: InputMaybe<Scalars['UUID']>;
+  UpdatedBy?: InputMaybe<Scalars['String']>;
+  User?: InputMaybe<ApplicationUserInput>;
+  UserId?: InputMaybe<Scalars['String']>;
+};
+
+export type PractitionerUserAndNote = {
+  __typename?: 'PractitionerUserAndNote';
+  appUser?: Maybe<ApplicationUser>;
+  note?: Maybe<Scalars['String']>;
+};
+
 export type Principal = {
   __typename?: 'Principal';
   attendanceRegisterLink?: Maybe<Scalars['String']>;
@@ -3940,6 +4023,7 @@ export type Query = {
   GetAllNoteType?: Maybe<Array<Maybe<NoteType>>>;
   GetAllPermission?: Maybe<Array<Maybe<Permission>>>;
   GetAllPractitioner?: Maybe<Array<Maybe<Practitioner>>>;
+  GetAllPractitionerOwner?: Maybe<Array<Maybe<PractitionerOwner>>>;
   GetAllPrincipal?: Maybe<Array<Maybe<Principal>>>;
   GetAllProgramme?: Maybe<Array<Maybe<Programme>>>;
   GetAllProgrammeAttendanceReason?: Maybe<
@@ -3998,6 +4082,7 @@ export type Query = {
   GetNoteTypeById?: Maybe<NoteType>;
   GetPermissionById?: Maybe<Permission>;
   GetPractitionerById?: Maybe<Practitioner>;
+  GetPractitionerOwnerById?: Maybe<PractitionerOwner>;
   GetPrincipalById?: Maybe<Principal>;
   GetProgrammeAttendanceReasonById?: Maybe<ProgrammeAttendanceReason>;
   GetProgrammeById?: Maybe<Programme>;
@@ -4084,7 +4169,8 @@ export type Query = {
   openConsent: Array<Maybe<Consent>>;
   openLanguage: Array<Maybe<Language>>;
   permissionGroups?: Maybe<Array<Maybe<PermissionGroupModel>>>;
-  practitionerByIdNumber?: Maybe<ApplicationUser>;
+  practitionerByIdNumber?: Maybe<PractitionerUserAndNote>;
+  practitionerByIdNumberInternal?: Maybe<ApplicationUser>;
   practitionerByUserId?: Maybe<Practitioner>;
   practitionerExcelTemplateGenerator?: Maybe<FileModel>;
   practitionerMetrics?: Maybe<PractitionerMetricReport>;
@@ -4234,6 +4320,10 @@ export type QueryGetAllPermissionArgs = {
 
 export type QueryGetAllPractitionerArgs = {
   where?: InputMaybe<PractitionerFilterInput>;
+};
+
+export type QueryGetAllPractitionerOwnerArgs = {
+  where?: InputMaybe<PractitionerOwnerFilterInput>;
 };
 
 export type QueryGetAllPrincipalArgs = {
@@ -4500,6 +4590,11 @@ export type QueryGetPermissionByIdArgs = {
 export type QueryGetPractitionerByIdArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   where?: InputMaybe<PractitionerFilterInput>;
+};
+
+export type QueryGetPractitionerOwnerByIdArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  where?: InputMaybe<PractitionerOwnerFilterInput>;
 };
 
 export type QueryGetPrincipalByIdArgs = {
@@ -4843,6 +4938,10 @@ export type QueryOpenConsentArgs = {
 };
 
 export type QueryPractitionerByIdNumberArgs = {
+  idNumber?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryPractitionerByIdNumberInternalArgs = {
   idNumber?: InputMaybe<Scalars['String']>;
 };
 

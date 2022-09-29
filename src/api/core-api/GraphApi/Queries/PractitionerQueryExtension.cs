@@ -63,7 +63,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             //this is the fucntion called from FE to search for practitioners to add practitioners to a principal - so limit to coach lines and non principals only and not practitioners added to any other principals
             var uId = contextAccessor.HttpContext.GetUser().Id;
 
-            var dbRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+            var dbRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
             //retrieve principal, check that the coach lines match, that the user to be searched for is not a principal or an FAA
             
             var principal = dbRepo.GetByUserId(uId);
@@ -79,14 +79,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     {
                         if (practitioner.PrincipalHierarchy == null && practitioner.CoachHierarchy == principal.CoachHierarchy) // only allow practitioners assigned to same coach and where they are not assigned to any otehr practitioners
                         {
-                            return new PractitionerUserAndNote() { ApplicationUser = practitioner.User };
+                            return new PractitionerUserAndNote() { AppUser = practitioner.User };
                         } else
                         {
-                            return new PractitionerUserAndNote() { ApplicationUser = practitioner.User, Note = "Practitioner Is Allocated to Different Principal" };
+                            return new PractitionerUserAndNote() { AppUser = practitioner.User, Note = "Practitioner Is Allocated to Different Principal" };
                         }
                     } else
                     {
-                        return new PractitionerUserAndNote() { ApplicationUser = null, Note = "No User can be matched" };
+                        return new PractitionerUserAndNote() { AppUser = null, Note = "No User can be matched" };
                     }
                 }
             }
