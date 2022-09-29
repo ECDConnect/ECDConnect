@@ -80,22 +80,23 @@ export const AddPractitioner = ({
 
     if (validPassportOrIdNumber) {
       getPractitionerDetailsByIdNumber().then((p: any) => {
+        console.log({ p });
         if (
-          p?.practitionerObjectData?.isRegistered === false ||
-          p?.practitionerObjectData?.isRegistered === null
+          p?.appUser?.practitionerObjectData?.isRegistered === false ||
+          p?.appUser?.practitionerObjectData?.isRegistered === null
         ) {
           setIsPractitionerRegistered(false);
         }
-        if (p?.practitionerObjectData?.isRegistered === true) {
+        if (p?.appUser?.practitionerObjectData?.isRegistered === true) {
           setIsPractitionerRegistered(false);
         }
 
-        setIsValidPractitioner(!!p?.idNumber);
+        setIsValidPractitioner(!!p?.appUser?.idNumber);
         setNewPractitioner({
-          firstName: p?.firstName,
-          surname: p?.surname,
-          idNumber: p?.idNumber,
-          userId: p?.id,
+          firstName: p?.appUser?.firstName,
+          surname: p?.appUser?.surname,
+          idNumber: p?.appUser?.idNumber,
+          userId: p?.appUser?.id,
         });
       });
     }
@@ -112,6 +113,7 @@ export const AddPractitioner = ({
         userAuth.auth_token
       ).getPractitionerByIdNumber(idNumber);
     }
+    console.log({ _practitioner });
     return _practitioner;
   };
 

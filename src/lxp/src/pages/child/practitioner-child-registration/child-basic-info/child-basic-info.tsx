@@ -28,8 +28,6 @@ export const ChildBasicInfo: React.FC<
     setClassroomsForPractitionerAnyType,
   ] = useState<any>([]);
 
-  const isPlaygroup = useSelector(classroomsSelectors.isPlaygroup());
-  const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const { getValues, setValue, register, formState } =
     useForm<ChildBasicInfoModel>({
       resolver: yupResolver(childBasicInfoFormSchema),
@@ -89,15 +87,7 @@ export const ChildBasicInfo: React.FC<
         label="Which class will the child attend?"
         placeholder="Select class"
         selectedValue={getSelectedClassroom()}
-        list={
-          practitioner?.isPrincipal !== true &&
-          classroomsForPractitionerAnyType.length > 0
-            ? classroomsForPractitionerAnyType.map((x: any) => ({
-                label: x.name,
-                value: x.id || '',
-              }))
-            : classrooms.map((x) => ({ label: x.name, value: x.id || '' }))
-        }
+        list={classrooms.map((x) => ({ label: x.name, value: x.id || '' }))}
         onChange={(classroomId: string) => {
           setValue('playgroupId', classroomId, { shouldValidate: true });
         }}
