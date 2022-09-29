@@ -3604,7 +3604,7 @@ export type PractitionerOwnerInput = {
 
 export type PractitionerUserAndNote = {
   __typename?: 'PractitionerUserAndNote';
-  applicationUser?: Maybe<ApplicationUser>;
+  appUser?: Maybe<ApplicationUser>;
   note?: Maybe<Scalars['String']>;
 };
 
