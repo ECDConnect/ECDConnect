@@ -20,17 +20,15 @@ export default function Franchisors() {
     if (data && data.GetAllFranchisor) {
       const copyItems = data.GetAllFranchisor.filter(
         (v) => v.user !== null && v.user.isActive === true
-      )
-        .sort((q) => q.user.firstName)
-        .map((item: FranchisorDto) => ({
-          ...item,
-          fullName: `${item.user?.firstName} ${item.user?.surname}`,
-          isActive: item.user?.isActive,
-          idNumber: item.user?.idNumber,
-          _view: undefined,
-          _edit: undefined,
-          _url: undefined,
-        }));
+      ).map((item: FranchisorDto) => ({
+        ...item,
+        fullName: `${item.user?.firstName} ${item.user?.surname}`,
+        isActive: item.user?.isActive,
+        idNumber: item.user?.idNumber,
+        _view: undefined,
+        _edit: undefined,
+        _url: undefined,
+      }));
       setTableData(copyItems);
     }
   }, [data]);

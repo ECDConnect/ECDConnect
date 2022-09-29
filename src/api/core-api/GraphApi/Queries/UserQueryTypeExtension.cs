@@ -35,7 +35,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         public IEnumerable<ApplicationUser> GetUsers([Service] UserManager<ApplicationUser> userManager)
         {
             Guid tenantId = TenantExecutionContext.Tenant.Id;
-            return userManager.Users.Where(x => x.TenantId.Equals(tenantId)).OrderBy(y => y.FirstName);
+            return userManager.Users.Where(x => x.TenantId.Equals(tenantId));//.OrderBy(y => y.FirstName);
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
