@@ -206,7 +206,7 @@ export const CoachProgrammeInformation: React.FC = () => {
           </Button>
         </div>
       </BannerWrapper>
-      <div className="flex justify-center mt-4">
+      {/* <div className="flex justify-center mt-4">
         <div className="w-11/12">
           <StackedList
             className="w-full rounded-2xl -mt-0.5 flex flex-col gap-1"
@@ -214,7 +214,7 @@ export const CoachProgrammeInformation: React.FC = () => {
             listItems={listItems}
           />
         </div>
-      </div>
+      </div> */}
       <div className="flex justify-center my-6">
         <Button
           type="outlined"
@@ -232,23 +232,27 @@ export const CoachProgrammeInformation: React.FC = () => {
         </Button>
       </div>
       <>
-        <div className={styles.infoWrapper}>
-          <div>
-            <Typography
-              text={'Programme name'}
-              type="h5"
-              color="textMid"
-              className={'mt-4'}
-            />
-            <Typography
-              text={practitionerClassroom?.name}
-              type="h4"
-              color="textDark"
-              className={'mt-1'}
-            />
-          </div>
-        </div>
-        <Divider dividerType="dashed" className="my-4" />
+        {practitionerClassroom?.name && (
+          <>
+            <div className={styles.infoWrapper}>
+              <div>
+                <Typography
+                  text={'Programme name'}
+                  type="h5"
+                  color="textMid"
+                  className={'mt-4'}
+                />
+                <Typography
+                  text={practitionerClassroom?.name}
+                  type="h4"
+                  color="textDark"
+                  className={'mt-1'}
+                />
+              </div>
+            </div>
+            <Divider dividerType="dashed" className="my-4" />
+          </>
+        )}
         <div className={styles.infoWrapper}>
           <div>
             <Typography

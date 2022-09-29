@@ -47,7 +47,7 @@ export const CoachProfile: React.FC = () => {
     const subTitleStyle = 'text-sm font-h1 font-normal text-textMid';
     const stackedMenuList: MenuListDataItem[] = [
       {
-        title: `${coach?.user?.firstName} ${coach?.user?.surname}`,
+        title: `${coach?.user?.firstName} ${coach?.user?.surname}`.slice(0, 30),
         titleStyle,
         subTitle: 'About me',
         subTitleStyle,

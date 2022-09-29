@@ -282,7 +282,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
               className={'mt-1'}
             />
             <Typography
-              text={'Lady bugs'}
+              text={'N/A'}
               type="h4"
               color="textDark"
               className={'mt-1'}
