@@ -197,15 +197,18 @@ class PractitionerService {
       query: `
        query GetPractitionerByIdNumber($idNumber: String) {
           practitionerByIdNumber(idNumber: $idNumber) {
-            id
-            idNumber
-            firstName
-            surname
-            userName
-            practitionerObjectData {
-              isRegistered
+            appUser {
               id
+              idNumber
+              firstName
+              surname
+              userName
+              practitionerObjectData {
+                isRegistered
+                id
+              }
             }
+            note
           }
         }
       `,
