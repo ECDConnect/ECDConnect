@@ -64,8 +64,8 @@ export const AddOrEditPractitioner = ({
     }
 
     if (validPassportOrIdNumber) {
-      getPractitionerDetailsByIdNumber().then((p) => {
-        setIsValidPractitioner(!!p?.idNumber);
+      getPractitionerDetailsByIdNumber().then((p: any) => {
+        setIsValidPractitioner(!!p?.appUser?.idNumber);
       });
     }
 
@@ -92,19 +92,19 @@ export const AddOrEditPractitioner = ({
   const handleSubmit = async () => {
     const { firstName, idNumber, passport, surname } = getValues();
 
-    const practitionerUserDetails: UserWithPractitionerData =
+    const practitionerUserDetails: any =
       await getPractitionerDetailsByIdNumber();
 
     onSubmit({
-      id: practitionerUserDetails?.practitionerObjectData?.id ?? '',
-      userId: practitionerUserDetails.id ?? '',
+      id: practitionerUserDetails?.appUser?.practitionerObjectData?.id ?? '',
+      userId: practitionerUserDetails.appUser?.id ?? '',
       idNumber: idNumber || passport,
       firstName: firstName,
       surname: surname,
       passport: '',
       preferId: !!idNumber,
       isRegistered: Boolean(
-        practitionerUserDetails.practitionerObjectData?.isRegistered
+        practitionerUserDetails?.appUser?.practitionerObjectData?.isRegistered
       ),
     });
   };

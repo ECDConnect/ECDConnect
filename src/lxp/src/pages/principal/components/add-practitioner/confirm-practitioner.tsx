@@ -131,7 +131,7 @@ export default function ConfirmPractitioner({
       principalPractitioners.splice(indexToEdit, 1);
       listItems.splice(indexToEdit, 1);
     }
-
+    console.log({ data });
     listItems.push(createStackItem(data));
     principalPractitioners.push(data);
     setPrincipalPractitioners(principalPractitioners);

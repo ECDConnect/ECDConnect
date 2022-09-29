@@ -294,17 +294,14 @@ class PractitionerService {
       query: `
         mutation updatePractitionerShareInfo(
           $practitionerId: String
-          $principalId: String
         ) {
           updatePractitionerShareInfo(
             practitionerId: $practitionerId
-            principalId: $principalId
           )
         }
       `,
       variables: {
         practitionerId,
-        principalId,
       },
     });
 
