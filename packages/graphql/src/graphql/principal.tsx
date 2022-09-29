@@ -141,3 +141,19 @@ export const DeletePrincipal = gql`
     deletePrincipal(id: $id)
   }
 `;
+
+export const UpdatePrincipalInvitation = gql`
+  mutation updatePrincipalInvitation(
+    $practitionerId: String
+    $principalId: String
+    $accepted: Boolean!
+  ) {
+    updatePrincipalInvitation(
+      practitionerId: $practitionerId
+      principalId: $principalId
+      accepted: $accepted
+    ) {
+      userId
+    }
+  }
+`;

@@ -255,48 +255,47 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         }
 
         public Practitioner UpdatePrincipalInvitation([Service] IHttpContextAccessor contextAccessor,
-    [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
     [Service] IGenericRepositoryFactory repoFactory,
     string practitionerId, string principalId, bool accepted)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
-            var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            var practitionerOwnerRepo = repoFactory.CreateRepository<PractitionerOwner>(userContext: uId);
+            var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
+            var practitionerOwnerRepo = repoFactory.CreateGenericRepository<PractitionerOwner>(userContext: uId);
             Practitioner principal = practitionerRepo.GetByUserId(principalId);
             Practitioner practitioner = practitionerRepo.GetByUserId(practitionerId);
 
             //reassign all practitioners to the new principal
             if (principal != null && practitioner != null)
             {
-                var link = practitionerOwnerRepo.GetAll().Where(x => x.PrincipalOwnerId.Equals(principal.UserId)).Where(x => x.PractitionerId.Equals(practitioner.UserId)).Where(x => x.DateAccepted != null).FirstOrDefault();
-                if (accepted == false)
+                PractitionerOwner link = practitionerOwnerRepo.GetAll().Where(x => x.PractitionerId.ToString() == practitionerId && x.PrincipalOwnerId.ToString() == principalId).FirstOrDefault();
+                if (link != null)
                 {
-                    practitioner.PrincipalHierarchy = null;
-                    practitioner.ShareInfo = false;
-                    var updateResult = practitionerRepo.Update(practitioner);
+                    if (accepted == false)
+                    {
+                        practitioner.PrincipalHierarchy = null;
+                        practitioner.ShareInfo = false;
+                        var updateResult = practitionerRepo.Update(practitioner);
 
-                    if (link != null)
-                    {
                         link.DateToBeRemoved = DateTime.Now;
+                        link.DateAccepted = null;
                         practitionerOwnerRepo.Update(link);
+
                     }
-                } else
-                {
-                    if (link != null)
+                    else
                     {
+                        link.DateToBeRemoved = null;
                         link.DateAccepted = DateTime.Now;
                         practitionerOwnerRepo.Update(link);
                     }
                 }
+                else return null;
                 //now kill the practitionerowner row
-                
-                if (link != null)
-                {
-                    link.DateToBeRemoved = DateTime.Now;
 
-                    practitionerOwnerRepo.Update(link);
-                }
+                //link.DateToBeRemoved = DateTime.Now;
+
+                //practitionerOwnerRepo.Update(link);           
             }
+            else return null;
 
             return practitioner;
         }
