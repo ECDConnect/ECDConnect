@@ -82,11 +82,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                             return new PractitionerUserAndNote() { AppUser = practitioner.User };
                         } else
                         {
-                            return new PractitionerUserAndNote() { AppUser = practitioner.User, Note = "Practitioner Is Allocated to Different Principal" };
+                            return new PractitionerUserAndNote() { AppUser = practitioner.User, Note = "This practitioner is linked to a different SmartStart programme" };
                         }
                     } else
                     {
-                        return new PractitionerUserAndNote() { AppUser = null, Note = "No User can be matched" };
+                        return new PractitionerUserAndNote() { AppUser = null, Note = "Not on Funda App" };
                     }
                 }
             }
