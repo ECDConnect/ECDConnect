@@ -268,6 +268,7 @@ class PractitionerService {
           classroomDetailsForPractitioner(userId: $userId) {
             principalName
             classroomName
+            classroomGroupName
           }
         }
       `,
@@ -412,6 +413,42 @@ class PractitionerService {
     }
 
     return response.data.data.updatePractitionerContactInfo;
+  }
+
+  async UpdatePrincipalInvitation(
+    practitionerId: string,
+    principalId: string,
+    accepted: boolean = true
+  ): Promise<boolean> {
+    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        mutation 
+          updatePrincipalInvitation ($practitionerId: String, $principalId: String, $accepted: Boolean!) {          
+          updatePrincipalInvitation(
+              practitionerId: $practitionerId            
+              principalId: $principalId
+              accepted: $accepted ) 
+          {            
+              userId            
+          isActive          
+          }     
+        }  
+      `,
+      variables: {
+        practitionerId,
+        principalId,
+        accepted,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Get Practitioner by ID number Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.updatePractitionerRegistered;
   }
 }
 

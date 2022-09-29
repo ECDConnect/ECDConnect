@@ -3562,7 +3562,6 @@ export type PractitionerOwner = {
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
   practitionerId?: Maybe<Scalars['UUID']>;
-  principalHierarchy?: Maybe<Scalars['UUID']>;
   principalOwnerId?: Maybe<Scalars['UUID']>;
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
@@ -3580,7 +3579,6 @@ export type PractitionerOwnerFilterInput = {
   isActive?: InputMaybe<BooleanOperationFilterInput>;
   or?: InputMaybe<Array<PractitionerOwnerFilterInput>>;
   practitionerId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
-  principalHierarchy?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   principalOwnerId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
@@ -3595,7 +3593,6 @@ export type PractitionerOwnerInput = {
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
   PractitionerId?: InputMaybe<Scalars['UUID']>;
-  PrincipalHierarchy?: InputMaybe<Scalars['UUID']>;
   PrincipalOwnerId?: InputMaybe<Scalars['UUID']>;
   UpdatedBy?: InputMaybe<Scalars['String']>;
   User?: InputMaybe<ApplicationUserInput>;
@@ -3646,6 +3643,7 @@ export type PrincipalFilterDocumentsByTypeArgs = {
 
 export type PrincipalClassroom = {
   __typename?: 'PrincipalClassroom';
+  classroomGroupName?: Maybe<Scalars['String']>;
   classroomName?: Maybe<Scalars['String']>;
   principalName?: Maybe<Scalars['String']>;
 };
