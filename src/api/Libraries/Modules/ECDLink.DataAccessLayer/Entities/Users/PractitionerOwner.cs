@@ -10,15 +10,14 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ECDLink.DataAccessLayer.Entities.Users
 {
-    [Table(nameof(Practitioner))]
+    [Table(nameof(PractitionerOwner))]
     [EntityPermission(PermissionGroups.USER)]
     public class PractitionerOwner : PractitionerOwner<Guid>
     {
 
     }
 
-    public class PractitionerOwner<TKey> : EntityBase<TKey>, 
-        IUserType
+    public class PractitionerOwner<TKey> : EntityBase<TKey>
          where TKey : IEquatable<TKey>
     {
         [GraphQLIgnore]
@@ -29,8 +28,6 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public string UserId { get; set; }
         public Guid? PrincipalOwnerId { get; set; }
         public Guid? PractitionerId { get; set; }
-
-        public Guid? PrincipalHierarchy { get; set; }
         public DateTime? DateLinked { get; set; }
         public DateTime? DateAccepted { get; set; }
         public DateTime? DateToBeRemoved { get; set; }

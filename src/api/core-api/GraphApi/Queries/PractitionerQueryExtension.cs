@@ -221,6 +221,7 @@ string userId)
                 var principal = practitionerRepo.GetByUserId(classroom.UserId);
                 if (principal != null)
                 {
+                    principalClassroom.ClassroomName = classroom.Name;
                     principalClassroom.PrincipalName = (string.IsNullOrWhiteSpace(principal.User.FullName)? principal.User.FullName : principal.User.FullName);   
                 }
             }
