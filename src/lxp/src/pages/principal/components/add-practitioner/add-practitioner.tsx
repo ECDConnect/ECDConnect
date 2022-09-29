@@ -80,7 +80,6 @@ export const AddPractitioner = ({
 
     if (validPassportOrIdNumber) {
       getPractitionerDetailsByIdNumber().then((p: any) => {
-        console.log({ p });
         if (
           p?.appUser?.practitionerObjectData?.isRegistered === false ||
           p?.appUser?.practitionerObjectData?.isRegistered === null
@@ -113,7 +112,7 @@ export const AddPractitioner = ({
         userAuth.auth_token
       ).getPractitionerByIdNumber(idNumber);
     }
-    console.log({ _practitioner });
+
     return _practitioner;
   };
 

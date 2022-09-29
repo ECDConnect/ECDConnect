@@ -23,6 +23,7 @@ import { OnNext } from '@/pages/principal/setup-principal/setup-principal.types'
 import { PractitionerFormData } from '../../edit-practitioner-profile.types';
 import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
+import { practitionerSelectors } from '@/store/practitioner';
 
 export const PractitionerSetup = ({
   onSubmit,
@@ -45,6 +46,7 @@ export const PractitionerSetup = ({
     },
   });
 
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const userAuth = useSelector(authSelectors.getAuthUser);
   const user = useSelector(userSelectors.getUser);
 
@@ -62,6 +64,16 @@ export const PractitionerSetup = ({
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const getPractitionerResponse = async () => {
+    await new PractitionerService(
+      userAuth?.auth_token || ''
+    ).UpdatePrincipalInvitation(
+      user?.id!,
+      practitioner?.principalHierarchy!,
+      practitionerToProgramme
+    );
+  };
 
   const { practitionerToProgramme, allowPermissions } = watch();
 
@@ -168,12 +180,17 @@ export const PractitionerSetup = ({
             }
             onClick={
               practitionerToProgramme === false
-                ? () => history.push(ROUTES.PRINCIPAL.SETUP_PROFILE)
-                : () =>
+                ? () => {
+                    getPractitionerResponse();
+                    history.push(ROUTES.PRINCIPAL.SETUP_PROFILE);
+                  }
+                : () => {
+                    getPractitionerResponse();
                     onSubmit({
                       practitionerToProgramme: !!practitionerToProgramme,
                       allowPermissions: !!allowPermissions,
-                    })
+                    });
+                  }
             }
           />
         </div>

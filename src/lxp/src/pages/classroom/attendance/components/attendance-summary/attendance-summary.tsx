@@ -182,7 +182,6 @@ export const AttendanceSummary: React.FC = () => {
             classProgramme.programmeStartDate
           ).valueOf();
           if (theDate < new Date().valueOf() && theDate > programmeStartDate) {
-            console.log({ classProgramme });
             actionListToDisplayWrapper.push({
               date: dayDate,
               group: group,
