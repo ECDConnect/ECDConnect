@@ -153,7 +153,10 @@ export const UpdatePrincipalInvitation = gql`
       principalId: $principalId
       accepted: $accepted
     ) {
-      userId
+      leavingDate
+      acceptedDate
+      linkeddate
+      leaving
     }
   }
 `;

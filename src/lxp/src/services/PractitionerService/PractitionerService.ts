@@ -423,17 +423,22 @@ class PractitionerService {
     const apiInstance = await api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-        mutation 
-          updatePrincipalInvitation ($practitionerId: String, $principalId: String, $accepted: Boolean!) {          
-          updatePrincipalInvitation(
-              practitionerId: $practitionerId            
-              principalId: $principalId
-              accepted: $accepted ) 
-          {            
-              userId            
-          isActive          
-          }     
-        }  
+      mutation updatePrincipalInvitation(
+        $practitionerId: String
+        $principalId: String
+        $accepted: Boolean!
+      ) {
+        updatePrincipalInvitation(
+          practitionerId: $practitionerId
+          principalId: $principalId
+          accepted: $accepted
+        ) {
+          leavingDate
+          acceptedDate
+          linkeddate
+          leaving
+        }
+      }  
       `,
       variables: {
         practitionerId,
