@@ -2108,7 +2108,7 @@ export type Mutation = {
   updatePractitionerShareInfo: Scalars['Boolean'];
   updatePractitionerToTeachClassroom?: Maybe<ClassroomGroup>;
   updatePrincipal?: Maybe<Principal>;
-  updatePrincipalInvitation?: Maybe<Practitioner>;
+  updatePrincipalInvitation?: Maybe<PrincipalInvitationStatus>;
   updateProgramme?: Maybe<Programme>;
   updateProgrammeAttendanceReason?: Maybe<ProgrammeAttendanceReason>;
   updateProgrammeRoutine?: Maybe<ProgrammeRoutine>;
@@ -3706,6 +3706,14 @@ export type PrincipalInput = {
   UpdatedBy?: InputMaybe<Scalars['String']>;
   User?: InputMaybe<ApplicationUserInput>;
   UserId?: InputMaybe<Scalars['String']>;
+};
+
+export type PrincipalInvitationStatus = {
+  __typename?: 'PrincipalInvitationStatus';
+  acceptedDate?: Maybe<Scalars['DateTime']>;
+  leaving: Scalars['Boolean'];
+  leavingDate?: Maybe<Scalars['DateTime']>;
+  linkedDate?: Maybe<Scalars['DateTime']>;
 };
 
 export type Programme = {

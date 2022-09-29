@@ -293,6 +293,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                             }
 
                             status.LeavingDate = DateTime.Now;
+                            status.Leaving = true;
                         } 
                         else
                         {
@@ -301,6 +302,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                             practitionerOwnerRepo.Update(link);
 
                             status.LeavingDate = DateTime.Now.AddDays(7);
+                            status.Leaving = true;
                         }
                     }
                     else
@@ -311,6 +313,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
                         status.LeavingDate = null;
                         status.AcceptedDate = DateTime.Now;
+                        status.Leaving = false;
                     }
                 }
                 else return null;
