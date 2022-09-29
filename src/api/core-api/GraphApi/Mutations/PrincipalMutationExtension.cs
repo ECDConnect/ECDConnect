@@ -32,8 +32,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
         public Practitioner AddPractitionerToPrincipal([Service] IServiceProvider serviceProvider, [Service] IHttpContextAccessor contextAccessor,
     [Service] UserManager<ApplicationUser> userManager,
-    [Service] RoleManager<IdentityRole> roleManager,
-    [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
     [Service] IGenericRepositoryFactory repoFactory,
     string firstName,
     string lastName,
@@ -41,7 +39,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     string userId)
         {
             //ensure only principals or FAAs can be assigned to be a parent of another practitioner, so they cannot be joined to themselves or unrelated users
-            //Guid tenantId = TenantExecutionContext.Tenant.Id;
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
             var practitionerOwnerRepo = repoFactory.CreateGenericRepository<PractitionerOwner>(userContext: uId);

@@ -15,5 +15,7 @@ namespace ECDLink.DataAccessLayer.Entities
         public string PrincipalName { get; set; }
 
         public string ClassroomName { get; set; }
+
+        public string ClassroomGroupName { get; set; }
     }
 }
