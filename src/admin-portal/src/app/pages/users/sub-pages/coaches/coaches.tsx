@@ -33,17 +33,15 @@ export default function Coaches() {
     if (data && data.GetAllCoach) {
       const copyItems = data.GetAllCoach.filter(
         (v) => v.user !== null && v.user.isActive === true
-      )
-        .sort((q) => q.user.firstName)
-        .map((item: CoachDto) => ({
-          ...item,
-          fullName: `${item.user?.firstName} ${item.user?.surname}`,
-          isActive: item.user?.isActive,
-          idNumber: item.user?.idNumber,
-          _view: undefined,
-          _edit: undefined,
-          _url: undefined,
-        }));
+      ).map((item: CoachDto) => ({
+        ...item,
+        fullName: `${item.user?.firstName} ${item.user?.surname}`,
+        isActive: item.user?.isActive,
+        idNumber: item.user?.idNumber,
+        _view: undefined,
+        _edit: undefined,
+        _url: undefined,
+      }));
       setTableData(copyItems);
     }
   }, [data]);

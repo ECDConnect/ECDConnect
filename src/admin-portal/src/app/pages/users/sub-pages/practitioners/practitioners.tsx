@@ -80,18 +80,16 @@ export default function Practitioners() {
     if (data && data.GetAllPractitioner) {
       const copyItems = data.GetAllPractitioner.filter(
         (v) => v.user !== null && v.user.isActive === true
-      )
-        .sort((q) => q.user.firstName)
-        .map((item: PractitionerDto) => ({
-          ...item,
-          fullName: `${item.user?.firstName} ${item.user?.surname}`,
-          isActive: item.user?.isActive,
-          isPrinicpal: item?.isPrincipal,
-          idNumber: item.user?.idNumber,
-          _view: undefined,
-          _edit: undefined,
-          _url: undefined,
-        }));
+      ).map((item: PractitionerDto) => ({
+        ...item,
+        fullName: `${item.user?.firstName} ${item.user?.surname}`,
+        isActive: item.user?.isActive,
+        isPrinicpal: item?.isPrincipal,
+        idNumber: item.user?.idNumber,
+        _view: undefined,
+        _edit: undefined,
+        _url: undefined,
+      }));
       setTableData(copyItems);
     }
   }, [data]);
