@@ -137,7 +137,7 @@ export const Dashboard: React.FC = () => {
       ).unwrap())();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  console.log({ classroom });
+
   useEffect(() => {
     if (practitioner?.userId && !classroom) {
       (async () =>
@@ -147,7 +147,6 @@ export const Dashboard: React.FC = () => {
           })
         ).unwrap())();
       // eslint-disable-next-line react-hooks/exhaustive-deps
-      console.log('testessssssss');
     }
   }, [practitioner?.userId]);
 

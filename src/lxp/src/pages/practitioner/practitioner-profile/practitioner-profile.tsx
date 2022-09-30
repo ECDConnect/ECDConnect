@@ -37,7 +37,7 @@ export const PractitionerProfile: React.FC = () => {
   const { isOnline } = useOnlineStatus();
   const history = useHistory();
   const dialog = useDialog();
-
+  console.log({ classroom });
   useEffect(() => {
     if (!isOnline) {
       appDispatch(
