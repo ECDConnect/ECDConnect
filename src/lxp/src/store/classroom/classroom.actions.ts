@@ -1,5 +1,5 @@
-import { PrincipalInput } from './../../../../../packages/graphql/src/graphql/generatedGraphql';
-import { PrincipalDto } from './../../../../../packages/core/lib/models/dto/Users/principal.dto.d';
+// import { PrincipalInput } from './../../../../../packages/graphql/src/graphql/generatedGraphql';
+// import { PrincipalDto } from './../../../../../packages/core/lib/models/dto/Users/principal.dto.d';
 import {
   ClassProgrammeDto,
   ClassroomDto,
@@ -20,6 +20,7 @@ import { ClassroomGroupService } from '@services/ClassroomGroupService';
 import { ClassroomService } from '@services/ClassroomService';
 import { newGuid } from '@utils/common/uuid.utils';
 import { RootState, ThunkApiType } from '../types';
+import { PractitionerService } from '@/services/PractitionerService';
 
 export const getClassroom = createAsyncThunk<
   ClassroomDto,
@@ -56,6 +57,49 @@ export const getClassroom = createAsyncThunk<
         return rejectWithValue(err);
       }
     } else {
+      return classroomsCache;
+    }
+  }
+);
+
+export const getClassroomDetailsForPractitioner = createAsyncThunk<
+  ClassroomDto,
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  { id: string },
+  ThunkApiType<RootState>
+>(
+  'getClassroomDetailsForPractitioner',
+  // eslint-disable-next-line no-empty-pattern
+  async ({ id }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      classroomData: { classroom: classroomsCache },
+    } = getState();
+
+    if (!classroomsCache) {
+      console.log('classroomCache');
+      try {
+        let classrooms: any | undefined;
+        console.log('tryyyyyyyyyy');
+        if (userAuth?.auth_token) {
+          console.log('authhhhhhhhhhh');
+          classrooms = await new PractitionerService(
+            userAuth?.auth_token
+          ).getClassroomDetailsForPractitioner(id);
+        } else {
+          return rejectWithValue('no access token, profile check required');
+        }
+
+        if (!classrooms) {
+          return rejectWithValue('Error getting Classrooms');
+        }
+        console.log({ classrooms });
+        return classrooms;
+      } catch (err) {
+        return rejectWithValue(err);
+      }
+    } else {
+      console.log({ classroomsCache });
       return classroomsCache;
     }
   }
