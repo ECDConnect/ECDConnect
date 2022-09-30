@@ -38,6 +38,10 @@ export const GetAllPrincipal = gql`
       startDate
       monthSinceFranchisee
       signingSignature
+      isLeaving
+      dateLinked
+      dateToBeRemoved
+      dateAccepted
     }
   }
 `;
@@ -78,6 +82,10 @@ export const allPrincipal = gql`
       languageUsedInGroups
       startDate
       monthSinceFranchisee
+      isLeaving
+      dateLinked
+      dateToBeRemoved
+      dateAccepted
     }
   }
 `;
@@ -116,6 +124,10 @@ export const GetPrincipalById = gql`
       isRegistered
       isTrainee
       signingSignature
+      isLeaving
+      dateLinked
+      dateToBeRemoved
+      dateAccepted
     }
   }
 `;
