@@ -24,4 +24,8 @@ export interface PractitionerDto extends EntityBase {
   coachHierarchy?: string;
   shareInfo?: boolean;
   isRegistered?: boolean;
+  dateLinked?: Date;
+  dateAccepted?: Date;
+  dateToBeRemoved?: Date;
+  isLeaving?: boolean;
 }

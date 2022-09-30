@@ -24,7 +24,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public string Password { get; set; }
         public string SecurityStamp { get; set; }
         public string PasswordConcurrency { get; set; }
-        public Guid? ParentUserId { get; set; }
+        public string ParentUserId { get; set; }
         public bool MatchWithSite { get; set; }
         public DateTime Dob { get; set; }
 

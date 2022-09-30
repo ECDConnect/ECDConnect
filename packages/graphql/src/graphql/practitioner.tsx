@@ -41,6 +41,10 @@ export const GetAllPractitioner = gql`
       signingSignature
       coachHierarchy
       principalHierarchy
+      isLeaving
+      dateLinked
+      dateToBeRemoved
+      dateAccepted
     }
   }
 `;
@@ -81,6 +85,10 @@ export const GetPractitionerById = gql`
       signingSignature
       coachHierarchy
       principalHierarchy
+      isLeaving
+      dateLinked
+      dateToBeRemoved
+      dateAccepted
     }
   }
 `;

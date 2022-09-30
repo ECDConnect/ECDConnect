@@ -194,6 +194,31 @@ class UserService {
 
     return response.data.data.addUser;
   }
+
+  async userByToken(token: string): Promise<boolean> {
+    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      query userByToken($token: String) {          
+        userByToken(token: $token) {      
+          fullName 
+          phoneNumber 
+          roleName 
+          userId   
+        }        
+      }
+      `,
+      variables: {
+        token: token,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error('Cannot retrieve usre by token');
+    }
+
+    return true;
+  }
 }
 
 export default UserService;

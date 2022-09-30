@@ -1,3 +1,4 @@
+using DotLiquid;
 using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.Managers.Notifications;
 using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
@@ -20,12 +21,14 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Azure.Documents;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OData.UriParser;
 using NPOI.SS.UserModel;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security;
+using static NPOI.HSSF.Util.HSSFColor;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
@@ -191,39 +194,45 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             var workbook = WorkbookFactory.Create(fileStream);
 
-            var sheet = workbook.GetSheetAt(0);
+            var sheet1 = workbook.GetSheetAt(0);
 
             var languages = localeService.GetAvailableLocale().ToList();
 
             List<ImportAllStaffItem> practitionerImportList = new List<ImportAllStaffItem>();
-            var headerRow = sheet.GetRow(0);
+
+            List<ImportAllChildInfoItem> childImportListItem = new List<ImportAllChildInfoItem>();
+            //var headerRow = sheet.GetRow(0);
 
             //set sharedinfo needed between rows
-            bool matchWithSite = false;
-            string siteIndicator = "";
-            Guid? parentUserId = null;
+            //bool matchWithSite = false;
+            //string siteIndicator = "";
+            //string parentUserId = null;
 
             var password = "AQAAAAEAACcQAAAAEG8HH4NQmDeD+mt5aV4WZLhKb4LnQN3HdkzGloeqmaH6qbA37HSVhysm+hPEq1NKZg==";
             var securityStamp = "NXAOZGBIVGAMGCHVNGN2WFJXPLPS67YD";
             var concurrencystamp = "d0797595-3855-4e5c-aebf-cf7300ddae02";
+            string franchisorId = "";
 
             var uId = httpContextAccessor.HttpContext.GetUser().Id;
 
-            var programmeTypeRepo = repoFactory.CreateRepository<ProgrammeType>(userContext: uId);
-            var coachRepo = repoFactory.CreateRepository<Coach>(userContext: uId);
-            var franchisorRepo = repoFactory.CreateRepository<Franchisor>(userContext: uId);
-            SendInvitationMutationExtension invite = new SendInvitationMutationExtension();
+            var programmeTypeRepo = repoFactory.CreateGenericRepository<ProgrammeType>(userContext: uId);
+            var coachRepo = repoFactory.CreateGenericRepository<Coach>(userContext: uId);
+            var franchisorRepo = repoFactory.CreateGenericRepository<Franchisor>(userContext: uId);
+            var addressRepo = repoFactory.CreateGenericRepository<SiteAddress>(userContext: uId);
+            var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
 
-            for (var row = 1; row <= sheet.LastRowNum; row++)
+            //SendInvitationMutationExtension invite = new SendInvitationMutationExtension();
+
+            for (var row = 1; row <= sheet1.LastRowNum; row++)
             {
-                var currentRow = sheet.GetRow(row);
+                var currentRow = sheet1.GetRow(row);
 
                 if (currentRow != null)
                 {
                     //check the indicator of what type of staff the row is - Franchisee(practitioner)/Principal/Coach/Franchisor/FAA(FundaAppAdmin)
-                    matchWithSite = (ExcelHelper.GetCellValue(currentRow.GetCell(0)) == "YES" ? true : false);
+                    var matchWithSite = (ExcelHelper.GetCellValue(currentRow.GetCell(0)) == "YES" ? true : false);
                     
-                    siteIndicator = ExcelHelper.GetCellValue(currentRow.GetCell(1));
+                    var siteIndicator = ExcelHelper.GetCellValue(currentRow.GetCell(1));
                     
                     //var programme_indicator = ExcelHelper.GetCellValue(currentRow.GetCell(2));
                     //var prograammeArr = programme_indicator.Split("_");
@@ -252,54 +261,115 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     var dob = new DateTime(Int32.Parse("19" + digits[0] + digits[1]), Int32.Parse(digits[2].ToString() + digits[3].ToString()), Int32.Parse(digits[4].ToString() + digits[5].ToString()));
 
 
-                    if (idNumber != null)
+                    //var languageEntity = languages.Where(x => x.Description == language).FirstOrDefault();
+                    //if (languageEntity == null)
+                    //{
+                    //    languageEntity = languages.Where(x => x.Locale == "en-za").FirstOrDefault();
+                    //}
+                    var currentItem = practitionerImportList.Where(x => x.IDNumber == idNumber).FirstOrDefault();
+
+                    var item = currentItem != null ? currentItem : new ImportAllStaffItem();
+                    item.MatchWithSite = matchWithSite;
+                    item.SiteIndicator = siteIndicator;
+                    //item.ParentUserId = (parentUserId!=null?parentUserId: null);
+
+                    item.FirstName = firstname;
+                    item.Surname = surname;
+                    item.FullName = fullname;
+                    item.PhoneNumber = cellnumber;
+                    item.IDNumber = idNumber;
+
+                    item.ProgrammeTypeDesc = programmeTypeDesc;
+                    item.ProgrammeTypeId = programmeType.Id.ToString();
+
+                    item.SiteArea = siteArea;
+                    item.SiteName = siteName;
+                    item.ClassName = className;
+
+                    item.CoachName = coachName;
+                    item.CoachID = coachID;
+
+                    item.FranchisorhName = franchisorhName;
+                    item.CoachNumber = coachNumber;
+
+                    item.Dob = dob;//dobDateInt > 0 ? DateTime.FromOADate(dobDateInt) : DateTime.Now;
+
+                    if (currentItem == null) practitionerImportList.Add(item);
+                }
+            }
+
+            //first accumulate list of coach and create coach users
+            if (practitionerImportList.Count > 0)
+            {
+                //get franchisor overseeing everything
+                var franchisor = franchisorRepo.GetAll().Where(x => x.User.FullName == practitionerImportList.FirstOrDefault().FranchisorhName).FirstOrDefault();//all is assigned to same franchisor
+                franchisorId = franchisor.UserId;
+
+                foreach (var coach in practitionerImportList)
+                {
+                    string userId = Guid.NewGuid().ToString();
+
+                    var nameArr = coach.CoachName.Split(" ");
+                    var firstname = (nameArr.Count() > 2 ? nameArr[0] + " " + nameArr[1] : nameArr[0]);
+                    var surname = (nameArr.Count() > 2 ? nameArr[2] : nameArr[1]);
+                    char[] coachdigits = coach.CoachID.ToCharArray();//new String(idNumber.TakeWhile(Char.IsDigit).ToArray());
+                    var coachdob = new DateTime(Int32.Parse("19" + coachdigits[0] + coachdigits[1]), Int32.Parse(coachdigits[2].ToString() + coachdigits[3].ToString()), Int32.Parse(coachdigits[4].ToString() + coachdigits[5].ToString()));
+
+                    //check user dont exist first
+                    var existingUser = userManager.Users.Where(x => x.IdNumber == coach.CoachID).FirstOrDefault();
+
+                    if (existingUser == null)
                     {
-                        //var languageEntity = languages.Where(x => x.Description == language).FirstOrDefault();
-                        //if (languageEntity == null)
-                        //{
-                        //    languageEntity = languages.Where(x => x.Locale == "en-za").FirstOrDefault();
-                        //}
-                        var currentItem = practitionerImportList.Where(x => x.IDNumber == idNumber).FirstOrDefault();
+                        var newUser = new ApplicationUser
+                        {
+                            Id = userId.ToString(),
+                            PhoneNumber = coach.CoachNumber,
+                            UserName = coach?.CoachID,
+                            IdNumber = coach?.CoachID,
+                            IsSouthAfricanCitizen = true,
+                            VerifiedByHomeAffairs = true,
+                            DateOfBirth = coachdob,
+                            FirstName = firstname,
+                            Surname = surname,
+                            FullName = coach.CoachName,//$"{practitioner.FirstName} {practitioner.Surname}",
+                            ContactPreference = "sms",
+                            IsActive = true,
+                            //PasswordHash = password,
+                            //SecurityStamp = securityStamp,
+                            //ConcurrencyStamp = concurrencystamp                        
+                        };
+                        var userCreatedResult = userManager.CreateAsync(newUser).Result;
+                        var userRole = userManager.AddToRoleAsync(newUser, Roles.COACH).Result;
+                        var siteaddressid = addressRepo.GetAll().Where(x => x.AddressLine1 == "Kellner St").FirstOrDefault().Id;
 
-                        var item = currentItem != null ? currentItem : new ImportAllStaffItem();
-                        item.MatchWithSite = matchWithSite;
-                        item.SiteIndicator = siteIndicator;
-                        item.ParentUserId = parentUserId;
+                        var cc = new Coach
+                        {
+                            Id = Guid.NewGuid(),
+                            UserId = userId,
+                            SiteAddressId = siteaddressid,
+                            AreaOfOperation = "Office",
+                            //MaxChildren = practitioner.MaxChildren,
+                            //ConsentForPhoto = practitioner.ConsentForPhoto,
+                            //ParentFees = practitioner.ParentFees,
+                            //StartDate = practitioner.StartDate,
+                            IsActive = true
+                        };
+                        coachRepo.Insert(cc);
 
-                        item.FirstName = firstname;
-                        item.Surname = surname;
-                        item.FullName = fullname;
-                        item.PhoneNumber = cellnumber;
-                        item.IDNumber = idNumber;
-
-                        item.ProgrammeTypeDesc = programmeTypeDesc;
-                        item.ProgrammeTypeId = programmeType.Id.ToString();
-
-                        item.SiteArea = siteArea;
-                        item.SiteName = siteName;
-                        item.ClassName = className;
-
-                        item.CoachName = coachName;
-                        item.CoachID = coachID;
-
-                        item.FranchisorhName = franchisorhName;
-                        item.CoachNumber = coachNumber;
-
-                        item.Dob = dob;//dobDateInt > 0 ? DateTime.FromOADate(dobDateInt) : DateTime.Now;
-
-                        if (currentItem == null) practitionerImportList.Add(item);
+                        //    //invite to application
+                        //    //invite.SendInviteToApplication(invitationManager, notificationManager, userManager, prac.UserId);
                     }
                 }
             }
 
-            var tempCoachlist = new List<Coach>();
-
-            var tempPractitionerlist = new List<Practitioner>();
 
             if (practitionerImportList.Count > 0)
             {
+                string parentUserId = null;
                 foreach (var practitioner in practitionerImportList)
                 {
+                    var coachUser = userManager.Users.Where(x => x.IdNumber == practitioner.CoachID).FirstOrDefault();
+                    //var principalUser = userManager.Users.Where(x => x.IdNumber == practitioner.CoachID).FirstOrDefault();
                     string userId = Guid.NewGuid().ToString();
                     var newUser = new ApplicationUser
                     {
@@ -321,38 +391,70 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     };
                     var userCreatedResult = userManager.CreateAsync(newUser).Result;
 
-                    tempPractitionerlist.Add(new Practitioner
+                    if (practitioner.SiteIndicator != "Principal")
+                    {
+                        var userRole = userManager.AddToRoleAsync(newUser, Roles.PRACTITIONER).Result;
+                        parentUserId = null;//reset parentUserId to null because we dont need this user to match anymore
+                    }
+                    else
+                    {
+                        //reset parentUserId
+                        var userRole = userManager.AddToRoleAsync(newUser, Roles.PRINCIPAL).Result;
+                        parentUserId = userId;
+                    }
+
+                    var newPractitioner = new Practitioner
                     {
                         Id = Guid.NewGuid(),
                         UserId = userId,
+                        CoachHierarchy = Guid.Parse(coachUser?.Id),
+                        //PrincipalHierarchy = (practitioner.ParentUserId!=null?Guid.Parse(practitioner.ParentUserId): null),
                         //MaxChildren = practitioner.MaxChildren,
                         //ConsentForPhoto = practitioner.ConsentForPhoto,
                         //ParentFees = practitioner.ParentFees,
                         //StartDate = practitioner.StartDate,
                         IsActive = true
-                    });
+                    };
 
-                    var userRole = userManager.AddToRoleAsync(newUser, Roles.PRACTITIONER).Result;
+                    var addedPractitioner = practitionerRepo.Insert(newPractitioner);
+                    
+                    if (practitioner.SiteIndicator == "Franchisee" && parentUserId != null)
+                    {
+                        addedPractitioner.PrincipalHierarchy = Guid.Parse(parentUserId);
+                    } else if (practitioner.SiteIndicator == "FAA")
+                    {
+                        addedPractitioner.IsFundaAppAdmin = true;
+                    } else if (practitioner.SiteIndicator == "Principal")
+                    {
+                        addedPractitioner.IsPrincipal = true;
+                    }
+                    practitionerRepo.Update(addedPractitioner);
+                    //var userRole = userManager.AddToRoleAsync(newUser, Roles.PRACTITIONER).Result;
+
+                    //    //invite to application
+                    //    //invite.SendInviteToApplication(invitationManager, notificationManager, userManager, prac.UserId);
+
                 }
             }
 
-            var importerUserId = httpContextAccessor.HttpContext.GetUser().Id;
-            var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: importerUserId);
-
-            foreach (var prac in tempPractitionerlist)
+            //now do sheet 2
+            var sheet2 = workbook.GetSheetAt(1);
+            for (var row = 1; row <= sheet1.LastRowNum; row++)
             {
-                
-                
-                
-                //prac.TenantId = tenantId;
-                var addedPractitioner = practitionerRepo.Insert(prac);
+                var currentRow = sheet1.GetRow(row);
 
-                //invite to application
-                //invite.SendInviteToApplication(invitationManager, notificationManager, userManager, prac.UserId);
+                if (currentRow != null)
+                {
+
+
+                }
             }
 
 
-            return true;
+
+
+
+                    return true;
         }
 
         public bool UpdatePractitionerShareInfo([Service] IHttpContextAccessor contextAccessor,
