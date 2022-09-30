@@ -4148,6 +4148,7 @@ export type Query = {
   tenantContext?: Maybe<TenantModel>;
   totalDaysAbsent: Scalars['Int'];
   userById?: Maybe<ApplicationUser>;
+  userByToken?: Maybe<UserByToken>;
   users?: Maybe<Array<Maybe<ApplicationUser>>>;
 };
 
@@ -4927,6 +4928,10 @@ export type QueryUserByIdArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
+export type QueryUserByTokenArgs = {
+  token?: InputMaybe<Scalars['String']>;
+};
+
 export type Race = {
   __typename?: 'Race';
   description?: Maybe<Scalars['String']>;
@@ -5374,6 +5379,14 @@ export type TrackAttendanceModelInput = {
   attendees?: InputMaybe<Array<InputMaybe<TrackAttendanceAttendeeModelInput>>>;
   classroomProgrammeId: Scalars['UUID'];
   programmeOwnerId?: InputMaybe<Scalars['String']>;
+};
+
+export type UserByToken = {
+  __typename?: 'UserByToken';
+  fullName?: Maybe<Scalars['String']>;
+  phoneNumber?: Maybe<Scalars['String']>;
+  roleName?: Maybe<Scalars['String']>;
+  userId?: Maybe<Scalars['String']>;
 };
 
 export type UserConsent = {
