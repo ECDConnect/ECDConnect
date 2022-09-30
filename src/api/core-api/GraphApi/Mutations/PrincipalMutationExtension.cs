@@ -43,7 +43,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             //ensure only principals or FAAs can be assigned to be a parent of another practitioner, so they cannot be joined to themselves or unrelated users
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
-            var practitionerOwnerRepo = repoFactory.CreateGenericRepository<PractitionerOwner>(userContext: uId);
             var practitionerUser = new PractitionerQueryExtension().GetPractitionerByIdNumberInternal(contextAccessor,userManager, repoFactory, idNumber);
             var principalUser = practitionerRepo.GetByUserId(userId);
             if (principalUser != null && (principalUser.IsPrincipal == true || principalUser.IsFundaAppAdmin == true)) //make sure the principal user exists and is a principal or a FAA
@@ -53,18 +52,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     Practitioner practitioner = practitionerRepo.GetByUserId(practitionerUser.Id);
                     if (practitioner != null && principalUser != null && (practitioner.CoachHierarchy == principalUser.CoachHierarchy) && (principalUser.UserId != practitioner.UserId)) //only allow the same coach line sto be added to each other,a nd the user ids are different
                     {
+                        practitioner.DateLinked = DateTime.Now;
                         practitioner.PrincipalHierarchy = Guid.Parse(principalUser.UserId);
                         var practitionerUpdateResult = practitionerRepo.Update(practitioner);
-
-                        //buld link up between practitioner and principal
-                        var owner = new PractitionerOwner()
-                        {
-                            UserId = principalUser.UserId,
-                            PrincipalOwnerId = Guid.Parse(principalUser.UserId),
-                            PractitionerId = Guid.Parse(practitioner.UserId),
-                            DateLinked = DateTime.Now,
-                        };
-                        practitionerOwnerRepo.Insert(owner);
 
                         //update users nicknames
                         var user = userManager.FindByIdAsync(practitioner.UserId).Result;
@@ -257,71 +247,61 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
-            var practitionerOwnerRepo = repoFactory.CreateGenericRepository<PractitionerOwner>(userContext: uId);
             Practitioner principal = practitionerRepo.GetByUserId(principalId);
             Practitioner practitioner = practitionerRepo.GetByUserId(practitionerId);
             PrincipalInvitationStatus status = new PrincipalInvitationStatus();
             //reassign all practitioners to the new principal
             if (principal != null && practitioner != null)
             {
-                PractitionerOwner link = practitionerOwnerRepo.GetAll().Where(x => x.PractitionerId.ToString() == practitionerId && x.PrincipalOwnerId.ToString() == principalId).FirstOrDefault();
-                if (link != null)
+                status.LinkedDate = practitioner.DateLinked;
+                if (accepted == false)
                 {
-                    status.LinkedDate = link.DateLinked;
-                    if (accepted == false)
+                    status.AcceptedDate = null;
+                    //if the function is run twice and the leaving date is already set, remove immediately, this is the principal confirming removal of this practitioner link
+                    if (practitioner.DateToBeRemoved!=null)
                     {
-                        status.AcceptedDate = null;
-                        //if the function is run twice and the leaving date is already set, remove immediately, this is the principal confirming removal of this practitioner link
-                        if (link.DateToBeRemoved!=null)
+                        practitioner.DateToBeRemoved = DateTime.Now;
+                        practitioner.DateAccepted = null;
+                        practitioner.IsLeaving = true;
+                        //update and clear  the practitioner details
+                        practitioner.PrincipalHierarchy = null;
+                        practitioner.ShareInfo = false;
+
+
+                        //reset the classroomgroups away from this practitioner and back to teh principal
+                        var classroomgroupRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);
+                        List<ClassroomGroup> classrooms = classroomgroupRepo.GetListByUserId(practitionerId);
+                        foreach (ClassroomGroup classroomgroup in classrooms)
                         {
-                            link.DateToBeRemoved = DateTime.Now;
-                            link.DateAccepted = null;
-                            practitionerOwnerRepo.Update(link);
-
-                            //update and clear  the practitioner details
-                            practitioner.PrincipalHierarchy = null;
-                            practitioner.ShareInfo = false;
-                            var updateResult = practitionerRepo.Update(practitioner);
-
-                            //reset the classroomgroups away from this practitioner and back to teh principal
-                            var classroomgroupRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);
-                            List<ClassroomGroup> classrooms = classroomgroupRepo.GetListByUserId(practitionerId);
-                            foreach (ClassroomGroup classroomgroup in classrooms)
-                            {
-                                classroomgroup.UserId = Guid.Parse(principal.UserId);
-                                classroomgroupRepo.Update(classroomgroup);
-                            }
-
-                            status.LeavingDate = DateTime.Now;
-                            status.Leaving = true;
-                        } 
-                        else
-                        {
-                            link.DateToBeRemoved = DateTime.Now.AddDays(7);
-                            link.DateAccepted = null;
-                            practitionerOwnerRepo.Update(link);
-
-                            status.LeavingDate = DateTime.Now.AddDays(7);
-                            status.Leaving = true;
+                            classroomgroup.UserId = Guid.Parse(principal.UserId);
+                            classroomgroupRepo.Update(classroomgroup);
                         }
-                    }
+
+                        status.LeavingDate = DateTime.Now;
+                        status.Leaving = true;
+                    } 
                     else
                     {
-                        link.DateToBeRemoved = null;
-                        link.DateAccepted = DateTime.Now;
-                        practitionerOwnerRepo.Update(link);
+                        practitioner.DateToBeRemoved = DateTime.Now.AddDays(7);
+                        practitioner.DateAccepted = null;
+                        practitioner.IsLeaving = true;
 
-                        status.LeavingDate = null;
-                        status.AcceptedDate = DateTime.Now;
-                        status.Leaving = false;
+                    status.LeavingDate = DateTime.Now.AddDays(7);
+                        status.Leaving = true;
                     }
                 }
-                else return null;
-                //now kill the practitionerowner row
-
-                //link.DateToBeRemoved = DateTime.Now;
-
-                //practitionerOwnerRepo.Update(link);           
+                else
+                {
+                    practitioner.DateToBeRemoved = null;
+                    practitioner.DateAccepted = DateTime.Now;
+                    practitioner.IsLeaving = false;
+                        
+                    status.LeavingDate = null;
+                    status.AcceptedDate = DateTime.Now;
+                    status.Leaving = false;
+                }
+                //update practitioner with column changes
+                var updateResult = practitionerRepo.Update(practitioner);    
             }
             else return null;
 
