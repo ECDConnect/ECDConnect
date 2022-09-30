@@ -17,12 +17,16 @@ import * as styles from './practitioners-list.styles';
 import ROUTES from '@routes/routes';
 import { useSelector } from 'react-redux';
 // import { practitionerForCoachSelectors } from '@/store/practitionerForCoach';
-import { practitionerSelectors } from '@/store/practitioner';
+import {
+  practitionerSelectors,
+  practitionerThunkActions,
+} from '@/store/practitioner';
 import { EmptyPractitioners } from './components/empty-practitioners/empty-practitioners';
 import { PractitionerDto } from '@/../../../packages/core/lib';
-import { KnownTypeNamesRule } from 'graphql';
+import { useAppDispatch } from '@store';
 
 export const PractitionersList: React.FC = () => {
+  const appDispatch = useAppDispatch();
   const history = useHistory();
   // const isCoach = true;
   // const practitionersForCoach = useSelector(
@@ -47,6 +51,14 @@ export const PractitionersList: React.FC = () => {
       practitionerId,
     });
   };
+
+  useEffect(() => {
+    (async () =>
+      await appDispatch(
+        practitionerThunkActions.getAllPractitioners({})
+      ).unwrap())();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (practitionersList && practitionersList?.length > 0) {
@@ -93,6 +105,10 @@ export const PractitionersList: React.FC = () => {
     };
   };
 
+  const handleReassignClass = () => {
+    history.push('principal/practitioner-reassign-class');
+  };
+
   return (
     <>
       {practitionersList?.length! > 0 || practitionersList !== undefined ? (
@@ -125,8 +141,7 @@ export const PractitionersList: React.FC = () => {
                   type="filled"
                   color="primary"
                   className={'w-11/12 mt-6 mb-6'}
-                  onClick={() => {}}
-                  disabled={true}
+                  onClick={handleReassignClass}
                 >
                   {renderIcon(
                     'PencilAltIcon',
