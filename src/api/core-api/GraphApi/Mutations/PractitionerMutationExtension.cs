@@ -316,48 +316,49 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     var coachdob = new DateTime(Int32.Parse("19" + coachdigits[0] + coachdigits[1]), Int32.Parse(coachdigits[2].ToString() + coachdigits[3].ToString()), Int32.Parse(coachdigits[4].ToString() + coachdigits[5].ToString()));
 
                     //check user dont exist first
-                    //var existingUser = userManager.Users.Where(x => x.IdNumber == coach.CoachID);
+                    var existingUser = userManager.Users.Where(x => x.IdNumber == coach.CoachID).FirstOrDefault();
 
-                    //if (existingUser)
-                    var newUser = new ApplicationUser
+                    if (existingUser == null)
                     {
-                        Id = userId.ToString(),
-                        PhoneNumber = coach.CoachNumber,
-                        UserName = coach?.CoachID,
-                        IdNumber = coach?.CoachID,
-                        IsSouthAfricanCitizen = true,
-                        VerifiedByHomeAffairs = true,
-                        DateOfBirth = coachdob,
-                        FirstName = firstname,
-                        Surname = surname,
-                        FullName = coach.CoachName,//$"{practitioner.FirstName} {practitioner.Surname}",
-                        ContactPreference = "sms",
-                        IsActive = true,
-                        //PasswordHash = password,
-                        //SecurityStamp = securityStamp,
-                        //ConcurrencyStamp = concurrencystamp                        
-                    };
-                    var userCreatedResult = userManager.CreateAsync(newUser).Result;
+                        var newUser = new ApplicationUser
+                        {
+                            Id = userId.ToString(),
+                            PhoneNumber = coach.CoachNumber,
+                            UserName = coach?.CoachID,
+                            IdNumber = coach?.CoachID,
+                            IsSouthAfricanCitizen = true,
+                            VerifiedByHomeAffairs = true,
+                            DateOfBirth = coachdob,
+                            FirstName = firstname,
+                            Surname = surname,
+                            FullName = coach.CoachName,//$"{practitioner.FirstName} {practitioner.Surname}",
+                            ContactPreference = "sms",
+                            IsActive = true,
+                            //PasswordHash = password,
+                            //SecurityStamp = securityStamp,
+                            //ConcurrencyStamp = concurrencystamp                        
+                        };
+                        var userCreatedResult = userManager.CreateAsync(newUser).Result;
+                        var userRole = userManager.AddToRoleAsync(newUser, Roles.COACH).Result;
+                        var siteaddressid = addressRepo.GetAll().Where(x => x.AddressLine1 == "Kellner St").FirstOrDefault().Id;
 
-                    var siteaddressid = addressRepo.GetAll().Where(x => x.AddressLine1 == "Kellner St").FirstOrDefault().Id;
+                        var cc = new Coach
+                        {
+                            Id = Guid.NewGuid(),
+                            UserId = userId,
+                            SiteAddressId = siteaddressid,
+                            AreaOfOperation = "Office",
+                            //MaxChildren = practitioner.MaxChildren,
+                            //ConsentForPhoto = practitioner.ConsentForPhoto,
+                            //ParentFees = practitioner.ParentFees,
+                            //StartDate = practitioner.StartDate,
+                            IsActive = true
+                        };
+                        coachRepo.Insert(cc);
 
-                    var cc = new Coach
-                    {
-                        Id = Guid.NewGuid(),
-                        UserId = userId,
-                        SiteAddressId = siteaddressid,
-                        AreaOfOperation = "Office",
-                        //MaxChildren = practitioner.MaxChildren,
-                        //ConsentForPhoto = practitioner.ConsentForPhoto,
-                        //ParentFees = practitioner.ParentFees,
-                        //StartDate = practitioner.StartDate,
-                        IsActive = true
-                    };
-                    coachRepo.Insert(cc);
-
-                    //    //invite to application
-                    //    //invite.SendInviteToApplication(invitationManager, notificationManager, userManager, prac.UserId);
-
+                        //    //invite to application
+                        //    //invite.SendInviteToApplication(invitationManager, notificationManager, userManager, prac.UserId);
+                    }
                 }
             }
 
