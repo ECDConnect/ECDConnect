@@ -165,6 +165,10 @@ class PractitionerService {
             coachHierarchy
             isRegistered
             shareInfo
+            dateLinked
+            dateAccepted
+            dateToBeRemoved
+            isLeaving
             user {
               idNumber
               fullName

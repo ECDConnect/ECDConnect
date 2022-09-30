@@ -50,6 +50,8 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const practitionerClassroomGroups = classroomGroups?.filter((item: any) => {
     return item?.userId === practitionerId;
   });
+  const learners = useSelector(classroomsSelectors.getClassroomGroupLearners);
+  // const learners = useSelector(classroomsSelectors.)
   const { theme } = useTheme();
 
   const [createPractitionerNoteVisible, setCreatePractitionerdNoteVisible] =
@@ -201,64 +203,77 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
             </div>
           </div>
         </Card>
-        <Card className={styles.absentCard}>
-          <Typography
-            type={'h1'}
-            text={practitionerClassroomGroups[0]?.name}
-            color={'textMid'}
-            className={styles.absentCardTitle}
-          />
-          <div>
-            <div className="flex flex-col mt-2 mr-2">
-              <div className="flex items-center justify-between w-11/12 ml-4">
-                <div className="flex items-center w-full">
+        {practitionerClassroomGroups.length > 0
+          ? practitionerClassroomGroups?.map((item, index) => {
+              const learnersByClass = learners?.filter(
+                (learner) => learner.classroomGroupId === item?.id
+              );
+
+              return (
+                <Card className={styles.absentCard}>
                   <Typography
-                    type={'h2'}
-                    text={`${childrenForPractitioner?.length}`}
-                    color={'textDark'}
-                    className="mt-2"
+                    type={'h1'}
+                    text={item.name}
+                    color={'textMid'}
+                    className={styles.absentCardTitle}
                   />
-                  <Typography
-                    type={'body'}
-                    text={'children in class'}
-                    color={'textDark'}
-                    className="mt-2 ml-4 mr-4"
-                  />
-                </div>
-                <Button
-                  size="small"
-                  shape="normal"
-                  color="primary"
-                  type="filled"
-                  onClick={() =>
-                    history.push(ROUTES.PRINCIPAL.PRACTITIONER_CHILD_LIST, {
-                      practitionerId,
-                    })
-                  }
-                  className="rounded-xl mt-2"
-                >
-                  <Typography type="help" color="white" text="View" />
-                  {renderIcon('EyeIcon', styles.buttonIcon)}
-                </Button>
-              </div>
-              <div className="flex justify-start items-center mt-2 mx-4 mb-4 w-9/12">
-                <StatusChip
-                  backgroundColour="alertMain"
-                  borderColour="alertMain"
-                  text={'N/A'}
-                  textColour={'white'}
-                  className={'mr-2'}
-                />
-                <Typography
-                  type={'body'}
-                  weight={'bold'}
-                  text={'attendance in September 2022'}
-                  color={'textMid'}
-                />
-              </div>
-            </div>
-          </div>
-        </Card>
+                  <div>
+                    <div className="flex flex-col mt-2 mr-2">
+                      <div className="flex items-center justify-between w-11/12 ml-4">
+                        <div className="flex items-center w-full">
+                          <Typography
+                            type={'h2'}
+                            text={`${learnersByClass?.length}`}
+                            color={'textDark'}
+                            className="mt-2"
+                          />
+                          <Typography
+                            type={'body'}
+                            text={'children in class'}
+                            color={'textDark'}
+                            className="mt-2 ml-4 mr-4"
+                          />
+                        </div>
+                        <Button
+                          size="small"
+                          shape="normal"
+                          color="primary"
+                          type="filled"
+                          onClick={() =>
+                            history.push(
+                              ROUTES.PRINCIPAL.PRACTITIONER_CHILD_LIST,
+                              {
+                                practitionerId,
+                              }
+                            )
+                          }
+                          className="rounded-xl mt-2"
+                        >
+                          <Typography type="help" color="white" text="View" />
+                          {renderIcon('EyeIcon', styles.buttonIcon)}
+                        </Button>
+                      </div>
+                      <div className="flex justify-start items-center mt-2 mx-4 mb-4 w-9/12">
+                        <StatusChip
+                          backgroundColour="alertMain"
+                          borderColour="alertMain"
+                          text={'N/A'}
+                          textColour={'white'}
+                          className={'mr-2'}
+                        />
+                        <Typography
+                          type={'body'}
+                          weight={'bold'}
+                          text={'attendance in September 2022'}
+                          color={'textMid'}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              );
+            })
+          : null}
         <Card className={styles.absentCard}>
           <Typography
             type={'h1'}

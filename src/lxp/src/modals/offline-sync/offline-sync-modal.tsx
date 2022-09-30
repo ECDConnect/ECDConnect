@@ -11,6 +11,8 @@ import { OfflineSyncExecuting } from './offline-sync-executing';
 import { OfflineSyncInformation } from './offline-sync-information';
 import OfflineSyncSuccess from './offline-sync-success';
 import ROUTES from '@routes/routes';
+import { useSelector } from 'react-redux';
+import { practitionerSelectors } from '@/store/practitioner';
 
 export type OfflineSyncModalProps = {
   onSubmit: () => void;
@@ -34,13 +36,18 @@ const OfflineSyncModal: React.FC<OfflineSyncModalProps> = ({
   const [unableToSync, setUnableToSync] = useState(false);
   const { resetAppStore, initStoreSetup } = useStoreSetup();
   const history = useHistory();
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
   const { status, error, currentAction, currentStep, stepTotal } =
     useAppSelector((state) => state.sync);
 
   const handleSync = () => {
-    dispatch(syncThunkActions.syncOfflineData({}));
-    // TODO: is it okay that we set this even if the sync isn't successful yet? BTW we already do this inside initStoreSetup()
+    if (practitioner?.isPrincipal === true) {
+      dispatch(syncThunkActions.syncOfflineData({}));
+      // TODO: is it okay that we set this even if the sync isn't successful yet? BTW we already do this inside initStoreSetup()
+    } else {
+      dispatch(syncThunkActions.syncOfflineDataForPractitioner({}));
+    }
     dispatch(settingActions.setLastDataSync());
   };
 
