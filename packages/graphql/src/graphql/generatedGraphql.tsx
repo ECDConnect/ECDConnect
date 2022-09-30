@@ -1957,7 +1957,6 @@ export type Mutation = {
   createNoteType?: Maybe<NoteType>;
   createPermission?: Maybe<Permission>;
   createPractitioner?: Maybe<Practitioner>;
-  createPractitionerOwner?: Maybe<PractitionerOwner>;
   createPrincipal?: Maybe<Principal>;
   createProgramme?: Maybe<Programme>;
   createProgrammeAttendanceReason?: Maybe<ProgrammeAttendanceReason>;
@@ -2021,7 +2020,6 @@ export type Mutation = {
   deletePractitioner?: Maybe<Scalars['Boolean']>;
   deletePractitionerForCoach?: Maybe<Practitioner>;
   deletePractitionerFromPrincipal?: Maybe<Practitioner>;
-  deletePractitionerOwner?: Maybe<Scalars['Boolean']>;
   deletePrincipal?: Maybe<Scalars['Boolean']>;
   deleteProgramme?: Maybe<Scalars['Boolean']>;
   deleteProgrammeAttendanceReason?: Maybe<Scalars['Boolean']>;
@@ -2103,7 +2101,6 @@ export type Mutation = {
   updatePractitionerContactInfo?: Maybe<ApplicationUser>;
   updatePractitionerIsFundaAppAdmin: Scalars['Boolean'];
   updatePractitionerIsTrainee: Scalars['Boolean'];
-  updatePractitionerOwner?: Maybe<PractitionerOwner>;
   updatePractitionerRegistered: Scalars['Boolean'];
   updatePractitionerShareInfo: Scalars['Boolean'];
   updatePractitionerToTeachClassroom?: Maybe<ClassroomGroup>;
@@ -2338,10 +2335,6 @@ export type MutationCreatePermissionArgs = {
 
 export type MutationCreatePractitionerArgs = {
   input?: InputMaybe<PractitionerInput>;
-};
-
-export type MutationCreatePractitionerOwnerArgs = {
-  input?: InputMaybe<PractitionerOwnerInput>;
 };
 
 export type MutationCreatePrincipalArgs = {
@@ -2625,10 +2618,6 @@ export type MutationDeletePractitionerForCoachArgs = {
 export type MutationDeletePractitionerFromPrincipalArgs = {
   principalId?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationDeletePractitionerOwnerArgs = {
-  id?: InputMaybe<Scalars['UUID']>;
 };
 
 export type MutationDeletePrincipalArgs = {
@@ -3030,11 +3019,6 @@ export type MutationUpdatePractitionerIsFundaAppAdminArgs = {
 
 export type MutationUpdatePractitionerIsTraineeArgs = {
   practitionerId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationUpdatePractitionerOwnerArgs = {
-  id?: InputMaybe<Scalars['UUID']>;
-  input?: InputMaybe<PractitionerOwnerInput>;
 };
 
 export type MutationUpdatePractitionerRegisteredArgs = {
@@ -3445,12 +3429,16 @@ export type Practitioner = {
   coach?: Maybe<Coach>;
   coachHierarchy?: Maybe<Scalars['UUID']>;
   consentForPhoto?: Maybe<Scalars['Boolean']>;
+  dateAccepted?: Maybe<Scalars['DateTime']>;
+  dateLinked?: Maybe<Scalars['DateTime']>;
+  dateToBeRemoved?: Maybe<Scalars['DateTime']>;
   documents?: Maybe<Array<Maybe<Document>>>;
   filterDocumentsByType?: Maybe<Array<Maybe<Document>>>;
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
   isFundaAppAdmin?: Maybe<Scalars['Boolean']>;
+  isLeaving?: Maybe<Scalars['Boolean']>;
   isPrincipal?: Maybe<Scalars['Boolean']>;
   isRegistered?: Maybe<Scalars['Boolean']>;
   isTrainee?: Maybe<Scalars['Boolean']>;
@@ -3490,11 +3478,15 @@ export type PractitionerFilterInput = {
   coach?: InputMaybe<CoachFilterInput>;
   coachHierarchy?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   consentForPhoto?: InputMaybe<BooleanOperationFilterInput>;
+  dateAccepted?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
+  dateLinked?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
+  dateToBeRemoved?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   documents?: InputMaybe<ListFilterInputTypeOfDocumentFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
   isFundaAppAdmin?: InputMaybe<BooleanOperationFilterInput>;
+  isLeaving?: InputMaybe<BooleanOperationFilterInput>;
   isPrincipal?: InputMaybe<BooleanOperationFilterInput>;
   isRegistered?: InputMaybe<BooleanOperationFilterInput>;
   isTrainee?: InputMaybe<BooleanOperationFilterInput>;
@@ -3521,10 +3513,14 @@ export type PractitionerInput = {
   Coach?: InputMaybe<CoachInput>;
   CoachHierarchy?: InputMaybe<Scalars['UUID']>;
   ConsentForPhoto?: InputMaybe<Scalars['Boolean']>;
+  DateAccepted?: InputMaybe<Scalars['DateTime']>;
+  DateLinked?: InputMaybe<Scalars['DateTime']>;
+  DateToBeRemoved?: InputMaybe<Scalars['DateTime']>;
   Documents?: InputMaybe<Array<InputMaybe<DocumentInput>>>;
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
   IsFundaAppAdmin?: InputMaybe<Scalars['Boolean']>;
+  IsLeaving?: InputMaybe<Scalars['Boolean']>;
   IsPrincipal?: InputMaybe<Scalars['Boolean']>;
   IsRegistered?: InputMaybe<Scalars['Boolean']>;
   IsTrainee?: InputMaybe<Scalars['Boolean']>;
@@ -3553,52 +3549,6 @@ export type PractitionerMetricReport = {
   statusData?: Maybe<Array<Maybe<MetricReportStatItem>>>;
 };
 
-export type PractitionerOwner = {
-  __typename?: 'PractitionerOwner';
-  dateAccepted?: Maybe<Scalars['DateTime']>;
-  dateLinked?: Maybe<Scalars['DateTime']>;
-  dateToBeRemoved?: Maybe<Scalars['DateTime']>;
-  id: Scalars['UUID'];
-  insertedDate: Scalars['DateTime'];
-  isActive: Scalars['Boolean'];
-  practitionerId?: Maybe<Scalars['UUID']>;
-  principalOwnerId?: Maybe<Scalars['UUID']>;
-  updatedBy?: Maybe<Scalars['String']>;
-  updatedDate: Scalars['DateTime'];
-  user?: Maybe<ApplicationUser>;
-  userId?: Maybe<Scalars['String']>;
-};
-
-export type PractitionerOwnerFilterInput = {
-  and?: InputMaybe<Array<PractitionerOwnerFilterInput>>;
-  dateAccepted?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
-  dateLinked?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
-  dateToBeRemoved?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
-  id?: InputMaybe<ComparableGuidOperationFilterInput>;
-  insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
-  isActive?: InputMaybe<BooleanOperationFilterInput>;
-  or?: InputMaybe<Array<PractitionerOwnerFilterInput>>;
-  practitionerId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
-  principalOwnerId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
-  updatedBy?: InputMaybe<StringOperationFilterInput>;
-  updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
-  user?: InputMaybe<ApplicationUserFilterInput>;
-  userId?: InputMaybe<StringOperationFilterInput>;
-};
-
-export type PractitionerOwnerInput = {
-  DateAccepted?: InputMaybe<Scalars['DateTime']>;
-  DateLinked?: InputMaybe<Scalars['DateTime']>;
-  DateToBeRemoved?: InputMaybe<Scalars['DateTime']>;
-  Id?: InputMaybe<Scalars['UUID']>;
-  IsActive: Scalars['Boolean'];
-  PractitionerId?: InputMaybe<Scalars['UUID']>;
-  PrincipalOwnerId?: InputMaybe<Scalars['UUID']>;
-  UpdatedBy?: InputMaybe<Scalars['String']>;
-  User?: InputMaybe<ApplicationUserInput>;
-  UserId?: InputMaybe<Scalars['String']>;
-};
-
 export type PractitionerUserAndNote = {
   __typename?: 'PractitionerUserAndNote';
   appUser?: Maybe<ApplicationUser>;
@@ -3611,12 +3561,16 @@ export type Principal = {
   coach?: Maybe<Coach>;
   coachHierarchy?: Maybe<Scalars['UUID']>;
   consentForPhoto?: Maybe<Scalars['Boolean']>;
+  dateAccepted?: Maybe<Scalars['DateTime']>;
+  dateLinked?: Maybe<Scalars['DateTime']>;
+  dateToBeRemoved?: Maybe<Scalars['DateTime']>;
   documents?: Maybe<Array<Maybe<Document>>>;
   filterDocumentsByType?: Maybe<Array<Maybe<Document>>>;
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
   isFundaAppAdmin?: Maybe<Scalars['Boolean']>;
+  isLeaving?: Maybe<Scalars['Boolean']>;
   isPrincipal?: Maybe<Scalars['Boolean']>;
   isRegistered?: Maybe<Scalars['Boolean']>;
   isTrainee?: Maybe<Scalars['Boolean']>;
@@ -3654,11 +3608,15 @@ export type PrincipalFilterInput = {
   coach?: InputMaybe<CoachFilterInput>;
   coachHierarchy?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   consentForPhoto?: InputMaybe<BooleanOperationFilterInput>;
+  dateAccepted?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
+  dateLinked?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
+  dateToBeRemoved?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   documents?: InputMaybe<ListFilterInputTypeOfDocumentFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
   isFundaAppAdmin?: InputMaybe<BooleanOperationFilterInput>;
+  isLeaving?: InputMaybe<BooleanOperationFilterInput>;
   isPrincipal?: InputMaybe<BooleanOperationFilterInput>;
   isRegistered?: InputMaybe<BooleanOperationFilterInput>;
   isTrainee?: InputMaybe<BooleanOperationFilterInput>;
@@ -3685,10 +3643,14 @@ export type PrincipalInput = {
   Coach?: InputMaybe<CoachInput>;
   CoachHierarchy?: InputMaybe<Scalars['UUID']>;
   ConsentForPhoto?: InputMaybe<Scalars['Boolean']>;
+  DateAccepted?: InputMaybe<Scalars['DateTime']>;
+  DateLinked?: InputMaybe<Scalars['DateTime']>;
+  DateToBeRemoved?: InputMaybe<Scalars['DateTime']>;
   Documents?: InputMaybe<Array<InputMaybe<DocumentInput>>>;
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
   IsFundaAppAdmin?: InputMaybe<Scalars['Boolean']>;
+  IsLeaving?: InputMaybe<Scalars['Boolean']>;
   IsPrincipal?: InputMaybe<Scalars['Boolean']>;
   IsRegistered?: InputMaybe<Scalars['Boolean']>;
   IsTrainee?: InputMaybe<Scalars['Boolean']>;
@@ -4029,7 +3991,6 @@ export type Query = {
   GetAllNoteType?: Maybe<Array<Maybe<NoteType>>>;
   GetAllPermission?: Maybe<Array<Maybe<Permission>>>;
   GetAllPractitioner?: Maybe<Array<Maybe<Practitioner>>>;
-  GetAllPractitionerOwner?: Maybe<Array<Maybe<PractitionerOwner>>>;
   GetAllPrincipal?: Maybe<Array<Maybe<Principal>>>;
   GetAllProgramme?: Maybe<Array<Maybe<Programme>>>;
   GetAllProgrammeAttendanceReason?: Maybe<
@@ -4088,7 +4049,6 @@ export type Query = {
   GetNoteTypeById?: Maybe<NoteType>;
   GetPermissionById?: Maybe<Permission>;
   GetPractitionerById?: Maybe<Practitioner>;
-  GetPractitionerOwnerById?: Maybe<PractitionerOwner>;
   GetPrincipalById?: Maybe<Principal>;
   GetProgrammeAttendanceReasonById?: Maybe<ProgrammeAttendanceReason>;
   GetProgrammeById?: Maybe<Programme>;
@@ -4326,10 +4286,6 @@ export type QueryGetAllPermissionArgs = {
 
 export type QueryGetAllPractitionerArgs = {
   where?: InputMaybe<PractitionerFilterInput>;
-};
-
-export type QueryGetAllPractitionerOwnerArgs = {
-  where?: InputMaybe<PractitionerOwnerFilterInput>;
 };
 
 export type QueryGetAllPrincipalArgs = {
@@ -4596,11 +4552,6 @@ export type QueryGetPermissionByIdArgs = {
 export type QueryGetPractitionerByIdArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   where?: InputMaybe<PractitionerFilterInput>;
-};
-
-export type QueryGetPractitionerOwnerByIdArgs = {
-  id?: InputMaybe<Scalars['UUID']>;
-  where?: InputMaybe<PractitionerOwnerFilterInput>;
 };
 
 export type QueryGetPrincipalByIdArgs = {
