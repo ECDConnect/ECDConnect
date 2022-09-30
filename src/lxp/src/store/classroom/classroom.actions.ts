@@ -77,12 +77,9 @@ export const getClassroomDetailsForPractitioner = createAsyncThunk<
     } = getState();
 
     if (!classroomsCache) {
-      console.log('classroomCache');
       try {
         let classrooms: any | undefined;
-        console.log('tryyyyyyyyyy');
         if (userAuth?.auth_token) {
-          console.log('authhhhhhhhhhh');
           classrooms = await new PractitionerService(
             userAuth?.auth_token
           ).getClassroomDetailsForPractitioner(id);
@@ -93,13 +90,11 @@ export const getClassroomDetailsForPractitioner = createAsyncThunk<
         if (!classrooms) {
           return rejectWithValue('Error getting Classrooms');
         }
-        console.log({ classrooms });
         return classrooms;
       } catch (err) {
         return rejectWithValue(err);
       }
     } else {
-      console.log({ classroomsCache });
       return classroomsCache;
     }
   }

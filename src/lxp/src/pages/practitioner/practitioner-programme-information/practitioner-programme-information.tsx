@@ -150,7 +150,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
     setClassImageBaseString();
     displayProfilePicturePrompt();
   };
-  console.log({ classroomForPractitionerAnyType });
+
   const getStackedListItems = () => {
     const stackedActionList: ActionListDataItem[] = [
       {

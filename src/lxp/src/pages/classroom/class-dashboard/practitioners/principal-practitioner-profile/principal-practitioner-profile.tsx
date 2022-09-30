@@ -208,7 +208,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
               const learnersByClass = learners?.filter(
                 (learner) => learner.classroomGroupId === item?.id
               );
-              console.log({ learnersByClass });
+
               return (
                 <Card className={styles.absentCard}>
                   <Typography
