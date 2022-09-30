@@ -12,7 +12,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public string PhoneNumber { get; set; }
         public string IDNumber { get; set; }
         public string ProgrammeTypeDesc { get; set; }
-        public string PrammeTypeId { get; set; }
+        public string ProgrammeTypeId { get; set; }
         public string SiteArea { get; set; }
         public string SiteName { get; set; }
         public string ClassName { get; set; }
@@ -21,6 +21,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public string FranchisorhName { get; set; }
         public string CoachNumber { get; set; }
         public string SiteIndicator { get; set; }
+        public string Password { get; set; }
+        public string SecurityStamp { get; set; }
+        public string PasswordConcurrency { get; set; }
         public Guid? ParentUserId { get; set; }
         public bool MatchWithSite { get; set; }
         public DateTime Dob { get; set; }
