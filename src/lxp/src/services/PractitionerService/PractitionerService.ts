@@ -176,6 +176,10 @@ class PractitionerService {
             isRegistered
             shareInfo
             signingSignature
+            dateLinked
+            dateAccepted
+            dateToBeRemoved
+            isLeaving
             user {
               idNumber
               fullName

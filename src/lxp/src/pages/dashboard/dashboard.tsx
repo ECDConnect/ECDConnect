@@ -21,7 +21,11 @@ import { OfflineSyncModal } from '../../modals';
 import OfflineSyncTimeExceeded from '../../modals/offline-sync/offline-sync-time-exceeded';
 import { useAppDispatch } from '@store';
 import { classroomsForCoachThunkActions } from '../../store/classroomForCoach';
-import { classroomsSelectors, classroomsThunkActions } from '@store/classroom';
+import {
+  classroomsActions,
+  classroomsSelectors,
+  classroomsThunkActions,
+} from '@store/classroom';
 import { notificationsSelectors } from '@store/notifications';
 import { settingSelectors } from '@store/settings';
 import { userSelectors } from '@store/user';
@@ -133,6 +137,18 @@ export const Dashboard: React.FC = () => {
       ).unwrap())();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (practitioner?.userId && !classroom) {
+      (async () =>
+        await appDispatch(
+          classroomsThunkActions.getClassroomDetailsForPractitioner({
+            id: practitioner?.userId!,
+          })
+        ).unwrap())();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }
+  }, [practitioner?.userId]);
 
   // useEffect(() => {
   //   (async () =>

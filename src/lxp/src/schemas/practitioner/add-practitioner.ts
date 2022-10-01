@@ -28,7 +28,7 @@ export const addPractitionerSchema = Yup.object().shape({
   idNumber: Yup.string().when('preferId', {
     is: true,
     then: Yup.string()
-      .required('Id number is required')
+      .required('ID number is required')
       .matches(SA_ID_REGEX, 'Please enter a valid ID number'),
   }),
   passport: Yup.string().when('preferId', {

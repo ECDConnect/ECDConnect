@@ -19,7 +19,7 @@ export const loginSchema = Yup.object().shape({
   idField: Yup.string().when('preferId', {
     is: true,
     then: Yup.string()
-      .required('Id number is required')
+      .required('ID number is required')
       .matches(SA_ID_REGEX, 'Please enter a valid ID number'),
   }),
   passportField: Yup.string().when('preferId', {

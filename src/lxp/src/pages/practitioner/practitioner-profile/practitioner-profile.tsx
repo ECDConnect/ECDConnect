@@ -29,6 +29,7 @@ export const PractitionerProfile: React.FC = () => {
   const user = useSelector(userSelectors.getUser);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const classroom = useSelector(classroomsSelectors.getClassroom);
+  const classroomForPractitionerAnyType: any = classroom;
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const lastDataSyncDate = useSelector(settingSelectors.getLastDataSync);
   const appDispatch = useAppDispatch();
@@ -70,7 +71,10 @@ export const PractitionerProfile: React.FC = () => {
       {
         title: 'Programme information',
         titleStyle,
-        subTitle: classroom?.name,
+        subTitle:
+          classroomForPractitionerAnyType && practitioner?.isPrincipal !== true
+            ? classroomForPractitionerAnyType?.classroomName
+            : classroom?.name || 'N/A',
         subTitleStyle,
         menuIconUrl: classroomImage?.file,
         menuIcon: 'HeartIcon',

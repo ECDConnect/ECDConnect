@@ -84,10 +84,6 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
       setClassroomsForPractitionerAnyType([classroomsForPractitioner]);
     }
   }, [classroomsForPractitioner]);
-  console.log(
-    practitioner?.isPrincipal !== true &&
-      classroomsForPractitionerAnyType.length > 0
-  );
 
   const {
     getValues: getChildInformationFormValues,
