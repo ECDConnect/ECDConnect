@@ -1,5 +1,9 @@
 import { Config, UserConsentDto, UserDto } from '@ecdlink/core';
-import { UserConsentInput, UserModelInput } from '@ecdlink/graphql';
+import {
+  UserByToken,
+  UserConsentInput,
+  UserModelInput,
+} from '@ecdlink/graphql';
 import { api } from '../axios.helper';
 class UserService {
   _accessToken: string;
@@ -195,7 +199,7 @@ class UserService {
     return response.data.data.addUser;
   }
 
-  async userByToken(token: string): Promise<boolean> {
+  async userByToken(token: string): Promise<UserByToken> {
     const apiInstance = await api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
@@ -217,7 +221,7 @@ class UserService {
       throw new Error('Cannot retrieve usre by token');
     }
 
-    return true;
+    return response.data;
   }
 }
 

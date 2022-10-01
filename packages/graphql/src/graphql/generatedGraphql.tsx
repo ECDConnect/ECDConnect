@@ -950,6 +950,21 @@ export type ComparableDateTimeOperationFilterInput = {
   nlte?: InputMaybe<Scalars['DateTime']>;
 };
 
+export type ComparableDecimalOperationFilterInput = {
+  eq?: InputMaybe<Scalars['Decimal']>;
+  gt?: InputMaybe<Scalars['Decimal']>;
+  gte?: InputMaybe<Scalars['Decimal']>;
+  in?: InputMaybe<Array<Scalars['Decimal']>>;
+  lt?: InputMaybe<Scalars['Decimal']>;
+  lte?: InputMaybe<Scalars['Decimal']>;
+  neq?: InputMaybe<Scalars['Decimal']>;
+  ngt?: InputMaybe<Scalars['Decimal']>;
+  ngte?: InputMaybe<Scalars['Decimal']>;
+  nin?: InputMaybe<Array<Scalars['Decimal']>>;
+  nlt?: InputMaybe<Scalars['Decimal']>;
+  nlte?: InputMaybe<Scalars['Decimal']>;
+};
+
 export type ComparableGuidOperationFilterInput = {
   eq?: InputMaybe<Scalars['UUID']>;
   gt?: InputMaybe<Scalars['UUID']>;
@@ -2100,7 +2115,7 @@ export type Mutation = {
   updatePractitioner?: Maybe<Practitioner>;
   updatePractitionerContactInfo?: Maybe<ApplicationUser>;
   updatePractitionerIsFundaAppAdmin: Scalars['Boolean'];
-  updatePractitionerIsTrainee: Scalars['Boolean'];
+  updatePractitionerProgress: Scalars['Decimal'];
   updatePractitionerRegistered: Scalars['Boolean'];
   updatePractitionerShareInfo: Scalars['Boolean'];
   updatePractitionerToTeachClassroom?: Maybe<ClassroomGroup>;
@@ -3017,8 +3032,9 @@ export type MutationUpdatePractitionerIsFundaAppAdminArgs = {
   practitionerId?: InputMaybe<Scalars['String']>;
 };
 
-export type MutationUpdatePractitionerIsTraineeArgs = {
+export type MutationUpdatePractitionerProgressArgs = {
   practitionerId?: InputMaybe<Scalars['String']>;
+  progress: Scalars['Decimal'];
 };
 
 export type MutationUpdatePractitionerRegisteredArgs = {
@@ -3448,6 +3464,7 @@ export type Practitioner = {
   parentFees?: Maybe<Scalars['Decimal']>;
   principal?: Maybe<Practitioner>;
   principalHierarchy?: Maybe<Scalars['UUID']>;
+  progress: Scalars['Decimal'];
   shareInfo?: Maybe<Scalars['Boolean']>;
   signingSignature?: Maybe<Scalars['String']>;
   siteAddress?: Maybe<SiteAddress>;
@@ -3497,6 +3514,7 @@ export type PractitionerFilterInput = {
   parentFees?: InputMaybe<ComparableNullableOfDecimalOperationFilterInput>;
   principal?: InputMaybe<PractitionerFilterInput>;
   principalHierarchy?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
+  progress?: InputMaybe<ComparableDecimalOperationFilterInput>;
   shareInfo?: InputMaybe<BooleanOperationFilterInput>;
   signingSignature?: InputMaybe<StringOperationFilterInput>;
   siteAddress?: InputMaybe<SiteAddressFilterInput>;
@@ -3530,6 +3548,7 @@ export type PractitionerInput = {
   ParentFees?: InputMaybe<Scalars['Decimal']>;
   Principal?: InputMaybe<PractitionerInput>;
   PrincipalHierarchy?: InputMaybe<Scalars['UUID']>;
+  Progress: Scalars['Decimal'];
   ShareInfo?: InputMaybe<Scalars['Boolean']>;
   SigningSignature?: InputMaybe<Scalars['String']>;
   SiteAddress?: InputMaybe<SiteAddressInput>;
@@ -3580,6 +3599,7 @@ export type Principal = {
   parentFees?: Maybe<Scalars['Decimal']>;
   principal?: Maybe<Practitioner>;
   principalHierarchy?: Maybe<Scalars['UUID']>;
+  progress: Scalars['Decimal'];
   shareInfo?: Maybe<Scalars['Boolean']>;
   signingSignature?: Maybe<Scalars['String']>;
   siteAddress?: Maybe<SiteAddress>;
@@ -3627,6 +3647,7 @@ export type PrincipalFilterInput = {
   parentFees?: InputMaybe<ComparableNullableOfDecimalOperationFilterInput>;
   principal?: InputMaybe<PractitionerFilterInput>;
   principalHierarchy?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
+  progress?: InputMaybe<ComparableDecimalOperationFilterInput>;
   shareInfo?: InputMaybe<BooleanOperationFilterInput>;
   signingSignature?: InputMaybe<StringOperationFilterInput>;
   siteAddress?: InputMaybe<SiteAddressFilterInput>;
@@ -3660,6 +3681,7 @@ export type PrincipalInput = {
   ParentFees?: InputMaybe<Scalars['Decimal']>;
   Principal?: InputMaybe<PractitionerInput>;
   PrincipalHierarchy?: InputMaybe<Scalars['UUID']>;
+  Progress: Scalars['Decimal'];
   ShareInfo?: InputMaybe<Scalars['Boolean']>;
   SigningSignature?: InputMaybe<Scalars['String']>;
   SiteAddress?: InputMaybe<SiteAddressInput>;

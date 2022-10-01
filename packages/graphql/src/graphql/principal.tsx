@@ -42,6 +42,7 @@ export const GetAllPrincipal = gql`
       dateLinked
       dateToBeRemoved
       dateAccepted
+      progress
     }
   }
 `;
@@ -86,6 +87,7 @@ export const allPrincipal = gql`
       dateLinked
       dateToBeRemoved
       dateAccepted
+      progress
     }
   }
 `;
@@ -128,6 +130,7 @@ export const GetPrincipalById = gql`
       dateLinked
       dateToBeRemoved
       dateAccepted
+      progress
     }
   }
 `;
@@ -167,7 +170,7 @@ export const UpdatePrincipalInvitation = gql`
     ) {
       leavingDate
       acceptedDate
-      linkeddate
+      linkedDate
       leaving
     }
   }

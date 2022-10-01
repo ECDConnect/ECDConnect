@@ -45,6 +45,7 @@ export const GetAllPractitioner = gql`
       dateLinked
       dateToBeRemoved
       dateAccepted
+      progress
     }
   }
 `;
@@ -89,6 +90,7 @@ export const GetPractitionerById = gql`
       dateLinked
       dateToBeRemoved
       dateAccepted
+      progress
     }
   }
 `;
