@@ -78,6 +78,11 @@ class PractitionerService {
             startDate
             monthSinceFranchisee
             shareInfo
+            dateLinked
+            dateAccepted
+            dateToBeRemoved
+            isLeaving
+            progress
           }
         }
       `,
@@ -134,6 +139,11 @@ class PractitionerService {
             startDate
             monthSinceFranchisee
             shareInfo
+            dateLinked
+            dateAccepted
+            dateToBeRemoved
+            isLeaving
+            progress
           }
         }
       `,
@@ -165,6 +175,7 @@ class PractitionerService {
             coachHierarchy
             isRegistered
             shareInfo
+            signingSignature
             user {
               idNumber
               fullName
@@ -179,6 +190,11 @@ class PractitionerService {
                 name
               }
             }
+            dateLinked
+            dateAccepted
+            dateToBeRemoved
+            isLeaving
+            progress
           }
         }
       `,
@@ -205,7 +221,16 @@ class PractitionerService {
               userName
               practitionerObjectData {
                 isRegistered
+                isPrincipal
                 id
+                shareInfo
+                principalHierarchy
+                dateLinked
+                dateAccepted
+                dateToBeRemoved
+                isLeaving
+                progress
+
               }
             }
             note
@@ -435,7 +460,7 @@ class PractitionerService {
         ) {
           leavingDate
           acceptedDate
-          linkeddate
+          linkedDate
           leaving
         }
       }  

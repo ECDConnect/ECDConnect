@@ -167,7 +167,7 @@ export const UpdatePrincipalInvitation = gql`
     ) {
       leavingDate
       acceptedDate
-      linkeddate
+      linkedDate
       leaving
     }
   }
