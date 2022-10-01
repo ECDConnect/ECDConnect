@@ -99,14 +99,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return default(ApplicationUser);
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public UserByToken GetUserByToken([Service] IServiceProvider serviceProvider, [Service] UserManager<ApplicationUser> userManager, [Service] RoleManager<IdentityRole> roleManager, [Service] IHttpContextAccessor contextAccessor, [Service] IDbContextFactory<AuthenticationDbContext> dbFactory, [Service] IGenericRepositoryFactory repoFactory, string token)
+        public UserByToken GetUserByToken([Service] IServiceProvider serviceProvider, [Service] UserManager<ApplicationUser> userManager, [Service] RoleManager<IdentityRole> roleManager, [Service] IHttpContextAccessor contextAccessor, [Service] IGenericRepositoryFactory repoFactory, string token)
         {
             UserByToken tokenuser = new UserByToken();
             if (token != null)
             {
-                var uId = contextAccessor.HttpContext.GetUser().Id;
-                var shortUrlRepo = repoFactory.CreateGenericRepository<ShortenUrlEntity>(userContext: uId);
+                var shortUrlRepo = repoFactory.CreateGenericRepository<ShortenUrlEntity>(userContext: null);
 
                 var tokenusr = shortUrlRepo.GetAll().Where(x => x.URL.Contains(token)).FirstOrDefault();
                 if (tokenusr != null)

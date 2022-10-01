@@ -28,6 +28,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security;
+using System.Text.RegularExpressions;
 using static NPOI.HSSF.Util.HSSFColor;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
@@ -194,8 +195,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             var workbook = WorkbookFactory.Create(fileStream);
 
-            var sheet1 = workbook.GetSheetAt(0);
-
             var languages = localeService.GetAvailableLocale().ToList();
 
             List<ImportAllStaffItem> practitionerImportList = new List<ImportAllStaffItem>();
@@ -216,14 +215,19 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var uId = httpContextAccessor.HttpContext.GetUser().Id;
 
             var programmeTypeRepo = repoFactory.CreateGenericRepository<ProgrammeType>(userContext: uId);
-            var coachRepo = repoFactory.CreateGenericRepository<Coach>(userContext: uId);
+
+            var coachRepo = repoFactory.CreateRepository<Coach>(userContext: uId);
             var franchisorRepo = repoFactory.CreateGenericRepository<Franchisor>(userContext: uId);
             var addressRepo = repoFactory.CreateGenericRepository<SiteAddress>(userContext: uId);
             var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
 
-            //SendInvitationMutationExtension invite = new SendInvitationMutationExtension();
+            var classroomRepo = repoFactory.CreateRepository<Classroom>(userContext: uId);
+            var classroomGroupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
+            var classProgramme = repoFactory.CreateRepository<ClassProgramme>(userContext: uId);
 
-            for (var row = 1; row <= sheet1.LastRowNum; row++)
+            //SendInvitationMutationExtension invite = new SendInvitationMutationExtension();
+            var sheet1 = workbook.GetSheetAt(0);
+            for (var row = 0; row <= sheet1.LastRowNum; row++)
             {
                 var currentRow = sheet1.GetRow(row);
 
@@ -237,8 +241,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     //var programme_indicator = ExcelHelper.GetCellValue(currentRow.GetCell(2));
                     //var prograammeArr = programme_indicator.Split("_");
 
-                    var fullname = ExcelHelper.GetCellValue(currentRow.GetCell(3));
-                    var nameArr = fullname.Split(" ");
+                    var fullname = ExcelHelper.GetCellValue(currentRow.GetCell(3)).Trim();
+                    fullname = Regex.Replace(fullname, @"\s+", " ");
+                    var nameArr = fullname.Split(' ');
                     var firstname = (nameArr.Count()>2 ? nameArr[0] + " " + nameArr[1] : nameArr[0]);
                     var surname = (nameArr.Count() > 2 ? nameArr[2]: nameArr[1]);
 
@@ -252,10 +257,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     var siteName = ExcelHelper.GetCellValue(currentRow.GetCell(9));
                     var className = ExcelHelper.GetCellValue(currentRow.GetCell(10));
 
-                    var coachName = ExcelHelper.GetCellValue(currentRow.GetCell(11));
+                    var coachName = ExcelHelper.GetCellValue(currentRow.GetCell(11)).Trim();
                     var coachID = ExcelHelper.GetCellValue(currentRow.GetCell(12));
                     var franchisorhName = ExcelHelper.GetCellValue(currentRow.GetCell(13));
                     var coachNumber = ExcelHelper.GetCellValue(currentRow.GetCell(14));
+
+                    var parentUserIdNumber = ExcelHelper.GetCellValue(currentRow.GetCell(15));
+
+
 
                     char[] digits = idNumber.ToCharArray();//new String(idNumber.TakeWhile(Char.IsDigit).ToArray());
                     var dob = new DateTime(Int32.Parse("19" + digits[0] + digits[1]), Int32.Parse(digits[2].ToString() + digits[3].ToString()), Int32.Parse(digits[4].ToString() + digits[5].ToString()));
@@ -292,13 +301,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     item.FranchisorhName = franchisorhName;
                     item.CoachNumber = coachNumber;
 
+                    item.ParentUserIdNumber = (parentUserIdNumber!="0"?parentUserIdNumber:null);
+
                     item.Dob = dob;//dobDateInt > 0 ? DateTime.FromOADate(dobDateInt) : DateTime.Now;
 
                     if (currentItem == null) practitionerImportList.Add(item);
                 }
             }
 
-            //first accumulate list of coach and create coach users
+            //first accumulate list of COACH and create coach users
             if (practitionerImportList.Count > 0)
             {
                 //get franchisor overseeing everything
@@ -309,7 +320,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 {
                     string userId = Guid.NewGuid().ToString();
 
-                    var nameArr = coach.CoachName.Split(" ");
+                    var fullname = Regex.Replace(coach.CoachName, @"\s+", " ");
+                    var nameArr = fullname.Split(' ');
+
                     var firstname = (nameArr.Count() > 2 ? nameArr[0] + " " + nameArr[1] : nameArr[0]);
                     var surname = (nameArr.Count() > 2 ? nameArr[2] : nameArr[1]);
                     char[] coachdigits = coach.CoachID.ToCharArray();//new String(idNumber.TakeWhile(Char.IsDigit).ToArray());
@@ -331,12 +344,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                             DateOfBirth = coachdob,
                             FirstName = firstname,
                             Surname = surname,
-                            FullName = coach.CoachName,//$"{practitioner.FirstName} {practitioner.Surname}",
+                            FullName = fullname,//$"{practitioner.FirstName} {practitioner.Surname}",
                             ContactPreference = "sms",
                             IsActive = true,
                             //PasswordHash = password,
                             //SecurityStamp = securityStamp,
-                            //ConcurrencyStamp = concurrencystamp                        
+                            //ConcurrencyStamp = concurrencystamp
+                            TenantId = tenantId,
                         };
                         var userCreatedResult = userManager.CreateAsync(newUser).Result;
                         var userRole = userManager.AddToRoleAsync(newUser, Roles.COACH).Result;
@@ -348,6 +362,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                             UserId = userId,
                             SiteAddressId = siteaddressid,
                             AreaOfOperation = "Office",
+                            FranchisorId = Guid.Parse(franchisorId),
                             //MaxChildren = practitioner.MaxChildren,
                             //ConsentForPhoto = practitioner.ConsentForPhoto,
                             //ParentFees = practitioner.ParentFees,
@@ -362,90 +377,118 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 }
             }
 
-
+            //create practitioners
             if (practitionerImportList.Count > 0)
             {
-                string parentUserId = null;
                 foreach (var practitioner in practitionerImportList)
                 {
-                    var coachUser = userManager.Users.Where(x => x.IdNumber == practitioner.CoachID).FirstOrDefault();
-                    //var principalUser = userManager.Users.Where(x => x.IdNumber == practitioner.CoachID).FirstOrDefault();
-                    string userId = Guid.NewGuid().ToString();
-                    var newUser = new ApplicationUser
-                    {
-                        Id = userId.ToString(),
-                        PhoneNumber = practitioner.PhoneNumber,
-                        UserName = practitioner?.IDNumber,
-                        IdNumber = practitioner?.IDNumber,
-                        IsSouthAfricanCitizen = true,
-                        VerifiedByHomeAffairs = true,
-                        DateOfBirth = practitioner.Dob,
-                        FirstName = practitioner.FirstName,
-                        Surname = practitioner.Surname,
-                        FullName = practitioner.FullName,//$"{practitioner.FirstName} {practitioner.Surname}",
-                        ContactPreference = "sms",
-                        IsActive = true,
-                        //PasswordHash = password,
-                        //SecurityStamp = securityStamp,
-                        //ConcurrencyStamp = concurrencystamp                        
-                    };
-                    var userCreatedResult = userManager.CreateAsync(newUser).Result;
+                    var existingUser = userManager.Users.Where(x => x.IdNumber == practitioner.IDNumber).FirstOrDefault();
 
-                    if (practitioner.SiteIndicator != "Principal")
+                    if (existingUser == null)
                     {
-                        var userRole = userManager.AddToRoleAsync(newUser, Roles.PRACTITIONER).Result;
-                        parentUserId = null;//reset parentUserId to null because we dont need this user to match anymore
+                        var coachUser = userManager.Users.Where(x => x.IdNumber == practitioner.CoachID).FirstOrDefault();
+                        
+                        var parentUser = (practitioner.ParentUserIdNumber!=null?userManager.Users.Where(x => x.IdNumber == practitioner.ParentUserIdNumber).FirstOrDefault():null);
+                        //var principalUser = userManager.Users.Where(x => x.IdNumber == practitioner.CoachID).FirstOrDefault();
+                        string userId = Guid.NewGuid().ToString();
+                        var newUser = new ApplicationUser
+                        {
+                            Id = userId.ToString(),
+                            PhoneNumber = practitioner.PhoneNumber,
+                            UserName = practitioner?.IDNumber,
+                            IdNumber = practitioner?.IDNumber,
+                            IsSouthAfricanCitizen = true,
+                            VerifiedByHomeAffairs = true,
+                            DateOfBirth = practitioner.Dob,
+                            FirstName = practitioner.FirstName,
+                            Surname = practitioner.Surname,
+                            FullName = practitioner.FullName,//$"{practitioner.FirstName} {practitioner.Surname}",
+                            ContactPreference = "sms",
+                            IsActive = true,
+                            //PasswordHash = password,
+                            //SecurityStamp = securityStamp,
+                            //ConcurrencyStamp = concurrencystamp
+                            TenantId = tenantId
+                        };
+                        var userCreatedResult = userManager.CreateAsync(newUser).Result;
+
+                        var newPractitioner = new Practitioner
+                        {
+                            Id = Guid.NewGuid(),
+                            UserId = userId,
+                            CoachHierarchy = Guid.Parse(coachUser?.Id),
+                            //PrincipalHierarchy = (practitioner.ParentUserId!=null?Guid.Parse(practitioner.ParentUserId): null),
+                            //MaxChildren = practitioner.MaxChildren,
+                            //ConsentForPhoto = practitioner.ConsentForPhoto,
+                            //ParentFees = practitioner.ParentFees,
+                            //StartDate = practitioner.StartDate,
+                            IsActive = true,
+                            TenantId = tenantId
+                            
+                        };
+
+
+                        if (practitioner.SiteIndicator == "Franchisee" && parentUser != null)
+                        {
+                            newPractitioner.PrincipalHierarchy = Guid.Parse(parentUser.Id);
+                        }
+                        else if (practitioner.SiteIndicator == "FAA")
+                        {
+                            newPractitioner.IsFundaAppAdmin = true;
+                            newPractitioner.IsPrincipal = true;
+                        }
+                        else if (practitioner.SiteIndicator == "Principal")
+                        {
+                            newPractitioner.IsPrincipal = true;
+                            newPractitioner.IsFundaAppAdmin = true;
+                        }
+                        var addedPractitioner = practitionerRepo.Insert(newPractitioner);
+
+                        //sort roles
+                        if (practitioner.SiteIndicator != "Principal")
+                        {
+                            var userRole = userManager.AddToRoleAsync(newUser, Roles.PRACTITIONER).Result;
+                            //parentUserId = pare null;//reset parentUserId to null because we dont need this user to match anymore
+                        }
+                        else
+                        {
+                            //reset parentUserId
+                            //var userRole = userManager.AddToRoleAsync(newUser, Roles.PRINCIPAL).Result;
+                            var userRole = userManager.AddToRoleAsync(newUser, Roles.PRACTITIONER).Result;
+                            //parentUserId = userId;
+                        }
+
+
+                        //    //invite to application
+                        //    //invite.SendInviteToApplication(invitationManager, notificationManager, userManager, prac.UserId);
+
+
+
+                        //create classrooms and classroomgroups and programmes
+
                     }
-                    else
-                    {
-                        //reset parentUserId
-                        var userRole = userManager.AddToRoleAsync(newUser, Roles.PRINCIPAL).Result;
-                        parentUserId = userId;
-                    }
-
-                    var newPractitioner = new Practitioner
-                    {
-                        Id = Guid.NewGuid(),
-                        UserId = userId,
-                        CoachHierarchy = Guid.Parse(coachUser?.Id),
-                        //PrincipalHierarchy = (practitioner.ParentUserId!=null?Guid.Parse(practitioner.ParentUserId): null),
-                        //MaxChildren = practitioner.MaxChildren,
-                        //ConsentForPhoto = practitioner.ConsentForPhoto,
-                        //ParentFees = practitioner.ParentFees,
-                        //StartDate = practitioner.StartDate,
-                        IsActive = true
-                    };
-
-                    var addedPractitioner = practitionerRepo.Insert(newPractitioner);
-                    
-                    if (practitioner.SiteIndicator == "Franchisee" && parentUserId != null)
-                    {
-                        addedPractitioner.PrincipalHierarchy = Guid.Parse(parentUserId);
-                    } else if (practitioner.SiteIndicator == "FAA")
-                    {
-                        addedPractitioner.IsFundaAppAdmin = true;
-                    } else if (practitioner.SiteIndicator == "Principal")
-                    {
-                        addedPractitioner.IsPrincipal = true;
-                    }
-                    practitionerRepo.Update(addedPractitioner);
-                    //var userRole = userManager.AddToRoleAsync(newUser, Roles.PRACTITIONER).Result;
-
-                    //    //invite to application
-                    //    //invite.SendInviteToApplication(invitationManager, notificationManager, userManager, prac.UserId);
 
                 }
+
+
+
+
             }
+
+
+
 
             //now do sheet 2
             var sheet2 = workbook.GetSheetAt(1);
-            for (var row = 1; row <= sheet1.LastRowNum; row++)
+            for (var row = 1; row <= sheet2.LastRowNum; row++)
             {
-                var currentRow = sheet1.GetRow(row);
+                var currentRow = sheet2.GetRow(row);
 
                 if (currentRow != null)
                 {
-
+                    var var1 = ExcelHelper.GetCellValue(currentRow.GetCell(0));
+                    var var2 = ExcelHelper.GetCellValue(currentRow.GetCell(1));
+                    var var3 = ExcelHelper.GetCellValue(currentRow.GetCell(2));
 
                 }
             }
@@ -454,7 +497,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
 
 
-                    return true;
+            return true;
         }
 
         public bool UpdatePractitionerShareInfo([Service] IHttpContextAccessor contextAccessor,
@@ -518,25 +561,24 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return bReturn;
         }
 
-        public bool UpdatePractitionerIsTrainee([Service] IHttpContextAccessor contextAccessor,
+        public decimal UpdatePractitionerProgress([Service] IHttpContextAccessor contextAccessor,
             [Service] IGenericRepositoryFactory repoFactory,
-            string practitionerId)
+            string practitionerId, decimal progress)
 
         {
-            bool bReturn = false;
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            Practitioner practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId.Equals(practitionerId)).FirstOrDefault();
+            Practitioner practitioner = practitionerRepo.GetByUserId(practitionerId);
             {
                 if (practitioner != null)
                 {
-                    practitioner.IsTrainee = true;
+                    practitioner.Progress = progress;
                     var updateResult = practitionerRepo.Update(practitioner);
-                    return true;
+                    return practitioner.Progress;
                 }
             }
 
-            return bReturn;
+            return 0;
         }
 
     }

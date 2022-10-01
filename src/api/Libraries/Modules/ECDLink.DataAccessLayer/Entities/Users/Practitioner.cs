@@ -68,7 +68,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public DateTime? DateAccepted { get; set; }
         public DateTime? DateToBeRemoved { get; set; }
         public bool? IsLeaving { get; set; }
-
+        public decimal Progress { get; set; }
     }
 
     public interface PractitionerJoin<TKey>
