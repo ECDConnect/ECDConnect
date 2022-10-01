@@ -567,7 +567,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
-            var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+            var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
             Practitioner practitioner = practitionerRepo.GetByUserId(practitionerId);
             {
                 if (practitioner != null)
