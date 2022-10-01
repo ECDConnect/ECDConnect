@@ -439,7 +439,7 @@ class PractitionerService {
         ) {
           leavingDate
           acceptedDate
-          linkeddate
+          linkedDate
           leaving
         }
       }  
