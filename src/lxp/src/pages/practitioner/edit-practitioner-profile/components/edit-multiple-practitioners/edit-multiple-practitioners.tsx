@@ -180,6 +180,10 @@ export default function EditMultiplePractitioners({
     onSubmit();
   };
 
+  const callForHelp = () => {
+    window.open('tel:+27800014817');
+  };
+
   const renderPage = (page: SetupPractitionersPage) => {
     switch (page) {
       case SetupPractitionersPage.confirmPractitioners:
@@ -224,6 +228,7 @@ export default function EditMultiplePractitioners({
                           type={'filled'}
                           color={'primary'}
                           textColor={'white'}
+                          onClick={callForHelp}
                         />
                       ) : (
                         <></>

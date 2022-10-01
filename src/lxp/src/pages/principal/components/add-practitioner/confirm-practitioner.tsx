@@ -152,6 +152,10 @@ export default function ConfirmPractitioner({
     onNext(PractitionerSetupSteps.CONFIRM_CLASSES);
   };
 
+  const callForHelp = () => {
+    window.open('tel:+27800014817');
+  };
+
   const renderPage = (page: ConfirmPractitionersSteps) => {
     switch (page) {
       case ConfirmPractitionersSteps.CONFIRM_PRACTITIONERS:
@@ -196,6 +200,7 @@ export default function ConfirmPractitioner({
                           type={'filled'}
                           color={'primary'}
                           textColor={'white'}
+                          onClick={callForHelp}
                         />
                       ) : (
                         <></>
