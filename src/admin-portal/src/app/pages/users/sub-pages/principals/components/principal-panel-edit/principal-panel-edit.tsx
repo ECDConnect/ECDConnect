@@ -179,6 +179,7 @@ export default function PractitionerPanelEdit({
         practitionerForm.monthSinceFranchisee &&
         +practitionerForm.monthSinceFranchisee,
       IsActive: true,
+      Progress: 0,
     };
 
     await updatePractitioner({
