@@ -145,6 +145,7 @@ export default function HealthCareWorkerPanelEdit({
         practitionerForm.monthSinceFranchisee &&
         +practitionerForm.monthSinceFranchisee,
       IsActive: true,
+      Progress: 0,
     };
 
     await updatePractitioner({

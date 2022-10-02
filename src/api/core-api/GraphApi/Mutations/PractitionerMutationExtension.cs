@@ -1,4 +1,5 @@
 using DotLiquid;
+using DotLiquid.Tags;
 using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.Managers.Notifications;
 using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
@@ -7,8 +8,12 @@ using ECDLink.Core.Helpers;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Caregiver;
 using ECDLink.DataAccessLayer.Entities.Classroom;
+using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Entities.Workflow;
+using ECDLink.DataAccessLayer.Hierarchy.Entities;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
@@ -17,6 +22,7 @@ using ECDLink.Security.Managers;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Types;
+using IdentityServer4.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Azure.Documents;
@@ -24,6 +30,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OData.UriParser;
 using NPOI.SS.UserModel;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -199,7 +206,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             List<ImportAllStaffItem> practitionerImportList = new List<ImportAllStaffItem>();
 
-            List<ImportAllChildInfoItem> childImportListItem = new List<ImportAllChildInfoItem>();
+
             //var headerRow = sheet.GetRow(0);
 
             //set sharedinfo needed between rows
@@ -224,6 +231,20 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var classroomRepo = repoFactory.CreateRepository<Classroom>(userContext: uId);
             var classroomGroupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
             var classProgramme = repoFactory.CreateRepository<ClassProgramme>(userContext: uId);
+
+            var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
+            var caregiverRepo = repoFactory.CreateGenericRepository<Caregiver>(userContext: uId);
+
+            var staticLanguageRepo = repoFactory.CreateGenericRepository<Language>(userContext: uId);
+            var staticEducationRepo = repoFactory.CreateGenericRepository<Education>(userContext: uId);
+            var staticRelationRepo = repoFactory.CreateGenericRepository<Relation>(userContext: uId);
+            var staticGenderRepo = repoFactory.CreateGenericRepository<Gender>(userContext: uId);
+            var staticGrantRepo = repoFactory.CreateGenericRepository<Grant>(userContext: uId);
+            var staticConsentRepo = repoFactory.CreateGenericRepository<UserConsent>(userContext: uId);
+
+            var staticHierarchyRepo = repoFactory.CreateGenericRepository<UserHierarchyEntity>(userContext: uId);
+
+            var staticWorkflowRepo = repoFactory.CreateGenericRepository<WorkflowStatus>(userContext: uId);
 
             //SendInvitationMutationExtension invite = new SendInvitationMutationExtension();
             var sheet1 = workbook.GetSheetAt(0);
@@ -276,33 +297,25 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     //    languageEntity = languages.Where(x => x.Locale == "en-za").FirstOrDefault();
                     //}
                     var currentItem = practitionerImportList.Where(x => x.IDNumber == idNumber).FirstOrDefault();
-
                     var item = currentItem != null ? currentItem : new ImportAllStaffItem();
                     item.MatchWithSite = matchWithSite;
                     item.SiteIndicator = siteIndicator;
                     //item.ParentUserId = (parentUserId!=null?parentUserId: null);
-
                     item.FirstName = firstname;
                     item.Surname = surname;
                     item.FullName = fullname;
                     item.PhoneNumber = cellnumber;
                     item.IDNumber = idNumber;
-
                     item.ProgrammeTypeDesc = programmeTypeDesc;
                     item.ProgrammeTypeId = programmeType.Id.ToString();
-
                     item.SiteArea = siteArea;
                     item.SiteName = siteName;
                     item.ClassName = className;
-
                     item.CoachName = coachName;
                     item.CoachID = coachID;
-
                     item.FranchisorhName = franchisorhName;
                     item.CoachNumber = coachNumber;
-
                     item.ParentUserIdNumber = (parentUserIdNumber!="0"?parentUserIdNumber:null);
-
                     item.Dob = dob;//dobDateInt > 0 ? DateTime.FromOADate(dobDateInt) : DateTime.Now;
 
                     if (currentItem == null) practitionerImportList.Add(item);
@@ -448,56 +461,252 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         if (practitioner.SiteIndicator != "Principal")
                         {
                             var userRole = userManager.AddToRoleAsync(newUser, Roles.PRACTITIONER).Result;
-                            //parentUserId = pare null;//reset parentUserId to null because we dont need this user to match anymore
                         }
                         else
                         {
-                            //reset parentUserId
                             //var userRole = userManager.AddToRoleAsync(newUser, Roles.PRINCIPAL).Result;
                             var userRole = userManager.AddToRoleAsync(newUser, Roles.PRACTITIONER).Result;
-                            //parentUserId = userId;
                         }
-
-
                         //    //invite to application
                         //    //invite.SendInviteToApplication(invitationManager, notificationManager, userManager, prac.UserId);
 
-
-
                         //create classrooms and classroomgroups and programmes
 
+
                     }
-
                 }
-
-
-
-
             }
 
 
-
+            List<ImportAllChildInfoItem> childImportListItem = new List<ImportAllChildInfoItem>();
 
             //now do sheet 2
             var sheet2 = workbook.GetSheetAt(1);
-            for (var row = 1; row <= sheet2.LastRowNum; row++)
+            int idx = 1;
+            for (var row = 0; row <= sheet2.LastRowNum; row++)
             {
                 var currentRow = sheet2.GetRow(row);
 
                 if (currentRow != null)
                 {
-                    var var1 = ExcelHelper.GetCellValue(currentRow.GetCell(0));
-                    var var2 = ExcelHelper.GetCellValue(currentRow.GetCell(1));
-                    var var3 = ExcelHelper.GetCellValue(currentRow.GetCell(2));
 
+                    var Fullname = ExcelHelper.GetCellValue(currentRow.GetCell(0)).Trim();
+                    var FirstName = ExcelHelper.GetCellValue(currentRow.GetCell(1)).Trim();
+                    var Surname = ExcelHelper.GetCellValue(currentRow.GetCell(2)).Trim();
+                    var Dob = ExcelHelper.GetCellValue(currentRow.GetCell(3));
+                    var IDNumber = ExcelHelper.GetCellValue(currentRow.GetCell(4));
+
+                    var FranchiseeType = ExcelHelper.GetCellValue(currentRow.GetCell(5));
+                    var ECDType = ExcelHelper.GetCellValue(currentRow.GetCell(6));
+                    var FranchiseeName = ExcelHelper.GetCellValue(currentRow.GetCell(7));
+                    var FranchiseeIDNumber = ExcelHelper.GetCellValue(currentRow.GetCell(8));
+
+                    var EmergencyContactName = ExcelHelper.GetCellValue(currentRow.GetCell(9));
+                    var EmergencyContactNo = ExcelHelper.GetCellValue(currentRow.GetCell(10));
+
+                    var EthnicGroup = ExcelHelper.GetCellValue(currentRow.GetCell(11));
+                    var Gender = ExcelHelper.GetCellValue(currentRow.GetCell(12));
+                    var PlayGroup = ExcelHelper.GetCellValue(currentRow.GetCell(13));
+
+                    var PrimaryCaregiverName = ExcelHelper.GetCellValue(currentRow.GetCell(16));
+                    var GrantRecipient = ExcelHelper.GetCellValue(currentRow.GetCell(17));
+                    var HomeLanguage = ExcelHelper.GetCellValue(currentRow.GetCell(18));
+                    var HasAllergies = ExcelHelper.GetCellValue(currentRow.GetCell(19));
+                    var HasDisabilities = ExcelHelper.GetCellValue(currentRow.GetCell(20));
+                    var HasHealthIssues = ExcelHelper.GetCellValue(currentRow.GetCell(21));
+                    var TypeoffAllergies = ExcelHelper.GetCellValue(currentRow.GetCell(22));
+                    var TypeofDisability = ExcelHelper.GetCellValue(currentRow.GetCell(23));
+                    var Education = ExcelHelper.GetCellValue(currentRow.GetCell(25));
+
+                    var CaregiverIdNumber = ExcelHelper.GetCellValue(currentRow.GetCell(26));
+                    var CaregiverLanguage = ExcelHelper.GetCellValue(currentRow.GetCell(27));
+                    var CaregiverRelationship = ExcelHelper.GetCellValue(currentRow.GetCell(28));
+                    var CaregiverContactNo = ExcelHelper.GetCellValue(currentRow.GetCell(29));
+                    var ParentFees = ExcelHelper.GetCellValue(currentRow.GetCell(30));
+
+                    var ConsentForPhoto = ExcelHelper.GetCellValue(currentRow.GetCell(31));
+                    var ConsentFroPopia = ExcelHelper.GetCellValue(currentRow.GetCell(32));
+
+                    string calcdob = null;
+                    if (IDNumber != null) {
+                        char[] childdigits = IDNumber.ToCharArray();
+                        calcdob = new DateTime(Int32.Parse("20" + childdigits[0] + childdigits[1]), Int32.Parse(childdigits[2].ToString() + childdigits[3].ToString()), Int32.Parse(childdigits[4].ToString() + childdigits[5].ToString())).ToString();
+                    }
+                    Dob = calcdob;//(Dob != null ? Dob.Replace("/", "-") : calcdob);
+
+                    ImportAllChildInfoItem childItem = new ImportAllChildInfoItem()
+                    {
+                        Fullname = Fullname,
+                        FirstName = FirstName,
+                        Surname = Surname,
+                        Dob = (Dob != null ? Dob : "2022-01-01"),
+                        IDNumber = (IDNumber != null ? IDNumber : "0000000000" + idx),
+                        ProgramType = FranchiseeType,
+                        ECDType = ECDType,
+                        FranchiseeName = (FranchiseeName != null ? FranchiseeName.Trim() : null),
+                        FranchiseeIDNumber = FranchiseeIDNumber,
+                        EmergencyContactFullName = (EmergencyContactName!=null?EmergencyContactName.Trim():null),
+                        EmergencyContactPhoneNumber = EmergencyContactNo,
+                        EthnicGroup = EthnicGroup,
+                        Gender = Gender,
+                        PlayGroupGroup = PlayGroup,
+                        PrimaryCaregiver = (PrimaryCaregiverName != null ? PrimaryCaregiverName.Trim() : null),
+                        GrantRecipient = GrantRecipient,
+                        HomeLanguage = HomeLanguage,
+                        Allergies = (HasAllergies != null ? (HasAllergies == "No" ? false : true) : false),
+                        Disabilities = (HasDisabilities != null ? (HasDisabilities == "No" ? false : true) : false),
+                        HealthConditions = (HasHealthIssues != null ? (HasHealthIssues == "No" ? false : true) : false),
+                        TypeofAllergies = TypeoffAllergies,
+                        TypeofDisabilities = TypeofDisability,
+                        CaregiverEducation = Education,
+                        CaregiverIDNumber = CaregiverIdNumber,
+                        CaregiverLanguage = CaregiverLanguage,
+                        CaregiverRelationship = CaregiverRelationship,
+                        CaregiverContactNo = CaregiverContactNo,
+                        ParentFees = ParentFees,
+                        ConsentForPhoto = (ConsentForPhoto != null ? (ConsentForPhoto == "No" ? false : true) : false),
+                        ConsentForPopia = (ConsentFroPopia != null ? (ConsentFroPopia == "No" ? false : true) : false)
+                    };
+
+                    childImportListItem.Add(childItem);
                 }
+                idx++;
+            }
+
+
+            //now run child logic
+            if (childImportListItem.Count > 0)
+            {
+                foreach (var childItem in childImportListItem)
+                {
+                    var existingUser = userManager.Users.Where(x => x.IdNumber == childItem.IDNumber).FirstOrDefault();
+
+                    if (existingUser == null)
+                    {
+                        var parentUser = userManager.Users.Where(x => x.IdNumber == childItem.FranchiseeIDNumber).FirstOrDefault();
+                        if (parentUser != null)
+                        {
+                            //check language
+                            var languageEntity = languages.Where(x => x.Description == childItem.HomeLanguage).FirstOrDefault();
+                            if (languageEntity == null)
+                            {
+                                languageEntity = languages.Where(x => x.Locale == "en-za").FirstOrDefault();
+                            }
+
+
+                            string parentHierarchy = (parentUser.practitionerObjectData!=null?parentUser.practitionerObjectData.Hierarchy : (parentUser.principalObjectData!=null? parentUser.principalObjectData.Hierarchy:""));
+
+                            var caregivefullname = Regex.Replace(childItem.PrimaryCaregiver, @"\s+", " ");
+                            var nameArr = caregivefullname.Split(' ');
+                            var cgfirstname = (nameArr.Count() > 2 ? nameArr[0] + " " + nameArr[1] : nameArr[0]);
+                            var cgsurname = (nameArr.Count() > 2 ? nameArr[2] : nameArr[1]);
+
+                            Guid? relation = null;
+                            if (childItem.CaregiverRelationship!=null)
+                            {
+                                var sRelation = staticRelationRepo.GetAll().Where(x => x.Description == childItem.CaregiverRelationship).FirstOrDefault();
+                                if (sRelation != null)
+                                    relation = sRelation.Id;
+                            }
+                            Guid? education = null;
+                            if (childItem.CaregiverEducation != null)
+                            {
+                                var sEducation = staticRelationRepo.GetAll().Where(x => x.Description == childItem.CaregiverEducation).FirstOrDefault();
+                                if (sEducation != null)
+                                    education = sEducation.Id;
+                            }
+
+                            //create caregiver record
+                            var newCaregiver = new Caregiver
+                            {
+                                Id = Guid.NewGuid(),
+                                IsActive = true,
+                                TenantId = tenantId,
+
+                                IdNumber = childItem.CaregiverIDNumber,
+                                FirstName = cgfirstname,
+                                Surname = cgsurname,
+                                FullName = caregivefullname,
+                                PhoneNumber = childItem.CaregiverContactNo,
+                                EmergencyContactFirstName = childItem.EmergencyContactPhoneNumber,
+                                JoinReferencePanel = false,
+                                Contribution = false,
+                                RelationId = relation,  
+                                EducationId = education,                               
+                            };
+                            var addedCaregiver = caregiverRepo.Insert(newCaregiver);
+
+                            //create child user
+                            string userId = Guid.NewGuid().ToString();
+                            var newUser = new ApplicationUser
+                            {
+                                Id = userId.ToString(),
+                                PhoneNumber = childItem.CaregiverContactNo,
+                                UserName = childItem?.IDNumber,
+                                IdNumber = childItem?.IDNumber,
+                                IsSouthAfricanCitizen = true,
+                                VerifiedByHomeAffairs = true,
+                                DateOfBirth = DateTime.Parse(childItem.Dob),
+                                FirstName = childItem.FirstName,
+                                Surname = childItem.Surname,
+                                FullName = childItem.Fullname,
+                                ContactPreference = "sms",
+                                IsActive = true,
+                                //PasswordHash = password,
+                                //SecurityStamp = securityStamp,
+                                //ConcurrencyStamp = concurrencystamp
+                                TenantId = tenantId
+                            };
+                            var userCreatedResult = userManager.CreateAsync(newUser).Result;
+
+                            var workflow = staticWorkflowRepo.GetAll().Where(x => x.Description == "Active").FirstOrDefault();
+                            //create child record
+                            var newChild = new Child
+                            {
+                                Id = Guid.NewGuid(),
+                                UserId = userId,
+                                CaregiverId = newCaregiver.Id,
+                                IsActive = true,
+                                TenantId = tenantId,
+                                Allergies = childItem.TypeofAllergies,
+                                Disabilities = childItem.TypeofDisabilities,
+                                //Hierarchy = parentHierarchy,
+                                //OtherHealthConditions = (childItem.HealthConditions?true:false),
+                                WorkflowStatusId = workflow.Id
+                            };
+                            var addedChild = childRepo.Insert(newChild);
+                            //add child role
+                            var userRole = userManager.AddToRoleAsync(newUser, Roles.CHILD).Result;
+
+                            //update the children hierarchy
+                            string childNewHierarchy = "";                            
+                            UserHierarchyEntity childHierarchy = staticHierarchyRepo.GetAll().Where(x => x.UserId.Equals(userId)).FirstOrDefault();
+                            
+                            if (childHierarchy != null)
+                            {
+                                //update NamedTypePath to not be System.Child. but System.Administrator.Practitioner.Child.
+                                childHierarchy.NamedTypePath = childHierarchy.NamedTypePath.Replace("System.Child.", "System.Administrator.Practitioner.Child.");
+                                //update hierarchy not be 0.466. but 0.1.455.459.
+                                childNewHierarchy = childHierarchy.Hierarchy.Replace("0.", parentHierarchy);
+                                childHierarchy.Hierarchy = childNewHierarchy;
+                                childHierarchy.UserId = userId;
+                                childHierarchy.ParentId = parentUser.Id;
+
+                                staticHierarchyRepo.Update(childHierarchy);
+                            }
+                            //update child hierarchy
+                            Child newChildHierarchyUpdate = childRepo.GetByUserId(userId);
+                            newChildHierarchyUpdate.Hierarchy = childNewHierarchy;
+                            childRepo.Update(newChildHierarchyUpdate);
+
+                        }
+                    }
+                } 
             }
 
 
 
-
-
-            return true;
+                        return true;
         }
 
         public bool UpdatePractitionerShareInfo([Service] IHttpContextAccessor contextAccessor,
@@ -527,7 +736,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
-            var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+            var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
             Practitioner practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId.Equals(practitionerId)).FirstOrDefault();
             {
                 if (practitioner != null)

@@ -209,6 +209,7 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
         practitionerForm.monthSinceFranchisee &&
         +practitionerForm.monthSinceFranchisee,
       IsActive: true,
+      Progress: 0,
     };
 
     await createPractitioner({
