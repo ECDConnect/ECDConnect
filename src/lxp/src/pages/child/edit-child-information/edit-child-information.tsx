@@ -358,7 +358,9 @@ export const EditChildInformation: React.FC = () => {
 
         list.push({
           title: 'Address',
-          subTitle: `${caregiver?.siteAddress?.ward} ${caregiver?.siteAddress?.addressLine1}, ${caregiver?.siteAddress?.addressLine2}`,
+          subTitle: caregiver?.siteAddress?.ward
+            ? `${caregiver?.siteAddress?.ward} ${caregiver?.siteAddress?.addressLine1}, ${caregiver?.siteAddress?.addressLine2}`
+            : 'Add address',
           switchTextStyles: true,
           actionName: 'View',
           actionIcon: 'EyeIcon',
