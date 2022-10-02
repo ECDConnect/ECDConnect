@@ -213,16 +213,27 @@ string userId)
             var classroomRepo = repoFactory.CreateGenericRepository<Classroom>(userContext: uId);
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId); //BYPASS USERHIERARCHY TO SEE UP THE CHAIN
             PrincipalClassroom principalClassroom = new PrincipalClassroom();
-            ClassroomGroup classroomGroup = classroomGroupRepo.GetByUserId(userId);
-            if (classroomGroup != null)
+            var practitioner = practitionerRepo.GetByUserId(userId);
+            if (practitioner != null)
             {
-                principalClassroom.ClassroomGroupName = classroomGroup.Name;
-                Classroom classroom = classroomRepo.GetById(classroomGroup.ClassroomId);
-                var principal = practitionerRepo.GetByUserId(classroom.UserId);
+                var principal = practitionerRepo.GetByUserId(practitioner.PrincipalHierarchy.ToString());
                 if (principal != null)
                 {
-                    principalClassroom.ClassroomName = classroom.Name;
-                    principalClassroom.PrincipalName = (string.IsNullOrWhiteSpace(principal.User.FullName)? principal.User.FullName : principal.User.FullName);   
+                    principalClassroom.PrincipalName = (string.IsNullOrWhiteSpace(principal.User.FullName) ? principal.User.FullName : principal.User.FullName);
+                    ClassroomGroup classroomGroup = classroomGroupRepo.GetByUserId(userId);
+                    Classroom classroom = null;
+
+                    if (classroomGroup != null)
+                    {
+                        classroom = classroomRepo.GetById(classroomGroup.ClassroomId);
+                        principalClassroom.ClassroomGroupName = classroomGroup.Name;
+                    }
+                    else
+                    {
+                        //if no classroomgroup is available to look at, use the classroom for principal
+                        classroom = classroomRepo.GetByUserId(principal.UserId);
+                    }
+                    principalClassroom.ClassroomName = classroom.Name;                    
                 }
             }
             return principalClassroom;
