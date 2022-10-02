@@ -182,16 +182,14 @@ export const PractitionerProfile: React.FC = () => {
               return (
                 <ActionModal
                   className={'mx-4'}
-                  title={'Logout & reset data'}
-                  importantText={
-                    'Please note that by doing this, all your data will be reset and you will loose all data that has not been synced up.'
-                  }
+                  title={'Are you sure want to log out'}
+                  importantText={''}
                   icon={'ExclamationCircleIcon'}
                   iconColor={'alertDark'}
                   iconBorderColor={'alertBg'}
                   actionButtons={[
                     {
-                      text: 'Okay',
+                      text: 'Yes, log out',
                       colour: 'primary',
                       onClick: async () => {
                         onSubmit();
@@ -204,7 +202,7 @@ export const PractitionerProfile: React.FC = () => {
                       leadingIcon: 'CheckCircleIcon',
                     },
                     {
-                      text: 'Cancel',
+                      text: 'No, cancel',
                       textColour: 'white',
                       colour: 'primary',
                       type: 'filled',
