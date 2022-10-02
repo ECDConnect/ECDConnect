@@ -183,9 +183,7 @@ export const PractitionerProfile: React.FC = () => {
                 <ActionModal
                   className={'mx-4'}
                   title={'Logout & reset data'}
-                  importantText={
-                    'Please note that by doing this, all your data will be reset and you will loose all data that has not been synced up.'
-                  }
+                  importantText={'Are you sure want to log out'}
                   icon={'ExclamationCircleIcon'}
                   iconColor={'alertDark'}
                   iconBorderColor={'alertBg'}
