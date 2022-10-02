@@ -19,14 +19,14 @@ export const Logout: React.FC = () => {
     >
       <ActionModal
         className={'mx-4'}
-        title={'Logout & reset data'}
-        importantText={'Are you sure want to log out'}
+        title={'Are you sure want to log out'}
+        importantText={''}
         icon={'ExclamationCircleIcon'}
         iconColor={'alertDark'}
         iconBorderColor={'alertBg'}
         actionButtons={[
           {
-            text: 'Okay',
+            text: 'Yes, log out',
             colour: 'primary',
             onClick: async () => {
               //   onSubmit();
@@ -39,7 +39,7 @@ export const Logout: React.FC = () => {
             leadingIcon: 'CheckCircleIcon',
           },
           {
-            text: 'Cancel',
+            text: 'No, cancel',
             textColour: 'white',
             colour: 'primary',
             type: 'filled',
