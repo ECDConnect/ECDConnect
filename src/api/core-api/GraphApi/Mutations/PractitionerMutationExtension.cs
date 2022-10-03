@@ -230,9 +230,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             var classroomRepo = repoFactory.CreateRepository<Classroom>(userContext: uId);
             var classroomGroupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
-            var classProgramme = repoFactory.CreateRepository<ClassProgramme>(userContext: uId);
+            var classroomGroupGenericRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
+            var classProgrammeRepo = repoFactory.CreateRepository<ClassProgramme>(userContext: uId);
+            var learnerRepo = repoFactory.CreateRepository<Learner>(userContext: uId);
 
             var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
+            var childGenericRepo = repoFactory.CreateGenericRepository<Child>(userContext: uId);
             var caregiverRepo = repoFactory.CreateGenericRepository<Caregiver>(userContext: uId);
 
             var staticLanguageRepo = repoFactory.CreateGenericRepository<Language>(userContext: uId);
@@ -241,6 +244,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var staticGenderRepo = repoFactory.CreateGenericRepository<Gender>(userContext: uId);
             var staticGrantRepo = repoFactory.CreateGenericRepository<Grant>(userContext: uId);
             var staticConsentRepo = repoFactory.CreateGenericRepository<UserConsent>(userContext: uId);
+            var staticProgrammeTypeRepo = repoFactory.CreateGenericRepository<ProgrammeType>(userContext: uId);
+            var staticRaceRepo = repoFactory.CreateGenericRepository<Race>(userContext: uId);
 
             var staticHierarchyRepo = repoFactory.CreateGenericRepository<UserHierarchyEntity>(userContext: uId);
 
@@ -418,7 +423,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                             FullName = practitioner.FullName,//$"{practitioner.FirstName} {practitioner.Surname}",
                             ContactPreference = "sms",
                             IsActive = true,
-                            //PasswordHash = password,
+                            PasswordHash = password,
                             //SecurityStamp = securityStamp,
                             //ConcurrencyStamp = concurrencystamp
                             TenantId = tenantId
@@ -471,8 +476,46 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         //    //invite.SendInviteToApplication(invitationManager, notificationManager, userManager, prac.UserId);
 
                         //create classrooms and classroomgroups and programmes
+                        Classroom pracClass = new Classroom()
+                        {
+                            Id = Guid.NewGuid(),
+                            UserId = userId,
+                            IsActive = true,
+                            TenantId = tenantId,
+                            Name = practitioner.SiteName,
+                            IsPrinciple = true,
+                            NumberPractitioners = 1
+                        };
+                        var retClass = classroomRepo.Insert(pracClass);
+                        ClassroomGroup pracClassGroup = new ClassroomGroup()
+                        {
+                            Id = Guid.NewGuid(),
+                            UserId = Guid.Parse(userId),
+                            IsActive = true,
+                            TenantId = tenantId,
+                            Name = "Group A", //practitioner.SiteName,
+                            ClassroomId = retClass.Id,                            
+                        };
+                        if (practitioner.ProgrammeTypeId != null) {
+                            pracClassGroup.ProgrammeTypeId = Guid.Parse(practitioner.ProgrammeTypeId);
+                        }
+                        var retClassGroup = classroomGroupRepo.Insert(pracClassGroup);
 
-
+                        //create programme
+                        for (var iidx = 1; iidx <= 5; iidx++)
+                        {
+                            ClassProgramme pracClassGroupProgramme = new ClassProgramme()
+                            {
+                                Id = Guid.NewGuid(),
+                               MeetingDay = iidx,
+                               IsFullDay = true,
+                                IsActive = true,
+                                TenantId = tenantId,
+                                ProgrammeStartDate = DateTime.Now,
+                                ClassroomGroupId = pracClassGroup.Id,
+                            };
+                            var retClassGroupProgramme = classProgrammeRepo.Insert(pracClassGroupProgramme);
+                        }
                     }
                 }
             }
@@ -575,8 +618,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
 
             //now run child logic
+            
             if (childImportListItem.Count > 0)
             {
+                int idx2 = 0;
                 foreach (var childItem in childImportListItem)
                 {
                     var existingUser = userManager.Users.Where(x => x.IdNumber == childItem.IDNumber).FirstOrDefault();
@@ -586,35 +631,103 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         var parentUser = userManager.Users.Where(x => x.IdNumber == childItem.FranchiseeIDNumber).FirstOrDefault();
                         if (parentUser != null)
                         {
-                            //check language
-                            var languageEntity = languages.Where(x => x.Description == childItem.HomeLanguage).FirstOrDefault();
-                            if (languageEntity == null)
-                            {
-                                languageEntity = languages.Where(x => x.Locale == "en-za").FirstOrDefault();
-                            }
 
-
-                            string parentHierarchy = (parentUser.practitionerObjectData!=null?parentUser.practitionerObjectData.Hierarchy : (parentUser.principalObjectData!=null? parentUser.principalObjectData.Hierarchy:""));
-
+                            var practiParent = practitionerRepo.GetByUserId(parentUser.Id);//(parentUser.practitionerObjectData != null ? parentUser.practitionerObjectData.Hierarchy : (parentUser.principalObjectData != null ? parentUser.principalObjectData.Hierarchy : ""));
+                            string parentHierarchy = practiParent.Hierarchy;
                             var caregivefullname = Regex.Replace(childItem.PrimaryCaregiver, @"\s+", " ");
                             var nameArr = caregivefullname.Split(' ');
                             var cgfirstname = (nameArr.Count() > 2 ? nameArr[0] + " " + nameArr[1] : nameArr[0]);
                             var cgsurname = (nameArr.Count() > 2 ? nameArr[2] : nameArr[1]);
 
-                            Guid? relation = null;
-                            if (childItem.CaregiverRelationship!=null)
+                            var emergencyfullname = "";
+                            var emerfirstname = "";
+                            var emersurname = "";
+                            if (childItem.EmergencyContactFullName != null)
                             {
-                                var sRelation = staticRelationRepo.GetAll().Where(x => x.Description == childItem.CaregiverRelationship).FirstOrDefault();
+                                emergencyfullname = Regex.Replace(childItem.EmergencyContactFullName, @"\s+", " ");
+                                var nameArrEmer = caregivefullname.Split(' ');
+                                emerfirstname = (nameArrEmer.Count() > 2 ? nameArrEmer[0] + " " + nameArrEmer[1] : nameArrEmer[0]);
+                                emersurname = (nameArrEmer.Count() > 2 ? nameArrEmer[2] : nameArrEmer[1]);
+                            } else if (childItem.PrimaryCaregiver != null) {
+                                emerfirstname = cgfirstname;
+                                emersurname = cgsurname;
+                                emergencyfullname = caregivefullname;
+                            }
+                            //check language
+                            var languageEntity = languages.Where(x => x.Description.Contains(childItem.HomeLanguage)).FirstOrDefault();
+                            if (languageEntity == null)
+                            {
+                                languageEntity = languages.Where(x => x.Locale == "en-za").FirstOrDefault();
+                            }
+
+                            Guid? relation = null;
+                            if (childItem.CaregiverRelationship != null)
+                            {
+                                var sRelation = staticRelationRepo.GetAll().Where(x => x.Description.Contains(childItem.CaregiverRelationship)).FirstOrDefault();
+                                if (sRelation != null)
+                                    relation = sRelation.Id;
+                            } else
+                            {
+                                var sRelation = staticRelationRepo.GetAll().Where(x => x.Description.Contains("Guardian")).FirstOrDefault();
                                 if (sRelation != null)
                                     relation = sRelation.Id;
                             }
+
                             Guid? education = null;
                             if (childItem.CaregiverEducation != null)
                             {
-                                var sEducation = staticRelationRepo.GetAll().Where(x => x.Description == childItem.CaregiverEducation).FirstOrDefault();
+                                var sEducation = staticRelationRepo.GetAll().Where(x => x.Description.Contains(childItem.CaregiverEducation)).FirstOrDefault();
+                                if (sEducation != null)
+                                    education = sEducation.Id;
+                            } else
+                            {
+                                var sEducation = staticRelationRepo.GetAll().Where(x => x.Description.Contains("Matric")).FirstOrDefault();
                                 if (sEducation != null)
                                     education = sEducation.Id;
                             }
+
+                            Guid? gender = null;
+                            if (childItem.Gender != null)
+                            {
+                                var sgender = staticGenderRepo.GetAll().Where(x => x.Description.Contains(childItem.Gender)).FirstOrDefault();
+                                if (gender != null)
+                                    gender = sgender.Id;
+                            } else
+                            {
+                                var sgender = staticGenderRepo.GetAll().Where(x => x.Description.Contains("Boy")).FirstOrDefault();
+                                if (gender != null)
+                                    gender = sgender.Id;
+                            }
+
+
+                            Guid? race = null;
+                            if (childItem.EthnicGroup != null)
+                            {
+                                var srace = staticRaceRepo.GetAll().Where(x => x.Description.Contains(childItem.EthnicGroup)).FirstOrDefault();
+                                if (srace != null)
+                                    race = srace.Id;
+                            } else
+                            {
+                                var srace = staticRaceRepo.GetAll().Where(x => x.Description.Contains("Other")).FirstOrDefault();
+                                if (srace != null)
+                                    race = srace.Id;
+                            }
+
+
+                            Guid? grant = null;
+                            if (childItem.GrantRecipient != null)
+                            {
+                                string sgrantremap = "";
+                                if (childItem.GrantRecipient == "No")
+                                    sgrantremap = "None";
+                                else
+                                    sgrantremap = "Child Support Grant";
+
+                                var sGrant = staticGrantRepo.GetAll().Where(x => x.Description.Contains(sgrantremap)).FirstOrDefault();
+                                if (sGrant != null)
+                                    grant = sGrant.Id;
+                            }
+
 
                             //create caregiver record
                             var newCaregiver = new Caregiver
@@ -628,11 +741,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                                 Surname = cgsurname,
                                 FullName = caregivefullname,
                                 PhoneNumber = childItem.CaregiverContactNo,
-                                EmergencyContactFirstName = childItem.EmergencyContactPhoneNumber,
+                                EmergencyContactFirstName = childItem.EmergencyContactFullName,
                                 JoinReferencePanel = false,
                                 Contribution = false,
-                                RelationId = relation,  
-                                EducationId = education,                               
+                                RelationId = relation,
+                                EducationId = education,
+                                AdditionalFirstName = emerfirstname,
+                                AdditionalSurname = emersurname
+
                             };
                             var addedCaregiver = caregiverRepo.Insert(newCaregiver);
 
@@ -657,6 +773,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                                 //ConcurrencyStamp = concurrencystamp
                                 TenantId = tenantId
                             };
+                            if (gender != null) { 
+                                newUser.GenderId = gender;
+                            }
+                            if (race != null)
+                            {
+                                newUser.RaceId = race;
+                            }
                             var userCreatedResult = userManager.CreateAsync(newUser).Result;
 
                             var workflow = staticWorkflowRepo.GetAll().Where(x => x.Description == "Active").FirstOrDefault();
@@ -695,12 +818,67 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                                 staticHierarchyRepo.Update(childHierarchy);
                             }
                             //update child hierarchy
-                            Child newChildHierarchyUpdate = childRepo.GetByUserId(userId);
+                            Child newChildHierarchyUpdate = childGenericRepo.GetByUserId(userId);
                             newChildHierarchyUpdate.Hierarchy = childNewHierarchy;
-                            childRepo.Update(newChildHierarchyUpdate);
+                            childGenericRepo.Update(newChildHierarchyUpdate);
+
+
+                            //now add the kids to classrooms and playgroups
+                            var fullListGroups = classroomGroupGenericRepo.GetAll();//.Where(x => x.UserId.Equals(parentUser.Id)).ToList(); //classroomGroupGenericRepo.GetAll().ToList();//.Where(x => x.UserId.Equals(parentUser.Id)).ToList();//GetListByUserId(parentUser.Id).ToList();
+                            List < ClassroomGroup > parentClassroomGroups = new List<ClassroomGroup>();
+                            foreach (ClassroomGroup group in fullListGroups)
+                            {
+                                if (group.UserId.ToString() == parentUser.Id)
+                                {
+                                    parentClassroomGroups.Add(group);
+                                }
+                            }
+                            //parentClassroomGroups = parentClassroomGroups.Where(x => x.UserId.).ToList();
+                            //check if the playgroup/classroomgroup exists for the parent, if not create it from teh child record, assigning heirarchy
+                            string playGroupId = null;
+                            if (parentClassroomGroups.Any())
+                            {
+                                //check if this playgroup exists already and assign  the learner to it
+                                ClassroomGroup classMapped = parentClassroomGroups.Where(x => x.Name.Contains(childItem.PlayGroupGroup)).FirstOrDefault();
+                                if (classMapped != null)
+                                {
+                                    playGroupId = classMapped.Id.ToString();
+                                } else
+                                {
+                                    //get the cassroomid from teh poarent classroom that exists
+                                    var existingClassGroup = parentClassroomGroups.FirstOrDefault();
+                                    Guid pgId = Guid.NewGuid();
+                                    //create the playgroup
+                                    ClassroomGroup newGroup = new ClassroomGroup()
+                                    {
+                                        Name = childItem.PlayGroupGroup,
+                                        UserId = Guid.Parse(parentUser.Id),
+                                        ClassroomId = existingClassGroup.Id,
+                                        ProgrammeTypeId = existingClassGroup.ProgrammeTypeId,
+                                        Hierarchy = existingClassGroup.Hierarchy,
+                                        Id = pgId,
+                                        TenantId = tenantId
+                                    };
+                                    var retNewGroup = classroomGroupGenericRepo.Insert(newGroup);
+                                    playGroupId = pgId.ToString();
+
+                                }
+                                Learner newLearner = new Learner()
+                                {
+                                    UserId = userId,
+                                    ClassroomGroupId = Guid.Parse(playGroupId),
+                                    StartedAttendance = DateTime.Now,
+                                    Hierarchy = parentHierarchy
+                                };
+                                var newLearnerRet = learnerRepo.Insert(newLearner);
+                            }
+                            //then assign the learner to it
+
+                            //get the classrooom
 
                         }
                     }
+                    idx2++;
                 } 
             }
 
