@@ -175,16 +175,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return true;
         }
 
-        // EXCEL LEGEND
-        // 0 = FirstName
-        // 1 = Surname
-        // 2 = Cellphone Number
-        // 3 = ID / Passport Number
-        // 4 = Consent For Photo
-        // 5 = Language Used in group
-        // 6 = Parent Fees
-        // 7 = StartDate
-        // 8 = MaxChildren
+
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public bool ImportAll(
                     //[Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
@@ -229,10 +220,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
 
             var classroomRepo = repoFactory.CreateRepository<Classroom>(userContext: uId);
+            var classroomGenericRepo = repoFactory.CreateGenericRepository<Classroom>(userContext: uId);
             var classroomGroupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
-            var classroomGroupGenericRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
+            var classroomGroupGenericRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);
             var classProgrammeRepo = repoFactory.CreateRepository<ClassProgramme>(userContext: uId);
+            var classProgrammeGenericRepo = repoFactory.CreateGenericRepository<ClassProgramme>(userContext: uId);
             var learnerRepo = repoFactory.CreateRepository<Learner>(userContext: uId);
+            var learnerGenericRepo = repoFactory.CreateGenericRepository<Learner>(userContext: uId);
 
             var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
             var childGenericRepo = repoFactory.CreateGenericRepository<Child>(userContext: uId);
@@ -461,6 +455,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                             newPractitioner.IsFundaAppAdmin = true;
                         }
                         var addedPractitioner = practitionerRepo.Insert(newPractitioner);
+                        var usersHierarchy = addedPractitioner.Hierarchy;
 
                         //sort roles
                         if (practitioner.SiteIndicator != "Principal")
@@ -484,22 +479,26 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                             TenantId = tenantId,
                             Name = practitioner.SiteName,
                             IsPrinciple = true,
-                            NumberPractitioners = 1
+                            NumberPractitioners = 1,
+                            Hierarchy = usersHierarchy
                         };
-                        var retClass = classroomRepo.Insert(pracClass);
-                        ClassroomGroup pracClassGroup = new ClassroomGroup()
+                        var retClass = classroomGenericRepo.Insert(pracClass);
+
+                        /*move this to child record because only then do we know the groups*/
+                        /*ClassroomGroup pracClassGroup = new ClassroomGroup()
                         {
                             Id = Guid.NewGuid(),
                             UserId = Guid.Parse(userId),
                             IsActive = true,
                             TenantId = tenantId,
                             Name = "Group A", //practitioner.SiteName,
-                            ClassroomId = retClass.Id,                            
+                            ClassroomId = retClass.Id,          
+                            Hierarchy = usersHierarchy
                         };
                         if (practitioner.ProgrammeTypeId != null) {
                             pracClassGroup.ProgrammeTypeId = Guid.Parse(practitioner.ProgrammeTypeId);
                         }
-                        var retClassGroup = classroomGroupRepo.Insert(pracClassGroup);
+                        var retClassGroup = classroomGroupGenericRepo.Insert(pracClassGroup);
 
                         //create programme
                         for (var iidx = 1; iidx <= 5; iidx++)
@@ -513,9 +512,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                                 TenantId = tenantId,
                                 ProgrammeStartDate = DateTime.Now,
                                 ClassroomGroupId = pracClassGroup.Id,
+                                Hierarchy = usersHierarchy
                             };
-                            var retClassGroupProgramme = classProgrammeRepo.Insert(pracClassGroupProgramme);
-                        }
+                            var retClassGroupProgramme = classProgrammeGenericRepo.Insert(pracClassGroupProgramme);
+                        }*/
                     }
                 }
             }
@@ -822,56 +822,128 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                             newChildHierarchyUpdate.Hierarchy = childNewHierarchy;
                             childGenericRepo.Update(newChildHierarchyUpdate);
 
+                            /*
+                                        //now add the kids to classrooms and playgroups
+                                        var fullListGroups = classroomGroupGenericRepo.GetAll();//.Where(x => x.UserId.Equals(parentUser.Id)).ToList(); //classroomGroupGenericRepo.GetAll().ToList();//.Where(x => x.UserId.Equals(parentUser.Id)).ToList();//GetListByUserId(parentUser.Id).ToList();
+                                        List < ClassroomGroup > parentClassroomGroups = new List<ClassroomGroup>();
+                                        foreach (ClassroomGroup group in fullListGroups)
+                                        {
+                                            if (group.UserId.ToString() == parentUser.Id)
+                                            {
+                                                parentClassroomGroups.Add(group);
+                                            }
+                                        }
+                                        //parentClassroomGroups = parentClassroomGroups.Where(x => x.UserId.).ToList();
+                                        //check if the playgroup/classroomgroup exists for the parent, if not create it from teh child record, assigning heirarchy
+                                        string playGroupId = null;
+                                        if (parentClassroomGroups.Any())
+                                        {
+                                            //check if this playgroup exists already and assign  the learner to it
+                                            ClassroomGroup classMapped = parentClassroomGroups.Where(x => x.Name.Contains(childItem.PlayGroupGroup)).FirstOrDefault();
+                                            if (classMapped != null)
+                                            {
+                                                playGroupId = classMapped.Id.ToString();
+                                            } else
+                                            {
+                                                //get the cassroomid from teh poarent classroom that exists
+                                                var existingClassGroup = parentClassroomGroups.FirstOrDefault();
+                                                Guid pgId = Guid.NewGuid();
+                                                //create the playgroup
+                                                ClassroomGroup newGroup = new ClassroomGroup()
+                                                {
+                                                    Name = childItem.PlayGroupGroup,
+                                                    UserId = Guid.Parse(parentUser.Id),
+                                                    ClassroomId = existingClassGroup.Id,
+                                                    ProgrammeTypeId = existingClassGroup.ProgrammeTypeId,
+                                                    Hierarchy = parentHierarchy,//existingClassGroup.Hierarchy,
+                                                    Id = pgId,
+                                                    TenantId = tenantId
+                                                };
+                                                var retNewGroup = classroomGroupGenericRepo.Insert(newGroup);
+                                                playGroupId = pgId.ToString();
 
-                            //now add the kids to classrooms and playgroups
-                            var fullListGroups = classroomGroupGenericRepo.GetAll();//.Where(x => x.UserId.Equals(parentUser.Id)).ToList(); //classroomGroupGenericRepo.GetAll().ToList();//.Where(x => x.UserId.Equals(parentUser.Id)).ToList();//GetListByUserId(parentUser.Id).ToList();
-                            List < ClassroomGroup > parentClassroomGroups = new List<ClassroomGroup>();
-                            foreach (ClassroomGroup group in fullListGroups)
+                                            }
+                                            Learner newLearner = new Learner()
+                                            {
+                                                UserId = userId,
+                                                ClassroomGroupId = Guid.Parse(playGroupId),
+                                                StartedAttendance = DateTime.Now,
+                                                Hierarchy = parentHierarchy
+                                            };
+                                            var newLearnerRet = learnerGenericRepo.Insert(newLearner);
+                                        }
+                            */
+
+                            /*moved this from practitioner record to here because only then do we know the groups*/
+                            //get the classroom
+                            Classroom existingClassroom = classroomGenericRepo.GetAll().Where(x => x.UserId.Equals(parentUser.Id)).FirstOrDefault();
+                            if (existingClassroom != null)
                             {
-                                if (group.UserId.ToString() == parentUser.Id)
+                                var programmeType = programmeTypeRepo.GetAll().Where(x => x.Description.Equals(childItem.ECDType)).FirstOrDefault();
+
+                                //check if this specific group exists already
+                                var fullListGroups = classroomGroupGenericRepo.GetAll();//.Where(x => x.UserId.Equals(parentUser.Id)).ToList(); //classroomGroupGenericRepo.GetAll().ToList();//.Where(x => x.UserId.Equals(parentUser.Id)).ToList();//GetListByUserId(parentUser.Id).ToList();
+                                List<ClassroomGroup> parentClassroomGroups = new List<ClassroomGroup>();
+                                foreach (ClassroomGroup group in fullListGroups)
                                 {
-                                    parentClassroomGroups.Add(group);
+                                    if (group.UserId.ToString() == parentUser.Id)
+                                    {
+                                        parentClassroomGroups.Add(group);
+                                    }
                                 }
-                            }
-                            //parentClassroomGroups = parentClassroomGroups.Where(x => x.UserId.).ToList();
-                            //check if the playgroup/classroomgroup exists for the parent, if not create it from teh child record, assigning heirarchy
-                            string playGroupId = null;
-                            if (parentClassroomGroups.Any())
-                            {
-                                //check if this playgroup exists already and assign  the learner to it
-                                ClassroomGroup classMapped = parentClassroomGroups.Where(x => x.Name.Contains(childItem.PlayGroupGroup)).FirstOrDefault();
-                                if (classMapped != null)
+                                var existingGroup = parentClassroomGroups.Where(x => x.Name.Equals(childItem.PlayGroupGroup)).FirstOrDefault();
+                                string programmeGroupId = null;
+                                if (existingGroup == null)
                                 {
-                                    playGroupId = classMapped.Id.ToString();
+                                    //if the group doesnt exist yet, create it
+                                    ClassroomGroup pracClassGroup = new ClassroomGroup()
+                                    {
+                                        Id = Guid.NewGuid(),
+                                        UserId = Guid.Parse(parentUser.Id),
+                                        IsActive = true,
+                                        TenantId = tenantId,
+                                        Name = childItem.PlayGroupGroup, //practitioner.SiteName,
+                                        ClassroomId = existingClassroom.Id,
+                                        Hierarchy = parentHierarchy,
+                                        ProgrammeTypeId = programmeType.Id
+                                    };
+                                    var retClassGroup = classroomGroupGenericRepo.Insert(pracClassGroup);
+
+                                    for (var iidx = 1; iidx <= 5; iidx++)
+                                    {
+                                        ClassProgramme pracClassGroupProgramme = new ClassProgramme()
+                                        {
+                                            Id = Guid.NewGuid(),
+                                            MeetingDay = iidx,
+                                            IsFullDay = true,
+                                            IsActive = true,
+                                            TenantId = tenantId,
+                                            ProgrammeStartDate = DateTime.Now,
+                                            ClassroomGroupId = pracClassGroup.Id,
+                                            Hierarchy = parentHierarchy
+                                        };
+                                        var retClassGroupProgramme = classProgrammeGenericRepo.Insert(pracClassGroupProgramme);
+                                    }
+                                    programmeGroupId = pracClassGroup.Id.ToString();
                                 } else
                                 {
-                                    //get the cassroomid from teh poarent classroom that exists
-                                    var existingClassGroup = parentClassroomGroups.FirstOrDefault();
-                                    Guid pgId = Guid.NewGuid();
-                                    //create the playgroup
-                                    ClassroomGroup newGroup = new ClassroomGroup()
-                                    {
-                                        Name = childItem.PlayGroupGroup,
-                                        UserId = Guid.Parse(parentUser.Id),
-                                        ClassroomId = existingClassGroup.Id,
-                                        ProgrammeTypeId = existingClassGroup.ProgrammeTypeId,
-                                        Hierarchy = existingClassGroup.Hierarchy,
-                                        Id = pgId,
-                                        TenantId = tenantId
-                                    };
-                                    var retNewGroup = classroomGroupGenericRepo.Insert(newGroup);
-                                    playGroupId = pgId.ToString();
-
+                                    //if the group exist already, only use that group id to create learnetr4
+                                    programmeGroupId = existingGroup.Id.ToString();
                                 }
+                                //create programme
+                               
+                                //now create the learner and tie them to the playgroup
                                 Learner newLearner = new Learner()
                                 {
                                     UserId = userId,
-                                    ClassroomGroupId = Guid.Parse(playGroupId),
+                                    ClassroomGroupId = Guid.Parse(programmeGroupId),
                                     StartedAttendance = DateTime.Now,
                                     Hierarchy = parentHierarchy
                                 };
-                                var newLearnerRet = learnerRepo.Insert(newLearner);
+                                var newLearnerRet = learnerGenericRepo.Insert(newLearner);
+
                             }
+
                             //then assign the learner to it
 
                             //get the classrooom
