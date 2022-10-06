@@ -19,6 +19,7 @@ import { staticDataSelectors } from '@store/static-data';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useStoreSetup } from '@hooks/useStoreSetup';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
+import { practitionerSelectors } from '@/store/practitioner';
 
 export const EditPlaygroups: React.FC = () => {
   const location = useLocation<EditPlaygroupsState>();
@@ -40,6 +41,8 @@ export const EditPlaygroups: React.FC = () => {
   const playGroupType = useSelector(
     staticDataSelectors.getPlaygroupProgrammeType
   );
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  const isPrincipal = practitioner?.isPrincipal === true;
 
   const [updatedPlaygroups, setUpdatedPlaygroups] = useState<
     EditPlaygroupModel[]
@@ -249,7 +252,7 @@ export const EditPlaygroups: React.FC = () => {
           <ConfirmPlayGroups
             defaultPlayGroups={updatedPlaygroups || []}
             onEditPlaygroup={onPlayGroupsEdit}
-            title="Edit classes"
+            title={isPrincipal ? 'Edit classes' : 'View classes'}
             isLoading={isLoading}
             onSubmit={(value) => {
               confirmPlaygroups(value);
@@ -313,7 +316,7 @@ export const EditPlaygroups: React.FC = () => {
 
   return (
     <BannerWrapper
-      title={'Edit classes'}
+      title={isPrincipal ? 'Edit classes' : 'View Classes'}
       onBack={onBack}
       onClose={exitPrompt}
       size="medium"

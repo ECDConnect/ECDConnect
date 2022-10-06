@@ -16,6 +16,7 @@ import {
   practitionerActions,
   practitionerThunkActions,
 } from '@/store/practitioner';
+import { useHistory, useLocation } from 'react-router-dom';
 
 export const EditPractitioner: React.FC<EditPractitionerProps> = ({
   setEditiPractitionerVisible,
@@ -23,6 +24,7 @@ export const EditPractitioner: React.FC<EditPractitionerProps> = ({
   const [practitionerInfo, setPractitionerInfo] = useState({});
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
+  const history = useHistory();
 
   const {
     getValues: getPractitionerInfoFormValues,
@@ -71,6 +73,7 @@ export const EditPractitioner: React.FC<EditPractitionerProps> = ({
         title={'Edit practitioner'}
         backgroundColour={'uiBg'}
         displayOffline={!isOnline}
+        onBack={() => history.goBack()}
       ></BannerWrapper>
       <div className="w-12/12 px-4 wrapper-with-sticky-button">
         <div className="flex justify-center w-full">
