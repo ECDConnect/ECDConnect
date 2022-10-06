@@ -221,29 +221,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             var classroomRepo = repoFactory.CreateRepository<Classroom>(userContext: uId);
             var classroomGenericRepo = repoFactory.CreateGenericRepository<Classroom>(userContext: uId);
-            var classroomGroupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
-            var classroomGroupGenericRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);
-            var classProgrammeRepo = repoFactory.CreateRepository<ClassProgramme>(userContext: uId);
-            var classProgrammeGenericRepo = repoFactory.CreateGenericRepository<ClassProgramme>(userContext: uId);
-            var learnerRepo = repoFactory.CreateRepository<Learner>(userContext: uId);
-            var learnerGenericRepo = repoFactory.CreateGenericRepository<Learner>(userContext: uId);
-
-            var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
-            var childGenericRepo = repoFactory.CreateGenericRepository<Child>(userContext: uId);
-            var caregiverRepo = repoFactory.CreateGenericRepository<Caregiver>(userContext: uId);
-
-            var staticLanguageRepo = repoFactory.CreateGenericRepository<Language>(userContext: uId);
-            var staticEducationRepo = repoFactory.CreateGenericRepository<Education>(userContext: uId);
-            var staticRelationRepo = repoFactory.CreateGenericRepository<Relation>(userContext: uId);
-            var staticGenderRepo = repoFactory.CreateGenericRepository<Gender>(userContext: uId);
-            var staticGrantRepo = repoFactory.CreateGenericRepository<Grant>(userContext: uId);
-            var staticConsentRepo = repoFactory.CreateGenericRepository<UserConsent>(userContext: uId);
-            var staticProgrammeTypeRepo = repoFactory.CreateGenericRepository<ProgrammeType>(userContext: uId);
-            var staticRaceRepo = repoFactory.CreateGenericRepository<Race>(userContext: uId);
 
             var staticHierarchyRepo = repoFactory.CreateGenericRepository<UserHierarchyEntity>(userContext: uId);
-
-            var staticWorkflowRepo = repoFactory.CreateGenericRepository<WorkflowStatus>(userContext: uId);
 
             //SendInvitationMutationExtension invite = new SendInvitationMutationExtension();
             var sheet1 = workbook.GetSheetAt(0);
@@ -520,6 +499,67 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 }
             }
 
+            //everything below here to import children and playgroups have moved to function ImportAllChildren
+
+
+
+            return true;
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        public bool ImportAllChildren(
+                    //[Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+                    [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
+                    [Service] InvitationNotificationManager notificationManager,
+                      [Service] IGenericRepositoryFactory repoFactory,
+                      [Service] IHttpContextAccessor httpContextAccessor,
+                      [Service] ILocaleService<Language> localeService,
+                      [Service] UserManager<ApplicationUser> userManager,
+                      string file)
+        {
+            Guid tenantId = TenantExecutionContext.Tenant.Id;
+            var bytes = Convert.FromBase64String(file);
+            using MemoryStream fileStream = new MemoryStream(bytes);
+
+            var workbook = WorkbookFactory.Create(fileStream);
+
+            var languages = localeService.GetAvailableLocale().ToList();
+
+            var uId = httpContextAccessor.HttpContext.GetUser().Id;
+
+            var programmeTypeRepo = repoFactory.CreateGenericRepository<ProgrammeType>(userContext: uId);
+
+            var addressRepo = repoFactory.CreateGenericRepository<SiteAddress>(userContext: uId);
+            var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+
+            var classroomRepo = repoFactory.CreateRepository<Classroom>(userContext: uId);
+            var classroomGenericRepo = repoFactory.CreateGenericRepository<Classroom>(userContext: uId);
+            var classroomGroupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
+            var classroomGroupGenericRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);
+            var classProgrammeRepo = repoFactory.CreateRepository<ClassProgramme>(userContext: uId);
+            var classProgrammeGenericRepo = repoFactory.CreateGenericRepository<ClassProgramme>(userContext: uId);
+            var learnerRepo = repoFactory.CreateRepository<Learner>(userContext: uId);
+            var learnerGenericRepo = repoFactory.CreateGenericRepository<Learner>(userContext: uId);
+
+            var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
+            var childGenericRepo = repoFactory.CreateGenericRepository<Child>(userContext: uId);
+            var caregiverRepo = repoFactory.CreateGenericRepository<Caregiver>(userContext: uId);
+
+            var staticLanguageRepo = repoFactory.CreateGenericRepository<Language>(userContext: uId);
+            var staticEducationRepo = repoFactory.CreateGenericRepository<Education>(userContext: uId);
+            var staticRelationRepo = repoFactory.CreateGenericRepository<Relation>(userContext: uId);
+            var staticGenderRepo = repoFactory.CreateGenericRepository<Gender>(userContext: uId);
+            var staticGrantRepo = repoFactory.CreateGenericRepository<Grant>(userContext: uId);
+            var staticConsentRepo = repoFactory.CreateGenericRepository<UserConsent>(userContext: uId);
+            var staticProgrammeTypeRepo = repoFactory.CreateGenericRepository<ProgrammeType>(userContext: uId);
+            var staticRaceRepo = repoFactory.CreateGenericRepository<Race>(userContext: uId);
+
+            var staticHierarchyRepo = repoFactory.CreateGenericRepository<UserHierarchyEntity>(userContext: uId);
+
+            var staticWorkflowRepo = repoFactory.CreateGenericRepository<WorkflowStatus>(userContext: uId);
+
+ 
+            /*The rest above this to pull in practitioners is in ImportAll Function*/
 
             List<ImportAllChildInfoItem> childImportListItem = new List<ImportAllChildInfoItem>();
 
@@ -571,7 +611,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     var ConsentFroPopia = ExcelHelper.GetCellValue(currentRow.GetCell(32));
 
                     string calcdob = null;
-                    if (IDNumber != null) {
+                    if (IDNumber != null)
+                    {
                         char[] childdigits = IDNumber.ToCharArray();
                         calcdob = new DateTime(Int32.Parse("20" + childdigits[0] + childdigits[1]), Int32.Parse(childdigits[2].ToString() + childdigits[3].ToString()), Int32.Parse(childdigits[4].ToString() + childdigits[5].ToString())).ToString();
                     }
@@ -588,7 +629,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         ECDType = ECDType,
                         FranchiseeName = (FranchiseeName != null ? FranchiseeName.Trim() : null),
                         FranchiseeIDNumber = FranchiseeIDNumber,
-                        EmergencyContactFullName = (EmergencyContactName!=null?EmergencyContactName.Trim():null),
+                        EmergencyContactFullName = (EmergencyContactName != null ? EmergencyContactName.Trim() : null),
                         EmergencyContactPhoneNumber = EmergencyContactNo,
                         EthnicGroup = EthnicGroup,
                         Gender = Gender,
@@ -618,7 +659,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
 
             //now run child logic
-            
+
             if (childImportListItem.Count > 0)
             {
                 int idx2 = 0;
@@ -648,7 +689,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                                 var nameArrEmer = caregivefullname.Split(' ');
                                 emerfirstname = (nameArrEmer.Count() > 2 ? nameArrEmer[0] + " " + nameArrEmer[1] : nameArrEmer[0]);
                                 emersurname = (nameArrEmer.Count() > 2 ? nameArrEmer[2] : nameArrEmer[1]);
-                            } else if (childItem.PrimaryCaregiver != null) {
+                            }
+                            else if (childItem.PrimaryCaregiver != null)
+                            {
                                 emerfirstname = cgfirstname;
                                 emersurname = cgsurname;
                                 emergencyfullname = caregivefullname;
@@ -666,7 +709,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                                 var sRelation = staticRelationRepo.GetAll().Where(x => x.Description.Contains(childItem.CaregiverRelationship)).FirstOrDefault();
                                 if (sRelation != null)
                                     relation = sRelation.Id;
-                            } else
+                            }
+                            else
                             {
                                 var sRelation = staticRelationRepo.GetAll().Where(x => x.Description.Contains("Guardian")).FirstOrDefault();
                                 if (sRelation != null)
@@ -679,7 +723,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                                 var sEducation = staticRelationRepo.GetAll().Where(x => x.Description.Contains(childItem.CaregiverEducation)).FirstOrDefault();
                                 if (sEducation != null)
                                     education = sEducation.Id;
-                            } else
+                            }
+                            else
                             {
                                 var sEducation = staticRelationRepo.GetAll().Where(x => x.Description.Contains("Matric")).FirstOrDefault();
                                 if (sEducation != null)
@@ -692,7 +737,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                                 var sgender = staticGenderRepo.GetAll().Where(x => x.Description.Contains(childItem.Gender)).FirstOrDefault();
                                 if (gender != null)
                                     gender = sgender.Id;
-                            } else
+                            }
+                            else
                             {
                                 var sgender = staticGenderRepo.GetAll().Where(x => x.Description.Contains("Boy")).FirstOrDefault();
                                 if (gender != null)
@@ -706,7 +752,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                                 var srace = staticRaceRepo.GetAll().Where(x => x.Description.Contains(childItem.EthnicGroup)).FirstOrDefault();
                                 if (srace != null)
                                     race = srace.Id;
-                            } else
+                            }
+                            else
                             {
                                 var srace = staticRaceRepo.GetAll().Where(x => x.Description.Contains("Other")).FirstOrDefault();
                                 if (srace != null)
@@ -773,7 +820,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                                 //ConcurrencyStamp = concurrencystamp
                                 TenantId = tenantId
                             };
-                            if (gender != null) { 
+                            if (gender != null)
+                            {
                                 newUser.GenderId = gender;
                             }
                             if (race != null)
@@ -802,9 +850,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                             var userRole = userManager.AddToRoleAsync(newUser, Roles.CHILD).Result;
 
                             //update the children hierarchy
-                            string childNewHierarchy = "";                            
+                            string childNewHierarchy = "";
                             UserHierarchyEntity childHierarchy = staticHierarchyRepo.GetAll().Where(x => x.UserId.Equals(userId)).FirstOrDefault();
-                            
+
                             if (childHierarchy != null)
                             {
                                 //update NamedTypePath to not be System.Child. but System.Administrator.Practitioner.Child.
@@ -925,13 +973,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                                         var retClassGroupProgramme = classProgrammeGenericRepo.Insert(pracClassGroupProgramme);
                                     }
                                     programmeGroupId = pracClassGroup.Id.ToString();
-                                } else
+                                }
+                                else
                                 {
                                     //if the group exist already, only use that group id to create learnetr4
                                     programmeGroupId = existingGroup.Id.ToString();
                                 }
                                 //create programme
-                               
+
                                 //now create the learner and tie them to the playgroup
                                 Learner newLearner = new Learner()
                                 {
@@ -951,12 +1000,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         }
                     }
                     idx2++;
-                } 
+                }
             }
 
 
 
-                        return true;
+            return true;
         }
 
         public bool UpdatePractitionerShareInfo([Service] IHttpContextAccessor contextAccessor,

@@ -185,7 +185,25 @@ export default function Practitioners() {
   const UploadContentImport = () => {
     panel({
       noPadding: true,
-      title: `Upload Data Import`,
+      title: `Upload Data Import Users`,
+      render: (onSubmit: any) => (
+        <UploadAllImportTemplate
+          closeDialog={(created: boolean) => {
+            onSubmit();
+
+            if (created) {
+              refetch();
+            }
+          }}
+        />
+      ),
+    });
+  };
+
+  const UploadContentImportChildren = () => {
+    panel({
+      noPadding: true,
+      title: `Upload Data Import Children/Classes`,
       render: (onSubmit: any) => (
         <UploadAllImportTemplate
           closeDialog={(created: boolean) => {
@@ -272,7 +290,7 @@ export default function Practitioners() {
                                       className="mr-3 h-5 w-5 text-gray-400"
                                       aria-hidden="true"
                                     />
-                                    Upload template
+                                    Upload Practitioners
                                   </div>
                                 </Menu.Item>
                                 <Menu.Item>
@@ -284,7 +302,21 @@ export default function Practitioners() {
                                       className="mr-3 h-5 w-5 text-gray-400"
                                       aria-hidden="true"
                                     />
-                                    Upload Import
+                                    Upload Data Import Users
+                                  </div>
+                                </Menu.Item>
+                                <Menu.Item>
+                                  <div
+                                    onClick={() =>
+                                      UploadContentImportCHildren()
+                                    }
+                                    className="text-gray-700 flex px-4 py-2 text-sm cursor-pointer"
+                                  >
+                                    <UploadIcon
+                                      className="mr-3 h-5 w-5 text-gray-400"
+                                      aria-hidden="true"
+                                    />
+                                    Upload Data Import Children Classes
                                   </div>
                                 </Menu.Item>
                               </div>
