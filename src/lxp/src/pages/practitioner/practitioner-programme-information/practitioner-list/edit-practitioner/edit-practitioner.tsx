@@ -40,29 +40,29 @@ export const EditPractitioner: React.FC<EditPractitionerProps> = ({
     reValidateMode: 'onChange',
   });
 
-  // const { firstName, surname } = useWatch({
-  //   control: practitionerInfoFormControl,git checkout develop
-  // });
+  const { firstName, surname } = useWatch({
+    control: practitionerInfoFormControl,
+  });
 
-  // const handleChangePractitionerInfo = () => {
-  //   const editPractitionerModel: PractitionerDto = {
-  //     user: {
-  //       firstName: firstName ?? '',
-  //       surname: surname ?? '',
-  //     },
-  //   };
+  const handleChangePractitionerInfo = () => {
+    const editPractitionerModel: PractitionerDto = {
+      user: {
+        firstName: firstName ?? '',
+        surname: surname ?? '',
+      },
+    };
+    console.log('dispatchhhhhhhh');
+    appDispatch(
+      practitionerThunkActions.updatePractitionerById({
+        id: 'c87a3c8a-e247-4899-a757-6e5be5657206',
+        input: editPractitionerModel,
+      })
+    );
+    setEditiPractitionerVisible(false);
+    // appDispatch(practitionerThunkActions.updatePractitionerById())
+  };
 
-  //   appDispatch(
-  //     practitionerThunkActions.updatePractitionerById({
-  //       id: 'c87a3c8a-e247-4899-a757-6e5be5657206',
-  //       input: editPractitionerModel,
-  //     })
-  //   );
-  //   setEditiPractitionerVisible(false);
-  //   // appDispatch(practitionerThunkActions.)
-  // };
-
-  // console.log(getPractitionerInfoFormValues());
+  console.log(getPractitionerInfoFormValues());
   return (
     <div>
       <BannerWrapper
@@ -105,7 +105,10 @@ export const EditPractitioner: React.FC<EditPractitionerProps> = ({
                 text="Save"
                 textColor="white"
                 icon="SaveIcon"
-                onClick={() => setEditiPractitionerVisible(false)}
+                onClick={() => {
+                  handleChangePractitionerInfo();
+                  setEditiPractitionerVisible(false);
+                }}
               />
               <Button
                 size="normal"
