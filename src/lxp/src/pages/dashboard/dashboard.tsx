@@ -433,17 +433,15 @@ export const Dashboard: React.FC = () => {
     });
   };
 
+  const profilePc = userProfilePicture?.file || userProfilePicture?.reference;
+
   return (
     <BannerWrapper
       backgroundColour={'white'}
       backgroundImageColour={'primary'}
       avatar={
-        userProfilePicture?.file || userData?.profileImageUrl ? (
-          <Avatar
-            dataUrl={userProfilePicture?.file || userData?.profileImageUrl!}
-            size={'sm'}
-            displayBorder={true}
-          />
+        profilePc ? (
+          <Avatar dataUrl={profilePc} size={'sm'} displayBorder={true} />
         ) : (
           <UserAvatar
             size="sm-md"

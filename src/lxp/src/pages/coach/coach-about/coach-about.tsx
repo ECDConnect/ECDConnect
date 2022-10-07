@@ -258,25 +258,22 @@ export const CoachAbout: React.FC = () => {
   };
 
   const picturePromptOnAction = async (imageBaseString: string) => {
-    setEditProfilePictureVisible(!editProfilePictureVisible);
     setStorageItem(imageBaseString, pictureStorageKey);
+    setEditProfilePictureVisible(!editProfilePictureVisible);
 
-    const coachCopy = cloneDeep(coach);
-    const userCopy = cloneDeep(user);
-
-    if (coachCopy && userCopy) {
-      userCopy.profileImageUrl = imageBaseString;
-      Object.assign(coachCopy.user as UserDto, userCopy);
-      appDispatch(coachActions.updateCoach(coachCopy));
-      appDispatch(userActions.updateUser(userCopy));
+    const copy = Object.assign({}, user);
+    if (copy) {
+      copy.profileImageUrl = imageBaseString;
+      appDispatch(userActions.updateUser(copy));
+      // appDispatch(userThunkActions.updateUser(copy));
     }
 
     if (!userProfilePicture) {
       await createNewDocument({
         data: imageBaseString,
-        userId: coach!.user?.id || '',
+        userId: coach?.id || user?.id || '',
         fileType: FileTypeEnum.ProfileImage,
-        fileName: `ProfilePicture_${coach!.user?.id}.png`,
+        fileName: `ProfilePicture_${user?.id}.png`,
       });
     } else {
       updateDocument(userProfilePicture, imageBaseString);
@@ -322,7 +319,11 @@ export const CoachAbout: React.FC = () => {
         <div className="px-4">
           <div className={'w-full inline-flex justify-center pt-8'}>
             <ProfileAvatar
-              dataUrl={userProfilePicture?.file || ''}
+              dataUrl={
+                userProfilePicture?.file ||
+                user?.profileImageUrl ||
+                userProfilePicture?.reference
+              }
               size={'header'}
               onPressed={displayProfilePicturePrompt}
               hasConsent={true}
