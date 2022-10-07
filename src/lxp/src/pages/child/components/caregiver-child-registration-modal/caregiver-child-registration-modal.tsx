@@ -11,9 +11,9 @@ interface CaregiverChildRegistrationModalProps extends ComponentBaseProps {
 export const CaregiverChildRegistrationModal: React.FC<
   CaregiverChildRegistrationModalProps
 > = ({ childDetails, caregiverUrl, onSubmit, onCancel }) => {
-  const whatsapp = () => {
-    window.open(`https://wa.me/`);
-  };
+  // const whatsapp = () => {
+  //   window.open(`https://wa.me/`);
+  // };
 
   return (
     <ActionModal
@@ -34,7 +34,7 @@ export const CaregiverChildRegistrationModal: React.FC<
           leadingIcon: 'ArrowCircleRightIcon',
           onClick: () => {
             onSubmit();
-            whatsapp();
+            // whatsapp();
           },
         },
         {
