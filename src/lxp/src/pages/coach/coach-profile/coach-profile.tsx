@@ -45,22 +45,27 @@ export const CoachProfile: React.FC = () => {
   const getStackedMenuList = (): MenuListDataItem[] => {
     const titleStyle = 'text-textDark font-semibold text-base leading-snug';
     const subTitleStyle = 'text-sm font-h1 font-normal text-textMid';
+    const profilePc =
+      userProfilePicture?.file ||
+      coach?.user?.profileImageUrl ||
+      userProfilePicture?.reference;
     const stackedMenuList: MenuListDataItem[] = [
       {
-        title: `${coach?.user?.firstName} ${coach?.user?.surname}`.slice(0, 30),
+        title: `${coach?.user?.firstName} ${coach?.user?.surname}`.slice(0, 25),
         titleStyle,
         subTitle: 'About me',
         subTitleStyle,
-        menuIconUrl: userProfilePicture?.file,
+        menuIconUrl: profilePc,
         menuIcon: 'UserIcon',
         iconBackgroundColor: 'tertiary',
         iconColor: 'white',
 
-        showIcon: userProfilePicture?.file === undefined,
+        showIcon: profilePc === undefined,
         onActionClick: () => {
           history.push(ROUTES.COACH.ABOUT.ROOT);
         },
       },
+
       {
         title: 'Account',
         titleStyle,
