@@ -7,6 +7,8 @@ import { newGuid } from '@utils/common/uuid.utils';
 import { EditPlaygroupModel } from '@schemas/practitioner/edit-playgroups';
 import * as styles from '../../edit-practitioner-profile.styles';
 import { ConfirmPlayGroupListItem } from '../edit-playgroup-form/components/confirm-playgroup-list-item/confirm-playgroup-list-item';
+import { practitionerSelectors } from '@/store/practitioner';
+import { useSelector } from 'react-redux';
 interface ConfirmPlayGroupsProps extends FormComponentProps<any | void> {
   defaultPlayGroups: EditPlaygroupModel[];
   onEditPlaygroup: (
@@ -31,6 +33,8 @@ export const ConfirmPlayGroups: React.FC<ConfirmPlayGroupsProps> = ({
     playgroups.push({ meetingDays: [], name: '', classroomGroupId: newGuid() });
     onEditPlaygroup(playgroups, playgroups.length - 1, true);
   };
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  const isPrincipal = practitioner?.isPrincipal === true;
 
   useEffect(() => {
     setPlayGroups(defaultPlayGroups);
@@ -61,7 +65,7 @@ export const ConfirmPlayGroups: React.FC<ConfirmPlayGroupsProps> = ({
         );
       })}
 
-      {playgroups.length < 5 && (
+      {playgroups.length < 5 && isPrincipal && (
         <Button
           className="mt-4"
           color="secondary"
@@ -80,20 +84,21 @@ export const ConfirmPlayGroups: React.FC<ConfirmPlayGroupsProps> = ({
       )}
 
       <Divider className="mt-4 mb-1" dividerType="solid" />
-
-      <Button
-        type="filled"
-        color="primary"
-        className={'w-full my-3'}
-        isLoading={isLoading}
-        disabled={isLoading}
-        onClick={() => {
-          onSubmit(playgroups);
-        }}
-      >
-        {!isLoading && renderIcon('CheckCircleIcon', styles.icon)}
-        <Typography type={'help'} text={'Confirm'} color={'white'} />
-      </Button>
+      {isPrincipal && (
+        <Button
+          type="filled"
+          color="primary"
+          className={'w-full my-3'}
+          isLoading={isLoading}
+          disabled={isLoading}
+          onClick={() => {
+            onSubmit(playgroups);
+          }}
+        >
+          {!isLoading && renderIcon('CheckCircleIcon', styles.icon)}
+          <Typography type={'help'} text={'Confirm'} color={'white'} />
+        </Button>
+      )}
     </>
   );
 };
