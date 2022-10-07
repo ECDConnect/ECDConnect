@@ -51,7 +51,7 @@ export const CoachProfile: React.FC = () => {
       userProfilePicture?.reference;
     const stackedMenuList: MenuListDataItem[] = [
       {
-        title: `${coach?.user?.firstName} ${coach?.user?.surname}`.slice(0, 30),
+        title: `${coach?.user?.firstName} ${coach?.user?.surname}`.slice(0, 25),
         titleStyle,
         subTitle: 'About me',
         subTitleStyle,

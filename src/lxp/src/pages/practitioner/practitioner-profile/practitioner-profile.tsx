@@ -55,7 +55,7 @@ export const PractitionerProfile: React.FC = () => {
     const subTitleStyle = 'text-sm font-h1 font-normal text-textMid';
     const stackedMenuList: MenuListDataItem[] = [
       {
-        title: `${user?.firstName} ${user?.surname}`.slice(0, 30),
+        title: `${user?.firstName} ${user?.surname}`.slice(0, 25),
         titleStyle,
         subTitle: 'About me',
         subTitleStyle,

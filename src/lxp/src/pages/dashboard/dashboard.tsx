@@ -478,7 +478,7 @@ export const Dashboard: React.FC = () => {
       <Typography
         type={'h1'}
         color="white"
-        text={`Welcome ${userData && userData?.firstName}`}
+        text={`Welcome ${userData && userData?.firstName}`.slice(0, 25)}
         className={styles.welcomeText}
       />
 
