@@ -28,6 +28,14 @@ export const CoachClassesReassigned: React.FC = () => {
 
   const reassignedGroups = false;
 
+  const call = () => {
+    window.open(`tel:${practitioner?.user?.phoneNumber}`);
+  };
+
+  const whatsapp = () => {
+    window.open(`https://wa.me/${practitioner?.user?.phoneNumber}`);
+  };
+
   return (
     <div className={styles.contentWrapper}>
       <BannerWrapper
@@ -97,7 +105,7 @@ export const CoachClassesReassigned: React.FC = () => {
               type={'outlined'}
               className={'mr-4 rounded-xl'}
               size={'normal'}
-              onClick={() => {}}
+              onClick={whatsapp}
             >
               <div className="flex justify-center items-center">
                 <img
@@ -118,7 +126,7 @@ export const CoachClassesReassigned: React.FC = () => {
               type={'outlined'}
               className={'mr-4 rounded-xl'}
               size={'small'}
-              onClick={() => {}}
+              onClick={call}
             >
               <div className="flex justify-center items-center">
                 <PhoneIcon
