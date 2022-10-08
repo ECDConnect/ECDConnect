@@ -44,6 +44,7 @@ import { userSelectors } from '@/store/user';
 import { useStoreSetup } from '@/hooks/useStoreSetup';
 import { PractitionerService } from '@/services/PractitionerService';
 import ROUTES from '@/routes/routes';
+import { notificationActions } from '@/store/notifications';
 
 export const SetupPrincipal: React.FC = () => {
   const history = useHistory();
@@ -154,6 +155,7 @@ export const SetupPrincipal: React.FC = () => {
       }
     }
     setIsLoading(false);
+    appDispatch(notificationActions.resetNotificationState());
     history.push(ROUTES.ROOT);
   };
 

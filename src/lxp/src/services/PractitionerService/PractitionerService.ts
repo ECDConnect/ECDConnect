@@ -376,6 +376,38 @@ class PractitionerService {
     return response.data.data.updatePractitionerRegistered;
   }
 
+  async UpdatePractitionerProgress(
+    practitionerId: string,
+    progress: any
+  ): Promise<boolean> {
+    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        mutation updatePractitionerProgress(
+          $practitionerId: String
+          $progress: Decimal!
+        ) {
+          updatePractitionerProgress(
+            practitionerId: $practitionerId
+            progress: $progress
+          )
+        }
+      `,
+      variables: {
+        practitionerId,
+        progress,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'UpdatePractitionerProgress Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.updatePractitionerProgress;
+  }
+
   async AddPractitionerToPrincipal(
     input: MutationAddPractitionerToPrincipalArgs
   ): Promise<UserDto> {

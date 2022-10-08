@@ -61,6 +61,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
   const practitionersList = practitioners?.filter(
     (item) => item.userId !== practitioner?.userId
   );
+  const isPrincipal = practitioner?.isPrincipal === true;
 
   const { createNewDocument, classroomImage, updateDocument, deleteDocument } =
     useDocuments();
@@ -171,7 +172,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
         title: 'Location - N/A',
         subTitle: 'N/A',
         switchTextStyles: true,
-        actionName: 'Add',
+        actionName: undefined,
         actionIcon: 'PlusIcon',
         onActionClick: () => {},
       },
@@ -180,20 +181,28 @@ export const PractitionerProgrammeInformation: React.FC = () => {
         subTitle: programmeType?.description,
         switchTextStyles: true,
       },
-      {
+    ];
+
+    if (practitioners?.length! > 0) {
+      stackedActionList.push({
         title: 'Other practitioners on site',
         subTitle:
           practitionersList?.map((x) => x?.user?.firstName).join(', ') || 'N/A',
         switchTextStyles: true,
-        actionName: 'Edit',
-        actionIcon: 'PencilIcon',
+        actionName:
+          practitioners?.length! > 1
+            ? isPrincipal
+              ? 'Edit'
+              : 'View'
+            : undefined,
+        actionIcon: isPrincipal ? 'PencilIcon' : 'EyeIcon',
         onActionClick: () => {
           history.push(ROUTES.PRINCIPAL.PRACTITIONER_LIST, {
             returnRoute: ROUTES.PRACTITIONER.PROGRAMME_INFORMATION,
           });
         },
-      },
-    ];
+      });
+    }
 
     if (classroomGroups.length > 0) {
       stackedActionList.push({
@@ -203,8 +212,8 @@ export const PractitionerProgrammeInformation: React.FC = () => {
           .map((x) => x.name)
           .join(', '),
         switchTextStyles: true,
-        actionName: 'Edit',
-        actionIcon: 'PencilIcon',
+        actionName: isPrincipal ? 'Edit' : 'View',
+        actionIcon: isPrincipal ? 'PencilIcon' : 'EyeIcon',
         onActionClick: () => {
           history.push(ROUTES.PRACTITIONER.PROFILE.PLAYGROUPS, { a: 'hello' });
         },

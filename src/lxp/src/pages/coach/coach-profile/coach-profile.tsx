@@ -45,22 +45,27 @@ export const CoachProfile: React.FC = () => {
   const getStackedMenuList = (): MenuListDataItem[] => {
     const titleStyle = 'text-textDark font-semibold text-base leading-snug';
     const subTitleStyle = 'text-sm font-h1 font-normal text-textMid';
+    const profilePc =
+      userProfilePicture?.file ||
+      coach?.user?.profileImageUrl ||
+      userProfilePicture?.reference;
     const stackedMenuList: MenuListDataItem[] = [
       {
-        title: `${coach?.user?.firstName} ${coach?.user?.surname}`.slice(0, 30),
+        title: `${coach?.user?.firstName} ${coach?.user?.surname}`.slice(0, 25),
         titleStyle,
         subTitle: 'About me',
         subTitleStyle,
-        menuIconUrl: userProfilePicture?.file,
+        menuIconUrl: profilePc,
         menuIcon: 'UserIcon',
         iconBackgroundColor: 'tertiary',
         iconColor: 'white',
 
-        showIcon: userProfilePicture?.file === undefined,
+        showIcon: profilePc === undefined,
         onActionClick: () => {
           history.push(ROUTES.COACH.ABOUT.ROOT);
         },
       },
+
       {
         title: 'Account',
         titleStyle,
@@ -91,16 +96,14 @@ export const CoachProfile: React.FC = () => {
               return (
                 <ActionModal
                   className={'mx-4'}
-                  title={'Logout & reset data'}
-                  importantText={
-                    'Please note that by doing this, all your data will be reset and you will loose all data that has not been synced up.'
-                  }
+                  title={'Are you sure want to log out'}
+                  importantText={''}
                   icon={'ExclamationCircleIcon'}
                   iconColor={'alertDark'}
                   iconBorderColor={'alertBg'}
                   actionButtons={[
                     {
-                      text: 'Okay',
+                      text: 'Yes, log out',
                       colour: 'primary',
                       onClick: async () => {
                         onSubmit();
@@ -113,7 +116,7 @@ export const CoachProfile: React.FC = () => {
                       leadingIcon: 'CheckCircleIcon',
                     },
                     {
-                      text: 'Cancel',
+                      text: 'No, cancel',
                       textColour: 'white',
                       colour: 'primary',
                       type: 'filled',

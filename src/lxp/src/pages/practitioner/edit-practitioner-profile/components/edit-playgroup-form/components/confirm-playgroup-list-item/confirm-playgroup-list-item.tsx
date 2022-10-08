@@ -6,6 +6,8 @@ import {
 } from '@utils/practitioner/playgroups-utils';
 import * as styles from './confirm-playgroup-list-item.styles';
 import { ConfirmPlaygroupListItemProps } from './confirm-playgroup-list-item.types';
+import { practitionerSelectors } from '@/store/practitioner';
+import { useSelector } from 'react-redux';
 
 export const ConfirmPlayGroupListItem: React.FC<
   ConfirmPlaygroupListItemProps
@@ -15,6 +17,8 @@ export const ConfirmPlayGroupListItem: React.FC<
       .map((day) => getWeekdayValue(day as Weekdays))
       .join(' & ');
   };
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  const isPrincipal = practitioner?.isPrincipal === true;
 
   return (
     <div className={styles.wrapper} key={`confirm-playgroup-item-${index}`}>
@@ -34,18 +38,20 @@ export const ConfirmPlayGroupListItem: React.FC<
           />
         </div>
       </div>
-      <div>
-        <Button
-          size="small"
-          shape="normal"
-          color="primary"
-          type="outlined"
-          onClick={onPlayGroupEdit}
-        >
-          <Typography type="help" color="primary" text="Edit" />
-          {renderIcon('PencilIcon', styles.buttonIcon)}
-        </Button>
-      </div>
+      {isPrincipal && (
+        <div>
+          <Button
+            size="small"
+            shape="normal"
+            color="primary"
+            type="outlined"
+            onClick={onPlayGroupEdit}
+          >
+            <Typography type="help" color="primary" text="Edit" />
+            {renderIcon('PencilIcon', styles.buttonIcon)}
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

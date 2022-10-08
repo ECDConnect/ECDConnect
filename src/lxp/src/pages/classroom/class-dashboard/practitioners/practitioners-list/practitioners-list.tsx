@@ -8,6 +8,7 @@ import {
   Typography,
   renderIcon,
   Button,
+  AlertSeverityType,
 } from '@ecdlink/ui';
 import { getAvatarColor } from '@ecdlink/core';
 // import SearchHeader from '../../../../../components/search-header/search-header';
@@ -24,6 +25,7 @@ import {
 import { EmptyPractitioners } from './components/empty-practitioners/empty-practitioners';
 import { PractitionerDto } from '@/../../../packages/core/lib';
 import { useAppDispatch } from '@store';
+import { getPractitionerAlertModel } from '@/utils/practitioner/practitioner-alert-message-util';
 
 export const PractitionersList: React.FC = () => {
   const appDispatch = useAppDispatch();
@@ -91,15 +93,20 @@ export const PractitionersList: React.FC = () => {
     //   reports
     // );
 
+    const practitionerAlert = getPractitionerAlertModel(
+      practitionerRecord,
+      practitioners
+    );
+
     return {
       id: practitioner?.id,
       profileDataUrl: practitioner?.user?.profileImageUrl!,
       title: `${practitioner?.user?.firstName} ${practitioner?.user?.surname}`,
-      subTitle: '',
+      subTitle: practitionerAlert?.message || '',
       profileText: `${
         practitioner?.user?.firstName && practitioner?.user?.firstName[0]
       }${practitioner?.user?.surname && practitioner?.user?.surname[0]}`,
-      alertSeverity: 'none',
+      alertSeverity: practitionerAlert.status as AlertSeverityType,
       avatarColor: getAvatarColor() || '',
       onActionClick: () => handleClick(practitioner?.userId!),
     };

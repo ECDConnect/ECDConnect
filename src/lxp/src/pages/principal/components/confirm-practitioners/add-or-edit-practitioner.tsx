@@ -109,6 +109,10 @@ export const AddOrEditPractitioner = ({
     });
   };
 
+  const callForHelp = () => {
+    window.open('tel:+27800014817');
+  };
+
   return (
     <div className="wrapper-with-sticky-button">
       <div className="flex flex-col gap-4 mt-4">
@@ -191,6 +195,7 @@ export const AddOrEditPractitioner = ({
                   type={'filled'}
                   color={'primary'}
                   textColor={'white'}
+                  onClick={callForHelp}
                 />
               }
             />
