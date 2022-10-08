@@ -285,7 +285,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     item.PhoneNumber = cellnumber;
                     item.IDNumber = idNumber;
                     item.ProgrammeTypeDesc = programmeTypeDesc;
-                    item.ProgrammeTypeId = programmeType.Id.ToString();
+                    item.ProgrammeTypeId = (programmeType!=null? programmeType.Id.ToString():null);
                     item.SiteArea = siteArea;
                     item.SiteName = siteName;
                     item.ClassName = className;
@@ -564,7 +564,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             List<ImportAllChildInfoItem> childImportListItem = new List<ImportAllChildInfoItem>();
 
             //now do sheet 2
-            var sheet2 = workbook.GetSheetAt(1);
+            var sheet2 = workbook.GetSheetAt(0);
             int idx = 1;
             for (var row = 0; row <= sheet2.LastRowNum; row++)
             {
@@ -697,10 +697,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                                 emergencyfullname = caregivefullname;
                             }
                             //check language
-                            var languageEntity = languages.Where(x => x.Description.Contains(childItem.HomeLanguage)).FirstOrDefault();
-                            if (languageEntity == null)
+                            Guid? languageId = null;
+                            if (childItem.HomeLanguage != null)
                             {
-                                languageEntity = languages.Where(x => x.Locale == "en-za").FirstOrDefault();
+                                var languageEntity = languages.Where(x => x.Description.Contains(childItem.HomeLanguage)).FirstOrDefault();
+                                if (languageEntity == null)
+                                {
+                                    languageEntity = languages.Where(x => x.Locale == "en-za").FirstOrDefault();
+                                }
+                                languageId = languageEntity.Id;
                             }
 
                             Guid? relation = null;

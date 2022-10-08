@@ -25,6 +25,7 @@ import PractitionerPanelCreate from './components/practitioner-panel-create/prac
 import PractitionerPanelEdit from './components/practitioner-panel-edit/practitioner-panel-edit';
 import UploadPractitionerTemplate from './components/upload-template/upload-template';
 import UploadAllImportTemplate from './components/upload-import-template/upload-import-template';
+import UploadAllChildrenTemplate from './components/upload-import-template-children/upload-import-template-children';
 
 export default function Practitioners() {
   const { hasPermission } = useUser();
@@ -205,7 +206,7 @@ export default function Practitioners() {
       noPadding: true,
       title: `Upload Data Import Children/Classes`,
       render: (onSubmit: any) => (
-        <UploadAllImportTemplate
+        <UploadAllChildrenTemplate
           closeDialog={(created: boolean) => {
             onSubmit();
 
@@ -308,7 +309,7 @@ export default function Practitioners() {
                                 <Menu.Item>
                                   <div
                                     onClick={() =>
-                                      UploadContentImportCHildren()
+                                      UploadContentImportChildren()
                                     }
                                     className="text-gray-700 flex px-4 py-2 text-sm cursor-pointer"
                                   >
