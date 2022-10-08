@@ -129,6 +129,12 @@ export const importAll = gql`
   }
 `;
 
+export const importAllChildren = gql`
+  mutation importAllChildren($file: String) {
+    importAllChildren(file: $file)
+  }
+`;
+
 export const practitionerExcelTemplateGenerator = gql`
   query {
     practitionerExcelTemplateGenerator {

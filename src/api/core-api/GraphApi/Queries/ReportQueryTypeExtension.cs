@@ -16,6 +16,7 @@ using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
+using NPOI.OpenXmlFormats.Spreadsheet;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -164,27 +165,46 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             
             var uId = contextAccessor.HttpContext.GetUser().Id;
 
-            var attendedVsAbsent = new List<MetricReportStatItem>();
+            
 
             DateTime reference = DateTime.Now;
-            var fromDate = new DateTime(reference.Year, reference.Month, 1);
-            var toDate = reference.AddMonths(1).AddDays(-1);
-            var attendaceRepo = attendanceRepo.GetAllByDateRange(fromDate, toDate);
+            //var fromDate = new DateTime(reference.Year, reference.Month, 1);
+            //var toDate = reference.AddMonths(1).AddDays(-1);
+            //var attendaceRepo = attendanceRepo.GetAllByDateRange(fromDate, toDate);
 
-            var attendanceAttended = attendaceRepo.Where(x => x.Attended).Count();
-            var attendanceUnAttended = attendaceRepo.Where(x => !x.Attended).Count();
 
-            attendedVsAbsent.Add(new MetricReportStatItem() { Name = "Attended", Value = attendanceAttended.ToString() });
-            attendedVsAbsent.Add(new MetricReportStatItem() { Name = "Absent", Value = attendanceUnAttended.ToString() });
+
+
             List<ClassroomMetricReport> metrics = new List<ClassroomMetricReport>();
             var classRepo = repoFactory.CreateRepository<Classroom>(userContext: uId);
             var classes = classRepo.GetAll(); //get all classrooms assigned to user
-            foreach (var c in classes)
+
+            for (int idx = 1; idx <= 12; idx++)
             {
-                var thisClass = new ClassroomMetricReport() { childCount = 4, attendancePercentage = 75, classroomId = c.Id };
-                metrics.Add(thisClass);
+                var fromDate = new DateTime(reference.Year, reference.Month, 1);
+                fromDate = fromDate.AddMonths(-idx);
+                var toDate = reference.AddMonths(idx+1).AddDays(-1); //todate is always start of the month, + 1 month - 1 day gives the last day of that month
+                
+                var attendaceRepo = attendanceRepo.GetAllByDateRange(fromDate, toDate);
+                var attendanceAttended = attendaceRepo.Where(x => x.Attended).Count();
+                var attendanceUnAttended = attendaceRepo.Where(x => !x.Attended).Count();
+
+                foreach (var c in classes)
+                {
+                    //count children in class
+
+
+                    //calculate attendance
+                    var attendedVsAbsent = new List<MetricReportStatItem>();
+                    attendedVsAbsent.Add(new MetricReportStatItem() { Name = "Attended", Value = attendanceAttended.ToString() });
+                    attendedVsAbsent.Add(new MetricReportStatItem() { Name = "Absent", Value = attendanceUnAttended.ToString() });
+
+                    
+
+                    var thisClass = new ClassroomMetricReport() { childCount = 4, attendancePercentage = 75, classroomId = c.Id, month = fromDate.Month, year = fromDate.Year};
+                    metrics.Add(thisClass);
+                }
             }
-            //
 
             return metrics; 
         }
@@ -193,19 +213,19 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         public List<NotificationDisplay> GetDisplayMetrics([Service] IHttpContextAccessor contextAccessor, 
             [Service] AttendanceTrackingRepository attendanceRepo,
             [Service] IGenericRepositoryFactory repoFactory,
-            string type)
+            string type)//, DateTime fromDate,DateTime toDate
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
 
             var notificationList = new List<NotificationDisplay>();
 
             //loop for last 12 months
-            for (int idx = 1; idx <= 12; idx++)
-            {
+            //for (int idx = 1; idx <= 12; idx++)
+            //{
                 DateTime reference = DateTime.Now;
-                var fromDate = new DateTime(reference.Year, reference.Month, 1);
-                fromDate = fromDate.AddMonths(-idx);
-                var toDate = reference.AddMonths(-idx).AddDays(-1);//decrement
+                //fromDate = (fromDate!=null?fromDate : new DateTime(reference.Year, reference.Month, 1).AddMonths(-1));
+                //fromDate = fromDate.AddMonths(-1);
+                //toDate = (toDate != null ? toDate : reference.AddMonths(-idx).AddDays(-1);//decrement
 
                 //var attendanceAttended = attendaceRepo.Where(x => x.Attended).Count();
                 //var attendanceUnAttended = attendaceRepo.Where(x => !x.Attended).Count();
@@ -269,7 +289,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                         }
                         break;
                 }
-            }
+            //}
 
 
 
