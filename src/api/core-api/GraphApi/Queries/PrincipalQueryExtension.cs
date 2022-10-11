@@ -168,5 +168,82 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             List<Classroom> classes = classroomRepo.GetAll().Where(x => x.UserId.Equals(userId)).ToList();
             return classes;
         }
+
+        public List<ClassroomGroup> GetAllClassroomGroupsByPrincipal([Service] IHttpContextAccessor contextAccessor,
+    [Service] IGenericRepositoryFactory repoFactory,
+    string userId)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var classroomRepo = repoFactory.CreateRepository<Classroom>(userContext: uId);
+            var classroomGroupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
+            List<ClassroomGroup> allClassGroups = new List<ClassroomGroup>();
+            List<Classroom> classes = classroomRepo.GetAll().Where(x => x.UserId.Equals(userId)).ToList();
+            foreach(Classroom classroom in classes)
+            {
+                List<ClassroomGroup> cgroups = classroomGroupRepo.GetAll().Where(x => x.ClassroomId.Equals(classroom.Id)).ToList(); 
+                allClassGroups.AddRange(cgroups);
+            }
+            return allClassGroups;
+        }
+
+        public List<Child> GetAllChildrenUnderPrincipal([Service] IHttpContextAccessor contextAccessor,
+[Service] IGenericRepositoryFactory repoFactory,
+string userId)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
+            var learnerRepo = repoFactory.CreateRepository<Learner>(userContext: uId);
+            List<Child> children = new List<Child>();
+            //List < ClassroomGroup> cGroups = this.GetAllClassroomGroupsByPrincipal(contextAccessor, dbFactory,repoFactory, userId).ToList();
+            //foreach (var cg in cGroups)
+            //{
+            //    List<Learner> learnerList = new List<Learner>();
+            //    learnerList = learnerRepo.GetAll().Where(x => x.ClassroomGroupId.Equals(cg.Id)).ToList();
+
+            //    foreach(Learner learner in learnerList)
+            //    {
+            //        var child = childRepo.GetByUserId(learner.UserId);
+            //        children.Add(child);
+            //    }                
+            //}
+            //return children;
+            if (userId != null)
+            {
+                var dbRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+                List<Practitioner> practitioners = dbRepo.GetAll().Where(x => x.PrincipalHierarchy.HasValue).ToList();
+                practitioners.Where(x => x.PrincipalHierarchy.Equals(userId)).ToList();
+                Practitioner principalPrac = dbRepo.GetByUserId(userId);
+                if (!practitioners.Contains(principalPrac))  //add principal user to the list
+                    practitioners.Add(principalPrac);
+                foreach (var practioner in practitioners)
+                {
+                    List<Child> practitionerChildren = childRepo.GetAll().Where(x => x.Hierarchy.Contains(practioner.Hierarchy)).ToList();
+                    children.AddRange(practitionerChildren);
+                }
+            }
+            return children;
+        }
+        public List<Child> GetAllChildrenUnderPrincipalByClassrooms([Service] IHttpContextAccessor contextAccessor,
+[Service] IGenericRepositoryFactory repoFactory,
+string userId)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
+            var learnerRepo = repoFactory.CreateRepository<Learner>(userContext: uId);
+            List<Child> children = new List<Child>();
+            List<ClassroomGroup> cGroups = this.GetAllClassroomGroupsByPrincipal(contextAccessor, repoFactory, userId).ToList();
+            foreach (var cg in cGroups)
+            {
+                List<Learner> learnerList = new List<Learner>();
+                learnerList = learnerRepo.GetAll().Where(x => x.ClassroomGroupId.Equals(cg.Id)).ToList();
+
+                foreach (Learner learner in learnerList)
+                {
+                    var child = childRepo.GetByUserId(learner.UserId);
+                    children.Add(child);
+                }
+            }
+            return children;
+        }
     }
 }
