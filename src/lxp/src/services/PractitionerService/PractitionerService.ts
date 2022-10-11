@@ -375,7 +375,7 @@ class PractitionerService {
 
     return response.data.data.updatePractitionerRegistered;
   }
-  
+
   async UpdatePractitionerProgress(
     practitionerId: string,
     progress: any

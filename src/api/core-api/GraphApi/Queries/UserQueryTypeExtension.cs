@@ -62,17 +62,20 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 //Franchisor
                 if (roles.Any(x => x.Name.Contains("Franchisor")))                
                 {
-                    user.franchisorObjectData = new FranchisorQueryExtension().GetFranchisorByUserId(contextAccessor, dbFactory, repoFactory, userId);
+                    var franchisorRepo = repoFactory.CreateGenericRepository<Franchisor>(userContext: user.Id);
+                    user.franchisorObjectData = franchisorRepo.GetByUserId(user.Id);                    
                 }
                 //Coach
                 if (roles.Any(x => x.Name.Contains("Coach")))
                     {
-                    user.coachObjectData = new CoachQueryExtension().GetCoachByCoachUserId(contextAccessor, dbFactory, repoFactory, userId);
+                    var coachRepo = repoFactory.CreateGenericRepository<Coach>(userContext: user.Id);
+                    user.coachObjectData = coachRepo.GetByUserId(user.Id);                    
                 }
                 //Principal or Practitioner - Principal is just a Practitioner with IsPrincipal as true
                 if (roles.Any(x => x.Name.Contains("Principal") || x.Name.Contains("Practitioner")))
                 {
-                    var userData = new PractitionerQueryExtension().GetPractitionerByUserId(contextAccessor, repoFactory, userId);
+                    var practiRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: user.Id);
+                    var userData = practiRepo.GetByUserId(user.Id);                    
                     if (userData != null)
                     {
                         if (userData.IsPrincipal.HasValue && userData.IsPrincipal == true)
@@ -89,10 +92,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 }
                 //Child
                 if (roles.Any(x => x.Name.Contains("Child")))
-                    {
-                    user.childObjectData = new ChildQueryExtension().GetChildByUserId(contextAccessor, dbFactory, repoFactory, userId);
+                {
+                    var childRepo = repoFactory.CreateGenericRepository<Child>(userContext: user.Id);
+                    user.childObjectData = childRepo.GetByUserId(user.Id);                    
                 }
-                
 
                 return user.IsActive ? user : default(ApplicationUser);
             }

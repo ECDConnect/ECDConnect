@@ -2068,6 +2068,7 @@ export type Mutation = {
   fileUpload?: Maybe<DocumentModel>;
   generateCaregiverChildToken?: Maybe<Scalars['String']>;
   importAll: Scalars['Boolean'];
+  importAllChildren: Scalars['Boolean'];
   mapPractitionerToPrincipal?: Maybe<Principal>;
   openAccessAddChild: Scalars['Boolean'];
   practitionerImport: Scalars['Boolean'];
@@ -2792,6 +2793,10 @@ export type MutationGenerateCaregiverChildTokenArgs = {
 };
 
 export type MutationImportAllArgs = {
+  file?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationImportAllChildrenArgs = {
   file?: InputMaybe<Scalars['String']>;
 };
 

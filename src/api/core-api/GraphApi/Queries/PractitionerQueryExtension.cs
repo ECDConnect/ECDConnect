@@ -117,18 +117,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 [Service] IGenericRepositoryFactory repoFactory,
 string userId)
         {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
+            var childRepo = repoFactory.CreateRepository<Child>(userContext: userId);
 
-            List<Child> children = new List<Child>();
-            var dbRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            List<Practitioner> practitioners = dbRepo.GetAll().Where(x => x.UserId == userId).ToList();
-            practitioners.Where(x => x.UserId.Equals(userId)).ToList();
-            foreach (var practioner in practitioners)
-            {
-                List<Child> practitionerChildren = childRepo.GetAll().Where(x => x.Hierarchy.Contains(practioner.Hierarchy)).ToList();
-                children.AddRange(practitionerChildren);
-            }
+            var dbRepo = repoFactory.CreateRepository<Practitioner>(userContext: userId);
+            Practitioner practitioner = dbRepo.GetByUserId(userId);
+
+            List<Child> children = childRepo.GetAll().Where(x => x.Hierarchy.Contains(practitioner.Hierarchy)).ToList();
             return children;
         }
 
@@ -136,8 +130,7 @@ string userId)
 [Service] IGenericRepositoryFactory repoFactory,
 string userId)
         {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            var classRepo = repoFactory.CreateRepository<Classroom>(userContext: uId);
+            var classRepo = repoFactory.CreateRepository<Classroom>(userContext: userId);
 
             return classRepo.GetListByUserId(userId);
         }
@@ -147,7 +140,7 @@ string userId)
 string userId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
-            var classRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
+            var classRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: userId);
 
             return classRepo.GetAll().Where(x => x.UserId.Equals(userId)).ToList();
         }
@@ -291,6 +284,39 @@ string userId)
 
             return classrooms;
         }
+
+
+        public List<Child> GetAllChildrenByRole([Service] IHttpContextAccessor contextAccessor,
+            [Service] UserManager<ApplicationUser> userManager,
+            [Service] RoleManager<IdentityRole> roleManager,
+            [Service] IGenericRepositoryFactory repoFactory,
+            string userId)
+        {
+            string role = new RoleQueryTypeExtension().GetRoleForUser(contextAccessor, userManager,repoFactory,roleManager, userId);            
+            List<Child> children = new List<Child>();
+            if (role != null)
+            {
+                switch (role)
+                {
+                    case "Franchisor":
+                        children = new FranchisorQueryExtension().GetAllChildrenForFranchisor(contextAccessor, repoFactory, userId);
+                        break;
+                    case "Coach":
+                        children = new CoachQueryExtension().GetAllChildrenForCoach(contextAccessor, repoFactory, userId);
+                        break;
+                    case "Principal":
+                        children = new PrincipalQueryExtension().GetAllChildrenUnderPrincipal(contextAccessor, repoFactory, userId);
+                        break;
+                    case "Practitioner":
+                        children = this.GetAllChildrenForPractitioner(contextAccessor,repoFactory, userId);
+                            break;
+                    default:
+                        break;
+                }
+            }
+            return children;
+        }
+
     }
 
     }

@@ -8,7 +8,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
     {
         public int childCount { get; set; }
         public int attendancePercentage { get; set; }
-
+        public int month { get; set; }
+        public int year { get; set; }
         public Guid classroomId { get; set; }
     }
 }
