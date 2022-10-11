@@ -271,7 +271,7 @@ export const CoachAbout: React.FC = () => {
     if (!userProfilePicture) {
       await createNewDocument({
         data: imageBaseString,
-        userId: coach?.id || user?.id || '',
+        userId: user?.id || '',
         fileType: FileTypeEnum.ProfileImage,
         fileName: `ProfilePicture_${user?.id}.png`,
       });
