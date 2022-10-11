@@ -214,9 +214,7 @@ namespace ECDLink.DataAccessLayer.Hierarchy
                     }
                 }
             }
-            
-
-                return hierarchyList;
+            return hierarchyList;
         }
 
         public string GetHierarchy<TChild>(string parentId, string childId)

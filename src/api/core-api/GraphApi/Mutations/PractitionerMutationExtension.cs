@@ -226,7 +226,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             //SendInvitationMutationExtension invite = new SendInvitationMutationExtension();
             var sheet1 = workbook.GetSheetAt(0);
-            for (var row = 0; row <= sheet1.LastRowNum; row++)
+            for (var row = 1; row <= sheet1.LastRowNum; row++)
             {
                 var currentRow = sheet1.GetRow(row);
 
@@ -498,11 +498,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     }
                 }
             }
-
             //everything below here to import children and playgroups have moved to function ImportAllChildren
-
-
-
             return true;
         }
 
@@ -566,7 +562,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             //now do sheet 2
             var sheet2 = workbook.GetSheetAt(0);
             int idx = 1;
-            for (var row = 0; row <= sheet2.LastRowNum; row++)
+            for (var row = 1; row <= sheet2.LastRowNum; row++)
             {
                 var currentRow = sheet2.GetRow(row);
 
