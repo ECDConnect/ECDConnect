@@ -1,3 +1,4 @@
+import Loader from '../../../components/loader/loader';
 import { LoginRequestModel, useDialog } from '@ecdlink/core';
 import {
   ActionModal,
@@ -142,29 +143,30 @@ export const VerifyPhoneNumber = () => {
 
   return (
     <>
-      <BannerWrapper color="primary" size={'normal'} renderBorder={true}>
+      <Loader loadingMessage={'Loading . . .'} />
+      {/* <BannerWrapper color="primary" size={'normal'} renderBorder={true}>
         <div className={styles.contentWrapper}>
-          {/* <Typography
+          <Typography
             type="h1"
             color="primary"
             text={'Enter your 6 digit code'}
             className={'mb-4'}
-          /> */}
-          {/* <Alert
+          />
+          <Alert
             type="info"
             message={`We've sent an SMS with a 6-digit code to ${state?.phoneNumber}`}
             className={'mb-4'}
-          /> */}
-          {/* <FormInput<VerifyPhoneNumberModel>
+          />
+          <FormInput<VerifyPhoneNumberModel>
             type={'number'}
             register={register}
             nameProp={'code'}
             label={'6-digit code'}
             placeholder={'------'}
             className={classNames(styles.marginBottom, 'w-40')}
-          /> */}
-          {/* <Divider /> */}
-          {/* {!isValid && (
+          />
+          <Divider />
+          {!isValid && (
             <Button
               type="outlined"
               color="primary"
@@ -179,7 +181,7 @@ export const VerifyPhoneNumber = () => {
                 text={'Send me a new code'}
               />
             </Button>
-          )} */}
+          )}
           {
             <Button
               type="filled"
@@ -219,7 +221,7 @@ export const VerifyPhoneNumber = () => {
             </Button>
           </div>
         </div>
-      </BannerWrapper>
+      </BannerWrapper> */}
     </>
   );
 };
