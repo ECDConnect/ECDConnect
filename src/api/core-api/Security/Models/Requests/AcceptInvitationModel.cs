@@ -8,6 +8,6 @@ namespace EcdLink.Api.CoreApi.Security.Models.Requests
 
         public string Password { get; set; }
 
-        public string VerificationCode { get; set; }
+        //public string VerificationCode { get; set; }
     }
 }

@@ -12,7 +12,7 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useHistory, useLocation } from 'react-router-dom';
 import {
@@ -42,6 +42,10 @@ export const VerifyPhoneNumber = () => {
   });
 
   const { isValid } = formState;
+
+  useEffect(() => {
+    confirm();
+  }, []);
 
   const displayTollFreeDialog = () => {
     dialog({
@@ -96,15 +100,16 @@ export const VerifyPhoneNumber = () => {
     }, 60000);
   };
 
-  const confirm = async (formValue: VerifyPhoneNumberModel) => {
-    if (!formValue.code) return;
+  const confirm = async () => {
+    //if (!formValue.code) return;
+
     setIsLoading(true);
     const accepted = await new AuthService().AcceptInvitationRequest({
       username: state.username,
       password: state.password,
       token: state.token,
-      verificationCode: formValue.code,
     });
+
     setIsLoading(false);
     if (accepted) {
       const body: LoginRequestModel = {
@@ -139,27 +144,27 @@ export const VerifyPhoneNumber = () => {
     <>
       <BannerWrapper color="primary" size={'normal'} renderBorder={true}>
         <div className={styles.contentWrapper}>
-          <Typography
+          {/* <Typography
             type="h1"
             color="primary"
             text={'Enter your 6 digit code'}
             className={'mb-4'}
-          />
-          <Alert
+          /> */}
+          {/* <Alert
             type="info"
             message={`We've sent an SMS with a 6-digit code to ${state?.phoneNumber}`}
             className={'mb-4'}
-          />
-          <FormInput<VerifyPhoneNumberModel>
+          /> */}
+          {/* <FormInput<VerifyPhoneNumberModel>
             type={'number'}
             register={register}
             nameProp={'code'}
             label={'6-digit code'}
             placeholder={'------'}
             className={classNames(styles.marginBottom, 'w-40')}
-          />
-          <Divider />
-          {!isValid && (
+          /> */}
+          {/* <Divider /> */}
+          {/* {!isValid && (
             <Button
               type="outlined"
               color="primary"
@@ -174,19 +179,22 @@ export const VerifyPhoneNumber = () => {
                 text={'Send me a new code'}
               />
             </Button>
-          )}
-          {isValid && (
+          )} */}
+          {
             <Button
               type="filled"
               color="primary"
               isLoading={isLoading}
-              onClick={() => confirm(getValues())}
+              onClick={() => confirm()}
               className={styles.marginTop}
             >
-              {renderIcon('CheckCircleIcon', styles.iconSize)}
-              <Typography type={'small'} color="white" text={'Confirm'} />
+              <Typography
+                type={'small'}
+                color="white"
+                text={'Complete Sign Up'}
+              />
             </Button>
-          )}
+          }
 
           <div className={classNames(styles.helpWrapper, 'mt-6')}>
             {renderIcon(
