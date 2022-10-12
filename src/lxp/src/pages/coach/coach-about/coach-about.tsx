@@ -23,8 +23,8 @@ import { PhotoPrompt } from '../../../components/photo-prompt/photo-prompt';
 import { DialogFormInput } from '@models/practitioner/DialogFormInput';
 import { setStorageItem } from '@utils/common/local-storage.utils';
 import { practitionerForCoachSelectors } from '@/store/practitionerForCoach';
-import { coachActions, coachSelectors } from '@store/coach';
-import { userActions, userSelectors } from '@/store/user';
+import { coachActions, coachSelectors, coachThunkActions } from '@store/coach';
+import { userActions, userSelectors, userThunkActions } from '@/store/user';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { childrenSelectors } from '@/store/children';
@@ -221,7 +221,7 @@ export const CoachAbout: React.FC = () => {
       setDisplayError(true);
     } else {
       setEditFieldVisible(false);
-      saveCoachUserData();
+      await saveCoachUserData();
     }
   };
 
@@ -282,7 +282,6 @@ export const CoachAbout: React.FC = () => {
 
   const saveCoachUserData = () => {
     const coachForm = coachAboutFormGetValues();
-
     const coachCopy = cloneDeep(coach);
     const userCopy = cloneDeep(user);
 
@@ -295,8 +294,13 @@ export const CoachAbout: React.FC = () => {
 
       Object.assign(coachCopy.user as UserDto, userCopy);
 
+      console.log('user upd');
       appDispatch(userActions.updateUser(userCopy));
+      appDispatch(userThunkActions.updateUser(userCopy));
+      console.log('coach upd');
       appDispatch(coachActions.updateCoach(coachCopy));
+      appDispatch(coachThunkActions.updateCoach(coachCopy));
+
       setNewStackListItems(coachCopy);
     }
   };
