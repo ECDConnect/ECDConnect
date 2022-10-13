@@ -219,13 +219,15 @@ string userId)
                     {
                         classroom = classroomRepo.GetById(classroomGroup.ClassroomId);
                         principalClassroom.ClassroomGroupName = classroomGroup.Name;
+                        principalClassroom.ClassroomGroupId = classroomGroup.Id.ToString();
                     }
                     else
                     {
                         //if no classroomgroup is available to look at, use the classroom for principal
                         classroom = classroomRepo.GetByUserId(principal.UserId);
                     }
-                    principalClassroom.ClassroomName = classroom.Name;                    
+                    principalClassroom.ClassroomName = classroom.Name;   
+                    principalClassroom.ClassroomId = classroom.Id.ToString();
                 }
             }
             return principalClassroom;
