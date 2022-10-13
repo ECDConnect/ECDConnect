@@ -331,10 +331,15 @@ string userId)
             {
                 List<Practitioner> practitioners = practiRepo.GetAll().Where(x => (x.PrincipalHierarchy.HasValue ? x.PrincipalHierarchy.Equals(practi.PrincipalHierarchy) : (x.IsPrincipal == true ? x.UserId.Equals(userId) : x.UserId.Equals(userId)))).ToList();
                 //also add principal
-                //if (practi.IsPrincipal == true) {
-                //    Practitioner practiPrincipal = practiRepo.GetByUserId(practi.UserId.ToString());
-                //    if (practiPrincipal != null) practitioners.Add(practiPrincipal);
-                //}
+                if (practi.IsPrincipal == true) {
+                    Practitioner practiPrincipal = practiRepo.GetByUserId(practi.UserId.ToString());
+                    if (practiPrincipal != null) practitioners.Add(practiPrincipal);
+                }
+                if (practi.PrincipalHierarchy.HasValue)
+                {
+                    Practitioner practiPrincipal = practiRepo.GetByUserId(practi.PrincipalHierarchy.ToString());
+                    if (practiPrincipal != null) practitioners.Add(practiPrincipal);
+                }
 
                 if (practitioners.Count > 0)
                 {
