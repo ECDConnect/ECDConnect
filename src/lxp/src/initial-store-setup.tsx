@@ -8,10 +8,7 @@ import { authActions } from './store/auth';
 import { caregiverActions, caregiverThunkActions } from './store/caregiver';
 import { childrenActions, childrenThunkActions } from './store/children';
 import { classroomsActions, classroomsThunkActions } from './store/classroom';
-import {
-  activityActions,
-  activityThunkActions,
-} from './store/content/activity';
+import { activityActions } from './store/content/activity';
 import {
   contentConsentActions,
   contentConsentThunkActions,
@@ -20,18 +17,12 @@ import {
   programmeRoutineActions,
   programmeRoutineThunkActions,
 } from './store/content/programme-routine';
-import {
-  programmeThemeActions,
-  programmeThemeThunkActions,
-} from './store/content/programme-theme';
+import { programmeThemeActions } from './store/content/programme-theme';
 import {
   contentReportActions,
   contentReportThunkActions,
 } from './store/content/report';
-import {
-  storyBookActions,
-  storyBookThunkActions,
-} from './store/content/story-book';
+import { storyBookActions } from './store/content/story-book';
 import { documentActions, documentThunkActions } from './store/document';
 import { notesActions, notesThunkActions } from './store/notes';
 import { notificationActions } from './store/notifications';
@@ -198,7 +189,6 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   };
 
   const initStaticStoreSetup = async () => {
-    const today = new Date();
     setStaticDataLoading(true);
 
     await appDispatch(
@@ -229,18 +219,6 @@ const InitialStoreSetup: React.FC = ({ children }) => {
 
     await appDispatch(
       programmeRoutineThunkActions.getProgrammeRoutines({ locale: 'en-za' })
-    ).unwrap();
-
-    await appDispatch(
-      activityThunkActions.getActivities({ locale: 'en-za' })
-    ).unwrap();
-
-    await appDispatch(
-      storyBookThunkActions.getStoryBooks({ locale: 'en-za' })
-    ).unwrap();
-
-    await appDispatch(
-      programmeThemeThunkActions.getProgrammeThemes({ locale: 'en-za' })
     ).unwrap();
 
     setStaticDataLoading(false);

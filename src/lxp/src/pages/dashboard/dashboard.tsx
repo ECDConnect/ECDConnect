@@ -21,11 +21,7 @@ import { OfflineSyncModal } from '../../modals';
 import OfflineSyncTimeExceeded from '../../modals/offline-sync/offline-sync-time-exceeded';
 import { useAppDispatch } from '@store';
 import { classroomsForCoachThunkActions } from '../../store/classroomForCoach';
-import {
-  classroomsActions,
-  classroomsSelectors,
-  classroomsThunkActions,
-} from '@store/classroom';
+import { classroomsSelectors, classroomsThunkActions } from '@store/classroom';
 import { notificationsSelectors } from '@store/notifications';
 import { settingSelectors } from '@store/settings';
 import { userSelectors } from '@store/user';
@@ -33,15 +29,17 @@ import { analyticsActions } from '@store/analytics';
 import { DashboardItems } from './components/dashboard-items/dashboard-items';
 import { practitionerForCoachThunkActions } from '@/store/practitionerForCoach';
 import {
-  practitionerActions,
   practitionerSelectors,
   practitionerThunkActions,
 } from '@/store/practitioner';
 import { childrenThunkActions } from '@/store/children';
 import * as styles from './dashboard.styles';
 import ROUTES from '@routes/routes';
-import { staticDataActions, staticDataThunkActions } from '@store/static-data';
-import { settingActions, settingThunkActions } from '@store/settings';
+import { staticDataThunkActions } from '@store/static-data';
+import { settingThunkActions } from '@store/settings';
+import { programmeThemeThunkActions } from '@store/content/programme-theme';
+import { storyBookThunkActions } from '@store/content/story-book';
+import { activityThunkActions } from '@store/content/activity';
 const { version } = require('../../../package.json');
 
 export enum NavigationTypes {
@@ -101,6 +99,18 @@ export const Dashboard: React.FC = () => {
     await appDispatch(staticDataThunkActions.getDocumentTypes({})).unwrap();
     await appDispatch(staticDataThunkActions.getNoteTypes({})).unwrap();
     await appDispatch(staticDataThunkActions.getWorkflowStatuses({})).unwrap();
+
+    await appDispatch(
+      activityThunkActions.getActivities({ locale: 'en-za' })
+    ).unwrap();
+
+    await appDispatch(
+      storyBookThunkActions.getStoryBooks({ locale: 'en-za' })
+    ).unwrap();
+
+    await appDispatch(
+      programmeThemeThunkActions.getProgrammeThemes({ locale: 'en-za' })
+    ).unwrap();
   };
 
   useEffect(() => {
