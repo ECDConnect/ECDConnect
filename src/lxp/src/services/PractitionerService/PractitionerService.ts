@@ -298,6 +298,8 @@ class PractitionerService {
             principalName
             classroomName
             classroomGroupName
+            classroomId
+            insertedDate
           }
         }
       `,
