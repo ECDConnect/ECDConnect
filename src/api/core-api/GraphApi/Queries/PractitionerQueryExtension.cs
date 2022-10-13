@@ -182,7 +182,6 @@ string userId)
         }
 
         public Classroom GetAllClassroomsForPractitioner([Service] IHttpContextAccessor contextAccessor,
-            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
             string practitionerId, string principalId)
         {
@@ -220,13 +219,15 @@ string userId)
                     {
                         classroom = classroomRepo.GetById(classroomGroup.ClassroomId);
                         principalClassroom.ClassroomGroupName = classroomGroup.Name;
+                        principalClassroom.ClassroomGroupId = classroomGroup.Id.ToString();
                     }
                     else
                     {
                         //if no classroomgroup is available to look at, use the classroom for principal
                         classroom = classroomRepo.GetByUserId(principal.UserId);
                     }
-                    principalClassroom.ClassroomName = classroom.Name;                    
+                    principalClassroom.ClassroomName = classroom.Name;   
+                    principalClassroom.ClassroomId = classroom.Id.ToString();
                 }
             }
             return principalClassroom;
@@ -315,6 +316,52 @@ string userId)
                 }
             }
             return children;
+        }
+
+        public Dictionary<string,string> GetPractitionerColleagues([Service] IHttpContextAccessor contextAccessor,
+    [Service] IGenericRepositoryFactory repoFactory,
+    string userId)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var practiRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
+            Dictionary<string, string> practitionerColleagues = new Dictionary<string, string>();
+            Practitioner practi = practiRepo.GetByUserId(userId);
+            if (practi.PrincipalHierarchy.HasValue || practi.IsPrincipal == true)
+            {
+                List<Practitioner> practitioners = practiRepo.GetAll().Where(x => (x.PrincipalHierarchy.HasValue ? x.PrincipalHierarchy.Equals(practi.PrincipalHierarchy) : (x.IsPrincipal == true ? x.UserId.Equals(userId) : x.UserId.Equals(userId)))).ToList();
+                //also add principal
+                //if (practi.IsPrincipal == true) {
+                //    Practitioner practiPrincipal = practiRepo.GetByUserId(practi.UserId.ToString());
+                //    if (practiPrincipal != null) practitioners.Add(practiPrincipal);
+                //}
+
+                if (practitioners.Count > 0)
+                {
+                    foreach (var practitioner in practitioners)
+                    {
+                        if (practitioner.User != null)
+                        {
+                            string practiName = (practitioner.User.NickFullName != null ? practitioner.User.NickFullName : practitioner.User.FullName);
+                            string practiType = "";
+                            if (practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal != false)
+                            {
+                                practiType = "Principal";
+                            }
+                            else if (practitioner.IsFundaAppAdmin.HasValue && practitioner.IsFundaAppAdmin != false)
+                            {
+                                practiType = "Funda App Admin";
+                            }
+                            else
+                            {
+                                practiType = "Practitioner";
+                            }
+
+                            practitionerColleagues.Add(practiName, practiType);
+                        }
+                    }
+                }
+            }
+            return practitionerColleagues;
         }
 
     }
