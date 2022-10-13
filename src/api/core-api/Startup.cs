@@ -36,6 +36,8 @@ using Microsoft.Extensions.Hosting;
 using System;
 using System.Diagnostics;
 using ECDLink.Tenancy.EntityFramework.Extensions;
+using System.Threading.Tasks;
+using EcdLink.Api.CoreApi.Middleware;
 
 namespace EcdLink.Api.CoreApi
 {
@@ -156,6 +158,7 @@ namespace EcdLink.Api.CoreApi
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseTenancy();
+            app.UseInputSanitizer();
 
             app.UseEndpoints(endpoints =>
             {
