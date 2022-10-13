@@ -1,3 +1,4 @@
+import Loader from '../../../components/loader/loader';
 import { LoginRequestModel, useDialog } from '@ecdlink/core';
 import {
   ActionModal,
@@ -12,7 +13,7 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useHistory, useLocation } from 'react-router-dom';
 import {
@@ -42,6 +43,10 @@ export const VerifyPhoneNumber = () => {
   });
 
   const { isValid } = formState;
+
+  useEffect(() => {
+    confirm();
+  }, []);
 
   const displayTollFreeDialog = () => {
     dialog({
@@ -96,15 +101,16 @@ export const VerifyPhoneNumber = () => {
     }, 60000);
   };
 
-  const confirm = async (formValue: VerifyPhoneNumberModel) => {
-    if (!formValue.code) return;
+  const confirm = async () => {
+    //if (!formValue.code) return;
+
     setIsLoading(true);
     const accepted = await new AuthService().AcceptInvitationRequest({
       username: state.username,
       password: state.password,
       token: state.token,
-      verificationCode: formValue.code,
     });
+
     setIsLoading(false);
     if (accepted) {
       const body: LoginRequestModel = {
@@ -137,7 +143,8 @@ export const VerifyPhoneNumber = () => {
 
   return (
     <>
-      <BannerWrapper color="primary" size={'normal'} renderBorder={true}>
+      <Loader loadingMessage={'Loading . . .'} />
+      {/* <BannerWrapper color="primary" size={'normal'} renderBorder={true}>
         <div className={styles.contentWrapper}>
           <Typography
             type="h1"
@@ -175,18 +182,21 @@ export const VerifyPhoneNumber = () => {
               />
             </Button>
           )}
-          {isValid && (
+          {
             <Button
               type="filled"
               color="primary"
               isLoading={isLoading}
-              onClick={() => confirm(getValues())}
+              onClick={() => confirm()}
               className={styles.marginTop}
             >
-              {renderIcon('CheckCircleIcon', styles.iconSize)}
-              <Typography type={'small'} color="white" text={'Confirm'} />
+              <Typography
+                type={'small'}
+                color="white"
+                text={'Complete Sign Up'}
+              />
             </Button>
-          )}
+          }
 
           <div className={classNames(styles.helpWrapper, 'mt-6')}>
             {renderIcon(
@@ -211,7 +221,7 @@ export const VerifyPhoneNumber = () => {
             </Button>
           </div>
         </div>
-      </BannerWrapper>
+      </BannerWrapper> */}
     </>
   );
 };
