@@ -35,6 +35,7 @@ import { authSelectors } from '@/store/auth';
 import { PractitionerNotRegistered } from './practitioner-not-registered/practitioner-not-registered';
 import { PractitionerService } from '@/services/PractitionerService';
 import { practitionerThunkActions } from '@/store/practitioner';
+import { ClassroomGroupService } from '@/services/ClassroomGroupService';
 
 export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const history = useHistory();
@@ -67,11 +68,25 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
     setCreatePractitionerdNoteVisible(false);
   };
 
+  const [classMetrics, setClassMetrics] = useState<any>();
+  const practitionerClassrooms = [];
+
   const handleReassignClass = (practitionerId: string) => {
     history.push('practitioner-reassign-class', {
       practitionerId,
     });
   };
+
+  useEffect(() => {
+    if (practitionerClassroomGroups && classMetrics) {
+      const test2 = practitionerClassroomGroups.map((x) => x.id);
+      const test1 = practitionerClassroomGroups.filter((item) =>
+        test2?.includes(item?.id!)
+      );
+
+      console.log({ test1 });
+    }
+  }, [classMetrics, practitionerClassroomGroups]);
 
   useEffect(() => {
     (async () =>
@@ -113,6 +128,19 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
     ).unwrap();
     history.push(ROUTES.CLASSROOM);
   };
+
+  const test = async () => {
+    const a = await new ClassroomGroupService(
+      userAuth?.auth_token!
+    ).getClassAttendanceMetrics();
+    setClassMetrics(a);
+    return a;
+  };
+  console.log(classMetrics);
+  console.log({ practitionerClassroomGroups });
+  useEffect(() => {
+    test();
+  }, []);
 
   return (
     <>
@@ -247,7 +275,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                   );
 
                   return (
-                    <Card className={styles.absentCard}>
+                    <Card className={styles.absentCard} key={index}>
                       <Typography
                         type={'h1'}
                         text={item.name}
