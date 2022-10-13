@@ -228,6 +228,7 @@ string userId)
                     }
                     principalClassroom.ClassroomName = classroom.Name;   
                     principalClassroom.ClassroomId = classroom.Id.ToString();
+                    principalClassroom.InsertedDate = classroom.InsertedDate;
                 }
             }
             return principalClassroom;
