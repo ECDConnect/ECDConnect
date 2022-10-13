@@ -200,28 +200,10 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   const initStaticStoreSetup = async () => {
     const today = new Date();
     setStaticDataLoading(true);
+
     await appDispatch(
       contentConsentThunkActions.getConsent({ locale: 'en-za' })
     ).unwrap();
-    await appDispatch(settingThunkActions.getSettings({})).unwrap();
-    await appDispatch(staticDataThunkActions.getRelations({})).unwrap();
-    await appDispatch(staticDataThunkActions.getProgrammeTypes({})).unwrap();
-    await appDispatch(
-      staticDataThunkActions.getProgrammeAttendanceReasons({})
-    ).unwrap();
-    await appDispatch(staticDataThunkActions.getGenders({})).unwrap();
-    await appDispatch(staticDataThunkActions.getRaces({})).unwrap();
-    await appDispatch(staticDataThunkActions.getLanguages({})).unwrap();
-    await appDispatch(staticDataThunkActions.getEducationLevels({})).unwrap();
-    await appDispatch(
-      staticDataThunkActions.getHolidays({ year: today.getFullYear() })
-    ).unwrap();
-    await appDispatch(staticDataThunkActions.getProvinces({})).unwrap();
-    await appDispatch(staticDataThunkActions.getReasonsForLeaving({})).unwrap();
-    await appDispatch(staticDataThunkActions.getGrants({})).unwrap();
-    await appDispatch(staticDataThunkActions.getDocumentTypes({})).unwrap();
-    await appDispatch(staticDataThunkActions.getNoteTypes({})).unwrap();
-    await appDispatch(staticDataThunkActions.getWorkflowStatuses({})).unwrap();
 
     // PROGRESS TRACKING
     await appDispatch(
