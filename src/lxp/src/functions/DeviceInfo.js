@@ -4,7 +4,6 @@ export default function getFreeDiskStorage() {
   DeviceInfo.getFreeDiskStorage().then((freeDiskStorage) => {
     let freeStorageInMB = freeDiskStorage / 1024 / 1024;
     freeStorageInMB = parseInt(freeStorageInMB + '');
-    console.log(`freeDiskStorage ${freeStorageInMB}`);
     return freeStorageInMB;
   });
 }

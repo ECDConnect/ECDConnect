@@ -485,10 +485,6 @@ export const Dashboard: React.FC = () => {
         className={styles.welcomeText}
       />
 
-      {console.log('---- userProfilePicture ----', userProfilePicture)}
-
-      {console.log('---- userData ----', userData)}
-
       <div className={`${!classroom ? styles.wrapper : ''}`}>
         <DashboardItems
           listItems={dashboardItems}

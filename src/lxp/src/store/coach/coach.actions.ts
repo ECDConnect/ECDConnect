@@ -97,14 +97,10 @@ export const updateCoach = createAsyncThunk<
     try {
       let update: boolean | undefined;
 
-      console.log('--- api, update coach 1');
       if (userAuth?.auth_token && coach) {
-        console.log('--- api, update coach 2');
         const coachModelInput: CoachInput = mapCoach(coach);
-        console.log('coach obj ', coach);
 
         if (coach.siteAddress?.id) {
-          console.log('--- api, update coach 3');
           const addressInput = mapSiteAddress(coach.siteAddress);
 
           await new SiteAddressService(userAuth?.auth_token).updateSiteAddress(
@@ -115,14 +111,11 @@ export const updateCoach = createAsyncThunk<
           coachModelInput.SiteAddressId = addressInput.Id;
         }
 
-        console.log('--- api, update coach 4');
         update = await new CoachService(userAuth?.auth_token).updateCoach(
           userAuth.id,
           coachModelInput
         );
-        console.log('--- api, update coach 5');
       } else {
-        console.log('--- api, update coach 6 return');
         return rejectWithValue('no access token, profile check required');
       }
 
