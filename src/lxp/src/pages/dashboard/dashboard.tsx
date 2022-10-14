@@ -473,7 +473,10 @@ export const Dashboard: React.FC = () => {
     });
   };
 
-  const profilePc = userProfilePicture?.file || userProfilePicture?.reference;
+  const profilePc =
+    userProfilePicture?.file ||
+    userData?.profileImageUrl ||
+    userProfilePicture?.reference;
 
   return (
     <BannerWrapper
