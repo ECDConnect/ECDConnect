@@ -265,7 +265,7 @@ export const CoachAbout: React.FC = () => {
     if (copy) {
       copy.profileImageUrl = imageBaseString;
       appDispatch(userActions.updateUser(copy));
-      // appDispatch(userThunkActions.updateUser(copy));
+      //appDispatch(userThunkActions.updateUser(copy));
     }
 
     if (!userProfilePicture) {
@@ -294,10 +294,9 @@ export const CoachAbout: React.FC = () => {
 
       Object.assign(coachCopy.user as UserDto, userCopy);
 
-      console.log('user upd');
       appDispatch(userActions.updateUser(userCopy));
       appDispatch(userThunkActions.updateUser(userCopy));
-      console.log('coach upd');
+
       appDispatch(coachActions.updateCoach(coachCopy));
       appDispatch(coachThunkActions.updateCoach(coachCopy));
 

@@ -433,7 +433,10 @@ export const Dashboard: React.FC = () => {
     });
   };
 
-  const profilePc = userProfilePicture?.file || userProfilePicture?.reference;
+  const profilePc =
+    userProfilePicture?.file ||
+    userData?.profileImageUrl ||
+    userProfilePicture?.reference;
 
   return (
     <BannerWrapper
@@ -481,6 +484,10 @@ export const Dashboard: React.FC = () => {
         text={`Welcome ${userData && userData?.firstName}`.slice(0, 25)}
         className={styles.welcomeText}
       />
+
+      {console.log('---- userProfilePicture ----', userProfilePicture)}
+
+      {console.log('---- userData ----', userData)}
 
       <div className={`${!classroom ? styles.wrapper : ''}`}>
         <DashboardItems
