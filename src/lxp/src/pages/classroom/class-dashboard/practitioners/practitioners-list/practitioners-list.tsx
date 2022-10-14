@@ -26,6 +26,8 @@ import { EmptyPractitioners } from './components/empty-practitioners/empty-pract
 import { PractitionerDto } from '@/../../../packages/core/lib';
 import { useAppDispatch } from '@store';
 import { getPractitionerAlertModel } from '@/utils/practitioner/practitioner-alert-message-util';
+import { PractitionerService } from '@/services/PractitionerService';
+import { authSelectors } from '@/store/auth';
 
 export const PractitionersList: React.FC = () => {
   const appDispatch = useAppDispatch();
@@ -34,6 +36,7 @@ export const PractitionersList: React.FC = () => {
   // const practitionersForCoach = useSelector(
   //   practitionerForCoachSelectors.getPractitionersForCoach
   // );
+  const userAuth = useSelector(authSelectors.getAuthUser);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const practitionersList = practitioners?.filter(
@@ -115,6 +118,17 @@ export const PractitionersList: React.FC = () => {
   const handleReassignClass = () => {
     history.push('principal/practitioner-reassign-class');
   };
+
+  const test = async () => {
+    const a = await new PractitionerService(
+      userAuth?.auth_token!
+    ).displayMetrics();
+    return a;
+  };
+
+  useEffect(() => {
+    test();
+  }, []);
 
   return (
     <>
