@@ -2,6 +2,7 @@ using ECDLink.Abstractrions.Services;
 using ECDLink.Core.Models;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities.Classroom;
+using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.SmartStart.Reports.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -19,6 +20,7 @@ namespace ECDLink.SmartStart.Reports
 
         public IEnumerable<MonthlyAttendanceReportModel> GenerateMonthlyAttendanceReport(string userId, Guid classroomId, DateTime startMonth, DateTime endMonth)
         {
+ 
             var classroom = _dbContext.Classrooms
                                 .Include(x => x.ClassroomGroups)
                                 .ThenInclude(c => c.ClassProgrammes)
@@ -26,7 +28,24 @@ namespace ECDLink.SmartStart.Reports
 
             if (classroom == default(Classroom))
             {
-                throw new UnauthorizedAccessException("User does not have access to this classroom");
+                //a practitioner may call here on a classroom that only the principal has access to, since practitioners are assigned to classroomgroups, and principals to classrooms.
+                //So get the parent of the practitioner and if that matches the classroom id by their principal id to the classroom id, then allow the request
+
+                Practitioner practi = _dbContext.Practitioners.FirstOrDefault(x => string.Equals(userId, x.UserId));
+                if (practi != null && practi.PrincipalHierarchy.HasValue)
+                {
+                    //now test the practitioners principal userid, if its theirs, then show results. If it still doesnt match, throw the error
+                    classroom = _dbContext.Classrooms
+                    .Include(x => x.ClassroomGroups)
+                    .ThenInclude(c => c.ClassProgrammes)
+                    .FirstOrDefault(c => c.Id == classroomId && c.UserId.Contains(practi.PrincipalHierarchy.ToString()));// && string.Equals(practi.PrincipalHierarchy, c.UserId)
+                }
+
+                if (classroom == default(Classroom))
+                {
+
+                    throw new UnauthorizedAccessException("User and Principal does not have access to this classroom");
+                }
             }
 
             return GenerateMonthlyAttendanceReport(userId, classroom, startMonth, endMonth);
