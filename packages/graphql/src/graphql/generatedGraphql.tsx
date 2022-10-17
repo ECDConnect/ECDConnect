@@ -1675,12 +1675,6 @@ export type InfantModelInput = {
   weightAtBirth?: InputMaybe<Scalars['Decimal']>;
 };
 
-export type KeyValuePairOfStringAndString = {
-  __typename?: 'KeyValuePairOfStringAndString';
-  key: Scalars['String'];
-  value: Scalars['String'];
-};
-
 export type Language = {
   __typename?: 'Language';
   description?: Maybe<Scalars['String']>;
@@ -3503,6 +3497,12 @@ export type PractitionerClassroomName = {
   principalName?: Maybe<Scalars['String']>;
 };
 
+export type PractitionerColleagues = {
+  __typename?: 'PractitionerColleagues';
+  name?: Maybe<Scalars['String']>;
+  title?: Maybe<Scalars['String']>;
+};
+
 export type PractitionerFilterInput = {
   and?: InputMaybe<Array<PractitionerFilterInput>>;
   attendanceRegisterLink?: InputMaybe<StringOperationFilterInput>;
@@ -4188,7 +4188,7 @@ export type Query = {
   practitionerByIdNumber?: Maybe<PractitionerUserAndNote>;
   practitionerByIdNumberInternal?: Maybe<ApplicationUser>;
   practitionerByUserId?: Maybe<Practitioner>;
-  practitionerColleagues?: Maybe<Array<KeyValuePairOfStringAndString>>;
+  practitionerColleagues?: Maybe<Array<Maybe<PractitionerColleagues>>>;
   practitionerExcelTemplateGenerator?: Maybe<FileModel>;
   practitionerMetrics?: Maybe<PractitionerMetricReport>;
   practitionerNewSignupMetric: Scalars['Int'];
