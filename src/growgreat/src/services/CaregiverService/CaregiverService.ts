@@ -13,7 +13,7 @@ class CaregiverService {
     const response = await apiInstance.post<any>(``, {
       query: `
         query {
-          GetAllCaregiver {
+          allCaregiver {
             id
             phoneNumber
             idNumber
