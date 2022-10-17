@@ -538,6 +538,25 @@ class PractitionerService {
 
     return response.data.data.displayMetrics;
   }
+
+  // async practitionerColleagues(): Promise<PractitionerColleagues[]> {
+  //   const apiInstance = await api(Config.graphQlApi, this._accessToken);
+  //   const response = await apiInstance.post<any>(``, {
+  //     query: `
+  //     query practitionerColleagues($userId: String) {
+  //       practitionerColleagues(userId: $userId) {
+  //     key value
+  //       }
+  //     }
+  //     `,
+  //   });
+
+  //   if (response.status !== 200) {
+  //     throw new Error('Practitioner Colleagues Failed - Server connection error');
+  //   }
+
+  //   return response.data.data.practitionerColleagues;
+  // }
 }
 
 export default PractitionerService;
