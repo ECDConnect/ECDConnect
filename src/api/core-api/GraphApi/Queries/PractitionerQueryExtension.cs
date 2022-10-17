@@ -319,13 +319,13 @@ string userId)
             return children;
         }
 
-        public Dictionary<string,string> GetPractitionerColleagues([Service] IHttpContextAccessor contextAccessor,
+        public List<PractitionerColleagues> GetPractitionerColleagues([Service] IHttpContextAccessor contextAccessor,
     [Service] IGenericRepositoryFactory repoFactory,
     string userId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practiRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
-            Dictionary<string, string> practitionerColleagues = new Dictionary<string, string>();
+            List<PractitionerColleagues> practitionerColleagues = new List<PractitionerColleagues>();
             Practitioner practi = practiRepo.GetByUserId(userId);
             if (practi.PrincipalHierarchy.HasValue || practi.IsPrincipal == true)
             {
@@ -362,7 +362,7 @@ string userId)
                                 practiType = "Practitioner";
                             }
 
-                            practitionerColleagues.Add(practiName, practiType);
+                            practitionerColleagues.Add(new PractitionerColleagues() { Name = practiName, Title = practiType });
                         }
                     }
                 }
