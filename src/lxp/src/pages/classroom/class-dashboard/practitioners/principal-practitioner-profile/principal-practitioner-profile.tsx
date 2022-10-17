@@ -57,7 +57,8 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const practitionerClassroomGroups = classroomGroups?.filter((item: any) => {
     return item?.userId === practitionerId;
   });
-
+  const learners = useSelector(classroomsSelectors.getClassroomGroupLearners);
+  // const learners = useSelector(classroomsSelectors.)
   const { theme } = useTheme();
 
   const [createPractitionerNoteVisible, setCreatePractitionerdNoteVisible] =
@@ -67,9 +68,9 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const onCreatePractitionerNoteBack = () => {
     setCreatePractitionerdNoteVisible(false);
   };
-  const [practitionersClassroom, setPractitionersClassroom] = useState<any[]>();
 
   const [classMetrics, setClassMetrics] = useState<any>();
+  const practitionerClassrooms: any[] = [];
 
   const handleReassignClass = (practitionerId: string) => {
     history.push('practitioner-reassign-class', {
@@ -77,29 +78,19 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
     });
   };
 
-  useEffect(() => {
-    if (classMetrics) {
-      let classroomsArray: any = [];
-      practitionerClassroomGroups.forEach((e: any) => {
-        let classroomValue: any = classMetrics.find(
-          (item: any) => item?.classroomGroupId === e?.id
-        );
+  if (classMetrics) {
+    classMetrics.forEach((e: any) => {
+      let classroomValue: any = practitionerClassroomGroups.filter(
+        (item) => item?.id === e?.classroomGroupId
+      );
 
-        if (classroomValue) {
-          classroomsArray.push({
-            ...e,
-            childCount: classroomValue?.childCount,
-            month: classroomValue?.month,
-            year: classroomValue?.year,
-            attendancePercentage: classroomValue?.attendancePercentage,
-          });
-
-          setPractitionersClassroom(classroomsArray);
-        }
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [classMetrics]);
+      if (classroomValue) {
+        practitionerClassrooms.push({ ...e, name: classroomValue?.name });
+      } else {
+        practitionerClassrooms.push({ ...e });
+      }
+    });
+  }
 
   useEffect(() => {
     (async () =>
@@ -142,7 +133,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
     history.push(ROUTES.CLASSROOM);
   };
 
-  const getClassroomMetrics = async () => {
+  const test = async () => {
     const metricsData = await new ClassroomGroupService(
       userAuth?.auth_token!
     ).getClassAttendanceMetrics();
@@ -151,7 +142,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   };
 
   useEffect(() => {
-    getClassroomMetrics();
+    test();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -185,7 +176,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
             </div>
 
             <div className={styles.chipsWrapper}>
-              {practitionerClassroomGroups ? (
+              {practitionerClassroomGroups.length > 0 ? (
                 practitionerClassroomGroups?.map((item, index) => {
                   return (
                     <StatusChip
@@ -281,8 +272,8 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                 </div>
               </div>
             </Card>
-            {practitionersClassroom?.length! > 0
-              ? practitionersClassroom?.map((item, index) => {
+            {practitionerClassrooms.length > 0
+              ? practitionerClassrooms?.map((item, index) => {
                   return (
                     <Card className={styles.absentCard} key={index}>
                       <Typography
