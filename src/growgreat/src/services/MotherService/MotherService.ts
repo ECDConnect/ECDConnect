@@ -20,6 +20,7 @@ class MotherService {
               surname
               phoneNumber
             }
+            expectedDateOfDelivery
             siteAddress {
               id
               province {
@@ -44,8 +45,8 @@ class MotherService {
     if (response.status !== 200) {
       throw new Error('Getting Mothers failed - Server connection error');
     }
-
-    return response.data.data.GetAllMother;
+    console.log(response);
+    return response.data.data.allMothersForHealthCareWorker;
   }
 
   async updateMother(id: string, input: MotherModelInput): Promise<MotherDto> {

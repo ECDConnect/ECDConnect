@@ -27,6 +27,10 @@ namespace ECDLink.Abstractrions.Enums
         [Description("progress-tracking-level")]
         ProgressTrackingLevel,
         [Description("report-templates")]
-        ReportTemplates
+        ReportTemplates,
+        [Description("maternal-case-record")]
+        MaternalCaseRecord,
+        [Description("road-to-health-book")]
+        RoadToHealthBook
     }
 }

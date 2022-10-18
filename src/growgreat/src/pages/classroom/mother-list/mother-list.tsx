@@ -31,7 +31,7 @@ export const MotherList: React.FC<ComponentBaseProps> = () => {
   useEffect(() => {
     const mothersList: ActionListDataItem[] = mothers.map((mother) => {
       return {
-        title: mother.firstName! + mother?.surname,
+        title: mother?.user?.firstName! + ' ' + mother?.user?.surname,
         subTitle: mother?.siteAddressId,
         switchTextStyles: true,
         onActionClick: () => {},

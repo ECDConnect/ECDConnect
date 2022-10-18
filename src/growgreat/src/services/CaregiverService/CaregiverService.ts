@@ -63,6 +63,64 @@ class CaregiverService {
     return response.data.data.GetAllCaregiver;
   }
 
+  async getCaregiversForHealthCareWorker(id: string): Promise<CaregiverDto[]> {
+    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        query getAllCaregiversForHealthCareWorker($id: String) {
+          allCaregiversForHealthCareWorker(id: $id) {
+            id
+            phoneNumber
+            idNumber
+            firstName
+            surname
+            fullName  
+            siteAddressId          
+            siteAddress {
+              id
+              provinceId
+              province {
+                id
+                description
+              }
+              name
+              addressLine1
+              addressLine2
+              addressLine3
+              postalCode
+              ward
+              isActive
+            }
+            relationId
+            educationId
+            emergencyContactFirstName
+            emergencyContactSurname
+            emergencyContactPhoneNumber
+            additionalFirstName
+            additionalSurname
+            additionalPhoneNumber
+            joinReferencePanel
+            contribution
+            grants {
+              id
+              description
+            }
+            isActive
+          }
+        }        
+        `,
+      variables: {
+        id: id,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error('Getting Caregivers failed - Server connection error');
+    }
+
+    return response.data.data.allCaregiversForHealthCareWorker;
+  }
+
   async updateCareGiver(
     id: string,
     input: CaregiverInput

@@ -103,7 +103,6 @@ export const VerifyPhoneNumber = () => {
       username: state.username,
       password: state.password,
       token: state.token,
-      verificationCode: formValue.code,
     });
     setIsLoading(false);
     if (accepted) {

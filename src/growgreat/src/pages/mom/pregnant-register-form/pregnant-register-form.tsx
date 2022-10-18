@@ -11,16 +11,26 @@ import { ContactInformation } from '../components/contact-information/contact-in
 import { PregnantAddress } from '../components/pregnant-address/pregnant-address';
 import { PregnantMaternalCaseRecord } from '../components/pregnant-maternal-record/pregnant-maternal-record';
 import { newGuid } from '@utils/common/uuid.utils';
-import { MotherDto, SiteAddressDto } from '@/../../../packages/core/lib';
+import {
+  Document,
+  MotherDto,
+  SiteAddressDto,
+  UserDto,
+  CaregiverDto,
+} from '@/../../../packages/core/lib';
 import { EditPregnantDetailsProps } from '../components/pregnant-details/pregnant-details.types';
 import { PregnantAddressProps } from '../components/pregnant-address/pregnant-address.types';
 import { PregnantMaternalCaseRecordProps } from '../components/pregnant-maternal-record/pregnant-maternal-record.types';
 import { useSelector } from 'react-redux';
 import { userSelectors } from '@store/user';
 import { EditPregnantContactInformationProps } from '../components/contact-information/contact-information.types';
-// import { HealthCareWorkerDto } from '@/../../../packages/core/lib/models/dto/Users/health-care-worker';
 import { motherActions, motherThunkActions } from '@/store/mother';
 import momImage from '../../../assets/momImage.png';
+import { documentActions, documentThunkActions } from '@/store/document';
+import { useStaticData } from '@/hooks/useStaticData';
+import { FileTypeEnum, WorkflowStatusEnum } from '@ecdlink/graphql';
+import { caregiverActions } from '@/store/caregiver';
+import { staticDataSelectors } from '@/store/static-data';
 
 export const PregnantRegisterForm: React.FC = () => {
   const [label, setLabel] = useState('');
@@ -41,6 +51,9 @@ export const PregnantRegisterForm: React.FC = () => {
   );
   const user = useSelector(userSelectors.getUser);
   const [registeredClientVisible, setRegisteredClientVisible] = useState(false);
+  const { getWorkflowStatusIdByEnum, getDocumentTypeIdByEnum } =
+    useStaticData();
+  const relations = useSelector(staticDataSelectors.getRelations);
 
   useEffect(() => {
     setLabel('step 1 of 5');
@@ -53,7 +66,6 @@ export const PregnantRegisterForm: React.FC = () => {
     }
     setActiveStep(PregnantRegisterSteps.pregnantContactInformation);
   };
-  console.log(pregnantMaternalCaseRecord?.deliveryDate);
 
   useEffect(() => {
     if (pregnantMaternalCaseRecord?.deliveryDate !== undefined) {
@@ -63,28 +75,70 @@ export const PregnantRegisterForm: React.FC = () => {
   }, [pregnantMaternalCaseRecord?.deliveryDate]);
 
   const completeAllSteps = useCallback(() => {
-    const userId = newGuid();
+    const motherId = newGuid();
+    const motherUserId = newGuid();
     const siteAddressDto: SiteAddressDto = {
       addressLine1: address?.address ?? '',
     };
-    const motherInputModel: MotherDto = {
+    const userInput: UserDto = {
+      phoneNumber: contactInformation?.cellphone ?? '',
       firstName: details?.name ?? '',
       surname: details?.surname ?? '',
-      id: userId ?? '',
+    };
+    const motherInputModel: MotherDto = {
+      id: motherId,
+      userId: motherUserId,
+      firstName: details?.name ?? '',
+      surname: details?.surname ?? '',
+      user: userInput,
       phoneNumber: contactInformation?.cellphone ?? '',
       siteAddress: siteAddressDto,
       siteAddressId: address?.address ?? '',
       healthCareWorkerId: user?.id ?? '',
-      // documents: pregnantMaternalCaseRecord?.maternalCaseRecord,
       age: details?.age,
       expectedDateOfDelivery:
         pregnantMaternalCaseRecord?.deliveryDate?.toISOString(),
-      whatsAppNumber: contactInformation?.whatsapp ?? '',
+      whatsAppNumber:
+        contactInformation?.whatsapp ?? contactInformation?.cellphone,
     };
-    console.log({ motherInputModel });
+    const caregiverInput: CaregiverDto = {
+      firstName: details?.name ?? '',
+      surname: details?.surname ?? '',
+      phoneNumber: contactInformation?.cellphone ?? '',
+      whatsAppNumber: contactInformation?.whatsapp,
+      age: details?.age,
+      isActive: true,
+      siteAddress: siteAddressDto,
+      relationId: relations.find((x) => x.description == 'Mother')?.id,
+    };
+    appDispatch(caregiverActions.createCaregiver(caregiverInput));
     appDispatch(motherActions.addMother(motherInputModel));
     appDispatch(
       motherThunkActions.addMother({ mother: motherInputModel })
+    ).unwrap();
+
+    const fileName = 'maternalcaserecord.png';
+    const workflowStatusId = getWorkflowStatusIdByEnum(
+      WorkflowStatusEnum.DocumentPendingVerification
+    );
+    const documentTypeId = getDocumentTypeIdByEnum(
+      FileTypeEnum.MaternalCaseRecord
+    );
+
+    const documentInputModel: Document = {
+      id: newGuid(),
+      userId: motherUserId,
+      createdUserId: user?.id ?? '',
+      workflowStatusId: workflowStatusId ?? '',
+      documentTypeId: documentTypeId ?? '',
+      name: fileName,
+      fileName: fileName,
+      file: pregnantMaternalCaseRecord?.maternalCaseRecord,
+      fileType: FileTypeEnum.MaternalCaseRecord,
+    };
+    appDispatch(documentActions.createDocument(documentInputModel));
+    appDispatch(
+      documentThunkActions.createDocument(documentInputModel)
     ).unwrap();
   }, [
     appDispatch,

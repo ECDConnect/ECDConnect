@@ -18,16 +18,11 @@ namespace ECDLink.DataAccessLayer.Entities.Users
     }
 
     public class Infant<TKey> : EntityBase<TKey>,
-        MotherJoin<Guid?>,
         GenderJoin<Guid?>,
         CaregiverJoin<Guid?>,
         ApplicationUserJoin
          where TKey : IEquatable<TKey>
     {
-        [ForeignKey(nameof(MotherId))]
-        public virtual Mother Mother { get; set; }
-        public Guid? MotherId { get; set; }
-
         [ForeignKey(nameof(GenderId))]
         public virtual Gender Gender { get; set; }
         public Guid? GenderId { get; set; }

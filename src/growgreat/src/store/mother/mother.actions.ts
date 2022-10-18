@@ -148,6 +148,7 @@ export const updateMother = createAsyncThunk<
 });
 
 const mapMother = (x: Partial<MotherDto>): MotherModelInput => ({
+  userId: x.userId,
   age: x.age,
   expectedDateOfDelivery: x.expectedDateOfDelivery,
   firstName: x.firstName,

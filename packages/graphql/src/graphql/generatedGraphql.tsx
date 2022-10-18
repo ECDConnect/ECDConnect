@@ -877,7 +877,10 @@ export type ClassroomMetricReport = {
   __typename?: 'ClassroomMetricReport';
   attendancePercentage: Scalars['Int'];
   childCount: Scalars['Int'];
+  classroomGroupId: Scalars['UUID'];
   classroomId: Scalars['UUID'];
+  month: Scalars['Int'];
+  year: Scalars['Int'];
 };
 
 export type Coach = {
@@ -1359,12 +1362,14 @@ export enum FileTypeEnum {
   Child = 'CHILD',
   ClassroomProfile = 'CLASSROOM_PROFILE',
   Coach = 'COACH',
+  MaternalCaseRecord = 'MATERNAL_CASE_RECORD',
   Practitioner = 'PRACTITIONER',
   ProfileImage = 'PROFILE_IMAGE',
   ProgressTrackingCategory = 'PROGRESS_TRACKING_CATEGORY',
   ProgressTrackingLevel = 'PROGRESS_TRACKING_LEVEL',
   ProgressTrackingSubCategory = 'PROGRESS_TRACKING_SUB_CATEGORY',
   ReportTemplates = 'REPORT_TEMPLATES',
+  RoadToHealthBook = 'ROAD_TO_HEALTH_BOOK',
   Theme = 'THEME',
   Unknown = 'UNKNOWN',
 }
@@ -1670,6 +1675,12 @@ export type InfantModelInput = {
   lengthAtBirth?: InputMaybe<Scalars['Decimal']>;
   userId?: InputMaybe<Scalars['String']>;
   weightAtBirth?: InputMaybe<Scalars['Decimal']>;
+};
+
+export type KeyValuePairOfStringAndString = {
+  __typename?: 'KeyValuePairOfStringAndString';
+  key: Scalars['String'];
+  value: Scalars['String'];
 };
 
 export type Language = {
@@ -3566,6 +3577,9 @@ export type PractitionerInput = {
 
 export type PractitionerMetricReport = {
   __typename?: 'PractitionerMetricReport';
+  allChildren: Scalars['Int'];
+  allClassroomGroups: Scalars['Int'];
+  allClassrooms: Scalars['Int'];
   avgChildren: Scalars['Int'];
   completedProfiles: Scalars['Int'];
   outstandingSyncs: Scalars['Int'];
@@ -3622,8 +3636,11 @@ export type PrincipalFilterDocumentsByTypeArgs = {
 
 export type PrincipalClassroom = {
   __typename?: 'PrincipalClassroom';
+  classroomGroupId?: Maybe<Scalars['String']>;
   classroomGroupName?: Maybe<Scalars['String']>;
+  classroomId?: Maybe<Scalars['String']>;
   classroomName?: Maybe<Scalars['String']>;
+  insertedDate: Scalars['DateTime'];
   principalName?: Maybe<Scalars['String']>;
 };
 
@@ -4106,9 +4123,14 @@ export type Query = {
   absenteeByUserId?: Maybe<Array<Maybe<Absentees>>>;
   allCaregiverByPractitioner?: Maybe<Array<Maybe<Caregiver>>>;
   allCaregiversForHealthCareWorker?: Maybe<Array<Maybe<Caregiver>>>;
+  allChildrenByRole?: Maybe<Array<Maybe<Child>>>;
   allChildrenForCoach?: Maybe<Array<Maybe<Child>>>;
+  allChildrenForFranchisor?: Maybe<Array<Maybe<Child>>>;
   allChildrenForPractitioner?: Maybe<Array<Maybe<Child>>>;
   allChildrenForPrincipal?: Maybe<Array<Maybe<Child>>>;
+  allChildrenUnderPrincipal?: Maybe<Array<Maybe<Child>>>;
+  allChildrenUnderPrincipalByClassrooms?: Maybe<Array<Maybe<Child>>>;
+  allClassroomGroupsByPrincipal?: Maybe<Array<Maybe<ClassroomGroup>>>;
   allClassroomGroupsForCoach?: Maybe<Array<Maybe<ClassroomGroup>>>;
   allClassroomGroupsForPractitioner?: Maybe<Array<Maybe<ClassroomGroup>>>;
   allClassroomsForCoach?: Maybe<Array<Maybe<Classroom>>>;
@@ -4136,6 +4158,7 @@ export type Query = {
   childrenByClassroomId?: Maybe<Array<Maybe<Child>>>;
   childrenMetrics?: Maybe<ChildrenMetricReport>;
   classAttendanceMetrics?: Maybe<Array<Maybe<ClassroomMetricReport>>>;
+  classAttendanceMetricsByUser?: Maybe<ClassroomMetricReport>;
   classroomDetailsForPractitioner?: Maybe<PrincipalClassroom>;
   classroomGroupClassroomsForPractitioner?: Maybe<Array<Maybe<ClassroomGroup>>>;
   classroomNamesForPractitioner?: Maybe<
@@ -4161,15 +4184,18 @@ export type Query = {
   openAccessAddChildDetail?: Maybe<ChildTokenAccessModel>;
   openConsent: Array<Maybe<Consent>>;
   openLanguage: Array<Maybe<Language>>;
+  ownershipMetrics?: Maybe<PractitionerMetricReport>;
   permissionGroups?: Maybe<Array<Maybe<PermissionGroupModel>>>;
   practitionerByIdNumber?: Maybe<PractitionerUserAndNote>;
   practitionerByIdNumberInternal?: Maybe<ApplicationUser>;
   practitionerByUserId?: Maybe<Practitioner>;
+  practitionerColleagues?: Maybe<Array<KeyValuePairOfStringAndString>>;
   practitionerExcelTemplateGenerator?: Maybe<FileModel>;
   practitionerMetrics?: Maybe<PractitionerMetricReport>;
   practitionerNewSignupMetric: Scalars['Int'];
   principalById?: Maybe<Practitioner>;
   principalByUserId?: Maybe<Practitioner>;
+  roleForUser?: Maybe<Scalars['String']>;
   roles?: Maybe<Array<Maybe<IdentityRole>>>;
   settings?: Maybe<SettingsType>;
   tenantContext?: Maybe<TenantModel>;
@@ -4177,6 +4203,9 @@ export type Query = {
   userById?: Maybe<ApplicationUser>;
   userByToken?: Maybe<UserByToken>;
   users?: Maybe<Array<Maybe<ApplicationUser>>>;
+  yearlyClassAttendanceMetricsByUser?: Maybe<
+    Array<Maybe<ClassroomMetricReport>>
+  >;
 };
 
 export type QueryGetAbsenteesByIdArgs = {
@@ -4741,7 +4770,15 @@ export type QueryAllCaregiversForHealthCareWorkerArgs = {
   id?: InputMaybe<Scalars['String']>;
 };
 
+export type QueryAllChildrenByRoleArgs = {
+  userId?: InputMaybe<Scalars['String']>;
+};
+
 export type QueryAllChildrenForCoachArgs = {
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryAllChildrenForFranchisorArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
@@ -4750,6 +4787,18 @@ export type QueryAllChildrenForPractitionerArgs = {
 };
 
 export type QueryAllChildrenForPrincipalArgs = {
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryAllChildrenUnderPrincipalArgs = {
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryAllChildrenUnderPrincipalByClassroomsArgs = {
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryAllClassroomGroupsByPrincipalArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
@@ -4830,6 +4879,10 @@ export type QueryChildrenAttendedVsAbsentMetricsArgs = {
 
 export type QueryChildrenByClassroomIdArgs = {
   classroomId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryClassAttendanceMetricsByUserArgs = {
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryClassroomDetailsForPractitionerArgs = {
@@ -4934,6 +4987,10 @@ export type QueryPractitionerByUserIdArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
+export type QueryPractitionerColleaguesArgs = {
+  userId?: InputMaybe<Scalars['String']>;
+};
+
 export type QueryPractitionerNewSignupMetricArgs = {
   fromDate: Scalars['DateTime'];
   toDate: Scalars['DateTime'];
@@ -4947,6 +5004,10 @@ export type QueryPrincipalByUserIdArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
+export type QueryRoleForUserArgs = {
+  userId?: InputMaybe<Scalars['String']>;
+};
+
 export type QueryTotalDaysAbsentArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
@@ -4957,6 +5018,10 @@ export type QueryUserByIdArgs = {
 
 export type QueryUserByTokenArgs = {
   token?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryYearlyClassAttendanceMetricsByUserArgs = {
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type Race = {
@@ -5107,6 +5172,11 @@ export type Setting_SendGrid = {
   User: Scalars['String'];
 };
 
+export type Setting_SyncDelay = {
+  __typename?: 'Setting_SyncDelay';
+  SyncDelay: Scalars['String'];
+};
+
 export type Setting_Tokens = {
   __typename?: 'Setting_Tokens';
   InvitationLinkExpiry: Scalars['String'];
@@ -5131,6 +5201,7 @@ export type SettingsType = {
   Reporting: Setting_Reporting;
   Security: Setting_Security;
   SendGrid: Setting_SendGrid;
+  SyncDelay: Setting_SyncDelay;
   Tokens: Setting_Tokens;
   UrlShortner: Setting_UrlShortner;
 };

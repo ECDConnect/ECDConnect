@@ -19,9 +19,11 @@ import { InfantRoadToHealthModel } from '@/schemas/infant/infant-road-to-health'
 import { MothertContactInformationModel } from '@/schemas/infant/mother-contact-information';
 import { newGuid } from '@utils/common/uuid.utils';
 import {
+  Document,
   CaregiverDto,
   InfantDto,
   SiteAddressDto,
+  UserDto,
 } from '@/../../../packages/core/lib';
 import { EditConsentAgreementProps } from '../components/consent-agrement/consent-agreement.types';
 import { infantActions, infantThunkActions } from '@/store/infant';
@@ -32,6 +34,9 @@ import { caregiverActions, caregiverThunkActions } from '@/store/caregiver';
 import { MotherDetailsProps } from '../components/mother-details/mother-details.types';
 import { AddressInfo } from 'net';
 import { InfantAddressProps } from '../components/infant-address/infant-address.types';
+import { useStaticData } from '@/hooks/useStaticData';
+import { FileTypeEnum, WorkflowStatusEnum } from '@ecdlink/graphql';
+import { documentActions, documentThunkActions } from '@/store/document';
 
 export const InfantRegisterForm: React.FC = () => {
   const [label, setLabel] = useState('');
@@ -58,21 +63,13 @@ export const InfantRegisterForm: React.FC = () => {
   let numberOfChildren: number | undefined = hasConsent?.numberOfChildren;
   const [multipleChildrenCount, setMultipleChildrenCount] = useState<number>(1);
   const [registeredClientVisible, setRegisteredClientVisible] = useState(false);
-  console.log({ numberOfChildren });
-  console.log(
-    hasConsent,
-    details,
-    contactInformation,
-    address,
-    infantDetails,
-    infantRoadToHealthBook
-  );
+  const { getWorkflowStatusIdByEnum, getDocumentTypeIdByEnum } =
+    useStaticData();
   useEffect(() => {
     setLabel('step 1 of 6');
   }, []);
 
   // const { data } = useQuery(GenderList, { fetchPolicy: 'cache-and-network' });
-  // console.log({ data });
 
   useEffect(() => {
     if (infantRoadToHealthBook) {
@@ -87,7 +84,6 @@ export const InfantRegisterForm: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [infantRoadToHealthBook]);
-  console.log({ multipleChildrenArray });
 
   const handleExistingUser = () => {
     if (isAlreadyClient) {
@@ -110,12 +106,25 @@ export const InfantRegisterForm: React.FC = () => {
   const completeAllSteps = () => {
     if (multipleChildrenArray.length >= 1) {
       for (const child of multipleChildrenArray) {
-        const userId = newGuid();
+        let weightAtBirth = undefined;
+        let lengthAtBirth = undefined;
+        if (child?.roadToHealthBook) {
+          weightAtBirth = (child?.weightAtBirth && +child?.weightAtBirth) ?? 0;
+          lengthAtBirth = (child?.lengthAtBirth && +child?.lengthAtBirth) ?? 0;
+        }
+
+        const childUserId = newGuid();
         const caregiverId = newGuid();
         const siteAddressId = newGuid();
         const siteAddress: SiteAddressDto = {
           id: siteAddressId,
           addressLine1: address ?? '',
+        };
+        const user: UserDto = {
+          phoneNumber: contactInformation?.cellphone ?? '',
+          firstName: details?.name ?? '',
+          surname: details?.surname ?? '',
+          dateOfBirth: infantDetails?.dateOfBirth?.toISOString(),
         };
         const caregiverInput: CaregiverDto = {
           id: caregiverId,
@@ -127,40 +136,76 @@ export const InfantRegisterForm: React.FC = () => {
           age: details?.age,
           siteAddress: siteAddress,
           isActive: true,
-          relationId: details?.relationshipId,
+          relationId: details?.relationshipId, // TODO we need to get the relation ids here // child?.relationship ?? '',
         };
         const infantInputModel: InfantDto = {
           dateOfBirth: child?.dateOfBirth?.toISOString(),
           firstName: child?.firstName,
           documents: child?.roadToHealthBook,
-          userId: userId ?? '',
-          weightAtBirth: (child?.weightAtBirth && +child?.weightAtBirth) ?? 0,
-          lengthAtBirth: (child?.lengthAtBirth && +child?.lengthAtBirth) ?? 0,
+          userId: childUserId ?? '',
+          user: user,
+          weightAtBirth: weightAtBirth,
+          lengthAtBirth: lengthAtBirth,
           genderId: child?.genderId ?? '',
           caregiverId: details?.id,
           caregiver: caregiverInput,
         };
-
-        console.log({ caregiverInput });
-        console.log({ infantInputModel });
-
-        // appDispatch(caregiverActions.resetCaregiverState());
         appDispatch(caregiverActions.createCaregiver(caregiverInput));
-        // appDispatch(
-        //   caregiverThunkActions.createCaregiver({ caregiver: caregiverInput })
-        // ).unwrap();
         appDispatch(infantActions.addInfant(infantInputModel));
         appDispatch(
           infantThunkActions.addInfant({ infant: infantInputModel })
         ).unwrap();
+
+        const fileName = 'roadtohealthbook.png';
+        const workflowStatusId = getWorkflowStatusIdByEnum(
+          WorkflowStatusEnum.DocumentPendingVerification
+        );
+        const documentTypeId = getDocumentTypeIdByEnum(
+          FileTypeEnum.RoadToHealthBook
+        );
+        const documentInputModel: Document = {
+          id: newGuid(),
+          userId: childUserId,
+          createdUserId: user?.id ?? '',
+          workflowStatusId: workflowStatusId ?? '',
+          documentTypeId: documentTypeId ?? '',
+          name: fileName,
+          fileName: fileName,
+          file: infantRoadToHealthBook?.roadToHealthBook,
+          fileType: FileTypeEnum.RoadToHealthBook,
+        };
+        appDispatch(documentActions.createDocument(documentInputModel));
+        appDispatch(
+          documentThunkActions.createDocument(documentInputModel)
+        ).unwrap();
       }
     } else {
-      const userId = newGuid();
+      let weightAtBirth = undefined;
+      let lengthAtBirth = undefined;
+      if (!infantRoadToHealthBook?.notRoadToHealthBook) {
+        console.log(infantRoadToHealthBook?.notRoadToHealthBook);
+        weightAtBirth =
+          (infantRoadToHealthBook?.weightAtBirth &&
+            +infantRoadToHealthBook?.weightAtBirth) ??
+          0;
+        lengthAtBirth =
+          (infantRoadToHealthBook?.lengthAtBirth &&
+            +infantRoadToHealthBook?.lengthAtBirth) ??
+          0;
+      }
+
+      const childUserId = newGuid();
       const caregiverId = newGuid();
       const siteAddressId = newGuid();
       const siteAddress: SiteAddressDto = {
         id: siteAddressId,
         addressLine1: address ?? '',
+      };
+      const user: UserDto = {
+        phoneNumber: contactInformation?.cellphone ?? '',
+        firstName: details?.name ?? '',
+        surname: details?.surname ?? '',
+        dateOfBirth: infantDetails?.dateOfBirth?.toISOString(),
       };
       const caregiverInput: CaregiverDto = {
         id: caregiverId,
@@ -178,26 +223,40 @@ export const InfantRegisterForm: React.FC = () => {
         firstName: infantDetails?.firstName,
         genderId: infantDetails?.genderId,
         documents: infantRoadToHealthBook?.roadToHealthBook,
-        userId: userId ?? '',
-        weightAtBirth:
-          (infantRoadToHealthBook?.weightAtBirth &&
-            +infantRoadToHealthBook?.weightAtBirth) ??
-          0,
-        lengthAtBirth:
-          (infantRoadToHealthBook?.lengthAtBirth &&
-            +infantRoadToHealthBook?.lengthAtBirth) ??
-          0,
+        userId: childUserId ?? '',
+        user: user,
+        weightAtBirth: weightAtBirth,
+        lengthAtBirth: lengthAtBirth,
         caregiverId: details?.id,
         caregiver: caregiverInput,
       };
-
-      console.log({ caregiverInput });
-      console.log({ infantInputModel });
-
       appDispatch(caregiverActions.createCaregiver(caregiverInput));
       appDispatch(infantActions.addInfant(infantInputModel));
       appDispatch(
         infantThunkActions.addInfant({ infant: infantInputModel })
+      ).unwrap();
+
+      const fileName = 'roadtohealthbook.png';
+      const workflowStatusId = getWorkflowStatusIdByEnum(
+        WorkflowStatusEnum.DocumentPendingVerification
+      );
+      const documentTypeId = getDocumentTypeIdByEnum(
+        FileTypeEnum.RoadToHealthBook
+      );
+      const documentInputModel: Document = {
+        id: newGuid(),
+        userId: childUserId,
+        createdUserId: user?.id ?? '',
+        workflowStatusId: workflowStatusId ?? '',
+        documentTypeId: documentTypeId ?? '',
+        name: fileName,
+        fileName: fileName,
+        file: infantRoadToHealthBook?.roadToHealthBook,
+        fileType: FileTypeEnum.RoadToHealthBook,
+      };
+      appDispatch(documentActions.createDocument(documentInputModel));
+      appDispatch(
+        documentThunkActions.createDocument(documentInputModel)
       ).unwrap();
     }
   };
@@ -214,7 +273,7 @@ export const InfantRegisterForm: React.FC = () => {
               onSubmit={(value) => {
                 setActiveStep(InfantRegisterSteps.infantDetails);
                 setHasConsent(value as any);
-                setLabel(`step 2 of 5`);
+                setLabel(`step 2 of 6`);
               }}
             />
           </div>
@@ -226,7 +285,7 @@ export const InfantRegisterForm: React.FC = () => {
               multipleChildrenCount={multipleChildrenCount}
               numberOfChildren={numberOfChildren}
               onSubmit={(value) => {
-                setLabel(`step 3 of 5`);
+                setLabel(`step 3 of 6`);
                 setInfantDetails(value);
                 setActiveStep(InfantRegisterSteps.infantRoadToHealth);
               }}
@@ -237,8 +296,9 @@ export const InfantRegisterForm: React.FC = () => {
         return (
           <div className="text-textMid">
             <InfantRoadToHealth
+              infantDetails={infantDetails}
               onSubmit={(value) => {
-                setLabel(`step 4 of 5`);
+                setLabel(`step 4 of 6`);
                 handleMultipleChildrenSteps();
                 // setActiveStep(InfantRegisterSteps.motherDetails);
                 setInfantRoadToHealthBook(value);
@@ -258,7 +318,7 @@ export const InfantRegisterForm: React.FC = () => {
               setIsAlreadyClient={setIsAlreadyClient}
               isAlreadyClient={isAlreadyClient}
               onSubmit={(value) => {
-                setLabel(`step 3 of 5`);
+                setLabel(`step 5 of 6`);
                 setDetails(value as any);
                 handleExistingUser();
               }}
@@ -283,8 +343,9 @@ export const InfantRegisterForm: React.FC = () => {
           <div className="text-textMid">
             <InfantAddress
               details={details}
+              infantDetails={infantDetails}
               onSubmit={(value) => {
-                setLabel(`step 5 of 5`);
+                setLabel(`step 6 of 6`);
                 // setActiveStep(InfantRegisterSteps.pregnantMaternalRecord);
                 setAddress(value.address);
                 completeAllSteps();
@@ -328,8 +389,22 @@ export const InfantRegisterForm: React.FC = () => {
             </div>
             <div>
               <Typography
-                className="mt-4"
-                text={`Great job ${user?.firstName}, you've registered 1 children this month.`}
+                className="mt-4 text-center"
+                color="textMid"
+                text={
+                  hasConsent?.numberOfChildren! > 0
+                    ? `Great job ${user?.firstName}, you've registered ${hasConsent?.numberOfChildren} children this month.`
+                    : `Great job ${user?.firstName}, you've registered 1 child this month.`
+                }
+                type="body"
+                lineHeight="snug"
+              />
+            </div>
+            <div>
+              <Typography
+                className="mt-8"
+                color="textMid"
+                text={`Keep going`}
                 type="body"
                 lineHeight="snug"
               />

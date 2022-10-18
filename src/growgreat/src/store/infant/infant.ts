@@ -1,6 +1,7 @@
 import { InfantDto } from '@ecdlink/core';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
+import { getInfants } from './infant.actions';
 // import { createMother, getMothers, updateMother } from './mother.actions';
 import { InfantState } from './infant.types';
 
@@ -26,40 +27,41 @@ const infantSlice = createSlice({
       }
     },
   },
-  // extraReducers: (builder) => {
-  //   builder.addCase(getMothers.fulfilled, (state, action) => {
-  //     if (!state.mothers) {
-  //       const mothers = Object.assign([], action.payload) as MotherDto[];
+  extraReducers: (builder) => {
+    builder.addCase(getInfants.fulfilled, (state, action) => {
+      if (!state.infants) {
+        const infants = Object.assign([], action.payload) as InfantDto[];
 
-  //       for (let i = 0; i < mothers.length; i++) {
-  //         mothers[i].isActive = true;
-  //       }
+        for (let i = 0; i < infants.length; i++) {
+          infants[i].isActive = true;
+        }
 
-  //       state.mothers = mothers;
-  //     }
-  //   });
-  //   builder.addCase(
-  //     updateMother.fulfilled,
-  //     (state, action: PayloadAction<MotherDto>) => {
-  //       if (state.mothers) {
-  //         const motherIndex = state.mothers.findIndex(
-  //           (mother) => mother.id === action.payload.id
-  //         );
+        state.infants = infants;
+      }
+    });
+    //   builder.addCase(
+    //     updateMother.fulfilled,
+    //     (state, action: PayloadAction<MotherDto>) => {
+    //       if (state.mothers) {
+    //         const motherIndex = state.mothers.findIndex(
+    //           (mother) => mother.id === action.payload.id
+    //         );
 
-  //         if (motherIndex < 0) return;
+    //         if (motherIndex < 0) return;
 
-  //         state.mothers[motherIndex] = action.payload;
-  //       }
-  //     }
-  //   );
-  //   builder.addCase(
-  //     createMother.fulfilled,
-  //     (state, action: PayloadAction<MotherDto>) => {
-  //       if (!state.mothers) state.mothers = [];
-  //       state.mothers?.push(action.payload);
-  //     }
-  //   );
-  // },
+    //         state.mothers[motherIndex] = action.payload;
+    //       }
+    //     }
+    //   );
+    //   builder.addCase(
+    //     createMother.fulfilled,
+    //     (state, action: PayloadAction<MotherDto>) => {
+    //       if (!state.mothers) state.mothers = [];
+    //       state.mothers?.push(action.payload);
+    //     }
+    //   );
+    // },
+  },
 });
 
 const { reducer: infantReducer, actions: infantActions } = infantSlice;

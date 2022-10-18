@@ -94,7 +94,7 @@ const mapInfant = (x: Partial<InfantDto>): InfantModelInput => ({
   firstName: x.firstName,
   caregiverId: x.caregiverId,
   caregiver: mapCaregiver(x.caregiver!),
-  userId: x.id,
+  userId: x.userId,
   genderId: x.genderId,
   weightAtBirth: x.weightAtBirth,
   lengthAtBirth: x.lengthAtBirth,

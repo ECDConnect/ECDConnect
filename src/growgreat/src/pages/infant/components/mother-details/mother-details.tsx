@@ -48,24 +48,18 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
     // defaultValues: playgroup,
     reValidateMode: 'onChange',
   });
-  console.log({ infantDetails });
+
   const { isValid } = useFormState({ control: motherDetailsFormControl });
   const mothers = useSelector(motherSelectors.getMothers);
   const [relationshipChildrenArray, setRelationshipChildrenArray] =
     useState<MultipleChildrenProps[]>();
   const hasMultipleChildren = multipleChildrenArray?.length! > 1;
-  console.log(getMothereDetailsFormValues());
   const [userId, setUserId] = useState('');
   const caregivers = useSelector(caregiverSelectors.getCaregivers);
-  console.log({ caregivers });
   const handleAddExistingUser = useMemo(() => {
     const existingUser = mothers.find((item) => item.userId === userId);
     return existingUser;
   }, [userId, mothers]);
-
-  console.log({ handleAddExistingUser });
-  console.log({ multipleChildrenArray });
-  console.log({ relationshipChildrenArray });
 
   useEffect(() => {
     if (isAlreadyClient) {
@@ -86,11 +80,9 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
     );
     // if(uniqueChildrenArray)
     setMultipleChildrenArray(uniqueChildrenArray);
-    console.log({ uniqueChildrenArray });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [relationshipChildrenArray]);
 
-  console.log(watch());
   return (
     <div className="h-screen ">
       <div>
@@ -266,7 +258,7 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
                     .filter((x) => x.firstName?.length! > 0)
                     .map((item) => {
                       return {
-                        label: item.firstName!,
+                        label: item.firstName! + ' ' + item.surname!,
                         value: item.id,
                       };
                     })) ||
@@ -277,7 +269,6 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
                   ...multipleChildrenArray,
                   caregiver: value,
                 });
-                console.log({ value });
                 setUserId(value!);
               }}
             />

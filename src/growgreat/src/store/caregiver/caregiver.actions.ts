@@ -12,6 +12,7 @@ import { CaregiverContactHistory } from './caregiver.types';
 
 export const CaregiverActions = {
   GET_CAREGIVERS: 'getCaregivers',
+  GET_CAREGIVERS_HEALTH_CARE_WORKER: 'getCaregiversHealthCareWorker',
   UPDATE_CONTACT_HISTORY: 'updateContactCaregiverHistory',
   ADD_CONTACT_HISTORY: 'addContactCaregiverHistory',
 };
@@ -38,6 +39,46 @@ export const getCaregivers = createAsyncThunk<
           caregivers = await new CaregiverService(
             userAuth?.auth_token
           ).getCaregivers();
+        } else {
+          return rejectWithValue('no access token, profile check required');
+        }
+
+        if (!caregivers) {
+          return rejectWithValue('Error getting caregivers');
+        }
+
+        return caregivers;
+      } catch (err) {
+        return rejectWithValue(err);
+      }
+    } else {
+      return caregiversCache;
+    }
+  }
+);
+
+export const getCaregiversForHealthCareWorker = createAsyncThunk<
+  CaregiverDto[],
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  {},
+  ThunkApiType<RootState>
+>(
+  CaregiverActions.GET_CAREGIVERS_HEALTH_CARE_WORKER,
+  // eslint-disable-next-line no-empty-pattern
+  async ({}, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      caregivers: { caregivers: caregiversCache },
+    } = getState();
+
+    if (!caregiversCache) {
+      try {
+        let caregivers: CaregiverDto[] | undefined;
+
+        if (userAuth?.auth_token) {
+          caregivers = await new CaregiverService(
+            userAuth?.auth_token
+          ).getCaregiversForHealthCareWorker(userAuth?.id);
         } else {
           return rejectWithValue('no access token, profile check required');
         }
