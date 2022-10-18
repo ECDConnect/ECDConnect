@@ -23,8 +23,8 @@ import { PhotoPrompt } from '../../../components/photo-prompt/photo-prompt';
 import { DialogFormInput } from '@models/practitioner/DialogFormInput';
 import { setStorageItem } from '@utils/common/local-storage.utils';
 import { practitionerForCoachSelectors } from '@/store/practitionerForCoach';
-import { coachActions, coachSelectors } from '@store/coach';
-import { userActions, userSelectors } from '@/store/user';
+import { coachActions, coachSelectors, coachThunkActions } from '@store/coach';
+import { userActions, userSelectors, userThunkActions } from '@/store/user';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { childrenSelectors } from '@/store/children';
@@ -221,7 +221,7 @@ export const CoachAbout: React.FC = () => {
       setDisplayError(true);
     } else {
       setEditFieldVisible(false);
-      saveCoachUserData();
+      await saveCoachUserData();
     }
   };
 
@@ -258,25 +258,22 @@ export const CoachAbout: React.FC = () => {
   };
 
   const picturePromptOnAction = async (imageBaseString: string) => {
-    setEditProfilePictureVisible(!editProfilePictureVisible);
     setStorageItem(imageBaseString, pictureStorageKey);
+    setEditProfilePictureVisible(!editProfilePictureVisible);
 
-    const coachCopy = cloneDeep(coach);
-    const userCopy = cloneDeep(user);
-
-    if (coachCopy && userCopy) {
-      userCopy.profileImageUrl = imageBaseString;
-      Object.assign(coachCopy.user as UserDto, userCopy);
-      appDispatch(coachActions.updateCoach(coachCopy));
-      appDispatch(userActions.updateUser(userCopy));
+    const copy = Object.assign({}, user);
+    if (copy) {
+      copy.profileImageUrl = imageBaseString;
+      appDispatch(userActions.updateUser(copy));
+      //appDispatch(userThunkActions.updateUser(copy));
     }
 
     if (!userProfilePicture) {
       await createNewDocument({
         data: imageBaseString,
-        userId: coach!.user?.id || '',
+        userId: user?.id || '',
         fileType: FileTypeEnum.ProfileImage,
-        fileName: `ProfilePicture_${coach!.user?.id}.png`,
+        fileName: `ProfilePicture_${user?.id}.png`,
       });
     } else {
       updateDocument(userProfilePicture, imageBaseString);
@@ -285,7 +282,6 @@ export const CoachAbout: React.FC = () => {
 
   const saveCoachUserData = () => {
     const coachForm = coachAboutFormGetValues();
-
     const coachCopy = cloneDeep(coach);
     const userCopy = cloneDeep(user);
 
@@ -299,7 +295,11 @@ export const CoachAbout: React.FC = () => {
       Object.assign(coachCopy.user as UserDto, userCopy);
 
       appDispatch(userActions.updateUser(userCopy));
+      appDispatch(userThunkActions.updateUser(userCopy));
+
       appDispatch(coachActions.updateCoach(coachCopy));
+      appDispatch(coachThunkActions.updateCoach(coachCopy));
+
       setNewStackListItems(coachCopy);
     }
   };
@@ -322,7 +322,11 @@ export const CoachAbout: React.FC = () => {
         <div className="px-4">
           <div className={'w-full inline-flex justify-center pt-8'}>
             <ProfileAvatar
-              dataUrl={userProfilePicture?.file || ''}
+              dataUrl={
+                userProfilePicture?.file ||
+                user?.profileImageUrl ||
+                userProfilePicture?.reference
+              }
               size={'header'}
               onPressed={displayProfilePicturePrompt}
               hasConsent={true}

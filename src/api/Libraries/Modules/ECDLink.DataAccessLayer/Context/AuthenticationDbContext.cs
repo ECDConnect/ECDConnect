@@ -50,6 +50,9 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<Programme> Programmes { get; set; }
 
         public DbSet<DailyProgramme> DailyProgrammes { get; set; }
+        public DbSet<ClassReassignmentHistory> ClassReassignmentHistories { get; set; }
+
+        
 
         // Security
         public DbSet<Permission> Permissions { get; set; }
@@ -70,7 +73,7 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<Franchisor> Franchisors { get; set; }
         public DbSet<HealthCareWorker> HealthCareWorkers { get; set; }
         public DbSet<Mother> Mothers { get; set; }
-        public DbSet<Infant> Infants { get; set; }
+        public DbSet<Infant> Infants { get; set; }        
 
         //Reports
         public DbSet<ChildProgressReport> ChildProgressReports { get; set; }

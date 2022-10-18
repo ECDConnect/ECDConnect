@@ -17,6 +17,7 @@ using ECDLink.Security;
 using ECDLink.Security.Extensions;
 using ECDLink.Security.Helpers;
 using ECDLink.Security.Managers;
+using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
@@ -198,13 +199,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             string surname,
             Guid classgroupId)
         {
+            Guid tenantId = TenantExecutionContext.Tenant.Id;
             var appUser = new ApplicationUser
             {
                 FirstName = firstname,
                 Surname = surname,
                 UserName = $"External_Edit_{Guid.NewGuid()}"
             };
-
+            appUser.TenantId = tenantId;
             var result = await userManager.CreateAsync(appUser);
 
             var childRepo = repoFactory.CreateRepository<Child>(userContext: httpContext.HttpContext.GetUser().Id);
@@ -217,6 +219,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 WorkflowStatusId = workflowStatus.Id
             };
 
+            child.TenantId = tenantId;
             var newChild = childRepo.Insert(child);
 
             var tokenWrapper = new ChildTokenWrapperModel

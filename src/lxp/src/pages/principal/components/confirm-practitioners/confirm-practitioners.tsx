@@ -61,6 +61,10 @@ export default function ConfirmPractitioners({
     },
   ]);
 
+  const callForHelp = () => {
+    window.open('tel:+27800014817');
+  };
+
   useEffect(() => {
     if (practitionersForPrincipal?.length) {
       const _practitionersList: SetStateAction<RegisterPractitioner[]> = [];
@@ -196,6 +200,7 @@ export default function ConfirmPractitioners({
                           type={'filled'}
                           color={'primary'}
                           textColor={'white'}
+                          onClick={callForHelp}
                         />
                       ) : (
                         <></>

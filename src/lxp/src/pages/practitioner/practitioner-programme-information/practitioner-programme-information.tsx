@@ -39,6 +39,7 @@ import { analyticsActions } from '@store/analytics';
 import * as styles from './practitioner-programme-information.styles';
 import ROUTES from '@routes/routes';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
+import { practitionerSelectors } from '@/store/practitioner';
 
 export const PractitionerProgrammeInformation: React.FC = () => {
   const history = useHistory();
@@ -53,6 +54,14 @@ export const PractitionerProgrammeInformation: React.FC = () => {
   const programmeType = useSelector(
     classroomsSelectors.getClassroomProgrammeType()
   );
+
+  const classroomForPractitionerAnyType: any = classroom;
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  const practitioners = useSelector(practitionerSelectors.getPractitioners);
+  const practitionersList = practitioners?.filter(
+    (item) => item.userId !== practitioner?.userId
+  );
+  const isPrincipal = practitioner?.isPrincipal === true;
 
   const { createNewDocument, classroomImage, updateDocument, deleteDocument } =
     useDocuments();
@@ -147,13 +156,25 @@ export const PractitionerProgrammeInformation: React.FC = () => {
     const stackedActionList: ActionListDataItem[] = [
       {
         title: 'Programme name',
-        subTitle: classroom?.name,
+        subTitle:
+          classroomForPractitionerAnyType && practitioner?.isPrincipal !== true
+            ? classroomForPractitionerAnyType?.classroomName
+            : classroom?.name || 'N/A',
         switchTextStyles: true,
         actionName: 'Edit',
         actionIcon: 'PencilIcon',
-        onActionClick: () => {
-          setEditFieldVisible(true);
-        },
+        onActionClick:
+          classroomForPractitionerAnyType && practitioner?.isPrincipal !== true
+            ? () => {}
+            : () => setEditFieldVisible(true),
+      },
+      {
+        title: 'Location - N/A',
+        subTitle: 'N/A',
+        switchTextStyles: true,
+        actionName: undefined,
+        actionIcon: 'PlusIcon',
+        onActionClick: () => {},
       },
       {
         title: 'Type of ECD service',
@@ -162,20 +183,39 @@ export const PractitionerProgrammeInformation: React.FC = () => {
       },
     ];
 
-    if (programmeType?.enumId === ProgrammeTypeEnum.Playgroup) {
+    if (practitioners?.length! > 0) {
       stackedActionList.push({
-        title: 'Groups',
+        title: 'Other practitioners on site',
+        subTitle:
+          practitionersList?.map((x) => x?.user?.firstName).join(', ') || 'N/A',
+        switchTextStyles: true,
+        actionName:
+          practitioners?.length! > 1
+            ? isPrincipal
+              ? 'Edit'
+              : 'View'
+            : undefined,
+        actionIcon: isPrincipal ? 'PencilIcon' : 'EyeIcon',
+        onActionClick: () => {
+          history.push(ROUTES.PRINCIPAL.PRACTITIONER_LIST, {
+            returnRoute: ROUTES.PRACTITIONER.PROGRAMME_INFORMATION,
+          });
+        },
+      });
+    }
+
+    if (classroomGroups.length > 0) {
+      stackedActionList.push({
+        title: 'Classes',
         subTitle: classroomGroups
           ?.filter((x) => x.name !== NoPlaygroupClassroomType.name)
           .map((x) => x.name)
-          .join(','),
+          .join(', '),
         switchTextStyles: true,
-        actionName: 'Edit',
-        actionIcon: 'PencilIcon',
+        actionName: isPrincipal ? 'Edit' : 'View',
+        actionIcon: isPrincipal ? 'PencilIcon' : 'EyeIcon',
         onActionClick: () => {
-          history.push(ROUTES.PRACTITIONER.PROFILE.PLAYGROUPS, {
-            returnRoute: ROUTES.PRACTITIONER.PROGRAMME_INFORMATION,
-          });
+          history.push(ROUTES.PRACTITIONER.PROFILE.PLAYGROUPS, { a: 'hello' });
         },
       });
     }

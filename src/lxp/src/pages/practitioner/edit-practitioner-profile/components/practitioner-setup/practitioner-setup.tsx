@@ -21,6 +21,9 @@ import { authSelectors } from '@/store/auth';
 import { PractitionerService } from '@/services/PractitionerService';
 import { OnNext } from '@/pages/principal/setup-principal/setup-principal.types';
 import { PractitionerFormData } from '../../edit-practitioner-profile.types';
+import { useHistory } from 'react-router';
+import ROUTES from '@/routes/routes';
+import { practitionerSelectors } from '@/store/practitioner';
 
 export const PractitionerSetup = ({
   onSubmit,
@@ -30,6 +33,7 @@ export const PractitionerSetup = ({
     allowPermissions,
   }: PractitionerFormData) => void;
 }) => {
+  const history = useHistory();
   const [principalName, setPrincipalName] = useState<string>('Principal');
   const [programName, setProgramName] = useState<string>('Programme');
   const [viewPermissionToShare, setViewPermissionToShare] =
@@ -42,6 +46,7 @@ export const PractitionerSetup = ({
     },
   });
 
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const userAuth = useSelector(authSelectors.getAuthUser);
   const user = useSelector(userSelectors.getUser);
 
@@ -59,6 +64,16 @@ export const PractitionerSetup = ({
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const getPractitionerResponse = async () => {
+    await new PractitionerService(
+      userAuth?.auth_token || ''
+    ).UpdatePrincipalInvitation(
+      user?.id!,
+      practitioner?.principalHierarchy!,
+      practitionerToProgramme
+    );
+  };
 
   const { practitionerToProgramme, allowPermissions } = watch();
 
@@ -114,7 +129,7 @@ export const PractitionerSetup = ({
 
           {practitionerToProgramme !== undefined && (
             <Alert
-              type={practitionerToProgramme ? 'info' : 'error'}
+              type={practitionerToProgramme ? 'info' : 'warning'}
               title={
                 practitionerToProgramme
                   ? 'You need to accept the agreement below to continue'
@@ -158,13 +173,25 @@ export const PractitionerSetup = ({
             text="Next"
             textColor="white"
             icon="ArrowCircleRightIcon"
-            disabled={!(practitionerToProgramme != null && allowPermissions)}
-            onClick={() => {
-              onSubmit({
-                practitionerToProgramme: !!practitionerToProgramme,
-                allowPermissions: !!allowPermissions,
-              });
-            }}
+            disabled={
+              (practitionerToProgramme === true && !allowPermissions) ||
+              practitionerToProgramme === null ||
+              practitionerToProgramme === undefined
+            }
+            onClick={
+              practitionerToProgramme === false
+                ? () => {
+                    getPractitionerResponse();
+                    history.push(ROUTES.PRINCIPAL.SETUP_PROFILE);
+                  }
+                : () => {
+                    getPractitionerResponse();
+                    onSubmit({
+                      practitionerToProgramme: !!practitionerToProgramme,
+                      allowPermissions: !!allowPermissions,
+                    });
+                  }
+            }
           />
         </div>
       </div>

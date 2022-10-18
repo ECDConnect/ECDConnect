@@ -9,9 +9,11 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import {
   getClassroom,
+  getClassroomGroupClassroomsForPractitioner,
   getClassroomGroupLearners,
   getClassroomGroups,
   getClassroomProgrammes,
+  getClassroomDetailsForPractitioner,
 } from './classroom.actions';
 import { ClassroomState } from './classroom.types';
 
@@ -22,6 +24,7 @@ const initialState: ClassroomState = {
   classroomGroupLearners: undefined,
   programmeType: undefined,
   principal: undefined,
+  classrooGroupsForPractitioner: undefined,
 };
 
 const classroomsSlice = createSlice({
@@ -37,6 +40,8 @@ const classroomsSlice = createSlice({
       state.classroomProgrammes = initialState.classroomProgrammes;
       state.classroomGroupLearners = initialState.classroomGroupLearners;
       state.principal = initialState.principal;
+      state.classrooGroupsForPractitioner =
+        initialState.classrooGroupsForPractitioner;
     },
     updateClassroom: (state, action: PayloadAction<ClassroomDto>) => {
       state.classroom = action.payload;
@@ -192,6 +197,23 @@ const classroomsSlice = createSlice({
         state.classroomGroupLearners = action.payload;
       }
     });
+    builder.addCase(
+      getClassroomGroupClassroomsForPractitioner.fulfilled,
+      (state, action) => {
+        if (action.payload) {
+          state.classroom = action.payload;
+        }
+      }
+    );
+    builder.addCase(
+      getClassroomDetailsForPractitioner.fulfilled,
+      (state, action: any) => {
+        if (action.payload) {
+          const classroomProgramme = action?.payload;
+          state.classroom = classroomProgramme;
+        }
+      }
+    );
   },
 });
 

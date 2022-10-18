@@ -1,30 +1,15 @@
-import { useLazyQuery, useMutation, useQuery } from '@apollo/client';
-import {
-  InfantDto,
-  NOTIFICATION,
-  PermissionEnum,
-  useDialog,
-  useNotifications,
-  usePanel,
-} from '@ecdlink/core';
-import { HealthCareWorkerDto } from '@ecdlink/core/lib/models/dto/Users/health-care-worker.dto';
-import { SendInviteToApplication, GetAllInfants } from '@ecdlink/graphql';
-import { DialogPosition } from '@ecdlink/ui';
+import { useQuery } from '@apollo/client';
+import { InfantDto } from '@ecdlink/core';
+import { GetAllInfants } from '@ecdlink/graphql';
 import { useEffect, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
-import AlertModal from '../../../../components/dialog-alert/dialog-alert';
 import UiTable from '../../../../components/ui-table';
-import { useUser } from '../../../../hooks/useUser';
 
 export default function Infants() {
-  const { hasPermission } = useUser();
-  const { setNotification } = useNotifications();
-  const dialog = useDialog();
   const { data } = useQuery(GetAllInfants, {
     fetchPolicy: 'cache-and-network',
   });
   const [tableData, setTableData] = useState<any[]>([]);
-  const [sendInviteToApplication] = useMutation(SendInviteToApplication);
 
   useEffect(() => {
     if (data && data.GetAllInfant) {

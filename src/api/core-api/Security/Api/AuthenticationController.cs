@@ -39,8 +39,12 @@ namespace ECDLink.Security.Api
                 return BadRequest(ModelState);
             }
 
-            ApplicationUser user;
+            if (login.Password.StartsWith('<') || (login.PhoneNumber!=null? login.PhoneNumber.StartsWith('<') : login.Username.StartsWith('<'))) //exclude funny script attempts
+            {
+                return Unauthorized(new { Error = "Some of the information you have entered is incorrect. Please contact the SmartStart call centre to find out more: 0800 014 817" });
+            }
 
+            ApplicationUser user;
             if (!string.IsNullOrWhiteSpace(login.Username))
             {
                 user = await _securityManager.LogInWithUsernameAsync(login.Username, login.Password);
@@ -56,6 +60,7 @@ namespace ECDLink.Security.Api
                 return Unauthorized(new { Error = "Some of the information you have entered is incorrect. Please contact the SmartStart call centre to find out more: 0800 014 817" });
             }
 
+            //TODO: hook in JWT obfuscation in here
             var jwt = await _securityManager.GenerateJwtForUserAsync(user, JwtEncoderEnum.Standard);
 
             var package = new OkObjectResult(JsonConvert.DeserializeObject<JwtObject>(jwt));

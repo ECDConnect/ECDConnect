@@ -38,6 +38,11 @@ export const GetAllPrincipal = gql`
       startDate
       monthSinceFranchisee
       signingSignature
+      isLeaving
+      dateLinked
+      dateToBeRemoved
+      dateAccepted
+      progress
     }
   }
 `;
@@ -78,6 +83,11 @@ export const allPrincipal = gql`
       languageUsedInGroups
       startDate
       monthSinceFranchisee
+      isLeaving
+      dateLinked
+      dateToBeRemoved
+      dateAccepted
+      progress
     }
   }
 `;
@@ -116,6 +126,11 @@ export const GetPrincipalById = gql`
       isRegistered
       isTrainee
       signingSignature
+      isLeaving
+      dateLinked
+      dateToBeRemoved
+      dateAccepted
+      progress
     }
   }
 `;
@@ -139,5 +154,24 @@ export const UpdatePrincipal = gql`
 export const DeletePrincipal = gql`
   mutation deletePrincipal($id: UUID!) {
     deletePrincipal(id: $id)
+  }
+`;
+
+export const UpdatePrincipalInvitation = gql`
+  mutation updatePrincipalInvitation(
+    $practitionerId: String
+    $principalId: String
+    $accepted: Boolean!
+  ) {
+    updatePrincipalInvitation(
+      practitionerId: $practitionerId
+      principalId: $principalId
+      accepted: $accepted
+    ) {
+      leavingDate
+      acceptedDate
+      linkedDate
+      leaving
+    }
   }
 `;

@@ -358,7 +358,9 @@ export const EditChildInformation: React.FC = () => {
 
         list.push({
           title: 'Address',
-          subTitle: `${caregiver?.siteAddress?.ward} ${caregiver?.siteAddress?.addressLine1}, ${caregiver?.siteAddress?.addressLine2}`,
+          subTitle: caregiver?.siteAddress?.ward
+            ? `${caregiver?.siteAddress?.ward} ${caregiver?.siteAddress?.addressLine1}, ${caregiver?.siteAddress?.addressLine2}`
+            : 'Add address',
           switchTextStyles: true,
           actionName: 'View',
           actionIcon: 'EyeIcon',
@@ -724,7 +726,7 @@ export const EditChildInformation: React.FC = () => {
               type="body"
               className=""
               color="textDark"
-              text={'Edit Playgroup'}
+              text={'Edit Classes'}
               weight="bold"
             />
             <div onClick={closeEditField}>
@@ -732,7 +734,7 @@ export const EditChildInformation: React.FC = () => {
             </div>
           </div>
           <Dropdown<string>
-            placeholder={'Select playgroup'}
+            placeholder={'Select class'}
             list={classRoomGroupsList}
             fillType="clear"
             fullWidth

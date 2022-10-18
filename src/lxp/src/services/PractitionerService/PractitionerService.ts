@@ -1,6 +1,9 @@
 import { api } from '../axios.helper';
 import { Config, UserDto, PractitionerDto } from '@ecdlink/core';
-import { MutationAddPractitionerToPrincipalArgs } from '@ecdlink/graphql';
+import {
+  MutationAddPractitionerToPrincipalArgs,
+  MutationUpdatePractitionerContactInfoArgs,
+} from '@ecdlink/graphql';
 
 class PractitionerService {
   _accessToken: string;
@@ -75,6 +78,11 @@ class PractitionerService {
             startDate
             monthSinceFranchisee
             shareInfo
+            dateLinked
+            dateAccepted
+            dateToBeRemoved
+            isLeaving
+            progress
           }
         }
       `,
@@ -131,6 +139,11 @@ class PractitionerService {
             startDate
             monthSinceFranchisee
             shareInfo
+            dateLinked
+            dateAccepted
+            dateToBeRemoved
+            isLeaving
+            progress
           }
         }
       `,
@@ -162,6 +175,11 @@ class PractitionerService {
             coachHierarchy
             isRegistered
             shareInfo
+            signingSignature
+            dateLinked
+            dateAccepted
+            dateToBeRemoved
+            isLeaving
             user {
               idNumber
               fullName
@@ -170,7 +188,17 @@ class PractitionerService {
               id
               email
               phoneNumber
+              profileImageUrl
+              roles {
+                id
+                name
+              }
             }
+            dateLinked
+            dateAccepted
+            dateToBeRemoved
+            isLeaving
+            progress
           }
         }
       `,
@@ -189,15 +217,27 @@ class PractitionerService {
       query: `
        query GetPractitionerByIdNumber($idNumber: String) {
           practitionerByIdNumber(idNumber: $idNumber) {
-            id
-            idNumber
-            firstName
-            surname
-            userName
-            practitionerObjectData {
-              isRegistered
+            appUser {
               id
+              idNumber
+              firstName
+              surname
+              userName
+              practitionerObjectData {
+                isRegistered
+                isPrincipal
+                id
+                shareInfo
+                principalHierarchy
+                dateLinked
+                dateAccepted
+                dateToBeRemoved
+                isLeaving
+                progress
+
+              }
             }
+            note
           }
         }
       `,
@@ -253,10 +293,13 @@ class PractitionerService {
     const apiInstance = await api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-        query getClassroomDetailsForPractitioner($userId: String) {
-          getClassroomDetailsForPractitioner(userId: $userId) {
+        query classroomDetailsForPractitioner($userId: String) {
+          classroomDetailsForPractitioner(userId: $userId) {
             principalName
             classroomName
+            classroomGroupName
+            classroomId
+            insertedDate
           }
         }
       `,
@@ -271,7 +314,7 @@ class PractitionerService {
       );
     }
 
-    return response.data.data.getClassroomDetailsForPractitioner;
+    return response.data.data.classroomDetailsForPractitioner;
   }
 
   async UpdatePractitionerShareInfo(
@@ -283,17 +326,14 @@ class PractitionerService {
       query: `
         mutation updatePractitionerShareInfo(
           $practitionerId: String
-          $principalId: String
         ) {
           updatePractitionerShareInfo(
             practitionerId: $practitionerId
-            principalId: $principalId
           )
         }
       `,
       variables: {
         practitionerId,
-        principalId,
       },
     });
 
@@ -338,6 +378,38 @@ class PractitionerService {
     return response.data.data.updatePractitionerRegistered;
   }
 
+  async UpdatePractitionerProgress(
+    practitionerId: string,
+    progress: any
+  ): Promise<boolean> {
+    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        mutation updatePractitionerProgress(
+          $practitionerId: String
+          $progress: Decimal!
+        ) {
+          updatePractitionerProgress(
+            practitionerId: $practitionerId
+            progress: $progress
+          )
+        }
+      `,
+      variables: {
+        practitionerId,
+        progress,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'UpdatePractitionerProgress Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.updatePractitionerProgress;
+  }
+
   async AddPractitionerToPrincipal(
     input: MutationAddPractitionerToPrincipalArgs
   ): Promise<UserDto> {
@@ -372,6 +444,119 @@ class PractitionerService {
 
     return response.data.data.addPractitionerToPrincipal;
   }
+
+  async UpdatePractitionerByid(
+    practitionerId: string,
+    input: MutationUpdatePractitionerContactInfoArgs
+  ): Promise<PractitionerDto> {
+    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      mutation updatePractitionerContactInfo($practitionerId: String, $firstName: String, $lastName: String, $phoneNumber: String, $email: String) {
+        updatePractitionerContactInfo(practitionerId: $practitionerId, firstName: $firstName, lastName: $lastName, phoneNumber: $phoneNumber, email: $email) {
+            id
+            idNumber
+            firstName
+            nickFirstName
+            nickSurname
+              email
+            phoneNumber
+        }
+      }
+      `,
+      variables: {
+        practitionerId,
+        input,
+      },
+    });
+    if (response.status !== 200) {
+      throw new Error(
+        'Update Practitioner by ID number Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.updatePractitionerContactInfo;
+  }
+
+  async UpdatePrincipalInvitation(
+    practitionerId: string,
+    principalId: string,
+    accepted: boolean = true
+  ): Promise<boolean> {
+    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      mutation updatePrincipalInvitation(
+        $practitionerId: String
+        $principalId: String
+        $accepted: Boolean!
+      ) {
+        updatePrincipalInvitation(
+          practitionerId: $practitionerId
+          principalId: $principalId
+          accepted: $accepted
+        ) {
+          leavingDate
+          acceptedDate
+          linkedDate
+          leaving
+        }
+      }  
+      `,
+      variables: {
+        practitionerId,
+        principalId,
+        accepted,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Get Practitioner by ID number Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.updatePractitionerRegistered;
+  }
+
+  async displayMetrics(): Promise<PractitionerDto[]> {
+    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      query displayMetrics($type: String) {
+        displayMetrics(type: $type) {
+      subject icon color message notes userId userType 
+      
+        }
+      }
+      `,
+    });
+
+    if (response.status !== 200) {
+      throw new Error('Display metrics Failed - Server connection error');
+    }
+
+    return response.data.data.displayMetrics;
+  }
+
+  // async practitionerColleagues(): Promise<PractitionerColleagues[]> {
+  //   const apiInstance = await api(Config.graphQlApi, this._accessToken);
+  //   const response = await apiInstance.post<any>(``, {
+  //     query: `
+  //     query practitionerColleagues($userId: String) {
+  //       practitionerColleagues(userId: $userId) {
+  //     key value
+  //       }
+  //     }
+  //     `,
+  //   });
+
+  //   if (response.status !== 200) {
+  //     throw new Error('Practitioner Colleagues Failed - Server connection error');
+  //   }
+
+  //   return response.data.data.practitionerColleagues;
+  // }
 }
 
 export default PractitionerService;

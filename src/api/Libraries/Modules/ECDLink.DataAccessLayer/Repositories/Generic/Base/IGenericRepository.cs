@@ -1,5 +1,6 @@
 using ECDLink.DataAccessLayer.Entities.Base;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
@@ -12,6 +13,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
         IQueryable<T> GetAll();
         T GetById(TKey id);
         T GetByUserId(string id);
+        List<T> GetListByUserId(string id);
         T Insert(T entity);
         T Update(T entity);
         void Delete(TKey id);

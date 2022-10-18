@@ -6,10 +6,13 @@ import { ThunkActionStatuses } from '@store/types';
 import localforage from 'localforage';
 import { useCallback, useEffect } from 'react';
 import hash from 'object-hash';
+import { useSelector } from 'react-redux';
+import { practitionerSelectors } from '@/store/practitioner';
 
 const useBackgroundSync = () => {
   const { isOnline } = useOnlineStatus();
   const dispatch = useAppDispatch();
+  const practitioner = useSelector(practitionerSelectors?.getPractitioner);
 
   const { resetAppStore, initStoreSetup } = useStoreSetup();
 
@@ -23,13 +26,19 @@ const useBackgroundSync = () => {
 
       const hasStateChanged = stateHash !== hash(rest);
 
-      hasStateChanged &&
-        isOnline &&
-        dispatch(syncThunkActions.syncOfflineData({}));
-    }, 15 * 60 * 1000);
+      if (practitioner?.isPrincipal === true) {
+        hasStateChanged &&
+          isOnline &&
+          dispatch(syncThunkActions.syncOfflineData({}));
+      } else {
+        hasStateChanged &&
+          isOnline &&
+          dispatch(syncThunkActions.syncOfflineDataForPractitioner({}));
+      }
+    }, 30 * 60 * 1000);
 
     return () => clearInterval(interval);
-  }, [isOnline, dispatch, rest]);
+  }, [isOnline, dispatch, rest, practitioner?.isPrincipal]);
 
   const handleSyncSuccess = useCallback(async () => {
     await dispatch(syncActions.resetSyncState());

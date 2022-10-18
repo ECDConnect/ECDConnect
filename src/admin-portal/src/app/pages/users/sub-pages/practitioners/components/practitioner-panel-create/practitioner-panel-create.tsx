@@ -219,6 +219,7 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
         practitionerForm.principalHierarchy !== ''
           ? practitionerForm.principalHierarchy
           : null,
+      Progress: 0,
     };
 
     await createPractitioner({

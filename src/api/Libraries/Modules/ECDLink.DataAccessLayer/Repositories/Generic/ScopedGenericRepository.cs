@@ -14,6 +14,8 @@ using ECDLink.DataAccessLayer.Entities.Classroom;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using System.Linq.Expressions;
 using Org.BouncyCastle.Math.EC.Rfc7748;
+using ECDLink.Tenancy.Context;
+using System.Collections.Generic;
 
 namespace ECDLink.DataAccessLayer.Repositories.Generic
 {
@@ -61,7 +63,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             else
             {
                 try {
-                    var hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId);
+                    List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId);
                     if (hh.Count > 0)
                     {
                         if (!hh.Contains(null)) //dont run any null values through teh check, nothing should be null
@@ -79,7 +81,6 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
 
         public override T GetById(Guid id)
         {
-            //TODO CB: build userhierarchy permissions list in to GetById
             if (string.IsNullOrEmpty(_userId))
             {
                 throw new UnauthorizedAccessException("User does not have access to this data");
@@ -96,15 +97,19 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             //if user is in a higher admin role (Principal, Practitioner, Coach, Franchisor, then skip the check as they need to be able to see anyone anywhere due to the shift in roles of Milestone 1.
             var user = _userManager.FindByIdAsync(_userId).Result;
             var roles = _userManager.GetRolesAsync(user).Result;
-            var higherRoles = new[] { Roles.PRACTITIONER, Roles.COACH, Roles.ADMINISTRATOR, Roles.PRINCIPAL, Roles.FRANCHISOR };//
-            bool isHigherRole = higherRoles.Any(roles.Contains); //roles.contains(Roles.ADMINISTRATOR);
-            if (!isHigherRole)
+            var isAdmin = roles.Contains(Roles.ADMINISTRATOR);
+
+            if (!isAdmin)
             {
                 if (!string.IsNullOrWhiteSpace(castRecord.Hierarchy))
                 {
-                    if (!castRecord.Hierarchy.StartsWith(Hierarchy))
+                    List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId);
+                    if (hh != null)
                     {
-                        return default;
+                        if (!hh.Contains(castRecord.Hierarchy))
+                        {
+                            return default;
+                        }
                     }
                 }
             }
@@ -112,9 +117,8 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             return record;
         }
 
-        public T GetByUserId(Guid id)
+        public override T GetByUserId(string id)
         {
-            //TODO CB: build userhierarchy permissions list in to GetById
             if (string.IsNullOrEmpty(_userId))
             {
                 throw new UnauthorizedAccessException("User does not have access to this data");
@@ -124,8 +128,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             if (type.GetProperty("UserId") != null)
             {
 
-                var record = base.GetAll().Where(s => s.GetType().GetProperty("UserId").GetValue(type, null).Equals(id));
-
+                var record = base.GetByUserId(id);
 
                 var castRecord = record as IUserScoped;
 
@@ -133,36 +136,94 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                 {
                     return default;
                 }
-                //if user is in a higher admin role (Principal, Practitioner, Coach, Franchisor, then skip the check as they need to be able to see anyone anywhere due to the shift in roles of Milestone 1.
+                //hierarchy confirmation allowing this to be viewed
                 var user = _userManager.FindByIdAsync(_userId).Result;
                 var roles = _userManager.GetRolesAsync(user).Result;
-                var higherRoles = new[] { Roles.PRACTITIONER, Roles.COACH, Roles.ADMINISTRATOR, Roles.PRINCIPAL, Roles.FRANCHISOR };//
-                bool isHigherRole = higherRoles.Any(roles.Contains); //roles.contains(Roles.ADMINISTRATOR);
-                if (!isHigherRole)
+                var isAdmin = roles.Contains(Roles.ADMINISTRATOR);
+
+                if (!isAdmin)
                 {
-                    if (!string.IsNullOrWhiteSpace(castRecord.Hierarchy))
+                    try
                     {
-                        if (!castRecord.Hierarchy.StartsWith(Hierarchy))
+                        List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId);
+                        if (hh != null)
                         {
-                            return default;
+                            if (!hh.Contains(castRecord.Hierarchy))
+                            {
+                                return default;
+                            }
                         }
                     }
-                }
+                    catch (Exception e)
+                    {
+                        return null;
+                    }
 
+                }
                 return (T)record;
             }
-            else return this.GetById(id);//default to getting just by id
+            return null;
+        }
+
+        public override List<T> GetListByUserId(string id)
+        {
+            if (string.IsNullOrEmpty(_userId))
+            {
+                throw new UnauthorizedAccessException("User does not have access to this data");
+            }
+
+            Type type = typeof(T);
+            if (type.GetProperty("UserId") != null)
+            {
+
+                var record = base.GetListByUserId(id);
+
+                var castRecord = record as IUserScoped;
+
+                if (castRecord == default)
+                {
+                    return default;
+                }
+                //hierarchy confirmation allowing this to be viewed
+                var user = _userManager.FindByIdAsync(_userId).Result;
+                var roles = _userManager.GetRolesAsync(user).Result;
+                var isAdmin = roles.Contains(Roles.ADMINISTRATOR);
+
+                if (!isAdmin)
+                {
+                    try
+                    {
+                        List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId);
+                        if (hh != null)
+                        {
+                            if (!hh.Contains(castRecord.Hierarchy))
+                            {
+                                return default;
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        return null;
+                    }
+
+                }
+                return (List<T>)record;
+            }
+            return null;
         }
 
         public override T Insert(T entity)
         {
+            Guid tenantId = TenantExecutionContext.Tenant.Id;
             ((IUserScoped)entity).Hierarchy = Hierarchy;
-
+            entity.TenantId = tenantId;
             return base.Insert(entity);
         }
 
         public override T Update(T entity)
         {
+            Guid tenantId = TenantExecutionContext.Tenant.Id;
             if (entity == null)
             {
                 throw new ArgumentNullException("entity");
@@ -172,10 +233,12 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
 
             if (dbEntity == default(T))
             {
+                entity.TenantId = tenantId;
                 Insert(entity);
             }
             else
             {
+                entity.TenantId = tenantId;
                 ((IUserScoped)entity).Hierarchy = ((IUserScoped)dbEntity).Hierarchy;
                 context.Entry(dbEntity).CurrentValues.SetValues(entity);
                 _domainEventService.NotifyUpdate<T>(_userId, entity);

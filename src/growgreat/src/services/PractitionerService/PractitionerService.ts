@@ -42,6 +42,13 @@ class PractitionerService {
             languageUsedInGroups
             startDate
             monthSinceFranchisee
+            signingSignature
+            coachHierarchy
+            principalHierarchy
+            isLeaving
+            dateLinked
+            dateToBeRemoved
+            dateAccepted
           }
         }
       `,

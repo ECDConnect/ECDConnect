@@ -41,6 +41,11 @@ export const GetAllPractitioner = gql`
       signingSignature
       coachHierarchy
       principalHierarchy
+      isLeaving
+      dateLinked
+      dateToBeRemoved
+      dateAccepted
+      progress
     }
   }
 `;
@@ -81,6 +86,11 @@ export const GetPractitionerById = gql`
       signingSignature
       coachHierarchy
       principalHierarchy
+      isLeaving
+      dateLinked
+      dateToBeRemoved
+      dateAccepted
+      progress
     }
   }
 `;
@@ -110,6 +120,18 @@ export const DeletePractitioner = gql`
 export const practitionerImport = gql`
   mutation practitionerImport($file: String) {
     practitionerImport(file: $file)
+  }
+`;
+
+export const importAll = gql`
+  mutation importAll($file: String) {
+    importAll(file: $file)
+  }
+`;
+
+export const importAllChildren = gql`
+  mutation importAllChildren($file: String) {
+    importAllChildren(file: $file)
   }
 `;
 

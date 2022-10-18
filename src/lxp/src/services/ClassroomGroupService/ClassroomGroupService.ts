@@ -47,6 +47,7 @@ class ClassroomGroupService {
             id
             classroomId
             name
+            userId
             programmeTypeId
             programmeType {
               id
@@ -91,6 +92,64 @@ class ClassroomGroupService {
     }
 
     return true;
+  }
+
+  async updateReassignClassroomGroup(
+    practitionerId: string,
+    reassignedToPractitioner: string,
+    reason: string,
+    absentDate: Date,
+    loggedByUser: string,
+    classProgram: string
+  ): Promise<boolean> {
+    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      mutation addAbsenteeForPractitioner ($practitionerId: String,$reason: String, $absentDate: DateTime!,$loggedByUser: String,$classProgram: String,$reassignedToPractitioner: String)
+       { 
+        addAbsenteeForPractitioner (practitionerId: $practitionerId, reason: $reason, absentDate: $absentDate, loggedByUser: $loggedByUser, classProgram: $classProgram, reassignedToPractitioner: $reassignedToPractitioner) {
+           id 
+            }   
+            }
+      `,
+      variables: {
+        practitionerId: practitionerId,
+        reassignedToPractitioner: reassignedToPractitioner,
+        reason: reason,
+        absentDate: absentDate,
+        loggedByUser: loggedByUser,
+        classProgram: classProgram,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Updating classroom group failed - Server connection error'
+      );
+    }
+
+    return true;
+  }
+
+  async getClassAttendanceMetrics(): Promise<ClassroomGroupDto> {
+    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      query {          classAttendanceMetrics {         childCount  attendancePercentage 
+        classroomId
+        year
+        month
+        classroomGroupId
+                 }        }
+      `,
+      variables: {},
+    });
+
+    if (response.status !== 200) {
+      throw new Error('Get class metrics Failed - Server connection error');
+    }
+
+    return response.data.data.classAttendanceMetrics;
   }
 }
 

@@ -8,6 +8,7 @@ export interface EditPlaygroupModel {
   name: string;
   meetingDays: number[];
   isFullDay?: boolean;
+  userId?: string;
 }
 
 export interface EditGroupedPlaygroupModel {

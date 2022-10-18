@@ -2,6 +2,7 @@ using ECDLink.Security.Attributes;
 using ECDLink.Security;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
+using ECDLink.DataAccessLayer.Entities.Interfaces;
 
 namespace ECDLink.DataAccessLayer.Entities.Classroom
 {

@@ -24,6 +24,7 @@ export const UpdateClassroomGroup = gql`
         description
       }
       name
+      userId
     }
   }
 `;

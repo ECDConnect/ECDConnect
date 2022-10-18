@@ -95,13 +95,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
 
         public List<Child> GetAllChildrenForCoach([Service] IHttpContextAccessor contextAccessor,
-        [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
         [Service] IGenericRepositoryFactory repoFactory,
         string userId)
         {
-            
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
+           
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
 
@@ -157,7 +154,7 @@ string userId)
             practitioners.Where(x => x.CoachHierarchy.Equals(userId)).ToList();
             foreach (var practioner in practitioners)
             {
-                List<ClassroomGroup> practitionerClasses = classRepo.GetAll().Where(x => x.UserId.Contains(practioner.UserId)).ToList();
+                List<ClassroomGroup> practitionerClasses = classRepo.GetAll().Where(x => x.UserId.Equals(practioner.UserId)).ToList();
                 classrooms.AddRange(practitionerClasses);
             }
             return classrooms;

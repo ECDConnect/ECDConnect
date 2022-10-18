@@ -4,7 +4,6 @@ import {
   initialPractitionerValues,
   initialSiteAddressValues,
   NOTIFICATION,
-  PractitionerDto,
   practitionerSchema,
   siteAddressSchema,
   useNotifications,
@@ -146,6 +145,7 @@ export default function HealthCareWorkerPanelEdit({
         practitionerForm.monthSinceFranchisee &&
         +practitionerForm.monthSinceFranchisee,
       IsActive: true,
+      Progress: 0,
     };
 
     await updatePractitioner({

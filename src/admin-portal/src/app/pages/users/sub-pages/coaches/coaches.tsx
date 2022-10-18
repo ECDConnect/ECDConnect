@@ -31,7 +31,9 @@ export default function Coaches() {
 
   useEffect(() => {
     if (data && data.GetAllCoach) {
-      const copyItems = data.GetAllCoach.map((item: CoachDto) => ({
+      const copyItems = data.GetAllCoach.filter(
+        (v) => v.user !== null && v.user.isActive === true
+      ).map((item: CoachDto) => ({
         ...item,
         fullName: `${item.user?.firstName} ${item.user?.surname}`,
         isActive: item.user?.isActive,

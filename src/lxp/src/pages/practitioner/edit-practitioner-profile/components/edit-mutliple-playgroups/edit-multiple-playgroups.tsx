@@ -54,7 +54,7 @@ export const EditMultiplePlayGroups: React.FC<EditMultiplePlayGroupsProps> = ({
     <EditPlaygroupForm
       isNew={editPlaygroupAtIndex === undefined}
       playgroup={currentPlayGroup}
-      title={`Playgroup ${currentPlayGroupIndex + 1}`}
+      title={`Class ${currentPlayGroupIndex + 1}`}
       onSubmit={onPlayGroupSubmitted}
       onDelete={() => {
         deletePlaygroup(currentPlayGroup);

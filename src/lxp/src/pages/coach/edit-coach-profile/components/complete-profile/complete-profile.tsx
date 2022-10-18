@@ -11,7 +11,7 @@ export const CompleteProfile: React.FC = () => {
       <div className={styles.content}>
         <Typography
           type={'h3'}
-          text={'Complete your profile'}
+          text={'Tell us more about you!'}
           color={'textDark'}
           className={styles.header}
         />
@@ -27,7 +27,7 @@ export const CompleteProfile: React.FC = () => {
               type={'help'}
               weight={'bold'}
               color={'primary'}
-              text={'Complete your profile'}
+              text={'Tell us more about you!'}
               className={styles.texthover}
             />
           </div>

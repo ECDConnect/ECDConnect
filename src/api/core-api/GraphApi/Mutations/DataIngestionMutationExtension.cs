@@ -9,6 +9,7 @@ using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
+using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
@@ -44,6 +45,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
           [Service] UserManager<ApplicationUser> userManager,
           string file)
         {
+            Guid tenantId = TenantExecutionContext.Tenant.Id;
             var bytes = Convert.FromBase64String(file);
             using MemoryStream fileStream = new MemoryStream(bytes);
 
@@ -122,7 +124,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         Surname = practitioner.Surname,
                         FullName = $"{practitioner.FirstName} {practitioner.Surname}",
                         ContactPreference = "sms",
-                        IsActive = true                        
+                        IsActive = true,
+                        TenantId = tenantId
                     };
 
                     var userCreatedResult = userManager.CreateAsync(newUser).Result;
@@ -135,7 +138,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         ConsentForPhoto = practitioner.ConsentForPhoto,
                         ParentFees = practitioner.ParentFees,
                         StartDate = practitioner.StartDate,
-                        IsActive = true
+                        IsActive = true,
+                        TenantId = tenantId
                     });
 
                     var userRole = userManager.AddToRoleAsync(newUser, Roles.PRACTITIONER).Result;
@@ -148,6 +152,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             foreach (var prac in templist)
             {
+                prac.TenantId = tenantId;
                 var addedPractitioner = practitionerRepo.Insert(prac);
             }
 

@@ -30,18 +30,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             [Service] IGenericRepositoryFactory repoFactory,
         string userId)
         {
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var dbRepo = repoFactory.CreateRepository<Franchisor>(userContext: uId);
-            Franchisor franchisor = new Franchisor();
-            List<Franchisor> franchisors = dbRepo.GetAll().Where(x => x.UserId.Contains(userId)).ToList();
-            if (franchisors.Count > 0)
-            {
-                franchisor = franchisors.FirstOrDefault();
-            }
-
-            return franchisor;
+            return dbRepo.GetByUserId(userId);
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
@@ -50,13 +41,30 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
      [Service] IGenericRepositoryFactory repoFactory,
      string userId)
         {
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var coachRepo = repoFactory.CreateRepository<Coach>(userContext: uId);
             List<Coach> coaches = coachRepo.GetAll().Where(x => x.FranchisorId.Equals(userId)).ToList();
 
             return coaches;
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public List<Child> GetAllChildrenForFranchisor([Service] IHttpContextAccessor contextAccessor,
+[Service] IGenericRepositoryFactory repoFactory,
+string userId)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var coachRepo = repoFactory.CreateRepository<Coach>(userContext: uId);
+            List<Coach> coaches = coachRepo.GetAll().Where(x => x.FranchisorId.Equals(userId)).ToList();
+            List<Child> children = new List<Child>();
+            foreach (var c in coaches)
+            {
+                var coachChild = new CoachQueryExtension().GetAllChildrenForCoach(contextAccessor, repoFactory, c.UserId);
+                children.AddRange(coachChild);
+            }
+
+
+            return children;
         }
 
     }

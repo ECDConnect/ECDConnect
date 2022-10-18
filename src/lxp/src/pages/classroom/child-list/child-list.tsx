@@ -35,8 +35,8 @@ import ROUTES from '@/routes/routes';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 
 const filterInfo: FilterInfo = {
-  filterName: 'Playgroup',
-  filterHint: 'You can select multiple playgroups',
+  filterName: 'Class',
+  filterHint: 'You can select multiple classes',
 };
 
 const sortOptions: SearchSortOptions = {
@@ -244,8 +244,9 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
           }
           case 'surname':
             return (childUserOne !== undefined &&
-              childUserOne?.surname.toUpperCase()) >
-              (childUserTwo !== undefined && childUserTwo.surname.toUpperCase())
+              childUserOne?.surname?.toUpperCase()!) >
+              (childUserTwo !== undefined &&
+                childUserTwo.surname?.toUpperCase()!)
               ? 1
               : -1;
           case 'age':
@@ -265,9 +266,9 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
           case 'firstName':
           default:
             return (childUserOne !== undefined &&
-              childUserOne.firstName.toUpperCase()) >
+              childUserOne.firstName?.toUpperCase()!) >
               (childUserTwo !== undefined &&
-                childUserTwo.firstName.toUpperCase())
+                childUserTwo.firstName?.toUpperCase()!)
               ? 1
               : -1;
         }
@@ -368,24 +369,22 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
           onBack={() => setSearchTextActive(false)}
           onSearchButtonClick={() => setSearchTextActive(true)}
         >
-          {isPlaygroup && (
-            <SearchDropDown<string>
-              displayMenuOverlay={true}
-              menuItemClassName={styles.dropdownStyles}
-              className={'mr-1'}
-              options={updatedPlaygroups}
-              selectedOptions={activeFilters}
-              onChange={onFilterItemsChanges}
-              placeholder={'Playgroups'}
-              pluralSelectionText={'Playgroups'}
-              multiple
-              color={'secondary'}
-              info={{
-                name: `Filter by: ${filterInfo?.filterName}`,
-                hint: filterInfo?.filterHint || '',
-              }}
-            />
-          )}
+          <SearchDropDown<string>
+            displayMenuOverlay={true}
+            menuItemClassName={styles.dropdownStyles}
+            className={'mr-1'}
+            options={updatedPlaygroups}
+            selectedOptions={activeFilters}
+            onChange={onFilterItemsChanges}
+            placeholder={'Classes'}
+            pluralSelectionText={'Classes'}
+            multiple
+            color={'secondary'}
+            info={{
+              name: `Filter by: ${filterInfo?.filterName}`,
+              hint: filterInfo?.filterHint || '',
+            }}
+          />
 
           <SearchDropDown<string>
             displayMenuOverlay={true}

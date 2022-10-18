@@ -47,8 +47,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
         public virtual IQueryable<T> GetAll()
         {
             Guid tenantId = TenantExecutionContext.Tenant.Id;
-            //return entities.Where(e => e.TenantId.Equals(tenantId)).AsQueryable();
-            return entities.Where(e => e.TenantId == null || e.TenantId.Equals(tenantId)).AsQueryable();
+            return entities.Where(e => e.TenantId == null || e.TenantId.Equals(tenantId)).AsQueryable();////.OrderByDescending(y => y.InsertedDate);
         }
 
         public virtual T GetById(Guid id)
@@ -67,6 +66,19 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
                 var qq = entities.FromSqlRaw("SELECT * FROM \"" + type.Name + "\" WHERE \"UserId\" = '" + id + "' AND \"TenantId\" = '" + tenantId + "'").ToList();
                 return qq.FirstOrDefault();
             } else return default;        
+        }
+
+        public virtual List<T> GetListByUserId(string id)
+        {
+            Type type = typeof(T);
+            if (type.GetProperty("UserId") != null)
+            {
+                //var val = entities.AsQueryable().Where(x => x.GetType().GetProperty("UserId").GetValue(type,null).Equals(id)).FirstOrDefault();
+                Guid tenantId = TenantExecutionContext.Tenant.Id;
+                var qq = entities.FromSqlRaw("SELECT * FROM \"" + type.Name + "\" WHERE \"UserId\" = '" + id + "' AND \"TenantId\" = '" + tenantId + "'").ToList();////.OrderByDescending(y => y.InsertedDate);
+                return qq.ToList();
+            }
+            else return default;
         }
 
         public virtual T Insert(T entity)

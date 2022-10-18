@@ -76,6 +76,14 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
     useState<boolean>(false);
   const notes = useSelector(notesSelectors.getNotesByUserId(practitionerId));
 
+  const call = () => {
+    window.open(`tel:${practitioner?.user?.phoneNumber}`);
+  };
+
+  const whatsapp = () => {
+    window.open(`https://wa.me/${practitioner?.user?.phoneNumber}`);
+  };
+
   const listItems = [
     {
       title: 'Classroom',
@@ -152,7 +160,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
           <ProfileAvatar
             hasConsent={true}
             canChangeImage={false}
-            dataUrl={''}
+            dataUrl={practitioner?.user?.profileImageUrl || ''}
             size={'header'}
             // eslint-disable-next-line @typescript-eslint/no-empty-function
             onPressed={() => {}}
@@ -181,7 +189,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
             type={'outlined'}
             className={'rounded-2xl'}
             size={'small'}
-            onClick={() => {}}
+            onClick={call}
           >
             <PhoneIcon className="h-5 w-5 text-primary" aria-hidden="true" />
           </Button>
@@ -190,7 +198,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
             type={'outlined'}
             className={'rounded-2xl'}
             size={'small'}
-            onClick={() => {}}
+            onClick={whatsapp}
           >
             <img
               src={getLogo(LogoSvgs.whatsapp)}
@@ -282,7 +290,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
               className={'mt-1'}
             />
             <Typography
-              text={'Lady bugs'}
+              text={'N/A'}
               type="h4"
               color="textDark"
               className={'mt-1'}

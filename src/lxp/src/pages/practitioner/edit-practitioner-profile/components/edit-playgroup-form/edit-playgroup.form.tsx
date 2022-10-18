@@ -7,11 +7,12 @@ import {
   Divider,
   FormInput,
   Typography,
+  Dropdown,
 } from '@ecdlink/ui';
 import { ButtonGroupTypes } from '@ecdlink/ui';
 import { renderIcon } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
+import { useForm, useWatch, Controller } from 'react-hook-form';
 import * as styles from '../../edit-practitioner-profile.styles';
 import {
   EditPlaygroupModel,
@@ -37,6 +38,8 @@ import { useSelector } from 'react-redux';
 import { authSelectors } from '@store/auth';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import OnlineOnlyModal from '../../../../../modals/offline-sync/online-only-modal';
+import { practitionerSelectors } from '@/store/practitioner';
+
 export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
   isNew,
   playgroup,
@@ -48,6 +51,7 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
   const authUser = useSelector(authSelectors.getAuthUser);
   const [classroomGroup, setClassroomGroup] =
     useState<RecursivePartial<ClassroomGroupDto>>();
+  const practitioners = useSelector(practitionerSelectors.getPractitioners);
 
   const { isOnline } = useOnlineStatus();
 
@@ -78,6 +82,27 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
   const isFormValid = () => {
     return isValid && meetingDays && meetingDays?.length > 1;
   };
+
+  const [practitionersList, setPractitionersList] = useState<
+    { label: string; value: any }[]
+  >([]);
+
+  useEffect(() => {
+    const _list = practitioners
+      ?.map((p) => {
+        if (p?.user?.firstName && p?.user?.surname) {
+          return {
+            label: `${p?.user?.firstName} ${p?.user?.surname}`,
+            value: p.userId,
+          };
+        }
+        return undefined;
+      })
+      .filter(Boolean) as { label: string; value: any }[];
+
+    setPractitionersList(_list);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [practitioners]);
 
   const getCannotDeletePlaygroupRender = (submit: () => void) => {
     return (
@@ -110,7 +135,7 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
       <ActionModal
         title={`Delete ${playgroup?.name}.`}
         paragraphs={[
-          `Are you sure you want to delete ${playgroup?.name} playgroup?`,
+          `Are you sure you want to delete ${playgroup?.name} class?`,
         ]}
         actionButtons={[
           {
@@ -214,11 +239,31 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
         className={'my-3'}
       />
       <FormInput<EditPlaygroupModel>
-        label={`Give your playgroup a name`}
+        label={`Give your class a name`}
         register={playgroupFormRegister}
         nameProp={'name'}
-        placeholder={'E.g. Tuesday Group'}
+        placeholder={'E.g. Tuesday class'}
       />
+      <div>
+        <Controller
+          name={'userId'}
+          control={playgroupFormControl}
+          defaultValue={undefined}
+          render={({ field: { onChange, value, ref } }) => (
+            <Dropdown<string>
+              inputRef={ref}
+              placeholder={'Select a practitioner'}
+              list={practitionersList}
+              fillType="clear"
+              label={'Which Practitioner teaches this class?'}
+              fullWidth
+              className={'mt-3 w-full'}
+              selectedValue={value}
+              onChange={onChange}
+            />
+          )}
+        />
+      </div>
       <Typography
         text={playgroupName?.message || ''}
         className="text-errorMain -mb-4"
@@ -227,7 +272,7 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
       <div className="mt-5">
         <span className={styles.label}>{`When does ${
           name ? `"${name}"` : 'the'
-        } playgroup meet?`}</span>
+        } class meet?`}</span>
         <span className={styles.hintStyle}>
           You must choose at least 2 days
         </span>

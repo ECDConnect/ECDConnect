@@ -93,6 +93,8 @@ namespace ECDLink.DataAccessLayer.Entities
                 return 0;
             }
         }
+
+        public Guid? TenantId { get; set; }
     }
 
     public interface ApplicationUserJoin

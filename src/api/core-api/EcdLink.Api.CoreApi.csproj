@@ -5,6 +5,13 @@
   </PropertyGroup>
   
   <ItemGroup>
+    <Compile Remove="Tenancy\TempScripts\**" />
+    <Content Remove="Tenancy\TempScripts\**" />
+    <EmbeddedResource Remove="Tenancy\TempScripts\**" />
+    <None Remove="Tenancy\TempScripts\**" />
+  </ItemGroup>
+  
+  <ItemGroup>
     
     <PackageReference Include="HotChocolate.Data.EntityFramework" Version="12.0.1" />
     
@@ -48,10 +55,6 @@
     <ProjectReference Include="..\Libraries\Modules\ECDLink.Security\ECDLink.Security.csproj" />
     <ProjectReference Include="..\Libraries\Modules\ECDLink.SmartStart\ECDLink.SmartStart.csproj" />
     <ProjectReference Include="..\Libraries\Modules\ECDLink.UrlShortner\ECDLink.UrlShortner.csproj" />
-  </ItemGroup>
-  
-  <ItemGroup>
-    <Folder Include="Tenancy\TempScripts\" />
   </ItemGroup>
   
   <ProjectExtensions><VisualStudio><UserProperties appsettings_1development_1json__JsonSchema="https://download.stackhawk.com/hawk/jsonconfig/hawkconfig.json" /></VisualStudio></ProjectExtensions>

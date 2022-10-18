@@ -116,3 +116,14 @@ export const ResetUserPassword = gql`
     resetUserPassword(id: $id, newPassword: $newPassword)
   }
 `;
+
+export const GetUserByToken = gql`
+  query userByToken($token: String) {
+    userByToken(token: $token) {
+      fullName
+      phoneNumber
+      roleName
+      userId
+    }
+  }
+`;

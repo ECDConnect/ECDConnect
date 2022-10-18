@@ -57,6 +57,14 @@ import ROUTES from './routes';
 import { CoachClassesReassigned } from '@/pages/coach/coach-classes-reassigned/coach-classes-reassigned';
 import { CoachNotes } from '@/pages/coach/practitioner-profile-info/components/coach-notes/coach-notes';
 import { SetupPrincipal } from '@/pages/principal/setup-principal/setup-principal';
+import { PrincipalPractitionerProfileInfo } from '@/pages/classroom/class-dashboard/practitioners/principal-practitioner-profile/principal-practitioner-profile';
+import { PrincipalPractitionerChildList } from '@/pages/classroom/class-dashboard/practitioners/principal-practitioner-child-list/principal-practitioner-child-list';
+import { PrincipalNotes } from '@/pages/classroom/class-dashboard/practitioners/principal-practitioner-profile/components/principal-notes/principal-notes';
+import { PractitionerList } from '@/pages/practitioner/practitioner-programme-information/practitioner-list/practitioner-list';
+import { Logout } from '@/pages/auth/logout/logout';
+import ReassignClass from '@/pages/classroom/class-dashboard/practitioners/reassign-class/reassign-class';
+import { AddPractitioner } from '@/pages/principal/components/add-practitioner/add-practitioner';
+import ConfirmPractitioner from '@/pages/principal/components/add-practitioner/confirm-practitioner';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -110,6 +118,7 @@ const AuthRoutes: React.FC = () => {
         component={VerifyPhoneNumber}
         exact={true}
       />
+      <Route path={ROUTES.LOGOUT} component={Logout} exact={true} />
 
       <Route path={ROUTES.ROOT} component={Dashboard} exact={true} />
       <Route path={ROUTES.DASHBOARD} component={Dashboard} exact={true} />
@@ -153,6 +162,37 @@ const AuthRoutes: React.FC = () => {
         path={ROUTES.PRINCIPAL.SETUP_PROFILE}
         component={SetupPrincipal}
       />
+      <Route
+        exact
+        path={ROUTES.PRINCIPAL.ADD_PRACTITIONER}
+        component={AddPractitioner}
+      />
+      <Route
+        exact
+        path={ROUTES.PRINCIPAL.CONFIRM_PRACTITIONER}
+        component={ConfirmPractitioner}
+      />
+      <Route
+        exact
+        path={ROUTES.PRINCIPAL.PRACTITIONER_PROFILE}
+        component={PrincipalPractitionerProfileInfo}
+      />
+      <Route
+        exact
+        path={ROUTES.PRINCIPAL.PRACTITIONER_LIST}
+        component={PractitionerList}
+      />
+      <Route
+        exact
+        path={ROUTES.PRINCIPAL.PRACTITIONER_REASSIGN_CLASS}
+        component={ReassignClass}
+      />
+      <Route
+        exact
+        path={ROUTES.PRINCIPAL.PRACTITIONER_CHILD_LIST}
+        component={PrincipalPractitionerChildList}
+      />
+      <Route exact path={ROUTES.PRINCIPAL.NOTES} component={PrincipalNotes} />
       <Route path={ROUTES.CLASSROOM} component={ClassDashboard} />
       <Route path={ROUTES.CHILD_REGISTRATION} component={ChildRegistration} />
       <Route

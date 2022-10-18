@@ -17,7 +17,7 @@ namespace ECDLink.DataAccessLayer.Entities.Classroom
 
     }
 
-    public class ClassroomGroup<TKey> : EntityBase<TKey>, IUserScoped, ClassroomJoin<TKey>, ProgrammeTypeJoin<Guid?>
+    public class ClassroomGroup<TKey> : EntityBase<TKey>, IUserScoped, IReversedHierarchy, ClassroomJoin<TKey>, ProgrammeTypeJoin<Guid?>
          where TKey : IEquatable<TKey>
     {
         public TKey ClassroomId { get; set; }
@@ -36,7 +36,7 @@ namespace ECDLink.DataAccessLayer.Entities.Classroom
         public string Name { get; set; }
         [GraphQLIgnore]
         public string Hierarchy { get; set; }
-        public string UserId { get; set; }
+        public Guid? UserId { get; set; }
     }
 
     public interface ClassroomGroupJoin<TKey>

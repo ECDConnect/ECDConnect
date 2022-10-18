@@ -39,6 +39,7 @@ import { staticDataSelectors } from '@store/static-data';
 import { calculateFullAge } from '@utils/common/date.utils';
 import * as styles from './child-information-form.styles';
 import { ChildInformationFormProps } from './child-information-form.types';
+import { practitionerSelectors } from '@/store/practitioner';
 
 export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
   childInformation,
@@ -68,6 +69,21 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
   const [updatedPlaygroups, setUpdatedPlaygroups] = useState<
     DropDownOption<string>[]
   >([]);
+
+  const classroomsForPractitioner = useSelector(
+    classroomsSelectors.getClassroom
+  );
+  const [
+    classroomsForPractitionerAnyType,
+    setClassroomsForPractitionerAnyType,
+  ] = useState<any>([]);
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
+
+  useEffect(() => {
+    if (classroomsForPractitioner) {
+      setClassroomsForPractitionerAnyType([classroomsForPractitioner]);
+    }
+  }, [classroomsForPractitioner]);
 
   const {
     getValues: getChildInformationFormValues,
@@ -126,7 +142,21 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
   }, [dobDay, dobMonth, dobYear]);
 
   useEffect(() => {
-    if (classroomGroups) {
+    if (
+      practitioner?.isPrincipal !== true &&
+      classroomsForPractitionerAnyType.length > 0
+    ) {
+      const groupedItems: DropDownOption<string>[] = [];
+
+      classroomsForPractitionerAnyType.forEach((groupedItem: any) => {
+        groupedItems.push({
+          label: groupedItem.name,
+          value: groupedItem.id ?? '',
+        });
+      });
+      setUpdatedPlaygroups(groupedItems);
+    }
+    if (classroomGroups.length > 0) {
       const groupedItems: DropDownOption<string>[] = [];
 
       classroomGroups.forEach((groupedItem) => {
@@ -138,7 +168,7 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
       setUpdatedPlaygroups(groupedItems);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [classroomGroups]);
+  }, [classroomGroups, classroomsForPractitionerAnyType]);
 
   const validateDateOfBirth = () => {
     const alertsArray: AlertProps[] = [];

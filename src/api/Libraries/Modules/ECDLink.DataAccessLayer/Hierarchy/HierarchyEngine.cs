@@ -2,6 +2,7 @@
 using ECDLink.Core.Caching;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Hierarchy.Entities;
@@ -9,6 +10,7 @@ using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
+using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -53,7 +55,7 @@ namespace ECDLink.DataAccessLayer.Hierarchy
         public UserHierarchyEntity AddHierarchyEntity<TChild>(string parentId, string childId)
         {
             var childType = typeof(TChild).FullName;
-
+            Guid tenantId = TenantExecutionContext.Tenant.Id;
             // Only one hierarchy type allowed for now
             // Multiple to be added in the future
             var hierarchyType = HierarchyCache
@@ -88,7 +90,8 @@ namespace ECDLink.DataAccessLayer.Hierarchy
                 NamedTypePath = HierarchyHelper.AppendHierarchy(parentEntity?.NamedTypePath ?? "System.", hierarchyType.Type),
                 ParentId = parentId,
                 UserId = childId,
-                UserType = hierarchyType.Type
+                UserType = hierarchyType.Type,
+                TenantId = tenantId
             };
 
             var newHierarchy = userHierarchyRepo.Insert(childHierarchyEntity);
@@ -134,7 +137,10 @@ namespace ECDLink.DataAccessLayer.Hierarchy
                         {
                             foreach (var p in franchisorsPractitioners)
                             {
-                                hierarchyList.Add(this.GetUserHierarchy(p.UserId));
+                                if (p.User != null)
+                                {
+                                    hierarchyList.Add(this.GetUserHierarchy(p.UserId));
+                                }
                             }
                         }
                     }
@@ -147,20 +153,51 @@ namespace ECDLink.DataAccessLayer.Hierarchy
                 {
                     foreach (var p in coachPractitioners)
                     {
-                        hierarchyList.Add(this.GetUserHierarchy(p.UserId));
+                        if (p.User != null)
+                        {
+                            hierarchyList.Add(this.GetUserHierarchy(p.UserId));
+                        }
                     }
                 }
             } else if (isPrincipal || isPractitioner) {
-                List<Practitioner> principalPractitioners = practRepo.GetAll().ToList();
-                principalPractitioners = principalPractitioners.Where(c => c.PrincipalHierarchy.HasValue).ToList();
-                principalPractitioners = principalPractitioners.Where(c => c.PrincipalHierarchy.ToString() == userId).ToList();
+                List<Practitioner> practitioners = practRepo.GetAll().ToList();
+                practitioners = practitioners.Where(c => c.PrincipalHierarchy.HasValue || c.IsPrincipal == true).ToList(); // some practitioners can be principal as owner with only themselves as owner
+                var principalPractitioners = practitioners.Where(c => c.PrincipalHierarchy.ToString() == userId).ToList();
                 if (principalPractitioners.Count > 0)
                 {
                     foreach (var p in principalPractitioners)
                     {
-                        hierarchyList.Add(this.GetUserHierarchy(p.UserId));
+                        if (p.User != null)
+                        {
+                            hierarchyList.Add(this.GetUserHierarchy(p.UserId));
+                        }
                     }
                 }
+                //reverse userhierarchy is not needed until its needed again, do not uncomment
+                //if (isPractitioner && (typeof(T) == typeof(Classroom) || typeof(T) == typeof(ClassroomGroup)))
+                //{
+                //    //in the event of classrooms and classroomgroups, a reverse hierarchy need sto be performed if the user is a practitioner as they need to see teh reverse hierarchy to return the ownership of classes and programmes to determine who assigned the classroom to them, valis for classroomDetailsForPractitioner, absenteeism and reassigning classes to different practitioners
+                //    //var practitionerPrincipal = practitioners.Where(c => c.PrincipalHierarchy.HasValue || c.IsPrincipal == true).ToList();
+                //    if (practitioners.Count > 0)
+                //    {
+                //        foreach (var p in practitioners.Where(p => p.UserId == userId))
+                //        {
+                //            Practitioner practitionerPrincipal = practRepo.GetByUserId(p.PrincipalHierarchy.ToString());
+                //            if (practitionerPrincipal != null) 
+                //                hierarchyList.Add(this.GetUserHierarchy(practitionerPrincipal.UserId));
+                //            if (p.CoachHierarchy != null)
+                //            {
+                //                Coach principalCoach = coachRepo.GetByUserId(p.CoachHierarchy.ToString());
+                //                if (principalCoach != null)
+                //                    hierarchyList.Add(this.GetUserHierarchy(principalCoach.UserId));
+                //                if (principalCoach.FranchisorId != null)
+                //                    hierarchyList.Add(this.GetUserHierarchy(principalCoach.FranchisorId.ToString()));
+                //            }
+
+                //        }
+                //    }
+
+                //}
             }
             //in some cases like a child, we need to get the relevant children hierarchy in addition for the generic repository selectionlist
             if (typeof(T) == typeof(Child))
@@ -177,7 +214,6 @@ namespace ECDLink.DataAccessLayer.Hierarchy
                     }
                 }
             }
-
             return hierarchyList;
         }
 

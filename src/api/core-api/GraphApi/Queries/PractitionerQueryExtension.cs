@@ -26,6 +26,7 @@ using Microsoft.EntityFrameworkCore;
 using ECDLink.Security.Extensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Azure.Documents;
+using EcdLink.Api.CoreApi.GraphApi.Models;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
@@ -39,90 +40,109 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
 
         public Practitioner GetPractitionerByUserId([Service] IHttpContextAccessor contextAccessor,
-        [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
         [Service] IGenericRepositoryFactory repoFactory,
         string userId)
         {
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
-            var practiRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            Practitioner practitioner = new Practitioner();
-            List<Practitioner> practitioners = practiRepo.GetAll().Where(x => x.UserId.Contains(userId)).ToList();
-            if (practitioners.Count > 0)
+            var practiRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
+            Practitioner practitioner = practiRepo.GetByUserId(userId);
+            if (practitioner != null)
             {
-                practitioner = practitioners.FirstOrDefault();
+                return practitioner;
             }
 
-            return practitioner;
+            return null;
         }
 
-        public ApplicationUser GetPractitionerByIdNumber([Service] IServiceProvider serviceProvider, [Service] IHttpContextAccessor contextAccessor,
+        public PractitionerUserAndNote GetPractitionerByIdNumber(
+            [Service] IHttpContextAccessor contextAccessor,
             [Service] UserManager<ApplicationUser> userManager,
-             [Service] RoleManager<IdentityRole> roleManager,
-            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
             string idNumber)
         {
+            //this is the fucntion called from FE to search for practitioners to add practitioners to a principal - so limit to coach lines and non principals only and not practitioners added to any other principals
+            var uId = contextAccessor.HttpContext.GetUser().Id;
 
-            var practionerUser = userManager.FindByNameAsync(idNumber).Result;//find practitioner by Username/Id number, if exists, add coach to practitioner
+            var dbRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
+            //retrieve principal, check that the coach lines match, that the user to be searched for is not a principal or an FAA
+            
+            var principal = dbRepo.GetByUserId(uId);
+            if (principal != null)
+            {
+                var practionerUser = userManager.FindByNameAsync(idNumber).Result;
 
+                if (practionerUser != null)
+                {
+                    var practiRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
+                    var practitioner = practiRepo.GetByUserId(practionerUser.Id);
+                    if (practitioner != null)
+                    {
+                        if (practitioner.PrincipalHierarchy == null && practitioner.CoachHierarchy == principal.CoachHierarchy) // only allow practitioners assigned to same coach and where they are not assigned to any otehr practitioners
+                        {
+                            return new PractitionerUserAndNote() { AppUser = practitioner.User };
+                        } else
+                        {
+                            return new PractitionerUserAndNote() { AppUser = practitioner.User, Note = "This practitioner is linked to a different SmartStart programme" };
+                        }
+                    } else
+                    {
+                        return new PractitionerUserAndNote() { AppUser = null, Note = "Not on Funda App" };
+                    }
+                }
+            }
+            return null;
+        }
+
+        public ApplicationUser GetPractitionerByIdNumberInternal(
+    [Service] IHttpContextAccessor contextAccessor,
+    [Service] UserManager<ApplicationUser> userManager,
+    [Service] IGenericRepositoryFactory repoFactory,
+    string idNumber)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var practionerUser = userManager.FindByNameAsync(idNumber).Result;
             if (practionerUser != null)
             {
-                return new UserQueryTypeExtension().GetUserById(serviceProvider, userManager, roleManager, contextAccessor, dbFactory, repoFactory, practionerUser.Id);
+                var practiRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
+                var practitioner = practiRepo.GetByUserId(practionerUser.Id);
+                if (practitioner != null)
+                {
+                    return practitioner.User;
+                }
             }
             return default(ApplicationUser);
         }
 
         public List<Child> GetAllChildrenForPractitioner([Service] IHttpContextAccessor contextAccessor,
-[Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
 [Service] IGenericRepositoryFactory repoFactory,
 string userId)
         {
+            var childRepo = repoFactory.CreateRepository<Child>(userContext: userId);
 
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
+            var dbRepo = repoFactory.CreateRepository<Practitioner>(userContext: userId);
+            Practitioner practitioner = dbRepo.GetByUserId(userId);
 
-            List<Child> children = new List<Child>();
-            var dbRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            List<Practitioner> practitioners = dbRepo.GetAll().Where(x => x.UserId == userId).ToList();
-            practitioners.Where(x => x.UserId.Equals(userId)).ToList();
-            foreach (var practioner in practitioners)
-            {
-                List<Child> practitionerChildren = childRepo.GetAll().Where(x => x.Hierarchy.Contains(practioner.Hierarchy)).ToList();
-                children.AddRange(practitionerChildren);
-            }
+            List<Child> children = childRepo.GetAll().Where(x => x.Hierarchy.Contains(practitioner.Hierarchy)).ToList();
             return children;
         }
 
         public List<Classroom> GetAllClassroomsForPractitioner([Service] IHttpContextAccessor contextAccessor,
-[Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
 [Service] IGenericRepositoryFactory repoFactory,
 string userId)
         {
+            var classRepo = repoFactory.CreateRepository<Classroom>(userContext: userId);
 
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            var classRepo = repoFactory.CreateRepository<Classroom>(userContext: uId);
-
-            return classRepo.GetAll().Where(x => x.UserId.Contains(userId)).ToList();
+            return classRepo.GetListByUserId(userId);
         }
 
         public List<ClassroomGroup> GetAllClassroomGroupsForPractitioner([Service] IHttpContextAccessor contextAccessor,
-[Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
 [Service] IGenericRepositoryFactory repoFactory,
 string userId)
         {
-
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
-            var classRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
+            var classRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: userId);
 
-            return classRepo.GetAll().Where(x => x.UserId.Contains(userId)).ToList();
+            return classRepo.GetAll().Where(x => x.UserId.Equals(userId)).ToList();
         }
 
         public async Task<FileModel> PractitionerExcelTemplateGenerator(
@@ -162,12 +182,9 @@ string userId)
         }
 
         public Classroom GetAllClassroomsForPractitioner([Service] IHttpContextAccessor contextAccessor,
-            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
             string practitionerId, string principalId)
         {
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var classroomRepo = repoFactory.CreateRepository<Classroom>(userContext: uId);
             var classroomGroupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
@@ -180,34 +197,179 @@ string userId)
         }
 
         public PrincipalClassroom GetClassroomDetailsForPractitioner([Service] IHttpContextAccessor contextAccessor,
-            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
             string userId)
         {
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
-            var classroomGroupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
-            var classroomRepo = repoFactory.CreateRepository<Classroom>(userContext: uId);
-            var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            var userRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+            var classroomGroupRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);
+            var classroomRepo = repoFactory.CreateGenericRepository<Classroom>(userContext: uId);
+            var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId); //BYPASS USERHIERARCHY TO SEE UP THE CHAIN
             PrincipalClassroom principalClassroom = new PrincipalClassroom();
-            ClassroomGroup classroomGroup = classroomGroupRepo.GetByUserId(userId);
-            if (classroomGroup != null)
+            var practitioner = practitionerRepo.GetByUserId(userId);
+            if (practitioner != null)
             {
-                Classroom classroom = classroomRepo.GetById(classroomGroup.ClassroomId);
-                principalClassroom.ClassroomName = classroom.Name;
-                var principal = practitionerRepo.GetByUserId(classroom.UserId);
+                var principal = practitionerRepo.GetByUserId(practitioner.PrincipalHierarchy.ToString());
                 if (principal != null)
                 {
+                    principalClassroom.PrincipalName = (string.IsNullOrWhiteSpace(principal.User.FullName) ? principal.User.FullName : principal.User.FullName);
+                    ClassroomGroup classroomGroup = classroomGroupRepo.GetByUserId(userId);
+                    Classroom classroom = null;
 
-                    principalClassroom.PrincipalName = principal.User.FirstName + " " + principal.User.Surname;
-                    
+                    if (classroomGroup != null)
+                    {
+                        classroom = classroomRepo.GetById(classroomGroup.ClassroomId);
+                        principalClassroom.ClassroomGroupName = classroomGroup.Name;
+                        principalClassroom.ClassroomGroupId = classroomGroup.Id.ToString();
+                    }
+                    else
+                    {
+                        //if no classroomgroup is available to look at, use the classroom for principal
+                        classroom = classroomRepo.GetByUserId(principal.UserId);
+                    }
+                    principalClassroom.ClassroomName = classroom.Name;   
+                    principalClassroom.ClassroomId = classroom.Id.ToString();
+                    principalClassroom.InsertedDate = classroom.InsertedDate;
                 }
-
             }
             return principalClassroom;
         }
+
+        public List<ClassroomGroup> GetClassroomGroupClassroomsForPractitioner([Service] IHttpContextAccessor contextAccessor,
+            [Service] IGenericRepositoryFactory repoFactory,
+            string userId)
+        {
+            //return this.GetAllClassroomGroupsForPractitioner(contextAccessor, repoFactory, userId);
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var classroomGroupRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);
+            List<ClassroomGroup> classroomGroup = classroomGroupRepo.GetListByUserId(userId);
+            if (classroomGroup != null)
+            {
+                return classroomGroup;
+            }
+            return null;
+        }
+
+        public List<PractitionerClassroomName> GetClassroomNamesForPractitioner([Service] IHttpContextAccessor contextAccessor,
+    [Service] IGenericRepositoryFactory repoFactory,
+    string userId)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var classroomGroupRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);
+            var classroomRepo = repoFactory.CreateGenericRepository<Classroom>(userContext: uId);
+            var coachRepo = repoFactory.CreateGenericRepository<Coach>(userContext: uId);
+            var practiRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
+            List<PractitionerClassroomName> classrooms = new List<PractitionerClassroomName>();
+            List<ClassroomGroup> classroomGroup = classroomGroupRepo.GetListByUserId(userId);
+            if (classroomGroup.Count>0)
+            {
+                foreach (var group in classroomGroup)
+                {
+                    string coachName = null;
+                    var practitioner = practiRepo.GetByUserId(userId);
+                    if (practitioner != null) {
+                        if (practitioner.CoachHierarchy != null) {
+                            var coach = coachRepo.GetByUserId(practitioner.CoachHierarchy.ToString());
+                            if (coach != null)
+                            {
+                                coachName = coach.User.FullName;
+                            }
+                        }
+                    }
+                    Classroom classroom = classroomRepo.GetById(group.ClassroomId);
+                    if (classroom != null)
+                    {
+                        var pcn = new PractitionerClassroomName() { ClassroomGroupId = group.Id, ClassRoomId = classroom.Id, ClassroomName = classroom.Name, CoachName = coachName };
+                        classrooms.Add(pcn);
+                    }
+                }
+            }
+
+            return classrooms;
+        }
+
+
+        public List<Child> GetAllChildrenByRole([Service] IHttpContextAccessor contextAccessor,
+            [Service] UserManager<ApplicationUser> userManager,
+            [Service] RoleManager<IdentityRole> roleManager,
+            [Service] IGenericRepositoryFactory repoFactory,
+            string userId)
+        {
+            string role = new RoleQueryTypeExtension().GetRoleForUser(contextAccessor, userManager,repoFactory,roleManager, userId);            
+            List<Child> children = new List<Child>();
+            if (role != null)
+            {
+                switch (role)
+                {
+                    case "Franchisor":
+                        children = new FranchisorQueryExtension().GetAllChildrenForFranchisor(contextAccessor, repoFactory, userId);
+                        break;
+                    case "Coach":
+                        children = new CoachQueryExtension().GetAllChildrenForCoach(contextAccessor, repoFactory, userId);
+                        break;
+                    case "Principal":
+                        children = new PrincipalQueryExtension().GetAllChildrenUnderPrincipal(contextAccessor, repoFactory, userId);
+                        break;
+                    case "Practitioner":
+                        children = this.GetAllChildrenForPractitioner(contextAccessor,repoFactory, userId);
+                            break;
+                    default:
+                        break;
+                }
+            }
+            return children;
+        }
+
+        public List<PractitionerColleagues> GetPractitionerColleagues([Service] IHttpContextAccessor contextAccessor,
+    [Service] IGenericRepositoryFactory repoFactory,
+    string userId)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var practiRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
+            List<PractitionerColleagues> practitionerColleagues = new List<PractitionerColleagues>();
+            Practitioner practi = practiRepo.GetByUserId(userId);
+            if (practi.PrincipalHierarchy.HasValue || practi.IsPrincipal == true)
+            {
+                List<Practitioner> practitioners = practiRepo.GetAll().Where(x => (x.PrincipalHierarchy.HasValue ? x.PrincipalHierarchy.Equals(practi.PrincipalHierarchy) : (x.IsPrincipal == true ? x.UserId.Equals(userId) : x.UserId.Equals(userId)))).ToList();
+                //also add principal
+                if (practi.IsPrincipal == true) {
+                    Practitioner practiPrincipal = practiRepo.GetByUserId(practi.UserId.ToString());
+                    if (practiPrincipal != null) practitioners.Add(practiPrincipal);
+                }
+                if (practi.PrincipalHierarchy.HasValue)
+                {
+                    Practitioner practiPrincipal = practiRepo.GetByUserId(practi.PrincipalHierarchy.ToString());
+                    if (practiPrincipal != null) practitioners.Add(practiPrincipal);
+                }
+
+                if (practitioners.Count > 0)
+                {
+                    foreach (var practitioner in practitioners)
+                    {
+                        if (practitioner.User != null)
+                        {
+                            string practiName = (practitioner.User.NickFullName != null ? practitioner.User.NickFullName : practitioner.User.FullName);
+                            string practiType = "";
+                            if (practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal != false)
+                            {
+                                practiType = "Principal";
+                            }
+                            else if (practitioner.IsFundaAppAdmin.HasValue && practitioner.IsFundaAppAdmin != false)
+                            {
+                                practiType = "Funda App Admin";
+                            }
+                            else
+                            {
+                                practiType = "Practitioner";
+                            }
+
+                            practitionerColleagues.Add(new PractitionerColleagues() { Name = practiName, Title = practiType });
+                        }
+                    }
+                }
+            }
+            return practitionerColleagues;
+        }
+
     }
 
     }

@@ -21,7 +21,7 @@ import { OfflineSyncModal } from '../../modals';
 import OfflineSyncTimeExceeded from '../../modals/offline-sync/offline-sync-time-exceeded';
 import { useAppDispatch } from '@store';
 import { classroomsForCoachThunkActions } from '../../store/classroomForCoach';
-import { classroomsSelectors } from '@store/classroom';
+import { classroomsSelectors, classroomsThunkActions } from '@store/classroom';
 import { notificationsSelectors } from '@store/notifications';
 import { settingSelectors } from '@store/settings';
 import { userSelectors } from '@store/user';
@@ -29,13 +29,17 @@ import { analyticsActions } from '@store/analytics';
 import { DashboardItems } from './components/dashboard-items/dashboard-items';
 import { practitionerForCoachThunkActions } from '@/store/practitionerForCoach';
 import {
-  practitionerActions,
   practitionerSelectors,
   practitionerThunkActions,
 } from '@/store/practitioner';
 import { childrenThunkActions } from '@/store/children';
 import * as styles from './dashboard.styles';
 import ROUTES from '@routes/routes';
+import { staticDataThunkActions } from '@store/static-data';
+import { settingThunkActions } from '@store/settings';
+import { programmeThemeThunkActions } from '@store/content/programme-theme';
+import { storyBookThunkActions } from '@store/content/story-book';
+import { activityThunkActions } from '@store/content/activity';
 const { version } = require('../../../package.json');
 
 export enum NavigationTypes {
@@ -53,6 +57,7 @@ export enum NavigationTypes {
 export const Dashboard: React.FC = () => {
   const shouldUserSync = useSelector(settingSelectors.getShouldUserSync);
   const classroom = useSelector(classroomsSelectors.getClassroom);
+  const classroomGroup = useSelector(classroomsSelectors.getClassroomGroups);
   const userData = useSelector(userSelectors.getUser);
   const practitionerData = useSelector(practitionerSelectors.getPractitioners);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
@@ -62,7 +67,6 @@ export const Dashboard: React.FC = () => {
   const { theme } = useTheme();
   const dialog = useDialog();
   const isCoach = userData?.roles?.some((role) => role.name === 'Coach');
-
   const newNotificationCount = useSelector(
     notificationsSelectors.getNewNotificationCount
   );
@@ -72,6 +76,46 @@ export const Dashboard: React.FC = () => {
   );
 
   const { userProfilePicture } = useDocuments();
+
+  const initStaticStoreSetup = async () => {
+    const today = new Date();
+    // setStaticDataLoading(true);
+    await appDispatch(settingThunkActions.getSettings({})).unwrap();
+    await appDispatch(staticDataThunkActions.getRelations({})).unwrap();
+    await appDispatch(staticDataThunkActions.getProgrammeTypes({})).unwrap();
+    await appDispatch(
+      staticDataThunkActions.getProgrammeAttendanceReasons({})
+    ).unwrap();
+    await appDispatch(staticDataThunkActions.getGenders({})).unwrap();
+    await appDispatch(staticDataThunkActions.getRaces({})).unwrap();
+    await appDispatch(staticDataThunkActions.getLanguages({})).unwrap();
+    await appDispatch(staticDataThunkActions.getEducationLevels({})).unwrap();
+    await appDispatch(
+      staticDataThunkActions.getHolidays({ year: today.getFullYear() })
+    ).unwrap();
+    await appDispatch(staticDataThunkActions.getProvinces({})).unwrap();
+    await appDispatch(staticDataThunkActions.getReasonsForLeaving({})).unwrap();
+    await appDispatch(staticDataThunkActions.getGrants({})).unwrap();
+    await appDispatch(staticDataThunkActions.getDocumentTypes({})).unwrap();
+    await appDispatch(staticDataThunkActions.getNoteTypes({})).unwrap();
+    await appDispatch(staticDataThunkActions.getWorkflowStatuses({})).unwrap();
+
+    await appDispatch(
+      activityThunkActions.getActivities({ locale: 'en-za' })
+    ).unwrap();
+
+    await appDispatch(
+      storyBookThunkActions.getStoryBooks({ locale: 'en-za' })
+    ).unwrap();
+
+    await appDispatch(
+      programmeThemeThunkActions.getProgrammeThemes({ locale: 'en-za' })
+    ).unwrap();
+  };
+
+  useEffect(() => {
+    initStaticStoreSetup();
+  }, []);
 
   useEffect(() => {
     if (!isOnline) {
@@ -115,7 +159,6 @@ export const Dashboard: React.FC = () => {
         (x) => x?.user?.id === userData.id
       );
       const _current = currentPrincipal?.at(0);
-
       if (_current) {
         (async () =>
           await appDispatch(
@@ -125,7 +168,37 @@ export const Dashboard: React.FC = () => {
           ).unwrap())();
       }
     }
+  }, [userData]);
+
+  useEffect(() => {
+    (async () =>
+      await appDispatch(
+        practitionerThunkActions.getAllPractitioners({})
+      ).unwrap())();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (practitioner?.userId && !classroom) {
+      (async () =>
+        await appDispatch(
+          classroomsThunkActions.getClassroomDetailsForPractitioner({
+            id: practitioner?.userId!,
+          })
+        ).unwrap())();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }
+  }, [practitioner?.userId]);
+
+  // useEffect(() => {
+  //   (async () =>
+  //     await appDispatch(
+  //       classroomsThunkActions.getClassroomGroupClassroomsForPractitioner({
+  //         userId: userData?.id!,
+  //       })
+  //     ).unwrap())();
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, []);
 
   const navigation: (NavigationRouteItem | NavigationDropdown)[] = [
     {
@@ -180,7 +253,7 @@ export const Dashboard: React.FC = () => {
     },
     {
       name: NavigationTypes.Logout,
-      href: ROUTES.LOGIN,
+      href: ROUTES.LOGOUT,
       icon: 'ExternalLinkIcon',
       current: false,
       showDivider: true,
@@ -221,7 +294,7 @@ export const Dashboard: React.FC = () => {
     },
     {
       name: NavigationTypes.Logout,
-      href: ROUTES.LOGIN,
+      href: ROUTES.LOGOUT,
       icon: 'ExternalLinkIcon',
       current: false,
       showDivider: true,
@@ -274,9 +347,24 @@ export const Dashboard: React.FC = () => {
         classNames: 'bg-uiBg',
         chipConfig: {
           colorPalette: {
-            backgroundColour: 'white',
-            borderColour: 'errorMain',
-            textColour: 'errorMain',
+            backgroundColour: 'alertMain',
+            borderColour: 'alertMain',
+            textColour: 'white',
+          },
+          text: 'Coming soon',
+        },
+      },
+      {
+        title: 'Calendar',
+        titleIcon: 'CalendarIcon',
+        titleIconClassName: styles.businessIcon,
+        onActionClick: () => ({}),
+        classNames: 'bg-uiBg',
+        chipConfig: {
+          colorPalette: {
+            backgroundColour: 'alertMain',
+            borderColour: 'alertMain',
+            textColour: 'white',
           },
           text: 'Coming soon',
         },
@@ -321,7 +409,10 @@ export const Dashboard: React.FC = () => {
   };
 
   const goToClassroom = () => {
-    if (classroom && classroom.id) {
+    if (
+      (classroom && classroom.id) ||
+      (classroomGroup && classroomGroup.length > 0)
+    ) {
       history.push(ROUTES.CLASSROOM, { activeTabIndex: 1 });
     } else {
       showCompleteProfileBlockingDialog();
@@ -382,17 +473,18 @@ export const Dashboard: React.FC = () => {
     });
   };
 
+  const profilePc =
+    userProfilePicture?.file ||
+    userData?.profileImageUrl ||
+    userProfilePicture?.reference;
+
   return (
     <BannerWrapper
       backgroundColour={'white'}
       backgroundImageColour={'primary'}
       avatar={
-        userProfilePicture?.file ? (
-          <Avatar
-            dataUrl={userProfilePicture?.file}
-            size={'sm'}
-            displayBorder={true}
-          />
+        profilePc ? (
+          <Avatar dataUrl={profilePc} size={'sm'} displayBorder={true} />
         ) : (
           <UserAvatar
             size="sm-md"
@@ -429,7 +521,7 @@ export const Dashboard: React.FC = () => {
       <Typography
         type={'h1'}
         color="white"
-        text={`Welcome ${userData && userData?.firstName}`}
+        text={`Welcome ${userData && userData?.firstName}`.slice(0, 25)}
         className={styles.welcomeText}
       />
 

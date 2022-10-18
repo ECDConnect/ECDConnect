@@ -18,7 +18,9 @@ export default function Franchisors() {
 
   useEffect(() => {
     if (data && data.GetAllFranchisor) {
-      const copyItems = data.GetAllFranchisor.map((item: FranchisorDto) => ({
+      const copyItems = data.GetAllFranchisor.filter(
+        (v) => v.user !== null && v.user.isActive === true
+      ).map((item: FranchisorDto) => ({
         ...item,
         fullName: `${item.user?.firstName} ${item.user?.surname}`,
         isActive: item.user?.isActive,

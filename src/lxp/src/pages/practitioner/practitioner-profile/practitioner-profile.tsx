@@ -29,6 +29,8 @@ export const PractitionerProfile: React.FC = () => {
   const user = useSelector(userSelectors.getUser);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const classroom = useSelector(classroomsSelectors.getClassroom);
+  const classroomForPractitionerAnyType: any = classroom;
+  const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const lastDataSyncDate = useSelector(settingSelectors.getLastDataSync);
   const appDispatch = useAppDispatch();
   const { userProfilePicture, classroomImage } = useDocuments();
@@ -53,7 +55,7 @@ export const PractitionerProfile: React.FC = () => {
     const subTitleStyle = 'text-sm font-h1 font-normal text-textMid';
     const stackedMenuList: MenuListDataItem[] = [
       {
-        title: `${user?.firstName} ${user?.surname}`,
+        title: `${user?.firstName} ${user?.surname}`.slice(0, 25),
         titleStyle,
         subTitle: 'About me',
         subTitleStyle,
@@ -69,7 +71,10 @@ export const PractitionerProfile: React.FC = () => {
       {
         title: 'Programme information',
         titleStyle,
-        subTitle: classroom?.name,
+        subTitle:
+          classroomForPractitionerAnyType && practitioner?.isPrincipal !== true
+            ? classroomForPractitionerAnyType?.classroomName
+            : classroom?.name || 'N/A',
         subTitleStyle,
         menuIconUrl: classroomImage?.file,
         menuIcon: 'HeartIcon',
@@ -78,7 +83,7 @@ export const PractitionerProfile: React.FC = () => {
         iconColor: 'white',
         showIcon: classroomImage?.file === undefined,
         onActionClick: () => {
-          if (classroom && classroom.id) {
+          if ((classroom && classroom.id) || classroomGroups) {
             history.push(ROUTES.PRACTITIONER.PROGRAMME_INFORMATION);
           } else {
             dialog({
@@ -88,7 +93,7 @@ export const PractitionerProfile: React.FC = () => {
                     icon="ExclamationCircleIcon"
                     iconBorderColor="alertBg"
                     iconColor="alertMain"
-                    title="Complete your profile!"
+                    title="Tell us more about you!"
                     paragraphs={[
                       `Please Complete your profile to unlock the classroom feature`,
                     ]}
@@ -177,16 +182,14 @@ export const PractitionerProfile: React.FC = () => {
               return (
                 <ActionModal
                   className={'mx-4'}
-                  title={'Logout & reset data'}
-                  importantText={
-                    'Please note that by doing this, all your data will be reset and you will loose all data that has not been synced up.'
-                  }
+                  title={'Are you sure want to log out'}
+                  importantText={''}
                   icon={'ExclamationCircleIcon'}
                   iconColor={'alertDark'}
                   iconBorderColor={'alertBg'}
                   actionButtons={[
                     {
-                      text: 'Okay',
+                      text: 'Yes, log out',
                       colour: 'primary',
                       onClick: async () => {
                         onSubmit();
@@ -199,7 +202,7 @@ export const PractitionerProfile: React.FC = () => {
                       leadingIcon: 'CheckCircleIcon',
                     },
                     {
-                      text: 'Cancel',
+                      text: 'No, cancel',
                       textColour: 'white',
                       colour: 'primary',
                       type: 'filled',
