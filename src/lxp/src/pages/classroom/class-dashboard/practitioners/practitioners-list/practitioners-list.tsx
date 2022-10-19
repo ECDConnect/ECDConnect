@@ -119,16 +119,16 @@ export const PractitionersList: React.FC = () => {
     history.push('principal/practitioner-reassign-class');
   };
 
-  const test = async () => {
-    const a = await new PractitionerService(
-      userAuth?.auth_token!
-    ).displayMetrics();
-    return a;
-  };
+  // const test = async () => {
+  //   const a = await new PractitionerService(
+  //     userAuth?.auth_token!
+  //   ).displayMetrics();
+  //   return a;
+  // };
 
-  useEffect(() => {
-    test();
-  }, []);
+  // useEffect(() => {
+  //   test();
+  // }, []);
 
   return (
     <>
