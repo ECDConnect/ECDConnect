@@ -544,16 +544,21 @@ class PractitionerService {
     return response.data.data.displayMetrics;
   }
 
-  async practitionerColleagues(): Promise<PractitionerColleagues[]> {
+  async practitionerColleagues(
+    userId: string
+  ): Promise<PractitionerColleagues[]> {
     const apiInstance = await api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
       query practitionerColleagues($userId: String) {
         practitionerColleagues(userId: $userId) {
-      key value
+      name title
         }
       }
       `,
+      variables: {
+        userId,
+      },
     });
 
     if (response.status !== 200) {

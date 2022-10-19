@@ -1,5 +1,5 @@
 import { BannerWrapper, Button, Alert } from '@ecdlink/ui';
-import { format } from 'date-fns';
+import { format, addDays } from 'date-fns';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useTheme } from '@ecdlink/core';
 import { useHistory, useLocation } from 'react-router';
@@ -45,7 +45,7 @@ export const PractitionerNotRegistered: React.FC<
   const callForHelp = () => {
     window.open('tel:+27800014817');
   };
-
+  console.log({ practitioner });
   return (
     <>
       <BannerWrapper
@@ -63,20 +63,28 @@ export const PractitionerNotRegistered: React.FC<
           type={'error'}
           title={
             practitioner?.isLeaving
-              ? `Thandi has said that they are not a practitioner at Angels Daycare. If Thandi does not accept by ${format(
+              ? `${
+                  practitioner?.user?.firstName
+                } has said that they are not a practitioner at Angels Daycare. If ${
+                  practitioner?.user?.firstName
+                } does not accept by ${format(
                   new Date(practitioner?.dateToBeRemoved!),
                   'LLL d'
                 )}, this profile will be deleted.`
-              : `Thandi has not registered on Funda App. If Thandi does not register by ${format(
-                  new Date(practitioner?.dateLinked!),
+              : `${
+                  practitioner?.user?.firstName
+                } has not registered on Funda App. If ${
+                  practitioner?.user?.firstName
+                } does not register by ${format(
+                  addDays(new Date(practitioner?.dateLinked!), 7),
                   'LLL d'
                 )}, this profile will be deleted.`
           }
           list={[
             !practitioner?.isLeaving
-              ? 'If Thandi needs help registering for Funda App, please contact the SmartStart call centre.'
-              : 'If Thandi needs help with Funda App, please contact the SmartStart call centre.',
-            'If you added Thandi by mistake, please remove them from your programme.',
+              ? `If ${practitioner?.user?.firstName} needs help registering for Funda App, please contact the SmartStart call centre.`
+              : `If ${practitioner?.user?.firstName} needs help with Funda App, please contact the SmartStart call centre.`,
+            `If you added ${practitioner?.user?.firstName} by mistake, please remove them from your programme.`,
           ]}
           button={
             <Button

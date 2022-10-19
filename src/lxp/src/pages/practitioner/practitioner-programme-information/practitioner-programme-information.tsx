@@ -2,7 +2,6 @@ import { ClassroomDto, useTheme } from '@ecdlink/core';
 import {
   FileTypeEnum,
   PractitionerColleagues,
-  ProgrammeTypeEnum,
   WorkflowStatusEnum,
 } from '@ecdlink/graphql';
 import {
@@ -58,7 +57,10 @@ export const PractitionerProgrammeInformation: React.FC = () => {
   const programmeType = useSelector(
     classroomsSelectors.getClassroomProgrammeType()
   );
-
+  const [otherColleagues, setOtherColleagues] = useState<any[]>([]);
+  const [otherColleaguesFiltered, setOtherColleaguesFiltered] = useState<any>(
+    []
+  );
   const classroomForPractitionerAnyType: any = classroom;
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
@@ -103,14 +105,14 @@ export const PractitionerProgrammeInformation: React.FC = () => {
   });
 
   useEffect(() => {
-    if (classroomGroups) {
+    if (classroomGroups || otherColleaguesFiltered) {
       getStackedListItems();
     }
     if (classroom) {
       setProgrammeNameValue('name', classroom?.name || '');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [classroom, classroomGroups, programmeType]);
+  }, [classroom, classroomGroups, programmeType, otherColleaguesFiltered]);
 
   const displayProfilePicturePrompt = () => {
     setEditProfilePictureVisible(!editProfilePictureVisible);
@@ -163,15 +165,30 @@ export const PractitionerProgrammeInformation: React.FC = () => {
     if (userAuth) {
       practitionerColleagues = await new PractitionerService(
         userAuth.auth_token
-      ).practitionerColleagues();
+      ).practitionerColleagues(user?.id!);
     }
-    console.log({ practitionerColleagues });
+
+    setOtherColleagues(practitionerColleagues);
     return practitionerColleagues;
   };
 
   useEffect(() => {
     getPractitionerColleagues();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (otherColleagues && user?.firstName) {
+      const filteredColleagues = otherColleagues?.filter(
+        (item) => !item?.name.includes(user?.firstName)
+      );
+      const firstNameFilteredColleagues = filteredColleagues.map((item) => ({
+        name: item?.name.split(' ')[0],
+        title: item?.title,
+      }));
+      setOtherColleaguesFiltered(firstNameFilteredColleagues);
+    }
+  }, [otherColleagues, user?.firstName]);
 
   const getStackedListItems = () => {
     const stackedActionList: ActionListDataItem[] = [
@@ -204,14 +221,15 @@ export const PractitionerProgrammeInformation: React.FC = () => {
       },
     ];
 
-    if (practitioners?.length! > 0) {
+    if (practitioners?.length! > 0 || otherColleaguesFiltered?.length! > 0) {
       stackedActionList.push({
         title: 'Other practitioners on site',
         subTitle:
-          practitionersList?.map((x) => x?.user?.firstName).join(', ') || 'N/A',
+          practitionersList?.map((x) => x?.user?.firstName).join(', ') ||
+          otherColleaguesFiltered?.map((x: any) => x?.name).join(', '),
         switchTextStyles: true,
         actionName:
-          practitioners?.length! > 1
+          practitioners?.length! > 1 || otherColleaguesFiltered?.length! > 0
             ? isPrincipal
               ? 'Edit'
               : 'View'
