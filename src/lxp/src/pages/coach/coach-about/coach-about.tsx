@@ -265,7 +265,6 @@ export const CoachAbout: React.FC = () => {
     if (copy) {
       copy.profileImageUrl = imageBaseString;
       appDispatch(userActions.updateUser(copy));
-      //appDispatch(userThunkActions.updateUser(copy));
     }
 
     if (!userProfilePicture) {
@@ -278,9 +277,11 @@ export const CoachAbout: React.FC = () => {
     } else {
       updateDocument(userProfilePicture, imageBaseString);
     }
+
+    await saveCoachUserData(imageBaseString);
   };
 
-  const saveCoachUserData = () => {
+  const saveCoachUserData = (imageBaseString: string = '') => {
     const coachForm = coachAboutFormGetValues();
     const coachCopy = cloneDeep(coach);
     const userCopy = cloneDeep(user);
@@ -291,6 +292,9 @@ export const CoachAbout: React.FC = () => {
       userCopy.phoneNumber = coachForm.cellphone;
       userCopy.email = coachForm.email;
       userCopy.fullName = `${userCopy.firstName} ${userCopy.surname}`;
+      if (imageBaseString?.length > 0) {
+        userCopy.profileImageUrl = imageBaseString;
+      }
 
       Object.assign(coachCopy.user as UserDto, userCopy);
 
