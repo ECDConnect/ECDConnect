@@ -877,9 +877,11 @@ export type ClassroomMetricReport = {
   __typename?: 'ClassroomMetricReport';
   attendancePercentage: Scalars['Int'];
   childCount: Scalars['Int'];
-  classroomGroupId: Scalars['UUID'];
-  classroomId: Scalars['UUID'];
+  classroomGroupId?: Maybe<Scalars['String']>;
+  classroomId?: Maybe<Scalars['String']>;
   month: Scalars['Int'];
+  practitionerId?: Maybe<Scalars['String']>;
+  weekOfYear: Scalars['Int'];
   year: Scalars['Int'];
 };
 
@@ -4157,7 +4159,7 @@ export type Query = {
   childrenByClassroomId?: Maybe<Array<Maybe<Child>>>;
   childrenMetrics?: Maybe<ChildrenMetricReport>;
   classAttendanceMetrics?: Maybe<Array<Maybe<ClassroomMetricReport>>>;
-  classAttendanceMetricsByUser?: Maybe<ClassroomMetricReport>;
+  classAttendanceMetricsByUser?: Maybe<Array<Maybe<ClassroomMetricReport>>>;
   classroomDetailsForPractitioner?: Maybe<PrincipalClassroom>;
   classroomGroupClassroomsForPractitioner?: Maybe<Array<Maybe<ClassroomGroup>>>;
   classroomNamesForPractitioner?: Maybe<
