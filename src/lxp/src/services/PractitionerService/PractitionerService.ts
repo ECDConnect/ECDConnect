@@ -298,6 +298,8 @@ class PractitionerService {
             principalName
             classroomName
             classroomGroupName
+            classroomId
+            insertedDate
           }
         }
       `,
@@ -516,6 +518,45 @@ class PractitionerService {
 
     return response.data.data.updatePractitionerRegistered;
   }
+
+  async displayMetrics(): Promise<PractitionerDto[]> {
+    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      query displayMetrics($type: String) {
+        displayMetrics(type: $type) {
+      subject icon color message notes userId userType 
+      
+        }
+      }
+      `,
+    });
+
+    if (response.status !== 200) {
+      throw new Error('Display metrics Failed - Server connection error');
+    }
+
+    return response.data.data.displayMetrics;
+  }
+
+  // async practitionerColleagues(): Promise<PractitionerColleagues[]> {
+  //   const apiInstance = await api(Config.graphQlApi, this._accessToken);
+  //   const response = await apiInstance.post<any>(``, {
+  //     query: `
+  //     query practitionerColleagues($userId: String) {
+  //       practitionerColleagues(userId: $userId) {
+  //     key value
+  //       }
+  //     }
+  //     `,
+  //   });
+
+  //   if (response.status !== 200) {
+  //     throw new Error('Practitioner Colleagues Failed - Server connection error');
+  //   }
+
+  //   return response.data.data.practitionerColleagues;
+  // }
 }
 
 export default PractitionerService;

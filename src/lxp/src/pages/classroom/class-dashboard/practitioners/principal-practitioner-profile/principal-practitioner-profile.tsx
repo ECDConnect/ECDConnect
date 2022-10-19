@@ -35,6 +35,8 @@ import { authSelectors } from '@/store/auth';
 import { PractitionerNotRegistered } from './practitioner-not-registered/practitioner-not-registered';
 import { PractitionerService } from '@/services/PractitionerService';
 import { practitionerThunkActions } from '@/store/practitioner';
+import { ClassroomGroupService } from '@/services/ClassroomGroupService';
+import { getMonthName } from '@utils/classroom/attendance/track-attendance-utils';
 
 export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const history = useHistory();
@@ -67,11 +69,28 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
     setCreatePractitionerdNoteVisible(false);
   };
 
+  const [classMetrics, setClassMetrics] = useState<any>();
+  const practitionerClassrooms: any[] = [];
+
   const handleReassignClass = (practitionerId: string) => {
     history.push('practitioner-reassign-class', {
       practitionerId,
     });
   };
+
+  if (classMetrics) {
+    classMetrics.forEach((e: any) => {
+      let classroomValue: any = practitionerClassroomGroups.filter(
+        (item) => item?.id === e?.classroomGroupId
+      );
+
+      if (classroomValue) {
+        practitionerClassrooms.push({ ...e, name: classroomValue?.name });
+      } else {
+        practitionerClassrooms.push({ ...e });
+      }
+    });
+  }
 
   useEffect(() => {
     (async () =>
@@ -113,6 +132,19 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
     ).unwrap();
     history.push(ROUTES.CLASSROOM);
   };
+
+  const test = async () => {
+    const metricsData = await new ClassroomGroupService(
+      userAuth?.auth_token!
+    ).getClassAttendanceMetrics();
+    setClassMetrics(metricsData);
+    return metricsData;
+  };
+
+  useEffect(() => {
+    test();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <>
@@ -240,17 +272,13 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                 </div>
               </div>
             </Card>
-            {practitionerClassroomGroups.length > 0
-              ? practitionerClassroomGroups?.map((item, index) => {
-                  const learnersByClass = learners?.filter(
-                    (learner) => learner.classroomGroupId === item?.id
-                  );
-
+            {practitionerClassrooms.length > 0
+              ? practitionerClassrooms?.map((item, index) => {
                   return (
-                    <Card className={styles.absentCard}>
+                    <Card className={styles.absentCard} key={index}>
                       <Typography
                         type={'h1'}
-                        text={item.name}
+                        text={item?.name}
                         color={'textMid'}
                         className={styles.absentCardTitle}
                       />
@@ -260,7 +288,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                             <div className="flex items-center w-full">
                               <Typography
                                 type={'h2'}
-                                text={`${learnersByClass?.length}`}
+                                text={`${item?.childCount}`}
                                 color={'textDark'}
                                 className="mt-2"
                               />
@@ -298,14 +326,17 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                             <StatusChip
                               backgroundColour="alertMain"
                               borderColour="alertMain"
-                              text={'N/A'}
+                              text={`${item?.attendancePercentage}`}
                               textColour={'white'}
                               className={'mr-2'}
                             />
                             <Typography
                               type={'body'}
                               weight={'bold'}
-                              text={'attendance in September 2022'}
+                              text={`attendance in ${getMonthName(
+                                item?.month
+                                // eslint-disable-next-line no-useless-concat
+                              )}\u00A0${item?.year}`}
                               color={'textMid'}
                             />
                           </div>
