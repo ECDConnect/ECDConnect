@@ -219,14 +219,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     {
                         var attendanceAttended = attendanceData.Where(x => x.Attended == true).Count();
                         var attendanceUnAttended = attendanceData.Where(x => x.Attended == false).Count();
-                        attendancePercentage = (childCount > 0 && attendanceAttended > 0 ? ((attendanceAttended + attendanceUnAttended) / attendanceAttended) * 100 : 0);
+                        if (attendanceUnAttended > 0)
+                        attendancePercentage = (int)(childCount > 0 && attendanceAttended > 0 ? Math.Round((double)(attendanceAttended / (double)(attendanceAttended + attendanceUnAttended)) * 100) : 0);
                         //override month and year to attendance month and year
                         month = attendanceData.FirstOrDefault().MonthOfYear;
                         year = attendanceData.FirstOrDefault().Year;
                         weekOfYear = attendanceData.FirstOrDefault().WeekOfYear;
                     }
-                    metric.Add(new ClassroomMetricReport() { childCount = childCount, attendancePercentage = attendancePercentage, classroomGroupId = group.Id.ToString(), classroomId = group.ClassroomId.ToString(), month = month, year = year, weekOfYear = weekOfYear, practitionerId = userId });
-                        
+                    metric.Add(new ClassroomMetricReport() { childCount = childCount, attendancePercentage = attendancePercentage, classroomGroupId = group.Id.ToString(), classroomId = group.ClassroomId.ToString(), month = month, year = year, weekOfYear = weekOfYear, practitionerId = userId });                        
                 }
             }
 

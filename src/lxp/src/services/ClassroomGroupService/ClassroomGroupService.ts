@@ -135,12 +135,18 @@ class ClassroomGroupService {
     const apiInstance = await api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-      query {          classAttendanceMetrics {         childCount  attendancePercentage 
-        classroomId
-        year
-        month
-        classroomGroupId
-                 }        }
+      query {          
+        classAttendanceMetrics {         
+          childCount  
+          attendancePercentage 
+          weekOfYear
+          year
+          month
+          classroomId
+          classroomGroupId
+          practitionerId
+        }        
+      }
       `,
       variables: {},
     });
