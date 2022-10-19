@@ -1,6 +1,7 @@
 import { ClassroomDto, useTheme } from '@ecdlink/core';
 import {
   FileTypeEnum,
+  PractitionerColleagues,
   ProgrammeTypeEnum,
   WorkflowStatusEnum,
 } from '@ecdlink/graphql';
@@ -40,6 +41,8 @@ import * as styles from './practitioner-programme-information.styles';
 import ROUTES from '@routes/routes';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 import { practitionerSelectors } from '@/store/practitioner';
+import { PractitionerService } from '@/services/PractitionerService';
+import { authSelectors } from '@/store/auth';
 
 export const PractitionerProgrammeInformation: React.FC = () => {
   const history = useHistory();
@@ -48,6 +51,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
   const appDispatch = useAppDispatch();
 
   const user = useSelector(userSelectors.getUser);
+  const userAuth = useSelector(authSelectors.getAuthUser);
 
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
@@ -151,6 +155,23 @@ export const PractitionerProgrammeInformation: React.FC = () => {
     setClassImageBaseString();
     displayProfilePicturePrompt();
   };
+
+  const getPractitionerColleagues = async () => {
+    // Check if the practitioner exists
+    let practitionerColleagues: PractitionerColleagues[] = [];
+
+    if (userAuth) {
+      practitionerColleagues = await new PractitionerService(
+        userAuth.auth_token
+      ).practitionerColleagues();
+    }
+    console.log({ practitionerColleagues });
+    return practitionerColleagues;
+  };
+
+  useEffect(() => {
+    getPractitionerColleagues();
+  }, []);
 
   const getStackedListItems = () => {
     const stackedActionList: ActionListDataItem[] = [

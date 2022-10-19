@@ -22,20 +22,40 @@ import { AttendanceReport } from './components/attendance-report/attendance-repo
 import { AttendanceSummary } from './components/attendance-summary/attendance-summary';
 import { isWorkingDay } from '@/utils/common/date.utils';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
+import { practitionerSelectors } from '@/store/practitioner';
+import { userSelectors } from '@store/user';
 
 export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
+  const userData = useSelector(userSelectors.getUser);
   const [attendanceComponentType, setAttendanceComponentType] =
     useState<AttendanceComponentType>();
-
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  const isPrincipal = practitioner?.isPrincipal === true;
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const allClassroomGroups = useSelector(
     classroomsSelectors.getClassroomGroups
   );
-  const classroomGroups = allClassroomGroups.filter(
-    (x) => x.name !== NoPlaygroupClassroomType.name
+  const classroomGroupsForPrincipal = allClassroomGroups.filter(
+    (item) => item?.userId === userData?.id
   );
+
+  const classroomGroups = isPrincipal
+    ? classroomGroupsForPrincipal.filter(
+        (x) => x.name !== NoPlaygroupClassroomType.name
+      )
+    : allClassroomGroups.filter(
+        (x) => x.name !== NoPlaygroupClassroomType.name
+      );
   const children = useSelector(childrenSelectors.getChildren);
   const classProgrammes = useSelector(classroomsSelectors.getClassProgrammes);
+  const classProgrammesForPrincipal = classProgrammes.filter((el) => {
+    return classroomGroupsForPrincipal.some((f) => {
+      return f.id === el.classroomGroupId;
+    });
+  });
+  const classProgrammesUpdated = isPrincipal
+    ? classProgrammesForPrincipal
+    : classProgrammes;
   const publicHolidays = useSelector(staticDataSelectors.getHolidays);
   const attendance = useSelector(attendanceSelectors.getAttendance);
   const learners = useSelector(classroomsSelectors.getClassroomGroupLearners);
@@ -51,10 +71,9 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
     const _learners: LearnerDto[] = learners;
 
     const currentClassProgramme = classroomGroupHasAttendanceOnDate(
-      classProgrammes,
+      classProgrammesUpdated,
       currentDate
     );
-
     const currentDayClassroomGroup = classroomGroups.find(
       (x) => x.id === currentClassProgramme?.classroomGroupId
     );
@@ -88,7 +107,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       return;
     }
 
-    const currentClassProgrammes = classProgrammes.filter(
+    const currentClassProgrammes = classProgrammesUpdated.filter(
       (x) => x.classroomGroupId === currentDayClassroomGroup.id
     );
     const meetingDays = getClassroomGroupSchoolDays(currentClassProgrammes);
@@ -110,7 +129,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
 
     const missedClassAttendance = getMissedClassAttendance(
       [currentDayClassroomGroup],
-      classProgrammes.filter(
+      classProgrammesUpdated.filter(
         (x) => x.classroomGroupId === currentDayClassroomGroup.id
       ),
       attendance || [],
@@ -148,7 +167,9 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
 
     const missedClassAttendance = getMissedClassAttendance(
       [classgroup],
-      classProgrammes.filter((x) => x.classroomGroupId === classgroup.id),
+      classProgrammesUpdated.filter(
+        (x) => x.classroomGroupId === classgroup.id
+      ),
       attendance || [],
       currentDate
     );
