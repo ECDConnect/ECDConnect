@@ -183,6 +183,18 @@ export const CoachAbout: React.FC = () => {
         },
       },
       {
+        title: 'Work address',
+        subTitle: formatSiteAddressAsText(currentUser),
+        switchTextStyles: true,
+        hasMarkup: true,
+        actionName: currentUser?.siteAddress ? 'Edit' : 'Add',
+        actionIcon: currentUser?.siteAddress ? 'PencilIcon' : 'PlusIcon',
+        buttonType: currentUser?.siteAddress ? 'filled' : 'outlined',
+        onActionClick: () => {
+          history.push(ROUTES.COACH.ABOUT.ADDRESS);
+        },
+      },
+      {
         title: 'Signature',
         subTitle: currentUser?.signingSignature
           ? 'Replace your signature'
@@ -193,18 +205,6 @@ export const CoachAbout: React.FC = () => {
         buttonType: 'filled',
         onActionClick: () => {
           history.push(ROUTES.COACH.ABOUT.SIGNATURE);
-        },
-      },
-      {
-        title: 'Work address',
-        subTitle: formatSiteAddressAsText(currentUser),
-        switchTextStyles: true,
-        hasMarkup: true,
-        actionName: currentUser?.siteAddress ? 'Edit' : 'Add',
-        actionIcon: currentUser?.siteAddress ? 'PencilIcon' : 'PlusIcon',
-        buttonType: currentUser?.siteAddress ? 'filled' : 'outlined',
-        onActionClick: () => {
-          history.push(ROUTES.COACH.ABOUT.ADDRESS);
         },
       },
     ];
@@ -265,7 +265,6 @@ export const CoachAbout: React.FC = () => {
     if (copy) {
       copy.profileImageUrl = imageBaseString;
       appDispatch(userActions.updateUser(copy));
-      //appDispatch(userThunkActions.updateUser(copy));
     }
 
     if (!userProfilePicture) {
@@ -278,9 +277,11 @@ export const CoachAbout: React.FC = () => {
     } else {
       updateDocument(userProfilePicture, imageBaseString);
     }
+
+    await saveCoachUserData(imageBaseString);
   };
 
-  const saveCoachUserData = () => {
+  const saveCoachUserData = (imageBaseString: string = '') => {
     const coachForm = coachAboutFormGetValues();
     const coachCopy = cloneDeep(coach);
     const userCopy = cloneDeep(user);
@@ -291,6 +292,9 @@ export const CoachAbout: React.FC = () => {
       userCopy.phoneNumber = coachForm.cellphone;
       userCopy.email = coachForm.email;
       userCopy.fullName = `${userCopy.firstName} ${userCopy.surname}`;
+      if (imageBaseString?.length > 0) {
+        userCopy.profileImageUrl = imageBaseString;
+      }
 
       Object.assign(coachCopy.user as UserDto, userCopy);
 
@@ -357,6 +361,16 @@ export const CoachAbout: React.FC = () => {
             listItems={listItems}
             type={'ActionList'}
           ></StackedList>
+          {coach?.signingSignature && (
+            <>
+              <img
+                src={coach.signingSignature}
+                style={{ margin: '20px 0 ' }}
+                width="60"
+              />
+              <br />
+            </>
+          )}
         </div>
       </BannerWrapper>
 
