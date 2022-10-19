@@ -183,6 +183,18 @@ export const CoachAbout: React.FC = () => {
         },
       },
       {
+        title: 'Work address',
+        subTitle: formatSiteAddressAsText(currentUser),
+        switchTextStyles: true,
+        hasMarkup: true,
+        actionName: currentUser?.siteAddress ? 'Edit' : 'Add',
+        actionIcon: currentUser?.siteAddress ? 'PencilIcon' : 'PlusIcon',
+        buttonType: currentUser?.siteAddress ? 'filled' : 'outlined',
+        onActionClick: () => {
+          history.push(ROUTES.COACH.ABOUT.ADDRESS);
+        },
+      },
+      {
         title: 'Signature',
         subTitle: currentUser?.signingSignature
           ? 'Replace your signature'
@@ -193,18 +205,6 @@ export const CoachAbout: React.FC = () => {
         buttonType: 'filled',
         onActionClick: () => {
           history.push(ROUTES.COACH.ABOUT.SIGNATURE);
-        },
-      },
-      {
-        title: 'Work address',
-        subTitle: formatSiteAddressAsText(currentUser),
-        switchTextStyles: true,
-        hasMarkup: true,
-        actionName: currentUser?.siteAddress ? 'Edit' : 'Add',
-        actionIcon: currentUser?.siteAddress ? 'PencilIcon' : 'PlusIcon',
-        buttonType: currentUser?.siteAddress ? 'filled' : 'outlined',
-        onActionClick: () => {
-          history.push(ROUTES.COACH.ABOUT.ADDRESS);
         },
       },
     ];
@@ -361,6 +361,16 @@ export const CoachAbout: React.FC = () => {
             listItems={listItems}
             type={'ActionList'}
           ></StackedList>
+          {coach?.signingSignature && (
+            <>
+              <img
+                src={coach.signingSignature}
+                style={{ margin: '20px 0 ' }}
+                width="60"
+              />
+              <br />
+            </>
+          )}
         </div>
       </BannerWrapper>
 
