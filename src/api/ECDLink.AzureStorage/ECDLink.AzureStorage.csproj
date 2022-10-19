@@ -9,12 +9,14 @@
     <Compile Remove="Content\**" />
     <EmbeddedResource Remove="Content\**" />
     <None Remove="Content\**" />
+    <None Remove="FileSignatures" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NETCore.Targets" Version="3.0.0" PrivateAssets="all" />
     <PackageReference Include="Azure.Data.Tables" Version="12.2.0" />
     <PackageReference Include="Azure.Storage.Blobs" Version="12.10.0" />
     <PackageReference Include="Microsoft.Azure.Cosmos.Table" Version="1.0.8" />
+    <PackageReference Include="FileSignatures" Version="4.4.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Libraries\Modules\ECDLink.Abstractrions\ECDLink.Abstractrions.csproj" />
