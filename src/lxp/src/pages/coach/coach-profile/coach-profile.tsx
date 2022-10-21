@@ -8,6 +8,7 @@ import { coachSelectors } from '@store/coach';
 import { useSelector } from 'react-redux';
 import { useDialog } from '@ecdlink/core';
 import { useAppDispatch } from '@store';
+import { userSelectors } from '@store/user';
 import ROUTES from '@routes/routes';
 import { useEffect } from 'react';
 import {
@@ -22,6 +23,7 @@ import {
 
 export const CoachProfile: React.FC = () => {
   const { resetAuth, resetAppStore } = useStoreSetup();
+  const user = useSelector(userSelectors.getUser);
   const { userProfilePicture } = useDocuments();
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
@@ -47,7 +49,7 @@ export const CoachProfile: React.FC = () => {
     const subTitleStyle = 'text-sm font-h1 font-normal text-textMid';
     const profilePc =
       userProfilePicture?.file ||
-      coach?.user?.profileImageUrl ||
+      user?.profileImageUrl ||
       userProfilePicture?.reference;
     const stackedMenuList: MenuListDataItem[] = [
       {

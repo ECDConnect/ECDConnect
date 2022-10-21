@@ -79,13 +79,19 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   };
 
   if (classMetrics) {
-    classMetrics.forEach((e: any) => {
-      let classroomValue: any = practitionerClassroomGroups.filter(
-        (item) => item?.id === e?.classroomGroupId
+    practitionerClassroomGroups.forEach((e: any) => {
+      let classroomValue: any = classMetrics.find(
+        (item: any) => item?.id === e?.classroomGroupId
       );
 
       if (classroomValue) {
-        practitionerClassrooms.push({ ...e, name: classroomValue?.name });
+        practitionerClassrooms.push({
+          ...e,
+          childCount: classroomValue?.childCount,
+          attendancePercentage: classroomValue?.attendancePercentage,
+          month: classroomValue?.month,
+          year: classroomValue?.year,
+        });
       } else {
         practitionerClassrooms.push({ ...e });
       }
@@ -133,7 +139,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
     history.push(ROUTES.CLASSROOM);
   };
 
-  const test = async () => {
+  const classroomsMetrics = async () => {
     const metricsData = await new ClassroomGroupService(
       userAuth?.auth_token!
     ).getClassAttendanceMetrics();
@@ -142,7 +148,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   };
 
   useEffect(() => {
-    test();
+    classroomsMetrics();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -326,7 +332,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                             <StatusChip
                               backgroundColour="alertMain"
                               borderColour="alertMain"
-                              text={`${item?.attendancePercentage}`}
+                              text={`${item?.attendancePercentage}%`}
                               textColour={'white'}
                               className={'mr-2'}
                             />

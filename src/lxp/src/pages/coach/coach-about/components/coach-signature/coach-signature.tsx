@@ -6,7 +6,7 @@ import {
   Typography,
 } from '@ecdlink/ui';
 
-import { coachActions, coachSelectors } from '@store/coach';
+import { coachActions, coachSelectors, coachThunkActions } from '@store/coach';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import SignatureCanvas from 'react-signature-canvas';
 import { analyticsActions } from '@store/analytics';
@@ -43,6 +43,7 @@ export const CoachSignature: React.FC = () => {
     if (copy.signingSignature !== signature) {
       copy.signingSignature = signature;
       appDispatch(coachActions.updateCoach(copy));
+      appDispatch(coachThunkActions.updateCoach(copy));
     }
   };
 
@@ -51,6 +52,8 @@ export const CoachSignature: React.FC = () => {
       .getTrimmedCanvas()
       .toDataURL('image/png');
     saveSignature(signatureString);
+
+    history.push(ROUTES.COACH.ABOUT.ROOT);
   };
 
   const clearSignature = () => {

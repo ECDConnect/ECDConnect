@@ -7,17 +7,21 @@ import {
   ActionListDataItem,
   StackedList,
 } from '@ecdlink/ui';
+import { PractitionerColleagues } from '@ecdlink/graphql';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useHistory } from 'react-router-dom';
-import ROUTES from '@routes/routes';
+// import ROUTES from '@routes/routes';
 import * as styles from './practitioner-list.styles';
 import { classroomsSelectors } from '@store/classroom';
 import { useSelector } from 'react-redux';
-import { useState, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { PractitionerListProps } from './practitioner-list.types';
 import { renderIcon } from '@ecdlink/ui';
 import { practitionerSelectors } from '@/store/practitioner';
 import { EditPractitioner } from './edit-practitioner/edit-practitioner';
+import { userSelectors } from '@store/user';
+import { PractitionerService } from '@/services/PractitionerService';
+import { authSelectors } from '@/store/auth';
 // import { PractitionerInfo } from './practitioner-info/practitioner-info';
 
 const mockedPractitioners = [
@@ -43,6 +47,8 @@ export const PractitionerList: React.FC<PractitionerListProps> = ({
 }) => {
   const history = useHistory();
   const { theme } = useTheme();
+  const user = useSelector(userSelectors.getUser);
+  const userAuth = useSelector(authSelectors.getAuthUser);
   const { isOnline } = useOnlineStatus();
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const classroomName = classroom?.name;
@@ -51,37 +57,75 @@ export const PractitionerList: React.FC<PractitionerListProps> = ({
   const [practitionerId, setPractitionerId] = useState(0);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
+  const isPrincipal = practitioner?.isPrincipal === true;
   const practitionersList = practitioners?.filter(
     (item) => item.userId !== practitioner?.userId
   );
   const [editPractitionerVisible, setEditiPractitionerVisible] =
     useState(false);
+  const [otherColleagues, setOtherColleagues] = useState<any[]>([]);
+  const [otherColleaguesFiltered, setOtherColleaguesFiltered] = useState<any>(
+    []
+  );
 
-  const stackedListItems: ActionListDataItem[] = practitionersList
-    ? practitionersList?.map((item) => {
-        return {
-          title: item?.user?.fullName ? item?.user?.fullName : '',
-          subTitle: item?.isPrincipal
-            ? 'Principal / owner'
-            : item?.user?.roles
-            ? item?.user?.roles[0]?.name
-            : '',
-          switchTextStyles: true,
-          actionName: 'Edit',
-          actionIcon: 'PencilIcon',
-          onActionClick: () => setEditiPractitionerVisible(true),
-        };
-      })
-    : mockedPractitioners?.map((item) => {
-        return {
-          title: item?.name,
-          subTitle: item?.role,
-          switchTextStyles: true,
-          actionName: 'Edit',
-          actionIcon: 'PencilIcon',
-          onActionClick: () => setEditiPractitionerVisible(true),
-        };
-      });
+  const getPractitionerColleagues = async () => {
+    // Check if the practitioner exists
+    let practitionerColleagues: PractitionerColleagues[] = [];
+
+    if (userAuth) {
+      practitionerColleagues = await new PractitionerService(
+        userAuth?.auth_token
+      ).practitionerColleagues(user?.id!);
+    }
+
+    setOtherColleagues(practitionerColleagues);
+    return practitionerColleagues;
+  };
+
+  useEffect(() => {
+    getPractitionerColleagues();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (otherColleagues && user?.firstName) {
+      const filteredColleagues = otherColleagues?.filter(
+        (item) => !item?.name.includes(user?.firstName)
+      );
+      const firstNameFilteredColleagues = filteredColleagues.map((item) => ({
+        name: item?.name.split(' ')[0],
+        title: item?.title,
+      }));
+      setOtherColleaguesFiltered(firstNameFilteredColleagues);
+    }
+  }, [otherColleagues, user?.firstName]);
+
+  const stackedListItems: ActionListDataItem[] =
+    practitionersList && practitionersList?.length! > 0
+      ? practitionersList?.map((item) => {
+          return {
+            title: item?.user?.fullName ? item?.user?.fullName : '',
+            subTitle: item?.isPrincipal
+              ? 'Principal / owner'
+              : item?.user?.roles
+              ? item?.user?.roles[0]?.name
+              : '',
+            switchTextStyles: true,
+            actionName: 'Edit',
+            actionIcon: 'PencilIcon',
+            onActionClick: () => setEditiPractitionerVisible(true),
+          };
+        })
+      : otherColleaguesFiltered?.map((item: any) => {
+          return {
+            title: item?.name,
+            subTitle: item?.title,
+            switchTextStyles: true,
+            // actionName: 'Edit',
+            // actionIcon: 'PencilIcon',
+            // onActionClick: () => setEditiPractitionerVisible(true),
+          };
+        });
 
   return (
     <div>
@@ -112,7 +156,7 @@ export const PractitionerList: React.FC<PractitionerListProps> = ({
           <div className="ml-4 mt-4">
             <Typography
               type={'h2'}
-              text={'Edit Practitioners'}
+              text={isPrincipal ? 'Edit Practitioners' : 'View Practitioners'}
               color={'textDark'}
             />
             {stackedListItems && (
