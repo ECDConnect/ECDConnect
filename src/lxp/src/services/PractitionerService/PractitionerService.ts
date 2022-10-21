@@ -552,7 +552,7 @@ class PractitionerService {
       query: `
       query practitionerColleagues($userId: String) {
         practitionerColleagues(userId: $userId) {
-      name title
+          name title nickName contactNumber classroomNames profilePhoto
         }
       }
       `,
