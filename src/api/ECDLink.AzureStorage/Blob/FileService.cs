@@ -175,19 +175,28 @@ namespace ECDLink.AzureStorage.Blob
         private bool IsUnknownOrValidFileType(MemoryStream fileStream)
         {
             var format = _inspector.DetermineFileFormat(fileStream);
+
             if(format == null)
             {
                 return true;
             }
 
-            var whiteListedFileTypes = new List<Type>() { typeof(Pdf), typeof(Image), typeof(OfficeOpenXml) };
-            if (whiteListedFileTypes.Contains(format.GetType()))
+            if(format is Image)
             {
                 return true;
-            } else
-            {
-                return false;
             }
+
+            if(format is Pdf)
+            {
+                return true;
+            }
+
+            if (format is OfficeOpenXml)
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }
