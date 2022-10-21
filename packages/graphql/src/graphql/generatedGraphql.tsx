@@ -3501,7 +3501,11 @@ export type PractitionerClassroomName = {
 
 export type PractitionerColleagues = {
   __typename?: 'PractitionerColleagues';
+  classroomNames?: Maybe<Scalars['String']>;
+  contactNumber?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
+  nickName?: Maybe<Scalars['String']>;
+  profilePhoto?: Maybe<Scalars['String']>;
   title?: Maybe<Scalars['String']>;
 };
 
