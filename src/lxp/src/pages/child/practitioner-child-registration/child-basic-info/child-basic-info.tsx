@@ -20,6 +20,9 @@ export const ChildBasicInfo: React.FC<
   FormComponentProps<ChildBasicInfoModel>
 > = ({ onSubmit }) => {
   const classrooms = useSelector(classroomsSelectors.getClassroomGroups);
+  const getAllClassroomGroups = useSelector(
+    classroomsSelectors?.getAllClassroomGroups
+  );
   const classroomsForPractitioner = useSelector(
     classroomsSelectors.getClassroom
   );
@@ -87,7 +90,10 @@ export const ChildBasicInfo: React.FC<
         label="Which class will the child attend?"
         placeholder="Select class"
         selectedValue={getSelectedClassroom()}
-        list={classrooms.map((x) => ({ label: x.name, value: x.id || '' }))}
+        list={getAllClassroomGroups.map((x) => ({
+          label: x.name,
+          value: x.id || '',
+        }))}
         onChange={(classroomId: string) => {
           setValue('playgroupId', classroomId, { shouldValidate: true });
         }}
