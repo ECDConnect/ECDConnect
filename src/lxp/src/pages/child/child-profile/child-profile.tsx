@@ -388,7 +388,11 @@ export const ChildProfile: React.FC = () => {
 
     // Check when the child was register and determine wether attendance should have been recorded
 
-    if (childAttendancePercentage.percentage < 50 && !caregiverHasBeenContacted)
+    if (
+      childAttendancePercentage.percentage < 50 &&
+      childAttendancePercentage?.percentage !== 0 &&
+      !caregiverHasBeenContacted
+    )
       return {
         ...baseNotificationListItem,
         subTitle: `Attended ${childAttendancePercentage.daysAttended} days last week`,
