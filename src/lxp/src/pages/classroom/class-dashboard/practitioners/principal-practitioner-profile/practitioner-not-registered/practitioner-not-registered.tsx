@@ -45,7 +45,7 @@ export const PractitionerNotRegistered: React.FC<
   const callForHelp = () => {
     window.open('tel:+27800014817');
   };
-  console.log({ practitioner });
+
   return (
     <>
       <BannerWrapper
