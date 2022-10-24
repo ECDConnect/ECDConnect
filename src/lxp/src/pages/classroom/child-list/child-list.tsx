@@ -85,6 +85,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
   const pendingStatusId = getWorkflowStatusIdByEnum(
     WorkflowStatusEnum.ChildPending
   );
+  console.log({ pendingStatusId });
   const history = useHistory();
   const attendanceData = useSelector(attendanceSelectors.getAttendance);
   const children = useSelector(childrenSelectors.getChildren);
@@ -107,6 +108,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
   const classroomGroupLearners = useSelector(
     classroomsSelectors.getClassroomGroupLearners
   );
+  console.log({ classroomGroupLearners });
   // const isPlaygroup = useSelector(classroomsSelectors.isPlaygroup());
   const [addChildButtonExpanded, setAddChildButtonExpanded] =
     useState<boolean>(true);
@@ -126,7 +128,9 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
   const principalClassroomGroups = classroomGroups.filter(
     (item) => item?.userId === practitioner?.userId
   );
-
+  console.log({ principalClassroomGroups });
+  console.log({ childUserListData });
+  console.log({ childrenForPrincipal });
   useEffect(() => {
     if (classroomGroups && classroomGroupLearners) {
       const groupedItems: SearchDropDownOption<string>[] = isPrincipal
@@ -183,7 +187,9 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
 
   useEffect(() => {
     if (isPrincipal) {
+      console.log('isPrincipal');
       if (classroomGroupLearners && childrenForPrincipal && pendingStatusId) {
+        console.log('classroomGtoupLearners');
         const childListItem: UserAlertListDataItem[] = [];
 
         for (const child of childrenForPrincipal) {
@@ -192,13 +198,18 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
           );
           childListItem.push(mapUserListDataItem(child, learner));
         }
-
+        console.log({ childListItem });
         setChildUserListData(childListItem);
         setFilteredChildData(childListItem);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [classroomGroupLearners, children, pendingStatusId]);
+  }, [
+    classroomGroupLearners,
+    childrenForPrincipal,
+    pendingStatusId,
+    isPrincipal,
+  ]);
 
   const onChildListItemAction = (childId: string) => {
     history.push(ROUTES.CHILD_PROFILE, {
