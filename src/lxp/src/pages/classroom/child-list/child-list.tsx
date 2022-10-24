@@ -91,7 +91,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
   const childrenForPrincipal = useSelector(
     childrenForPractitionerSelectors?.getChildrenForPractitioner
   );
-  console.log({ childrenForPrincipal });
+
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const classroomGroupProgrammes = useSelector(
     classroomsSelectors.getClassProgrammes
