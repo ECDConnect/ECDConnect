@@ -25,24 +25,7 @@ import { userSelectors } from '@store/user';
 import { PractitionerService } from '@/services/PractitionerService';
 import { authSelectors } from '@/store/auth';
 import { PractitionerInfo } from './other-practitioner-view/other-practitioner';
-
-const mockedPractitioners = [
-  {
-    name: 'Joao da Silva',
-    id: 1,
-    role: 'Principal/Owner',
-  },
-  {
-    name: 'Robson Barros',
-    id: 2,
-    role: 'Practitioner',
-  },
-  {
-    name: 'Carlos Heitor',
-    id: 3,
-    role: 'Practitioner',
-  },
-];
+import ROUTES from '@routes/routes';
 
 export const PractitionerList: React.FC<PractitionerListProps> = ({
   setPractitionerList,
@@ -52,8 +35,8 @@ export const PractitionerList: React.FC<PractitionerListProps> = ({
   const user = useSelector(userSelectors.getUser);
   const userAuth = useSelector(authSelectors.getAuthUser);
   const { isOnline } = useOnlineStatus();
-  const classroom = useSelector(classroomsSelectors.getClassroom);
-  const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
+  // const classroom = useSelector(classroomsSelectors.getClassroom);
+  // const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const [practitionerInfo, setPractitionerInfo] = useState(false);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
@@ -85,7 +68,9 @@ export const PractitionerList: React.FC<PractitionerListProps> = ({
   };
 
   useEffect(() => {
-    getPractitionerColleagues();
+    if (practitioner?.isPrincipal !== true) {
+      getPractitionerColleagues();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -194,6 +179,18 @@ export const PractitionerList: React.FC<PractitionerListProps> = ({
                 type={'ActionList'}
               ></StackedList>
             )}
+            <div>
+              <Button
+                size="small"
+                type="filled"
+                color="primary"
+                text="Add practitioner"
+                textColor="white"
+                icon="PlusIcon"
+                className="mt-8"
+                onClick={() => history.push(ROUTES.PRINCIPAL.ADD_PRACTITIONER)}
+              />
+            </div>
           </div>
           <div className="absolute bottom-0 left-0 right-0 p-4 max-h-20">
             <div className="flex justify-center">

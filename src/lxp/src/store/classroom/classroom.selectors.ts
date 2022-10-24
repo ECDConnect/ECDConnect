@@ -24,6 +24,9 @@ export const getProgrammeType = () =>
     }
   );
 
+export const getAllClassroomGroups = (state: RootState): ClassroomGroupDto[] =>
+  state.classroomData.classroomGroups || [];
+
 export const getClassroomGroups = (state: RootState): ClassroomGroupDto[] =>
   state.classroomData.classroomGroups?.filter((x) => x.isActive) || [];
 

@@ -93,6 +93,9 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
   );
 
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
+  const getAllClassroomGroups = useSelector(
+    classroomsSelectors?.getAllClassroomGroups
+  );
   const classroomGroupProgrammes = useSelector(
     classroomsSelectors.getClassProgrammes
   );
@@ -157,7 +160,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
       setUpdatedPlaygroups(groupedItems);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [classroomGroups, classroomGroupLearners]);
+  }, [getAllClassroomGroups, classroomGroupLearners]);
 
   useEffect(() => {
     if (!isPrincipal) {
@@ -267,7 +270,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
               a,
               childUserDocumentsOne,
               attendanceData,
-              classroomGroups,
+              getAllClassroomGroups,
               classroomGroupProgrammes,
               childReportsOne
             );
@@ -284,7 +287,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
               b,
               childUserDocumentsTwo,
               attendanceData,
-              classroomGroups,
+              getAllClassroomGroups,
               classroomGroupProgrammes,
               childReportsTwo
             );
@@ -352,7 +355,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
       childRecord,
       childDocuments,
       attendanceData,
-      classroomGroups,
+      getAllClassroomGroups,
       classroomGroupProgrammes,
       reports
     );
