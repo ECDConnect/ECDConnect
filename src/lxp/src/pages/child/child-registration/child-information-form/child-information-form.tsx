@@ -1,4 +1,8 @@
-import { getArrayRange, ProgrammeAttendanceReasonDto } from '@ecdlink/core';
+import {
+  ClassroomGroupDto,
+  getArrayRange,
+  ProgrammeAttendanceReasonDto,
+} from '@ecdlink/core';
 import {
   Alert,
   AlertProps,
