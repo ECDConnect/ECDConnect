@@ -61,6 +61,7 @@ export const AddPractitioner = ({
   const [newPractitioner, setNewPractitioner] =
     useState<AddNewPractitionerModel>(AddPractitinerInitialState);
   const userData = useSelector(userSelectors.getUser);
+  const [addNote, setAddNote] = useState();
 
   const { preferId, idNumber, passport } = useWatch({
     control,
@@ -80,6 +81,9 @@ export const AddPractitioner = ({
 
     if (validPassportOrIdNumber) {
       getPractitionerDetailsByIdNumber().then((p: any) => {
+        if (p?.note !== undefined) {
+          setAddNote(p?.note);
+        }
         if (
           p?.appUser?.practitionerObjectData?.isRegistered === false ||
           p?.appUser?.practitionerObjectData?.isRegistered === null
@@ -237,7 +241,31 @@ export const AddPractitioner = ({
               </div>
             )}
 
-            {isPractitionerRegistered !== undefined && (
+            {addNote && (
+              <div>
+                <Alert
+                  type={'error'}
+                  title={addNote}
+                  list={[
+                    'Check if the ID you entered is correct.',
+                    'Make sure the practitioner is still in your programme.',
+                    'If your practitioner needs help, please contact the SmartStart call centre.',
+                  ]}
+                  button={
+                    <Button
+                      text="Contact call centre"
+                      icon="PhoneIcon"
+                      type={'filled'}
+                      color={'primary'}
+                      textColor={'white'}
+                      onClick={() => callForHelp()}
+                    />
+                  }
+                />
+              </div>
+            )}
+
+            {!addNote && isPractitionerRegistered !== undefined && (
               <div>
                 <Alert
                   type={isPractitionerRegistered ? 'success' : 'error'}
@@ -278,7 +306,7 @@ export const AddPractitioner = ({
               text="Save"
               textColor="white"
               icon="SaveIcon"
-              disabled={!isValid || isValidPractitioner === false}
+              disabled={!isValid || isValidPractitioner === false || addNote}
               onClick={onSubmitAddPractitioner}
             />
             {isValidPractitioner === false && (

@@ -220,7 +220,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
         reassignedClass
       );
     }
-    history.push(ROUTES.PRINCIPAL.PRACTITIONER_PROFILE, { practitionerId });
+    history.push(ROUTES.DASHBOARD);
   };
 
   return (

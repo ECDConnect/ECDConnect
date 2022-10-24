@@ -84,6 +84,9 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
   const attendanceData = useSelector(attendanceSelectors.getAttendance);
   const children = useSelector(childrenSelectors.getChildren);
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
+  const getAllClassroomGroups = useSelector(
+    classroomsSelectors?.getAllClassroomGroups
+  );
   const classroomGroupProgrammes = useSelector(
     classroomsSelectors.getClassProgrammes
   );
@@ -112,8 +115,8 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
 
   useEffect(() => {
     if (classroomGroups && classroomGroupLearners) {
-      const groupedItems: SearchDropDownOption<string>[] = classroomGroups.map(
-        (groupedItem, idx) =>
+      const groupedItems: SearchDropDownOption<string>[] =
+        getAllClassroomGroups.map((groupedItem, idx) =>
           groupedItem.name === NoPlaygroupClassroomType.name
             ? {
                 id: idx.toString(),
@@ -125,12 +128,12 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
                 label: groupedItem.name,
                 value: groupedItem.id ?? '',
               }
-      );
+        );
 
       setUpdatedPlaygroups(groupedItems);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [classroomGroups, classroomGroupLearners]);
+  }, [getAllClassroomGroups, classroomGroupLearners]);
 
   useEffect(() => {
     if (classroomGroupLearners && children && pendingStatusId) {
@@ -219,7 +222,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
               a,
               childUserDocumentsOne,
               attendanceData,
-              classroomGroups,
+              getAllClassroomGroups,
               classroomGroupProgrammes,
               childReportsOne
             );
@@ -236,7 +239,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
               b,
               childUserDocumentsTwo,
               attendanceData,
-              classroomGroups,
+              getAllClassroomGroups,
               classroomGroupProgrammes,
               childReportsTwo
             );
@@ -304,7 +307,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
       childRecord,
       childDocuments,
       attendanceData,
-      classroomGroups,
+      getAllClassroomGroups,
       classroomGroupProgrammes,
       reports
     );
