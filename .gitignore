@@ -168,3 +168,5 @@ packages/.vscode/settings.json
 /*.code-workspace
 
 _data
+
+yarn.lock
