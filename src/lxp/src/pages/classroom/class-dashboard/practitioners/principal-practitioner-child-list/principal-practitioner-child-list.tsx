@@ -79,11 +79,9 @@ export const PrincipalPractitionerChildList: React.FC<
   const [updatedPlaygroups, setUpdatedPlaygroups] = useState<
     SearchDropDownOption<string>[]
   >([]);
-
   const childrenForPractitionerList = children?.filter((item) =>
     childrenForPractitioner?.find((item2) => item.id === item2.id)
   );
-
   const filterInfo: FilterInfo = {
     filterName: 'Class',
     filterHint: 'You can select multiple classes',

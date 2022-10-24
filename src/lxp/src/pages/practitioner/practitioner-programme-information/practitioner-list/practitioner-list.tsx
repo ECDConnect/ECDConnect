@@ -6,6 +6,8 @@ import {
   Button,
   ActionListDataItem,
   StackedList,
+  Dialog,
+  DialogPosition,
 } from '@ecdlink/ui';
 import { PractitionerColleagues } from '@ecdlink/graphql';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
@@ -22,7 +24,7 @@ import { EditPractitioner } from './edit-practitioner/edit-practitioner';
 import { userSelectors } from '@store/user';
 import { PractitionerService } from '@/services/PractitionerService';
 import { authSelectors } from '@/store/auth';
-// import { PractitionerInfo } from './practitioner-info/practitioner-info';
+import { PractitionerInfo } from './other-practitioner-view/other-practitioner';
 import ROUTES from '@routes/routes';
 
 export const PractitionerList: React.FC<PractitionerListProps> = ({
@@ -36,19 +38,20 @@ export const PractitionerList: React.FC<PractitionerListProps> = ({
   // const classroom = useSelector(classroomsSelectors.getClassroom);
   // const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const [practitionerInfo, setPractitionerInfo] = useState(false);
-  const [practitionerId, setPractitionerId] = useState(0);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const isPrincipal = practitioner?.isPrincipal === true;
   const practitionersList = practitioners?.filter(
     (item) => item.userId !== practitioner?.userId
   );
+  const practitionerId = practitioner?.user?.id;
   const [editPractitionerVisible, setEditiPractitionerVisible] =
     useState(false);
   const [otherColleagues, setOtherColleagues] = useState<any[]>([]);
   const [otherColleaguesFiltered, setOtherColleaguesFiltered] = useState<any>(
     []
   );
+  const [colleagueProfile, setColleagueProfile] = useState({});
 
   const getPractitionerColleagues = async () => {
     // Check if the practitioner exists
@@ -79,6 +82,10 @@ export const PractitionerList: React.FC<PractitionerListProps> = ({
       const firstNameFilteredColleagues = filteredColleagues.map((item) => ({
         name: item?.name.split(' ')[0],
         title: item?.title,
+        classroomNames: item?.classroomNames,
+        contactNumber: item?.contactNumber,
+        profilePhoto: item?.profilePhoto,
+        nickName: item?.nickName,
       }));
       setOtherColleaguesFiltered(firstNameFilteredColleagues);
     }
@@ -105,23 +112,45 @@ export const PractitionerList: React.FC<PractitionerListProps> = ({
             title: item?.name,
             subTitle: item?.title,
             switchTextStyles: true,
-            // actionName: 'Edit',
-            // actionIcon: 'PencilIcon',
-            // onActionClick: () => setEditiPractitionerVisible(true),
+            actionName: 'View',
+            actionIcon: 'PencilIcon',
+            onActionClick: () => {
+              setPractitionerInfo(true);
+              setColleagueProfile({
+                name: item?.name,
+                classroomNames: item?.classroomNames,
+                contactNumber: item?.contactNumber,
+                profilePhoto: item?.profilePhoto,
+                title: item?.title,
+                nickName: item?.nickName,
+              });
+            },
           };
         });
 
   return (
     <div>
-      {editPractitionerVisible ? (
-        <EditPractitioner
-          setEditiPractitionerVisible={setEditiPractitionerVisible}
-        />
-      ) : practitionerInfo ? null : (
-        // <PractitionerInfo
-        //   practitionerId={practitionerId}
-        //   setPractitionerInfo={setPractitionerInfo}
-        // />
+      <>
+        <Dialog
+          fullScreen
+          visible={editPractitionerVisible}
+          position={DialogPosition.Top}
+        >
+          <EditPractitioner
+            setEditiPractitionerVisible={setEditiPractitionerVisible}
+          />
+        </Dialog>
+        <Dialog
+          fullScreen
+          visible={practitionerInfo}
+          position={DialogPosition.Top}
+        >
+          <PractitionerInfo
+            practitionerId={practitionerId!}
+            setPractitionerInfo={setPractitionerInfo}
+            colleagueProfile={colleagueProfile}
+          />
+        </Dialog>
         <>
           <div className={styles.container}>
             <BannerWrapper
@@ -183,7 +212,7 @@ export const PractitionerList: React.FC<PractitionerListProps> = ({
             </div>
           </div>
         </>
-      )}
+      </>
     </div>
   );
 };
