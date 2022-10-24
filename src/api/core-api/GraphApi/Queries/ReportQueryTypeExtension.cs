@@ -164,7 +164,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
         public List<ClassroomMetricReport> GetClassAttendanceMetrics([Service] IHttpContextAccessor contextAccessor,
             [Service] IGenericRepositoryFactory repoFactory,
-    [Service] AttendanceTrackingRepository attendanceRepo)
+            [Service] AttendanceTrackingRepository attendanceRepo, 
+            DateTime startMonth, 
+            DateTime endMonth)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
@@ -173,7 +175,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             List<ClassroomMetricReport> metrics = new List<ClassroomMetricReport>();
             foreach (var practitioner in practitioners)
             {
-                var metric = this.GetClassAttendanceMetricsByUser(contextAccessor, repoFactory, attendanceRepo, practitioner.UserId);
+                var metric = this.GetClassAttendanceMetricsByUser(contextAccessor, repoFactory, attendanceRepo, practitioner.UserId, startMonth, endMonth);
                 if (metric.Any())
                 {
                     if (metric.FirstOrDefault().classroomGroupId.ToString() != "00000000-0000-0000-0000-000000000000")
@@ -189,7 +191,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
         public List<ClassroomMetricReport> GetClassAttendanceMetricsByUser([Service] IHttpContextAccessor contextAccessor,
             [Service] IGenericRepositoryFactory repoFactory,
-            [Service] AttendanceTrackingRepository attendanceRepo, string userId)
+            [Service] AttendanceTrackingRepository attendanceRepo, string userId, DateTime startMonth, DateTime endMonth)
         {
             DateTime reference = DateTime.Now;
 
@@ -198,9 +200,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var classGroupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: userId);
             var LearnerRepo = repoFactory.CreateRepository<Learner>(userContext: userId);
 
-            var fromDate = new DateTime(reference.Year, reference.Month, 1);
+            var fromDate = (startMonth!=null? startMonth : new DateTime(reference.Year, reference.Month, 1));
             fromDate = fromDate.AddMonths(-1);
-            var toDate = reference;//fromDate.GetEndOfMonth();///reference.AddDays(-1); //start of month - day is end of last month
+            var toDate = (endMonth!=null? endMonth:reference);//fromDate.GetEndOfMonth();///reference.AddDays(-1); //start of month - day is end of last month
 
             var classroomGroups = classGroupRepo.GetAll().Where(x => x.UserId.ToString().Contains(userId)).ToList();
             if (classroomGroups != null)
