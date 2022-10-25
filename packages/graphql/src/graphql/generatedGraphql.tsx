@@ -1364,12 +1364,14 @@ export enum FileTypeEnum {
   Child = 'CHILD',
   ClassroomProfile = 'CLASSROOM_PROFILE',
   Coach = 'COACH',
+  MaternalCaseRecord = 'MATERNAL_CASE_RECORD',
   Practitioner = 'PRACTITIONER',
   ProfileImage = 'PROFILE_IMAGE',
   ProgressTrackingCategory = 'PROGRESS_TRACKING_CATEGORY',
   ProgressTrackingLevel = 'PROGRESS_TRACKING_LEVEL',
   ProgressTrackingSubCategory = 'PROGRESS_TRACKING_SUB_CATEGORY',
   ReportTemplates = 'REPORT_TEMPLATES',
+  RoadToHealthBook = 'ROAD_TO_HEALTH_BOOK',
   Theme = 'THEME',
   Unknown = 'UNKNOWN',
 }
@@ -1675,6 +1677,12 @@ export type InfantModelInput = {
   lengthAtBirth?: InputMaybe<Scalars['Decimal']>;
   userId?: InputMaybe<Scalars['String']>;
   weightAtBirth?: InputMaybe<Scalars['Decimal']>;
+};
+
+export type KeyValuePairOfStringAndString = {
+  __typename?: 'KeyValuePairOfStringAndString';
+  key: Scalars['String'];
+  value: Scalars['String'];
 };
 
 export type Language = {

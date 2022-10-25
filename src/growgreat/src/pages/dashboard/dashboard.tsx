@@ -33,9 +33,8 @@ const { version } = require('../../../package.json');
 export enum NavigationTypes {
   Home = 'Home',
   ClientFolders = 'Client folders',
-  Attendance = 'Attendance',
-  Children = 'Children',
-  Programme = 'Programme',
+  Pregnant_Mom = 'Pregnant Mom',
+  Child = 'Child',
   Profile = 'Profile',
   Messages = 'Messages',
   Logout = 'Logout',
@@ -58,8 +57,7 @@ export const Dashboard: React.FC = () => {
   const { userProfilePicture } = useDocuments();
   const mothers = useSelector(motherSelectors.getMothers);
   const infants = useSelector(getInfants);
-  console.log({ mothers });
-  console.log({ infants });
+
   useEffect(() => {
     if (!isOnline) {
       appDispatch(
@@ -80,21 +78,15 @@ export const Dashboard: React.FC = () => {
       current: false,
       nestedChildren: [
         {
-          name: NavigationTypes.Attendance,
-          href: ROUTES.CLASSROOM,
+          name: NavigationTypes.Pregnant_Mom,
+          href: ROUTES.MOM_REGISTER,
           params: { activeTabIndex: 0 },
           current: false,
         },
         {
-          name: NavigationTypes.Children,
-          href: ROUTES.CLASSROOM,
+          name: NavigationTypes.Child,
+          href: ROUTES.INFANT_REGISTER,
           params: { activeTabIndex: 1 },
-          current: false,
-        },
-        {
-          name: NavigationTypes.Programme,
-          href: ROUTES.CLASSROOM,
-          params: { activeTabIndex: 2 },
           current: false,
         },
       ],
@@ -158,8 +150,9 @@ export const Dashboard: React.FC = () => {
   };
 
   const goToClientFolders = () => {
-    if (mothers.length > 0) {
+    if (mothers.length > 0 || infants.length > 0) {
       history.push(ROUTES.CLASSROOM, { activeTabIndex: 1 });
+      return;
     } else {
       showCompleteProfileBlockingDialog();
     }

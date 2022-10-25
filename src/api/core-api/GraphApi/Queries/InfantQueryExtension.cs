@@ -44,7 +44,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var healthCareWorkerId = GetHealthCareWorkerIdByUserId(contextAccessor, dbFactory, repoFactory);
             var childRepo = repoFactory.CreateRepository<Infant>(userContext: uId);
-            List<Infant> children = childRepo.GetAll().Where(x => x.Mother.HealthCareWorkerId.Equals(healthCareWorkerId)).ToList();
+            List<Infant> children = childRepo.GetAll().Where(x => x.Caregiver.HealthCareWorkerId.Equals(healthCareWorkerId)).ToList();
 
             return children;
         }

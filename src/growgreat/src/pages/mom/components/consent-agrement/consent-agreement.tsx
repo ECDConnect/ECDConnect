@@ -30,7 +30,6 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
     useState<ContentConsentTypeEnum>(ContentConsentTypeEnum.PhotoPermissions);
   const [presentArticle, setPresentArticle] = useState<boolean>(false);
   const [accept, setAccept] = useState(false);
-  console.log(getConsentFormValues());
 
   const handleConsentAccept = () => {
     setConsentFormValue('hasConsent', !accept);

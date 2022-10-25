@@ -4,9 +4,11 @@ import {
   StackedList,
   ActionListDataItem,
   DialogPosition,
+  UserAlertListDataItem,
 } from '@ecdlink/ui';
 import { format } from 'date-fns';
 import { useDialog } from '@ecdlink/core';
+import { IconInformationIndicator } from '@/components/icon-information-indicator/icon-information-indicator';
 import * as styles from './infant-list.styles';
 import { useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
@@ -14,14 +16,15 @@ import ROUTES from '@/routes/routes';
 import { useHistory } from 'react-router-dom';
 import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import { infantSelectors } from '@/store/infant';
-import { IconInformationIndicator } from '@/components/icon-information-indicator/icon-information-indicator';
+import { getInfants } from '@/store/infant/infant.selectors';
+import { getAvatarColor } from '@ecdlink/core';
+import Infant from '../../../assets/infant.svg';
 
 export const InfantList: React.FC<ComponentBaseProps> = () => {
   const dialog = useDialog();
   const { isOnline } = useOnlineStatus();
   const history = useHistory();
-  const infants = useSelector(infantSelectors.getInfants);
+  const infants = useSelector(getInfants);
   const [infantsListItems, setInfantsListItems] = useState<
     ActionListDataItem[]
   >([]);
@@ -30,11 +33,16 @@ export const InfantList: React.FC<ComponentBaseProps> = () => {
     useState<boolean>(true);
 
   useEffect(() => {
-    const infantsList: ActionListDataItem[] = infants.map((infant) => {
+    const infantsList: UserAlertListDataItem[] = infants.map((infant) => {
       return {
-        title: infant.firstName!,
-        subTitle: `Birth date: ${format(new Date(infant?.dateOfBirth!), 'PP')}`,
+        icon: Infant,
+        title: infant?.firstName ?? infant?.user?.firstName!,
+        subTitle: infant?.user?.dateOfBirth
+          ? `Birth date: ${format(new Date(infant?.user?.dateOfBirth!), 'PP')}`
+          : `Birth date: ${format(new Date(infant?.dateOfBirth!), 'PP')}`,
         switchTextStyles: true,
+        alertSeverity: 'none',
+        avatarColor: getAvatarColor() || '',
         onActionClick: () => {},
       };
     });
@@ -72,7 +80,7 @@ export const InfantList: React.FC<ComponentBaseProps> = () => {
         <StackedList
           className={styles.stackedList}
           listItems={infantsListItems}
-          type={'MenuList'}
+          type={'UserAlertList'}
           onScroll={(scrollTop: number) => {}}
         ></StackedList>
       ) : null}
