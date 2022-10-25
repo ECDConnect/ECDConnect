@@ -11,7 +11,7 @@ import {
   renderIcon,
 } from '@ecdlink/ui';
 
-import { coachActions, coachSelectors } from '@store/coach';
+import { coachActions, coachSelectors, coachThunkActions } from '@store/coach';
 import { SiteAddressDto, ProvinceDto } from '@ecdlink/core';
 import { staticDataSelectors } from '@store/static-data';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
@@ -112,34 +112,36 @@ export const CoachAddress: React.FC = () => {
     control: coachAddressFormControl,
   });
 
-  // console.log(provinces);
-
   const handleFormSubmit = (): void => {
     if (isValid) {
       const newAddress = getCoachAddressFormValues();
       const copy = Object.assign({}, coach);
 
-      if (!isEqual(copy.siteAddress, newAddress)) {
-        const provinceDescription = (id: string) =>
-          provinces.find((province) => province.id === id);
+      const provinceDescription = (id: string) =>
+        provinces.find((province) => province.id === id);
 
-        const newProvince: ProvinceDto = {
-          description: provinceDescription(newAddress.provinceId)!.description,
-          enumId: newAddress.provinceId,
-          id: newAddress.provinceId,
-        };
+      const newProvince: ProvinceDto = {
+        description: provinceDescription(newAddress.provinceId)!.description,
+        enumId: newAddress.provinceId,
+        id: newAddress.provinceId,
+      };
 
-        newAddress.province = newProvince;
-        copy.siteAddress = newAddress;
+      newAddress.province = newProvince;
+      copy.siteAddress = newAddress;
 
-        if (isOfficeAddress) {
-          copy.siteAddressId = copy.franchisor?.siteAddressId;
-          setIsOfficeAddress(true);
-        }
-
-        appDispatch(coachActions.updateCoach(copy));
-        resetCoachAddressFormValue(copy.siteAddress);
+      if (isOfficeAddress) {
+        copy.siteAddressId = copy.franchisor?.siteAddressId;
+        setIsOfficeAddress(true);
       }
+
+      appDispatch(coachActions.updateCoach(copy));
+
+      appDispatch(coachThunkActions.updateCoach(copy));
+
+      resetCoachAddressFormValue();
+      history.push(ROUTES.COACH.ABOUT.ROOT);
+    } else {
+      console.log('not valid, errors: ', errors);
     }
   };
 
