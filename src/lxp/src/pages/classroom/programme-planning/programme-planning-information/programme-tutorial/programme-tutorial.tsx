@@ -1,5 +1,12 @@
 import { ContentConsentTypeEnum } from '@ecdlink/core';
-import { BannerWrapper, Button, StackedList, Typography } from '@ecdlink/ui';
+import {
+  BannerWrapper,
+  Button,
+  ComponentBaseProps,
+  StackedList,
+  StackedListItemType,
+  Typography,
+} from '@ecdlink/ui';
 import { MenuListDataItem } from '@ecdlink/ui';
 import { useState } from 'react';
 import { useHistory } from 'react-router-dom';
@@ -8,7 +15,15 @@ import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import * as styles from './programme-tutorial.styles';
 import ROUTES from '@routes/routes';
 
-export const ProgrammeTutorial = () => {
+interface ProgrammeTutorialProps extends ComponentBaseProps {
+  listItems: StackedListItemType[];
+  notification?: Notification;
+}
+
+export const ProgrammeTutorial: React.FC<ProgrammeTutorialProps> = ({
+  listItems,
+  notification,
+}) => {
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
   const navigate = (route: string) => {
@@ -20,18 +35,21 @@ export const ProgrammeTutorial = () => {
   const [notifications] = useState<MenuListDataItem[]>([
     {
       title: 'Developing children holistically',
+      showIcon: true,
       onActionClick: () => {
         navigate(ROUTES.PROGRAMMES.TUTORIAL.DEVELOPING_CHILDREN);
       },
     },
     {
       title: 'Learning through play',
+      showIcon: true,
       onActionClick: () => {
         setPresentArticle(true);
       },
     },
     {
       title: 'The daily routine',
+      showIcon: true,
       onActionClick: () => {
         navigate(ROUTES.PROGRAMMES.TUTORIAL.DAILY_ROUTINE);
       },
@@ -42,6 +60,7 @@ export const ProgrammeTutorial = () => {
     // ROUTE TO PROGRAMME CREATION
     history.replace(ROUTES.PROGRAMMES.THEME);
   };
+  console.log('notifications', notifications);
 
   return (
     <BannerWrapper
@@ -50,17 +69,19 @@ export const ProgrammeTutorial = () => {
       title={'Programme best practices'}
       color={'primary'}
       onBack={() => history.push(ROUTES.CLASSROOM, { activeTabIndex: 2 })}
-      className={styles.bannerContentWrapper}
+      className={`${styles.bannerContentWrapper}`}
       backgroundColour="uiBg"
       displayOffline={!isOnline}
     >
-      <div className="bg-white">
-        {notifications ? (
-          <StackedList listItems={notifications} type={'MenuList'} />
-        ) : null}
-      </div>
+      {!!notifications.length && (
+        <StackedList
+          type={'MenuList'}
+          className={styles.stackedList}
+          listItems={notifications}
+        />
+      )}
 
-      <div className={'px-4 pt-2 bg-uiBg'}>
+      <div className={'pt-2'}>
         <Button
           color={'primary'}
           type={'filled'}
