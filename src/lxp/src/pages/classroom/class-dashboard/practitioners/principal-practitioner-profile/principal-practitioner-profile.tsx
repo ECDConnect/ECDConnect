@@ -27,10 +27,6 @@ import { useSelector } from 'react-redux';
 import { practitionerSelectors } from '@/store/practitioner';
 import { classroomsSelectors } from '@/store/classroom';
 import { useAppDispatch } from '@store';
-import {
-  childrenForPractitionerSelectors,
-  childrenForPractitionerThunkActions,
-} from '@/store/childrenForPractitioner';
 import { authSelectors } from '@/store/auth';
 import { PractitionerNotRegistered } from './practitioner-not-registered/practitioner-not-registered';
 import { PractitionerService } from '@/services/PractitionerService';
@@ -51,9 +47,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const practitioner = practitioners?.find(
     (practitioner) => practitioner?.userId === practitionerId
   );
-  const childrenForPractitioner = useSelector(
-    childrenForPractitionerSelectors.getChildrenForPractitioner
-  );
+
   const practitionerClassroomGroups = classroomGroups?.filter((item: any) => {
     return item?.userId === practitionerId;
   });
@@ -68,8 +62,9 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const onCreatePractitionerNoteBack = () => {
     setCreatePractitionerdNoteVisible(false);
   };
-
+  const [childrenCount, setChildrenCount] = useState(0);
   const [classMetrics, setClassMetrics] = useState<any>();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const practitionerClassrooms: any[] = [];
 
   const handleReassignClass = (practitionerId: string) => {
@@ -99,13 +94,17 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   }
 
   useEffect(() => {
-    (async () =>
-      await appDispatch(
-        childrenForPractitionerThunkActions.getChildrenForPractitioner({
-          id: practitionerId,
-        })
-      ).unwrap())();
-  }, [appDispatch, practitionerId]);
+    let count = 0;
+    if (practitionerClassrooms.length > 0) {
+      // eslint-disable-next-line array-callback-return
+      practitionerClassrooms?.map((item) => {
+        count += item?.childCount;
+      });
+      return setChildrenCount(count);
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [practitionerClassrooms]);
 
   const callForHelp = () => {
     window.open(`tel:${practitioner?.user?.phoneNumber}`);
@@ -210,13 +209,15 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                   className={'px-3 py-1.5'}
                 />
               )}
-              <StatusChip
-                backgroundColour="secondary"
-                borderColour="secondary"
-                text={`${childrenForPractitioner?.length} children`}
-                textColour={'white'}
-                className={'mr-2 px-3 py-1.5'}
-              />
+              {childrenCount && (
+                <StatusChip
+                  backgroundColour="secondary"
+                  borderColour="secondary"
+                  text={`${childrenCount} children`}
+                  textColour={'white'}
+                  className={'mr-2 px-3 py-1.5'}
+                />
+              )}
             </div>
             <div className={styles.contactButtons}>
               <Button

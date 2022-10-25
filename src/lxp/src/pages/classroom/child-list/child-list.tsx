@@ -192,13 +192,17 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
           );
           childListItem.push(mapUserListDataItem(child, learner));
         }
-
         setChildUserListData(childListItem);
         setFilteredChildData(childListItem);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [classroomGroupLearners, children, pendingStatusId]);
+  }, [
+    classroomGroupLearners,
+    childrenForPrincipal,
+    pendingStatusId,
+    isPrincipal,
+  ]);
 
   const onChildListItemAction = (childId: string) => {
     history.push(ROUTES.CHILD_PROFILE, {
@@ -210,28 +214,57 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
     setActiveFilters(value);
     const selectedClassrooms = value.map((x) => x.value);
     const childListItem: UserAlertListDataItem[] = [];
-    if (children && classroomGroupLearners) {
-      if (value && value.length > 0) {
-        for (const child of children) {
-          const learner = classroomGroupLearners.find(
-            (x) =>
-              x.userId === child.userId &&
-              /* ensures only children in a playgroup are shown and not those who stopped attending or changed playgroups */
-              x.stoppedAttendance == null &&
-              selectedClassrooms.some((sc) => sc === x.classroomGroupId)
-          );
-          if (learner) {
-            childListItem.push(mapUserListDataItem(child, learner));
+    if (isPrincipal) {
+      if (childrenForPrincipal && classroomGroupLearners) {
+        if (value && value.length > 0) {
+          for (const child of childrenForPrincipal) {
+            const learner = classroomGroupLearners.find(
+              (x) =>
+                x.userId === child.userId &&
+                /* ensures only children in a playgroup are shown and not those who stopped attending or changed playgroups */
+                x.stoppedAttendance == null &&
+                selectedClassrooms.some((sc) => sc === x.classroomGroupId)
+            );
+            if (learner) {
+              childListItem.push(mapUserListDataItem(child, learner));
+            }
+          }
+        } else {
+          for (const child of childrenForPrincipal) {
+            // TODO: change to display all children
+            const learner = classroomGroupLearners.find(
+              (x) => x.userId === child.userId && x.stoppedAttendance == null
+            );
+            if (learner) {
+              childListItem.push(mapUserListDataItem(child, learner));
+            }
           }
         }
-      } else {
-        for (const child of children) {
-          // TODO: change to display all children
-          const learner = classroomGroupLearners.find(
-            (x) => x.userId === child.userId && x.stoppedAttendance == null
-          );
-          if (learner) {
-            childListItem.push(mapUserListDataItem(child, learner));
+      }
+    } else {
+      if (children && classroomGroupLearners) {
+        if (value && value.length > 0) {
+          for (const child of children) {
+            const learner = classroomGroupLearners.find(
+              (x) =>
+                x.userId === child.userId &&
+                /* ensures only children in a playgroup are shown and not those who stopped attending or changed playgroups */
+                x.stoppedAttendance == null &&
+                selectedClassrooms.some((sc) => sc === x.classroomGroupId)
+            );
+            if (learner) {
+              childListItem.push(mapUserListDataItem(child, learner));
+            }
+          }
+        } else {
+          for (const child of children) {
+            // TODO: change to display all children
+            const learner = classroomGroupLearners.find(
+              (x) => x.userId === child.userId && x.stoppedAttendance == null
+            );
+            if (learner) {
+              childListItem.push(mapUserListDataItem(child, learner));
+            }
           }
         }
       }
