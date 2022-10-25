@@ -45,7 +45,7 @@ export const PractitionerInfo: React.FC<PractitionerProfileRouteState> = ({
   return (
     <div className={styles.contentWrapper}>
       <BannerWrapper
-        title={`Classes reassigned`}
+        title={`${practitioner?.user?.fullName}`}
         color={'primary'}
         size="small"
         renderOverflow={false}
