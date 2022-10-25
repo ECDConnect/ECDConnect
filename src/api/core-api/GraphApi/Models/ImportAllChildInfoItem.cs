@@ -46,6 +46,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
 
         public bool ConsentForPhoto { get; set; }
         public bool ConsentForPopia { get; set; }
+        public string UserId { get; set; }
 
     }
 }
