@@ -34,10 +34,7 @@ import { IconInformationIndicator } from '../programme-planning/components/icon-
 import ROUTES from '@/routes/routes';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 import { practitionerSelectors } from '@/store/practitioner';
-import {
-  childrenForPractitionerActions,
-  childrenForPractitionerSelectors,
-} from '@/store/childrenForPractitioner';
+import { childrenForPractitionerSelectors } from '@/store/childrenForPractitioner';
 
 const filterInfo: FilterInfo = {
   filterName: 'Class',
@@ -126,6 +123,16 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
   const principalClassroomGroups = classroomGroups.filter(
     (item) => item?.userId === practitioner?.userId
   );
+  const principalLearners = classroomGroupLearners.filter((el) => {
+    return principalClassroomGroups.some((f) => {
+      return f.id === el.classroomGroupId; // filter only principal learners
+    });
+  });
+  const principalChildren = children?.filter((el) => {
+    return principalLearners.some((f) => {
+      return f.userId === el.userId; // filter only principal learners
+    });
+  });
 
   useEffect(() => {
     if (classroomGroups && classroomGroupLearners) {
@@ -183,10 +190,10 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
 
   useEffect(() => {
     if (isPrincipal) {
-      if (classroomGroupLearners && childrenForPrincipal && pendingStatusId) {
+      if (classroomGroupLearners && principalChildren && pendingStatusId) {
         const childListItem: UserAlertListDataItem[] = [];
 
-        for (const child of childrenForPrincipal) {
+        for (const child of principalChildren) {
           const learner = classroomGroupLearners.find(
             (x) => x.userId === child.userId && x.stoppedAttendance == null
           );
@@ -213,35 +220,8 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
   const onFilterItemsChanges = (value: SearchDropDownOption<any>[]) => {
     setActiveFilters(value);
     const selectedClassrooms = value.map((x) => x.value);
-    const childListItem: UserAlertListDataItem[] = [];
-    if (isPrincipal) {
-      if (childrenForPrincipal && classroomGroupLearners) {
-        if (value && value.length > 0) {
-          for (const child of childrenForPrincipal) {
-            const learner = classroomGroupLearners.find(
-              (x) =>
-                x.userId === child.userId &&
-                /* ensures only children in a playgroup are shown and not those who stopped attending or changed playgroups */
-                x.stoppedAttendance == null &&
-                selectedClassrooms.some((sc) => sc === x.classroomGroupId)
-            );
-            if (learner) {
-              childListItem.push(mapUserListDataItem(child, learner));
-            }
-          }
-        } else {
-          for (const child of childrenForPrincipal) {
-            // TODO: change to display all children
-            const learner = classroomGroupLearners.find(
-              (x) => x.userId === child.userId && x.stoppedAttendance == null
-            );
-            if (learner) {
-              childListItem.push(mapUserListDataItem(child, learner));
-            }
-          }
-        }
-      }
-    } else {
+    if (!isPrincipal) {
+      const childListItem: UserAlertListDataItem[] = [];
       if (children && classroomGroupLearners) {
         if (value && value.length > 0) {
           for (const child of children) {
@@ -268,17 +248,54 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
           }
         }
       }
+      setChildUserListData(childListItem || []);
+      setActiveSort([]);
+    } else {
+      const childListItem: UserAlertListDataItem[] = [];
+      if (principalChildren && classroomGroupLearners) {
+        if (value && value.length > 0) {
+          for (const child of principalChildren) {
+            const learner = classroomGroupLearners.find(
+              (x) =>
+                x.userId === child.userId &&
+                /* ensures only children in a playgroup are shown and not those who stopped attending or changed playgroups */
+                x.stoppedAttendance == null &&
+                selectedClassrooms.some((sc) => sc === x.classroomGroupId)
+            );
+            if (learner) {
+              childListItem.push(mapUserListDataItem(child, learner));
+            }
+          }
+        } else {
+          for (const child of principalChildren) {
+            // TODO: change to display all children
+            const learner = principalLearners.find(
+              (x) => x.userId === child.userId && x.stoppedAttendance == null
+            );
+            if (learner) {
+              childListItem.push(mapUserListDataItem(child, learner));
+            }
+          }
+        }
+      }
+      setChildUserListData(childListItem || []);
+      setActiveSort([]);
     }
-    setChildUserListData(childListItem || []);
-    setActiveSort([]);
   };
 
   const onSortItemsChanges = (column: string) => {
-    if (children && classroomGroupLearners) {
-      const filteredChildren = children.filter((child) =>
-        childUserListData?.some((x) => x.id === child.id)
-      );
-      const sorted = [...filteredChildren].sort((a: ChildDto, b: ChildDto) => {
+    if (
+      (children && classroomGroupLearners) ||
+      (childrenForPrincipal && classroomGroupLearners)
+    ) {
+      const filteredChildren = isPrincipal
+        ? childrenForPrincipal?.filter((child) =>
+            childUserListData?.some((x) => x.id === child.id)
+          )
+        : children?.filter((child) =>
+            childUserListData?.some((x) => x.id === child.id)
+          );
+      const sorted = [...filteredChildren!].sort((a: ChildDto, b: ChildDto) => {
         const childUserOne = childUsers?.find((x) => x.id === a.userId);
         const childUserTwo = childUsers?.find((x) => x.id === b.userId);
         const childLearnerOne = classroomGroupLearners?.find(
