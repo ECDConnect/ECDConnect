@@ -171,7 +171,7 @@ export default function ChildrenDashboard() {
       position: DialogPosition.Middle,
       render: (onSubmit: any, onCancel: any) => (
         <DateRangeModal
-          title="Filter Attedance (Attended vs Absent)"
+          title="Filter Attendance (Attended vs Absent)"
           onCancel={onCancel}
           onSubmit={(body) => {
             setAttendedAbsentDate(
@@ -218,7 +218,7 @@ export default function ChildrenDashboard() {
             {childAttendacedata && (
               <HorizontalBarChart
                 data={childAttendacedata}
-                graphTitle={`Attedance (Attended vs Absent) - ${attendedAbsentDate}`}
+                graphTitle={`Attendance (Attended vs Absent) - ${attendedAbsentDate}`}
               />
             )}
           </div>
@@ -227,7 +227,7 @@ export default function ChildrenDashboard() {
           {childAttendancePerMonthdata && (
             <VerticalBarChart
               data={childAttendancePerMonthdata}
-              graphTitle={'Average Attedance per month'}
+              graphTitle={'Average Attendance per month'}
             />
           )}
         </div>
