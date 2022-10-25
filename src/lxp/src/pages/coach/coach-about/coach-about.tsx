@@ -116,7 +116,10 @@ export const CoachAbout: React.FC = () => {
       ? `${user.siteAddress.ward}<br/>`
       : '';
 
-    if (user.siteAddress.province?.description === undefined) {
+    if (
+      user.siteAddress.province?.description === undefined ||
+      user.siteAddress.addressLine1 === ''
+    ) {
       return 'Franchisor Site Address Not Set';
     } else {
       return address.concat(`
