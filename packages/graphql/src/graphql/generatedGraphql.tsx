@@ -877,9 +877,11 @@ export type ClassroomMetricReport = {
   __typename?: 'ClassroomMetricReport';
   attendancePercentage: Scalars['Int'];
   childCount: Scalars['Int'];
-  classroomGroupId: Scalars['UUID'];
-  classroomId: Scalars['UUID'];
+  classroomGroupId?: Maybe<Scalars['String']>;
+  classroomId?: Maybe<Scalars['String']>;
   month: Scalars['Int'];
+  practitionerId?: Maybe<Scalars['String']>;
+  weekOfYear: Scalars['Int'];
   year: Scalars['Int'];
 };
 
@@ -3505,6 +3507,16 @@ export type PractitionerClassroomName = {
   principalName?: Maybe<Scalars['String']>;
 };
 
+export type PractitionerColleagues = {
+  __typename?: 'PractitionerColleagues';
+  classroomNames?: Maybe<Scalars['String']>;
+  contactNumber?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
+  nickName?: Maybe<Scalars['String']>;
+  profilePhoto?: Maybe<Scalars['String']>;
+  title?: Maybe<Scalars['String']>;
+};
+
 export type PractitionerFilterInput = {
   and?: InputMaybe<Array<PractitionerFilterInput>>;
   attendanceRegisterLink?: InputMaybe<StringOperationFilterInput>;
@@ -4121,6 +4133,7 @@ export type Query = {
   GetWorkflowStatusById?: Maybe<WorkflowStatus>;
   GetWorkflowStatusTypeById?: Maybe<WorkflowStatusType>;
   absenteeByUserId?: Maybe<Array<Maybe<Absentees>>>;
+  allCaregiver?: Maybe<Array<Maybe<Caregiver>>>;
   allCaregiverByPractitioner?: Maybe<Array<Maybe<Caregiver>>>;
   allCaregiversForHealthCareWorker?: Maybe<Array<Maybe<Caregiver>>>;
   allChildrenByRole?: Maybe<Array<Maybe<Child>>>;
@@ -4158,7 +4171,7 @@ export type Query = {
   childrenByClassroomId?: Maybe<Array<Maybe<Child>>>;
   childrenMetrics?: Maybe<ChildrenMetricReport>;
   classAttendanceMetrics?: Maybe<Array<Maybe<ClassroomMetricReport>>>;
-  classAttendanceMetricsByUser?: Maybe<ClassroomMetricReport>;
+  classAttendanceMetricsByUser?: Maybe<Array<Maybe<ClassroomMetricReport>>>;
   classroomDetailsForPractitioner?: Maybe<PrincipalClassroom>;
   classroomGroupClassroomsForPractitioner?: Maybe<Array<Maybe<ClassroomGroup>>>;
   classroomNamesForPractitioner?: Maybe<
@@ -4189,7 +4202,7 @@ export type Query = {
   practitionerByIdNumber?: Maybe<PractitionerUserAndNote>;
   practitionerByIdNumberInternal?: Maybe<ApplicationUser>;
   practitionerByUserId?: Maybe<Practitioner>;
-  practitionerColleagues?: Maybe<Array<KeyValuePairOfStringAndString>>;
+  practitionerColleagues?: Maybe<Array<Maybe<PractitionerColleagues>>>;
   practitionerExcelTemplateGenerator?: Maybe<FileModel>;
   practitionerMetrics?: Maybe<PractitionerMetricReport>;
   practitionerNewSignupMetric: Scalars['Int'];
@@ -4881,7 +4894,14 @@ export type QueryChildrenByClassroomIdArgs = {
   classroomId?: InputMaybe<Scalars['String']>;
 };
 
+export type QueryClassAttendanceMetricsArgs = {
+  endMonth: Scalars['DateTime'];
+  startMonth: Scalars['DateTime'];
+};
+
 export type QueryClassAttendanceMetricsByUserArgs = {
+  endMonth: Scalars['DateTime'];
+  startMonth: Scalars['DateTime'];
   userId?: InputMaybe<Scalars['String']>;
 };
 

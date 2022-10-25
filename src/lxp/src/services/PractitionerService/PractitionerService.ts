@@ -1,5 +1,10 @@
 import { api } from '../axios.helper';
-import { Config, UserDto, PractitionerDto } from '@ecdlink/core';
+import {
+  Config,
+  UserDto,
+  PractitionerDto,
+  PractitionerColleagues,
+} from '@ecdlink/core';
 import {
   MutationAddPractitionerToPrincipalArgs,
   MutationUpdatePractitionerContactInfoArgs,
@@ -537,6 +542,32 @@ class PractitionerService {
     }
 
     return response.data.data.displayMetrics;
+  }
+
+  async practitionerColleagues(
+    userId: string
+  ): Promise<PractitionerColleagues[]> {
+    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      query practitionerColleagues($userId: String) {
+        practitionerColleagues(userId: $userId) {
+          name title nickName contactNumber classroomNames profilePhoto
+        }
+      }
+      `,
+      variables: {
+        userId,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Practitioner Colleagues Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.practitionerColleagues;
   }
 }
 

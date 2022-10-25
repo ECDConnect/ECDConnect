@@ -51,6 +51,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
   );
 
   const [isButtonActive, setIsButtonActive] = useState<boolean>(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [shouldFilter, setShouldFilter] = useState<boolean>(true);
 
   const [attendanceGroups, setAttendanceGroups] = useState<AttendanceState[]>();
@@ -78,16 +79,15 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
     practitioner?.isPrincipal === true
       ? classProgrammesForPrincipal
       : classProgrammes;
-  const isPlaygroup = useSelector(classroomsSelectors.isPlaygroup());
   const primaryClassProgramme = classProgrammesUpdated.find(
     (prog) => prog.meetingDay === getDay(attendanceDate)
   );
 
   useEffect(() => {
     if (classroomGroups) {
-      if (!isPlaygroup) {
-        setShouldFilter(false);
-      }
+      // if (!isPlaygroup) {
+      //   setShouldFilter(false);
+      // }
 
       const selectedGroups = classroomGroups.filter(
         (x) => x.id === primaryClassProgramme?.classroomGroupId
@@ -96,7 +96,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
       setSelectedClassroomGroups(selectedGroups);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [classroomGroups, isPlaygroup]);
+  }, []);
 
   const onFilterItemsChanges = (value: SearchDropDownOption<any>[]) => {
     setSelectedClassroomGroups(value.map((x) => x.value));
@@ -223,8 +223,8 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
               []
             }
             onChange={(value) => onFilterItemsChanges(value)}
-            placeholder={'Playgroups'}
-            pluralSelectionText={'Playgroups'}
+            placeholder={'Class'}
+            pluralSelectionText={'Classes'}
             multiple
             color={'uiMidDark'}
             selectedOptions={selectedClassroomGroups.map((x) => {
@@ -244,7 +244,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
         <div className={styles.statusChipsWrapper(shouldFilter)}>
           <StatusChip
             className={'mr-2'}
-            padding={'px-2 py-0'}
+            padding={'px-3 py-1.5'}
             textColour="white"
             borderColour="successMain"
             textType="small"
@@ -253,7 +253,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
           />
           <StatusChip
             textColour="white"
-            padding={'px-2 py-0'}
+            padding={'px-3 py-1.5'}
             borderColour="errorMain"
             textType="small"
             backgroundColour="errorMain"

@@ -62,25 +62,40 @@ namespace ECDLink.DataAccessLayer.Repositories
             return _context.Attendances.Where(f => f.AttendanceDate >= start && f.AttendanceDate < end);            
         }
 
-        public List<ClassroomAttendance> GetAllByDateRangeByClassroom(DateTime startMonth, DateTime endMonth, Guid classroomId)
+
+        public List<Attendance> GetAllByDateRangeByClassroom(DateTime startMonth, DateTime endMonth, Guid classroomId, string userId)
         {
-            //TODO: iterate through classrooms and its programmes and tally up
-            var start = startMonth.GetStartOfMonth();
-            var end = endMonth.GetStartOfMonth();
-            List<ClassroomAttendance> classAttendance = new List<ClassroomAttendance>();
-            //foreach (var classroom in classes)
-            //{
+            try
+            {
+                var start = startMonth.GetStartOfMonth();
+                var end = endMonth.GetEndOfMonth();
                 //get all programmes under classroom
-                List<ClassProgramme> programmes = _context.ClassProgrammes.Where(x => x.ClassroomGroupId.Equals(classroomId)).ToList();
-                IQueryable<Attendance> attendance = _context.Attendances.Where(f => f.AttendanceDate >= start && f.AttendanceDate < end);
+                IQueryable<ClassProgramme> programmes = _context.ClassProgrammes.Where(x => x.ClassroomGroupId.Equals(classroomId)).AsQueryable();
+                List<Attendance> attendance = _context.Attendances.Where(f => f.UserId == userId && f.AttendanceDate >= start && f.AttendanceDate < end).ToList();//
+                List<string> programmeIds = programmes.Select(y => y.Id.ToString()).ToList();
 
-                //ClassAttendance = programmes.Where(x => x.ClassroomId.ToString().Contains(classroom.Id.ToString())).ToList() };
-                List<string> programmeIds = programmes.Where(x => x.ClassroomGroupId.Equals(classroomId)).Select(y => y.ClassroomGroupId.ToString()).ToList();
-                List<Attendance> filteredAttendance = (List<Attendance>)attendance.Where(x => x.ClassroomProgrammeId.ToString().Contains(programmeIds.ToString())).ToList();
-                classAttendance.Add(new ClassroomAttendance() { ClassroomId = classroomId.ToString(), ClassAttendance = filteredAttendance });
-            //}
+                List<Attendance> filteredAttendance = new List<Attendance>();
 
-            return classAttendance;//
+                if (attendance.Any())
+                {
+                    
+                    foreach (var att in attendance)
+                    {                        
+                        if (programmeIds.Contains(att.ClassroomProgrammeId.ToString()))
+                        {
+                            if (att != null)
+                            {
+                                filteredAttendance.Add(att);
+                            }
+                        }
+                    }
+                }
+                return filteredAttendance;
+            }
+            catch (Exception e)
+            {
+                return null;
+            }
         }
     }
 }

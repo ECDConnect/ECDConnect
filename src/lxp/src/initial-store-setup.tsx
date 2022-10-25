@@ -36,6 +36,7 @@ import { userActions, userThunkActions } from './store/user';
 import { coachActions, coachThunkActions } from './store/coach';
 import {
   practitionerActions,
+  practitionerSelectors,
   practitionerThunkActions,
 } from './store/practitioner';
 import {
@@ -47,6 +48,10 @@ import localforage from 'localforage';
 import hash from 'object-hash';
 import { userSelectors } from '@store/user';
 import { useSelector } from 'react-redux';
+import {
+  childrenForPractitionerActions,
+  childrenForPractitionerThunkActions,
+} from './store/childrenForPractitioner';
 
 type IntialStoreSetupContextValues = {
   initloading: boolean;
@@ -69,6 +74,8 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   const [staticDataLoading, setStaticDataLoading] = useState(false);
   const userData = useSelector(userSelectors.getUser);
   const isCoach = userData?.roles?.some((role) => role.name === 'Coach');
+  const practitioner = useSelector(practitionerSelectors?.getPractitioner);
+  const isPrincipal = practitioner?.isPrincipal;
 
   const [otherLoading, setOtherLoading] = useState(false);
 
@@ -92,6 +99,19 @@ const InitialStoreSetup: React.FC = ({ children }) => {
       }
     }
   }, [appDispatch, isCoach, userData]);
+
+  useEffect(() => {
+    if (userData) {
+      if (isPrincipal) {
+        (async () =>
+          await appDispatch(
+            childrenForPractitionerThunkActions?.getChildrenForPractitioner({
+              id: userData?.id!,
+            })
+          ).unwrap())();
+      }
+    }
+  }, [appDispatch, isPrincipal, userData]);
 
   const resetAppStore = async (showLoading = true) => {
     if (showLoading) {

@@ -4,7 +4,10 @@ using ECDLink.Core.Helpers;
 using ECDLink.Core.Models.Storage;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.Core.SystemSettings.SystemOptions;
+using FileSignatures;
+using FileSignatures.Formats;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -14,10 +17,12 @@ namespace ECDLink.AzureStorage.Blob
     {
         private ISystemSetting<AzureBlobOptions> _options;
         private BlobServiceClient _blobServiceClient;
+        private FileFormatInspector _inspector;
 
         public FileService(ISystemSetting<AzureBlobOptions> options)
         {
             _options = options;
+            _inspector = new FileFormatInspector();
         }
 
         private BlobServiceClient BlobClient
@@ -56,7 +61,10 @@ namespace ECDLink.AzureStorage.Blob
 
                 using MemoryStream fileStream = new MemoryStream(bytes);
 
+                ValidateFileType(fileStream);
+
                 await blobClient.UploadAsync(fileStream);
+
                 fileStream.Dispose();
 
                 var fileUrl = blobClient.Uri.AbsoluteUri;
@@ -79,6 +87,8 @@ namespace ECDLink.AzureStorage.Blob
         {
             try
             {
+                ValidateFileType(file);
+
                 var container = EnumHelper.GetDescription(fileType);
                 var fileReference = $"{fileName}";
                 var blobContainer = BlobClient.GetBlobContainerClient(container);
@@ -152,6 +162,41 @@ namespace ECDLink.AzureStorage.Blob
                 // log(e)
                 return false;
             }
+        }
+
+        private void ValidateFileType(MemoryStream fileStream)
+        {
+            if (!IsUnknownOrValidFileType(fileStream))
+            {
+                throw new Exception("Unspoorted file type");
+            }
+        }
+
+        private bool IsUnknownOrValidFileType(MemoryStream fileStream)
+        {
+            var format = _inspector.DetermineFileFormat(fileStream);
+
+            if(format == null)
+            {
+                return true;
+            }
+
+            if(format is Image)
+            {
+                return true;
+            }
+
+            if(format is Pdf)
+            {
+                return true;
+            }
+
+            if (format is OfficeOpenXml)
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }

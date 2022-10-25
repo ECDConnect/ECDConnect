@@ -53,17 +53,21 @@ export const PractitionerProfile: React.FC = () => {
   const getStackedMenuList = (): MenuListDataItem[] => {
     const titleStyle = 'text-textDark font-semibold text-base leading-snug';
     const subTitleStyle = 'text-sm font-h1 font-normal text-textMid';
+    const profilePc =
+      userProfilePicture?.file ||
+      user?.profileImageUrl ||
+      userProfilePicture?.reference;
     const stackedMenuList: MenuListDataItem[] = [
       {
         title: `${user?.firstName} ${user?.surname}`.slice(0, 25),
         titleStyle,
         subTitle: 'About me',
         subTitleStyle,
-        menuIconUrl: userProfilePicture?.file,
+        menuIconUrl: profilePc,
         menuIcon: 'UserIcon',
         iconBackgroundColor: 'tertiary',
         iconColor: 'white',
-        showIcon: userProfilePicture?.file === undefined,
+        showIcon: profilePc === undefined,
         onActionClick: () => {
           history.push(ROUTES.PRACTITIONER.ABOUT);
         },

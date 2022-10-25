@@ -33,6 +33,11 @@ import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { IconInformationIndicator } from '../programme-planning/components/icon-information-indicator/icon-information-indicator';
 import ROUTES from '@/routes/routes';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
+import { practitionerSelectors } from '@/store/practitioner';
+import {
+  childrenForPractitionerActions,
+  childrenForPractitionerSelectors,
+} from '@/store/childrenForPractitioner';
 
 const filterInfo: FilterInfo = {
   filterName: 'Class',
@@ -83,7 +88,14 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
   const history = useHistory();
   const attendanceData = useSelector(attendanceSelectors.getAttendance);
   const children = useSelector(childrenSelectors.getChildren);
+  const childrenForPrincipal = useSelector(
+    childrenForPractitionerSelectors?.getChildrenForPractitioner
+  );
+
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
+  const getAllClassroomGroups = useSelector(
+    classroomsSelectors?.getAllClassroomGroups
+  );
   const classroomGroupProgrammes = useSelector(
     classroomsSelectors.getClassProgrammes
   );
@@ -95,7 +107,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
   const classroomGroupLearners = useSelector(
     classroomsSelectors.getClassroomGroupLearners
   );
-  const isPlaygroup = useSelector(classroomsSelectors.isPlaygroup());
+  // const isPlaygroup = useSelector(classroomsSelectors.isPlaygroup());
   const [addChildButtonExpanded, setAddChildButtonExpanded] =
     useState<boolean>(true);
   const [searchTextActive, setSearchTextActive] = useState(false);
@@ -109,45 +121,88 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
   const [updatedPlaygroups, setUpdatedPlaygroups] = useState<
     SearchDropDownOption<string>[]
   >([]);
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  const isPrincipal = practitioner?.isPrincipal === true;
+  const principalClassroomGroups = classroomGroups.filter(
+    (item) => item?.userId === practitioner?.userId
+  );
 
   useEffect(() => {
     if (classroomGroups && classroomGroupLearners) {
-      const groupedItems: SearchDropDownOption<string>[] = classroomGroups.map(
-        (groupedItem, idx) =>
-          groupedItem.name === NoPlaygroupClassroomType.name
-            ? {
-                id: idx.toString(),
-                label: NoPlaygroupClassroomType.title,
-                value: groupedItem.id ?? '',
-              }
-            : {
-                id: idx.toString(),
-                label: groupedItem.name,
-                value: groupedItem.id ?? '',
-              }
-      );
+      const groupedItems: SearchDropDownOption<string>[] = isPrincipal
+        ? principalClassroomGroups.map((groupedItem, idx) =>
+            groupedItem.name === NoPlaygroupClassroomType.name
+              ? {
+                  id: idx.toString(),
+                  label: NoPlaygroupClassroomType.title,
+                  value: groupedItem.id ?? '',
+                }
+              : {
+                  id: idx.toString(),
+                  label: groupedItem.name,
+                  value: groupedItem.id ?? '',
+                }
+          )
+        : classroomGroups.map((groupedItem, idx) =>
+            groupedItem.name === NoPlaygroupClassroomType.name
+              ? {
+                  id: idx.toString(),
+                  label: NoPlaygroupClassroomType.title,
+                  value: groupedItem.id ?? '',
+                }
+              : {
+                  id: idx.toString(),
+                  label: groupedItem.name,
+                  value: groupedItem.id ?? '',
+                }
+          );
 
       setUpdatedPlaygroups(groupedItems);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [classroomGroups, classroomGroupLearners]);
+  }, [getAllClassroomGroups, classroomGroupLearners]);
 
   useEffect(() => {
-    if (classroomGroupLearners && children && pendingStatusId) {
-      const childListItem: UserAlertListDataItem[] = [];
+    if (!isPrincipal) {
+      if (classroomGroupLearners && children && pendingStatusId) {
+        const childListItem: UserAlertListDataItem[] = [];
 
-      for (const child of children) {
-        const learner = classroomGroupLearners.find(
-          (x) => x.userId === child.userId && x.stoppedAttendance == null
-        );
-        childListItem.push(mapUserListDataItem(child, learner));
+        for (const child of children) {
+          const learner = classroomGroupLearners.find(
+            (x) => x.userId === child.userId && x.stoppedAttendance == null
+          );
+          childListItem.push(mapUserListDataItem(child, learner));
+        }
+
+        setChildUserListData(childListItem);
+        setFilteredChildData(childListItem);
       }
-
-      setChildUserListData(childListItem);
-      setFilteredChildData(childListItem);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [classroomGroupLearners, children, pendingStatusId]);
+
+  useEffect(() => {
+    if (isPrincipal) {
+      if (classroomGroupLearners && childrenForPrincipal && pendingStatusId) {
+        const childListItem: UserAlertListDataItem[] = [];
+
+        for (const child of childrenForPrincipal) {
+          const learner = classroomGroupLearners.find(
+            (x) => x.userId === child.userId && x.stoppedAttendance == null
+          );
+          childListItem.push(mapUserListDataItem(child, learner));
+        }
+        setChildUserListData(childListItem);
+        setFilteredChildData(childListItem);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    classroomGroupLearners,
+    childrenForPrincipal,
+    pendingStatusId,
+    isPrincipal,
+  ]);
 
   const onChildListItemAction = (childId: string) => {
     history.push(ROUTES.CHILD_PROFILE, {
@@ -159,28 +214,57 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
     setActiveFilters(value);
     const selectedClassrooms = value.map((x) => x.value);
     const childListItem: UserAlertListDataItem[] = [];
-    if (children && classroomGroupLearners) {
-      if (value && value.length > 0) {
-        for (const child of children) {
-          const learner = classroomGroupLearners.find(
-            (x) =>
-              x.userId === child.userId &&
-              /* ensures only children in a playgroup are shown and not those who stopped attending or changed playgroups */
-              x.stoppedAttendance == null &&
-              selectedClassrooms.some((sc) => sc === x.classroomGroupId)
-          );
-          if (learner) {
-            childListItem.push(mapUserListDataItem(child, learner));
+    if (isPrincipal) {
+      if (childrenForPrincipal && classroomGroupLearners) {
+        if (value && value.length > 0) {
+          for (const child of childrenForPrincipal) {
+            const learner = classroomGroupLearners.find(
+              (x) =>
+                x.userId === child.userId &&
+                /* ensures only children in a playgroup are shown and not those who stopped attending or changed playgroups */
+                x.stoppedAttendance == null &&
+                selectedClassrooms.some((sc) => sc === x.classroomGroupId)
+            );
+            if (learner) {
+              childListItem.push(mapUserListDataItem(child, learner));
+            }
+          }
+        } else {
+          for (const child of childrenForPrincipal) {
+            // TODO: change to display all children
+            const learner = classroomGroupLearners.find(
+              (x) => x.userId === child.userId && x.stoppedAttendance == null
+            );
+            if (learner) {
+              childListItem.push(mapUserListDataItem(child, learner));
+            }
           }
         }
-      } else {
-        for (const child of children) {
-          // TODO: change to display all children
-          const learner = classroomGroupLearners.find(
-            (x) => x.userId === child.userId && x.stoppedAttendance == null
-          );
-          if (learner) {
-            childListItem.push(mapUserListDataItem(child, learner));
+      }
+    } else {
+      if (children && classroomGroupLearners) {
+        if (value && value.length > 0) {
+          for (const child of children) {
+            const learner = classroomGroupLearners.find(
+              (x) =>
+                x.userId === child.userId &&
+                /* ensures only children in a playgroup are shown and not those who stopped attending or changed playgroups */
+                x.stoppedAttendance == null &&
+                selectedClassrooms.some((sc) => sc === x.classroomGroupId)
+            );
+            if (learner) {
+              childListItem.push(mapUserListDataItem(child, learner));
+            }
+          }
+        } else {
+          for (const child of children) {
+            // TODO: change to display all children
+            const learner = classroomGroupLearners.find(
+              (x) => x.userId === child.userId && x.stoppedAttendance == null
+            );
+            if (learner) {
+              childListItem.push(mapUserListDataItem(child, learner));
+            }
           }
         }
       }
@@ -219,7 +303,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
               a,
               childUserDocumentsOne,
               attendanceData,
-              classroomGroups,
+              getAllClassroomGroups,
               classroomGroupProgrammes,
               childReportsOne
             );
@@ -236,7 +320,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
               b,
               childUserDocumentsTwo,
               attendanceData,
-              classroomGroups,
+              getAllClassroomGroups,
               classroomGroupProgrammes,
               childReportsTwo
             );
@@ -304,7 +388,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
       childRecord,
       childDocuments,
       attendanceData,
-      classroomGroups,
+      getAllClassroomGroups,
       classroomGroupProgrammes,
       reports
     );

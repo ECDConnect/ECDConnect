@@ -24,7 +24,6 @@ import { contentReportSelectors } from '@store/content/report';
 import { useStaticData } from '@hooks/useStaticData';
 import { WorkflowStatusEnum } from '@ecdlink/graphql';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import ROUTES from '@routes/routes';
 import { practitionerSelectors } from '@/store/practitioner';
 import { childrenForPractitionerSelectors } from '@/store/childrenForPractitioner';
 import { IconInformationIndicator } from '../../../../classroom/programme-planning/components/icon-information-indicator/icon-information-indicator';
@@ -51,6 +50,9 @@ export const PrincipalPractitionerChildList: React.FC<
     childrenForPractitionerSelectors.getChildrenForPractitioner
   );
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
+  const practitionerClassroomGroups = classroomGroups?.filter((item: any) => {
+    return item?.userId === practitionerId;
+  });
   const classroomGroupProgrammes = useSelector(
     classroomsSelectors.getClassProgrammes
   );
@@ -77,11 +79,9 @@ export const PrincipalPractitionerChildList: React.FC<
   const [updatedPlaygroups, setUpdatedPlaygroups] = useState<
     SearchDropDownOption<string>[]
   >([]);
-
   const childrenForPractitionerList = children?.filter((item) =>
     childrenForPractitioner?.find((item2) => item.id === item2.id)
   );
-
   const filterInfo: FilterInfo = {
     filterName: 'Class',
     filterHint: 'You can select multiple classes',
@@ -122,19 +122,18 @@ export const PrincipalPractitionerChildList: React.FC<
   };
 
   useEffect(() => {
-    if (classroomGroups && classroomGroupLearners) {
-      const groupedItems: SearchDropDownOption<string>[] = classroomGroups.map(
-        (groupedItem, idx) => ({
+    if (practitionerClassroomGroups && classroomGroupLearners) {
+      const groupedItems: SearchDropDownOption<string>[] =
+        practitionerClassroomGroups.map((groupedItem, idx) => ({
           id: idx.toString(),
           label: groupedItem.name,
           value: groupedItem.id ?? '',
-        })
-      );
+        }));
 
       setUpdatedPlaygroups(groupedItems);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [classroomGroups, classroomGroupLearners]);
+  }, [classroomGroupLearners]);
 
   useEffect(() => {
     if (
@@ -417,17 +416,6 @@ export const PrincipalPractitionerChildList: React.FC<
             onScroll={(scrollTop: number) => handleListScroll(scrollTop)}
           ></StackedList>
         ) : null}
-        {/* <FADButton
-          title={'Add a child'}
-          icon={'PlusIcon'}
-          iconDirection={'left'}
-          textToggle={addChildButtonExpanded}
-          type={'filled'}
-          color={'primary'}
-          shape={'round'}
-          className={styles.fadButton}
-          click={registerNewChild}
-        /> */}
       </div>
     </>
   );

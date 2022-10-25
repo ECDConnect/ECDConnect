@@ -6,5 +6,5 @@ export enum ProgrammeType {
 
 export const NoPlaygroupClassroomType = {
   name: 'Unsure',
-  title: 'No Playgroup',
+  title: 'Unsure',
 };

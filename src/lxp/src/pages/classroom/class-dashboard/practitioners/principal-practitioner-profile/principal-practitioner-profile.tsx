@@ -27,10 +27,6 @@ import { useSelector } from 'react-redux';
 import { practitionerSelectors } from '@/store/practitioner';
 import { classroomsSelectors } from '@/store/classroom';
 import { useAppDispatch } from '@store';
-import {
-  childrenForPractitionerSelectors,
-  childrenForPractitionerThunkActions,
-} from '@/store/childrenForPractitioner';
 import { authSelectors } from '@/store/auth';
 import { PractitionerNotRegistered } from './practitioner-not-registered/practitioner-not-registered';
 import { PractitionerService } from '@/services/PractitionerService';
@@ -51,13 +47,11 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const practitioner = practitioners?.find(
     (practitioner) => practitioner?.userId === practitionerId
   );
-  const childrenForPractitioner = useSelector(
-    childrenForPractitionerSelectors.getChildrenForPractitioner
-  );
+
   const practitionerClassroomGroups = classroomGroups?.filter((item: any) => {
     return item?.userId === practitionerId;
   });
-  const learners = useSelector(classroomsSelectors.getClassroomGroupLearners);
+  // const learners = useSelector(classroomsSelectors.getClassroomGroupLearners);
   // const learners = useSelector(classroomsSelectors.)
   const { theme } = useTheme();
 
@@ -68,8 +62,9 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const onCreatePractitionerNoteBack = () => {
     setCreatePractitionerdNoteVisible(false);
   };
-
+  const [childrenCount, setChildrenCount] = useState(0);
   const [classMetrics, setClassMetrics] = useState<any>();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const practitionerClassrooms: any[] = [];
 
   const handleReassignClass = (practitionerId: string) => {
@@ -79,13 +74,19 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   };
 
   if (classMetrics) {
-    classMetrics.forEach((e: any) => {
-      let classroomValue: any = practitionerClassroomGroups.filter(
-        (item) => item?.id === e?.classroomGroupId
+    practitionerClassroomGroups.forEach((e: any) => {
+      let classroomValue: any = classMetrics.find(
+        (item: any) => item?.id === e?.classroomGroupId
       );
 
       if (classroomValue) {
-        practitionerClassrooms.push({ ...e, name: classroomValue?.name });
+        practitionerClassrooms.push({
+          ...e,
+          childCount: classroomValue?.childCount,
+          attendancePercentage: classroomValue?.attendancePercentage,
+          month: classroomValue?.month,
+          year: classroomValue?.year,
+        });
       } else {
         practitionerClassrooms.push({ ...e });
       }
@@ -93,13 +94,17 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   }
 
   useEffect(() => {
-    (async () =>
-      await appDispatch(
-        childrenForPractitionerThunkActions.getChildrenForPractitioner({
-          id: practitionerId,
-        })
-      ).unwrap())();
-  }, [appDispatch, practitionerId]);
+    let count = 0;
+    if (practitionerClassrooms.length > 0) {
+      // eslint-disable-next-line array-callback-return
+      practitionerClassrooms?.map((item) => {
+        count += item?.childCount;
+      });
+      return setChildrenCount(count);
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [practitionerClassrooms]);
 
   const callForHelp = () => {
     window.open(`tel:${practitioner?.user?.phoneNumber}`);
@@ -133,16 +138,22 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
     history.push(ROUTES.CLASSROOM);
   };
 
-  const test = async () => {
+  const classroomsMetrics = async () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const previousMonth = today.getMonth() + 1;
     const metricsData = await new ClassroomGroupService(
       userAuth?.auth_token!
-    ).getClassAttendanceMetrics();
+    ).getClassAttendanceMetrics(
+      new Date(year, previousMonth, 1),
+      new Date(year, previousMonth, 1)
+    );
     setClassMetrics(metricsData);
     return metricsData;
   };
 
   useEffect(() => {
-    test();
+    classroomsMetrics();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -198,13 +209,15 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                   className={'px-3 py-1.5'}
                 />
               )}
-              <StatusChip
-                backgroundColour="secondary"
-                borderColour="secondary"
-                text={`${childrenForPractitioner?.length} children`}
-                textColour={'white'}
-                className={'mr-2 px-3 py-1.5'}
-              />
+              {childrenCount && (
+                <StatusChip
+                  backgroundColour="secondary"
+                  borderColour="secondary"
+                  text={`${childrenCount} children`}
+                  textColour={'white'}
+                  className={'mr-2 px-3 py-1.5'}
+                />
+              )}
             </div>
             <div className={styles.contactButtons}>
               <Button
@@ -215,7 +228,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                 onClick={callForHelp}
               >
                 <PhoneIcon
-                  className="h-5 w-5 text-primary"
+                  className="text-primary h-5 w-5"
                   aria-hidden="true"
                 />
               </Button>
@@ -255,7 +268,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                   <Button
                     type="filled"
                     color="primary"
-                    className={'w-11/12 mt-6 mb-6'}
+                    className={'mt-6 mb-6 w-11/12'}
                     onClick={() => handleReassignClass(practitionerId)}
                   >
                     {renderIcon(
@@ -283,9 +296,9 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                         className={styles.absentCardTitle}
                       />
                       <div>
-                        <div className="flex flex-col mt-2 mr-2">
-                          <div className="flex items-center justify-between w-11/12 ml-4">
-                            <div className="flex items-center w-full">
+                        <div className="mt-2 mr-2 flex flex-col">
+                          <div className="ml-4 flex w-11/12 items-center justify-between">
+                            <div className="flex w-full items-center">
                               <Typography
                                 type={'h2'}
                                 text={`${item?.childCount}`}
@@ -312,7 +325,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                                   }
                                 )
                               }
-                              className="rounded-xl mt-2"
+                              className="mt-2 rounded-xl"
                             >
                               <Typography
                                 type="help"
@@ -322,11 +335,11 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                               {renderIcon('EyeIcon', styles.buttonIcon)}
                             </Button>
                           </div>
-                          <div className="flex justify-start items-center mt-2 mx-4 mb-4 w-9/12">
+                          <div className="mx-4 mt-2 mb-4 flex w-9/12 items-center justify-start">
                             <StatusChip
                               backgroundColour="alertMain"
                               borderColour="alertMain"
-                              text={`${item?.attendancePercentage}`}
+                              text={`${item?.attendancePercentage}%`}
                               textColour={'white'}
                               className={'mr-2'}
                             />
@@ -353,8 +366,8 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                 color={'textMid'}
                 className={styles.absentCardTitle}
               />
-              <div className="flex items-center mt-2 mr-4">
-                <div className="flex items-center mt-2 mx-4 mb-4 w-full">
+              <div className="mt-2 mr-4 flex items-center">
+                <div className="mx-4 mt-2 mb-4 flex w-full items-center">
                   <StatusChip
                     backgroundColour="errorMain"
                     borderColour="errorMain"
@@ -391,8 +404,8 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                 className={styles.absentCardTitle}
               />
               <div>
-                <div className="flex flex-col mt-2 mr-4">
-                  <div className="flex items-center w-11/12 ml-4">
+                <div className="mt-2 mr-4 flex flex-col">
+                  <div className="ml-4 flex w-11/12 items-center">
                     <Typography
                       type={'h2'}
                       text={'N/A'}
@@ -411,14 +424,14 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                       color="primary"
                       type="filled"
                       onClick={() => {}}
-                      className="rounded-xl mt-2"
+                      className="mt-2 rounded-xl"
                       disabled={true}
                     >
                       <Typography type="help" color="white" text="View" />
                       {renderIcon('EyeIcon', styles.buttonIcon)}
                     </Button>
                   </div>
-                  <div className="flex justify-start items-center mt-2 mx-4 mb-4 w-9/12">
+                  <div className="mx-4 mt-2 mb-4 flex w-9/12 items-center justify-start">
                     <StatusChip
                       backgroundColour="errorMain"
                       borderColour="errorMain"
@@ -581,11 +594,11 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
               </Dialog>
             </div>
             <Divider dividerType="dashed" className="my-4" />
-            <div className="flex justify-center w-full">
+            <div className="flex w-full justify-center">
               <Button
                 type="outlined"
                 color="primary"
-                className={'w-11/12 mt-6 mb-6'}
+                className={'mt-6 mb-6 w-11/12'}
                 onClick={removePractitioner}
               >
                 {renderIcon(

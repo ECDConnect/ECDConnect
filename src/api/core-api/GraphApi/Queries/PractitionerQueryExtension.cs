@@ -319,13 +319,14 @@ string userId)
             return children;
         }
 
-        public Dictionary<string,string> GetPractitionerColleagues([Service] IHttpContextAccessor contextAccessor,
+        public List<PractitionerColleagues> GetPractitionerColleagues([Service] IHttpContextAccessor contextAccessor,
     [Service] IGenericRepositoryFactory repoFactory,
     string userId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practiRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
-            Dictionary<string, string> practitionerColleagues = new Dictionary<string, string>();
+            var classGroupRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);
+            List<PractitionerColleagues> practitionerColleagues = new List<PractitionerColleagues>();
             Practitioner practi = practiRepo.GetByUserId(userId);
             if (practi.PrincipalHierarchy.HasValue || practi.IsPrincipal == true)
             {
@@ -347,11 +348,15 @@ string userId)
                     {
                         if (practitioner.User != null)
                         {
-                            string practiName = (practitioner.User.NickFullName != null ? practitioner.User.NickFullName : practitioner.User.FullName);
+                            string practiProfile = practitioner.User.ProfileImageUrl;
+                            string practiName = practitioner.User.FullName;
+                            string practiNickName = (practitioner.User.NickFullName != null ? practitioner.User.NickFullName : "");
+                            string practiNumber = practitioner.User.PhoneNumber;
+                            string practiClassroomNames = "";
                             string practiType = "";
                             if (practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal != false)
                             {
-                                practiType = "Principal";
+                                practiType = "Principal/Owner";
                             }
                             else if (practitioner.IsFundaAppAdmin.HasValue && practitioner.IsFundaAppAdmin != false)
                             {
@@ -361,8 +366,15 @@ string userId)
                             {
                                 practiType = "Practitioner";
                             }
+                            //get any classroomnames from user and append them
+                            var classes = classGroupRepo.GetAll().Where(x => x.UserId.ToString().Contains(practitioner.UserId.ToString()));
+                            if (classes.Any())
+                            {
+                                var classNames = classes.Where(x => x.Name != "").Select(f => f.Name);
+                                practiClassroomNames = string.Join(",", classNames);
+                            }
 
-                            practitionerColleagues.Add(practiName, practiType);
+                            practitionerColleagues.Add(new PractitionerColleagues() { Name = practiName, NickName = practiNickName, Title = practiType, ProfilePhoto = practiProfile, ContactNumber = practiNumber, ClassroomNames = practiClassroomNames });
                         }
                     }
                 }

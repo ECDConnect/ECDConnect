@@ -94,27 +94,31 @@ export const updateCoach = createAsyncThunk<
       coach: { coach },
     } = getState();
 
+    console.log('coach actions before try');
+
     try {
+      console.log('coach actions inside try');
       let update: boolean | undefined;
 
       if (userAuth?.auth_token && coach) {
         const coachModelInput: CoachInput = mapCoach(coach);
 
-        if (coach.siteAddress?.id) {
-          const addressInput = mapSiteAddress(coach.siteAddress);
+        // if (coach.siteAddress?.id) {
+        //   const addressInput = mapSiteAddress(coach.siteAddress);
 
-          await new SiteAddressService(userAuth?.auth_token).updateSiteAddress(
-            coach.siteAddress.id ?? '',
-            addressInput
-          );
+        //   await new SiteAddressService(userAuth?.auth_token).updateSiteAddress(
+        //     coach.siteAddress.id ?? '',
+        //     addressInput
+        //   );
 
-          coachModelInput.SiteAddressId = addressInput.Id;
-        }
+        //   coachModelInput.SiteAddressId = addressInput.Id;
+        // }
 
         update = await new CoachService(userAuth?.auth_token).updateCoach(
           userAuth.id,
           coachModelInput
         );
+        console.log('coach actions updateCoach inside if auth token', update);
       } else {
         return rejectWithValue('no access token, profile check required');
       }
@@ -123,8 +127,10 @@ export const updateCoach = createAsyncThunk<
         return rejectWithValue('Error updating user');
       }
 
+      console.log('coach actions updateCoach before return', update);
       return [update];
     } catch (err) {
+      console.log('coach actions inside catch', err);
       if (err instanceof Error) {
         return rejectWithValue(err.message);
       }
@@ -136,8 +142,8 @@ export const updateCoach = createAsyncThunk<
 const mapCoach = (coach: Partial<CoachDto>): CoachInput => ({
   SecondaryAreaOfOperation: coach.secondaryAreaOfOperation,
   SigningSignature: coach.signingSignature || undefined,
-  SiteAddressId: coach.siteAddressId || undefined,
-  SiteAddress: mapSiteAddress(coach.siteAddress!),
+  // SiteAddressId: coach.siteAddressId || undefined,
+  // SiteAddress: mapSiteAddress(coach.siteAddress!),
   StartDate: coach.startDate || undefined,
   AreaOfOperation: coach.areaOfOperation,
   IsActive: coach.isActive || false,
@@ -146,16 +152,16 @@ const mapCoach = (coach: Partial<CoachDto>): CoachInput => ({
   Id: coach.id,
 });
 
-const mapSiteAddress = (
-  address: Partial<SiteAddressDto>
-): SiteAddressInput => ({
-  Id: address.id,
-  AddressLine1: address.addressLine1,
-  AddressLine2: address.addressLine2,
-  AddressLine3: address.addressLine3,
-  Name: address.name,
-  PostalCode: address.postalCode,
-  ProvinceId: address.provinceId,
-  Ward: address.ward,
-  IsActive: address.isActive === false ? false : true,
-});
+// const mapSiteAddress = (
+//   address: Partial<SiteAddressDto>
+// ): SiteAddressInput => ({
+//   Id: address.id,
+//   AddressLine1: address.addressLine1,
+//   AddressLine2: address.addressLine2,
+//   AddressLine3: address.addressLine3,
+//   Name: address.name,
+//   PostalCode: address.postalCode,
+//   ProvinceId: address.provinceId,
+//   Ward: address.ward,
+//   IsActive: address.isActive === false ? false : true,
+// });

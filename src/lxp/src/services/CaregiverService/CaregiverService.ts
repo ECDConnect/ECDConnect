@@ -13,7 +13,7 @@ class CaregiverService {
     const response = await apiInstance.post<any>(``, {
       query: `
         query {
-          GetAllCaregiver {
+          allCaregiver {
             id
             phoneNumber
             idNumber
@@ -60,7 +60,7 @@ class CaregiverService {
       throw new Error('Getting Caregivers failed - Server connection error');
     }
 
-    return response.data.data.GetAllCaregiver;
+    return response.data.data.allCaregiver;
   }
 
   async updateCareGiver(
