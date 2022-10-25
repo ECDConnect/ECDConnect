@@ -116,10 +116,17 @@ export const CoachAbout: React.FC = () => {
       ? `${user.siteAddress.ward}<br/>`
       : '';
 
-    return address.concat(`
-      ${user.siteAddress.addressLine1}<br/>
-      ${user.siteAddress.addressLine2}, ${user.siteAddress.addressLine3} ${user.siteAddress.postalCode}
-      <br/>${user.siteAddress.province?.description}`);
+    if (
+      user.siteAddress.province?.description === undefined ||
+      user.siteAddress.addressLine1 === ''
+    ) {
+      return 'Franchisor Site Address Not Set';
+    } else {
+      return address.concat(`
+        ${user.siteAddress.addressLine1}<br/>
+        ${user.siteAddress.addressLine2}, ${user.siteAddress.addressLine3} ${user.siteAddress.postalCode}
+        <br/>${user.siteAddress.province?.description}`);
+    }
   };
 
   const setNewStackListItems = (currentUser: CoachDto) => {
@@ -324,7 +331,7 @@ export const CoachAbout: React.FC = () => {
         backgroundColour={'white'}
       >
         <div className="px-4">
-          <div className={'w-full inline-flex justify-center pt-8'}>
+          <div className={'inline-flex w-full justify-center pt-8'}>
             <ProfileAvatar
               dataUrl={
                 userProfilePicture?.file ||
@@ -336,7 +343,7 @@ export const CoachAbout: React.FC = () => {
               hasConsent={true}
             />
           </div>
-          <div className="flex my-4 justify-center">
+          <div className="my-4 flex justify-center">
             {practitioners && (
               <StatusChip
                 className="mr-2"
