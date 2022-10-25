@@ -139,9 +139,15 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   };
 
   const classroomsMetrics = async () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const previousMonth = today.getMonth() + 1;
     const metricsData = await new ClassroomGroupService(
       userAuth?.auth_token!
-    ).getClassAttendanceMetrics();
+    ).getClassAttendanceMetrics(
+      new Date(year, previousMonth, 1),
+      new Date(year, previousMonth, 1)
+    );
     setClassMetrics(metricsData);
     return metricsData;
   };

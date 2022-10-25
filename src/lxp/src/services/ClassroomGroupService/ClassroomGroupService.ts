@@ -131,24 +131,28 @@ class ClassroomGroupService {
     return true;
   }
 
-  async getClassAttendanceMetrics(): Promise<ClassroomGroupDto> {
+  async getClassAttendanceMetrics(
+    startMonth: Date,
+    endMonth: Date
+  ): Promise<ClassroomGroupDto> {
     const apiInstance = await api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-      query {          
-        classAttendanceMetrics {         
-          childCount  
-          attendancePercentage 
-          weekOfYear
-          year
-          month
-          classroomId
-          classroomGroupId
-          practitionerId
-        }        
-      }
+      query classAttendanceMetrics(        
+        $startMonth: DateTime! $endMonth: DateTime!) 
+        {        
+          classAttendanceMetrics(          
+            startMonth: $startMonth endMonth: $endMonth 
+          ) 
+          {          
+            childCount  attendancePercentage month year classroomId practitionerId weekOfYear classroomGroupId       
+          }      
+        }  
       `,
-      variables: {},
+      variables: {
+        startMonth: startMonth,
+        endMonth: endMonth,
+      },
     });
 
     if (response.status !== 200) {

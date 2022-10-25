@@ -4886,7 +4886,14 @@ export type QueryChildrenByClassroomIdArgs = {
   classroomId?: InputMaybe<Scalars['String']>;
 };
 
+export type QueryClassAttendanceMetricsArgs = {
+  endMonth: Scalars['DateTime'];
+  startMonth: Scalars['DateTime'];
+};
+
 export type QueryClassAttendanceMetricsByUserArgs = {
+  endMonth: Scalars['DateTime'];
+  startMonth: Scalars['DateTime'];
   userId?: InputMaybe<Scalars['String']>;
 };
 
