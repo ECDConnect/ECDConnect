@@ -25,7 +25,7 @@ import {
 } from '@schemas/child/child-notes/create-note';
 import { CreateNoteProps } from './create-notes.types';
 import { newGuid } from '@utils/common/uuid.utils';
-import { notesActions } from '@store/notes';
+import { notesActions, notesThunkActions } from '@store/notes';
 import { useStaticData } from '@hooks/useStaticData';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 
@@ -88,6 +88,7 @@ export const CreateNote: React.FC<CreateNoteProps> = ({
       };
 
       appDispatch(notesActions.createNote(newNoteToSave));
+      appDispatch(notesThunkActions.upsertNotes(newNoteToSave));
 
       if (onCreated) {
         onCreated();
@@ -166,7 +167,7 @@ export const CreateNote: React.FC<CreateNoteProps> = ({
       </BannerWrapper>
 
       <Dialog
-        className={'px-4 mb-16'}
+        className={'mb-16 px-4'}
         stretch={true}
         visible={confirmGoBackPromptVisible}
         position={DialogPosition.Middle}
