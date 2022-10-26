@@ -3,6 +3,7 @@ using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.AuditLog;
 using ECDLink.DataAccessLayer.Entities.Caregiver;
 using ECDLink.DataAccessLayer.Entities.Classroom;
+using ECDLink.DataAccessLayer.Entities.DataIngestion;
 using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.Navigation;
 using ECDLink.DataAccessLayer.Entities.Notes;
@@ -35,6 +36,10 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<ShortenUrlEntity> ShortUrls { get; set; }
         public DbSet<UserConsent> UserConsents { get; set; }
         public DbSet<Absentees> Absents { get; set; }
+        public DbSet<ProgrammeType> ProgrammeTypes { get; set; }
+        public DbSet<SL_Ingestion_User> SL_Ingestion_Users { get; set; }
+        public DbSet<SL_Ingestion_ChildCaregiver> SL_Ingestion_ChildCaregivers { get; set; }
+        public DbSet<SystemLog> SystemLogs { get; set; }        
 
         // Notes
         public DbSet<Note> Notes { get; set; }
@@ -52,14 +57,13 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<DailyProgramme> DailyProgrammes { get; set; }
         public DbSet<ClassReassignmentHistory> ClassReassignmentHistories { get; set; }
 
-        
 
         // Security
         public DbSet<Permission> Permissions { get; set; }
         public DbSet<RolePermission> RolePermissions { get; set; }
         public DbSet<UserHierarchyEntity> UserHierarchy { get; set; }
         public DbSet<HierarchyEntity> Hierarchy { get; set; }
-        public DbSet<ProgrammeType> ProgrammeTypes { get; set; }
+        
 
         // Navigation
         public DbSet<NavigationPermission> NavigationPermissions { get; set; }
