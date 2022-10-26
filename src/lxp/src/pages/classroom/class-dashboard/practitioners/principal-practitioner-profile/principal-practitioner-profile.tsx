@@ -76,7 +76,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   if (classMetrics) {
     practitionerClassroomGroups.forEach((e: any) => {
       let classroomValue: any = classMetrics.find(
-        (item: any) => item?.id === e?.classroomGroupId
+        (item: any) => item?.userId === e?.practitionerId
       );
 
       if (classroomValue) {
