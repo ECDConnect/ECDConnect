@@ -6,6 +6,7 @@ export interface PractitionerAboutModel {
   surname: string;
   cellphone: string;
   email: string;
+  whatsapp?: string;
 }
 
 export const initialPractitionerAboutValues: PractitionerAboutModel = {
@@ -13,6 +14,7 @@ export const initialPractitionerAboutValues: PractitionerAboutModel = {
   surname: '',
   cellphone: '',
   email: '',
+  whatsapp: '',
 };
 
 export const practitionerAboutModelSchema = Yup.object().shape({
@@ -24,4 +26,8 @@ export const practitionerAboutModelSchema = Yup.object().shape({
   email: Yup.string()
     .email('Please enter a valid email address')
     .required('Email is required'),
+  whatsapp: Yup.string().matches(
+    SA_CELL_REGEX,
+    'Please enter a valid whatsapp number'
+  ),
 });

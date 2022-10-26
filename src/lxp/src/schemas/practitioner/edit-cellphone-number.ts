@@ -1,24 +1,25 @@
 import * as Yup from 'yup';
 import { SA_CELL_REGEX } from '@ecdlink/ui';
-export interface EditPractitionerModel {
+export interface EditCellphoneModel {
   id?: string;
   userId?: string;
-  firstName: string;
-  surname: string;
+  name?: string;
+  surname?: string;
   cellphone?: string;
   whatsapp?: string;
+  email?: string;
 }
 
-export const initialEditPractitionerValues: EditPractitionerModel = {
-  firstName: '',
+export const initialEditPractitionerValues: EditCellphoneModel = {
+  name: '',
   surname: '',
   cellphone: '',
   whatsapp: '',
+  email: '',
 };
 
-export const editPractitionerSchema = Yup.object().shape({
-  firstName: Yup.string().required(),
-  surname: Yup.string().required(),
+export const editCelphoneNumberSchema = Yup.object().shape({
+  name: Yup.string(),
   cellphone: Yup.string().matches(
     SA_CELL_REGEX,
     'Please enter a valid cellphone number'
@@ -27,4 +28,5 @@ export const editPractitionerSchema = Yup.object().shape({
     SA_CELL_REGEX,
     'Please enter a valid cellphone number'
   ),
+  email: Yup.string(),
 });

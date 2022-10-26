@@ -32,6 +32,7 @@ import { analyticsActions } from '@store/analytics';
 import { setStorageItem } from '@utils/common/local-storage.utils';
 import * as styles from './practitioner-about.styles';
 import ROUTES from '@routes/routes';
+import { EditCellPhoneNumber } from './edit-cellphone-number/edit-cellphone-number';
 
 export const PractitionerAbout: React.FC = () => {
   const history = useHistory();
@@ -48,6 +49,7 @@ export const PractitionerAbout: React.FC = () => {
   const [displayError, setDisplayError] = useState<boolean>(false);
   const [editProfilePictureVisible, setEditProfilePictureVisible] =
     useState(false);
+  const [editiCellPhoneNumber, setEditiCellPhoneNumber] = useState(false);
 
   useEffect(() => {
     if (!isOnline) {
@@ -62,7 +64,6 @@ export const PractitionerAbout: React.FC = () => {
   }, [isOnline]);
 
   const user = useSelector(userSelectors.getUser);
-
   const pictureStorageKey = LocalStorageKeys.practitionerProfilePicture;
   const [listItems, setListItems] = useState<ActionListDataItem[]>([]);
 
@@ -145,11 +146,12 @@ export const PractitionerAbout: React.FC = () => {
         actionIcon: currentUser?.phoneNumber ? 'PencilIcon' : 'PlusIcon',
         buttonType: currentUser?.phoneNumber ? 'outlined' : 'filled',
         onActionClick: () => {
-          editField({
-            label: 'Cellphone Number',
-            formFieldName: 'cellphone',
-            value: practitionerAboutFormGetValues().cellphone,
-          });
+          setEditiCellPhoneNumber(true);
+          // editField({
+          //   label: 'Cellphone Number',
+          //   formFieldName: 'cellphone',
+          //   value: practitionerAboutFormGetValues().cellphone,
+          // });
         },
       },
       {
@@ -253,6 +255,16 @@ export const PractitionerAbout: React.FC = () => {
 
   return (
     <div className={styles.container}>
+      <Dialog
+        fullScreen
+        visible={editiCellPhoneNumber}
+        position={DialogPosition.Top}
+      >
+        <EditCellPhoneNumber
+          setEditiCellPhoneNumber={setEditiCellPhoneNumber}
+          user={user}
+        />
+      </Dialog>
       <BannerWrapper
         showBackground={true}
         backgroundUrl={theme?.images.graphicOverlayUrl}
