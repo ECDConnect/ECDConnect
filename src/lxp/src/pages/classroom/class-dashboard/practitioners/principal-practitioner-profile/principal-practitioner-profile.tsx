@@ -97,12 +97,12 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
 
   useEffect(() => {
     if (classMetrics) {
-      const test = classMetrics?.filter((item: any) => {
+      const practitionerClassroomData = classMetrics?.filter((item: any) => {
         return practitionerClassroomGroups.some((x) => {
           return item?.practitionerId === x?.userId;
         });
       });
-      setPractitionerClassrooms(test);
+      setPractitionerClassrooms(practitionerClassroomData);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [classMetrics]);
@@ -302,11 +302,16 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
             </Card>
             {practitionerClassrooms?.length! > 0
               ? practitionerClassrooms?.map((item: any, index: number) => {
+                  const classroomItem: any = practitionerClassroomGroups?.find(
+                    (x) => {
+                      return x?.id === item?.classroomGroupId;
+                    }
+                  );
                   return (
                     <Card className={styles.absentCard} key={index}>
                       <Typography
                         type={'h1'}
-                        text={item?.name}
+                        text={classroomItem?.name}
                         color={'textMid'}
                         className={styles.absentCardTitle}
                       />
@@ -429,7 +434,10 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                     />
                     <Typography
                       type={'body'}
-                      text={'programmes planned in September 2022'}
+                      text={`programmes planned in  ${getMonthName(
+                        getMonth(new Date()) - 1
+                        // eslint-disable-next-line no-useless-concat
+                      )} 2022`}
                       color={'textDark'}
                       className="mt-2 ml-4 mr-8"
                     />
