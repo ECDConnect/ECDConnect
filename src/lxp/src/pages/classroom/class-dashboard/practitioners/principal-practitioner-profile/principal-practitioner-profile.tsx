@@ -348,7 +348,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                               type={'body'}
                               weight={'bold'}
                               text={`attendance in ${getMonthName(
-                                item?.month
+                                item?.month - 1
                                 // eslint-disable-next-line no-useless-concat
                               )}\u00A0${item?.year}`}
                               color={'textMid'}
