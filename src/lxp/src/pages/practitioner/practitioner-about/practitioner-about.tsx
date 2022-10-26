@@ -64,7 +64,6 @@ export const PractitionerAbout: React.FC = () => {
   }, [isOnline]);
 
   const user = useSelector(userSelectors.getUser);
-  console.log({ user });
   const pictureStorageKey = LocalStorageKeys.practitionerProfilePicture;
   const [listItems, setListItems] = useState<ActionListDataItem[]>([]);
 
@@ -263,6 +262,7 @@ export const PractitionerAbout: React.FC = () => {
       >
         <EditCellPhoneNumber
           setEditiCellPhoneNumber={setEditiCellPhoneNumber}
+          user={user}
         />
       </Dialog>
       <BannerWrapper

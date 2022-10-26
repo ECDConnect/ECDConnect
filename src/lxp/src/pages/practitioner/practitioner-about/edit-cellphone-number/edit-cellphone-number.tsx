@@ -1,62 +1,81 @@
-import { FormInput, Button, BannerWrapper } from '@ecdlink/ui';
-import { PractitionerDto, UserDto } from '@ecdlink/core';
-import { useEffect, useState } from 'react';
+import {
+  FormInput,
+  Button,
+  BannerWrapper,
+  Typography,
+  ButtonGroup,
+  ButtonGroupTypes,
+} from '@ecdlink/ui';
+import { useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { PractitionerService } from '@/services/PractitionerService';
-import { EditCellPhoneNUmberProps } from './edit-cellphone-number.types';
+import {
+  EditCellPhoneNUmberProps,
+  yesNoOptions,
+} from './edit-cellphone-number.types';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import {
-  EditPractitionerModel,
-  editPractitionerSchema,
+  EditCellphoneModel,
+  editCelphoneNumberSchema,
   initialEditPractitionerValues,
-} from '@/schemas/practitioner/edit-practitioner';
+} from '@/schemas/practitioner/edit-cellphone-number';
 import { useAppDispatch } from '@store';
-import { practitionerThunkActions } from '@/store/practitioner';
-import { useHistory, useLocation } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
+import { userActions, userThunkActions } from '@store/user';
 
 export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
   setEditiCellPhoneNumber,
+  user,
 }) => {
-  const [practitionerInfo, setPractitionerInfo] = useState({});
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
   const history = useHistory();
+  const [isWhatsappNumber, setIsWhatsappNumber] = useState(true);
+
+  const getDefaultFormvalues = () => {
+    if (user) {
+      const tempPractitioner: EditCellphoneModel = {
+        name: user.firstName || '',
+        surname: user.surname || '',
+        cellphone: user.phoneNumber || '',
+        email: user?.email! || '',
+        whatsapp: user?.whatsappNumber || '',
+      };
+      return tempPractitioner;
+    } else {
+      return initialEditPractitionerValues;
+    }
+  };
 
   const {
     getValues: getPractitionerInfoFormValues,
-    formState: practitionerInfoFormState,
-    setValue: setPractitionerInfoFormValue,
     register: practitionerInfoFormRegister,
-    reset: resetPractitionerFormValue,
     control: practitionerInfoFormControl,
   } = useForm({
-    resolver: yupResolver(editPractitionerSchema),
-    defaultValues: initialEditPractitionerValues,
+    resolver: yupResolver(editCelphoneNumberSchema),
+    defaultValues: getDefaultFormvalues(),
     mode: 'onBlur',
     reValidateMode: 'onChange',
   });
-
-  const { firstName, surname } = useWatch({
+  const { whatsapp } = useWatch({
     control: practitionerInfoFormControl,
   });
 
-  const handleChangePractitionerInfo = () => {
-    const editPractitionerModel: PractitionerDto = {
-      user: {
-        firstName: firstName ?? '',
-        surname: surname ?? '',
-      },
-    };
+  const savePractitionerUserData = () => {
+    const practitionerForm = getPractitionerInfoFormValues();
+    const copy = Object.assign({}, user);
+    if (copy) {
+      copy.firstName = practitionerForm.name;
+      copy.surname = practitionerForm.surname;
+      copy.phoneNumber = practitionerForm.cellphone;
+      copy.email = practitionerForm.email;
+      if (whatsapp) {
+        copy.whatsappNumber = practitionerForm?.whatsapp;
+      }
 
-    appDispatch(
-      practitionerThunkActions.updatePractitionerById({
-        id: 'c87a3c8a-e247-4899-a757-6e5be5657206',
-        input: editPractitionerModel,
-      })
-    );
-    setEditiCellPhoneNumber(false);
-    // appDispatch(practitionerThunkActions.updatePractitionerById())
+      appDispatch(userActions.updateUser(copy));
+      appDispatch(userThunkActions.updateUser(copy));
+    }
   };
 
   return (
@@ -74,25 +93,56 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
       <div className="w-12/12 px-4 wrapper-with-sticky-button">
         <div className="flex justify-center w-full">
           <div className="flex flex-wrap justify-center">
-            <div className="flex flex-col justify-center gap-4 mt-4 w-full">
-              <FormInput<EditPractitionerModel>
-                label={'First name'}
-                visible={true}
-                nameProp={'firstName'}
-                placeholder="First Name"
-                className="w-full"
-                register={practitionerInfoFormRegister}
-              />
-              <FormInput<EditPractitionerModel>
-                label={'Surname'}
-                placeholder="Surname/Family name"
-                visible={true}
-                nameProp={'surname'}
-                className="w-full"
-                register={practitionerInfoFormRegister}
+            <div className="w-full">
+              <Typography
+                type="h2"
+                text="Cellphone number"
+                color={'textDark'}
+                className="w-11/12 mt-4"
               />
             </div>
-            <div className="self-end -mb-4 w-full">
+            <div className="flex flex-col justify-center gap-4 mt-2 w-full">
+              <FormInput<EditCellphoneModel>
+                label={'Cellphone number'}
+                visible={true}
+                nameProp={'cellphone'}
+                placeholder="073 527 9059"
+                className="w-full"
+                register={practitionerInfoFormRegister}
+              />
+              <div className="mt-4 w-11/12">
+                <Typography
+                  type="h4"
+                  color={'textMid'}
+                  text={'Do you use this cellphone number for WhatsApp?'}
+                  className="z-50 pt-2 w-11/12"
+                />
+              </div>
+              <div>
+                <ButtonGroup<boolean>
+                  options={yesNoOptions}
+                  onOptionSelected={(value: boolean | boolean[]) => {
+                    setIsWhatsappNumber(value as boolean);
+                  }}
+                  color="secondary"
+                  type={ButtonGroupTypes.Button}
+                  className={'w-full'}
+                  // selectedOptions={multipleChildren}
+                />
+              </div>
+              {!isWhatsappNumber && (
+                <FormInput<EditCellphoneModel>
+                  label={'What phone number do you use for WhatsApp?'}
+                  hint={'Optional. Leave blank if you do not use WhatsApp.'}
+                  placeholder="073 527 9059"
+                  visible={true}
+                  nameProp={'whatsapp'}
+                  className="w-full"
+                  register={practitionerInfoFormRegister}
+                />
+              )}
+            </div>
+            <div className="self-end mt-4 -mb-4 w-full h-full">
               <Button
                 size="normal"
                 className="w-full mb-4"
@@ -102,19 +152,10 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
                 textColor="white"
                 icon="SaveIcon"
                 onClick={() => {
-                  handleChangePractitionerInfo();
+                  // handleChangePractitionerInfo();
+                  savePractitionerUserData();
                   setEditiCellPhoneNumber(false);
                 }}
-              />
-              <Button
-                size="normal"
-                className="w-full mb-4"
-                type="outlined"
-                color="primary"
-                text="Remove practitioner"
-                textColor="primary"
-                icon="TrashIcon"
-                onClick={() => {}}
               />
             </div>
           </div>
