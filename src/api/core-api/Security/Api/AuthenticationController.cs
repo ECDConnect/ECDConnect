@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using NPOI.OpenXml4Net.OPC;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 
@@ -63,9 +64,16 @@ namespace ECDLink.Security.Api
             //TODO: hook in JWT obfuscation in here
             var jwt = await _securityManager.GenerateJwtForUserAsync(user, JwtEncoderEnum.Standard);
 
-            var package = new OkObjectResult(JsonConvert.DeserializeObject<JwtObject>(jwt));
-
-            return package;
+            //var package = new OkObjectResult(JsonConvert.DeserializeObject<JwtObject>(jwt));
+            var jwtObj = JsonConvert.DeserializeObject<JwtObject>(jwt);
+            //var package = new OkObjectResult(jwtObj);
+            var jwtObjObfuscated = await _securityManager.ObfuscateJwtToken(jwtObj.auth_token, jwtObj.expires_in, user.Id);
+            //var jwtObjObfuscated = JsonConvert.DeserializeObject<JwtObfuscatedObject>(tokenGuid.JWTToken);
+            var obfPackage = new OkObjectResult(jwtObjObfuscated);
+            //var obfPackage = new OkObjectResult(JsonConvert.DeserializeObject<JwtObfuscatedObject>(tokenGuid));
+            //return package;
+            //return new OkObjectResult(_securityManager.ObfuscateJwtToken(jwt, user.Id));
+            return obfPackage;
         }
 
         // This API should always return an OK result as to not give away emails

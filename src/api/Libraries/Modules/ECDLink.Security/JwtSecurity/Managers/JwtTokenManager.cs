@@ -1,5 +1,6 @@
 using ECDLink.Core.Extensions;
 using ECDLink.Core.Helpers;
+using ECDLink.PostgresTenancy.Repository;
 using ECDLink.Security.JwtSecurity.Configuration;
 using ECDLink.Security.JwtSecurity.Enums;
 using ECDLink.Security.JwtSecurity.Factories;
@@ -14,24 +15,41 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+//using ECDLink.PostgresJWT.Entities;
+using ECDLink.PostgresTenancy.Entities;
+using ECDLink.Tenancy.Context;
+using ECDLink.Tenancy.Services;
+using ECDLink.PostgresTenancy.Services;
+using HotChocolate;
+using Newtonsoft.Json.Linq;
+//using ECDLink.DataAccessLayer.Context;
+//using Microsoft.EntityFrameworkCore;
 
 namespace ECDLink.Security.JwtSecurity.Managers
 {
     public class JwtTokenManager
     {
         private IJwtFactory _jwtFactory;
+        //private IJWTRepository _jwtRepository;
+        private IJWTService _jwtService;
         private readonly IClaimsManager _claimsManager;
         private readonly TokenValidationParameters _parameters;
+        //private readonly AuthenticationDbContext _dbContext;
+        //private readonly DbSet<ShortenUrlEntity> _entities;
 
         public JwtTokenManager(
             IJwtFactory jwtFactory, 
             IClaimsManager claimsManager, 
+            //IJWTRepository jwtRepository,
+            [Service] IJWTService jWTService,
             TokenValidationParameters parameters
             )
         {
             _jwtFactory = jwtFactory;
             _claimsManager = claimsManager;
             _parameters = parameters;
+            //_jwtRepository = jwtRepository;
+            _jwtService = jWTService;
         }
 
         public async Task<string> GenerateJwt(ClaimsIdentity identity, string userId, JwtEncoderEnum encoderType)
@@ -129,6 +147,13 @@ namespace ECDLink.Security.JwtSecurity.Managers
                 Console.WriteLine(e);
                 throw;
             }
+        }
+
+        public async Task<JWTUserTokensEntityReturn> StoreJWTToken(string auth_token, string expiresIn, string contextIdentifier)
+        {
+            Guid tenantId = TenantExecutionContext.Tenant.Id;            
+            var insertedJWTToken = _jwtService.InsertToken(new JWTUserTokensEntity() { InsertedDate = DateTime.Now,  UserId = contextIdentifier, Token = auth_token, TokenKey = Guid.NewGuid().ToString(), ExpiresIn = expiresIn, TenantId = tenantId });
+            return new JWTUserTokensEntityReturn() { id = insertedJWTToken.TokenKey, auth_token = insertedJWTToken.TokenKey, expires_in = insertedJWTToken.ExpiresIn };
         }
     }
 }

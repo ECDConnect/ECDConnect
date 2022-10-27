@@ -206,8 +206,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             //string parentUserId = null;
 
             var password = "AQAAAAEAACcQAAAAEG8HH4NQmDeD+mt5aV4WZLhKb4LnQN3HdkzGloeqmaH6qbA37HSVhysm+hPEq1NKZg==";
-            var securityStamp = "NXAOZGBIVGAMGCHVNGN2WFJXPLPS67YD";
-            var concurrencystamp = "d0797595-3855-4e5c-aebf-cf7300ddae02";
+            //var securityStamp = "NXAOZGBIVGAMGCHVNGN2WFJXPLPS67YD";
+            //var concurrencystamp = "d0797595-3855-4e5c-aebf-cf7300ddae02";
             string franchisorId = "";
 
             var uId = httpContextAccessor.HttpContext.GetUser().Id;

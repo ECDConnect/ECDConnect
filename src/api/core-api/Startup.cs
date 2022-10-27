@@ -36,6 +36,11 @@ using Microsoft.Extensions.Hosting;
 using System;
 using System.Diagnostics;
 using ECDLink.Tenancy.EntityFramework.Extensions;
+using ECDLink.PostgresTenancy.Repository;
+using ECDLink.Tenancy.Services;
+//using ECDLink.PostgresJWT.Entities;
+using ECDLink.PostgresTenancy.Services;
+using ECDLink.PostgresTenancy.Entities;
 
 namespace EcdLink.Api.CoreApi
 {
@@ -114,6 +119,11 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<IPasswordManager<ApplicationUser>, PasswordManager>();
             services.AddTransient<IAuthenticationManager<ApplicationUser>, SecurityManager>();
 
+            //services.AddTransient<IJWTRepository<JWTUserTokensEntity>, JWTRepository>();
+            //services.AddTransient<JWTRepository>();//IJWTRepository jwtRepository
+            //services.AddTransient<IJWTService>();//IJWTRepository jwtRepository
+            services.AddTransient<IJWTService, JWTService>();
+            services.AddTransient<IJWTRepository, JWTRepository>();
             services.AddTransient<SecurityNotificationManager>();
             services.AddTransient<InvitationNotificationManager>();
             services.AddTransient<HealthCareWorkerManager>();
