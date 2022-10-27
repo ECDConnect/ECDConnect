@@ -170,7 +170,7 @@ export const ClassDashboard: React.FC = () => {
         break;
     }
   };
-  console.log(currentTab?.title);
+
   const displayHelp =
     currentTab?.title === 'Attendance' || currentTab?.title === 'Programme';
 
