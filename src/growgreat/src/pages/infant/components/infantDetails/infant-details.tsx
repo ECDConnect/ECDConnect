@@ -41,7 +41,6 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
   });
   const genders = useSelector(staticDataSelectors.getGenders);
   const currentDate = new Date();
-  console.log({ multipleChildrenCount });
 
   const genderOptionsUpdated = genders
     ?.filter((gender) => gender?.description !== 'Other')
@@ -59,12 +58,10 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
   const minDate = new Date(myYear.getFullYear(), myMonth.getMonth(), 1);
   const maxDate = new Date(myYear.getFullYear(), myMonth.getMonth() + 1, 0);
   const { years, months } = intervalToDuration({
-    start: myDay,
+    start: myDay > new Date() ? new Date() : myDay,
     end: currentDate,
   });
   const { isValid } = useFormState({ control: infantDetailsFormControl });
-
-  console.log(getInfantDetailsFormValues());
 
   useEffect(() => {
     setMyDay(new Date(myYear.getFullYear(), myMonth.getMonth(), 1));
@@ -83,7 +80,30 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
     return <span>{date.getDate()}</span>;
   };
 
-  console.log(watch());
+  const setYearDate = (date: Date) => {
+    if (date > new Date()) {
+      setMyYear(new Date());
+      return;
+    }
+    setMyYear(date);
+  };
+
+  const setMonthDate = (date: Date) => {
+    if (date > new Date()) {
+      setMyMonth(new Date());
+      return;
+    }
+    setMyMonth(date);
+  };
+
+  const setDayDate = (date: Date) => {
+    if (date > new Date()) {
+      setMyDay(new Date());
+      return;
+    }
+    setMyDay(date);
+  };
+
   return (
     <div className="h-screen ">
       <div>
@@ -127,7 +147,7 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
             placeholderText={'Please select a date'}
             className="mt-1 w-full text-textMid bg-uiBg border-none rounded-md text-lg focus:border-primary focus:ring-primary shadow-sm"
             selected={myDay}
-            onChange={(date: Date) => setMyDay(date)}
+            onChange={(date: Date) => setDayDate(date)}
             dateFormat="dd"
             renderDayContents={renderDayContents}
             renderCustomHeader={({ date }) => <div></div>}
@@ -136,7 +156,7 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
             placeholderText={'Please select a date'}
             className="mt-1 w-full text-primtextMidary bg-uiBg border-none rounded-md text-lg focus:border-primary focus:ring-primary shadow-sm"
             selected={myMonth}
-            onChange={(date: Date) => setMyMonth(date)}
+            onChange={(date: Date) => setMonthDate(date)}
             renderCustomHeader={({ date }) => <div></div>}
             dateFormat="MMMM"
             showMonthYearPicker
@@ -146,7 +166,7 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
             placeholderText={'Please select a date'}
             className="mt-1 w-full bg-uiBg text-textMid border-none rounded-md text-lg focus:border-primary focus:ring-primary shadow-sm"
             selected={myYear}
-            onChange={(date: Date) => setMyYear(date)}
+            onChange={(date: Date) => setYearDate(date)}
             dateFormat="yyyy"
             showYearPicker
           />

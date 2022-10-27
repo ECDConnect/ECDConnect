@@ -165,6 +165,12 @@ export const PregnantMaternalCaseRecord: React.FC<
           />
         </div>
         <div className="mt-4">
+          <Typography
+            type="h4"
+            color={'textMid'}
+            text={`Does ${details?.name} have her Maternal Case Record?`}
+            className="z-50 pt-2 w-11/12"
+          />
           <ButtonGroup<boolean>
             options={yesNoOptions}
             onOptionSelected={(value: boolean | boolean[]) =>
@@ -197,9 +203,7 @@ export const PregnantMaternalCaseRecord: React.FC<
                   }}
                 />
                 <Typography
-                  text={
-                    "I do not have a copy of Lethabo's Maternal Case Record. I declare that all information provided about Lethabo is accurate."
-                  }
+                  text={`I do not have a copy of ${details?.name}'s Maternal Case Record. I declare that all information provided about ${details?.name} is accurate.`}
                   type="body"
                   color={'textMid'}
                   className="mt-8"

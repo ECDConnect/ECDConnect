@@ -26,6 +26,7 @@ import roadToHealth from '../../../../assets/roadToHealth.png';
 
 export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
   onSubmit,
+  infantDetails,
 }) => {
   const {
     watch,
@@ -47,7 +48,6 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
     control: roadToHealthControl,
   });
 
-  console.log(watch());
   const [hasMaternalCaseRecord, setHasMaternalCaseRecord] = useState<any>(null);
   const acceptedFormats = ['jpg', 'pdf', 'jpeg'];
   const [registrationFormPhotoUrl, setRegistrationFormPhotoUrl] =
@@ -92,7 +92,7 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
         <Typography
           type="h4"
           color={'textMid'}
-          text={"Does the caregiver have Themba's Road to Health Book?"}
+          text={`Does the caregiver have ${infantDetails?.firstName}'s Road to Health Book?`}
           className="z-50 mt-8 w-9/12"
         />
         <div className="mt-4">

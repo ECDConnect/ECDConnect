@@ -27,16 +27,13 @@ import { useSelector } from 'react-redux';
 import { practitionerSelectors } from '@/store/practitioner';
 import { classroomsSelectors } from '@/store/classroom';
 import { useAppDispatch } from '@store';
-import {
-  childrenForPractitionerSelectors,
-  childrenForPractitionerThunkActions,
-} from '@/store/childrenForPractitioner';
 import { authSelectors } from '@/store/auth';
 import { PractitionerNotRegistered } from './practitioner-not-registered/practitioner-not-registered';
 import { PractitionerService } from '@/services/PractitionerService';
 import { practitionerThunkActions } from '@/store/practitioner';
 import { ClassroomGroupService } from '@/services/ClassroomGroupService';
 import { getMonthName } from '@utils/classroom/attendance/track-attendance-utils';
+import { getMonth } from 'date-fns';
 
 export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const history = useHistory();
@@ -51,13 +48,11 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const practitioner = practitioners?.find(
     (practitioner) => practitioner?.userId === practitionerId
   );
-  const childrenForPractitioner = useSelector(
-    childrenForPractitionerSelectors.getChildrenForPractitioner
-  );
+
   const practitionerClassroomGroups = classroomGroups?.filter((item: any) => {
     return item?.userId === practitionerId;
   });
-  const learners = useSelector(classroomsSelectors.getClassroomGroupLearners);
+  // const learners = useSelector(classroomsSelectors.getClassroomGroupLearners);
   // const learners = useSelector(classroomsSelectors.)
   const { theme } = useTheme();
 
@@ -68,9 +63,11 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const onCreatePractitionerNoteBack = () => {
     setCreatePractitionerdNoteVisible(false);
   };
-
+  const [childrenCount, setChildrenCount] = useState(0);
   const [classMetrics, setClassMetrics] = useState<any>();
-  const practitionerClassrooms: any[] = [];
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // const practitionerClassrooms: any[] = [];
+  const [practitionerClassrooms, setPractitionerClassrooms] = useState<any[]>();
 
   const handleReassignClass = (practitionerId: string) => {
     history.push('practitioner-reassign-class', {
@@ -78,34 +75,50 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
     });
   };
 
-  if (classMetrics) {
-    practitionerClassroomGroups.forEach((e: any) => {
-      let classroomValue: any = classMetrics.find(
-        (item: any) => item?.id === e?.classroomGroupId
-      );
+  // if (classMetrics) {
+  //   classMetrics.forEach((e: any) => {
+  //     let classroomValue: any = practitionerClassroomGroups.find(
+  //       (item: any) => item?.userId === e?.practitionerId
+  //     );
 
-      if (classroomValue) {
-        practitionerClassrooms.push({
-          ...e,
-          childCount: classroomValue?.childCount,
-          attendancePercentage: classroomValue?.attendancePercentage,
-          month: classroomValue?.month,
-          year: classroomValue?.year,
-        });
-      } else {
-        practitionerClassrooms.push({ ...e });
-      }
-    });
-  }
+  //     if (classroomValue) {
+  //       practitionerClassrooms.push({
+  //         ...e,
+  //         childCount: classroomValue?.childCount,
+  //         attendancePercentage: classroomValue?.attendancePercentage,
+  //         month: classroomValue?.month,
+  //         year: classroomValue?.year,
+  //       });
+  //     } else {
+  //       practitionerClassrooms.push({ ...e });
+  //     }
+  //   });
+  // }
 
   useEffect(() => {
-    (async () =>
-      await appDispatch(
-        childrenForPractitionerThunkActions.getChildrenForPractitioner({
-          id: practitionerId,
-        })
-      ).unwrap())();
-  }, [appDispatch, practitionerId]);
+    if (classMetrics) {
+      const practitionerClassroomData = classMetrics?.filter((item: any) => {
+        return practitionerClassroomGroups.some((x) => {
+          return item?.practitionerId === x?.userId;
+        });
+      });
+      setPractitionerClassrooms(practitionerClassroomData);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [classMetrics]);
+
+  useEffect(() => {
+    let count = 0;
+    if (practitionerClassrooms?.length! > 0) {
+      // eslint-disable-next-line array-callback-return
+      practitionerClassrooms?.map((item: any) => {
+        count += item?.childCount;
+      });
+      return setChildrenCount(count);
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [practitionerClassrooms]);
 
   const callForHelp = () => {
     window.open(`tel:${practitioner?.user?.phoneNumber}`);
@@ -140,9 +153,16 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   };
 
   const classroomsMetrics = async () => {
+    const today = new Date();
+    const firstDayPrevMonth = new Date(
+      today.getFullYear(),
+      today.getMonth() - 1,
+      1
+    );
+    const lastDayPrevMonth = new Date(today.getFullYear(), today.getMonth(), 0);
     const metricsData = await new ClassroomGroupService(
       userAuth?.auth_token!
-    ).getClassAttendanceMetrics();
+    ).getClassAttendanceMetrics(firstDayPrevMonth, lastDayPrevMonth);
     setClassMetrics(metricsData);
     return metricsData;
   };
@@ -182,7 +202,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
             </div>
 
             <div className={styles.chipsWrapper}>
-              {practitionerClassroomGroups.length > 0 ? (
+              {practitionerClassroomGroups?.length > 0 ? (
                 practitionerClassroomGroups?.map((item, index) => {
                   return (
                     <StatusChip
@@ -204,13 +224,15 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                   className={'px-3 py-1.5'}
                 />
               )}
-              <StatusChip
-                backgroundColour="secondary"
-                borderColour="secondary"
-                text={`${childrenForPractitioner?.length} children`}
-                textColour={'white'}
-                className={'mr-2 px-3 py-1.5'}
-              />
+              {childrenCount && (
+                <StatusChip
+                  backgroundColour="secondary"
+                  borderColour="secondary"
+                  text={`${childrenCount} children`}
+                  textColour={'white'}
+                  className={'mr-2 px-3 py-1.5'}
+                />
+              )}
             </div>
             <div className={styles.contactButtons}>
               <Button
@@ -221,7 +243,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                 onClick={callForHelp}
               >
                 <PhoneIcon
-                  className="h-5 w-5 text-primary"
+                  className="text-primary h-5 w-5"
                   aria-hidden="true"
                 />
               </Button>
@@ -261,7 +283,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                   <Button
                     type="filled"
                     color="primary"
-                    className={'w-11/12 mt-6 mb-6'}
+                    className={'mt-6 mb-6 w-11/12'}
                     onClick={() => handleReassignClass(practitionerId)}
                   >
                     {renderIcon(
@@ -278,20 +300,25 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                 </div>
               </div>
             </Card>
-            {practitionerClassrooms.length > 0
-              ? practitionerClassrooms?.map((item, index) => {
+            {practitionerClassrooms?.length! > 0
+              ? practitionerClassrooms?.map((item: any, index: number) => {
+                  const classroomItem: any = practitionerClassroomGroups?.find(
+                    (x) => {
+                      return x?.id === item?.classroomGroupId;
+                    }
+                  );
                   return (
                     <Card className={styles.absentCard} key={index}>
                       <Typography
                         type={'h1'}
-                        text={item?.name}
+                        text={classroomItem?.name}
                         color={'textMid'}
                         className={styles.absentCardTitle}
                       />
                       <div>
-                        <div className="flex flex-col mt-2 mr-2">
-                          <div className="flex items-center justify-between w-11/12 ml-4">
-                            <div className="flex items-center w-full">
+                        <div className="mt-2 mr-2 flex flex-col">
+                          <div className="ml-4 flex w-11/12 items-center justify-between">
+                            <div className="flex w-full items-center">
                               <Typography
                                 type={'h2'}
                                 text={`${item?.childCount}`}
@@ -318,7 +345,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                                   }
                                 )
                               }
-                              className="rounded-xl mt-2"
+                              className="mt-2 rounded-xl"
                             >
                               <Typography
                                 type="help"
@@ -328,7 +355,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                               {renderIcon('EyeIcon', styles.buttonIcon)}
                             </Button>
                           </div>
-                          <div className="flex justify-start items-center mt-2 mx-4 mb-4 w-9/12">
+                          <div className="mx-4 mt-2 mb-4 flex w-9/12 items-center justify-start">
                             <StatusChip
                               backgroundColour="alertMain"
                               borderColour="alertMain"
@@ -340,7 +367,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                               type={'body'}
                               weight={'bold'}
                               text={`attendance in ${getMonthName(
-                                item?.month
+                                getMonth(new Date()) - 1
                                 // eslint-disable-next-line no-useless-concat
                               )}\u00A0${item?.year}`}
                               color={'textMid'}
@@ -359,8 +386,8 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                 color={'textMid'}
                 className={styles.absentCardTitle}
               />
-              <div className="flex items-center mt-2 mr-4">
-                <div className="flex items-center mt-2 mx-4 mb-4 w-full">
+              <div className="mt-2 mr-4 flex items-center">
+                <div className="mx-4 mt-2 mb-4 flex w-full items-center">
                   <StatusChip
                     backgroundColour="errorMain"
                     borderColour="errorMain"
@@ -397,8 +424,8 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                 className={styles.absentCardTitle}
               />
               <div>
-                <div className="flex flex-col mt-2 mr-4">
-                  <div className="flex items-center w-11/12 ml-4">
+                <div className="mt-2 mr-4 flex flex-col">
+                  <div className="ml-4 flex w-11/12 items-center">
                     <Typography
                       type={'h2'}
                       text={'N/A'}
@@ -407,7 +434,10 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                     />
                     <Typography
                       type={'body'}
-                      text={'programmes planned in September 2022'}
+                      text={`programmes planned in  ${getMonthName(
+                        getMonth(new Date()) - 1
+                        // eslint-disable-next-line no-useless-concat
+                      )} 2022`}
                       color={'textDark'}
                       className="mt-2 ml-4 mr-8"
                     />
@@ -417,14 +447,14 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                       color="primary"
                       type="filled"
                       onClick={() => {}}
-                      className="rounded-xl mt-2"
+                      className="mt-2 rounded-xl"
                       disabled={true}
                     >
                       <Typography type="help" color="white" text="View" />
                       {renderIcon('EyeIcon', styles.buttonIcon)}
                     </Button>
                   </div>
-                  <div className="flex justify-start items-center mt-2 mx-4 mb-4 w-9/12">
+                  <div className="mx-4 mt-2 mb-4 flex w-9/12 items-center justify-start">
                     <StatusChip
                       backgroundColour="errorMain"
                       borderColour="errorMain"
@@ -533,7 +563,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                   color="textMid"
                   className={'mt-1'}
                 />
-                {notes.length > 0 ? (
+                {notes?.length > 0 ? (
                   <Typography
                     text={getLastNoteDate(notes)}
                     type="h4"
@@ -587,11 +617,11 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
               </Dialog>
             </div>
             <Divider dividerType="dashed" className="my-4" />
-            <div className="flex justify-center w-full">
+            <div className="flex w-full justify-center">
               <Button
                 type="outlined"
                 color="primary"
-                className={'w-11/12 mt-6 mb-6'}
+                className={'mt-6 mb-6 w-11/12'}
                 onClick={removePractitioner}
               >
                 {renderIcon(

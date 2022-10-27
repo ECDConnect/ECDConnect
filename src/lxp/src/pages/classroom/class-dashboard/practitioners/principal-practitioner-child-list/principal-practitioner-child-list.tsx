@@ -1,4 +1,4 @@
-import { ChildDto, LearnerDto, PractitionerDto } from '@ecdlink/core';
+import { ChildDto, LearnerDto } from '@ecdlink/core';
 import { getAvatarColor } from '@ecdlink/core';
 import { SearchDropDown, StackedList, BannerWrapper } from '@ecdlink/ui';
 import {
@@ -25,7 +25,6 @@ import { useStaticData } from '@hooks/useStaticData';
 import { WorkflowStatusEnum } from '@ecdlink/graphql';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { practitionerSelectors } from '@/store/practitioner';
-import { childrenForPractitionerSelectors } from '@/store/childrenForPractitioner';
 import { IconInformationIndicator } from '../../../../classroom/programme-planning/components/icon-information-indicator/icon-information-indicator';
 
 export const PrincipalPractitionerChildList: React.FC<
@@ -46,9 +45,9 @@ export const PrincipalPractitionerChildList: React.FC<
   const history = useHistory();
   const attendanceData = useSelector(attendanceSelectors.getAttendance);
   const children = useSelector(childrenSelectors.getChildren);
-  const childrenForPractitioner = useSelector(
-    childrenForPractitionerSelectors.getChildrenForPractitioner
-  );
+  // const childrenForPractitioner = useSelector(
+  //   childrenForPractitionerSelectors.getChildrenForPractitioner
+  // );
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const practitionerClassroomGroups = classroomGroups?.filter((item: any) => {
     return item?.userId === practitionerId;
@@ -64,7 +63,18 @@ export const PrincipalPractitionerChildList: React.FC<
   const classroomGroupLearners = useSelector(
     classroomsSelectors.getClassroomGroupLearners
   );
-  const isPlaygroup = useSelector(classroomsSelectors.isPlaygroup());
+
+  const practitionerLearners = classroomGroupLearners.filter((el) => {
+    return practitionerClassroomGroups.some((f) => {
+      return f.id === el.classroomGroupId;
+    });
+  });
+  const childrenForPractitioner = practitionerLearners.filter((el) => {
+    return children?.some((f) => {
+      return f.userId === el.userId;
+    });
+  });
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [addChildButtonExpanded, setAddChildButtonExpanded] =
     useState<boolean>(true);
@@ -79,10 +89,6 @@ export const PrincipalPractitionerChildList: React.FC<
   const [updatedPlaygroups, setUpdatedPlaygroups] = useState<
     SearchDropDownOption<string>[]
   >([]);
-
-  const childrenForPractitionerList = children?.filter((item) =>
-    childrenForPractitioner?.find((item2) => item.id === item2.id)
-  );
 
   const filterInfo: FilterInfo = {
     filterName: 'Class',
@@ -138,14 +144,10 @@ export const PrincipalPractitionerChildList: React.FC<
   }, [classroomGroupLearners]);
 
   useEffect(() => {
-    if (
-      classroomGroupLearners &&
-      childrenForPractitionerList &&
-      pendingStatusId
-    ) {
+    if (classroomGroupLearners && childrenForPractitioner && pendingStatusId) {
       const childListItem: UserAlertListDataItem[] = [];
 
-      for (const child of childrenForPractitionerList) {
+      for (const child of childrenForPractitioner) {
         const learner = classroomGroupLearners.find(
           (x) => x.userId === child.userId
         );
@@ -169,9 +171,9 @@ export const PrincipalPractitionerChildList: React.FC<
     setActiveFilters(value);
     const selectedClassrooms = value.map((x) => x.value);
     const childListItem: UserAlertListDataItem[] = [];
-    if (childrenForPractitionerList && classroomGroupLearners) {
+    if (childrenForPractitioner && classroomGroupLearners) {
       if (value && value.length > 0) {
-        for (const child of childrenForPractitionerList) {
+        for (const child of childrenForPractitioner) {
           const learner = classroomGroupLearners.find(
             (x) =>
               x.userId === child.userId &&
@@ -182,7 +184,7 @@ export const PrincipalPractitionerChildList: React.FC<
           }
         }
       } else {
-        for (const child of childrenForPractitionerList) {
+        for (const child of childrenForPractitioner) {
           const learner = classroomGroupLearners.find(
             (x) => x.userId === child.userId
           );
@@ -197,8 +199,8 @@ export const PrincipalPractitionerChildList: React.FC<
   };
 
   const onSortItemsChanges = (column: string) => {
-    if (childrenForPractitionerList && classroomGroupLearners) {
-      const filteredChildren = childrenForPractitionerList.filter((child) =>
+    if (childrenForPractitioner && classroomGroupLearners) {
+      const filteredChildren = childrenForPractitioner.filter((child) =>
         childUserListData?.some((x) => x.id === child.id)
       );
       const sorted = [...filteredChildren].sort((a: ChildDto, b: ChildDto) => {
@@ -365,24 +367,22 @@ export const PrincipalPractitionerChildList: React.FC<
         onBack={() => setSearchTextActive(false)}
         onSearchButtonClick={() => setSearchTextActive(true)}
       >
-        {isPlaygroup && (
-          <SearchDropDown<string>
-            displayMenuOverlay={true}
-            menuItemClassName={styles.dropdownStyles}
-            className={'mr-1'}
-            options={updatedPlaygroups}
-            selectedOptions={activeFilters}
-            onChange={onFilterItemsChanges}
-            placeholder={'Classes'}
-            pluralSelectionText={'Classes'}
-            multiple
-            color={'secondary'}
-            info={{
-              name: `Filter by: ${filterInfo?.filterName}`,
-              hint: filterInfo?.filterHint || '',
-            }}
-          />
-        )}
+        <SearchDropDown<string>
+          displayMenuOverlay={true}
+          menuItemClassName={styles.dropdownStyles}
+          className={'mr-1'}
+          options={updatedPlaygroups}
+          selectedOptions={activeFilters}
+          onChange={onFilterItemsChanges}
+          placeholder={'Classes'}
+          pluralSelectionText={'Classes'}
+          multiple
+          color={'secondary'}
+          info={{
+            name: `Filter by: ${filterInfo?.filterName}`,
+            hint: filterInfo?.filterHint || '',
+          }}
+        />
 
         <SearchDropDown<string>
           displayMenuOverlay={true}
@@ -403,8 +403,8 @@ export const PrincipalPractitionerChildList: React.FC<
       </SearchHeader>
 
       <div className={styles.overlay}>
-        {(!childrenForPractitionerList ||
-          childrenForPractitionerList.length === 0) && (
+        {(!childrenForPractitioner ||
+          childrenForPractitioner?.length === 0) && (
           <IconInformationIndicator
             title="This practitioner doesn't have any children yet!"
             subTitle="Check with the practitioner!"

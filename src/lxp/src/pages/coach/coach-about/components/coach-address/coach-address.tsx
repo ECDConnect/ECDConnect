@@ -11,7 +11,7 @@ import {
   renderIcon,
 } from '@ecdlink/ui';
 
-import { coachActions, coachSelectors } from '@store/coach';
+import { coachActions, coachSelectors, coachThunkActions } from '@store/coach';
 import { SiteAddressDto, ProvinceDto } from '@ecdlink/core';
 import { staticDataSelectors } from '@store/static-data';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
@@ -112,14 +112,29 @@ export const CoachAddress: React.FC = () => {
     control: coachAddressFormControl,
   });
 
-  // console.log(provinces);
-
   const handleFormSubmit = (): void => {
-    if (isValid) {
-      const newAddress = getCoachAddressFormValues();
+    try {
       const copy = Object.assign({}, coach);
 
-      if (!isEqual(copy.siteAddress, newAddress)) {
+      if (isOfficeAddress) {
+        if (copy.franchisor?.siteAddressId !== undefined) {
+          copy.siteAddressId = copy.franchisor?.siteAddressId;
+        } else {
+          let tempAddress = {
+            addressLine1: '',
+            addressLine2: '',
+            addressLine3: '',
+            postalCode: '',
+            provinceId: provinces[0].id,
+          };
+
+          copy.siteAddress = tempAddress;
+          // history.push(ROUTES.COACH.ABOUT.ROOT);
+          // return;
+        }
+        setIsOfficeAddress(true);
+      } else {
+        const newAddress = getCoachAddressFormValues();
         const provinceDescription = (id: string) =>
           provinces.find((province) => province.id === id);
 
@@ -131,15 +146,15 @@ export const CoachAddress: React.FC = () => {
 
         newAddress.province = newProvince;
         copy.siteAddress = newAddress;
-
-        if (isOfficeAddress) {
-          copy.siteAddressId = copy.franchisor?.siteAddressId;
-          setIsOfficeAddress(true);
-        }
-
-        appDispatch(coachActions.updateCoach(copy));
-        resetCoachAddressFormValue(copy.siteAddress);
       }
+
+      appDispatch(coachActions.updateCoach(copy));
+      appDispatch(coachThunkActions.updateCoach(copy));
+
+      resetCoachAddressFormValue();
+      history.push(ROUTES.COACH.ABOUT.ROOT);
+    } catch (error) {
+      console.log('not valid, errors: ', error);
     }
   };
 
@@ -269,7 +284,6 @@ export const CoachAddress: React.FC = () => {
             type="filled"
             color="primary"
             className={styles.button}
-            disabled={!isValid}
             onClick={handleFormSubmit}
           >
             {renderIcon('SaveIcon', styles.icon)}

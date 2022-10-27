@@ -49,12 +49,11 @@ export const PregnantDetails: React.FC<EditPregnantDetailsProps> = ({
   const [userId, setUserId] = useState('');
   const mothers = useSelector(motherSelectors.getMothers);
   const handleAddExistingUser = useMemo(() => {
-    const existingUser = mothers.find((item) => item.id === userId.toString());
+    const existingUser = mothers.find(
+      (item) => item?.user?.id === userId.toString()
+    );
     return existingUser;
   }, [userId, mothers]);
-
-  console.log({ handleAddExistingUser });
-  console.log({ mothers });
 
   useEffect(() => {
     if (isAlreadyClient) {
@@ -64,7 +63,6 @@ export const PregnantDetails: React.FC<EditPregnantDetailsProps> = ({
     }
   }, [isAlreadyClient, setPregnantDetailsFormValue, handleAddExistingUser]);
 
-  console.log(watch());
   return (
     <div className="h-screen ">
       <div>
@@ -176,7 +174,7 @@ export const PregnantDetails: React.FC<EditPregnantDetailsProps> = ({
               setAddress(handleAddExistingUser?.siteAddressId);
               setContactInformation(handleAddExistingUser?.phoneNumber);
             }}
-            disabled={!isValid && !isAlreadyClient}
+            disabled={!isValid}
           />
         </div>
       </div>

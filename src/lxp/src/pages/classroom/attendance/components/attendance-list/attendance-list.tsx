@@ -244,7 +244,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
         <div className={styles.statusChipsWrapper(shouldFilter)}>
           <StatusChip
             className={'mr-2'}
-            padding={'px-2 py-0'}
+            padding={'px-3 py-1.5'}
             textColour="white"
             borderColour="successMain"
             textType="small"
@@ -253,7 +253,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
           />
           <StatusChip
             textColour="white"
-            padding={'px-2 py-0'}
+            padding={'px-3 py-1.5'}
             borderColour="errorMain"
             textType="small"
             backgroundColour="errorMain"

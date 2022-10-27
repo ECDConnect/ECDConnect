@@ -53,7 +53,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             using var scope = dbFactory.CreateDbContext();
             using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
-            var dbRepo = repoFactory.CreateRepository<Coach>(userContext: uId);
+            var dbRepo = repoFactory.CreateGenericRepository<Coach>(userContext: uId);
             
             Coach coach = (Coach)dbRepo.GetAll().Where(x => x.Id.Equals(input.Id)).FirstOrDefault();
             {
@@ -82,6 +82,27 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                             address.ProvinceId = input.SiteAddress.ProvinceId;
                         var updateAddressResult = addressRepo.Update(address);
                         //TODO: create address if not exists, but it really should
+                    }
+                    if (input.SiteAddress!=null && input.SiteAddressId == null)
+                    {
+                        //create siteaddress
+                        var addressRepo = repoFactory.CreateRepository<SiteAddress>(userContext: uId);
+                        SiteAddress address = new SiteAddress();
+                        if (input.SiteAddress.Ward != null)
+                            address.Ward = input.SiteAddress.Ward;
+                        if (input.SiteAddress.AddressLine1 != null)
+                            address.AddressLine1 = input.SiteAddress.AddressLine1;
+                        if (input.SiteAddress.AddressLine2 != null)
+                            address.AddressLine2 = input.SiteAddress.AddressLine2;
+                        if (input.SiteAddress.AddressLine3 != null)
+                            address.AddressLine3 = input.SiteAddress.AddressLine3;
+                        if (input.SiteAddress.PostalCode != null)
+                            address.PostalCode = input.SiteAddress.PostalCode;
+                        if (input.SiteAddress.ProvinceId != null)
+                            address.ProvinceId = input.SiteAddress.ProvinceId;
+                        var updateAddressResult = addressRepo.Insert(address);
+                        if (updateAddressResult != null)
+                            coach.SiteAddressId = updateAddressResult.Id;
                     }
 
                     var updateResult = dbRepo.Update(coach);

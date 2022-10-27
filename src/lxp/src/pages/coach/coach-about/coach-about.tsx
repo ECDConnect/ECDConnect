@@ -116,10 +116,17 @@ export const CoachAbout: React.FC = () => {
       ? `${user.siteAddress.ward}<br/>`
       : '';
 
-    return address.concat(`
-      ${user.siteAddress.addressLine1}<br/>
-      ${user.siteAddress.addressLine2}, ${user.siteAddress.addressLine3} ${user.siteAddress.postalCode}
-      <br/>${user.siteAddress.province?.description}`);
+    if (
+      user.siteAddress.province?.description === undefined ||
+      user.siteAddress.addressLine1 === ''
+    ) {
+      return 'Franchisor Site Address Not Set';
+    } else {
+      return address.concat(`
+        ${user.siteAddress.addressLine1}<br/>
+        ${user.siteAddress.addressLine2}, ${user.siteAddress.addressLine3} ${user.siteAddress.postalCode}
+        <br/>${user.siteAddress.province?.description}`);
+    }
   };
 
   const setNewStackListItems = (currentUser: CoachDto) => {
@@ -183,6 +190,18 @@ export const CoachAbout: React.FC = () => {
         },
       },
       {
+        title: 'Work address',
+        subTitle: formatSiteAddressAsText(currentUser),
+        switchTextStyles: true,
+        hasMarkup: true,
+        actionName: currentUser?.siteAddress ? 'Edit' : 'Add',
+        actionIcon: currentUser?.siteAddress ? 'PencilIcon' : 'PlusIcon',
+        buttonType: currentUser?.siteAddress ? 'filled' : 'outlined',
+        onActionClick: () => {
+          history.push(ROUTES.COACH.ABOUT.ADDRESS);
+        },
+      },
+      {
         title: 'Signature',
         subTitle: currentUser?.signingSignature
           ? 'Replace your signature'
@@ -193,18 +212,6 @@ export const CoachAbout: React.FC = () => {
         buttonType: 'filled',
         onActionClick: () => {
           history.push(ROUTES.COACH.ABOUT.SIGNATURE);
-        },
-      },
-      {
-        title: 'Work address',
-        subTitle: formatSiteAddressAsText(currentUser),
-        switchTextStyles: true,
-        hasMarkup: true,
-        actionName: currentUser?.siteAddress ? 'Edit' : 'Add',
-        actionIcon: currentUser?.siteAddress ? 'PencilIcon' : 'PlusIcon',
-        buttonType: currentUser?.siteAddress ? 'filled' : 'outlined',
-        onActionClick: () => {
-          history.push(ROUTES.COACH.ABOUT.ADDRESS);
         },
       },
     ];
@@ -265,7 +272,6 @@ export const CoachAbout: React.FC = () => {
     if (copy) {
       copy.profileImageUrl = imageBaseString;
       appDispatch(userActions.updateUser(copy));
-      //appDispatch(userThunkActions.updateUser(copy));
     }
 
     if (!userProfilePicture) {
@@ -278,9 +284,11 @@ export const CoachAbout: React.FC = () => {
     } else {
       updateDocument(userProfilePicture, imageBaseString);
     }
+
+    await saveCoachUserData(imageBaseString);
   };
 
-  const saveCoachUserData = () => {
+  const saveCoachUserData = (imageBaseString: string = '') => {
     const coachForm = coachAboutFormGetValues();
     const coachCopy = cloneDeep(coach);
     const userCopy = cloneDeep(user);
@@ -291,6 +299,9 @@ export const CoachAbout: React.FC = () => {
       userCopy.phoneNumber = coachForm.cellphone;
       userCopy.email = coachForm.email;
       userCopy.fullName = `${userCopy.firstName} ${userCopy.surname}`;
+      if (imageBaseString?.length > 0) {
+        userCopy.profileImageUrl = imageBaseString;
+      }
 
       Object.assign(coachCopy.user as UserDto, userCopy);
 
@@ -320,7 +331,7 @@ export const CoachAbout: React.FC = () => {
         backgroundColour={'white'}
       >
         <div className="px-4">
-          <div className={'w-full inline-flex justify-center pt-8'}>
+          <div className={'inline-flex w-full justify-center pt-8'}>
             <ProfileAvatar
               dataUrl={
                 userProfilePicture?.file ||
@@ -332,7 +343,7 @@ export const CoachAbout: React.FC = () => {
               hasConsent={true}
             />
           </div>
-          <div className="flex my-4 justify-center">
+          <div className="my-4 flex justify-center">
             {practitioners && (
               <StatusChip
                 className="mr-2"
@@ -357,6 +368,16 @@ export const CoachAbout: React.FC = () => {
             listItems={listItems}
             type={'ActionList'}
           ></StackedList>
+          {coach?.signingSignature && (
+            <>
+              <img
+                src={coach.signingSignature}
+                style={{ margin: '20px 0 ' }}
+                width="60"
+              />
+              <br />
+            </>
+          )}
         </div>
       </BannerWrapper>
 

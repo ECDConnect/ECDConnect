@@ -1,5 +1,12 @@
 import { ActionSelect } from '@ecdlink/ui';
-import { ActionSelectItem, ComponentBaseProps } from '@ecdlink/ui';
+import {
+  ActionSelectItem,
+  ComponentBaseProps,
+  Dialog,
+  DialogPosition,
+  Typography,
+  Button,
+} from '@ecdlink/ui';
 import {
   getImageSourceFromCamera,
   getImageSourceFromFileSystem,
@@ -8,6 +15,14 @@ import {
 import { useEffect, useState } from 'react';
 import * as styles from './photo-prompt.styles';
 import { PhotoPromptActionType } from './photo-prompt.types';
+import womanEmoji from '../../assets/emojis/womanEmoji.png';
+import manEmoji from '../../assets/emojis/manEmoji.png';
+import duckEmoji from '../../assets/emojis/avatar_duck.png';
+import catEmoji from '../../assets/emojis/avatar_cat.png';
+import leopardEmoji from '../../assets/emojis/avatar_leopard.png';
+import dogEmoji from '../../assets/emojis/avatar_dog.png';
+import penguinEmoji from '../../assets/emojis/penguinEmoji.png';
+import monkeyEmoji from '../../assets/emojis/avatar_monkey.png';
 
 export interface PhotoPromptProps extends ComponentBaseProps {
   title: string;
@@ -30,6 +45,17 @@ export const PhotoPrompt: React.FC<PhotoPromptProps> = ({
   const [actions, setActions] = useState<
     ActionSelectItem<PhotoPromptActionType>[]
   >([]);
+  const [emojisSection, setEmojisSection] = useState(false);
+  const emojis = [
+    womanEmoji,
+    manEmoji,
+    duckEmoji,
+    catEmoji,
+    leopardEmoji,
+    dogEmoji,
+    penguinEmoji,
+    monkeyEmoji,
+  ];
 
   useEffect(() => {
     getActions();
@@ -58,6 +84,11 @@ export const PhotoPrompt: React.FC<PhotoPromptProps> = ({
       icon: renderIcon('CameraIcon', styles.iconStyle),
       title: 'Camera',
       value: 'camera',
+    });
+    actionsList.push({
+      icon: renderIcon('EmojiHappyIcon', styles.iconStyle),
+      title: 'Emojis',
+      value: 'emojis',
     });
 
     setActions(actionsList);
@@ -101,6 +132,9 @@ export const PhotoPrompt: React.FC<PhotoPromptProps> = ({
       case 'gallery':
         openGallery();
         break;
+      case 'emojis':
+        setEmojisSection(true);
+        break;
       default:
         close();
         break;
@@ -108,11 +142,53 @@ export const PhotoPrompt: React.FC<PhotoPromptProps> = ({
   };
 
   return (
-    <ActionSelect
-      actions={actions}
-      title={title}
-      onActionSelected={actionSelected}
-      onClose={close}
-    />
+    <>
+      <ActionSelect
+        actions={actions}
+        title={title}
+        onActionSelected={actionSelected}
+        onClose={close}
+      />
+      <Dialog
+        visible={emojisSection}
+        position={DialogPosition.Middle}
+        fullScreen
+        className="overflow-auto"
+      >
+        <div>
+          <Typography
+            className="ml-6 mt-6"
+            weight="bold"
+            type={'h1'}
+            color={'textMid'}
+            text={'Choose your emoji'}
+          ></Typography>
+        </div>
+        <div className="flex flex-wrap justify-center">
+          <div className="grid grid-cols-2 mt-16 overflow-auto gap-x-8 gap-y-8 w-9/12 justify-center">
+            {emojis.map((item) => {
+              return (
+                <div className="flex justify-center items-center">
+                  <img src={item} alt="emojis" />;
+                </div>
+              );
+            })}
+          </div>
+          <div className="w-full flex justify-center mt-14">
+            <div className="w-full flex justify-center ">
+              <Button
+                className={'w-11/12'}
+                type={'filled'}
+                color={'primary'}
+                text={'Confirm'}
+                textColor={'white'}
+                iconPosition={'start'}
+                onClick={() => setEmojisSection(false)}
+              />
+            </div>
+          </div>
+        </div>
+      </Dialog>
+    </>
   );
 };

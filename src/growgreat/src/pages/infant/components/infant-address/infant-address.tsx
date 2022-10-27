@@ -21,6 +21,7 @@ import {
 export const InfantAddress: React.FC<InfantAddressProps> = ({
   onSubmit,
   details,
+  infantDetails,
 }) => {
   const {
     watch,
@@ -41,13 +42,11 @@ export const InfantAddress: React.FC<InfantAddressProps> = ({
     control: infantContactInformationControl,
   });
 
-  console.log(getInfantAddressFormValues());
   const [useMap, setUseMap] = useState(false);
   //   const handleConsentAccept = () => {
   //     setConsentFormValue('hasConsent', !accept);
   //   };
 
-  console.log(watch());
   return (
     <div className="h-screen ">
       <div>
@@ -69,7 +68,7 @@ export const InfantAddress: React.FC<InfantAddressProps> = ({
           <Typography
             type="h4"
             color={'textMid'}
-            text={"Add Mom's name address"}
+            text={`Add ${details?.name} name address`}
             className="z-50 pt-2 w-11/12"
           />
           <div className="mt-2">
@@ -89,7 +88,7 @@ export const InfantAddress: React.FC<InfantAddressProps> = ({
           <Alert
             type={'info'}
             // title="Each child is unique!"
-            message="If you are at Lethabo's house now, you can use your phone's GPS to save the address."
+            message={`If you are at ${infantDetails?.firstName}'s house now, you can use your phone's GPS to save the address.`}
           />
         </div>
         {useMap === false && (

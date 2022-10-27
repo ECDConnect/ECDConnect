@@ -32,7 +32,7 @@ class InfantService {
       throw new Error('Getting Mothers failed - Server connection error');
     }
 
-    return response.data.data.GetAllMother;
+    return response.data.data.allInfantsForHealthCareWorker;
   }
 
   async addInfant(input: InfantModelInput): Promise<InfantDto> {

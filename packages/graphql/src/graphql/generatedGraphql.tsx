@@ -877,9 +877,11 @@ export type ClassroomMetricReport = {
   __typename?: 'ClassroomMetricReport';
   attendancePercentage: Scalars['Int'];
   childCount: Scalars['Int'];
-  classroomGroupId: Scalars['UUID'];
-  classroomId: Scalars['UUID'];
+  classroomGroupId?: Maybe<Scalars['String']>;
+  classroomId?: Maybe<Scalars['String']>;
   month: Scalars['Int'];
+  practitionerId?: Maybe<Scalars['String']>;
+  weekOfYear: Scalars['Int'];
   year: Scalars['Int'];
 };
 
@@ -1362,12 +1364,14 @@ export enum FileTypeEnum {
   Child = 'CHILD',
   ClassroomProfile = 'CLASSROOM_PROFILE',
   Coach = 'COACH',
+  MaternalCaseRecord = 'MATERNAL_CASE_RECORD',
   Practitioner = 'PRACTITIONER',
   ProfileImage = 'PROFILE_IMAGE',
   ProgressTrackingCategory = 'PROGRESS_TRACKING_CATEGORY',
   ProgressTrackingLevel = 'PROGRESS_TRACKING_LEVEL',
   ProgressTrackingSubCategory = 'PROGRESS_TRACKING_SUB_CATEGORY',
   ReportTemplates = 'REPORT_TEMPLATES',
+  RoadToHealthBook = 'ROAD_TO_HEALTH_BOOK',
   Theme = 'THEME',
   Unknown = 'UNKNOWN',
 }
@@ -1673,6 +1677,12 @@ export type InfantModelInput = {
   lengthAtBirth?: InputMaybe<Scalars['Decimal']>;
   userId?: InputMaybe<Scalars['String']>;
   weightAtBirth?: InputMaybe<Scalars['Decimal']>;
+};
+
+export type KeyValuePairOfStringAndString = {
+  __typename?: 'KeyValuePairOfStringAndString';
+  key: Scalars['String'];
+  value: Scalars['String'];
 };
 
 export type Language = {
@@ -3499,7 +3509,11 @@ export type PractitionerClassroomName = {
 
 export type PractitionerColleagues = {
   __typename?: 'PractitionerColleagues';
+  classroomNames?: Maybe<Scalars['String']>;
+  contactNumber?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
+  nickName?: Maybe<Scalars['String']>;
+  profilePhoto?: Maybe<Scalars['String']>;
   title?: Maybe<Scalars['String']>;
 };
 
@@ -4157,7 +4171,7 @@ export type Query = {
   childrenByClassroomId?: Maybe<Array<Maybe<Child>>>;
   childrenMetrics?: Maybe<ChildrenMetricReport>;
   classAttendanceMetrics?: Maybe<Array<Maybe<ClassroomMetricReport>>>;
-  classAttendanceMetricsByUser?: Maybe<ClassroomMetricReport>;
+  classAttendanceMetricsByUser?: Maybe<Array<Maybe<ClassroomMetricReport>>>;
   classroomDetailsForPractitioner?: Maybe<PrincipalClassroom>;
   classroomGroupClassroomsForPractitioner?: Maybe<Array<Maybe<ClassroomGroup>>>;
   classroomNamesForPractitioner?: Maybe<
@@ -4880,7 +4894,14 @@ export type QueryChildrenByClassroomIdArgs = {
   classroomId?: InputMaybe<Scalars['String']>;
 };
 
+export type QueryClassAttendanceMetricsArgs = {
+  endMonth: Scalars['DateTime'];
+  startMonth: Scalars['DateTime'];
+};
+
 export type QueryClassAttendanceMetricsByUserArgs = {
+  endMonth: Scalars['DateTime'];
+  startMonth: Scalars['DateTime'];
   userId?: InputMaybe<Scalars['String']>;
 };
 

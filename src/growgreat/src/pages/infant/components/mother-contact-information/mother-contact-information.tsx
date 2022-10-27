@@ -72,7 +72,7 @@ export const MotherContactInformation: React.FC<
           <Typography
             type="h4"
             color={'textMid'}
-            text={'Does Lethabo use this cellphone number for WhatsApp?'}
+            text={`Does ${details?.name} use this cellphone number for WhatsApp?`}
             className="z-50 pt-2 w-11/12"
           />
           <div className="mt-2">
@@ -90,7 +90,7 @@ export const MotherContactInformation: React.FC<
         {hasWhatsapp === false && (
           <>
             <FormInput<MothertContactInformationModel>
-              label={'What cellphone number does Lethabo use for WhatsApp?'}
+              label={`What cellphone number does ${details?.name} use for WhatsApp?`}
               register={motherFormRegister}
               nameProp={'whatsapp'}
               placeholder={'e.g 012 345 6789'}

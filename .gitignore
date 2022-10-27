@@ -152,6 +152,7 @@ npm-debug.log
 yarn-error.log
 testem.log
 /typings
+.dccache
 
 # System Files
 .DS_Store
@@ -167,3 +168,5 @@ packages/.vscode/settings.json
 /*.code-workspace
 
 _data
+
+yarn.lock
