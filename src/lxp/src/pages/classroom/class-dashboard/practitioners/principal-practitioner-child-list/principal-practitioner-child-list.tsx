@@ -74,7 +74,6 @@ export const PrincipalPractitionerChildList: React.FC<
       return f.userId === el.userId;
     });
   });
-
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [addChildButtonExpanded, setAddChildButtonExpanded] =
     useState<boolean>(true);

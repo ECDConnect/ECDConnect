@@ -101,6 +101,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
   const childReportSummaries = useSelector(
     contentReportSelectors.getChildLatestCompletedReports()
   );
+
   const classroomGroupLearners = useSelector(
     classroomsSelectors.getClassroomGroupLearners
   );
