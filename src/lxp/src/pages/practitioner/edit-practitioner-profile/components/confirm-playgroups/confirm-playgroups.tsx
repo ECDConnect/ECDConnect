@@ -65,7 +65,7 @@ export const ConfirmPlayGroups: React.FC<ConfirmPlayGroupsProps> = ({
         );
       })}
 
-      {playgroups.length < 5 && isPrincipal && (
+      {isPrincipal && (
         <Button
           className="mt-4"
           color="secondary"
