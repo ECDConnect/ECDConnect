@@ -130,7 +130,7 @@ export const SignUp: React.FC = () => {
     token: string
   ) => {
     setIsLoading(true);
-    await new AuthService().SendAuthCode(username, token);
+    //await new AuthService().SendAuthCode(username, token);
 
     setIsLoading(false);
     history.push('/verify-phone', {
