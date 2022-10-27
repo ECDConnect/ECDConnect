@@ -86,9 +86,9 @@ export const PointsSuccessCard: React.FC<PointsSuccessCardProps> = ({
                   )}
                 </div>
                 <div className={styles.closeWrapper}>
-                  <div onClick={() => onClose && onClose()}>
+                  {/* <div onClick={() => onClose && onClose()}>
                     {renderIcon('XIcon', 'h-6 w-6 text-white')}
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </div>
