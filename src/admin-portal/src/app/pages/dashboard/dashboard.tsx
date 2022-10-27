@@ -5,6 +5,8 @@ import PractitionerDashboard from './components/dashboard-practitioner/dashboard
 import ChildrenDashboard from './components/dashboard-children/dashboard-children';
 import { useQuery } from '@apollo/client/react/hooks/useQuery';
 import { GetTenantContext } from '@ecdlink/graphql';
+import MotherDashboard from './components/dashboard-mother/dashboard-mother';
+import HealthWorkerDashboard from './components/dashboard-health-worker/dashboard-health-worker';
 
 // TODO: (Tenancy) This can't be hardcoded as it will be different for each tenant
 export default function Dashboard() {
@@ -14,23 +16,52 @@ export default function Dashboard() {
 
   console.log(data);
 
-  const tabItems: TabItem[] = [
-    {
-      title: 'Analytics',
-      initActive: true,
-      child: <GADashboard />,
-    },
-    {
-      title: 'Practitioners',
-      initActive: false,
-      child: <PractitionerDashboard />,
-    },
-    {
-      title: 'Children',
-      initActive: false,
-      child: <ChildrenDashboard />,
-    },
-  ];
+  const getNavigationItems = () => {
+    console.log(data);
+    if (
+      data &&
+      data.tenantContext &&
+      data.tenantContext.applicationName === 'GrowGreat'
+    ) {
+      return [
+        {
+          title: 'Analytics',
+          initActive: true,
+          child: <GADashboard />,
+        },
+        {
+          title: 'Health Workers',
+          initActive: false,
+          child: <HealthWorkerDashboard />,
+        },
+        {
+          title: 'Mothers',
+          initActive: false,
+          child: <MotherDashboard />,
+        },
+      ];
+    } else {
+      return [
+        {
+          title: 'Analytics',
+          initActive: true,
+          child: <GADashboard />,
+        },
+        {
+          title: 'Practitioners',
+          initActive: false,
+          child: <PractitionerDashboard />,
+        },
+        {
+          title: 'Children',
+          initActive: false,
+          child: <ChildrenDashboard />,
+        },
+      ];
+    }
+  };
+
+  const tabItems = getNavigationItems();
 
   const [currentTab, setCurrentTab] = useState<TabItem>(tabItems[0]);
 

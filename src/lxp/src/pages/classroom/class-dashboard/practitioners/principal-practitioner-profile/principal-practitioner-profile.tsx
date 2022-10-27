@@ -33,6 +33,7 @@ import { PractitionerService } from '@/services/PractitionerService';
 import { practitionerThunkActions } from '@/store/practitioner';
 import { ClassroomGroupService } from '@/services/ClassroomGroupService';
 import { getMonthName } from '@utils/classroom/attendance/track-attendance-utils';
+import { getMonth } from 'date-fns';
 
 export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const history = useHistory();
@@ -65,7 +66,8 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const [childrenCount, setChildrenCount] = useState(0);
   const [classMetrics, setClassMetrics] = useState<any>();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const practitionerClassrooms: any[] = [];
+  // const practitionerClassrooms: any[] = [];
+  const [practitionerClassrooms, setPractitionerClassrooms] = useState<any[]>();
 
   const handleReassignClass = (practitionerId: string) => {
     history.push('practitioner-reassign-class', {
@@ -73,31 +75,43 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
     });
   };
 
-  if (classMetrics) {
-    practitionerClassroomGroups.forEach((e: any) => {
-      let classroomValue: any = classMetrics.find(
-        (item: any) => item?.id === e?.classroomGroupId
-      );
+  // if (classMetrics) {
+  //   classMetrics.forEach((e: any) => {
+  //     let classroomValue: any = practitionerClassroomGroups.find(
+  //       (item: any) => item?.userId === e?.practitionerId
+  //     );
 
-      if (classroomValue) {
-        practitionerClassrooms.push({
-          ...e,
-          childCount: classroomValue?.childCount,
-          attendancePercentage: classroomValue?.attendancePercentage,
-          month: classroomValue?.month,
-          year: classroomValue?.year,
+  //     if (classroomValue) {
+  //       practitionerClassrooms.push({
+  //         ...e,
+  //         childCount: classroomValue?.childCount,
+  //         attendancePercentage: classroomValue?.attendancePercentage,
+  //         month: classroomValue?.month,
+  //         year: classroomValue?.year,
+  //       });
+  //     } else {
+  //       practitionerClassrooms.push({ ...e });
+  //     }
+  //   });
+  // }
+
+  useEffect(() => {
+    if (classMetrics) {
+      const practitionerClassroomData = classMetrics?.filter((item: any) => {
+        return practitionerClassroomGroups.some((x) => {
+          return item?.practitionerId === x?.userId;
         });
-      } else {
-        practitionerClassrooms.push({ ...e });
-      }
-    });
-  }
+      });
+      setPractitionerClassrooms(practitionerClassroomData);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [classMetrics]);
 
   useEffect(() => {
     let count = 0;
-    if (practitionerClassrooms.length > 0) {
+    if (practitionerClassrooms?.length! > 0) {
       // eslint-disable-next-line array-callback-return
-      practitionerClassrooms?.map((item) => {
+      practitionerClassrooms?.map((item: any) => {
         count += item?.childCount;
       });
       return setChildrenCount(count);
@@ -188,7 +202,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
             </div>
 
             <div className={styles.chipsWrapper}>
-              {practitionerClassroomGroups.length > 0 ? (
+              {practitionerClassroomGroups?.length > 0 ? (
                 practitionerClassroomGroups?.map((item, index) => {
                   return (
                     <StatusChip
@@ -286,13 +300,18 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                 </div>
               </div>
             </Card>
-            {practitionerClassrooms.length > 0
-              ? practitionerClassrooms?.map((item, index) => {
+            {practitionerClassrooms?.length! > 0
+              ? practitionerClassrooms?.map((item: any, index: number) => {
+                  const classroomItem: any = practitionerClassroomGroups?.find(
+                    (x) => {
+                      return x?.id === item?.classroomGroupId;
+                    }
+                  );
                   return (
                     <Card className={styles.absentCard} key={index}>
                       <Typography
                         type={'h1'}
-                        text={item?.name}
+                        text={classroomItem?.name}
                         color={'textMid'}
                         className={styles.absentCardTitle}
                       />
@@ -348,7 +367,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                               type={'body'}
                               weight={'bold'}
                               text={`attendance in ${getMonthName(
-                                item?.month
+                                getMonth(new Date()) - 1
                                 // eslint-disable-next-line no-useless-concat
                               )}\u00A0${item?.year}`}
                               color={'textMid'}
@@ -415,7 +434,10 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                     />
                     <Typography
                       type={'body'}
-                      text={'programmes planned in September 2022'}
+                      text={`programmes planned in  ${getMonthName(
+                        getMonth(new Date()) - 1
+                        // eslint-disable-next-line no-useless-concat
+                      )} 2022`}
                       color={'textDark'}
                       className="mt-2 ml-4 mr-8"
                     />
@@ -541,7 +563,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                   color="textMid"
                   className={'mt-1'}
                 />
-                {notes.length > 0 ? (
+                {notes?.length > 0 ? (
                   <Typography
                     text={getLastNoteDate(notes)}
                     type="h4"

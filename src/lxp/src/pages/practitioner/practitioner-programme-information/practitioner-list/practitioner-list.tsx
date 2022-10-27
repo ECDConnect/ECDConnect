@@ -157,7 +157,7 @@ export const PractitionerList: React.FC<PractitionerListProps> = ({
               showBackground={true}
               backgroundUrl={theme?.images.graphicOverlayUrl}
               backgroundImageColour={'primary'}
-              title={`Edit Practitioners`}
+              title={isPrincipal ? `Edit Practitioners` : `View Practitioners`}
               color={'primary'}
               size="medium"
               renderBorder={true}
@@ -179,18 +179,22 @@ export const PractitionerList: React.FC<PractitionerListProps> = ({
                 type={'ActionList'}
               ></StackedList>
             )}
-            <div>
-              <Button
-                size="small"
-                type="filled"
-                color="primary"
-                text="Add practitioner"
-                textColor="white"
-                icon="PlusIcon"
-                className="mt-8"
-                onClick={() => history.push(ROUTES.PRINCIPAL.ADD_PRACTITIONER)}
-              />
-            </div>
+            {isPrincipal && (
+              <div>
+                <Button
+                  size="small"
+                  type="filled"
+                  color="primary"
+                  text="Add practitioner"
+                  textColor="white"
+                  icon="PlusIcon"
+                  className="mt-8"
+                  onClick={() =>
+                    history.push(ROUTES.PRINCIPAL.ADD_PRACTITIONER)
+                  }
+                />
+              </div>
+            )}
           </div>
           <div className="absolute bottom-0 left-0 right-0 p-4 max-h-20">
             <div className="flex justify-center">
