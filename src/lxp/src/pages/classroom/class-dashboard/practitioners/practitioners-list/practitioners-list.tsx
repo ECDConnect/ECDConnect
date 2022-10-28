@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react';
 import {
   StackedList,
-  SearchSortOptions,
   UserAlertListDataItem,
-  SearchDropDown,
   Card,
   Typography,
   renderIcon,
@@ -26,23 +24,27 @@ import { EmptyPractitioners } from './components/empty-practitioners/empty-pract
 import { PractitionerDto } from '@/../../../packages/core/lib';
 import { useAppDispatch } from '@store';
 import { getPractitionerAlertModel } from '@/utils/practitioner/practitioner-alert-message-util';
-import { PractitionerService } from '@/services/PractitionerService';
-import { authSelectors } from '@/store/auth';
+import { childrenSelectors } from '@store/children';
+import { classroomsSelectors } from '@store/classroom';
+import { contentReportSelectors } from '@store/content/report';
 
 export const PractitionersList: React.FC = () => {
   const appDispatch = useAppDispatch();
   const history = useHistory();
-  // const isCoach = true;
-  // const practitionersForCoach = useSelector(
-  //   practitionerForCoachSelectors.getPractitionersForCoach
-  // );
-  const userAuth = useSelector(authSelectors.getAuthUser);
+  const progressReports = useSelector(
+    contentReportSelectors?.getAllChildProgressObservationReports
+  );
+
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const practitionersList = practitioners?.filter(
     (item) => item.userId !== practitioner?.userId
   );
-  const redirectedFromPractitionersList = true;
+  const children = useSelector(childrenSelectors.getChildren);
+  const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
+  const classroomGroupLearners = useSelector(
+    classroomsSelectors.getClassroomGroupLearners
+  );
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [practitionerListData, setPractitionerListData] =
@@ -72,7 +74,6 @@ export const PractitionersList: React.FC = () => {
         practitionerListItem.push(mapUserListDataItem(practitioner));
       }
       setPractitionerListData(practitionerListItem);
-      // setFilteredChildData(practitionerListItem);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -84,21 +85,32 @@ export const PractitionersList: React.FC = () => {
       (x) => x.userId === practitionerRecord.userId
     );
 
-    // const childAlert = getChildAlertModel(
-    //   childLearner,
-    //   pendingStatusId,
-    //   childUser,
-    //   childRecord,
-    //   childDocuments,
-    //   attendanceData,
-    //   classroomGroups,
-    //   classroomGroupProgrammes,
-    //   reports
-    // );
+    const practitionerClassroomGroups = classroomGroups?.filter((item: any) => {
+      return item?.userId === practitioner?.userId;
+    });
+    const practitionerLearners = classroomGroupLearners.filter((el) => {
+      return practitionerClassroomGroups.some((f) => {
+        return f.id === el.classroomGroupId;
+      });
+    });
+    const childrenForPractitioner = practitionerLearners.filter((el) => {
+      return children?.some((f) => {
+        return f.userId === el.userId;
+      });
+    });
+
+    const practitionerChildrenReports = progressReports?.filter((item) => {
+      return childrenForPractitioner?.some((f) => {
+        return f.id === item?.childId;
+      });
+    });
 
     const practitionerAlert = getPractitionerAlertModel(
       practitionerRecord,
-      practitioners
+      practitioners,
+      childrenForPractitioner,
+      practitionerChildrenReports,
+      children
     );
 
     return {
@@ -118,17 +130,6 @@ export const PractitionersList: React.FC = () => {
   const handleReassignClass = () => {
     history.push('principal/practitioner-reassign-class');
   };
-
-  // const test = async () => {
-  //   const a = await new PractitionerService(
-  //     userAuth?.auth_token!
-  //   ).displayMetrics();
-  //   return a;
-  // };
-
-  // useEffect(() => {
-  //   test();
-  // }, []);
 
   return (
     <>
