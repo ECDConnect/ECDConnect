@@ -1,5 +1,6 @@
 using ECDLink.ContentManagement.Entities;
 using ECDLink.DataAccessLayer.Context;
+using ECDLink.Tenancy.Context;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -20,7 +21,8 @@ namespace ECDLink.ContentManagement.Repositories
         public IEnumerable<ContentType> GetAll()
         {
             // Can probably inject Id and fields
-            return _context.ContentTypes
+            Guid tenantId = TenantExecutionContext.Tenant.Id;
+            return _context.ContentTypes.Where(e => e.TenantId == null || e.TenantId.Equals(tenantId))
               .Include(x => x.Content)
                 .ThenInclude(x => x.ContentValues)
                   .ThenInclude(x => x.ContentTypeField)
