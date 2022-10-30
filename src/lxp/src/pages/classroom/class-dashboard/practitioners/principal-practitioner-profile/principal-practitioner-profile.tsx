@@ -43,6 +43,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const location = useLocation<PractitionerProfileRouteState>();
   const practitionerId = location.state.practitionerId;
   // const isFromProgrammeView = location.state.isFromProgrammeView;
+  const classroom = useSelector(classroomsSelectors?.getClassroom);
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const practitioner = practitioners?.find(
@@ -176,7 +177,10 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
     <>
       {practitioner?.isRegistered === null ||
       practitioner?.isRegistered === false ? (
-        <PractitionerNotRegistered practitioner={practitioner} />
+        <PractitionerNotRegistered
+          practitioner={practitioner}
+          classroom={classroom}
+        />
       ) : (
         <div className={styles.contentWrapper}>
           <BannerWrapper
