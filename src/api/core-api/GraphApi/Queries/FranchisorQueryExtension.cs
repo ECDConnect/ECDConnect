@@ -67,5 +67,23 @@ string userId)
             return children;
         }
 
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public SiteAddress GetFranchisorSiteAddressById([Service] IHttpContextAccessor contextAccessor,
+            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+            [Service] IGenericRepositoryFactory repoFactory,
+            string franchisorId)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var dbRepo = repoFactory.CreateGenericRepository<Franchisor>(userContext: uId);
+            var franchisor = dbRepo.GetByUserId(franchisorId);
+
+            if(franchisor == null)
+            {
+                return null;
+            }
+
+            return franchisor.SiteAddress;
+        }
+
     }
 }
