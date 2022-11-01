@@ -76,7 +76,7 @@ export const getChildAlertModel = (
     (x) => x.name.includes('clinicCard') || x.name.includes('birthCertificate')
   );
 
-  if (userBirthDocument) {
+  if (!userBirthDocument) {
     alert = 'error';
     alertMessage = 'Child document missing';
 

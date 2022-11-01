@@ -676,7 +676,7 @@ export const ChildProfile: React.FC = () => {
         </div>
       </Dialog>
       <Dialog
-        className={'px-4 mb-16'}
+        className={'mb-16 px-4'}
         stretch={true}
         visible={removeChildConfirmationVisible}
         position={DialogPosition.Bottom}

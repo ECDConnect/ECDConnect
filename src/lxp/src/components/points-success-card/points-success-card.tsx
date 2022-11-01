@@ -54,7 +54,7 @@ export const PointsSuccessCard: React.FC<PointsSuccessCardProps> = ({
                   )}
                   {isSmartStartUser && (
                     <div>
-                      <div className={'flex flex-row mt-2'}>
+                      <div className={'mt-2 flex flex-row'}>
                         <div>
                           {renderIcon('GiftIcon', 'h-5 w-5 text-white mr-1.5')}
                         </div>
