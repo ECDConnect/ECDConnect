@@ -22,6 +22,7 @@ import {
   editCoachProfileSchema,
 } from '@schemas/coach/edit-profile';
 import { useEffect, useState } from 'react';
+import { coachActions, coachSelectors, coachThunkActions } from '@store/coach';
 
 export const EditProfileForm: React.FC<EditProfileFormProps> = ({
   coachProfileInformation,
@@ -30,6 +31,7 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
   const provinces = useSelector(staticDataSelectors.getProvinces);
   const franchisorAddress = coachProfileInformation?.franchisorAddress;
   const siteAddress = coachProfileInformation?.siteAddress;
+  const coach = useSelector(coachSelectors.getCoach);
 
   const [isOfficeAddress, setIsOfficeAddress] = useState<boolean | undefined>();
 
@@ -78,6 +80,7 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
   const handleFormSubmit = (): void => {
     if (isValid /*  && onSubmit */) {
       const profileFormValues = getCoachProfileFormValues();
+      const copy = Object.assign({}, coach);
 
       const newCoachProfileInformation = Object.assign(
         {},
@@ -98,8 +101,20 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
       newCoachProfileInformation.email = profileFormValues.email;
 
       if (isOfficeAddress) {
-        newCoachProfileInformation.siteAddressId =
-          coachProfileInformation?.franchisorAddressId;
+        if (coachProfileInformation?.franchisorAddressId !== undefined) {
+          newCoachProfileInformation.siteAddressId =
+            coachProfileInformation?.franchisorAddressId;
+        } else {
+          let tempAddress = {
+            addressLine1: '',
+            addressLine2: '',
+            addressLine3: '',
+            postalCode: '',
+            provinceId: provinces[0].id,
+          };
+
+          newCoachProfileInformation.siteAddress = tempAddress;
+        }
       }
 
       onSubmit(newCoachProfileInformation);

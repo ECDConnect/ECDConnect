@@ -13,7 +13,7 @@ import ROUTES from '@/routes/routes';
 
 export const PractitionerNotRegistered: React.FC<
   PractitionerNotRegisterProps
-> = ({ practitioner }) => {
+> = ({ practitioner, classroom }) => {
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
   const userAuth = useSelector(authSelectors.getAuthUser);
@@ -57,7 +57,7 @@ export const PractitionerNotRegistered: React.FC<
         onBack={() => history.goBack()}
         displayOffline={!isOnline}
       />
-      <div className="w-full flex justify-center">
+      <div className="flex w-full justify-center">
         <Alert
           className="mt-10 w-11/12 rounded-xl"
           type={'error'}
@@ -65,7 +65,9 @@ export const PractitionerNotRegistered: React.FC<
             practitioner?.isLeaving
               ? `${
                   practitioner?.user?.firstName
-                } has said that they are not a practitioner at Angels Daycare. If ${
+                } has said that they are not a practitioner at ${
+                  classroom?.name
+                }. If ${
                   practitioner?.user?.firstName
                 } does not accept by ${format(
                   new Date(practitioner?.dateToBeRemoved!),
@@ -98,14 +100,14 @@ export const PractitionerNotRegistered: React.FC<
           }
         />
       </div>
-      <div className="w-full flex justify-center">
+      <div className="flex w-full justify-center">
         <Button
           text="Remove Practitioner"
           icon="TrashIcon"
           type={'filled'}
           color={'primary'}
           textColor={'white'}
-          className="w-11/12 mt-4"
+          className="mt-4 w-11/12"
           onClick={removePractitioner}
         />
       </div>
