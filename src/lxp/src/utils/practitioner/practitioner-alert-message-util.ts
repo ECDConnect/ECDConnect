@@ -1,11 +1,10 @@
 // import { NoPlaygroupClassroomType } from './../../enums/ProgrammeType';
-import { childrenSelectors } from '@/store/children';
 import {
   ChildDto,
   ChildProgressObservationReport,
   PractitionerDto,
 } from '@ecdlink/core';
-import { format } from 'date-fns';
+import { differenceInDays, format } from 'date-fns';
 
 export const getPractitionerAlertModel = (
   practitioner: PractitionerDto,
@@ -17,12 +16,26 @@ export const getPractitionerAlertModel = (
   let alert = 'success';
   let alertMessage = 'All information captured';
   let childrenMissingInfo = 0;
+  let passedDaysGreaterThanThirty = 0;
 
   const practitionerFilteredChildren = children?.filter((el) => {
     return childrenForPractitioner?.some((f) => {
       return f.userId === el.userId;
     });
   });
+
+  if (practitionerFilteredChildren) {
+    practitionerFilteredChildren?.map((item) => {
+      const daysSinceInsertedDate = differenceInDays(
+        new Date(),
+        new Date(item?.insertedDate!)
+      );
+      if (daysSinceInsertedDate > 30) {
+        passedDaysGreaterThanThirty++;
+      }
+      return passedDaysGreaterThanThirty;
+    });
+  }
 
   if (practitionerFilteredChildren) {
     practitionerFilteredChildren.map((item) => {
@@ -38,12 +51,9 @@ export const getPractitionerAlertModel = (
   }
 
   if (childrenForPractitioner) {
-    if (
-      childrenMissingInfo > 0 &&
-      childrenMissingInfo / childrenForPractitioner?.length <= 0.7
-    ) {
+    if (childrenMissingInfo > 0) {
       alert = 'error';
-      alertMessage = 'Child information missing';
+      alertMessage = `${childrenMissingInfo} incomplete child registers`;
 
       return { status: alert, message: alertMessage, severity: 2 };
     }
@@ -56,12 +66,13 @@ export const getPractitionerAlertModel = (
 
     if (childrenForPractitioner && practitionerChildrenReports) {
       if (
-        practitionerChildrenReports?.length / childrenForPractitioner?.length <=
-          0.7 &&
+        practitionerChildrenReports?.length < passedDaysGreaterThanThirty &&
         practitionerChildrenReports?.length !== 0
       ) {
         alert = 'error';
-        alertMessage = 'Progress reports overdue';
+        alertMessage = `${
+          passedDaysGreaterThanThirty - practitionerChildrenReports?.length
+        } Progress reports overdue`;
         return { status: alert, message: alertMessage, severity: 2 };
       }
     }
