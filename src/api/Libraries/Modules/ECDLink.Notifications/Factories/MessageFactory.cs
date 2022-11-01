@@ -3,6 +3,7 @@ using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.Notifications.Message;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities.Notifications;
+using ECDLink.Tenancy.Context;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
@@ -22,7 +23,8 @@ namespace ECDLink.Notifications.Factories
 
         public IMessageTemplate GetMessage(MessageTypeEnum messageType, TemplateTypeEnum templateType)
         {
-            var query = _entities.AsQueryable();
+            Guid tenantId = TenantExecutionContext.Tenant.Id;
+            var query = _entities.Where(e => e.TenantId == null || e.TenantId.Equals(tenantId)).AsQueryable();
 
             query = FilterTypes(query, messageType);
 

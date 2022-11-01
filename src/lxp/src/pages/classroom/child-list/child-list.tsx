@@ -101,6 +101,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
   const childReportSummaries = useSelector(
     contentReportSelectors.getChildLatestCompletedReports()
   );
+
   const classroomGroupLearners = useSelector(
     classroomsSelectors.getClassroomGroupLearners
   );
@@ -380,6 +381,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
         const learner = classroomGroupLearners.find(
           (x) => x.userId === child.userId
         );
+
         childListItem.push(mapUserListDataItem(child, learner));
       }
       setChildUserListData(childListItem || []);

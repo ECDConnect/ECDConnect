@@ -81,7 +81,11 @@ export const ClassDashboard: React.FC = () => {
 
   useEffect(() => {
     if (selectedTabIndex !== undefined && selectedTabIndex >= 0) {
-      setCurrentTab(tabItems[selectedTabIndex]);
+      if (isPrincipal && practitioners?.length! > 1) {
+        setCurrentTab(tabItemsForPrincipal[selectedTabIndex]);
+      } else {
+        setCurrentTab(tabItems[selectedTabIndex]);
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTabIndex]);

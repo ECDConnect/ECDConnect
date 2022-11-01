@@ -26,6 +26,7 @@ import { WorkflowStatusEnum } from '@ecdlink/graphql';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { practitionerSelectors } from '@/store/practitioner';
 import { IconInformationIndicator } from '../../../../classroom/programme-planning/components/icon-information-indicator/icon-information-indicator';
+import ROUTES from '@/routes/routes';
 
 export const PrincipalPractitionerChildList: React.FC<
   ComponentBaseProps
@@ -69,12 +70,11 @@ export const PrincipalPractitionerChildList: React.FC<
       return f.id === el.classroomGroupId;
     });
   });
-  const childrenForPractitioner = practitionerLearners.filter((el) => {
-    return children?.some((f) => {
+  const childrenForPractitioner = children?.filter((el) => {
+    return practitionerLearners?.some((f) => {
       return f.userId === el.userId;
     });
   });
-
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [addChildButtonExpanded, setAddChildButtonExpanded] =
     useState<boolean>(true);
@@ -161,9 +161,8 @@ export const PrincipalPractitionerChildList: React.FC<
   }, [classroomGroupLearners, pendingStatusId]);
 
   const onChildListItemAction = (childId: string) => {
-    history.push('child-profile', {
+    history.push(ROUTES.CHILD_PROFILE, {
       childId,
-      practitionerId,
     });
   };
 

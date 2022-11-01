@@ -193,14 +193,13 @@ export const Login: React.FC = () => {
           <Offline>
             <Alert
               className={'mt-5 mb-3'}
-              title="You are offline"
-              message={'You need to be online to log in to the app'}
+              title="Your internet connection is unstable."
               type={'warning'}
             />
           </Offline>
           <Button
             id="gtm-login"
-            className={'w-full mt-3'}
+            className={'mt-3 w-full'}
             type="filled"
             isLoading={isLoading}
             color="primary"
@@ -211,7 +210,7 @@ export const Login: React.FC = () => {
           </Button>
           <Button
             id="gtm-signup"
-            className={'w-full mt-3'}
+            className={'mt-3 w-full'}
             type="outlined"
             color="primary"
             disabled={!isOnline}
