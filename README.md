@@ -146,7 +146,7 @@ hosted on Azure infrastructure.
 
 ### Remember to do this before running FE or API
 
-`npm install --global lerna` `npm install --global yarn`
+`npm install --global lerna && npm install --global yarn`
 
 ### Run the Frontend PWA
 

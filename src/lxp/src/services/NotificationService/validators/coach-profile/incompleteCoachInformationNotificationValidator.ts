@@ -48,8 +48,8 @@ export class IncompleteCoachInformationNotificationValidator
       return [
         {
           reference: `coach-profile`,
-          title: 'Tell us more about you!',
-          message: 'Share more information to make Funda App useful for you',
+          title: 'Complete your Profile',
+          message: 'Share more information to make Funda App useful for you.',
           dateCreated: new Date().toISOString(),
           priority: NotificationPriority.lower,
           viewOnDashboard: true,

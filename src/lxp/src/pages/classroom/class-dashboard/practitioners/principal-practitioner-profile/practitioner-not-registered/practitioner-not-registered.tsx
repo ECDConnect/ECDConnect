@@ -13,7 +13,7 @@ import ROUTES from '@/routes/routes';
 
 export const PractitionerNotRegistered: React.FC<
   PractitionerNotRegisterProps
-> = ({ practitioner }) => {
+> = ({ practitioner, classroom }) => {
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
   const userAuth = useSelector(authSelectors.getAuthUser);
@@ -65,7 +65,9 @@ export const PractitionerNotRegistered: React.FC<
             practitioner?.isLeaving
               ? `${
                   practitioner?.user?.firstName
-                } has said that they are not a practitioner at Angels Daycare. If ${
+                } has said that they are not a practitioner at ${
+                  classroom?.name
+                }. If ${
                   practitioner?.user?.firstName
                 } does not accept by ${format(
                   new Date(practitioner?.dateToBeRemoved!),
