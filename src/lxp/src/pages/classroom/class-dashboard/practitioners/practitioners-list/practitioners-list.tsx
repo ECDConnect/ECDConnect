@@ -134,7 +134,7 @@ export const PractitionersList: React.FC = () => {
   return (
     <>
       {practitionersList?.length! > 0 || practitionersList !== undefined ? (
-        <div className="flex justify-center flex-wrap">
+        <div className="flex flex-wrap justify-center">
           <div className="w-11/12">
             <StackedList
               className={styles.stackedList}
@@ -162,7 +162,7 @@ export const PractitionersList: React.FC = () => {
                 <Button
                   type="filled"
                   color="primary"
-                  className={'w-11/12 mt-6 mb-6'}
+                  className={'mt-6 mb-6 w-11/12'}
                   onClick={handleReassignClass}
                 >
                   {renderIcon(
@@ -179,11 +179,11 @@ export const PractitionersList: React.FC = () => {
               </div>
             </div>
           </Card>
-          <div className="flex justify-center w-11/12">
+          <div className="flex w-11/12 justify-center">
             <Button
               type="outlined"
               color="primary"
-              className={'w-full mt-6 mb-6'}
+              className={'mt-6 mb-6 w-full'}
               onClick={() => history.push(ROUTES.PRINCIPAL.ADD_PRACTITIONER)}
             >
               {renderIcon(
