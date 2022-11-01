@@ -71,7 +71,7 @@ export const getChildAlertModel = (
       return { status: alert, message: alertMessage, severity: 1 };
     }
   }
-  console.log({ userDocuments });
+
   const userBirthDocument = userDocuments?.find(
     (x) => x.name.includes('clinicCard') || x.name.includes('birthCertificate')
   );
