@@ -1,16 +1,21 @@
-import { Redirect, Route, Switch } from 'react-router-dom';
+import ROUTES from './routes';
 import { Login } from '@auth-p/login/login';
-import { NewPassword } from '@auth-p/new-password/new-password';
-import PasswordReset from '@auth-p/password-reset/password-reset';
-import { SignUp } from '@auth-p/sign-up/sign-up';
-import { VerifyPhoneNumber } from '@auth-p/verify-phonenumber/verify-phone-number';
 import Dashboard from '@dashboard-p/dashboard';
 import { Messages } from '@messages-p/messages';
+import { SignUp } from '@auth-p/sign-up/sign-up';
+import { Redirect, Route, Switch } from 'react-router-dom';
+import { NewPassword } from '@auth-p/new-password/new-password';
+import PasswordReset from '@auth-p/password-reset/password-reset';
+import { VerifyPhoneNumber } from '@auth-p/verify-phonenumber/verify-phone-number';
 import { PregnantRegister } from '@/pages/mom/pregnant-register/pregnant-register';
 import { PregnantRegisterForm } from '@/pages/mom/pregnant-register-form/pregnant-register-form';
 import { InfantRegister } from '@/pages/infant/infant-register/infant-register';
 import { InfantRegisterForm } from '@/pages/infant/infant-register-form/infant-register-form';
-import ROUTES from './routes';
+import { ClassDashboard } from '@/pages/classroom/class-dashboard/class-dashboard';
+import { PractitionerAbout } from '@/pages/practitioner/practitioner-about/practitioner-about';
+import { PractitionerProfile } from '@/pages/practitioner/practitioner-profile/practitioner-profile';
+import PractitionerAccount from '@/pages/practitioner/practitioner-account/practitioner-account';
+import { EditPractitionerProfile } from '@/pages/practitioner/edit-practitioner-profile/edit-practitioner-profile';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -52,6 +57,12 @@ const AuthRoutes: React.FC = () => {
       />
 
       <Route path={ROUTES.ROOT} component={Dashboard} exact={true} />
+      <Route path={ROUTES.CLASSROOM} component={ClassDashboard} exact={true} />
+      <Route
+        path={ROUTES.PRACTITIONER.PROFILE.ROOT}
+        component={PractitionerProfile}
+        exact={true}
+      />
       <Route path={ROUTES.DASHBOARD} component={Dashboard} exact={true} />
       <Route path={ROUTES.MESSAGES} component={Messages} />
       <Route path={ROUTES.MOM_REGISTER} component={PregnantRegister} />
@@ -60,6 +71,26 @@ const AuthRoutes: React.FC = () => {
       <Route
         path={ROUTES.INFANT_REGISTER_FORM}
         component={InfantRegisterForm}
+      />
+      <Route
+        exact
+        path={ROUTES.PRACTITIONER.ABOUT}
+        component={PractitionerAbout}
+      />
+      <Route
+        exact
+        path={ROUTES.PRACTITIONER.ACCOUNT}
+        component={PractitionerAccount}
+      />
+      <Route
+        exact
+        path={ROUTES.PRACTITIONER.PROFILE.ROOT}
+        component={PractitionerProfile}
+      />
+      <Route
+        exact
+        path={ROUTES.PRACTITIONER.PROFILE.EDIT}
+        component={EditPractitionerProfile}
       />
     </Switch>
   );
