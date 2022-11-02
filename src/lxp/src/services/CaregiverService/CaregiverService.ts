@@ -178,6 +178,30 @@ class CaregiverService {
 
     return response.data.data.createCaregiver;
   }
+
+  async updateCareGiverGrants(
+    childUserId: string,
+    grantsIds: string[]
+  ): Promise<CaregiverDto> {
+    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      mutation updateCareGiverGrants($childUserId: UUID!, $grantIds: [UUID!] ) {
+                 updateCareGiverGrants(childUserId: $childUserId, grantIds: $grantIds)
+                      }
+      `,
+      variables: {
+        childUserId: childUserId,
+        grantsIds: grantsIds,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error('Updating caregiver failed - Server connection error');
+    }
+
+    return response.data.data.updateCareGiverGrants;
+  }
 }
 
 export default CaregiverService;

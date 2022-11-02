@@ -56,6 +56,8 @@ import {
   ChildRegistrationSteps,
 } from './child-registration.types';
 import ROUTES from '@routes/routes';
+import { CaregiverService } from '@/services/CaregiverService';
+import { authSelectors } from '@store/auth';
 
 export const ChildRegistration: React.FC = () => {
   const history = useHistory();
@@ -70,6 +72,7 @@ export const ChildRegistration: React.FC = () => {
   const user = useSelector(userSelectors.getUser);
   const consentList = useSelector(contentConsentSelectors.getConsent);
   const existingChild = useSelector(childrenSelectors.getChildById(childId));
+  const authUser = useSelector(authSelectors.getAuthUser);
 
   const existingLearner = useSelector(
     classroomsSelectors.getChildLearner(existingChild)
@@ -326,6 +329,9 @@ export const ChildRegistration: React.FC = () => {
       ).unwrap();
     } else {
       appDispatch(caregiverActions.createCaregiver(caregiverDto));
+      await new CaregiverService(
+        authUser?.auth_token ?? ''
+      ).updateCareGiverGrants(childId!, caregiverDto?.grants!);
       await appDispatch(
         caregiverThunkActions.createCaregiver({ caregiver: caregiverDto })
       ).unwrap();
