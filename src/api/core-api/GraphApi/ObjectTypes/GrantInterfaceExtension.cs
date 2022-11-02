@@ -63,41 +63,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.ObjectTypes
             }
 
             return true;
-        }
-
-        public bool UpdateGrants(
-  [Service] AuthenticationDbContext context,
-   Guid userId,
-  Guid[] grantIds)
-        {
-            if (userId != null && grantIds!=null)
-            {
-                var grantsToAdd = grantIds.Select(x => new UserGrant
-                {
-                    GrantId = x,
-                    UserId = userId.ToString()
-                });
-
-                var existingGrants = context.UserGrants
-                  .Where(x => string.Equals(x.UserId, userId));
-
-                // Added safety from removing items from the list should the insertion of new items fail
-                try
-                {
-                    context.UserGrants.RemoveRange(existingGrants);
-
-                    context.UserGrants.AddRange(grantsToAdd);
-
-                    context.SaveChanges();
-                }
-                catch (Exception e)
-                {
-                    // Error
-                }
-
-                return true;
-            }
-            else return false;
-        }
+        }        
     }
 }

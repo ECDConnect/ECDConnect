@@ -3,6 +3,7 @@ using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.AuditLog;
 using ECDLink.DataAccessLayer.Entities.Classroom;
+using ECDLink.Tenancy.Context;
 using Microsoft.EntityFrameworkCore;
 using Org.BouncyCastle.Math.EC.Rfc7748;
 using System;
@@ -15,7 +16,7 @@ namespace ECDLink.DataAccessLayer.Repositories
 {
     public class AttendanceTrackingRepository
     {
-        private AuthenticationDbContext _context;
+        private AuthenticationDbContext _context;        
 
         public AttendanceTrackingRepository(AuthenticationDbContext context)
         {
@@ -45,12 +46,13 @@ namespace ECDLink.DataAccessLayer.Repositories
             {
                 return Enumerable.Empty<Attendance>().AsQueryable();
             }
-
+            Guid tenantId = TenantExecutionContext.Tenant.Id;
             var attendances = _context.Attendances
                               .Include(x => x.User)
                               .Include(x => x.ClassroomProgramme)
                                 .ThenInclude(x => x.ClassroomGroup)
-                              .Where(x => string.Equals(x.ParentRecordId, userId));
+                              .Where(x => string.Equals(x.ParentRecordId, userId))
+                              .Where(e => e.TenantId == null || e.TenantId.Equals(tenantId));
 
             return attendances;
         }
@@ -59,7 +61,10 @@ namespace ECDLink.DataAccessLayer.Repositories
         {
             var start = startMonth.GetStartOfMonth();
             var end = endMonth.GetStartOfMonth();
-            return _context.Attendances.Where(f => f.AttendanceDate >= start && f.AttendanceDate < end);            
+            Guid tenantId = TenantExecutionContext.Tenant.Id;
+            return _context.Attendances
+                .Where(f => f.AttendanceDate >= start && f.AttendanceDate < end)
+                .Where(e => e.TenantId == null || e.TenantId.Equals(tenantId));            
         }
 
 
@@ -69,9 +74,10 @@ namespace ECDLink.DataAccessLayer.Repositories
             {
                 var start = startMonth.GetStartOfMonth();
                 var end = endMonth.GetEndOfMonth();
+                Guid tenantId = TenantExecutionContext.Tenant.Id;
                 //get all programmes under classroom
                 IQueryable<ClassProgramme> programmes = _context.ClassProgrammes.Where(x => x.ClassroomGroupId.Equals(classroomId)).AsQueryable();
-                List<Attendance> attendance = _context.Attendances.Where(f => f.UserId == userId && f.AttendanceDate >= start && f.AttendanceDate < end).ToList();//
+                List<Attendance> attendance = _context.Attendances.Where(f => f.UserId == userId && f.AttendanceDate >= start && f.AttendanceDate < end).Where(e => e.TenantId == null || e.TenantId.Equals(tenantId)).ToList();//
                 List<string> programmeIds = programmes.Select(y => y.Id.ToString()).ToList();
 
                 List<Attendance> filteredAttendance = new List<Attendance>();

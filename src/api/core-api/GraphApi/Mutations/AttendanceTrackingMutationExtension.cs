@@ -7,6 +7,7 @@ using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Repositories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
+using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.EntityFrameworkCore;
@@ -24,6 +25,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
           TrackAttendanceModel attendance
           )
         {
+            System.Guid tenantId = TenantExecutionContext.Tenant.Id;
             var dbEntities = new List<Attendance>();
 
             // Add Parent Record
@@ -36,7 +38,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 MonthOfYear = attendance.AttendanceDate.Month,
                 Year = attendance.AttendanceDate.Year,
                 AttendanceDate = attendance.AttendanceDate,
-                Attended = true
+                Attended = true,
+                TenantId = tenantId
             });
 
             foreach (var attendee in attendance.Attendees)
@@ -50,7 +53,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     MonthOfYear = attendance.AttendanceDate.Month,
                     Year = attendance.AttendanceDate.Year,
                     AttendanceDate = attendance.AttendanceDate,
-                    Attended = attendee.Attended
+                    Attended = attendee.Attended,
+                    TenantId = tenantId
                 });
             }
 

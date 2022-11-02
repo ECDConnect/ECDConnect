@@ -11,5 +11,6 @@ namespace ECDLink.DataAccessLayer.Entities.Users.Mapping
         public virtual Grant Grant { get; set; }
 
         public Guid GrantId { get; set; }
+        public Guid TenantId { get; set; }
     }
 }

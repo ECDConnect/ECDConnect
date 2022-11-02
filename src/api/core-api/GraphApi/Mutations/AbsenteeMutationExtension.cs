@@ -56,6 +56,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     LoggedBy = loggedByUser,
                     ReassignedClass = classProgram,
                     ReassignedToPractitioner = reassignedToPractitioner
+                    
                 };
                 updated = absenteeRepo.Insert(absent);
 
@@ -67,7 +68,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     ReassignedDate = DateTime.Now,
                     LoggedBy = loggedByUser,
                     ReassignedClass = classProgram,
-                    ReassignedToUser = reassignedToPractitioner
+                    ReassignedToUser = reassignedToPractitioner,
+                    HierarchyToUser = hierarchy,
+                    
                 };
                 var historySaved = historyRepo.Insert(history);
 
