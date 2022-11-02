@@ -24,7 +24,7 @@ import { EditPractitioner } from './edit-practitioner/edit-practitioner';
 import { userSelectors } from '@store/user';
 import { PractitionerService } from '@/services/PractitionerService';
 import { authSelectors } from '@/store/auth';
-import { PractitionerInfo } from './other-practitioner-view/other-practitioner';
+import { OtherPractitionerProfile } from './other-practitioner-view/other-practitioner';
 import ROUTES from '@routes/routes';
 
 export const PractitionerList: React.FC<PractitionerListProps> = ({
@@ -145,7 +145,7 @@ export const PractitionerList: React.FC<PractitionerListProps> = ({
           visible={practitionerInfo}
           position={DialogPosition.Top}
         >
-          <PractitionerInfo
+          <OtherPractitionerProfile
             practitionerId={practitionerId!}
             setPractitionerInfo={setPractitionerInfo}
             colleagueProfile={colleagueProfile}
