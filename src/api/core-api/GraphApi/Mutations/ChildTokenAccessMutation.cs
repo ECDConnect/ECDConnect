@@ -285,35 +285,39 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             if (childUserId != null && grantIds != null)
             {
                 //retrieve careGiveId from child
-                Guid caregiverId = (Guid)context.Children.Where(x => x.UserId.Equals(childUserId)).Select(y => y.CaregiverId).FirstOrDefault();
-                if (caregiverId != null)
+                var childObj = context.Children.Where(x => x.UserId == childUserId.ToString()).FirstOrDefault();
+                if (childObj != null)
                 {
-                    var grantsToAdd = grantIds.Select(x => new UserGrant
+                    Guid? caregiverId = childObj.CaregiverId;
+                    if (caregiverId != null)
                     {
-                        GrantId = x,
-                        UserId = caregiverId.ToString(),
-                        TenantId = _tenantId
-                    });
+                        var grantsToAdd = grantIds.Select(x => new UserGrant
+                        {
+                            GrantId = x,
+                            UserId = caregiverId.ToString(),
+                            TenantId = _tenantId
+                        });
 
-                    var existingGrants = context.UserGrants
-                      .Where(x => string.Equals(x.UserId, caregiverId));
+                        var existingGrants = context.UserGrants
+                          .Where(x => string.Equals(x.UserId, caregiverId));
 
-                    // Added safety from removing items from the list should the insertion of new items fail
-                    try
-                    {
-                        context.UserGrants.RemoveRange(existingGrants);
+                        // Added safety from removing items from the list should the insertion of new items fail
+                        try
+                        {
+                            context.UserGrants.RemoveRange(existingGrants);
 
-                        context.UserGrants.AddRange(grantsToAdd);
+                            context.UserGrants.AddRange(grantsToAdd);
 
-                        context.SaveChanges();
+                            context.SaveChanges();
+                        }
+                        catch (Exception e)
+                        {
+                            // Error
+                            return false;
+                        }
+                        return true;
                     }
-                    catch (Exception e)
-                    {
-                        // Error
-                        return false;
-                    }
-
-                    return true;
+                    else return false;
                 }
                 else return false;
             }
