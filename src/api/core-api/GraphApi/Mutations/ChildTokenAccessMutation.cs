@@ -310,6 +310,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     catch (Exception e)
                     {
                         // Error
+                        return false;
                     }
 
                     return true;
