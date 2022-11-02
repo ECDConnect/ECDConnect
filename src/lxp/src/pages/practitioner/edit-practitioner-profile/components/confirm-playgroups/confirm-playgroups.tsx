@@ -88,7 +88,7 @@ export const ConfirmPlayGroups: React.FC<ConfirmPlayGroupsProps> = ({
         <Button
           type="filled"
           color="primary"
-          className={'w-full my-3'}
+          className={'my-3 w-full'}
           isLoading={isLoading}
           disabled={isLoading}
           onClick={() => {

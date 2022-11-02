@@ -38,6 +38,16 @@ namespace EcdLink.Api.CoreApi
                     c.TimeZoneInfo = TimeZoneInfo.Local;
                     c.CronExpression = CronTags.MidnightDaily;
                 });
+                services.AddCronJob<ExpireInvitationsJob>(c =>
+                {
+                    c.TimeZoneInfo = TimeZoneInfo.Local;
+                    c.CronExpression = CronTags.MidnightDaily;
+                });
+                services.AddCronJob<RevertReassignment>(c =>
+                {
+                    c.TimeZoneInfo = TimeZoneInfo.Local;
+                    c.CronExpression = CronTags.MidnightDaily;
+                });
             }
         } 
     }
