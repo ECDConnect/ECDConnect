@@ -14,6 +14,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
@@ -22,11 +23,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
     {
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public List<Caregiver> GetAllCaregiver([Service] IHttpContextAccessor contextAccessor,
-    [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
     [Service] IGenericRepositoryFactory repoFactory)
         {
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
             var careGiverRepo = repoFactory.CreateRepository<Caregiver>(userContext: uId);
@@ -55,12 +53,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public List<Caregiver> GetAllCaregiverByPractitioner([Service] IHttpContextAccessor contextAccessor,
-            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
             string practitionerId)
         {
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
             var careGiverRepo = repoFactory.CreateRepository<Caregiver>(userContext: uId);
@@ -86,12 +81,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public List<Caregiver> GetAllCaregiversForHealthCareWorker([Service] IHttpContextAccessor contextAccessor,
-            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
             string id)
         {
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var careGiverRepo = repoFactory.CreateRepository<Caregiver>(userContext: uId);
             var healthCareWorkerRepo = repoFactory.CreateRepository<HealthCareWorker>(userContext: uId);
@@ -104,5 +96,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
             return careGiverRepo.GetAll().Where(x => x.HealthCareWorkerId.Equals(healthCareWorker.Id)).ToList();
         }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public List<UserGrant> GetCaregiverGrants([Service]
+        AuthenticationDbContext context,
+    Guid careGiverId)
+        {
+            return context.UserGrants.Where(x => x.UserId == careGiverId.ToString()).ToList();
+        }
+
     }
 }

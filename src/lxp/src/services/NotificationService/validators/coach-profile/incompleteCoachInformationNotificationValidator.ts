@@ -41,8 +41,7 @@ export class IncompleteCoachInformationNotificationValidator
       (!userState?.user?.firstName ||
         !userState?.user?.surname ||
         !userState?.user?.phoneNumber ||
-        !userState?.user?.email ||
-        !userState?.user?.genderId);
+        !userState?.user?.email);
 
     if (!userState?.user || showNotification) {
       return [

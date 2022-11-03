@@ -186,7 +186,7 @@ export default function Practitioners() {
   const UploadContentImport = () => {
     panel({
       noPadding: true,
-      title: `Upload Data Import Users`,
+      title: `Import Users`,
       render: (onSubmit: any) => (
         <UploadAllImportTemplate
           closeDialog={(created: boolean) => {
@@ -204,7 +204,7 @@ export default function Practitioners() {
   const UploadContentImportChildren = () => {
     panel({
       noPadding: true,
-      title: `Upload Data Import Children/Classes`,
+      title: `Import Children`,
       render: (onSubmit: any) => (
         <UploadAllChildrenTemplate
           closeDialog={(created: boolean) => {
@@ -224,14 +224,14 @@ export default function Practitioners() {
       <div>
         <div className="flex flex-col">
           <div className="pb-5 sm:flex sm:items-center sm:justify-between">
-            <span className="text-lg leading-6 font-medium text-gray-900"></span>
+            <span className="text-lg font-medium leading-6 text-gray-900"></span>
             <div className="flex flex-row">
               <div className="mt-3 sm:mt-0 sm:ml-4">
                 {hasPermission(PermissionEnum.create_user) && (
                   <button
                     onClick={displayPanel}
                     type="button"
-                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-uiMid hover:bg-uiLight focus:outline-none focus:ring-2 focus:ring-offset-2"
+                    className="bg-uiMid hover:bg-uiLight focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
                   >
                     Create Practitioner
                   </button>
@@ -246,7 +246,7 @@ export default function Practitioners() {
                           <div>
                             <Menu.Button
                               type="button"
-                              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-uiMid hover:bg-uiLight focus:outline-none focus:ring-2 focus:ring-offset-2"
+                              className="bg-uiMid hover:bg-uiLight focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
                             >
                               <span className="sr-only">Open options</span>
                               <CogIcon className="h-5 w-5" aria-hidden="true" />
@@ -265,7 +265,7 @@ export default function Practitioners() {
                           >
                             <Menu.Items
                               static
-                              className="z-50 origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
+                              className="focus:outline-none absolute right-0 z-50 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5"
                             >
                               <div className="py-1">
                                 <Menu.Item>
@@ -273,7 +273,7 @@ export default function Practitioners() {
                                     onClick={() =>
                                       downloadContentTypeTemplate()
                                     }
-                                    className="text-gray-700 flex px-4 py-2 text-sm cursor-pointer"
+                                    className="flex cursor-pointer px-4 py-2 text-sm text-gray-700"
                                   >
                                     <DownloadIcon
                                       className="mr-3 h-5 w-5 text-gray-400"
@@ -285,7 +285,7 @@ export default function Practitioners() {
                                 <Menu.Item>
                                   <div
                                     onClick={() => UploadContent()}
-                                    className="text-gray-700 flex px-4 py-2 text-sm cursor-pointer"
+                                    className="flex cursor-pointer px-4 py-2 text-sm text-gray-700"
                                   >
                                     <UploadIcon
                                       className="mr-3 h-5 w-5 text-gray-400"
@@ -297,13 +297,13 @@ export default function Practitioners() {
                                 <Menu.Item>
                                   <div
                                     onClick={() => UploadContentImport()}
-                                    className="text-gray-700 flex px-4 py-2 text-sm cursor-pointer"
+                                    className="flex cursor-pointer px-4 py-2 text-sm text-gray-700"
                                   >
                                     <UploadIcon
                                       className="mr-3 h-5 w-5 text-gray-400"
                                       aria-hidden="true"
                                     />
-                                    Upload Data Import Users
+                                    Import Users
                                   </div>
                                 </Menu.Item>
                                 <Menu.Item>
@@ -311,13 +311,13 @@ export default function Practitioners() {
                                     onClick={() =>
                                       UploadContentImportChildren()
                                     }
-                                    className="text-gray-700 flex px-4 py-2 text-sm cursor-pointer"
+                                    className="flex cursor-pointer px-4 py-2 text-sm text-gray-700"
                                   >
                                     <UploadIcon
                                       className="mr-3 h-5 w-5 text-gray-400"
                                       aria-hidden="true"
                                     />
-                                    Upload Data Import Children Classes
+                                    Import Children Classes
                                   </div>
                                 </Menu.Item>
                               </div>
@@ -333,8 +333,8 @@ export default function Practitioners() {
           </div>
 
           <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-            <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-              <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+            <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+              <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
                 <UiTable
                   columns={[
                     { field: 'idNumber', use: 'id / Passport' },

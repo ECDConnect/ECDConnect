@@ -11,13 +11,13 @@ namespace ECDLink.EGraphQL.Resolvers
     public class GenericMutationResolvers<T>
         where T : EntityBase<Guid>
     {
+        private readonly Guid _tenantId = TenantExecutionContext.Tenant.Id;
         public T Update([Service] IGenericRepositoryFactory repositoryFactory, [Service] IHttpContextAccessor httpContextAccessor, Guid id, T input)
         {
-            Guid tenantId = TenantExecutionContext.Tenant.Id;
             var repository = repositoryFactory.CreateRepository<T>();
             input.UpdatedDate = DateTime.Now;
             input.Id = id;
-            input.TenantId = tenantId;
+            input.TenantId = _tenantId;
 
             repository.SetUserContext(httpContextAccessor.HttpContext.GetUser().Id);
             return repository.Update(input);
@@ -25,11 +25,10 @@ namespace ECDLink.EGraphQL.Resolvers
 
         public T Create([Service] IGenericRepositoryFactory repositoryFactory, [Service] IHttpContextAccessor httpContextAccessor, T input)
         {
-            Guid tenantId = TenantExecutionContext.Tenant.Id;
             var repository = repositoryFactory.CreateRepository<T>();
 
             repository.SetUserContext(httpContextAccessor.HttpContext.GetUser().Id);
-            input.TenantId = tenantId;
+            input.TenantId = _tenantId;
             return repository.Insert(input);
         }
 

@@ -9,6 +9,7 @@ using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Caregiver;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Workflow;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
@@ -25,6 +26,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -33,6 +35,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class ChildTokenAccessMutation
     {
+        private readonly Guid _tenantId = TenantExecutionContext.Tenant.Id;
         [TokenAccess(typeof(ChildOpenAccessValidator))]
         public async Task<bool> OpenAccessAddChild(
             [Service] ITokenManager<ApplicationUser, OpenAccessTokenManager> tokenManager,
@@ -272,6 +275,53 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             };
 
             return TokenHelper.EncodeToken(JsonConvert.SerializeObject(tokenWrapper));
+        }
+
+        public bool UpdateCareGiverGrants(
+  [Service] AuthenticationDbContext context,
+   Guid childUserId,
+  List<Guid> grantIds)
+        {
+            if (childUserId != null && grantIds != null)
+            {
+                //retrieve careGiveId from child
+                var childObj = context.Children.Where(x => x.UserId == childUserId.ToString()).FirstOrDefault();
+                if (childObj != null)
+                {
+                    Guid? caregiverId = childObj.CaregiverId;
+                    if (caregiverId != null)
+                    {
+                        var grantsToAdd = grantIds.Select(x => new UserGrant
+                        {
+                            GrantId = x,
+                            UserId = caregiverId.ToString(),
+                            TenantId = _tenantId
+                        });
+
+                        var existingGrants = context.UserGrants
+                          .Where(x => string.Equals(x.UserId, caregiverId));
+
+                        // Added safety from removing items from the list should the insertion of new items fail
+                        try
+                        {
+                            context.UserGrants.RemoveRange(existingGrants);
+
+                            context.UserGrants.AddRange(grantsToAdd);
+
+                            context.SaveChanges();
+                        }
+                        catch (Exception e)
+                        {
+                            // Error
+                            return false;
+                        }
+                        return true;
+                    }
+                    else return false;
+                }
+                else return false;
+            }
+            else return false;
         }
     }
 }
