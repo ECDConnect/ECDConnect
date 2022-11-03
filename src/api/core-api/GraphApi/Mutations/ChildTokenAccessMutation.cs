@@ -28,7 +28,9 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Timers;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
@@ -284,7 +286,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         {
             if (childUserId != null && grantIds != null)
             {
-                //retrieve careGiveId from child
+                //retrieve careGiverId from child
                 var childObj = context.Children.Where(x => x.UserId == childUserId.ToString()).FirstOrDefault();
                 if (childObj != null)
                 {
@@ -299,15 +301,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         });
 
                         var existingGrants = context.UserGrants
-                          .Where(x => string.Equals(x.UserId, caregiverId));
-
-                        // Added safety from removing items from the list should the insertion of new items fail
+                          .Where(x =>x.UserId == caregiverId.ToString());
+                       
                         try
                         {
+                            //remove
                             context.UserGrants.RemoveRange(existingGrants);
-
+                            context.SaveChanges();
+                            //reinsert
                             context.UserGrants.AddRange(grantsToAdd);
-
                             context.SaveChanges();
                         }
                         catch (Exception e)
