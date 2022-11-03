@@ -7,11 +7,12 @@
       "dom.iterable",
       "esnext"
     ],
+    "strict": true,
     "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
+    "useUnknownInCatchVariables": true,
     "allowSyntheticDefaultImports": true,
-    "strict": true,
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
     "module": "esnext",
@@ -23,6 +24,7 @@
     "outDir": "./lib"
   },
   "include": [
-    "src"
+    "src",
+    "globals.d.ts"
   ]
 }
