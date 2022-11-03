@@ -181,7 +181,7 @@ class CaregiverService {
 
   async updateCareGiverGrants(
     childUserId: string,
-    grantsIds: string[]
+    grantIds: string[]
   ): Promise<CaregiverDto> {
     const apiInstance = await api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
@@ -192,7 +192,7 @@ class CaregiverService {
       `,
       variables: {
         childUserId: childUserId,
-        grantsIds: grantsIds,
+        grantIds: grantIds,
       },
     });
 

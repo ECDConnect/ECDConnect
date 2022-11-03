@@ -329,12 +329,12 @@ export const ChildRegistration: React.FC = () => {
       ).unwrap();
     } else {
       appDispatch(caregiverActions.createCaregiver(caregiverDto));
-      await new CaregiverService(
-        authUser?.auth_token ?? ''
-      ).updateCareGiverGrants(existingChild?.userId!, caregiverDto?.grants!);
       await appDispatch(
         caregiverThunkActions.createCaregiver({ caregiver: caregiverDto })
       ).unwrap();
+      await new CaregiverService(
+        authUser?.auth_token ?? ''
+      ).updateCareGiverGrants(existingChild?.userId!, caregiverDto?.grants!);
     }
 
     const childInputModel = existingChild
@@ -656,7 +656,7 @@ export const ChildRegistration: React.FC = () => {
         </StepViewer>
       </IonContent>
       <Dialog
-        className={'px-4 mb-16'}
+        className={'mb-16 px-4'}
         stretch
         visible={exitRegistrationPromptVisible}
         position={DialogPosition.Bottom}
