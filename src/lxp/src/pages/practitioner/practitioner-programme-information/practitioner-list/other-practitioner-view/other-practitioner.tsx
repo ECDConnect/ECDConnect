@@ -21,11 +21,9 @@ import { useTheme } from '@ecdlink/core';
 // import { notesSelectors } from '@store/notes';
 // import { useSelector } from 'react-redux';
 
-export const PractitionerInfo: React.FC<PractitionerProfileRouteState> = ({
-  practitionerId,
-  setPractitionerInfo,
-  colleagueProfile,
-}) => {
+export const OtherPractitionerProfile: React.FC<
+  PractitionerProfileRouteState
+> = ({ practitionerId, setPractitionerInfo, colleagueProfile }) => {
   const { theme } = useTheme();
   const { isOnline } = useOnlineStatus();
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
@@ -45,7 +43,7 @@ export const PractitionerInfo: React.FC<PractitionerProfileRouteState> = ({
   return (
     <div className={styles.contentWrapper}>
       <BannerWrapper
-        title={`${practitioner?.user?.fullName}`}
+        title={`${colleagueProfile?.name}`}
         color={'primary'}
         size="small"
         renderOverflow={false}
