@@ -130,12 +130,11 @@ export const PractitionerProfile: React.FC = () => {
       title: 'Profile',
       initActive: true,
       child: (
-        <div>
-          <StackedList
-            listItems={getStackedMenuList()}
-            type={'MenuList'}
-          ></StackedList>
-        </div>
+        <StackedList
+          className={'secondary'}
+          listItems={getStackedMenuList()}
+          type={'MenuList'}
+        />
       ),
     },
   ];
@@ -150,7 +149,7 @@ export const PractitionerProfile: React.FC = () => {
       backgroundColour="uiBg"
       displayOffline={!isOnline}
     >
-      <div className="bg-white">
+      <div className="secondary bg-white">
         <TabList tabItems={tabItem} />
       </div>
     </BannerWrapper>

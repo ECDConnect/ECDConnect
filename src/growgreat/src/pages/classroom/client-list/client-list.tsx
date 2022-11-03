@@ -172,7 +172,7 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
           listItems={clientsListItems || []}
           type={'UserAlertList'}
           onScroll={(scrollTop: number) => {}}
-        ></StackedList>
+        />
       ) : null}
       <FADButton
         title={'Open a folder'}
