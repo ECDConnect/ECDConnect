@@ -331,7 +331,7 @@ export const ChildRegistration: React.FC = () => {
       appDispatch(caregiverActions.createCaregiver(caregiverDto));
       await new CaregiverService(
         authUser?.auth_token ?? ''
-      ).updateCareGiverGrants(childId!, caregiverDto?.grants!);
+      ).updateCareGiverGrants(existingChild?.userId!, caregiverDto?.grants!);
       await appDispatch(
         caregiverThunkActions.createCaregiver({ caregiver: caregiverDto })
       ).unwrap();
