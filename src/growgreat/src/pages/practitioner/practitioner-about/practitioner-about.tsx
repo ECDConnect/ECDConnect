@@ -260,7 +260,7 @@ export const PractitionerAbout: React.FC = () => {
         onBack={() => history.push(ROUTES.PRACTITIONER.PROFILE.ROOT)}
         displayOffline={!isOnline}
       >
-        <div className={'w-full inline-flex justify-center pt-8'}>
+        <div className={'inline-flex w-full justify-center pt-8'}>
           <ProfileAvatar
             dataUrl={userProfilePicture?.file || ''}
             size={'header'}
@@ -269,10 +269,10 @@ export const PractitionerAbout: React.FC = () => {
           />
         </div>
         <StackedList
-          className={'bg-uiBg'}
+          className={'bg-uiBg px-4'}
           listItems={listItems}
           type={'ActionList'}
-        ></StackedList>
+        />
       </BannerWrapper>
 
       <Dialog

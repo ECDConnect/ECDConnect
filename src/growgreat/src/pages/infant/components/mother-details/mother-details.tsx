@@ -35,7 +35,7 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
   setMultipleChildrenArray,
 }) => {
   const {
-    watch,
+    // watch,
     getValues: getMothereDetailsFormValues,
     // formState: pregnantDetailsFormState,
     setValue: setMothereDetailsFormValue,
@@ -96,10 +96,10 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
           type="h4"
           color={'textMid'}
           text={'Details'}
-          className="z-50 pt-2 w-11/12"
+          className="z-50 w-11/12 pt-2"
         />
       </div>
-      <div className="flex justify-center w-11/12 text-red-400">
+      <div className="flex w-11/12 justify-center text-red-400">
         <Divider dividerType="dashed" />
       </div>
       <div>
@@ -107,7 +107,7 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
           type="h3"
           color={'textDark'}
           text={'Is this client already on CHW Connect?'}
-          className="z-50 pt-2 w-11/12"
+          className="z-50 w-11/12 pt-2"
         />
         <div className="mt-2">
           <ButtonGroup<boolean>
@@ -130,7 +130,7 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
                     type="h3"
                     color={'textDark'}
                     text={`Relationship to ${child?.firstName}`}
-                    className="z-50 pt-2 w-11/12 bt-1"
+                    className="bt-1 z-50 w-11/12 pt-2"
                   />
                   <Dropdown
                     key={index + 3}
@@ -179,7 +179,7 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
                 type="h3"
                 color={'textDark'}
                 text={`Relationship to ${infantDetails?.firstName}`}
-                className="z-50 pt-2 w-11/12 bt-1"
+                className="bt-1 z-50 w-11/12 pt-2"
               />
               <Dropdown
                 placeholder={'Please choose the client:'}
@@ -246,7 +246,7 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
               type="h3"
               color={'textDark'}
               text={`Choose caregiver`}
-              className="z-50 pt-2 w-11/12 bt-1"
+              className="bt-1 z-50 w-11/12 pt-2"
             />
             <Dropdown
               placeholder={'Please choose the client:'}
@@ -275,12 +275,12 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
           </div>
         )}
       </div>
-      <div className="flex w-full h-full align-bottom">
-        <div className={'mt-10 w-11/12 flex justify-center align-bottom'}>
+      <div className="flex h-full w-full align-bottom">
+        <div className={'mt-10 flex w-11/12 justify-center align-bottom'}>
           <Button
             type={'filled'}
             color={'primary'}
-            className={'mt-2 ml-6 w-11/12 max-h-10 absolute bottom-10'}
+            className={'absolute bottom-10 mt-2 ml-6 max-h-10 w-11/12'}
             textColor={'white'}
             text={`Next`}
             icon={'ArrowCircleRightIcon'}

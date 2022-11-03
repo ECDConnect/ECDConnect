@@ -165,17 +165,20 @@ export const PhotoPrompt: React.FC<PhotoPromptProps> = ({
           ></Typography>
         </div>
         <div className="flex flex-wrap justify-center">
-          <div className="grid grid-cols-2 mt-16 overflow-auto gap-x-8 gap-y-8 w-9/12 justify-center">
-            {emojis.map((item) => {
+          <div className="mt-16 grid w-9/12 grid-cols-2 justify-center gap-x-8 gap-y-8 overflow-auto">
+            {emojis.map((item, index) => {
               return (
-                <div className="flex justify-center items-center">
+                <div
+                  key={`${item}-${index}`}
+                  className="flex items-center justify-center"
+                >
                   <img src={item} alt="emojis" />;
                 </div>
               );
             })}
           </div>
-          <div className="w-full flex justify-center mt-14">
-            <div className="w-full flex justify-center ">
+          <div className="mt-14 flex w-full justify-center">
+            <div className="flex w-full justify-center ">
               <Button
                 className={'w-11/12'}
                 type={'filled'}

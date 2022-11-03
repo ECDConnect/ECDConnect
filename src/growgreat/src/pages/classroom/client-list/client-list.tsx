@@ -14,16 +14,16 @@ import { useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
 import ROUTES from '@/routes/routes';
 import { useHistory } from 'react-router-dom';
-import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
-import { useOnlineStatus } from '@hooks/useOnlineStatus';
+// import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
+// import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { getInfants } from '@/store/infant/infant.selectors';
 import { motherSelectors } from '@/store/mother';
 import { getAvatarColor } from '@ecdlink/core';
-import Infant from '../../../assets/infant.svg';
+import Infant from '@/assets/infant.svg';
 
 export const ClientList: React.FC<ComponentBaseProps> = () => {
   const dialog = useDialog();
-  const { isOnline } = useOnlineStatus();
+  // const { isOnline } = useOnlineStatus();
   const history = useHistory();
   const infants = useSelector(getInfants);
   const mothers = useSelector(motherSelectors.getMothers);
@@ -97,22 +97,22 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
     }
   }, [infantsListItems, mothersListItems]);
 
-  const showOnlineOnly = () => {
-    dialog({
-      position: DialogPosition.Bottom,
-      render: (onSubmit) => {
-        return <OnlineOnlyModal onSubmit={onSubmit}></OnlineOnlyModal>;
-      },
-    });
-  };
+  // const showOnlineOnly = () => {
+  //   dialog({
+  //     position: DialogPosition.Bottom,
+  //     render: (onSubmit) => {
+  //       return <OnlineOnlyModal onSubmit={onSubmit}></OnlineOnlyModal>;
+  //     },
+  //   });
+  // };
 
-  const registerNewInfant = () => {
-    if (isOnline) {
-      history.push(ROUTES.INFANT_REGISTER);
-    } else {
-      showOnlineOnly();
-    }
-  };
+  // const registerNewInfant = () => {
+  //   if (isOnline) {
+  //     history.push(ROUTES.INFANT_REGISTER);
+  //   } else {
+  //     showOnlineOnly();
+  //   }
+  // };
 
   const showCompleteProfileBlockingDialog = () => {
     dialog({

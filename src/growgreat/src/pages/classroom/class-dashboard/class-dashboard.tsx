@@ -15,7 +15,7 @@ import { useAppDispatch } from '@store';
 import { analyticsActions } from '@store/analytics';
 import {
   getStorageItem,
-  setStorageItem,
+  // setStorageItem,
 } from '@utils/common/local-storage.utils';
 // import { AttendanceComponent } from '../attendance/attendance';
 // import AttendanceTutorial from '../attendance/components/attendance-tutorial/attendance-tutorial';
@@ -24,8 +24,8 @@ import {
 import * as styles from './class-dashboard.styles';
 import { ClassDashboardRouteState } from './class-dashboard.types';
 import ROUTES from '@routes/routes';
-import { MotherList } from '../mother-list/mother-list';
-import { InfantList } from '../infant-list/infant-list';
+// import { MotherList } from '../mother-list/mother-list';
+// import { InfantList } from '../infant-list/infant-list';
 import { ClientList } from '../client-list/client-list';
 
 export const ClassDashboard: React.FC = () => {
@@ -40,7 +40,11 @@ export const ClassDashboard: React.FC = () => {
     state?.activeTabIndex !== undefined ? state?.activeTabIndex : 1
   );
   const appDispatch = useAppDispatch();
-  const [previousTabIndex, setPreviousTabIndex] = useState<number>();
+  const [
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    previousTabIndex,
+    setPreviousTabIndex,
+  ] = useState<number>();
   const [currentTab, setCurrentTab] = useState<TabItem>();
   const { isOnline } = useOnlineStatus();
 
@@ -128,19 +132,19 @@ export const ClassDashboard: React.FC = () => {
   const displayHelp =
     currentTab?.title === 'Attendance' || currentTab?.title === 'Programme';
 
-  const closeAttendanceTutorial = () => {
-    if (!attendanceTutorialComplete && previousTabIndex) {
-      setSelectedTabIndex(previousTabIndex);
-    }
-    setAttendanceTutorialActive(false);
-  };
+  // const closeAttendanceTutorial = () => {
+  //   if (!attendanceTutorialComplete && previousTabIndex) {
+  //     setSelectedTabIndex(previousTabIndex);
+  //   }
+  //   setAttendanceTutorialActive(false);
+  // };
 
-  const completeTutorial = () => {
-    setStorageItem(true, LocalStorageKeys.attendanceTutorialComplete);
-    setAttendanceTutorialComplete(true);
-    setSelectedTabIndex(0);
-    setAttendanceTutorialActive(false);
-  };
+  // const completeTutorial = () => {
+  //   setStorageItem(true, LocalStorageKeys.attendanceTutorialComplete);
+  //   setAttendanceTutorialComplete(true);
+  //   setSelectedTabIndex(0);
+  //   setAttendanceTutorialActive(false);
+  // };
 
   return (
     <>

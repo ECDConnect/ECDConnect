@@ -25,7 +25,7 @@ import { useSelector } from 'react-redux';
 import { userSelectors } from '@store/user';
 import { EditPregnantContactInformationProps } from '../components/contact-information/contact-information.types';
 import { motherActions, motherThunkActions } from '@/store/mother';
-import momImage from '../../../assets/momImage.png';
+import momImage from '@/assets/momImage.png';
 import { documentActions, documentThunkActions } from '@/store/document';
 import { useStaticData } from '@/hooks/useStaticData';
 import { FileTypeEnum, WorkflowStatusEnum } from '@ecdlink/graphql';
@@ -109,7 +109,7 @@ export const PregnantRegisterForm: React.FC = () => {
       age: details?.age,
       isActive: true,
       siteAddress: siteAddressDto,
-      relationId: relations.find((x) => x.description == 'Mother')?.id,
+      relationId: relations.find((x) => x.description === 'Mother')?.id,
     };
     appDispatch(caregiverActions.createCaregiver(caregiverInput));
     appDispatch(motherActions.addMother(motherInputModel));
@@ -142,6 +142,9 @@ export const PregnantRegisterForm: React.FC = () => {
     ).unwrap();
   }, [
     appDispatch,
+    relations,
+    getDocumentTypeIdByEnum,
+    getWorkflowStatusIdByEnum,
     pregnantMaternalCaseRecord,
     user,
     contactInformation,
@@ -158,7 +161,7 @@ export const PregnantRegisterForm: React.FC = () => {
             <ConsentAgreement
               onSubmit={(value) => {
                 setActiveStep(PregnantRegisterSteps.pregnantDetails);
-                setHasConsent(value as boolean);
+                setHasConsent(Boolean(value));
                 setLabel(`step 2 of 5`);
               }}
             />
@@ -233,13 +236,13 @@ export const PregnantRegisterForm: React.FC = () => {
         displayOffline={!isOnline}
       ></BannerWrapper>
       {registeredClientVisible ? (
-        <div className="h-full w-full flex justify-center items-center mt-40">
+        <div className="mt-40 flex h-full w-full items-center justify-center">
           <Card
             borderRaduis={'md'}
             shadowSize={'lg'}
-            className="flex flex-col justify-scenter items-center p-4 w-11/12"
+            className="flex w-11/12 flex-col items-center justify-center p-4"
           >
-            <div className="h-28 w-28 rounded-full bg-tertiary justify-center items-center flex">
+            <div className="bg-tertiary flex h-28 w-28 items-center justify-center rounded-full">
               <img className={'m-auto'} src={momImage} alt="card" />
             </div>
             <div>
@@ -259,11 +262,11 @@ export const PregnantRegisterForm: React.FC = () => {
                 lineHeight="snug"
               />
             </div>
-            <div className={'mt-4 w-full flex justify-center'}>
+            <div className={'mt-4 flex w-full justify-center'}>
               <Button
                 type={'filled'}
                 color={'primary'}
-                className={'w-11/12 max-h-10'}
+                className={'max-h-10 w-11/12'}
                 textColor={'white'}
                 text={`Close`}
                 icon={'XIcon'}
