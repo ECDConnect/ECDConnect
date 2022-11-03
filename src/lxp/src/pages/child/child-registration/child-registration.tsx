@@ -1,4 +1,5 @@
 import {
+  CaregiverDto,
   ChildDto,
   ContentConsentTypeEnum,
   useStepNavigation,
@@ -101,6 +102,8 @@ export const ChildRegistration: React.FC = () => {
       setFormState({ ...formState, [action.formProp]: action.value });
     }
   };
+  const [caregiverData, setCaregiverData] = useState<CaregiverDto>();
+  const [sendGrants, setSendGrants] = useState(false);
 
   useEffect(() => {
     if (!isOnline) {
@@ -318,6 +321,7 @@ export const ChildRegistration: React.FC = () => {
       formState.careGiverContributionFormModel,
       existingCaregiver
     );
+    setCaregiverData(caregiverDto);
 
     if (existingCaregiver) {
       appDispatch(caregiverActions.updateCaregiver(caregiverDto));
@@ -332,9 +336,6 @@ export const ChildRegistration: React.FC = () => {
       await appDispatch(
         caregiverThunkActions.createCaregiver({ caregiver: caregiverDto })
       ).unwrap();
-      await new CaregiverService(
-        authUser?.auth_token ?? ''
-      ).updateCareGiverGrants(existingChild?.userId!, caregiverDto?.grants!);
     }
 
     const childInputModel = existingChild
@@ -352,13 +353,26 @@ export const ChildRegistration: React.FC = () => {
     history.push(ROUTES.CLASSROOM);
   };
 
+  useEffect(() => {
+    if (sendGrants) {
+      const updateGrants = async () => {
+        await new CaregiverService(
+          authUser?.auth_token ?? ''
+        ).updateCareGiverGrants(existingChild?.userId!, caregiverData?.grants!);
+      };
+      updateGrants();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sendGrants]);
+
   const updateChild = async (child: ChildDto) => {
-    if (!child) return;
+    if (!child && caregiverData) return;
 
     await appDispatch(
       childrenThunkActions.updateChild({ child: child, id: child.id as string })
     ).unwrap();
     appDispatch(childrenActions.updateChild(child));
+    setSendGrants(true);
   };
 
   const saveChildBirthCertificate = async (
