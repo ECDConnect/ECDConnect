@@ -16,6 +16,7 @@ import { useAppDispatch } from '@store';
 import ROUTES from '@routes/routes';
 import { coachActions, coachSelectors, coachThunkActions } from '@store/coach';
 import { userActions, userSelectors, userThunkActions } from '@/store/user';
+import { notificationActions } from '@/store/notifications';
 
 export const EditCoachProfile: React.FC = () => {
   const [activeStep, setActiveStep] = useState(EditCoachSteps.completeProfile);
@@ -59,6 +60,7 @@ export const EditCoachProfile: React.FC = () => {
 
         appDispatch(coachActions.updateCoach(coachCopy));
         appDispatch(coachThunkActions.updateCoach(coachCopy));
+        appDispatch(notificationActions.resetNotificationState());
       }
 
       history.push(ROUTES.ROOT);
