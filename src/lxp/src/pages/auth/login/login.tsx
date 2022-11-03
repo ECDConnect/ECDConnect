@@ -8,8 +8,10 @@ import {
   FormInput,
   PasswordInput,
   Typography,
+  Dialog,
+  DialogPosition,
 } from '@ecdlink/ui';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
 import * as styles from './login.styles';
@@ -23,6 +25,8 @@ import { authActions, authThunkActions } from '@store/auth';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { settingActions } from '@store/settings';
 import ROUTES from '@routes/routes';
+import DeviceInfo from 'react-native-device-info';
+import { StorageFull } from './storage-full/storage-full';
 const { version } = require('../../../../package.json');
 
 export const Login: React.FC = () => {
@@ -32,6 +36,27 @@ export const Login: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [idFieldVisible, setIdFieldVisible] = useState(true);
   const { isOnline, Offline } = useOnlineStatus();
+  const [freeMemory, setFreeMemory] = useState(0);
+  const [errorMessage, setErrorMessage] = useState(false);
+
+  function getFreeDiskStorage() {
+    DeviceInfo.getFreeDiskStorage().then((freeDiskStorage) => {
+      let freeStorageInMB = freeDiskStorage / 1024 / 1024;
+      freeStorageInMB = parseInt(freeStorageInMB + '');
+      setFreeMemory(freeStorageInMB);
+      return freeStorageInMB;
+    });
+  }
+
+  useEffect(() => {
+    let isMounted = true;
+    if (isMounted) {
+      getFreeDiskStorage();
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const {
     register: loginRegister,
@@ -44,37 +69,41 @@ export const Login: React.FC = () => {
     mode: 'onChange',
   });
   const { isValid, errors } = loginFormState;
-
+  console.log({ freeMemory });
   const submitForm = async () => {
     setDisplayError(false);
     if (isValid) {
-      setIsLoading(true);
-      const body: LoginRequestModel = {
-        username: loginFormGetValues().preferId
-          ? loginFormGetValues().idField
-          : loginFormGetValues().passportField,
-        password: loginFormGetValues().password,
-      };
+      if (freeMemory > 20000000) {
+        setIsLoading(true);
+        const body: LoginRequestModel = {
+          username: loginFormGetValues().preferId
+            ? loginFormGetValues().idField
+            : loginFormGetValues().passportField,
+          password: loginFormGetValues().password,
+        };
 
-      appDispatch(authThunkActions.login(body))
-        .then((isAuthenticated: any) => {
-          if (
-            isAuthenticated &&
-            isAuthenticated?.payload?.response?.status !== 401
-          ) {
-            appDispatch(settingActions.setApplicationVersion(version));
-            appDispatch(authActions.setUserExpired());
-            setIsLoading(false);
-            history.push(ROUTES.DASHBOARD);
-          } else {
+        appDispatch(authThunkActions.login(body))
+          .then((isAuthenticated: any) => {
+            if (
+              isAuthenticated &&
+              isAuthenticated?.payload?.response?.status !== 401
+            ) {
+              appDispatch(settingActions.setApplicationVersion(version));
+              appDispatch(authActions.setUserExpired());
+              setIsLoading(false);
+              history.push(ROUTES.DASHBOARD);
+            } else {
+              setDisplayError(true);
+              setIsLoading(false);
+            }
+          })
+          .catch(() => {
             setDisplayError(true);
             setIsLoading(false);
-          }
-        })
-        .catch(() => {
-          setDisplayError(true);
-          setIsLoading(false);
-        });
+          });
+      } else {
+        setErrorMessage(true);
+      }
     }
   };
 
@@ -102,6 +131,9 @@ export const Login: React.FC = () => {
       displayOffline={!isOnline}
     >
       <div className={styles.loginContainer}>
+        <Dialog fullScreen visible={errorMessage} position={DialogPosition.Top}>
+          <StorageFull />
+        </Dialog>
         <form>
           <div>
             {idFieldVisible && (
