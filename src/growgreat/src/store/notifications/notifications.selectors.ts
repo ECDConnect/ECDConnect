@@ -23,6 +23,10 @@ export const getDashboardNotification = createSelector(
   (state: RootState) => state.notifications.notifications,
   (notifications: Notification[]) =>
     [...notifications]
+      // TODO: fix sort callback
+      // The callback provided to sort should return 0 if the
+      // compared values are equal.
+      // deepcode ignore NoZeroReturnedInSort: <Will resolve in phase 2>
       .sort((a, b) => (a.message.priority > b.message.priority ? 1 : -1))
       .find((n) => n.message.viewType !== 'Messages')
 );
