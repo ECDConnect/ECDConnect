@@ -13,10 +13,10 @@ import { InfantRegisterForm } from '@/pages/infant/infant-register-form/infant-r
 import { PractitionerAbout } from '@practitioner-p/practitioner-about/practitioner-about';
 import PractitionerAccount from '@practitioner-p/practitioner-account/practitioner-account';
 import { PractitionerProfile } from '@practitioner-p/practitioner-profile/practitioner-profile';
-import ROUTES from './routes';
+import ROUTES from '@/routes/routes';
 import ClassDashboard from '@/pages/classroom/class-dashboard/class-dashboard';
 
-const PublicRoutes: React.FC = () => {
+function PublicRoutes() {
   return (
     <Switch>
       <Route exact path={ROUTES.ROOT} render={() => <Redirect to="/login" />} />
@@ -35,9 +35,9 @@ const PublicRoutes: React.FC = () => {
       />
     </Switch>
   );
-};
+}
 
-const AuthRoutes: React.FC = () => {
+function AuthRoutes() {
   return (
     <Switch>
       <Route
@@ -84,6 +84,6 @@ const AuthRoutes: React.FC = () => {
       />
     </Switch>
   );
-};
+}
 
 export { PublicRoutes, AuthRoutes };
