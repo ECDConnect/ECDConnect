@@ -1,14 +1,18 @@
-// This optional code is used to register a service worker.
-// register() is not called by default.
+// This optional code is used to register a
+// service worker. register() is not called by default.
 
-// This lets the app load faster on subsequent visits in production, and gives
-// it offline capabilities. However, it also means that developers (and users)
-// will only see deployed updates on subsequent visits to a page, after all the
-// existing tabs open on the page have been closed, since previously cached
-// resources are updated in the background.
+// This lets the app load faster on subsequent
+// visits in production, and gives it offline
+// capabilities. However, it also means that
+// developers (and users) will only see deployed
+// updates on subsequent visits to a page, after
+// all the existing tabs open on the page have
+// been closed, since previously cached resources
+// are updated in the background.
 
-// To learn more about the benefits of this model and instructions on how to
-// opt-in, read https://cra.link/PWA
+// To learn more about the benefits of this model
+// and instructions on how to opt-in,
+// read: https://cra.link/PWA
 
 const isLocalhost = Boolean(
   window.location.hostname === 'localhost' ||
@@ -27,12 +31,15 @@ type Config = {
 
 export function register(config?: Config) {
   if (process.env.NODE_ENV === 'production' && 'serviceWorker' in navigator) {
-    // The URL constructor is available in all browsers that support SW.
+    // The URL constructor is available
+    // in all browsers that support SW.
     const publicUrl = new URL(process.env.PUBLIC_URL, window.location.href);
     if (publicUrl.origin !== window.location.origin) {
-      // Our service worker won't work if PUBLIC_URL is on a different origin
-      // from what our page is served on. This might happen if a CDN is used to
-      // serve assets; see https://github.com/facebook/create-react-app/issues/2374
+      // Our service worker won't work if
+      // PUBLIC_URL is on a different origin
+      // from what our page is served on. This
+      // might happen if a CDN is used to serve assets.
+      // See: https://github.com/facebook/create-react-app/issues/2374
       return;
     }
 
@@ -40,17 +47,27 @@ export function register(config?: Config) {
       const swUrl = `${process.env.PUBLIC_URL}/service-worker.js`;
 
       if (isLocalhost) {
-        // This is running on localhost. Let's check if a service worker still exists or not.
+        // This is running on localhost.
+        // Let's check if a service worker
+        // still exists or not.
         checkValidServiceWorker(swUrl, config);
 
-        // Add some additional logging to localhost, pointing developers to the
-        // service worker/PWA documentation.
-        navigator.serviceWorker.ready.then(() => {
-          console.log(
-            'This web app is being served cache-first by a service ' +
-              'worker. To learn more, visit https://cra.link/PWA'
+        // Add some additional logging to localhost,
+        // pointing developers to the service
+        // worker/PWA documentation.
+        navigator.serviceWorker.ready
+          .then(() =>
+            console.log(
+              'This web app is being served cache-first by a service ' +
+                'worker. To learn more, visit https://cra.link/PWA'
+            )
+          )
+          .catch((error: unknown) =>
+            console.error(
+              'Error while attempting to load service worker',
+              error
+            )
           );
-        });
       } else {
         // Is not localhost. Just register service worker
         registerValidSW(swUrl, config);
@@ -98,9 +115,9 @@ function registerValidSW(swUrl: string, config?: Config) {
         };
       };
     })
-    .catch((error) => {
-      console.error('Error during service worker registration:', error);
-    });
+    .catch((error) =>
+      console.error('Error during service worker registration:', error)
+    );
 }
 
 function checkValidServiceWorker(swUrl: string, config?: Config) {
@@ -116,31 +133,33 @@ function checkValidServiceWorker(swUrl: string, config?: Config) {
         (contentType != null && contentType.indexOf('javascript') === -1)
       ) {
         // No service worker found. Probably a different app. Reload the page.
-        navigator.serviceWorker.ready.then((registration) => {
-          registration.unregister().then(() => {
-            window.location.reload();
-          });
-        });
+        navigator.serviceWorker.ready
+          .then(async (registration) => await Promise.resolve(registration))
+          .catch((error: unknown) =>
+            console.error(
+              'No service worker found. Probably a different app. Reload the page.',
+              error
+            )
+          );
       } else {
         // Service worker found. Proceed as normal.
         registerValidSW(swUrl, config);
       }
     })
-    .catch(() => {
-      console.log(
-        'No internet connection found. App is running in offline mode.'
-      );
-    });
+    .catch((error: unknown) =>
+      console.error(
+        'No internet connection found. App is running in offline mode.',
+        error
+      )
+    );
 }
 
 export function unregister() {
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.ready
-      .then((registration) => {
-        registration.unregister();
-      })
-      .catch((error) => {
-        console.error(error.message);
-      });
+      .then((registration) => registration.unregister())
+      .catch((error) =>
+        console.error('Error trying to unregister service worker', error)
+      );
   }
 }
