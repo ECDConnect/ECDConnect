@@ -69,11 +69,11 @@ export const Login: React.FC = () => {
     mode: 'onChange',
   });
   const { isValid, errors } = loginFormState;
-  console.log({ freeMemory });
+
   const submitForm = async () => {
     setDisplayError(false);
     if (isValid) {
-      if (freeMemory > 20000000) {
+      if (freeMemory > 50) {
         setIsLoading(true);
         const body: LoginRequestModel = {
           username: loginFormGetValues().preferId
@@ -234,7 +234,7 @@ export const Login: React.FC = () => {
             type="filled"
             isLoading={isLoading}
             color="primary"
-            disabled={!isValid || !isOnline}
+            disabled={!isValid}
             onClick={submitForm}
           >
             <Typography type="help" color="white" text={'Log in'}></Typography>

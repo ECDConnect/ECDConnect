@@ -78,9 +78,6 @@ export const Dashboard: React.FC = () => {
     notificationsSelectors.getDashboardNotification
   );
 
-  // const test = getFreeDiskStorage();
-  // console.log({ test });
-
   function getFreeDiskStorage() {
     DeviceInfo.getFreeDiskStorage().then((freeDiskStorage) => {
       let freeStorageInMB = freeDiskStorage / 1024 / 1024;
@@ -99,8 +96,6 @@ export const Dashboard: React.FC = () => {
       isMounted = false;
     };
   }, []);
-
-  console.log({ freeMemory });
 
   const { userProfilePicture } = useDocuments();
 
