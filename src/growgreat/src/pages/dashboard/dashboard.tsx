@@ -1,4 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
+import { useEffect } from 'react';
+import { useSelector } from 'react-redux';
+import { useHistory } from 'react-router-dom';
 import { useDialog, useTheme } from '@ecdlink/core';
 import {
   ActionModal,
@@ -11,24 +14,22 @@ import {
   Typography,
   UserAvatar,
 } from '@ecdlink/ui';
-import { useEffect } from 'react';
-import { useSelector } from 'react-redux';
-import { useHistory } from 'react-router-dom';
-import { useDocuments } from '@hooks/useDocuments';
-import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import { OfflineSyncModal } from '../../modals';
-import OfflineSyncTimeExceeded from '../../modals/offline-sync/offline-sync-time-exceeded';
-import { useAppDispatch } from '@store';
+
+import { useDocuments } from '@/hooks/useDocuments';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { OfflineSyncModal } from '@/modals';
+import OfflineSyncTimeExceeded from '@/modals/offline-sync/offline-sync-time-exceeded';
+import { useAppDispatch } from '@/store';
 import { motherSelectors } from '@/store/mother';
-import { notificationsSelectors } from '@store/notifications';
-import { settingSelectors } from '@store/settings';
-import { userSelectors } from '@store/user';
-import { analyticsActions } from '@store/analytics';
-import { DashboardItems } from './components/dashboard-items/dashboard-items';
-import * as styles from './dashboard.styles';
+import { notificationsSelectors } from '@/store/notifications';
+import { settingSelectors } from '@/store/settings';
+import { userSelectors } from '@/store/user';
+import { analyticsActions } from '@/store/analytics';
+import { DashboardItems } from '@/pages/dashboard/components/dashboard-items/dashboard-items';
+import * as styles from '@/pages/dashboard/dashboard.styles';
 import ROUTES from '@routes/routes';
 import { getInfants } from '@/store/infant/infant.selectors';
-const { version } = require('../../../package.json');
+import { version } from '@/../package.json';
 
 export enum NavigationTypes {
   Home = 'Home',

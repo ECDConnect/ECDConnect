@@ -38,7 +38,7 @@ export const PractitionerProfile: React.FC = () => {
       child: (
         <StackedList
           type={'MenuList'}
-          className={'secondary'}
+          className={'secondary flex flex-col gap-3'}
           listItems={getStackedMenuList()}
         />
       ),
@@ -146,12 +146,12 @@ export const PractitionerProfile: React.FC = () => {
       size="normal"
       color={'primary'}
       renderBorder={true}
-      backgroundColour="uiBg"
+      backgroundColour="white"
       displayOffline={!isOnline}
       onBack={() => history.push(ROUTES.ROOT)}
       title={`${user?.firstName} ${user?.surname}`}
     >
-      <div className="secondary bg-white">
+      <div className="secondary text-textDark flex flex-col justify-between bg-white px-5">
         <TabList tabItems={tabItem} />
       </div>
     </BannerWrapper>
