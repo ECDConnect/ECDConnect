@@ -102,11 +102,13 @@ export const PhotoPrompt: React.FC<PhotoPromptProps> = ({
   };
 
   const openGallery = () => {
-    getImageSourceFromFileSystem().then((dataUrl) => {
-      if (dataUrl && onAction) {
-        onAction(dataUrl);
-      }
-    });
+    getImageSourceFromFileSystem()
+      .then((dataUrl) => {
+        if (dataUrl && onAction) {
+          onAction(dataUrl);
+        }
+      })
+      .catch((error: unknown) => console.error(error));
   };
 
   const deletePhoto = () => {
