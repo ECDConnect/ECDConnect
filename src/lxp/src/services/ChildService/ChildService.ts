@@ -89,7 +89,27 @@ class ChildService {
         query allChildrenForPractitioner($userId: String) {
           allChildrenForPractitioner(userId: $userId) {
             id
+            caregiverId
+            workflowStatusId
+            insertedDate
             userId
+            user {
+              id
+              firstName
+              surname
+              email
+              genderId
+              dateOfBirth
+              profileImageUrl
+              isActive
+              isSouthAfricanCitizen
+              verifiedByHomeAffairs
+            }
+            languageId
+            allergies
+            disabilities
+            otherHealthConditions
+            isActive
           }
         }    
       `,
