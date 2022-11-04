@@ -1,11 +1,32 @@
 {
   "extends": "./tsconfig.paths.json",
   "compilerOptions": {
-    "target": "es5",
+    "pretty": true,
+    "target": "ES6",
     "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
+      "ES5",
+      "ES6",
+      "ES2017",
+      "ES2018",
+      "ES2019",
+      "ES2020",
+      "ES2021",
+      "ES2022",
+      "DOM",
+      "DOM.Iterable",
+      "ESNext",
+      "ESNext.Array",
+      "ESNext.AsyncIterable",
+      "ESNext.BigInt",
+      "ESNext.Intl",
+      "ESNext.Promise",
+      "ESNext.String",
+      "ESNext.Symbol",
+      "ESNext.WeakRef",
+      "ScriptHost",
+      "WebWorker",
+      "WebWorker.ImportScripts",
+      "Webworker.Iterable"
     ],
     "strict": true,
     "allowJs": true,
@@ -23,8 +44,14 @@
     "jsx": "react-jsx",
     "outDir": "./lib"
   },
+  "ts-node": {
+    "swc": true,
+    "esm": true,
+    "transpileOnly": true,
+    "experimentalResolver": true,
+    "experimentalReplAwait": true
+  },
   "include": [
-    "src",
-    "globals.d.ts"
+    "src"
   ]
 }
