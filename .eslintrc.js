@@ -157,8 +157,6 @@ module.exports = {
     'prefer-const': 'error',
     'prefer-template': 'error',
     'template-curly-spacing': ['error', 'never'],
-    'react-hooks/exhaustive-deps': 'error',
-    'react-hooks/rules-of-hooks': 'error',
     'react/display-name': 0,
     'react/jsx-curly-brace-presence': [
       2,
@@ -261,7 +259,7 @@ module.exports = {
         forbid: ['>', '}'],
       },
     ],
-    'react/jsx-child-element-spacing': 0,
+    // 'react/jsx-child-element-spacing': 0,
     'no-irregular-whitespace': 0,
     'no-empty': [
       1,
