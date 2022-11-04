@@ -73,7 +73,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <IonApp className="max-w-4xl m-auto bg-white">
+    <IonApp className="m-auto w-full bg-white">
       <IonReactRouter>
         <IonRouterOutlet>{getRoutes()}</IonRouterOutlet>
       </IonReactRouter>
