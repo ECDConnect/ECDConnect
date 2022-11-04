@@ -105,7 +105,7 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
   };
 
   return (
-    <div className="h-screen ">
+    <div className="h-screen pb-5">
       <div>
         <Typography
           type="h2"
@@ -145,7 +145,7 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
         <div className="flex items-center gap-1">
           <DatePicker
             placeholderText={'Please select a date'}
-            className="text-textMid bg-uiBg focus:border-primary focus:ring-primary mt-1 w-full rounded-md border-none text-lg shadow-sm"
+            // className="text-textMid bg-uiBg focus:border-primary focus:ring-primary mt-1 w-full rounded-md border-none text-lg shadow-sm"
             selected={myDay}
             onChange={(date: Date) => setDayDate(date)}
             dateFormat="dd"
@@ -154,7 +154,7 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
           />
           <DatePicker
             placeholderText={'Please select a date'}
-            className="text-primtextMidary bg-uiBg focus:border-primary focus:ring-primary mt-1 w-full rounded-md border-none text-lg shadow-sm"
+            // className="text-primary bg-uiBg focus:border-primary focus:ring-primary mt-1 w-full rounded-md border-none text-lg shadow-sm"
             selected={myMonth}
             onChange={(date: Date) => setMonthDate(date)}
             renderCustomHeader={({ date }) => <div></div>}
@@ -164,7 +164,7 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
           />
           <DatePicker
             placeholderText={'Please select a date'}
-            className="bg-uiBg text-textMid focus:border-primary focus:ring-primary mt-1 w-full rounded-md border-none text-lg shadow-sm"
+            // className="bg-uiBg text-textMid focus:border-primary focus:ring-primary mt-1 w-full rounded-md border-none text-lg shadow-sm"
             selected={myYear}
             onChange={(date: Date) => setYearDate(date)}
             dateFormat="yyyy"
@@ -176,7 +176,7 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
             type={'info'}
             message={`${years} years and ${months} months old`}
             className="w-full"
-          ></Alert>
+          />
         </div>
       </div>
       <div>
