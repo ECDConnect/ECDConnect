@@ -1,11 +1,16 @@
 import { Colours, ComponentBaseProps } from '../../../models';
 import { renderIcon } from '../../../utils';
-import { FieldError, Path, UseFormRegister } from 'react-hook-form';
+import {
+  FieldError,
+  Path,
+  UseFormRegister,
+  FieldValues,
+} from 'react-hook-form';
 import * as styles from './form-input.style';
 export type FormFieldType = 'text' | 'number' | 'password';
 export type TextInputType = 'input' | 'textarea' | 'date';
 
-interface FormFieldProps<T> extends ComponentBaseProps {
+interface FormFieldProps<T extends FieldValues> extends ComponentBaseProps {
   label?: string;
   nameProp?: Path<T>;
   type?: FormFieldType;
@@ -23,7 +28,7 @@ interface FormFieldProps<T> extends ComponentBaseProps {
   suffixIconAction?: () => void;
 }
 
-export const FormInput = <T,>({
+export const FormInput = <T extends FieldValues>({
   label,
   nameProp,
   type = 'text',
@@ -117,7 +122,7 @@ export const FormInput = <T,>({
             </div>
           </div>
 
-          <span className="text-xs text-errorMain"> {error?.message} </span>
+          <span className="text-errorMain text-xs"> {error?.message} </span>
         </div>
       )}
     </>

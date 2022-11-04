@@ -1,12 +1,13 @@
 import { Colours, ComponentBaseProps } from '../../../models';
 import { getImageSourceFromCamera, renderIcon } from '../../../utils';
 import { useEffect, useState } from 'react';
-import { Path, UseFormRegister, UseFormSetValue } from 'react-hook-form';
+import { Path, UseFormRegister, FieldValues } from 'react-hook-form';
 import { classNames } from '../../../utils/style-class.utils';
 import Typography from '../../typography/typography';
 import * as styles from './image-input.styles';
 
-export interface ImageInputProps<T> extends ComponentBaseProps {
+export interface ImageInputProps<T extends FieldValues>
+  extends ComponentBaseProps {
   nameProp: Path<T>;
   label: string;
   icon?: string;
@@ -19,7 +20,7 @@ export interface ImageInputProps<T> extends ComponentBaseProps {
   overrideOnClick?: () => void;
 }
 
-export const ImageInput = <T,>({
+export const ImageInput = <T extends FieldValues>({
   label,
   nameProp,
   acceptedFormats,
@@ -119,19 +120,19 @@ export const ImageInput = <T,>({
     if (overrideOnClick) {
       overrideOnClick();
     } else {
-      const res = await getImageSourceFromCamera().then(
-        (imageString: string | undefined) => {
+      const res = await getImageSourceFromCamera()
+        .then((imageString: string | undefined) => {
           setCurrentImage(imageString ?? '');
           if (onValueChange) {
             onValueChange(imageString ?? '');
           }
-        }
-      );
+        })
+        .catch((error: unknown) => console.error(error));
     }
   };
 
   return (
-    <div className={className && className}>
+    <div className={className}>
       <div>
         <Typography
           className={styles.labelStyle}
@@ -165,7 +166,7 @@ export const ImageInput = <T,>({
           <Typography
             className={`${
               currentImage.length > 0
-                ? styles.buttonlabelStyle + ` bg-white rounded`
+                ? styles.buttonlabelStyle + ` rounded bg-white`
                 : styles.buttonlabelStyle
             }`}
             weight="bold"
