@@ -1,15 +1,15 @@
 import { useTheme } from '@ecdlink/core';
 import { BannerWrapper, Button, Typography } from '@ecdlink/ui';
-import { useOnlineStatus } from '@hooks/useOnlineStatus';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useHistory } from 'react-router-dom';
 import * as styles from './pregnant-register.styles';
-import momImage from '../../../assets/momImage.png';
+import momImage from '@/assets/momImage.png';
 import {
   LightBulbIcon,
   ClipboardListIcon,
   HeartIcon,
 } from '@heroicons/react/solid';
-import ROUTES from '@routes/routes';
+import ROUTES from '@/routes/routes';
 
 export const PregnantRegister: React.FC = () => {
   const { isOnline } = useOnlineStatus();
@@ -40,10 +40,10 @@ export const PregnantRegister: React.FC = () => {
         />
 
         <div className="flex justify-center pt-6">
-          <div className="text-textMid bg-uiBg ml-1/2 relative z-40 flex h-60 w-11/12 justify-center rounded-2xl pt-4">
+          <div className="text-textMid bg-uiBg ml-1/2 relative z-40 flex h-60 w-full justify-center rounded-2xl pt-4">
             <div className="mt-8 flex w-11/12 flex-wrap justify-center">
               <div className="bg-tertiary flex h-24 w-24 items-center justify-center rounded-full">
-                <img src={momImage} alt="momImage" className="mb-2 h-28 w-28" />
+                <img src={momImage} alt="momImage" className="h-26 w-29" />
               </div>
               <div className="flex w-full justify-center">
                 <Typography
@@ -58,7 +58,7 @@ export const PregnantRegister: React.FC = () => {
           </div>
         </div>
         <div className={styles.wrapper}>
-          <div className="flex w-10/12 flex-wrap">
+          <div className="w-8/11 flex flex-col flex-wrap">
             <Typography
               type="h2"
               color={'textMid'}
@@ -73,7 +73,7 @@ export const PregnantRegister: React.FC = () => {
                 type="body"
                 color={'textMid'}
                 text={
-                  'Support for your health and wellbeing during your pregnancy and beyond    '
+                  'Support for your health and wellbeing during your pregnancy and beyond'
                 }
                 className="z-50 w-9/12"
               />
