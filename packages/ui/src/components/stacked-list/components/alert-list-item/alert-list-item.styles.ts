@@ -32,7 +32,7 @@ export const getShapeClassByAlertSeverity = (type: AlertSeverityType) => {
     case 'error':
       return 'h-2.5 w-2.5 bg-errorMain';
     case 'warning':
-      return 'h-0 w-0 border-opacity-0 border-t-0 border-l-5 border-l-tranparent border-r-5 border-r-tranparent border-b-10 border-b-alertMain shadow-none';
+      return 'h-0 w-0 border-opacity-0 border-t-0 border-l-5 border-l-transparent border-r-5 border-r-transparent border-b-10 border-b-alertMain shadow-none';
     case 'success':
       return 'h-2.5 w-2.5 rounded-full bg-successMain';
     default:

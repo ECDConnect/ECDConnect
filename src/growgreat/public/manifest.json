@@ -18,7 +18,7 @@
       "purpose": "maskable"
     },
     {
-      "src": "assets/smartstart-og.png",
+      "src": "assets/growgreat-og.png",
       "type": "image/png",
       "sizes": "1024x1024",
       "purpose": "maskable"
@@ -27,6 +27,6 @@
   "id": "funda_app",
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#ffffff",
+  "theme_color": "#f36f21",
   "background_color": "#ffffff"
 }

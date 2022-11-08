@@ -1,105 +1,103 @@
-import Loader from '../../../components/loader/loader';
-import { LoginRequestModel, useDialog } from '@ecdlink/core';
+import Loader from '@/components/loader/loader';
 import {
-  ActionModal,
-  Alert,
-  BannerWrapper,
-  Button,
-  classNames,
-  DialogPosition,
-  Divider,
-  FormInput,
-  renderIcon,
-  Typography,
-} from '@ecdlink/ui';
-import { yupResolver } from '@hookform/resolvers/yup';
+  LoginRequestModel,
+  // useDialog
+} from '@ecdlink/core';
+import // ActionModal,
+// Alert,
+// BannerWrapper,
+// Button,
+// classNames,
+// DialogPosition,
+// Divider,
+// FormInput,
+// renderIcon,
+// Typography,
+'@ecdlink/ui';
+// import { yupResolver } from '@hookform/resolvers/yup';
 import { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+// import { useForm } from 'react-hook-form';
 import { useHistory, useLocation } from 'react-router-dom';
-import {
-  VerifyPhoneNumberModel,
-  verifyPhoneNumberSchema,
-} from '@schemas/auth/verify-phone-number/verify-phone-number';
+// import {
+//   VerifyPhoneNumberModel,
+//   verifyPhoneNumberSchema,
+// } from '@schemas/auth/verify-phone-number/verify-phone-number';
 import AuthService from '@services/AuthService/AuthService';
 import { useAppDispatch } from '@store';
 import { authThunkActions } from '@store/auth';
 import { settingActions } from '@store/settings';
-import * as styles from './verify-phone-number.styles';
+// import * as styles from './verify-phone-number.styles';
 import { VerifyPhoneNumberRouteState } from './verify-phone-number.types';
-const { version } = require('../../../../package.json');
+import { version } from '../../../../package.json';
 
 export const VerifyPhoneNumber = () => {
   const history = useHistory();
-  const dialog = useDialog();
+  // const dialog = useDialog();
   const { state } = useLocation<VerifyPhoneNumberRouteState>();
   const appDispatch = useAppDispatch();
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [disableNewCodeSend, setDisableNewCodeSend] = useState<boolean>(false);
+  // const [disableNewCodeSend, setDisableNewCodeSend] = useState<boolean>(false);
+  //
+  //   const { register, formState, getValues } = useForm({
+  //     resolver: yupResolver(verifyPhoneNumberSchema),
+  //     mode: 'all',
+  //   });
 
-  const { register, formState, getValues } = useForm({
-    resolver: yupResolver(verifyPhoneNumberSchema),
-    mode: 'all',
-  });
+  // const { isValid } = formState;
+  //
+  //   const displayTollFreeDialog = () => {
+  //     dialog({
+  //       position: DialogPosition.Middle,
+  //       render: (onSubmit, onClose) => {
+  //         return (
+  //           <ActionModal
+  //             icon="ExclamationCircleIcon"
+  //             iconBorderColor="alertBg"
+  //             iconColor="alertMain"
+  //             importantText={`Is your phone number correct: <b>${
+  //               state?.phoneNumber || '000'
+  //             }</b>`}
+  //             paragraphs={[
+  //               'If your phone number is incorrect, please call our toll free number to change it.',
+  //             ]}
+  //             linkClick={callForHelp}
+  //             actionButtons={[
+  //               {
+  //                 text: `Call 0800 014 817`,
+  //                 textColour: 'primary',
+  //                 colour: 'primary',
+  //                 type: 'outlined',
+  //                 onClick: () => {
+  //                   callForHelp();
+  //                   onSubmit();
+  //                 },
+  //                 leadingIcon: 'PhoneIcon',
+  //               },
+  //               {
+  //                 text: `Close`,
+  //                 textColour: 'white',
+  //                 colour: 'primary',
+  //                 type: 'filled',
+  //                 onClick: onClose,
+  //                 leadingIcon: 'XCircleIcon',
+  //               },
+  //             ]}
+  //           />
+  //         );
+  //       },
+  //     });
+  //   };
 
-  const { isValid } = formState;
-
-  useEffect(() => {
-    confirm();
-  }, []);
-
-  const displayTollFreeDialog = () => {
-    dialog({
-      position: DialogPosition.Middle,
-      render: (onSubmit, onClose) => {
-        return (
-          <ActionModal
-            icon="ExclamationCircleIcon"
-            iconBorderColor="alertBg"
-            iconColor="alertMain"
-            importantText={`Is your phone number correct: <b>${
-              state?.phoneNumber || '000'
-            }</b>`}
-            paragraphs={[
-              'If your phone number is incorrect, please call our toll free number to change it.',
-            ]}
-            linkClick={callForHelp}
-            actionButtons={[
-              {
-                text: `Call 0800 014 817`,
-                textColour: 'primary',
-                colour: 'primary',
-                type: 'outlined',
-                onClick: () => {
-                  callForHelp();
-                  onSubmit();
-                },
-                leadingIcon: 'PhoneIcon',
-              },
-              {
-                text: `Close`,
-                textColour: 'white',
-                colour: 'primary',
-                type: 'filled',
-                onClick: onClose,
-                leadingIcon: 'XCircleIcon',
-              },
-            ]}
-          />
-        );
-      },
-    });
-  };
-
-  const sendNewCode = async () => {
-    setIsLoading(true);
-    await new AuthService().SendAuthCode(state.username, state.token);
-    setIsLoading(false);
-    setDisableNewCodeSend(true);
-    setTimeout(() => {
-      setDisableNewCodeSend(false);
-    }, 60000);
-  };
+  // const sendNewCode = async () => {
+  //   setIsLoading(true);
+  //   await new AuthService().SendAuthCode(state.username, state.token);
+  //   setIsLoading(false);
+  //   setDisableNewCodeSend(true);
+  //   setTimeout(() => {
+  //     setDisableNewCodeSend(false);
+  //   }, 60000);
+  // };
 
   const confirm = async () => {
     //if (!formValue.code) return;
@@ -137,13 +135,17 @@ export const VerifyPhoneNumber = () => {
     }
   };
 
-  const callForHelp = () => {
-    window.open('tel:+27800014817');
-  };
+  // const callForHelp = () => {
+  //   window.open('tel:+27800014817');
+  // };
+
+  useEffect(() => {
+    confirm();
+  });
 
   return (
     <>
-      <Loader loadingMessage={'Loading . . .'} />
+      <Loader loadingMessage={isLoading ? 'Loading . . .' : ''} />
       {/* <BannerWrapper color="primary" size={'normal'} renderBorder={true}>
         <div className={styles.contentWrapper}>
           <Typography

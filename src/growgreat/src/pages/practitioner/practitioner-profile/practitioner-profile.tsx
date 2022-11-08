@@ -11,17 +11,17 @@ import {
 import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
-import { useDocuments } from '@hooks/useDocuments';
-import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import { useStoreSetup } from '@hooks/useStoreSetup';
+import { useDocuments } from '@/hooks/useDocuments';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { useStoreSetup } from '@/hooks/useStoreSetup';
 // import { OfflineSyncModal } from '../../../modals';
-import { useAppDispatch } from '@store';
-import { userSelectors } from '@store/user';
-import { analyticsActions } from '@store/analytics';
-import ROUTES from '@routes/routes';
+import { useAppDispatch } from '@/store';
+import { userSelectors } from '@/store/user';
+import { analyticsActions } from '@/store/analytics';
+import ROUTES from '@/routes/routes';
 
 export const PractitionerProfile: React.FC = () => {
-  const { resetAuth, resetAppStaticStores } = useStoreSetup();
+  const { resetAuth, resetAppStore } = useStoreSetup();
   const user = useSelector(userSelectors.getUser);
   // const lastDataSyncDate = useSelector(settingSelectors.getLastDataSync);
   const appDispatch = useAppDispatch();
@@ -31,19 +31,21 @@ export const PractitionerProfile: React.FC = () => {
   const history = useHistory();
   const dialog = useDialog();
 
-  useEffect(() => {
-    if (!isOnline) {
-      appDispatch(
-        analyticsActions.createViewTracking({
-          pageView: window.location.pathname,
-          title: 'Practitioner Profile',
-        })
-      );
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOnline]);
+  const tabItem: TabItem[] = [
+    {
+      title: 'Profile',
+      initActive: true,
+      child: (
+        <StackedList
+          type={'MenuList'}
+          className={'secondary flex flex-col gap-3'}
+          listItems={getStackedMenuList()}
+        />
+      ),
+    },
+  ];
 
-  const getStackedMenuList = (): MenuListDataItem[] => {
+  function getStackedMenuList(): MenuListDataItem[] {
     const stackedMenuList: MenuListDataItem[] = [
       {
         title: `${user?.firstName} ${user?.surname}`,
@@ -54,8 +56,8 @@ export const PractitionerProfile: React.FC = () => {
         iconColor: 'white',
 
         showIcon: userProfilePicture?.file === undefined,
-        onActionClick: () => {
-          history.push(ROUTES.PRACTITIONER.ABOUT);
+        onActionClick() {
+          return history.push(ROUTES.PRACTITIONER.ABOUT);
         },
       },
       {
@@ -66,8 +68,8 @@ export const PractitionerProfile: React.FC = () => {
         iconBackgroundColor: 'primary',
         showIcon: true,
         iconColor: 'white',
-        onActionClick: () => {
-          history.push(ROUTES.PRACTITIONER.ACCOUNT);
+        onActionClick() {
+          return history.push(ROUTES.PRACTITIONER.ACCOUNT);
         },
       },
       {
@@ -77,10 +79,10 @@ export const PractitionerProfile: React.FC = () => {
         iconColor: 'white',
         iconBackgroundColor: 'primary',
         showIcon: true,
-        onActionClick: () => {
-          dialog({
+        onActionClick() {
+          return dialog({
             position: DialogPosition.Bottom,
-            render: (onSubmit, onClose) => {
+            render(onSubmit, onClose) {
               return (
                 <ActionModal
                   className={'mx-4'}
@@ -98,8 +100,8 @@ export const PractitionerProfile: React.FC = () => {
                       onClick: async () => {
                         onSubmit();
                         await resetAuth();
-                        await resetAppStaticStores();
-                        history.push('/');
+                        await resetAppStore();
+                        history.push(ROUTES.ROOT);
                       },
                       type: 'filled',
                       textColour: 'white',
@@ -110,8 +112,10 @@ export const PractitionerProfile: React.FC = () => {
                       textColour: 'white',
                       colour: 'primary',
                       type: 'filled',
-                      onClick: () => onClose && onClose(),
                       leadingIcon: 'XCircleIcon',
+                      onClick() {
+                        return onClose && onClose();
+                      },
                     },
                   ]}
                 />
@@ -123,34 +127,31 @@ export const PractitionerProfile: React.FC = () => {
     ];
 
     return stackedMenuList;
-  };
+  }
 
-  const tabItem: TabItem[] = [
-    {
-      title: 'Profile',
-      initActive: true,
-      child: (
-        <div>
-          <StackedList
-            listItems={getStackedMenuList()}
-            type={'MenuList'}
-          ></StackedList>
-        </div>
-      ),
-    },
-  ];
+  useEffect(() => {
+    if (!isOnline) {
+      appDispatch(
+        analyticsActions.createViewTracking({
+          pageView: window.location.pathname,
+          title: 'Practitioner Profile',
+        })
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOnline]);
 
   return (
     <BannerWrapper
       size="normal"
-      renderBorder={true}
-      title={`${user?.firstName} ${user?.surname}`}
       color={'primary'}
-      onBack={() => history.push(ROUTES.ROOT)}
-      backgroundColour="uiBg"
+      renderBorder={true}
+      backgroundColour="white"
       displayOffline={!isOnline}
+      onBack={() => history.push(ROUTES.ROOT)}
+      title={`${user?.firstName} ${user?.surname}`}
     >
-      <div className="bg-white">
+      <div className="secondary text-textDark flex flex-col justify-between bg-white px-5">
         <TabList tabItems={tabItem} />
       </div>
     </BannerWrapper>

@@ -24,7 +24,7 @@ export const InfantAddress: React.FC<InfantAddressProps> = ({
   infantDetails,
 }) => {
   const {
-    watch,
+    // watch,
     getValues: getInfantAddressFormValues,
     // formState: pregnantAddressFormState,
     // setValue: setPregnantAddressFormValue,
@@ -60,7 +60,7 @@ export const InfantAddress: React.FC<InfantAddressProps> = ({
           type="h4"
           color={'textMid'}
           text={'Address'}
-          className="z-50 pt-2 w-11/12"
+          className="z-50 w-11/12 pt-2"
         />
       </div>
       <div>
@@ -69,7 +69,7 @@ export const InfantAddress: React.FC<InfantAddressProps> = ({
             type="h4"
             color={'textMid'}
             text={`Add ${details?.name} name address`}
-            className="z-50 pt-2 w-11/12"
+            className="z-50 w-11/12 pt-2"
           />
           <div className="mt-2">
             <ButtonGroup<boolean>
@@ -79,7 +79,7 @@ export const InfantAddress: React.FC<InfantAddressProps> = ({
               }
               color="secondary"
               type={ButtonGroupTypes.Button}
-              className={'w-full mt-2'}
+              className={'mt-2 w-full'}
               selectedOptions={useMap}
             />
           </div>
@@ -105,12 +105,12 @@ export const InfantAddress: React.FC<InfantAddressProps> = ({
           </>
         )}
       </div>
-      <div className="flex w-full h-full align-bottom">
-        <div className={'mt-10 w-11/12 flex justify-center align-bottom ml-2'}>
+      <div className="flex h-full w-full align-bottom">
+        <div className={'mt-10 ml-2 flex w-11/12 justify-center align-bottom'}>
           <Button
             type={'filled'}
             color={'primary'}
-            className={'mt-2 ml-6 w-11/12 max-h-10 absolute bottom-10'}
+            className={'absolute bottom-10 mt-2 ml-6 max-h-10 w-11/12'}
             textColor={'white'}
             text={`Save`}
             icon={'ArrowCircleRightIcon'}

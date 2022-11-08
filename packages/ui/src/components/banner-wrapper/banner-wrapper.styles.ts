@@ -62,7 +62,6 @@ export const header = (
           : ''
       );
     case 'normal':
-    default:
       return classNames(
         baseClass,
         renderBorder ? 'h-16' : 'h-116',
@@ -138,7 +137,6 @@ export const backgroundImageWrapper = (
         `bg-${backgroundImageColour}`
       );
     case 'normal':
-    default:
       return classNames(
         baseBackgroundImageClass,
         'h-116',
