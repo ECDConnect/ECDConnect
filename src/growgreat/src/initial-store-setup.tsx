@@ -1,6 +1,6 @@
 // import { getYear, getMonth, getWeek } from 'date-fns';
 import React, { useEffect, useState } from 'react';
-import Loader from './components/loader/loader';
+import Loader from '@/components/loader/loader';
 import { useOnlineStatus } from './hooks/useOnlineStatus';
 import { useAppDispatch } from './store';
 import { authActions } from './store/auth';
@@ -22,7 +22,7 @@ import { infantThunkActions } from './store/infant';
 type IntialStoreSetupContextValues = {
   initloading: boolean;
   initStoreSetup: () => Promise<void>;
-  resetAppStaticStores: (showLoading?: boolean) => Promise<void>;
+  resetAppStore: (showLoading?: boolean) => Promise<void>;
   resetAuth: () => Promise<void>;
   getLoadingMessage: () => string;
   syncClassroom: () => Promise<void>;
@@ -45,7 +45,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     await appDispatch(authActions.resetAuthState());
   };
 
-  const resetAppStaticStores = async (showLoading = true) => {
+  const resetAppStore = async (showLoading = true) => {
     if (showLoading) {
       setInitLoading(true);
     }
@@ -139,7 +139,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   const values = {
     initloading,
     initStoreSetup,
-    resetAppStaticStores,
+    resetAppStore,
     resetAuth,
     getLoadingMessage,
     syncClassroom,
