@@ -21,7 +21,7 @@ import { analyticsActions } from '@/store/analytics';
 import ROUTES from '@/routes/routes';
 
 export const PractitionerProfile: React.FC = () => {
-  const { resetAuth, resetAppStaticStores } = useStoreSetup();
+  const { resetAuth, resetAppStore } = useStoreSetup();
   const user = useSelector(userSelectors.getUser);
   // const lastDataSyncDate = useSelector(settingSelectors.getLastDataSync);
   const appDispatch = useAppDispatch();
@@ -100,7 +100,7 @@ export const PractitionerProfile: React.FC = () => {
                       onClick: async () => {
                         onSubmit();
                         await resetAuth();
-                        await resetAppStaticStores();
+                        await resetAppStore();
                         history.push(ROUTES.ROOT);
                       },
                       type: 'filled',

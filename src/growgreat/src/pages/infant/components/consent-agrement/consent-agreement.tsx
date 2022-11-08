@@ -54,8 +54,8 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
   };
 
   return (
-    <div className="ml-4 h-screen ">
-      <div>
+    <div className="h-screen">
+      <>
         <Typography
           type="h2"
           color={'textDark'}
@@ -67,7 +67,7 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
             type="h4"
             color={'textMid'}
             text={'Are you registering more than one child under 2 years old?'}
-            className="z-50 pt-2 w-11/12"
+            className="z-50 w-11/12 pt-2"
           />
           <div className="mt-2">
             <ButtonGroup<boolean>
@@ -94,7 +94,7 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
             </div>
           )}
         </div>
-        <div className="flex justify-center w-11/12 text-red-400">
+        <div className="flex w-11/12 justify-center text-red-400">
           <Divider dividerType="dashed" />
         </div>
         <Typography
@@ -106,13 +106,13 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
           }
           className="z-50 mt-4 w-11/12"
         />
-      </div>
-      <div className="flex justify-center w-11/12 text-red-400">
+      </>
+      <div className="flex w-11/12 justify-center text-red-400">
         <Divider dividerType="dashed" />
       </div>
-      <div>
-        <div className="flex w-11/12 justify-between items-center mt-4">
-          <div className="flex gap-2 items-center">
+      <>
+        <div className="mt-4 flex w-11/12 items-center justify-between">
+          <div className="flex items-center gap-2">
             <input
               type="checkbox"
               className={accept ? 'bg-secondary' : 'bg-uiBg'}
@@ -132,7 +132,7 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
               text={'View'}
               type="body"
               color={'secondary'}
-              className="underline cursor-pointer"
+              className="cursor-pointer underline"
               onClick={() => {
                 displayArticle(
                   ContentConsentTypeEnum.ConsentAgreement,
@@ -142,7 +142,7 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
             />
           </div>
         </div>
-        <div className="flex items-center mt-6 w-11/12">
+        <div className="mt-6 flex w-11/12 items-center">
           <Alert
             type={'info'}
             message={
@@ -150,13 +150,13 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
             }
           ></Alert>
         </div>
-      </div>
-      <div className="flex w-full h-full align-bottom">
-        <div className={'mt-10 w-11/12 flex justify-center align-bottom'}>
+      </>
+      <div className="flex h-full w-full align-bottom">
+        <div className={'mt-10 flex w-11/12 justify-center align-bottom'}>
           <Button
             type={'filled'}
             color={'primary'}
-            className={'mt-2 m-auto w-11/12 max-h-10 absolute bottom-10'}
+            className={'absolute bottom-10 m-auto mt-2 max-h-10 w-11/12'}
             textColor={'white'}
             text={`Next`}
             icon={'ArrowCircleRightIcon'}
