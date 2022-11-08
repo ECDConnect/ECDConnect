@@ -75,6 +75,7 @@ class PractitionerService {
             isPrincipal
             isRegistered
             principalHierarchy
+            coachHierarchy
             attendanceRegisterLink
             maxChildren
             consentForPhoto
