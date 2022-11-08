@@ -1,5 +1,6 @@
 import { Redirect, Route, Switch } from 'react-router-dom';
-import { Login } from '@auth-p/login/login';
+import { Login } from '@/pages/auth/login/login';
+import { Logout } from '@/pages/auth/logout/logout';
 import { NewPassword } from '@auth-p/new-password/new-password';
 import PasswordReset from '@auth-p/password-reset/password-reset';
 import { SignUp } from '@auth-p/sign-up/sign-up';
@@ -19,7 +20,11 @@ import ClassDashboard from '@/pages/classroom/class-dashboard/class-dashboard';
 function PublicRoutes() {
   return (
     <Switch>
-      <Route exact path={ROUTES.ROOT} render={() => <Redirect to="/login" />} />
+      <Route
+        exact
+        path={ROUTES.ROOT}
+        render={() => <Redirect to={ROUTES.LOGIN} />}
+      />
       <Route path={ROUTES.LOGIN} component={Login} exact={true} />
       <Route
         path={ROUTES.PASSWORD_RESET}
@@ -33,6 +38,7 @@ function PublicRoutes() {
         component={VerifyPhoneNumber}
         exact={true}
       />
+      <Route render={() => <Redirect to={ROUTES.LOGIN} />} />
     </Switch>
   );
 }
@@ -52,6 +58,7 @@ function AuthRoutes() {
         component={VerifyPhoneNumber}
         exact={true}
       />
+      <Route path={ROUTES.LOGOUT} component={Logout} exact={true} />
 
       <Route path={ROUTES.ROOT} component={Dashboard} exact={true} />
       <Route path={ROUTES.DASHBOARD} component={Dashboard} exact={true} />
