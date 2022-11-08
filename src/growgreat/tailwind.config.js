@@ -114,8 +114,8 @@ module.exports = {
     },
   },
   plugins: [
-    require('@tailwindcss/typography'),
     require('@tailwindcss/forms'),
+    require('@tailwindcss/typography'),
     plugin(function ({ addUtilities, theme }) {
       const themeColors = theme('colors');
       const individualBorderColors = Object.keys(themeColors).map(
