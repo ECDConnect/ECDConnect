@@ -4,7 +4,7 @@ import { AvatarSize } from '../avatar/models/AvatarSize';
 export const wrapper = 'relative rounded-full';
 export const camaraWrapper =
   'rounded-full -top-1 -right-1 z-1 bg-white absolute p-1';
-export const iconColor = 'text-secondary';
+export const iconColor = 'text-primary';
 export const getCameraIconSize = (size: AvatarSize): AvatarStyle => {
   switch (size) {
     case 'xs':

@@ -34,7 +34,7 @@ export const ProfileAvatar: React.FC<ProfileAvatarProps> = ({
       {displayUserAvatar && (
         <UserAvatar
           size={size}
-          color={'primary'}
+          color={'secondary'}
           text={userAvatarText}
           displayBorder={true}
           borderColour={'white'}
