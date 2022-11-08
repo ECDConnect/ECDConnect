@@ -1,4 +1,5 @@
 import {
+  CaregiverDto,
   ChildDto,
   ContentConsentTypeEnum,
   useStepNavigation,
@@ -56,6 +57,8 @@ import {
   ChildRegistrationSteps,
 } from './child-registration.types';
 import ROUTES from '@routes/routes';
+import { CaregiverService } from '@/services/CaregiverService';
+import { authSelectors } from '@store/auth';
 
 export const ChildRegistration: React.FC = () => {
   const history = useHistory();
@@ -70,6 +73,7 @@ export const ChildRegistration: React.FC = () => {
   const user = useSelector(userSelectors.getUser);
   const consentList = useSelector(contentConsentSelectors.getConsent);
   const existingChild = useSelector(childrenSelectors.getChildById(childId));
+  const authUser = useSelector(authSelectors.getAuthUser);
 
   const existingLearner = useSelector(
     classroomsSelectors.getChildLearner(existingChild)
@@ -98,6 +102,8 @@ export const ChildRegistration: React.FC = () => {
       setFormState({ ...formState, [action.formProp]: action.value });
     }
   };
+  const [caregiverData, setCaregiverData] = useState<CaregiverDto>();
+  const [sendGrants, setSendGrants] = useState(false);
 
   useEffect(() => {
     if (!isOnline) {
@@ -315,6 +321,7 @@ export const ChildRegistration: React.FC = () => {
       formState.careGiverContributionFormModel,
       existingCaregiver
     );
+    setCaregiverData(caregiverDto);
 
     if (existingCaregiver) {
       appDispatch(caregiverActions.updateCaregiver(caregiverDto));
@@ -346,13 +353,26 @@ export const ChildRegistration: React.FC = () => {
     history.push(ROUTES.CLASSROOM);
   };
 
+  useEffect(() => {
+    if (sendGrants) {
+      const updateGrants = async () => {
+        await new CaregiverService(
+          authUser?.auth_token ?? ''
+        ).updateCareGiverGrants(existingChild?.userId!, caregiverData?.grants!);
+      };
+      updateGrants();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sendGrants]);
+
   const updateChild = async (child: ChildDto) => {
-    if (!child) return;
+    if (!child && caregiverData) return;
 
     await appDispatch(
       childrenThunkActions.updateChild({ child: child, id: child.id as string })
     ).unwrap();
     appDispatch(childrenActions.updateChild(child));
+    setSendGrants(true);
   };
 
   const saveChildBirthCertificate = async (
@@ -650,7 +670,7 @@ export const ChildRegistration: React.FC = () => {
         </StepViewer>
       </IonContent>
       <Dialog
-        className={'px-4 mb-16'}
+        className={'mb-16 px-4'}
         stretch
         visible={exitRegistrationPromptVisible}
         position={DialogPosition.Bottom}
