@@ -150,6 +150,8 @@ packages/*/node_modules
 /libpeerconnection.log
 npm-debug.log
 yarn-error.log
+*yarn.lock
+*lock*
 testem.log
 /typings
 .dccache
@@ -168,5 +170,3 @@ packages/.vscode/settings.json
 /*.code-workspace
 
 _data
-
-*lock*
