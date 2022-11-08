@@ -17,21 +17,21 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
-import { PhotoPrompt } from '../../../components/photo-prompt/photo-prompt';
-import { useDocuments } from '@hooks/useDocuments';
-import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import { DialogFormInput } from '@models/practitioner/DialogFormInput';
+import { PhotoPrompt } from '@/components/photo-prompt/photo-prompt';
+import { useDocuments } from '@/hooks/useDocuments';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { DialogFormInput } from '@/models/practitioner/DialogFormInput';
 import {
   initialPractitionerAboutValues,
   PractitionerAboutModel,
   practitionerAboutModelSchema,
-} from '@schemas/practitioner/practitioner-about';
+} from '@/schemas/practitioner/practitioner-about';
 import { useAppDispatch } from '@store';
-import { userActions, userSelectors, userThunkActions } from '@store/user';
-import { analyticsActions } from '@store/analytics';
-import { setStorageItem } from '@utils/common/local-storage.utils';
-import * as styles from './practitioner-about.styles';
-import ROUTES from '@routes/routes';
+import { userActions, userSelectors, userThunkActions } from '@/store/user';
+import { analyticsActions } from '@/store/analytics';
+import { setStorageItem } from '@/utils/common/local-storage.utils';
+import * as styles from '@/pages/practitioner/practitioner-about/practitioner-about.styles';
+import ROUTES from '@/routes/routes';
 
 export const PractitionerAbout: React.FC = () => {
   const history = useHistory();
@@ -49,29 +49,10 @@ export const PractitionerAbout: React.FC = () => {
   const [editProfilePictureVisible, setEditProfilePictureVisible] =
     useState(false);
 
-  useEffect(() => {
-    if (!isOnline) {
-      appDispatch(
-        analyticsActions.createViewTracking({
-          pageView: window.location.pathname,
-          title: 'Practitioner About',
-        })
-      );
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOnline]);
-
   const user = useSelector(userSelectors.getUser);
 
   const pictureStorageKey = LocalStorageKeys.practitionerProfilePicture;
   const [listItems, setListItems] = useState<ActionListDataItem[]>([]);
-
-  useEffect(() => {
-    if (user) {
-      setNewStackListItems(user);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
 
   const getDefaultFormvalues = () => {
     if (user) {
@@ -246,6 +227,25 @@ export const PractitionerAbout: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    if (!isOnline) {
+      appDispatch(
+        analyticsActions.createViewTracking({
+          pageView: window.location.pathname,
+          title: 'Practitioner About',
+        })
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOnline]);
+
+  useEffect(() => {
+    if (user) {
+      setNewStackListItems(user);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
+
   return (
     <div className={styles.container}>
       <BannerWrapper
@@ -260,19 +260,20 @@ export const PractitionerAbout: React.FC = () => {
         onBack={() => history.push(ROUTES.PRACTITIONER.PROFILE.ROOT)}
         displayOffline={!isOnline}
       >
-        <div className={'w-full inline-flex justify-center pt-8'}>
+        <div className={'inline-flex w-full justify-center pt-8'}>
           <ProfileAvatar
             dataUrl={userProfilePicture?.file || ''}
             size={'header'}
+            className="bg-secondary"
             onPressed={displayProfilePicturePrompt}
             hasConsent={true}
           />
         </div>
         <StackedList
-          className={'bg-uiBg'}
+          className={'px-4'}
           listItems={listItems}
           type={'ActionList'}
-        ></StackedList>
+        />
       </BannerWrapper>
 
       <Dialog
@@ -289,7 +290,7 @@ export const PractitionerAbout: React.FC = () => {
               color="textDark"
               text={dialogFormInput.label}
               weight="bold"
-            ></Typography>
+            />
             <div onClick={closeEditField}>
               {renderIcon('XIcon', 'h-6 w-6 text-uiLight')}
             </div>
@@ -312,7 +313,7 @@ export const PractitionerAbout: React.FC = () => {
                   ]?.message || ''
                 }
                 className={'mb-6'}
-              ></Typography>
+              />
             </div>
           )}
           <Button
@@ -327,7 +328,7 @@ export const PractitionerAbout: React.FC = () => {
               className="mr-2"
               color="white"
               text={'Save'}
-            ></Typography>
+            />
           </Button>
         </div>
       </Dialog>
@@ -341,7 +342,7 @@ export const PractitionerAbout: React.FC = () => {
             onClose={displayProfilePicturePrompt}
             onAction={picturePromtOnAction}
             onDelete={userProfilePicture ? deleteProfilePicture : undefined}
-          ></PhotoPrompt>
+          />
         </div>
       </Dialog>
     </div>

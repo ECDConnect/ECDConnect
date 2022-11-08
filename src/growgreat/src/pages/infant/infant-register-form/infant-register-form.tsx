@@ -30,10 +30,13 @@ import { infantActions, infantThunkActions } from '@/store/infant';
 import momImage from '../../../assets/momImage.png';
 import { useSelector } from 'react-redux';
 import { userSelectors } from '@store/user';
-import { caregiverActions, caregiverThunkActions } from '@/store/caregiver';
+import {
+  caregiverActions,
+  // caregiverThunkActions
+} from '@/store/caregiver';
 import { MotherDetailsProps } from '../components/mother-details/mother-details.types';
-import { AddressInfo } from 'net';
-import { InfantAddressProps } from '../components/infant-address/infant-address.types';
+// import { AddressInfo } from 'net';
+// import { InfantAddressProps } from '../components/infant-address/infant-address.types';
 import { useStaticData } from '@/hooks/useStaticData';
 import { FileTypeEnum, WorkflowStatusEnum } from '@ecdlink/graphql';
 import { documentActions, documentThunkActions } from '@/store/document';
@@ -369,13 +372,13 @@ export const InfantRegisterForm: React.FC = () => {
         displayOffline={!isOnline}
       ></BannerWrapper>
       {registeredClientVisible ? (
-        <div className="h-full w-full flex justify-center items-center mt-40">
+        <div className="mt-40 flex h-full w-full items-center justify-center">
           <Card
             borderRaduis={'md'}
             shadowSize={'lg'}
-            className="flex flex-col justify-scenter items-center p-4 w-11/12"
+            className="flex w-11/12 flex-col items-center justify-center p-4"
           >
-            <div className="h-28 w-28 rounded-full bg-tertiary justify-center items-center flex">
+            <div className="bg-tertiary flex h-28 w-28 items-center justify-center rounded-full">
               <img className={'m-auto'} src={momImage} alt="card" />
             </div>
             <div>
@@ -409,11 +412,11 @@ export const InfantRegisterForm: React.FC = () => {
                 lineHeight="snug"
               />
             </div>
-            <div className={'mt-4 w-full flex justify-center'}>
+            <div className={'mt-4 flex w-full justify-center'}>
               <Button
                 type={'filled'}
                 color={'primary'}
-                className={'w-11/12 max-h-10'}
+                className={'max-h-10 w-11/12'}
                 textColor={'white'}
                 text={`Close`}
                 icon={'XIcon'}

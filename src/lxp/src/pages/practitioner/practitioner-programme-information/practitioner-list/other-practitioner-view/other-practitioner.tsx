@@ -21,11 +21,9 @@ import { useTheme } from '@ecdlink/core';
 // import { notesSelectors } from '@store/notes';
 // import { useSelector } from 'react-redux';
 
-export const PractitionerInfo: React.FC<PractitionerProfileRouteState> = ({
-  practitionerId,
-  setPractitionerInfo,
-  colleagueProfile,
-}) => {
+export const OtherPractitionerProfile: React.FC<
+  PractitionerProfileRouteState
+> = ({ practitionerId, setPractitionerInfo, colleagueProfile }) => {
   const { theme } = useTheme();
   const { isOnline } = useOnlineStatus();
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
@@ -45,7 +43,7 @@ export const PractitionerInfo: React.FC<PractitionerProfileRouteState> = ({
   return (
     <div className={styles.contentWrapper}>
       <BannerWrapper
-        title={`${practitioner?.user?.fullName}`}
+        title={`${colleagueProfile?.name}`}
         color={'primary'}
         size="small"
         renderOverflow={false}
@@ -55,7 +53,7 @@ export const PractitionerInfo: React.FC<PractitionerProfileRouteState> = ({
         showBackground={true}
         backgroundUrl={theme?.images.graphicOverlayUrl}
       >
-        <div className={'w-full inline-flex justify-center pt-8'}>
+        <div className={'inline-flex w-full justify-center pt-8'}>
           <ProfileAvatar
             dataUrl={colleagueProfile?.profilePhoto!}
             size={'header'}
@@ -111,7 +109,7 @@ export const PractitionerInfo: React.FC<PractitionerProfileRouteState> = ({
               size={'normal'}
               onClick={whatsapp}
             >
-              <div className="flex justify-center items-center">
+              <div className="flex items-center justify-center">
                 <img
                   src={getLogo(LogoSvgs.whatsapp)}
                   alt="whatsapp"
@@ -132,9 +130,9 @@ export const PractitionerInfo: React.FC<PractitionerProfileRouteState> = ({
               size={'small'}
               onClick={call}
             >
-              <div className="flex justify-center items-center">
+              <div className="flex items-center justify-center">
                 <PhoneIcon
-                  className="h-6 w-5 text-primary mr-2"
+                  className="text-primary mr-2 h-6 w-5"
                   aria-hidden="true"
                 />
                 <Typography

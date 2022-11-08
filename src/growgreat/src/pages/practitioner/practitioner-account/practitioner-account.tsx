@@ -113,10 +113,7 @@ export default function PractitionerAccount() {
         onBack={() => history.goBack()}
         displayOffline={!isOnline}
       >
-        <StackedList
-          listItems={stackedActionList}
-          type={'ActionList'}
-        ></StackedList>
+        <StackedList listItems={stackedActionList} type={'ActionList'} />
       </BannerWrapper>
       <Dialog
         borderRadius="normal"
@@ -132,7 +129,7 @@ export default function PractitionerAccount() {
               color="textDark"
               text={dialogFormInput.label}
               weight="bold"
-            ></Typography>
+            />
             <div onClick={closeEditField}>
               {renderIcon('XIcon', 'h-6 w-6 text-uiLight')}
             </div>
@@ -158,7 +155,7 @@ export default function PractitionerAccount() {
               className="mr-2"
               color="white"
               text={'Save'}
-            ></Typography>
+            />
           </Button>
         </div>
       </Dialog>
