@@ -8,11 +8,14 @@ import {
   FormInput,
   PasswordInput,
   Typography,
+  Dialog,
+  DialogPosition,
 } from '@ecdlink/ui';
-import { useState } from 'react';
+import { StorageFull } from './storage-full/storage-full';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
-import * as styles from './login.styles';
+import * as styles from '@/pages/auth/login/login.styles';
 import {
   initialLoginValues,
   LoginModel,
@@ -23,16 +26,30 @@ import { authActions, authThunkActions } from '@store/auth';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { settingActions } from '@store/settings';
 import ROUTES from '@routes/routes';
-import { version } from '@/../package.json';
+import DeviceInfo from 'react-native-device-info';
+import { version } from '@@/package.json';
 
 export const Login: React.FC = () => {
   const { theme } = useTheme();
   const history = useHistory();
   const appDispatch = useAppDispatch();
   const { isOnline, Offline } = useOnlineStatus();
+  const [freeMemory, setFreeMemory] = useState(0);
+  const [errorMessage, setErrorMessage] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [displayError, setDisplayError] = useState(false);
   const [idFieldVisible, setIdFieldVisible] = useState(true);
+
+  function getFreeDiskStorage() {
+    DeviceInfo.getFreeDiskStorage()
+      .then((freeDiskStorage) => {
+        let freeStorageInMB = freeDiskStorage / 1024 / 1024;
+        freeStorageInMB = parseInt(freeStorageInMB + '');
+        setFreeMemory(freeStorageInMB);
+        return freeStorageInMB;
+      })
+      .catch((error: unknown) => console.log(error));
+  }
 
   const {
     register: loginRegister,
@@ -40,9 +57,9 @@ export const Login: React.FC = () => {
     formState: loginFormState,
     getValues: loginFormGetValues,
   } = useForm({
-    mode: 'onChange',
-    defaultValues: initialLoginValues,
     resolver: yupResolver(loginSchema),
+    defaultValues: initialLoginValues,
+    mode: 'onChange',
   });
 
   const { isValid, errors } = loginFormState;
@@ -50,33 +67,37 @@ export const Login: React.FC = () => {
   async function submitForm() {
     setDisplayError(false);
     if (isValid) {
-      setIsLoading(true);
-      const body: LoginRequestModel = {
-        username: loginFormGetValues().preferId
-          ? loginFormGetValues().idField
-          : loginFormGetValues().passportField,
-        password: loginFormGetValues().password,
-      };
+      if (freeMemory > 50) {
+        setIsLoading(true);
+        const body: LoginRequestModel = {
+          username: loginFormGetValues().preferId
+            ? loginFormGetValues().idField
+            : loginFormGetValues().passportField,
+          password: loginFormGetValues().password,
+        };
 
-      appDispatch(authThunkActions.login(body))
-        .then((isAuthenticated: any) => {
-          if (
-            isAuthenticated &&
-            isAuthenticated?.payload?.response?.status !== 401
-          ) {
-            appDispatch(settingActions.setApplicationVersion(version));
-            appDispatch(authActions.setUserExpired());
-            setIsLoading(false);
-            history.push(ROUTES.DASHBOARD);
-          } else {
+        appDispatch(authThunkActions.login(body))
+          .then((isAuthenticated: any) => {
+            if (
+              isAuthenticated &&
+              isAuthenticated?.payload?.response?.status !== 401
+            ) {
+              appDispatch(settingActions.setApplicationVersion(version));
+              appDispatch(authActions.setUserExpired());
+              setIsLoading(false);
+              history.push(ROUTES.DASHBOARD);
+            } else {
+              setDisplayError(true);
+              setIsLoading(false);
+            }
+          })
+          .catch(() => {
             setDisplayError(true);
             setIsLoading(false);
-          }
-        })
-        .catch(() => {
-          setDisplayError(true);
-          setIsLoading(false);
-        });
+          });
+      } else {
+        setErrorMessage(true);
+      }
     }
   }
 
@@ -91,6 +112,16 @@ export const Login: React.FC = () => {
     setIdFieldVisible(flag);
   }
 
+  useEffect(() => {
+    let isMounted = true;
+    if (isMounted) {
+      getFreeDiskStorage();
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   return (
     <BannerWrapper
       size="medium"
@@ -102,6 +133,9 @@ export const Login: React.FC = () => {
       backgroundUrl={theme?.images.graphicOverlayUrl}
     >
       <form className={styles.loginContainer}>
+        <Dialog fullScreen visible={errorMessage} position={DialogPosition.Top}>
+          <StorageFull />
+        </Dialog>
         {idFieldVisible && (
           <FormInput<LoginModel>
             label={'ID number'}
@@ -205,12 +239,12 @@ export const Login: React.FC = () => {
           <Typography type="help" color="white" text={'Log in'} />
         </Button>
         <Button
-          id="gtm-signup"
-          className={'bg-uiBg mt-3 w-full'}
           type="filled"
-          isLoading={isLoading}
-          color="uiBg"
+          id="gtm-signup"
+          color={'primary'}
           disabled={!isOnline}
+          isLoading={isLoading}
+          className={'mt-3 w-full'}
           onClick={() => history.push(ROUTES.SIGN_UP)}
         >
           <Typography type="help" color="white" text={'Sign up'} />

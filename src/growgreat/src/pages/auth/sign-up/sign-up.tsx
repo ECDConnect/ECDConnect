@@ -25,24 +25,24 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
 import { useForm, useFormState } from 'react-hook-form';
 import { useHistory, useLocation } from 'react-router-dom';
-import { Article } from '../../../components/article/article';
-import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import { useStoreSetup } from '@hooks/useStoreSetup';
+import { Article } from '@/components/article/article';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { useStoreSetup } from '@/hooks/useStoreSetup';
 import {
   initialRegisterValues,
   SignUpModel,
   signUpSchema,
-} from '@schemas/auth/sign-up/sign-up';
-import AuthService from '@services/AuthService/AuthService';
-import { useAppDispatch } from '@store';
-import { staticDataThunkActions } from '@store/static-data';
-import * as styles from './sign-up.styles';
+} from '@/schemas/auth/sign-up/sign-up';
+import AuthService from '@/services/AuthService/AuthService';
+import { useAppDispatch } from '@/store';
+import { staticDataThunkActions } from '@/store/static-data';
+import * as styles from '@/pages/auth/sign-up/sign-up.styles';
 
 const headerSlide: HeaderSlide = {
   status: ChipStatus.Available,
   title: 'Welcome to CHW Connect!',
   text: 'Track your clients, get support, access training opportunities, connect with other CHWs & get rewarded.',
-  image: '../../../assets/banner-ss.jpg',
+  image: '@/assets/banner-ss.jpg',
 };
 
 export const SignUp: React.FC = () => {
@@ -60,7 +60,7 @@ export const SignUp: React.FC = () => {
     mode: 'onChange',
   });
   const { errors } = useFormState({ control });
-  const { resetAppStaticStores, resetAuth } = useStoreSetup();
+  const { resetAppStore, resetAuth } = useStoreSetup();
   const [preferId, setPreferId] = useState<boolean>(true);
   const [contentConsentTypeEnum, setContentConsentTypeEnum] =
     useState<ContentConsentTypeEnum>();
@@ -79,8 +79,8 @@ export const SignUp: React.FC = () => {
 
   useEffect(() => {
     async function init() {
-      if (resetAppStaticStores) {
-        await resetAppStaticStores(false);
+      if (resetAppStore) {
+        await resetAppStore(false);
         await resetAuth();
       }
 
@@ -246,7 +246,7 @@ export const SignUp: React.FC = () => {
                   ? 'errorDark'
                   : 'primaryAccent2'
               }
-            ></Checkbox>
+            />
             <Typography
               text={'I accept the'}
               type="help"
@@ -287,7 +287,7 @@ export const SignUp: React.FC = () => {
                   ? 'errorDark'
                   : 'primaryAccent2'
               }
-            ></Checkbox>
+            />
             <Typography
               text={'I accept the'}
               type="help"
@@ -343,7 +343,7 @@ export const SignUp: React.FC = () => {
             disabled={!isOnline}
             onClick={handleSubmit(submitForm)}
           >
-            <Typography type="help" color="white" text={'Sign up'}></Typography>
+            <Typography type="help" color="white" text={'Sign up'} />
           </Button>
 
           <Divider
@@ -359,11 +359,7 @@ export const SignUp: React.FC = () => {
             disabled={!isOnline}
             onClick={() => history.push('./login')}
           >
-            <Typography
-              type="help"
-              color="primary"
-              text={'Log in'}
-            ></Typography>
+            <Typography type="help" color="primary" text={'Log in'} />
           </Button>
         </form>
       </BannerWrapper>
