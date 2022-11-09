@@ -48,7 +48,7 @@ export const ChildAttendanceReportPage: React.FC = () => {
   const learner = useSelector(
     classroomsSelectors.getChildLearnerByClassroom(classroomGroupId, child)
   );
-  console.log({ learner });
+
   useEffect(() => {
     if (!isOnline) {
       appDispatch(
@@ -121,7 +121,7 @@ export const ChildAttendanceReportPage: React.FC = () => {
     setClassroomGroup(group);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [childAttendanceReportData]);
-  console.log({ childAttendanceReportData });
+
   const contactCaregiver = () => {
     history.push('/child-caregivers', { childId });
   };
