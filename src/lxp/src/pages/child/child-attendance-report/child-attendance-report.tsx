@@ -48,7 +48,7 @@ export const ChildAttendanceReportPage: React.FC = () => {
   const learner = useSelector(
     classroomsSelectors.getChildLearnerByClassroom(classroomGroupId, child)
   );
-
+  console.log({ learner });
   useEffect(() => {
     if (!isOnline) {
       appDispatch(
@@ -121,19 +121,19 @@ export const ChildAttendanceReportPage: React.FC = () => {
     setClassroomGroup(group);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [childAttendanceReportData]);
-
+  console.log({ childAttendanceReportData });
   const contactCaregiver = () => {
     history.push('/child-caregivers', { childId });
   };
   return (
     <BannerWrapper
-      className="overflow-y-auto h-full"
+      className="h-full overflow-y-auto"
       onBack={history.goBack}
       size={'small'}
       title={`${childUser?.firstName}'s attendance`}
       displayOffline={!isOnline}
     >
-      <div className={'w-full pt-2 flex flex-col pb-20'}>
+      <div className={'flex w-full flex-col pt-2 pb-20'}>
         <Typography
           className={'px-4'}
           type="h1"
@@ -141,33 +141,38 @@ export const ChildAttendanceReportPage: React.FC = () => {
           text={`Attendance ${currentYear}`}
         />
 
-        <div className={'w-full pt-4 px-4 flex flex-row'}>
-          <StatusChip
-            backgroundColour={getColor(attendancePercentage)}
-            text={`${childAttendanceReportData?.totalActualAttendance ?? 0}/${
-              childAttendanceReportData?.totalExpectedAttendance ?? 0
-            }`}
-            textColour={'white'}
-            borderColour={getColor(attendancePercentage)}
-          />
-          <Typography
-            className={'ml-2'}
-            type="body"
-            color={getColor(attendancePercentage)}
-            text={`days attended so far this year.`}
-          />
-        </div>
+        {childAttendanceReportData?.classGroupAttendance.length > 0 &&
+          childAttendanceReportData?.classGroupAttendance[0].startDate >
+            learner?.startedAttendance! && (
+            <>
+              <div className={'flex w-full flex-row px-4 pt-4'}>
+                <StatusChip
+                  backgroundColour={getColor(attendancePercentage)}
+                  text={`${
+                    childAttendanceReportData?.totalActualAttendance ?? 0
+                  }/${childAttendanceReportData?.totalExpectedAttendance ?? 0}`}
+                  textColour={'white'}
+                  borderColour={getColor(attendancePercentage)}
+                />
+                <Typography
+                  className={'ml-2'}
+                  type="body"
+                  color={getColor(attendancePercentage)}
+                  text={`days attended so far this year.`}
+                />
+              </div>
 
-        <Typography
-          className={'mt-2 px-4'}
-          type="body"
-          color={'textMid'}
-          text={getAttendanceText(attendancePercentage)}
-        />
-
+              <Typography
+                className={'mt-2 px-4'}
+                type="body"
+                color={'textMid'}
+                text={getAttendanceText(attendancePercentage)}
+              />
+            </>
+          )}
         <div
           className={
-            'w-full flex flex-row justify-between items-center border-b border-solid border-uiLight py-3'
+            'border-uiLight flex w-full flex-row items-center justify-between border-b border-solid py-3'
           }
         >
           <Typography
@@ -190,7 +195,7 @@ export const ChildAttendanceReportPage: React.FC = () => {
             return (
               <div
                 key={`child-attendance-report-month-${idx}`}
-                className={`w-full flex flex-row justify-between items-center py-4 bg-${
+                className={`flex w-full flex-row items-center justify-between py-4 bg-${
                   (idx + 1) % 2 === 0 ? 'uiBg' : 'white'
                 }`}
               >
@@ -201,7 +206,7 @@ export const ChildAttendanceReportPage: React.FC = () => {
                   color={'black'}
                   text={report.month}
                 />
-                <div className={'w-1/2 flex flex-row items-center pl-6'}>
+                <div className={'flex w-1/2 flex-row items-center pl-6'}>
                   <div
                     className={getShapeClass(reportItemShape, reportItemColor)}
                   ></div>
