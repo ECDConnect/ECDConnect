@@ -3,7 +3,7 @@ import { BannerWrapper, Button, Typography, Divider } from '@ecdlink/ui';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useHistory } from 'react-router-dom';
 import * as styles from './infant-register.styles';
-import momImage from '../../../assets/momImage.png';
+import momImage from '@/assets/momImage.png';
 import {
   BellIcon,
   ClipboardCheckIcon,
@@ -41,38 +41,38 @@ export const InfantRegister: React.FC = () => {
           type="h1"
           color={'white'}
           text={'Register a new child!'}
-          className="z-50 w-ful pt-6"
+          className="w-ful z-50 pt-6"
         />
 
-        <div className="flex justify-center pt-6">
-          <div className="text-textMid relative pt-4 z-40 w-11/12 h-60 bg-uiBg ml-1/2 rounded-2xl flex justify-center">
-            <div className="w-11/12 flex justify-center flex-wrap mt-8">
-              <div className="flex justify-center items-center w-24 h-24 bg-tertiary rounded-full">
-                <img src={momImage} alt="cebisa" className="h-28 w-28 mb-2" />
-              </div>
-              <div className="flex justify-center w-full">
-                <Typography
-                  type="h3"
-                  color={'textDark'}
-                  text={'Please share this information with the caregiver:'}
-                  className="z-50 pt-2 w-10/12"
-                  align="center"
-                />
-              </div>
+        <div className="text-textMid bg-uiBg ml-1/2 relative z-40 flex h-60 justify-center rounded-2xl pt-4">
+          <div className="mt-8 flex w-11/12 flex-wrap  items-center">
+            <div className="bg-tertiary flex h-24 w-24 justify-center rounded-full">
+              <img src={momImage} alt="cebisa" className="mb-2 h-28 w-28" />
+            </div>
+            <div className="flex w-full justify-center">
+              <Typography
+                type="h3"
+                color={'textDark'}
+                text={'Please share this information with the caregiver:'}
+                className="z-50 w-10/12 pt-2"
+                align="center"
+              />
             </div>
           </div>
         </div>
+
         <div className={styles.wrapper}>
-          <div className="flex flex-wrap w-10/12">
+          <div className="flex w-10/12 flex-col">
             <Typography
               type="h2"
               color={'textMid'}
               text={'What you can expect from these visits'}
               className="z-50 pt-4"
             />
-            <div className="flex gap-2 items-center pt-4">
-              <div className="w-12 h-12 flex items-center justify-center bg-secondary rounded-full mr-2">
-                <PresentationChartLineIcon color="white" className="w-5 h-5" />
+
+            <div className="flex items-center gap-2 pt-4">
+              <div className="bg-secondary mr-2 flex h-12 w-12 items-center justify-center rounded-full">
+                <PresentationChartLineIcon color="white" className="h-5 w-5" />
               </div>
               <Typography
                 type="body"
@@ -83,9 +83,9 @@ export const InfantRegister: React.FC = () => {
                 className="z-50 w-9/12"
               />
             </div>
-            <div className="flex gap-2 items-center pt-4">
-              <div className="w-12 h-12 flex items-center justify-center bg-secondary rounded-full mr-2">
-                <UserIcon color="white" className="w-5 h-5" />
+            <div className="flex items-center gap-2 pt-4">
+              <div className="bg-secondary mr-2 flex h-12 w-12 items-center justify-center rounded-full">
+                <UserIcon color="white" className="h-5 w-5" />
               </div>
               <Typography
                 type="body"
@@ -96,9 +96,9 @@ export const InfantRegister: React.FC = () => {
                 className="z-50 w-9/12"
               />
             </div>
-            <div className="flex gap-2 items-center pt-4">
-              <div className="w-12 h-12 flex items-center justify-center bg-secondary rounded-full mr-2">
-                <BellIcon color="white" className="w-5 h-5" />
+            <div className="flex items-center gap-2 pt-4">
+              <div className="bg-secondary mr-2 flex h-12 w-12 items-center justify-center rounded-full">
+                <BellIcon color="white" className="h-5 w-5" />
               </div>
               <Typography
                 type="body"
@@ -107,9 +107,9 @@ export const InfantRegister: React.FC = () => {
                 className="z-50 w-9/12"
               />
             </div>
-            <div className="flex gap-2 items-center pt-4">
-              <div className="w-12 h-12 flex items-center justify-center bg-secondary rounded-full mr-2">
-                <EmojiHappyIcon color="white" className="w-5 h-5" />
+            <div className="flex items-center gap-2 pt-4">
+              <div className="bg-secondary mr-2 flex h-12 w-12 items-center justify-center rounded-full">
+                <EmojiHappyIcon color="white" className="h-5 w-5" />
               </div>
               <Typography
                 type="body"
@@ -118,9 +118,9 @@ export const InfantRegister: React.FC = () => {
                 className="z-50 w-9/12"
               />
             </div>
-            <div className="flex gap-2 items-center pt-4">
-              <div className="w-12 h-12 flex items-center justify-center bg-secondary rounded-full mr-2">
-                <CurrencyDollarIcon color="white" className="w-5 h-5" />
+            <div className="flex items-center gap-2 pt-4">
+              <div className="bg-secondary mr-2 flex h-12 w-12 items-center justify-center rounded-full">
+                <CurrencyDollarIcon color="white" className="h-5 w-5" />
               </div>
               <Typography
                 type="body"
@@ -129,7 +129,7 @@ export const InfantRegister: React.FC = () => {
                 className="z-50 w-9/12"
               />
             </div>
-            <div className="flex justify-center w-11/12 text-red-400">
+            <div className="flex w-11/12 justify-center text-red-400">
               <Divider dividerType="dashed" />
             </div>
             <Typography
@@ -138,9 +138,9 @@ export const InfantRegister: React.FC = () => {
               text={'Why should you participate?'}
               className="z-50 pt-4"
             />
-            <div className="flex gap-2 items-center pt-4">
-              <div className="w-12 h-12 flex items-center justify-center bg-secondary rounded-full mr-2">
-                <HeartIcon color="white" className="w-5 h-5" />
+            <div className="flex items-center gap-2 pt-4">
+              <div className="bg-secondary mr-2 flex h-12 w-12 items-center justify-center rounded-full">
+                <HeartIcon color="white" className="h-5 w-5" />
               </div>
               <Typography
                 type="body"
@@ -151,9 +151,9 @@ export const InfantRegister: React.FC = () => {
                 className="z-50 w-9/12"
               />
             </div>
-            <div className="flex gap-2 items-center pt-4">
-              <div className="w-12 h-12 flex items-center justify-center bg-secondary rounded-full mr-2">
-                <FolderOpenIcon color="white" className="w-5 h-5" />
+            <div className="flex items-center gap-2 pt-4">
+              <div className="bg-secondary mr-2 flex h-12 w-12 items-center justify-center rounded-full">
+                <FolderOpenIcon color="white" className="h-5 w-5" />
               </div>
               <Typography
                 type="body"
@@ -164,9 +164,9 @@ export const InfantRegister: React.FC = () => {
                 className="z-50 w-9/12"
               />
             </div>
-            <div className="flex gap-2 items-center pt-4">
-              <div className="w-12 h-12 flex items-center justify-center bg-secondary rounded-full mr-2">
-                <ClipboardCheckIcon color="white" className="w-5 h-5" />
+            <div className="flex items-center gap-2 pt-4">
+              <div className="bg-secondary mr-2 flex h-12 w-12 items-center justify-center rounded-full">
+                <ClipboardCheckIcon color="white" className="h-5 w-5" />
               </div>
               <Typography
                 type="body"

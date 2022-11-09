@@ -10,8 +10,14 @@ export const getNotesByUserId = (userId?: string) =>
     (notes: NoteDto[]) => {
       if (!notes || !userId) return [];
 
-      return notes
-        .filter((note) => note.userId === userId)
-        .sort((a, b) => (a.insertedDate > b.insertedDate ? -1 : 1));
+      return (
+        notes
+          .filter((note) => note.userId === userId)
+          // TODO: fix sort callback
+          // The callback provided to sort should return 0
+          // if the compared values are equal.
+          // deepcode ignore NoZeroReturnedInSort: <Will resolve in Phase 2>
+          .sort((a, b) => (a.insertedDate > b.insertedDate ? -1 : 1))
+      );
     }
   );

@@ -27,7 +27,7 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
   multipleChildrenCount,
 }) => {
   const {
-    watch,
+    // watch,
     getValues: getInfantDetailsFormValues,
     // formState: InfantDetailsFormState,
     setValue: setInfantDetailsFormValue,
@@ -105,7 +105,7 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
   };
 
   return (
-    <div className="h-screen ">
+    <div className="h-screen pb-5">
       <div>
         <Typography
           type="h2"
@@ -119,10 +119,10 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
           type="h4"
           color={'textMid'}
           text={'Details'}
-          className="z-50 pt-2 w-11/12"
+          className="z-50 w-11/12 pt-2"
         />
       </div>
-      <div className="flex justify-center w-11/12 text-red-400">
+      <div className="flex w-11/12 justify-center text-red-400">
         <Divider dividerType="dashed" />
       </div>
       <>
@@ -140,12 +140,12 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
           type="h4"
           color={'textMid'}
           text={'Date of birth:'}
-          className="z-50 pt-2 w-11/12"
+          className="z-50 w-11/12 pt-2"
         />
         <div className="flex items-center gap-1">
           <DatePicker
             placeholderText={'Please select a date'}
-            className="mt-1 w-full text-textMid bg-uiBg border-none rounded-md text-lg focus:border-primary focus:ring-primary shadow-sm"
+            // className="text-textMid bg-uiBg focus:border-primary focus:ring-primary mt-1 w-full rounded-md border-none text-lg shadow-sm"
             selected={myDay}
             onChange={(date: Date) => setDayDate(date)}
             dateFormat="dd"
@@ -154,7 +154,7 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
           />
           <DatePicker
             placeholderText={'Please select a date'}
-            className="mt-1 w-full text-primtextMidary bg-uiBg border-none rounded-md text-lg focus:border-primary focus:ring-primary shadow-sm"
+            // className="text-primary bg-uiBg focus:border-primary focus:ring-primary mt-1 w-full rounded-md border-none text-lg shadow-sm"
             selected={myMonth}
             onChange={(date: Date) => setMonthDate(date)}
             renderCustomHeader={({ date }) => <div></div>}
@@ -164,19 +164,19 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
           />
           <DatePicker
             placeholderText={'Please select a date'}
-            className="mt-1 w-full bg-uiBg text-textMid border-none rounded-md text-lg focus:border-primary focus:ring-primary shadow-sm"
+            // className="bg-uiBg text-textMid focus:border-primary focus:ring-primary mt-1 w-full rounded-md border-none text-lg shadow-sm"
             selected={myYear}
             onChange={(date: Date) => setYearDate(date)}
             dateFormat="yyyy"
             showYearPicker
           />
         </div>
-        <div className="flex justify-start mt-6 w-full">
+        <div className="mt-6 flex w-full justify-start">
           <Alert
             type={'info'}
             message={`${years} years and ${months} months old`}
             className="w-full"
-          ></Alert>
+          />
         </div>
       </div>
       <div>
@@ -184,7 +184,7 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
           type="h3"
           color={'textDark'}
           text={'Sex'}
-          className="z-50 pt-2 w-11/12"
+          className="z-50 w-11/12 pt-2"
         />
         <div className="mt-2">
           <ButtonGroup<string>
@@ -200,12 +200,12 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
           />
         </div>
       </div>
-      <div className="flex w-full h-full align-bottom">
-        <div className={'mt-10 w-11/12 flex justify-center align-bottom'}>
+      <div className="flex h-full w-full align-bottom">
+        <div className={'mt-10 flex w-11/12 justify-center align-bottom'}>
           <Button
             type={'filled'}
             color={'primary'}
-            className={'mt-2 ml-6 w-11/12 max-h-10 absolute bottom-10'}
+            className={'absolute bottom-10 mt-2 ml-6 max-h-10 w-11/12'}
             textColor={'white'}
             text={`Next`}
             icon={'ArrowCircleRightIcon'}

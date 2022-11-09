@@ -57,7 +57,7 @@ export class NotificationService {
   };
 
   registerValidators = (store: EnhancedStore<RootState, any>) => {
-    const currentDate = new Date();
+    // const currentDate = new Date();
     this.validators = [
       //new ChildDocumentsNotificationValidator(store),
       //new IncompleteChildRegistrationNotificationValidator(store, currentDate),

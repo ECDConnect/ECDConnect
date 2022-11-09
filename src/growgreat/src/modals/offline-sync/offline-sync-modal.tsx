@@ -32,7 +32,7 @@ const OfflineSyncModal: React.FC<OfflineSyncModalProps> = ({
   const { isOnline } = useOnlineStatus();
   const dispatch = useAppDispatch();
   const [unableToSync, setUnableToSync] = useState(false);
-  const { resetAppStaticStores, initStoreSetup } = useStoreSetup();
+  const { resetAppStore, initStoreSetup } = useStoreSetup();
   const history = useHistory();
 
   const { status, error, currentAction, currentStep, stepTotal } =
@@ -52,7 +52,7 @@ const OfflineSyncModal: React.FC<OfflineSyncModalProps> = ({
   const handleSyncSuccess = async () => {
     onSubmit();
     await dispatch(syncActions.clearSyncState());
-    await resetAppStaticStores();
+    await resetAppStore();
     await initStoreSetup();
     if (!avoidNavigation) history.push(ROUTES.ROOT);
   };

@@ -1,7 +1,11 @@
 import { MotherDto } from '@ecdlink/core';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
-import { addMother, getMothers, updateMother } from './mother.actions';
+import {
+  // addMother,
+  getMothers,
+  // updateMother
+} from './mother.actions';
 import { MotherState } from './mother.types';
 
 const initialState: MotherState = {};
