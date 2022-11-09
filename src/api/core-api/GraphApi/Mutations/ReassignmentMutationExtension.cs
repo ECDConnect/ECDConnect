@@ -15,15 +15,11 @@ using System;
 using System.Linq;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using System.Collections.Generic;
-using ECDLink.DataAccessLayer.Hierarchy.Entities;
 using ECDLink.DataAccessLayer.Hierarchy;
 using Microsoft.Azure.Documents;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.Core.SystemSettings.SystemOptions;
 using static ECDLink.Core.SystemSettings.SettingGroups;
-using ECDLink.Abstractrions.Notifications;
-using AngleSharp.Text;
-using System.Drawing;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
