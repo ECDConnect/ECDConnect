@@ -18,7 +18,7 @@ import ROUTES from '@routes/routes';
 import { PhoneIcon } from '@heroicons/react/solid';
 import { useSelector } from 'react-redux';
 import { practitionerSelectors } from '@/store/practitioner';
-import { practitionerForCoachSelectors } from '@/store/practitionerForCoach';
+// import { practitionerForCoachSelectors } from '@/store/practitionerForCoach';
 import { classroomsForCoachSelectors } from '@/store/classroomForCoach';
 import { useEffect, useState } from 'react';
 import { PractitionerService } from '@/services/PractitionerService';
@@ -32,9 +32,9 @@ export const CoachProgrammeInformation: React.FC = () => {
   const location = useLocation<PractitionerProfileRouteState>();
   const practitionerId = location.state.practitionerId;
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
-  const practitionersForCoach = useSelector(
-    practitionerForCoachSelectors.getPractitionersForCoach
-  );
+  // const practitionersForCoach = useSelector(
+  //   practitionerForCoachSelectors.getPractitionersForCoach
+  // );
   const isFromProgrammeView = true;
   const [practitionerClassroomDetails, setPractitionerClassroomDetails] =
     useState<any>();
@@ -270,7 +270,7 @@ export const CoachProgrammeInformation: React.FC = () => {
                   className={'mt-4'}
                 />
                 <Typography
-                  text={practitionerClassroom?.name}
+                  text={practitionerClassroom?.name || ''}
                   type="h4"
                   color="textDark"
                   className={'mt-1'}
@@ -354,9 +354,11 @@ export const CoachProgrammeInformation: React.FC = () => {
               <Typography
                 text={
                   practitionerClassroomDetails?.length > 0
-                    ? practitionerClassroomDetails[0].classroom
-                        ?.numberPractitioners
-                    : []
+                    ? String(
+                        practitionerClassroomDetails[0].classroom
+                          ?.numberPractitioners
+                      )
+                    : ''
                 }
                 type="h4"
                 color="textDark"
@@ -376,9 +378,11 @@ export const CoachProgrammeInformation: React.FC = () => {
               <Typography
                 text={
                   practitionerClassroomDetails?.length > 0
-                    ? practitionerClassroomDetails[0].classroom
-                        ?.numberOfOtherAssistants
-                    : []
+                    ? String(
+                        practitionerClassroomDetails[0].classroom
+                          ?.numberOfOtherAssistants
+                      )
+                    : ''
                 }
                 type="h4"
                 color="textDark"
