@@ -146,15 +146,17 @@ string userId)
             using var scope = dbFactory.CreateDbContext();
             using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
-            var classRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
+            var classRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);
+
+            var userIdGuid = new Guid(userId);
 
             List<ClassroomGroup> classrooms = new List<ClassroomGroup>();
-            var dbRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            List<Practitioner> practitioners = dbRepo.GetAll().Where(x => x.CoachHierarchy.HasValue).ToList();
-            practitioners.Where(x => x.CoachHierarchy.Equals(userId)).ToList();
+            var dbRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
+            List<Practitioner> practitioners = dbRepo.GetAll().Where(x => x.CoachHierarchy.Equals(userIdGuid)).ToList();
             foreach (var practioner in practitioners)
             {
-                List<ClassroomGroup> practitionerClasses = classRepo.GetAll().Where(x => x.UserId.Equals(practioner.UserId)).ToList();
+                var practinionerUserIdGuid = new Guid(practioner.UserId);
+                List<ClassroomGroup> practitionerClasses = classRepo.GetAll().Where(x => x.UserId.Equals(practinionerUserIdGuid)).ToList();
                 classrooms.AddRange(practitionerClasses);
             }
             return classrooms;
