@@ -46,9 +46,7 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  const today = new Date();
-  console.log(today.getMonth() + 1);
-  // console.log(new Date(year, currentMonth, 1))
+
   useEffect(() => {
     if (!classroom) return;
     const today = new Date();
