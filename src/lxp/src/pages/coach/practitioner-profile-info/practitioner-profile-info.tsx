@@ -26,39 +26,6 @@ import { notesSelectors } from '@store/notes';
 import { useSelector } from 'react-redux';
 import { practitionerSelectors } from '@/store/practitioner';
 
-// const mockedData = [
-//   {
-//     id: 1,
-//     title: 'John Buffalo',
-//     subTitle: 'Progress report overdue',
-//     avatarColor: '#6974af',
-//     profileText: 'Jb',
-//     alertSeverity: 'error',
-//     phoneNumber: '2138471324',
-//     email: 'johnbf@gmail.com',
-//   },
-//   {
-//     id: 2,
-//     title: 'Pedro Machado',
-//     subTitle: 'Progress report overdue',
-//     avatarColor: '#6974af',
-//     profileText: 'Pm',
-//     alertSeverity: 'error',
-//     phoneNumber: '23984123490',
-//     email: 'pedroM@gmail.com',
-//   },
-//   {
-//     id: 3,
-//     title: 'Carlos Vieira',
-//     subTitle: 'Progress report overdue',
-//     avatarColor: '#6974af',
-//     profileText: 'Cv',
-//     alertSeverity: 'error',
-//     phoneNumber: '314874393',
-//     email: 'carlosvieira1234@gmail.com',
-//   },
-// ];
-
 export const CoachPractitionerProfileInfo: React.FC = () => {
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
@@ -191,7 +158,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
             size={'small'}
             onClick={call}
           >
-            <PhoneIcon className="h-5 w-5 text-primary" aria-hidden="true" />
+            <PhoneIcon className="text-primary h-5 w-5" aria-hidden="true" />
           </Button>
           <Button
             color={'primary'}
@@ -208,10 +175,10 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
           </Button>
         </div>
       </BannerWrapper>
-      <div className="flex justify-center mt-4">
+      <div className="mt-4 flex justify-center">
         <div className="w-11/12">
           <StackedList
-            className="w-full rounded-2xl -mt-0.5 flex flex-col gap-1"
+            className="-mt-0.5 flex w-full flex-col gap-1 rounded-2xl"
             type="MenuList"
             listItems={listItems}
           />
