@@ -28,7 +28,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
 
         public Absentees AddAbsenteeForPractitioner([Service] IHttpContextAccessor contextAccessor,
-            [Service] UserManager<ApplicationUser> userManager,
             [Service] IGenericRepositoryFactory repoFactory,
             [Service] HierarchyEngine engine,
             string fromUserId,
@@ -43,7 +42,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var updated = new Absentees();
             if (classProgram != null)
             {
-
+                reason = (string.IsNullOrEmpty(reason)?"Practitioner Marked Absent":reason);
                 var absent = new Absentees
                 {
                     UserId = fromUserId,
@@ -58,7 +57,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
                 //Log to the history table for reassignment back to owner user
                 ReassignmentMutationExtension reassignment = new ReassignmentMutationExtension();
-                reassignment.AddReassignmentForPractitioner(contextAccessor, repoFactory, engine, fromUserId, toUserId, reason, absentDate, loggedByUser, classProgram);
+                reassignment.AddReassignmentForPractitioner(contextAccessor, repoFactory, engine, fromUserId, toUserId, reason, absentDate, loggedByUser, classProgram, false);
             }
 
             //Save the history so it can be reassigned
@@ -67,15 +66,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         }
 
         public bool ReassignAbsenteeFromHistory([Service] IHttpContextAccessor contextAccessor,
-            [Service] UserManager<ApplicationUser> userManager,
-            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
-            [Service] HierarchyEngine engine,
             string userId)
-        {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            var historyRepo = repoFactory.CreateRepository<ClassReassignmentHistory>(userContext: uId);
-            bool reAssigned = false;
+        {            
             ReassignmentMutationExtension reassignment = new ReassignmentMutationExtension();
             return reassignment.ReassignClassroomsFromHistory(contextAccessor, repoFactory, userId);
         }

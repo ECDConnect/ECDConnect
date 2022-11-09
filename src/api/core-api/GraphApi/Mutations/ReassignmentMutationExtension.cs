@@ -51,7 +51,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             string reason,
             DateTime startDate,
             string loggedByUser,
-            string classroomGroup = null
+            string classroomGroup = null,
+            bool permanentAssign = false
             )
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;            
@@ -75,11 +76,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         HierarchyToUser = toUserHierarchy,
                         HierarchyBackToUser = fromUserHierarchy,
                     };
+                    
+                    if(permanentAssign) history.ReassignedBackToDate = DateTime.Now; //if a permanent reassign, set the date of ReassignedBackToDate so it doesnt get picked up for reassignment from history
+                    
                     var historySaved = historyRepo.Insert(history);
 
                     if (!string.IsNullOrEmpty(toUserHierarchy) && !string.IsNullOrEmpty(fromUserHierarchy)) { 
                         //reassign classroomGroups - populate the other objects done insid ethe classroomgroups function
-                        ReassignmentLists reassignment = UpdateClassroomGroups(contextAccessor, repoFactory, fromUserId, toUserId, fromUserHierarchy, toUserHierarchy, classroomGroup);
+                        ReassignmentLists reassignment = UpdateClassroomGroups(contextAccessor, repoFactory, fromUserId, toUserId, toUserHierarchy, classroomGroup);
 
                         //update the history line with classes, children and classroomgroups also moved
                         if (reassignment.ClassroomGroupsReassigned!=null) historySaved.ReassignedClassroomGroups = string.Join(";", reassignment.ClassroomGroupsReassigned);
@@ -103,7 +107,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
         private ReassignmentLists UpdateClassroomGroups([Service] IHttpContextAccessor contextAccessor,
             [Service] IGenericRepositoryFactory repoFactory, string fromUserId,
-            string toUserId, string fromUserHierarchy, string toUserHierarchy, string classroomGroup = null)
+            string toUserId, string toUserHierarchy, string classroomGroup = null)
         {
             ReassignmentLists reassignment = new ReassignmentLists();
             if (toUserHierarchy != null)
@@ -218,7 +222,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         private string[] UpdateClassProgrammes([Service] IHttpContextAccessor contextAccessor,
 [Service] IGenericRepositoryFactory repoFactory, Guid classroomGroupId, string newHierarchy)
         {
-            bool updated = false;
             var uId = contextAccessor.HttpContext.GetUser().Id;
             string[] classroomsProgrammesReassigned = null;
 
@@ -308,7 +311,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                                 foreach (string reassignedGroup in reassignedClassroomGroups)
                                 {
                                     //Log to the history table the reassignment back to original user as a new row for continuation                                    
-                                    ReassignmentLists newReassignment = UpdateClassroomGroups(contextAccessor, repoFactory, historyItem.ReassignedToUser, historyItem.ReassignedBackToUserId, historyItem.HierarchyToUser, historyItem.HierarchyBackToUser, reassignedGroup);
+                                    ReassignmentLists newReassignment = UpdateClassroomGroups(contextAccessor, repoFactory, historyItem.ReassignedToUser, historyItem.ReassignedBackToUserId, historyItem.HierarchyBackToUser, reassignedGroup);
 
                                     //Log to the history table for the inverse of the presvious historyitem to indicate reassignment to how it was before
                                     var newReassignmentHistory = new ClassReassignmentHistory
