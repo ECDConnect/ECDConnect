@@ -126,7 +126,10 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
       idNumber: userDetailForm.idNumber,
       verifiedByHomeAffairs: userDetailForm.verifiedByHomeAffairs,
       dateOfBirth: userDetailForm.dateOfBirth,
-      genderId: userDetailForm.genderId && +userDetailForm.genderId,
+      genderId:
+        userDetailForm.genderId && userDetailForm.genderId.length
+          ? userDetailForm.genderId
+          : null,
       firstName: userDetailForm.firstName,
       surname: userDetailForm.surname,
       contactPreference: userDetailForm.contactPreference,

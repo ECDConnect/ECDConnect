@@ -63,7 +63,7 @@ export const Typography: React.FC<TypographyProps> = ({
             onClick={onClick}
             className="prose"
             dangerouslySetInnerHTML={{ __html: text || '' }}
-          ></article>
+          />
         );
       case 'h1':
         return (

@@ -302,7 +302,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
                         var existingGrants = context.UserGrants
                           .Where(x =>x.UserId == caregiverId.ToString());
-                       
+
                         try
                         {
                             //remove

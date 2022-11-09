@@ -1,19 +1,21 @@
-import { ConfigProvider } from '@ecdlink/core';
-import { defineCustomElements } from '@ionic/pwa-elements/loader';
-import React from 'react';
+import '@/styles.css';
 import ReactDOM from 'react-dom';
-import ConfigWrapper from './config-wrapper';
-import { OnlineStatusProvider } from './hooks/useOnlineStatus';
-import reportWebVitals from './reportWebVitals';
-import * as serviceWorkerRegistration from './serviceWorkerRegistration';
-import './styles.css';
+import { StrictMode } from 'react';
+import ConfigWrapper from '@/config-wrapper';
+import { ConfigProvider } from '@ecdlink/core';
+import reportWebVitals from '@/reportWebVitals';
+import { defineCustomElements } from '@ionic/pwa-elements/loader';
+import { OnlineStatusProvider } from '@/hooks/useOnlineStatus';
+import * as serviceWorkerRegistration from '@/serviceWorkerRegistration';
 
 ReactDOM.render(
-  <OnlineStatusProvider>
-    <ConfigProvider>
-      <ConfigWrapper />
-    </ConfigProvider>
-  </OnlineStatusProvider>,
+  <StrictMode>
+    <OnlineStatusProvider>
+      <ConfigProvider>
+        <ConfigWrapper />
+      </ConfigProvider>
+    </OnlineStatusProvider>
+  </StrictMode>,
   document.getElementById('root')
 );
 

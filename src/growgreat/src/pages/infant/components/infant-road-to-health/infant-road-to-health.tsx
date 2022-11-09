@@ -29,7 +29,7 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
   infantDetails,
 }) => {
   const {
-    watch,
+    // watch,
     trigger,
     getValues: getRoadToHealthFormValues,
     // formState: pregnantMaternalRecordState,
@@ -85,7 +85,7 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
           type="h4"
           color={'textMid'}
           text={'Road to Health Book'}
-          className="z-50 pt-2 w-11/12"
+          className="z-50 w-11/12 pt-2"
         />
       </div>
       <div>
@@ -103,7 +103,7 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
             }
             color="secondary"
             type={ButtonGroupTypes.Button}
-            className={'w-full mt-2'}
+            className={'mt-2 w-full'}
           />
         </div>
         {hasMaternalCaseRecord === false && (
@@ -116,8 +116,8 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
                 className="z-50 pt-6"
               />
             </div>
-            <div className="flex w-11/12 justify-between items-center mt-4">
-              <div className="flex gap-2 items-center">
+            <div className="mt-4 flex w-11/12 items-center justify-between">
+              <div className="flex items-center gap-2">
                 <input
                   type="checkbox"
                   className={confirmhasNoRecord ? 'bg-secondary' : 'bg-uiBg'}
@@ -146,17 +146,17 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
         )}
         {hasMaternalCaseRecord === true && (
           <>
-            <div className="flex items-center justify-between mt-4">
+            <div className="mt-4 flex items-center justify-between">
               <Typography
                 type="h4"
                 weight="bold"
                 color={'textMid'}
                 text={"Take a photo of the client's Maternal Case Record"}
-                className="z-50 pt-2 w-9/12"
+                className="z-50 w-9/12 pt-2"
               />
               <div
                 onClick={() => setMaternalRecordExampleVisible(true)}
-                className="bg-infoDark h-6 w-6 rounded-full grid place-items-center"
+                className="bg-infoDark grid h-6 w-6 place-items-center rounded-full"
               >
                 <InformationCircleIcon
                   className="h-4 w-4 bg-transparent text-white"
@@ -216,12 +216,12 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
           </>
         )}
       </div>
-      <div className="flex w-full h-full align-bottom">
-        <div className={'mt-10 w-11/12 flex justify-center align-bottom ml-2'}>
+      <div className="flex h-full w-full align-bottom">
+        <div className={'mt-10 ml-2 flex w-11/12 justify-center align-bottom'}>
           <Button
             type={'filled'}
             color={'primary'}
-            className={'mt-2 w-11/12 max-h-10 absolute bottom-10'}
+            className={'absolute bottom-10 mt-2 max-h-10 w-11/12'}
             textColor={'white'}
             text={`Save`}
             icon={'ArrowCircleRightIcon'}
@@ -259,31 +259,31 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
         fullScreen
         className="overflow-auto"
       >
-        <div className="flex justify-center mt-12 overflow-auto ">
+        <div className="mt-12 flex justify-center overflow-auto ">
           <div>
             <div className="flex justify-center">
-              <div className="h-16 w-16 bg-infoDark rounded-full grid place-items-center">
-                <InformationCircleIcon className="h-12 w-12 bg-trasparent text-white" />
+              <div className="bg-infoDark grid h-16 w-16 place-items-center rounded-full">
+                <InformationCircleIcon className="bg-trasparent h-12 w-12 text-white" />
               </div>
             </div>
-            <div className="flex justify-center mt-4">
+            <div className="mt-4 flex justify-center">
               <Typography
                 type="h2"
                 align="center"
                 weight="bold"
                 color={'textDark'}
                 text={'Page ii of the Road to Health Book'}
-                className="z-50 pt-2 w-9/12"
+                className="z-50 w-9/12 pt-2"
               />
             </div>
-            <div className="h-11/12 w-full flex justify-center mt-6">
+            <div className="h-11/12 mt-6 flex w-full justify-center">
               <img
                 src={roadToHealth}
                 alt="maternal record"
-                className="w-7/12 h-9/12"
+                className="h-9/12 w-7/12"
               />
             </div>
-            <div className="flex justify-center mt-4">
+            <div className="mt-4 flex justify-center">
               <Typography
                 type="body"
                 align="center"
@@ -297,14 +297,14 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
                   '\n' +
                   'If your client has an old version of the book, you can see the personal details on page 4.'
                 }
-                className="z-50 pt-2 w-9/12"
+                className="z-50 w-9/12 pt-2"
               />
             </div>
-            <div className={'mt-4 w-11/12 flex justify-center ml-4'}>
+            <div className={'mt-4 ml-4 flex w-11/12 justify-center'}>
               <Button
                 type={'filled'}
                 color={'primary'}
-                className={'w-11/12 max-h-10'}
+                className={'max-h-10 w-11/12'}
                 textColor={'white'}
                 text={`Close`}
                 icon={'XIcon'}

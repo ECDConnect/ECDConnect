@@ -13,28 +13,30 @@ const ConfigWrapper: React.FC = () => {
 
   useEffect(() => {
     // minimum loading effect
-    if (!loading) {
-      setTimeout(() => {
+    const loadingTimer = setTimeout(() => {
+      if (!loading) {
         setLoader(false);
-      }, 2500);
-    }
+      }
+    }, 2500);
+
+    return () => clearTimeout(loadingTimer);
   }, [loading]);
 
   if (loader) {
     return <Loader />;
-  } else {
-    return (
-      <Provider store={store}>
-        <PersistGate loading={null} persistor={persistor}>
-          <ThemeProvider themeEndPoint={Config.themeUrl} overRideCache={true}>
-            <DialogServiceProvider>
-              <App />
-            </DialogServiceProvider>
-          </ThemeProvider>
-        </PersistGate>
-      </Provider>
-    );
   }
+
+  return (
+    <Provider store={store}>
+      <PersistGate loading={null} persistor={persistor}>
+        <ThemeProvider themeEndPoint={Config.themeUrl} overRideCache={true}>
+          <DialogServiceProvider>
+            <App />
+          </DialogServiceProvider>
+        </ThemeProvider>
+      </PersistGate>
+    </Provider>
+  );
 };
 
 export default ConfigWrapper;

@@ -1,21 +1,21 @@
-import { DialogServiceProvider, useDialog } from '@ecdlink/core';
-import { DialogPosition } from '@ecdlink/ui';
-import { IonApp, IonRouterOutlet } from '@ionic/react';
-import { IonReactRouter } from '@ionic/react-router';
 import '@ionic/react/css/core.css';
 import '@ionic/react/css/display.css';
 import '@ionic/react/css/flex-utils.css';
 import '@ionic/react/css/float-elements.css';
-import { default as React, useEffect } from 'react';
+import { IonApp, IonRouterOutlet } from '@ionic/react';
+import { IonReactRouter } from '@ionic/react-router';
+import { DialogPosition } from '@ecdlink/ui';
+import { DialogServiceProvider, useDialog } from '@ecdlink/core';
+import React, { useEffect } from 'react';
 import ReactGA from 'react-ga';
 import TagManager from 'react-gtm-module';
 import { useSelector } from 'react-redux';
-import { AuthRoutes, PublicRoutes } from '@routes';
-import InitialNotificationSetup from './initial-notifications-setup';
-import InitialStoreSetup from './initial-store-setup';
-import { LoginModal } from './pages/auth/login-modal/login-modal';
-import { authSelectors } from './store/auth';
-import { settingSelectors } from './store/settings';
+import { AuthRoutes, PublicRoutes } from '@/routes';
+import { authSelectors } from '@/store/auth';
+import { settingSelectors } from '@/store/settings';
+import InitialStoreSetup from '@/initial-store-setup';
+import InitialNotificationSetup from '@/initial-notifications-setup';
+import { LoginModal } from '@/pages/auth/login-modal/login-modal';
 
 const App: React.FC = () => {
   const dialog = useDialog();
@@ -24,6 +24,23 @@ const App: React.FC = () => {
   const applicationSettings = useSelector(
     settingSelectors.getApplicationSettings
   );
+
+  function getRoutes() {
+    // show auth routes for auth users
+    if (user && user.isTempUser !== true) {
+      return (
+        <InitialStoreSetup>
+          <DialogServiceProvider>
+            <InitialNotificationSetup>
+              <AuthRoutes />
+            </InitialNotificationSetup>
+          </DialogServiceProvider>
+        </InitialStoreSetup>
+      );
+    }
+    // show public routes for non auth users
+    return <PublicRoutes />;
+  }
 
   useEffect(() => {
     if (applicationSettings && applicationSettings.Google) {
@@ -40,7 +57,6 @@ const App: React.FC = () => {
         TagManager.initialize(tagManagerArgs);
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [applicationSettings]);
 
   useEffect(() => {
@@ -48,7 +64,7 @@ const App: React.FC = () => {
       dialog({
         position: DialogPosition.Middle,
         blocking: true,
-        render: (onSubmit, onClose) => {
+        render(onSubmit) {
           return <LoginModal loginSuccessful={onSubmit} />;
         },
       });
@@ -56,24 +72,8 @@ const App: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userExpired]);
 
-  const getRoutes = () => {
-    if (user && user.isTempUser !== true) {
-      return (
-        <InitialStoreSetup>
-          <DialogServiceProvider>
-            <InitialNotificationSetup>
-              <AuthRoutes />
-            </InitialNotificationSetup>
-          </DialogServiceProvider>
-        </InitialStoreSetup>
-      );
-    } else {
-      return <PublicRoutes />;
-    }
-  };
-
   return (
-    <IonApp className="max-w-4xl m-auto bg-white">
+    <IonApp className="m-auto h-screen w-full bg-white">
       <IonReactRouter>
         <IonRouterOutlet>{getRoutes()}</IonRouterOutlet>
       </IonReactRouter>

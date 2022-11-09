@@ -1,4 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
+import { useEffect } from 'react';
+import { useSelector } from 'react-redux';
+import { useHistory } from 'react-router-dom';
 import { useDialog, useTheme } from '@ecdlink/core';
 import {
   ActionModal,
@@ -11,24 +14,22 @@ import {
   Typography,
   UserAvatar,
 } from '@ecdlink/ui';
-import { useEffect } from 'react';
-import { useSelector } from 'react-redux';
-import { useHistory } from 'react-router-dom';
-import { useDocuments } from '@hooks/useDocuments';
-import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import { OfflineSyncModal } from '../../modals';
-import OfflineSyncTimeExceeded from '../../modals/offline-sync/offline-sync-time-exceeded';
-import { useAppDispatch } from '@store';
+
+import { useDocuments } from '@/hooks/useDocuments';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { OfflineSyncModal } from '@/modals';
+import OfflineSyncTimeExceeded from '@/modals/offline-sync/offline-sync-time-exceeded';
+import { useAppDispatch } from '@/store';
 import { motherSelectors } from '@/store/mother';
-import { notificationsSelectors } from '@store/notifications';
-import { settingSelectors } from '@store/settings';
-import { userSelectors } from '@store/user';
-import { analyticsActions } from '@store/analytics';
-import { DashboardItems } from './components/dashboard-items/dashboard-items';
-import * as styles from './dashboard.styles';
+import { notificationsSelectors } from '@/store/notifications';
+import { settingSelectors } from '@/store/settings';
+import { userSelectors } from '@/store/user';
+import { analyticsActions } from '@/store/analytics';
+import { DashboardItems } from '@/pages/dashboard/components/dashboard-items/dashboard-items';
+import * as styles from '@/pages/dashboard/dashboard.styles';
 import ROUTES from '@routes/routes';
 import { getInfants } from '@/store/infant/infant.selectors';
-const { version } = require('../../../package.json');
+import { version } from '@/../package.json';
 
 export enum NavigationTypes {
   Home = 'Home',
@@ -74,7 +75,7 @@ export const Dashboard: React.FC = () => {
     { name: NavigationTypes.Home, href: '/', icon: 'HomeIcon', current: true },
     {
       name: NavigationTypes.ClientFolders,
-      icon: 'AcademicCapIcon',
+      icon: 'UserGroupIcon',
       current: false,
       nestedChildren: [
         {
@@ -105,7 +106,7 @@ export const Dashboard: React.FC = () => {
       current: false,
       showDivider: true,
       getNotificationCount: () => {
-        return newNotificationCount;
+        return Number(newNotificationCount);
       },
     },
     {
@@ -122,7 +123,7 @@ export const Dashboard: React.FC = () => {
       dialog({
         position: DialogPosition.Bottom,
         blocking: true,
-        render: (onSubmitParent, onCancel) => {
+        render: (onSubmitParent) => {
           return (
             <OfflineSyncTimeExceeded
               onSubmit={() => {
@@ -131,7 +132,7 @@ export const Dashboard: React.FC = () => {
                 dialog({
                   position: DialogPosition.Bottom,
                   blocking: true,
-                  render: (onSubmit, onCancel) => {
+                  render: (onSubmit) => {
                     return (
                       <OfflineSyncModal onSubmit={onSubmit}></OfflineSyncModal>
                     );
@@ -215,9 +216,9 @@ export const Dashboard: React.FC = () => {
         ) : (
           <UserAvatar
             size="sm-md"
-            color="transparent"
+            color="secondary"
             displayBorder
-            borderColour="white"
+            borderColour="secondary"
           />
         )
       }
@@ -257,22 +258,22 @@ export const Dashboard: React.FC = () => {
           listItems={[
             {
               title: 'Client folders',
-              titleIcon: 'AcademicCapIcon',
+              titleIcon: 'UserGroupIcon',
               titleIconClassName: styles.classRoomIcon,
               onActionClick: () => {
                 goToClientFolders();
               },
-              classNames: 'bg-uiBg',
+              classNames: 'bg-secondaryAccent2',
             },
             {
               title: 'Training',
-              titleIcon: 'AcademicCapIcon',
+              titleIcon: 'BriefcaseIcon',
               titleIconClassName: styles.businessIcon,
               onActionClick: () => ({}),
               chipConfig: {
                 colorPalette: {
-                  backgroundColour: 'alertMain',
-                  borderColour: 'alertMain',
+                  backgroundColour: 'successMain',
+                  borderColour: 'successMain',
                   textColour: 'white',
                 },
                 text: 'Coming soon',
