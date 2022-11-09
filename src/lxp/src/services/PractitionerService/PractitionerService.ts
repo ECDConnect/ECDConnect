@@ -4,6 +4,7 @@ import {
   UserDto,
   PractitionerDto,
   PractitionerColleagues,
+  ClassroomDto,
 } from '@ecdlink/core';
 import {
   MutationAddPractitionerToPrincipalArgs,
@@ -320,6 +321,62 @@ class PractitionerService {
     }
 
     return response.data.data.classroomDetailsForPractitioner;
+  }
+
+  async getClassroomGroupClassroomsForPractitioner(
+    userId: string
+  ): Promise<{ classroom: ClassroomDto }> {
+    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      query GetClassroomGroupClassroomsForPractitioner($userId: String) {
+        classroomGroupClassroomsForPractitioner(userId: $userId){
+            id
+            name
+            programmeType {
+                description
+            }
+            classroom {
+                id
+                siteAddress {
+                    name
+                    addressLine1
+                    addressLine2
+                    addressLine3
+                    postalCode
+                    province {
+                        description
+                    }
+                }
+                name
+                numberPractitioners
+                numberOfAssistants
+                numberOfOtherAssistants
+            }
+            classProgrammes{
+                id
+                meetingDay
+                isFullDay
+                classroomGroup{
+                    id
+                    name
+                }
+            }
+        }
+    }
+      `,
+      variables: {
+        userId,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Get Practitioner classrooms Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.classroomGroupClassroomsForPractitioner;
   }
 
   async UpdatePractitionerShareInfo(
