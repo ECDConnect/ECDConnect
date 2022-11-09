@@ -46,12 +46,17 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
+  const today = new Date();
+  console.log(today.getMonth() + 1);
+  // console.log(new Date(year, currentMonth, 1))
   useEffect(() => {
     if (!classroom) return;
     const today = new Date();
-    const year = today.getFullYear();
-    const currentMonth = today.getMonth() + 1;
+    const lastDayCurrentMonth = new Date(
+      today.getFullYear(),
+      today.getMonth() + 1,
+      0
+    );
     const startDate = new Date(classroom.insertedDate ?? '');
 
     if (attendanceTracked) {
@@ -60,7 +65,7 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
           authUser?.id ?? '',
           classroom.id ?? classroom?.classroomId!,
           startDate,
-          new Date(year, currentMonth, 1)
+          new Date(lastDayCurrentMonth)
         )
         .then((data) => {
           setReportData(data);
@@ -85,7 +90,7 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   }, [reportData]);
 
   return (
-    <div className="h-full w-full flex flex-col px-4 pt-4 overflow-y-auto pb-32">
+    <div className="flex h-full w-full flex-col overflow-y-auto px-4 pt-4 pb-32">
       <div className={'flex flex-col'}>
         <PointsSuccessCard
           visible={successMessageVisible}

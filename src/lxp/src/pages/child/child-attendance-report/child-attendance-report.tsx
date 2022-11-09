@@ -125,6 +125,7 @@ export const ChildAttendanceReportPage: React.FC = () => {
   const contactCaregiver = () => {
     history.push('/child-caregivers', { childId });
   };
+
   return (
     <BannerWrapper
       className="h-full overflow-y-auto"
@@ -141,35 +142,33 @@ export const ChildAttendanceReportPage: React.FC = () => {
           text={`Attendance ${currentYear}`}
         />
 
-        {childAttendanceReportData?.classGroupAttendance.length > 0 &&
-          childAttendanceReportData?.classGroupAttendance[0].startDate >
-            learner?.startedAttendance! && (
-            <>
-              <div className={'flex w-full flex-row px-4 pt-4'}>
-                <StatusChip
-                  backgroundColour={getColor(attendancePercentage)}
-                  text={`${
-                    childAttendanceReportData?.totalActualAttendance ?? 0
-                  }/${childAttendanceReportData?.totalExpectedAttendance ?? 0}`}
-                  textColour={'white'}
-                  borderColour={getColor(attendancePercentage)}
-                />
-                <Typography
-                  className={'ml-2'}
-                  type="body"
-                  color={getColor(attendancePercentage)}
-                  text={`days attended so far this year.`}
-                />
-              </div>
-
-              <Typography
-                className={'mt-2 px-4'}
-                type="body"
-                color={'textMid'}
-                text={getAttendanceText(attendancePercentage)}
+        {childAttendanceReportData?.totalExpectedAttendance !== 0 && (
+          <>
+            <div className={'flex w-full flex-row px-4 pt-4'}>
+              <StatusChip
+                backgroundColour={getColor(attendancePercentage)}
+                text={`${
+                  childAttendanceReportData?.totalActualAttendance ?? 0
+                }/${childAttendanceReportData?.totalExpectedAttendance ?? 0}`}
+                textColour={'white'}
+                borderColour={getColor(attendancePercentage)}
               />
-            </>
-          )}
+              <Typography
+                className={'ml-2'}
+                type="body"
+                color={getColor(attendancePercentage)}
+                text={`days attended so far this year.`}
+              />
+            </div>
+
+            <Typography
+              className={'mt-2 px-4'}
+              type="body"
+              color={'textMid'}
+              text={getAttendanceText(attendancePercentage)}
+            />
+          </>
+        )}
         <div
           className={
             'border-uiLight flex w-full flex-row items-center justify-between border-b border-solid py-3'
