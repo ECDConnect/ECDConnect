@@ -70,7 +70,7 @@ export const Login: React.FC = () => {
   });
   const { isValid, errors } = loginFormState;
 
-  console.log({ freeMemory });
+  console.log('freeMemory:', freeMemory);
 
   const submitForm = async () => {
     setDisplayError(false);
