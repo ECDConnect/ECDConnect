@@ -196,7 +196,7 @@ export const PractitionerList: React.FC<PractitionerListProps> = ({
               </div>
             )}
           </div>
-          <div className="absolute bottom-0 left-0 right-0 p-4 max-h-20">
+          <div className="absolute bottom-0 left-0 right-0 max-h-20 p-4">
             <div className="flex justify-center">
               <Button
                 type="filled"

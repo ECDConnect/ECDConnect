@@ -33,6 +33,7 @@ export const PrincipalPractitionerChildList: React.FC<
 > = () => {
   const location = useLocation<PractitionerProfileRouteState>();
   const practitionerId = location.state.practitionerId;
+  const classroomItem = location?.state?.classroomItem;
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const practitioner = practitioners?.find(
     (practitioner) => practitioner?.userId === practitionerId
@@ -75,6 +76,7 @@ export const PrincipalPractitionerChildList: React.FC<
       return f.userId === el.userId;
     });
   });
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [addChildButtonExpanded, setAddChildButtonExpanded] =
     useState<boolean>(true);
@@ -196,6 +198,16 @@ export const PrincipalPractitionerChildList: React.FC<
     setChildUserListData(childListItem || []);
     setActiveSort([]);
   };
+
+  useEffect(() => {
+    if (classroomItem) {
+      const filteredClassroomGroup = updatedPlaygroups?.filter(
+        (item) => item?.value === classroomItem?.id
+      );
+      onFilterItemsChanges(filteredClassroomGroup);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [classroomItem, updatedPlaygroups]);
 
   const onSortItemsChanges = (column: string) => {
     if (childrenForPractitioner && classroomGroupLearners) {
