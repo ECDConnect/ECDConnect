@@ -8,11 +8,16 @@ import {
   FormInput,
   PasswordInput,
   Typography,
-  Dialog,
-  DialogPosition,
+  // Dialog,
+  // DialogPosition,
 } from '@ecdlink/ui';
-import { StorageFull } from './storage-full/storage-full';
-import { useEffect, useState } from 'react';
+// import {
+//   StorageFull
+// } from './storage-full/storage-full';
+import {
+  // useEffect,
+  useState,
+} from 'react';
 import { useForm } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
 import * as styles from '@/pages/auth/login/login.styles';
@@ -26,7 +31,7 @@ import { authActions, authThunkActions } from '@store/auth';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { settingActions } from '@store/settings';
 import ROUTES from '@routes/routes';
-import DeviceInfo from 'react-native-device-info';
+// import DeviceInfo from 'react-native-device-info';
 import { version } from '@@/package.json';
 
 export const Login: React.FC = () => {
@@ -34,22 +39,23 @@ export const Login: React.FC = () => {
   const history = useHistory();
   const appDispatch = useAppDispatch();
   const { isOnline, Offline } = useOnlineStatus();
-  const [freeMemory, setFreeMemory] = useState(0);
+  // const [freeMemory, setFreeMemory] = useState(0);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [errorMessage, setErrorMessage] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [displayError, setDisplayError] = useState(false);
   const [idFieldVisible, setIdFieldVisible] = useState(true);
 
-  function getFreeDiskStorage() {
-    DeviceInfo.getFreeDiskStorage()
-      .then((freeDiskStorage) => {
-        let freeStorageInMB = freeDiskStorage / 1024 / 1024;
-        freeStorageInMB = parseInt(freeStorageInMB + '');
-        setFreeMemory(freeStorageInMB);
-        return freeStorageInMB;
-      })
-      .catch((error: unknown) => console.log(error));
-  }
+  // function getFreeDiskStorage() {
+  //   DeviceInfo.getFreeDiskStorage()
+  //     .then((freeDiskStorage) => {
+  //       let freeStorageInMB = freeDiskStorage / 1024 / 1024;
+  //       freeStorageInMB = parseInt(freeStorageInMB + '');
+  //       setFreeMemory(freeStorageInMB);
+  //       return freeStorageInMB;
+  //     })
+  //     .catch((error: unknown) => console.log(error));
+  // }
 
   const {
     register: loginRegister,
@@ -67,37 +73,36 @@ export const Login: React.FC = () => {
   async function submitForm() {
     setDisplayError(false);
     if (isValid) {
-      if (freeMemory > 50) {
-        setIsLoading(true);
-        const body: LoginRequestModel = {
-          username: loginFormGetValues().preferId
-            ? loginFormGetValues().idField
-            : loginFormGetValues().passportField,
-          password: loginFormGetValues().password,
-        };
+      setIsLoading(true);
+      const body: LoginRequestModel = {
+        username: loginFormGetValues().preferId
+          ? loginFormGetValues().idField
+          : loginFormGetValues().passportField,
+        password: loginFormGetValues().password,
+      };
 
-        appDispatch(authThunkActions.login(body))
-          .then((isAuthenticated: any) => {
-            if (
-              isAuthenticated &&
-              isAuthenticated?.payload?.response?.status !== 401
-            ) {
-              appDispatch(settingActions.setApplicationVersion(version));
-              appDispatch(authActions.setUserExpired());
-              setIsLoading(false);
-              history.push(ROUTES.DASHBOARD);
-            } else {
-              setDisplayError(true);
-              setIsLoading(false);
-            }
-          })
-          .catch(() => {
+      appDispatch(authThunkActions.login(body))
+        .then((isAuthenticated: any) => {
+          if (
+            isAuthenticated &&
+            isAuthenticated?.payload?.response?.status !== 401
+          ) {
+            appDispatch(settingActions.setApplicationVersion(version));
+            appDispatch(authActions.setUserExpired());
+            setIsLoading(false);
+            history.push(ROUTES.DASHBOARD);
+          } else {
             setDisplayError(true);
             setIsLoading(false);
-          });
-      } else {
-        setErrorMessage(true);
-      }
+          }
+        })
+        .catch((error: unknown) => {
+          setDisplayError(true);
+          setIsLoading(false);
+          console.error(error);
+        });
+    } else {
+      setErrorMessage(true);
     }
   }
 
@@ -112,15 +117,15 @@ export const Login: React.FC = () => {
     setIdFieldVisible(flag);
   }
 
-  useEffect(() => {
-    let isMounted = true;
-    if (isMounted) {
-      getFreeDiskStorage();
-    }
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  // useEffect(() => {
+  //   let isMounted = true;
+  //   if (isMounted) {
+  //     getFreeDiskStorage();
+  //   }
+  //   return () => {
+  //     isMounted = false;
+  //   };
+  // }, []);
 
   return (
     <BannerWrapper
@@ -133,9 +138,9 @@ export const Login: React.FC = () => {
       backgroundUrl={theme?.images.graphicOverlayUrl}
     >
       <form className={styles.loginContainer}>
-        <Dialog fullScreen visible={errorMessage} position={DialogPosition.Top}>
+        {/* <Dialog fullScreen visible={errorMessage} position={DialogPosition.Top}>
           <StorageFull />
-        </Dialog>
+        </Dialog> */}
         {idFieldVisible && (
           <FormInput<LoginModel>
             label={'ID number'}
@@ -212,7 +217,8 @@ export const Login: React.FC = () => {
           />
         </Button>
 
-        <Divider />
+        <Divider dividerType="dashed" />
+
         {displayError && (
           <Alert
             className={'mt-5 mb-3'}
