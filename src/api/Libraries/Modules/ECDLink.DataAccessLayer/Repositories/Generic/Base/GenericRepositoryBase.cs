@@ -30,8 +30,6 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
 
         protected string errorMessage = string.Empty;
 
-        private readonly ICacheService<IGlobalCache> _cacheService;
-
         public GenericRepositoryBase(AuthenticationDbContext context, IDomainEventService domainEventService)
         {
             SetCustomScope(context);

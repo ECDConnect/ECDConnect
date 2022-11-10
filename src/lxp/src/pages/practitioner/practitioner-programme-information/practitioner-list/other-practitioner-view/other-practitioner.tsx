@@ -53,7 +53,7 @@ export const OtherPractitionerProfile: React.FC<
         showBackground={true}
         backgroundUrl={theme?.images.graphicOverlayUrl}
       >
-        <div className={'w-full inline-flex justify-center pt-8'}>
+        <div className={'inline-flex w-full justify-center pt-8'}>
           <ProfileAvatar
             dataUrl={colleagueProfile?.profilePhoto!}
             size={'header'}
@@ -109,7 +109,7 @@ export const OtherPractitionerProfile: React.FC<
               size={'normal'}
               onClick={whatsapp}
             >
-              <div className="flex justify-center items-center">
+              <div className="flex items-center justify-center">
                 <img
                   src={getLogo(LogoSvgs.whatsapp)}
                   alt="whatsapp"
@@ -130,9 +130,9 @@ export const OtherPractitionerProfile: React.FC<
               size={'small'}
               onClick={call}
             >
-              <div className="flex justify-center items-center">
+              <div className="flex items-center justify-center">
                 <PhoneIcon
-                  className="h-6 w-5 text-primary mr-2"
+                  className="text-primary mr-2 h-6 w-5"
                   aria-hidden="true"
                 />
                 <Typography

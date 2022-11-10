@@ -214,6 +214,21 @@ namespace ECDLink.DataAccessLayer.Hierarchy
                     }
                 }
             }
+            //in some cases like a learner, similarly to a child, we need to get the relevant children hierarchy in addition for the generic repository selectionlist
+            if (typeof(T) == typeof(Learner))
+            {
+                var childRepo = _repoFactory.CreateGenericRepository<Learner>(userContext: userId);
+                //use the parent list to determine
+                List<string> learnerHierarchyList = hierarchyList.Copy();
+                foreach (var hierarchy in learnerHierarchyList)
+                {
+                    List<string> learnerHierarchy = childRepo.GetAll().Where(c => c.Hierarchy.StartsWith(hierarchy)).Select(p => p.Hierarchy).ToList();
+                    if (learnerHierarchy.Any())
+                    {
+                        hierarchyList.AddRange(learnerHierarchy);
+                    }
+                }
+            }
             return hierarchyList;
         }
 
