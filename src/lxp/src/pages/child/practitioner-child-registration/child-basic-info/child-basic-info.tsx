@@ -41,6 +41,7 @@ export const ChildBasicInfo: React.FC<
   const classroomsForPractitioner = useSelector(
     classroomsSelectors.getClassroom
   );
+  console.log({ classroomsForPractitioner });
   const isPrincipal = practitioner?.isPrincipal;
   const [
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -184,7 +185,12 @@ export const ChildBasicInfo: React.FC<
       {childAlreadyAdded && (
         <div>
           <Alert
-            title={`There is already a child named Themba Sibiya at Angels Daycare, born on 12 February 2019.`}
+            title={`There is already a child named ${
+              childAlreadyAdded?.user?.fullName
+            } at ${classroomsForPractitioner?.name}, born on ${format(
+              new Date(childAlreadyAdded?.user?.dateOfBirth!),
+              'dd MMM yyyy'
+            )}.`}
             type="warning"
             list={[
               'Please make sure that you are not adding the same child again.',
