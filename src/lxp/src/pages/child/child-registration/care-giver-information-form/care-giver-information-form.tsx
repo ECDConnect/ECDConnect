@@ -76,6 +76,7 @@ export const CareGiverInformationForm: React.FC<
         fullWidth
         fillType="clear"
         label={`Relationship to ${childName || 'child'}?`}
+        selectedValue={getCareGiverInformationFormValues().relationId}
         className={'mt-3'}
         onChange={(item: any) => {
           setCareGiverInformationFormValue('relationId', item, {
