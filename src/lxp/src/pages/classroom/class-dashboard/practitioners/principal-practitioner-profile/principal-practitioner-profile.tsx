@@ -346,6 +346,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                                   ROUTES.PRINCIPAL.PRACTITIONER_CHILD_LIST,
                                   {
                                     practitionerId,
+                                    classroomItem,
                                   }
                                 )
                               }
