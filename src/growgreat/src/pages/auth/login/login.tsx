@@ -117,16 +117,6 @@ export const Login: React.FC = () => {
     setIdFieldVisible(flag);
   }
 
-  // useEffect(() => {
-  //   let isMounted = true;
-  //   if (isMounted) {
-  //     getFreeDiskStorage();
-  //   }
-  //   return () => {
-  //     isMounted = false;
-  //   };
-  // }, []);
-
   return (
     <BannerWrapper
       size="medium"
@@ -138,9 +128,6 @@ export const Login: React.FC = () => {
       backgroundUrl={theme?.images.graphicOverlayUrl}
     >
       <form className={styles.loginContainer}>
-        {/* <Dialog fullScreen visible={errorMessage} position={DialogPosition.Top}>
-          <StorageFull />
-        </Dialog> */}
         {idFieldVisible && (
           <FormInput<LoginModel>
             label={'ID number'}
