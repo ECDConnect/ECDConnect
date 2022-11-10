@@ -30,6 +30,7 @@ class ChildService {
               id
               firstName
               surname
+              fullName
               email
               genderId
               dateOfBirth

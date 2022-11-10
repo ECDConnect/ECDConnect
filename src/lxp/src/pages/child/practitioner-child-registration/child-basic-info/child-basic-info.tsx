@@ -1,8 +1,18 @@
-import { FormComponentProps } from '@ecdlink/core';
-import { Divider, Dropdown, FormInput, Typography, Button } from '@ecdlink/ui';
+import { ChildDto, FormComponentProps, LearnerDto } from '@ecdlink/core';
+import { getAvatarColor } from '@ecdlink/core';
+import {
+  Divider,
+  Dropdown,
+  FormInput,
+  Typography,
+  Button,
+  Alert,
+  UserAlertListDataItem,
+  StackedList,
+} from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import {
   childBasicInfoFormSchema,
@@ -11,6 +21,9 @@ import {
 import { classroomsSelectors } from '@store/classroom';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 import { practitionerSelectors } from '@/store/practitioner';
+import { childrenSelectors } from '@/store/children';
+import { UserDto } from '@/../../../packages/core/src/models/dto/Users/user.dto';
+import { format } from 'date-fns';
 
 export const ChildBasicInfo: React.FC<
   FormComponentProps<ChildBasicInfoModel>
@@ -23,7 +36,8 @@ export const ChildBasicInfo: React.FC<
   const getClassroomForPrincipal = getAllClassroomGroups.filter((item) => {
     return item?.userId === practitioner?.userId || item?.isActive !== true;
   });
-
+  const children = useSelector(childrenSelectors?.getChildren);
+  console.log({ children });
   const classroomsForPractitioner = useSelector(
     classroomsSelectors.getClassroom
   );
@@ -33,29 +47,87 @@ export const ChildBasicInfo: React.FC<
     classroomsForPractitionerAnyType,
     setClassroomsForPractitionerAnyType,
   ] = useState<any>([]);
+  const [childUserListData, setChildUserListData] =
+    useState<UserAlertListDataItem[]>();
+  console.log({ childUserListData });
+  const classroomGroupLearners = useSelector(
+    classroomsSelectors.getClassroomGroupLearners
+  );
 
-  const { getValues, setValue, register, formState } =
-    useForm<ChildBasicInfoModel>({
-      resolver: yupResolver(childBasicInfoFormSchema),
-      mode: 'onBlur',
-      defaultValues: {},
-    });
+  const {
+    getValues,
+    setValue,
+    register,
+    formState,
+    control: childInfoFormControl,
+  } = useForm<ChildBasicInfoModel>({
+    resolver: yupResolver(childBasicInfoFormSchema),
+    mode: 'onBlur',
+    defaultValues: {},
+  });
+
+  const { firstName, surname } = useWatch({
+    control: childInfoFormControl,
+  });
+  const childAlreadyAdded = children?.find(
+    (item) => item?.user?.fullName === firstName! + ' ' + surname!
+  );
+  console.log({ childAlreadyAdded });
+  console.log({ firstName, surname });
 
   useEffect(() => {
-    if (classroomsForPractitioner) {
-      setClassroomsForPractitionerAnyType([classroomsForPractitioner]);
-    }
-  }, [classroomsForPractitioner]);
+    if (childAlreadyAdded) {
+      const childListItem: UserAlertListDataItem[] = [];
 
-  useEffect(() => {
-    if (classrooms && classrooms.length > 0) {
-      const defaultPlaygroup =
-        classrooms.find((c) => c.name === NoPlaygroupClassroomType.name)?.id ||
-        (classrooms[0].id ?? '');
-      setValue('playgroupId', defaultPlaygroup, { shouldValidate: true });
+      const learner = classroomGroupLearners.find(
+        (x) =>
+          x.userId === childAlreadyAdded.userId && x.stoppedAttendance == null
+      );
+      childListItem.push(mapUserListDataItem(childAlreadyAdded, learner));
+
+      setChildUserListData(childListItem);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [classrooms]);
+  }, [childAlreadyAdded]);
+
+  const mapUserListDataItem = (
+    childRecord: ChildDto,
+    childLearner?: LearnerDto
+  ): UserAlertListDataItem => {
+    console.log(childRecord, childLearner);
+    const childUser = childAlreadyAdded as UserDto;
+
+    // const childAlert = getChildAlertModel(
+    //   childLearner,
+    //   pendingStatusId,
+    //   childUser,
+    //   childRecord,
+    //   childDocuments,
+    //   attendanceData,
+    //   getAllClassroomGroups,
+    //   classroomGroupProgrammes,
+    //   reports
+    // );
+
+    return {
+      id: childRecord.id,
+      profileDataUrl: childUser?.profileImageUrl,
+      title: `${childAlreadyAdded?.user?.firstName} ${childAlreadyAdded?.user?.surname}`,
+      subTitle:
+        `Added on ${format(
+          new Date(childAlreadyAdded?.insertedDate!),
+          'LLL d'
+        )}` ?? '',
+      profileText: `${
+        childUser?.firstName && childUser?.firstName[0]?.toUpperCase()
+      }${childUser?.surname && childUser?.surname[0]?.toUpperCase()}`,
+      alertSeverity: 'none',
+      avatarColor: getAvatarColor() || '',
+      // onActionClick: () => {
+      //   onChildListItemAction(childRecord.id as string);
+      // },
+    };
+  };
 
   const onNext = (formValue: ChildBasicInfoModel) => {
     onSubmit(formValue);
@@ -68,7 +140,7 @@ export const ChildBasicInfo: React.FC<
   };
 
   return (
-    <div className="bg-white p-4 flex flex-col h-full w-full">
+    <div className="flex h-full w-full flex-col bg-white p-4">
       <Typography type="h2" color="textDark" text="Child" />
       <Typography type={'h4'} text="Basic details" color={'textMid'} />
 
@@ -108,6 +180,27 @@ export const ChildBasicInfo: React.FC<
           setValue('playgroupId', classroomId, { shouldValidate: true });
         }}
       />
+
+      {childAlreadyAdded && (
+        <div>
+          <Alert
+            title={`There is already a child named Themba Sibiya at Angels Daycare, born on 12 February 2019.`}
+            type="warning"
+            list={[
+              'Please make sure that you are not adding the same child again.',
+            ]}
+            className={'mt-4'}
+          />
+          {childUserListData && (
+            <StackedList
+              className={'mt-4'}
+              listItems={childUserListData!}
+              type={'UserAlertList'}
+              // onScroll={(scrollTop: number) => handleListScroll(scrollTop)}
+            />
+          )}
+        </div>
+      )}
 
       <Divider dividerType="solid" className="my-3" />
       <Button
