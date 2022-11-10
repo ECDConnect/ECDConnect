@@ -6,6 +6,7 @@ export interface ChildListLearner extends LearnerDto {
 
 export interface PractitionerProfileRouteState {
   practitionerId: string;
+  classroomItem: any;
 }
 
 export interface PractitionerDashboardModel {
