@@ -1,51 +1,87 @@
-using ECDLink.Abstractrions.GraphQL.Enums;
-using ECDLink.DataAccessLayer.Context;
-using ECDLink.DataAccessLayer.Entities;
-using ECDLink.DataAccessLayer.Entities.Users;
-using ECDLink.DataAccessLayer.Repositories.Factories;
-using ECDLink.EGraphQL.Authorization;
-using ECDLink.Security;
-using ECDLink.Security.Extensions;
-using HotChocolate;
-using HotChocolate.Types;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Linq;
-using ECDLink.DataAccessLayer.Entities.Classroom;
-using System.Collections.Generic;
-using ECDLink.DataAccessLayer.Hierarchy;
-using Microsoft.Azure.Documents;
+﻿using ECDLink.Abstractrions.Enums;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.Core.SystemSettings.SystemOptions;
-using static ECDLink.Core.SystemSettings.SettingGroups;
-using Microsoft.Extensions.DependencyInjection;
-using EcdLink.Api.CoreApi.Services;
-using System.Drawing;
-using ECDLink.Core.Services;
+using ECDLink.DataAccessLayer.Entities.Classroom;
+using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Entities.Workflow;
+using ECDLink.DataAccessLayer.Hierarchy;
+using ECDLink.DataAccessLayer.Repositories.Factories;
+using ECDLink.DataAccessLayer.Repositories.Generic.Base;
+using ECDLink.DataAccessLayer.Services;
+using HotChocolate;
+using Microsoft.AspNetCore.Http;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Mutations
+namespace ECDLink.Core.Services
 {
-    [ExtendObjectType(OperationTypeNames.Mutation)]
-    public class ReassignmentMutationExtension
+    public class InvitationReassignmentService : IInvitationReassignmentService
     {
-        private readonly IServiceScopeFactory _scopeFactory;
+        private readonly IGenericRepositoryFactory _repositoryFactory;
+        private readonly ISystemSetting<InvitationCutoffDelayOptions> _invitationDelay;
+        private readonly HierarchyEngine _hierarchyEngine;
 
-        public ReassignmentMutationExtension(IServiceScopeFactory scopeFactory)
+        public InvitationReassignmentService(
+            IGenericRepositoryFactory repositoryFactory,
+            HierarchyEngine hierarchyEngine,
+            ISystemSetting<InvitationCutoffDelayOptions> invitationDelay)
         {
-            _scopeFactory = scopeFactory;
+            _repositoryFactory = repositoryFactory;
+            _invitationDelay = invitationDelay;
+            _hierarchyEngine = hierarchyEngine;
         }
 
-        public ReassignmentMutationExtension()
+        public void ReassignAbsentees()
         {
+            var adminId = _hierarchyEngine.GetAdminUserId();
+            int hrsToReassign = int.Parse(_invitationDelay.Value.InvitationCutoffDelay);
+            var dbRepo = _repositoryFactory.CreateGenericRepository<ClassReassignmentHistory>(userContext: adminId);
+            //get all entries that ha snot yet been reassigned back to where they should be
+            var reassignments = dbRepo.GetAll()
+                                        .Where(x => x.ReassignedBackToDate == null)
+                                        .ToList();
+
+            if (reassignments.Count > 0)
+            {
+                foreach (var reassign in reassignments)
+                {
+                    if (reassign.ReassignedToDate <= DateTime.Now.AddHours(-hrsToReassign)) {
+                        ReassignClassroomsFromHistory(adminId,reassign.UserId);
+                    }
+                }
+            }
         }
 
-        #region API Calls 
-        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
-        public bool AddReassignmentForPractitioner([Service] IHttpContextAccessor contextAccessor,
-            [Service] IGenericRepositoryFactory repoFactory,
-            [Service] HierarchyEngine engine,
+        public void ExpireRelationshipLinks()
+        {
+            var adminId = _hierarchyEngine.GetAdminUserId();
+            var practiRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: adminId);
+            var pracsToExpire = practiRepo.GetAll()
+                                        .Where(x => x.IsLeaving == true)
+                                        .Where(x => x.DateToBeRemoved != null)
+                                        .ToList();
+
+            if (pracsToExpire.Count > 0)
+            {
+                foreach (var prac in pracsToExpire)
+                {
+                    prac.DateToBeRemoved = null;
+                    prac.DateAccepted = null;
+                    prac.DateLinked = null;
+                    prac.IsLeaving = false;
+                    //update and clear  the practitioner details
+                    prac.PrincipalHierarchy = null;
+                    prac.ShareInfo = false;
+
+                    practiRepo.Update(prac);
+                }
+            }
+        }
+
+        public bool AddReassignmentForPractitioner(string uId,
             string fromUserId,
             string toUserId,
             string reason,
@@ -55,15 +91,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             bool permanentAssign = false
             )
         {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            var historyRepo = repoFactory.CreateGenericRepository<ClassReassignmentHistory>(userContext: uId);
+            var historyRepo = _repositoryFactory.CreateGenericRepository<ClassReassignmentHistory>(userContext: uId);
 
             try
             {
                 if (fromUserId != null && toUserId != null)
                 {
-                    var toUserHierarchy = engine.GetUserHierarchy((toUserId != null ? toUserId : uId));
-                    var fromUserHierarchy = engine.GetUserHierarchy((fromUserId != null ? fromUserId : uId));
+                    var toUserHierarchy = _hierarchyEngine.GetUserHierarchy((toUserId != null ? toUserId : uId));
+                    var fromUserHierarchy = _hierarchyEngine.GetUserHierarchy((fromUserId != null ? fromUserId : uId));
 
                     //Log to the history table
                     var history = new ClassReassignmentHistory
@@ -84,7 +119,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     if (!string.IsNullOrEmpty(toUserHierarchy) && !string.IsNullOrEmpty(fromUserHierarchy))
                     {
                         //reassign classroomGroups - populate the other objects done insid ethe classroomgroups function
-                        ReassignmentLists reassignment = UpdateClassroomGroups(contextAccessor, repoFactory, fromUserId, toUserId, toUserHierarchy, classroomGroup);
+                        ReassignmentLists reassignment = UpdateClassroomGroups(uId,fromUserId, toUserId, toUserHierarchy, classroomGroup);
 
                         //update the history line with classes, children and classroomgroups also moved
                         if (reassignment.ClassroomGroupsReassigned != null) historySaved.ReassignedClassroomGroups = string.Join(";", reassignment.ClassroomGroupsReassigned);
@@ -106,17 +141,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             }
         }
 
-        private ReassignmentLists UpdateClassroomGroups([Service] IHttpContextAccessor contextAccessor,
-            [Service] IGenericRepositoryFactory repoFactory, string fromUserId,
+        private ReassignmentLists UpdateClassroomGroups(string uId, string fromUserId,
             string toUserId, string toUserHierarchy, string classroomGroup = null)
         {
             ReassignmentLists reassignment = new ReassignmentLists();
             if (toUserHierarchy != null)
             {
-                var uId = contextAccessor.HttpContext.GetUser().Id;
 
-
-                var classroomGroupRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);
+                var classroomGroupRepo = _repositoryFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);
                 if (classroomGroup != null)
                 {
                     var classroomGroupObj = classroomGroupRepo.GetById(Guid.Parse(classroomGroup));
@@ -129,13 +161,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                             var updatedClassroomGroup = classroomGroupRepo.Update(classroomGroupObj);
 
                             //update classroom
-                            reassignment.ClassroomsReassigned = UpdateClassrooms(contextAccessor, repoFactory, fromUserId, toUserId, toUserHierarchy, updatedClassroomGroup.ClassroomId.ToString());
+                            reassignment.ClassroomsReassigned = UpdateClassrooms(uId,fromUserId, toUserId, toUserHierarchy, updatedClassroomGroup.ClassroomId.ToString());
                             //update classProgramme
-                            reassignment.ClassProgrammesReassigned = UpdateClassProgrammes(contextAccessor, repoFactory, classroomGroupObj.Id, toUserHierarchy);
+                            reassignment.ClassProgrammesReassigned = UpdateClassProgrammes(uId, classroomGroupObj.Id, toUserHierarchy);
                             //reassign learners
-                            reassignment.LearnersReassigned = UpdateLearners(contextAccessor, repoFactory, classroomGroupObj.Id, toUserHierarchy);
+                            reassignment.LearnersReassigned = UpdateLearners(uId, classroomGroupObj.Id, toUserHierarchy);
                             //reassign children
-                            reassignment.ChildrenReassignedUserIds = UpdateChildren(contextAccessor, repoFactory, toUserHierarchy, reassignment.LearnersReassigned);
+                            reassignment.ChildrenReassignedUserIds = UpdateChildren(uId,toUserHierarchy, reassignment.LearnersReassigned);
 
                             reassignment.ClassroomGroupsReassigned.Append(updatedClassroomGroup.Id.ToString());
                         }
@@ -154,40 +186,38 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                             var updatedClassroomGroup = classroomGroupRepo.Update(classGroup);
 
                             //update classProgramme
-                            reassignment.ClassProgrammesReassigned = UpdateClassProgrammes(contextAccessor, repoFactory, classGroup.Id, toUserHierarchy);
+                            reassignment.ClassProgrammesReassigned = UpdateClassProgrammes(uId, classGroup.Id, toUserHierarchy);
                             //reassign learners
-                            reassignment.LearnersReassigned = UpdateLearners(contextAccessor, repoFactory, classGroup.Id, toUserHierarchy);
+                            reassignment.LearnersReassigned = UpdateLearners(uId, classGroup.Id, toUserHierarchy);
 
                             //reassign children
-                            reassignment.ChildrenReassignedUserIds = UpdateChildren(contextAccessor, repoFactory, toUserHierarchy, reassignment.LearnersReassigned);
+                            reassignment.ChildrenReassignedUserIds = UpdateChildren(uId, toUserHierarchy, reassignment.LearnersReassigned);
 
                             reassignment.ClassroomGroupsReassigned.Append(updatedClassroomGroup.Id.ToString());
                         }
                     }
                     //update classroom
-                    reassignment.ClassroomsReassigned = UpdateClassrooms(contextAccessor, repoFactory, fromUserId, toUserId, toUserHierarchy, null);
+                    reassignment.ClassroomsReassigned = UpdateClassrooms(uId, fromUserId, toUserId, toUserHierarchy, null);
                 }
             }
             return reassignment;
         }
 
-        private string[] UpdateClassrooms([Service] IHttpContextAccessor contextAccessor,
-            [Service] IGenericRepositoryFactory repoFactory, string fromUserId,
+        private string[] UpdateClassrooms(string uId, string fromUserId,
             string toUserId, string toUserHierarchy, string classroom = null)
         {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
             string[] classroomsReassigned = null;
-            var classroomRepo = repoFactory.CreateRepository<Classroom>(userContext: uId);
+            var classroomRepo = _repositoryFactory.CreateGenericRepository<Classroom>(userContext: uId);
 
             if (classroom != null)
             {
                 // a group has been passed in, so match the userid and the classroomgroup, and update that
 
-                var classroomList = classroomRepo.GetAll().Where(x => x.Id.Equals(classroom)).ToList();
+                var classroomList = classroomRepo.GetAll().Where(x => x.Id.Equals(classroom));
                 if (classroomList != null)
                 {
                     //filter to only where user id matches
-                    classroomList = classroomList.Where(x => x.UserId.Equals(fromUserId)).ToList();
+                    classroomList = classroomList.Where(x => x.UserId.Equals(fromUserId));
                     if (classroomList != null)
                     {
                         foreach (var classes in classroomList)
@@ -220,13 +250,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return classroomsReassigned;
         }
 
-        private string[] UpdateClassProgrammes([Service] IHttpContextAccessor contextAccessor,
-[Service] IGenericRepositoryFactory repoFactory, Guid classroomGroupId, string newHierarchy)
+        private string[] UpdateClassProgrammes(string uId, Guid classroomGroupId, string newHierarchy)
         {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
             string[] classroomsProgrammesReassigned = null;
 
-            var classProgrammeRepo = repoFactory.CreateGenericRepository<ClassProgramme>(userContext: uId);
+            var classProgrammeRepo = _repositoryFactory.CreateGenericRepository<ClassProgramme>(userContext: uId);
             ClassProgramme classProgramme = (ClassProgramme)classProgrammeRepo.GetAll().Where(x => x.ClassroomGroupId.Equals(classroomGroupId)).FirstOrDefault();
             if (classProgramme != null && !string.IsNullOrWhiteSpace(newHierarchy))
             {
@@ -238,13 +266,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return classroomsProgrammesReassigned;
         }
 
-        private string[] UpdateLearners([Service] IHttpContextAccessor contextAccessor,
-[Service] IGenericRepositoryFactory repoFactory, Guid classroomGroupId, string newHierarchy)
+        private string[] UpdateLearners(string uId, Guid classroomGroupId, string newHierarchy)
         {
-            string[] learnersReassigned = null;
-            var uId = contextAccessor.HttpContext.GetUser().Id;
+            string[] learnersReassigned = null;;
 
-            var learnerRepo = repoFactory.CreateGenericRepository<Learner>(userContext: uId);
+            var learnerRepo = _repositoryFactory.CreateGenericRepository<Learner>(userContext: uId);
             List<Learner> learners = learnerRepo.GetAll().Where(x => x.ClassroomGroupId.Equals(classroomGroupId)).ToList();
             if (learners != null && !string.IsNullOrWhiteSpace(newHierarchy))
             {
@@ -259,13 +285,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return learnersReassigned;
         }
 
-        private string[] UpdateChildren([Service] IHttpContextAccessor contextAccessor,
-[Service] IGenericRepositoryFactory repoFactory, string newHierarchy, string[] learnerIds)
+        private string[] UpdateChildren(string uId, string newHierarchy, string[] learnerIds)
         {
             string[] childrenReassigned = null;
-            var uId = contextAccessor.HttpContext.GetUser().Id;
 
-            var childRepo = repoFactory.CreateGenericRepository<Child>(userContext: uId);
+            var childRepo = _repositoryFactory.CreateGenericRepository<Child>(userContext: uId);
             //List<Child> learners = childRepo.GetAll().Where(x => x.UserId.Equals(classroomGroupId)).ToList();
             if (learnerIds != null && !string.IsNullOrWhiteSpace(newHierarchy))
             {
@@ -285,17 +309,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         }
 
 
-        public bool ReassignClassroomsFromHistory([Service] IHttpContextAccessor contextAccessor,
-            [Service] IGenericRepositoryFactory repoFactory,
-            string userId)
+        public bool ReassignClassroomsFromHistory(string uId, string userId)
         {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            var historyRepo = repoFactory.CreateRepository<ClassReassignmentHistory>(userContext: uId);
+            var historyRepo = _repositoryFactory.CreateGenericRepository<ClassReassignmentHistory>(userContext: uId);
             bool reAssigned = false;
             List<ClassReassignmentHistory> history = historyRepo.GetListByUserId(userId);
             if (history != null)
             {
-                //int hrsToReassign = int.Parse(_invitationDelay.Value.InvitationCutoffDelay);
+                int hrsToReassign = int.Parse(_invitationDelay.Value.InvitationCutoffDelay);
                 //filter history only on items that ha snot yet been reverted
                 history = history.Where(x => x.ReassignedBackToDate == null).ToList();
                 foreach (var historyItem in history)
@@ -312,7 +333,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                                 foreach (string reassignedGroup in reassignedClassroomGroups)
                                 {
                                     //Log to the history table the reassignment back to original user as a new row for continuation                                    
-                                    ReassignmentLists newReassignment = UpdateClassroomGroups(contextAccessor, repoFactory, historyItem.ReassignedToUser, historyItem.ReassignedBackToUserId, historyItem.HierarchyBackToUser, reassignedGroup);
+                                    ReassignmentLists newReassignment = UpdateClassroomGroups(historyItem.ReassignedToUser, historyItem.ReassignedBackToUserId, historyItem.HierarchyBackToUser, reassignedGroup);
 
                                     //Log to the history table for the inverse of the presvious historyitem to indicate reassignment to how it was before
                                     var newReassignmentHistory = new ClassReassignmentHistory
@@ -351,43 +372,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return reAssigned;
         }
 
-        #endregion
 
-        #region Service Calls       
-
-        public bool AddReassignmentForPractitionerService(
-        [Service] IHttpContextAccessor contextAccessor,
-        [Service] InvitationReassignmentService reassignmentService,
-        string fromUserId,
-        string toUserId,
-        string reason,
-        DateTime startDate,
-        string loggedByUser,
-        string classroomGroup = null,
-        bool permanentAssign = false
-        )
-        {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            return reassignmentService.AddReassignmentForPractitioner(uId, fromUserId, toUserId, reason, startDate, loggedByUser, classroomGroup, permanentAssign);
-        }
-
-
-        public bool ReassignClassroomsFromHistoryService([Service] IHttpContextAccessor contextAccessor,
-            [Service] IInvitationReassignmentService reassignmentService,
-            string userId)
-        {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            return reassignmentService.ReassignClassroomsFromHistory(uId, userId);
-        }
-        public bool ExpireRelationshipLinksService([Service] IHttpContextAccessor contextAccessor,
-    [Service] IInvitationReassignmentService reassignmentService)
-        {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            reassignmentService.ExpireRelationshipLinks();
-            return true;
-        }
-
-
-        #endregion
     }
 }

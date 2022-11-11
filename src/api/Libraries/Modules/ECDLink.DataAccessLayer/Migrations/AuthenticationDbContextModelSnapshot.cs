@@ -80,6 +80,15 @@ namespace ECDLink.DataAccessLayer.Migrations
                     b.Property<string>("NickSurname")
                         .HasColumnType("text");
 
+                    b.Property<string>("EmergencyContactFirstName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("EmergencyContactSurname")
+                        .HasColumnType("text");
+
+                    b.Property<string>("EmergencyContactPhoneNumber")
+                        .HasColumnType("text");
+
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
