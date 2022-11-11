@@ -31,6 +31,7 @@ using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using ECDLink.DataAccessLayer.Hierarchy.Entities;
 using Microsoft.Azure.Documents;
 using ECDLink.DataAccessLayer.Hierarchy;
+using System.Drawing;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
@@ -51,6 +52,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             ClassroomGroup classRoom = (ClassroomGroup)classRepo.GetAll().Where(x => x.Id.Equals(classroomId));
             if (classRoom != null)
             {
+
+                ReassignmentMutationExtension reassignment = new ReassignmentMutationExtension();
+                reassignment.AddReassignmentForPractitioner(contextAccessor, repoFactory, engine, uId, userId, "Principal Linked Practitioner", DateTime.Now, uId, classRoom.Id.ToString(), true);
+
+                /*
+
                 //get the users hierarchy to reuse
                 var hierarchy = engine.GetUserHierarchy((userId != null ? userId : uId));
 
@@ -66,11 +73,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         newReassignment.LoggedBy = uId;
                         newReassignment.IsActive = true;
                         newReassignment.Reason = "Principal Linked Practitioner";
-                        newReassignment.ReassignedClass = classroomId;
-                        newReassignment.ReassignedDate = DateTime.Now;
+                        newReassignment.ReassignedClassroomGroups = classroomId+";";
+                        newReassignment.ReassignedToDate = DateTime.Now;
                         newReassignment.ReassignedToUser = userId;
                         newReassignment.UserId = userId;
-                        newReassignment.ReassignedBackToUserId = classRoom.UserId.ToString();
+                        newReassignment.ReassignedBackToUserId = null;
                     }
                 }
                 classRoom.UserId = Guid.Parse(userId);
@@ -82,7 +89,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
                 //also update the userhierarchy on classroomgroup, as well as classProgramme so that a practitioner can see this
                 this.UpdateClassProgrammeForPractitioner(contextAccessor, dbFactory, repoFactory, Guid.Parse(classroomId), hierarchy);
-
+                */
                 return classRoom;
             }
 
@@ -136,11 +143,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         newReassignment.LoggedBy = uId;
                         newReassignment.IsActive = true;
                         newReassignment.Reason = "Principal Linked Practitioner";
-                        newReassignment.ReassignedClass = id.ToString();
-                        newReassignment.ReassignedDate = DateTime.Now;
+                        newReassignment.ReassignedClassroomGroups = id.ToString()+";";
+                        newReassignment.ReassignedToDate = DateTime.Now;
                         newReassignment.ReassignedToUser = input.UserId.ToString();
                         newReassignment.UserId = input.UserId.ToString();
-                        newReassignment.ReassignedBackToUserId = classRoom.UserId.ToString();
+                        newReassignment.ReassignedBackToUserId = uId;//classRoom.UserId.ToString();
+                        newReassignment.ReassignedBackToDate = DateTime.Now;
                     }                    
                 }
                 classRoom.UserId = input.UserId;
