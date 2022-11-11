@@ -41,7 +41,7 @@ export const CoachProgrammeInformation: React.FC = () => {
     useState<any>();
   const userAuth = useSelector(authSelectors.getAuthUser);
   const [otherColleagues, setOtherColleagues] = useState<any[]>([]);
-  console.log({ practitioners });
+
   const weekday = [
     'Sunday',
     'Monday',
@@ -185,15 +185,13 @@ export const CoachProgrammeInformation: React.FC = () => {
     setOtherColleagues(practitionerColleagues);
     return practitionerColleagues;
   };
-  console.log({ otherColleagues });
+
   useEffect(() => {
     if (practitioner) {
       getPractitionerColleagues();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  console.log({ practitionerClassroomDetails });
 
   return (
     <div className={styles.contentWrapper}>
@@ -284,7 +282,7 @@ export const CoachProgrammeInformation: React.FC = () => {
         </Button>
       </div>
       <>
-        {practitionerClassroom?.name && (
+        {practitionerClassroomDetails?.length > 0 && (
           <>
             <div className={styles.infoWrapper}>
               <div>
@@ -295,7 +293,7 @@ export const CoachProgrammeInformation: React.FC = () => {
                   className={'mt-4'}
                 />
                 <Typography
-                  text={practitionerClassroom?.name || ''}
+                  text={practitionerClassroomDetails[0].classroom?.name || ''}
                   type="h4"
                   color="textDark"
                   className={'mt-1'}
@@ -327,7 +325,7 @@ export const CoachProgrammeInformation: React.FC = () => {
             const meetingDays = getClassroomGroupSchoolDays(
               item?.classProgrammes
             );
-            console.log({ meetingDays });
+
             const weekMeetingDays = meetingDays
               .sort()
               .map((item) => weekday[item]);
