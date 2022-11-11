@@ -14,11 +14,11 @@ namespace ECDLink.DataAccessLayer.Entities
     [EntityPermission(PermissionGroups.CLASSROOM)]
     public class ReassignmentLists
     {
-        public string[] ClassroomGroupsReassigned { get; set; }
-        public string[] ClassProgrammesReassigned { get; set; }
-        public string[] ClassroomsReassigned { get; set; }
-        public string[] ChildrenReassignedUserIds { get; set; }
-        public string[] LearnersReassigned { get; set; }
+        public List<string> ClassroomGroupsReassigned { get; set; }
+        public List<string> ClassProgrammesReassigned { get; set; }
+        public List<string> ClassroomsReassigned { get; set; }
+        public List<string> ChildrenReassignedUserIds { get; set; }
+        public List<string> LearnersReassigned { get; set; }
 
     }
 }
