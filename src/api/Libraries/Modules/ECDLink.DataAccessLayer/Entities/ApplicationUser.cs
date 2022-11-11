@@ -44,6 +44,9 @@ namespace ECDLink.DataAccessLayer.Entities
         public string NickFirstName { get; set; }
         public string NickSurname { get; set; }
         public string NickFullName { get; set; }
+        public string EmergencyContactPhoneNumber { get; set; }
+        public string EmergencyContactFirstName { get; set; }
+        public string EmergencyContactSurname { get; set; }
 
         public virtual Franchisor franchisorObjectData { get; set; }
         public virtual Coach coachObjectData { get; set; }
