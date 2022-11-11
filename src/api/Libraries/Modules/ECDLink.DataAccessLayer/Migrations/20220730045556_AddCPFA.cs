@@ -90,6 +90,22 @@ namespace ECDLink.DataAccessLayer.Migrations
                 nullable: true);
 
             migrationBuilder.AddColumn<string>(
+                name: "EmergencyContactFirstName",
+                table: "AspNetUsers",
+                type: "text",
+                nullable: true);
+                        migrationBuilder.AddColumn<string>(
+                name: "EmergencyContactSurname",
+                table: "AspNetUsers",
+                type: "text",
+                nullable: true);
+                        migrationBuilder.AddColumn<string>(
+                name: "EmergencyContactPhoneNumber",
+                table: "AspNetUsers",
+                type: "text",
+                nullable: true);
+
+            migrationBuilder.AddColumn<string>(
                 name: "SigningSignature",
                 table: "Practitioner",
                 type: "text",
@@ -358,6 +374,18 @@ namespace ECDLink.DataAccessLayer.Migrations
 
             migrationBuilder.DropColumn(
                 name: "NickSurname",
+                table: "AspNetUsers");
+
+            migrationBuilder.DropColumn(
+                name: "EmergencyContactFirstName",
+                table: "AspNetUsers");
+
+            migrationBuilder.DropColumn(
+                name: "EmergencyContactSurname",
+                table: "AspNetUsers");
+
+            migrationBuilder.DropColumn(
+                name: "EmergencyContactPhoneNumber",
                 table: "AspNetUsers");
 
             migrationBuilder.RenameColumn(

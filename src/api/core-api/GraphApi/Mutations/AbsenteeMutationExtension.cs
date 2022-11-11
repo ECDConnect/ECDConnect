@@ -24,8 +24,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         public Absentees AddAbsenteeForPractitioner([Service] IHttpContextAccessor contextAccessor,
             [Service] IGenericRepositoryFactory repoFactory,
             [Service] HierarchyEngine engine,
-            string fromUserId,
-            string toUserId,
+            string practitionerId,
+            string reassignedToPractitioner,
             string reason,
             DateTime absentDate,
             string loggedByUser,
@@ -39,19 +39,19 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 reason = (string.IsNullOrEmpty(reason)?"Practitioner Marked Absent":reason);
                 var absent = new Absentees
                 {
-                    UserId = fromUserId,
+                    UserId = practitionerId,
                     Reason = reason,
                     AbsentDate = absentDate,
                     LoggedBy = loggedByUser,
                     ReassignedClass = classProgram,
-                    ReassignedToPractitioner = toUserId,
+                    ReassignedToPractitioner = reassignedToPractitioner,
                     
                 };
                 updated = absenteeRepo.Insert(absent);
 
                 //Log to the history table for reassignment back to owner user
                 ReassignmentMutationExtension reassignment = new ReassignmentMutationExtension();
-                reassignment.AddReassignmentForPractitioner(contextAccessor, repoFactory, engine, fromUserId, toUserId, reason, absentDate, loggedByUser, classProgram, false);
+                reassignment.AddReassignmentForPractitioner(contextAccessor, repoFactory, engine, practitionerId, reassignedToPractitioner, reason, absentDate, loggedByUser, classProgram, false);
             }
 
             //Save the history so it can be reassigned
