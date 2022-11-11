@@ -205,11 +205,15 @@ export const PractitionerAbout: React.FC = () => {
       },
       {
         title: 'Next of kin',
-        subTitle: 'Add next of kin',
+        subTitle: currentUser?.emergencyContactFirstName || 'Add next of kin',
         switchTextStyles: true,
-        actionName: currentUser?.email ? 'Edit' : 'Add',
-        actionIcon: currentUser?.email ? 'PencilIcon' : 'PlusIcon',
-        buttonType: currentUser?.email ? 'outlined' : 'filled',
+        actionName: currentUser?.emergencyContactFirstName ? 'Edit' : 'Add',
+        actionIcon: currentUser?.emergencyContactFirstName
+          ? 'PencilIcon'
+          : 'PlusIcon',
+        buttonType: currentUser?.emergencyContactFirstName
+          ? 'outlined'
+          : 'filled',
         onActionClick: () => {
           setAddNextToKin(true);
         },

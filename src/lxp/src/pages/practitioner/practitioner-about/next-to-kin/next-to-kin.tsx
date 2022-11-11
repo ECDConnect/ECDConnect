@@ -31,12 +31,11 @@ export const NextToKin: React.FC<EditCellPhoneNUmberProps> = ({
   const getDefaultFormvalues = () => {
     if (user) {
       const tempPractitioner: EditCellphoneModel = {
-        name: user.firstName || '',
-        surname: user.surname || '',
-        cellphone: user.phoneNumber || '',
-        email: user?.email! || '',
-        whatsapp: user?.whatsappNumber || '',
+        name: user.emergencyContactFirstName || '',
+        surname: user.emergencyContactSurname || '',
+        cellphone: user.emergencyContactPhoneNumber || '',
       };
+
       return tempPractitioner;
     } else {
       return initialEditPractitionerValues;
@@ -46,7 +45,7 @@ export const NextToKin: React.FC<EditCellPhoneNUmberProps> = ({
   const {
     getValues: getNextOfKinInfoFormValues,
     register: nextOfKinInfoFormRegister,
-    control: practitionerInfoFormControl,
+    control: nextOfKinInfoFormControl,
   } = useForm({
     resolver: yupResolver(editCelphoneNumberSchema),
     defaultValues: getDefaultFormvalues(),
@@ -54,23 +53,19 @@ export const NextToKin: React.FC<EditCellPhoneNUmberProps> = ({
     reValidateMode: 'onChange',
   });
   const { whatsapp } = useWatch({
-    control: practitionerInfoFormControl,
+    control: nextOfKinInfoFormControl,
   });
 
   const savePractitionerUserData = () => {
     const practitionerForm = getNextOfKinInfoFormValues();
     const copy = Object.assign({}, user);
     if (copy) {
-      copy.firstName = practitionerForm.name;
-      copy.surname = practitionerForm.surname;
-      copy.phoneNumber = practitionerForm.cellphone;
-      copy.email = practitionerForm.email;
-      if (whatsapp) {
-        copy.whatsappNumber = practitionerForm?.whatsapp;
-      }
-      console.log({ copy });
-      //   appDispatch(userActions.updateUser(copy));
-      //   appDispatch(userThunkActions.updateUser(copy));
+      copy.emergencyContactFirstName = practitionerForm.name;
+      copy.emergencyContactSurname = practitionerForm.surname;
+      copy.emergencyContactPhoneNumber = practitionerForm.cellphone;
+
+      appDispatch(userActions.updateUser(copy));
+      appDispatch(userThunkActions.updateUser(copy));
     }
   };
 
@@ -107,7 +102,7 @@ export const NextToKin: React.FC<EditCellPhoneNUmberProps> = ({
               <FormInput<EditCellphoneModel>
                 label={'First name'}
                 visible={true}
-                nameProp={'cellphone'}
+                nameProp={'name'}
                 placeholder="First name"
                 className="w-full"
                 register={nextOfKinInfoFormRegister}
@@ -115,7 +110,7 @@ export const NextToKin: React.FC<EditCellPhoneNUmberProps> = ({
               <FormInput<EditCellphoneModel>
                 label={'Surname'}
                 visible={true}
-                nameProp={'cellphone'}
+                nameProp={'surname'}
                 placeholder="Surname/family name"
                 className="w-full"
                 register={nextOfKinInfoFormRegister}

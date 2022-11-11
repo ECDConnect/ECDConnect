@@ -187,6 +187,9 @@ class PractitionerService {
             dateToBeRemoved
             isLeaving
             user {
+              emergencyContactFirstName
+              emergencyContactSurname
+              emergencyContactPhoneNumber
               idNumber
               fullName
               firstName

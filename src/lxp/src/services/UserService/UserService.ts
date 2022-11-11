@@ -29,6 +29,9 @@ class UserService {
             firstName
             surname
             fullName
+            emergencyContactFirstName
+            emergencyContactSurname
+            emergencyContactPhoneNumber
             contactPreference
             genderId
             phoneNumber
