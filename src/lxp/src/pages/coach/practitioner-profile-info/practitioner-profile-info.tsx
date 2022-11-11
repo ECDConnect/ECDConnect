@@ -42,7 +42,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
   const isPrincipal = practitioner?.isPrincipal === true;
   const [practitionerClassroomDetails, setPractitionerClassroomDetails] =
     useState<any>();
-  console.log({ practitionerClassroomDetails });
+
   const { theme } = useTheme();
 
   const [createPractitionerNoteVisible, setCreatePractitionerdNoteVisible] =
