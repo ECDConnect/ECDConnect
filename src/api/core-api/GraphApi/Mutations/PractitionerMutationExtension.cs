@@ -1222,5 +1222,21 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return 0;
         }
 
+        public bool UpdatePractitionerEmergencyContact([Service] IHttpContextAccessor contextAccessor,
+    [Service] IGenericRepositoryFactory repoFactory,
+    [Service] UserManager<ApplicationUser> userManager,
+    string userId, string firstname, string surname, string contactno)
+
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var user = userManager.FindByIdAsync(userId).Result;
+            user.EmergencyContactFirstName = firstname;
+            user.EmergencyContactSurname = surname;
+            user.EmergencyContactPhoneNumber = contactno;
+
+            var userUpdateResult = userManager.UpdateAsync(user).Result;
+            return userUpdateResult.Succeeded;
+        }
+
     }
 }
