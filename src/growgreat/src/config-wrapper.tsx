@@ -1,17 +1,19 @@
-import { Config, DialogServiceProvider } from '@ecdlink/core';
-import { ThemeProvider, useConfig } from '@ecdlink/core';
-import { useEffect, useState } from 'react';
 import { Provider } from 'react-redux';
+import { useLayoutEffect, useState } from 'react';
 import { PersistGate } from 'redux-persist/integration/react';
-import App from './App';
-import Loader from './components/loader/loader';
-import { persistor, store } from './store';
 
-const ConfigWrapper: React.FC = () => {
+import { ThemeProvider, useConfig } from '@ecdlink/core';
+import { Config, DialogServiceProvider } from '@ecdlink/core';
+
+import App from '@/App';
+import { persistor, store } from '@/store';
+import Loader from '@/components/loader/loader';
+
+function ConfigWrapper() {
   const { loading } = useConfig();
   const [loader, setLoader] = useState(true);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     // minimum loading effect
     const loadingTimer = setTimeout(() => {
       if (!loading) {
@@ -22,7 +24,7 @@ const ConfigWrapper: React.FC = () => {
     return () => clearTimeout(loadingTimer);
   }, [loading]);
 
-  if (loader) {
+  if (loader && !loading) {
     return <Loader />;
   }
 
@@ -37,6 +39,6 @@ const ConfigWrapper: React.FC = () => {
       </PersistGate>
     </Provider>
   );
-};
+}
 
 export default ConfigWrapper;
