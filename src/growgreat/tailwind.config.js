@@ -1,7 +1,7 @@
 const plugin = require('tailwindcss/plugin');
 
 module.exports = {
-  purge: ['./src/**/*.{js,jsx,ts,tsx}', './public/index.html'],
+  // purge: ['./src/**/*.{js,jsx,ts,tsx}', './public/index.html'],
   important: true,
   mode: 'aot',
   darkMode: false, // or 'media' or 'class'
@@ -11,7 +11,7 @@ module.exports = {
         headercard: '328px',
       },
       height: {
-        bannerimage: '300px',
+        bannerimage: '200px',
       },
       borderRadius: {
         10: '0.625rem',

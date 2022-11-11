@@ -1,68 +1,80 @@
 // import { getYear, getMonth, getWeek } from 'date-fns';
-import React, { useEffect, useState } from 'react';
+import { ReactNode, useEffect, useState, createContext } from 'react';
 import Loader from '@/components/loader/loader';
-import { useOnlineStatus } from './hooks/useOnlineStatus';
-import { useAppDispatch } from './store';
-import { authActions } from './store/auth';
-import { caregiverActions, caregiverThunkActions } from './store/caregiver';
-import { motherActions, motherThunkActions } from './store/mother';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { useAppDispatch } from '@/store';
+import { authActions } from '@/store/auth';
+import { caregiverActions, caregiverThunkActions } from '@/store/caregiver';
+import { motherActions, motherThunkActions } from '@/store/mother';
 import {
   contentConsentActions,
   contentConsentThunkActions,
-} from './store/content/consent';
-import { documentActions, documentThunkActions } from './store/document';
-import { notesActions, notesThunkActions } from './store/notes';
-import { notificationActions } from './store/notifications';
-import { settingActions, settingThunkActions } from './store/settings';
-import { staticDataActions, staticDataThunkActions } from './store/static-data';
-import { userActions, userThunkActions } from './store/user';
-import { analyticsActions } from './store/analytics';
-import { infantThunkActions } from './store/infant';
+} from '@/store/content/consent';
+import { documentActions, documentThunkActions } from '@/store/document';
+import { notesActions, notesThunkActions } from '@/store/notes';
+import { notificationActions } from '@/store/notifications';
+import { settingActions, settingThunkActions } from '@/store/settings';
+import { staticDataActions, staticDataThunkActions } from '@/store/static-data';
+import { userActions, userThunkActions } from '@/store/user';
+import { analyticsActions } from '@/store/analytics';
+import { infantThunkActions } from '@/store/infant';
 
 type IntialStoreSetupContextValues = {
   initloading: boolean;
-  initStoreSetup: () => Promise<void>;
-  resetAppStore: (showLoading?: boolean) => Promise<void>;
   resetAuth: () => Promise<void>;
   getLoadingMessage: () => string;
   syncClassroom: () => Promise<void>;
+  initStoreSetup: () => Promise<void>;
+  resetAppStore: (showLoading?: boolean) => Promise<void>;
+};
+
+type Props = {
+  children?: ReactNode | undefined;
 };
 
 export const IntialStoreSetupContext =
-  React.createContext<IntialStoreSetupContextValues>(
+  createContext<IntialStoreSetupContextValues>(
     {} as IntialStoreSetupContextValues
   );
 
-const InitialStoreSetup: React.FC = ({ children }) => {
+function InitialStoreSetup(props: Props) {
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
   const [initloading, setInitLoading] = useState(false);
   const [staticDataLoading, setStaticDataLoading] = useState(false);
-
   const [otherLoading, setOtherLoading] = useState(false);
 
-  const resetAuth = async () => {
-    await appDispatch(authActions.resetAuthState());
+  const values = {
+    initloading,
+    resetAuth,
+    resetAppStore,
+    syncClassroom,
+    initStoreSetup,
+    getLoadingMessage,
   };
 
-  const resetAppStore = async (showLoading = true) => {
+  async function resetAuth() {
+    await appDispatch(authActions.resetAuthState());
+  }
+
+  async function resetAppStore(showLoading = true) {
     if (showLoading) {
       setInitLoading(true);
     }
+
     await resetStaticStoreSetup();
     await resetAdditionalStoreSetup();
-    if (showLoading) {
-      setInitLoading(false);
-    }
-  };
 
-  const resetStaticStoreSetup = async () => {
+    setInitLoading(false);
+  }
+
+  async function resetStaticStoreSetup() {
     await appDispatch(staticDataActions.resetStaticDataState());
     await appDispatch(contentConsentActions.resetContentConsentState());
     await appDispatch(notificationActions.resetNotificationState());
     await appDispatch(settingActions.resetSettingsState());
     await appDispatch(analyticsActions.resetAnalyticsState());
-  };
+  }
 
   const resetAdditionalStoreSetup = async () => {
     await appDispatch(notesActions.resetNotesState());
@@ -72,17 +84,19 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     await appDispatch(motherActions.resetMotherState());
   };
 
-  const initStoreSetup = async () => {
+  async function initStoreSetup() {
     if (isOnline) {
       setInitLoading(true);
+
       await initStaticStoreSetup();
       await initAdditionalStoreSetup();
       await appDispatch(settingActions.setLastDataSync());
+
       setInitLoading(false);
     }
-  };
+  }
 
-  const initAdditionalStoreSetup = async () => {
+  async function initAdditionalStoreSetup() {
     // SPECIFIC DATA
     setOtherLoading(true);
     await appDispatch(notesThunkActions.getNotes({})).unwrap();
@@ -92,11 +106,10 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     await appDispatch(userThunkActions.getUserConsents({})).unwrap();
     await appDispatch(caregiverThunkActions.getCaregivers({})).unwrap();
     await appDispatch(documentThunkActions.getDocuments({})).unwrap();
-
     setOtherLoading(false);
-  };
+  }
 
-  const initStaticStoreSetup = async () => {
+  async function initStaticStoreSetup() {
     const today = new Date();
     setStaticDataLoading(true);
     await appDispatch(
@@ -116,13 +129,12 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     await appDispatch(staticDataThunkActions.getDocumentTypes({})).unwrap();
     await appDispatch(staticDataThunkActions.getNoteTypes({})).unwrap();
     await appDispatch(staticDataThunkActions.getWorkflowStatuses({})).unwrap();
-
     setStaticDataLoading(false);
-  };
+  }
 
-  const syncClassroom = async () => {};
+  async function syncClassroom() {}
 
-  const getLoadingMessage = () => {
+  function getLoadingMessage() {
     let message = 'Loading . . .';
 
     if (staticDataLoading) {
@@ -134,31 +146,28 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     }
 
     return message;
-  };
+  }
 
-  const values = {
-    initloading,
-    initStoreSetup,
-    resetAppStore,
-    resetAuth,
-    getLoadingMessage,
-    syncClassroom,
-  };
+  async function init() {
+    try {
+      return await initStoreSetup();
+    } catch (error: unknown) {
+      console.error(error);
+    }
+  }
 
   useEffect(() => {
-    async function init() {
-      await initStoreSetup();
-    }
-    init().catch(console.error);
+    init();
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <IntialStoreSetupContext.Provider value={values}>
-      {!initloading && children}
       {initloading && <Loader loadingMessage={getLoadingMessage()} />}
+      {!initloading && props.children}
     </IntialStoreSetupContext.Provider>
   );
-};
+}
 
 export default InitialStoreSetup;
