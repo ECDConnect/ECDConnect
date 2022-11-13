@@ -186,7 +186,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 LanguageId = child.LanguageId,
                 OtherHealthConditions = child.OtherHealthConditions,
                 WorkflowStatusId = child.WorkflowStatusId,
-                CaregiverId = caregiver.Id
+                CaregiverId = caregiver.Id,
+                InsertedBy = tokenModel.AddedByUserId
             };
 
             var updated = repoFactory.Update(childEntity);
@@ -221,7 +222,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var child = new Child
             {
                 UserId = appUser.Id,
-                WorkflowStatusId = workflowStatus.Id
+                WorkflowStatusId = workflowStatus.Id,
+                InsertedBy = httpContext.HttpContext.GetUser().Id
             };
 
             child.TenantId = tenantId;
