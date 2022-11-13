@@ -28,7 +28,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public string ReassignedToUser { get; set; }
         public DateTime ReassignedToDate { get; set; }
         public string ReassignedBackToUserId { get; set; }
-        public DateTime ReassignedBackToDate { get; set; }
+        public DateTime? ReassignedBackToDate { get; set; }
         
         public string HierarchyToUser { get; set; }
         public string HierarchyBackToUser { get; set; }

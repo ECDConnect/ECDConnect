@@ -44,6 +44,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
                [Service] HierarchyEngine engine,
+               [Service] IInvitationReassignmentService reassignmentService,
             string classroomId,
             string userId)
         {
@@ -54,42 +55,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             {
 
                 ReassignmentMutationExtension reassignment = new ReassignmentMutationExtension();
-                reassignment.AddReassignmentForPractitioner(contextAccessor, repoFactory, engine, uId, userId, "Principal Linked Practitioner", DateTime.Now, uId, classRoom.Id.ToString(), true);
+                //reassignment.AddReassignmentForPractitioner(contextAccessor, repoFactory, engine, uId, , "Principal Linked Practitioner", DateTime.Now, uId, classRoom.Id.ToString(), true);
+                reassignmentService.AddReassignmentForPractitioner(uId, uId, userId, "Principal Linked Practitioner", DateTime.Now, uId, classroomId, true);
 
-                /*
-
-                //get the users hierarchy to reuse
-                var hierarchy = engine.GetUserHierarchy((userId != null ? userId : uId));
-
-                ClassReassignmentHistory newReassignment = new ClassReassignmentHistory();
-                if (userId != null)
-                {
-                    //update classrooms hierarchy and send through to next function
-                    if (hierarchy != null)
-                    {
-                        classRoom.Hierarchy = hierarchy;
-
-                        var reassignmentRepo = repoFactory.CreateGenericRepository<ClassReassignmentHistory>(userContext: uId);
-                        newReassignment.LoggedBy = uId;
-                        newReassignment.IsActive = true;
-                        newReassignment.Reason = "Principal Linked Practitioner";
-                        newReassignment.ReassignedClassroomGroups = classroomId+";";
-                        newReassignment.ReassignedToDate = DateTime.Now;
-                        newReassignment.ReassignedToUser = userId;
-                        newReassignment.UserId = userId;
-                        newReassignment.ReassignedBackToUserId = null;
-                    }
-                }
-                classRoom.UserId = Guid.Parse(userId);
-                classRoom.ClassroomId = Guid.Parse(classroomId);
-                classRoom.Name = classRoom.Name;
-                classRoom.IsActive = true;
-                classRoom.ProgrammeTypeId = classRoom.ProgrammeTypeId;
-                var updateResult = classRepo.Update(classRoom);
-
-                //also update the userhierarchy on classroomgroup, as well as classProgramme so that a practitioner can see this
-                this.UpdateClassProgrammeForPractitioner(contextAccessor, dbFactory, repoFactory, Guid.Parse(classroomId), hierarchy);
-                */
                 return classRoom;
             }
 
