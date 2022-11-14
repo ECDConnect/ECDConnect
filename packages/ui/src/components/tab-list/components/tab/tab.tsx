@@ -45,7 +45,7 @@ export function Tab({
         }
         text={title}
         className="font-medium"
-      ></Typography>
+      />
     </div>
   );
 }

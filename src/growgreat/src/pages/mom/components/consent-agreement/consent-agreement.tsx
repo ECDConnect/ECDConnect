@@ -1,0 +1,130 @@
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { ContentConsentTypeEnum } from '@ecdlink/core';
+import { Button, Divider, Typography, Alert } from '@ecdlink/ui';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { EditConsentAgreementProps } from '@/pages/mom/components/consent-agreement/consent-agreement.types';
+import {
+  pregnantConsentModelSchema,
+  PregnantConsentModel,
+} from '@/schemas/pregnant/pregnant-consent';
+import Article from '@/components/article/article';
+
+export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
+  onSubmit,
+}) => {
+  const {
+    getValues: getConsentFormValues,
+    // formState: consentFormState,
+    setValue: setConsentFormValue,
+    // register: consentFormRegister,
+    // reset: resetConsentFormValue,
+    // control: consentFormControl,
+  } = useForm<PregnantConsentModel>({
+    resolver: yupResolver(pregnantConsentModelSchema),
+    mode: 'onBlur',
+    // defaultValues: playgroup,
+    reValidateMode: 'onChange',
+  });
+  const [contentConsentTypeEnum, setContentConsentTypeEnum] =
+    useState<ContentConsentTypeEnum>(ContentConsentTypeEnum.PhotoPermissions);
+  const [presentArticle, setPresentArticle] = useState<boolean>(false);
+  const [accept, setAccept] = useState(false);
+
+  const handleConsentAccept = () => {
+    setConsentFormValue('hasConsent', !accept);
+  };
+
+  const displayArticle = (key: ContentConsentTypeEnum, title: string) => {
+    setContentConsentTypeEnum(key);
+    setPresentArticle(true);
+  };
+
+  return (
+    <div className="h-full h-screen px-4">
+      <Typography
+        type="h2"
+        color={'textDark'}
+        text={'Agreements'}
+        className="z-50 pt-6"
+      />
+
+      <Typography
+        type="h4"
+        color={'textMid'}
+        className="z-50 py-2"
+        text={
+          'Ask your client to read the consent agreement and tap the box if they agree.'
+        }
+      />
+
+      <Divider dividerType="dashed" />
+
+      <Typography
+        type="h4"
+        color={'textDark'}
+        text={'Check to confirm that you agree with the following:'}
+        className="z-50 w-full py-2"
+      />
+
+      <div className="flex w-full flex-col">
+        <div className="flex flex-row items-center gap-3">
+          <input
+            type="checkbox"
+            className={accept ? 'bg-secondary' : 'bg-uiBg'}
+            onChange={() => {
+              setAccept(!accept);
+              handleConsentAccept();
+            }}
+          />
+          <Typography
+            type="body"
+            color={'textMid'}
+            text={'I accept the consent agreement'}
+          />
+        </div>
+
+        <Button type="filled" color="secondary" className={'my-4'}>
+          <Typography
+            type="body"
+            text={'View'}
+            className="w-full cursor-pointer text-white"
+            onClick={() => {
+              displayArticle(
+                ContentConsentTypeEnum.ConsentAgreement,
+                'Consent Agreement'
+              );
+            }}
+          />
+        </Button>
+        <Alert
+          type={'info'}
+          className="mt-4 flex w-full items-center justify-center"
+          message={
+            'If the client does not consent, please do not register them on CHW Connect.'
+          }
+        />
+      </div>
+
+      <div className="mt-10 flex h-full w-full justify-center align-bottom">
+        <Button
+          text={`Next`}
+          type={'filled'}
+          color={'primary'}
+          disabled={!accept}
+          textColor={'white'}
+          iconPosition={'start'}
+          icon={'ArrowCircleRightIcon'}
+          className={'absolute bottom-10 m-auto mt-2 max-h-10 w-11/12'}
+          onClick={() => onSubmit(getConsentFormValues())}
+        />
+      </div>
+      <Article
+        visible={presentArticle}
+        title={'Consent Agreement'}
+        consentEnumType={contentConsentTypeEnum}
+        onClose={() => setPresentArticle(false)}
+      />
+    </div>
+  );
+};

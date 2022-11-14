@@ -1,5 +1,5 @@
 import { useHistory, useLocation } from 'react-router';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTheme } from '@ecdlink/core';
 import {
   BannerWrapper,
@@ -13,6 +13,7 @@ import {
   Typography,
   StackedList,
 } from '@ecdlink/ui';
+import { PractitionerService } from '@/services/PractitionerService';
 import { NoteTypeEnum } from '@ecdlink/graphql';
 import { getLogo, LogoSvgs } from '@utils/common/svg.utils';
 import { PractitionerProfileRouteState } from './practitioner-profile-info.types';
@@ -25,42 +26,11 @@ import { getLastNoteDate } from '@utils/child/child-profile-utils';
 import { notesSelectors } from '@store/notes';
 import { useSelector } from 'react-redux';
 import { practitionerSelectors } from '@/store/practitioner';
-
-// const mockedData = [
-//   {
-//     id: 1,
-//     title: 'John Buffalo',
-//     subTitle: 'Progress report overdue',
-//     avatarColor: '#6974af',
-//     profileText: 'Jb',
-//     alertSeverity: 'error',
-//     phoneNumber: '2138471324',
-//     email: 'johnbf@gmail.com',
-//   },
-//   {
-//     id: 2,
-//     title: 'Pedro Machado',
-//     subTitle: 'Progress report overdue',
-//     avatarColor: '#6974af',
-//     profileText: 'Pm',
-//     alertSeverity: 'error',
-//     phoneNumber: '23984123490',
-//     email: 'pedroM@gmail.com',
-//   },
-//   {
-//     id: 3,
-//     title: 'Carlos Vieira',
-//     subTitle: 'Progress report overdue',
-//     avatarColor: '#6974af',
-//     profileText: 'Cv',
-//     alertSeverity: 'error',
-//     phoneNumber: '314874393',
-//     email: 'carlosvieira1234@gmail.com',
-//   },
-// ];
+import { authSelectors } from '@store/auth';
 
 export const CoachPractitionerProfileInfo: React.FC = () => {
   const history = useHistory();
+  const userAuth = useSelector(authSelectors.getAuthUser);
   const { isOnline } = useOnlineStatus();
   const location = useLocation<PractitionerProfileRouteState>();
   const practitionerId = location.state.practitionerId;
@@ -69,6 +39,9 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
   const practitioner = practitioners?.find(
     (practitioner) => practitioner?.userId === practitionerId
   );
+  const isPrincipal = practitioner?.isPrincipal === true;
+  const [practitionerClassroomDetails, setPractitionerClassroomDetails] =
+    useState<any>();
 
   const { theme } = useTheme();
 
@@ -83,6 +56,19 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
   const whatsapp = () => {
     window.open(`https://wa.me/${practitioner?.user?.phoneNumber}`);
   };
+
+  const classroomsDetailsForPractitioner = async () => {
+    const classroomDetails = await new PractitionerService(
+      userAuth?.auth_token!
+    ).getClassroomGroupClassroomsForPractitioner(practitioner?.userId!);
+    setPractitionerClassroomDetails(classroomDetails);
+    return classroomDetails;
+  };
+
+  useEffect(() => {
+    classroomsDetailsForPractitioner();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const listItems = [
     {
@@ -109,6 +95,33 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
         }),
       classNames: 'bg-uiBg',
     },
+    {
+      title: 'Programme Information',
+      titleStyle: 'text-textDark font-semibold text-base leading-snug',
+      subTitle: 'Location, classes & staff',
+      subTitleStyle:
+        'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
+      menuIcon: 'InformationCircleIcon',
+      menuIconClassName: 'bg-secondary text-white',
+      showIcon: true,
+      iconBackgroundColor: 'secondary',
+      chipConfig: {
+        colorPalette: {
+          backgroundColour: 'white',
+          borderColour: 'errorMain',
+          textColour: 'errorMain',
+        },
+      },
+      text: '1',
+      onActionClick: () =>
+        history.push(ROUTES.COACH.PROGRAMME_INFORMATION, {
+          practitionerId,
+        }),
+      classNames: 'bg-uiBg',
+    },
+  ];
+
+  const noClassroomGroupsListItems = [
     {
       title: 'Programme Information',
       titleStyle: 'text-textDark font-semibold text-base leading-snug',
@@ -175,13 +188,15 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
             textColour={'white'}
             className={'px-3 py-1.5'}
           />
-          {/* <StatusChip
-            backgroundColour="tertiary"
-            borderColour="tertiary"
-            text={`Owner`}
-            textColour={'white'}
-            className={'mr-2 px-3 py-1.5'}
-          /> */}
+          {isPrincipal && (
+            <StatusChip
+              backgroundColour="secondary"
+              borderColour="secondary"
+              text={`Owner`}
+              textColour={'white'}
+              className={'mr-2 px-3 py-1.5'}
+            />
+          )}
         </div>
         <div className={styles.contactButtons}>
           <Button
@@ -191,7 +206,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
             size={'small'}
             onClick={call}
           >
-            <PhoneIcon className="h-5 w-5 text-primary" aria-hidden="true" />
+            <PhoneIcon className="text-primary h-5 w-5" aria-hidden="true" />
           </Button>
           <Button
             color={'primary'}
@@ -208,12 +223,16 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
           </Button>
         </div>
       </BannerWrapper>
-      <div className="flex justify-center mt-4">
+      <div className="mt-4 flex justify-center">
         <div className="w-11/12">
           <StackedList
-            className="w-full rounded-2xl -mt-0.5 flex flex-col gap-1"
+            className="-mt-0.5 flex w-full flex-col gap-1 rounded-2xl"
             type="MenuList"
-            listItems={listItems}
+            listItems={
+              practitionerClassroomDetails?.length > 0
+                ? listItems
+                : noClassroomGroupsListItems
+            }
           />
         </div>
       </div>

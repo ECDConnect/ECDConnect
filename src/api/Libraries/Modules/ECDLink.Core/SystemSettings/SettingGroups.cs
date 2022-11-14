@@ -143,5 +143,15 @@ namespace ECDLink.Core.SystemSettings
 
             public const string BlobStorageConnection = "General.Azure.BlobStorageConnection";
         }
+
+        public static class Invitation
+        {
+            public const string InvitationCutoffDelay = "General.InvitationCutoffDelay";
+        }
+
+        public static class Sync
+        {
+            public const string SyncDelay = "General.SyncDelay";
+        }
     }
 }

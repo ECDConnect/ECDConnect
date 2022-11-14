@@ -67,14 +67,14 @@ export const MotherList: React.FC<ComponentBaseProps> = () => {
           subTitle="Tap the add a child button below to start"
         />
       )}
-      {mothers.length > 0 ? (
+      {mothers.length > 0 && (
         <StackedList
+          type={'MenuList'}
           className={styles.stackedList}
           listItems={mothersListItems}
-          type={'MenuList'}
           onScroll={(scrollTop: number) => {}}
-        ></StackedList>
-      ) : null}
+        />
+      )}
       <FADButton
         title={'Add a mother'}
         icon={'PlusIcon'}

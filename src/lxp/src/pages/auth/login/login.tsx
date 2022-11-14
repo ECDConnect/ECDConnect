@@ -70,10 +70,12 @@ export const Login: React.FC = () => {
   });
   const { isValid, errors } = loginFormState;
 
+  console.log('freeMemory:', freeMemory);
+
   const submitForm = async () => {
     setDisplayError(false);
     if (isValid) {
-      if (freeMemory > 50) {
+      if (freeMemory > 50 || freeMemory === 0) {
         setIsLoading(true);
         const body: LoginRequestModel = {
           username: loginFormGetValues().preferId

@@ -38,12 +38,100 @@ using System.Security;
 using System.Text.RegularExpressions;
 using static NPOI.HSSF.Util.HSSFColor;
 using ECDLink.DataAccessLayer.Entities.DataIngestion;
+using System.Reflection;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class PractitionerMutationExtension
     {
+        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        public Practitioner UpdatePractitioner([Service] IHttpContextAccessor contextAccessor,
+          [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+          [Service] IGenericRepositoryFactory repoFactory,
+          Guid? id,
+          Practitioner input)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var dbRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
+
+            if (id == null) id = input.Id;
+
+            Practitioner practitioner = dbRepo.GetById((Guid)id);
+            {
+                if (practitioner != null)
+                {
+                    //Type t = practitioner.GetType(); //practitioner
+                    //Type i = input.GetType(); //input
+                    //foreach (PropertyInfo prop in i.GetProperties())
+                    //{
+                    //    if (t.GetProperty(prop.Name)!=null && prop.Name!="Id") { //do not attempt to update the PK
+                    //        PropertyInfo pinfo = t.GetProperty(prop.Name);
+                    //        pinfo.SetValue(t, prop.GetValue(input, null));
+                    //        //t.GetProperty(prop.Name).SetValue(prop.Name, prop.GetValue(practitioner, null));
+                    //    }
+                    //}
+                    //practitioner = input; //update the entity
+
+                    if (input.CoachHierarchy != null) practitioner.CoachHierarchy = input.CoachHierarchy;
+                    practitioner.IsActive = input.IsActive;
+                    if (input.AttendanceRegisterLink != null) practitioner.AttendanceRegisterLink = input.AttendanceRegisterLink;
+                    if (input.MaxChildren != null) practitioner.MaxChildren = input.MaxChildren;
+                    if (input.IsPrincipal != null) practitioner.IsPrincipal = input.IsPrincipal;
+                    if (input.IsFundaAppAdmin != null) practitioner.IsFundaAppAdmin = input.IsFundaAppAdmin;
+                    if (input.PrincipalHierarchy != null) practitioner.PrincipalHierarchy = input.PrincipalHierarchy;
+                    if (input.IsTrainee != null) practitioner.IsTrainee = input.IsTrainee;
+                    if (input.SigningSignature != null) practitioner.SigningSignature = input.SigningSignature;
+                    if (input.StartDate != null) practitioner.StartDate = input.StartDate;
+
+                    if (input.SiteAddressId != null)
+                    {
+                        var addressRepo = repoFactory.CreateRepository<SiteAddress>(userContext: uId);
+                        SiteAddress address = (SiteAddress)addressRepo.GetAll().Where(x => x.Id.Equals(input.SiteAddressId)).FirstOrDefault();
+                        if (input.SiteAddress.Ward != null)
+                            address.Ward = input.SiteAddress.Ward;
+                        if (input.SiteAddress.AddressLine1 != null)
+                            address.AddressLine1 = input.SiteAddress.AddressLine1;
+                        if (input.SiteAddress.AddressLine2 != null)
+                            address.AddressLine2 = input.SiteAddress.AddressLine2;
+                        if (input.SiteAddress.AddressLine3 != null)
+                            address.AddressLine3 = input.SiteAddress.AddressLine3;
+                        if (input.SiteAddress.PostalCode != null)
+                            address.PostalCode = input.SiteAddress.PostalCode;
+                        if (input.SiteAddress.ProvinceId != null)
+                            address.ProvinceId = input.SiteAddress.ProvinceId;
+                        var updateAddressResult = addressRepo.Update(address);
+                        //TODO: create address if not exists, but it really should
+                    }
+                    if (input.SiteAddress != null && input.SiteAddressId == null)
+                    {
+                        //create siteaddress
+                        var addressRepo = repoFactory.CreateRepository<SiteAddress>(userContext: uId);
+                        SiteAddress address = new SiteAddress();
+                        if (input.SiteAddress.Ward != null)
+                            address.Ward = input.SiteAddress.Ward;
+                        if (input.SiteAddress.AddressLine1 != null)
+                            address.AddressLine1 = input.SiteAddress.AddressLine1;
+                        if (input.SiteAddress.AddressLine2 != null)
+                            address.AddressLine2 = input.SiteAddress.AddressLine2;
+                        if (input.SiteAddress.AddressLine3 != null)
+                            address.AddressLine3 = input.SiteAddress.AddressLine3;
+                        if (input.SiteAddress.PostalCode != null)
+                            address.PostalCode = input.SiteAddress.PostalCode;
+                        if (input.SiteAddress.ProvinceId != null)
+                            address.ProvinceId = input.SiteAddress.ProvinceId;
+                        var updateAddressResult = addressRepo.Insert(address);
+                        if (updateAddressResult != null)
+                            practitioner.SiteAddressId = updateAddressResult.Id;
+                    }
+                    Practitioner updateResult = dbRepo.Update(practitioner);
+                    return updateResult;
+                }
+                return practitioner;
+            }
+        }
+
+
         // EXCEL LEGEND
         // 0 = FirstName
         // 1 = Surname
@@ -1132,6 +1220,22 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             }
 
             return 0;
+        }
+
+        public bool UpdatePractitionerEmergencyContact([Service] IHttpContextAccessor contextAccessor,
+    [Service] IGenericRepositoryFactory repoFactory,
+    [Service] UserManager<ApplicationUser> userManager,
+    string userId, string firstname, string surname, string contactno)
+
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var user = userManager.FindByIdAsync(userId).Result;
+            user.EmergencyContactFirstName = firstname;
+            user.EmergencyContactSurname = surname;
+            user.EmergencyContactPhoneNumber = contactno;
+
+            var userUpdateResult = userManager.UpdateAsync(user).Result;
+            return userUpdateResult.Succeeded;
         }
 
     }
