@@ -13,7 +13,7 @@ import { useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
 import ROUTES from '@/routes/routes';
 import { useHistory } from 'react-router-dom';
-import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
+import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 
 export const MotherList: React.FC<ComponentBaseProps> = () => {

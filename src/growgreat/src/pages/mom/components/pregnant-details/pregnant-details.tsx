@@ -64,8 +64,8 @@ export const PregnantDetails: React.FC<EditPregnantDetailsProps> = ({
   }, [isAlreadyClient, setPregnantDetailsFormValue, handleAddExistingUser]);
 
   return (
-    <div className="h-screen ">
-      <div>
+    <div className="h-screen h-full w-screen w-full p-4">
+      <>
         <Typography
           type="h2"
           color={'textDark'}
@@ -78,7 +78,7 @@ export const PregnantDetails: React.FC<EditPregnantDetailsProps> = ({
           text={'Details'}
           className="z-50 w-11/12 pt-2"
         />
-      </div>
+      </>
       <div className="flex w-11/12 justify-center text-red-400">
         <Divider dividerType="dashed" />
       </div>
@@ -109,7 +109,7 @@ export const PregnantDetails: React.FC<EditPregnantDetailsProps> = ({
               placeholder={'Enter a name'}
               type={'text'}
               className="mt-4"
-            ></FormInput>
+            />
             <FormInput<PregnantDetailsModel>
               label={'Surname'}
               register={consentFormRegister}
@@ -117,7 +117,7 @@ export const PregnantDetails: React.FC<EditPregnantDetailsProps> = ({
               placeholder={'Enter a surname'}
               type={'text'}
               className="mt-4"
-            ></FormInput>
+            />
             <div className="flex items-center gap-1">
               <FormInput<PregnantDetailsModel>
                 label={'Age'}
@@ -126,7 +126,7 @@ export const PregnantDetails: React.FC<EditPregnantDetailsProps> = ({
                 placeholder={'Enter an age'}
                 type={'number'}
                 className="mt-4 w-1/2"
-              ></FormInput>
+              />
               <Typography
                 type="h4"
                 color={'textMid'}
