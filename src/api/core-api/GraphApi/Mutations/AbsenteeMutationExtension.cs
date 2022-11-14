@@ -13,6 +13,7 @@ using System.Linq;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Hierarchy;
 using Microsoft.Azure.Documents;
+using ECDLink.Core.Services.Interfaces;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
@@ -24,8 +25,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         public Absentees AddAbsenteeForPractitioner([Service] IHttpContextAccessor contextAccessor,
             [Service] IGenericRepositoryFactory repoFactory,
             [Service] HierarchyEngine engine,
-            string fromUserId,
-            string toUserId,
+            [Service] IInvitationReassignmentService reassignmentService,
+            string practitionerId,
+            string reassignedToPractitioner,
             string reason,
             DateTime absentDate,
             string loggedByUser,
@@ -39,65 +41,31 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 reason = (string.IsNullOrEmpty(reason)?"Practitioner Marked Absent":reason);
                 var absent = new Absentees
                 {
-                    UserId = fromUserId,
+                    UserId = practitionerId,
                     Reason = reason,
                     AbsentDate = absentDate,
                     LoggedBy = loggedByUser,
                     ReassignedClass = classProgram,
-                    ReassignedToPractitioner = toUserId,
+                    ReassignedToPractitioner = reassignedToPractitioner,
                     
                 };
                 updated = absenteeRepo.Insert(absent);
 
                 //Log to the history table for reassignment back to owner user
-                ReassignmentMutationExtension reassignment = new ReassignmentMutationExtension();
-                reassignment.AddReassignmentForPractitioner(contextAccessor, repoFactory, engine, fromUserId, toUserId, reason, absentDate, loggedByUser, classProgram, false);
+                reassignmentService.AddReassignmentForPractitioner(uId, practitionerId, reassignedToPractitioner, reason, absentDate, loggedByUser, classProgram, false);
             }
 
             //Save the history so it can be reassigned
-
             return updated;            
         }
 
         public bool ReassignAbsenteeFromHistory([Service] IHttpContextAccessor contextAccessor,
-            [Service] IGenericRepositoryFactory repoFactory,
+            [Service] IInvitationReassignmentService reassignmentService,
             string userId)
         {            
-            ReassignmentMutationExtension reassignment = new ReassignmentMutationExtension();
-            return reassignment.ReassignClassroomsFromHistory(contextAccessor, repoFactory, userId);
-        }
-
-        private bool UpdateClassProgrammeForPractitioner([Service] IHttpContextAccessor contextAccessor,
-[Service] IGenericRepositoryFactory repoFactory, Guid classroomId, string newHierarchy)
-        {
-            bool updated = false;
             var uId = contextAccessor.HttpContext.GetUser().Id;
-
-            var classProgrammeRepo = repoFactory.CreateGenericRepository<ClassProgramme>(userContext: uId);
-            ClassProgramme classProgramme = (ClassProgramme)classProgrammeRepo.GetAll().Where(x => x.ClassroomGroupId.Equals(classroomId)).FirstOrDefault();
-            if (classProgramme != null && !string.IsNullOrWhiteSpace(newHierarchy))
-            {
-                classProgramme.Hierarchy = newHierarchy;
-                classProgrammeRepo.Update(classProgramme);
-            }
-            return updated;
+            return reassignmentService.ReassignClassroomsFromHistory(uId, userId);
         }
-
-//        private bool UpdateLearnerForPractitioner([Service] IHttpContextAccessor contextAccessor,
-//[Service] IGenericRepositoryFactory repoFactory, Guid classroomGroupId, string hierarchy)
-//        {
-//            bool updated = false;
-//            var uId = contextAccessor.HttpContext.GetUser().Id;
-
-//            var learnerRepo = repoFactory.CreateGenericRepository<Learner>(userContext: uId);
-//            Learner learners = (ClassProgramme)learnerRepo.GetAll().Where(x => x.ClassroomGroupId.Equals(classroomId)).FirstOrDefault();
-//            if (classProgramme != null && !string.IsNullOrWhiteSpace(newHierarchy))
-//            {
-//                classProgramme.Hierarchy = newHierarchy;
-//                classProgrammeRepo.Update(classProgramme);
-//            }
-//            return updated;
-//        }
 
     }
 }

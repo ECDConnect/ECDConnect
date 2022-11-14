@@ -68,42 +68,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
                     return practitioner;
                 }
-                else return null;
-                //{
-                //    //Create basic user and practitioner
-                //    var pracRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-
-                //    var pOne = new ApplicationUser
-                //    {
-                //        FirstName = firstName,
-                //        Surname = lastName,
-                //        FullName = firstName + " " + lastName,
-                //        UserName = idNumber,
-                //        IdNumber = idNumber,
-                //        IsActive = true,
-                //        NickFirstName = firstName,
-                //        NickSurname = lastName,
-                //        NickFullName = firstName + " " + lastName,
-                //        TenantId = tenantId
-                //    };
-
-                //    var result = userManager.CreateAsync(pOne).Result;
-                //    string practitionerId = pOne.Id;
-
-                //    var passwordResult = userManager.AddPasswordAsync(pOne, idNumber).Result;
-
-                //    pracRepo.Insert(new Practitioner
-                //    {
-                //        Id = Guid.NewGuid(),
-                //        UserId = practitionerId,
-                //        IsPrincipal = false,
-                //        PrincipalHierarchy = Guid.Parse(principalUser.UserId),
-                //        IsRegistered = true,
-                //        TenantId = tenantId
-                //    });
-
-                //    return new PractitionerQueryExtension().GetPractitionerByUserId(contextAccessor, repoFactory, practitionerId);
-                //}
+                else return null;              
             } else return null;
         }
 
@@ -266,6 +231,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         //update and clear  the practitioner details
                         practitioner.PrincipalHierarchy = null;
                         practitioner.ShareInfo = false;
+                        practitioner.DateLinked = null;
 
 
                         //reset the classroomgroups away from this practitioner and back to teh principal

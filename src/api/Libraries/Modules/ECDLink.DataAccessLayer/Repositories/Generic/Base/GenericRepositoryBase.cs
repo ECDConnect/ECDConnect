@@ -105,8 +105,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
             }
             Guid tenantId = TenantExecutionContext.Tenant.Id;
             if (Exists(entity.Id))
-            {
-                entity.InsertedDate = entity.InsertedDate;//do not update inserted date to Now                
+            {          
                 entity.UpdatedDate = DateTime.Now;
                 entity.UpdatedBy = _userId;
                 entity.TenantId = tenantId;

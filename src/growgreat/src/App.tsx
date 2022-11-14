@@ -1,23 +1,30 @@
+import ReactGA from 'react-ga';
+import { useEffect } from 'react';
+import { useSelector } from 'react-redux';
+import TagManager from 'react-gtm-module';
+
+import { IonReactRouter } from '@ionic/react-router';
+import { IonApp, IonRouterOutlet } from '@ionic/react';
 import '@ionic/react/css/core.css';
 import '@ionic/react/css/display.css';
 import '@ionic/react/css/flex-utils.css';
 import '@ionic/react/css/float-elements.css';
-import { IonApp, IonRouterOutlet } from '@ionic/react';
-import { IonReactRouter } from '@ionic/react-router';
-import { DialogPosition } from '@ecdlink/ui';
+
 import { DialogServiceProvider, useDialog } from '@ecdlink/core';
-import React, { useEffect } from 'react';
-import ReactGA from 'react-ga';
-import TagManager from 'react-gtm-module';
-import { useSelector } from 'react-redux';
+import { DialogPosition } from '@ecdlink/ui';
+
 import { AuthRoutes, PublicRoutes } from '@/routes';
-import { authSelectors } from '@/store/auth';
-import { settingSelectors } from '@/store/settings';
 import InitialStoreSetup from '@/initial-store-setup';
 import InitialNotificationSetup from '@/initial-notifications-setup';
+
+import { authSelectors } from '@/store/auth';
+import { settingSelectors } from '@/store/settings';
+
 import { LoginModal } from '@/pages/auth/login-modal/login-modal';
 
-const App: React.FC = () => {
+import '@/styles.css';
+
+function App() {
   const dialog = useDialog();
   const user = useSelector(authSelectors.getAuthUser);
   const userExpired = useSelector(authSelectors.getUserExpired);
@@ -62,23 +69,22 @@ const App: React.FC = () => {
   useEffect(() => {
     if (userExpired) {
       dialog({
-        position: DialogPosition.Middle,
         blocking: true,
+        position: DialogPosition.Middle,
         render(onSubmit) {
           return <LoginModal loginSuccessful={onSubmit} />;
         },
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userExpired]);
+  });
 
   return (
-    <IonApp className="m-auto h-screen w-full bg-white">
+    <IonApp className="m-auto h-screen w-screen bg-white">
       <IonReactRouter>
         <IonRouterOutlet>{getRoutes()}</IonRouterOutlet>
       </IonReactRouter>
     </IonApp>
   );
-};
+}
 
 export default App;

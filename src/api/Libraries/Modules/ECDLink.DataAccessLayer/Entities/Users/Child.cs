@@ -59,6 +59,8 @@ namespace ECDLink.DataAccessLayer.Entities.Users
 
         [GraphQLIgnore]
         public string Hierarchy { get; set; }
+
+        public string InsertedBy { get; set; }
     }
 
     public interface ChildJoin<TKey>

@@ -40,6 +40,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
 
         public string OtherHealthConditions { get; set; }
         public Guid? WorkflowStatusId { get; set; }
+
+        public string InsertedBy { get; set; }
     }
 
     public class AddChildLearnerTokenModel
