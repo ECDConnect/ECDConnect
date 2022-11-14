@@ -76,6 +76,7 @@ class PractitionerService {
             isPrincipal
             isRegistered
             principalHierarchy
+            coachHierarchy
             attendanceRegisterLink
             maxChildren
             consentForPhoto
@@ -187,6 +188,9 @@ class PractitionerService {
             dateToBeRemoved
             isLeaving
             user {
+              emergencyContactFirstName
+              emergencyContactSurname
+              emergencyContactPhoneNumber
               idNumber
               fullName
               firstName
@@ -625,6 +629,46 @@ class PractitionerService {
     }
 
     return response.data.data.practitionerColleagues;
+  }
+
+  async updatePractitionerEmergencyContact(
+    userId: string,
+    firstname: string,
+    surname: string,
+    contactno: string
+  ): Promise<boolean> {
+    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        mutation updatePractitionerEmergencyContact(
+          $userId: String
+          $firstname: String
+          $surname: String
+          $contactno: String
+        ) {
+          updatePractitionerEmergencyContact(
+            userId: $userId
+            firstname: $firstname
+            surname: $surname
+            contactno: $contactno
+          )
+        }
+      `,
+      variables: {
+        userId,
+        firstname,
+        surname,
+        contactno,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Update Emergency contact information failed - Server connection error'
+      );
+    }
+
+    return response.data.data.updatePractitionerEmergencyContact;
   }
 }
 

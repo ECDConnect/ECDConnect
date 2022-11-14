@@ -33,6 +33,8 @@ import { setStorageItem } from '@utils/common/local-storage.utils';
 import * as styles from './practitioner-about.styles';
 import ROUTES from '@routes/routes';
 import { EditCellPhoneNumber } from './edit-cellphone-number/edit-cellphone-number';
+import { practitionerSelectors } from '@/store/practitioner';
+import { NextToKin } from './next-to-kin/next-to-kin';
 
 export const PractitionerAbout: React.FC = () => {
   const history = useHistory();
@@ -50,6 +52,7 @@ export const PractitionerAbout: React.FC = () => {
   const [editProfilePictureVisible, setEditProfilePictureVisible] =
     useState(false);
   const [editiCellPhoneNumber, setEditiCellPhoneNumber] = useState(false);
+  const [addNextToKin, setAddNextToKin] = useState(false);
 
   useEffect(() => {
     if (!isOnline) {
@@ -64,6 +67,7 @@ export const PractitionerAbout: React.FC = () => {
   }, [isOnline]);
 
   const user = useSelector(userSelectors.getUser);
+  const practitioner = useSelector(practitionerSelectors?.getPractitioner);
   const pictureStorageKey = LocalStorageKeys.practitionerProfilePicture;
   const [listItems, setListItems] = useState<ActionListDataItem[]>([]);
 
@@ -110,34 +114,34 @@ export const PractitionerAbout: React.FC = () => {
 
   const setNewStackListItems = (currentUser: UserDto) => {
     const list: ActionListDataItem[] = [
-      {
-        title: 'First Name',
-        subTitle: currentUser?.firstName,
-        actionName: 'Edit',
-        actionIcon: 'PencilIcon',
-        switchTextStyles: true,
-        onActionClick: () => {
-          editField({
-            label: 'First Name',
-            formFieldName: 'name',
-            value: practitionerAboutFormGetValues().name,
-          });
-        },
-      },
-      {
-        title: 'Surname',
-        subTitle: currentUser?.surname,
-        actionName: 'Edit',
-        actionIcon: 'PencilIcon',
-        switchTextStyles: true,
-        onActionClick: () => {
-          editField({
-            label: 'Surname',
-            formFieldName: 'surname',
-            value: practitionerAboutFormGetValues().surname,
-          });
-        },
-      },
+      // {
+      //   title: 'First Name',
+      //   subTitle: currentUser?.firstName,
+      //   actionName: 'Edit',
+      //   actionIcon: 'PencilIcon',
+      //   switchTextStyles: true,
+      //   onActionClick: () => {
+      //     editField({
+      //       label: 'First Name',
+      //       formFieldName: 'name',
+      //       value: practitionerAboutFormGetValues().name,
+      //     });
+      //   },
+      // },
+      // {
+      //   title: 'Surname',
+      //   subTitle: currentUser?.surname,
+      //   actionName: 'Edit',
+      //   actionIcon: 'PencilIcon',
+      //   switchTextStyles: true,
+      //   onActionClick: () => {
+      //     editField({
+      //       label: 'Surname',
+      //       formFieldName: 'surname',
+      //       value: practitionerAboutFormGetValues().surname,
+      //     });
+      //   },
+      // },
       {
         title: 'Cellphone Number',
         subTitle: currentUser?.phoneNumber || 'Add an Cellphone Number',
@@ -167,6 +171,51 @@ export const PractitionerAbout: React.FC = () => {
             formFieldName: 'email',
             value: practitionerAboutFormGetValues().email,
           });
+        },
+      },
+      {
+        title: 'Your SmartStart club',
+        subTitle: 'N/A',
+        switchTextStyles: true,
+        actionName: currentUser?.email ? 'Edit' : 'Add',
+        actionIcon: currentUser?.email ? 'PencilIcon' : 'PlusIcon',
+        buttonType: currentUser?.email ? 'outlined' : 'filled',
+        // onActionClick: () => {
+        //   editField({
+        //     label: 'Email Address',
+        //     formFieldName: 'email',
+        //     value: practitionerAboutFormGetValues().email,
+        //   });
+        // },
+      },
+      {
+        title: 'Your SmartStart coach',
+        subTitle: practitioner?.coachHierarchy || 'N/A',
+        switchTextStyles: true,
+        // actionName: currentUser?.email ? 'Edit' : 'Add',
+        // actionIcon: currentUser?.email ? 'PencilIcon' : 'PlusIcon',
+        // buttonType: currentUser?.email ? 'outlined' : 'filled',
+        // onActionClick: () => {
+        //   editField({
+        //     label: 'Email Address',
+        //     formFieldName: 'email',
+        //     value: practitionerAboutFormGetValues().email,
+        //   });
+        // },
+      },
+      {
+        title: 'Next of kin',
+        subTitle: currentUser?.emergencyContactFirstName || 'Add next of kin',
+        switchTextStyles: true,
+        actionName: currentUser?.emergencyContactFirstName ? 'Edit' : 'Add',
+        actionIcon: currentUser?.emergencyContactFirstName
+          ? 'PencilIcon'
+          : 'PlusIcon',
+        buttonType: currentUser?.emergencyContactFirstName
+          ? 'outlined'
+          : 'filled',
+        onActionClick: () => {
+          setAddNextToKin(true);
         },
       },
     ];
@@ -265,6 +314,9 @@ export const PractitionerAbout: React.FC = () => {
           user={user}
         />
       </Dialog>
+      <Dialog fullScreen visible={addNextToKin} position={DialogPosition.Top}>
+        <NextToKin setAddNextToKin={setAddNextToKin} user={user} />
+      </Dialog>
       <BannerWrapper
         showBackground={true}
         backgroundUrl={theme?.images.graphicOverlayUrl}
@@ -277,7 +329,7 @@ export const PractitionerAbout: React.FC = () => {
         onBack={() => history.push(ROUTES.PRACTITIONER.PROFILE.ROOT)}
         displayOffline={!isOnline}
       >
-        <div className={'w-full inline-flex justify-center pt-8'}>
+        <div className={'inline-flex w-full justify-center pt-8'}>
           <ProfileAvatar
             dataUrl={userProfilePicture?.file || user?.profileImageUrl}
             size={'header'}
