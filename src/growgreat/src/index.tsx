@@ -1,4 +1,3 @@
-import '@/styles.css';
 import ReactDOM from 'react-dom';
 import { StrictMode } from 'react';
 import ConfigWrapper from '@/config-wrapper';

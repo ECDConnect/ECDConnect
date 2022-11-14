@@ -1,4 +1,5 @@
 using ECDLink.Core.Services.Interfaces;
+using ECDLink.Core.Services;
 using ECDLink.DataAccessLayer.Configuration.Setup.Seed;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Events;
@@ -37,6 +38,7 @@ namespace ECDLink.EGraphQL
 
             services.AddTransient<IDomainEventService, EventServiceWrapper>();
             services.AddTransient<ISystemSettingsService, SystemSettingsService>();
+            //services.AddTransient<IInvitationReassignmentService, InvitationReassignmentService>();
 
             services.AddMediatR(Assembly.GetExecutingAssembly());
 

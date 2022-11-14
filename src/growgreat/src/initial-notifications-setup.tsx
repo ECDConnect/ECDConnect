@@ -1,14 +1,22 @@
-import React, { useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
-import { useStoreSetup } from './hooks/useStoreSetup';
-import { Message } from './models/messages/messages';
-import { NotificationService } from './services/NotificationService/NotificationService';
-import { store, useAppDispatch } from './store';
+import { createContext, ReactNode, useEffect, useRef } from 'react';
+
+import { useStoreSetup } from '@/hooks/useStoreSetup';
+import { Message } from '@/models/messages/messages';
+import { NotificationService } from '@/services/NotificationService/NotificationService';
+
+import { store, useAppDispatch } from '@/store';
+
+import { settingSelectors } from '@/store/settings';
+
 import {
   notificationActions,
   notificationsSelectors,
-} from './store/notifications';
-import { settingSelectors } from './store/settings';
+} from '@/store/notifications';
+
+type Props = {
+  children: ReactNode;
+};
 
 type IntialNotificationSetupContextValues = {
   startService: () => void;
@@ -16,11 +24,11 @@ type IntialNotificationSetupContextValues = {
 };
 
 export const IntialNotificationSetupContext =
-  React.createContext<IntialNotificationSetupContextValues>(
+  createContext<IntialNotificationSetupContextValues>(
     {} as IntialNotificationSetupContextValues
   );
 
-const InitialNotificationSetup: React.FC = ({ children }) => {
+function InitialNotificationSetup(props: Props) {
   const dispatch = useAppDispatch();
   const notifications = useSelector(notificationsSelectors.getAllNotifications);
   const notificationPollInterval = useSelector(
@@ -31,64 +39,69 @@ const InitialNotificationSetup: React.FC = ({ children }) => {
     undefined
   );
 
-  useEffect(() => {
-    initializeServices();
-    return () => {
-      stopService();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const onNotificationsRecieved = (messages: Message[]) => {
+  function onNotificationsReceived(messages: Message[]) {
     const newMessages = messages.filter(
       (message) =>
         !notifications.some(
-          (notification) => notification.message.reference === message.reference
+          (notification: any) =>
+            notification.message.reference === message.reference
         )
     );
 
-    if (newMessages.length > 0)
+    if (!!newMessages?.length) {
       dispatch(notificationActions.addNotifications(newMessages));
-  };
+    }
+  }
 
-  const initializeServices = () => {
+  function initializeServices() {
     if (!notificationServiceRef.current) {
       notificationServiceRef.current = new NotificationService(
         notificationPollInterval
       );
     }
+
     notificationServiceRef.current.registerValidators(store);
+
     notificationServiceRef.current.onNotificationsReceived = (
       messages: Message[]
     ) => {
       if (!initloading) {
-        onNotificationsRecieved(messages);
+        onNotificationsReceived(messages);
       }
     };
+
     notificationServiceRef.current.initialEvaluate();
     notificationServiceRef.current.start();
-  };
+  }
 
-  const stopService = () => {
+  function stopService() {
     if (notificationServiceRef.current) {
       notificationServiceRef.current.stop();
       dispatch(notificationActions.resetNotificationState());
     }
-  };
+  }
 
-  const startService = () => {
+  function startService() {
     if (notificationServiceRef.current) {
       initializeServices();
     }
-  };
+  }
+
+  useEffect(() => {
+    initializeServices();
+
+    return () => stopService();
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <IntialNotificationSetupContext.Provider
       value={{ stopService, startService }}
     >
-      {children}
+      {props.children}
     </IntialNotificationSetupContext.Provider>
   );
-};
+}
 
 export default InitialNotificationSetup;
