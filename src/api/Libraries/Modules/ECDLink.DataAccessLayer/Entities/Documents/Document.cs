@@ -5,6 +5,7 @@ using ECDLink.DataAccessLayer.Entities.Workflow;
 using ECDLink.Security;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
+using ECDLink.DataAccessLayer.Entities.Interfaces;
 
 namespace ECDLink.DataAccessLayer.Entities.Documents
 {
@@ -15,7 +16,7 @@ namespace ECDLink.DataAccessLayer.Entities.Documents
 
     }
 
-    public class Document<TKey> : EntityBase<TKey>, ApplicationUserJoin, DocumentTypeJoin<TKey>, WorkflowStatusJoin<TKey>
+    public class Document<TKey> : EntityBase<TKey>, ApplicationUserJoin, DocumentTypeJoin<TKey>, WorkflowStatusJoin<TKey>, IUserScoped
          where TKey : IEquatable<TKey>
     {
         public string CreatedUserId { get; set; }
@@ -35,6 +36,8 @@ namespace ECDLink.DataAccessLayer.Entities.Documents
         [ForeignKey(nameof(WorkflowStatusId))]
         public virtual WorkflowStatus WorkflowStatus { get; set; }
         public TKey WorkflowStatusId { get; set; }
+
+        public string Hierarchy { get; set; }
     }
 
     public interface DocumentJoin<TKey>
