@@ -14,11 +14,11 @@ import { useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
 import ROUTES from '@/routes/routes';
 import { useHistory } from 'react-router-dom';
-import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
+import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { getInfants } from '@/store/infant/infant.selectors';
 import { getAvatarColor } from '@ecdlink/core';
-import Infant from '../../../assets/infant.svg';
+import Infant from '@/assets/infant.svg';
 
 export const InfantList: React.FC<ComponentBaseProps> = () => {
   const dialog = useDialog();
@@ -82,7 +82,7 @@ export const InfantList: React.FC<ComponentBaseProps> = () => {
           listItems={infantsListItems}
           type={'UserAlertList'}
           onScroll={(scrollTop: number) => {}}
-        ></StackedList>
+        />
       ) : null}
       <FADButton
         title={'Add a child'}
