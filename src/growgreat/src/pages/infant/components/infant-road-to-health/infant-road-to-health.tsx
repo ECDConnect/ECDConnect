@@ -59,7 +59,7 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
   //   const handleConsentAccept = () => {
   //     setConsentFormValue('hasConsent', !accept);
   //   };
-  const [confirmhasNoRecord, setConfirmHasNoRecord] = useState(false);
+  const [confirmHasNoRecord, setConfirmHasNoRecord] = useState(false);
 
   const setPhotoUrl = (imageUrl: string) => {
     setRoadToHealthFormValue('roadToHealthBook', imageUrl);
@@ -69,7 +69,7 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
   };
 
   const handleConsentAccept = () => {
-    setRoadToHealthFormValue('notRoadToHealthBook', !confirmhasNoRecord);
+    setRoadToHealthFormValue('notRoadToHealthBook', !confirmHasNoRecord);
   };
 
   return (
@@ -120,9 +120,9 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
               <div className="flex items-center gap-2">
                 <input
                   type="checkbox"
-                  className={confirmhasNoRecord ? 'bg-secondary' : 'bg-uiBg'}
+                  className={confirmHasNoRecord ? 'bg-secondary' : 'bg-uiBg'}
                   onChange={() => {
-                    setConfirmHasNoRecord(!confirmhasNoRecord);
+                    setConfirmHasNoRecord(!confirmHasNoRecord);
                     handleConsentAccept();
                   }}
                 />
@@ -229,7 +229,7 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
             onClick={() => {
               onSubmit(getRoadToHealthFormValues());
             }}
-            disabled={!isValid && !confirmhasNoRecord}
+            disabled={!isValid && !confirmHasNoRecord}
           />
         </div>
       </div>

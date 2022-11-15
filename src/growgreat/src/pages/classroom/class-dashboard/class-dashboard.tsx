@@ -48,9 +48,80 @@ export const ClassDashboard: React.FC = () => {
   const [currentTab, setCurrentTab] = useState<TabItem>();
   const { isOnline } = useOnlineStatus();
 
-  const backToDashboard = () => {
+  const tabItems: TabItem[] = [
+    {
+      title: 'Highlights',
+      initActive: false,
+      child: (
+        <Typography
+          className={'p-4'}
+          type={'body'}
+          color="textDark"
+          text={'Coming soon'}
+        />
+      ),
+    },
+    {
+      title: 'Clients',
+      initActive: true,
+      child: <ClientList />,
+    },
+    {
+      title: 'Visits',
+      initActive: false,
+      child: (
+        <Typography
+          className={'p-4'}
+          type={'body'}
+          color="textDark"
+          text={'Coming soon'}
+        />
+      ),
+    },
+  ];
+
+  function backToDashboard() {
     history.push('/');
-  };
+  }
+
+  function setTabSelected(tab: TabItem, tabIndex: number) {
+    if (tab.title === 'Attendance' && !attendanceTutorialComplete) {
+      displayTutorial('Attendance');
+    }
+
+    setPreviousTabIndex(selectedTabIndex);
+    setSelectedTabIndex(tabIndex);
+  }
+
+  function displayTutorial(type?: string) {
+    switch (type) {
+      case 'Attendance':
+        setAttendanceTutorialActive(true);
+        break;
+      case 'Programme':
+        history.push(ROUTES.PROGRAMMES.TUTORIAL.GETTING_STARTED);
+        break;
+      default:
+        break;
+    }
+  }
+
+  const displayHelp =
+    currentTab?.title === 'Attendance' || currentTab?.title === 'Programme';
+
+  // const closeAttendanceTutorial = () => {
+  //   if (!attendanceTutorialComplete && previousTabIndex) {
+  //     setSelectedTabIndex(previousTabIndex);
+  //   }
+  //   setAttendanceTutorialActive(false);
+  // };
+
+  // const completeTutorial = () => {
+  //   setStorageItem(true, LocalStorageKeys.attendanceTutorialComplete);
+  //   setAttendanceTutorialComplete(true);
+  //   setSelectedTabIndex(0);
+  //   setAttendanceTutorialActive(false);
+  // };
 
   useEffect(() => {
     const isTutorialComplete = getStorageItem<boolean>(
@@ -80,71 +151,6 @@ export const ClassDashboard: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTabIndex]);
-
-  const tabItems: TabItem[] = [
-    {
-      title: 'Clients',
-      initActive: true,
-      child: <ClientList />,
-    },
-    {
-      title: 'Highlights',
-      initActive: false,
-      child: (
-        <div className={'p-4'}>
-          <Typography type={'body'} color="textDark" text={'Coming soon'} />
-        </div>
-      ),
-    },
-    {
-      title: 'Visits',
-      initActive: false,
-      child: (
-        <div className={'p-4'}>
-          <Typography type={'body'} color="textDark" text={'Coming soon'} />
-        </div>
-      ),
-    },
-  ];
-
-  const setTabSelected = (tab: TabItem, tabIndex: number) => {
-    if (tab.title === 'Attendance' && !attendanceTutorialComplete) {
-      displayTutorial('Attendance');
-    }
-
-    setPreviousTabIndex(selectedTabIndex);
-    setSelectedTabIndex(tabIndex);
-  };
-
-  const displayTutorial = (type?: string) => {
-    switch (type) {
-      case 'Attendance':
-        setAttendanceTutorialActive(true);
-        break;
-      case 'Programme':
-        history.push(ROUTES.PROGRAMMES.TUTORIAL.GETTING_STARTED);
-        break;
-      default:
-        break;
-    }
-  };
-
-  const displayHelp =
-    currentTab?.title === 'Attendance' || currentTab?.title === 'Programme';
-
-  // const closeAttendanceTutorial = () => {
-  //   if (!attendanceTutorialComplete && previousTabIndex) {
-  //     setSelectedTabIndex(previousTabIndex);
-  //   }
-  //   setAttendanceTutorialActive(false);
-  // };
-
-  // const completeTutorial = () => {
-  //   setStorageItem(true, LocalStorageKeys.attendanceTutorialComplete);
-  //   setAttendanceTutorialComplete(true);
-  //   setSelectedTabIndex(0);
-  //   setAttendanceTutorialActive(false);
-  // };
 
   return (
     <>

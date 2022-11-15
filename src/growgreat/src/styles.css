@@ -52,6 +52,13 @@ ion-content {
   margin-bottom: 5rem !important;
 }
 
+#root .bg-loader {
+  background-color: #F47C24;
+  background-image: url("./assets/bg-loader.svg");
+  background-repeat: repeat-y;
+  background-size: contain;
+}
+
 .placeholder-fontWeight::placeholder {
   font-weight: 300;
 }

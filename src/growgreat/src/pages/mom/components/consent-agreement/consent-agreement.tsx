@@ -68,7 +68,7 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
       />
 
       <div className="flex w-full flex-col">
-        <div className="flex flex-row items-center gap-3">
+        <div className="flex flex-row items-center justify-around gap-3">
           <input
             type="checkbox"
             className={accept ? 'bg-secondary' : 'bg-uiBg'}
@@ -77,26 +77,26 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
               handleConsentAccept();
             }}
           />
+
           <Typography
             type="body"
             color={'textMid'}
             text={'I accept the consent agreement'}
           />
-        </div>
 
-        <Button type="filled" color="secondary" className={'my-4'}>
           <Typography
-            type="body"
             text={'View'}
-            className="w-full cursor-pointer text-white"
-            onClick={() => {
+            type="body"
+            color={'secondary'}
+            className="cursor-pointer text-right underline"
+            onClick={() =>
               displayArticle(
                 ContentConsentTypeEnum.ConsentAgreement,
-                'Consent Agreement'
-              );
-            }}
+                'Photo Permissions'
+              )
+            }
           />
-        </Button>
+        </div>
         <Alert
           type={'info'}
           className="mt-4 flex w-full items-center justify-center"

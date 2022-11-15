@@ -1,15 +1,15 @@
 import { useTheme } from '@ecdlink/core';
-import { BannerWrapper, Button, Typography } from '@ecdlink/ui';
-import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useHistory } from 'react-router-dom';
-import * as styles from './pregnant-register.styles';
-import momImage from '@/assets/momImage.png';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { BannerWrapper, Button, Typography } from '@ecdlink/ui';
 import {
+  HeartIcon,
   LightBulbIcon,
   ClipboardListIcon,
-  HeartIcon,
 } from '@heroicons/react/solid';
 import ROUTES from '@/routes/routes';
+import * as styles from '@/pages/mom/pregnant-register/pregnant-register.styles';
+import momImage from '@/assets/momImage.png';
 
 export const PregnantRegister: React.FC = () => {
   const { isOnline } = useOnlineStatus();

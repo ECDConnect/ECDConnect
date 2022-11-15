@@ -30,7 +30,7 @@ import {
 import * as styles from '@/pages/auth/login-modal/login-modal.styles';
 
 import ROUTES from '@/routes/routes';
-import { version } from '@@/package.json';
+import packageInfo from '@@/package.json';
 
 interface LoginModalProps {
   loginSuccessful: () => void;
@@ -76,8 +76,10 @@ export const LoginModal: React.FC<LoginModalProps> = ({ loginSuccessful }) => {
             isAuthenticated?.payload?.response?.status !== 401
           ) {
             loginSuccessful();
-            await appDispatch(settingActions.setApplicationVersion(version));
-            await appDispatch(authActions.setUserExpired());
+            appDispatch(
+              settingActions.setApplicationVersion(packageInfo.version)
+            );
+            appDispatch(authActions.setUserExpired());
             setIsLoading(false);
           } else {
             setDisplayError(true);
@@ -170,7 +172,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ loginSuccessful }) => {
               value={loginFormGetValues().password}
               register={loginRegister}
             />
-            <Divider></Divider>
+            <Divider />
             {displayError && (
               <Alert
                 className={'mt-5 mb-3'}
@@ -195,7 +197,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ loginSuccessful }) => {
             disabled={!isValid || !isOnline}
             onClick={submitForm}
           >
-            <Typography type="help" color="white" text={'Log in'}></Typography>
+            <Typography type="help" color="white" text={'Log in'} />
           </Button>
 
           <Button
@@ -212,7 +214,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ loginSuccessful }) => {
               type="help"
               color="white"
               text={'Reset & Go back to login'}
-            ></Typography>
+            />
           </Button>
         </form>
       </div>
