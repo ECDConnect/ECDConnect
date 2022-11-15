@@ -76,6 +76,7 @@ class PractitionerService {
             isPrincipal
             isRegistered
             principalHierarchy
+            coachHierarchy
             attendanceRegisterLink
             maxChildren
             consentForPhoto
@@ -187,6 +188,9 @@ class PractitionerService {
             dateToBeRemoved
             isLeaving
             user {
+              emergencyContactFirstName
+              emergencyContactSurname
+              emergencyContactPhoneNumber
               idNumber
               fullName
               firstName

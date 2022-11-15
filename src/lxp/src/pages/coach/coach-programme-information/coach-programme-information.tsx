@@ -10,6 +10,7 @@ import {
   Typography,
   StackedList,
 } from '@ecdlink/ui';
+import { PractitionerColleagues } from '@ecdlink/graphql';
 import { getLogo, LogoSvgs } from '@utils/common/svg.utils';
 import { PractitionerProfileRouteState } from './coach-programme-information.types';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
@@ -39,6 +40,7 @@ export const CoachProgrammeInformation: React.FC = () => {
   const [practitionerClassroomDetails, setPractitionerClassroomDetails] =
     useState<any>();
   const userAuth = useSelector(authSelectors.getAuthUser);
+  const [otherColleagues, setOtherColleagues] = useState<any[]>([]);
 
   const weekday = [
     'Sunday',
@@ -170,6 +172,27 @@ export const CoachProgrammeInformation: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const getPractitionerColleagues = async () => {
+    // Check if the practitioner exists
+    let practitionerColleagues: PractitionerColleagues[] = [];
+
+    if (userAuth) {
+      practitionerColleagues = await new PractitionerService(
+        userAuth?.auth_token
+      ).practitionerColleagues(practitioner?.userId!);
+    }
+
+    setOtherColleagues(practitionerColleagues);
+    return practitionerColleagues;
+  };
+
+  useEffect(() => {
+    if (practitioner) {
+      getPractitionerColleagues();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <div className={styles.contentWrapper}>
       <BannerWrapper
@@ -259,7 +282,7 @@ export const CoachProgrammeInformation: React.FC = () => {
         </Button>
       </div>
       <>
-        {practitionerClassroom?.name && (
+        {practitionerClassroomDetails?.length > 0 && (
           <>
             <div className={styles.infoWrapper}>
               <div>
@@ -270,7 +293,7 @@ export const CoachProgrammeInformation: React.FC = () => {
                   className={'mt-4'}
                 />
                 <Typography
-                  text={practitionerClassroom?.name || ''}
+                  text={practitionerClassroomDetails[0].classroom?.name || ''}
                   type="h4"
                   color="textDark"
                   className={'mt-1'}
@@ -302,8 +325,16 @@ export const CoachProgrammeInformation: React.FC = () => {
             const meetingDays = getClassroomGroupSchoolDays(
               item?.classProgrammes
             );
-            const weekMeetingDays = meetingDays.map((item) => weekday[item]);
+
+            const weekMeetingDays = meetingDays
+              .sort()
+              .map((item) => weekday[item]);
             const stringMeetingDays = weekMeetingDays.join(', ').toString();
+            const halfOrFullDayMeeting =
+              item?.classProgrammes.length > 0 &&
+              item?.classProgrammes[0].isFullDay === true
+                ? 'Full day'
+                : 'Half day';
 
             return (
               <div key={index}>
@@ -326,7 +357,7 @@ export const CoachProgrammeInformation: React.FC = () => {
                 <div className={styles.infoWrapper}>
                   <div className="ml-6">
                     <Typography
-                      text={stringMeetingDays}
+                      text={stringMeetingDays + ', ' + halfOrFullDayMeeting}
                       type="h5"
                       color="textMid"
                       className={'mt-1'}
@@ -356,7 +387,7 @@ export const CoachProgrammeInformation: React.FC = () => {
                   practitionerClassroomDetails?.length > 0
                     ? String(
                         practitionerClassroomDetails[0].classroom
-                          ?.numberPractitioners
+                          ?.numberOfOtherAssistants
                       )
                     : ''
                 }
@@ -380,7 +411,7 @@ export const CoachProgrammeInformation: React.FC = () => {
                   practitionerClassroomDetails?.length > 0
                     ? String(
                         practitionerClassroomDetails[0].classroom
-                          ?.numberOfOtherAssistants
+                          ?.numberPractitioners
                       )
                     : ''
                 }

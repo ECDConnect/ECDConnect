@@ -22,6 +22,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Metadata.Ecma335;
 using System.Text;
+using Document = ECDLink.DataAccessLayer.Entities.Documents.Document;
 
 namespace ECDLink.DataAccessLayer.Hierarchy
 {
@@ -229,7 +230,22 @@ namespace ECDLink.DataAccessLayer.Hierarchy
                     }
                 }
             }
+            if (typeof(T) == typeof(Document))
+            {
+                var documentRepo = _repoFactory.CreateGenericRepository<Document>(userContext: userId);
+                //use the parent list to determine
+                List<string> documentHierarchyList = hierarchyList.Copy();
+                foreach (var hierarchy in documentHierarchyList)
+                {
+                    List<string> documentHierarchy = documentRepo.GetAll().Where(c => c.Hierarchy.StartsWith(hierarchy)).Select(p => p.Hierarchy).ToList();
+                    if (documentHierarchy.Any())
+                    {
+                        hierarchyList.AddRange(documentHierarchy);
+                    }
+                }
+            }
             return hierarchyList;
+
         }
 
         public string GetHierarchy<TChild>(string parentId, string childId)
