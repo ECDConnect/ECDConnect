@@ -585,7 +585,7 @@ class PractitionerService {
     return response.data.data.updatePractitionerRegistered;
   }
 
-  async displayMetrics(): Promise<PractitionerDto[]> {
+  async displayMetrics(type: string): Promise<PractitionerDto[]> {
     const apiInstance = await api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
@@ -596,6 +596,9 @@ class PractitionerService {
         }
       }
       `,
+      variables: {
+        type,
+      },
     });
 
     if (response.status !== 200) {
