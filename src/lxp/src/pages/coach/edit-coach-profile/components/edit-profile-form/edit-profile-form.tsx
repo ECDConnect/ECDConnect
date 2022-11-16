@@ -39,6 +39,8 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
   const [isOfficeAddress, setIsOfficeAddress] = useState<boolean | undefined>();
   const [franchisorSiteAddress, setFranchisorSetAddress] =
     useState<SiteAddressDto>();
+  const [differentProvinceNotification, setDifferentProvinceNotification] =
+    useState(false);
 
   const isAtOfficeLocation: ButtonGroupOption<boolean>[] = [
     { text: 'At the office', value: true },
@@ -107,6 +109,23 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
     getFranchisorSiteAdress();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    const currentProvince: any = provinces?.find(
+      (item) => item?.id === provinceId
+    );
+
+    if (
+      currentProvince?.description &&
+      provinceId !== '' &&
+      currentProvince?.description !==
+        franchisorSiteAddress?.province?.description
+    ) {
+      setDifferentProvinceNotification(true);
+    } else {
+      setDifferentProvinceNotification(false);
+    }
+  }, [franchisorSiteAddress?.province?.description, provinceId, provinces]);
 
   useEffect(() => {
     if (isOfficeAddress && franchisorSiteAddress && provinces) {
@@ -304,6 +323,15 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
                 });
               }}
             />
+
+            {differentProvinceNotification && (
+              <Alert
+                type={'warning'}
+                message={
+                  'Your Franchisor does not operate in this province. Please choose a different province.'
+                }
+              />
+            )}
             <FormInput<EditCoachProfileModel>
               label={'Postal Code'}
               register={coachProfileFormRegister}
@@ -320,7 +348,7 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
           type="filled"
           color="primary"
           className={styles.button}
-          disabled={disabledButton}
+          disabled={disabledButton || differentProvinceNotification}
           onClick={handleFormSubmit}
         >
           {renderIcon('ArrowCircleRightIcon', styles.icon)}
