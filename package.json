@@ -90,7 +90,6 @@
     "react-hook-form": "7.17.3",
     "react-i18next": "^11.11.4",
     "react-native-device-info": "^10.2.1",
-    "react-native-web": "^0.18.9",
     "react-redux": "^8.0.2",
     "react-router": "^5.2.0",
     "react-router-dom": "^5.2.0",
