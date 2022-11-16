@@ -110,22 +110,28 @@ export const CoachAbout: React.FC = () => {
   });
 
   const formatSiteAddressAsText = (user: CoachDto): string => {
-    if (!user || !user.siteAddress) return 'Add a work address';
+    if (!user || !coach?.siteAddress) return 'Add a work address';
 
-    const address = user.siteAddress.ward?.length
+    const address = user?.siteAddress?.ward?.length
       ? `${user.siteAddress.ward}<br/>`
       : '';
 
     if (
-      user.siteAddress.province?.description === undefined ||
-      user.siteAddress.addressLine1 === ''
+      coach?.siteAddress?.provinceId === undefined ||
+      coach?.siteAddress?.addressLine1 === ''
     ) {
       return 'Franchisor Site Address Not Set';
     } else {
       return address.concat(`
-        ${user.siteAddress.addressLine1}<br/>
-        ${user.siteAddress.addressLine2}, ${user.siteAddress.addressLine3} ${user.siteAddress.postalCode}
-        <br/>${user.siteAddress.province?.description}`);
+        ${coach?.siteAddress?.addressLine1}<br/>
+        ${coach?.siteAddress?.addressLine2}, ${
+        coach?.siteAddress?.addressLine3
+      } ${coach?.siteAddress?.postalCode}
+        <br/>${
+          coach?.siteAddress?.province?.description
+            ? coach?.siteAddress?.province?.description
+            : ''
+        }`);
     }
   };
 
@@ -371,6 +377,7 @@ export const CoachAbout: React.FC = () => {
           {coach?.signingSignature && (
             <>
               <img
+                alt="signature"
                 src={coach.signingSignature}
                 style={{ margin: '20px 0 ' }}
                 width="60"
