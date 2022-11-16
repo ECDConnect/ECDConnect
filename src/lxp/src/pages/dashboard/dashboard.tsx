@@ -78,24 +78,24 @@ export const Dashboard: React.FC = () => {
     notificationsSelectors.getDashboardNotification
   );
 
-  function getFreeDiskStorage() {
-    DeviceInfo.getFreeDiskStorage().then((freeDiskStorage) => {
-      let freeStorageInMB = freeDiskStorage / 1024 / 1024;
-      freeStorageInMB = parseInt(freeStorageInMB + '');
-      setFreeMemory(freeStorageInMB);
-      return freeStorageInMB;
-    });
-  }
+  // function getFreeDiskStorage() {
+  //   DeviceInfo.getFreeDiskStorage().then((freeDiskStorage) => {
+  //     let freeStorageInMB = freeDiskStorage / 1024 / 1024;
+  //     freeStorageInMB = parseInt(freeStorageInMB + '');
+  //     setFreeMemory(freeStorageInMB);
+  //     return freeStorageInMB;
+  //   });
+  // }
 
-  useEffect(() => {
-    let isMounted = true;
-    if (isMounted) {
-      getFreeDiskStorage();
-    }
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  // useEffect(() => {
+  //   let isMounted = true;
+  //   if (isMounted) {
+  //     getFreeDiskStorage();
+  //   }
+  //   return () => {
+  //     isMounted = false;
+  //   };
+  // }, []);
 
   const { userProfilePicture } = useDocuments();
 
