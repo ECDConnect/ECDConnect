@@ -246,16 +246,16 @@ export const PractitionerProgrammeInformation: React.FC = () => {
     ) {
       stackedActionList.push({
         title: 'Other practitioners on site',
-        subTitle:
-          practitionersList?.map((x) => x?.user?.firstName).join(', ') ||
-          otherColleaguesFiltered?.map((x: any) => x?.name).join(', '),
+        subTitle: isPrincipal
+          ? practitionersList?.map((x) => x?.user?.firstName).join(', ')
+          : otherColleaguesFiltered?.map((x: any) => x?.name).join(', '),
         switchTextStyles: true,
         actionName:
           practitioners?.length! > 1 || otherColleaguesFiltered?.length! > 0
             ? isPrincipal
               ? 'Edit'
               : 'View'
-            : undefined,
+            : 'Add',
         actionIcon: isPrincipal ? 'PencilIcon' : 'EyeIcon',
         onActionClick: () => {
           history.push(ROUTES.PRINCIPAL.PRACTITIONER_LIST, {
