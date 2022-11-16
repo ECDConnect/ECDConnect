@@ -43,6 +43,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             [Service] ITokenManager<ApplicationUser, OpenAccessTokenManager> tokenManager,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
+            [Service] UserManager<ApplicationUser> userManager,
             string token,
             AddChildCaregiverTokenModel caregiver,
             AddChildLearnerTokenModel learner,
@@ -69,10 +70,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             try
             {
                 var siteAddressEntity = AddSiteAddress(siteAddress, siteRepo);
-
+               
                 var caregiverEntity = AddCaregiver(caregiver, siteAddressEntity, caregiverRepo);
 
-                var childEntity = AddChild(child, tokenModel, caregiverEntity, childRepo);
+                var childEntity = AddChild(child, tokenModel, caregiverEntity, childRepo, userManager);
 
                 AddLearner(childEntity, learner, tokenModel, scope);
 
