@@ -175,8 +175,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return updated;
         }
 
-        private Child AddChild(AddChildTokenModel child, ChildTokenWrapperModel tokenModel, Caregiver caregiver, IGenericRepository<Child, Guid> repoFactory)
+        private Child AddChild(AddChildTokenModel child, ChildTokenWrapperModel tokenModel, Caregiver caregiver, IGenericRepository<Child, Guid> repoFactory, [Service] UserManager<ApplicationUser> userManager)
         {
+
+            var insertingUser = userManager.FindByIdAsync(tokenModel.AddedByUserId);
+
             var childEntity = new Child
             {
                 Id = tokenModel.ChildId,
@@ -187,7 +190,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 OtherHealthConditions = child.OtherHealthConditions,
                 WorkflowStatusId = child.WorkflowStatusId,
                 CaregiverId = caregiver.Id,
-                InsertedBy = tokenModel.AddedByUserId
+                InsertedBy = (insertingUser!=null ? insertingUser.Result.FullName : "N/A")
             };
 
             var updated = repoFactory.Update(childEntity);
@@ -223,7 +226,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             {
                 UserId = appUser.Id,
                 WorkflowStatusId = workflowStatus.Id,
-                InsertedBy = httpContext.HttpContext.GetUser().Id
+                InsertedBy = httpContext.HttpContext.GetUser().FullName
             };
 
             child.TenantId = tenantId;

@@ -287,10 +287,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
             var notificationList = new List<NotificationDisplay>();
 
+            var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
+            var practRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+            var absenteeRepo = repoFactory.CreateRepository<Absentees>(userContext: uId);            
             //loop for last 12 months
             //for (int idx = 1; idx <= 12; idx++)
             //{
-                DateTime reference = DateTime.Now;
+            DateTime reference = DateTime.Now;
                 //fromDate = (fromDate!=null?fromDate : new DateTime(reference.Year, reference.Month, 1).AddMonths(-1));
                 //fromDate = fromDate.AddMonths(-1);
                 //toDate = (toDate != null ? toDate : reference.AddMonths(-idx).AddDays(-1);//decrement
@@ -310,14 +313,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 Add weighting to each subject, and weigh up for each user what the messages are and use weighting to push the most relevant message up to the top, and assign colour, icon and Message to each
                 return list to FE for each user
                 */
-                switch (type)
+                switch (type.ToLower())
                 {
                     case "child":
-                        var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
+                        
                         var children = childRepo.GetAll();
                         foreach (var user in children)
                         {
-                            NotificationDisplay display = new NotificationDisplay()
+                            NotificationDisplay displayChild = new NotificationDisplay()
                             {
                                 Subject = "Child Information missing",
                                 Icon = "redicon",
@@ -330,18 +333,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                             };
                             //var attendaceRepo = attendanceRepo.GetAllByDateRange(fromDate, toDate);
 
-                            notificationList.Add(display);
+                            notificationList.Add(displayChild);
                         }
                         break;
                     case "practitioner": //practitioners and principals
-                        var practRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-                        var absenteeRepo = repoFactory.CreateRepository<Absentees>(userContext: uId);
+
                         var practitioners = practRepo.GetAll();
                         foreach (var user in practitioners)
                         {
                             //get absent days
-                            int daysAbsent = 0;
-                            NotificationDisplay display = new NotificationDisplay()
+                            //int daysAbsent = 0;
+                            NotificationDisplay displayPracti = new NotificationDisplay()
                             {
                                 Subject = "0 days absent last month",
                                 Icon = "greenicon",
@@ -353,9 +355,30 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                             };
                             //var attendaceRepo = attendanceRepo.GetAllByDateRange(fromDate, toDate);
 
-                            notificationList.Add(display);
+                            notificationList.Add(displayPracti);
                         }
-                        break;
+                    break;
+                case "coach": //practitioners and principals
+                    //var practitioners = practRepo.GetAll();
+                    //foreach (var user in practitioners)
+                    //{
+                        //get absent days
+                        int daysAbsent = 0;
+                        NotificationDisplay displayCoach = new NotificationDisplay()
+                        {
+                            Subject = "0 days absent last month",
+                            Icon = "greenicon",
+                            Color = "green",
+                            Message = "",
+                            Notes = "",
+                            UserId = Guid.Parse(uId),
+                            UserType = "coach"
+                        };
+                        //var attendaceRepo = attendanceRepo.GetAllByDateRange(fromDate, toDate);
+
+                        notificationList.Add(displayCoach);
+                    //}
+                    break;
                 }
             //}
 
