@@ -25,12 +25,16 @@ using Microsoft.Azure.Documents;
 using System.Collections.Concurrent;
 using NPOI.SS.Formula.Functions;
 using ECDLink.DataAccessLayer.Entities.Classroom;
+using ECDLink.Core.SystemSettings.SystemOptions;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class PrincipalMutationExtension
     {
+        private readonly ISystemSetting<InvitationCutoffDelayOptions> _invitationDelay;
+
+
 
         public Practitioner AddPractitionerToPrincipal([Service] IServiceProvider serviceProvider, [Service] IHttpContextAccessor contextAccessor,
     [Service] UserManager<ApplicationUser> userManager,
@@ -208,6 +212,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
         public PrincipalInvitationStatus UpdatePrincipalInvitation([Service] IHttpContextAccessor contextAccessor,
     [Service] IGenericRepositoryFactory repoFactory,
+    [Service] ISystemSetting<InvitationCutoffDelayOptions> invitationDelay,
     string practitionerId, string principalId, bool accepted)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
@@ -248,11 +253,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     } 
                     else
                     {
-                        practitioner.DateToBeRemoved = DateTime.Now.AddDays(7);
+                        int hrsToReassign = int.Parse(invitationDelay.Value.InvitationCutoffDelay);
+
+                        practitioner.DateToBeRemoved = DateTime.Now.AddHours(hrsToReassign);
                         practitioner.DateAccepted = null;
                         practitioner.IsLeaving = true;
 
-                    status.LeavingDate = DateTime.Now.AddDays(7);
+                    status.LeavingDate = DateTime.Now.AddHours(hrsToReassign);
                         status.Leaving = true;
                     }
                 }
