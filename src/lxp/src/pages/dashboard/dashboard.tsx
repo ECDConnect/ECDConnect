@@ -42,6 +42,7 @@ import { storyBookThunkActions } from '@store/content/story-book';
 import { activityThunkActions } from '@store/content/activity';
 import getFreeDiskStorage from '@/functions/DeviceInfo';
 import DeviceInfo from 'react-native-device-info';
+import { browserName, browserVersion } from 'react-device-detect';
 import packageInfo from '@@/package.json';
 
 export enum NavigationTypes {
@@ -76,9 +77,10 @@ export const Dashboard: React.FC = () => {
   const dashboardNotification = useSelector(
     notificationsSelectors.getDashboardNotification
   );
-  //   console.log({ browserName });
-  //
-  //   console.log({ browserVersion });
+
+  console.log({ browserName });
+
+  console.log({ browserVersion });
 
   const { userProfilePicture } = useDocuments();
 
