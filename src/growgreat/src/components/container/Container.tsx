@@ -8,6 +8,7 @@ import { useLayoutEffect, useState } from 'react';
  *
  * */
 interface ContainerProps extends ComponentBaseProps {
+  className: string;
   title: string;
   isOnline?: boolean;
   activeStep: number;
