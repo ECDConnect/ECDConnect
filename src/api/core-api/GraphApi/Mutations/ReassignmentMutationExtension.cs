@@ -64,6 +64,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return true;
         }
 
+        public bool ReassignAllClassroomsFromHistoryService([Service] IHttpContextAccessor contextAccessor,
+    [Service] IInvitationReassignmentService reassignmentService)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            return reassignmentService.ReassignClassroomsFromHistory(uId, null);
+        }
+
 
         #endregion
     }
