@@ -40,8 +40,6 @@ import { settingThunkActions } from '@store/settings';
 import { programmeThemeThunkActions } from '@store/content/programme-theme';
 import { storyBookThunkActions } from '@store/content/story-book';
 import { activityThunkActions } from '@store/content/activity';
-import getFreeDiskStorage from '@/functions/DeviceInfo';
-import DeviceInfo from 'react-native-device-info';
 import { browserName, browserVersion } from 'react-device-detect';
 import packageInfo from '@@/package.json';
 
@@ -77,25 +75,9 @@ export const Dashboard: React.FC = () => {
   const dashboardNotification = useSelector(
     notificationsSelectors.getDashboardNotification
   );
+  console.log({ browserName });
 
-  // function getFreeDiskStorage() {
-  //   DeviceInfo.getFreeDiskStorage().then((freeDiskStorage) => {
-  //     let freeStorageInMB = freeDiskStorage / 1024 / 1024;
-  //     freeStorageInMB = parseInt(freeStorageInMB + '');
-  //     setFreeMemory(freeStorageInMB);
-  //     return freeStorageInMB;
-  //   });
-  // }
-
-  // useEffect(() => {
-  //   let isMounted = true;
-  //   if (isMounted) {
-  //     getFreeDiskStorage();
-  //   }
-  //   return () => {
-  //     isMounted = false;
-  //   };
-  // }, []);
+  console.log({ browserVersion });
 
   const { userProfilePicture } = useDocuments();
 

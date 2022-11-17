@@ -245,7 +245,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         //update and clear the principals details
                         practitioner.PrincipalHierarchy = null;
                         practitioner.ShareInfo = false;
+<<<<<<< HEAD
 
+=======
+                        
+>>>>>>> develop
                         status.LeavingDate = DateTime.Now;
                         status.Leaving = true;
                     }
