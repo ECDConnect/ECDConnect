@@ -1,20 +1,19 @@
-import { IonContent } from '@ionic/react';
-import { useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { IonContent } from '@ionic/react';
 
 import { useDialog, ConsentDto, LanguageDto } from '@ecdlink/core';
 
 import {
   Button,
-  Divider,
   Typography,
-  renderIcon,
   ActionModal,
   BannerWrapper,
   DialogPosition,
 } from '@ecdlink/ui';
 
 import { useAppDispatch } from '@/store';
+
 import {
   contentConsentSelectors,
   contentConsentThunkActions,
@@ -22,9 +21,10 @@ import {
 
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
-import * as styles from '@/components/article/article.styles';
 import { ArticleProps } from '@/components/article/article.types';
 import LanguageSelector from '@/components/language-selector/language-selector';
+
+import * as styles from '@/components/article/article.styles';
 
 export const Article = ({
   title,
@@ -39,7 +39,6 @@ export const Article = ({
   const { isOnline } = useOnlineStatus();
   const [articleText, setArticleText] = useState<string>('');
   const consent = useSelector(contentConsentSelectors.getConsent);
-
   function presentUnavailableAlert() {
     return dialog({
       position: DialogPosition.Middle,
@@ -69,28 +68,25 @@ export const Article = ({
       },
     });
   }
-
   async function changeLanguage(language: LanguageDto) {
     getOpenContent(language.locale);
   }
-
   async function getOpenContent(locale: string) {
     const content = await appDispatch(
       contentConsentThunkActions.getOpenConsent({
         locale: locale,
-        type: consentEnumType,
+        type: consentEnumType as any,
       })
     ).unwrap();
-
     if (content && content.length > 0) {
       const consentFilter = content.find((x) => x.type === consentEnumType);
+
       setArticleText(consentFilter?.description ?? '');
     } else {
       setArticleText('');
       presentUnavailableAlert();
     }
   }
-
   async function getContent(consentList: ConsentDto[] | undefined) {
     const consentFilter = consentList?.find((x) => x.type === consentEnumType);
 
@@ -100,14 +96,12 @@ export const Article = ({
 
     setArticleText(consentFilter?.description ?? '');
   }
-
   useEffect(() => {
     if (consent && visible && !isOpen) {
       getContent(consent);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [consent, visible, isOpen]);
-
   useEffect(() => {
     if (isOpen) {
       // DEFAULT SETTING
@@ -121,24 +115,22 @@ export const Article = ({
       <div className={styles.contentWrapper}>
         <IonContent scrollY={true}>
           <BannerWrapper
-            title={title}
+            title={title as string}
             size={'normal'}
             onBack={onClose}
             color={'primary'}
             renderBorder={true}
             showBackground={false}
-            backgroundColour={'uiBg'}
+            backgroundColour={'white'}
             displayOffline={!isOnline}
             className={styles.bannerContentWrapper}
           >
             <div className={styles.localeDropDownWrapper}>
               <LanguageSelector
                 currentLocale="en-za"
-                selectLanguage={(data) => changeLanguage(data)}
+                selectLanguage={(data) => changeLanguage(data as any)}
               />
             </div>
-
-            <Divider dividerType="dashed" />
 
             <div className={styles.articleTextWrapper}>
               <Typography type={'markdown'} text={articleText} />
@@ -146,20 +138,19 @@ export const Article = ({
 
             {showClose && (
               <div className={styles.bottom}>
-                <Divider dividerType="dashed" />
-
                 <Button
                   color={'primary'}
-                  type={'outlined'}
+                  icon="XIcon"
+                  type={'filled'}
                   onClick={onClose}
+                  textColor={'white'}
                   className={styles.closeButton}
                 >
-                  {renderIcon('XIcon', 'h-4 w-4 mr-2')}
                   <Typography
                     type={'body'}
                     text={'Close'}
                     weight={'bold'}
-                    color={'primary'}
+                    color={'white'}
                   />
                 </Button>
               </div>

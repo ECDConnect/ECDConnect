@@ -1,6 +1,6 @@
 import { render } from '@testing-library/react';
-
-import Article from './article';
+import { ArticleProps } from './article.types';
+import { Article } from './article';
 
 describe('Article', () => {
   it('should render successfully', () => {
