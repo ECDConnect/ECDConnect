@@ -1,9 +1,9 @@
 const plugin = require('tailwindcss/plugin');
 
-// purge: ['./src/**/*.{js,jsx,ts,tsx}', './public/index.html'],
 module.exports = {
+  purge: ['./src/**/*.{js,jsx,ts,tsx}', './public/index.html'],
   important: true,
-  mode: 'aot',
+  mode: 'jit',
   darkMode: false, // or 'media' or 'class'
   theme: {
     extend: {
