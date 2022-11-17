@@ -76,9 +76,9 @@ export const Dashboard: React.FC = () => {
   const dashboardNotification = useSelector(
     notificationsSelectors.getDashboardNotification
   );
-  console.log({ browserName });
-
-  console.log({ browserVersion });
+  //   console.log({ browserName });
+  //
+  //   console.log({ browserVersion });
 
   const { userProfilePicture } = useDocuments();
 
