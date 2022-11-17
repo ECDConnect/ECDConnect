@@ -13,6 +13,7 @@ interface DialogProps extends ComponentBaseProps {
   position: DialogPosition;
   fullScreen?: boolean;
   borderRadius?: DialogBorderRadiusType;
+  children?: React.ReactNode | null;
 }
 
 export const Dialog: React.FC<DialogProps> = ({

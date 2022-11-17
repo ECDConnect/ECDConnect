@@ -2,6 +2,7 @@ import { classNames, Colours, ComponentBaseProps } from '../..';
 
 interface BadgeProps extends ComponentBaseProps {
   color?: Colours;
+  children?: React.ReactNode | null;
 }
 
 export const Badge: React.FC<BadgeProps> = ({
@@ -13,7 +14,7 @@ export const Badge: React.FC<BadgeProps> = ({
     <span
       className={classNames(
         className,
-        'inline-flex items-center justify-center px-3 py-1 text-xs font-bold leading-none rounded-full',
+        'inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-bold leading-none',
         `bg-${color}`
       )}
     >

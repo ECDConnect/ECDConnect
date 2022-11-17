@@ -37,6 +37,7 @@ export interface BannerWrapperProps extends ComponentBaseProps {
   onClose?: () => void;
   onHelp?: () => void;
   version?: string;
+  children?: React.ReactNode | null;
 }
 
 export const BannerWrapper: React.FC<BannerWrapperProps> = ({
