@@ -61,7 +61,6 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
         text={'Agreements'}
         className="z-50 pt-6"
       />
-
       <Typography
         type="h4"
         color={'textMid'}
@@ -145,10 +144,8 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
 
       <Alert
         className="mt-6 flex w-11/12 items-center"
-        type={'info'}
-        message={
-          'If the client does not consent, please do not register them on CHW Connect.'
-        }
+        type="info"
+        message="If the client does not consent, please do not register them on CHW Connect."
       />
 
       <div className="flex h-full w-full justify-center align-bottom">

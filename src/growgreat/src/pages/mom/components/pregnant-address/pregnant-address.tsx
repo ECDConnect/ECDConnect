@@ -45,7 +45,7 @@ export const PregnantAddress: React.FC<PregnantAddressProps> = ({
   //   };
 
   return (
-    <div className="h-screen ">
+    <div className="h-screen h-full w-screen w-full px-4">
       <Typography
         type="h2"
         color={'textDark'}
@@ -78,13 +78,14 @@ export const PregnantAddress: React.FC<PregnantAddressProps> = ({
           />
         </div>
       </div>
-      <div className={'mt-4 px-4'}>
-        <Alert
-          type={'info'}
-          // title="Each child is unique!"
-          message={`If you are at ${details?.name}'s house now, you can use your phone's GPS to save the address.`}
-        />
-      </div>
+
+      <Alert
+        type={'info'}
+        className="mt-4 flex w-full flex-col justify-center"
+        // title="Each child is unique!"
+        message={`If you are at ${details?.name}'s house now, you can use your phone's GPS to save the address.`}
+      />
+
       {useMap === false && (
         <FormInput<PregnantAddressModel>
           label={'Add address'}
@@ -97,21 +98,21 @@ export const PregnantAddress: React.FC<PregnantAddressProps> = ({
         />
       )}
       <div className="flex h-full w-full align-bottom">
-        <div className={'mt-10 ml-2 flex w-11/12 justify-center align-bottom'}>
-          <Button
-            type={'filled'}
-            color={'primary'}
-            className={'absolute bottom-10 mt-2 ml-6 max-h-10 w-11/12'}
-            textColor={'white'}
-            text={`Next`}
-            icon={'ArrowCircleRightIcon'}
-            iconPosition={'start'}
-            onClick={() => {
-              onSubmit(getPregnantAddressFormValues());
-            }}
-            disabled={!isValid}
-          />
-        </div>
+        {/* <div className={'mt-10 ml-2 flex w-full justify-center align-bottom'}> */}
+        <Button
+          type={'filled'}
+          color={'primary'}
+          className={'absolute bottom-10 m-auto mt-2 max-h-10 w-11/12'}
+          textColor={'white'}
+          text={`Next`}
+          icon={'ArrowCircleRightIcon'}
+          iconPosition={'start'}
+          onClick={() => {
+            onSubmit(getPregnantAddressFormValues());
+          }}
+          disabled={!isValid}
+        />
+        {/* </div> */}
       </div>
     </div>
   );
