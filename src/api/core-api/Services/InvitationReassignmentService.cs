@@ -68,11 +68,17 @@ namespace ECDLink.Core.Services
             {
                 foreach (var prac in pracsToExpire)
                 {
+                    if (prac.PrincipalHierarchy != null && prac.UserId != null)
+                    {
+                        //Reassign all classes and programmes back to principal
+                        AddReassignmentForPractitioner(adminId, prac.UserId, prac.PrincipalHierarchy.ToString(), "Removing link between Principal and Practitioner", DateTime.Now, adminId, null, true);
+                    }
+
                     prac.DateToBeRemoved = null;
                     prac.DateAccepted = null;
                     prac.DateLinked = null;
                     prac.IsLeaving = false;
-                    //update and clear  the practitioner details
+                    //update and clear the practitioner details
                     prac.PrincipalHierarchy = null;
                     prac.ShareInfo = false;
 
