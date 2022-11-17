@@ -39,24 +39,10 @@ export const Login: React.FC = () => {
   const [freeMemory, setFreeMemory] = useState(0);
   const [errorMessage, setErrorMessage] = useState(false);
 
-  // function getFreeDiskStorage() {
-  //   DeviceInfo.getFreeDiskStorage().then((freeDiskStorage) => {
-  //     let freeStorageInMB = freeDiskStorage / 1024 / 1024;
-  //     freeStorageInMB = parseInt(freeStorageInMB + '');
-  //     setFreeMemory(freeStorageInMB);
-  //     return freeStorageInMB;
-  //   });
-  // }
-
-  // useEffect(() => {
-  //   let isMounted = true;
-  //   if (isMounted) {
-  //     getFreeDiskStorage();
-  //   }
-  //   return () => {
-  //     isMounted = false;
-  //   };
-  // }, []);
+  navigator.storage.estimate().then((estimate) => {
+    console.log(estimate?.quota! / 1024 / 1024);
+    return estimate;
+  });
 
   const {
     register: loginRegister,
@@ -69,8 +55,6 @@ export const Login: React.FC = () => {
     mode: 'onChange',
   });
   const { isValid, errors } = loginFormState;
-
-  console.log('freeMemory:', freeMemory);
 
   const submitForm = async () => {
     setDisplayError(false);

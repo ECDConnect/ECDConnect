@@ -72,30 +72,13 @@ export const Dashboard: React.FC = () => {
   const newNotificationCount = useSelector(
     notificationsSelectors.getNewNotificationCount
   );
-  const [freeMemory, setFreeMemory] = useState(0);
 
   const dashboardNotification = useSelector(
     notificationsSelectors.getDashboardNotification
   );
+  console.log({ browserName });
 
-  // function getFreeDiskStorage() {
-  //   DeviceInfo.getFreeDiskStorage().then((freeDiskStorage) => {
-  //     let freeStorageInMB = freeDiskStorage / 1024 / 1024;
-  //     freeStorageInMB = parseInt(freeStorageInMB + '');
-  //     setFreeMemory(freeStorageInMB);
-  //     return freeStorageInMB;
-  //   });
-  // }
-
-  // useEffect(() => {
-  //   let isMounted = true;
-  //   if (isMounted) {
-  //     getFreeDiskStorage();
-  //   }
-  //   return () => {
-  //     isMounted = false;
-  //   };
-  // }, []);
+  console.log({ browserVersion });
 
   const { userProfilePicture } = useDocuments();
 
