@@ -47,7 +47,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     LoggedBy = loggedByUser,
                     ReassignedClass = classProgram,
                     ReassignedToPractitioner = reassignedToPractitioner,
-                    
+                    UpdatedBy = loggedByUser,
+                    UpdatedDate = DateTime.Now
                 };
                 updated = absenteeRepo.Insert(absent);
 
