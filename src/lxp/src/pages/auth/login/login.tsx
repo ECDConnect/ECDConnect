@@ -27,7 +27,7 @@ import { settingActions } from '@store/settings';
 import ROUTES from '@routes/routes';
 // import DeviceInfo from 'react-native-device-info';
 import { StorageFull } from './storage-full/storage-full';
-import packageInfo from '../../../../package.json';
+import packageInfo from '@@/package.json';
 
 export const Login: React.FC = () => {
   const appDispatch = useAppDispatch();
