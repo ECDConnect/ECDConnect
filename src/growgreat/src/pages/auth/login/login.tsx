@@ -232,15 +232,14 @@ export const Login: React.FC = () => {
           <Typography type="help" color="white" text={'Log in'} />
         </Button>
         <Button
-          type="filled"
           id="gtm-signup"
+          type="outlined"
           color={'primary'}
-          disabled={!isOnline}
-          isLoading={isLoading}
+          disabled={!isOnline || isLoading}
           className={'mt-3 w-full'}
           onClick={() => history.push(ROUTES.SIGN_UP)}
         >
-          <Typography type="help" color="white" text={'Sign up'} />
+          <Typography type="help" color="primary" text={'Sign up'} />
         </Button>
       </form>
     </BannerWrapper>

@@ -25,7 +25,7 @@ import { authActions, authThunkActions } from '@store/auth';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { settingActions } from '@store/settings';
 import ROUTES from '@routes/routes';
-import DeviceInfo from 'react-native-device-info';
+// import DeviceInfo from 'react-native-device-info';
 import { StorageFull } from './storage-full/storage-full';
 const { version } = require('../../../../package.json');
 
@@ -39,24 +39,24 @@ export const Login: React.FC = () => {
   const [freeMemory, setFreeMemory] = useState(0);
   const [errorMessage, setErrorMessage] = useState(false);
 
-  function getFreeDiskStorage() {
-    DeviceInfo.getFreeDiskStorage().then((freeDiskStorage) => {
-      let freeStorageInMB = freeDiskStorage / 1024 / 1024;
-      freeStorageInMB = parseInt(freeStorageInMB + '');
-      setFreeMemory(freeStorageInMB);
-      return freeStorageInMB;
-    });
-  }
+  // function getFreeDiskStorage() {
+  //   DeviceInfo.getFreeDiskStorage().then((freeDiskStorage) => {
+  //     let freeStorageInMB = freeDiskStorage / 1024 / 1024;
+  //     freeStorageInMB = parseInt(freeStorageInMB + '');
+  //     setFreeMemory(freeStorageInMB);
+  //     return freeStorageInMB;
+  //   });
+  // }
 
-  useEffect(() => {
-    let isMounted = true;
-    if (isMounted) {
-      getFreeDiskStorage();
-    }
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  // useEffect(() => {
+  //   let isMounted = true;
+  //   if (isMounted) {
+  //     getFreeDiskStorage();
+  //   }
+  //   return () => {
+  //     isMounted = false;
+  //   };
+  // }, []);
 
   const {
     register: loginRegister,

@@ -42,7 +42,7 @@ const headerSlide: HeaderSlide = {
   status: ChipStatus.Available,
   title: 'Welcome to CHW Connect!',
   text: 'Track your clients, get support, access training opportunities, connect with other CHWs & get rewarded.',
-  image: '@/assets/banner-ss.jpg',
+  image: require('@/assets/banner-ss.jpg'),
 };
 
 export const SignUp: React.FC = () => {

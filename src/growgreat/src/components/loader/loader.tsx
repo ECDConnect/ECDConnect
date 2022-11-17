@@ -1,10 +1,11 @@
 import { Alert, Button, Typography } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useHistory } from 'react-router';
-import LoadingRocket from '@/assets/gifs/rocketclear.gif';
+// import LoadingRocket from '@/assets/gifs/rocketclear.gif';
 import { useStoreSetup } from '@/hooks/useStoreSetup';
 // import { useTheme } from '@ecdlink/core';
 import ROUTES from '@/routes/routes';
+import * as styles from '@/components/loader/loader.styles';
 
 const Loader = ({ loadingMessage = 'Loading . . .' }) => {
   const history = useHistory();
@@ -22,18 +23,17 @@ const Loader = ({ loadingMessage = 'Loading . . .' }) => {
 
   return (
     <div
-      style={{ backgroundColor: '#F47C24' }}
-      className="z-50 flex w-full flex-col items-center justify-between"
+      className={`z-50 flex w-full flex-col items-center justify-between ${styles.container}`}
     >
       <div className="flex h-screen flex-col items-center justify-center">
-        <img src={LoadingRocket} alt="loading rocket" />
-        <Typography
+        {/* <img src={LoadingRocket} alt="loading rocket" /> */}
+        {/* <Typography
           type="h2"
           color="white"
           weight="bold"
           className="text-center"
           text={loadingMessage}
-        />
+        /> */}
       </div>
       {showIssue && (
         <div className="flex flex-col items-center justify-center px-4 py-4">

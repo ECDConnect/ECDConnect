@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
   Button,
@@ -8,7 +9,6 @@ import {
   FormInput,
 } from '@ecdlink/ui';
 import { useForm, useFormState } from 'react-hook-form';
-import { useState } from 'react';
 import {
   PregnantAddressProps,
   useMapOrAddressOptions,
@@ -46,62 +46,56 @@ export const PregnantAddress: React.FC<PregnantAddressProps> = ({
 
   return (
     <div className="h-screen ">
-      <div>
-        <Typography
-          type="h2"
-          color={'textDark'}
-          text={`${details?.name}`}
-          className="z-50 pt-6"
-        />
+      <Typography
+        type="h2"
+        color={'textDark'}
+        text={`${details?.name}`}
+        className="z-50 pt-6"
+      />
+      <Typography
+        type="h4"
+        color={'textMid'}
+        text={'Address'}
+        className="z-50 w-11/12 pt-2"
+      />
+      <div className="mt-4">
         <Typography
           type="h4"
           color={'textMid'}
-          text={'Address'}
+          text={`Add ${details?.name}'s address`}
           className="z-50 w-11/12 pt-2"
         />
-      </div>
-      <div>
-        <div className="mt-4">
-          <Typography
-            type="h4"
-            color={'textMid'}
-            text={`Add ${details?.name}'s address`}
-            className="z-50 w-11/12 pt-2"
-          />
-          <div className="mt-2">
-            <ButtonGroup<boolean>
-              options={useMapOrAddressOptions}
-              onOptionSelected={(value: boolean | boolean[]) =>
-                setUseMap(value as boolean)
-              }
-              color="secondary"
-              type={ButtonGroupTypes.Button}
-              className={'mt-2 w-full'}
-              selectedOptions={useMap}
-            />
-          </div>
-        </div>
-        <div className={'mt-4 px-4'}>
-          <Alert
-            type={'info'}
-            // title="Each child is unique!"
-            message={`If you are at ${details?.name}'s house now, you can use your phone's GPS to save the address.`}
+        <div className="mt-2">
+          <ButtonGroup<boolean>
+            color="secondary"
+            selectedOptions={useMap}
+            className={'mt-2 w-full'}
+            type={ButtonGroupTypes.Button}
+            options={useMapOrAddressOptions}
+            onOptionSelected={(value: boolean | boolean[]) =>
+              setUseMap(value as boolean)
+            }
           />
         </div>
-        {useMap === false && (
-          <>
-            <FormInput<PregnantAddressModel>
-              label={'Add address'}
-              register={pregnantAddressFormRegister}
-              nameProp={'address'}
-              placeholder={'e.g 012 345 6789'}
-              type={'text'}
-              className="mt-4"
-              textInputType="textarea"
-            ></FormInput>
-          </>
-        )}
       </div>
+      <div className={'mt-4 px-4'}>
+        <Alert
+          type={'info'}
+          // title="Each child is unique!"
+          message={`If you are at ${details?.name}'s house now, you can use your phone's GPS to save the address.`}
+        />
+      </div>
+      {useMap === false && (
+        <FormInput<PregnantAddressModel>
+          label={'Add address'}
+          register={pregnantAddressFormRegister}
+          nameProp={'address'}
+          placeholder={'e.g 012 345 6789'}
+          type={'text'}
+          className="mt-4"
+          textInputType="textarea"
+        />
+      )}
       <div className="flex h-full w-full align-bottom">
         <div className={'mt-10 ml-2 flex w-11/12 justify-center align-bottom'}>
           <Button

@@ -55,9 +55,66 @@ export const Dashboard: React.FC = () => {
   const dashboardNotification = useSelector(
     notificationsSelectors.getDashboardNotification
   );
+
   const { userProfilePicture } = useDocuments();
   const mothers = useSelector(motherSelectors.getMothers);
   const infants = useSelector(getInfants);
+
+  function goToProfile() {
+    history.push(ROUTES.PRACTITIONER.PROFILE.ROOT);
+  }
+
+  function goToClientFolders() {
+    if (mothers.length > 0 || infants.length > 0) {
+      history.push(ROUTES.CLASSROOM, { activeTabIndex: 1 });
+      return;
+    } else {
+      showCompleteProfileBlockingDialog();
+    }
+  }
+
+  function onNavigation(navItem: any) {
+    history.push(navItem.href, navItem.params);
+  }
+
+  function showCompleteProfileBlockingDialog() {
+    dialog({
+      blocking: true,
+      position: DialogPosition.Middle,
+      render: (onSubmit, onCancel) => {
+        return (
+          <ActionModal
+            className="z-50"
+            title="Open a new folder"
+            actionButtons={[
+              {
+                colour: 'primary',
+                text: 'Pregnant mom',
+                textColour: 'white',
+                type: 'filled',
+                leadingIcon: 'UserAddIcon',
+                onClick: async () => {
+                  onSubmit();
+                  history.push(ROUTES.MOM_REGISTER);
+                },
+              },
+              {
+                colour: 'primary',
+                text: 'Child',
+                textColour: 'primary',
+                type: 'outlined',
+                leadingIcon: 'UserGroupIcon',
+                onClick: () => {
+                  onSubmit();
+                  history.push(ROUTES.INFANT_REGISTER);
+                },
+              },
+            ]}
+          />
+        );
+      },
+    });
+  }
 
   useEffect(() => {
     if (!isOnline) {
@@ -145,62 +202,6 @@ export const Dashboard: React.FC = () => {
       });
     }
   }, [shouldUserSync]);
-
-  const goToProfile = () => {
-    history.push(ROUTES.PRACTITIONER.PROFILE.ROOT);
-  };
-
-  const goToClientFolders = () => {
-    if (mothers.length > 0 || infants.length > 0) {
-      history.push(ROUTES.CLASSROOM, { activeTabIndex: 1 });
-      return;
-    } else {
-      showCompleteProfileBlockingDialog();
-    }
-  };
-
-  const onNavigation = (navItem: any) => {
-    history.push(navItem.href, navItem.params);
-  };
-
-  const showCompleteProfileBlockingDialog = () => {
-    dialog({
-      blocking: true,
-      position: DialogPosition.Middle,
-      render: (onSubmit, onCancel) => {
-        return (
-          <ActionModal
-            className="z-50"
-            title="Open a new folder"
-            actionButtons={[
-              {
-                colour: 'primary',
-                text: 'Pregnant mom',
-                textColour: 'white',
-                type: 'filled',
-                leadingIcon: 'UserAddIcon',
-                onClick: async () => {
-                  onSubmit();
-                  history.push(ROUTES.MOM_REGISTER);
-                },
-              },
-              {
-                colour: 'primary',
-                text: 'Child',
-                textColour: 'primary',
-                type: 'outlined',
-                leadingIcon: 'UserGroupIcon',
-                onClick: () => {
-                  onSubmit();
-                  history.push(ROUTES.INFANT_REGISTER);
-                },
-              },
-            ]}
-          />
-        );
-      },
-    });
-  };
 
   return (
     <BannerWrapper
