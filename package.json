@@ -1,5 +1,6 @@
 {
   "name": "root",
+  "license": "UNLICENSED",
   "private": true,
   "scripts": {
     "bootstrap": "lerna bootstrap --force-local && lerna run tsc",

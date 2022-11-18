@@ -1,6 +1,7 @@
 {
   "name": "growgreat",
   "version": "0.0.17",
+  "license": "UNLICENSED",
   "dependencies": {
     "@ecdlink/core": "^1.0.0",
     "@ecdlink/graphql": "^1.0.0",

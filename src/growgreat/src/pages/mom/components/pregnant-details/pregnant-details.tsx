@@ -11,8 +11,8 @@ import {
   ButtonGroupTypes,
   FormInput,
   Dropdown,
-  UserAlertListDataItem,
-  ActionListDataItem,
+  // UserAlertListDataItem,
+  // ActionListDataItem,
 } from '@ecdlink/ui';
 
 import { motherSelectors } from '@/store/mother';
@@ -26,7 +26,7 @@ import {
   pregnantDetailsModelSchema,
   PregnantDetailsModel,
 } from '@/schemas/pregnant/pregnant-details';
-import { format } from 'date-fns';
+// import { format } from 'date-fns';
 
 export const PregnantDetails: React.FC<EditPregnantDetailsProps> = ({
   onSubmit,
