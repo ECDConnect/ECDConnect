@@ -28,12 +28,12 @@ export const getDataResponse = <T>(
       break;
     case HttpResponseCodes.serviceError:
       dataResponse.dataError = {
-        error: 'Ooops... we could not complete your request',
+        error: 'Oops... we could not complete your request',
       };
       break;
     default:
       dataResponse.dataError = {
-        error: 'Unhandleld Error code',
+        error: 'Unhandled Error code',
       };
   }
 

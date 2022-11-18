@@ -21,9 +21,9 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
     // reset: resetConsentFormValue,
     // control: consentFormControl,
   } = useForm<PregnantConsentModel>({
-    resolver: yupResolver(pregnantConsentModelSchema),
     mode: 'onBlur',
     reValidateMode: 'onChange',
+    resolver: yupResolver(pregnantConsentModelSchema),
   });
   const [contentConsentTypeEnum, setContentConsentTypeEnum] =
     useState<ContentConsentTypeEnum>(ContentConsentTypeEnum.PhotoPermissions);
@@ -43,8 +43,8 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
 
   if (presentArticle === false) {
     return (
-      <div className="flex h-screen w-full flex-col">
-        <div className="flex flex-col px-5">
+      <div className="text-textMid flex h-full w-full flex-col px-5">
+        <div className="flex h-screen flex-col">
           <Typography
             type="h2"
             color={'textDark'}
@@ -107,7 +107,9 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
               disabled={!accept}
               iconPosition={'start'}
               icon={'ArrowCircleRightIcon'}
-              className={'absolute bottom-10 m-auto mt-2 max-h-10 w-11/12'}
+              className={
+                'absolute bottom-10 left-0 right-0 m-auto mt-2 max-h-10 w-11/12'
+              }
               onClick={() => onSubmit(getConsentFormValues())}
             />
           </div>

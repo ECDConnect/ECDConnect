@@ -8,12 +8,12 @@ import {
   InfantRegisterSteps,
   MultipleChildrenProps,
 } from './infant-register-form.types';
-import { ConsentAgreement } from '../components/consent-agrement/consent-agreement';
-import { MotherDetails } from '../components/mother-details/mother-details';
-import { MotherContactInformation } from '../components/mother-contact-information/mother-contact-information';
-import { InfantAddress } from '../components/infant-address/infant-address';
-import { InfantRoadToHealth } from '../components/infant-road-to-health/infant-road-to-health';
-import { InfantDetails } from '../components/infantDetails/infant-details';
+import { ConsentAgreement } from '@/pages/infant/components/consent-agreement/consent-agreement';
+import { MotherDetails } from '@/pages/infant/components/mother-details/mother-details';
+import { MotherContactInformation } from '@/pages/infant/components/mother-contact-information/mother-contact-information';
+import { InfantAddress } from '@/pages/infant/components/infant-address/infant-address';
+import { InfantRoadToHealth } from '@/pages/infant/components/infant-road-to-health/infant-road-to-health';
+import { InfantDetails } from '@/pages/infant/components/infantDetails/infant-details';
 import { InfantDetailsModel } from '@/schemas/infant/infant-details';
 import { InfantRoadToHealthModel } from '@/schemas/infant/infant-road-to-health';
 import { MothertContactInformationModel } from '@/schemas/infant/mother-contact-information';
@@ -24,19 +24,15 @@ import {
   InfantDto,
   SiteAddressDto,
   UserDto,
-} from '@/../../../packages/core/lib';
-import { EditConsentAgreementProps } from '../components/consent-agrement/consent-agreement.types';
+} from '@@@@/packages/core/lib';
+import { EditConsentAgreementProps } from '@/pages/infant/components/consent-agreement/consent-agreement.types';
 import { infantActions, infantThunkActions } from '@/store/infant';
-import momImage from '../../../assets/momImage.png';
+import momImage from '@/assets/momImage.png';
 import { useSelector } from 'react-redux';
 import { userSelectors } from '@store/user';
-import {
-  caregiverActions,
-  // caregiverThunkActions
-} from '@/store/caregiver';
-import { MotherDetailsProps } from '../components/mother-details/mother-details.types';
-// import { AddressInfo } from 'net';
-// import { InfantAddressProps } from '../components/infant-address/infant-address.types';
+import { caregiverActions } from '@/store/caregiver';
+import { MotherDetailsProps } from '@/pages/infant/components/mother-details/mother-details.types';
+
 import { useStaticData } from '@/hooks/useStaticData';
 import { FileTypeEnum, WorkflowStatusEnum } from '@ecdlink/graphql';
 import { documentActions, documentThunkActions } from '@/store/document';

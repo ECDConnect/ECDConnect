@@ -49,7 +49,7 @@ export function LanguageSelector({
         id="languageDropDown"
         fillColor="secondary"
         selectedValue={locale}
-        className="flex-inline w-filled w-40 text-white"
+        className="flex-inline w-outlined w-40 text-white "
         list={
           (languages?.length &&
             languages

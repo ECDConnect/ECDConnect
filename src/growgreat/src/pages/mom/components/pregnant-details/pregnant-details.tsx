@@ -11,6 +11,8 @@ import {
   ButtonGroupTypes,
   FormInput,
   Dropdown,
+  UserAlertListDataItem,
+  ActionListDataItem,
 } from '@ecdlink/ui';
 
 import { motherSelectors } from '@/store/mother';
@@ -24,6 +26,7 @@ import {
   pregnantDetailsModelSchema,
   PregnantDetailsModel,
 } from '@/schemas/pregnant/pregnant-details';
+import { format } from 'date-fns';
 
 export const PregnantDetails: React.FC<EditPregnantDetailsProps> = ({
   onSubmit,
@@ -58,6 +61,26 @@ export const PregnantDetails: React.FC<EditPregnantDetailsProps> = ({
     );
     return existingUser;
   }, [userId, mothers]);
+
+  useEffect(() => {
+    const mothersList: UserAlertListDataItem[] = mothers.map((mother) => {
+      return {
+        firstName: mother?.firstName || mother?.user?.firstName!,
+        subTitle: mother?.expectedDateOfDelivery
+          ? `Expected delivery date: ${format(
+              new Date(mother?.expectedDateOfDelivery!),
+              'PP'
+            )}`
+          : `Expected delivery date: -`,
+        switchTextStyles: true,
+        alertSeverity: 'none',
+        onActionClick: () => {},
+      };
+    });
+
+    setMothersListItems(mothersList);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mothers]);
 
   useEffect(() => {
     if (isAlreadyClient) {
@@ -143,7 +166,7 @@ export const PregnantDetails: React.FC<EditPregnantDetailsProps> = ({
             fillType="clear"
             // selectedValue={getMomDetailsFormValues()}
             list={
-              (mothers?.length &&
+              (mothersList?.length &&
                 mothers
                   .filter((x) => x.firstName?.length! > 0)
                   .map((item) => {
