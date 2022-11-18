@@ -49,7 +49,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
   const practitioner: any = practitioners?.find(
     (item) => item?.userId === userData?.id
   );
-
+  const isPrincipal = practitioner?.isPrincipal === true;
   const [isButtonActive, setIsButtonActive] = useState<boolean>(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [shouldFilter, setShouldFilter] = useState<boolean>(true);
@@ -75,10 +75,9 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
       return f.id === el.classroomGroupId;
     });
   });
-  const classProgrammesUpdated =
-    practitioner?.isPrincipal === true
-      ? classProgrammesForPrincipal
-      : classProgrammes;
+  const classProgrammesUpdated = isPrincipal
+    ? classProgrammesForPrincipal
+    : classProgrammes;
   const primaryClassProgramme = classProgrammesUpdated.find(
     (prog) => prog.meetingDay === getDay(attendanceDate)
   );
@@ -89,9 +88,13 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
       //   setShouldFilter(false);
       // }
 
-      const selectedGroups = classroomGroups.filter(
-        (x) => x.id === primaryClassProgramme?.classroomGroupId
-      );
+      const selectedGroups = isPrincipal
+        ? classroomGroupsForPrincipal.filter(
+            (x) => x.id === primaryClassProgramme?.classroomGroupId
+          )
+        : classroomGroups.filter(
+            (x) => x.id === primaryClassProgramme?.classroomGroupId
+          );
 
       setSelectedClassroomGroups(selectedGroups);
     }
@@ -211,16 +214,25 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
             menuItemClassName={styles.dropdownStyles}
             className={'mr-1'}
             options={
-              (classroomGroups &&
-                classroomGroups.map((x) => {
-                  return {
-                    id: x.id ?? '',
-                    value: x,
-                    label: x.name,
-                    disabled: x.id === primaryClassProgramme?.classroomGroupId,
-                  };
-                })) ||
-              []
+              (classroomGroups && isPrincipal
+                ? classroomGroupsForPrincipal.map((x) => {
+                    return {
+                      id: x.id ?? '',
+                      value: x,
+                      label: x.name,
+                      disabled:
+                        x.id === primaryClassProgramme?.classroomGroupId,
+                    };
+                  })
+                : classroomGroups.map((x) => {
+                    return {
+                      id: x.id ?? '',
+                      value: x,
+                      label: x.name,
+                      disabled:
+                        x.id === primaryClassProgramme?.classroomGroupId,
+                    };
+                  })) || []
             }
             onChange={(value) => onFilterItemsChanges(value)}
             placeholder={'Class'}
@@ -286,7 +298,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
           <Button
             id="gtm-add-attendance"
             onClick={handleFormSubmit}
-            className="w-full mt-4"
+            className="mt-4 w-full"
             size="small"
             color="primary"
             type="filled"
