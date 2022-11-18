@@ -1,8 +1,4 @@
-import {
-  FormComponentProps,
-  PractitionerDto,
-  practitionerSchema,
-} from '@ecdlink/core';
+import { FormComponentProps } from '@ecdlink/core';
 import { Divider, Dropdown, FormInput, Typography, Button } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
@@ -20,10 +16,20 @@ export const ChildBasicInfo: React.FC<
   FormComponentProps<ChildBasicInfoModel>
 > = ({ onSubmit }) => {
   const classrooms = useSelector(classroomsSelectors.getClassroomGroups);
+  const getAllClassroomGroups = useSelector(
+    classroomsSelectors?.getAllClassroomGroups
+  );
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  const getClassroomForPrincipal = getAllClassroomGroups.filter((item) => {
+    return item?.userId === practitioner?.userId || item?.isActive !== true;
+  });
+
   const classroomsForPractitioner = useSelector(
     classroomsSelectors.getClassroom
   );
+  const isPrincipal = practitioner?.isPrincipal;
   const [
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     classroomsForPractitionerAnyType,
     setClassroomsForPractitionerAnyType,
   ] = useState<any>([]);
@@ -87,7 +93,17 @@ export const ChildBasicInfo: React.FC<
         label="Which class will the child attend?"
         placeholder="Select class"
         selectedValue={getSelectedClassroom()}
-        list={classrooms.map((x) => ({ label: x.name, value: x.id || '' }))}
+        list={
+          isPrincipal
+            ? getClassroomForPrincipal.map((x) => ({
+                label: x.name,
+                value: x.id || '',
+              }))
+            : getAllClassroomGroups.map((x) => ({
+                label: x.name,
+                value: x.id || '',
+              }))
+        }
         onChange={(classroomId: string) => {
           setValue('playgroupId', classroomId, { shouldValidate: true });
         }}

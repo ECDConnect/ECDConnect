@@ -17,5 +17,11 @@ namespace ECDLink.DataAccessLayer.Entities
         public string ClassroomName { get; set; }
 
         public string ClassroomGroupName { get; set; }
+
+        public string ClassroomId { get; set; }
+
+        public string ClassroomGroupId { get; set; }
+
+        public DateTime InsertedDate { get; set; }
     }
 }

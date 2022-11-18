@@ -89,7 +89,6 @@ export const ChildProfile: React.FC = () => {
   const appDispatch = useAppDispatch();
   const location = useLocation<ChildProfileRouteState>();
   const childId = location.state.childId;
-
   const { getDocumentTypeIdByEnum, getWorkflowStatusIdByEnum } =
     useStaticData();
   const workflowDocumentVerified = getWorkflowStatusIdByEnum(
@@ -99,6 +98,7 @@ export const ChildProfile: React.FC = () => {
     WorkflowStatusEnum.DocumentPendingVerification
   );
   const child = useSelector(childrenSelectors.getChildById(childId));
+
   const classGroupId = useSelector(
     classroomsSelectors.getLearnerClassGroupId(child?.userId)
   );
@@ -388,7 +388,11 @@ export const ChildProfile: React.FC = () => {
 
     // Check when the child was register and determine wether attendance should have been recorded
 
-    if (childAttendancePercentage.percentage < 50 && !caregiverHasBeenContacted)
+    if (
+      childAttendancePercentage.percentage < 50 &&
+      childAttendancePercentage?.percentage !== 0 &&
+      !caregiverHasBeenContacted
+    )
       return {
         ...baseNotificationListItem,
         subTitle: `Attended ${childAttendancePercentage.daysAttended} days last week`,
@@ -672,7 +676,7 @@ export const ChildProfile: React.FC = () => {
         </div>
       </Dialog>
       <Dialog
-        className={'px-4 mb-16'}
+        className={'mb-16 px-4'}
         stretch={true}
         visible={removeChildConfirmationVisible}
         position={DialogPosition.Bottom}

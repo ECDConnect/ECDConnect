@@ -13,9 +13,10 @@ import { useSelector } from 'react-redux';
 import { PhotoPrompt } from '../../../../../components/photo-prompt/photo-prompt';
 import { useDocuments } from '@hooks/useDocuments';
 import { useAppDispatch } from '@store';
-import { userActions, userSelectors } from '@store/user';
+import { userActions, userSelectors, userThunkActions } from '@/store/user';
 import * as styles from '../../edit-practitioner-profile.styles';
 import { AddPhotoProps } from './add-photo.types';
+import { cloneDeep } from 'lodash';
 
 export const AddPhoto: React.FC<AddPhotoProps> = ({ onSubmit, isLoading }) => {
   const user = useSelector(userSelectors.getUser);
@@ -51,6 +52,17 @@ export const AddPhoto: React.FC<AddPhotoProps> = ({ onSubmit, isLoading }) => {
       });
     } else {
       updateDocument(userProfilePicture, imageBaseString);
+    }
+
+    // save details with request updateUser
+    const userCopy = cloneDeep(user);
+
+    if (userCopy) {
+      if (imageBaseString?.length > 0) {
+        userCopy.profileImageUrl = imageBaseString;
+      }
+      appDispatch(userActions.updateUser(userCopy));
+      appDispatch(userThunkActions.updateUser(userCopy));
     }
   };
 

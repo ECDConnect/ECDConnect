@@ -63,6 +63,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.ObjectTypes
             }
 
             return true;
-        }
+        }        
     }
 }

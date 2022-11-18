@@ -8,10 +8,7 @@ import { authActions } from './store/auth';
 import { caregiverActions, caregiverThunkActions } from './store/caregiver';
 import { childrenActions, childrenThunkActions } from './store/children';
 import { classroomsActions, classroomsThunkActions } from './store/classroom';
-import {
-  activityActions,
-  activityThunkActions,
-} from './store/content/activity';
+import { activityActions } from './store/content/activity';
 import {
   contentConsentActions,
   contentConsentThunkActions,
@@ -20,18 +17,12 @@ import {
   programmeRoutineActions,
   programmeRoutineThunkActions,
 } from './store/content/programme-routine';
-import {
-  programmeThemeActions,
-  programmeThemeThunkActions,
-} from './store/content/programme-theme';
+import { programmeThemeActions } from './store/content/programme-theme';
 import {
   contentReportActions,
   contentReportThunkActions,
 } from './store/content/report';
-import {
-  storyBookActions,
-  storyBookThunkActions,
-} from './store/content/story-book';
+import { storyBookActions } from './store/content/story-book';
 import { documentActions, documentThunkActions } from './store/document';
 import { notesActions, notesThunkActions } from './store/notes';
 import { notificationActions } from './store/notifications';
@@ -45,6 +36,7 @@ import { userActions, userThunkActions } from './store/user';
 import { coachActions, coachThunkActions } from './store/coach';
 import {
   practitionerActions,
+  practitionerSelectors,
   practitionerThunkActions,
 } from './store/practitioner';
 import {
@@ -56,6 +48,10 @@ import localforage from 'localforage';
 import hash from 'object-hash';
 import { userSelectors } from '@store/user';
 import { useSelector } from 'react-redux';
+import {
+  childrenForPractitionerActions,
+  childrenForPractitionerThunkActions,
+} from './store/childrenForPractitioner';
 
 type IntialStoreSetupContextValues = {
   initloading: boolean;
@@ -78,6 +74,8 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   const [staticDataLoading, setStaticDataLoading] = useState(false);
   const userData = useSelector(userSelectors.getUser);
   const isCoach = userData?.roles?.some((role) => role.name === 'Coach');
+  const practitioner = useSelector(practitionerSelectors?.getPractitioner);
+  const isPrincipal = practitioner?.isPrincipal;
 
   const [otherLoading, setOtherLoading] = useState(false);
 
@@ -101,6 +99,19 @@ const InitialStoreSetup: React.FC = ({ children }) => {
       }
     }
   }, [appDispatch, isCoach, userData]);
+
+  useEffect(() => {
+    if (userData) {
+      if (isPrincipal) {
+        (async () =>
+          await appDispatch(
+            childrenForPractitionerThunkActions?.getChildrenForPractitioner({
+              id: userData?.id!,
+            })
+          ).unwrap())();
+      }
+    }
+  }, [appDispatch, isPrincipal, userData]);
 
   const resetAppStore = async (showLoading = true) => {
     if (showLoading) {
@@ -198,30 +209,11 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   };
 
   const initStaticStoreSetup = async () => {
-    const today = new Date();
     setStaticDataLoading(true);
+
     await appDispatch(
       contentConsentThunkActions.getConsent({ locale: 'en-za' })
     ).unwrap();
-    await appDispatch(settingThunkActions.getSettings({})).unwrap();
-    await appDispatch(staticDataThunkActions.getRelations({})).unwrap();
-    await appDispatch(staticDataThunkActions.getProgrammeTypes({})).unwrap();
-    await appDispatch(
-      staticDataThunkActions.getProgrammeAttendanceReasons({})
-    ).unwrap();
-    await appDispatch(staticDataThunkActions.getGenders({})).unwrap();
-    await appDispatch(staticDataThunkActions.getRaces({})).unwrap();
-    await appDispatch(staticDataThunkActions.getLanguages({})).unwrap();
-    await appDispatch(staticDataThunkActions.getEducationLevels({})).unwrap();
-    await appDispatch(
-      staticDataThunkActions.getHolidays({ year: today.getFullYear() })
-    ).unwrap();
-    await appDispatch(staticDataThunkActions.getProvinces({})).unwrap();
-    await appDispatch(staticDataThunkActions.getReasonsForLeaving({})).unwrap();
-    await appDispatch(staticDataThunkActions.getGrants({})).unwrap();
-    await appDispatch(staticDataThunkActions.getDocumentTypes({})).unwrap();
-    await appDispatch(staticDataThunkActions.getNoteTypes({})).unwrap();
-    await appDispatch(staticDataThunkActions.getWorkflowStatuses({})).unwrap();
 
     // PROGRESS TRACKING
     await appDispatch(
@@ -247,18 +239,6 @@ const InitialStoreSetup: React.FC = ({ children }) => {
 
     await appDispatch(
       programmeRoutineThunkActions.getProgrammeRoutines({ locale: 'en-za' })
-    ).unwrap();
-
-    await appDispatch(
-      activityThunkActions.getActivities({ locale: 'en-za' })
-    ).unwrap();
-
-    await appDispatch(
-      storyBookThunkActions.getStoryBooks({ locale: 'en-za' })
-    ).unwrap();
-
-    await appDispatch(
-      programmeThemeThunkActions.getProgrammeThemes({ locale: 'en-za' })
     ).unwrap();
 
     setStaticDataLoading(false);

@@ -4,6 +4,7 @@ using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
+using ECDLink.Tenancy.Context;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -29,7 +30,8 @@ namespace ECDLink.DataAccessLayer.Services
                 return new List<ISetting>();
             }
 
-            return _context.SystemSettings.ToList();
+            Guid tenantId = TenantExecutionContext.Tenant.Id;
+            return _context.SystemSettings.Where(e => e.TenantId == null || e.TenantId.Equals(tenantId)).ToList();
         }
     }
 }

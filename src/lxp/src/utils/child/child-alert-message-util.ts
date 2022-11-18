@@ -14,6 +14,7 @@ import {
   getChildAttendancePercentageAtPlaygroup,
   isMatchingReportingPeriods,
 } from './child-profile-utils';
+import { differenceInDays } from 'date-fns';
 
 export const getChildAlertModel = (
   learner?: LearnerDto,
@@ -29,7 +30,6 @@ export const getChildAlertModel = (
   const today = new Date();
   let alert = 'success';
   let alertMessage = 'All information captured';
-
   if (classroomGroups && learner) {
     const classroomGroup = classroomGroups.find(
       (x) => x.id === learner?.classroomGroupId
@@ -60,17 +60,23 @@ export const getChildAlertModel = (
   );
 
   if (!report) {
-    alert = 'error';
-    alertMessage = 'Progress report overdue';
+    const daysSinceInsertedDate = differenceInDays(
+      new Date(),
+      new Date(child?.insertedDate!)
+    );
+    if (daysSinceInsertedDate > 30) {
+      alert = 'error';
+      alertMessage = 'Progress report overdue';
 
-    return { status: alert, message: alertMessage, severity: 1 };
+      return { status: alert, message: alertMessage, severity: 1 };
+    }
   }
 
   const userBirthDocument = userDocuments?.find(
     (x) => x.name.includes('clinicCard') || x.name.includes('birthCertificate')
   );
 
-  if (userBirthDocument) {
+  if (!userBirthDocument) {
     alert = 'error';
     alertMessage = 'Child document missing';
 

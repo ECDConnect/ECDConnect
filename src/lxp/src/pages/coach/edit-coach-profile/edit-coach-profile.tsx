@@ -11,11 +11,12 @@ import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
 import { EditProfileInformationModel } from '@schemas/coach/edit-profile';
 import { EditCoachSteps } from './edit-coach-profile.types';
 import { AddPhoto } from './components/add-photo/add-photo';
-import { coachActions, coachSelectors } from '@store/coach';
-import { userActions, userSelectors } from '@store/user';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useAppDispatch } from '@store';
 import ROUTES from '@routes/routes';
+import { coachActions, coachSelectors, coachThunkActions } from '@store/coach';
+import { userActions, userSelectors, userThunkActions } from '@/store/user';
+import { notificationActions } from '@/store/notifications';
 
 export const EditCoachProfile: React.FC = () => {
   const [activeStep, setActiveStep] = useState(EditCoachSteps.completeProfile);
@@ -51,10 +52,15 @@ export const EditCoachProfile: React.FC = () => {
         coachCopy.siteAddressId = coachProfileInformation.siteAddressId;
 
         userCopy.email = coachProfileInformation.email;
+
         Object.assign(coachCopy.user as UserDto, userCopy);
 
-        appDispatch(coachActions.updateCoach(coachCopy));
         appDispatch(userActions.updateUser(userCopy));
+        appDispatch(userThunkActions.updateUser(userCopy));
+
+        appDispatch(coachActions.updateCoach(coachCopy));
+        appDispatch(coachThunkActions.updateCoach(coachCopy));
+        appDispatch(notificationActions.resetNotificationState());
       }
 
       history.push(ROUTES.ROOT);

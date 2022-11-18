@@ -36,6 +36,9 @@ using Microsoft.Extensions.Hosting;
 using System;
 using System.Diagnostics;
 using ECDLink.Tenancy.EntityFramework.Extensions;
+using System.Threading.Tasks;
+using EcdLink.Api.CoreApi.Middleware;
+using ECDLink.Core.Services;
 using ECDLink.PostgresTenancy.Repository;
 using ECDLink.Tenancy.Services;
 //using ECDLink.PostgresJWT.Entities;
@@ -134,6 +137,7 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<IUserInterceptHandler, UserInterceptHandler>();
             services.AddTransient<IChildrenAnonymiseService, ChildrenAnonymiseService>();
             services.AddTransient<IDocumentManagementService, DocumentManagementService>();
+            services.AddTransient<IInvitationReassignmentService, InvitationReassignmentService>();
 
             ConfigureJobs(services);
 
@@ -166,6 +170,7 @@ namespace EcdLink.Api.CoreApi
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseTenancy();
+            app.UseInputSanitizer();
 
             app.UseEndpoints(endpoints =>
             {

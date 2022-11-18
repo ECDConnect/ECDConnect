@@ -1,7 +1,7 @@
 const plugin = require('tailwindcss/plugin');
 
-// purge: ['./src/**/*.{js,jsx,ts,tsx}', './public/index.html'],
 module.exports = {
+  // purge: ['./src/**/*.{js,jsx,ts,tsx}', './public/index.html'],
   important: true,
   mode: 'aot',
   darkMode: false, // or 'media' or 'class'
@@ -114,12 +114,12 @@ module.exports = {
     },
   },
   plugins: [
-    require('@tailwindcss/typography'),
     require('@tailwindcss/forms'),
+    require('@tailwindcss/typography'),
     plugin(function ({ addUtilities, theme }) {
       const themeColors = theme('colors');
       const individualBorderColors = Object.keys(themeColors).map(
-        (colorName) => {
+        function (colorName) {
           if (typeof themeColors[colorName] == 'string') {
             return {
               [`.border-b-${colorName}`]: {

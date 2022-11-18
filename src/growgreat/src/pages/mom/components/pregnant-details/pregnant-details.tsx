@@ -29,7 +29,7 @@ export const PregnantDetails: React.FC<EditPregnantDetailsProps> = ({
   isAlreadyClient,
 }) => {
   const {
-    watch,
+    // watch,
     getValues: getPregnantDetailsFormValues,
     // formState: pregnantDetailsFormState,
     setValue: setPregnantDetailsFormValue,
@@ -49,12 +49,11 @@ export const PregnantDetails: React.FC<EditPregnantDetailsProps> = ({
   const [userId, setUserId] = useState('');
   const mothers = useSelector(motherSelectors.getMothers);
   const handleAddExistingUser = useMemo(() => {
-    const existingUser = mothers.find((item) => item.id === userId.toString());
+    const existingUser = mothers.find(
+      (item) => item?.user?.id === userId.toString()
+    );
     return existingUser;
   }, [userId, mothers]);
-
-  console.log({ handleAddExistingUser });
-  console.log({ mothers });
 
   useEffect(() => {
     if (isAlreadyClient) {
@@ -64,10 +63,9 @@ export const PregnantDetails: React.FC<EditPregnantDetailsProps> = ({
     }
   }, [isAlreadyClient, setPregnantDetailsFormValue, handleAddExistingUser]);
 
-  console.log(watch());
   return (
-    <div className="h-screen ">
-      <div>
+    <div className="h-screen h-full w-screen w-full p-4">
+      <>
         <Typography
           type="h2"
           color={'textDark'}
@@ -78,10 +76,10 @@ export const PregnantDetails: React.FC<EditPregnantDetailsProps> = ({
           type="h4"
           color={'textMid'}
           text={'Details'}
-          className="z-50 pt-2 w-11/12"
+          className="z-50 w-11/12 pt-2"
         />
-      </div>
-      <div className="flex justify-center w-11/12 text-red-400">
+      </>
+      <div className="flex w-11/12 justify-center text-red-400">
         <Divider dividerType="dashed" />
       </div>
       <div>
@@ -89,7 +87,7 @@ export const PregnantDetails: React.FC<EditPregnantDetailsProps> = ({
           type="h3"
           color={'textDark'}
           text={'Is this client already on CHW Connect?'}
-          className="z-50 pt-2 w-11/12"
+          className="z-50 w-11/12 pt-2"
         />
         <div className="mt-2">
           <ButtonGroup<boolean>
@@ -111,7 +109,7 @@ export const PregnantDetails: React.FC<EditPregnantDetailsProps> = ({
               placeholder={'Enter a name'}
               type={'text'}
               className="mt-4"
-            ></FormInput>
+            />
             <FormInput<PregnantDetailsModel>
               label={'Surname'}
               register={consentFormRegister}
@@ -119,7 +117,7 @@ export const PregnantDetails: React.FC<EditPregnantDetailsProps> = ({
               placeholder={'Enter a surname'}
               type={'text'}
               className="mt-4"
-            ></FormInput>
+            />
             <div className="flex items-center gap-1">
               <FormInput<PregnantDetailsModel>
                 label={'Age'}
@@ -128,7 +126,7 @@ export const PregnantDetails: React.FC<EditPregnantDetailsProps> = ({
                 placeholder={'Enter an age'}
                 type={'number'}
                 className="mt-4 w-1/2"
-              ></FormInput>
+              />
               <Typography
                 type="h4"
                 color={'textMid'}
@@ -161,12 +159,12 @@ export const PregnantDetails: React.FC<EditPregnantDetailsProps> = ({
           </div>
         )}
       </div>
-      <div className="flex w-full h-full align-bottom">
-        <div className={'mt-10 w-11/12 flex justify-center align-bottom'}>
+      <div className="flex h-full w-full align-bottom">
+        <div className={'mt-10 flex w-11/12 justify-center align-bottom'}>
           <Button
             type={'filled'}
             color={'primary'}
-            className={'mt-2 ml-6 w-11/12 max-h-10 absolute bottom-10'}
+            className={'absolute bottom-10 mt-2 ml-6 max-h-10 w-11/12'}
             textColor={'white'}
             text={`Next`}
             icon={'ArrowCircleRightIcon'}
@@ -176,7 +174,7 @@ export const PregnantDetails: React.FC<EditPregnantDetailsProps> = ({
               setAddress(handleAddExistingUser?.siteAddressId);
               setContactInformation(handleAddExistingUser?.phoneNumber);
             }}
-            disabled={!isValid && !isAlreadyClient}
+            disabled={!isValid}
           />
         </div>
       </div>

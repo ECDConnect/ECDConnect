@@ -22,6 +22,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Metadata.Ecma335;
 using System.Text;
+using Document = ECDLink.DataAccessLayer.Entities.Documents.Document;
 
 namespace ECDLink.DataAccessLayer.Hierarchy
 {
@@ -214,7 +215,37 @@ namespace ECDLink.DataAccessLayer.Hierarchy
                     }
                 }
             }
+            //in some cases like a learner, similarly to a child, we need to get the relevant children hierarchy in addition for the generic repository selectionlist
+            if (typeof(T) == typeof(Learner))
+            {
+                var childRepo = _repoFactory.CreateGenericRepository<Learner>(userContext: userId);
+                //use the parent list to determine
+                List<string> learnerHierarchyList = hierarchyList.Copy();
+                foreach (var hierarchy in learnerHierarchyList)
+                {
+                    List<string> learnerHierarchy = childRepo.GetAll().Where(c => c.Hierarchy.StartsWith(hierarchy)).Select(p => p.Hierarchy).ToList();
+                    if (learnerHierarchy.Any())
+                    {
+                        hierarchyList.AddRange(learnerHierarchy);
+                    }
+                }
+            }
+            if (typeof(T) == typeof(Document))
+            {
+                var documentRepo = _repoFactory.CreateGenericRepository<Document>(userContext: userId);
+                //use the parent list to determine
+                List<string> documentHierarchyList = hierarchyList.Copy();
+                foreach (var hierarchy in documentHierarchyList)
+                {
+                    List<string> documentHierarchy = documentRepo.GetAll().Where(c => c.Hierarchy.StartsWith(hierarchy)).Select(p => p.Hierarchy).ToList();
+                    if (documentHierarchy.Any())
+                    {
+                        hierarchyList.AddRange(documentHierarchy);
+                    }
+                }
+            }
             return hierarchyList;
+
         }
 
         public string GetHierarchy<TChild>(string parentId, string childId)

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
   Button,
@@ -8,7 +9,6 @@ import {
   FormInput,
 } from '@ecdlink/ui';
 import { useForm, useFormState } from 'react-hook-form';
-import { useState } from 'react';
 import {
   PregnantAddressProps,
   useMapOrAddressOptions,
@@ -23,7 +23,7 @@ export const PregnantAddress: React.FC<PregnantAddressProps> = ({
   details,
 }) => {
   const {
-    watch,
+    // watch,
     getValues: getPregnantAddressFormValues,
     // formState: pregnantAddressFormState,
     // setValue: setPregnantAddressFormValue,
@@ -39,77 +39,69 @@ export const PregnantAddress: React.FC<PregnantAddressProps> = ({
 
   const { isValid } = useFormState({ control: momContactInformationControl });
 
-  console.log(getPregnantAddressFormValues());
   const [useMap, setUseMap] = useState(false);
   //   const handleConsentAccept = () => {
   //     setConsentFormValue('hasConsent', !accept);
   //   };
 
-  console.log(watch());
   return (
     <div className="h-screen ">
-      <div>
-        <Typography
-          type="h2"
-          color={'textDark'}
-          text={`${details?.name}`}
-          className="z-50 pt-6"
-        />
+      <Typography
+        type="h2"
+        color={'textDark'}
+        text={`${details?.name}`}
+        className="z-50 pt-6"
+      />
+      <Typography
+        type="h4"
+        color={'textMid'}
+        text={'Address'}
+        className="z-50 w-11/12 pt-2"
+      />
+      <div className="mt-4">
         <Typography
           type="h4"
           color={'textMid'}
-          text={'Address'}
-          className="z-50 pt-2 w-11/12"
+          text={`Add ${details?.name}'s address`}
+          className="z-50 w-11/12 pt-2"
+        />
+        <div className="mt-2">
+          <ButtonGroup<boolean>
+            color="secondary"
+            selectedOptions={useMap}
+            className={'mt-2 w-full'}
+            type={ButtonGroupTypes.Button}
+            options={useMapOrAddressOptions}
+            onOptionSelected={(value: boolean | boolean[]) =>
+              setUseMap(value as boolean)
+            }
+          />
+        </div>
+      </div>
+      <div className={'mt-4 px-4'}>
+        <Alert
+          type={'info'}
+          // title="Each child is unique!"
+          message={`If you are at ${details?.name}'s house now, you can use your phone's GPS to save the address.`}
         />
       </div>
-      <div>
-        <div className="mt-4">
-          <Typography
-            type="h4"
-            color={'textMid'}
-            text={"Add Mom's name address"}
-            className="z-50 pt-2 w-11/12"
-          />
-          <div className="mt-2">
-            <ButtonGroup<boolean>
-              options={useMapOrAddressOptions}
-              onOptionSelected={(value: boolean | boolean[]) =>
-                setUseMap(value as boolean)
-              }
-              color="secondary"
-              type={ButtonGroupTypes.Button}
-              className={'w-full mt-2'}
-              selectedOptions={useMap}
-            />
-          </div>
-        </div>
-        <div className={'mt-4 px-4'}>
-          <Alert
-            type={'info'}
-            // title="Each child is unique!"
-            message="If you are at Lethabo's house now, you can use your phone's GPS to save the address."
-          />
-        </div>
-        {useMap === false && (
-          <>
-            <FormInput<PregnantAddressModel>
-              label={'Add address'}
-              register={pregnantAddressFormRegister}
-              nameProp={'address'}
-              placeholder={'e.g 012 345 6789'}
-              type={'text'}
-              className="mt-4"
-              textInputType="textarea"
-            ></FormInput>
-          </>
-        )}
-      </div>
-      <div className="flex w-full h-full align-bottom">
-        <div className={'mt-10 w-11/12 flex justify-center align-bottom ml-2'}>
+      {useMap === false && (
+        <FormInput<PregnantAddressModel>
+          label={'Add address'}
+          register={pregnantAddressFormRegister}
+          nameProp={'address'}
+          placeholder={'e.g 012 345 6789'}
+          type={'text'}
+          className="mt-4"
+          textInputType="textarea"
+        />
+      )}
+      <div className="flex h-full w-full align-bottom">
+        <div className={'mt-10 ml-2 flex w-11/12 justify-center align-bottom'}>
           <Button
             type={'filled'}
             color={'primary'}
-            className={'mt-2 ml-6 w-11/12 max-h-10 absolute bottom-10'}
+            className={'absolute bottom-10 mt-2 ml-6 max-h-10 w-11/12'}
             textColor={'white'}
             text={`Next`}
             icon={'ArrowCircleRightIcon'}

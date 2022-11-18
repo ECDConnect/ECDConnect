@@ -25,12 +25,16 @@ using Microsoft.Azure.Documents;
 using System.Collections.Concurrent;
 using NPOI.SS.Formula.Functions;
 using ECDLink.DataAccessLayer.Entities.Classroom;
+using ECDLink.Core.SystemSettings.SystemOptions;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class PrincipalMutationExtension
     {
+        private readonly ISystemSetting<InvitationCutoffDelayOptions> _invitationDelay;
+
+
 
         public Practitioner AddPractitionerToPrincipal([Service] IServiceProvider serviceProvider, [Service] IHttpContextAccessor contextAccessor,
     [Service] UserManager<ApplicationUser> userManager,
@@ -68,42 +72,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
                     return practitioner;
                 }
-                else return null;
-                //{
-                //    //Create basic user and practitioner
-                //    var pracRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-
-                //    var pOne = new ApplicationUser
-                //    {
-                //        FirstName = firstName,
-                //        Surname = lastName,
-                //        FullName = firstName + " " + lastName,
-                //        UserName = idNumber,
-                //        IdNumber = idNumber,
-                //        IsActive = true,
-                //        NickFirstName = firstName,
-                //        NickSurname = lastName,
-                //        NickFullName = firstName + " " + lastName,
-                //        TenantId = tenantId
-                //    };
-
-                //    var result = userManager.CreateAsync(pOne).Result;
-                //    string practitionerId = pOne.Id;
-
-                //    var passwordResult = userManager.AddPasswordAsync(pOne, idNumber).Result;
-
-                //    pracRepo.Insert(new Practitioner
-                //    {
-                //        Id = Guid.NewGuid(),
-                //        UserId = practitionerId,
-                //        IsPrincipal = false,
-                //        PrincipalHierarchy = Guid.Parse(principalUser.UserId),
-                //        IsRegistered = true,
-                //        TenantId = tenantId
-                //    });
-
-                //    return new PractitionerQueryExtension().GetPractitionerByUserId(contextAccessor, repoFactory, practitionerId);
-                //}
+                else return null;              
             } else return null;
         }
 
@@ -243,6 +212,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
         public PrincipalInvitationStatus UpdatePrincipalInvitation([Service] IHttpContextAccessor contextAccessor,
     [Service] IGenericRepositoryFactory repoFactory,
+    [Service] ISystemSetting<InvitationCutoffDelayOptions> invitationDelay,
+    [Service] IInvitationReassignmentService reassignmentService,
     string practitionerId, string principalId, bool accepted)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
@@ -256,37 +227,44 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 status.LinkedDate = practitioner.DateLinked;
                 if (accepted == false)
                 {
+                    //reset the classroomgroups away from this practitioner and back to teh principal
+                    if (principal.UserId != null && practitioner.UserId != null)
+                    {
+                        //Reassign all classes and programmes back to principal
+                        reassignmentService.AddReassignmentForPractitioner(uId, practitioner.UserId, principal.UserId, "Removing link between Principal and Practitioner", DateTime.Now, uId, null, true);
+                    }
+
                     status.AcceptedDate = null;
                     //if the function is run twice and the leaving date is already set, remove immediately, this is the principal confirming removal of this practitioner link
                     if (practitioner.DateToBeRemoved!=null)
                     {
                         practitioner.DateToBeRemoved = DateTime.Now;
                         practitioner.DateAccepted = null;
+                        practitioner.DateLinked = null;
                         practitioner.IsLeaving = true;
-                        //update and clear  the practitioner details
+                        //update and clear the principals details
                         practitioner.PrincipalHierarchy = null;
                         practitioner.ShareInfo = false;
-
-
-                        //reset the classroomgroups away from this practitioner and back to teh principal
-                        var classroomgroupRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);
-                        List<ClassroomGroup> classrooms = classroomgroupRepo.GetListByUserId(practitionerId);
-                        foreach (ClassroomGroup classroomgroup in classrooms)
-                        {
-                            classroomgroup.UserId = Guid.Parse(principal.UserId);
-                            classroomgroupRepo.Update(classroomgroup);
-                        }
-
+                        
                         status.LeavingDate = DateTime.Now;
                         status.Leaving = true;
                     } 
                     else
                     {
-                        practitioner.DateToBeRemoved = DateTime.Now.AddDays(7);
+                        //reset the classroomgroups away from this practitioner and back to teh principal
+                        if (principal.UserId != null && practitioner.UserId != null)
+                        {
+                            //Reassign all classes and programmes back to principal
+                            reassignmentService.AddReassignmentForPractitioner(uId, practitioner.UserId, principal.UserId, "Removing link between Principal and Practitioner", DateTime.Now, uId, null, true);
+                        }
+
+                        int hrsToReassign = int.Parse(invitationDelay.Value.InvitationCutoffDelay);
+
+                        practitioner.DateToBeRemoved = DateTime.Now.AddHours(hrsToReassign);
                         practitioner.DateAccepted = null;
                         practitioner.IsLeaving = true;
 
-                    status.LeavingDate = DateTime.Now.AddDays(7);
+                    status.LeavingDate = DateTime.Now.AddHours(hrsToReassign);
                         status.Leaving = true;
                     }
                 }

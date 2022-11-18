@@ -18,4 +18,5 @@ export interface ClassroomDto extends EntityBase {
   // doesOwnerTeach: boolean | null;
   attendance?: AttendanceDto[];
   classroomImageUrl?: string;
+  classroomId?: string;
 }

@@ -51,7 +51,7 @@ export const EditPractitioner: React.FC<EditPractitionerProps> = ({
         surname: surname ?? '',
       },
     };
-    console.log('dispatchhhhhhhh');
+
     appDispatch(
       practitionerThunkActions.updatePractitionerById({
         id: 'c87a3c8a-e247-4899-a757-6e5be5657206',
@@ -62,7 +62,6 @@ export const EditPractitioner: React.FC<EditPractitionerProps> = ({
     // appDispatch(practitionerThunkActions.updatePractitionerById())
   };
 
-  console.log(getPractitionerInfoFormValues());
   return (
     <div>
       <BannerWrapper

@@ -164,64 +164,71 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
         public List<ClassroomMetricReport> GetClassAttendanceMetrics([Service] IHttpContextAccessor contextAccessor,
             [Service] IGenericRepositoryFactory repoFactory,
-    [Service] AttendanceTrackingRepository attendanceRepo)
+            [Service] AttendanceTrackingRepository attendanceRepo, 
+            DateTime startMonth, 
+            DateTime endMonth)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
             List<Practitioner> practitioners = practitionerRepo.GetAll().ToList(); //get all practitioners within userhierarchy
-
-            //user.coachObjectData = new CoachQueryExtension().GetCoachByCoachUserId(contextAccessor, dbFactory, repoFactory, userId);
+            
             List<ClassroomMetricReport> metrics = new List<ClassroomMetricReport>();
             foreach (var practitioner in practitioners)
             {
-                var metric = this.GetClassAttendanceMetricsByUser(contextAccessor, repoFactory, attendanceRepo, practitioner.UserId);
-                metrics.Add(metric);
+                var metric = this.GetClassAttendanceMetricsByUser(contextAccessor, repoFactory, attendanceRepo, practitioner.UserId, startMonth, endMonth);
+                if (metric.Any())
+                {
+                    if (metric.FirstOrDefault().classroomGroupId.ToString() != "00000000-0000-0000-0000-000000000000")
+                    {
+                        metrics.AddRange(metric);
+                    }
+                }
 
             }
             return metrics;
         }
 
         [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
-        public ClassroomMetricReport GetClassAttendanceMetricsByUser([Service] IHttpContextAccessor contextAccessor,
+        public List<ClassroomMetricReport> GetClassAttendanceMetricsByUser([Service] IHttpContextAccessor contextAccessor,
             [Service] IGenericRepositoryFactory repoFactory,
-    [Service] AttendanceTrackingRepository attendanceRepo, string userId)
+            [Service] AttendanceTrackingRepository attendanceRepo, string userId, DateTime startMonth, DateTime endMonth)
         {
             DateTime reference = DateTime.Now;
 
- 
-            ClassroomMetricReport metric = new ClassroomMetricReport();
+            List<ClassroomMetricReport> metric = new List<ClassroomMetricReport>();
             var classRepo = repoFactory.CreateRepository<Classroom>(userContext: userId);
             var classGroupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: userId);
             var LearnerRepo = repoFactory.CreateRepository<Learner>(userContext: userId);
-            //var classes = classRepo.GetAll(); //get all classrooms assigned to user
 
-            var fromDate = new DateTime(reference.Year, reference.Month, 1);
+            var fromDate = (startMonth!=null? startMonth : new DateTime(reference.Year, reference.Month, 1));
             fromDate = fromDate.AddMonths(-1);
-            var toDate = reference.AddDays(-1); //start of month - day is end of last month
+            var toDate = (endMonth!=null? endMonth:reference);//fromDate.GetEndOfMonth();///reference.AddDays(-1); //start of month - day is end of last month
 
             var classroomGroups = classGroupRepo.GetAll().Where(x => x.UserId.ToString().Contains(userId)).ToList();
             if (classroomGroups != null)
             {
                 foreach (var group in classroomGroups)
                 {
-                    //count children in class
-                    //var children = new PractitionerQueryExtension().GetAllChildrenByRole(contextAccessor, userManager, roleManager, repoFactory, userId);
-
                     List<Learner> learners = LearnerRepo.GetAll().Where(x => x.ClassroomGroupId.ToString().Contains(group.Id.ToString())).ToList();
                     int childCount = learners.Count;
+                    int month = fromDate.Month;
+                    int year = fromDate.Year;
+                    int weekOfYear = fromDate.GetWeekOfYear();
 
-                    //calculate attendance
-                    //var attendaceRepo = attendanceRepo.GetAllByDateRange(fromDate, toDate); //TODO: may need to extend this to be specific by classrooms
-                    List<ClassroomAttendance> attendaceData = attendanceRepo.GetAllByDateRangeByClassroom(fromDate, toDate, group.Id);
-                    var attendanceAttended = (attendaceData!=null && attendaceData.FirstOrDefault().ClassAttendance.Count>0 ?attendaceData.Where(x => x.ClassAttendance.FirstOrDefault().Attended).Count() : 0);
-                    var attendanceUnAttended = (attendaceData != null && attendaceData.FirstOrDefault().ClassAttendance.Count > 0 ? attendaceData.Where(x => !x.ClassAttendance.FirstOrDefault().Attended).Count() : 0);
-
-                    //var attendedVsAbsent = new List<MetricReportStatItem>();
-                    //attendedVsAbsent.Add(new MetricReportStatItem() { Name = "Attended", Value = attendanceAttended.ToString() });
-                    //attendedVsAbsent.Add(new MetricReportStatItem() { Name = "Absent", Value = attendanceUnAttended.ToString() });
-                    int attendancePercentage = 0;// (childCount>0 && attendanceAttended>0?(attendanceAttended / childCount) * 100:0);
-                    metric = new ClassroomMetricReport() { childCount = childCount, attendancePercentage = attendancePercentage, classroomId = group.ClassroomId, month = fromDate.Month, year = fromDate.Year };
-
+                    int attendancePercentage = 0;
+                    List <Attendance> attendanceData = attendanceRepo.GetAllByDateRangeByClassroom(fromDate, toDate, group.Id, group.UserId.ToString());
+                    if (attendanceData.Any())
+                    {
+                        var attendanceAttended = attendanceData.Where(x => x.Attended == true).Count();
+                        var attendanceUnAttended = attendanceData.Where(x => x.Attended == false).Count();
+                        if (attendanceUnAttended > 0)
+                        attendancePercentage = (int)(childCount > 0 && attendanceAttended > 0 ? Math.Round((double)(attendanceAttended / (double)(attendanceAttended + attendanceUnAttended)) * 100) : 0);
+                        //override month and year to attendance month and year
+                        month = attendanceData.FirstOrDefault().MonthOfYear;
+                        year = attendanceData.FirstOrDefault().Year;
+                        weekOfYear = attendanceData.FirstOrDefault().WeekOfYear;
+                    }
+                    metric.Add(new ClassroomMetricReport() { childCount = childCount, attendancePercentage = attendancePercentage, classroomGroupId = group.Id.ToString(), classroomId = group.ClassroomId.ToString(), month = month, year = year, weekOfYear = weekOfYear, practitionerId = userId });                        
                 }
             }
 
@@ -240,10 +247,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             DateTime reference = DateTime.Now;
             //var fromDate = new DateTime(reference.Year, reference.Month, 1);
 
-
-
-
-
             List<ClassroomMetricReport> metrics = new List<ClassroomMetricReport>();
             var classRepo = repoFactory.CreateRepository<Classroom>(userContext: uId);
             var classGroupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
@@ -261,17 +264,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
                 foreach (var c in classes)
                 {
-                    //count children in class
-
-
                     //calculate attendance
                     var attendedVsAbsent = new List<MetricReportStatItem>();
                     attendedVsAbsent.Add(new MetricReportStatItem() { Name = "Attended", Value = attendanceAttended.ToString() });
                     attendedVsAbsent.Add(new MetricReportStatItem() { Name = "Absent", Value = attendanceUnAttended.ToString() });
 
-
-
-                    var thisClass = new ClassroomMetricReport() { childCount = 4, attendancePercentage = 75, classroomId = c.Id, month = fromDate.Month, year = fromDate.Year };
+                    var thisClass = new ClassroomMetricReport() { childCount = 4, attendancePercentage = 75, classroomId = c.Id.ToString(), month = fromDate.Month, year = fromDate.Year };
                     metrics.Add(thisClass);
                 }
             }
@@ -289,10 +287,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
             var notificationList = new List<NotificationDisplay>();
 
+            var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
+            var practRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+            var absenteeRepo = repoFactory.CreateRepository<Absentees>(userContext: uId);            
             //loop for last 12 months
             //for (int idx = 1; idx <= 12; idx++)
             //{
-                DateTime reference = DateTime.Now;
+            DateTime reference = DateTime.Now;
                 //fromDate = (fromDate!=null?fromDate : new DateTime(reference.Year, reference.Month, 1).AddMonths(-1));
                 //fromDate = fromDate.AddMonths(-1);
                 //toDate = (toDate != null ? toDate : reference.AddMonths(-idx).AddDays(-1);//decrement
@@ -312,14 +313,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 Add weighting to each subject, and weigh up for each user what the messages are and use weighting to push the most relevant message up to the top, and assign colour, icon and Message to each
                 return list to FE for each user
                 */
-                switch (type)
+                switch (type.ToLower())
                 {
                     case "child":
-                        var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
+                        
                         var children = childRepo.GetAll();
                         foreach (var user in children)
                         {
-                            NotificationDisplay display = new NotificationDisplay()
+                            NotificationDisplay displayChild = new NotificationDisplay()
                             {
                                 Subject = "Child Information missing",
                                 Icon = "redicon",
@@ -332,18 +333,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                             };
                             //var attendaceRepo = attendanceRepo.GetAllByDateRange(fromDate, toDate);
 
-                            notificationList.Add(display);
+                            notificationList.Add(displayChild);
                         }
                         break;
                     case "practitioner": //practitioners and principals
-                        var practRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-                        var absenteeRepo = repoFactory.CreateRepository<Absentees>(userContext: uId);
+
                         var practitioners = practRepo.GetAll();
                         foreach (var user in practitioners)
                         {
                             //get absent days
-                            int daysAbsent = 0;
-                            NotificationDisplay display = new NotificationDisplay()
+                            //int daysAbsent = 0;
+                            NotificationDisplay displayPracti = new NotificationDisplay()
                             {
                                 Subject = "0 days absent last month",
                                 Icon = "greenicon",
@@ -355,9 +355,30 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                             };
                             //var attendaceRepo = attendanceRepo.GetAllByDateRange(fromDate, toDate);
 
-                            notificationList.Add(display);
+                            notificationList.Add(displayPracti);
                         }
-                        break;
+                    break;
+                case "coach": //practitioners and principals
+                    //var practitioners = practRepo.GetAll();
+                    //foreach (var user in practitioners)
+                    //{
+                        //get absent days
+                        int daysAbsent = 0;
+                        NotificationDisplay displayCoach = new NotificationDisplay()
+                        {
+                            Subject = "0 days absent last month",
+                            Icon = "greenicon",
+                            Color = "green",
+                            Message = "",
+                            Notes = "",
+                            UserId = Guid.Parse(uId),
+                            UserType = "coach"
+                        };
+                        //var attendaceRepo = attendanceRepo.GetAllByDateRange(fromDate, toDate);
+
+                        notificationList.Add(displayCoach);
+                    //}
+                    break;
                 }
             //}
 

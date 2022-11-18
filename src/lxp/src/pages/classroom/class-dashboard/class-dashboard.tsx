@@ -49,6 +49,7 @@ export const ClassDashboard: React.FC = () => {
   const [currentTab, setCurrentTab] = useState<TabItem>();
   const { isOnline } = useOnlineStatus();
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  const practitioners = useSelector(practitionerSelectors.getPractitioners);
 
   const backToDashboard = () => {
     history.push('/');
@@ -80,7 +81,11 @@ export const ClassDashboard: React.FC = () => {
 
   useEffect(() => {
     if (selectedTabIndex !== undefined && selectedTabIndex >= 0) {
-      setCurrentTab(tabItems[selectedTabIndex]);
+      if (isPrincipal && practitioners?.length! > 1) {
+        setCurrentTab(tabItemsForPrincipal[selectedTabIndex]);
+      } else {
+        setCurrentTab(tabItems[selectedTabIndex]);
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTabIndex]);
@@ -199,7 +204,11 @@ export const ClassDashboard: React.FC = () => {
       >
         <TabList
           className="bg-uiBg"
-          tabItems={isPrincipal ? tabItemsForPrincipal : tabItems}
+          tabItems={
+            isPrincipal && practitioners?.length! > 1
+              ? tabItemsForPrincipal
+              : tabItems
+          }
           setSelectedIndex={selectedTabIndex}
           tabSelected={(tab: TabItem, tabIndex: number) =>
             setTabSelected(tab, tabIndex)

@@ -1,4 +1,3 @@
-import { PractitionerInput } from '@/../../../packages/graphql/lib';
 import { PractitionerDto } from '@ecdlink/core';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { PractitionerService } from '@services/PractitionerService';

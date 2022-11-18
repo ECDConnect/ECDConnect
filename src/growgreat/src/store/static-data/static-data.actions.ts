@@ -8,8 +8,8 @@ import {
   RaceDto,
   RelationDto,
   DocumentTypeDto,
-  NoteTypeDto,
   WorkflowStatusDto,
+  NoteTypeDto,
 } from '@ecdlink/core';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { DocumentTypeService } from '@services/DocumentTypeService';
@@ -22,8 +22,8 @@ import { ProvinceService } from '@services/ProvinceService';
 import { RaceService } from '@services/RaceService';
 import { ReasonForLeavingService } from '@services/ReasonForLeavingService';
 import { RelationsService } from '@services/RelationsService';
-import { RootState, ThunkApiType } from '../types';
 import { WorkflowStatusService } from '@services/WorkflowStatusService';
+import { RootState, ThunkApiType } from '../types';
 
 export const getRelations = createAsyncThunk<
   RelationDto[],

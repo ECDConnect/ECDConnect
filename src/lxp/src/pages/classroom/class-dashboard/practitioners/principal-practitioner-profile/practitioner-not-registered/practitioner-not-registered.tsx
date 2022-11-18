@@ -1,5 +1,5 @@
 import { BannerWrapper, Button, Alert } from '@ecdlink/ui';
-import { format } from 'date-fns';
+import { format, addDays } from 'date-fns';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useTheme } from '@ecdlink/core';
 import { useHistory, useLocation } from 'react-router';
@@ -13,7 +13,7 @@ import ROUTES from '@/routes/routes';
 
 export const PractitionerNotRegistered: React.FC<
   PractitionerNotRegisterProps
-> = ({ practitioner }) => {
+> = ({ practitioner, classroom }) => {
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
   const userAuth = useSelector(authSelectors.getAuthUser);
@@ -57,26 +57,36 @@ export const PractitionerNotRegistered: React.FC<
         onBack={() => history.goBack()}
         displayOffline={!isOnline}
       />
-      <div className="w-full flex justify-center">
+      <div className="flex w-full justify-center">
         <Alert
           className="mt-10 w-11/12 rounded-xl"
           type={'error'}
           title={
             practitioner?.isLeaving
-              ? `Thandi has said that they are not a practitioner at Angels Daycare. If Thandi does not accept by ${format(
+              ? `${
+                  practitioner?.user?.firstName
+                } has said that they are not a practitioner at ${
+                  classroom?.name
+                }. If ${
+                  practitioner?.user?.firstName
+                } does not accept by ${format(
                   new Date(practitioner?.dateToBeRemoved!),
                   'LLL d'
                 )}, this profile will be deleted.`
-              : `Thandi has not registered on Funda App. If Thandi does not register by ${format(
-                  new Date(practitioner?.dateLinked!),
+              : `${
+                  practitioner?.user?.firstName
+                } has not registered on Funda App. If ${
+                  practitioner?.user?.firstName
+                } does not register by ${format(
+                  addDays(new Date(practitioner?.dateLinked!), 7),
                   'LLL d'
                 )}, this profile will be deleted.`
           }
           list={[
             !practitioner?.isLeaving
-              ? 'If Thandi needs help registering for Funda App, please contact the SmartStart call centre.'
-              : 'If Thandi needs help with Funda App, please contact the SmartStart call centre.',
-            'If you added Thandi by mistake, please remove them from your programme.',
+              ? `If ${practitioner?.user?.firstName} needs help registering for Funda App, please contact the SmartStart call centre.`
+              : `If ${practitioner?.user?.firstName} needs help with Funda App, please contact the SmartStart call centre.`,
+            `If you added ${practitioner?.user?.firstName} by mistake, please remove them from your programme.`,
           ]}
           button={
             <Button
@@ -90,14 +100,14 @@ export const PractitionerNotRegistered: React.FC<
           }
         />
       </div>
-      <div className="w-full flex justify-center">
+      <div className="flex w-full justify-center">
         <Button
           text="Remove Practitioner"
           icon="TrashIcon"
           type={'filled'}
           color={'primary'}
           textColor={'white'}
-          className="w-11/12 mt-4"
+          className="mt-4 w-11/12"
           onClick={removePractitioner}
         />
       </div>

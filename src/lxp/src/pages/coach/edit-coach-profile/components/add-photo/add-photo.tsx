@@ -1,6 +1,7 @@
 import { PhotoPrompt } from '../../../../../components/photo-prompt/photo-prompt';
 import { FileTypeEnum } from '@ecdlink/graphql';
 import { coachActions, coachSelectors, coachThunkActions } from '@store/coach';
+import { userActions, userSelectors, userThunkActions } from '@/store/user';
 import * as styles from '../../edit-coach-profile.styles';
 import { useDocuments } from '@hooks/useDocuments';
 import { AddPhotoProps } from './add-photo.types';
@@ -16,9 +17,11 @@ import {
   ProfileAvatar,
   Typography,
 } from '@ecdlink/ui';
+import { cloneDeep } from 'lodash';
 
 export const AddPhoto: React.FC<AddPhotoProps> = ({ onSubmit }) => {
   const coach = useSelector(coachSelectors.getCoach);
+  const user = useSelector(userSelectors.getUser);
   const appDispatch = useAppDispatch();
   const {
     userProfilePicture,
@@ -57,6 +60,17 @@ export const AddPhoto: React.FC<AddPhotoProps> = ({ onSubmit }) => {
     } else {
       updateDocument(userProfilePicture, imageBaseString);
     }
+
+    // save details with request updateUser
+    const userCopy = cloneDeep(user);
+
+    if (userCopy) {
+      if (imageBaseString?.length > 0) {
+        userCopy.profileImageUrl = imageBaseString;
+      }
+      appDispatch(userActions.updateUser(userCopy));
+      appDispatch(userThunkActions.updateUser(userCopy));
+    }
   };
 
   const handleDelete = () => {
@@ -77,14 +91,14 @@ export const AddPhoto: React.FC<AddPhotoProps> = ({ onSubmit }) => {
         text={
           userProfilePicture?.file
             ? 'Edit your photo by tapping the camera icon or tap save'
-            : 'Add a photo of yourself so your coach and club will recognise you.'
+            : 'Add a photo of yourself so your practitioners will recognise you.'
         }
         type="body"
         color="textDark"
         className="font-medium"
       />
 
-      <div className={'w-full inline-flex justify-center pt-16 pb-12'}>
+      <div className={'inline-flex w-full justify-center pt-16 pb-12'}>
         <ProfileAvatar
           dataUrl={userProfilePicture?.file ?? ''}
           size={'header'}

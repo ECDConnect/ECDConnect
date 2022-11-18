@@ -111,7 +111,7 @@ export const BannerWrapper: React.FC<BannerWrapperProps> = ({
                     type="h4"
                     text={title}
                     color={'white'}
-                    className="overflow-auto w-full truncate"
+                    className="w-full overflow-auto truncate"
                   />
                   <Typography
                     type="help"
@@ -124,7 +124,7 @@ export const BannerWrapper: React.FC<BannerWrapperProps> = ({
                   type="h4"
                   text={title}
                   color={'white'}
-                  className="overflow-auto w-full truncate"
+                  className="w-full overflow-auto truncate"
                 />
               )
             ) : (
@@ -149,14 +149,11 @@ export const BannerWrapper: React.FC<BannerWrapperProps> = ({
             />
           )}
           {notificationRender && (
-            <div className={'flex items-center mr-5'}>
+            <div className={'mr-5 flex items-center'}>
               {notificationRender()}
             </div>
           )}
-          <div
-            className="flex-shrink-0"
-            onClick={onAvatarSelect && onAvatarSelect}
-          >
+          <div className="flex-shrink-0" onClick={onAvatarSelect}>
             {avatar}
           </div>
         </div>

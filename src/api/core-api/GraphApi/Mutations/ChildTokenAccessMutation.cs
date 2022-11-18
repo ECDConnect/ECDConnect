@@ -9,6 +9,7 @@ using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Caregiver;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Workflow;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
@@ -25,19 +26,24 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Timers;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class ChildTokenAccessMutation
     {
+        private readonly Guid _tenantId = TenantExecutionContext.Tenant.Id;
         [TokenAccess(typeof(ChildOpenAccessValidator))]
         public async Task<bool> OpenAccessAddChild(
             [Service] ITokenManager<ApplicationUser, OpenAccessTokenManager> tokenManager,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
+            [Service] UserManager<ApplicationUser> userManager,
             string token,
             AddChildCaregiverTokenModel caregiver,
             AddChildLearnerTokenModel learner,
@@ -64,10 +70,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             try
             {
                 var siteAddressEntity = AddSiteAddress(siteAddress, siteRepo);
-
+               
                 var caregiverEntity = AddCaregiver(caregiver, siteAddressEntity, caregiverRepo);
 
-                var childEntity = AddChild(child, tokenModel, caregiverEntity, childRepo);
+                var childEntity = AddChild(child, tokenModel, caregiverEntity, childRepo, userManager);
 
                 AddLearner(childEntity, learner, tokenModel, scope);
 
@@ -170,8 +176,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return updated;
         }
 
-        private Child AddChild(AddChildTokenModel child, ChildTokenWrapperModel tokenModel, Caregiver caregiver, IGenericRepository<Child, Guid> repoFactory)
+        private Child AddChild(AddChildTokenModel child, ChildTokenWrapperModel tokenModel, Caregiver caregiver, IGenericRepository<Child, Guid> repoFactory, [Service] UserManager<ApplicationUser> userManager)
         {
+
+            var insertingUser = userManager.FindByIdAsync(tokenModel.AddedByUserId);
+
             var childEntity = new Child
             {
                 Id = tokenModel.ChildId,
@@ -181,7 +190,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 LanguageId = child.LanguageId,
                 OtherHealthConditions = child.OtherHealthConditions,
                 WorkflowStatusId = child.WorkflowStatusId,
-                CaregiverId = caregiver.Id
+                CaregiverId = caregiver.Id,
+                InsertedBy = (insertingUser!=null ? insertingUser.Result.FullName : "N/A")
             };
 
             var updated = repoFactory.Update(childEntity);
@@ -216,7 +226,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var child = new Child
             {
                 UserId = appUser.Id,
-                WorkflowStatusId = workflowStatus.Id
+                WorkflowStatusId = workflowStatus.Id,
+                InsertedBy = httpContext.HttpContext.GetUser().FullName
             };
 
             child.TenantId = tenantId;
@@ -272,6 +283,53 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             };
 
             return TokenHelper.EncodeToken(JsonConvert.SerializeObject(tokenWrapper));
+        }
+
+        public bool UpdateCareGiverGrants(
+  [Service] AuthenticationDbContext context,
+   Guid childUserId,
+  List<Guid> grantIds)
+        {
+            if (childUserId != null && grantIds != null)
+            {
+                //retrieve careGiverId from child
+                var childObj = context.Children.Where(x => x.UserId == childUserId.ToString()).FirstOrDefault();
+                if (childObj != null)
+                {
+                    Guid? caregiverId = childObj.CaregiverId;
+                    if (caregiverId != null)
+                    {
+                        var grantsToAdd = grantIds.Select(x => new UserGrant
+                        {
+                            GrantId = x,
+                            UserId = caregiverId.ToString(),
+                            TenantId = _tenantId
+                        });
+
+                        var existingGrants = context.UserGrants
+                          .Where(x =>x.UserId == caregiverId.ToString());
+
+                        try
+                        {
+                            //remove
+                            context.UserGrants.RemoveRange(existingGrants);
+                            context.SaveChanges();
+                            //reinsert
+                            context.UserGrants.AddRange(grantsToAdd);
+                            context.SaveChanges();
+                        }
+                        catch (Exception e)
+                        {
+                            // Error
+                            return false;
+                        }
+                        return true;
+                    }
+                    else return false;
+                }
+                else return false;
+            }
+            else return false;
         }
     }
 }

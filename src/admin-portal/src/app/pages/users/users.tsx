@@ -2,32 +2,67 @@ import { useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 import { UserRoutes } from '../../app.routes';
 import SubNavigationLink from '../../components/sub-navigation-link/sub-navigation-link';
-
-// TODO: (Tenancy) This can't be hardcoded as it will be different for each tenant
-const navigation = [
-  {
-    name: 'Application Users',
-    href: '/users/application',
-  },
-  {
-    name: 'Franchisors',
-    href: '/users/franchisors',
-  },
-  {
-    name: 'Coaches',
-    href: '/users/coaches',
-  },
-  {
-    name: 'Practitioners',
-    href: '/users/practitioners',
-  },
-  {
-    name: 'Children',
-    href: '/users/children',
-  },
-];
+import { useQuery } from '@apollo/client/react/hooks/useQuery';
+import { GetTenantContext } from '@ecdlink/graphql';
 
 export function Users() {
+  const { data } = useQuery(GetTenantContext, {
+    fetchPolicy: 'cache-and-network',
+  });
+
+  const getNavigationItems = () => {
+    console.log(data);
+    if (
+      data &&
+      data.tenantContext &&
+      data.tenantContext.applicationName === 'GrowGreat'
+    ) {
+      return [
+        {
+          name: 'Application Users',
+          href: '/users/application',
+        },
+        {
+          name: 'Health Care Worker',
+          href: '/users/health-care-worker',
+        },
+        {
+          name: 'Mothers',
+          href: '/users/mother',
+        },
+        {
+          name: 'Children',
+          href: '/users/infant',
+        },
+      ];
+    } else {
+      return [
+        {
+          name: 'Application Users',
+          href: '/users/application',
+        },
+        {
+          name: 'Franchisors',
+          href: '/users/franchisors',
+        },
+        {
+          name: 'Coaches',
+          href: '/users/coaches',
+        },
+        {
+          name: 'Practitioners',
+          href: '/users/practitioners',
+        },
+        {
+          name: 'Children',
+          href: '/users/children',
+        },
+      ];
+    }
+  };
+
+  const navigation = getNavigationItems();
+
   const history = useHistory();
   useEffect(() => {
     // GO TO DEFAULT ROUTE

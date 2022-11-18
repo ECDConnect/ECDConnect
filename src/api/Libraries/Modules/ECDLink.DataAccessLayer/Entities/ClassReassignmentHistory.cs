@@ -24,11 +24,20 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public string UserId { get; set; }
         public string Reason { get; set; }
         public string LoggedBy { get; set; }
-        public string ReassignedClass { get; set; }
+
         public string ReassignedToUser { get; set; }
-        public DateTime ReassignedDate { get; set; }
-        public DateTime ReassignedBackDate { get; set; }
+        public DateTime ReassignedToDate { get; set; }
         public string ReassignedBackToUserId { get; set; }
+        public DateTime? ReassignedBackToDate { get; set; }
+        
+        public string HierarchyToUser { get; set; }
+        public string HierarchyBackToUser { get; set; }
+
+        public string ReassignedClassrooms { get; set; }
+        public string ReassignedClassroomGroups { get; set; }
+        public string ReassignedChildrenUserIds { get; set; }
+        public string ReassignedClassProgrammes { get; set; }
+        public string ReassignedLearners { get; set; }
 
     }
 

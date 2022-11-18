@@ -31,6 +31,7 @@ using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using ECDLink.DataAccessLayer.Hierarchy.Entities;
 using Microsoft.Azure.Documents;
 using ECDLink.DataAccessLayer.Hierarchy;
+using System.Drawing;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
@@ -43,6 +44,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
                [Service] HierarchyEngine engine,
+               [Service] IInvitationReassignmentService reassignmentService,
             string classroomId,
             string userId)
         {
@@ -51,37 +53,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             ClassroomGroup classRoom = (ClassroomGroup)classRepo.GetAll().Where(x => x.Id.Equals(classroomId));
             if (classRoom != null)
             {
-                //get the users hierarchy to reuse
-                var hierarchy = engine.GetUserHierarchy((userId != null ? userId : uId));
 
-                ClassReassignmentHistory newReassignment = new ClassReassignmentHistory();
-                if (userId != null)
-                {
-                    //update classrooms hierarchy and send through to next function
-                    if (hierarchy != null)
-                    {
-                        classRoom.Hierarchy = hierarchy;
-
-                        var reassignmentRepo = repoFactory.CreateGenericRepository<ClassReassignmentHistory>(userContext: uId);
-                        newReassignment.LoggedBy = uId;
-                        newReassignment.IsActive = true;
-                        newReassignment.Reason = "Principal Linked Practitioner";
-                        newReassignment.ReassignedClass = classroomId;
-                        newReassignment.ReassignedDate = DateTime.Now;
-                        newReassignment.ReassignedToUser = userId;
-                        newReassignment.UserId = userId;
-                        newReassignment.ReassignedBackToUserId = classRoom.UserId.ToString();
-                    }
-                }
-                classRoom.UserId = Guid.Parse(userId);
-                classRoom.ClassroomId = Guid.Parse(classroomId);
-                classRoom.Name = classRoom.Name;
-                classRoom.IsActive = true;
-                classRoom.ProgrammeTypeId = classRoom.ProgrammeTypeId;
-                var updateResult = classRepo.Update(classRoom);
-
-                //also update the userhierarchy on classroomgroup, as well as classProgramme so that a practitioner can see this
-                this.UpdateClassProgrammeForPractitioner(contextAccessor, dbFactory, repoFactory, Guid.Parse(classroomId), hierarchy);
+                ReassignmentMutationExtension reassignment = new ReassignmentMutationExtension();
+                //reassignment.AddReassignmentForPractitioner(contextAccessor, repoFactory, engine, uId, , "Principal Linked Practitioner", DateTime.Now, uId, classRoom.Id.ToString(), true);
+                reassignmentService.AddReassignmentForPractitioner(uId, uId, userId, "Principal Linked Practitioner", DateTime.Now, uId, classroomId, true);
 
                 return classRoom;
             }
@@ -136,11 +111,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         newReassignment.LoggedBy = uId;
                         newReassignment.IsActive = true;
                         newReassignment.Reason = "Principal Linked Practitioner";
-                        newReassignment.ReassignedClass = id.ToString();
-                        newReassignment.ReassignedDate = DateTime.Now;
+                        newReassignment.ReassignedClassroomGroups = id.ToString()+";";
+                        newReassignment.ReassignedToDate = DateTime.Now;
                         newReassignment.ReassignedToUser = input.UserId.ToString();
                         newReassignment.UserId = input.UserId.ToString();
-                        newReassignment.ReassignedBackToUserId = classRoom.UserId.ToString();
+                        newReassignment.ReassignedBackToUserId = uId;//classRoom.UserId.ToString();
+                        newReassignment.ReassignedBackToDate = DateTime.Now;
                     }                    
                 }
                 classRoom.UserId = input.UserId;

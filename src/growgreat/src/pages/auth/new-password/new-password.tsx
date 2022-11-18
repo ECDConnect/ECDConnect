@@ -24,7 +24,7 @@ import { useStoreSetup } from '@hooks/useStoreSetup';
 
 export const NewPassword: React.FC = () => {
   const appDispatch = useAppDispatch();
-  const { resetAppStaticStores, resetAuth } = useStoreSetup();
+  const { resetAppStore, resetAuth } = useStoreSetup();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [displayError, setDisplayError] = useState<boolean>(false);
   const [displaySuccess, setDisplaySuccess] = useState<boolean>(false);
@@ -43,20 +43,6 @@ export const NewPassword: React.FC = () => {
     mode: 'onChange',
   });
   const { isValid } = newPasswordFormState;
-  useEffect(() => {
-    if (!hasSubmitted) {
-      setSubmitButtonDisabled(!isValid);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isValid]);
-
-  useEffect(() => {
-    if (resetAppStaticStores) {
-      resetAppStaticStores(false);
-      resetAuth();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const submitForm = async () => {
     setHasSubmitted(true);
@@ -99,6 +85,21 @@ export const NewPassword: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    if (!hasSubmitted) {
+      setSubmitButtonDisabled(!isValid);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isValid]);
+
+  useEffect(() => {
+    if (resetAppStore) {
+      resetAppStore(false);
+      resetAuth();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <div className={styles.container}>
       <BannerWrapper
@@ -112,7 +113,7 @@ export const NewPassword: React.FC = () => {
             type="body"
             color="uiMidDark"
             text={'Enter a new password that has:'}
-          ></Typography>
+          />
 
           <ul className={styles.listStyles}>
             <li>
@@ -145,9 +146,8 @@ export const NewPassword: React.FC = () => {
             register={newPasswordRegister}
             strengthMeterVisible={true}
           />
-          <div className={'mt-6'}>
-            <Divider dividerType="solid"></Divider>
-          </div>
+
+          <Divider className={'mt-6'} dividerType="solid" />
 
           {displayError && (
             <Alert
@@ -173,11 +173,7 @@ export const NewPassword: React.FC = () => {
             isLoading={isLoading}
             onClick={submitForm}
           >
-            <Typography
-              type="help"
-              color="white"
-              text={'Reset password'}
-            ></Typography>
+            <Typography type="help" color="white" text={'Reset password'} />
           </Button>
         </div>
       </BannerWrapper>

@@ -166,7 +166,7 @@ export const SignUp: React.FC = () => {
     token: string
   ) => {
     setIsLoading(true);
-    await new AuthService().SendAuthCode(username, token);
+    //await new AuthService().SendAuthCode(username, token);
 
     setIsLoading(false);
     history.push('/verify-phone', {
@@ -370,14 +370,7 @@ export const SignUp: React.FC = () => {
               className={styles.marginTop}
             />
           )}
-          <Offline>
-            <Alert
-              className={'mt-5 mb-3'}
-              title="You are offline"
-              message={'You need to be online to sign up for the app'}
-              type={'warning'}
-            />
-          </Offline>
+
           <Button
             id="gtm-register"
             className={styles.formButton}
@@ -458,6 +451,13 @@ export const SignUp: React.FC = () => {
           ]}
         />
       </Dialog>
+      <Offline>
+        <Alert
+          className={'mt-5 mb-3'}
+          title="Your internet connection is unstable."
+          type={'warning'}
+        />
+      </Offline>
     </div>
   );
 };

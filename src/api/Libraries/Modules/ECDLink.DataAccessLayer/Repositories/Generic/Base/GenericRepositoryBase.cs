@@ -30,8 +30,6 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
 
         protected string errorMessage = string.Empty;
 
-        //private readonly ICacheService<IGlobalCache> _cacheService;
-
         public GenericRepositoryBase(AuthenticationDbContext context, IDomainEventService domainEventService)
         {
             SetCustomScope(context);
@@ -107,8 +105,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
             }
             Guid tenantId = TenantExecutionContext.Tenant.Id;
             if (Exists(entity.Id))
-            {
-                entity.InsertedDate = entity.InsertedDate;//do not update inserted date to Now                
+            {          
                 entity.UpdatedDate = DateTime.Now;
                 entity.UpdatedBy = _userId;
                 entity.TenantId = tenantId;

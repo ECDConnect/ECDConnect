@@ -23,8 +23,8 @@ import { PhotoPrompt } from '../../../components/photo-prompt/photo-prompt';
 import { DialogFormInput } from '@models/practitioner/DialogFormInput';
 import { setStorageItem } from '@utils/common/local-storage.utils';
 import { practitionerForCoachSelectors } from '@/store/practitionerForCoach';
-import { coachActions, coachSelectors } from '@store/coach';
-import { userActions, userSelectors } from '@/store/user';
+import { coachActions, coachSelectors, coachThunkActions } from '@store/coach';
+import { userActions, userSelectors, userThunkActions } from '@/store/user';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { childrenSelectors } from '@/store/children';
@@ -110,16 +110,29 @@ export const CoachAbout: React.FC = () => {
   });
 
   const formatSiteAddressAsText = (user: CoachDto): string => {
-    if (!user || !user.siteAddress) return 'Add a work address';
+    if (!user || !coach?.siteAddress) return 'Add a work address';
 
-    const address = user.siteAddress.ward?.length
+    const address = user?.siteAddress?.ward?.length
       ? `${user.siteAddress.ward}<br/>`
       : '';
 
-    return address.concat(`
-      ${user.siteAddress.addressLine1}<br/>
-      ${user.siteAddress.addressLine2}, ${user.siteAddress.addressLine3} ${user.siteAddress.postalCode}
-      <br/>${user.siteAddress.province?.description}`);
+    if (
+      coach?.siteAddress?.provinceId === undefined ||
+      coach?.siteAddress?.addressLine1 === ''
+    ) {
+      return 'Franchisor Site Address Not Set';
+    } else {
+      return address.concat(`
+        ${coach?.siteAddress?.addressLine1}<br/>
+        ${coach?.siteAddress?.addressLine2}, ${
+        coach?.siteAddress?.addressLine3
+      } ${coach?.siteAddress?.postalCode}
+        <br/>${
+          coach?.siteAddress?.province?.description
+            ? coach?.siteAddress?.province?.description
+            : ''
+        }`);
+    }
   };
 
   const setNewStackListItems = (currentUser: CoachDto) => {
@@ -183,6 +196,18 @@ export const CoachAbout: React.FC = () => {
         },
       },
       {
+        title: 'Work address',
+        subTitle: formatSiteAddressAsText(currentUser),
+        switchTextStyles: true,
+        hasMarkup: true,
+        actionName: currentUser?.siteAddress ? 'Edit' : 'Add',
+        actionIcon: currentUser?.siteAddress ? 'PencilIcon' : 'PlusIcon',
+        buttonType: currentUser?.siteAddress ? 'filled' : 'outlined',
+        onActionClick: () => {
+          history.push(ROUTES.COACH.ABOUT.ADDRESS);
+        },
+      },
+      {
         title: 'Signature',
         subTitle: currentUser?.signingSignature
           ? 'Replace your signature'
@@ -193,18 +218,6 @@ export const CoachAbout: React.FC = () => {
         buttonType: 'filled',
         onActionClick: () => {
           history.push(ROUTES.COACH.ABOUT.SIGNATURE);
-        },
-      },
-      {
-        title: 'Work address',
-        subTitle: formatSiteAddressAsText(currentUser),
-        switchTextStyles: true,
-        hasMarkup: true,
-        actionName: currentUser?.siteAddress ? 'Edit' : 'Add',
-        actionIcon: currentUser?.siteAddress ? 'PencilIcon' : 'PlusIcon',
-        buttonType: currentUser?.siteAddress ? 'filled' : 'outlined',
-        onActionClick: () => {
-          history.push(ROUTES.COACH.ABOUT.ADDRESS);
         },
       },
     ];
@@ -221,7 +234,7 @@ export const CoachAbout: React.FC = () => {
       setDisplayError(true);
     } else {
       setEditFieldVisible(false);
-      saveCoachUserData();
+      await saveCoachUserData();
     }
   };
 
@@ -265,24 +278,24 @@ export const CoachAbout: React.FC = () => {
     if (copy) {
       copy.profileImageUrl = imageBaseString;
       appDispatch(userActions.updateUser(copy));
-      // appDispatch(userThunkActions.updateUser(copy));
     }
 
     if (!userProfilePicture) {
       await createNewDocument({
         data: imageBaseString,
-        userId: coach?.id || user?.id || '',
+        userId: user?.id || '',
         fileType: FileTypeEnum.ProfileImage,
         fileName: `ProfilePicture_${user?.id}.png`,
       });
     } else {
       updateDocument(userProfilePicture, imageBaseString);
     }
+
+    await saveCoachUserData(imageBaseString);
   };
 
-  const saveCoachUserData = () => {
+  const saveCoachUserData = (imageBaseString: string = '') => {
     const coachForm = coachAboutFormGetValues();
-
     const coachCopy = cloneDeep(coach);
     const userCopy = cloneDeep(user);
 
@@ -292,11 +305,18 @@ export const CoachAbout: React.FC = () => {
       userCopy.phoneNumber = coachForm.cellphone;
       userCopy.email = coachForm.email;
       userCopy.fullName = `${userCopy.firstName} ${userCopy.surname}`;
+      if (imageBaseString?.length > 0) {
+        userCopy.profileImageUrl = imageBaseString;
+      }
 
       Object.assign(coachCopy.user as UserDto, userCopy);
 
       appDispatch(userActions.updateUser(userCopy));
+      appDispatch(userThunkActions.updateUser(userCopy));
+
       appDispatch(coachActions.updateCoach(coachCopy));
+      appDispatch(coachThunkActions.updateCoach(coachCopy));
+
       setNewStackListItems(coachCopy);
     }
   };
@@ -317,7 +337,7 @@ export const CoachAbout: React.FC = () => {
         backgroundColour={'white'}
       >
         <div className="px-4">
-          <div className={'w-full inline-flex justify-center pt-8'}>
+          <div className={'inline-flex w-full justify-center pt-8'}>
             <ProfileAvatar
               dataUrl={
                 userProfilePicture?.file ||
@@ -329,7 +349,7 @@ export const CoachAbout: React.FC = () => {
               hasConsent={true}
             />
           </div>
-          <div className="flex my-4 justify-center">
+          <div className="my-4 flex justify-center">
             {practitioners && (
               <StatusChip
                 className="mr-2"
@@ -354,6 +374,17 @@ export const CoachAbout: React.FC = () => {
             listItems={listItems}
             type={'ActionList'}
           ></StackedList>
+          {coach?.signingSignature && (
+            <>
+              <img
+                alt="signature"
+                src={coach.signingSignature}
+                style={{ margin: '20px 0 ' }}
+                width="60"
+              />
+              <br />
+            </>
+          )}
         </div>
       </BannerWrapper>
 

@@ -176,14 +176,13 @@ export const LoginModal: React.FC<LoginModalProps> = ({ loginSuccessful }) => {
           <Offline>
             <Alert
               className={'mt-5 mb-3'}
-              title="You are offline"
-              message={'You need to be online to log in to the app'}
+              title="Your internet connection is unstable."
               type={'warning'}
             />
           </Offline>
 
           <Button
-            className={'w-full mt-3'}
+            className={'mt-3 w-full'}
             type="filled"
             isLoading={isLoading}
             color="primary"
@@ -194,7 +193,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ loginSuccessful }) => {
           </Button>
 
           <Button
-            className={'w-full mt-3'}
+            className={'mt-3 w-full'}
             type="filled"
             color="alertMain"
             onClick={async () => {
