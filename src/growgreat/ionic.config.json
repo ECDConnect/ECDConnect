@@ -3,6 +3,5 @@
   "integrations": "capacitor",
   "type": "react",
   "livereload": true,
-  "external": true,
   "webDir": "./build"
 }
