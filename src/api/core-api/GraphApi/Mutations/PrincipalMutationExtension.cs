@@ -240,11 +240,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     {
                         practitioner.DateToBeRemoved = DateTime.Now;
                         practitioner.DateAccepted = null;
+                        practitioner.DateLinked = null;
                         practitioner.IsLeaving = true;
-                        //update and clear  the practitioner details
+                        //update and clear the principals details
                         practitioner.PrincipalHierarchy = null;
                         practitioner.ShareInfo = false;
-                        practitioner.DateLinked = null;
+                        
                         status.LeavingDate = DateTime.Now;
                         status.Leaving = true;
                     } 
