@@ -55,6 +55,7 @@ export const PregnantDetails: React.FC<EditPregnantDetailsProps> = ({
   console.log(getPregnantDetailsFormValues());
   const [userId, setUserId] = useState('');
   const mothers = useSelector(motherSelectors.getMothers);
+  const [getMothers, setMothersListItems] = useState(mothers);
   const handleAddExistingUser = useMemo(() => {
     const existingUser = mothers.find(
       (item) => item?.user?.id === userId.toString()
@@ -63,24 +64,12 @@ export const PregnantDetails: React.FC<EditPregnantDetailsProps> = ({
   }, [userId, mothers]);
 
   useEffect(() => {
-    const mothersList: UserAlertListDataItem[] = mothers.map((mother) => {
-      return {
-        firstName: mother?.firstName || mother?.user?.firstName!,
-        subTitle: mother?.expectedDateOfDelivery
-          ? `Expected delivery date: ${format(
-              new Date(mother?.expectedDateOfDelivery!),
-              'PP'
-            )}`
-          : `Expected delivery date: -`,
-        switchTextStyles: true,
-        alertSeverity: 'none',
-        onActionClick: () => {},
-      };
-    });
+    if (!mothers?.length) {
+      setMothersListItems(mothers);
+    }
 
-    setMothersListItems(mothersList);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mothers]);
+  }, [mothers, getMothers]);
 
   useEffect(() => {
     if (isAlreadyClient) {
@@ -166,7 +155,7 @@ export const PregnantDetails: React.FC<EditPregnantDetailsProps> = ({
             fillType="clear"
             // selectedValue={getMomDetailsFormValues()}
             list={
-              (mothersList?.length &&
+              (mothers?.length &&
                 mothers
                   .filter((x) => x.firstName?.length! > 0)
                   .map((item) => {

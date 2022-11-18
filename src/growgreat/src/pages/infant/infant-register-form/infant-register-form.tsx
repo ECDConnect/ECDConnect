@@ -84,25 +84,25 @@ export const InfantRegisterForm: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [infantRoadToHealthBook]);
 
-  const handleExistingUser = () => {
+  function handleExistingUser() {
     if (isAlreadyClient) {
       completeAllSteps();
       history.push(ROUTES.DASHBOARD);
       return;
     }
     setActiveStep(InfantRegisterSteps.pregnantContactInformation);
-  };
+  }
 
-  const handleMultipleChildrenSteps = () => {
+  function handleMultipleChildrenSteps() {
     if (multipleChildrenCount < Number(numberOfChildren!)) {
       setActiveStep(InfantRegisterSteps.infantDetails);
       setMultipleChildrenCount(multipleChildrenCount + 1);
       return;
     }
     setActiveStep(InfantRegisterSteps.motherDetails);
-  };
+  }
 
-  const completeAllSteps = () => {
+  function completeAllSteps() {
     if (multipleChildrenArray.length >= 1) {
       for (const child of multipleChildrenArray) {
         let weightAtBirth = undefined;
@@ -258,12 +258,11 @@ export const InfantRegisterForm: React.FC = () => {
         documentThunkActions.createDocument(documentInputModel)
       ).unwrap();
     }
-  };
+  }
 
   const steps = (step: InfantRegisterSteps) => {
     switch (step) {
       case InfantRegisterSteps.consentAgreement:
-      default:
         return (
           <div className="text-textMid">
             <ConsentAgreement
