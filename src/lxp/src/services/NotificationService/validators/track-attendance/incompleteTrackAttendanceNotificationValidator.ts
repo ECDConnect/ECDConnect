@@ -25,8 +25,17 @@ export class IncompleteTrackAttendanceNotificationValidator
   }
 
   getNotifications = (): Message[] => {
-    const { classroomData: classroomState, attendanceData: attendanceState } =
-      this.store.getState();
+    const {
+      classroomData: classroomState,
+      attendanceData: attendanceState,
+      user: userState,
+    } = this.store.getState();
+
+    const isCoach = userState?.user?.roles?.some(
+      (role) => role.name === 'Coach'
+    );
+
+    if (isCoach) return [];
 
     if (!classroomState) return [];
 
