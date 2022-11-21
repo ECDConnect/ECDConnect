@@ -11,7 +11,7 @@ import {
   Dialog,
   DialogPosition,
 } from '@ecdlink/ui';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
 import * as styles from './login.styles';
@@ -40,7 +40,8 @@ export const Login: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState(false);
 
   navigator.storage.estimate().then((estimate) => {
-    console.log(estimate?.quota! / 1024 / 1024);
+    const freMemoryResult = estimate?.quota! / 1024 / 1024;
+    setFreeMemory(Number(freMemoryResult.toFixed(0)));
     return estimate;
   });
 
