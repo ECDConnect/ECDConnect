@@ -1802,6 +1802,8 @@ namespace ECDLink.DataAccessLayer.Migrations
 
                     b.Property<string>("Value")
                         .HasColumnType("text");
+                    b.Property<DateTime>("InsertedDate")
+                        .HasColumnType("timestamp without time zone");
 
                     b.HasKey("UserId", "LoginProvider", "Name");
 
