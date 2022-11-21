@@ -64,6 +64,8 @@ import { contentReportSelectors } from '@store/content/report';
 import { analyticsActions } from '@store/analytics';
 import ROUTES from '@routes/routes';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
+import { childrenForPractitionerSelectors } from '@/store/childrenForPractitioner';
+import { practitionerSelectors } from '@/store/practitioner';
 
 const baseNotificationListItem: ListItemProps = {
   key: 'message-caregiver',
@@ -97,7 +99,17 @@ export const ChildProfile: React.FC = () => {
   const workflowDocumentPendingVerified = getWorkflowStatusIdByEnum(
     WorkflowStatusEnum.DocumentPendingVerification
   );
+  const practitioner = useSelector(practitionerSelectors?.getPractitioner);
+  const isPrincipal = practitioner?.isPrincipal;
+  const childrenForPrincipal = useSelector(
+    childrenForPractitionerSelectors?.getChildrenForPractitioner
+  );
+
   const child = useSelector(childrenSelectors.getChildById(childId));
+
+  const isPrincipalChild = childrenForPrincipal?.find(
+    (item) => item?.userId === child?.userId
+  );
 
   const classGroupId = useSelector(
     classroomsSelectors.getLearnerClassGroupId(child?.userId)
@@ -619,17 +631,21 @@ export const ChildProfile: React.FC = () => {
           />
         )}
 
-        {notifications && child && (
-          <div className={styles.notificationsStacklist}>
-            {notifications.map((notification) => (
-              <ListItem
-                {...notification}
-                key={`child-profile-notification-${notification.key}`}
-              />
-            ))}
-            <ChildProgressReportAlert child={child} />
-          </div>
-        )}
+        {((isPrincipal && isPrincipalChild) ||
+          (!isPrincipal && !isPrincipalChild)) &&
+          notifications &&
+          child && (
+            <div className={styles.notificationsStacklist}>
+              {notifications.map((notification) => (
+                <ListItem
+                  {...notification}
+                  key={`child-profile-notification-${notification.key}`}
+                />
+              ))}
+              <ChildProgressReportAlert child={child} />
+            </div>
+          )}
+
         <div className={styles.profileOptionsWrapper}>
           {profileOptions.map((options) => (
             <ListItem
