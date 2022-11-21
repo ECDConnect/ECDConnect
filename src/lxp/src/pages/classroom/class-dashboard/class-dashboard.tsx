@@ -32,8 +32,11 @@ import {
   practitionerThunkActions,
 } from '@/store/practitioner';
 import PractitionersList from './practitioners/practitioners-list/practitioners-list';
+import { PractitionerService } from '@/services/PractitionerService';
+import { authSelectors } from '@/store/auth';
 
 export const ClassDashboard: React.FC = () => {
+  const userAuth = useSelector(authSelectors.getAuthUser);
   const history = useHistory();
   const { state } = useLocation<ClassDashboardRouteState>();
   const date = format(new Date(), 'EEEE, d LLLL');
@@ -150,7 +153,11 @@ export const ClassDashboard: React.FC = () => {
   ];
 
   const setTabSelected = (tab: TabItem, tabIndex: number) => {
-    if (tab.title === 'Attendance' && !attendanceTutorialComplete) {
+    if (
+      tab.title === 'Attendance' &&
+      !attendanceTutorialComplete &&
+      practitioner?.progress! < 3
+    ) {
       displayTutorial('Attendance');
     }
 
@@ -181,11 +188,18 @@ export const ClassDashboard: React.FC = () => {
     setAttendanceTutorialActive(false);
   };
 
+  const updatePractitionerProgress = async () => {
+    await new PractitionerService(
+      userAuth?.auth_token!
+    ).UpdatePractitionerProgress(practitioner?.userId!, 3.0);
+  };
+
   const completeTutorial = () => {
     setStorageItem(true, LocalStorageKeys.attendanceTutorialComplete);
     setAttendanceTutorialComplete(true);
     setSelectedTabIndex(0);
     setAttendanceTutorialActive(false);
+    updatePractitionerProgress();
   };
 
   return (

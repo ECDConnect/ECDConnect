@@ -6,6 +6,7 @@ import { classNames } from '../../utils/style-class.utils';
 interface CardProps extends ComponentBaseProps {
   borderRaduis?: CardBorderRaduis;
   shadowSize?: CardShadowSize;
+  children?: React.ReactNode | null;
 }
 
 export const Card: React.FC<CardProps> = ({
