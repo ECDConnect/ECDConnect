@@ -2,7 +2,7 @@ export const contentWrapper =
   'flex h-full z-20 flex-col justify-start items-center px-2';
 export const checkboxWrapper =
   'flex w-full flex-row justify-start items-center';
-export const formStyle = 'pb-2 px-2 w-full';
+export const formStyle = 'max-w-md pb-2 px-2 w-full';
 export const wrapper = 'h-full overflow-y-auto';
 export const marginBottom = 'mb-4';
 export const marginTop = 'mt-4';
