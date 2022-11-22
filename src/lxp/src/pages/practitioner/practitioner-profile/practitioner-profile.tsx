@@ -28,6 +28,7 @@ export const PractitionerProfile: React.FC = () => {
   const { resetAuth, resetAppStore } = useStoreSetup();
   const user = useSelector(userSelectors.getUser);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  const practitioners = useSelector(practitionerSelectors?.getPractitioners);
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const classroomForPractitionerAnyType: any = classroom;
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
@@ -37,6 +38,10 @@ export const PractitionerProfile: React.FC = () => {
   const { isOnline } = useOnlineStatus();
   const history = useHistory();
   const dialog = useDialog();
+
+  const principalPractitioner = practitioners?.find(
+    (item) => item?.userId === user?.id
+  );
 
   useEffect(() => {
     if (!isOnline) {
@@ -231,7 +236,10 @@ export const PractitionerProfile: React.FC = () => {
       initActive: true,
       child: (
         <div>
-          {practitioner?.isRegistered ? null : <CompleteProfile />}
+          {principalPractitioner?.isRegistered ||
+          practitioner?.isRegistered ? null : (
+            <CompleteProfile />
+          )}
           <StackedList
             listItems={getStackedMenuList()}
             type={'MenuList'}
