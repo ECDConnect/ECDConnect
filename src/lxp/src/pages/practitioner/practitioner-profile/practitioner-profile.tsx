@@ -69,7 +69,7 @@ export const PractitionerProfile: React.FC = () => {
         iconColor: 'white',
         showIcon: profilePc === undefined,
         onActionClick: () => {
-          history.push(ROUTES.PRACTITIONER.ABOUT);
+          history.push(ROUTES.PRACTITIONER.ABOUT.ROOT);
         },
       },
       {
@@ -253,7 +253,7 @@ export const PractitionerProfile: React.FC = () => {
       displayOffline={!isOnline}
     >
       <div className="bg-white">
-        <TabList className="bg-white mb-1" tabItems={tabItem} />
+        <TabList className="mb-1 bg-white" tabItems={tabItem} />
       </div>
     </BannerWrapper>
   );
