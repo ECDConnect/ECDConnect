@@ -74,7 +74,7 @@ export const PractitionerProfile: React.FC = () => {
         iconColor: 'white',
         showIcon: profilePc === undefined,
         onActionClick: () => {
-          history.push(ROUTES.PRACTITIONER.ABOUT);
+          history.push(ROUTES.PRACTITIONER.ABOUT.ROOT);
         },
       },
       {
