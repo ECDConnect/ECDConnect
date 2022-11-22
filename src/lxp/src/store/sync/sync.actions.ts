@@ -11,7 +11,8 @@ import { notesThunkActions } from '../notes';
 import { programmeThunkActions } from '../programme';
 import { RootState, ThunkApiType } from '../types';
 import { userThunkActions } from '../user';
-import { coachThunkActions } from '../coach';
+import { practitionerThunkActions } from '../practitioner';
+// import { coachThunkActions } from '../coach';
 
 import { SyncOfflineDataProps, SyncOfflineDataReturnType } from './sync.types';
 
@@ -26,8 +27,12 @@ export const syncOfflineData = createAsyncThunk<
 >('sync/offlineData', async (any, { rejectWithValue, dispatch }) => {
   const syncSteps: SyncStep[] = [
     {
-      title: 'Practitioner',
+      title: 'User',
       action: userThunkActions.updateUser,
+    },
+    {
+      title: 'Practitioner',
+      action: practitionerThunkActions.updatePractitionerById,
     },
     // {
     //   title: 'Coach',
@@ -128,8 +133,12 @@ export const syncOfflineDataForPractitioner = createAsyncThunk<
 >('sync/offlineData', async (any, { rejectWithValue, dispatch }) => {
   const syncSteps: SyncStep[] = [
     {
-      title: 'Practitioner',
+      title: 'User',
       action: userThunkActions.updateUser,
+    },
+    {
+      title: 'Practitioner',
+      action: practitionerThunkActions.updatePractitionerById,
     },
     // {
     //   title: 'Coach',
