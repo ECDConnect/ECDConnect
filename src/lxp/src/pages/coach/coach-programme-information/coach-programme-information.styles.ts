@@ -24,4 +24,4 @@ export const rightArrowIcon = 'h-8 w-8';
 export const circleIcon = 'h-6 w-6 bg-trasparent text-white';
 export const circleIconDiv =
   'h-12 w-12 rounded-full bg-alertMain grid place-items-center mr-2';
-export const stackedList = 'pb-8 h-1/2 w-11/12';
+export const stackedList = 'pb-8 h-1/2 w-11/12 flex flex-col gap-1';
