@@ -52,6 +52,7 @@ import {
   childrenForPractitionerActions,
   childrenForPractitionerThunkActions,
 } from './store/childrenForPractitioner';
+import { PractitionerDto } from '@ecdlink/core';
 
 type IntialStoreSetupContextValues = {
   initloading: boolean;
@@ -74,6 +75,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   const [staticDataLoading, setStaticDataLoading] = useState(false);
   const userData = useSelector(userSelectors.getUser);
   const isCoach = userData?.roles?.some((role) => role.name === 'Coach');
+  const practitioners = useSelector(practitionerSelectors?.getPractitioners);
   const practitioner = useSelector(practitionerSelectors?.getPractitioner);
   const isPrincipal = practitioner?.isPrincipal;
 
@@ -99,6 +101,22 @@ const InitialStoreSetup: React.FC = ({ children }) => {
       }
     }
   }, [appDispatch, isCoach, userData]);
+
+  useEffect(() => {
+    if (userData) {
+      if (practitioners && practitioners?.length > 0) {
+        const currentPractitioner = practitioners.find(
+          (item) => item?.userId === userData?.id!
+        ) as PractitionerDto;
+        (async () =>
+          await appDispatch(
+            practitionerThunkActions.getPractitionerById({
+              id: currentPractitioner?.id!,
+            })
+          ).unwrap())();
+      }
+    }
+  }, [appDispatch, userData, practitioners]);
 
   useEffect(() => {
     if (userData) {
