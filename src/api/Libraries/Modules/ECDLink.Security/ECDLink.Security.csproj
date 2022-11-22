@@ -24,6 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\ECDLink.PostgresTenancy\ECDLink.PostgresTenancy.csproj" />
     <ProjectReference Include="..\ECDLink.Core\ECDLink.Core.csproj" />
   </ItemGroup>
 

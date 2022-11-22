@@ -14,7 +14,7 @@ namespace ECDLink.Core.Helpers
 
             var noSpacePhoneNumber = phoneNumber.Replace(" ", "");
 
-            if (noSpacePhoneNumber.StartsWith("<"))
+            if (noSpacePhoneNumber.Contains("<"))
             {
                 throw new Exception("Phone number not valid, try again");
             }

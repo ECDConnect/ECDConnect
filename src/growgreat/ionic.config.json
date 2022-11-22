@@ -1,5 +1,7 @@
 {
   "name": "growgreat",
   "integrations": "capacitor",
-  "type": "react"
+  "type": "react",
+  "livereload": true,
+  "webDir": "./build"
 }

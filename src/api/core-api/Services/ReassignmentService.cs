@@ -185,7 +185,7 @@ namespace ECDLink.Core.Services
                 }
                 else
                 {
-                    //reassign all classrooms and classroomgroups if none in particular is given                        
+                    //reassign all classrooms and classroomgroups if none in particular is given
                     var classroomGroups = classroomGroupRepo.GetAll().Where(x => x.UserId.ToString() == fromUserId).ToList();
                     if (classroomGroups != null)
                     {
@@ -244,7 +244,7 @@ namespace ECDLink.Core.Services
             }
             else
             {
-                //reassign all classrooms and classroomgroups if none in particular is given                        
+                //reassign all classrooms and classroomgroups if none in particular is given
                 var classroomList = classroomRepo.GetAll().Where(x => x.UserId.ToString() == fromUserId).ToList();
                 if (classroomList != null)
                 {
@@ -405,7 +405,7 @@ namespace ECDLink.Core.Services
                                                                                                                           //if a list of groups exist, then split them up and reassign back to initial user for each classroomgroup, and subsequently, learners,m children, classrooms and programmes
                                     foreach (string reassignedGroup in reassignedClassroomGroups)
                                     {
-                                        //Log to the history table the reassignment back to original user as a new row for continuation                                    
+                                        //Log to the history table the reassignment back to original user as a new row for continuation
                                         ReassignmentLists newReassignment = UpdateClassroomGroups(uId, historyItem.ReassignedToUser, historyItem.UserId, historyItem.HierarchyToUser, historyItem.HierarchyBackToUser, reassignedGroup);
                                         //reassign attendance
                                         UpdateAttendance(uId, DateTime.Now, historyItem.UserId, historyItem.ReassignedToUser, historyItem.HierarchyBackToUser, historyItem.HierarchyToUser, newReassignment.ClassProgrammesReassigned, newReassignment.LearnersReassigned);

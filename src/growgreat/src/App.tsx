@@ -1,5 +1,5 @@
-import ReactGA from 'react-ga';
 import { useEffect } from 'react';
+import ReactGA from 'react-ga';
 import { useSelector } from 'react-redux';
 import TagManager from 'react-gtm-module';
 
@@ -21,8 +21,7 @@ import { authSelectors } from '@/store/auth';
 import { settingSelectors } from '@/store/settings';
 
 import { LoginModal } from '@/pages/auth/login-modal/login-modal';
-
-import '@/styles.css';
+import '@/style.css';
 
 function App() {
   const dialog = useDialog();

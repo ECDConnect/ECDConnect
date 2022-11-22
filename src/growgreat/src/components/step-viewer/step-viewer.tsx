@@ -9,6 +9,7 @@ interface StepViewProps {
   activeStep: number;
   showStepCount?: boolean;
   onBack: () => void;
+  children?: React.ReactNode | null;
 }
 export const StepViewer: React.FC<StepViewProps> = ({
   activeStep,

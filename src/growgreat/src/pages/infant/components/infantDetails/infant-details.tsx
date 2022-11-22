@@ -1,3 +1,6 @@
+import { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
+import { useForm, useFormState } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
   Button,
@@ -8,8 +11,6 @@ import {
   FormInput,
   Alert,
 } from '@ecdlink/ui';
-import { useForm, useFormState } from 'react-hook-form';
-import { useState, useEffect } from 'react';
 import { EditInfantDetailsProps } from './infant-details.types';
 import {
   InfantDetailsModel,
@@ -17,8 +18,8 @@ import {
 } from '@/schemas/infant/infant-details';
 import { intervalToDuration } from 'date-fns';
 import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 // import { getGenders } from '@/store/static-data/static-data.selectors';
-import { useSelector } from 'react-redux';
 import { staticDataSelectors } from '@store/static-data';
 
 export const InfantDetails: React.FC<EditInfantDetailsProps> = ({

@@ -3,6 +3,7 @@
     "baseUrl": "./src",
     "paths": {
       "@/*": ["./*"],
+      "@@/*": ["../*"],
       "@enums/*": ["./enums/*"],
       "@hooks/*": ["./hooks/*"],
       "@models/*": ["./models/*"],

@@ -10,6 +10,7 @@ namespace ECDLink.PostgresTenancy.Context
     public class PostgresTenancyContext : IdentityDbContext<TenancyIdentityUser>
     {
         internal DbSet<TenantEntity> Tenants { get; set; }
+        internal DbSet<JWTUserTokensEntity> JWTTokens { get; set; }
 
         public PostgresTenancyContext(DbContextOptions<PostgresTenancyContext> options)
           : base(options)

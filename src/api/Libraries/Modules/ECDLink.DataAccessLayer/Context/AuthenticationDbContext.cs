@@ -16,6 +16,7 @@ using ECDLink.DataAccessLayer.Hierarchy.Entities;
 using ECDLink.DataAccessLayer.Jobs;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using ECDLink.Security.JwtSecurity;
 
 namespace ECDLink.DataAccessLayer.Context
 {
@@ -63,7 +64,7 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<RolePermission> RolePermissions { get; set; }
         public DbSet<UserHierarchyEntity> UserHierarchy { get; set; }
         public DbSet<HierarchyEntity> Hierarchy { get; set; }
-        
+        public DbSet<AspNetJWTSession> AspNetJWTSession { get; set; }
 
         // Navigation
         public DbSet<NavigationPermission> NavigationPermissions { get; set; }

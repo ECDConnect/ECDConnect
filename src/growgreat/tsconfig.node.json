@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "pretty": true,
+    "composite": true,
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "allowSyntheticDefaultImports": true
+  },
+  "ts-node": {
+    "swc": true,
+    "esm": true,
+    "transpileOnly": true
+  },
+  "include": ["craco.config.ts"]
+}
