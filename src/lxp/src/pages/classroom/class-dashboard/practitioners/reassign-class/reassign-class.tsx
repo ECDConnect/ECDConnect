@@ -224,148 +224,146 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
   };
 
   return (
-    <>
-      <BannerWrapper
-        title={`Progress summary`}
-        subTitle={`${
-          formattedDate ? formattedDate : format(new Date(), 'EEEE, d LLLL')
-        }`}
-        color={'primary'}
-        size="medium"
-        renderBorder={true}
-        renderOverflow={false}
-        onBack={() => history.push(ROUTES.CLASSROOM)}
-        // displayOffline={!isOnline}
-      />
-      <div className="flex flex-wrap w-full justify-center">
-        <div className="ml-3 flex flex-wrap justify-center">
-          <Typography
-            type="h2"
-            color="textMid"
-            text={'Reassign a class'}
-            className="mt-6"
-          />
-          <Typography
-            type="body"
-            color="textMid"
-            text={
-              'If a practitioner is absent, you can assign their class to a different practitioner.'
+    <BannerWrapper
+      title={`Progress summary`}
+      subTitle={`${
+        formattedDate ? formattedDate : format(new Date(), 'EEEE, d LLLL')
+      }`}
+      color={'primary'}
+      size="medium"
+      renderBorder={true}
+      onBack={() => history.push(ROUTES.CLASSROOM)}
+      // displayOffline={!isOnline}
+    >
+      <div className="mb-3 flex w-full flex-wrap justify-center">
+        <Typography
+          type="h2"
+          color="textMid"
+          text={'Reassign a class'}
+          className="mt-6"
+        />
+        <Typography
+          type="body"
+          color="textMid"
+          text={
+            'If a practitioner is absent, you can assign their class to a different practitioner.'
+          }
+          className="w-11/12"
+        />
+        <label className="text-md mt-2 mb-1 block w-11/12 font-medium text-gray-700">
+          What date would you like to reassign the class?
+        </label>
+        {practitionerId ? (
+          <DatePicker
+            placeholderText={`Please select a date`}
+            wrapperClassName="text-center"
+            className="border-uiLight text-textMid mx-auto w-11/12 rounded-md"
+            selected={new Date()}
+            onChange={(date: Date) =>
+              setReassignClassValue('date', date ? date.toString() : '')
             }
-            className="w-11/12"
+            dateFormat="EEE, dd MMM yyyy"
+            minDate={new Date()}
           />
-          <label className="block w-11/12 text-md font-medium text-gray-700 mt-2 mb-1">
-            What date would you like to reassign the class?
-          </label>
-          {practitionerId ? (
-            <DatePicker
-              placeholderText={`Please select a date`}
-              className="w-11/12 border-uiLight rounded-md mx-auto text-textMid"
-              selected={new Date()}
-              onChange={(date: Date) =>
-                setReassignClassValue('date', date ? date.toString() : '')
-              }
-              dateFormat="EEE, dd MMM yyyy"
-              minDate={new Date()}
-            />
-          ) : (
-            <DatePicker
-              placeholderText={`Please select a date`}
-              className="w-11/12 border-uiLight rounded-md mx-auto text-textMid"
-              selected={selectedDate ? new Date(selectedDate) : undefined}
-              onChange={(date: Date) =>
-                setReassignClassValue('date', date ? date.toString() : '')
-              }
-              dateFormat="EEE, dd MMM yyyy"
-              minDate={new Date()}
-            />
-          )}
-          <Dropdown
-            placeholder={'Select the class'}
-            list={(classroomGroupsList && classroomGroupsList) || []}
-            fillType="clear"
-            label={'Which class needs the assignment?'}
-            fullWidth
-            className={'mt-3 w-11/12'}
-            selectedValue={reassignedClass}
-            onChange={(item: any) => {
-              setReassignClassValue('reassignedClass', item);
-            }}
-          />
-          <Dropdown
-            placeholder={'Select practitioner'}
-            list={(practitionersList && practitionersList) || []}
-            fillType="clear"
-            label={'Which practitioner is absent on this date?'}
-            fullWidth
-            className={'mt-3 w-11/12'}
-            selectedValue={practitioner}
-            onChange={(item: any) => {
-              setReassignClassValue('practitioner', item);
-            }}
-          />
-          <Dropdown
-            placeholder={'Select practitioner'}
-            list={(practitionersList && practitionersList) || []}
-            fillType="clear"
-            label={'Which practitioner will teach this class instead?'}
-            fullWidth
-            className={'mt-3 w-11/12'}
-            onChange={(item: any) => {
-              setReassignClassValue('practitioner2', item);
-            }}
-          />
-          <Dropdown
-            placeholder={'Select reason'}
-            list={
-              (absentInfo &&
-                absentInfo.map((item) => {
-                  return {
-                    label: item.name,
-                    value: item.name,
-                  };
-                })) ||
-              []
+        ) : (
+          <DatePicker
+            placeholderText={`Please select a date`}
+            wrapperClassName="text-center"
+            className="border-uiLight text-textMid mx-auto w-11/12 rounded-md"
+            selected={selectedDate ? new Date(selectedDate) : undefined}
+            onChange={(date: Date) =>
+              setReassignClassValue('date', date ? date.toString() : '')
             }
-            fillType="clear"
-            label={'Why is the practitioner absent?'}
-            fullWidth
-            className={'mt-3 w-11/12'}
-            onChange={(item: string) => {
-              setReassignClassValue('reason', item);
-            }}
+            dateFormat="EEE, dd MMM yyyy"
+            minDate={new Date()}
           />
-          {practitioner && selectedDate && reason && (
-            <div className="flex mt-3 w-11/12 bg-infoBb rounded-lg py-2">
-              <InformationCircleIcon className="h-14 w-14 mr-1 p-2 text-infoDark" />
-              <Typography
-                type="body"
-                color="textMid"
-                text={`You are reassigning ${
-                  practitionerAbsentName?.user?.fullName
-                } class ${reassignedClassName?.name} to ${
-                  practitionerPresentName?.user?.fullName
-                } for ${format(new Date(selectedDate), 'EEEE, d LLLL')}.`}
-                className="mr-1"
-              />
-            </div>
-          )}
-          <Button
-            type="filled"
-            color="primary"
-            className={'w-11/12 mx-auto mt-4 rounded-xl'}
-            onClick={submitReassignClass}
-          >
-            {renderIcon('SaveIcon', styles.buttonIcon)}
+        )}
+        <Dropdown
+          placeholder={'Select the class'}
+          list={(classroomGroupsList && classroomGroupsList) || []}
+          fillType="clear"
+          label={'Which class needs the assignment?'}
+          fullWidth
+          className={'mt-3 w-11/12'}
+          selectedValue={reassignedClass}
+          onChange={(item: any) => {
+            setReassignClassValue('reassignedClass', item);
+          }}
+        />
+        <Dropdown
+          placeholder={'Select practitioner'}
+          list={(practitionersList && practitionersList) || []}
+          fillType="clear"
+          label={'Which practitioner is absent on this date?'}
+          fullWidth
+          className={'mt-3 w-11/12'}
+          selectedValue={practitioner}
+          onChange={(item: any) => {
+            setReassignClassValue('practitioner', item);
+          }}
+        />
+        <Dropdown
+          placeholder={'Select practitioner'}
+          list={(practitionersList && practitionersList) || []}
+          fillType="clear"
+          label={'Which practitioner will teach this class instead?'}
+          fullWidth
+          className={'mt-3 w-11/12'}
+          onChange={(item: any) => {
+            setReassignClassValue('practitioner2', item);
+          }}
+        />
+        <Dropdown
+          placeholder={'Select reason'}
+          list={
+            (absentInfo &&
+              absentInfo.map((item) => {
+                return {
+                  label: item.name,
+                  value: item.name,
+                };
+              })) ||
+            []
+          }
+          fillType="clear"
+          label={'Why is the practitioner absent?'}
+          fullWidth
+          className={'mt-3 w-11/12'}
+          onChange={(item: string) => {
+            setReassignClassValue('reason', item);
+          }}
+        />
+        {practitioner && selectedDate && reason && (
+          <div className="bg-infoBb mt-3 flex w-11/12 rounded-lg py-2">
+            <InformationCircleIcon className="text-infoDark mr-1 h-14 w-14 p-2" />
             <Typography
-              type="help"
-              className="mr-2"
-              color="white"
-              text={'Save'}
-            ></Typography>
-          </Button>
-        </div>
+              type="body"
+              color="textMid"
+              text={`You are reassigning ${
+                practitionerAbsentName?.user?.fullName
+              } class ${reassignedClassName?.name} to ${
+                practitionerPresentName?.user?.fullName
+              } for ${format(new Date(selectedDate), 'EEEE, d LLLL')}.`}
+              className="mr-1"
+            />
+          </div>
+        )}
+        <Button
+          type="filled"
+          color="primary"
+          className={'mx-auto mt-4 w-11/12 rounded-xl'}
+          onClick={submitReassignClass}
+        >
+          {renderIcon('SaveIcon', styles.buttonIcon)}
+          <Typography
+            type="help"
+            className="mr-2"
+            color="white"
+            text={'Save'}
+          ></Typography>
+        </Button>
       </div>
-    </>
+    </BannerWrapper>
   );
 };
 
