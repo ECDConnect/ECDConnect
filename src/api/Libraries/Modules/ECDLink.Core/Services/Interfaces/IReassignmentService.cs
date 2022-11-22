@@ -4,7 +4,7 @@ using System.Text;
 
 namespace ECDLink.Core.Services.Interfaces
 {
-    public interface IInvitationReassignmentService
+    public interface IReassignmentService
     {
         public void ReassignAbsentees();
         public void ExpireRelationshipLinks();

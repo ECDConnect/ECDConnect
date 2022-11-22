@@ -1,16 +1,17 @@
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace ECDLink.Abstractrions.Enums
 {
     public enum MetricsColorEnum
     {
-        [Description("white")]
+        [Display(Name = "white")]
         None,
-        [Description("red")]
+        [Display(Name = "red")]
         Error,
-        [Description("orange")]
+        [Display(Name = "orange")]
         Warning,
-        [Description("green")]
+        [Display(Name =  "green")]
         Success
     }
 }

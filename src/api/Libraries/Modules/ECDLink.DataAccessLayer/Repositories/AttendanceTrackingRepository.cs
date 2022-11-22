@@ -103,5 +103,63 @@ namespace ECDLink.DataAccessLayer.Repositories
                 return null;
             }
         }
+
+        public List<Attendance> GetAllByParentClassroom(Guid classroomId, string userId, string parentRecordId)
+        {
+            try
+            {
+                //var start = startMonth.GetStartOfMonth();
+                //var end = endMonth.GetEndOfMonth();
+                Guid tenantId = TenantExecutionContext.Tenant.Id;
+                //get all programmes under classroom
+                IQueryable<ClassProgramme> programmes = _context.ClassProgrammes.Where(x => x.ClassroomGroupId.Equals(classroomId)).AsQueryable();
+                List<Attendance> attendance = _context.Attendances.Where(f => f.UserId == userId)
+                    .Where(g => g.ClassroomProgrammeId == classroomId)
+                    .Where(y => y.ParentRecordId == parentRecordId)
+                    .Where(e => e.TenantId == null || e.TenantId.Equals(tenantId)).ToList();//
+                List<string> programmeIds = programmes.Select(y => y.Id.ToString()).ToList();
+
+                List<Attendance> filteredAttendance = new List<Attendance>();
+
+                if (attendance.Any())
+                {
+
+                    foreach (var att in attendance)
+                    {
+                        if (att != null)
+                        {
+                            filteredAttendance.Add(att);
+                        }
+                    }
+                }
+                return filteredAttendance;
+            }
+            catch (Exception e)
+            {
+                return null;
+            }
+        }
+
+        public bool UpdateAttendance(Attendance attendance, string newParentRecordId)
+        {
+            try
+            {
+                var existingAttendance = _context.Attendances
+                    .Where(x => x.UserId == attendance.UserId && x.ClassroomProgrammeId == attendance.ClassroomProgrammeId)
+                    .Where(y => y.ParentRecordId == attendance.ParentRecordId && y.AttendanceDate == attendance.AttendanceDate).FirstOrDefault();
+
+                existingAttendance.ParentRecordId = newParentRecordId;
+
+                _context.Update(existingAttendance);
+                return true;
+            }
+            catch (Exception)
+            {
+                // Log error
+                return false;
+            }
+
+            return true;
+        }
     }
 }
