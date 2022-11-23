@@ -25,7 +25,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         public Absentees AddAbsenteeForPractitioner([Service] IHttpContextAccessor contextAccessor,
             [Service] IGenericRepositoryFactory repoFactory,
             [Service] HierarchyEngine engine,
-            [Service] IInvitationReassignmentService reassignmentService,
+            [Service] IReassignmentService reassignmentService,
             string practitionerId,
             string reassignedToPractitioner,
             string reason,
@@ -61,7 +61,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         }
 
         public bool ReassignAbsenteeFromHistory([Service] IHttpContextAccessor contextAccessor,
-            [Service] IInvitationReassignmentService reassignmentService,
+            [Service] IReassignmentService reassignmentService,
             string userId)
         {            
             var uId = contextAccessor.HttpContext.GetUser().Id;

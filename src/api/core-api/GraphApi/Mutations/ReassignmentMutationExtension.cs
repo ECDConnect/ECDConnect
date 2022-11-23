@@ -34,7 +34,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
         public bool AddReassignmentForPractitionerService(
         [Service] IHttpContextAccessor contextAccessor,
-        [Service] IInvitationReassignmentService reassignmentService,
+        [Service] IReassignmentService reassignmentService,
         string fromUserId,
         string toUserId,
         string reason,
@@ -50,14 +50,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
 
         public bool ReassignClassroomsFromHistoryService([Service] IHttpContextAccessor contextAccessor,
-            [Service] IInvitationReassignmentService reassignmentService,
+            [Service] IReassignmentService reassignmentService,
             string userId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             return reassignmentService.ReassignClassroomsFromHistory(uId, userId);
         }
         public bool ExpireRelationshipLinksService([Service] IHttpContextAccessor contextAccessor,
-    [Service] IInvitationReassignmentService reassignmentService)
+    [Service] IReassignmentService reassignmentService)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             reassignmentService.ExpireRelationshipLinks();
@@ -65,7 +65,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         }
 
         public bool ReassignAllClassroomsFromHistoryService([Service] IHttpContextAccessor contextAccessor,
-    [Service] IInvitationReassignmentService reassignmentService)
+    [Service] IReassignmentService reassignmentService)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             return reassignmentService.ReassignClassroomsFromHistory(uId, null);

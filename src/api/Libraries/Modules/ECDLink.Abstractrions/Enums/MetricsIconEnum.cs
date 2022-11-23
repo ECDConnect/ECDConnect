@@ -1,16 +1,17 @@
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace ECDLink.Abstractrions.Enums
 {
     public enum MetricsIconEnum
     {
-        [Description("none")]
+        [Display(Name = "none")]
         None,
-        [Description("error")]
+        [Display(Name = "error")]
         Error,
-        [Description("warning")]
+        [Display(Name = "warning")]
         Warning,
-        [Description("success")]
+        [Display(Name = "success")]
         Success
     }
 }
