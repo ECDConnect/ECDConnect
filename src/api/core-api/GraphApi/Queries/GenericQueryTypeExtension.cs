@@ -33,5 +33,26 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return TenantExecutionContext.Tenant;
         }
 
+        public List<Absentees> GetAbsentees([Service] IHttpContextAccessor contextAccessor,
+    [Service] IGenericRepositoryFactory repoFactory,
+    string userId, DateTime fromDate,DateTime toDate)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var absenteeRepo = repoFactory.CreateRepository<Absentees>(userContext: uId);
+
+            var absentees = absenteeRepo.GetAll().Where(x => x.UserId == userId).ToList();
+            return absentees.Where(x => x.AbsentDate >= fromDate && x.AbsentDate <= toDate).ToList();
+        }
+
+        public List<Absentees> IsRegistered([Service] IHttpContextAccessor contextAccessor,
+[Service] IGenericRepositoryFactory repoFactory,
+string userId, DateTime fromDate, DateTime toDate)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var absenteeRepo = repoFactory.CreateRepository<Absentees>(userContext: uId);
+
+            var absentees = absenteeRepo.GetAll().Where(x => x.UserId == userId).ToList();
+            return absentees.Where(x => x.AbsentDate >= fromDate && x.AbsentDate <= toDate).ToList();
+        }
     }
 }
