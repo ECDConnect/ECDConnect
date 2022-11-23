@@ -21,113 +21,110 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
     // reset: resetConsentFormValue,
     // control: consentFormControl,
   } = useForm<PregnantConsentModel>({
-    mode: 'onBlur',
-    reValidateMode: 'onChange',
     resolver: yupResolver(pregnantConsentModelSchema),
+    mode: 'onBlur',
+    // defaultValues: playgroup,
+    reValidateMode: 'onChange',
   });
   const [contentConsentTypeEnum, setContentConsentTypeEnum] =
     useState<ContentConsentTypeEnum>(ContentConsentTypeEnum.PhotoPermissions);
   const [presentArticle, setPresentArticle] = useState<boolean>(false);
   const [accept, setAccept] = useState(false);
-  function handleConsentAccept() {
+
+  const handleConsentAccept = () => {
     setConsentFormValue('hasConsent', !accept);
-  }
-  function displayArticle(key: ContentConsentTypeEnum, title: string) {
+  };
+
+  const displayArticle = (key: ContentConsentTypeEnum, title: string) => {
     setContentConsentTypeEnum(key);
     setPresentArticle(true);
-  }
-  function toggleConsentAgreement() {
-    setAccept(!accept);
-    handleConsentAccept();
-  }
+  };
 
-  if (presentArticle === false) {
-    return (
-      <div className="text-textMid flex h-full w-full flex-col px-5">
-        <div className="flex h-screen flex-col">
-          <Typography
-            type="h2"
-            color={'textDark'}
-            text={'Agreements'}
-            className="z-50 pt-3"
+  return (
+    <div className="h-full h-screen px-4">
+      <Typography
+        type="h2"
+        color={'textDark'}
+        text={'Agreements'}
+        className="z-50 pt-6"
+      />
+
+      <Typography
+        type="h4"
+        color={'textMid'}
+        className="z-50 py-2"
+        text={
+          'Ask your client to read the consent agreement and tap the box if they agree.'
+        }
+      />
+
+      <Divider dividerType="dashed" />
+
+      <Typography
+        type="h4"
+        color={'textDark'}
+        text={'Check to confirm that you agree with the following:'}
+        className="z-50 w-full py-2"
+      />
+
+      <div className="flex w-full flex-col">
+        <div className="flex flex-row items-center justify-around gap-3">
+          <input
+            type="checkbox"
+            className={accept ? 'bg-secondary' : 'bg-uiBg'}
+            onChange={() => {
+              setAccept(!accept);
+              handleConsentAccept();
+            }}
           />
+
           <Typography
-            type="h4"
+            type="body"
             color={'textMid'}
-            className="z-50 py-2"
-            text="Ask your client to read the consent agreement and tap the box if they agree."
+            text={'I accept the consent agreement'}
           />
-          <Divider dividerType="dashed" className="my-2" />
-          <Typography
-            type="h4"
-            color={'textDark'}
-            className="z-50 w-full py-2"
-            text={'Check to confirm that you agree with the following:'}
-          />
-          <div className="flex w-full w-screen flex-row items-center py-2">
-            <input
-              type="checkbox"
-              checked={!!accept}
-              onChange={toggleConsentAgreement}
-              className={accept ? 'bg-secondary' : 'bg-uiBg'}
-            />
-            <Typography
-              type="body"
-              color={'textMid'}
-              onClick={toggleConsentAgreement}
-              className="w-9/12 pl-2 md:w-11/12"
-              text={'I accept the consent agreement'}
-            />
-            <Typography
-              text={'View'}
-              type="body"
-              color={'secondary'}
-              className="cursor-pointer justify-end underline"
-              onClick={() =>
-                displayArticle(
-                  ContentConsentTypeEnum.ConsentAgreement,
-                  'Consent Agreement'
-                )
-              }
-            />
-          </div>
-          <Alert
-            type="info"
-            className="mt-4 flex flex-col items-center justify-center"
-            message="If the client does not consent, please do not register them on CHW Connect."
-          />
-        </div>
-        <div className="flex h-full w-full flex-col items-center justify-end px-5 py-4">
-          <div className="mb-16 w-full items-center justify-center">
-            <Button
-              text={`Next`}
-              type={'filled'}
-              color={'primary'}
-              textColor={'white'}
-              disabled={!accept}
-              iconPosition={'start'}
-              icon={'ArrowCircleRightIcon'}
-              className={
-                'absolute bottom-10 left-0 right-0 m-auto mt-2 max-h-10 w-11/12'
-              }
-              onClick={() => onSubmit(getConsentFormValues())}
-            />
-          </div>
-        </div>
-      </div>
-    );
-  }
 
-  if (presentArticle) {
-    return (
+          <Typography
+            text={'View'}
+            type="body"
+            color={'secondary'}
+            className="cursor-pointer text-right underline"
+            onClick={() =>
+              displayArticle(
+                ContentConsentTypeEnum.ConsentAgreement,
+                'Photo Permissions'
+              )
+            }
+          />
+        </div>
+        <Alert
+          type={'info'}
+          className="mt-4 flex w-full items-center justify-center"
+          message={
+            'If the client does not consent, please do not register them on CHW Connect.'
+          }
+        />
+      </div>
+
+      <div className="mt-10 flex h-full w-full justify-center align-bottom">
+        <Button
+          text={`Next`}
+          type={'filled'}
+          color={'primary'}
+          disabled={!accept}
+          textColor={'white'}
+          iconPosition={'start'}
+          icon={'ArrowCircleRightIcon'}
+          className={'absolute bottom-10 m-auto mt-2 max-h-10 w-11/12'}
+          onClick={() => onSubmit(getConsentFormValues())}
+        />
+      </div>
       <Article
         visible={presentArticle}
         title={'Consent Agreement'}
         consentEnumType={contentConsentTypeEnum}
         onClose={() => setPresentArticle(false)}
       />
-    );
-  }
-
-  return null;
+    </div>
+  );
 };

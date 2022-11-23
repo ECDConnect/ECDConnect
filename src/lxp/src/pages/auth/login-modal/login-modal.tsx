@@ -24,7 +24,7 @@ import { authActions, authThunkActions } from '@store/auth';
 import { settingActions } from '@store/settings';
 import * as styles from './login-modal.styles';
 import ROUTES from '@routes/routes';
-import packageInfo from '@@/package.json';
+const { version } = require('../../../../package.json');
 
 interface LoginModalProps {
   loginSuccessful: () => void;
@@ -70,9 +70,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ loginSuccessful }) => {
             isAuthenticated?.payload?.response?.status !== 401
           ) {
             loginSuccessful();
-            await appDispatch(
-              settingActions.setApplicationVersion(packageInfo.version)
-            );
+            await appDispatch(settingActions.setApplicationVersion(version));
             await appDispatch(authActions.setUserExpired());
             setIsLoading(false);
           } else {

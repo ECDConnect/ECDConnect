@@ -36,6 +36,7 @@ export const getDropDownFill = (
     case 'clear':
       return classNames(dropdownClearWrapper, `bg-${fillColor}`);
     case 'filled':
+    default:
       return classNames(dropdownWrapper, `bg-${fillColor}`);
   }
 };
@@ -45,6 +46,7 @@ export const getDropDownSelectedTextColour = (fillType: DropDownFillType) => {
     case 'clear':
       return 'text-primary';
     case 'filled':
+    default:
       return 'text-white';
   }
 };
@@ -57,6 +59,7 @@ export const getDropDownIcon = (
     case 'clear':
       return classNames(iconClear, `text-${colour}`);
     case 'filled':
+    default:
       return classNames(icon, `text-${colour}`);
   }
 };

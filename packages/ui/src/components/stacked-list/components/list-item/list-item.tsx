@@ -46,7 +46,6 @@ export interface ListItemProps extends ComponentBaseProps {
   buttonText?: string;
   buttonIcon?: string;
   onButtonClick?: () => void;
-  children?: React.ReactNode | null;
 }
 
 export const ListItem: React.FC<ListItemProps> = ({
@@ -106,13 +105,13 @@ export const ListItem: React.FC<ListItemProps> = ({
           (iconImageSrc ? (
             <div
               style={{ backgroundColor: iconImageBackgroundColor }}
-              className={`mr-4 rounded-full p-4`}
+              className={`p-4 rounded-full mr-4`}
             >
               <img src={iconImageSrc} className={'w-22 h-22'} />
             </div>
           ) : (
             <div
-              className={`bg-${iconBackgroundColor} p-13 mr-4 h-12 w-12 rounded-full`}
+              className={`bg-${iconBackgroundColor} rounded-full mr-4 w-12 h-12 p-13`}
             >
               {renderIcon(
                 iconName || 'InformationIcon',

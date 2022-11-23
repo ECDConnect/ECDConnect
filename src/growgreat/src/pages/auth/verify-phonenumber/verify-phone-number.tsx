@@ -28,7 +28,7 @@ import { authThunkActions } from '@store/auth';
 import { settingActions } from '@store/settings';
 // import * as styles from './verify-phone-number.styles';
 import { VerifyPhoneNumberRouteState } from './verify-phone-number.types';
-import packageInfo from '@@/package.json';
+import { version } from '../../../../package.json';
 
 export const VerifyPhoneNumber = () => {
   const history = useHistory();
@@ -122,9 +122,7 @@ export const VerifyPhoneNumber = () => {
             isAuthenticated &&
             isAuthenticated?.payload?.response?.status !== 401
           ) {
-            await appDispatch(
-              settingActions.setApplicationVersion(packageInfo.version)
-            );
+            await appDispatch(settingActions.setApplicationVersion(version));
             history.push('/');
             setIsLoading(false);
           } else {

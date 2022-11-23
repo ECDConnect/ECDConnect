@@ -1,7 +1,7 @@
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
   Button,
-  // Divider,
+  Divider,
   Typography,
   ButtonGroup,
   ButtonGroupTypes,
@@ -41,69 +41,81 @@ export const MotherContactInformation: React.FC<
   const [hasWhatsapp, setHasWhatsapp] = useState<any>(null);
 
   return (
-    <div className="h-screen w-screen justify-center px-5">
-      <Typography
-        type="h2"
-        color={'textDark'}
-        text={`${details?.name}`}
-        className="z-50 pt-6"
-      />
-      <Typography
-        type="h4"
-        color={'textMid'}
-        text={'Contact information'}
-        className="z-50"
-      />
-
-      <FormInput<MothertContactInformationModel>
-        label={'Cellphone number'}
-        register={motherFormRegister}
-        nameProp={'cellphone'}
-        placeholder={'e.g 012 345 6789'}
-        type={'number'}
-        className="mt-4"
-      />
-      <div className="mt-4">
+    <div className="h-screen ">
+      <div>
+        <Typography
+          type="h2"
+          color={'textDark'}
+          text={`${details?.name}`}
+          className="z-50 pt-6"
+        />
         <Typography
           type="h4"
           color={'textMid'}
-          text={`Does ${details?.name} use this cellphone number for WhatsApp?`}
-          className="z-50 w-11/12 pt-2"
+          text={'Contact information'}
+          className="z-50 pt-2 w-11/12"
         />
-        <div className="mt-3">
-          <ButtonGroup<boolean>
-            options={yesNoOptions}
-            onOptionSelected={(value: boolean | boolean[]) =>
-              setHasWhatsapp(value)
-            }
-            color="secondary"
-            type={ButtonGroupTypes.Button}
-            className={'mt-2 w-full'}
-          />
-        </div>
       </div>
-      {hasWhatsapp === false && (
+      <div className="flex justify-center w-11/12 text-red-400">
+        <Divider dividerType="dashed" />
+      </div>
+      <div>
         <FormInput<MothertContactInformationModel>
-          label={`What cellphone number does ${details?.name} use for WhatsApp?`}
+          label={'Cellphone number'}
           register={motherFormRegister}
-          nameProp={'whatsapp'}
+          nameProp={'cellphone'}
           placeholder={'e.g 012 345 6789'}
           type={'number'}
           className="mt-4"
-        />
-      )}
-      <div className={'mt-10 flex h-full w-full justify-center align-bottom'}>
-        <Button
-          text={`Next`}
-          type={'filled'}
-          color={'primary'}
-          textColor={'white'}
-          disabled={!isValid}
-          iconPosition={'start'}
-          icon={'ArrowCircleRightIcon'}
-          className={'absolute bottom-10 mt-2 max-h-10 w-11/12'}
-          onClick={() => onSubmit(getMotherContactInformationFormValues())}
-        />
+        ></FormInput>
+        <div className="mt-4">
+          <Typography
+            type="h4"
+            color={'textMid'}
+            text={`Does ${details?.name} use this cellphone number for WhatsApp?`}
+            className="z-50 pt-2 w-11/12"
+          />
+          <div className="mt-2">
+            <ButtonGroup<boolean>
+              options={yesNoOptions}
+              onOptionSelected={(value: boolean | boolean[]) =>
+                setHasWhatsapp(value)
+              }
+              color="secondary"
+              type={ButtonGroupTypes.Button}
+              className={'w-full mt-2'}
+            />
+          </div>
+        </div>
+        {hasWhatsapp === false && (
+          <>
+            <FormInput<MothertContactInformationModel>
+              label={`What cellphone number does ${details?.name} use for WhatsApp?`}
+              register={motherFormRegister}
+              nameProp={'whatsapp'}
+              placeholder={'e.g 012 345 6789'}
+              type={'number'}
+              className="mt-4"
+            ></FormInput>
+          </>
+        )}
+      </div>
+      <div className="flex w-full h-full align-bottom">
+        <div className={'mt-10 w-11/12 flex justify-center align-bottom'}>
+          <Button
+            type={'filled'}
+            color={'primary'}
+            className={'mt-2 ml-6 w-11/12 max-h-10 absolute bottom-10'}
+            textColor={'white'}
+            text={`Next`}
+            icon={'ArrowCircleRightIcon'}
+            iconPosition={'start'}
+            onClick={() => {
+              onSubmit(getMotherContactInformationFormValues());
+            }}
+            disabled={!isValid}
+          />
+        </div>
       </div>
     </div>
   );

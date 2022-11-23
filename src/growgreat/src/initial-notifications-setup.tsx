@@ -1,12 +1,14 @@
-import { createContext, ReactNode, useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
+import { createContext, ReactNode, useEffect, useRef } from 'react';
 
-import { Message } from '@/models/messages/messages';
 import { useStoreSetup } from '@/hooks/useStoreSetup';
+import { Message } from '@/models/messages/messages';
 import { NotificationService } from '@/services/NotificationService/NotificationService';
 
 import { store, useAppDispatch } from '@/store';
+
 import { settingSelectors } from '@/store/settings';
+
 import {
   notificationActions,
   notificationsSelectors,
