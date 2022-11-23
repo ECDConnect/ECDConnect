@@ -5,63 +5,66 @@
 /* utility classes generated based on our tailwind.config.js */
 @tailwind utilities;
 
-/* fallback font */
-body {
-  font-family: 'Inter', sans-serif;
-}
+@layer base {
 
-html,
-body,
-#root {
-  height: 100%;
-  position: fixed;
-  overflow: hidden;
-  width: 100%;
-}
-
-input[type='number'] {
-  -moz-appearance: textfield;
-}
-
-input::-webkit-outer-spin-button,
-input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-}
-
-@layer utilities {
-  .placeholder-fontWeight::placeholder {
-    font-weight: 300;
+  /* fallback font */
+  body {
+    font-family: 'Inter', sans-serif;
   }
-}
 
-/* Scrollbar Styling for Desktop views */
+  html,
+  body,
+  #root {
+    height: 100%;
+    position: fixed;
+    overflow: hidden;
+    width: 100%;
+  }
 
-/* Hide scrollbar for Chrome, Safari and Opera */
-::-webkit-scrollbar {
-  display: none;
-}
+  input[type='number'] {
+    -moz-appearance: textfield;
+  }
 
-/* Hide scrollbar for IE, Edge and Firefox */
-.overflow-x-auto {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
-}
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+  }
 
-/* .pad-children-6 > div {
-  padding-bottom: 6rem;
-}
+  @layer utilities {
+    .placeholder-fontWeight::placeholder {
+      font-weight: 300;
+    }
+  }
 
-.pad-children-1 > div {
-  padding-bottom: 1rem;
-} */
+  /* Scrollbar Styling for Desktop views */
 
-ion-content {
-  --keyboard-offset: 0 !important;
-}
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  ::-webkit-scrollbar {
+    display: none;
+  }
 
-.wrapper-with-sticky-button {
-  height: calc(100vh - 80px);
-  display: grid;
-  grid-template-rows: min-content 1fr;
-  gap: 16px;
+  /* Hide scrollbar for IE, Edge and Firefox */
+  .overflow-x-auto {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+
+  /* .pad-children-6 > div {
+    padding-bottom: 6rem;
+  }
+
+  .pad-children-1 > div {
+    padding-bottom: 1rem;
+  } */
+
+  ion-content {
+    --keyboard-offset: 0 !important;
+  }
+
+  .wrapper-with-sticky-button {
+    height: calc(100vh - 80px);
+    display: grid;
+    grid-template-rows: min-content 1fr;
+    gap: 16px;
+  }
 }

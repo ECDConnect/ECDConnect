@@ -197,11 +197,17 @@ export const PractitionerProgrammeInformation: React.FC = () => {
         title: 'Programme name',
         subTitle:
           classroomForPractitionerAnyType?.classroomId &&
-          practitioner?.isPrincipal !== true
+          practitioner?.isPrincipal !== true &&
+          practitioner?.isRegistered
             ? classroomForPractitionerAnyType?.classroomName
-            : classroom?.name || 'None',
+            : practitioner?.isRegistered
+            ? classroom?.name || 'None'
+            : 'None',
         switchTextStyles: true,
-        actionName: 'Edit',
+        actionName:
+          practitioner?.isRegistered && practitioner?.isPrincipal !== true
+            ? ''
+            : 'Edit',
         actionIcon: 'PencilIcon',
         onActionClick:
           practitioner?.isRegistered !== null ||
@@ -210,6 +216,8 @@ export const PractitionerProgrammeInformation: React.FC = () => {
               practitioner?.isPrincipal !== true
               ? () => {}
               : () => setEditFieldVisible(true)
+            : practitioner?.isPrincipal !== true
+            ? () => history.push(ROUTES.PRACTITIONER?.PROFILE?.EDIT)
             : () => {
                 history.push(ROUTES?.PRINCIPAL.SETUP_PROFILE);
                 return;
@@ -327,8 +335,33 @@ export const PractitionerProgrammeInformation: React.FC = () => {
             hasConsent={true}
           />
         </div>
-        {(practitioner?.isRegistered === null ||
-          !practitioner?.principalHierarchy) &&
+        {practitioner?.isRegistered === null &&
+          practitioner?.principalHierarchy &&
+          !isPrincipal && (
+            <div className="flex justify-center">
+              <Alert
+                type="info"
+                title={`You have been added to ${classroomForPractitionerAnyType?.classroomName}`}
+                list={[`Edit your profile to accept or disagree. `]}
+                className={'mt-4 w-11/12'}
+                button={
+                  <Button
+                    text="Edit profile"
+                    icon="PencilIcon"
+                    type={'filled'}
+                    color={'primary'}
+                    textColor={'white'}
+                    onClick={() =>
+                      history.push(ROUTES.PRACTITIONER?.PROFILE?.EDIT)
+                    }
+                  />
+                }
+              />
+            </div>
+          )}
+
+        {practitioner?.isRegistered === null &&
+          !practitioner?.principalHierarchy &&
           !isPrincipal && (
             <div className="flex justify-center">
               <Alert

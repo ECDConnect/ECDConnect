@@ -17,7 +17,7 @@ import { coachActions, coachSelectors, coachThunkActions } from '@store/coach';
 import { SiteAddressDto, ProvinceDto } from '@ecdlink/core';
 import { staticDataSelectors } from '@store/static-data';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import { useForm, useFormState } from 'react-hook-form';
+import { useForm, useFormState, useWatch } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { analyticsActions } from '@store/analytics';
 import * as styles from './coach-address.styles';
@@ -47,6 +47,8 @@ export const CoachAddress: React.FC = () => {
   const [franchisorSiteAddress, setFranchisorSetAddress] =
     useState<SiteAddressDto>();
   const [loading, setLoading] = useState(false);
+  const [differentProvinceNotification, setDifferentProvinceNotification] =
+    useState(false);
 
   /**
    * Determination method to display the Franchisor
@@ -168,6 +170,41 @@ export const CoachAddress: React.FC = () => {
   const { errors } = useFormState({
     control: coachAddressFormControl,
   });
+
+  const {
+    name,
+    addressLine1,
+    addressLine2,
+    addressLine3,
+    postalCode,
+    provinceId,
+  } = useWatch({
+    control: coachAddressFormControl,
+  });
+
+  const disabledButton =
+    !addressLine1 ||
+    !addressLine2 ||
+    !addressLine3 ||
+    !postalCode ||
+    !provinceId;
+
+  useEffect(() => {
+    const currentProvince: any = provinces?.find(
+      (item) => item?.id === provinceId
+    );
+
+    if (
+      currentProvince?.description &&
+      provinceId !== '' &&
+      currentProvince?.description !==
+        franchisorSiteAddress?.province?.description
+    ) {
+      setDifferentProvinceNotification(true);
+    } else {
+      setDifferentProvinceNotification(false);
+    }
+  }, [franchisorSiteAddress?.province?.description, provinceId, provinces]);
 
   const handleFormSubmit = (): void => {
     try {
@@ -391,6 +428,16 @@ export const CoachAddress: React.FC = () => {
                     });
                   }}
                 />
+
+                {differentProvinceNotification && (
+                  <Alert
+                    type={'warning'}
+                    message={
+                      'Your Franchisor does not operate in this province. Please choose a different province.'
+                    }
+                  />
+                )}
+
                 <FormInput<EditSiteAddressModel>
                   label={'Postal Code'}
                   register={coachAddressFormRegister}
@@ -408,6 +455,7 @@ export const CoachAddress: React.FC = () => {
               color="primary"
               className={styles.button}
               onClick={handleFormSubmit}
+              disabled={disabledButton || differentProvinceNotification}
             >
               {renderIcon('SaveIcon', styles.icon)}
               <Typography type={'h6'} text={'Save'} color={'white'} />

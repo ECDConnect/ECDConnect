@@ -24,9 +24,9 @@ import AuthService from '@services/AuthService/AuthService';
 import { useAppDispatch } from '@store';
 import { authThunkActions } from '@store/auth';
 import { settingActions } from '@store/settings';
-import * as styles from './verify-phone-number.styles';
+// import * as styles from './verify-phone-number.styles';
 import { VerifyPhoneNumberRouteState } from './verify-phone-number.types';
-const { version } = require('../../../../package.json');
+import packageInfo from '@@/package.json';
 
 export const VerifyPhoneNumber = () => {
   const history = useHistory();
@@ -124,7 +124,9 @@ export const VerifyPhoneNumber = () => {
             isAuthenticated &&
             isAuthenticated?.payload?.response?.status !== 401
           ) {
-            await appDispatch(settingActions.setApplicationVersion(version));
+            await appDispatch(
+              settingActions.setApplicationVersion(packageInfo.version)
+            );
             history.push('/');
             setIsLoading(false);
           } else {

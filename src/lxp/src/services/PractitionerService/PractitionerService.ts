@@ -9,6 +9,7 @@ import {
 import {
   MutationAddPractitionerToPrincipalArgs,
   MutationUpdatePractitionerContactInfoArgs,
+  PractitionerInput,
 } from '@ecdlink/graphql';
 
 class PractitionerService {
@@ -82,6 +83,7 @@ class PractitionerService {
             consentForPhoto
             parentFees
             languageUsedInGroups
+            signingSignature
             startDate
             monthSinceFranchisee
             shareInfo
@@ -143,6 +145,7 @@ class PractitionerService {
             consentForPhoto
             parentFees
             languageUsedInGroups
+            signingSignature
             startDate
             monthSinceFranchisee
             shareInfo
@@ -672,6 +675,32 @@ class PractitionerService {
     }
 
     return response.data.data.updatePractitionerEmergencyContact;
+  }
+
+  async updatePractitioner(
+    userId: PractitionerInput['Id'],
+    practitioner: PractitionerInput
+  ): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      mutation updatePractitioner($input: PractitionerInput, $id: UUID) {
+        updatePractitioner(input: $input, id: $id) {
+          id
+        }
+      }
+      `,
+      variables: {
+        id: userId,
+        input: practitioner,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error('Updating Practitioner failed - Server connection error');
+    }
+
+    return true;
   }
 }
 

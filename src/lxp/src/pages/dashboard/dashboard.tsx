@@ -41,7 +41,7 @@ import { programmeThemeThunkActions } from '@store/content/programme-theme';
 import { storyBookThunkActions } from '@store/content/story-book';
 import { activityThunkActions } from '@store/content/activity';
 import { browserName, browserVersion } from 'react-device-detect';
-const { version } = require('../../../package.json');
+import packageInfo from '@@/package.json';
 
 export enum NavigationTypes {
   Home = 'Home',
@@ -520,12 +520,12 @@ export const Dashboard: React.FC = () => {
       backgroundUrl={theme?.images.graphicOverlayUrl}
       className={styles.bannerContent}
       displayOffline={!isOnline}
-      version={`v ${version}`}
+      version={`v ${packageInfo.version}`}
     >
       <Typography
         type={'h1'}
         color="white"
-        text={`Welcome ${userData && userData?.firstName}`.slice(0, 25)}
+        text={`Welcome ${userData && userData?.firstName}`}
         className={styles.welcomeText}
       />
 

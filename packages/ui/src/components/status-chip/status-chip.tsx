@@ -20,6 +20,7 @@ export interface StatusChipProps extends ComponentBaseProps {
   textType?: TypographyType;
   textWeight?: TypographyWeight;
   padding?: string;
+  children?: React.ReactNode | null;
 }
 
 export const StatusChip: React.FC<StatusChipProps> = ({
