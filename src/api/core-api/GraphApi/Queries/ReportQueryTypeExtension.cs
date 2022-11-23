@@ -295,7 +295,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             //set basic dates to be last month and before last
             DateTime reference = DateTime.Now;
             DateTime fromDate = reference.GetStartOfPreviousMonth();
-            DateTime toDate = fromDate.GetEndOfPreviousMonth();
+            DateTime toDate = reference.GetEndOfPreviousMonth();
 
             int avgClassDays = 20;
 
@@ -348,7 +348,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 }
             }
             if (type == "practitioner" || type == "principal" || type == "coach") {  //practitioners and principals
-                var practitioners = practRepo.GetAll();
+                var practitioners = practRepo.GetAll().ToList();
                 foreach (var user in practitioners)
                 {
                     string finalMessageToDisplay = "";
@@ -427,18 +427,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                         weighting = 80;
                     } else if (attendancePercentage >= 60 && attendancePercentage < 79)
                     {
-                        weighting80.Icon = MetricsIconEnum.Warning.ToString();
-                        weighting80.Color = MetricsColorEnum.Warning.ToString();
-                        weighting80.Subject = "Child Attendance > 60% and less than 70%";
-                        weighting80.Notes = "Improve Attendance";
+                        weighting50.Icon = MetricsIconEnum.Warning.ToString();
+                        weighting50.Color = MetricsColorEnum.Warning.ToString();
+                        weighting50.Subject = "Child Attendance > 60% and less than 70%";
+                        weighting50.Notes = "Improve Attendance";
                         priority = 7;
                         weighting = 50;
                     } else if (attendancePercentage > 80)
                     {
-                        weighting80.Icon = MetricsIconEnum.Success.ToString();
-                        weighting80.Color = MetricsColorEnum.Success.ToString();
-                        weighting80.Subject = "Child Attendance > 80%";
-                        weighting80.Notes = "Well done, attendance is 80% or higher.";
+                        weighting10.Icon = MetricsIconEnum.Success.ToString();
+                        weighting10.Color = MetricsColorEnum.Success.ToString();
+                        weighting10.Subject = "Child Attendance > 80%";
+                        weighting10.Notes = "Well done, attendance is 80% or higher.";
                         priority = 8;
                         weighting = 10;
                     }
@@ -477,6 +477,190 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                         weighting = 100;
                     }
 
+                    if (priority == 8)
+                    {
+                        if (weighting == 10)
+                        {
+                            finalMessageToDisplay = weighting10.Subject;
+                            finalIcon = weighting10.Icon;
+                            finalColor = weighting10.Color;
+                            finalNotes = weighting10.Notes;
+                        }
+                        if (weighting == 90)
+                        {
+                            finalMessageToDisplay = weighting90.Subject;
+                            finalIcon = weighting90.Icon;
+                            finalColor = weighting90.Color;
+                            finalNotes = weighting90.Notes;
+                        }
+                        if (weighting == 100)
+                        {
+                            finalMessageToDisplay = weighting100.Subject;
+                            finalIcon = weighting100.Icon;
+                            finalColor = weighting100.Color;
+                            finalNotes = weighting100.Notes;
+                        }
+                    }
+
+                    if (priority == 7)
+                    {
+                        if (weighting == 50)
+                        {
+                            finalMessageToDisplay = weighting50.Subject;
+                            finalIcon = weighting50.Icon;
+                            finalColor = weighting50.Color;
+                            finalNotes = weighting50.Notes;
+                        }
+                        if (weighting == 90)
+                        {
+                            finalMessageToDisplay = weighting90.Subject;
+                            finalIcon = weighting90.Icon;
+                            finalColor = weighting90.Color;
+                            finalNotes = weighting90.Notes;
+                        }
+                        if (weighting == 100)
+                        {
+                            finalMessageToDisplay = weighting100.Subject;
+                            finalIcon = weighting100.Icon;
+                            finalColor = weighting100.Color;
+                            finalNotes = weighting100.Notes;
+                        }
+                    }
+
+   
+
+
+                    if (priority == 6)
+                    {
+                        if (weighting == 50)
+                        {
+                            finalMessageToDisplay = weighting50.Subject;
+                            finalIcon = weighting50.Icon;
+                            finalColor = weighting50.Color;
+                            finalNotes = weighting50.Notes;
+                        }
+                        if (weighting == 90)
+                        {
+                            finalMessageToDisplay = weighting90.Subject;
+                            finalIcon = weighting90.Icon;
+                            finalColor = weighting90.Color;
+                            finalNotes = weighting90.Notes;
+                        }
+                        if (weighting == 100)
+                        {
+                            finalMessageToDisplay = weighting100.Subject;
+                            finalIcon = weighting100.Icon;
+                            finalColor = weighting100.Color;
+                            finalNotes = weighting100.Notes;
+                        }
+                    }
+
+                    if (priority == 5)
+                    {
+                        if (weighting == 80)
+                        {
+                            finalMessageToDisplay = weighting80.Subject;
+                            finalIcon = weighting80.Icon;
+                            finalColor = weighting80.Color;
+                            finalNotes = weighting80.Notes;
+                        }
+                        if (weighting == 50)
+                        {
+                            finalMessageToDisplay = weighting50.Subject;
+                            finalIcon = weighting50.Icon;
+                            finalColor = weighting50.Color;
+                            finalNotes = weighting50.Notes;
+                        }
+                        if (weighting == 90)
+                        {
+                            finalMessageToDisplay = weighting90.Subject;
+                            finalIcon = weighting90.Icon;
+                            finalColor = weighting90.Color;
+                            finalNotes = weighting90.Notes;
+                        }
+                        if (weighting == 100)
+                        {
+                            finalMessageToDisplay = weighting100.Subject;
+                            finalIcon = weighting100.Icon;
+                            finalColor = weighting100.Color;
+                            finalNotes = weighting100.Notes;
+                        }
+                    }
+
+                    if (priority == 4)
+                    {
+                        if (weighting == 50)
+                        {
+                            finalMessageToDisplay = weighting50.Subject;
+                            finalIcon = weighting50.Icon;
+                            finalColor = weighting50.Color;
+                            finalNotes = weighting50.Notes;
+                        }
+                        if (weighting == 90)
+                        {
+                            finalMessageToDisplay = weighting90.Subject;
+                            finalIcon = weighting90.Icon;
+                            finalColor = weighting90.Color;
+                            finalNotes = weighting90.Notes;
+                        }
+                        if (weighting == 100)
+                        {
+                            finalMessageToDisplay = weighting100.Subject;
+                            finalIcon = weighting100.Icon;
+                            finalColor = weighting100.Color;
+                            finalNotes = weighting100.Notes;
+                        }
+                    }
+
+                    if (priority == 3)
+                    {
+                        if (weighting == 50)
+                        {
+                            finalMessageToDisplay = weighting50.Subject;
+                            finalIcon = weighting50.Icon;
+                            finalColor = weighting50.Color;
+                            finalNotes = weighting50.Notes;
+                        }
+                        if (weighting == 90)
+                        {
+                            finalMessageToDisplay = weighting90.Subject;
+                            finalIcon = weighting90.Icon;
+                            finalColor = weighting90.Color;
+                            finalNotes = weighting90.Notes;
+                        }
+                        if (weighting == 100)
+                        {
+                            finalMessageToDisplay = weighting100.Subject;
+                            finalIcon = weighting100.Icon;
+                            finalColor = weighting100.Color;
+                            finalNotes = weighting100.Notes;
+                        }
+                    }
+
+                    if (priority == 2)
+                    {
+                        if (weighting == 50)
+                        {
+                            finalMessageToDisplay = weighting50.Subject;
+                            finalIcon = weighting50.Icon;
+                            finalColor = weighting50.Color;
+                            finalNotes = weighting50.Notes;
+                        }
+                        if (weighting == 90)
+                        {
+                            finalMessageToDisplay = weighting90.Subject;
+                            finalIcon = weighting90.Icon;
+                            finalColor = weighting90.Color;
+                            finalNotes = weighting90.Notes;
+                        }
+                        if (weighting == 100)
+                        {
+                            finalMessageToDisplay = weighting100.Subject;
+                            finalIcon = weighting100.Icon;
+                            finalColor = weighting100.Color;
+                            finalNotes = weighting100.Notes;
+                        }
+                    }
 
                     if (priority == 1)
                     {

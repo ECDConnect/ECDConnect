@@ -40,7 +40,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var absenteeRepo = repoFactory.CreateRepository<Absentees>(userContext: uId);
 
-            var absentees = absenteeRepo.GetListByUserId(userId);
+            var absentees = absenteeRepo.GetAll().Where(x => x.UserId == userId).ToList();
             return absentees.Where(x => x.AbsentDate >= fromDate && x.AbsentDate <= toDate).ToList();
         }
 
@@ -51,7 +51,7 @@ string userId, DateTime fromDate, DateTime toDate)
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var absenteeRepo = repoFactory.CreateRepository<Absentees>(userContext: uId);
 
-            var absentees = absenteeRepo.GetListByUserId(userId);
+            var absentees = absenteeRepo.GetAll().Where(x => x.UserId == userId).ToList();
             return absentees.Where(x => x.AbsentDate >= fromDate && x.AbsentDate <= toDate).ToList();
         }
     }

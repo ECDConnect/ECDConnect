@@ -170,11 +170,11 @@ namespace ECDLink.DataAccessLayer.Repositories
                 int totalPercentageAttendance = 0;
                 int percentageAttendance = 0;
                 Guid tenantId = TenantExecutionContext.Tenant.Id;
-                IQueryable<ClassroomGroup> groups = _context.ClassroomGroupss.Where(x => x.UserId == Guid.Parse(parentRecordId)).AsQueryable();
+                List<ClassroomGroup> groups = _context.ClassroomGroupss.Where(x => x.UserId == Guid.Parse(parentRecordId)).ToList();
                 int divider = groups.Count();
                 foreach (ClassroomGroup group in groups) {
 
-                    IQueryable<ClassProgramme> programmes = _context.ClassProgrammes.Where(x => x.ClassroomGroupId.Equals(group.Id)).AsQueryable();
+                    List<ClassProgramme> programmes = _context.ClassProgrammes.Where(x => x.ClassroomGroupId.Equals(group.Id)).ToList();
 
                     foreach (ClassProgramme programme in programmes)
                     {
