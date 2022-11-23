@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useEffect, useState } from 'react';
 
 import {
@@ -122,6 +123,19 @@ export const PhotoPrompt: React.FC<PhotoPromptProps> = ({
     switch (value) {
       case 'camera':
         openCamera();
+        // added logic to flip camera using JS and CSS
+        // some logic from: https://github.com/ionic-team/pwa-elements/issues/11
+        // some logic from CSS knowledge
+        setTimeout(() => {
+          const video = document
+            .querySelector('pwa-camera-modal-instance')
+            .shadowRoot.querySelector('pwa-camera')
+            .shadowRoot.querySelector('video');
+          if (video !== null) {
+            video.style.transform = 'none';
+            video.style.transform = 'scaleX(-1)';
+          }
+        }, 100);
         break;
       case 'delete':
         deletePhoto();
