@@ -61,6 +61,7 @@ export const PractitionerAbout: React.FC = () => {
         surname: user.surname || '',
         cellphone: user.phoneNumber || '',
         email: user.email || '',
+        language: user?.language || '',
       };
       return tempPractitioner;
     } else {
@@ -90,34 +91,34 @@ export const PractitionerAbout: React.FC = () => {
 
   const setNewStackListItems = (currentUser: UserDto) => {
     const list: ActionListDataItem[] = [
-      {
-        title: 'First Name',
-        subTitle: currentUser?.firstName,
-        actionName: 'Edit',
-        actionIcon: 'PencilIcon',
-        switchTextStyles: true,
-        onActionClick: () => {
-          editField({
-            label: 'First Name',
-            formFieldName: 'name',
-            value: practitionerAboutFormGetValues().name,
-          });
-        },
-      },
-      {
-        title: 'Surname',
-        subTitle: currentUser?.surname,
-        actionName: 'Edit',
-        actionIcon: 'PencilIcon',
-        switchTextStyles: true,
-        onActionClick: () => {
-          editField({
-            label: 'Surname',
-            formFieldName: 'surname',
-            value: practitionerAboutFormGetValues().surname,
-          });
-        },
-      },
+      // {
+      //   title: 'First Name',
+      //   subTitle: currentUser?.firstName,
+      //   actionName: 'Edit',
+      //   actionIcon: 'PencilIcon',
+      //   switchTextStyles: true,
+      //   onActionClick: () => {
+      //     editField({
+      //       label: 'First Name',
+      //       formFieldName: 'name',
+      //       value: practitionerAboutFormGetValues().name,
+      //     });
+      //   },
+      // },
+      // {
+      //   title: 'Surname',
+      //   subTitle: currentUser?.surname,
+      //   actionName: 'Edit',
+      //   actionIcon: 'PencilIcon',
+      //   switchTextStyles: true,
+      //   onActionClick: () => {
+      //     editField({
+      //       label: 'Surname',
+      //       formFieldName: 'surname',
+      //       value: practitionerAboutFormGetValues().surname,
+      //     });
+      //   },
+      // },
       {
         title: 'Cellphone Number',
         subTitle: currentUser?.phoneNumber || 'Add an Cellphone Number',
@@ -145,6 +146,51 @@ export const PractitionerAbout: React.FC = () => {
             label: 'Email Address',
             formFieldName: 'email',
             value: practitionerAboutFormGetValues().email,
+          });
+        },
+      },
+      {
+        title: 'Your clinic & GGC team',
+        subTitle: 'Your clinic & GGC team',
+        switchTextStyles: true,
+        actionName: 'View',
+        actionIcon: 'EyeIcon',
+        buttonType: currentUser?.phoneNumber ? 'outlined' : 'filled',
+        onActionClick: () => {
+          // editField({
+          //   label: 'Cellphone Number',
+          //   formFieldName: 'cellphone',
+          //   value: practitionerAboutFormGetValues().cellphone,
+          // });
+        },
+      },
+      {
+        title: 'Your Team Leader',
+        subTitle: 'Your Team Leader',
+        switchTextStyles: true,
+        actionName: 'View',
+        actionIcon: 'EyeIcon',
+        buttonType: currentUser?.email ? 'outlined' : 'filled',
+        onActionClick: () => {
+          // editField({
+          //   label: 'Email Address',
+          //   formFieldName: 'email',
+          //   value: practitionerAboutFormGetValues().email,
+          // });
+        },
+      },
+      {
+        title: 'Preferred language on app',
+        subTitle: currentUser?.language || 'Add a language',
+        switchTextStyles: true,
+        actionName: currentUser?.language ? 'Edit' : 'Add',
+        actionIcon: currentUser?.language ? 'PencilIcon' : 'PlusIcon',
+        buttonType: currentUser?.language ? 'outlined' : 'filled',
+        onActionClick: () => {
+          editField({
+            label: 'Language',
+            formFieldName: 'language',
+            value: practitionerAboutFormGetValues().language,
           });
         },
       },
@@ -219,6 +265,7 @@ export const PractitionerAbout: React.FC = () => {
       copy.surname = practitionerForm.surname;
       copy.phoneNumber = practitionerForm.cellphone;
       copy.email = practitionerForm.email;
+      copy.language = practitionerForm.language;
 
       appDispatch(userActions.updateUser(copy));
       appDispatch(userThunkActions.updateUser(copy));
