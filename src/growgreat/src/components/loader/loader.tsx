@@ -1,7 +1,7 @@
+import { Alert, Button, Typography } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useHistory } from 'react-router';
-import { Alert, Button, Typography } from '@ecdlink/ui';
-// import LoadingBG from '@/assets/bg-loader.svg';
+// import LoadingRocket from '@/assets/gifs/rocketclear.gif';
 import { useStoreSetup } from '@/hooks/useStoreSetup';
 // import { useTheme } from '@ecdlink/core';
 import ROUTES from '@/routes/routes';
@@ -26,7 +26,7 @@ const Loader = ({ loadingMessage = 'Loading . . .' }) => {
       className={`z-50 flex w-full flex-col items-center justify-between ${styles.container}`}
     >
       <div className="flex h-screen flex-col items-center justify-center">
-        {/* <img src={LoadingBG} alt="loading rocket" /> */}
+        {/* <img src={LoadingRocket} alt="loading rocket" /> */}
         {/* <Typography
           type="h2"
           color="white"

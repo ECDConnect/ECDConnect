@@ -1,5 +1,3 @@
-import { useEffect, useState } from 'react';
-import { useForm, useFormState } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
   Button,
@@ -11,20 +9,21 @@ import {
   ImageInput,
   DialogPosition,
 } from '@ecdlink/ui';
-import { PhotoPrompt } from '@/components/photo-prompt/photo-prompt';
+import { PhotoPrompt } from '../../../../components/photo-prompt/photo-prompt';
 import { differenceInWeeks } from 'date-fns';
 import DatePicker from 'react-datepicker';
-
+import { useForm, useFormState } from 'react-hook-form';
+import { useEffect, useState } from 'react';
 import {
   PregnantMaternalCaseRecordProps,
   yesNoOptions,
-} from '@/pages/mom/components/pregnant-maternal-record/pregnant-maternal-record.types';
+} from './pregnant-maternal-record.types';
 import {
   pregnantMaternalCaseRecordModelSchema,
   PregnantMaternalCaseRecordModel,
 } from '@/schemas/pregnant/pregnant-maternal-case-record';
 import { InformationCircleIcon } from '@heroicons/react/outline';
-import maternalRecord from '@/assets/maternalRecord.png';
+import maternalRecord from '../../../../assets/maternalRecord.png';
 
 export const PregnantMaternalCaseRecord: React.FC<
   PregnantMaternalCaseRecordProps
@@ -71,40 +70,42 @@ export const PregnantMaternalCaseRecord: React.FC<
   const minDate = new Date(myYear.getFullYear(), myMonth.getMonth(), 1);
   const maxDate = new Date(myYear.getFullYear(), myMonth.getMonth() + 1, 0);
 
-  const diffDates = differenceInWeeks(myDay, currentDate);
-  const actualGestationWeek = 40 - diffDates;
-
-  function renderDayContents(day: any, date: any) {
+  const renderDayContents = (day: any, date: any) => {
     if (date < minDate || date > maxDate) {
-      return <span />;
+      return <span></span>;
     }
     return <span>{date.getDate()}</span>;
-  }
+  };
 
-  function setPhotoUrl(imageUrl: string) {
+  const setPhotoUrl = (imageUrl: string) => {
     setPregnantMaternalCaseRecordFormValue('maternalCaseRecord', imageUrl);
     setRegistrationFormPhotoUrl(imageUrl);
     setPhotoActionBarVisible(false);
     trigger();
-  }
-
-  function handleConsentAccept() {
-    setPregnantMaternalCaseRecordFormValue(
-      'notHaveAMaternalRecord',
-      !confirmHasNoRecord
-    );
-  }
+  };
 
   useEffect(() => {
     setMyDay(new Date(myYear.getFullYear(), myMonth.getMonth(), 1));
   }, [myMonth, myYear, setMyDay]);
 
   useEffect(() => {
-    if (myDay) setPregnantMaternalCaseRecordFormValue('deliveryDate', myDay);
+    if (myDay) {
+      setPregnantMaternalCaseRecordFormValue('deliveryDate', myDay);
+    }
   }, [myDay, setPregnantMaternalCaseRecordFormValue]);
 
+  const handleConsentAccept = () => {
+    setPregnantMaternalCaseRecordFormValue(
+      'notHaveAMaternalRecord',
+      !confirmHasNoRecord
+    );
+  };
+
+  const diffDates = differenceInWeeks(myDay, currentDate);
+  const actualGestationWeek = 40 - diffDates;
+
   return (
-    <div className="h-screen h-full w-screen w-full px-4">
+    <div className="h-screen h-full w-screen w-full">
       <Typography
         type="h2"
         color={'textDark'}
@@ -115,14 +116,14 @@ export const PregnantMaternalCaseRecord: React.FC<
         type="h4"
         color={'textMid'}
         text={'Maternal Case Record'}
-        className="z-50 w-full pt-2"
+        className="z-50 w-11/12 pt-2"
       />
       <div className="mt-4">
         <Typography
           type="h4"
           color={'textMid'}
           text={'Expected delivery date:'}
-          className="z-50 w-full pt-2"
+          className="z-50 w-11/12 pt-2"
         />
         <div className="flex items-center gap-1">
           <DatePicker
@@ -154,7 +155,7 @@ export const PregnantMaternalCaseRecord: React.FC<
           />
         </div>
       </div>
-      <div className={'mt-4'}>
+      <div className={'mt-4 px-4'}>
         <Alert
           type={'info'}
           message={`About ${actualGestationWeek} weeks pregnant`}
@@ -178,7 +179,7 @@ export const PregnantMaternalCaseRecord: React.FC<
           selectedOptions={useMap}
         />
       </div>
-      {Boolean(hasMaternalCaseRecord) === false && (
+      {hasMaternalCaseRecord === false && (
         <>
           <Typography
             type="h2"
@@ -204,7 +205,7 @@ export const PregnantMaternalCaseRecord: React.FC<
               />
             </div>
           </div>
-          <div className={'mt-4'}>
+          <div className={'mt-4 px-4'}>
             <Alert
               type={'info'}
               message={`You will need to upload Lethabo's documents and expected delivery date in a future visit.`}
@@ -212,7 +213,7 @@ export const PregnantMaternalCaseRecord: React.FC<
           </div>
         </>
       )}
-      {Boolean(hasMaternalCaseRecord) === true && (
+      {hasMaternalCaseRecord === true && (
         <>
           <div className="mt-4 flex items-center justify-between">
             <Typography
@@ -227,7 +228,7 @@ export const PregnantMaternalCaseRecord: React.FC<
               className="bg-infoDark grid h-10 w-10 place-items-center rounded-full"
             >
               <InformationCircleIcon
-                className="h-5 w-5 bg-transparent text-white"
+                className="bg-trasparent h-5 w-5 text-white"
                 aria-hidden="true"
               />
             </div>
@@ -252,8 +253,8 @@ export const PregnantMaternalCaseRecord: React.FC<
           </div>
         </>
       )}
-      <div className="flex h-full w-full flex-col align-bottom">
-        <div className={'m-auto mt-10 flex w-full justify-center align-bottom'}>
+      <div className="flex h-full w-full align-bottom">
+        <div className={'mt-10 ml-2 flex w-11/12 justify-center align-bottom'}>
           <Button
             type={'filled'}
             color={'primary'}
@@ -261,7 +262,7 @@ export const PregnantMaternalCaseRecord: React.FC<
             text={`Save`}
             icon={'ArrowCircleRightIcon'}
             iconPosition={'start'}
-            className={'mt-2 max-h-10 w-full'}
+            className={'absolute bottom-10 mt-2 max-h-10 w-11/12'}
             onClick={() => {
               onSubmit(getPregnantMaternalCaseRecordFormValues());
             }}
@@ -270,9 +271,9 @@ export const PregnantMaternalCaseRecord: React.FC<
         </div>
       </div>
       <Dialog
-        stretch
         visible={photoActionBarVisible}
-        position={DialogPosition.Bottom}
+        position={DialogPosition.Middle}
+        stretch
       >
         <PhotoPrompt
           title="Maternal case record form"
@@ -298,9 +299,9 @@ export const PregnantMaternalCaseRecord: React.FC<
         position={DialogPosition.Middle}
         className="overflow-auto"
       >
-        <div className="align-center flex flex-col justify-center overflow-auto p-4">
-          <div className="bg-infoDark grid h-14 w-14 place-items-center rounded-full">
-            <InformationCircleIcon className="h-10 w-10 bg-transparent text-white" />
+        <div className="mt-12 flex justify-center overflow-auto ">
+          <div className="bg-infoDark grid h-16 w-16 place-items-center rounded-full">
+            <InformationCircleIcon className="h-12 w-12 bg-transparent text-white" />
           </div>
           <div className="mt-4 flex justify-center">
             <Typography

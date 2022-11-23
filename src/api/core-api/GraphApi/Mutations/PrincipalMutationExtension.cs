@@ -72,7 +72,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
                     return practitioner;
                 }
-                else return null;
+                else return null;              
             } else return null;
         }
 
@@ -89,7 +89,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var user = userManager.FindByIdAsync(practitionerId).Result;
             user.NickFirstName = firstName;
             user.NickSurname = lastName;
-            user.NickFullName = firstName + " " + lastName;
+            user.NickFullName = firstName + " " + lastName;    
             user.PhoneNumber = phoneNumber;
             user.Email = email;
 
@@ -245,10 +245,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         //update and clear the principals details
                         practitioner.PrincipalHierarchy = null;
                         practitioner.ShareInfo = false;
-
+                        
                         status.LeavingDate = DateTime.Now;
                         status.Leaving = true;
-                    }
+                    } 
                     else
                     {
                         //reset the classroomgroups away from this practitioner and back to teh principal
@@ -273,13 +273,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     practitioner.DateToBeRemoved = null;
                     practitioner.DateAccepted = DateTime.Now;
                     practitioner.IsLeaving = false;
-
+                        
                     status.LeavingDate = null;
                     status.AcceptedDate = DateTime.Now;
                     status.Leaving = false;
                 }
                 //update practitioner with column changes
-                var updateResult = practitionerRepo.Update(practitioner);
+                var updateResult = practitionerRepo.Update(practitioner);    
             }
             else return null;
 
@@ -313,7 +313,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 ShareInfo = practitioner?.ShareInfo,
                 IsRegistered = practitioner.IsRegistered,
                 //Signature = practitioner.Signature,
-                //PrincipalHierarchy = practitioner?.PrincipalHierarchy,
+                //PrincipalHierarchy = practitioner?.PrincipalHierarchy,           
             };
 
             return userToMap;
