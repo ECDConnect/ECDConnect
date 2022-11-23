@@ -41,20 +41,20 @@ export const InfantRegister: React.FC = () => {
           type="h1"
           color={'white'}
           text={'Register a new child!'}
-          className="w-ful z-50 pt-6"
+          className="w-ful z-50 mb-7 pt-6"
         />
 
-        <div className="text-textMid bg-uiBg ml-1/2 relative z-40 flex h-60 justify-center rounded-2xl pt-4">
-          <div className="mt-8 flex w-11/12 flex-wrap  items-center">
-            <div className="bg-tertiary flex h-24 w-24 justify-center rounded-full">
-              <img src={momImage} alt="cebisa" className="mb-2 h-28 w-28" />
+        <div className="text-textMid bg-uiBg ml-1/2 relative z-40 flex justify-center rounded-2xl py-4 shadow-md">
+          <div className="flex w-11/12 flex-wrap items-center justify-center">
+            <div className="bg-tertiary mt-1 mb-3 flex h-24 w-24 justify-center rounded-full">
+              <img src={momImage} alt="cebisa" className="h-24 w-24" />
             </div>
             <div className="flex w-full justify-center">
               <Typography
                 type="h3"
                 color={'textDark'}
                 text={'Please share this information with the caregiver:'}
-                className="z-50 w-10/12 pt-2"
+                className="z-50 w-10/12"
                 align="center"
               />
             </div>
@@ -62,10 +62,10 @@ export const InfantRegister: React.FC = () => {
         </div>
 
         <div className={styles.wrapper}>
-          <div className="flex w-10/12 flex-col">
+          <div className="flex flex-col">
             <Typography
               type="h2"
-              color={'textMid'}
+              color="textDark"
               text={'What you can expect from these visits'}
               className="z-50 pt-4"
             />
@@ -134,9 +134,9 @@ export const InfantRegister: React.FC = () => {
             </div>
             <Typography
               type="h2"
-              color={'textMid'}
+              color="textDark"
               text={'Why should you participate?'}
-              className="z-50 pt-4"
+              className="border-primaryAccent1 z-50 mt-3 border-t border-dashed pt-4"
             />
             <div className="flex items-center gap-2 pt-4">
               <div className="bg-secondary mr-2 flex h-12 w-12 items-center justify-center rounded-full">
@@ -177,7 +177,7 @@ export const InfantRegister: React.FC = () => {
                 className="z-50 w-9/12"
               />
             </div>
-            <div className={'mt-10 w-full'}>
+            <div className={'mt-9 w-full'}>
               <Button
                 type={'filled'}
                 color={'primary'}
