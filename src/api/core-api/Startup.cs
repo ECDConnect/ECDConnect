@@ -137,7 +137,7 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<IUserInterceptHandler, UserInterceptHandler>();
             services.AddTransient<IChildrenAnonymiseService, ChildrenAnonymiseService>();
             services.AddTransient<IDocumentManagementService, DocumentManagementService>();
-            services.AddTransient<IInvitationReassignmentService, InvitationReassignmentService>();
+            services.AddTransient<IReassignmentService, ReassignmentService>();
 
             ConfigureJobs(services);
 

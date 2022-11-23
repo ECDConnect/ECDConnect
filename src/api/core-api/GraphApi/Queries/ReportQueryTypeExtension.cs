@@ -1,5 +1,6 @@
 using DotLiquid.Tags;
 using EcdLink.Api.CoreApi.GraphApi.Models;
+using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Extensions;
 using ECDLink.DataAccessLayer.Entities;
@@ -294,93 +295,91 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             //for (int idx = 1; idx <= 12; idx++)
             //{
             DateTime reference = DateTime.Now;
-                //fromDate = (fromDate!=null?fromDate : new DateTime(reference.Year, reference.Month, 1).AddMonths(-1));
-                //fromDate = fromDate.AddMonths(-1);
-                //toDate = (toDate != null ? toDate : reference.AddMonths(-idx).AddDays(-1);//decrement
+            //fromDate = (fromDate!=null?fromDate : new DateTime(reference.Year, reference.Month, 1).AddMonths(-1));
+            //fromDate = fromDate.AddMonths(-1);
+            //toDate = (toDate != null ? toDate : reference.AddMonths(-idx).AddDays(-1);//decrement
 
-                //var attendanceAttended = attendaceRepo.Where(x => x.Attended).Count();
-                //var attendanceUnAttended = attendaceRepo.Where(x => !x.Attended).Count();
+            //var attendanceAttended = attendaceRepo.Where(x => x.Attended).Count();
+            //var attendanceUnAttended = attendaceRepo.Where(x => !x.Attended).Count();
 
-                //attendedVsAbsent.Add(new MetricReportStatItem() { Name = "Attended", Value = attendanceAttended.ToString() });
-                //attendedVsAbsent.Add(new MetricReportStatItem() { Name = "Absent", Value = attendanceUnAttended.ToString() });
-                /*Do logic for weighting - loop through each user then
-                1: Get all not registered
-                2: Get all progress reports overdue
-                3: Get all incomplete registers (for practitioners/principals)
-                4: Get Days absent (for practitioners/principals)
-                5: Get Child attendance for each
+            //attendedVsAbsent.Add(new MetricReportStatItem() { Name = "Attended", Value = attendanceAttended.ToString() });
+            //attendedVsAbsent.Add(new MetricReportStatItem() { Name = "Absent", Value = attendanceUnAttended.ToString() });
+            /*Do logic for weighting - loop through each user then
+            1: Get all not registered
+            2: Get all progress reports overdue
+            3: Get all incomplete registers (for practitioners/principals)
+            4: Get Days absent (for practitioners/principals)
+            5: Get Child attendance for each
 
-                Add weighting to each subject, and weigh up for each user what the messages are and use weighting to push the most relevant message up to the top, and assign colour, icon and Message to each
-                return list to FE for each user
-                */
-                switch (type.ToLower())
+            Add weighting to each subject, and weigh up for each user what the messages are and use weighting to push the most relevant message up to the top, and assign colour, icon and Message to each
+            return list to FE for each user
+            */
+            type = type.ToLower();
+            if (type == "child") {
+                //child view from practitioner/principal/coach
+                var children = childRepo.GetAll();
+                foreach (var user in children)
                 {
-                    case "child":
-                        
-                        var children = childRepo.GetAll();
-                        foreach (var user in children)
-                        {
-                            NotificationDisplay displayChild = new NotificationDisplay()
-                            {
-                                Subject = "Child Information missing",
-                                Icon = "redicon",
-                                Color = "red",
-                                Message = "",
-                                Notes = "",
-                                UserId = Guid.Parse(user.UserId),
-                                UserType = "child"
+                    NotificationDisplay displayChild = new NotificationDisplay()
+                    {
+                        Subject = "Child Information missing",
+                        Icon = MetricsIconEnum.Error.ToString(),
+                        Color = MetricsColorEnum.Error.ToString(),
+                        Message = "",
+                        Notes = "",
+                        UserId = Guid.Parse(user.UserId),
+                        UserType = "child"
 
-                            };
-                            //var attendaceRepo = attendanceRepo.GetAllByDateRange(fromDate, toDate);
+                    };
+                    //var attendaceRepo = attendanceRepo.GetAllByDateRange(fromDate, toDate);
 
-                            notificationList.Add(displayChild);
-                        }
-                        break;
-                    case "practitioner": //practitioners and principals
-
-                        var practitioners = practRepo.GetAll();
-                        foreach (var user in practitioners)
-                        {
-                            //get absent days
-                            //int daysAbsent = 0;
-                            NotificationDisplay displayPracti = new NotificationDisplay()
-                            {
-                                Subject = "0 days absent last month",
-                                Icon = "greenicon",
-                                Color = "green",
-                                Message = "",
-                                Notes = "",
-                                UserId = Guid.Parse(user.UserId),
-                                UserType = "practitioner"
-                            };
-                            //var attendaceRepo = attendanceRepo.GetAllByDateRange(fromDate, toDate);
-
-                            notificationList.Add(displayPracti);
-                        }
-                    break;
-                case "coach": //practitioners and principals
-                    //var practitioners = practRepo.GetAll();
-                    //foreach (var user in practitioners)
-                    //{
-                        //get absent days
-                        int daysAbsent = 0;
-                        NotificationDisplay displayCoach = new NotificationDisplay()
-                        {
-                            Subject = "0 days absent last month",
-                            Icon = "greenicon",
-                            Color = "green",
-                            Message = "",
-                            Notes = "",
-                            UserId = Guid.Parse(uId),
-                            UserType = "coach"
-                        };
-                        //var attendaceRepo = attendanceRepo.GetAllByDateRange(fromDate, toDate);
-
-                        notificationList.Add(displayCoach);
-                    //}
-                    break;
+                    notificationList.Add(displayChild);
                 }
-            //}
+            }
+            if (type == "practitioner" || type == "principal") {  //practitioners and principals
+
+                var practitioners = practRepo.GetAll();
+                foreach (var user in practitioners)
+                {
+                    //get absent days
+                    //int daysAbsent = 0;
+                    NotificationDisplay displayPracti = new NotificationDisplay()
+                    {
+                        Subject = "0 days absent last month",
+                        Icon = "greenicon",
+                        Color = "green",
+                        Message = "",
+                        Notes = "",
+                        UserId = Guid.Parse(user.UserId),
+                        UserType = "practitioner"
+                    };
+                    //var attendaceRepo = attendanceRepo.GetAllByDateRange(fromDate, toDate);
+
+                    notificationList.Add(displayPracti);
+                }
+            }
+            if (type == "coach") {  //practitioners and principals
+            var practitioners = practRepo.GetAll();
+                foreach (var prac in practitioners)
+                {
+                    //get absent days
+                    int daysAbsent = 0;
+                    NotificationDisplay displayCoach = new NotificationDisplay()
+                    {
+                        Subject = "0 days absent last month",
+                        Icon = "greenicon",
+                        Color = "green",
+                        Message = "",
+                        Notes = "",
+                        UserId = Guid.Parse(uId),
+                        UserType = "coach"
+                    };
+                    //var attendaceRepo = attendanceRepo.GetAllByDateRange(fromDate, toDate);
+
+                    notificationList.Add(displayCoach);
+                }
+            }
+           
 
 
 

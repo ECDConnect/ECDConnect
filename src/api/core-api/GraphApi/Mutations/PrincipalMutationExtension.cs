@@ -213,7 +213,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         public PrincipalInvitationStatus UpdatePrincipalInvitation([Service] IHttpContextAccessor contextAccessor,
     [Service] IGenericRepositoryFactory repoFactory,
     [Service] ISystemSetting<InvitationCutoffDelayOptions> invitationDelay,
-    [Service] IInvitationReassignmentService reassignmentService,
+    [Service] IReassignmentService reassignmentService,
     string practitionerId, string principalId, bool accepted)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
