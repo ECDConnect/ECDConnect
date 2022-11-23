@@ -27,7 +27,7 @@ import { settingActions } from '@store/settings';
 import ROUTES from '@routes/routes';
 // import DeviceInfo from 'react-native-device-info';
 import { StorageFull } from './storage-full/storage-full';
-import packageInfo from '@@/package.json';
+const { version } = require('../../../../package.json');
 
 export const Login: React.FC = () => {
   const appDispatch = useAppDispatch();
@@ -75,9 +75,7 @@ export const Login: React.FC = () => {
               isAuthenticated &&
               isAuthenticated?.payload?.response?.status !== 401
             ) {
-              appDispatch(
-                settingActions.setApplicationVersion(packageInfo.version)
-              );
+              appDispatch(settingActions.setApplicationVersion(version));
               appDispatch(authActions.setUserExpired());
               setIsLoading(false);
               history.push(ROUTES.DASHBOARD);

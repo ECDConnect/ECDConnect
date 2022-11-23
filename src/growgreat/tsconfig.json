@@ -44,12 +44,14 @@
     "jsx": "react-jsx",
     "outDir": "./lib"
   },
+  "ts-node": {
+    "swc": true,
+    "esm": true,
+    "transpileOnly": true,
+    "experimentalResolver": true,
+    "experimentalReplAwait": true
+  },
   "include": [
     "src"
-  ],
-  "references": [
-    {
-      "path": "./tsconfig.node.json"
-    }
   ]
 }

@@ -8,7 +8,6 @@ import { NavigationDropdown, NavigationItem } from './side-menu.types';
 export type NestedSubMenuProps = {
   item: NavigationDropdown;
   onNavigation: (item: NavigationItem) => void;
-  children?: React.ReactNode | null;
 };
 
 export default function NestedSubMenu({ item, onNavigation }) {
@@ -17,9 +16,9 @@ export default function NestedSubMenu({ item, onNavigation }) {
     setOpenSubMenu(!openSubMenu);
   };
   return (
-    <div className="group w-full items-center">
+    <div className="group items-center w-full">
       <Fragment key={item.name}>
-        <div className={`group w-full items-center`}>
+        <div className={`group items-center w-full`}>
           {item.showDivider && (
             <Divider className="bg-primaryAccent1" dividerType="dashed" />
           )}
@@ -27,10 +26,10 @@ export default function NestedSubMenu({ item, onNavigation }) {
             onClick={handleOpenSubMenu}
             className={classNames(
               openSubMenu ? 'bg-secondaryAccent2 text-primary' : 'text-primary',
-              'flex h-full cursor-pointer flex-row items-center rounded-lg p-2.5 text-base font-medium'
+              'h-full flex flex-row items-center p-2.5 text-base font-medium rounded-lg cursor-pointer'
             )}
           >
-            <div className={'mr-4 w-1/12 items-center justify-center '}>
+            <div className={'w-1/12 items-center justify-center mr-4 '}>
               {item.icon && renderIcon(item.icon, 'flex-shrink-0 h-6 w-6')}
             </div>
             <Typography
@@ -55,9 +54,9 @@ export default function NestedSubMenu({ item, onNavigation }) {
           <div
             key={nested.name}
             onClick={() => onNavigation(nested)}
-            className="flex h-full cursor-pointer flex-row items-center rounded-lg p-2.5 text-base font-medium"
+            className="h-full flex flex-row items-center p-2.5 text-base font-medium rounded-lg cursor-pointer"
           >
-            <div className={'mr-4 w-1/12 items-center justify-center '} />
+            <div className={'w-1/12 items-center justify-center mr-4 '} />
             <Typography type={'help'} color={'textDark'} text={nested.name} />
           </div>
         ))}

@@ -28,5 +28,4 @@ export interface SideMenuProps extends ComponentBaseProps {
   onNavigation: (item: NavigationItem) => void;
   setSidebarOpen: (value: boolean) => void;
   version?: string;
-  children?: React.ReactNode | null;
 }
