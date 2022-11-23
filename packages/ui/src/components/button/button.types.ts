@@ -20,5 +20,4 @@ export interface ButtonProps extends ComponentBaseProps {
   text?: string;
   textColor?: Colours;
   onClick?: () => void;
-  children?: React.ReactNode | null;
 }

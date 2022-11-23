@@ -70,7 +70,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             try
             {
                 var siteAddressEntity = AddSiteAddress(siteAddress, siteRepo);
-
+               
                 var caregiverEntity = AddCaregiver(caregiver, siteAddressEntity, caregiverRepo);
 
                 var childEntity = AddChild(child, tokenModel, caregiverEntity, childRepo, userManager);

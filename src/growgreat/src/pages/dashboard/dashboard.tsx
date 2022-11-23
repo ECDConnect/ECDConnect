@@ -29,7 +29,7 @@ import { DashboardItems } from '@/pages/dashboard/components/dashboard-items/das
 import * as styles from '@/pages/dashboard/dashboard.styles';
 import ROUTES from '@routes/routes';
 import { getInfants } from '@/store/infant/infant.selectors';
-import packageInfo from '@@/package.json';
+import { version } from '@/../package.json';
 
 export enum NavigationTypes {
   Home = 'Home',
@@ -245,7 +245,7 @@ export const Dashboard: React.FC = () => {
       backgroundUrl={theme?.images.graphicOverlayUrl}
       className={styles.bannerContent}
       displayOffline={!isOnline}
-      version={`v ${packageInfo.version}`}
+      version={`v ${version}`}
     >
       <Typography
         type={'h1'}

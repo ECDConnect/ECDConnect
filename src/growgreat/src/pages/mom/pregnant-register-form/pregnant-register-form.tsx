@@ -1,7 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
-
+import { useCallback, useEffect, useState } from 'react';
 import { BannerWrapper, Card, Button, Typography } from '@ecdlink/ui';
 import { FileTypeEnum, WorkflowStatusEnum } from '@ecdlink/graphql';
 import {
@@ -57,6 +56,21 @@ export const PregnantRegisterForm: React.FC = () => {
   const { getWorkflowStatusIdByEnum, getDocumentTypeIdByEnum } =
     useStaticData();
   const relations = useSelector(staticDataSelectors.getRelations);
+
+  const handleExistingUser = () => {
+    if (isAlreadyClient) {
+      setActiveStep(PregnantRegisterSteps.pregnantMaternalRecord);
+      return;
+    }
+    setActiveStep(PregnantRegisterSteps.pregnantContactInformation);
+  };
+
+  useEffect(() => {
+    if (pregnantMaternalCaseRecord?.deliveryDate !== undefined) {
+      completeAllSteps();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pregnantMaternalCaseRecord?.deliveryDate]);
 
   const completeAllSteps = useCallback(() => {
     const motherId = newGuid();
@@ -136,9 +150,10 @@ export const PregnantRegisterForm: React.FC = () => {
     details,
   ]);
 
-  function steps(step: PregnantRegisterSteps) {
+  const steps = (step: PregnantRegisterSteps) => {
     switch (step) {
       case PregnantRegisterSteps.consentAgreement:
+      default:
         return (
           <ConsentAgreement
             onSubmit={(value) => {
@@ -196,22 +211,7 @@ export const PregnantRegisterForm: React.FC = () => {
           />
         );
     }
-  }
-
-  function handleExistingUser() {
-    if (isAlreadyClient) {
-      setActiveStep(PregnantRegisterSteps.pregnantMaternalRecord);
-      return;
-    }
-    setActiveStep(PregnantRegisterSteps.pregnantContactInformation);
-  }
-
-  useEffect(() => {
-    if (pregnantMaternalCaseRecord?.deliveryDate !== undefined) {
-      completeAllSteps();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pregnantMaternalCaseRecord?.deliveryDate]);
+  };
 
   useEffect(() => {
     setLabel('step 1 of 5');
