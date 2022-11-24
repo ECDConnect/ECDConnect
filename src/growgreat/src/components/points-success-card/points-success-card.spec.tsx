@@ -10,7 +10,6 @@ describe('PointsSuccessCard', () => {
         message={'What can you do with SmartStart points?'}
         icon={'GiftIcon'}
         points={100}
-        visible={true}
       />
     );
     expect(baseElement).toBeTruthy();

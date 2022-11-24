@@ -46,7 +46,6 @@ export interface ListItemProps extends ComponentBaseProps {
   buttonText?: string;
   buttonIcon?: string;
   onButtonClick?: () => void;
-  children?: React.ReactNode | null;
 }
 
 export const ListItem: React.FC<ListItemProps> = ({

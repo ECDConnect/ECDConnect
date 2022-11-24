@@ -2,7 +2,6 @@ import { classNames, Colours, ComponentBaseProps } from '../..';
 
 interface BadgeProps extends ComponentBaseProps {
   color?: Colours;
-  children?: React.ReactNode | null;
 }
 
 export const Badge: React.FC<BadgeProps> = ({

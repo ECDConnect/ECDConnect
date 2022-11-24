@@ -8,7 +8,6 @@ import { NavigationDropdown, NavigationItem } from './side-menu.types';
 export type NestedSubMenuProps = {
   item: NavigationDropdown;
   onNavigation: (item: NavigationItem) => void;
-  children?: React.ReactNode | null;
 };
 
 export default function NestedSubMenu({ item, onNavigation }) {

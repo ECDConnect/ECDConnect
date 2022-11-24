@@ -8,7 +8,6 @@ import { NavigationItem, NavigationRouteItem } from './side-menu.types';
 export type SideMenuItemProps = {
   item: NavigationRouteItem;
   onNavigation: (item: NavigationItem) => void;
-  children?: React.ReactNode | null;
 };
 
 export default function SideMenuItem({ item, onNavigation }) {

@@ -21,7 +21,6 @@ export interface ActionModalProps extends ComponentBaseProps {
   linkClick?: () => void;
   actionButtons?: ActionModalButton[];
   textAlignment?: 'left' | 'right' | 'center';
-  children?: React.ReactNode | null;
 }
 
 export const ActionModal: React.FC<ActionModalProps> = ({

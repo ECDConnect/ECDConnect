@@ -1,8 +1,3 @@
-import { useEffect, useState } from 'react';
-import { useHistory, useLocation } from 'react-router-dom';
-import { useForm, useFormState } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-
 import {
   ContentConsentTypeEnum,
   useQueryParams,
@@ -24,19 +19,19 @@ import {
   PasswordInput,
   Typography,
 } from '@ecdlink/ui';
-
+import { yupResolver } from '@hookform/resolvers/yup';
+import { useEffect, useState } from 'react';
+import { useForm, useFormState } from 'react-hook-form';
+import { useHistory, useLocation } from 'react-router-dom';
 import { Article } from '@/components/article/article';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useStoreSetup } from '@/hooks/useStoreSetup';
-
 import {
   initialRegisterValues,
   SignUpModel,
   signUpSchema,
 } from '@/schemas/auth/sign-up/sign-up';
-
 import AuthService from '@/services/AuthService/AuthService';
-
 import { useAppDispatch } from '@/store';
 import { staticDataThunkActions } from '@/store/static-data';
 
@@ -101,6 +96,19 @@ export const SignUp: React.FC = () => {
   const authToken = queryParams.getValue('token');
   const { isOnline, Offline } = useOnlineStatus();
 
+  useEffect(() => {
+    async function init() {
+      if (resetAppStore) {
+        await resetAppStore(false);
+        await resetAuth();
+      }
+
+      await appDispatch(staticDataThunkActions.getLanguages({})).unwrap();
+    }
+    init().catch(console.error);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const errorStrings = Object.keys(errors).map(
     (x: string) => (errors as any)[x].message
   );
@@ -136,12 +144,13 @@ export const SignUp: React.FC = () => {
     }
   };
 
-  async function proceedToPhoneValidation(
+  const proceedToPhoneValidation = async (
     { cellphone, username, password }: SignUpModel,
     token: string
-  ) {
+  ) => {
     setIsLoading(true);
     //await new AuthService().SendAuthCode(username, token);
+
     setIsLoading(false);
     history.push('/verify-phone', {
       phoneNumber: cellphone,
@@ -149,9 +158,9 @@ export const SignUp: React.FC = () => {
       username,
       token,
     });
-  }
+  };
 
-  function toggleIdAndPassport() {
+  const toggleIdAndPassport = () => {
     setPreferId(!preferId);
     signUpSetValue('preferId', !preferId, {
       shouldDirty: true,
@@ -161,26 +170,13 @@ export const SignUp: React.FC = () => {
       shouldDirty: true,
       shouldValidate: true,
     });
-  }
+  };
 
-  async function displayArticle(key: ContentConsentTypeEnum, title: string) {
+  const displayArticle = async (key: ContentConsentTypeEnum, title: string) => {
     setContentConsentTypeEnum(key);
     setPresentArticle(true);
     setArticleTitle(title);
-  }
-
-  useEffect(() => {
-    async function init() {
-      if (resetAppStore) {
-        await resetAppStore(false);
-        await resetAuth();
-      }
-
-      await appDispatch(staticDataThunkActions.getLanguages({})).unwrap();
-    }
-    init().catch(console.error);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  };
 
   return (
     <div className={styles.wrapper}>
@@ -236,7 +232,6 @@ export const SignUp: React.FC = () => {
               type="small"
             />
           </Button>
-
           <FormInput<SignUpModel>
             className={styles.marginBottom}
             label={'Cellphone number'}
@@ -362,7 +357,6 @@ export const SignUp: React.FC = () => {
               }
             />
           </div>
-
           <Button
             id="gtm-register"
             className={styles.formButton}
@@ -392,8 +386,7 @@ export const SignUp: React.FC = () => {
           </Button>
         </form>
       </BannerWrapper>
-
-      {contentConsentTypeEnum && presentArticle && (
+      {contentConsentTypeEnum && (
         <Article
           consentEnumType={contentConsentTypeEnum}
           visible={presentArticle}
@@ -402,48 +395,51 @@ export const SignUp: React.FC = () => {
           isOpen={true}
         />
       )}
-      {Boolean(!!presentCellNumberMismatch) && (
-        <>
-          <Dialog
-            visible={presentCellNumberMismatch}
-            position={DialogPosition.Middle}
-          >
-            <ActionModal
-              iconColor={'alertMain'}
-              icon={'InformationCircleIcon'}
-              importantText={`Grow Great has a different cellphone number for you: ${
-                signUpFormGetValues().cellphone
-              }`}
-              detailText="Please check you have entered the correct cellphone number or call our toll free number to have it changed."
-              actionButtons={[
-                {
-                  text: 'Edit cellphone number',
-                  type: 'filled',
-                  textColour: 'white',
-                  colour: 'primary',
-                  leadingIcon: 'PencilIcon',
-                  onClick: () => setPresentCellNumberMismatch(false),
-                },
-                {
-                  type: 'outlined',
-                  colour: 'primary',
-                  textColour: 'primary',
-                  leadingIcon: 'PhoneIcon',
-                  text: 'Call 0800 014 817',
-                  onClick: () => setPresentCellNumberMismatch(false),
-                },
-              ]}
-            />
-          </Dialog>
-          <Offline>
-            <Alert
-              className={'mt-5 mb-3'}
-              title="Your internet connection is unstable."
-              type={'warning'}
-            />
-          </Offline>
-        </>
-      )}
+
+      <Dialog
+        visible={presentCellNumberMismatch}
+        position={DialogPosition.Middle}
+      >
+        <ActionModal
+          icon={'InformationCircleIcon'}
+          iconColor={'alertMain'}
+          importantText={`Grow Great has a different cellphone number for you: ${
+            signUpFormGetValues().cellphone
+          }`}
+          detailText={
+            'Please check you have entered the correct cellphone number or call our toll free number to have it changed.'
+          }
+          actionButtons={[
+            {
+              colour: 'primary',
+              text: 'Edit cellphone number',
+              textColour: 'white',
+              leadingIcon: 'PencilIcon',
+              onClick: () => {
+                setPresentCellNumberMismatch(false);
+              },
+              type: 'filled',
+            },
+            {
+              colour: 'primary',
+              text: 'Call 0800 014 817',
+              textColour: 'primary',
+              leadingIcon: 'PhoneIcon',
+              onClick: () => {
+                setPresentCellNumberMismatch(false);
+              },
+              type: 'outlined',
+            },
+          ]}
+        />
+      </Dialog>
+      <Offline>
+        <Alert
+          className={'mt-5 mb-3'}
+          title="Your internet connection is unstable."
+          type={'warning'}
+        />
+      </Offline>
     </div>
   );
 };

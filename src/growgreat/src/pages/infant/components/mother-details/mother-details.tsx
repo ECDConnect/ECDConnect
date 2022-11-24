@@ -1,9 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
-import { useForm, useFormState } from 'react-hook-form';
-import { useSelector } from 'react-redux';
-
 import { yupResolver } from '@hookform/resolvers/yup';
-
 import {
   Button,
   Divider,
@@ -13,21 +8,20 @@ import {
   FormInput,
   Dropdown,
 } from '@ecdlink/ui';
-
+import { useForm, useFormState } from 'react-hook-form';
+import { useState, useMemo, useEffect } from 'react';
 import {
   MotherDetailsProps,
   yesNoOptions,
   relationshipTypes,
-} from '@/pages/infant/components/mother-details/mother-details.types';
-
+} from './mother-details.types';
 import {
   MotherDetailsModel,
   motherDetailsModelSchema,
 } from '@/schemas/infant/mother-details';
-
 import { motherSelectors } from '@/store/mother';
-
-import { MultipleChildrenProps } from '@/pages/infant/infant-register-form/infant-register-form.types';
+import { useSelector } from 'react-redux';
+import { MultipleChildrenProps } from '../../infant-register-form/infant-register-form.types';
 import { caregiverSelectors } from '@/store/caregiver';
 
 export const MotherDetails: React.FC<MotherDetailsProps> = ({
@@ -93,124 +87,128 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
   }, [relationshipChildrenArray]);
 
   return (
-    <div className="h-screen h-full w-screen w-full px-4">
-      <Typography
-        type="h2"
-        color={'textDark'}
-        text={'Caregiver'}
-        className="z-50 pt-6"
-      />
-      <Typography
-        type="h4"
-        color={'textMid'}
-        text={'Details'}
-        className="z-50 w-11/12 pt-2"
-      />
-
-      <Divider dividerType="dashed" />
-
-      <Typography
-        type="h3"
-        color={'textDark'}
-        text={'Is this client already on CHW Connect?'}
-        className="z-50 w-11/12 pt-2"
-      />
-      <div className="mt-2">
-        <ButtonGroup<boolean>
-          options={yesNoOptions}
-          onOptionSelected={(value: boolean | boolean[]) =>
-            setIsAlreadyClient(value)
-          }
-          color="secondary"
-          type={ButtonGroupTypes.Button}
-          className={'w-full'}
+    <div className="h-screen ">
+      <div>
+        <Typography
+          type="h2"
+          color={'textDark'}
+          text={'Caregiver'}
+          className="z-50 pt-6"
+        />
+        <Typography
+          type="h4"
+          color={'textMid'}
+          text={'Details'}
+          className="z-50 w-11/12 pt-2"
         />
       </div>
-      <div className="mt-4 w-full">
-        {multipleChildrenArray?.length! > 1 ? (
-          multipleChildrenArray?.map((child, index) => {
-            return (
-              <div key={index}>
-                <Typography
-                  key={index + 2}
-                  type="h3"
-                  color={'textDark'}
-                  text={`Relationship to ${child?.firstName}`}
-                  className="bt-1 z-50 w-11/12 pt-2"
-                />
-                <Dropdown
-                  key={index + 3}
-                  placeholder={'Please choose the client:'}
-                  fillType="clear"
-                  selectedValue={
-                    getMothereDetailsFormValues('relationshipId') ||
-                    multipleChildrenArray[index].relationshipId
-                  }
-                  list={
-                    (relationshipTypes?.length &&
-                      relationshipTypes
-                        .filter((x) => x.label?.length > 0)
-                        .map((item) => {
-                          return {
-                            label: item.label,
-                            value: item.value,
-                          };
-                        })) ||
-                    []
-                  }
-                  onChange={(value) => {
-                    relationshipChildrenArray
-                      ? setRelationshipChildrenArray([
-                          {
-                            ...multipleChildrenArray[index],
-                            relationshipId: value,
-                          },
-                          ...relationshipChildrenArray!,
-                        ])
-                      : setRelationshipChildrenArray([
-                          {
-                            ...multipleChildrenArray[index],
-                            relationshipId: value,
-                          },
-                          ...multipleChildrenArray!,
-                        ]);
-                  }}
-                />
-              </div>
-            );
-          })
-        ) : (
-          <>
-            <Typography
-              type="h3"
-              color={'textDark'}
-              text={`Relationship to ${infantDetails?.firstName}`}
-              className="bt-1 z-50 w-11/12 pt-2"
-            />
-            <Dropdown
-              placeholder={'Please choose the client:'}
-              fillType="clear"
-              // selectedValue={getMothereDetailsFormValues()}
-              list={
-                (relationshipTypes?.length &&
-                  relationshipTypes
-                    .filter((x) => x.label?.length > 0)
-                    .map((item) => {
-                      return {
-                        label: item.label,
-                        value: item.value,
-                      };
-                    })) ||
-                []
-              }
-              onChange={(value) => {
-                setMothereDetailsFormValue('relationshipId', value);
-              }}
-            />
-          </>
-        )}
+      <div className="flex w-11/12 justify-center text-red-400">
+        <Divider dividerType="dashed" />
+      </div>
+      <div>
+        <Typography
+          type="h3"
+          color={'textDark'}
+          text={'Is this client already on CHW Connect?'}
+          className="z-50 w-11/12 pt-2"
+        />
+        <div className="mt-2">
+          <ButtonGroup<boolean>
+            options={yesNoOptions}
+            onOptionSelected={(value: boolean | boolean[]) =>
+              setIsAlreadyClient(value)
+            }
+            color="secondary"
+            type={ButtonGroupTypes.Button}
+            className={'w-full'}
+          />
+        </div>
+        <div className="mt-4 w-full">
+          {multipleChildrenArray?.length! > 1 ? (
+            multipleChildrenArray?.map((child, index) => {
+              return (
+                <div key={index}>
+                  <Typography
+                    key={index + 2}
+                    type="h3"
+                    color={'textDark'}
+                    text={`Relationship to ${child?.firstName}`}
+                    className="bt-1 z-50 w-11/12 pt-2"
+                  />
+                  <Dropdown
+                    key={index + 3}
+                    placeholder={'Please choose the client:'}
+                    fillType="clear"
+                    selectedValue={
+                      getMothereDetailsFormValues('relationshipId') ||
+                      multipleChildrenArray[index].relationshipId
+                    }
+                    list={
+                      (relationshipTypes &&
+                        relationshipTypes
+                          .filter((x) => x.label?.length > 0)
+                          .map((item) => {
+                            return {
+                              label: item.label,
+                              value: item.value,
+                            };
+                          })) ||
+                      []
+                    }
+                    onChange={(value) => {
+                      relationshipChildrenArray
+                        ? setRelationshipChildrenArray([
+                            {
+                              ...multipleChildrenArray[index],
+                              relationshipId: value,
+                            },
+                            ...relationshipChildrenArray!,
+                          ])
+                        : setRelationshipChildrenArray([
+                            {
+                              ...multipleChildrenArray[index],
+                              relationshipId: value,
+                            },
+                            ...multipleChildrenArray!,
+                          ]);
+                    }}
+                  />
+                </div>
+              );
+            })
+          ) : (
+            <>
+              <Typography
+                type="h3"
+                color={'textDark'}
+                text={`Relationship to ${infantDetails?.firstName}`}
+                className="bt-1 z-50 w-11/12 pt-2"
+              />
+              <Dropdown
+                placeholder={'Please choose the client:'}
+                fillType="clear"
+                // selectedValue={getMomDetailsFormValues()}
+                list={
+                  (relationshipTypes &&
+                    relationshipTypes
+                      .filter((x) => x.label?.length > 0)
+                      .map((item) => {
+                        return {
+                          label: item.label,
+                          value: item.value,
+                        };
+                      })) ||
+                  []
+                }
+                onChange={(value) => {
+                  setMothereDetailsFormValue('relationshipId', value);
+                }}
+              />
+            </>
+          )}
+        </div>
         {isAlreadyClient === false && (
-          <div className="mt-4 w-full">
+          <>
             <FormInput<MotherDetailsModel>
               label={'First name'}
               register={caregiverFormRegister}
@@ -218,7 +216,7 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
               placeholder={'Enter a name'}
               type={'text'}
               className="mt-4"
-            />
+            ></FormInput>
             <FormInput<MotherDetailsModel>
               label={'Surname'}
               register={caregiverFormRegister}
@@ -226,7 +224,7 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
               placeholder={'Enter a surname'}
               type={'text'}
               className="mt-4"
-            />
+            ></FormInput>
             <div className="flex items-center gap-1">
               <FormInput<MotherDetailsModel>
                 label={'Age'}
@@ -235,7 +233,7 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
                 placeholder={'Enter an age'}
                 type={'number'}
                 className="mt-4 w-1/2"
-              />
+              ></FormInput>
               <Typography
                 type="h4"
                 color={'textMid'}
@@ -243,7 +241,7 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
                 className="z-50 mt-12"
               />
             </div>
-          </div>
+          </>
         )}
         {isAlreadyClient === true && (
           <div className="mt-4 w-full">
@@ -258,7 +256,7 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
               fillType="clear"
               selectedValue={getMothereDetailsFormValues('name')}
               list={
-                (caregivers?.length &&
+                (caregivers &&
                   caregivers
                     .filter((x) => x.firstName?.length! > 0)
                     .map((item) => {
@@ -280,22 +278,24 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
           </div>
         )}
       </div>
-      <div className={'flex h-full w-full flex-col justify-end align-bottom'}>
-        <Button
-          type={'filled'}
-          color={'primary'}
-          className={'mt-2 max-h-10 w-full'}
-          textColor={'white'}
-          text={`Next`}
-          icon={'ArrowCircleRightIcon'}
-          iconPosition={'start'}
-          onClick={() => {
-            onSubmit(getMothereDetailsFormValues());
-            // setAddress(handleAddExistingUser?.siteAddress);
-            // setContactInformation(handleAddExistingUser?.phoneNumber);
-          }}
-          disabled={!isValid && !isAlreadyClient && !hasMultipleChildren}
-        />
+      <div className="flex h-full w-full align-bottom">
+        <div className={'mt-10 flex w-11/12 justify-center align-bottom'}>
+          <Button
+            type={'filled'}
+            color={'primary'}
+            className={'absolute bottom-10 mt-2 ml-6 max-h-10 w-11/12'}
+            textColor={'white'}
+            text={`Next`}
+            icon={'ArrowCircleRightIcon'}
+            iconPosition={'start'}
+            onClick={() => {
+              onSubmit(getMothereDetailsFormValues());
+              // setAddress(handleAddExistingUser?.siteAddress);
+              // setContactInformation(handleAddExistingUser?.phoneNumber);
+            }}
+            disabled={!isValid && !isAlreadyClient && !hasMultipleChildren}
+          />
+        </div>
       </div>
     </div>
   );

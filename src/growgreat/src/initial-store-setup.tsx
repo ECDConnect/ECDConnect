@@ -15,9 +15,11 @@ import { notesActions, notesThunkActions } from '@/store/notes';
 import { notificationActions } from '@/store/notifications';
 import { settingActions, settingThunkActions } from '@/store/settings';
 import { staticDataActions, staticDataThunkActions } from '@/store/static-data';
-import { userActions, userThunkActions } from '@/store/user';
+import { userActions, userSelectors, userThunkActions } from '@/store/user';
 import { analyticsActions } from '@/store/analytics';
 import { infantThunkActions } from '@/store/infant';
+import { useSelector } from 'react-redux';
+import { healthCareWorkerThunkActions } from './store/healthCareWorker';
 
 type IntialStoreSetupContextValues = {
   initloading: boolean;
@@ -41,8 +43,20 @@ function InitialStoreSetup(props: Props) {
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
   const [initloading, setInitLoading] = useState(false);
+  const userData = useSelector(userSelectors?.getUser);
   const [staticDataLoading, setStaticDataLoading] = useState(false);
   const [otherLoading, setOtherLoading] = useState(false);
+
+  useEffect(() => {
+    if (userData) {
+      (async () =>
+        await appDispatch(
+          healthCareWorkerThunkActions.getHealthCareWorkerByUserId({
+            userId: userData?.id!,
+          })
+        ).unwrap())();
+    }
+  }, [appDispatch, userData]);
 
   const values = {
     initloading,

@@ -1,17 +1,13 @@
 import React, { useState, useContext } from 'react';
 import { Detector, Offline, Online } from 'react-detect-offline';
 
-type Props = {
-  children: React.ReactNode | null;
-};
-
 const OnlineStatusContext = React.createContext({
   isOnline: false,
   Offline,
   Online,
 });
 
-export function OnlineStatusProvider(props: Props) {
+export const OnlineStatusProvider: React.FC = ({ children }) => {
   const [onlineStatus, setOnlineStatus] = useState<boolean>(true);
 
   const value = {
@@ -28,10 +24,10 @@ export function OnlineStatusProvider(props: Props) {
           return <></>;
         }}
       />
-      {props.children}
+      {children}
     </OnlineStatusContext.Provider>
   );
-}
+};
 
 export const useOnlineStatus = () => {
   const store = useContext(OnlineStatusContext);
