@@ -54,7 +54,7 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
   };
 
   return (
-    <div className="h-screen w-full justify-center">
+    <>
       <Typography
         type="h2"
         color={'textDark'}
@@ -94,7 +94,7 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
       )}
 
       <Divider
-        className="flex w-11/12 justify-center text-red-400"
+        className="mt-4 flex justify-center text-red-400"
         dividerType="dashed"
       />
 
@@ -108,7 +108,7 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
 
       <Divider
         dividerType="dashed"
-        className="flex w-full justify-center text-red-400"
+        className="mt-4 flex w-full justify-center text-red-400"
       />
 
       <div className="mt-4 flex w-full items-center justify-between">
@@ -144,20 +144,18 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
       </div>
 
       <Alert
-        className="mt-6 flex w-11/12 items-center"
+        className="mt-6 flex items-center"
         type={'info'}
         message={
           'If the client does not consent, please do not register them on CHW Connect.'
         }
       />
 
-      <div className="flex h-full w-full justify-center align-bottom">
+      <div className="flex h-full items-end">
         <Button
           type={'filled'}
           color={'primary'}
-          className={
-            'absolute bottom-10 m-auto mt-2 max-h-10 w-11/12 justify-center'
-          }
+          className={'mt-4 w-full'}
           textColor={'white'}
           text={`Next`}
           icon={'ArrowCircleRightIcon'}
@@ -174,6 +172,6 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
         title={'Consent Agreement'}
         onClose={() => setPresentArticle(false)}
       />
-    </div>
+    </>
   );
 };
