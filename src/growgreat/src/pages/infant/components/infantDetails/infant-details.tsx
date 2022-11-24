@@ -17,6 +17,7 @@ import {
 } from '@/schemas/infant/infant-details';
 import { intervalToDuration } from 'date-fns';
 import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 // import { getGenders } from '@/store/static-data/static-data.selectors';
 import { useSelector } from 'react-redux';
 import { staticDataSelectors } from '@store/static-data';
@@ -145,7 +146,7 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
         <div className="flex items-center gap-1">
           <DatePicker
             placeholderText={'Please select a date'}
-            // className="text-textMid bg-uiBg focus:border-primary focus:ring-primary mt-1 w-full rounded-md border-none text-lg shadow-sm"
+            className="text-textMid bg-uiBg focus:border-primary focus:ring-primary mt-1 w-full rounded-md border-none text-lg shadow-sm"
             selected={myDay}
             onChange={(date: Date) => setDayDate(date)}
             dateFormat="dd"
@@ -154,7 +155,7 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
           />
           <DatePicker
             placeholderText={'Please select a date'}
-            // className="text-primary bg-uiBg focus:border-primary focus:ring-primary mt-1 w-full rounded-md border-none text-lg shadow-sm"
+            className="text-primary bg-uiBg focus:border-primary focus:ring-primary mt-1 w-full rounded-md border-none text-lg shadow-sm"
             selected={myMonth}
             onChange={(date: Date) => setMonthDate(date)}
             renderCustomHeader={({ date }) => <div></div>}
@@ -164,7 +165,7 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
           />
           <DatePicker
             placeholderText={'Please select a date'}
-            // className="bg-uiBg text-textMid focus:border-primary focus:ring-primary mt-1 w-full rounded-md border-none text-lg shadow-sm"
+            className="bg-uiBg text-textMid focus:border-primary focus:ring-primary mt-1 w-full rounded-md border-none text-lg shadow-sm"
             selected={myYear}
             onChange={(date: Date) => setYearDate(date)}
             dateFormat="yyyy"
