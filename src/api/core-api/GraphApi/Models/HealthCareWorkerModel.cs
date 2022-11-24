@@ -1,5 +1,6 @@
 using System;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Users;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Models
 {
@@ -7,9 +8,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
     {
         public string UserId { get; set; }
         public ApplicationUser User { get; set; }
+
+        public TeamLead TeamLead { get; set; }
+        public Guid? TeamLeadId { get; set; }
+
         public Guid? LangaugeId { get; set; }
-        public Guid? SiteAddressId { get; set; }
-        public SiteAddress SiteAddress { get; set; }
-        public string TeamLeadId { get; set; }
+
+        public bool IsRegistered { get; set; }
     }
 }
