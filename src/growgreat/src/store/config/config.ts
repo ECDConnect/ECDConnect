@@ -48,8 +48,11 @@ import { infantPersistConfig, infantReducer } from '@/store/infant/infant';
 import {
   healthCareWorkerPersistConfig,
   healthCareWorkerReducer,
-} from '@/store/healthCareWorker/healthCareWorker';
-import { practitionerPersistConfig, practitionerReducer } from "@/store/practitioner/practitioner";
+} from '../healthCareWorker/healthCareWorker';
+import {
+  practitionerPersistConfig,
+  practitionerReducer,
+} from '@/store/practitioner/practitioner';
 
 const persistedReducers = {
   analytics: persistReducer(analyticsPersistConfig, analyticsReducer),
