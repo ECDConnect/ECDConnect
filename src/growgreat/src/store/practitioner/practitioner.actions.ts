@@ -104,6 +104,7 @@ export const updatePractitionerById = createAsyncThunk<
   }
 );
 
+// eslint-disable-next-line  @typescript-eslint/no-unused-vars
 const mapPractitioner = (x: Partial<any>): any => ({
   User: {
     firstName: x.firstName,

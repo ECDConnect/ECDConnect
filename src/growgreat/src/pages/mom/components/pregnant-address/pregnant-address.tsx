@@ -41,80 +41,81 @@ export const PregnantAddress: React.FC<PregnantAddressProps> = ({
   const { isValid } = useFormState({ control: momContactInformationControl });
 
   const [useMap, setUseMap] = useState(false);
-  //   const handleConsentAccept = () => {
-  //     setConsentFormValue('hasConsent', !accept);
-  //   };
 
   return (
-    <div className="h-screen ">
-      <Typography
-        type="h2"
-        color={'textDark'}
-        text={`${details?.name}`}
-        className="z-50 pt-6"
-      />
-      <Typography
-        type="h4"
-        color={'textMid'}
-        text={'Address'}
-        className="z-50 w-11/12 pt-2"
-      />
-      <div className="mt-4">
-        <Typography
-          type="h4"
-          color={'textMid'}
-          text={`Add ${details?.name}'s address`}
-          className="z-50 w-11/12 pt-2"
-        />
-        <div className="mt-2">
-          <ButtonGroup<boolean>
-            color="secondary"
-            selectedOptions={useMap}
-            className={'mt-2 w-full'}
-            type={ButtonGroupTypes.Button}
-            options={useMapOrAddressOptions}
-            onOptionSelected={(value: boolean | boolean[]) =>
-              setUseMap(value as boolean)
-            }
-          />
-        </div>
-      </div>
-      <div className={'mt-4 px-4'}>
-        <Alert
-          type={'info'}
-          // title="Each child is unique!"
-          message={`If you are at ${details?.name}'s house now, you can use your phone's GPS to save the address.`}
-        />
-      </div>
+    <div className="h-screen px-5">
+      {!!useMap && <GoogleMap></GoogleMap>}
+
       {!useMap && (
-        <FormInput<PregnantAddressModel>
-          label={'Add address'}
-          register={pregnantAddressFormRegister}
-          nameProp={'address'}
-          placeholder={'e.g 012 345 6789'}
-          type={'text'}
-          className="mt-4"
-          textInputType="textarea"
-        />
-      )}
-      {!!useMap && <GoogleMap />}
-      <div className="flex h-full w-full align-bottom">
-        <div className={'mt-10 ml-2 flex w-11/12 justify-center align-bottom'}>
-          <Button
-            type={'filled'}
-            color={'primary'}
-            className={'absolute bottom-10 mt-2 ml-6 max-h-10 w-11/12'}
-            textColor={'white'}
-            text={`Next`}
-            icon={'ArrowCircleRightIcon'}
-            iconPosition={'start'}
-            onClick={() => {
-              onSubmit(getPregnantAddressFormValues());
-            }}
-            disabled={!isValid}
+        <>
+          <Typography
+            type="h2"
+            color={'textDark'}
+            text={`${details?.name}`}
+            className="z-50 pt-6"
           />
-        </div>
-      </div>
+          <Typography
+            type="h4"
+            color={'textMid'}
+            text={'Address'}
+            className="z-50 w-11/12 pt-2"
+          />
+          <div className="mt-4">
+            <Typography
+              type="h4"
+              color={'textMid'}
+              text={`Add ${details?.name}'s address`}
+              className="z-50 w-11/12 pt-2"
+            />
+            <div className="mt-2">
+              <ButtonGroup<boolean>
+                color="secondary"
+                selectedOptions={useMap}
+                className={'mt-2 w-full'}
+                type={ButtonGroupTypes.Button}
+                options={useMapOrAddressOptions}
+                onOptionSelected={(value: boolean | boolean[]) =>
+                  setUseMap(value as boolean)
+                }
+              />
+            </div>
+          </div>
+          <div className={'mt-4'}>
+            <Alert
+              type={'info'}
+              // title="Each child is unique!"
+              message={`If you are at ${details?.name}'s house now, you can use your phone's GPS to save the address.`}
+            />
+          </div>
+          <FormInput<PregnantAddressModel>
+            label={'Add address'}
+            register={pregnantAddressFormRegister}
+            nameProp={'address'}
+            placeholder={'e.g 012 345 6789'}
+            type={'text'}
+            className="mt-4"
+            textInputType="textarea"
+          />
+
+          <div className="flex h-full w-full align-bottom">
+            <div
+              className={'mt-10 ml-2 flex w-11/12 justify-center align-bottom'}
+            >
+              <Button
+                type={'filled'}
+                color={'primary'}
+                className={'absolute bottom-10 mt-2 ml-6 max-h-10 w-11/12'}
+                textColor={'white'}
+                text={`Next`}
+                icon={'ArrowCircleRightIcon'}
+                iconPosition={'start'}
+                onClick={() => onSubmit(getPregnantAddressFormValues())}
+                disabled={!isValid}
+              />
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };
