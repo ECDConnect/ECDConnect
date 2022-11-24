@@ -42,18 +42,6 @@ class HealthCareWorkerService {
               locale
               description
           }
-          siteAddress {
-              name
-              addressLine1
-              addressLine2
-              addressLine3
-              postalCode
-              province {
-                  description
-              }
-          }
-          emergancyContactPerson
-          emergancyContactNumber
         }
       }
       `,
