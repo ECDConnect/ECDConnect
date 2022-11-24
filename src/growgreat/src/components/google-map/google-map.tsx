@@ -94,7 +94,7 @@ function GoogleMap(props: ComponentBaseProps) {
   });
 
   useLayoutEffect(() => {
-    console.log('map', map);
+    console.log('map object', map);
   });
 
   return (
