@@ -34,6 +34,7 @@ import {
 import AuthService from '@/services/AuthService/AuthService';
 import { useAppDispatch } from '@/store';
 import { staticDataThunkActions } from '@/store/static-data';
+
 import bannerOne from '@/assets/sign-up-carousel/bannerOnex2.png';
 import bannerTwo from '@/assets/sign-up-carousel/bannerTwox2.png';
 import bannerThree from '@/assets/sign-up-carousel/bannerThreex2.png';
@@ -356,7 +357,6 @@ export const SignUp: React.FC = () => {
               }
             />
           </div>
-
           <Button
             id="gtm-register"
             className={styles.formButton}
