@@ -87,7 +87,7 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
   }, [relationshipChildrenArray]);
 
   return (
-    <div className="h-screen ">
+    <>
       <div>
         <Typography
           type="h2"
@@ -278,25 +278,23 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
           </div>
         )}
       </div>
-      <div className="flex h-full w-full align-bottom">
-        <div className={'mt-10 flex w-11/12 justify-center align-bottom'}>
-          <Button
-            type={'filled'}
-            color={'primary'}
-            className={'absolute bottom-10 mt-2 ml-6 max-h-10 w-11/12'}
-            textColor={'white'}
-            text={`Next`}
-            icon={'ArrowCircleRightIcon'}
-            iconPosition={'start'}
-            onClick={() => {
-              onSubmit(getMothereDetailsFormValues());
-              // setAddress(handleAddExistingUser?.siteAddress);
-              // setContactInformation(handleAddExistingUser?.phoneNumber);
-            }}
-            disabled={!isValid && !isAlreadyClient && !hasMultipleChildren}
-          />
-        </div>
+      <div className="flex h-full items-end">
+        <Button
+          type={'filled'}
+          color={'primary'}
+          className="mt-4 w-full"
+          textColor={'white'}
+          text={`Next`}
+          icon={'ArrowCircleRightIcon'}
+          iconPosition={'start'}
+          onClick={() => {
+            onSubmit(getMothereDetailsFormValues());
+            // setAddress(handleAddExistingUser?.siteAddress);
+            // setContactInformation(handleAddExistingUser?.phoneNumber);
+          }}
+          disabled={!isValid && !isAlreadyClient && !hasMultipleChildren}
+        />
       </div>
-    </div>
+    </>
   );
 };

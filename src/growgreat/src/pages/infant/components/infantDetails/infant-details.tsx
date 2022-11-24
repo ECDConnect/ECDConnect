@@ -106,42 +106,38 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
   };
 
   return (
-    <div className="h-screen pb-5">
-      <div>
-        <Typography
-          type="h2"
-          color={'textDark'}
-          text={
-            numberOfChildren! > 1 ? `Child ${multipleChildrenCount}` : 'Child'
-          }
-          className="z-50 pt-6"
-        />
-        <Typography
-          type="h4"
-          color={'textMid'}
-          text={'Details'}
-          className="z-50 w-11/12 pt-2"
-        />
-      </div>
+    <>
+      <Typography
+        type="h2"
+        color={'textDark'}
+        text={
+          numberOfChildren! > 1 ? `Child ${multipleChildrenCount}` : 'Child'
+        }
+        className="z-50 pt-6"
+      />
+      <Typography
+        type="h4"
+        color={'textMid'}
+        text={'Details'}
+        className="z-50 w-11/12 pt-2"
+      />
       <div className="flex w-11/12 justify-center text-red-400">
         <Divider dividerType="dashed" />
       </div>
-      <>
-        <FormInput<InfantDetailsModel>
-          label={'First name'}
-          register={infantFormRegister}
-          nameProp={'firstName'}
-          placeholder={'First name'}
-          type={'text'}
-          className="mt-4"
-        ></FormInput>
-      </>
+      <FormInput<InfantDetailsModel>
+        label={'First name'}
+        register={infantFormRegister}
+        nameProp={'firstName'}
+        placeholder={'First name'}
+        type={'text'}
+        className="mt-4"
+      ></FormInput>
       <div className="mt-4">
         <Typography
           type="h4"
           color={'textMid'}
           text={'Date of birth:'}
-          className="z-50 w-11/12 pt-2"
+          className="z-50 mt-4 w-11/12 pt-2"
         />
         <div className="flex items-center gap-1">
           <DatePicker
@@ -180,44 +176,40 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
           />
         </div>
       </div>
-      <div>
-        <Typography
-          type="h3"
-          color={'textDark'}
-          text={'Sex'}
-          className="z-50 w-11/12 pt-2"
+      <Typography
+        type="h3"
+        color={'textDark'}
+        text={'Sex'}
+        className="z-50 w-11/12 pt-2"
+      />
+      <div className="mt-2">
+        <ButtonGroup<string>
+          options={genderOptionsUpdated}
+          onOptionSelected={(value: string | string[]) => {
+            setInfantDetailsFormValue('genderId', value as string, {
+              shouldValidate: true,
+            });
+          }}
+          color="secondary"
+          type={ButtonGroupTypes.Button}
+          className={'w-full'}
         />
-        <div className="mt-2">
-          <ButtonGroup<string>
-            options={genderOptionsUpdated}
-            onOptionSelected={(value: string | string[]) => {
-              setInfantDetailsFormValue('genderId', value as string, {
-                shouldValidate: true,
-              });
-            }}
-            color="secondary"
-            type={ButtonGroupTypes.Button}
-            className={'w-full'}
-          />
-        </div>
       </div>
-      <div className="flex h-full w-full align-bottom">
-        <div className={'mt-10 flex w-11/12 justify-center align-bottom'}>
-          <Button
-            type={'filled'}
-            color={'primary'}
-            className={'absolute bottom-10 mt-2 ml-6 max-h-10 w-11/12'}
-            textColor={'white'}
-            text={`Next`}
-            icon={'ArrowCircleRightIcon'}
-            iconPosition={'start'}
-            onClick={() => {
-              onSubmit(getInfantDetailsFormValues());
-            }}
-            disabled={!isValid}
-          />
-        </div>
+      <div className="flex h-full items-end">
+        <Button
+          type={'filled'}
+          color={'primary'}
+          className={'bottom-10 mt-2 max-h-10 w-full'}
+          textColor={'white'}
+          text={`Next`}
+          icon={'ArrowCircleRightIcon'}
+          iconPosition={'start'}
+          onClick={() => {
+            onSubmit(getInfantDetailsFormValues());
+          }}
+          disabled={!isValid}
+        />
       </div>
-    </div>
+    </>
   );
 };
