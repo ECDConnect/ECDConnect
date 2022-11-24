@@ -171,15 +171,21 @@ export const PasswordInput = <T extends FieldValues>({
 
   return (
     <>
+      <label
+        htmlFor={nameProp}
+        className="font-body text-textMid block text-base font-semibold leading-snug"
+      >
+        {label}
+      </label>
       {strengthMeterVisible &&
         Object.values(passwordConstraintMessage).some((a) => !a) && (
-          <ul className="text-uiMidDark mb-4 mt-4 list-disc pl-5">
+          <ul className="text-textMid mb-4 list-disc pl-5">
             {!passwordConstraintMessage.characterCount && (
               <li>
                 <Typography // TODO: Fix help text font-family
                   text={'At least 8 characters'}
                   type={'help'}
-                  color={'uiMidDark'}
+                  color={'textMid'}
                 />
               </li>
             )}
@@ -188,7 +194,7 @@ export const PasswordInput = <T extends FieldValues>({
                 <Typography
                   text={'At least 1 number'}
                   type={'help'}
-                  color={'uiMidDark'}
+                  color={'textMid'}
                 />
               </li>
             )}
@@ -197,7 +203,7 @@ export const PasswordInput = <T extends FieldValues>({
                 <Typography
                   text={'At least 1 capital letter'}
                   type={'help'}
-                  color={'uiMidDark'}
+                  color={'textMid'}
                 />
               </li>
             )}
@@ -206,7 +212,7 @@ export const PasswordInput = <T extends FieldValues>({
                 <Typography
                   text={'At least 1 lowercase letter'}
                   type={'help'}
-                  color={'uiMidDark'}
+                  color={'textMid'}
                 />
               </li>
             )}
@@ -220,7 +226,6 @@ export const PasswordInput = <T extends FieldValues>({
           register={register}
           disabled={disabled}
           error={error}
-          label={label}
           placeholder={placeholder}
           type={inputType}
           suffixIcon={suffixIcon}
