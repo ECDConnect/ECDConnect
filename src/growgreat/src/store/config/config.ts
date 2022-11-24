@@ -43,12 +43,12 @@ import {
 } from '@/store/static-data/static-data';
 import { syncReducer } from '@/store/sync';
 import { userPersistConfig, userReducer } from '@/store/user/user';
-import type { RootState } from './types';
+import type { RootState } from '@/store/types';
 import { infantPersistConfig, infantReducer } from '@/store/infant/infant';
 import {
   healthCareWorkerPersistConfig,
   healthCareWorkerReducer,
-} from '../healthCareWorker/healthCareWorker';
+} from '@/store/healthCareWorker/healthCareWorker';
 import {
   practitionerPersistConfig,
   practitionerReducer,
