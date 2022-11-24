@@ -1,5 +1,7 @@
+using AngleSharp.Css.Values;
 using DotLiquid.Tags;
 using EcdLink.Api.CoreApi.GraphApi.Models;
+using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Extensions;
 using ECDLink.DataAccessLayer.Entities;
@@ -284,106 +286,449 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             string type)//, DateTime fromDate,DateTime toDate
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
-
+            GenericQueryTypeExtension genericQueries = new GenericQueryTypeExtension();
             var notificationList = new List<NotificationDisplay>();
 
             var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
             var practRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            var absenteeRepo = repoFactory.CreateRepository<Absentees>(userContext: uId);            
+
+            //set basic dates to be last month and before last
+            DateTime reference = DateTime.Now;
+            DateTime fromDate = reference.GetStartOfPreviousMonth();
+            DateTime toDate = reference.GetEndOfPreviousMonth();
+
+            int avgClassDays = 20;
+
+            DisplaySet weighting100 = new DisplaySet();
+            DisplaySet weighting90 = new DisplaySet();
+            DisplaySet weighting80 = new DisplaySet();
+            DisplaySet weighting70 = new DisplaySet();
+            DisplaySet weighting60 = new DisplaySet();
+            DisplaySet weighting50 = new DisplaySet();
+            DisplaySet weighting40 = new DisplaySet();
+            DisplaySet weighting30 = new DisplaySet();
+            DisplaySet weighting20 = new DisplaySet();
+            DisplaySet weighting10 = new DisplaySet();
+            DisplaySet weighting0 = new DisplaySet();
             //loop for last 12 months
             //for (int idx = 1; idx <= 12; idx++)
             //{
-            DateTime reference = DateTime.Now;
-                //fromDate = (fromDate!=null?fromDate : new DateTime(reference.Year, reference.Month, 1).AddMonths(-1));
-                //fromDate = fromDate.AddMonths(-1);
-                //toDate = (toDate != null ? toDate : reference.AddMonths(-idx).AddDays(-1);//decrement
+            /*Do logic for weighting - loop through each user then
+            1: Get all not registered
+            2: Get all progress reports overdue
+            3: Get all incomplete registers (for practitioners/principals)
+            4: Get Days absent (for practitioners/principals)
+            5: Get Child attendance for each
+            6: get all leavers - practitioners disputing association to principal
+            7: get all no classes assigned
+            8: 
 
-                //var attendanceAttended = attendaceRepo.Where(x => x.Attended).Count();
-                //var attendanceUnAttended = attendaceRepo.Where(x => !x.Attended).Count();
-
-                //attendedVsAbsent.Add(new MetricReportStatItem() { Name = "Attended", Value = attendanceAttended.ToString() });
-                //attendedVsAbsent.Add(new MetricReportStatItem() { Name = "Absent", Value = attendanceUnAttended.ToString() });
-                /*Do logic for weighting - loop through each user then
-                1: Get all not registered
-                2: Get all progress reports overdue
-                3: Get all incomplete registers (for practitioners/principals)
-                4: Get Days absent (for practitioners/principals)
-                5: Get Child attendance for each
-
-                Add weighting to each subject, and weigh up for each user what the messages are and use weighting to push the most relevant message up to the top, and assign colour, icon and Message to each
-                return list to FE for each user
-                */
-                switch (type.ToLower())
+            Add weighting to each subject, and weigh up for each user what the messages are and use weighting to push the most relevant message up to the top, and assign colour, icon and Message to each
+            return list to FE for each user
+            */
+            type = type.ToLower();
+            if (type == "child") {
+                //child view from practitioner/principal/coach
+                var children = childRepo.GetAll();
+                foreach (var user in children)
                 {
-                    case "child":
-                        
-                        var children = childRepo.GetAll();
-                        foreach (var user in children)
-                        {
-                            NotificationDisplay displayChild = new NotificationDisplay()
-                            {
-                                Subject = "Child Information missing",
-                                Icon = "redicon",
-                                Color = "red",
-                                Message = "",
-                                Notes = "",
-                                UserId = Guid.Parse(user.UserId),
-                                UserType = "child"
+                    NotificationDisplay displayChild = new NotificationDisplay()
+                    {
+                        Subject = "Missing Attendance",
+                        Icon = MetricsIconEnum.Error.ToString(),
+                        Color = MetricsColorEnum.Error.ToString(),
+                        Message = "",
+                        Notes = "",
+                        UserId = Guid.Parse(user.UserId),
+                        UserType = "child"
 
-                            };
-                            //var attendaceRepo = attendanceRepo.GetAllByDateRange(fromDate, toDate);
+                    };
 
-                            notificationList.Add(displayChild);
-                        }
-                        break;
-                    case "practitioner": //practitioners and principals
-
-                        var practitioners = practRepo.GetAll();
-                        foreach (var user in practitioners)
-                        {
-                            //get absent days
-                            //int daysAbsent = 0;
-                            NotificationDisplay displayPracti = new NotificationDisplay()
-                            {
-                                Subject = "0 days absent last month",
-                                Icon = "greenicon",
-                                Color = "green",
-                                Message = "",
-                                Notes = "",
-                                UserId = Guid.Parse(user.UserId),
-                                UserType = "practitioner"
-                            };
-                            //var attendaceRepo = attendanceRepo.GetAllByDateRange(fromDate, toDate);
-
-                            notificationList.Add(displayPracti);
-                        }
-                    break;
-                case "coach": //practitioners and principals
-                    //var practitioners = practRepo.GetAll();
-                    //foreach (var user in practitioners)
-                    //{
-                        //get absent days
-                        int daysAbsent = 0;
-                        NotificationDisplay displayCoach = new NotificationDisplay()
-                        {
-                            Subject = "0 days absent last month",
-                            Icon = "greenicon",
-                            Color = "green",
-                            Message = "",
-                            Notes = "",
-                            UserId = Guid.Parse(uId),
-                            UserType = "coach"
-                        };
-                        //var attendaceRepo = attendanceRepo.GetAllByDateRange(fromDate, toDate);
-
-                        notificationList.Add(displayCoach);
-                    //}
-                    break;
+                    notificationList.Add(displayChild);
                 }
-            //}
+            }
+            if (type == "practitioner" || type == "principal" || type == "coach") {  //practitioners and principals
+                var practitioners = practRepo.GetAll().ToList();
+                foreach (var user in practitioners)
+                {
+                    string finalMessageToDisplay = "";
+                    string finalIcon = "";
+                    string finalColor = "";
+                    string finalNotes = "";
+                    int priority = 8; //set the priority high and override as importance goes along
+                    int weighting = 0;
+
+
+                    //get absent days count 
+                    int absentDays = genericQueries.GetAbsentees(contextAccessor, repoFactory, user.UserId, fromDate, toDate).Count();
+                    //get is registered?
+                    bool isRegistered = (user.IsRegistered != null && user.IsRegistered == true ? true : false);
+                    //get is leaving?
+                    bool isLeaving = (user.IsLeaving != null && user.IsLeaving == true ? true : false);
+                    //get is leaving?
+                    bool isComplete = ((double)user.Progress > 0.2 ? true : false);
+
+                    //get attendance register counts across all classroomgroups and programmes
+                    int attendancePercentage = attendanceRepo.GetAttendancePercentileByParent(user.UserId, fromDate, toDate);
+
+                    //progress reports overdue count
+                    //TODO
+                    //incomplete child registers count
+                    //TODO
+                    //child progress reporting for coach
+                    
+                    if (type == "coach")
+                    {
+                        //TODO - logic to calculate
+                        weighting50.Icon = MetricsIconEnum.Warning.ToString();
+                        weighting50.Color = MetricsColorEnum.Warning.ToString();
+                        weighting50.Subject = 0 + " Children did not progress";
+                        weighting50.Notes = "Improve child progress";
+                        priority = 5;
+                        weighting = 30;
+                    }
+
+                    //absentees - priority varies betwen 4 and 6
+                    int absenteePercentage = (100 - (absentDays / avgClassDays) * 100);
+                    if (absenteePercentage <= 75)
+                    {
+                        weighting50.Icon = MetricsIconEnum.Error.ToString();
+                        weighting50.Color = MetricsColorEnum.Error.ToString();
+                        weighting50.Subject = absentDays + " days absent last month";
+                        weighting50.Notes = "Improve attendance";
+                        priority = 6;
+                        weighting = 50;
+                    } else if (absenteePercentage > 75 && absenteePercentage < 90)
+                    {
+                        weighting40.Icon = MetricsIconEnum.Warning.ToString();
+                        weighting40.Color = MetricsColorEnum.Warning.ToString();
+                        weighting40.Subject = absentDays + " days absent last month";
+                        weighting40.Notes = "Improve attendance";
+                        priority = 4;
+                        weighting = 40;
+                    } else if (absenteePercentage == 100)
+                    {
+                        weighting10.Icon = MetricsIconEnum.Success.ToString();
+                        weighting10.Color = MetricsColorEnum.Success.ToString();
+                        weighting10.Subject = absentDays + " days absent last month";
+                        weighting10.Notes = "Excellent attendance";
+                        priority = 8;
+                        weighting = 10;
+                    }
+
+                    //Calculate Overall Attendance Percentages
+                    if (attendancePercentage < 60)
+                    {
+                        weighting80.Icon = MetricsIconEnum.Error.ToString();
+                        weighting80.Color = MetricsColorEnum.Error.ToString();
+                        weighting80.Subject = "Child Attendance < 60%";
+                        weighting80.Notes = "Improve attendance";
+                        priority = 5;
+                        weighting = 80;
+                    } else if (attendancePercentage >= 60 && attendancePercentage < 79)
+                    {
+                        weighting50.Icon = MetricsIconEnum.Warning.ToString();
+                        weighting50.Color = MetricsColorEnum.Warning.ToString();
+                        weighting50.Subject = "Child Attendance > 60% and less than 70%";
+                        weighting50.Notes = "Improve Attendance";
+                        priority = 7;
+                        weighting = 50;
+                    } else if (attendancePercentage > 80)
+                    {
+                        weighting10.Icon = MetricsIconEnum.Success.ToString();
+                        weighting10.Color = MetricsColorEnum.Success.ToString();
+                        weighting10.Subject = "Child Attendance > 80%";
+                        weighting10.Notes = "Well done, attendance is 80% or higher.";
+                        priority = 8;
+                        weighting = 10;
+                    }
 
 
 
+                    //Priority 1
+                    if (!isRegistered)
+                    {
+                        weighting80.Icon = MetricsIconEnum.Error.ToString();
+                        weighting80.Color = MetricsColorEnum.Error.ToString();
+                        weighting80.Subject = "Not registered on Funda App";
+                        weighting80.Notes = "Request registration on Funda App";
+                        priority = 1;
+                        weighting = 80;
+                    }
+
+                    //priority 0
+                    if (isComplete)
+                    {
+                        weighting90.Icon = MetricsIconEnum.Success.ToString();
+                        weighting90.Color = MetricsColorEnum.Success.ToString();
+                        weighting90.Subject = "Profile complete";
+                        priority = 8;
+                        weighting = 90;
+                    }
+
+                    //priority 0
+                    if (isLeaving)
+                    {
+                        weighting100.Icon = MetricsIconEnum.Success.ToString();
+                        weighting100.Color = MetricsColorEnum.Success.ToString();
+                        weighting100.Subject = "Practitioner is leaving on " + user.DateToBeRemoved;
+                        weighting100.Notes = "Practitioner is leaving on " + user.DateToBeRemoved;
+                        priority = 0;
+                        weighting = 100;
+                    }
+
+                    if (priority == 8)
+                    {
+                        if (weighting == 10)
+                        {
+                            finalMessageToDisplay = weighting10.Subject;
+                            finalIcon = weighting10.Icon;
+                            finalColor = weighting10.Color;
+                            finalNotes = weighting10.Notes;
+                        }
+                        if (weighting == 90)
+                        {
+                            finalMessageToDisplay = weighting90.Subject;
+                            finalIcon = weighting90.Icon;
+                            finalColor = weighting90.Color;
+                            finalNotes = weighting90.Notes;
+                        }
+                        if (weighting == 100)
+                        {
+                            finalMessageToDisplay = weighting100.Subject;
+                            finalIcon = weighting100.Icon;
+                            finalColor = weighting100.Color;
+                            finalNotes = weighting100.Notes;
+                        }
+                    }
+
+                    if (priority == 7)
+                    {
+                        if (weighting == 50)
+                        {
+                            finalMessageToDisplay = weighting50.Subject;
+                            finalIcon = weighting50.Icon;
+                            finalColor = weighting50.Color;
+                            finalNotes = weighting50.Notes;
+                        }
+                        if (weighting == 90)
+                        {
+                            finalMessageToDisplay = weighting90.Subject;
+                            finalIcon = weighting90.Icon;
+                            finalColor = weighting90.Color;
+                            finalNotes = weighting90.Notes;
+                        }
+                        if (weighting == 100)
+                        {
+                            finalMessageToDisplay = weighting100.Subject;
+                            finalIcon = weighting100.Icon;
+                            finalColor = weighting100.Color;
+                            finalNotes = weighting100.Notes;
+                        }
+                    }
+
+   
+
+
+                    if (priority == 6)
+                    {
+                        if (weighting == 50)
+                        {
+                            finalMessageToDisplay = weighting50.Subject;
+                            finalIcon = weighting50.Icon;
+                            finalColor = weighting50.Color;
+                            finalNotes = weighting50.Notes;
+                        }
+                        if (weighting == 90)
+                        {
+                            finalMessageToDisplay = weighting90.Subject;
+                            finalIcon = weighting90.Icon;
+                            finalColor = weighting90.Color;
+                            finalNotes = weighting90.Notes;
+                        }
+                        if (weighting == 100)
+                        {
+                            finalMessageToDisplay = weighting100.Subject;
+                            finalIcon = weighting100.Icon;
+                            finalColor = weighting100.Color;
+                            finalNotes = weighting100.Notes;
+                        }
+                    }
+
+                    if (priority == 5)
+                    {
+                        if (weighting == 80)
+                        {
+                            finalMessageToDisplay = weighting80.Subject;
+                            finalIcon = weighting80.Icon;
+                            finalColor = weighting80.Color;
+                            finalNotes = weighting80.Notes;
+                        }
+                        if (weighting == 50)
+                        {
+                            finalMessageToDisplay = weighting50.Subject;
+                            finalIcon = weighting50.Icon;
+                            finalColor = weighting50.Color;
+                            finalNotes = weighting50.Notes;
+                        }
+                        if (weighting == 90)
+                        {
+                            finalMessageToDisplay = weighting90.Subject;
+                            finalIcon = weighting90.Icon;
+                            finalColor = weighting90.Color;
+                            finalNotes = weighting90.Notes;
+                        }
+                        if (weighting == 100)
+                        {
+                            finalMessageToDisplay = weighting100.Subject;
+                            finalIcon = weighting100.Icon;
+                            finalColor = weighting100.Color;
+                            finalNotes = weighting100.Notes;
+                        }
+                    }
+
+                    if (priority == 4)
+                    {
+                        if (weighting == 50)
+                        {
+                            finalMessageToDisplay = weighting50.Subject;
+                            finalIcon = weighting50.Icon;
+                            finalColor = weighting50.Color;
+                            finalNotes = weighting50.Notes;
+                        }
+                        if (weighting == 90)
+                        {
+                            finalMessageToDisplay = weighting90.Subject;
+                            finalIcon = weighting90.Icon;
+                            finalColor = weighting90.Color;
+                            finalNotes = weighting90.Notes;
+                        }
+                        if (weighting == 100)
+                        {
+                            finalMessageToDisplay = weighting100.Subject;
+                            finalIcon = weighting100.Icon;
+                            finalColor = weighting100.Color;
+                            finalNotes = weighting100.Notes;
+                        }
+                    }
+
+                    if (priority == 3)
+                    {
+                        if (weighting == 50)
+                        {
+                            finalMessageToDisplay = weighting50.Subject;
+                            finalIcon = weighting50.Icon;
+                            finalColor = weighting50.Color;
+                            finalNotes = weighting50.Notes;
+                        }
+                        if (weighting == 90)
+                        {
+                            finalMessageToDisplay = weighting90.Subject;
+                            finalIcon = weighting90.Icon;
+                            finalColor = weighting90.Color;
+                            finalNotes = weighting90.Notes;
+                        }
+                        if (weighting == 100)
+                        {
+                            finalMessageToDisplay = weighting100.Subject;
+                            finalIcon = weighting100.Icon;
+                            finalColor = weighting100.Color;
+                            finalNotes = weighting100.Notes;
+                        }
+                    }
+
+                    if (priority == 2)
+                    {
+                        if (weighting == 50)
+                        {
+                            finalMessageToDisplay = weighting50.Subject;
+                            finalIcon = weighting50.Icon;
+                            finalColor = weighting50.Color;
+                            finalNotes = weighting50.Notes;
+                        }
+                        if (weighting == 90)
+                        {
+                            finalMessageToDisplay = weighting90.Subject;
+                            finalIcon = weighting90.Icon;
+                            finalColor = weighting90.Color;
+                            finalNotes = weighting90.Notes;
+                        }
+                        if (weighting == 100)
+                        {
+                            finalMessageToDisplay = weighting100.Subject;
+                            finalIcon = weighting100.Icon;
+                            finalColor = weighting100.Color;
+                            finalNotes = weighting100.Notes;
+                        }
+                    }
+
+                    if (priority == 1)
+                    {
+                        if (weighting == 80)
+                        {
+                            finalMessageToDisplay = weighting80.Subject;
+                            finalIcon = weighting80.Icon;
+                            finalColor = weighting80.Color;
+                            finalNotes = weighting80.Notes;
+                        }
+                        if (weighting == 90)
+                        {
+                            finalMessageToDisplay = weighting90.Subject;
+                            finalIcon = weighting90.Icon;
+                            finalColor = weighting90.Color;
+                            finalNotes = weighting90.Notes;
+                        }
+                        if (weighting == 100)
+                        {
+                            finalMessageToDisplay = weighting100.Subject;
+                            finalIcon = weighting100.Icon;
+                            finalColor = weighting100.Color;
+                            finalNotes = weighting100.Notes;
+                        }
+                    }
+
+
+                    if (priority == 0)
+                    {
+                        if (weighting == 80)
+                        {
+                            finalMessageToDisplay = weighting80.Subject;
+                            finalIcon = weighting80.Icon;
+                            finalColor = weighting80.Color;
+                            finalNotes = weighting80.Notes;
+                        }
+                        if (weighting == 90)
+                        {
+                            finalMessageToDisplay = weighting90.Subject;
+                            finalIcon = weighting90.Icon;
+                            finalColor = weighting90.Color;
+                            finalNotes = weighting90.Notes;
+                        }
+                        if (weighting == 100)
+                        {
+                            finalMessageToDisplay = weighting100.Subject;
+                            finalIcon = weighting100.Icon;
+                            finalColor = weighting100.Color;
+                            finalNotes = weighting100.Notes;
+                        }
+                    }
+
+                    //build up display for this user
+                    NotificationDisplay displayPracti = new NotificationDisplay()
+                    {
+                        Subject = finalMessageToDisplay,
+                        Icon = finalIcon,
+                        Color = finalColor,
+                        Message = finalMessageToDisplay,
+                        Notes = finalNotes,
+                        UserId = Guid.Parse(user.UserId),
+                        UserType = "practitioner"
+                    };
+
+                    notificationList.Add(displayPracti);
+                }
+            }
+            
             return notificationList;
         }
 

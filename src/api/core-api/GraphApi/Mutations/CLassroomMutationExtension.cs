@@ -44,7 +44,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
                [Service] HierarchyEngine engine,
-               [Service] IInvitationReassignmentService reassignmentService,
+               [Service] IReassignmentService reassignmentService,
             string classroomId,
             string userId)
         {

@@ -218,6 +218,19 @@ export const PractitionerAbout: React.FC = () => {
           setAddNextToKin(true);
         },
       },
+      {
+        title: 'Signature',
+        subTitle: practitioner?.signingSignature
+          ? 'Replace your signature'
+          : 'Add your signature',
+        switchTextStyles: true,
+        actionName: practitioner?.signingSignature ? 'Edit' : 'Add',
+        actionIcon: practitioner?.signingSignature ? 'PencilIcon' : 'PlusIcon',
+        buttonType: 'filled',
+        onActionClick: () => {
+          history.push(ROUTES.PRACTITIONER.ABOUT.SIGNATURE);
+        },
+      },
     ];
 
     setListItems(list);
@@ -329,19 +342,28 @@ export const PractitionerAbout: React.FC = () => {
         onBack={() => history.push(ROUTES.PRACTITIONER.PROFILE.ROOT)}
         displayOffline={!isOnline}
       >
-        <div className={'inline-flex w-full justify-center pt-8'}>
-          <ProfileAvatar
-            dataUrl={userProfilePicture?.file || user?.profileImageUrl}
-            size={'header'}
-            onPressed={displayProfilePicturePrompt}
-            hasConsent={true}
-          />
+        <div className="px-4">
+          <div className={'inline-flex w-full justify-center pt-8'}>
+            <ProfileAvatar
+              dataUrl={userProfilePicture?.file || user?.profileImageUrl}
+              size={'header'}
+              onPressed={displayProfilePicturePrompt}
+              hasConsent={true}
+            />
+          </div>
+          <StackedList
+            className={'bg-uiBg h-auto'}
+            listItems={listItems}
+            type={'ActionList'}
+          ></StackedList>
+          {practitioner?.signingSignature && (
+            <img
+              alt="signature"
+              className="max-h-24 py-4"
+              src={practitioner.signingSignature}
+            />
+          )}
         </div>
-        <StackedList
-          className={'bg-uiBg px-4'}
-          listItems={listItems}
-          type={'ActionList'}
-        ></StackedList>
       </BannerWrapper>
 
       <Dialog

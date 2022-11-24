@@ -65,6 +65,7 @@ import { Logout } from '@/pages/auth/logout/logout';
 import ReassignClass from '@/pages/classroom/class-dashboard/practitioners/reassign-class/reassign-class';
 import { AddPractitioner } from '@/pages/principal/components/add-practitioner/add-practitioner';
 import ConfirmPractitioner from '@/pages/principal/components/add-practitioner/confirm-practitioner';
+import { PractitionerSignature } from '@/pages/practitioner/practitioner-about/components/practitioner-signature/practitioner-signature';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -125,8 +126,13 @@ const AuthRoutes: React.FC = () => {
       <Route path={ROUTES.TRAINING} component={Training} exact={true} />
       <Route
         exact
-        path={ROUTES.PRACTITIONER.ABOUT}
+        path={ROUTES.PRACTITIONER.ABOUT.ROOT}
         component={PractitionerAbout}
+      />
+      <Route
+        exact
+        path={ROUTES.PRACTITIONER.ABOUT.SIGNATURE}
+        component={PractitionerSignature}
       />
       <Route
         path={ROUTES.CHILD_REGISTRATION_LANDING}

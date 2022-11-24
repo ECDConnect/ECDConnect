@@ -1,6 +1,7 @@
 using ECDLink.Abstractrions.Constants;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.PostgresTenancy.Entities;
 using ECDLink.Security;
 using ECDLink.Security.JwtSecurity.Enums;
 using ECDLink.Security.JwtSecurity.Factories;
@@ -22,6 +23,7 @@ namespace EcdLink.Api.CoreApi.Security.Managers
         private readonly IClaimsManager _claimsManager;
         private readonly SecurityNotificationManager _notificationManager;
         private readonly ShortUrlManager _shortUrlManager;
+        protected AuthenticationDbContext _dbContext;
 
         public UserManager<ApplicationUser> _userManager { get; set; }
 
@@ -112,6 +114,7 @@ namespace EcdLink.Api.CoreApi.Security.Managers
             }
 
             var jwt = await _jwtTokenManager.GenerateJwt(claimIdentity, user.Id, jwtType);
+            //TODO: Save JWT Token to Datalayer
 
             return jwt;
         }
@@ -143,6 +146,12 @@ namespace EcdLink.Api.CoreApi.Security.Managers
             }
 
             return await GenerateJwtForUserAsync(user as ApplicationUser, JwtEncoderEnum.Standard);
+        }
+
+        public async Task<JWTUserTokensEntityReturn> ObfuscateJwtToken(string auth_token, string expiresIn, string contextIdentifier)
+        {
+            return await _jwtTokenManager.StoreJWTToken(auth_token,expiresIn, contextIdentifier);
+
         }
     }
 }
