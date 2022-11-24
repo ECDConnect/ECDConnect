@@ -11,7 +11,7 @@ import ROUTES from '@/routes/routes';
 import * as styles from '@/pages/mom/pregnant-register/pregnant-register.styles';
 import momImage from '@/assets/momImage.png';
 
-export const PregnantRegister: React.FC = () => {
+export function PregnantRegister() {
   const { isOnline } = useOnlineStatus();
   const history = useHistory();
   const { theme } = useTheme();
@@ -28,7 +28,7 @@ export const PregnantRegister: React.FC = () => {
         size="large"
         renderBorder={true}
         renderOverflow={false}
-        onBack={() => history.goBack()}
+        onBack={history.goBack}
         displayOffline={!isOnline}
         className={styles.bannerContent}
       >
@@ -121,4 +121,4 @@ export const PregnantRegister: React.FC = () => {
       </BannerWrapper>
     </div>
   );
-};
+}

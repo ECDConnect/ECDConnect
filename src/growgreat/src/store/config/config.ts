@@ -15,34 +15,44 @@ import {
 import {
   analyticsPersistConfig,
   analyticsReducer,
-} from '../analytics/analytics';
+} from '@/store/analytics/analytics';
 
-import { authPersistConfig, authReducer } from '../auth';
+import { authPersistConfig, authReducer } from '@/store/auth';
 import {
   caregiverPersistConfig,
   caregiverReducer,
-} from '../caregiver/caregiver';
-import { contentConsentReducer } from '../content/consent/consent';
-import { documentPersistConfig, documentReducer } from '../document/document';
-import { notesPersistConfig, notesReducer } from '../notes/notes';
+} from '@/store/caregiver/caregiver';
+import { contentConsentReducer } from '@/store/content/consent/consent';
+import {
+  documentPersistConfig,
+  documentReducer,
+} from '@/store/document/document';
+import { notesPersistConfig, notesReducer } from '@/store/notes/notes';
 import {
   notificationPersistConfig,
   notificationReducer,
-} from '../notifications/notifications';
-import { motherPersistConfig, motherReducer } from '../mother/mother';
-import { settingPersistConfig, settingReducer } from '../settings/settings';
+} from '@/store/notifications/notifications';
+import { motherPersistConfig, motherReducer } from '@/store/mother/mother';
+import {
+  settingPersistConfig,
+  settingReducer,
+} from '@/store/settings/settings';
 import {
   staticDataPersistConfig,
   staticDataReducer,
-} from '../static-data/static-data';
-import { syncReducer } from '../sync';
-import { userPersistConfig, userReducer } from '../user/user';
-import type { RootState } from './types';
-import { infantPersistConfig, infantReducer } from '../infant/infant';
+} from '@/store/static-data/static-data';
+import { syncReducer } from '@/store/sync';
+import { userPersistConfig, userReducer } from '@/store/user/user';
+import type { RootState } from '@/store/types';
+import { infantPersistConfig, infantReducer } from '@/store/infant/infant';
 import {
   healthCareWorkerPersistConfig,
   healthCareWorkerReducer,
-} from '../healthCareWorker/healthCareWorker';
+} from '@/store/healthCareWorker/healthCareWorker';
+import {
+  practitionerPersistConfig,
+  practitionerReducer,
+} from '@/store/practitioner/practitioner';
 
 const persistedReducers = {
   analytics: persistReducer(analyticsPersistConfig, analyticsReducer),
@@ -62,6 +72,7 @@ const persistedReducers = {
   staticData: persistReducer(staticDataPersistConfig, staticDataReducer),
   sync: syncReducer,
   user: persistReducer(userPersistConfig, userReducer),
+  practitioner: persistReducer(practitionerPersistConfig, practitionerReducer),
 };
 
 const rootReducer = combineReducers(persistedReducers);
