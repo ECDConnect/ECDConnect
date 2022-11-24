@@ -13,6 +13,7 @@ import {
 import { PhotoPrompt } from '../../../../components/photo-prompt/photo-prompt';
 import { differenceInWeeks } from 'date-fns';
 import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 import { useForm, useFormState } from 'react-hook-form';
 import { useEffect, useState } from 'react';
 import {
