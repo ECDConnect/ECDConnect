@@ -68,11 +68,7 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
       />
 
       <div className="flex w-full flex-col">
-<<<<<<< HEAD
         <div className="flex flex-row items-center justify-between gap-3">
-=======
-        <div className="flex flex-row items-center justify-around gap-3">
->>>>>>> 25c4921d (fix(ui): merge conflits)
           <label
             className={`flex flex-row items-center justify-center align-middle `}
             htmlFor="acceptConsent"

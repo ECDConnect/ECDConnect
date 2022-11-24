@@ -48,11 +48,7 @@ import { infantPersistConfig, infantReducer } from '@/store/infant/infant';
 import {
   healthCareWorkerPersistConfig,
   healthCareWorkerReducer,
-<<<<<<< HEAD
 } from '@/store/healthCareWorker/healthCareWorker';
-=======
-} from '../healthCareWorker/healthCareWorker';
->>>>>>> cbf391e2 (fix(ui): merge conflits)
 import {
   practitionerPersistConfig,
   practitionerReducer,
