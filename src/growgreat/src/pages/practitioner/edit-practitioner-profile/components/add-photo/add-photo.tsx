@@ -67,6 +67,12 @@ export const AddPhoto: React.FC<AddPhotoProps> = ({ onSubmit, isLoading }) => {
   };
 
   const handleDelete = () => {
+    const userCopy = cloneDeep(user);
+    if (userCopy) {
+      userCopy.profileImageUrl = '';
+      appDispatch(userActions.updateUser(userCopy));
+      appDispatch(userThunkActions.updateUser(userCopy));
+    }
     if (user?.profileImageUrl) deleteDocument(userProfilePicture);
     setEditProfilePictureVisible(false);
   };

@@ -1,9 +1,4 @@
 import { useDialog, useTheme } from '@ecdlink/core';
-import {
-  ClassProgrammeDto,
-  ClassroomDto,
-  ClassroomGroupDto,
-} from '@ecdlink/core';
 import { IonContent } from '@ionic/react';
 import { ActionModal, BannerWrapper } from '@ecdlink/ui';
 import { DialogPosition } from '@ecdlink/ui';
@@ -15,18 +10,12 @@ import { AddPhoto } from './components/add-photo/add-photo';
 import { EditPractitionerSteps } from './edit-practitioner-profile.types';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
-import { authSelectors } from '@/store/auth';
+// import { authSelectors } from '@/store/auth';
 import { PractitionerSetup } from './components/practitioner-setup/practitioner-setup';
 import { WelcomePage } from '@/components/welcome-page';
-import { PractitionerService } from '@/services/PractitionerService';
-// import {
-//   practitionerSelectors,
-//   practitionerThunkActions,
-// } from '@/store/practitioner';
+
 import ROUTES from '@/routes/routes';
 import { useAppDispatch } from '@store';
-import { notificationActions } from '@/store/notifications';
-import { practitionerThunkActions } from '@/store/practitioner';
 import {
   healthCareWorkerActions,
   healthCareWorkerSelectors,
@@ -40,16 +29,16 @@ export const EditPractitionerProfile: React.FC = () => {
   const dialog = useDialog();
   const { isOnline } = useOnlineStatus();
 
-  const userAuth = useSelector(authSelectors.getAuthUser);
+  // const userAuth = useSelector(authSelectors.getAuthUser);
   const user = useSelector(userSelectors.getUser);
   const healthCareWorker = useSelector(
     healthCareWorkerSelectors?.getHealthCareWorker
   );
-  console.log({ healthCareWorker });
+
   const [label, setLabel] = useState('');
   const [activeStep, setActiveStep] = useState(EditPractitionerSteps.WELCOME);
   const [language, setLanguage] = useState<string>();
-  console.log({ language });
+
   useEffect(() => {
     if (activeStep === EditPractitionerSteps.WELCOME) {
       setLabel('Welcome');
@@ -82,7 +71,7 @@ export const EditPractitionerProfile: React.FC = () => {
     const copy = Object.assign({}, healthCareWorker);
     if (copy) {
       copy.language = language! as string;
-      console.log({ copy });
+
       appDispatch(healthCareWorkerActions.updateHealthCareWorker(copy));
       appDispatch(
         healthCareWorkerThunkActions.updateHealthCareWorkerById({
@@ -98,6 +87,7 @@ export const EditPractitionerProfile: React.FC = () => {
       } else {
         showOnlineOnly();
       }
+      history.push(ROUTES.ROOT);
     }
   };
 

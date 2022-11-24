@@ -185,7 +185,7 @@ class HealthCareWorkerService {
   async UpdateHealthCareWorker(
     id: string,
     input: MutationUpdateHealthCareWorkerArgs
-  ): Promise<PractitionerDto> {
+  ): Promise<HealthCareWorkerDto> {
     const apiInstance = await api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `

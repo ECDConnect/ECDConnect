@@ -1,53 +1,30 @@
-import Article from '@/components/article/article';
-import { ContentConsentTypeEnum, LanguageDto } from '@ecdlink/core';
-import {
-  Alert,
-  Button,
-  Checkbox,
-  Divider,
-  Typography,
-  Dropdown,
-} from '@ecdlink/ui';
+import { LanguageDto } from '@ecdlink/core';
+import { Alert, Button, Divider, Typography, Dropdown } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useEffect, useState } from 'react';
-import { Controller, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { useSelector } from 'react-redux';
-// import { yesNoOptions } from '../edit-programme-form/edit-programme-form.types';
 import { setupPractitioner } from '@/schemas/practitioner/add-practitioner';
-import { userSelectors } from '@/store/user';
-import { useAppDispatch } from '@/store';
-import { authSelectors } from '@/store/auth';
-import { PractitionerService } from '@/services/PractitionerService';
-// import { OnNext } from '@/pages/principal/setup-principal/setup-principal.types';
-import { useHistory } from 'react-router';
-import ROUTES from '@/routes/routes';
+// import { useHistory } from 'react-router';
+// import ROUTES from '@/routes/routes';
 import { staticDataSelectors } from '@/store/static-data';
-// import { practitionerSelectors } from '@/store/practitioner';
-
 export const PractitionerSetup = ({
   onSubmit,
 }: {
   onSubmit: (item: string) => void;
 }) => {
-  const history = useHistory();
-  const [principalName, setPrincipalName] = useState<string>('Principal');
-  const [programName, setProgramName] = useState<string>('Programme');
+  // const history = useHistory();
   const languages = useSelector(staticDataSelectors?.getLanguages);
-  const [viewPermissionToShare, setViewPermissionToShare] =
-    useState<boolean>(false);
-  const { control, register, watch, setValue } = useForm({
+  const { watch, setValue } = useForm({
     resolver: yupResolver(setupPractitioner),
     defaultValues: {
       language: '',
     },
   });
 
-  // const practitioner = useSelector(practitionerSelectors.getPractitioner);
-  const userAuth = useSelector(authSelectors.getAuthUser);
-  const user = useSelector(userSelectors.getUser);
+  // const userAuth = useSelector(authSelectors.getAuthUser);
+  // const user = useSelector(userSelectors.getUser);
 
   const { language } = watch();
-  console.log({ language });
 
   return (
     <>

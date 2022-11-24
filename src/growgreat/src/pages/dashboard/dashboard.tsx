@@ -208,9 +208,9 @@ export const Dashboard: React.FC = () => {
       backgroundColour={'white'}
       backgroundImageColour={'primary'}
       avatar={
-        userProfilePicture?.file ? (
+        userProfilePicture?.file || userData?.profileImageUrl ? (
           <Avatar
-            dataUrl={userProfilePicture?.file}
+            dataUrl={userProfilePicture?.file || userData?.profileImageUrl!}
             size={'sm'}
             displayBorder={true}
           />
