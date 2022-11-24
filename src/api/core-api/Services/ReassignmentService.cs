@@ -324,6 +324,7 @@ namespace ECDLink.Core.Services
 
         private bool UpdateAttendance(string uId, DateTime startDate, string fromUserId, string toUserId, string oldHierarchy, string newHierarchy, List<string> classProgrammes, List<string> learnerIds)
         {
+            //TODO: work in start end dates to attendance to prevent a history record being edited/overridden and incorrectly allocated to new practitioner
             List<string> attendanceReassigned = new List<string>();
             bool isDone = false;
             foreach (var program in classProgrammes)
