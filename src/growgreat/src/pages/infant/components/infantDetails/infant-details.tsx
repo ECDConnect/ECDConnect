@@ -155,7 +155,7 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
           />
           <DatePicker
             placeholderText={'Please select a date'}
-            className="text-primary bg-uiBg focus:border-primary focus:ring-primary mt-1 w-full rounded-md border-none text-lg shadow-sm"
+            className="text-textMid bg-uiBg focus:border-primary focus:ring-primary mt-1 w-full rounded-md border-none text-lg shadow-sm"
             selected={myMonth}
             onChange={(date: Date) => setMonthDate(date)}
             renderCustomHeader={({ date }) => <div></div>}
