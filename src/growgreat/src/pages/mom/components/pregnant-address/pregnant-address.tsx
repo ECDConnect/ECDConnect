@@ -1,3 +1,4 @@
+import { renderIcon } from '@ecdlink/ui';
 import { useState } from 'react';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
@@ -13,6 +14,7 @@ import {
   PregnantAddressProps,
   useMapOrAddressOptions,
 } from './pregnant-address.types';
+import * as styles from './pregnant-address.styles';
 import {
   pregnantAddressModelSchema,
   PregnantAddressModel,
@@ -24,7 +26,6 @@ export const PregnantAddress: React.FC<PregnantAddressProps> = ({
   details,
 }) => {
   const {
-    // watch,
     getValues: getPregnantAddressFormValues,
     // formState: pregnantAddressFormState,
     // setValue: setPregnantAddressFormValue,
@@ -42,12 +43,70 @@ export const PregnantAddress: React.FC<PregnantAddressProps> = ({
 
   const [useMap, setUseMap] = useState(false);
 
+  function saveAddress() {
+    console.log('saveAddress', details);
+  }
+
   return (
-    <div className="h-screen px-5">
-      {!!useMap && <GoogleMap></GoogleMap>}
+    <div className="h-screen">
+      {!!useMap && (
+        <>
+          <GoogleMap />
+          <div className="flex-1 px-5">
+            <Typography
+              type="h2"
+              color={'textDark'}
+              text={`Is this address/location correct?`}
+              className="z-50 pt-6"
+            />
+            <Typography
+              type="h4"
+              color={'textMid'}
+              text={'Move the pin to change address'}
+              className="z-50 w-11/12 pt-2"
+            />
+            <Typography
+              type="h4"
+              color={'secondary'}
+              text={``}
+              className="z-50 w-11/12 pt-2"
+            />
+          </div>
+          <div className="flex flex-col gap-3 px-5">
+            <Button
+              type="filled"
+              color="primary"
+              className={'max-h-10 w-full'}
+              onClick={saveAddress}
+            >
+              {renderIcon('SaveIcon', styles.buttonIcon)}
+              <Typography
+                type="help"
+                className="mr-2"
+                color="white"
+                text={'Save'}
+              />
+            </Button>
+            <Button
+              type="outlined"
+              color="primary"
+              className={'max-h-10 w-full'}
+              onClick={() => setUseMap(false)}
+            >
+              {renderIcon('CloseIcon', styles.buttonIcon)}
+              <Typography
+                type="help"
+                className="mr-2"
+                color="primary"
+                text={'Cancel'}
+              />
+            </Button>
+          </div>
+        </>
+      )}
 
       {!useMap && (
-        <>
+        <div className="px-5">
           <Typography
             type="h2"
             color={'textDark'}
@@ -67,18 +126,20 @@ export const PregnantAddress: React.FC<PregnantAddressProps> = ({
               text={`Add ${details?.name}'s address`}
               className="z-50 w-11/12 pt-2"
             />
-            <div className="mt-2">
-              <ButtonGroup<boolean>
-                color="secondary"
-                selectedOptions={useMap}
-                className={'mt-2 w-full'}
-                type={ButtonGroupTypes.Button}
-                options={useMapOrAddressOptions}
-                onOptionSelected={(value: boolean | boolean[]) =>
-                  setUseMap(value as boolean)
-                }
-              />
-            </div>
+            {'geolocation' in navigator && (
+              <div className="mt-2">
+                <ButtonGroup<boolean>
+                  color="secondary"
+                  selectedOptions={useMap}
+                  className={'mt-2 w-full'}
+                  type={ButtonGroupTypes.Button}
+                  options={useMapOrAddressOptions}
+                  onOptionSelected={(value: boolean | boolean[]) =>
+                    setUseMap(value as boolean)
+                  }
+                />
+              </div>
+            )}
           </div>
           <div className={'mt-4'}>
             <Alert
@@ -114,7 +175,7 @@ export const PregnantAddress: React.FC<PregnantAddressProps> = ({
               />
             </div>
           </div>
-        </>
+        </div>
       )}
     </div>
   );
