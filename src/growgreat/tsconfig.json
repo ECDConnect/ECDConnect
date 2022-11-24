@@ -2,7 +2,7 @@
   "extends": "./tsconfig.paths.json",
   "compilerOptions": {
     "pretty": true,
-    "target": "esnext",
+    "target": "ES6",
     "lib": [
       "ES5",
       "ES6",

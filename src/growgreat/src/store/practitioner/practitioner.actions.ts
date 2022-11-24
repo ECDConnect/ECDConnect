@@ -83,7 +83,7 @@ export const updatePractitionerById = createAsyncThunk<
 >(
   'updatePractitionerById',
   // eslint-disable-next-line no-empty-pattern
-  async ({ input, id }, { getState, rejectWithValue }): Promise<any> => {
+  async ({ input, id }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
     } = getState();
@@ -104,7 +104,6 @@ export const updatePractitionerById = createAsyncThunk<
   }
 );
 
-// eslint-disable-next-line  @typescript-eslint/no-unused-vars
 const mapPractitioner = (x: Partial<any>): any => ({
   User: {
     firstName: x.firstName,
