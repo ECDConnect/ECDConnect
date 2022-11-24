@@ -32,6 +32,8 @@ import { analyticsActions } from '@/store/analytics';
 import { setStorageItem } from '@/utils/common/local-storage.utils';
 import * as styles from '@/pages/practitioner/practitioner-about/practitioner-about.styles';
 import ROUTES from '@/routes/routes';
+import LanguageSelector from '@/components/language-selector/language-selector';
+import { staticDataSelectors } from '@/store/static-data';
 
 export const PractitionerAbout: React.FC = () => {
   const history = useHistory();
@@ -45,12 +47,17 @@ export const PractitionerAbout: React.FC = () => {
   } = useDocuments();
 
   const [editFieldVisible, setEditFieldVisible] = useState(false);
+  const [editLanguageFieldVisible, setEditLanguageFieldVisible] =
+    useState(false);
   const [displayError, setDisplayError] = useState<boolean>(false);
   const [editProfilePictureVisible, setEditProfilePictureVisible] =
     useState(false);
 
   const user = useSelector(userSelectors.getUser);
-
+  const languages = useSelector(staticDataSelectors.getLanguages);
+  // const selectedLanguage = languages?.find(
+  //   (item) => item?.description === user?.language
+  // );
   const pictureStorageKey = LocalStorageKeys.practitionerProfilePicture;
   const [listItems, setListItems] = useState<ActionListDataItem[]>([]);
 
@@ -73,6 +80,7 @@ export const PractitionerAbout: React.FC = () => {
     register: practitionerAboutRegister,
     formState: practitionerAboutFormState,
     getValues: practitionerAboutFormGetValues,
+    setValue: practitionerAboutFormSetValue,
   } = useForm({
     resolver: yupResolver(practitionerAboutModelSchema),
     defaultValues: getDefaultFormvalues(),
@@ -202,8 +210,15 @@ export const PractitionerAbout: React.FC = () => {
   const editField = (
     formInputToLoad: DialogFormInput<PractitionerAboutModel>
   ) => {
-    setDialogFormInput(formInputToLoad);
-    setEditFieldVisible(true);
+    console.log({ formInputToLoad });
+    if (formInputToLoad.label === 'Language') {
+      setDialogFormInput(formInputToLoad);
+      setEditLanguageFieldVisible(true);
+      return;
+    } else {
+      setDialogFormInput(formInputToLoad);
+      setEditFieldVisible(true);
+    }
   };
 
   const saveEdit = async () => {
@@ -211,6 +226,7 @@ export const PractitionerAbout: React.FC = () => {
       setDisplayError(true);
     } else {
       setEditFieldVisible(false);
+      setEditLanguageFieldVisible(false);
       await savePractitionerUserData();
     }
   };
@@ -221,6 +237,7 @@ export const PractitionerAbout: React.FC = () => {
 
   const closeEditField = () => {
     setEditFieldVisible(false);
+    setEditLanguageFieldVisible(false);
   };
 
   const deleteProfilePicture = () => {
@@ -233,6 +250,10 @@ export const PractitionerAbout: React.FC = () => {
     }
 
     setEditProfilePictureVisible(!editProfilePictureVisible);
+  };
+
+  const saveLanguage = (data: any) => {
+    practitionerAboutFormSetValue('language', data?.description);
   };
 
   const picturePromtOnAction = async (imageBaseString: string) => {
@@ -259,6 +280,7 @@ export const PractitionerAbout: React.FC = () => {
 
   const savePractitionerUserData = () => {
     const practitionerForm = practitionerAboutFormGetValues();
+    console.log({ practitionerForm });
     const copy = Object.assign({}, user);
     if (copy) {
       copy.firstName = practitionerForm.name;
@@ -266,7 +288,7 @@ export const PractitionerAbout: React.FC = () => {
       copy.phoneNumber = practitionerForm.cellphone;
       copy.email = practitionerForm.email;
       copy.language = practitionerForm.language;
-
+      console.log({ copy });
       appDispatch(userActions.updateUser(copy));
       appDispatch(userThunkActions.updateUser(copy));
 
@@ -348,6 +370,66 @@ export const PractitionerAbout: React.FC = () => {
             register={practitionerAboutRegister}
             disabled={false}
             className={!displayError ? 'mb-6' : ''}
+          />
+          {displayError && (
+            <div className={'mt-2'}>
+              <Typography
+                type="help"
+                color="errorMain"
+                text={
+                  practitionerAboutFormState.errors[
+                    dialogFormInput.formFieldName
+                  ]?.message || ''
+                }
+                className={'mb-6'}
+              />
+            </div>
+          )}
+          <Button
+            type="filled"
+            color="primary"
+            className={'w-full'}
+            onClick={saveEdit}
+          >
+            {renderIcon('SaveIcon', styles.buttonIcon)}
+            <Typography
+              type="help"
+              className="mr-2"
+              color="white"
+              text={'Save'}
+            />
+          </Button>
+        </div>
+      </Dialog>
+      <Dialog
+        stretch={true}
+        borderRadius="normal"
+        visible={editLanguageFieldVisible}
+        position={DialogPosition.Bottom}
+      >
+        <div className={'p-4'}>
+          <div className={styles.labelContainer}>
+            <Typography
+              type="body"
+              className=""
+              color="textDark"
+              text={'Change preferred language on CHW Connect'}
+              weight="bold"
+            />
+            <div onClick={closeEditField}>
+              {renderIcon('XIcon', 'h-6 w-6 text-uiLight')}
+            </div>
+          </div>
+          {/* <FormInput<PractitionerAboutModel>
+            visible={true}
+            nameProp={dialogFormInput.formFieldName}
+            register={practitionerAboutRegister}
+            disabled={false}
+            className={!displayError ? 'mb-6' : ''}
+          /> */}
+          <LanguageSelector
+            currentLocale={'en-za'}
+            selectLanguage={(data) => saveLanguage(data)}
           />
           {displayError && (
             <div className={'mt-2'}>
