@@ -210,7 +210,6 @@ export const PractitionerAbout: React.FC = () => {
   const editField = (
     formInputToLoad: DialogFormInput<PractitionerAboutModel>
   ) => {
-    console.log({ formInputToLoad });
     if (formInputToLoad.label === 'Language') {
       setDialogFormInput(formInputToLoad);
       setEditLanguageFieldVisible(true);
@@ -280,7 +279,7 @@ export const PractitionerAbout: React.FC = () => {
 
   const savePractitionerUserData = () => {
     const practitionerForm = practitionerAboutFormGetValues();
-    console.log({ practitionerForm });
+
     const copy = Object.assign({}, user);
     if (copy) {
       copy.firstName = practitionerForm.name;
@@ -288,7 +287,7 @@ export const PractitionerAbout: React.FC = () => {
       copy.phoneNumber = practitionerForm.cellphone;
       copy.email = practitionerForm.email;
       copy.language = practitionerForm.language;
-      console.log({ copy });
+
       appDispatch(userActions.updateUser(copy));
       appDispatch(userThunkActions.updateUser(copy));
 

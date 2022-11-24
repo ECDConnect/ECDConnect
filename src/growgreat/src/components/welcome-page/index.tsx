@@ -1,5 +1,5 @@
 import { Typography, Card, Button } from '@ecdlink/ui';
-import { ReactComponent as Cebisa } from '@/assets/cebisa.svg';
+import { ReactComponent as MomImage } from '@/assets/momImageSvg.svg';
 
 export const WelcomePage = ({ onNext }: { onNext: () => void }) => {
   return (
@@ -9,7 +9,8 @@ export const WelcomePage = ({ onNext }: { onNext: () => void }) => {
           <Typography
             color="white"
             type="h1"
-            text="Hello, my name is Cebisa and I'm here to help you!"
+            text="Hello, my name is Polley and I'm here to help you!
+          "
           />
           <div>
             <Card
@@ -17,8 +18,8 @@ export const WelcomePage = ({ onNext }: { onNext: () => void }) => {
               borderRaduis="lg"
               shadowSize="lg"
             >
-              <div className="">
-                <Cebisa />
+              <div className="bg-tertiary flex h-28 w-28 items-center justify-center rounded-full">
+                <MomImage />
               </div>
               <Typography
                 color="textDark"
@@ -28,7 +29,7 @@ export const WelcomePage = ({ onNext }: { onNext: () => void }) => {
               <Typography
                 className="text-center"
                 color="textMid"
-                text="Please give me more information to make Funda App useful for you!"
+                text="Please give me more information to make CHW Connect useful for you!"
                 type={'body'}
               />
             </Card>
