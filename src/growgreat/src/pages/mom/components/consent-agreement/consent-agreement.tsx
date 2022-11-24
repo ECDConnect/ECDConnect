@@ -69,20 +69,27 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
 
       <div className="flex w-full flex-col">
         <div className="flex flex-row items-center justify-around gap-3">
-          <input
-            type="checkbox"
-            className={accept ? 'bg-secondary' : 'bg-uiBg'}
-            onChange={() => {
-              setAccept(!accept);
-              handleConsentAccept();
-            }}
-          />
-
-          <Typography
-            type="body"
-            color={'textMid'}
-            text={'I accept the consent agreement'}
-          />
+          <label
+            className={`flex flex-row items-center justify-center align-middle `}
+            htmlFor="acceptConsent"
+          >
+            <input
+              id="acceptConsent"
+              type="checkbox"
+              className={`mr-3 flex flex-col justify-start align-middle ${
+                accept ? 'bg-secondary' : 'bg-uiBg'
+              }}`}
+              onChange={() => {
+                setAccept(!accept);
+                handleConsentAccept();
+              }}
+            />
+            <Typography
+              type="body"
+              color={'textMid'}
+              text={'I accept the consent agreement'}
+            />
+          </label>
 
           <Typography
             text={'View'}
@@ -119,12 +126,14 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
           onClick={() => onSubmit(getConsentFormValues())}
         />
       </div>
-      <Article
-        visible={presentArticle}
-        title={'Consent Agreement'}
-        consentEnumType={contentConsentTypeEnum}
-        onClose={() => setPresentArticle(false)}
-      />
+      {!!presentArticle && (
+        <Article
+          visible={presentArticle}
+          title={'Consent Agreement'}
+          consentEnumType={contentConsentTypeEnum}
+          onClose={() => setPresentArticle(false)}
+        />
+      )}
     </div>
   );
 };

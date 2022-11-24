@@ -17,6 +17,7 @@ import {
   pregnantAddressModelSchema,
   PregnantAddressModel,
 } from '@/schemas/pregnant/pregnant-address';
+import { GoogleMap } from '@/components/google-map';
 
 export const PregnantAddress: React.FC<PregnantAddressProps> = ({
   onSubmit,
@@ -85,7 +86,7 @@ export const PregnantAddress: React.FC<PregnantAddressProps> = ({
           message={`If you are at ${details?.name}'s house now, you can use your phone's GPS to save the address.`}
         />
       </div>
-      {useMap === false && (
+      {!useMap && (
         <FormInput<PregnantAddressModel>
           label={'Add address'}
           register={pregnantAddressFormRegister}
@@ -96,6 +97,7 @@ export const PregnantAddress: React.FC<PregnantAddressProps> = ({
           textInputType="textarea"
         />
       )}
+      {!!useMap && <GoogleMap />}
       <div className="flex h-full w-full align-bottom">
         <div className={'mt-10 ml-2 flex w-11/12 justify-center align-bottom'}>
           <Button

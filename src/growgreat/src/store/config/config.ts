@@ -39,6 +39,10 @@ import { syncReducer } from '../sync';
 import { userPersistConfig, userReducer } from '../user/user';
 import type { RootState } from './types';
 import { infantPersistConfig, infantReducer } from '../infant/infant';
+import {
+  practitionerPersistConfig,
+  practitionerReducer,
+} from '@/store/practitioner/practitioner';
 
 const persistedReducers = {
   analytics: persistReducer(analyticsPersistConfig, analyticsReducer),
@@ -54,6 +58,7 @@ const persistedReducers = {
   staticData: persistReducer(staticDataPersistConfig, staticDataReducer),
   sync: syncReducer,
   user: persistReducer(userPersistConfig, userReducer),
+  practitioner: persistReducer(practitionerPersistConfig, practitionerReducer),
 };
 
 const rootReducer = combineReducers(persistedReducers);

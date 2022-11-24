@@ -83,7 +83,7 @@ export const updatePractitionerById = createAsyncThunk<
 >(
   'updatePractitionerById',
   // eslint-disable-next-line no-empty-pattern
-  async ({ input, id }, { getState, rejectWithValue }) => {
+  async ({ input, id }, { getState, rejectWithValue }): Promise<any> => {
     const {
       auth: { userAuth },
     } = getState();
