@@ -10,8 +10,13 @@ module.exports = {
       width: {
         headercard: '328px',
       },
+      maxWidth: {
+        '27': '27rem',
+      },
       height: {
         bannerimage: '200px',
+        '8.75': '8.75rem',
+        '100': '26rem',
       },
       borderRadius: {
         10: '0.625rem',
@@ -105,6 +110,9 @@ module.exports = {
           '100%': { transform: 'rotate(360deg)' },
         },
       },
+      screens: {
+        'sm-mobile': '370px',
+      }
     },
   },
   variants: {
