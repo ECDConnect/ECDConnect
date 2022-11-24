@@ -78,7 +78,7 @@ export const ActionModal: React.FC<ActionModalProps> = ({
             fontSize="18"
             hasMarkup
             text={importantText}
-            className={'leading-snug font-semibold'}
+            className={'font-semibold leading-snug'}
             color="textDark"
           />
         </div>
@@ -123,7 +123,7 @@ export const ActionModal: React.FC<ActionModalProps> = ({
       {actionButtons.map((button, index, { length }) => (
         <Button
           key={`action-modal-button-${index}`}
-          className={`w-full mt-2 ${index + 1 === length ? 'mb-0' : 'mb-2'}`}
+          className={`mt-2 w-full ${index + 1 === length ? 'mb-0' : 'mb-2'}`}
           type={button.type}
           color={button.colour}
           onClick={button.onClick}
