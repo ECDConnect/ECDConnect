@@ -9,16 +9,14 @@ import {
   BannerWrapper,
   Button,
   Checkbox,
-  ChipStatus,
   classNames,
   Dialog,
   DialogPosition,
   Divider,
   FormInput,
-  HeaderCard,
   HeaderSlide,
+  HeaderSlider,
   PasswordInput,
-  SliderPagination,
   Typography,
 } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -36,14 +34,34 @@ import {
 import AuthService from '@/services/AuthService/AuthService';
 import { useAppDispatch } from '@/store';
 import { staticDataThunkActions } from '@/store/static-data';
+import bannerOne from '@/assets/sign-up-carousel/bannerOnex2.png';
+import bannerTwo from '@/assets/sign-up-carousel/bannerTwox2.png';
+import bannerThree from '@/assets/sign-up-carousel/bannerThreex2.png';
+import bannerFour from '@/assets/sign-up-carousel/bannerFourx2.png';
 import * as styles from '@/pages/auth/sign-up/sign-up.styles';
 
-const headerSlide: HeaderSlide = {
-  status: ChipStatus.Available,
-  title: 'Welcome to CHW Connect!',
-  text: 'Track your clients, get support, access training opportunities, connect with other CHWs & get rewarded.',
-  image: require('@/assets/banner-ss.jpg'),
-};
+const headerSlide: HeaderSlide[] = [
+  {
+    title: 'Welcome to CHW Connect!',
+    text: 'Track your clients, get support, access training opportunities, connect with other CHWs & get rewarded.',
+    image: bannerOne,
+  },
+  {
+    title: 'Home visits made easy!',
+    text: 'No more carrying your client folders.',
+    image: bannerTwo,
+  },
+  {
+    title: 'Now available in Sepedi!',
+    text: 'Support that speaks your language.',
+    image: bannerThree,
+  },
+  {
+    title: 'Grow great with us!',
+    text: 'Stay up to date with the latest information and access training opportunities. ',
+    image: bannerFour,
+  },
+];
 
 export const SignUp: React.FC = () => {
   const appDispatch = useAppDispatch();
@@ -171,9 +189,14 @@ export const SignUp: React.FC = () => {
         renderBorder={false}
         renderOverflow={false}
       >
-        <HeaderCard className={'mt-4'} slide={headerSlide} />
-        <SliderPagination totalItems={1} activeIndex={0} className={'p-4'} />
-        <form style={{ maxWidth: '442px' }} className={styles.formStyle}>
+        <HeaderSlider
+          className="h-100 mx-4 mt-16"
+          slides={headerSlide}
+          autoPlay
+          infiniteLoop
+          transitionTime={500}
+        />
+        <form className={styles.formStyle}>
           {preferId && (
             <FormInput<SignUpModel>
               label={'ID Number'}
@@ -221,19 +244,36 @@ export const SignUp: React.FC = () => {
           <PasswordInput<SignUpModel>
             label={'Password'}
             nameProp={'password'}
-            sufficIconColor={'uiMidDark'}
+            sufficIconColor="primary"
             value={signUpFormGetValues().password}
             register={signUpRegister}
             strengthMeterVisible={true}
             className="mb-9"
           />
 
+          {errorStrings?.length > 0 && (
+            <Alert
+              title={`There were ${errorStrings.length} errors with your submission`}
+              type={'error'}
+              list={errorStrings}
+              className={styles.marginTop}
+            />
+          )}
+
+          {(requestError?.length ?? 0) > 0 && (
+            <Alert
+              title={`There were errors with your submission`}
+              type={'error'}
+              list={requestError ? [requestError] : []}
+              className={`${styles.marginTop}${styles.marginBottom}`}
+            />
+          )}
           <Typography
             type={'body'}
             color={'uiMidDark'}
             weight={'bold'}
             text={'Terms and conditions'}
-            className={styles.marginBottom}
+            className="my-4"
           />
           <div
             className={classNames(styles.checkboxWrapper, styles.marginBottom)}
@@ -296,7 +336,6 @@ export const SignUp: React.FC = () => {
                   ? 'errorDark'
                   : 'textMid'
               }
-              weight="bold"
             />
             &nbsp;
             <Typography
@@ -317,22 +356,6 @@ export const SignUp: React.FC = () => {
               }
             />
           </div>
-          {errorStrings.length > 0 && (
-            <Alert
-              title={`There were ${errorStrings.length} errors with your submission`}
-              type={'error'}
-              list={errorStrings}
-              className={styles.marginTop}
-            />
-          )}
-          {(requestError?.length ?? 0) > 0 && (
-            <Alert
-              title={`There were errors with your submission`}
-              type={'error'}
-              list={requestError ? [requestError] : []}
-              className={styles.marginTop}
-            />
-          )}
 
           <Button
             id="gtm-register"
@@ -349,7 +372,7 @@ export const SignUp: React.FC = () => {
           <Divider
             title={'Already have a CHW Connect account?'}
             dividerType={'solid'}
-            className={'mt-2 mb-2'}
+            className={'mt-2 mb-2 bg-white'}
           />
 
           <Button
