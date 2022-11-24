@@ -171,18 +171,18 @@ namespace ECDLink.DataAccessLayer.Repositories
                 int percentageAttendance = 0;
                 Guid tenantId = TenantExecutionContext.Tenant.Id;
                 List<ClassroomGroup> groups = _context.ClassroomGroupss.Where(x => x.UserId == Guid.Parse(parentRecordId)).ToList();
-                int divider = groups.Count();
+                int divider = 0;
                 foreach (ClassroomGroup group in groups) {
 
                     List<ClassProgramme> programmes = _context.ClassProgrammes.Where(x => x.ClassroomGroupId.Equals(group.Id)).ToList();
 
                     foreach (ClassProgramme programme in programmes)
                     {
-                        divider+=programmes.Count();
+                        //divider+=programmes.Count();
                         List<Attendance> attendance = _context.Attendances
                             .Where(g => g.ClassroomProgrammeId == programme.Id)
                             .Where(y => y.ParentRecordId == parentRecordId)
-                            .Where(x => x.AttendanceDate >= startDate && x.AttendanceDate < endDate)
+                            .Where(x => x.AttendanceDate >= startDate && x.AttendanceDate <= endDate)
                             .Where(e => e.TenantId == null || e.TenantId.Equals(tenantId)).ToList();//
                         List<string> programmeIds = programmes.Select(y => y.Id.ToString()).ToList();
 
@@ -190,13 +190,20 @@ namespace ECDLink.DataAccessLayer.Repositories
 
                         if (attendance.Any())
                         {
+                            divider = attendance.Count();
+                            int absent = 0;
+                            int present = 0;
                             foreach (var att in attendance)
                             {
                                 if (att != null)
                                 {
                                     filteredAttendance.Add(att);
+                                    present += (att.Attended == true ? 1 : 0);
+                                    absent += (att.Attended == false ? 1 : 0);
                                 }
                             }
+                            //calculate attendance percentage
+                            percentageAttendance+=(present>0 ? (int)Math.Round((double)(present / (present + absent)*100)) : 0);
                         }
 
                     }
@@ -204,7 +211,7 @@ namespace ECDLink.DataAccessLayer.Repositories
 
                 if (percentageAttendance > 0)
                 {
-                    totalPercentageAttendance = (int)Math.Round((double)(percentageAttendance / divider) * 100);
+                    totalPercentageAttendance = (int)Math.Round((double)(percentageAttendance / (divider*100)) * 100);
                 }               
                 return totalPercentageAttendance;
             }
