@@ -344,11 +344,11 @@ string userId)
                             {
                                 practiType = "Principal/Owner";
                             }
-                            else if (practitioner.IsFundaAppAdmin.HasValue && practitioner.IsFundaAppAdmin != false)
+                            if (practitioner.IsFundaAppAdmin.HasValue && practitioner.IsFundaAppAdmin != false)
                             {
                                 practiType = "Funda App Admin";
                             }
-                            else
+                            if (practiType == "")//if neither of the above, its a default
                             {
                                 practiType = "Practitioner";
                             }
