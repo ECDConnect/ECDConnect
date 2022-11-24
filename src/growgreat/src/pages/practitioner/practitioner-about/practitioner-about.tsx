@@ -288,7 +288,6 @@ export const PractitionerAbout: React.FC = () => {
       copy.phoneNumber = practitionerForm.cellphone;
       copy.email = practitionerForm.email;
       copy.language = practitionerForm.language;
-      console.log({ copy });
       appDispatch(userActions.updateUser(copy));
       appDispatch(userThunkActions.updateUser(copy));
 
