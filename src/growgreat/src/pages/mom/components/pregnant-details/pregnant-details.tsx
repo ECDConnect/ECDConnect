@@ -45,7 +45,6 @@ export const PregnantDetails: React.FC<EditPregnantDetailsProps> = ({
 
   const { isValid } = useFormState({ control: momDetailsFormControl });
 
-  console.log(getPregnantDetailsFormValues());
   const [userId, setUserId] = useState('');
   const mothers = useSelector(motherSelectors.getMothers);
   const handleAddExistingUser = useMemo(() => {

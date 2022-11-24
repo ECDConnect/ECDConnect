@@ -16,6 +16,7 @@ import PractitionerAccount from '@practitioner-p/practitioner-account/practition
 import { PractitionerProfile } from '@practitioner-p/practitioner-profile/practitioner-profile';
 import ROUTES from '@/routes/routes';
 import ClassDashboard from '@/pages/classroom/class-dashboard/class-dashboard';
+import { EditPractitionerProfile } from '@/pages/practitioner/edit-practitioner-profile/edit-practitioner-profile';
 
 function PublicRoutes() {
   return (
@@ -88,6 +89,10 @@ function AuthRoutes() {
       <Route
         path={ROUTES.INFANT_REGISTER_FORM}
         component={InfantRegisterForm}
+      />
+      <Route
+        path={ROUTES.HEALTH_CAREWORKER_PROFILE_SETUP}
+        component={EditPractitionerProfile}
       />
     </Switch>
   );
