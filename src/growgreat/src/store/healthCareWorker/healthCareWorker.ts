@@ -1,7 +1,10 @@
-import { PractitionerDto } from '@ecdlink/core';
+import { HealthCareWorkerDto, PractitionerDto } from '@ecdlink/core';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
-import { getHealthCareWorkerByUserId } from './healthCareWorker.actions';
+import {
+  getHealthCareWorkerByUserId,
+  updateHealthCareWorkerById,
+} from './healthCareWorker.actions';
 import { HealthCareWorkerState } from './healthCareWorker.types';
 
 const initialState: HealthCareWorkerState = {
@@ -17,7 +20,10 @@ const healthCareWorkerSlice = createSlice({
       state.healthCareWorker = initialState.healthCareWorker;
       state.healthCareWorkers = initialState.healthCareWorkers;
     },
-    updateHealthCareWorker: (state, action: PayloadAction<PractitionerDto>) => {
+    updateHealthCareWorker: (
+      state,
+      action: PayloadAction<HealthCareWorkerDto>
+    ) => {
       if (state.healthCareWorker) {
         state.healthCareWorker = action.payload;
       }
@@ -25,6 +31,9 @@ const healthCareWorkerSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder.addCase(getHealthCareWorkerByUserId.fulfilled, (state, action) => {
+      state.healthCareWorker = action.payload;
+    });
+    builder.addCase(updateHealthCareWorkerById.fulfilled, (state, action) => {
       state.healthCareWorker = action.payload;
     });
     // builder.addCase(getAllPractitioners.fulfilled, (state, action) => {
