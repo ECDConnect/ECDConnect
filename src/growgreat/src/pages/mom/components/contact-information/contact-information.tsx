@@ -40,7 +40,7 @@ export const ContactInformation: React.FC<
   const [hasWhatsapp, setHasWhatsapp] = useState<any>(null);
 
   return (
-    <div className="h-screen px-5">
+    <div className="h-screen ">
       <div>
         <Typography
           type="h2"
