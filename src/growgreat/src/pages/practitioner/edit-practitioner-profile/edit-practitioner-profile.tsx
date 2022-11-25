@@ -70,7 +70,9 @@ export const EditPractitionerProfile: React.FC = () => {
 
     const copy = Object.assign({}, healthCareWorker);
     if (copy) {
-      copy.language = language! as string;
+      copy.languageId = language! as string;
+      copy.isRegistered = true;
+      // copy.user!.emailConfirmed! = true;
 
       appDispatch(healthCareWorkerActions.updateHealthCareWorker(copy));
       appDispatch(

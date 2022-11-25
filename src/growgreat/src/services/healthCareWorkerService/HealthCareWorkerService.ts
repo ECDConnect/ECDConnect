@@ -37,7 +37,14 @@ class HealthCareWorkerService {
               genderId
               phoneNumber
               profileImageUrl
+              emailConfirmed
+              phoneNumberConfirmed
+              twoFactorEnabled
+              isActive
+              lastSeen
           }
+          isRegistered
+          languageId
           language {
               locale
               description
@@ -189,11 +196,42 @@ class HealthCareWorkerService {
     const apiInstance = await api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-      mutation updateHealthCareWorker($input: input, $id: UUID) {
-        updateHealthCareWorker(id: $id, input: $input) {
-          id
-        }
+      mutation updateHealthCareWorker(
+        $userId: String,
+        $input: HealthCareWorkerModelInput
+    ) {
+      updateHealthCareWorker(
+          userId: $userId,
+          input: $input
+        ) {
+            id
+            language {
+                description
+            }
+            isRegistered
+            user {
+                firstName
+                surname
+                email
+                phoneNumber
+                emailConfirmed
+            }
+            teamLead {
+                clinic {
+                    siteAddress {
+                        name
+                        addressLine1
+                        addressLine2
+                        addressLine3
+                        postalCode
+                        province {
+                            description
+                        }
+                    }
+                }
+            }
       }
+    }
       `,
       variables: {
         id,
