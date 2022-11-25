@@ -12,7 +12,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public TeamLead TeamLead { get; set; }
         public Guid? TeamLeadId { get; set; }
 
-        public Guid? LangaugeId { get; set; }
+        public Guid? LanguageId { get; set; }
 
         public bool IsRegistered { get; set; }
     }
