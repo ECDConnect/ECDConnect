@@ -34,7 +34,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 UpdatedDate = DateTime.Now,
                 UpdatedBy = applicationUserId,
                 UserId = input.UserId,
-                LanguageId = input.LangaugeId,
+                LanguageId = input.LanguageId,
                 TeamLeadId = input.TeamLeadId,
             };
 
@@ -59,9 +59,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 healthCareWorkerToUpdate.IsRegistered = input.IsRegistered;
             }
 
-            if (input.LangaugeId != null)
+            if (input.LanguageId != null)
             {
-                healthCareWorkerToUpdate.LanguageId = input.LangaugeId;
+                healthCareWorkerToUpdate.LanguageId = input.LanguageId;
             }
 
             if (input.TeamLeadId != null)
