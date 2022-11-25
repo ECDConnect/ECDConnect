@@ -63,21 +63,19 @@ export const PregnantDetails: React.FC<EditPregnantDetailsProps> = ({
   }, [isAlreadyClient, setPregnantDetailsFormValue, handleAddExistingUser]);
 
   return (
-    <div className="h-screen h-full w-screen w-full p-4">
-      <>
-        <Typography
-          type="h2"
-          color={'textDark'}
-          text={'Pregnant client'}
-          className="z-50 pt-6"
-        />
-        <Typography
-          type="h4"
-          color={'textMid'}
-          text={'Details'}
-          className="z-50 w-11/12 pt-2"
-        />
-      </>
+    <>
+      <Typography
+        type="h2"
+        color={'textDark'}
+        text={'Pregnant client'}
+        className="z-50 pt-6"
+      />
+      <Typography
+        type="h4"
+        color={'textMid'}
+        text={'Details'}
+        className="z-50 w-11/12 pt-2"
+      />
       <div className="flex w-11/12 justify-center text-red-400">
         <Divider dividerType="dashed" />
       </div>
@@ -158,25 +156,23 @@ export const PregnantDetails: React.FC<EditPregnantDetailsProps> = ({
           </div>
         )}
       </div>
-      <div className="flex h-full w-full align-bottom">
-        <div className={'mt-10 flex w-11/12 justify-center align-bottom'}>
-          <Button
-            type={'filled'}
-            color={'primary'}
-            className={'absolute bottom-10 mt-2 ml-6 max-h-10 w-11/12'}
-            textColor={'white'}
-            text={`Next`}
-            icon={'ArrowCircleRightIcon'}
-            iconPosition={'start'}
-            onClick={() => {
-              onSubmit(getPregnantDetailsFormValues());
-              setAddress(handleAddExistingUser?.siteAddressId);
-              setContactInformation(handleAddExistingUser?.phoneNumber);
-            }}
-            disabled={!isValid}
-          />
-        </div>
+      <div className="flex h-full items-end">
+        <Button
+          type={'filled'}
+          color={'primary'}
+          className={'mt-4 w-full'}
+          textColor={'white'}
+          text={`Next`}
+          icon={'ArrowCircleRightIcon'}
+          iconPosition={'start'}
+          onClick={() => {
+            onSubmit(getPregnantDetailsFormValues());
+            setAddress(handleAddExistingUser?.siteAddressId);
+            setContactInformation(handleAddExistingUser?.phoneNumber);
+          }}
+          disabled={!isValid}
+        />
       </div>
-    </div>
+    </>
   );
 };
