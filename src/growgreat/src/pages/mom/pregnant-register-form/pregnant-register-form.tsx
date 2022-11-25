@@ -22,6 +22,7 @@ import momImage from '@/assets/happyMom.svg';
 import { newGuid } from '@/utils/common/uuid.utils';
 import { useStaticData } from '@/hooks/useStaticData';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { useWindowSize } from '@reach/window-size';
 
 import { PregnantAddress } from '@/pages/mom/components/pregnant-address/pregnant-address';
 import { ConsentAgreement } from '@/pages/mom/components/consent-agreement/consent-agreement';
@@ -40,6 +41,8 @@ import { caregiverActions } from '@/store/caregiver';
 import { staticDataSelectors } from '@/store/static-data';
 import { motherActions, motherThunkActions } from '@/store/mother';
 import { documentActions, documentThunkActions } from '@/store/document';
+
+const BANNER_HEIGHT = 64;
 
 export const PregnantRegisterForm: React.FC = () => {
   const [label, setLabel] = useState('');
@@ -64,6 +67,8 @@ export const PregnantRegisterForm: React.FC = () => {
   const relations = useSelector(staticDataSelectors.getRelations);
 
   const dialog = useDialog();
+
+  const { height } = useWindowSize();
 
   const handleExistingUser = () => {
     if (isAlreadyClient) {
@@ -283,7 +288,12 @@ export const PregnantRegisterForm: React.FC = () => {
         onBack={() => history.goBack()}
         title={'Pregnant mom registration'}
       />
-      {steps(activeStep as PregnantRegisterSteps)}
+      <div
+        className={'flex flex-col overflow-auto px-4 pb-5'}
+        style={{ height: height - BANNER_HEIGHT }}
+      >
+        {steps(activeStep as PregnantRegisterSteps)}
+      </div>
     </div>
   );
 };

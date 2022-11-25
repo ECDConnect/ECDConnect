@@ -45,7 +45,7 @@ export const PregnantAddress: React.FC<PregnantAddressProps> = ({
   //   };
 
   return (
-    <div className="h-screen ">
+    <>
       <Typography
         type="h2"
         color={'textDark'}
@@ -78,7 +78,7 @@ export const PregnantAddress: React.FC<PregnantAddressProps> = ({
           />
         </div>
       </div>
-      <div className={'mt-4 px-4'}>
+      <div className={'mt-4'}>
         <Alert
           type={'info'}
           // title="Each child is unique!"
@@ -96,23 +96,21 @@ export const PregnantAddress: React.FC<PregnantAddressProps> = ({
           textInputType="textarea"
         />
       )}
-      <div className="flex h-full w-full align-bottom">
-        <div className={'mt-10 ml-2 flex w-11/12 justify-center align-bottom'}>
-          <Button
-            type={'filled'}
-            color={'primary'}
-            className={'absolute bottom-10 mt-2 ml-6 max-h-10 w-11/12'}
-            textColor={'white'}
-            text={`Next`}
-            icon={'ArrowCircleRightIcon'}
-            iconPosition={'start'}
-            onClick={() => {
-              onSubmit(getPregnantAddressFormValues());
-            }}
-            disabled={!isValid}
-          />
-        </div>
+      <div className="flex h-full items-end">
+        <Button
+          type={'filled'}
+          color={'primary'}
+          className={'mt-4 w-full'}
+          textColor={'white'}
+          text={`Next`}
+          icon={'ArrowCircleRightIcon'}
+          iconPosition={'start'}
+          onClick={() => {
+            onSubmit(getPregnantAddressFormValues());
+          }}
+          disabled={!isValid}
+        />
       </div>
-    </div>
+    </>
   );
 };
