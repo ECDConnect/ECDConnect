@@ -16,4 +16,11 @@ export interface HealthCareWorkerDto extends EntityBase {
   documents?: DocumentDto[];
   emergencyContactPerson?: string;
   emergencyContactNumber?: string;
+  teamLead?: {
+    jobTitle?: string;
+    clinic?: {
+      name?: string;
+      phoneNumber?: string;
+    };
+  };
 }

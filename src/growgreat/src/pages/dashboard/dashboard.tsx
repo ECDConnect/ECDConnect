@@ -30,6 +30,7 @@ import * as styles from '@/pages/dashboard/dashboard.styles';
 import ROUTES from '@routes/routes';
 import { getInfants } from '@/store/infant/infant.selectors';
 import { version } from '@/../package.json';
+import { healthCareWorkerSelectors } from '@/store/healthCareWorker';
 
 export enum NavigationTypes {
   Home = 'Home',
@@ -55,6 +56,9 @@ export const Dashboard: React.FC = () => {
   const dashboardNotification = useSelector(
     notificationsSelectors.getDashboardNotification
   );
+  const healthCareWorker = useSelector(
+    healthCareWorkerSelectors?.getHealthCareWorker
+  );
 
   const { userProfilePicture } = useDocuments();
   const mothers = useSelector(motherSelectors.getMothers);
@@ -72,6 +76,15 @@ export const Dashboard: React.FC = () => {
       showCompleteProfileBlockingDialog();
     }
   }
+
+  useEffect(() => {
+    if (healthCareWorker) {
+      if (healthCareWorker?.isRegistered !== true) {
+        history?.push(ROUTES?.HEALTH_CAREWORKER_PROFILE_SETUP);
+        return;
+      }
+    }
+  }, [healthCareWorker]);
 
   function onNavigation(navItem: any) {
     history.push(navItem.href, navItem.params);

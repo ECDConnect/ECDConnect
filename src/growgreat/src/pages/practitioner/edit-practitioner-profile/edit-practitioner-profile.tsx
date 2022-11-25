@@ -77,7 +77,7 @@ export const EditPractitionerProfile: React.FC = () => {
       appDispatch(healthCareWorkerActions.updateHealthCareWorker(copy));
       appDispatch(
         healthCareWorkerThunkActions.updateHealthCareWorkerById({
-          id: user?.id!,
+          userId: user?.id!,
           input: copy,
         })
       );

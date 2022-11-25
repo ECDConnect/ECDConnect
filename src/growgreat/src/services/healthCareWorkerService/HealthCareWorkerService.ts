@@ -43,12 +43,25 @@ class HealthCareWorkerService {
               isActive
               lastSeen
           }
+          teamLead {
+            jobTitle
+              clinic {
+                name
+                phoneNumber
+                  siteAddress {
+                      name
+                      addressLine1
+                      addressLine2
+                      addressLine3
+                      postalCode
+                      province {
+                          description
+                      }
+                  }
+              }
+          }
           isRegistered
           languageId
-          language {
-              locale
-              description
-          }
         }
       }
       `,
@@ -190,7 +203,7 @@ class HealthCareWorkerService {
   // }
 
   async UpdateHealthCareWorker(
-    id: string,
+    userId: string,
     input: MutationUpdateHealthCareWorkerArgs
   ): Promise<HealthCareWorkerDto> {
     const apiInstance = await api(Config.graphQlApi, this._accessToken);
@@ -217,7 +230,10 @@ class HealthCareWorkerService {
                 emailConfirmed
             }
             teamLead {
+              jobTitle
                 clinic {
+                  name
+                  phoneNumber
                     siteAddress {
                         name
                         addressLine1
@@ -234,7 +250,7 @@ class HealthCareWorkerService {
     }
       `,
       variables: {
-        id,
+        userId,
         input,
       },
     });
