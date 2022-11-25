@@ -191,7 +191,7 @@ export const PractitionerProfile: React.FC = () => {
               return (
                 <ActionModal
                   className={'mx-4'}
-                  title={'Are you sure want to log out'}
+                  title={'Are you sure you want to log out?'}
                   importantText={''}
                   icon={'ExclamationCircleIcon'}
                   iconColor={'alertDark'}
