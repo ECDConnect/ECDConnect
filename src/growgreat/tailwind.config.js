@@ -1,7 +1,13 @@
 const plugin = require('tailwindcss/plugin');
 
 module.exports = {
-  // purge: ['./src/**/*.{js,jsx,ts,tsx}', './public/index.html'],
+  purge: [
+    './src/*.{js,jsx}',
+    './src/*.{ts,tsx}',
+    './src/**/*.{js,jsx}',
+    './src/**/*.{ts,tsx}',
+    './{public,build}/index.html',
+  ],
   important: true,
   mode: 'aot',
   darkMode: false, // or 'media' or 'class'
@@ -28,15 +34,15 @@ module.exports = {
         18: '18px',
         22: '22px',
         30: '30px',
+        54:  '54px',
+        102: '102px',
         112: '112px',
         116: '116px',
         120: '120px',
         177: '177px',
         180: '180px',
-        360: '360px',
         244: '244px',
-        54: '54px',
-        102: '102px',
+        360: '360px',
       },
       fontFamily: {
         h1: 'var(--h1-font)',

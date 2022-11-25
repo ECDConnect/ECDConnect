@@ -1,5 +1,5 @@
-import { ComponentBaseProps } from '@/../../../packages/ui/lib/models/ComponentBaseProps';
-import { GoogleMap as Map } from '@capacitor/google-maps';
+import { ComponentBaseProps } from '@ecdlink/ui';
+import { GoogleMap } from '@capacitor/google-maps';
 import {
   useRef,
   useState,
@@ -7,55 +7,48 @@ import {
   useLayoutEffect,
   MutableRefObject,
 } from 'react';
+import { MapCoordinates } from '@/components/google-map/google-map.types';
+// import { GoogleMapInterface } from "@capacitor/google-maps/dist/typings/map";
 
-type MapCoordinates = {
-  longitude: number;
-  latitude: number;
-};
-
-const apiKey = 'AIzaSyAmTVxElyncQJh2hJ1ATFS0K_cB6d3VoSk';
-
-async function createMap(
+async function useGoogleMap(
   ref: MutableRefObject<HTMLElement> | any,
-  { longitude, latitude }: MapCoordinates
-): Promise<Map | null> {
-  let map: Map;
-  // let infoWindow: null; // TODO: implement information window
+  { latitude, longitude }: MapCoordinates
+): Promise<GoogleMap | void> {
+  let map: GoogleMap;
 
-  if (Boolean(ref.current)) {
-    try {
-      map = await Map.create({
-        id: 'google-map',
-        element: ref.current,
-        apiKey,
-        config: {
-          center: {
-            lat: latitude,
-            lng: longitude,
-          },
-          zoom: 15,
-          disableDefaultUI: true,
-        },
-      });
-
-      await map.addMarker({
-        coordinate: {
+  async function initMaps() {
+    map = await GoogleMap.create({
+      id: 'google-map',
+      element: ref.current,
+      apiKey: process.env.REACT_APP_MAP_API_KEY as string,
+      config: {
+        center: {
           lat: latitude,
           lng: longitude,
         },
-        draggable: true,
-      });
+        zoom: 15,
+        disableDefaultUI: true,
+      },
+    });
 
-      await map.enableCurrentLocation(true);
-      await map.enableClustering();
+    await map.addMarker({
+      coordinate: {
+        lat: latitude,
+        lng: longitude,
+      },
+      draggable: true,
+    });
 
-      return Promise.resolve(map);
-    } catch (error: any) {
-      console.error(error);
-      throw new Error('Unable to load map', error);
-    }
+    await map.enableCurrentLocation(true);
+    await map.enableClustering();
   }
-  return null;
+
+  // let infoWindow: null; // TODO: implement information window
+  useLayoutEffect(() => {
+    console.log('ref?.current', ref);
+
+    initMaps();
+  });
 }
 
 function useGeoLocation() {
@@ -85,30 +78,24 @@ function useGeoLocation() {
   };
 }
 
-function GoogleMap(
+function CustomGoogleMap(
   props: ComponentBaseProps & { children?: React.ReactNode | undefined }
 ) {
-  const mapRef = useRef<MutableRefObject<HTMLElement> | any>();
-  const { coords, setLatitude, setLongitude } = useGeoLocation();
-
-  useEffect(() => {
-    if (coords?.longitude) {
-      setLongitude(coords?.longitude);
-    }
-
-    if (coords?.latitude) {
-      setLatitude(coords?.latitude);
-    }
-  });
+  const mapRef = useRef();
+  const { coords } = useGeoLocation();
+  const map = useGoogleMap(mapRef, coords);
 
   useLayoutEffect(() => {
-    createMap(mapRef, coords);
-  });
+    console.log('map', mapRef);
+    // if (mapRef?.current) {
+    //   map(mapRef, coords);
+    // }
+  }, [map]);
 
   return (
     <>
       <div className="component-wrapper">
-        <div
+        <capacitor-google-map
           ref={mapRef}
           style={{
             display: 'inline-block',
@@ -117,9 +104,9 @@ function GoogleMap(
           }}
         />
       </div>
-      {props?.children}
+      {props.children}
     </>
   );
 }
 
-export default GoogleMap;
+export default CustomGoogleMap;

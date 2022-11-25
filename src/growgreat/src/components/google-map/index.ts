@@ -1,1 +1,1 @@
-export { default as GoogleMap } from '@/components/google-map/google-map';
+export { default as CustomGoogleMap } from '@/components/google-map/google-map';

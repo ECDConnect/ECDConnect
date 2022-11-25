@@ -19,7 +19,7 @@ import {
   pregnantAddressModelSchema,
   PregnantAddressModel,
 } from '@/schemas/pregnant/pregnant-address';
-import { GoogleMap } from '@/components/google-map';
+import { CustomGoogleMap } from '@/components/google-map';
 
 export const PregnantAddress: React.FC<PregnantAddressProps> = ({
   onSubmit,
@@ -47,7 +47,7 @@ export const PregnantAddress: React.FC<PregnantAddressProps> = ({
     <div className="h-screen">
       {!!useMap && (
         <>
-          <GoogleMap />
+          <CustomGoogleMap />
           <div className="flex-1 px-5">
             <Typography
               type="h2"

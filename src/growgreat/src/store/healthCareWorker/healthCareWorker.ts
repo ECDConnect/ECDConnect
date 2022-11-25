@@ -1,3 +1,4 @@
+// eslint-disable-next-line
 import { HealthCareWorkerDto, PractitionerDto } from '@ecdlink/core';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
