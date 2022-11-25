@@ -91,11 +91,95 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
       <div className="flex w-11/12 justify-center text-red-400">
         <Divider dividerType="dashed" />
       </div>
+      <div className="mb-2 w-full">
+        {multipleChildrenArray?.length! > 1 ? (
+          multipleChildrenArray?.map((child, index) => {
+            return (
+              <div key={index}>
+                <Typography
+                  key={index + 2}
+                  type="h3"
+                  color={'textDark'}
+                  text={`Relationship to ${child?.firstName}`}
+                  className="bt-1 z-50 w-11/12 pt-2"
+                />
+                <Dropdown
+                  key={index + 3}
+                  placeholder={'Please choose the client:'}
+                  fillType="clear"
+                  selectedValue={
+                    getMothereDetailsFormValues('relationshipId') ||
+                    multipleChildrenArray[index].relationshipId
+                  }
+                  list={
+                    (relationshipTypes &&
+                      relationshipTypes
+                        .filter((x) => x.label?.length > 0)
+                        .map((item) => {
+                          return {
+                            label: item.label,
+                            value: item.value,
+                          };
+                        })) ||
+                    []
+                  }
+                  onChange={(value) => {
+                    relationshipChildrenArray
+                      ? setRelationshipChildrenArray([
+                          {
+                            ...multipleChildrenArray[index],
+                            relationshipId: value,
+                          },
+                          ...relationshipChildrenArray!,
+                        ])
+                      : setRelationshipChildrenArray([
+                          {
+                            ...multipleChildrenArray[index],
+                            relationshipId: value,
+                          },
+                          ...multipleChildrenArray!,
+                        ]);
+                  }}
+                />
+              </div>
+            );
+          })
+        ) : (
+          <>
+            <Typography
+              type="h3"
+              color={'textDark'}
+              text={`Relationship to ${infantDetails?.firstName}`}
+              className="bt-1 z-50 w-11/12 pt-2"
+            />
+            <Dropdown
+              placeholder={'Please choose the client:'}
+              fillType="clear"
+              selectedValue={getMothereDetailsFormValues('relationshipId')}
+              list={
+                (relationshipTypes &&
+                  relationshipTypes
+                    .filter((x) => x.label?.length > 0)
+                    .map((item) => {
+                      return {
+                        label: item.label,
+                        value: item.value,
+                      };
+                    })) ||
+                []
+              }
+              onChange={(value) => {
+                setMothereDetailsFormValue('relationshipId', value);
+              }}
+            />
+          </>
+        )}
+      </div>
       <div>
         <Typography
           type="h3"
           color={'textDark'}
-          text={'Is this client already on CHW Connect?'}
+          text={'Is the caregiver already on CHW Connect?'}
           className="z-50 w-11/12 pt-2"
         />
         <div className="mt-2">
@@ -109,90 +193,7 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
             className={'w-full'}
           />
         </div>
-        <div className="mt-4 w-full">
-          {multipleChildrenArray?.length! > 1 ? (
-            multipleChildrenArray?.map((child, index) => {
-              return (
-                <div key={index}>
-                  <Typography
-                    key={index + 2}
-                    type="h3"
-                    color={'textDark'}
-                    text={`Relationship to ${child?.firstName}`}
-                    className="bt-1 z-50 w-11/12 pt-2"
-                  />
-                  <Dropdown
-                    key={index + 3}
-                    placeholder={'Please choose the client:'}
-                    fillType="clear"
-                    selectedValue={
-                      getMothereDetailsFormValues('relationshipId') ||
-                      multipleChildrenArray[index].relationshipId
-                    }
-                    list={
-                      (relationshipTypes &&
-                        relationshipTypes
-                          .filter((x) => x.label?.length > 0)
-                          .map((item) => {
-                            return {
-                              label: item.label,
-                              value: item.value,
-                            };
-                          })) ||
-                      []
-                    }
-                    onChange={(value) => {
-                      relationshipChildrenArray
-                        ? setRelationshipChildrenArray([
-                            {
-                              ...multipleChildrenArray[index],
-                              relationshipId: value,
-                            },
-                            ...relationshipChildrenArray!,
-                          ])
-                        : setRelationshipChildrenArray([
-                            {
-                              ...multipleChildrenArray[index],
-                              relationshipId: value,
-                            },
-                            ...multipleChildrenArray!,
-                          ]);
-                    }}
-                  />
-                </div>
-              );
-            })
-          ) : (
-            <>
-              <Typography
-                type="h3"
-                color={'textDark'}
-                text={`Relationship to ${infantDetails?.firstName}`}
-                className="bt-1 z-50 w-11/12 pt-2"
-              />
-              <Dropdown
-                placeholder={'Please choose the client:'}
-                fillType="clear"
-                selectedValue={getMothereDetailsFormValues('relationshipId')}
-                list={
-                  (relationshipTypes &&
-                    relationshipTypes
-                      .filter((x) => x.label?.length > 0)
-                      .map((item) => {
-                        return {
-                          label: item.label,
-                          value: item.value,
-                        };
-                      })) ||
-                  []
-                }
-                onChange={(value) => {
-                  setMothereDetailsFormValue('relationshipId', value);
-                }}
-              />
-            </>
-          )}
-        </div>
+
         {isAlreadyClient === false && (
           <>
             <FormInput<MotherDetailsModel>
