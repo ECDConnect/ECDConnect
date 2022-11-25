@@ -58,6 +58,7 @@ export const PractitionerAbout: React.FC = () => {
   const healthCareWorker = useSelector(
     healthCareWorkerSelectors?.getHealthCareWorker
   );
+  // eslint-disable-next-line
   const languages = useSelector(staticDataSelectors.getLanguages);
 
   const selectedLanguage = languages?.find(

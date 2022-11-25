@@ -41,7 +41,7 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
   };
 
   return (
-    <div className="h-full h-screen px-4">
+    <>
       <Typography
         type="h2"
         color={'textDark'}
@@ -106,7 +106,7 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
         />
       </div>
 
-      <div className="mt-10 flex h-full w-full justify-center align-bottom">
+      <div className="flex h-full items-end">
         <Button
           text={`Next`}
           type={'filled'}
@@ -115,7 +115,7 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
           textColor={'white'}
           iconPosition={'start'}
           icon={'ArrowCircleRightIcon'}
-          className={'absolute bottom-10 m-auto mt-2 max-h-10 w-11/12'}
+          className={'mt-4 w-full'}
           onClick={() => onSubmit(getConsentFormValues())}
         />
       </div>
@@ -125,6 +125,6 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
         consentEnumType={contentConsentTypeEnum}
         onClose={() => setPresentArticle(false)}
       />
-    </div>
+    </>
   );
 };
