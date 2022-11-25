@@ -20,8 +20,13 @@
     "lint:watch:portal": "esw -w --clear ./src/admin-portal/src --ext .js,jsx,.ts,.tsx",
     "prepare": "husky install",
     "test:fe": "cd ./src/lxp && yarn test",
+    "test:portal": "cd ./src/admin-portal && yarn test",
+    "test:fe-gg": "cd ./src/growgreat && yarn test",
     "codegen": "graphql-codegen --config codegen.yml",
-    "watch_packages": "npm-watch build:ui"
+    "packages:watch": "npm-watch build:ui",
+    "purge:portal": "cd ./src/admin-portal && npx rimraf ./{yarn.lock,package-lock.json,node_modules,build}",
+    "purge:fe": "cd ./src/lxp && npx rimraf ./{yarn.lock,package-lock.json,node_modules,build}",
+    "purge:fe-gg": "cd ./src/growgreat && npx rimraf ./{yarn.lock,package-lock.json,node_modules,build}"
   },
   "watch": {
     "build:ui": {
@@ -36,6 +41,7 @@
     "@apollo/client": "^3.3.20",
     "@capacitor/camera": "^1.2.1",
     "@capacitor/core": "3.3.1",
+    "@capacitor/geolocation": "^4.1.0",
     "@capacitor/google-maps": "^4.3.1",
     "@capacitor/storage": "^1.0.3",
     "@ckeditor/ckeditor5-build-classic": "^32.0.0",
