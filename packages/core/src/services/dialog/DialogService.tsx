@@ -5,6 +5,7 @@ import { DialogModal } from './dialog';
 export interface DialogModalOptions {
   render: (onSubmit: () => void, onCancel: () => void) => React.ReactNode;
   position?: DialogPosition;
+  color?: string;
   blocking?: boolean;
 }
 const DialogServiceContext = React.createContext<
