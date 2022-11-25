@@ -65,7 +65,7 @@ export const PractitionerAbout: React.FC = () => {
   );
   const pictureStorageKey = LocalStorageKeys.practitionerProfilePicture;
   const [listItems, setListItems] = useState<ActionListDataItem[]>([]);
-  console.log({ selectedLanguage });
+
   const getDefaultFormvalues = () => {
     if (user) {
       const tempPractitioner: PractitionerAboutModel = {
