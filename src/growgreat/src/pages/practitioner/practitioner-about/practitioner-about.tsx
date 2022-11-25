@@ -54,6 +54,7 @@ export const PractitionerAbout: React.FC = () => {
     useState(false);
 
   const user = useSelector(userSelectors.getUser);
+  // eslint-disable-next-line
   const languages = useSelector(staticDataSelectors.getLanguages);
   // const selectedLanguage = languages?.find(
   //   (item) => item?.description === user?.language

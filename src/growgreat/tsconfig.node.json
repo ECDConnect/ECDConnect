@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "baseUrl": "./src",
+    "moduleResolution": "node",
+    "pretty": true,
+    "composite": true,
+    "target": "ESNext",
+    // "jsx": "react-jsxdev",
+    "resolveJsonModule": true,
+    "experimentalDecorators": true,
+    "skipLibCheck": true,
+    "preserveConstEnums": true,
+    "paths": {
+      "@/*"   : ["./*"],
+      "@@/*"  : ["../*"],
+      "@@@@/*": ["../../*"]
+    }
+  },
+  "ts-node": {
+    "swc": true,
+    "esm": true,
+    "transpileOnly": true,
+    "experimentalResolver": true,
+    "experimentalReplAwait": true
+  },
+}
