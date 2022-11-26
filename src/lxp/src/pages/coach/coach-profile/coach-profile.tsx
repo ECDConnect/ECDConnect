@@ -98,7 +98,7 @@ export const CoachProfile: React.FC = () => {
               return (
                 <ActionModal
                   className={'mx-4'}
-                  title={'Are you sure want to log out'}
+                  title={'Are you sure you want to log out?'}
                   importantText={''}
                   icon={'ExclamationCircleIcon'}
                   iconColor={'alertDark'}
@@ -153,7 +153,7 @@ export const CoachProfile: React.FC = () => {
           <StackedList
             listItems={getStackedMenuList()}
             type={'MenuList'}
-            className={'-mt-0.5 px-4 flex flex-col gap-1'}
+            className={'-mt-0.5 flex flex-col gap-1 px-4'}
           ></StackedList>
         </div>
       ),
