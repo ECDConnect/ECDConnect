@@ -109,7 +109,7 @@ export const PregnantMaternalCaseRecord: React.FC<
   const actualGestationWeek = 40 - diffDates;
 
   return (
-    <div className="h-screen h-full w-screen w-full px-4">
+    <>
       <Typography
         type="h2"
         color={'textDark'}
@@ -170,7 +170,7 @@ export const PregnantMaternalCaseRecord: React.FC<
           type="h4"
           color={'textMid'}
           text={`Does ${details?.name} have her Maternal Case Record?`}
-          className="z-50 w-11/12 pt-2"
+          className="z-50 mb-2 w-11/12 pt-2"
         />
         <ButtonGroup<boolean>
           options={yesNoOptions}
@@ -189,7 +189,7 @@ export const PregnantMaternalCaseRecord: React.FC<
             type="h2"
             color={'textDark'}
             text={'Please confirm:'}
-            className="z-50 pt-6"
+            className="pt-6"
           />
           <div className="flex w-11/12 items-center justify-between">
             <div className="flex items-center gap-1">
@@ -257,29 +257,27 @@ export const PregnantMaternalCaseRecord: React.FC<
           </div>
         </>
       )}
-      <div className="flex h-full w-full align-bottom">
-        <div className={'mt-10 ml-2 flex w-11/12 justify-center align-bottom'}>
-          <Button
-            type={'filled'}
-            color={'primary'}
-            textColor={'white'}
-            text={`Save`}
-            icon={'SaveIcon'}
-            iconPosition={'start'}
-            className={'absolute bottom-10 mt-2 max-h-10 w-11/12'}
-            onClick={() => {
-              onSubmit(getPregnantMaternalCaseRecordFormValues());
-            }}
-            disabled={
-              !isValid ||
-              (!hasMaternalCaseRecord &&
-                !getPregnantMaternalCaseRecordFormValues()
-                  .notHaveAMaternalRecord) ||
-              (hasMaternalCaseRecord &&
-                !getPregnantMaternalCaseRecordFormValues().maternalCaseRecord)
-            }
-          />
-        </div>
+      <div className="flex h-full items-end">
+        <Button
+          type={'filled'}
+          color={'primary'}
+          textColor={'white'}
+          text={`Save`}
+          icon={'SaveIcon'}
+          iconPosition={'start'}
+          className={'mt-4 w-full'}
+          onClick={() => {
+            onSubmit(getPregnantMaternalCaseRecordFormValues());
+          }}
+          disabled={
+            !isValid ||
+            (!hasMaternalCaseRecord &&
+              !getPregnantMaternalCaseRecordFormValues()
+                .notHaveAMaternalRecord) ||
+            (hasMaternalCaseRecord &&
+              !getPregnantMaternalCaseRecordFormValues().maternalCaseRecord)
+          }
+        />
       </div>
       <Dialog
         visible={photoActionBarVisible}
@@ -357,6 +355,6 @@ export const PregnantMaternalCaseRecord: React.FC<
           </div>
         </div>
       </Dialog>
-    </div>
+    </>
   );
 };
