@@ -921,7 +921,7 @@ export type ClassroomMetricReport = {
 export type Clinic = {
   __typename?: 'Clinic';
   emergancyContactNumber?: Maybe<Scalars['String']>;
-  emergancyContactPerson?: Maybe<Scalars['String']>;
+  emergencyContactPerson?: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
@@ -935,8 +935,8 @@ export type Clinic = {
 
 export type ClinicFilterInput = {
   and?: InputMaybe<Array<ClinicFilterInput>>;
-  emergancyContactNumber?: InputMaybe<StringOperationFilterInput>;
-  emergancyContactPerson?: InputMaybe<StringOperationFilterInput>;
+  emergencyContactNumber?: InputMaybe<StringOperationFilterInput>;
+  emergencyContactPerson?: InputMaybe<StringOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
@@ -950,8 +950,8 @@ export type ClinicFilterInput = {
 };
 
 export type ClinicInput = {
-  EmergancyContactNumber?: InputMaybe<Scalars['String']>;
-  EmergancyContactPerson?: InputMaybe<Scalars['String']>;
+  EmergencyContactNumber?: InputMaybe<Scalars['String']>;
+  EmergencyContactPerson?: InputMaybe<Scalars['String']>;
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
   Name?: InputMaybe<Scalars['String']>;

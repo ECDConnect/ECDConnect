@@ -30,9 +30,9 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public virtual SiteAddress SiteAddress { get; set; }
         public Guid? SiteAddressId { get; set; }
 
-        public string EmergancyContactPerson { get; set; }
+        public string EmergencyContactPerson { get; set; }
 
-        public string EmergancyContactNumber { get; set; }
+        public string EmergencyContactNumber { get; set; }
     }
 
     public interface ClinicJoin<TKey>
