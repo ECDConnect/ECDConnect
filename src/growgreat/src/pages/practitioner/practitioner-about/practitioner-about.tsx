@@ -1,4 +1,9 @@
-import { LocalStorageKeys, UserDto, useTheme } from '@ecdlink/core';
+import {
+  LanguageDto,
+  LocalStorageKeys,
+  UserDto,
+  useTheme,
+} from '@ecdlink/core';
 import { FileTypeEnum } from '@ecdlink/graphql';
 import {
   ActionListDataItem,
@@ -11,6 +16,7 @@ import {
   renderIcon,
   StackedList,
   Typography,
+  Dropdown,
 } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
@@ -105,34 +111,6 @@ export const PractitionerAbout: React.FC = () => {
 
   const setNewStackListItems = (currentUser: UserDto) => {
     const list: ActionListDataItem[] = [
-      // {
-      //   title: 'First Name',
-      //   subTitle: currentUser?.firstName,
-      //   actionName: 'Edit',
-      //   actionIcon: 'PencilIcon',
-      //   switchTextStyles: true,
-      //   onActionClick: () => {
-      //     editField({
-      //       label: 'First Name',
-      //       formFieldName: 'name',
-      //       value: practitionerAboutFormGetValues().name,
-      //     });
-      //   },
-      // },
-      // {
-      //   title: 'Surname',
-      //   subTitle: currentUser?.surname,
-      //   actionName: 'Edit',
-      //   actionIcon: 'PencilIcon',
-      //   switchTextStyles: true,
-      //   onActionClick: () => {
-      //     editField({
-      //       label: 'Surname',
-      //       formFieldName: 'surname',
-      //       value: practitionerAboutFormGetValues().surname,
-      //     });
-      //   },
-      // },
       {
         title: 'Cellphone Number',
         subTitle: currentUser?.phoneNumber || 'Add an Cellphone Number',
@@ -150,11 +128,11 @@ export const PractitionerAbout: React.FC = () => {
       },
       {
         title: 'Email Address',
-        subTitle: healthCareWorker?.user?.email || 'Add an Email Address',
+        subTitle: currentUser?.email || 'Add an Email Address',
         switchTextStyles: true,
-        actionName: healthCareWorker?.user?.email ? 'Edit' : 'Add',
-        actionIcon: healthCareWorker?.user?.email ? 'PencilIcon' : 'PlusIcon',
-        buttonType: healthCareWorker?.user?.email ? 'outlined' : 'filled',
+        actionName: currentUser?.email ? 'Edit' : 'Add',
+        actionIcon: currentUser?.email ? 'PencilIcon' : 'PlusIcon',
+        buttonType: currentUser?.email ? 'outlined' : 'filled',
         onActionClick: () => {
           editField({
             label: 'Email Address',
@@ -260,7 +238,8 @@ export const PractitionerAbout: React.FC = () => {
   };
 
   const saveLanguage = (data: any) => {
-    practitionerAboutFormSetValue('language', data?.description);
+    console.log({ data });
+    practitionerAboutFormSetValue('language', data?.id);
   };
 
   const picturePromtOnAction = async (imageBaseString: string) => {
@@ -434,10 +413,32 @@ export const PractitionerAbout: React.FC = () => {
             disabled={false}
             className={!displayError ? 'mb-6' : ''}
           /> */}
-          <LanguageSelector
+          <Dropdown
+            placeholder={'Choose province'}
+            list={
+              (languages &&
+                languages.map((language: LanguageDto) => ({
+                  label: language.description,
+                  value: language.id!,
+                }))) ||
+              []
+            }
+            fillType="clear"
+            fullWidth={true}
+            label={'Province'}
+            // className={classNames(styles.divider, 'w-full')}
+            selectedValue={practitionerAboutFormGetValues().language}
+            onChange={(item: string) => {
+              console.log({ item });
+              practitionerAboutFormSetValue('language', item, {
+                shouldValidate: true,
+              });
+            }}
+          />
+          {/* <LanguageSelector
             currentLocale={'en-za'}
             selectLanguage={(data) => saveLanguage(data)}
-          />
+          /> */}
           {displayError && (
             <div className={'mt-2'}>
               <Typography
