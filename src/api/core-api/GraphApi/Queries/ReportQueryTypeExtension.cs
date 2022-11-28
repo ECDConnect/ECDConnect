@@ -299,15 +299,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
             int avgClassDays = 20;
 
-            //DisplaySet weighting60 = new DisplaySet();
-            //DisplaySet weighting50 = new DisplaySet();
-            //DisplaySet weighting40 = new DisplaySet();
             DisplaySet weighting30 = new DisplaySet();
             DisplaySet weighting20 = new DisplaySet();
             DisplaySet weighting10 = new DisplaySet();
-            //loop for last 12 months
-            //for (int idx = 1; idx <= 12; idx++)
-            //{
+
             /*Do logic for weighting - loop through each user then
             1: Get all not registered
             2: Get all progress reports overdue
@@ -322,6 +317,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return list to FE for each user
             */
             type = type.ToLower();
+
             if (type == "child") {
                 //child view from practitioner/principal/coach
                 var children = childRepo.GetAll();
@@ -352,10 +348,24 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     string finalNotes = "";
                     int priority = 8; //set the priority high and override as importance goes along
                     int weighting = 0;
+                    int absentDays = 0;
 
 
                     //get absent days count 
-                    int absentDays = genericQueries.GetAbsentees(contextAccessor, repoFactory, user.UserId, fromDate, toDate).Count();
+                    if (type != "coach")
+                    {
+                        absentDays = genericQueries.GetAbsentees(contextAccessor, repoFactory, user.UserId, fromDate, toDate).Count();
+                    } else
+                    {
+
+                        //TODO - logic to calculate
+                        weighting10.Icon = MetricsIconEnum.Warning.ToString();
+                        weighting10.Color = MetricsColorEnum.Warning.ToString();
+                        weighting10.Subject = 0 + " Children did not progress";
+                        weighting10.Notes = "Improve child progress";
+                        priority = 5;
+                        weighting = 10;
+                    }
                     //get is registered?
                     bool isRegistered = (user.IsRegistered != null && user.IsRegistered == true ? true : false);
                     //get is leaving?
@@ -378,16 +388,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     //TODO
                     //child progress reporting for coach
                     
-                    if (type == "coach")
-                    {
-                        //TODO - logic to calculate
-                        weighting10.Icon = MetricsIconEnum.Warning.ToString();
-                        weighting10.Color = MetricsColorEnum.Warning.ToString();
-                        weighting10.Subject = 0 + " Children did not progress";
-                        weighting10.Notes = "Improve child progress";
-                        priority = 5;
-                        weighting = 10;
-                    }
 
                     //priority 0
                     if (isComplete)
@@ -409,32 +409,38 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                         weighting = 20;
                     }
 
-                    //absentees - priority varies betwen 4 and 6
-                    int absenteePercentage = (100 - (absentDays / avgClassDays) * 100);
-                    if (absenteePercentage <= 75)
+
+                    if (type != "coach")
                     {
-                        weighting30.Icon = MetricsIconEnum.Error.ToString();
-                        weighting30.Color = MetricsColorEnum.Error.ToString();
-                        weighting30.Subject = absentDays + " days absent last month";
-                        weighting30.Notes = "Improve attendance";
-                        priority = 6;
-                        weighting = 30;
-                    } else if (absenteePercentage > 75 && absenteePercentage < 90)
-                    {
-                        weighting20.Icon = MetricsIconEnum.Warning.ToString();
-                        weighting20.Color = MetricsColorEnum.Warning.ToString();
-                        weighting20.Subject = absentDays + " days absent last month";
-                        weighting20.Notes = "Improve attendance";
-                        priority = 4;
-                        weighting = 20;
-                    } else if (absenteePercentage == 100)
-                    {
-                        weighting10.Icon = MetricsIconEnum.Success.ToString();
-                        weighting10.Color = MetricsColorEnum.Success.ToString();
-                        weighting10.Subject = absentDays + " days absent last month";
-                        weighting10.Notes = "Excellent attendance";
-                        priority = 8;
-                        weighting = 10;
+                        //absentees - priority varies betwen 4 and 6
+                        int absenteePercentage = (100 - (absentDays / avgClassDays) * 100);
+                        if (absenteePercentage <= 75)
+                        {
+                            weighting30.Icon = MetricsIconEnum.Error.ToString();
+                            weighting30.Color = MetricsColorEnum.Error.ToString();
+                            weighting30.Subject = absentDays + " days absent last month";
+                            weighting30.Notes = "Improve attendance";
+                            priority = 6;
+                            weighting = 30;
+                        }
+                        else if (absenteePercentage > 75 && absenteePercentage < 90)
+                        {
+                            weighting20.Icon = MetricsIconEnum.Warning.ToString();
+                            weighting20.Color = MetricsColorEnum.Warning.ToString();
+                            weighting20.Subject = absentDays + " days absent last month";
+                            weighting20.Notes = "Improve attendance";
+                            priority = 4;
+                            weighting = 20;
+                        }
+                        else if (absenteePercentage == 100)
+                        {
+                            weighting10.Icon = MetricsIconEnum.Success.ToString();
+                            weighting10.Color = MetricsColorEnum.Success.ToString();
+                            weighting10.Subject = absentDays + " days absent last month";
+                            weighting10.Notes = "Excellent attendance";
+                            priority = 8;
+                            weighting = 10;
+                        }
                     }
 
                     //Calculate Overall Attendance Percentages
