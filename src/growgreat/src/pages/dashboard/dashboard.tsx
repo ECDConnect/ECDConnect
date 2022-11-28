@@ -181,7 +181,7 @@ export const Dashboard: React.FC = () => {
     },
     {
       name: NavigationTypes.Logout,
-      href: ROUTES.LOGIN,
+      href: ROUTES.LOGOUT,
       icon: 'ExternalLinkIcon',
       current: false,
       showDivider: true,
