@@ -38,7 +38,7 @@ export const getHealthCareWorkerByUserId = createAsyncThunk<
 );
 
 export type UpdateHealthCareWorkerRequest = {
-  id: string;
+  userId: string;
   input: any;
 };
 
@@ -49,7 +49,7 @@ export const updateHealthCareWorkerById = createAsyncThunk<
 >(
   'updateHealthCareWorkerById',
   // eslint-disable-next-line no-empty-pattern
-  async ({ input, id }, { getState, rejectWithValue }) => {
+  async ({ input, userId }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
     } = getState();
@@ -60,7 +60,7 @@ export const updateHealthCareWorkerById = createAsyncThunk<
       if (userAuth?.auth_token) {
         await new HealthCareWorkerService(
           userAuth?.auth_token
-        ).UpdateHealthCareWorker(id, input);
+        ).UpdateHealthCareWorker(userId, input);
       } else {
         return rejectWithValue('no access token, profile check required');
       }

@@ -29,4 +29,5 @@ export interface UserDto extends EntityBase {
   emergencyContactSurname?: string;
   emergencyContactPhoneNumber?: string;
   language?: string;
+  emailConfirmed?: boolean;
 }

@@ -34,6 +34,7 @@ import * as styles from '@/pages/practitioner/practitioner-about/practitioner-ab
 import ROUTES from '@/routes/routes';
 import LanguageSelector from '@/components/language-selector/language-selector';
 import { staticDataSelectors } from '@/store/static-data';
+import { healthCareWorkerSelectors } from '@/store/healthCareWorker';
 
 export const PractitionerAbout: React.FC = () => {
   const history = useHistory();
@@ -54,11 +55,15 @@ export const PractitionerAbout: React.FC = () => {
     useState(false);
 
   const user = useSelector(userSelectors.getUser);
+  const healthCareWorker = useSelector(
+    healthCareWorkerSelectors?.getHealthCareWorker
+  );
   // eslint-disable-next-line
   const languages = useSelector(staticDataSelectors.getLanguages);
-  // const selectedLanguage = languages?.find(
-  //   (item) => item?.description === user?.language
-  // );
+
+  const selectedLanguage = languages?.find(
+    (item) => item?.id === healthCareWorker?.languageId
+  );
   const pictureStorageKey = LocalStorageKeys.practitionerProfilePicture;
   const [listItems, setListItems] = useState<ActionListDataItem[]>([]);
 
@@ -145,11 +150,11 @@ export const PractitionerAbout: React.FC = () => {
       },
       {
         title: 'Email Address',
-        subTitle: currentUser?.email || 'Add an Email Address',
+        subTitle: healthCareWorker?.user?.email || 'Add an Email Address',
         switchTextStyles: true,
-        actionName: currentUser?.email ? 'Edit' : 'Add',
-        actionIcon: currentUser?.email ? 'PencilIcon' : 'PlusIcon',
-        buttonType: currentUser?.email ? 'outlined' : 'filled',
+        actionName: healthCareWorker?.user?.email ? 'Edit' : 'Add',
+        actionIcon: healthCareWorker?.user?.email ? 'PencilIcon' : 'PlusIcon',
+        buttonType: healthCareWorker?.user?.email ? 'outlined' : 'filled',
         onActionClick: () => {
           editField({
             label: 'Email Address',
@@ -160,11 +165,13 @@ export const PractitionerAbout: React.FC = () => {
       },
       {
         title: 'Your clinic & GGC team',
-        subTitle: 'Your clinic & GGC team',
+        subTitle: healthCareWorker?.teamLead?.clinic?.name || '',
         switchTextStyles: true,
         actionName: 'View',
         actionIcon: 'EyeIcon',
-        buttonType: currentUser?.phoneNumber ? 'outlined' : 'filled',
+        buttonType: healthCareWorker?.teamLead?.clinic?.name
+          ? 'outlined'
+          : 'filled',
         onActionClick: () => {
           // editField({
           //   label: 'Cellphone Number',
@@ -175,7 +182,7 @@ export const PractitionerAbout: React.FC = () => {
       },
       {
         title: 'Your Team Leader',
-        subTitle: 'Your Team Leader',
+        subTitle: healthCareWorker?.teamLead?.jobTitle || '',
         switchTextStyles: true,
         actionName: 'View',
         actionIcon: 'EyeIcon',
@@ -190,11 +197,11 @@ export const PractitionerAbout: React.FC = () => {
       },
       {
         title: 'Preferred language on app',
-        subTitle: currentUser?.language || 'Add a language',
+        subTitle: selectedLanguage?.description || 'Add a language',
         switchTextStyles: true,
-        actionName: currentUser?.language ? 'Edit' : 'Add',
-        actionIcon: currentUser?.language ? 'PencilIcon' : 'PlusIcon',
-        buttonType: currentUser?.language ? 'outlined' : 'filled',
+        actionName: selectedLanguage?.description ? 'Edit' : 'Add',
+        actionIcon: selectedLanguage?.description ? 'PencilIcon' : 'PlusIcon',
+        buttonType: selectedLanguage?.description ? 'outlined' : 'filled',
         onActionClick: () => {
           editField({
             label: 'Language',
