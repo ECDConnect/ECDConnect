@@ -28,7 +28,7 @@ export const CompleteProfile: React.FC = () => {
       <NotificationHeaderCard
         header={'Tell us more about you!'}
         message={
-          'Share more information about your programme to make Funda App useful for you.'
+          'Share more information about who you are to make CHW Connect more useful for you.'
         }
         actionText={'Tell us more about you!'}
         onActioned={() => {}}

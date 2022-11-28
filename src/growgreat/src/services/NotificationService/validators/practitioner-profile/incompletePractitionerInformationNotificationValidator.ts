@@ -22,13 +22,8 @@ export class IncompletePractitionerInformationNotificationValidator
   }
 
   getNotifications = (): Message[] => {
-    const {
-      user: userState,
-      classroomData: classroomState,
-      practitioner: practitionerState,
-    } = this.store.getState();
-
-    if (!classroomState || !userState) return [];
+    const { user: userState, healthCareWorker: practitionerState } =
+      this.store.getState();
 
     /**
      * Notification is returned when
@@ -39,24 +34,12 @@ export class IncompletePractitionerInformationNotificationValidator
 
     // TODO: change conditions for when to show the page
 
-    if (practitionerState.practitioner) {
-      const hasPractitionerRole = userState?.user?.roles?.some(
-        (role) => role.name === 'Practitioner'
-      );
-
+    if (practitionerState.healthCareWorker) {
       const notRegistered = !Boolean(
-        practitionerState.practitioner?.isRegistered
+        practitionerState.healthCareWorker?.isRegistered
       );
-      const addedByPrincipal =
-        Boolean(practitionerState.practitioner?.principalHierarchy) &&
-        !practitionerState.practitioner?.isPrincipal;
 
-      const showNotificationForPractitionerFlow =
-        hasPractitionerRole && notRegistered && addedByPrincipal;
-      const showNotificationForPrincipalFlow =
-        hasPractitionerRole && notRegistered && !addedByPrincipal;
-
-      if (showNotificationForPrincipalFlow) {
+      if (notRegistered) {
         return [
           {
             reference: `practitioner-profile`,
@@ -72,29 +55,7 @@ export class IncompletePractitionerInformationNotificationValidator
             actionText: 'Complete your profile',
             viewType: 'Hub',
             routeConfig: {
-              route: ROUTES.PRINCIPAL.SETUP_PROFILE,
-            },
-          },
-        ];
-      }
-
-      if (showNotificationForPractitionerFlow) {
-        return [
-          {
-            reference: `practitioner-profile`,
-            title: 'Tell us more about you!',
-            message:
-              'Share more information about your programme to make Funda App useful for you.',
-            dateCreated: new Date().toISOString(),
-            priority: NotificationPriority.lower,
-            viewOnDashboard: true,
-            area: 'practitioner',
-            icon: 'SwitchVerticalIcon',
-            color: 'primary',
-            actionText: 'Complete your profile',
-            viewType: 'Hub',
-            routeConfig: {
-              route: ROUTES.PRACTITIONER.PROFILE.EDIT,
+              route: ROUTES.HEALTH_CAREWORKER_PROFILE_SETUP,
             },
           },
         ];
