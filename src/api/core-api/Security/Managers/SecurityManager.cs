@@ -1,3 +1,4 @@
+using EcdLink.Api.CoreApi.Security.Models;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
@@ -11,6 +12,7 @@ using ECDLink.Tenancy;
 using ECDLink.Tenancy.Context;
 using ECDLink.UrlShortner.Managers;
 using Microsoft.AspNetCore.Identity;
+using Newtonsoft.Json;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -104,17 +106,13 @@ namespace EcdLink.Api.CoreApi.Security.Managers
 
             var claimIdentity = _claimsManager.GenerateClaimsIdentity(
                     user.Id,
-                    new Claim(SecurityConstants.Strings.JwtClaimIdentifiers.Id, user.Id),
-                    new Claim(SecurityConstants.Strings.JwtClaimIdentifiers.Rol, string.Join(',', roles))
+                    new Claim(SecurityConstants.Strings.JwtClaimIdentifiers.Id, user.Id)//,
+                    //new Claim(SecurityConstants.Strings.JwtClaimIdentifiers.Rol, string.Join(',', roles))
                 );
-
-            if (!string.IsNullOrEmpty(TenantExecutionContext.Tenant.Id.ToString()))
-            {
-                claimIdentity.AddClaim(new Claim(TenancyConstants.Jwt.TenantJwtClaim, TenantExecutionContext.Tenant.Id.ToString()));
-            }
-
+            //Remove the Rol and tenantId and add to table and obfuscate     
             var jwt = await _jwtTokenManager.GenerateJwt(claimIdentity, user.Id, jwtType);
-            //TODO: Save JWT Token to Datalayer
+            var jwtObj = JsonConvert.DeserializeObject<JwtObject>(jwt);
+            await ObfuscateJwtToken(jwtObj.auth_token, jwtObj.expires_in, user.Id, string.Join(',', roles));//TODO CB - add role
 
             return jwt;
         }
@@ -148,9 +146,9 @@ namespace EcdLink.Api.CoreApi.Security.Managers
             return await GenerateJwtForUserAsync(user as ApplicationUser, JwtEncoderEnum.Standard);
         }
 
-        public async Task<JWTUserTokensEntityReturn> ObfuscateJwtToken(string auth_token, string expiresIn, string contextIdentifier)
+        public async Task<JWTUserTokensEntityReturn> ObfuscateJwtToken(string auth_token, string expiresIn, string contextIdentifier,string role)
         {
-            return await _jwtTokenManager.StoreJWTToken(auth_token,expiresIn, contextIdentifier);
+            return await _jwtTokenManager.StoreJWTToken(auth_token,expiresIn, contextIdentifier, role);
 
         }
     }
