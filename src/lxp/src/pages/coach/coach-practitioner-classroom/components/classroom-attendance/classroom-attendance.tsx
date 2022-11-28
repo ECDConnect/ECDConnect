@@ -1,13 +1,15 @@
-import { format } from 'date-fns';
 import { Typography, Card } from '@ecdlink/ui';
 import * as styles from './classroom-attendance.styles';
 import { ClassroomAttendanceProps } from './classroom-attendance.types';
+import { getMonthName } from '@utils/classroom/attendance/track-attendance-utils';
+import { getMonth, getYear } from 'date-fns';
 
 export const ClassroomAttendance: React.FC<ClassroomAttendanceProps> = ({
   practitionerClassroomGroups,
+  practitionerClassroomsData,
 }) => {
   return (
-    <div className="w-full flex flex-wrap justify-center">
+    <div className="flex w-full flex-wrap justify-center">
       <Card
         className={styles.attendanceCard}
         borderRaduis={'xl'}
@@ -15,16 +17,23 @@ export const ClassroomAttendance: React.FC<ClassroomAttendanceProps> = ({
       >
         <div className="ml-4 mt-4">
           <Typography
-            text={`Attendance: ${format(new Date(), 'LLLL yyyy')}`}
+            text={`Attendance: ${getMonthName(
+              getMonth(new Date()) - 1
+              // eslint-disable-next-line no-useless-concat
+            )}\u00A0${getYear(new Date())}`}
             type="body"
             className="mb-4"
           />
         </div>
-        <div className={'flex flex-wrap gap-4 justify-around'}>
+        <div className={'grid grid-cols-2 justify-around gap-4'}>
           {practitionerClassroomGroups?.map((item, index) => {
+            const classroomMetrics = practitionerClassroomsData?.find(
+              (item2) => item2?.classroomGroupId === item?.id
+            );
+
             let percentageClassname =
               'mt-4 mb-3 text-4xl font-semibold text-successMain';
-            const randomPercentage = Number((Math.random() * 100).toFixed(0));
+            const randomPercentage = classroomMetrics?.attendancePercentage;
             if (randomPercentage <= 75) {
               percentageClassname =
                 'mt-4 mb-3 text-4xl font-semibold text-alertMain';
@@ -34,7 +43,7 @@ export const ClassroomAttendance: React.FC<ClassroomAttendanceProps> = ({
               }
             }
             return (
-              <div className="mr-16" key={index}>
+              <div className="ml-8" key={index}>
                 <div className={percentageClassname}>{randomPercentage}%</div>
                 <Typography text={item?.name} type="body" className="mb-4" />
               </div>
