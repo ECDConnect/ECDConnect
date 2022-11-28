@@ -106,13 +106,13 @@ namespace EcdLink.Api.CoreApi.Security.Managers
 
             var claimIdentity = _claimsManager.GenerateClaimsIdentity(
                     user.Id,
-                    new Claim(SecurityConstants.Strings.JwtClaimIdentifiers.Id, user.Id)//,
-                    //new Claim(SecurityConstants.Strings.JwtClaimIdentifiers.Rol, string.Join(',', roles))
-                );
+                    new Claim(SecurityConstants.Strings.JwtClaimIdentifiers.Id, user.Id),
+                    new Claim(SecurityConstants.Strings.JwtClaimIdentifiers.Rol, string.Join(',', roles))
+                ); //TODO: CB Remove ROL again when portal login errors have been resolved
             //Remove the Rol and tenantId and add to table and obfuscate     
             var jwt = await _jwtTokenManager.GenerateJwt(claimIdentity, user.Id, jwtType);
             var jwtObj = JsonConvert.DeserializeObject<JwtObject>(jwt);
-            await ObfuscateJwtToken(jwtObj.auth_token, jwtObj.expires_in, user.Id, string.Join(',', roles));//TODO CB - add role
+            await ObfuscateJwtToken(jwtObj.auth_token, jwtObj.expires_in, user.Id, string.Join(',', roles));
 
             return jwt;
         }
