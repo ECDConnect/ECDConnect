@@ -62,7 +62,7 @@ export const Dashboard: React.FC = () => {
   const healthCareWorker = useSelector(
     healthCareWorkerSelectors?.getHealthCareWorker
   );
-  console.log({ isFromLogin });
+
   const { userProfilePicture } = useDocuments();
   const mothers = useSelector(motherSelectors.getMothers);
   const infants = useSelector(getInfants);

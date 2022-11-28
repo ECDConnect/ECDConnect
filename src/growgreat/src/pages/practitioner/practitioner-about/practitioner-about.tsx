@@ -67,9 +67,6 @@ export const PractitionerAbout: React.FC = () => {
   // eslint-disable-next-line
   const languages = useSelector(staticDataSelectors.getLanguages);
 
-  const selectedLanguage = languages?.find(
-    (item) => item?.id === healthCareWorker?.languageId
-  );
   const pictureStorageKey = LocalStorageKeys.practitionerProfilePicture;
   const [listItems, setListItems] = useState<ActionListDataItem[]>([]);
 
@@ -110,6 +107,9 @@ export const PractitionerAbout: React.FC = () => {
   const { theme } = useTheme();
 
   const setNewStackListItems = (currentUser: UserDto) => {
+    const selectedLanguage = languages?.find(
+      (item) => item?.id === currentUser?.language
+    );
     const list: ActionListDataItem[] = [
       {
         title: 'Cellphone Number',
@@ -235,11 +235,6 @@ export const PractitionerAbout: React.FC = () => {
     }
 
     setEditProfilePictureVisible(!editProfilePictureVisible);
-  };
-
-  const saveLanguage = (data: any) => {
-    console.log({ data });
-    practitionerAboutFormSetValue('language', data?.id);
   };
 
   const picturePromtOnAction = async (imageBaseString: string) => {
