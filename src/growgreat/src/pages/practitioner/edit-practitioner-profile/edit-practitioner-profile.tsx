@@ -74,11 +74,16 @@ export const EditPractitionerProfile: React.FC = () => {
       copy.isRegistered = true;
       // copy.user!.emailConfirmed! = true;
 
-      appDispatch(healthCareWorkerActions.updateHealthCareWorker(copy));
-      appDispatch(
+      await appDispatch(healthCareWorkerActions.updateHealthCareWorker(copy));
+      await appDispatch(
         healthCareWorkerThunkActions.updateHealthCareWorkerById({
           userId: user?.id!,
           input: copy,
+        })
+      );
+      await appDispatch(
+        healthCareWorkerThunkActions.getHealthCareWorkerByUserId({
+          userId: user?.id!,
         })
       );
 
@@ -131,19 +136,17 @@ export const EditPractitionerProfile: React.FC = () => {
       position: DialogPosition.Bottom,
       render: (onSubmit, onCancel) => (
         <ActionModal
-          icon={'XCircleIcon'}
+          icon={'ExclamationCircleIcon'}
           iconColor={'alertMain'}
           iconBorderColor="alertBg"
-          importantText={
-            'Please complete the process otherwise you will lose your changes.'
-          }
+          importantText={'If you leave now your changes will not be saved.'}
           actionButtons={[
             {
               colour: 'primary',
-              text: 'Exit',
+              text: 'Yes, exit',
               onClick: () => {
                 onSubmit();
-                history.goBack();
+                history.push(ROUTES?.DASHBOARD, { notRegistered: true });
               },
               textColour: 'white',
               type: 'filled',
@@ -151,7 +154,7 @@ export const EditPractitionerProfile: React.FC = () => {
             },
             {
               colour: 'primary',
-              text: 'Continue editing',
+              text: 'No, continue editing',
               onClick: () => {
                 onCancel();
               },
