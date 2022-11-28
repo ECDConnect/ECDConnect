@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import { useDialog, useTheme } from '@ecdlink/core';
 import {
   ActionModal,
@@ -31,6 +31,7 @@ import ROUTES from '@routes/routes';
 import { getInfants } from '@/store/infant/infant.selectors';
 import { version } from '@/../package.json';
 import { healthCareWorkerSelectors } from '@/store/healthCareWorker';
+import { DashboardRouteState } from './dashboard.types';
 
 export enum NavigationTypes {
   Home = 'Home',
@@ -45,6 +46,8 @@ export enum NavigationTypes {
 export const Dashboard: React.FC = () => {
   const history = useHistory();
   const { theme } = useTheme();
+  const location = useLocation<DashboardRouteState>();
+  const isFromLogin = location?.state?.isFromLogin;
   const userData = useSelector(userSelectors.getUser);
   const shouldUserSync = useSelector(settingSelectors.getShouldUserSync);
   const appDispatch = useAppDispatch();
@@ -59,7 +62,7 @@ export const Dashboard: React.FC = () => {
   const healthCareWorker = useSelector(
     healthCareWorkerSelectors?.getHealthCareWorker
   );
-
+  console.log({ isFromLogin });
   const { userProfilePicture } = useDocuments();
   const mothers = useSelector(motherSelectors.getMothers);
   const infants = useSelector(getInfants);
@@ -78,13 +81,13 @@ export const Dashboard: React.FC = () => {
   }
 
   useEffect(() => {
-    if (healthCareWorker) {
+    if (healthCareWorker && isFromLogin) {
       if (healthCareWorker?.isRegistered !== true) {
         history?.push(ROUTES?.HEALTH_CAREWORKER_PROFILE_SETUP);
         return;
       }
     }
-  }, [healthCareWorker]);
+  }, [healthCareWorker, isFromLogin]);
 
   function onNavigation(navItem: any) {
     history.push(navItem.href, navItem.params);
