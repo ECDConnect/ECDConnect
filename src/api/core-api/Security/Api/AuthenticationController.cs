@@ -60,18 +60,11 @@ namespace ECDLink.Security.Api
             {
                 return Unauthorized(new { Error = "Some of the information you have entered is incorrect. Please contact the SmartStart call centre to find out more: 0800 014 817" });
             }
-
-            //TODO: hook in JWT obfuscation in here
+            
             var jwt = await _securityManager.GenerateJwtForUserAsync(user, JwtEncoderEnum.Standard);
             var jwtObj = JsonConvert.DeserializeObject<JwtObject>(jwt);
             var package = new OkObjectResult(jwtObj);
-            var jwtObjObfuscated = await _securityManager.ObfuscateJwtToken(jwtObj.auth_token, jwtObj.expires_in, user.Id);
-            ////var jwtObjObfuscated = JsonConvert.DeserializeObject<JwtObfuscatedObject>(tokenGuid.JWTToken);
-            var obfPackage = new OkObjectResult(jwtObjObfuscated);
-                ////var obfPackage = new OkObjectResult(JsonConvert.DeserializeObject<JwtObfuscatedObject>(tokenGuid));
             return package;
-                ////return new OkObjectResult(_securityManager.ObfuscateJwtToken(jwt, user.Id));
-            //return obfPackage;
         }
 
         // This API should always return an OK result as to not give away emails

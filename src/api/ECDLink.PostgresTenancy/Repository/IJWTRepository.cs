@@ -16,7 +16,7 @@ namespace ECDLink.PostgresTenancy.Repository
         JWTUserTokensEntity GetByUserId(string id);
         JWTUserTokensEntity GetByToken(string token);
         JWTUserTokensEntity Insert(JWTUserTokensEntity entity);
-        //JWTUserTokensEntity Update(JWTUserTokensEntity entity);
+        bool DeleteAllTokensById(string id);
 
         void Delete(string key);
         bool Exists(string key);
