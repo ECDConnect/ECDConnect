@@ -386,7 +386,7 @@ export const PractitionerAbout: React.FC = () => {
         stretch={true}
         borderRadius="normal"
         visible={editLanguageFieldVisible}
-        position={DialogPosition.Bottom}
+        position={DialogPosition.Middle}
       >
         <div className={'p-4'}>
           <div className={styles.labelContainer}>
@@ -409,7 +409,7 @@ export const PractitionerAbout: React.FC = () => {
             className={!displayError ? 'mb-6' : ''}
           /> */}
           <Dropdown
-            placeholder={'Choose province'}
+            placeholder={'Choose language'}
             list={
               (languages &&
                 languages.map((language: LanguageDto) => ({
@@ -420,7 +420,7 @@ export const PractitionerAbout: React.FC = () => {
             }
             fillType="clear"
             fullWidth={true}
-            label={'Province'}
+            label={'Language'}
             // className={classNames(styles.divider, 'w-full')}
             selectedValue={practitionerAboutFormGetValues().language}
             onChange={(item: string) => {
@@ -450,7 +450,7 @@ export const PractitionerAbout: React.FC = () => {
           <Button
             type="filled"
             color="primary"
-            className={'w-full'}
+            className={'mt-4 w-full'}
             onClick={saveEdit}
           >
             {renderIcon('SaveIcon', styles.buttonIcon)}
