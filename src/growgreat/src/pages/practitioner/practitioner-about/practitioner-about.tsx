@@ -424,7 +424,6 @@ export const PractitionerAbout: React.FC = () => {
             // className={classNames(styles.divider, 'w-full')}
             selectedValue={practitionerAboutFormGetValues().language}
             onChange={(item: string) => {
-              console.log({ item });
               practitionerAboutFormSetValue('language', item, {
                 shouldValidate: true,
               });
