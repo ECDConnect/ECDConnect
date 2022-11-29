@@ -263,7 +263,6 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
               setReassignClassValue('date', date ? date.toString() : '')
             }
             dateFormat="EEE, dd MMM yyyy"
-            minDate={new Date()}
           />
         ) : (
           <DatePicker
