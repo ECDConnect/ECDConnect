@@ -24,6 +24,7 @@ namespace ECDLink.Core.Services
     {
         private readonly IGenericRepositoryFactory _repositoryFactory;
         private readonly ISystemSetting<InvitationCutoffDelayOptions> _invitationDelay;
+        private readonly ISystemSetting<AbsenteeCutoffDelayOptions> _absenteeDelay;
         private readonly HierarchyEngine _hierarchyEngine;
         private readonly AttendanceTrackingRepository _attendanceRepo;
 
@@ -41,7 +42,7 @@ namespace ECDLink.Core.Services
         public void ReassignAbsentees()
         {
             var adminId = _hierarchyEngine.GetAdminUserId();
-            int hrsToReassign = int.Parse(_invitationDelay.Value.InvitationCutoffDelay);
+            int hrsToReassign = int.Parse(_absenteeDelay.Value.AbsenteeCutoffDelay);
             var dbRepo = _repositoryFactory.CreateGenericRepository<ClassReassignmentHistory>(userContext: adminId);
             //get all entries that ha snot yet been reassigned back to where they should be
             var reassignments = dbRepo.GetAll()
@@ -59,9 +60,32 @@ namespace ECDLink.Core.Services
             }
         }
 
+        public void AssignFutureDatedAbsentees()
+        {
+            var adminId = _hierarchyEngine.GetAdminUserId();
+            int hrsToReassign = int.Parse(_absenteeDelay.Value.AbsenteeCutoffDelay);
+            var dbRepo = _repositoryFactory.CreateGenericRepository<ClassReassignmentHistory>(userContext: adminId);
+            //get all future dated absentees - where created date < Absentdate but absentdate is today
+            var reassignments = dbRepo.GetAll()
+                                        .Where(x => x.ReassignedBackToDate == null)
+                                        .ToList();
+
+            if (reassignments.Count > 0)
+            {
+                foreach (var reassign in reassignments)
+                {
+                    if (reassign.ReassignedToDate <= DateTime.Now.AddHours(-hrsToReassign))
+                    {
+                        ReassignClassroomsFromHistory(adminId, reassign.UserId);
+                    }
+                }
+            }
+        }
+
         public void ExpireRelationshipLinks()
         {
             var adminId = _hierarchyEngine.GetAdminUserId();
+            int hrsToReassign = int.Parse(_invitationDelay.Value.InvitationCutoffDelay);
             var practiRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: adminId);
             var pracsToExpire = practiRepo.GetAll()
                                         .Where(x => x.IsLeaving == true)
@@ -105,45 +129,53 @@ namespace ECDLink.Core.Services
 
             try
             {
-                if (fromUserId != null && toUserId != null)
+                if (startDate <= DateTime.Today)//  DateTime.Now.AddDays(1))//for future dated reassignments/absentees
                 {
-                    var toUserHierarchy = _hierarchyEngine.GetUserHierarchy((toUserId != null ? toUserId : uId));
-                    var fromUserHierarchy = _hierarchyEngine.GetUserHierarchy((fromUserId != null ? fromUserId : uId));
-
-                    //Log to the history table
-                    var history = new ClassReassignmentHistory
+                    if (fromUserId != null && toUserId != null)
                     {
-                        UserId = fromUserId,
-                        Reason = reason,
-                        LoggedBy = loggedByUser,
-                        ReassignedToUser = toUserId,
-                        ReassignedToDate = startDate,
-                        HierarchyToUser = toUserHierarchy,
-                        HierarchyBackToUser = fromUserHierarchy,
-                    };
+                        var toUserHierarchy = _hierarchyEngine.GetUserHierarchy((toUserId != null ? toUserId : uId));
+                        var fromUserHierarchy = _hierarchyEngine.GetUserHierarchy((fromUserId != null ? fromUserId : uId));
 
-                    if (permanentAssign) history.ReassignedBackToDate = DateTime.Now; //if a permanent reassign, set the date of ReassignedBackToDate so it doesnt get picked up for reassignment from history
+                        //Log to the history table
+                        var history = new ClassReassignmentHistory
+                        {
+                            UserId = fromUserId,
+                            Reason = reason,
+                            LoggedBy = loggedByUser,
+                            ReassignedToUser = toUserId,
+                            ReassignedToDate = startDate,
+                            HierarchyToUser = toUserHierarchy,
+                            HierarchyBackToUser = fromUserHierarchy,
+                        };
 
-                    var historySaved = historyRepo.Insert(history);
+                        if (permanentAssign) history.ReassignedBackToDate = DateTime.Now; //if a permanent reassign, set the date of ReassignedBackToDate so it doesnt get picked up for reassignment from history
 
-                    if (!string.IsNullOrEmpty(toUserHierarchy) && !string.IsNullOrEmpty(fromUserHierarchy))
-                    {
-                        //reassign classroomGroups - populate the other objects done insid ethe classroomgroups function
-                        ReassignmentLists reassignment = UpdateClassroomGroups(uId, fromUserId, toUserId, fromUserHierarchy, toUserHierarchy, classroomGroup);
-                        //reassign attendance
-                        UpdateAttendance(uId, startDate,fromUserId, toUserId, fromUserHierarchy, toUserHierarchy, reassignment.ClassProgrammesReassigned, reassignment.LearnersReassigned);
-                        //update the history line with classes, children and classroomgroups also moved
-                        if (reassignment.ClassroomGroupsReassigned != null) historySaved.ReassignedClassroomGroups = string.Join(";", reassignment.ClassroomGroupsReassigned);
-                        if (reassignment.ClassroomsReassigned != null) historySaved.ReassignedClassrooms = string.Join(";", reassignment.ClassroomsReassigned);
-                        if (reassignment.ClassProgrammesReassigned != null) historySaved.ReassignedClassProgrammes = string.Join(";", reassignment.ClassProgrammesReassigned);
-                        if (reassignment.ChildrenReassignedUserIds != null) historySaved.ReassignedChildrenUserIds = string.Join(";", reassignment.ChildrenReassignedUserIds);
-                        if (reassignment.LearnersReassigned != null) historySaved.ReassignedLearners = string.Join(";", reassignment.LearnersReassigned);
-                        historyRepo.Update(historySaved);
+                        var historySaved = historyRepo.Insert(history);
+
+                        if (!string.IsNullOrEmpty(toUserHierarchy) && !string.IsNullOrEmpty(fromUserHierarchy))
+                        {
+                            //reassign classroomGroups - populate the other objects done insid ethe classroomgroups function
+                            ReassignmentLists reassignment = UpdateClassroomGroups(uId, fromUserId, toUserId, fromUserHierarchy, toUserHierarchy, classroomGroup);
+                            //reassign attendance
+                            UpdateAttendance(uId, startDate, fromUserId, toUserId, fromUserHierarchy, toUserHierarchy, reassignment.ClassProgrammesReassigned, reassignment.LearnersReassigned);
+                            //update the history line with classes, children and classroomgroups also moved
+                            if (reassignment.ClassroomGroupsReassigned != null) historySaved.ReassignedClassroomGroups = string.Join(";", reassignment.ClassroomGroupsReassigned);
+                            if (reassignment.ClassroomsReassigned != null) historySaved.ReassignedClassrooms = string.Join(";", reassignment.ClassroomsReassigned);
+                            if (reassignment.ClassProgrammesReassigned != null) historySaved.ReassignedClassProgrammes = string.Join(";", reassignment.ClassProgrammesReassigned);
+                            if (reassignment.ChildrenReassignedUserIds != null) historySaved.ReassignedChildrenUserIds = string.Join(";", reassignment.ChildrenReassignedUserIds);
+                            if (reassignment.LearnersReassigned != null) historySaved.ReassignedLearners = string.Join(";", reassignment.LearnersReassigned);
+                            historyRepo.Update(historySaved);
+                        }
+
+                        if (startDate <= DateTime.Now) //backdating reassignments - immediately reassign everything back so that the records match up and functionality remains consistent
+                        {
+                            ReassignClassroomsFromHistory(uId, fromUserId);
+                        }
+
+                        return true;
                     }
-
-                    return true;
-                }
-                else return false;
+                    else return false;
+                } else return false;
             }
             catch (Exception e)
             {
