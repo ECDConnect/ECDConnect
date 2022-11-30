@@ -27,7 +27,10 @@ namespace ECDLink.AutomatedJobs.Anonymise
 
                 var anonChildService = scope.ServiceProvider.GetRequiredService<IChildrenAnonymiseService>();
 
-                anonChildService.AnonymiseChild();
+                //anonChildService.AnonymiseChild();
+
+                //AssignFutureAbsentees //settle Future dated absentees first
+                //ReassignAbsentees
             }
         }
 

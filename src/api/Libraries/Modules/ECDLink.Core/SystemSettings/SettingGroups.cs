@@ -149,6 +149,11 @@ namespace ECDLink.Core.SystemSettings
             public const string InvitationCutoffDelay = "General.InvitationCutoffDelay";
         }
 
+        public static class Absentee
+        {
+            public const string AbsenteeCutoffDelay = "General.AbsenteeCutoffDelay";
+        }
+
         public static class Sync
         {
             public const string SyncDelay = "General.SyncDelay";
