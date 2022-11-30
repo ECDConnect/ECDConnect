@@ -1,5 +1,5 @@
 import { useHistory, useLocation } from 'react-router';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
   BannerWrapper,
   Button,
@@ -25,6 +25,9 @@ import { ChildrenPerAgeGroup } from './components/childrenPerAgeGroup/childrenPe
 import { classroomsSelectors } from '@/store/classroom';
 import { classroomsForCoachSelectors } from '@/store/classroomForCoach';
 import { ClassroomAttendance } from './components/classroom-attendance/classroom-attendance';
+import { authSelectors } from '@/store/auth';
+import { PractitionerService } from '@/services/PractitionerService';
+import { ClassroomGroupService } from '@/services/ClassroomGroupService';
 
 // import { CreateNote } from '../components/create-note/create-note';
 // import { NoteTypeEnum } from '@ecdlink/graphql';
@@ -102,6 +105,7 @@ export const CoachPractitionerClassroom: React.FC = () => {
   const appDispatch = useAppDispatch();
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
+  const userAuth = useSelector(authSelectors.getAuthUser);
   const children = useSelector(childrenSelectors.getChildren);
   const childrenForPractitioner = useSelector(
     childrenForPractitionerSelectors.getChildrenForPractitioner
@@ -125,6 +129,58 @@ export const CoachPractitionerClassroom: React.FC = () => {
   const childrenForPractitionerList = children?.filter((item) =>
     childrenForPractitioner?.find((item2) => item.id === item2.id)
   );
+  const [classMetrics, setClassMetrics] = useState<any>();
+  const [practitionerClassroomsData, setPractitionerClassroomsData] =
+    useState<any[]>();
+
+  const classroomsMetrics = async () => {
+    const today = new Date();
+    const firstDayPrevMonth = new Date(
+      today.getFullYear(),
+      today.getMonth() - 1,
+      1
+    );
+    const lastDayPrevMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+    const metricsData = await new ClassroomGroupService(
+      userAuth?.auth_token!
+    ).getClassAttendanceMetrics(firstDayPrevMonth, lastDayPrevMonth);
+    setClassMetrics(metricsData);
+    return metricsData;
+  };
+
+  useEffect(() => {
+    classroomsMetrics();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (classMetrics) {
+      const practitionerClassroomData = classMetrics?.filter((item: any) => {
+        return practitionerClassroomGroups.some((x) => {
+          return item?.practitionerId === x?.userId;
+        });
+      });
+      setPractitionerClassroomsData(practitionerClassroomData);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [classMetrics]);
+
+  const classroomsDetailsForPractitioner = async () => {
+    // setLoading(true);
+    const practitionersMessageData = await new PractitionerService(
+      userAuth?.auth_token!
+    ).displayMetrics('practitioner');
+
+    // setPractitionersMessages(practitionersMessageData);
+    // setLoading(false);
+
+    return practitionersMessageData;
+  };
+
+  useEffect(() => {
+    classroomsDetailsForPractitioner();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     resetChildrenForPractitioner();
@@ -158,7 +214,7 @@ export const CoachPractitionerClassroom: React.FC = () => {
         }
         displayOffline={!isOnline}
       ></BannerWrapper>
-      <div className="w-full flex flex-wrap justify-center">
+      <div className="flex w-full flex-wrap justify-center">
         {/* {listItems.length > 0 ? (
           <div className="flex justify-center w-11/12 mt-4">
             <StackedList
@@ -201,7 +257,8 @@ export const CoachPractitionerClassroom: React.FC = () => {
             </div>
           </Card>
           <ClassroomAttendance
-          // practitionerClassroomGroups={practitionerClassroomGroups}
+            practitionerClassroomGroups={practitionerClassroomGroups}
+            practitionerClassroomsData={practitionerClassroomsData}
           />
           <div className="w-full">
             <ChildrenPerAgeGroup

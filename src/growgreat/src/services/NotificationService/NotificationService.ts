@@ -6,7 +6,7 @@ import { NotificationValidator } from './NotificationService.types';
 //import { ChildDocumentsNotificationValidator } from './validators/child-documents/childDocumentsNotificationValidator';
 //import { ChildProgressReportNotificationValidator } from './validators/child-progess-report/childProgressReportNotificationValidator';
 //import { IncompleteChildRegistrationNotificationValidator } from './validators/child-registration/incompleteChildRegistrationNotificationValidator';
-//import { IncompletePractitionerInformationNotificationValidator } from './validators/practitioner-profile/incompletePractitionerInformationNotificationValidator';
+import { IncompletePractitionerInformationNotificationValidator } from './validators/practitioner-profile/incompletePractitionerInformationNotificationValidator';
 //import { ProgrammePlanningNotificationValidator } from './validators/programme-planning/programmePlanningNotificationValidator';
 //import { IncompleteTrackAttendanceNotificationValidator } from './validators/track-attendance/incompleteTrackAttendanceNotificationValidator';
 
@@ -61,7 +61,7 @@ export class NotificationService {
     this.validators = [
       //new ChildDocumentsNotificationValidator(store),
       //new IncompleteChildRegistrationNotificationValidator(store, currentDate),
-      //new IncompletePractitionerInformationNotificationValidator(store),
+      new IncompletePractitionerInformationNotificationValidator(store),
       //new IncompleteTrackAttendanceNotificationValidator(store, currentDate),
       //new ProgrammePlanningNotificationValidator(store, currentDate),
       //new ChildProgressReportNotificationValidator(store, currentDate),

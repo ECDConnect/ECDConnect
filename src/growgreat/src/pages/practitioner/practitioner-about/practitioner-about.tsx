@@ -1,4 +1,9 @@
-import { LocalStorageKeys, UserDto, useTheme } from '@ecdlink/core';
+import {
+  LanguageDto,
+  LocalStorageKeys,
+  UserDto,
+  useTheme,
+} from '@ecdlink/core';
 import { FileTypeEnum } from '@ecdlink/graphql';
 import {
   ActionListDataItem,
@@ -11,6 +16,7 @@ import {
   renderIcon,
   StackedList,
   Typography,
+  Dropdown,
 } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
@@ -61,9 +67,6 @@ export const PractitionerAbout: React.FC = () => {
   // eslint-disable-next-line
   const languages = useSelector(staticDataSelectors.getLanguages);
 
-  const selectedLanguage = languages?.find(
-    (item) => item?.id === healthCareWorker?.languageId
-  );
   const pictureStorageKey = LocalStorageKeys.practitionerProfilePicture;
   const [listItems, setListItems] = useState<ActionListDataItem[]>([]);
 
@@ -104,35 +107,10 @@ export const PractitionerAbout: React.FC = () => {
   const { theme } = useTheme();
 
   const setNewStackListItems = (currentUser: UserDto) => {
+    const selectedLanguage = languages?.find(
+      (item) => item?.id === currentUser?.language
+    );
     const list: ActionListDataItem[] = [
-      // {
-      //   title: 'First Name',
-      //   subTitle: currentUser?.firstName,
-      //   actionName: 'Edit',
-      //   actionIcon: 'PencilIcon',
-      //   switchTextStyles: true,
-      //   onActionClick: () => {
-      //     editField({
-      //       label: 'First Name',
-      //       formFieldName: 'name',
-      //       value: practitionerAboutFormGetValues().name,
-      //     });
-      //   },
-      // },
-      // {
-      //   title: 'Surname',
-      //   subTitle: currentUser?.surname,
-      //   actionName: 'Edit',
-      //   actionIcon: 'PencilIcon',
-      //   switchTextStyles: true,
-      //   onActionClick: () => {
-      //     editField({
-      //       label: 'Surname',
-      //       formFieldName: 'surname',
-      //       value: practitionerAboutFormGetValues().surname,
-      //     });
-      //   },
-      // },
       {
         title: 'Cellphone Number',
         subTitle: currentUser?.phoneNumber || 'Add an Cellphone Number',
@@ -150,11 +128,11 @@ export const PractitionerAbout: React.FC = () => {
       },
       {
         title: 'Email Address',
-        subTitle: healthCareWorker?.user?.email || 'Add an Email Address',
+        subTitle: currentUser?.email || 'Add an Email Address',
         switchTextStyles: true,
-        actionName: healthCareWorker?.user?.email ? 'Edit' : 'Add',
-        actionIcon: healthCareWorker?.user?.email ? 'PencilIcon' : 'PlusIcon',
-        buttonType: healthCareWorker?.user?.email ? 'outlined' : 'filled',
+        actionName: currentUser?.email ? 'Edit' : 'Add',
+        actionIcon: currentUser?.email ? 'PencilIcon' : 'PlusIcon',
+        buttonType: currentUser?.email ? 'outlined' : 'filled',
         onActionClick: () => {
           editField({
             label: 'Email Address',
@@ -257,10 +235,6 @@ export const PractitionerAbout: React.FC = () => {
     }
 
     setEditProfilePictureVisible(!editProfilePictureVisible);
-  };
-
-  const saveLanguage = (data: any) => {
-    practitionerAboutFormSetValue('language', data?.description);
   };
 
   const picturePromtOnAction = async (imageBaseString: string) => {
@@ -412,7 +386,7 @@ export const PractitionerAbout: React.FC = () => {
         stretch={true}
         borderRadius="normal"
         visible={editLanguageFieldVisible}
-        position={DialogPosition.Bottom}
+        position={DialogPosition.Middle}
       >
         <div className={'p-4'}>
           <div className={styles.labelContainer}>
@@ -434,10 +408,31 @@ export const PractitionerAbout: React.FC = () => {
             disabled={false}
             className={!displayError ? 'mb-6' : ''}
           /> */}
-          <LanguageSelector
+          <Dropdown
+            placeholder={'Choose language'}
+            list={
+              (languages &&
+                languages.map((language: LanguageDto) => ({
+                  label: language.description,
+                  value: language.id!,
+                }))) ||
+              []
+            }
+            fillType="clear"
+            fullWidth={true}
+            label={'Language'}
+            // className={classNames(styles.divider, 'w-full')}
+            selectedValue={practitionerAboutFormGetValues().language}
+            onChange={(item: string) => {
+              practitionerAboutFormSetValue('language', item, {
+                shouldValidate: true,
+              });
+            }}
+          />
+          {/* <LanguageSelector
             currentLocale={'en-za'}
             selectLanguage={(data) => saveLanguage(data)}
-          />
+          /> */}
           {displayError && (
             <div className={'mt-2'}>
               <Typography
@@ -455,7 +450,7 @@ export const PractitionerAbout: React.FC = () => {
           <Button
             type="filled"
             color="primary"
-            className={'w-full'}
+            className={'mt-4 w-full'}
             onClick={saveEdit}
           >
             {renderIcon('SaveIcon', styles.buttonIcon)}
