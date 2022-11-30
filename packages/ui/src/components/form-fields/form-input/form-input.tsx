@@ -45,6 +45,7 @@ export const FormInput = <T extends FieldValues>({
   value,
   hint,
   maxLength,
+  ...restProps
 }: FormFieldProps<T>) => {
   const getInputToRender = () => {
     switch (textInputType) {
@@ -60,6 +61,7 @@ export const FormInput = <T extends FieldValues>({
               {...register(nameProp)}
               className={error ? styles.errorStyle : styles.defaultInputStyle}
               defaultValue={''}
+              {...restProps}
             />
           );
         } else {
@@ -72,6 +74,7 @@ export const FormInput = <T extends FieldValues>({
               maxLength={maxLength}
               className={error ? styles.errorStyle : styles.defaultInputStyle}
               defaultValue={value ?? ''}
+              {...restProps}
             />
           );
         }
@@ -87,6 +90,8 @@ export const FormInput = <T extends FieldValues>({
               maxLength={maxLength}
               {...register(nameProp)}
               className={error ? styles.errorStyle : styles.defaultInputStyle}
+              style={suffixIcon ? { paddingRight: 38 } : { paddingRight: 16 }}
+              {...restProps}
             />
           );
         } else {
@@ -99,6 +104,8 @@ export const FormInput = <T extends FieldValues>({
               value={value ?? ''}
               maxLength={maxLength}
               className={error ? styles.errorStyle : styles.defaultInputStyle}
+              style={suffixIcon ? { paddingRight: 38 } : { paddingRight: 16 }}
+              {...restProps}
             />
           );
         }
