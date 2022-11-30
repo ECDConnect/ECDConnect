@@ -312,7 +312,7 @@ export const PractitionerAbout: React.FC = () => {
       >
         <div className={'inline-flex w-full justify-center pt-8'}>
           <ProfileAvatar
-            dataUrl={userProfilePicture?.file || ''}
+            dataUrl={userProfilePicture?.file || user?.profileImageUrl || ''}
             size={'header'}
             className="bg-secondary"
             onPressed={displayProfilePicturePrompt}
