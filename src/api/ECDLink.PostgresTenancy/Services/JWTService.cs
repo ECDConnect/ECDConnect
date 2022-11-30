@@ -48,6 +48,18 @@ namespace ECDLink.PostgresTenancy.Services
             return entity;
         }
 
+        public JWTUserTokensEntity GetById(string id)
+        {
+            var entity = _repository.GetByUserId(id);
+
+            if (entity == null)
+            {
+                return default;
+            }
+
+            return entity;
+        }
+
 
         public JWTUserTokensEntity InsertToken(JWTUserTokensEntity entity)
         {
@@ -66,6 +78,11 @@ namespace ECDLink.PostgresTenancy.Services
             var tokenEntity = _repository.Insert(entity);
 
             return tokenEntity;
+        }
+
+        public bool InvalidateExistingTokens(string id)
+        {
+            return _repository.DeleteAllTokensById(id);
         }
     }
 }

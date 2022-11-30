@@ -19,8 +19,8 @@ namespace ECDLink.DataAccessLayer.Entities.Users
 
     public class HealthCareWorker<TKey> : EntityBase<TKey>,
         ApplicationUserJoin,
-        SiteAddressJoin<Guid?>,
-        LanguageJoin<Guid?>
+        LanguageJoin<Guid?>,
+        TeamLeadJoin<Guid?>
          where TKey : IEquatable<TKey>
     {
         public bool ConsentForPhoto { get; set; }
@@ -29,21 +29,15 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public virtual ApplicationUser User { get; set; }
         public string UserId { get; set; }
 
-        [ForeignKey(nameof(SiteAddressId))]
-        public virtual SiteAddress SiteAddress { get; set; }
-        public Guid? SiteAddressId { get; set; }
-
         [ForeignKey(nameof(LanguageId))]
         public virtual Language Language { get; set; }
         public Guid? LanguageId { get; set; }
 
         [ForeignKey(nameof(TeamLeadId))]
-        public virtual ApplicationUser TeamLead { get; set; }
-        public string TeamLeadId { get; set; }
+        public virtual TeamLead TeamLead { get; set; }
+        public Guid? TeamLeadId { get; set; }
 
-        public string EmergancyContactPerson { get; set; }
-
-        public string EmergancyContactNumber { get; set; }
+        public bool IsRegistered { get; set; }
     }
 
     public interface HealthCareWorkerJoin<TKey>

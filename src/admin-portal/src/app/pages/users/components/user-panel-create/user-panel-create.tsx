@@ -122,7 +122,6 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
 
         const userId = response.data.addUser.id;
         await saveRoles(userId);
-        await saveHealthCareWorker(userId);
       })
       .catch((error) => {
         console.log(error);
@@ -152,37 +151,6 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
       });
   };
 
-  // TODO: Temp workaround until we have a UI for creating Health care workers.
-  const saveHealthCareWorker = async (userId: string) => {
-    let isHealthCareWorker = false;
-    selectedUserRoles.forEach((x) => {
-      if (x.name === 'Health Care Worker') {
-        isHealthCareWorker = true;
-      }
-    });
-
-    if (isHealthCareWorker) {
-      const healthCareWorkerModelInput: HealthCareWorkerModelInput = {
-        userId: userId,
-      };
-
-      await addHealthCareWorker({
-        variables: {
-          input: { ...healthCareWorkerModelInput },
-        },
-      })
-        .then((response: any) => {
-          setNotification({
-            title: 'Successfully created Health Care Worker!',
-            variant: NOTIFICATION.SUCCESS,
-          });
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-    }
-  };
-
   const getIsValid = () => {
     let isValid = isUserDetailValid;
     return isValid && isPasswordValid ? true : false;
@@ -191,9 +159,9 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
   const getComponent = () => {
     return (
       <>
-        <div className="bg-uiBg px-4 py-5 border-b border-gray-200 rounded-lg">
+        <div className="bg-uiBg rounded-lg border-b border-gray-200 px-4 py-5">
           <div className="pb-2">
-            <h3 className="text-lg leading-6 font-medium text-uiMidDark">
+            <h3 className="text-uiMidDark text-lg font-medium leading-6">
               User Detail
             </h3>
           </div>
@@ -205,9 +173,9 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
             control={control}
           />
         </div>
-        <div className="mt-5 bg-uiBg px-4 py-5 border-b border-gray-200 rounded-lg">
+        <div className="bg-uiBg mt-5 rounded-lg border-b border-gray-200 px-4 py-5">
           <div className="pb-2">
-            <h3 className="text-lg leading-6 font-medium text-uiMidDark">
+            <h3 className="text-uiMidDark text-lg font-medium leading-6">
               Password
             </h3>
           </div>
@@ -219,9 +187,9 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
             errors={passwordFormErrors}
           />
         </div>
-        <div className="mt-5 bg-uiBg px-4 py-5 border-b border-gray-200 rounded-lg">
+        <div className="bg-uiBg mt-5 rounded-lg border-b border-gray-200 px-4 py-5">
           <div className="pb-2">
-            <h3 className="text-lg leading-6 font-medium text-uiMidDark">
+            <h3 className="text-uiMidDark text-lg font-medium leading-6">
               Roles
             </h3>
           </div>
@@ -238,7 +206,7 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
   return (
     <article>
       <UserPanelSave disabled={!getIsValid()} onSave={onSave} />
-      <div className="mt-5 max-w-5xl mx-auto">{getComponent()}</div>
+      <div className="mx-auto mt-5 max-w-5xl">{getComponent()}</div>
     </article>
   );
 }

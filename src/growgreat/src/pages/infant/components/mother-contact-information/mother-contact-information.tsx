@@ -41,7 +41,7 @@ export const MotherContactInformation: React.FC<
   const [hasWhatsapp, setHasWhatsapp] = useState<any>(null);
 
   return (
-    <div className="h-screen ">
+    <>
       <div>
         <Typography
           type="h2"
@@ -53,10 +53,10 @@ export const MotherContactInformation: React.FC<
           type="h4"
           color={'textMid'}
           text={'Contact information'}
-          className="z-50 pt-2 w-11/12"
+          className="z-50 w-11/12 pt-2"
         />
       </div>
-      <div className="flex justify-center w-11/12 text-red-400">
+      <div className="flex w-11/12 justify-center text-red-400">
         <Divider dividerType="dashed" />
       </div>
       <div>
@@ -73,7 +73,7 @@ export const MotherContactInformation: React.FC<
             type="h4"
             color={'textMid'}
             text={`Does ${details?.name} use this cellphone number for WhatsApp?`}
-            className="z-50 pt-2 w-11/12"
+            className="z-50 w-11/12 pt-2"
           />
           <div className="mt-2">
             <ButtonGroup<boolean>
@@ -83,7 +83,7 @@ export const MotherContactInformation: React.FC<
               }
               color="secondary"
               type={ButtonGroupTypes.Button}
-              className={'w-full mt-2'}
+              className={'mt-2 w-full'}
             />
           </div>
         </div>
@@ -100,23 +100,21 @@ export const MotherContactInformation: React.FC<
           </>
         )}
       </div>
-      <div className="flex w-full h-full align-bottom">
-        <div className={'mt-10 w-11/12 flex justify-center align-bottom'}>
-          <Button
-            type={'filled'}
-            color={'primary'}
-            className={'mt-2 ml-6 w-11/12 max-h-10 absolute bottom-10'}
-            textColor={'white'}
-            text={`Next`}
-            icon={'ArrowCircleRightIcon'}
-            iconPosition={'start'}
-            onClick={() => {
-              onSubmit(getMotherContactInformationFormValues());
-            }}
-            disabled={!isValid}
-          />
-        </div>
+      <div className="flex h-full items-end">
+        <Button
+          type={'filled'}
+          color={'primary'}
+          className={'mt-4 w-full'}
+          textColor={'white'}
+          text={`Next`}
+          icon={'ArrowCircleRightIcon'}
+          iconPosition={'start'}
+          onClick={() => {
+            onSubmit(getMotherContactInformationFormValues());
+          }}
+          disabled={!isValid}
+        />
       </div>
-    </div>
+    </>
   );
 };

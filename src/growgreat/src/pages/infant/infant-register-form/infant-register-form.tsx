@@ -40,6 +40,9 @@ import { MotherDetailsProps } from '../components/mother-details/mother-details.
 import { useStaticData } from '@/hooks/useStaticData';
 import { FileTypeEnum, WorkflowStatusEnum } from '@ecdlink/graphql';
 import { documentActions, documentThunkActions } from '@/store/document';
+import { useWindowSize } from '@reach/window-size';
+
+const BANNER_HEIGHT = 64;
 
 export const InfantRegisterForm: React.FC = () => {
   const [label, setLabel] = useState('');
@@ -66,6 +69,9 @@ export const InfantRegisterForm: React.FC = () => {
   let numberOfChildren: number | undefined = hasConsent?.numberOfChildren;
   const [multipleChildrenCount, setMultipleChildrenCount] = useState<number>(1);
   const [registeredClientVisible, setRegisteredClientVisible] = useState(false);
+
+  const { height } = useWindowSize();
+
   const { getWorkflowStatusIdByEnum, getDocumentTypeIdByEnum } =
     useStaticData();
   useEffect(() => {
@@ -269,94 +275,82 @@ export const InfantRegisterForm: React.FC = () => {
       case InfantRegisterSteps.consentAgreement:
       default:
         return (
-          <div className="text-textMid">
-            <ConsentAgreement
-              multipleChildren={multipleChildren}
-              setMultipleChildren={setMultipleChildren}
-              onSubmit={(value) => {
-                setActiveStep(InfantRegisterSteps.infantDetails);
-                setHasConsent(value as any);
-                setLabel(`step 2 of 6`);
-              }}
-            />
-          </div>
+          <ConsentAgreement
+            multipleChildren={multipleChildren}
+            setMultipleChildren={setMultipleChildren}
+            onSubmit={(value) => {
+              setActiveStep(InfantRegisterSteps.infantDetails);
+              setHasConsent(value as any);
+              setLabel(`step 2 of 6`);
+            }}
+          />
         );
       case InfantRegisterSteps.infantDetails:
         return (
-          <div className="text-textMid">
-            <InfantDetails
-              multipleChildrenCount={multipleChildrenCount}
-              numberOfChildren={numberOfChildren}
-              onSubmit={(value) => {
-                setLabel(`step 3 of 6`);
-                setInfantDetails(value);
-                setActiveStep(InfantRegisterSteps.infantRoadToHealth);
-              }}
-            />
-          </div>
+          <InfantDetails
+            multipleChildrenCount={multipleChildrenCount}
+            numberOfChildren={numberOfChildren}
+            onSubmit={(value) => {
+              setLabel(`step 3 of 6`);
+              setInfantDetails(value);
+              setActiveStep(InfantRegisterSteps.infantRoadToHealth);
+            }}
+          />
         );
       case InfantRegisterSteps.infantRoadToHealth:
         return (
-          <div className="text-textMid">
-            <InfantRoadToHealth
-              infantDetails={infantDetails}
-              onSubmit={(value) => {
-                setLabel(`step 4 of 6`);
-                handleMultipleChildrenSteps();
-                // setActiveStep(InfantRegisterSteps.motherDetails);
-                setInfantRoadToHealthBook(value);
-              }}
-            />
-          </div>
+          <InfantRoadToHealth
+            infantDetails={infantDetails}
+            onSubmit={(value) => {
+              setLabel(`step 4 of 6`);
+              handleMultipleChildrenSteps();
+              // setActiveStep(InfantRegisterSteps.motherDetails);
+              setInfantRoadToHealthBook(value);
+            }}
+          />
         );
       case InfantRegisterSteps.motherDetails:
         return (
-          <div className="text-textMid">
-            <MotherDetails
-              setMultipleChildrenArray={setMultipleChildrenArray}
-              multipleChildrenArray={multipleChildrenArray}
-              infantDetails={infantDetails}
-              setContactInformation={setContactInformation}
-              setAddress={setAddress}
-              setIsAlreadyClient={setIsAlreadyClient}
-              isAlreadyClient={isAlreadyClient}
-              onSubmit={(value) => {
-                setLabel(`step 5 of 6`);
-                setDetails(value as any);
-                handleExistingUser();
-              }}
-            />
-          </div>
+          <MotherDetails
+            setMultipleChildrenArray={setMultipleChildrenArray}
+            multipleChildrenArray={multipleChildrenArray}
+            infantDetails={infantDetails}
+            setContactInformation={setContactInformation}
+            setAddress={setAddress}
+            setIsAlreadyClient={setIsAlreadyClient}
+            isAlreadyClient={isAlreadyClient}
+            onSubmit={(value) => {
+              setLabel(`step 5 of 6`);
+              setDetails(value as any);
+              handleExistingUser();
+            }}
+          />
         );
       case InfantRegisterSteps.pregnantContactInformation:
         return (
-          <div className="text-textMid">
-            <MotherContactInformation
-              details={details}
-              onSubmit={(value) => {
-                setLabel(`step 4 of 5`);
-                setActiveStep(InfantRegisterSteps.pregnantAddress);
-                setContactInformation(value);
-              }}
-            />
-          </div>
+          <MotherContactInformation
+            details={details}
+            onSubmit={(value) => {
+              setLabel(`step 4 of 5`);
+              setActiveStep(InfantRegisterSteps.pregnantAddress);
+              setContactInformation(value);
+            }}
+          />
         );
       case InfantRegisterSteps.pregnantAddress:
         return (
-          <div className="text-textMid">
-            <InfantAddress
-              details={details}
-              infantDetails={infantDetails}
-              onSubmit={(value) => {
-                setLabel(`step 6 of 6`);
-                // setActiveStep(InfantRegisterSteps.pregnantMaternalRecord);
-                setAddress(value.address);
-                completeAllSteps();
-                // history.push(ROUTES.DASHBOARD);
-                setRegisteredClientVisible(true);
-              }}
-            />
-          </div>
+          <InfantAddress
+            details={details}
+            infantDetails={infantDetails}
+            onSubmit={(value) => {
+              setLabel(`step 6 of 6`);
+              // setActiveStep(InfantRegisterSteps.pregnantMaternalRecord);
+              setAddress(value.address);
+              completeAllSteps();
+              // history.push(ROUTES.DASHBOARD);
+              setRegisteredClientVisible(true);
+            }}
+          />
         );
     }
   };
@@ -427,7 +421,10 @@ export const InfantRegisterForm: React.FC = () => {
           </Card>
         </div>
       ) : (
-        <div className={'px-4 pb-5'}>
+        <div
+          className={'flex flex-col overflow-auto px-4 pb-5'}
+          style={{ height: height - BANNER_HEIGHT }}
+        >
           {steps(activeStep as InfantRegisterSteps)}
         </div>
       )}

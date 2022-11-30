@@ -12,10 +12,13 @@ namespace ECDLink.PostgresTenancy.Services
     {
         public JWTUserTokensEntity GetByKey(string key);
 
-        //public JWTUserTokensEntity GetTokenByName(string url);
+        public JWTUserTokensEntity GetById(string key);
+
         JWTUserTokensEntity GetByToken(string token);
 
         public JWTUserTokensEntity InsertToken(JWTUserTokensEntity model);
+
+        bool InvalidateExistingTokens(string id);
 
     }
 }

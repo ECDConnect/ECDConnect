@@ -149,11 +149,42 @@ namespace ECDLink.Security.JwtSecurity.Managers
             }
         }
 
-        public async Task<JWTUserTokensEntityReturn> StoreJWTToken(string auth_token, string expiresIn, string contextIdentifier)
+        public async Task<JWTUserTokensEntityReturn> StoreJWTToken(string auth_token, string expiresIn, string contextIdentifier, string role)
         {
-            Guid tenantId = TenantExecutionContext.Tenant.Id;            
-            var insertedJWTToken = _jwtService.InsertToken(new JWTUserTokensEntity() { InsertedDate = DateTime.Now,  UserId = contextIdentifier, Token = auth_token, TokenKey = Guid.NewGuid().ToString(), ExpiresIn = expiresIn, TenantId = tenantId });
+            Guid tenantId = TenantExecutionContext.Tenant.Id;
+
+            //remove previous tokens first
+            _jwtService.InvalidateExistingTokens(contextIdentifier);
+            
+            var insertedJWTToken = _jwtService.InsertToken(new JWTUserTokensEntity() { InsertedDate = DateTime.Now,  UserId = contextIdentifier, Token = auth_token, TokenKey = Guid.NewGuid().ToString(), ExpiresIn = expiresIn, TenantId = tenantId, Role = role });
             return new JWTUserTokensEntityReturn() { id = insertedJWTToken.TokenKey, auth_token = insertedJWTToken.TokenKey, expires_in = insertedJWTToken.ExpiresIn };
         }
+
+        public async Task<bool> InvalidateExistingTokens(string contextIdentifier)
+        {
+            Guid tenantId = TenantExecutionContext.Tenant.Id;
+
+            return _jwtService.InvalidateExistingTokens(contextIdentifier);
+        }
+
+        public async Task<JWTUserTokensEntity> GetJWTTokenByToken(string auth_token)
+        {
+            Guid tenantId = TenantExecutionContext.Tenant.Id;
+
+            return _jwtService.GetByToken(auth_token);            
+        }
+        public async Task<JWTUserTokensEntity> GetJWTTokenById(string id)
+        {
+            return _jwtService.GetById(id);
+        }
+
+
+        public List<string> GetJWTTokenRole(string id)
+        {
+            var obfuscatedToken = GetJWTTokenById(id);
+
+            return obfuscatedToken.Result.Role.Split(',').ToList();
+        }
+
     }
 }

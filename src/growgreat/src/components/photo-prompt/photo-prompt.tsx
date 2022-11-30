@@ -187,7 +187,7 @@ export const PhotoPrompt: React.FC<PhotoPromptProps> = ({
                   key={`${item}-${index}`}
                   className="flex items-center justify-center"
                 >
-                  <img src={item} alt="emojis" />
+                  <img src={item} alt="emojis" onClick={() => onAction(item)} />
                 </div>
               ))}
           </div>

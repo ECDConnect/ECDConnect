@@ -143,14 +143,21 @@ export const ChildBirthCertificateForm: React.FC<
 
   const closeDeletePhotoWarning = () => {
     setDisplayPhotoDeleteWarning(false);
-    setPhotoActionBarVisible(true);
+  };
+
+  const handleMissingDocument = () => {
+    if (childBirthDocumentPhotoUrl) {
+      return setDisplayPhotoDeleteWarning(true);
+    }
+
+    return toggleHasChildDocumentation();
   };
 
   const deleteBirthDocumentPhoto = () => {
     setChildBirthCertificateFormValue('birthCertificateImage', '');
     setChildBirthDocumentPhotoUrl('');
+    toggleHasChildDocumentation();
     setDisplayPhotoDeleteWarning(false);
-    setPhotoActionBarVisible(true);
   };
 
   return (
@@ -217,9 +224,7 @@ export const ChildBirthCertificateForm: React.FC<
             {!hasUploadedDocument && (
               <div className={'w-max'}>
                 <Typography
-                  onClick={() => {
-                    toggleHasChildDocumentation();
-                  }}
+                  onClick={handleMissingDocument}
                   className={'cursor-pointer pb-4'}
                   text={`I do not have ${childName}’s documents.`}
                   underline={true}
@@ -323,10 +328,10 @@ export const ChildBirthCertificateForm: React.FC<
         </div>
       </Dialog>
       <Dialog
-        className={'px-4 mb-16'}
+        className={'mb-16 px-4'}
         stretch
         visible={displayPhotoDeleteWarning}
-        position={DialogPosition.Bottom}
+        position={DialogPosition.Middle}
       >
         <ActionModal
           icon={'InformationCircleIcon'}
@@ -346,7 +351,7 @@ export const ChildBirthCertificateForm: React.FC<
               textColour: 'white',
               colour: 'primary',
               type: 'filled',
-              onClick: () => deleteBirthDocumentPhoto(),
+              onClick: deleteBirthDocumentPhoto,
               leadingIcon: 'TrashIcon',
             },
             {
@@ -354,7 +359,7 @@ export const ChildBirthCertificateForm: React.FC<
               textColour: 'primary',
               colour: 'primary',
               type: 'outlined',
-              onClick: () => closeDeletePhotoWarning(),
+              onClick: closeDeletePhotoWarning,
               leadingIcon: 'PencilIcon',
             },
           ]}

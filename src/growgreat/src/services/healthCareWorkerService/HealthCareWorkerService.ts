@@ -5,7 +5,7 @@ import {
   PractitionerDto,
   HealthCareWorkerDto,
 } from '@ecdlink/core';
-import { MutationUpdatePractitionerContactInfoArgs } from '@ecdlink/graphql';
+import { MutationUpdateHealthCareWorkerArgs } from '@ecdlink/graphql';
 
 class HealthCareWorkerService {
   _accessToken: string;
@@ -37,23 +37,31 @@ class HealthCareWorkerService {
               genderId
               phoneNumber
               profileImageUrl
+              emailConfirmed
+              phoneNumberConfirmed
+              twoFactorEnabled
+              isActive
+              lastSeen
           }
-          language {
-              locale
-              description
-          }
-          siteAddress {
-              name
-              addressLine1
-              addressLine2
-              addressLine3
-              postalCode
-              province {
-                  description
+          teamLead {
+            jobTitle
+              clinic {
+                name
+                phoneNumber
+                  siteAddress {
+                      name
+                      addressLine1
+                      addressLine2
+                      addressLine3
+                      postalCode
+                      province {
+                          description
+                      }
+                  }
               }
           }
-          emergancyContactPerson
-          emergancyContactNumber
+          isRegistered
+          languageId
         }
       }
       `,
@@ -130,87 +138,6 @@ class HealthCareWorkerService {
     return response.data.data.practitionerByUserId;
   }
 
-  async getAllPractitioners(): Promise<PractitionerDto[]> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
-    const response = await apiInstance.post<any>(``, {
-      query: `
-        query GetAllPractitioners {
-          GetAllPractitioner {
-            id
-            userId
-            isPrincipal
-            isFundaAppAdmin
-            isTrainee
-            principalHierarchy
-            isActive
-            coachHierarchy
-            isRegistered
-            shareInfo
-            signingSignature
-            dateLinked
-            dateAccepted
-            dateToBeRemoved
-            isLeaving
-            user {
-              idNumber
-              fullName
-              firstName
-              surname
-              id
-              email
-              phoneNumber
-              profileImageUrl
-              roles {
-                id
-                name
-              }
-            }
-            dateLinked
-            dateAccepted
-            dateToBeRemoved
-            isLeaving
-            progress
-          }
-        }
-      `,
-    });
-
-    if (response.status !== 200) {
-      throw new Error('Get Practitioner Failed - Server connection error');
-    }
-
-    return response.data.data.GetAllPractitioner;
-  }
-
-  async UpdatePractitionerShareInfo(
-    practitionerId: string,
-    principalId: string
-  ): Promise<boolean> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
-    const response = await apiInstance.post<any>(``, {
-      query: `
-        mutation updatePractitionerShareInfo(
-          $practitionerId: String
-        ) {
-          updatePractitionerShareInfo(
-            practitionerId: $practitionerId
-          )
-        }
-      `,
-      variables: {
-        practitionerId,
-      },
-    });
-
-    if (response.status !== 200) {
-      throw new Error(
-        'Get Practitioner by ID number Failed - Server connection error'
-      );
-    }
-
-    return response.data.data.updatePractitionerShareInfo;
-  }
-
   async UpdatePractitionerRegistered(
     practitionerId: string,
     status: boolean = true
@@ -243,59 +170,87 @@ class HealthCareWorkerService {
     return response.data.data.updatePractitionerRegistered;
   }
 
-  async UpdatePractitionerProgress(
-    practitionerId: string,
-    progress: any
-  ): Promise<boolean> {
+  // async UpdatePractitionerProgress(
+  //   practitionerId: string,
+  //   progress: any
+  // ): Promise<boolean> {
+  //   const apiInstance = await api(Config.graphQlApi, this._accessToken);
+  //   const response = await apiInstance.post<any>(``, {
+  //     query: `
+  //       mutation updatePractitionerProgress(
+  //         $practitionerId: String
+  //         $progress: Decimal!
+  //       ) {
+  //         updatePractitionerProgress(
+  //           practitionerId: $practitionerId
+  //           progress: $progress
+  //         )
+  //       }
+  //     `,
+  //     variables: {
+  //       practitionerId,
+  //       progress,
+  //     },
+  //   });
+
+  //   if (response.status !== 200) {
+  //     throw new Error(
+  //       'UpdatePractitionerProgress Failed - Server connection error'
+  //     );
+  //   }
+
+  //   return response.data.data.updatePractitionerProgress;
+  // }
+
+  async UpdateHealthCareWorker(
+    userId: string,
+    input: MutationUpdateHealthCareWorkerArgs
+  ): Promise<HealthCareWorkerDto> {
     const apiInstance = await api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-        mutation updatePractitionerProgress(
-          $practitionerId: String
-          $progress: Decimal!
+      mutation updateHealthCareWorker(
+        $userId: String,
+        $input: HealthCareWorkerModelInput
+    ) {
+      updateHealthCareWorker(
+          userId: $userId,
+          input: $input
         ) {
-          updatePractitionerProgress(
-            practitionerId: $practitionerId
-            progress: $progress
-          )
-        }
-      `,
-      variables: {
-        practitionerId,
-        progress,
-      },
-    });
-
-    if (response.status !== 200) {
-      throw new Error(
-        'UpdatePractitionerProgress Failed - Server connection error'
-      );
-    }
-
-    return response.data.data.updatePractitionerProgress;
-  }
-
-  async UpdatePractitionerByid(
-    practitionerId: string,
-    input: MutationUpdatePractitionerContactInfoArgs
-  ): Promise<PractitionerDto> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
-    const response = await apiInstance.post<any>(``, {
-      query: `
-      mutation updatePractitionerContactInfo($practitionerId: String, $firstName: String, $lastName: String, $phoneNumber: String, $email: String) {
-        updatePractitionerContactInfo(practitionerId: $practitionerId, firstName: $firstName, lastName: $lastName, phoneNumber: $phoneNumber, email: $email) {
             id
-            idNumber
-            firstName
-            nickFirstName
-            nickSurname
-              email
-            phoneNumber
-        }
+            language {
+                description
+            }
+            isRegistered
+            user {
+                firstName
+                surname
+                email
+                phoneNumber
+                emailConfirmed
+            }
+            teamLead {
+              jobTitle
+                clinic {
+                  name
+                  phoneNumber
+                    siteAddress {
+                        name
+                        addressLine1
+                        addressLine2
+                        addressLine3
+                        postalCode
+                        province {
+                            description
+                        }
+                    }
+                }
+            }
       }
+    }
       `,
       variables: {
-        practitionerId,
+        userId,
         input,
       },
     });
@@ -305,7 +260,7 @@ class HealthCareWorkerService {
       );
     }
 
-    return response.data.data.updatePractitionerContactInfo;
+    return response.data.data.updateHealthCareWorker;
   }
 }
 

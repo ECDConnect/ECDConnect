@@ -3,10 +3,11 @@ import * as React from 'react';
 import { Fragment } from 'react';
 import { DialogModalOptions } from './DialogService';
 import * as styles from './dialog.styles';
-import { DialogPosition } from '@ecdlink/ui';
+import { classNames, DialogPosition } from '@ecdlink/ui';
 
 interface DialogModalProps extends DialogModalOptions {
   open: boolean;
+  color?: string;
   onSubmit: () => void;
   onClose: () => void;
 }
@@ -17,6 +18,7 @@ export const DialogModal: React.FC<DialogModalProps> = ({
   onSubmit,
   onClose,
   position = DialogPosition.Full,
+  color = 'bg-uiBg ',
 }) => {
   return (
     <Transition.Root show={open} as={Fragment}>
@@ -56,7 +58,7 @@ export const DialogModal: React.FC<DialogModalProps> = ({
             leaveFrom="opacity-100 translate-y-0 sm:scale-100"
             leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
           >
-            <div className={styles.contentWrapper(position)}>
+            <div className={classNames(styles.contentWrapper(position), color)}>
               {render(onSubmit, onClose)}
             </div>
           </Transition.Child>

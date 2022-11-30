@@ -109,9 +109,11 @@ export const FormInput = <T extends FieldValues>({
     <>
       {visible && (
         <div className={className}>
-          <label htmlFor={nameProp} className={styles.label}>
-            {label}
-          </label>
+          {label && (
+            <label htmlFor={nameProp} className={styles.label}>
+              {label}
+            </label>
+          )}
           {hint && <label className={styles.hintStyle}>{hint}</label>}
           <div className={styles.inputWrapper}>
             {getInputToRender()}

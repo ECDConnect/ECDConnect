@@ -67,14 +67,20 @@ export const AddPhoto: React.FC<AddPhotoProps> = ({ onSubmit, isLoading }) => {
   };
 
   const handleDelete = () => {
-    if (userProfilePicture) deleteDocument(userProfilePicture);
+    const userCopy = cloneDeep(user);
+    if (userCopy) {
+      userCopy.profileImageUrl = '';
+      appDispatch(userActions.updateUser(userCopy));
+      appDispatch(userThunkActions.updateUser(userCopy));
+    }
+    if (user?.profileImageUrl) deleteDocument(userProfilePicture);
     setEditProfilePictureVisible(false);
   };
 
   return (
     <>
       <Typography
-        text={userProfilePicture?.file ? 'Looking good!' : 'Add a Photo'}
+        text={user?.profileImageUrl ? 'Looking good!' : 'Add a Photo'}
         type="h1"
         color="primary"
         className={'mt-3'}
@@ -82,7 +88,7 @@ export const AddPhoto: React.FC<AddPhotoProps> = ({ onSubmit, isLoading }) => {
 
       <Typography
         text={
-          userProfilePicture?.file
+          user?.profileImageUrl
             ? 'Edit your photo by tapping the camera icon or tap save'
             : 'Add a photo of yourself so your coach and club will recognise you.'
         }
@@ -93,7 +99,7 @@ export const AddPhoto: React.FC<AddPhotoProps> = ({ onSubmit, isLoading }) => {
 
       <div className={'inline-flex w-full justify-center pt-16 pb-12'}>
         <ProfileAvatar
-          dataUrl={userProfilePicture?.file ?? ''}
+          dataUrl={user?.profileImageUrl ?? ''}
           size={'header'}
           onPressed={displayProfilePicturePrompt}
           hasConsent={true}
@@ -107,18 +113,18 @@ export const AddPhoto: React.FC<AddPhotoProps> = ({ onSubmit, isLoading }) => {
         color="primary"
         type="outlined"
         onClick={() => {
-          onSubmit(userProfilePicture?.file ? '' : undefined);
+          onSubmit(user?.profileImageUrl ? '' : undefined);
         }}
         isLoading={isLoading}
       >
         {renderIcon(
-          userProfilePicture?.file ? 'SaveIcon' : 'ClockIcon',
+          user?.profileImageUrl ? 'SaveIcon' : 'ClockIcon',
           styles.iconPrimary
         )}
         <Typography
           type="h6"
           className="ml-2"
-          text={userProfilePicture?.file ? 'Save' : 'Skip'}
+          text={user?.profileImageUrl ? 'Save' : 'Skip'}
           color="primary"
         />
       </Button>
@@ -131,7 +137,7 @@ export const AddPhoto: React.FC<AddPhotoProps> = ({ onSubmit, isLoading }) => {
             title="Profile Photo"
             onClose={displayProfilePicturePrompt}
             onAction={picturePromtOnAction}
-            onDelete={userProfilePicture ? handleDelete : undefined}
+            onDelete={user?.profileImageUrl ? handleDelete : undefined}
           ></PhotoPrompt>
         </div>
       </Dialog>

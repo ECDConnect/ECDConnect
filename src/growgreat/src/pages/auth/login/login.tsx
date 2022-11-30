@@ -90,7 +90,7 @@ export const Login: React.FC = () => {
             appDispatch(settingActions.setApplicationVersion(version));
             appDispatch(authActions.setUserExpired());
             setIsLoading(false);
-            history.push(ROUTES.DASHBOARD);
+            history.push(ROUTES.DASHBOARD, { isFromLogin: true });
           } else {
             setDisplayError(true);
             setIsLoading(false);

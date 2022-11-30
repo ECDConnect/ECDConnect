@@ -31,12 +31,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class PrincipalMutationExtension
-    {
-        private readonly ISystemSetting<InvitationCutoffDelayOptions> _invitationDelay;
-
-
-
-        public Practitioner AddPractitionerToPrincipal([Service] IServiceProvider serviceProvider, [Service] IHttpContextAccessor contextAccessor,
+    {        
+        public Practitioner AddPractitionerToPrincipal([Service] IHttpContextAccessor contextAccessor,
     [Service] UserManager<ApplicationUser> userManager,
     [Service] IGenericRepositoryFactory repoFactory,
     string firstName,
@@ -79,7 +75,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         public ApplicationUser UpdatePractitionerContactInfo([Service] IHttpContextAccessor contextAccessor,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] UserManager<ApplicationUser> userManager,
-            [Service] IGenericRepositoryFactory repoFactory,
             string practitionerId, string firstName, string lastName, string phoneNumber, string email)
         {
             using var scope = dbFactory.CreateDbContext();
@@ -99,7 +94,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         }
 
         public Practitioner DeletePractitionerFromPrincipal([Service] IHttpContextAccessor contextAccessor,
-            [Service] UserManager<ApplicationUser> userManager,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
             string userId, string principalId)

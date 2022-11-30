@@ -1,5 +1,7 @@
 using ECDLink.Abstractrions.Enums;
+using ECDLink.Security;
 using ECDLink.Security.Enums;
+using ECDLink.Security.JwtSecurity.Managers;
 using ECDLink.Security.Managers;
 using HotChocolate;
 using HotChocolate.Resolvers;
@@ -17,12 +19,15 @@ namespace ECDLink.EGraphQL.Authorization
         private readonly FieldDelegate _next;
         private readonly IAuthorizationManager _authorizationManager;
         private readonly IClaimsManager _claimsManager;
+        public JwtTokenManager _jwtTokenManager { get; set; }
 
-        public PermissionMiddleware(FieldDelegate next, IAuthorizationManager authorizationManager, IClaimsManager claimsManager)
+        public PermissionMiddleware(FieldDelegate next, IAuthorizationManager authorizationManager, IClaimsManager claimsManager,
+          JwtTokenManager tokenManager)
         {
             _next = next ?? throw new ArgumentNullException(nameof(next));
             _authorizationManager = authorizationManager;
             _claimsManager = claimsManager;
+            _jwtTokenManager = tokenManager;
         }
 
         public override async Task InvokeAsync(IDirectiveContext context)
@@ -81,7 +86,11 @@ namespace ECDLink.EGraphQL.Authorization
                 return new List<string>();
             }
 
-            return _claimsManager.GetClaimRoles(principal);
+            //TODO: CB Remove ROL again when portal login errors have been resolved
+            return _claimsManager.GetClaimRoles(principal); //to remove obfuscation
+            //var idClaim = principal.Claims.FirstOrDefault(x => string.Equals(x.Type, SecurityConstants.Strings.JwtClaimIdentifiers.Id));
+            //return _jwtTokenManager.GetJWTTokenRole(idClaim.Value);
+
         }
     }
 }
