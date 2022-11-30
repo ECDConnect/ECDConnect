@@ -46,13 +46,13 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
         type="h2"
         color={'textDark'}
         text={'Agreements'}
-        className="z-50 pt-6"
+        className="pt-6"
       />
 
       <Typography
         type="h4"
         color={'textMid'}
-        className="z-50 py-2"
+        className="py-2"
         text={
           'Ask your client to read the consent agreement and tap the box if they agree.'
         }
@@ -64,7 +64,7 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
         type="h4"
         color={'textDark'}
         text={'Check to confirm that you agree with the following:'}
-        className="z-50 w-full py-2"
+        className="w-full py-2"
       />
 
       <div className="flex w-full flex-col">
