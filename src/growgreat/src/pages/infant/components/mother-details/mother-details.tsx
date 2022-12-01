@@ -8,7 +8,7 @@ import {
   FormInput,
   Dropdown,
 } from '@ecdlink/ui';
-import { useForm, useFormState } from 'react-hook-form';
+import { Controller, useForm, useFormState } from 'react-hook-form';
 import { useState, useEffect } from 'react';
 import {
   MotherDetailsProps,
@@ -34,16 +34,15 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
   setMultipleChildrenArray,
 }) => {
   const {
-    // watch,
-    getValues: getMothereDetailsFormValues,
+    watch,
+    getValues: getMotherDetailsFormValues,
     // formState: pregnantDetailsFormState,
-    setValue: setMothereDetailsFormValue,
+    setValue: setMotherDetailsFormValue,
     register: caregiverFormRegister,
-    // reset: resetMothereDetailsFormValue,
     control: motherDetailsFormControl,
   } = useForm<MotherDetailsModel>({
     resolver: yupResolver(motherDetailsModelSchema),
-    mode: 'onBlur',
+    mode: 'onChange',
     // defaultValues: playgroup,
     reValidateMode: 'onChange',
   });
@@ -51,7 +50,6 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
   const { isValid } = useFormState({ control: motherDetailsFormControl });
   const [relationshipChildrenArray, setRelationshipChildrenArray] =
     useState<MultipleChildrenProps[]>();
-  const hasMultipleChildren = multipleChildrenArray?.length! > 1;
 
   const caregivers = useSelector(caregiverSelectors.getCaregivers);
 
@@ -71,6 +69,10 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
     setMultipleChildrenArray(uniqueChildrenArray);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [relationshipChildrenArray]);
+
+  useEffect(() => {
+    watch();
+  }, [watch]);
 
   return (
     <>
@@ -108,7 +110,7 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
                   placeholder={'Please choose the client:'}
                   fillType="clear"
                   selectedValue={
-                    getMothereDetailsFormValues('relationshipId') ||
+                    getMotherDetailsFormValues('relationshipId') ||
                     multipleChildrenArray[index].relationshipId
                   }
                   list={
@@ -152,25 +154,29 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
               text={`Relationship to ${infantDetails?.firstName}`}
               className="bt-1 z-50 w-11/12 pt-2"
             />
-            <Dropdown
-              placeholder={'Please choose the client:'}
-              fillType="clear"
-              selectedValue={getMothereDetailsFormValues('relationshipId')}
-              list={
-                (relationshipTypes &&
-                  relationshipTypes
-                    .filter((x) => x.label?.length > 0)
-                    .map((item) => {
-                      return {
-                        label: item.label,
-                        value: item.value,
-                      };
-                    })) ||
-                []
-              }
-              onChange={(value) => {
-                setMothereDetailsFormValue('relationshipId', value);
-              }}
+            <Controller
+              name="relationshipId"
+              control={motherDetailsFormControl}
+              render={({ field: { onChange, value } }) => (
+                <Dropdown
+                  placeholder={'Please choose the client:'}
+                  fillType="clear"
+                  selectedValue={value}
+                  list={
+                    (relationshipTypes &&
+                      relationshipTypes
+                        .filter((x) => x.label?.length > 0)
+                        .map((item) => {
+                          return {
+                            label: item.label,
+                            value: item.value,
+                          };
+                        })) ||
+                    []
+                  }
+                  onChange={onChange}
+                />
+              )}
             />
           </>
         )}
@@ -185,9 +191,11 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
         <div className="mt-2">
           <ButtonGroup<boolean>
             options={yesNoOptions}
-            onOptionSelected={(value: boolean | boolean[]) =>
-              setIsAlreadyClient(value)
-            }
+            onOptionSelected={(value: boolean | boolean[]) => {
+              setIsAlreadyClient(value);
+              setMotherDetailsFormValue('name', '');
+              setMotherDetailsFormValue('surname', '');
+            }}
             color="secondary"
             type={ButtonGroupTypes.Button}
             className={'w-full'}
@@ -238,29 +246,37 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
               text={`Choose caregiver`}
               className="bt-1 z-50 w-11/12 pt-2"
             />
-            <Dropdown
-              placeholder={'Please choose the client:'}
-              fillType="clear"
-              selectedValue={getMothereDetailsFormValues('id')}
-              list={
-                (caregivers &&
-                  caregivers
-                    .filter((x) => x.id && x.firstName?.length! > 0)
-                    .map((item) => {
-                      return {
-                        label: item.firstName! + ' ' + item.surname!,
-                        value: item.id,
-                      };
-                    })) ||
-                []
-              }
-              onChange={(value) => {
-                const caregiver = caregivers?.find((item) => item.id === value);
-                setMothereDetailsFormValue('id', value);
-                setMothereDetailsFormValue('name', caregiver?.firstName);
-                setMothereDetailsFormValue('surname', caregiver?.surname);
-                setMothereDetailsFormValue('age', caregiver?.age);
-              }}
+            <Controller
+              name="id"
+              control={motherDetailsFormControl}
+              render={({ field: { onChange, value } }) => (
+                <Dropdown
+                  placeholder={'Please choose the client:'}
+                  fillType="clear"
+                  selectedValue={value}
+                  list={
+                    (caregivers &&
+                      caregivers
+                        .filter((x) => x.id && x.firstName?.length! > 0)
+                        .map((item) => {
+                          return {
+                            label: item.firstName! + ' ' + item.surname!,
+                            value: item.id,
+                          };
+                        })) ||
+                    []
+                  }
+                  onChange={(value) => {
+                    const caregiver = caregivers?.find(
+                      (item) => item.id === value
+                    );
+                    setMotherDetailsFormValue('name', caregiver?.firstName);
+                    setMotherDetailsFormValue('surname', caregiver?.surname);
+                    setMotherDetailsFormValue('age', caregiver?.age);
+                    onChange(value);
+                  }}
+                />
+              )}
             />
           </div>
         )}
@@ -275,11 +291,15 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
           icon={'ArrowCircleRightIcon'}
           iconPosition={'start'}
           onClick={() => {
-            onSubmit(getMothereDetailsFormValues());
+            onSubmit(getMotherDetailsFormValues());
             // setAddress(handleAddExistingUser?.siteAddress);
             // setContactInformation(handleAddExistingUser?.phoneNumber);
           }}
-          disabled={!isValid && !isAlreadyClient && !hasMultipleChildren}
+          disabled={
+            !isValid ||
+            (isAlreadyClient && !getMotherDetailsFormValues('id')) ||
+            (!isAlreadyClient && !getMotherDetailsFormValues('age'))
+          }
         />
       </div>
     </>
