@@ -42,9 +42,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             using var scope = dbFactory.CreateDbContext();
             using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
-            var healthCareWorkerId = GetHealthCareWorkerIdByUserId(contextAccessor, dbFactory, repoFactory);
             var motherRepo = repoFactory.CreateRepository<Mother>(userContext: uId);
-            List<Mother> mothers = motherRepo.GetAll().Where(x => x.HealthCareWorkerId.Equals(healthCareWorkerId)).ToList();
+            List<Mother> mothers = motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId.Equals(id)).ToList();
 
             return mothers;
         }
@@ -64,17 +63,5 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return mother;
         }
 
-        private Guid? GetHealthCareWorkerIdByUserId(
-            [Service] IHttpContextAccessor contextAccessor,
-            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
-            [Service] IGenericRepositoryFactory repoFactory)
-        {
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            var healthCareWorkerRepo = repoFactory.CreateRepository<HealthCareWorker>(userContext: uId);
-            HealthCareWorker healthCareWorker = healthCareWorkerRepo.GetAll().Where(x => x.UserId.Contains(uId)).FirstOrDefault();
-            return healthCareWorker.Id;
-        }
     }
 }

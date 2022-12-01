@@ -59,14 +59,14 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
         type="h2"
         color={'textDark'}
         text={'Agreements'}
-        className="z-50 pt-6"
+        className="pt-6"
       />
 
       <Typography
         type="h4"
         color={'textMid'}
         text={'Are you registering more than one child under 2 years old?'}
-        className="z-50 mt-2 w-full pt-2"
+        className="mt-2 w-full pt-2"
       />
       <div className="mt-2">
         <ButtonGroup<boolean>
@@ -102,7 +102,7 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
         type="h4"
         color={'textMid'}
         weight="bold"
-        className="z-50 mt-4 w-11/12"
+        className="mt-4 w-11/12"
         text="Ask your client to read the consent agreement and tap the box if they agree."
       />
 

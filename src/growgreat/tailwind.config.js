@@ -18,6 +18,9 @@ module.exports = {
         '8.75': '8.75rem',
         '100': '26rem',
       },
+      minHeight: {
+        '64': '16rem',
+      },
       borderRadius: {
         10: '0.625rem',
         15: '0.9375rem',

@@ -39,33 +39,28 @@ export const PregnantRegister: React.FC = () => {
           className="w-ful z-50 pt-6"
         />
 
-        <div className="flex justify-center pt-6">
-          <div className="text-textMid bg-uiBg ml-1/2 relative z-40 flex h-60 w-full justify-center rounded-2xl pt-4">
-            <div className="mt-8 flex w-11/12 flex-wrap justify-center">
-              <div className="bg-tertiary flex h-24 w-24 items-center justify-center rounded-full">
-                <img src={momImage} alt="momImage" className="h-26 w-29" />
-              </div>
-              <div className="flex w-full justify-center">
-                <Typography
-                  type="h3"
-                  color={'textDark'}
-                  text={'Please share this information with the new client:'}
-                  className="z-50 w-10/12 pt-2"
-                  align="center"
-                />
-              </div>
-            </div>
+        <div className="text-textMid bg-uiBg mt-7  flex  w-full flex-wrap justify-center rounded-2xl py-6 px-4 shadow-xl">
+          <div className="bg-tertiary flex h-24 w-24 items-center justify-center rounded-full">
+            <img src={momImage} alt="momImage" className="h-26 w-29" />
+          </div>
+          <div className="flex w-full justify-center">
+            <Typography
+              type="h3"
+              color={'textDark'}
+              text={'Please share this information with the new client:'}
+              className="pt-2"
+              align="center"
+            />
           </div>
         </div>
         <div className={styles.wrapper}>
           <div className="w-8/11 flex flex-col flex-wrap">
             <Typography
               type="h2"
-              color={'textMid'}
+              color={'textDark'}
               text={'What you can expect from these visits'}
-              className="z-50 pt-4"
             />
-            <div className="flex items-center gap-2 pt-4">
+            <div className="flex gap-2 pt-4">
               <div className="bg-secondary mr-2 flex h-12 w-12 items-center justify-center rounded-full">
                 <HeartIcon color="white" className="h-5 w-5" />
               </div>
@@ -78,7 +73,7 @@ export const PregnantRegister: React.FC = () => {
                 className="z-50 w-9/12"
               />
             </div>
-            <div className="flex items-center gap-2 pt-4">
+            <div className="flex gap-2 pt-4">
               <div className="bg-secondary mr-2 flex h-12 w-12 items-center justify-center rounded-full">
                 <LightBulbIcon color="white" className="h-5 w-5" />
               </div>
@@ -91,7 +86,7 @@ export const PregnantRegister: React.FC = () => {
                 className="z-50 w-9/12"
               />
             </div>
-            <div className="flex items-center gap-2 pt-4">
+            <div className="flex gap-2 pt-4">
               <div className="bg-secondary mr-2 flex h-12 w-12 items-center justify-center rounded-full">
                 <ClipboardListIcon color="white" className="h-5 w-5" />
               </div>
@@ -104,7 +99,7 @@ export const PregnantRegister: React.FC = () => {
                 className="z-50 w-9/12"
               />
             </div>
-            <div className={'mt-10 w-full'}>
+            <div className={'mt-9 w-full'}>
               <Button
                 type={'filled'}
                 color={'primary'}

@@ -1,0 +1,20 @@
+﻿using System;
+using ECDLink.DataAccessLayer.Entities;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace EcdLink.Api.CoreApi.GraphApi.Models
+{
+    public class ClinicModel
+    {
+        public string Name { get; set; }
+
+        public string PhoneNumber { get; set; }
+
+        public virtual SiteAddress SiteAddress { get; set; }
+        public Guid? SiteAddressId { get; set; }
+
+        public string EmergencyContactPerson { get; set; }
+
+        public string EmergencyContactNumber { get; set; }
+    }
+}
