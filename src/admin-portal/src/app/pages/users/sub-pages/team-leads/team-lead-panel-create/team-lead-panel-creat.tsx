@@ -1,7 +1,6 @@
 import { useMutation, useQuery } from '@apollo/client';
 import {
   initialPasswordValue,
-  initialHealthCareWorkerValues,
   initialSiteAddressValues,
   initialUserDetailsValues,
   NOTIFICATION,
@@ -10,32 +9,31 @@ import {
   siteAddressSchema,
   useNotifications,
   userSchema,
+  initialTeamLeadValues,
 } from '@ecdlink/core';
 import {
   AddUsersToRole,
-  CreateHealthCareWorker,
   CreateSiteAddress,
+  CreateTeamLead,
   CreateUser,
-  HealthCareWorkerModelInput,
   RoleList,
   SendInviteToApplication,
   SiteAddressInput,
+  TeamLeadModelInput,
   UserModelInput,
 } from '@ecdlink/graphql';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { newGuid } from '../../../../../../utils/uuid.utils';
-import HealthCareWorkerForm from '../../../../components/health-care-worker-form/health-care-worker-form';
-import PasswordForm from '../../../../components/password-form/password-form';
-import SiteAddressForm from '../../../../components/site-address-form/site-address-form';
-import UserDetailsForm from '../../../../components/user-details-form/user-details-form';
-import UserPanelSave from '../../../../components/user-panel-save/user-panel-save';
-import { UserPanelCreateProps } from '../../../../components/users';
+import { newGuid } from '../../../../../utils/uuid.utils';
+import PasswordForm from '../../../components/password-form/password-form';
+import SiteAddressForm from '../../../components/site-address-form/site-address-form';
+import TeamLeadForm from '../../../components/team-lead-form/team-lead-form';
+import UserDetailsForm from '../../../components/user-details-form/user-details-form';
+import UserPanelSave from '../../../components/user-panel-save/user-panel-save';
+import { UserPanelCreateProps } from '../../../components/users';
 
-export default function HealthCareWorkerPanelCreate(
-  props: UserPanelCreateProps
-) {
+export default function TeamLeadPanelCreate(props: UserPanelCreateProps) {
   const { setNotification } = useNotifications();
   const emitCloseDialog = (value: boolean) => {
     props.closeDialog(value);
@@ -52,8 +50,8 @@ export default function HealthCareWorkerPanelCreate(
   }, [roleData]);
 
   const [createUser] = useMutation(CreateUser);
-  const [createHealthCareWorker] = useMutation(CreateHealthCareWorker);
   const [createSiteAddress] = useMutation(CreateSiteAddress);
+  const [createTeamLead] = useMutation(CreateTeamLead);
   const [addRolesToUser] = useMutation(AddUsersToRole);
   const [sendInviteToApplication] = useMutation(SendInviteToApplication);
 
@@ -87,19 +85,17 @@ export default function HealthCareWorkerPanelCreate(
   });
   const { errors: passwordFormErrors } = passwordFormState;
 
-  // HEALTH CARE WORKER FORMS
+  // TEAM LEAD FORMS
   const {
-    register: healthCareWorkerRegister,
-    formState: healthCareWorkerFormState,
-    getValues: healthCareWorkerGetValues,
+    register: teamLeadRegister,
+    formState: teamLeadFormState,
+    getValues: teamLeadGetValues,
   } = useForm({
-    defaultValues: { ...initialHealthCareWorkerValues, sendInvite: false },
+    defaultValues: { ...initialTeamLeadValues, sendInvite: false },
     mode: 'onBlur',
   });
-  const {
-    errors: healthCareWorkerFormErrors,
-    isValid: isHealthCareWorkerValid,
-  } = healthCareWorkerFormState;
+  const { errors: teamLeadFormErrors, isValid: isTeamLeadValid } =
+    teamLeadFormState;
 
   // SITE ADDRESS FORMS
   const { register: siteAddressRegister, getValues: siteAddressGetValues } =
@@ -108,7 +104,7 @@ export default function HealthCareWorkerPanelCreate(
       defaultValues: { ...initialSiteAddressValues, sendInvite: false },
       mode: 'onBlur',
     });
-  const { errors: siteAddressFormErrors } = healthCareWorkerFormState;
+  const { errors: siteAddressFormErrors } = teamLeadFormState;
 
   const onSave = async () => {
     await saveUser();
@@ -193,44 +189,27 @@ export default function HealthCareWorkerPanelCreate(
       }
     }
 
-    await saveHealthCareWorker(userId, siteAddressId);
+    await saveTeamLead(userId, siteAddressId);
   };
 
-  const saveHealthCareWorker = async (
-    userId: string,
-    siteAddressId?: string
-  ) => {
-    const healthCareWorkerForm = healthCareWorkerGetValues();
-    const healthCareWorkeModel: HealthCareWorkerModelInput = {
+  const saveTeamLead = async (userId: string, siteAddressId?: string) => {
+    const teamLeadForm = teamLeadGetValues();
+    const teamLeadModel: TeamLeadModelInput = {
       userId: userId,
-      teamLeadId: healthCareWorkerForm.teamLeadId,
-      languageId: healthCareWorkerForm.languageId,
-      isRegistered: false,
+      clinicId: teamLeadForm.clinicId,
+      jobTitle: teamLeadForm.jobTitle,
     };
 
-    await createHealthCareWorker({
+    await createTeamLead({
       variables: {
-        input: { ...healthCareWorkeModel },
+        input: { ...teamLeadModel },
       },
     });
 
     setNotification({
-      title: 'Successfully Created Health Care Worker!',
+      title: 'Successfully Created Team Lead!',
       variant: NOTIFICATION.SUCCESS,
     });
-
-    if (healthCareWorkerForm.sendInvite) {
-      await sendInviteToApplication({
-        variables: {
-          userId: userId,
-        },
-      });
-
-      setNotification({
-        title: 'Successfully Sent Health Care Worker Invite!',
-        variant: NOTIFICATION.SUCCESS,
-      });
-    }
   };
 
   const saveRoles = async (userId: string) => {
@@ -271,9 +250,9 @@ export default function HealthCareWorkerPanelCreate(
 
   const getIsValid = () => {
     console.log(userDetailFormErrors);
-    console.log(healthCareWorkerFormErrors);
+    console.log(teamLeadFormErrors);
     let isValid = isUserDetailValid;
-    if (!isHealthCareWorkerValid) isValid = false;
+    if (!isTeamLeadValid) isValid = false;
     return isValid ? true : false;
   };
 
@@ -299,14 +278,14 @@ export default function HealthCareWorkerPanelCreate(
         <div className="bg-uiBg mt-5 rounded-lg border-b border-gray-200 px-4 py-5">
           <div className="pb-2">
             <h3 className="text-uiMidDark text-lg font-medium leading-6">
-              Health Care Worker Detail
+              Team Lead Detail
             </h3>
           </div>
 
-          <HealthCareWorkerForm
-            formKey={`createhealthcareworker-${new Date().getTime()}`}
-            register={healthCareWorkerRegister}
-            errors={healthCareWorkerFormErrors}
+          <TeamLeadForm
+            formKey={`createTeamLead-${new Date().getTime()}`}
+            register={teamLeadRegister}
+            errors={teamLeadFormErrors}
           />
         </div>
 

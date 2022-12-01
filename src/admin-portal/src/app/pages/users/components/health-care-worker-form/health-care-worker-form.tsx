@@ -1,6 +1,6 @@
 import { useQuery } from '@apollo/client/react/hooks/useQuery';
-import { LanguageDto } from '@ecdlink/core';
-import { GetAllLanguage } from '@ecdlink/graphql';
+import { LanguageDto, TeamLeadDto } from '@ecdlink/core';
+import { GetAllLanguage, GetAllTeamLead } from '@ecdlink/graphql';
 import { UseFormRegister } from 'react-hook-form';
 import FormField from '../../../../components/form-field/form-field';
 import FormSelectorField from '../../../../components/form-selector-field/form-selector-field';
@@ -20,11 +20,33 @@ const HealthCareWorkerForm: React.FC<HealthCareWorkerFormProps> = ({
     fetchPolicy: 'cache-and-network',
   });
 
+  const { data: teamLeadData } = useQuery(GetAllTeamLead, {
+    fetchPolicy: 'cache-and-network',
+  });
+
   return (
     <form key={formKey} className="space-y-8 divide-y divide-gray-200">
       <div className="space-y-8 divide-y divide-gray-200">
         <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
           <div className="sm:col-span-3">
+            <div className="sm:col-span-3">
+              <FormSelectorField
+                label="Team Lead"
+                nameProp={'teamLeadId'}
+                register={register}
+                options={
+                  teamLeadData &&
+                  teamLeadData.GetAllTeamLead &&
+                  teamLeadData.GetAllTeamLead.map((x: TeamLeadDto) => {
+                    return {
+                      key: x.id,
+                      value: x.user.firstName + ' ' + x.user.surname,
+                    };
+                  })
+                }
+                error={errors.teamLeadId?.message}
+              />
+            </div>
             <FormSelectorField
               label="Language"
               nameProp={'languageId'}

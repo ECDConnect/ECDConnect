@@ -4,6 +4,8 @@ export * from './user.dto';
 export * from './health-care-worker.dto';
 export * from './mother.dto';
 export * from './infant.dto';
+export * from './team-lead.dto';
+export * from './clinic.dto';
 export * from './child.dto';
 export * from './care-giver.dto';
 export * from './user-hierarchy-entity.dto';

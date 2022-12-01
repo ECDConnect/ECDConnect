@@ -23,6 +23,14 @@ export function Users() {
           href: '/users/application',
         },
         {
+          name: 'Clinics',
+          href: '/users/clinics',
+        },
+        {
+          name: 'Team Leads',
+          href: '/users/team-leads',
+        },
+        {
           name: 'Health Care Worker',
           href: '/users/health-care-worker',
         },
@@ -75,8 +83,8 @@ export function Users() {
   }, []);
 
   return (
-    <div className="shadow flex-1 min-w-0 bg-white xl:flex rounded bg-white">
-      <div className="border-b border-gray-200 xl:border-b-0 xl:flex-shrink-0 xl:w-64 xl:border-r xl:border-uiMidDark ">
+    <div className="min-w-0 flex-1 rounded bg-white bg-white shadow xl:flex">
+      <div className="xl:border-uiMidDark border-b border-gray-200 xl:w-64 xl:flex-shrink-0 xl:border-b-0 xl:border-r ">
         {navigation.map((item) => (
           <SubNavigationLink
             key={`${item.name}-${new Date().getTime()}`}
