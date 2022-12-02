@@ -43,7 +43,7 @@ export class ChildProgressReportNotificationValidator
       (role) => role.name === 'Coach'
     );
 
-    if (isCoach) return [];
+    // if (isCoach) return [];
 
     if (!childrenState || !contentReportState) return [];
     const monthOfDate = getMonth(this.currentDate);
@@ -58,7 +58,10 @@ export class ChildProgressReportNotificationValidator
       !this.isLastDateOfReportingPeriod(reportingPeriod)
     )
       return [];
-
+    console.log(
+      getDate(this.currentDate) > 1 &&
+        !this.isLastDateOfReportingPeriod(reportingPeriod)
+    );
     const notifications: Message[] = [];
     for (const child of childrenState.children || []) {
       const childProgressReport = (
