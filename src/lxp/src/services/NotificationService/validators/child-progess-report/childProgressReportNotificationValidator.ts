@@ -33,8 +33,17 @@ export class ChildProgressReportNotificationValidator
   };
 
   getNotifications = (): Message[] => {
-    const { children: childrenState, contentReportData: contentReportState } =
-      this.store.getState();
+    const {
+      children: childrenState,
+      contentReportData: contentReportState,
+      user: userState,
+    } = this.store.getState();
+
+    const isCoach = userState?.user?.roles?.some(
+      (role) => role.name === 'Coach'
+    );
+
+    if (isCoach) return [];
 
     if (!childrenState || !contentReportState) return [];
     const monthOfDate = getMonth(this.currentDate);
