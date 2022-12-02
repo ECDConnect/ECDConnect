@@ -35,6 +35,8 @@ export class IncompleteChildRegistrationNotificationValidator
       (role) => role.name === 'Coach'
     );
 
+    if (isCoach) return [];
+
     if (!childrenState || !staticDataState) return [];
 
     const workflowStatus = staticDataState.WorkflowStatuses?.find(
