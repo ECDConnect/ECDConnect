@@ -119,6 +119,10 @@ export const PregnantMaternalCaseRecord: React.FC<
     return new Date(`${month}/${day}/${year}`);
   };
 
+  const onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    event.preventDefault();
+  };
+
   return (
     <>
       <Typography
@@ -149,6 +153,7 @@ export const PregnantMaternalCaseRecord: React.FC<
             dateFormat="dd"
             renderDayContents={renderDayContents}
             renderCustomHeader={() => <div>Day</div>}
+            onKeyDown={onKeyDown}
           />
           <DatePicker
             placeholderText={'Please select a date'}
@@ -159,6 +164,7 @@ export const PregnantMaternalCaseRecord: React.FC<
             dateFormat="MMMM"
             showMonthYearPicker
             showPopperArrow={true}
+            onKeyDown={onKeyDown}
           />
           <DatePicker
             placeholderText={'Please select a date'}
@@ -170,6 +176,7 @@ export const PregnantMaternalCaseRecord: React.FC<
             maxDate={getDate('max')}
             renderCustomHeader={() => <div>Year</div>}
             showYearPicker
+            onKeyDown={onKeyDown}
           />
         </div>
       </div>
