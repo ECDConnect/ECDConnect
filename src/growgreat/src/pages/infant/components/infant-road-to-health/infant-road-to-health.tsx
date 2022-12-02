@@ -127,9 +127,7 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
                   }}
                 />
                 <Typography
-                  text={
-                    "I do not have a copy of Themba's Road to Health Book. I declare that all information provided about Themba is correct."
-                  }
+                  text={`I do not have a copy of ${infantDetails?.firstName}'s Road to Health Book. I declare that all information provided about Themba is correct.`}
                   type="body"
                   color={'textMid'}
                   className="mt-2"
@@ -139,7 +137,7 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
             <div className={'mt-4 px-4'}>
               <Alert
                 type={'info'}
-                message={`You will be required to upload Themba's document in a future visit.`}
+                message={`You will be required to upload ${infantDetails?.firstName}'s document in a future visit.`}
               />
             </div>
           </div>
