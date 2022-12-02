@@ -81,7 +81,7 @@ export class ChildProgressReportNotificationValidator
         }-${reportingPeriod}-${getYear(this.currentDate)}${
           this.isLastDateOfReportingPeriod(reportingPeriod) ? '-lw' : ''
         }`, // append '-lw' if it's the final day of reporting period.
-        title: `${childUser?.firstName}'s progress report is incomplete'`,
+        title: `${childUser?.firstName} ${childUser?.surname}'s  progress report is incomplete'`,
         message: `Create a progress report for ${childUser?.firstName} to share with caregivers. Remember to remove any children who are no longer attending your programme`,
         priority: NotificationPriority.high,
         actionText: 'Finish reports',
