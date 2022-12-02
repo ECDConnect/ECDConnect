@@ -45,7 +45,7 @@ const PregnantAddressView: React.FC<PregnantAddressProps> = ({
     reValidateMode: 'onChange',
   });
   const { isValid } = useFormState({ control: momContactInformationControl });
-  const [isMapTab, setIsMapTab] = useState(false);
+  const [isMapTab, setIsMapTab] = useState<boolean | undefined>();
   const [isMapView, setIsMapView] = useState(false);
   const [address, setAddress] = useState<Address[]>();
   const [formattedAddress, setFormattedAddress] = useState('');

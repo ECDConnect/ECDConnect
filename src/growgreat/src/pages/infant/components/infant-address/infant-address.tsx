@@ -8,7 +8,7 @@ import {
   FormInput,
 } from '@ecdlink/ui';
 import { useForm, useFormState } from 'react-hook-form';
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   InfantAddressProps,
   useMapOrAddressOptions,
@@ -17,6 +17,15 @@ import {
   InfantAddressModel,
   infantAddressModelSchema,
 } from '@/schemas/infant/infant-address';
+import { Address, CustomGoogleMap } from '@/components/google-map/google-map';
+
+const MARGIN = 16;
+const COMPONENT_HEIGHT = 280;
+
+const getInfo = (address: Address[] | undefined, type: string) =>
+  address?.find((item) =>
+    item?.types.find((currentType) => currentType.includes(type))
+  )?.short_name;
 
 export const InfantAddress: React.FC<InfantAddressProps> = ({
   onSubmit,
@@ -27,7 +36,7 @@ export const InfantAddress: React.FC<InfantAddressProps> = ({
     // watch,
     getValues: getInfantAddressFormValues,
     // formState: pregnantAddressFormState,
-    // setValue: setPregnantAddressFormValue,
+    setValue: setInfantAddressFormValue,
     register: infantAddressFormRegister,
     // reset: resetPregnantAddressFormValue,
     control: infantContactInformationControl,
@@ -42,10 +51,92 @@ export const InfantAddress: React.FC<InfantAddressProps> = ({
     control: infantContactInformationControl,
   });
 
-  const [useMap, setUseMap] = useState(false);
-  //   const handleConsentAccept = () => {
-  //     setConsentFormValue('hasConsent', !accept);
-  //   };
+  const [isMapTab, setIsMapTab] = useState<boolean | undefined>();
+  const [isMapView, setIsMapView] = useState(false);
+  const [address, setAddress] = useState<Address[]>();
+  const [formattedAddress, setFormattedAddress] = useState('');
+
+  const onToggleMapView = () => setIsMapView((prevState) => !prevState);
+
+  const saveAddress = () => {
+    // TODO: add integration
+    console.log('saveAddress', formattedAddress);
+    setInfantAddressFormValue('address', formattedAddress);
+    onToggleMapView();
+  };
+
+  const getAddress = useCallback(() => {
+    const number = getInfo(address, 'street_number');
+    const street = getInfo(address, 'route');
+    const city = getInfo(address, 'administrative_area_level_2');
+
+    setFormattedAddress(
+      `${number ? number : ''} ${street ? street + ', ' : ''}${
+        city ? city : ''
+      }`
+    );
+  }, [address]);
+
+  useEffect(() => getAddress(), [getAddress]);
+
+  if (isMapView) {
+    return (
+      <div
+        className="h-full"
+        style={{ marginLeft: -MARGIN, marginRight: -MARGIN }}
+      >
+        <CustomGoogleMap
+          height={window.screen.height - COMPONENT_HEIGHT}
+          onChange={setAddress}
+        />
+        <div className="min-h-64 absolute bottom-0 z-50 w-full flex-1 rounded-t-2xl bg-white px-5">
+          <Typography
+            type="h2"
+            color={'textDark'}
+            text={`Is this address/location correct?`}
+            className="z-50 pt-6"
+          />
+          <Typography
+            type="h4"
+            color={'textMid'}
+            text={'Move the pin to change address'}
+            className="z-50 w-11/12 pt-2"
+          />
+          <Typography
+            type="h4"
+            color={'secondary'}
+            text={formattedAddress}
+            className="my-5"
+          />
+          <div className="mb-5 flex flex-col gap-3">
+            <Button
+              type="filled"
+              color="primary"
+              className={'max-h-10 w-full'}
+              icon={'SaveIcon'}
+              onClick={saveAddress}
+            >
+              <Typography
+                type="help"
+                className="mr-2"
+                color="white"
+                text={'Save'}
+              />
+            </Button>
+            <Button
+              type="outlined"
+              color="primary"
+              className={'max-h-10 w-full'}
+              icon={'XCircleIcon'}
+              onClick={onToggleMapView}
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -75,34 +166,43 @@ export const InfantAddress: React.FC<InfantAddressProps> = ({
             <ButtonGroup<boolean>
               options={useMapOrAddressOptions}
               onOptionSelected={(value: boolean | boolean[]) =>
-                setUseMap(value as boolean)
+                setIsMapTab(value as boolean)
               }
               color="secondary"
               type={ButtonGroupTypes.Button}
               className={'mt-2 w-full'}
-              selectedOptions={useMap}
+              selectedOptions={isMapTab}
             />
           </div>
         </div>
-        <div className={'mt-4 px-4'}>
-          <Alert
-            type={'info'}
-            // title="Each child is unique!"
-            message={`If you are at ${infantDetails?.firstName}'s house now, you can use your phone's GPS to save the address.`}
+        <Alert
+          type={'info'}
+          className="mt-4"
+          message={`If you are at ${infantDetails?.firstName}'s house now, you can use your phone's GPS to save the address.`}
+        />
+        {isMapTab && (
+          <FormInput<InfantAddressModel>
+            label={'Add address'}
+            register={infantAddressFormRegister}
+            nameProp={'address'}
+            placeholder={'Tap to add'}
+            type={'text'}
+            className="mt-4"
+            onClick={onToggleMapView}
+            suffixIcon={'LocationMarkerIcon'}
+            sufficIconColor={'primary'}
           />
-        </div>
-        {useMap === false && (
-          <>
-            <FormInput<InfantAddressModel>
-              label={'Add address'}
-              register={infantAddressFormRegister}
-              nameProp={'address'}
-              placeholder={'e.g 012 345 6789'}
-              type={'text'}
-              className="mt-4"
-              textInputType="textarea"
-            ></FormInput>
-          </>
+        )}
+        {isMapTab === false && (
+          <FormInput<InfantAddressModel>
+            label={'Add address'}
+            register={infantAddressFormRegister}
+            nameProp={'address'}
+            placeholder={'e.g 012 345 6789'}
+            type={'text'}
+            className="mt-4"
+            textInputType="textarea"
+          ></FormInput>
         )}
       </div>
       <div className="flex h-full items-end">
