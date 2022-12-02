@@ -127,7 +127,7 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
                   }}
                 />
                 <Typography
-                  text={`I do not have a copy of ${infantDetails?.firstName}'s Road to Health Book. I declare that all information provided about Themba is correct.`}
+                  text={`I do not have a copy of ${infantDetails?.firstName}'s Road to Health Book. I declare that all information provided about ${infantDetails?.firstName} is correct.`}
                   type="body"
                   color={'textMid'}
                   className="mt-2"
