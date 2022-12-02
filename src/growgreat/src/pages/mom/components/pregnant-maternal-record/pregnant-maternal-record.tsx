@@ -108,6 +108,17 @@ export const PregnantMaternalCaseRecord: React.FC<
   const diffDates = differenceInWeeks(myDay, currentDate);
   const actualGestationWeek = 40 - diffDates;
 
+  const getDate = (point: 'min' | 'max') => {
+    const day = new Date().getDay();
+    const month = new Date().getMonth();
+    const year =
+      point === 'max'
+        ? new Date().getFullYear() + 1
+        : new Date().getFullYear() - 1;
+
+    return new Date(`${month}/${day}/${year}`);
+  };
+
   return (
     <>
       <Typography
@@ -137,14 +148,14 @@ export const PregnantMaternalCaseRecord: React.FC<
             onChange={(date: Date) => setMyDay(date)}
             dateFormat="dd"
             renderDayContents={renderDayContents}
-            renderCustomHeader={({ date }) => <div></div>}
+            renderCustomHeader={() => <div>Day</div>}
           />
           <DatePicker
             placeholderText={'Please select a date'}
             className="text-primary bg-uiBg focus:border-primary focus:ring-primary mt-1 w-full rounded-md border-none text-lg shadow-sm"
             selected={myMonth}
             onChange={(date: Date) => setMyMonth(date)}
-            renderCustomHeader={({ date }) => <div></div>}
+            renderCustomHeader={() => <div>Month</div>}
             dateFormat="MMMM"
             showMonthYearPicker
             showPopperArrow={true}
@@ -155,6 +166,9 @@ export const PregnantMaternalCaseRecord: React.FC<
             selected={myYear}
             onChange={(date: Date) => setMyYear(date)}
             dateFormat="yyyy"
+            minDate={getDate('min')}
+            maxDate={getDate('max')}
+            renderCustomHeader={() => <div>Year</div>}
             showYearPicker
           />
         </div>
