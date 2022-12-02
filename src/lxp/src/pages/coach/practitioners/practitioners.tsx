@@ -188,7 +188,11 @@ export const Practitioners: React.FC = () => {
         practitioner?.user?.firstName && practitioner?.user?.firstName[0]
       }${practitioner?.user?.surname && practitioner?.user?.surname[0]}`,
       alertSeverity:
-        currentPractitionerMessage?.color === 'green' ? 'success' : 'error',
+        currentPractitionerMessage?.color === 'Success'
+          ? 'success'
+          : currentPractitionerMessage?.color === 'Warning'
+          ? 'warning'
+          : 'error',
       avatarColor: getAvatarColor() || '',
       onActionClick: () => handleClick(practitioner?.userId!),
     };

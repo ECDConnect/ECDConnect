@@ -157,7 +157,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
       <BannerWrapper
         showBackground={true}
         backgroundUrl={theme?.images.graphicOverlayUrl}
-        title={`${practitioner?.user?.firstName}'s Profile`}
+        title={`${practitioner?.user?.firstName} ${practitioner?.user?.surname}`}
         color={'primary'}
         size="medium"
         renderBorder={true}

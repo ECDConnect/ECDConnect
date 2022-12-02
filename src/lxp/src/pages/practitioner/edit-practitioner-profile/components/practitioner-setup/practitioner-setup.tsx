@@ -24,6 +24,7 @@ import { PractitionerFormData } from '../../edit-practitioner-profile.types';
 import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
 import { practitionerSelectors } from '@/store/practitioner';
+import { classroomsActions } from '@/store/classroom';
 
 export const PractitionerSetup = ({
   onSubmit,
@@ -77,9 +78,16 @@ export const PractitionerSetup = ({
 
   const { practitionerToProgramme, allowPermissions } = watch();
 
+  const checkClassroomNeedsToBeRemove = () => {
+    if (!practitionerToProgramme) {
+      classroomsActions?.resetClassroomState();
+      return;
+    }
+  };
+
   return (
     <>
-      <div className="mt-4 wrapper-with-sticky-button">
+      <div className="wrapper-with-sticky-button mt-4">
         <div className="grid gap-4">
           <div>
             <Typography
@@ -154,7 +162,7 @@ export const PractitionerSetup = ({
                 <Typography
                   underline
                   color="secondary"
-                  className="ml-2 flex-0 flex items-center font-medium cursor-pointer"
+                  className="flex-0 ml-2 flex cursor-pointer items-center font-medium"
                   type="body"
                   text="Learn more"
                   onClick={() => setViewPermissionToShare(true)}
@@ -167,7 +175,7 @@ export const PractitionerSetup = ({
         <div className="self-end">
           <Button
             size="normal"
-            className="w-full mb-4"
+            className="mb-4 w-full"
             type="filled"
             color="primary"
             text="Next"
@@ -190,6 +198,7 @@ export const PractitionerSetup = ({
                       practitionerToProgramme: !!practitionerToProgramme,
                       allowPermissions: !!allowPermissions,
                     });
+                    checkClassroomNeedsToBeRemove();
                   }
             }
           />

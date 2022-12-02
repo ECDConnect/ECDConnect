@@ -33,8 +33,17 @@ export class ChildProgressReportNotificationValidator
   };
 
   getNotifications = (): Message[] => {
-    const { children: childrenState, contentReportData: contentReportState } =
-      this.store.getState();
+    const {
+      children: childrenState,
+      contentReportData: contentReportState,
+      user: userState,
+    } = this.store.getState();
+
+    const isCoach = userState?.user?.roles?.some(
+      (role) => role.name === 'Coach'
+    );
+
+    if (isCoach) return [];
 
     if (!childrenState || !contentReportState) return [];
     const monthOfDate = getMonth(this.currentDate);
@@ -72,7 +81,7 @@ export class ChildProgressReportNotificationValidator
         }-${reportingPeriod}-${getYear(this.currentDate)}${
           this.isLastDateOfReportingPeriod(reportingPeriod) ? '-lw' : ''
         }`, // append '-lw' if it's the final day of reporting period.
-        title: `${childUser?.firstName}'s progress report is incomplete'`,
+        title: `${childUser?.firstName} ${childUser?.surname}'s  progress report is incomplete'`,
         message: `Create a progress report for ${childUser?.firstName} to share with caregivers. Remember to remove any children who are no longer attending your programme`,
         priority: NotificationPriority.high,
         actionText: 'Finish reports',
