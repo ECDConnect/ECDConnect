@@ -32,6 +32,8 @@ import Mothers from './pages/users/sub-pages/mother/mother';
 import Practitioners from './pages/users/sub-pages/practitioners/practitioners';
 import Franchisors from './pages/users/sub-pages/franchisors/franchisors';
 import Users from './pages/users/users';
+import Clinics from './pages/users/sub-pages/clincs/clinics';
+import TeamLeads from './pages/users/sub-pages/team-leads/team-leads';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -83,6 +85,8 @@ const UserRoutes: React.FC = () => {
       <Route path={`/users/franchisors`} component={Franchisors}></Route>
       <Route path={`/users/coaches`} component={Coaches}></Route>
       <Route path={`/users/practitioners`} component={Practitioners}></Route>
+      <Route path={`/users/clinics`} component={Clinics}></Route>
+      <Route path={`/users/team-leads`} component={TeamLeads}></Route>
       <Route
         path={`/users/health-care-worker`}
         component={HealthCareWorkers}

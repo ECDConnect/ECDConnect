@@ -43,7 +43,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var healthCareWorkerRepo = repoFactory.CreateRepository<HealthCareWorker>(userContext: uId);
-            HealthCareWorker healthCareWorker = healthCareWorkerRepo.GetAll().Where(x => x.UserId.Contains(userId)).FirstOrDefault();
+            HealthCareWorker healthCareWorker = healthCareWorkerRepo.GetAll().Where(x => x.UserId.Equals(userId)).FirstOrDefault();
 
             return healthCareWorker;
         }
