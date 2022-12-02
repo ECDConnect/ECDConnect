@@ -2,22 +2,57 @@ import { ComponentBaseProps } from '@ecdlink/ui';
 import { GoogleMap } from '@capacitor/google-maps';
 import {
   useRef,
-  useState,
-  useEffect,
   useLayoutEffect,
   MutableRefObject,
+  useCallback,
+  memo,
+  useState,
+  useEffect,
 } from 'react';
-import { MapCoordinates } from '@/components/google-map/google-map.types';
-// import { GoogleMapInterface } from "@capacitor/google-maps/dist/typings/map";
 
-async function useGoogleMap(
-  ref: MutableRefObject<HTMLElement> | any,
-  { latitude, longitude }: MapCoordinates
-): Promise<GoogleMap | void> {
-  let map: GoogleMap;
+export interface Address {
+  long_name: string;
+  short_name: string;
+  types: string[];
+}
 
-  async function initMaps() {
-    map = await GoogleMap.create({
+interface GoogleApiResponse {
+  results: [
+    {
+      address_components: Address[];
+      types: string[];
+    }
+  ];
+}
+
+function useGoogleMap(ref: MutableRefObject<HTMLElement> | any) {
+  const [longitude, setLongitude] = useState(0);
+  const [latitude, setLatitude] = useState(0);
+  const [address, setAddress] = useState<Address[] | undefined>();
+  const [markerChanged, setMarkerChanged] = useState(false);
+
+  const getAddress = useCallback(() => {
+    fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=
+        ${latitude},${longitude}&key=${process.env.REACT_APP_MAP_API_KEY}`)
+      .then((response) => response.json())
+      .then((data: GoogleApiResponse) => {
+        if (data.results.length) {
+          setAddress(
+            data.results.find((result) =>
+              result.address_components.find((address) =>
+                address.types.find(
+                  (type) =>
+                    type.includes('street_number') || type.includes('route')
+                )
+              )
+            )?.address_components
+          );
+        }
+      });
+  }, [latitude, longitude]);
+
+  const initMaps = useCallback(async () => {
+    let map: GoogleMap = await GoogleMap.create({
       id: 'google-map',
       element: ref.current,
       apiKey: process.env.REACT_APP_MAP_API_KEY as string,
@@ -31,7 +66,7 @@ async function useGoogleMap(
       },
     });
 
-    await map.addMarker({
+    const markerId = await map.addMarker({
       coordinate: {
         lat: latitude,
         lng: longitude,
@@ -39,26 +74,30 @@ async function useGoogleMap(
       draggable: true,
     });
 
-    await map.enableCurrentLocation(true);
-    await map.enableClustering();
-  }
+    await map.setOnMarkerDragEndListener((event) => {
+      setMarkerChanged(true);
+      setLongitude(event?.longitude);
+      setLatitude(event?.latitude);
+    });
 
-  // let infoWindow: null; // TODO: implement information window
+    if (markerChanged) {
+      map.removeMarker(markerId);
+
+      await map.addMarker({
+        coordinate: {
+          lat: latitude,
+          lng: longitude,
+        },
+        draggable: true,
+      });
+
+      setMarkerChanged(false);
+      getAddress();
+    }
+  }, [markerChanged, getAddress, latitude, longitude, ref]);
+
   useLayoutEffect(() => {
-    console.log('ref?.current', ref);
-
-    initMaps();
-  });
-}
-
-function useGeoLocation() {
-  const [longitude, setLongitude] = useState(0);
-  const [latitude, setLatitude] = useState(0);
-
-  useEffect(() => {
     navigator.geolocation.getCurrentPosition(({ coords }) => {
-      console.log('coords', coords);
-
       if (coords?.longitude) {
         setLongitude(coords?.longitude);
       }
@@ -66,9 +105,20 @@ function useGeoLocation() {
         setLatitude(coords?.latitude);
       }
     });
-  });
+  }, []);
+
+  useLayoutEffect(() => {
+    initMaps();
+  }, [initMaps]);
+
+  useEffect(() => {
+    if (!address) {
+      getAddress();
+    }
+  }, [address, getAddress]);
 
   return {
+    address,
     coords: {
       latitude,
       longitude,
@@ -78,19 +128,22 @@ function useGeoLocation() {
   };
 }
 
-function CustomGoogleMap(
-  props: ComponentBaseProps & { children?: React.ReactNode | undefined }
+function CustomGoogleMapComponent(
+  props: ComponentBaseProps & {
+    children?: React.ReactNode | undefined;
+    height?: number;
+    onChange?: (address?: Address[]) => void;
+  }
 ) {
   const mapRef = useRef();
-  const { coords } = useGeoLocation();
-  const map = useGoogleMap(mapRef, coords);
 
-  useLayoutEffect(() => {
-    console.log('map', mapRef);
-    // if (mapRef?.current) {
-    //   map(mapRef, coords);
-    // }
-  }, [map]);
+  const { address } = useGoogleMap(mapRef);
+
+  useEffect(() => {
+    if (props.onChange) {
+      props.onChange(address);
+    }
+  }, [address, props]);
 
   return (
     <>
@@ -100,7 +153,7 @@ function CustomGoogleMap(
           style={{
             display: 'inline-block',
             width: window.screen.width,
-            height: window.screen.height / 2,
+            height: props.height || window.screen.height / 2,
           }}
         />
       </div>
@@ -109,4 +162,4 @@ function CustomGoogleMap(
   );
 }
 
-export default CustomGoogleMap;
+export const CustomGoogleMap = memo(CustomGoogleMapComponent);

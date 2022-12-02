@@ -87,7 +87,7 @@ export const ContactInformation: React.FC<
         {hasWhatsapp === false && (
           <>
             <FormInput<PregnantContactInformationModel>
-              label={'What cellphone number does Lethabo use for WhatsApp?'}
+              label={`What cellphone number does ${details?.name} use for WhatsApp?`}
               register={consentFormRegister}
               nameProp={'whatsapp'}
               placeholder={'e.g 012 345 6789'}

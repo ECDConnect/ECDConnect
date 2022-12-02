@@ -212,7 +212,7 @@ export const PregnantMaternalCaseRecord: React.FC<
           <div className={'mt-4'}>
             <Alert
               type={'info'}
-              message={`You will need to upload Lethabo's documents and expected delivery date in a future visit.`}
+              message={`You will need to upload ${details?.name}'s documents and expected delivery date in a future visit.`}
             />
           </div>
         </>
