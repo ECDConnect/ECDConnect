@@ -331,7 +331,7 @@ export const InfantRegisterForm: React.FC = () => {
           <MotherContactInformation
             details={details}
             onSubmit={(value) => {
-              setLabel(`step 4 of 5`);
+              setLabel(`step 6 of 6`);
               setActiveStep(InfantRegisterSteps.pregnantAddress);
               setContactInformation(value);
             }}
