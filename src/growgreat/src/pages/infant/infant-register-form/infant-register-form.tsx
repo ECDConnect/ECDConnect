@@ -141,7 +141,7 @@ export const InfantRegisterForm: React.FC = () => {
           id: siteAddressId,
           addressLine1: address ?? '',
         };
-        const user: UserDto = {
+        const userInput: UserDto = {
           phoneNumber: contactInformation?.cellphone ?? '',
           firstName: caregiverDetails?.name || details?.name || '',
           surname: caregiverDetails?.surname || details?.surname || '',
@@ -158,13 +158,14 @@ export const InfantRegisterForm: React.FC = () => {
           siteAddress: siteAddress,
           isActive: true,
           relationId: child?.relationshipId || details?.relationshipId || '', // TODO we need to get the relation ids here // child?.relationship ?? '',
+          healthCareWorkerId: user?.id,
         };
         const infantInputModel: InfantDto = {
           dateOfBirth: child?.dateOfBirth?.toISOString(),
           firstName: child?.firstName,
           documents: child?.roadToHealthBook,
           userId: childUserId ?? '',
-          user: user,
+          user: userInput,
           weightAtBirth: weightAtBirth,
           lengthAtBirth: lengthAtBirth,
           genderId: child?.genderId ?? '',
@@ -205,7 +206,6 @@ export const InfantRegisterForm: React.FC = () => {
       let weightAtBirth = undefined;
       let lengthAtBirth = undefined;
       if (!infantRoadToHealthBook?.notRoadToHealthBook) {
-        console.log(infantRoadToHealthBook?.notRoadToHealthBook);
         weightAtBirth =
           (infantRoadToHealthBook?.weightAtBirth &&
             +infantRoadToHealthBook?.weightAtBirth) ??
@@ -236,6 +236,7 @@ export const InfantRegisterForm: React.FC = () => {
         phoneNumber: contactInformation?.cellphone ?? '',
         whatsAppNumber: contactInformation?.whatsapp,
         age: caregiverDetails?.age || details?.age || '',
+        healthCareWorkerId: user?.id,
         isActive: true,
         siteAddress: siteAddress,
         relationId:

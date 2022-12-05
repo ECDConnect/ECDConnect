@@ -105,6 +105,7 @@ const mapCaregiver = (x: Partial<CaregiverDto>): CaregiverModelInput => ({
   surname: x.surname,
   phoneNumber: x.phoneNumber,
   whatsAppNumber: x.whatsAppNumber,
+  healthCareWorkerId: x.healthCareWorkerId,
   age: x.age,
   relationId: x.relationId,
   siteAddress: mapSiteAddress(x.siteAddress!),
