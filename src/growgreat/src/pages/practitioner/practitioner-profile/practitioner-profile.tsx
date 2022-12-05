@@ -50,12 +50,12 @@ export const PractitionerProfile: React.FC = () => {
       {
         title: `${user?.firstName} ${user?.surname}`,
         subTitle: 'About me',
-        menuIconUrl: userProfilePicture?.file,
+        menuIconUrl: userProfilePicture?.file || user?.profileImageUrl,
         menuIcon: 'UserIcon',
         iconBackgroundColor: 'primary',
         iconColor: 'white',
 
-        showIcon: userProfilePicture?.file === undefined,
+        showIcon: !userProfilePicture?.file && !user?.profileImageUrl,
         onActionClick() {
           return history.push(ROUTES.PRACTITIONER.ABOUT);
         },
