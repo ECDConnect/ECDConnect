@@ -48,8 +48,13 @@ import { useStaticData } from '@/hooks/useStaticData';
 import { FileTypeEnum, WorkflowStatusEnum } from '@ecdlink/graphql';
 import { documentActions, documentThunkActions } from '@/store/document';
 import { useWindowSize } from '@reach/window-size';
+import { MotherDetailsModel } from '@/schemas/infant/mother-details';
 
 const BANNER_HEIGHT = 64;
+
+interface onSubmit {
+  caregiverDetails?: MotherDetailsModel;
+}
 
 export const InfantRegisterForm: React.FC = () => {
   const [label, setLabel] = useState('');
@@ -102,9 +107,9 @@ export const InfantRegisterForm: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [infantRoadToHealthBook]);
 
-  const handleExistingUser = () => {
+  const handleExistingUser = ({ caregiverDetails }: onSubmit) => {
     if (isAlreadyClient) {
-      completeAllSteps();
+      completeAllSteps({ caregiverDetails });
       showSuccessMessage();
       return;
     }
@@ -120,8 +125,8 @@ export const InfantRegisterForm: React.FC = () => {
     setActiveStep(InfantRegisterSteps.motherDetails);
   };
 
-  const completeAllSteps = () => {
-    if (multipleChildrenArray.length >= 1) {
+  const completeAllSteps = ({ caregiverDetails }: onSubmit) => {
+    if (multipleChildrenArray?.length >= 1) {
       for (const child of multipleChildrenArray) {
         let weightAtBirth = undefined;
         let lengthAtBirth = undefined;
@@ -131,7 +136,6 @@ export const InfantRegisterForm: React.FC = () => {
         }
 
         const childUserId = newGuid();
-        const caregiverId = newGuid();
         const siteAddressId = newGuid();
         const siteAddress: SiteAddressDto = {
           id: siteAddressId,
@@ -139,21 +143,21 @@ export const InfantRegisterForm: React.FC = () => {
         };
         const user: UserDto = {
           phoneNumber: contactInformation?.cellphone ?? '',
-          firstName: details?.name ?? '',
-          surname: details?.surname ?? '',
+          firstName: caregiverDetails?.name || details?.name || '',
+          surname: caregiverDetails?.surname || details?.surname || '',
           dateOfBirth: infantDetails?.dateOfBirth?.toISOString(),
         };
         const caregiverInput: CaregiverDto = {
-          id: caregiverId,
-          firstName: details?.name ?? '',
-          surname: details?.surname ?? '',
+          id: child.caregiver?.id,
+          firstName: caregiverDetails?.name || details?.name || '',
+          surname: caregiverDetails?.surname || details?.surname || '',
           phoneNumber: contactInformation?.cellphone ?? '',
           whatsAppNumber:
             contactInformation?.whatsapp ?? contactInformation?.cellphone,
-          age: details?.age,
+          age: caregiverDetails?.age || details?.age || '',
           siteAddress: siteAddress,
           isActive: true,
-          relationId: details?.relationshipId, // TODO we need to get the relation ids here // child?.relationship ?? '',
+          relationId: child?.relationshipId || details?.relationshipId || '', // TODO we need to get the relation ids here // child?.relationship ?? '',
         };
         const infantInputModel: InfantDto = {
           dateOfBirth: child?.dateOfBirth?.toISOString(),
@@ -164,9 +168,10 @@ export const InfantRegisterForm: React.FC = () => {
           weightAtBirth: weightAtBirth,
           lengthAtBirth: lengthAtBirth,
           genderId: child?.genderId ?? '',
-          caregiverId: details?.id,
+          caregiverId: child?.caregiver?.id,
           caregiver: caregiverInput,
         };
+
         appDispatch(caregiverActions.createCaregiver(caregiverInput));
         appDispatch(infantActions.addInfant(infantInputModel));
         appDispatch(
@@ -220,20 +225,21 @@ export const InfantRegisterForm: React.FC = () => {
       };
       const user: UserDto = {
         phoneNumber: contactInformation?.cellphone ?? '',
-        firstName: details?.name ?? '',
-        surname: details?.surname ?? '',
+        firstName: caregiverDetails?.name || details?.name || '',
+        surname: caregiverDetails?.surname || details?.surname || '',
         dateOfBirth: infantDetails?.dateOfBirth?.toISOString(),
       };
       const caregiverInput: CaregiverDto = {
         id: caregiverId,
-        firstName: details?.name ?? '',
-        surname: details?.surname ?? '',
+        firstName: caregiverDetails?.name || details?.name || '',
+        surname: caregiverDetails?.surname || details?.surname || '',
         phoneNumber: contactInformation?.cellphone ?? '',
         whatsAppNumber: contactInformation?.whatsapp,
-        age: details?.age,
+        age: caregiverDetails?.age || details?.age || '',
         isActive: true,
         siteAddress: siteAddress,
-        relationId: details?.relationshipId,
+        relationId:
+          caregiverDetails?.relationshipId || details?.relationshipId || '',
       };
       const infantInputModel: InfantDto = {
         dateOfBirth: infantDetails?.dateOfBirth?.toISOString(),
@@ -244,9 +250,10 @@ export const InfantRegisterForm: React.FC = () => {
         user: user,
         weightAtBirth: weightAtBirth,
         lengthAtBirth: lengthAtBirth,
-        caregiverId: details?.id,
+        caregiverId: caregiverDetails?.id || details?.id || '',
         caregiver: caregiverInput,
       };
+
       appDispatch(caregiverActions.createCaregiver(caregiverInput));
       appDispatch(infantActions.addInfant(infantInputModel));
       appDispatch(
@@ -329,7 +336,7 @@ export const InfantRegisterForm: React.FC = () => {
             isAlreadyClient={isAlreadyClient}
             onSubmit={(value) => {
               setDetails(value as any);
-              handleExistingUser();
+              handleExistingUser({ caregiverDetails: value });
 
               if (isAlreadyClient) {
                 return setLabel(`step 4 of 4`);
@@ -358,7 +365,7 @@ export const InfantRegisterForm: React.FC = () => {
             onSubmit={(value) => {
               setLabel(`step 6 of 6`);
               setAddress(value.address);
-              completeAllSteps();
+              completeAllSteps({});
               showSuccessMessage();
             }}
           />
