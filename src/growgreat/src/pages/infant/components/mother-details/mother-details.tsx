@@ -94,7 +94,7 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
         <Divider dividerType="dashed" />
       </div>
       <div className="mb-2 w-full">
-        {multipleChildrenArray?.length! > 1 ? (
+        {!!multipleChildrenArray?.length ? (
           multipleChildrenArray?.map((child, index) => {
             return (
               <div key={index}>
@@ -193,6 +193,7 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
             options={yesNoOptions}
             onOptionSelected={(value: boolean | boolean[]) => {
               setIsAlreadyClient(value);
+              setMotherDetailsFormValue('id', '');
               setMotherDetailsFormValue('name', '');
               setMotherDetailsFormValue('surname', '');
             }}
@@ -270,6 +271,16 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
                     const caregiver = caregivers?.find(
                       (item) => item.id === value
                     );
+
+                    if (multipleChildrenArray?.length) {
+                      setMultipleChildrenArray(
+                        multipleChildrenArray.map((child) => ({
+                          ...child,
+                          caregiver,
+                        }))
+                      );
+                    }
+
                     setMotherDetailsFormValue('name', caregiver?.firstName);
                     setMotherDetailsFormValue('surname', caregiver?.surname);
                     setMotherDetailsFormValue('age', caregiver?.age);
@@ -296,9 +307,11 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
             // setContactInformation(handleAddExistingUser?.phoneNumber);
           }}
           disabled={
-            !isValid ||
+            (!multipleChildrenArray && !isValid) ||
             (isAlreadyClient && !getMotherDetailsFormValues('id')) ||
-            (!isAlreadyClient && !getMotherDetailsFormValues('age'))
+            (!isAlreadyClient && !getMotherDetailsFormValues('age')) ||
+            multipleChildrenArray?.filter((child) => child?.relationshipId)
+              .length !== multipleChildrenArray?.length
           }
         />
       </div>
