@@ -1,4 +1,10 @@
-import { BannerWrapper, Card, Typography, Button } from '@ecdlink/ui';
+import {
+  BannerWrapper,
+  Card,
+  Typography,
+  Button,
+  DialogPosition,
+} from '@ecdlink/ui';
 import { useHistory } from 'react-router-dom';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useAppDispatch } from '@store';
@@ -24,10 +30,11 @@ import {
   InfantDto,
   SiteAddressDto,
   UserDto,
-} from '@/../../../packages/core/lib';
+  useDialog,
+} from '@ecdlink/core/lib';
 import { EditConsentAgreementProps } from '../components/consent-agrement/consent-agreement.types';
 import { infantActions, infantThunkActions } from '@/store/infant';
-import momImage from '../../../assets/momImage.png';
+import momImage from '@/assets/happyMom.svg';
 import { useSelector } from 'react-redux';
 import { userSelectors } from '@store/user';
 import {
@@ -68,9 +75,10 @@ export const InfantRegisterForm: React.FC = () => {
   >([]);
   let numberOfChildren: number | undefined = hasConsent?.numberOfChildren;
   const [multipleChildrenCount, setMultipleChildrenCount] = useState<number>(1);
-  const [registeredClientVisible, setRegisteredClientVisible] = useState(false);
 
   const { height } = useWindowSize();
+
+  const dialog = useDialog();
 
   const { getWorkflowStatusIdByEnum, getDocumentTypeIdByEnum } =
     useStaticData();
@@ -97,7 +105,7 @@ export const InfantRegisterForm: React.FC = () => {
   const handleExistingUser = () => {
     if (isAlreadyClient) {
       completeAllSteps();
-      history.push(ROUTES.DASHBOARD);
+      showSuccessMessage();
       return;
     }
     setActiveStep(InfantRegisterSteps.pregnantContactInformation);
@@ -320,9 +328,14 @@ export const InfantRegisterForm: React.FC = () => {
             setIsAlreadyClient={setIsAlreadyClient}
             isAlreadyClient={isAlreadyClient}
             onSubmit={(value) => {
-              setLabel(`step 5 of 6`);
               setDetails(value as any);
               handleExistingUser();
+
+              if (isAlreadyClient) {
+                return setLabel(`step 4 of 4`);
+              }
+
+              return setLabel(`step 5 of 6`);
             }}
           />
         );
@@ -331,7 +344,7 @@ export const InfantRegisterForm: React.FC = () => {
           <MotherContactInformation
             details={details}
             onSubmit={(value) => {
-              setLabel(`step 4 of 5`);
+              setLabel(`step 6 of 6`);
               setActiveStep(InfantRegisterSteps.pregnantAddress);
               setContactInformation(value);
             }}
@@ -344,16 +357,83 @@ export const InfantRegisterForm: React.FC = () => {
             infantDetails={infantDetails}
             onSubmit={(value) => {
               setLabel(`step 6 of 6`);
-              // setActiveStep(InfantRegisterSteps.pregnantMaternalRecord);
               setAddress(value.address);
               completeAllSteps();
-              // history.push(ROUTES.DASHBOARD);
-              setRegisteredClientVisible(true);
+              showSuccessMessage();
             }}
           />
         );
     }
   };
+
+  const showSuccessMessage = () =>
+    dialog({
+      position: DialogPosition.Middle,
+      color: 'bg-transparent',
+      render(onSubmit, onClose) {
+        return (
+          <Card
+            shadowSize={'lg'}
+            borderRaduis={'3xl'}
+            className="flex flex-col items-center justify-center px-4 py-6"
+          >
+            <div className="bg-tertiary flex h-28 w-28 justify-center overflow-hidden rounded-full">
+              <img className={'mt-6'} src={momImage} alt="card" />
+            </div>
+            <Typography
+              type="h3"
+              weight="bold"
+              className="mt-4"
+              lineHeight="snug"
+              text={'New client registered!'}
+            />
+            <Typography
+              type="body"
+              color="textMid"
+              className="mt-4 text-center"
+              lineHeight="snug"
+              text={
+                hasConsent?.numberOfChildren! > 0
+                  ? `Great job ${user?.firstName}, you've registered ${hasConsent?.numberOfChildren} children this month.`
+                  : `Great job ${user?.firstName}, you've registered 1 child this month.`
+              }
+            />
+            <Typography
+              className="mt-7"
+              color="textDark"
+              text={`Keep going!`}
+              type="body"
+              lineHeight="snug"
+            />
+            <div className={'mt-4 flex w-full justify-center'}>
+              <Button
+                text={`Close`}
+                icon={'XIcon'}
+                type={'filled'}
+                color={'primary'}
+                textColor={'white'}
+                className={'max-h-10 w-full'}
+                iconPosition={'start'}
+                onClick={() => {
+                  history.push(ROUTES.DASHBOARD);
+                  onClose();
+                }}
+              />
+            </div>
+          </Card>
+        );
+      },
+    });
+
+  useEffect(() => {
+    if (activeStep === InfantRegisterSteps.motherDetails && isAlreadyClient) {
+      setLabel('step 4 of 4');
+    }
+
+    if (activeStep === InfantRegisterSteps.motherDetails && !isAlreadyClient) {
+      setLabel('step 4 of 6');
+    }
+  }, [activeStep, isAlreadyClient]);
 
   return (
     <div className="text-textMid">
@@ -365,69 +445,12 @@ export const InfantRegisterForm: React.FC = () => {
         onBack={() => history.goBack()}
         displayOffline={!isOnline}
       ></BannerWrapper>
-      {registeredClientVisible ? (
-        <div className="mt-40 flex h-full w-full items-center justify-center">
-          <Card
-            borderRaduis={'md'}
-            shadowSize={'lg'}
-            className="flex w-11/12 flex-col items-center justify-center p-4"
-          >
-            <div className="bg-tertiary flex h-28 w-28 items-center justify-center rounded-full">
-              <img className={'m-auto'} src={momImage} alt="card" />
-            </div>
-            <div>
-              <Typography
-                className="mt-6"
-                text={'New client registered!'}
-                type="h3"
-                weight="bold"
-                lineHeight="snug"
-              />
-            </div>
-            <div>
-              <Typography
-                className="mt-4 text-center"
-                color="textMid"
-                text={
-                  hasConsent?.numberOfChildren! > 0
-                    ? `Great job ${user?.firstName}, you've registered ${hasConsent?.numberOfChildren} children this month.`
-                    : `Great job ${user?.firstName}, you've registered 1 child this month.`
-                }
-                type="body"
-                lineHeight="snug"
-              />
-            </div>
-            <div>
-              <Typography
-                className="mt-8"
-                color="textMid"
-                text={`Keep going`}
-                type="body"
-                lineHeight="snug"
-              />
-            </div>
-            <div className={'mt-4 flex w-full justify-center'}>
-              <Button
-                type={'filled'}
-                color={'primary'}
-                className={'max-h-10 w-11/12'}
-                textColor={'white'}
-                text={`Close`}
-                icon={'XIcon'}
-                iconPosition={'start'}
-                onClick={() => history.push(ROUTES.DASHBOARD)}
-              />
-            </div>
-          </Card>
-        </div>
-      ) : (
-        <div
-          className={'flex flex-col overflow-auto px-4 pb-5'}
-          style={{ height: height - BANNER_HEIGHT }}
-        >
-          {steps(activeStep as InfantRegisterSteps)}
-        </div>
-      )}
+      <div
+        className={'flex flex-col overflow-auto px-4 pb-5'}
+        style={{ height: height - BANNER_HEIGHT }}
+      >
+        {steps(activeStep as InfantRegisterSteps)}
+      </div>
     </div>
   );
 };

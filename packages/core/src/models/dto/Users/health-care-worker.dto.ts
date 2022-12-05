@@ -22,6 +22,12 @@ export interface HealthCareWorkerDto extends EntityBase {
     clinic?: {
       name?: string;
       phoneNumber?: string;
+      siteAddress?: SiteAddressDto;
+    };
+    user?: {
+      firstName?: string;
+      surname?: string;
+      phoneNumber?: string;
     };
   };
 }

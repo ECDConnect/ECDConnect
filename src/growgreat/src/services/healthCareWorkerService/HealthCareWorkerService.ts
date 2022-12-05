@@ -45,6 +45,11 @@ class HealthCareWorkerService {
           }
           teamLead {
             jobTitle
+            user {
+              firstName
+              surname
+              phoneNumber
+            }
               clinic {
                 name
                 phoneNumber

@@ -38,9 +38,9 @@ import { analyticsActions } from '@/store/analytics';
 import { setStorageItem } from '@/utils/common/local-storage.utils';
 import * as styles from '@/pages/practitioner/practitioner-about/practitioner-about.styles';
 import ROUTES from '@/routes/routes';
-import LanguageSelector from '@/components/language-selector/language-selector';
 import { staticDataSelectors } from '@/store/static-data';
 import { healthCareWorkerSelectors } from '@/store/healthCareWorker';
+import { ClinicDetails } from './components/clinicDetails/clinic-details';
 
 export const PractitionerAbout: React.FC = () => {
   const history = useHistory();
@@ -69,6 +69,7 @@ export const PractitionerAbout: React.FC = () => {
 
   const pictureStorageKey = LocalStorageKeys.practitionerProfilePicture;
   const [listItems, setListItems] = useState<ActionListDataItem[]>([]);
+  const [clinicDetails, setClinicDetails] = useState(false);
 
   const getDefaultFormvalues = () => {
     if (user) {
@@ -151,27 +152,14 @@ export const PractitionerAbout: React.FC = () => {
           ? 'outlined'
           : 'filled',
         onActionClick: () => {
-          // editField({
-          //   label: 'Cellphone Number',
-          //   formFieldName: 'cellphone',
-          //   value: practitionerAboutFormGetValues().cellphone,
-          // });
+          setClinicDetails(true);
         },
       },
       {
         title: 'Your Team Leader',
-        subTitle: healthCareWorker?.teamLead?.jobTitle || '',
+        subTitle: healthCareWorker?.teamLead?.user?.firstName || '',
         switchTextStyles: true,
-        actionName: 'View',
-        actionIcon: 'EyeIcon',
         buttonType: currentUser?.email ? 'outlined' : 'filled',
-        onActionClick: () => {
-          // editField({
-          //   label: 'Email Address',
-          //   formFieldName: 'email',
-          //   value: practitionerAboutFormGetValues().email,
-          // });
-        },
       },
       {
         title: 'Preferred language on app',
@@ -298,6 +286,12 @@ export const PractitionerAbout: React.FC = () => {
 
   return (
     <div className={styles.container}>
+      <Dialog fullScreen visible={clinicDetails} position={DialogPosition.Top}>
+        <ClinicDetails
+          healthCareWorker={healthCareWorker}
+          setClinicDetails={setClinicDetails}
+        />
+      </Dialog>
       <BannerWrapper
         showBackground={true}
         backgroundUrl={theme?.images.graphicOverlayUrl}
@@ -401,13 +395,6 @@ export const PractitionerAbout: React.FC = () => {
               {renderIcon('XIcon', 'h-6 w-6 text-uiLight')}
             </div>
           </div>
-          {/* <FormInput<PractitionerAboutModel>
-            visible={true}
-            nameProp={dialogFormInput.formFieldName}
-            register={practitionerAboutRegister}
-            disabled={false}
-            className={!displayError ? 'mb-6' : ''}
-          /> */}
           <Dropdown
             placeholder={'Choose language'}
             list={
@@ -429,10 +416,6 @@ export const PractitionerAbout: React.FC = () => {
               });
             }}
           />
-          {/* <LanguageSelector
-            currentLocale={'en-za'}
-            selectLanguage={(data) => saveLanguage(data)}
-          /> */}
           {displayError && (
             <div className={'mt-2'}>
               <Typography
