@@ -34,6 +34,7 @@ export const PractitionerSetup = ({
     allowPermissions,
   }: PractitionerFormData) => void;
 }) => {
+  const appDispatch = useAppDispatch();
   const history = useHistory();
   const [principalName, setPrincipalName] = useState<string>('Principal');
   const [programName, setProgramName] = useState<string>('Programme');
@@ -78,9 +79,10 @@ export const PractitionerSetup = ({
 
   const { practitionerToProgramme, allowPermissions } = watch();
 
-  const checkClassroomNeedsToBeRemove = () => {
+  const checkClassroomNeedsToBeRemove = async () => {
     if (!practitionerToProgramme) {
-      classroomsActions?.resetClassroomState();
+      console.log('remove class func');
+      await appDispatch(classroomsActions.resetClassroomState());
       return;
     }
   };
@@ -191,6 +193,7 @@ export const PractitionerSetup = ({
                 ? () => {
                     getPractitionerResponse();
                     history.push(ROUTES.PRINCIPAL.SETUP_PROFILE);
+                    checkClassroomNeedsToBeRemove();
                   }
                 : () => {
                     getPractitionerResponse();
@@ -198,7 +201,6 @@ export const PractitionerSetup = ({
                       practitionerToProgramme: !!practitionerToProgramme,
                       allowPermissions: !!allowPermissions,
                     });
-                    checkClassroomNeedsToBeRemove();
                   }
             }
           />

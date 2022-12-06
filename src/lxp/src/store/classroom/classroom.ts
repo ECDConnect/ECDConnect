@@ -35,6 +35,7 @@ const classroomsSlice = createSlice({
       state.programmeType = action.payload;
     },
     resetClassroomState: (state) => {
+      console.log({ state });
       state.classroom = initialState.classroom;
       state.classroomGroups = initialState.classroomGroups;
       state.classroomProgrammes = initialState.classroomProgrammes;
