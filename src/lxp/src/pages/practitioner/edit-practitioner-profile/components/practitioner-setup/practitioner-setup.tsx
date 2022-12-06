@@ -81,7 +81,6 @@ export const PractitionerSetup = ({
 
   const checkClassroomNeedsToBeRemove = async () => {
     if (!practitionerToProgramme) {
-      console.log('remove class func');
       await appDispatch(classroomsActions.resetClassroomState());
       return;
     }
