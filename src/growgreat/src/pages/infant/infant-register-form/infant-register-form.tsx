@@ -120,8 +120,10 @@ export const InfantRegisterForm: React.FC = () => {
     if (multipleChildrenCount < Number(numberOfChildren!)) {
       setActiveStep(InfantRegisterSteps.infantDetails);
       setMultipleChildrenCount(multipleChildrenCount + 1);
+      setLabel(`step 2 of 6`);
       return;
     }
+    setLabel(`step 4 of 6`);
     setActiveStep(InfantRegisterSteps.motherDetails);
   };
 
@@ -318,7 +320,6 @@ export const InfantRegisterForm: React.FC = () => {
           <InfantRoadToHealth
             infantDetails={infantDetails}
             onSubmit={(value) => {
-              setLabel(`step 4 of 6`);
               handleMultipleChildrenSteps();
               // setActiveStep(InfantRegisterSteps.motherDetails);
               setInfantRoadToHealthBook(value);
