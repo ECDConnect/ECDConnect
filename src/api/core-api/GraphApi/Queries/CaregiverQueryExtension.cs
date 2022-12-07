@@ -84,17 +84,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             [Service] IGenericRepositoryFactory repoFactory,
             string id)
         {
+            var healtCareWorkerIdGuid = new Guid(id);
             var uId = contextAccessor.HttpContext.GetUser().Id;
-            var careGiverRepo = repoFactory.CreateRepository<Caregiver>(userContext: uId);
-            var healthCareWorkerRepo = repoFactory.CreateRepository<HealthCareWorker>(userContext: uId);
-            var healthCareWorker = healthCareWorkerRepo.GetAll().Where(x => x.UserId.Equals(uId)).FirstOrDefault();
+            var careGiverRepo = repoFactory.CreateGenericRepository<Caregiver>(userContext: uId);
+            List<Caregiver> caregivers = new List<Caregiver>();
 
-            if(healthCareWorker == null)
+            if (healtCareWorkerIdGuid != null)
             {
-                return new List<Caregiver>();
+                caregivers = careGiverRepo.GetAll().Where(x => x.HealthCareWorkerId.Equals(healtCareWorkerIdGuid)).ToList();
             }
 
-            return careGiverRepo.GetAll().Where(x => x.HealthCareWorkerId.Equals(healthCareWorker.Id)).ToList();
+            return caregivers;
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
