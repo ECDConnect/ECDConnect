@@ -81,9 +81,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public List<Caregiver> GetAllCaregiversForHealthCareWorker([Service] IHttpContextAccessor contextAccessor,
+            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
             string id)
         {
+            using var scope = dbFactory.CreateDbContext();
+            using var dbContextTransaction = scope.Database.BeginTransaction();
+
             var healtCareWorkerIdGuid = new Guid(id);
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var careGiverRepo = repoFactory.CreateGenericRepository<Caregiver>(userContext: uId);
