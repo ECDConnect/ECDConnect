@@ -227,7 +227,12 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
           onClick={() => {
             onSubmit(getRoadToHealthFormValues());
           }}
-          disabled={!isValid && !confirmHasNoRecord}
+          disabled={
+            (hasMaternalCaseRecord && !isValid) ||
+            (hasMaternalCaseRecord &&
+              !getRoadToHealthFormValues('roadToHealthBook')) ||
+            (!hasMaternalCaseRecord && !confirmHasNoRecord)
+          }
         />
       </div>
       <Dialog
