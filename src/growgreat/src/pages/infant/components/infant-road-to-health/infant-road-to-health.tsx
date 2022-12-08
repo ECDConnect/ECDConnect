@@ -12,7 +12,7 @@ import {
 } from '@ecdlink/ui';
 import { PhotoPrompt } from '../../../../components/photo-prompt/photo-prompt';
 import { useForm, useFormState } from 'react-hook-form';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   PregnantMaternalCaseRecordProps,
   yesNoOptions,
@@ -29,7 +29,7 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
   infantDetails,
 }) => {
   const {
-    // watch,
+    watch,
     trigger,
     getValues: getRoadToHealthFormValues,
     // formState: pregnantMaternalRecordState,
@@ -56,9 +56,7 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
     useState<boolean>(false);
   const [maternalRecordExampleVisible, setMaternalRecordExampleVisible] =
     useState(false);
-  //   const handleConsentAccept = () => {
-  //     setConsentFormValue('hasConsent', !accept);
-  //   };
+
   const [confirmHasNoRecord, setConfirmHasNoRecord] = useState(false);
 
   const setPhotoUrl = (imageUrl: string) => {
@@ -71,6 +69,10 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
   const handleConsentAccept = () => {
     setRoadToHealthFormValue('notRoadToHealthBook', !confirmHasNoRecord);
   };
+
+  useEffect(() => {
+    watch();
+  }, [watch]);
 
   return (
     <>
@@ -211,6 +213,14 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
                   className="z-50 mt-12"
                 />
               </div>
+              {String(getRoadToHealthFormValues('weightAtBirth'))?.length > 0 &&
+                Number(getRoadToHealthFormValues('weightAtBirth')) < 2.5 && (
+                  <Alert
+                    type={'warning'}
+                    message={'Low birth weight'}
+                    className="mt-6"
+                  />
+                )}
             </div>
           </>
         )}
@@ -219,7 +229,7 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
         <Button
           type={'filled'}
           color={'primary'}
-          className="mt-4 w-full"
+          className="mt-6 w-full"
           textColor={'white'}
           text={`Next`}
           icon={'ArrowCircleRightIcon'}
@@ -227,7 +237,12 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
           onClick={() => {
             onSubmit(getRoadToHealthFormValues());
           }}
-          disabled={!isValid && !confirmHasNoRecord}
+          disabled={
+            (hasMaternalCaseRecord && !isValid) ||
+            (hasMaternalCaseRecord &&
+              !getRoadToHealthFormValues('roadToHealthBook')) ||
+            (!hasMaternalCaseRecord && !confirmHasNoRecord)
+          }
         />
       </div>
       <Dialog

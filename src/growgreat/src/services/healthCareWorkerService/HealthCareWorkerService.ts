@@ -65,6 +65,7 @@ class HealthCareWorkerService {
                   }
               }
           }
+          id
           isRegistered
           languageId
         }
