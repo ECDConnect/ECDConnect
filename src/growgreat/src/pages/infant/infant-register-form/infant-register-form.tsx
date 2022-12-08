@@ -48,8 +48,13 @@ import { useStaticData } from '@/hooks/useStaticData';
 import { FileTypeEnum, WorkflowStatusEnum } from '@ecdlink/graphql';
 import { documentActions, documentThunkActions } from '@/store/document';
 import { useWindowSize } from '@reach/window-size';
+import { MotherDetailsModel } from '@/schemas/infant/mother-details';
 
 const BANNER_HEIGHT = 64;
+
+interface onSubmit {
+  caregiverDetails?: MotherDetailsModel;
+}
 
 export const InfantRegisterForm: React.FC = () => {
   const [label, setLabel] = useState('');
@@ -102,9 +107,9 @@ export const InfantRegisterForm: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [infantRoadToHealthBook]);
 
-  const handleExistingUser = () => {
+  const handleExistingUser = ({ caregiverDetails }: onSubmit) => {
     if (isAlreadyClient) {
-      completeAllSteps();
+      completeAllSteps({ caregiverDetails });
       showSuccessMessage();
       return;
     }
@@ -115,13 +120,15 @@ export const InfantRegisterForm: React.FC = () => {
     if (multipleChildrenCount < Number(numberOfChildren!)) {
       setActiveStep(InfantRegisterSteps.infantDetails);
       setMultipleChildrenCount(multipleChildrenCount + 1);
+      setLabel(`step 2 of 6`);
       return;
     }
+    setLabel(`step 4 of 6`);
     setActiveStep(InfantRegisterSteps.motherDetails);
   };
 
-  const completeAllSteps = () => {
-    if (multipleChildrenArray.length >= 1) {
+  const completeAllSteps = ({ caregiverDetails }: onSubmit) => {
+    if (multipleChildrenArray?.length >= 1) {
       for (const child of multipleChildrenArray) {
         let weightAtBirth = undefined;
         let lengthAtBirth = undefined;
@@ -131,42 +138,43 @@ export const InfantRegisterForm: React.FC = () => {
         }
 
         const childUserId = newGuid();
-        const caregiverId = newGuid();
         const siteAddressId = newGuid();
         const siteAddress: SiteAddressDto = {
           id: siteAddressId,
           addressLine1: address ?? '',
         };
-        const user: UserDto = {
+        const userInput: UserDto = {
           phoneNumber: contactInformation?.cellphone ?? '',
-          firstName: details?.name ?? '',
-          surname: details?.surname ?? '',
+          firstName: caregiverDetails?.name || details?.name || '',
+          surname: caregiverDetails?.surname || details?.surname || '',
           dateOfBirth: infantDetails?.dateOfBirth?.toISOString(),
         };
         const caregiverInput: CaregiverDto = {
-          id: caregiverId,
-          firstName: details?.name ?? '',
-          surname: details?.surname ?? '',
+          id: child.caregiver?.id,
+          firstName: caregiverDetails?.name || details?.name || '',
+          surname: caregiverDetails?.surname || details?.surname || '',
           phoneNumber: contactInformation?.cellphone ?? '',
           whatsAppNumber:
             contactInformation?.whatsapp ?? contactInformation?.cellphone,
-          age: details?.age,
+          age: caregiverDetails?.age || details?.age || '',
           siteAddress: siteAddress,
           isActive: true,
-          relationId: details?.relationshipId, // TODO we need to get the relation ids here // child?.relationship ?? '',
+          relationId: child?.relationshipId || details?.relationshipId || '', // TODO we need to get the relation ids here // child?.relationship ?? '',
+          healthCareWorkerId: user?.id,
         };
         const infantInputModel: InfantDto = {
           dateOfBirth: child?.dateOfBirth?.toISOString(),
           firstName: child?.firstName,
           documents: child?.roadToHealthBook,
           userId: childUserId ?? '',
-          user: user,
+          user: userInput,
           weightAtBirth: weightAtBirth,
           lengthAtBirth: lengthAtBirth,
           genderId: child?.genderId ?? '',
-          caregiverId: details?.id,
+          caregiverId: child?.caregiver?.id,
           caregiver: caregiverInput,
         };
+
         appDispatch(caregiverActions.createCaregiver(caregiverInput));
         appDispatch(infantActions.addInfant(infantInputModel));
         appDispatch(
@@ -200,7 +208,6 @@ export const InfantRegisterForm: React.FC = () => {
       let weightAtBirth = undefined;
       let lengthAtBirth = undefined;
       if (!infantRoadToHealthBook?.notRoadToHealthBook) {
-        console.log(infantRoadToHealthBook?.notRoadToHealthBook);
         weightAtBirth =
           (infantRoadToHealthBook?.weightAtBirth &&
             +infantRoadToHealthBook?.weightAtBirth) ??
@@ -220,20 +227,22 @@ export const InfantRegisterForm: React.FC = () => {
       };
       const user: UserDto = {
         phoneNumber: contactInformation?.cellphone ?? '',
-        firstName: details?.name ?? '',
-        surname: details?.surname ?? '',
+        firstName: caregiverDetails?.name || details?.name || '',
+        surname: caregiverDetails?.surname || details?.surname || '',
         dateOfBirth: infantDetails?.dateOfBirth?.toISOString(),
       };
       const caregiverInput: CaregiverDto = {
         id: caregiverId,
-        firstName: details?.name ?? '',
-        surname: details?.surname ?? '',
+        firstName: caregiverDetails?.name || details?.name || '',
+        surname: caregiverDetails?.surname || details?.surname || '',
         phoneNumber: contactInformation?.cellphone ?? '',
         whatsAppNumber: contactInformation?.whatsapp,
-        age: details?.age,
+        age: caregiverDetails?.age || details?.age || '',
+        healthCareWorkerId: user?.id,
         isActive: true,
         siteAddress: siteAddress,
-        relationId: details?.relationshipId,
+        relationId:
+          caregiverDetails?.relationshipId || details?.relationshipId || '',
       };
       const infantInputModel: InfantDto = {
         dateOfBirth: infantDetails?.dateOfBirth?.toISOString(),
@@ -244,9 +253,10 @@ export const InfantRegisterForm: React.FC = () => {
         user: user,
         weightAtBirth: weightAtBirth,
         lengthAtBirth: lengthAtBirth,
-        caregiverId: details?.id,
+        caregiverId: caregiverDetails?.id || details?.id || '',
         caregiver: caregiverInput,
       };
+
       appDispatch(caregiverActions.createCaregiver(caregiverInput));
       appDispatch(infantActions.addInfant(infantInputModel));
       appDispatch(
@@ -310,7 +320,6 @@ export const InfantRegisterForm: React.FC = () => {
           <InfantRoadToHealth
             infantDetails={infantDetails}
             onSubmit={(value) => {
-              setLabel(`step 4 of 6`);
               handleMultipleChildrenSteps();
               // setActiveStep(InfantRegisterSteps.motherDetails);
               setInfantRoadToHealthBook(value);
@@ -329,7 +338,7 @@ export const InfantRegisterForm: React.FC = () => {
             isAlreadyClient={isAlreadyClient}
             onSubmit={(value) => {
               setDetails(value as any);
-              handleExistingUser();
+              handleExistingUser({ caregiverDetails: value });
 
               if (isAlreadyClient) {
                 return setLabel(`step 4 of 4`);
@@ -358,7 +367,7 @@ export const InfantRegisterForm: React.FC = () => {
             onSubmit={(value) => {
               setLabel(`step 6 of 6`);
               setAddress(value.address);
-              completeAllSteps();
+              completeAllSteps({});
               showSuccessMessage();
             }}
           />

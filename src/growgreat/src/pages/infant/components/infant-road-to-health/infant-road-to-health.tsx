@@ -78,7 +78,7 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
         <Typography
           type="h2"
           color={'textDark'}
-          text={`Child name`}
+          text={`${infantDetails?.firstName}`}
           className="z-50 pt-6"
         />
         <Typography
@@ -149,7 +149,7 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
                 type="h4"
                 weight="bold"
                 color={'textMid'}
-                text={"Take a photo of the client's Maternal Case Record"}
+                text={'Take a photo of page ii of the Road to Health Book.'}
                 className="z-50 w-9/12 pt-2"
               />
               <div
@@ -157,7 +157,7 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
                 className="bg-infoDark grid h-6 w-6 place-items-center rounded-full"
               >
                 <InformationCircleIcon
-                  className="h-4 w-4 bg-transparent text-white"
+                  className="h-full w-full bg-transparent text-white"
                   aria-hidden="true"
                 />
               </div>
@@ -168,6 +168,7 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
                 label={''}
                 nameProp="roadToHealthBook"
                 icon="CameraIcon"
+                iconContainerColor={'tertiary'}
                 className={'pt-1'}
                 currentImageString={registrationFormPhotoUrl}
                 overrideOnClick={() => setPhotoActionBarVisible(true)}
@@ -231,11 +232,12 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
       </div>
       <Dialog
         visible={photoActionBarVisible}
-        position={DialogPosition.Middle}
+        position={DialogPosition.Bottom}
         stretch
       >
         <PhotoPrompt
-          title="Maternal case record form"
+          title="Road to Health Book, page ii"
+          hideEmojiOption
           onClose={() => setPhotoActionBarVisible(false)}
           onAction={(imageUrl: string) => setPhotoUrl(imageUrl)}
           onDelete={
@@ -253,61 +255,61 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
         visible={maternalRecordExampleVisible}
         position={DialogPosition.Middle}
         fullScreen
-        className="overflow-auto"
+        className="m-4 overflow-auto rounded-2xl"
       >
-        <div className="mt-12 flex justify-center overflow-auto ">
-          <div>
-            <div className="flex justify-center">
-              <div className="bg-infoDark grid h-16 w-16 place-items-center rounded-full">
-                <InformationCircleIcon className="bg-trasparent h-12 w-12 text-white" />
-              </div>
-            </div>
-            <div className="mt-4 flex justify-center">
-              <Typography
-                type="h2"
-                align="center"
-                weight="bold"
-                color={'textDark'}
-                text={'Page ii of the Road to Health Book'}
-                className="z-50 w-9/12 pt-2"
-              />
-            </div>
-            <div className="h-11/12 mt-6 flex w-full justify-center">
-              <img
-                src={roadToHealth}
-                alt="maternal record"
-                className="h-9/12 w-7/12"
-              />
-            </div>
-            <div className="mt-4 flex justify-center">
-              <Typography
-                type="body"
-                align="center"
-                color={'textMid'}
-                text={
-                  "Page ii is the first page you should see when opening the book. It should have the child's basic details." +
-                  '\n' +
-                  '\n' +
-                  'OR page 4 of the old Road to Health Book.' +
-                  '\n' +
-                  '\n' +
-                  'If your client has an old version of the book, you can see the personal details on page 4.'
-                }
-                className="z-50 w-9/12 pt-2"
-              />
-            </div>
-            <div className={'mt-4 ml-4 flex w-11/12 justify-center'}>
-              <Button
-                type={'filled'}
-                color={'primary'}
-                className={'max-h-10 w-11/12'}
-                textColor={'white'}
-                text={`Close`}
-                icon={'XIcon'}
-                iconPosition={'start'}
-                onClick={() => setMaternalRecordExampleVisible(false)}
-              />
-            </div>
+        <div className="flex h-full flex-col items-center overflow-auto px-4 pt-7 pb-6">
+          <div className="bg-infoDark flex h-12 w-12 items-center justify-center rounded-full">
+            <InformationCircleIcon className="h-full w-full text-white" />
+          </div>
+          <Typography
+            type="h2"
+            align="center"
+            weight="bold"
+            color={'textDark'}
+            text={'Page ii of the Road to Health Book'}
+            className="pt-4"
+          />
+          <img
+            src={roadToHealth}
+            alt="maternal record"
+            className="h-9/12 w-7/12 py-4"
+          />
+          <Typography
+            type="body"
+            align="center"
+            color={'textMid'}
+            text={
+              "Page ii is the first page you should see when opening the book. It should have the child's basic details."
+            }
+          />
+          <Typography
+            type="body"
+            align="center"
+            color={'textMid'}
+            weight={'bold'}
+            lineHeight={'none'}
+            text={`OR page 4 of the old Road to \n Health Book.`}
+            className="py-6"
+          />
+          <Typography
+            type="body"
+            align="center"
+            color={'textMid'}
+            text={
+              'If your client has an old version of the book, you can see the personal details on page 4.'
+            }
+          />
+          <div className={'mt-4 flex h-full w-full items-end'}>
+            <Button
+              type={'filled'}
+              color={'primary'}
+              className={'w-full'}
+              textColor={'white'}
+              text={`Close`}
+              icon={'XIcon'}
+              iconPosition={'start'}
+              onClick={() => setMaternalRecordExampleVisible(false)}
+            />
           </div>
         </div>
       </Dialog>

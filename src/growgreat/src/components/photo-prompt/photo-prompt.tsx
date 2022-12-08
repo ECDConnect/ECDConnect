@@ -28,6 +28,7 @@ import { PhotoPromptActionType } from '@/components/photo-prompt/photo-prompt.ty
 
 export interface PhotoPromptProps extends ComponentBaseProps {
   title: string;
+  hideEmojiOption?: boolean;
   onClose?: () => void;
   onDelete?: () => void;
   onAction?: (imageBaseString: string) => void;
@@ -39,6 +40,7 @@ export interface PhotoPromptProps extends ComponentBaseProps {
 
 export const PhotoPrompt: React.FC<PhotoPromptProps> = ({
   title,
+  hideEmojiOption,
   onClose,
   onAction,
   onDelete,
@@ -74,18 +76,24 @@ export const PhotoPrompt: React.FC<PhotoPromptProps> = ({
       icon: renderIcon('PhotographIcon', styles.iconStyle),
       title: 'Gallery',
       value: 'gallery',
+      actionColour: 'secondary',
     });
 
     actionsList.push({
       icon: renderIcon('CameraIcon', styles.iconStyle),
       title: 'Camera',
       value: 'camera',
+      actionColour: 'secondary',
     });
-    actionsList.push({
-      icon: renderIcon('EmojiHappyIcon', styles.iconStyle),
-      title: 'Emojis',
-      value: 'emojis',
-    });
+
+    if (!hideEmojiOption) {
+      actionsList.push({
+        icon: renderIcon('EmojiHappyIcon', styles.iconStyle),
+        title: 'Emojis',
+        value: 'emojis',
+        actionColour: 'secondary',
+      });
+    }
 
     setActions(actionsList);
   };

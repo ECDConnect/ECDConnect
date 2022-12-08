@@ -25,4 +25,5 @@ export interface CaregiverDto extends EntityBase {
   joinReferencePanel?: boolean;
   contribution?: boolean;
   grants?: string[] | undefined;
+  healthCareWorkerId?: string;
 }

@@ -173,7 +173,7 @@ const PregnantAddressView: React.FC<PregnantAddressProps> = ({
         message={`If you are at ${details?.name}'s house now, you can use your phone's GPS to save the address.`}
         className={'mt-4'}
       />
-      {isMapTab ? (
+      {isMapTab && (
         <FormInput<PregnantAddressModel>
           label={'Add address'}
           register={pregnantAddressFormRegister}
@@ -185,7 +185,9 @@ const PregnantAddressView: React.FC<PregnantAddressProps> = ({
           suffixIcon={'LocationMarkerIcon'}
           sufficIconColor={'primary'}
         />
-      ) : (
+      )}
+
+      {isMapTab === false && (
         <FormInput<PregnantAddressModel>
           label={'Add address'}
           register={pregnantAddressFormRegister}
