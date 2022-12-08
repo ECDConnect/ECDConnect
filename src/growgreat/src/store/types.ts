@@ -13,3 +13,11 @@ export enum ThunkActionStatuses {
   Pending = 'pending',
   Rejected = 'rejected',
 }
+
+export interface ThunkStateStatus {
+  status?:
+    | ThunkActionStatuses.Unset
+    | ThunkActionStatuses.Pending
+    | ThunkActionStatuses.Fulfilled
+    | ThunkActionStatuses.Rejected;
+}
