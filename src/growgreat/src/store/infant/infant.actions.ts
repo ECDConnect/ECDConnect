@@ -34,11 +34,12 @@ export const getInfants = createAsyncThunk<
     if (!infantsCache) {
       try {
         let infants: InfantDto[] | undefined;
+        const id = userAuth?.id;
 
         if (userAuth?.auth_token) {
           infants = await new InfantService(
             userAuth?.auth_token
-          ).GetAllInfantsForMother();
+          ).GetAllInfantsForMother(id!);
         } else {
           return rejectWithValue('no access token, profile check required');
         }
