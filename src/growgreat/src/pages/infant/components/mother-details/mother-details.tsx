@@ -7,6 +7,7 @@ import {
   ButtonGroupTypes,
   FormInput,
   Dropdown,
+  Alert,
 } from '@ecdlink/ui';
 import { Controller, useForm, useFormState } from 'react-hook-form';
 import { useState, useEffect } from 'react';
@@ -239,7 +240,7 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
             </div>
           </>
         )}
-        {isAlreadyClient === true && (
+        {isAlreadyClient && !!caregivers?.length && (
           <div className="mt-4 w-full">
             <Typography
               type="h3"
@@ -292,6 +293,15 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
           </div>
         )}
       </div>
+      {isAlreadyClient !== false && !caregivers?.length && (
+        <Alert
+          className={'mt-5 mb-3'}
+          message={
+            "You don't have any clients yet! Choose &quot;No&quot; above to continue."
+          }
+          type={'info'}
+        />
+      )}
       <div className="flex h-full items-end">
         <Button
           type={'filled'}
