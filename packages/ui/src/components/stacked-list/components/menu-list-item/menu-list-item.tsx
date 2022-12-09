@@ -28,13 +28,15 @@ export const MenuListItem: React.FC<MenuListItemProps> = ({ item }) => {
                 icon={item.menuIcon}
               />
             ) : (
-              <Avatar
-                className="mr-4"
-                displayBorder
-                dataUrl={item.menuIconUrl ?? ''}
-                size={'lg'}
-                borderColor={'primary'}
-              />
+              <div>
+                <Avatar
+                  className="mr-4"
+                  displayBorder
+                  dataUrl={item.menuIconUrl ?? ''}
+                  size={'lg'}
+                  borderColor={'primary'}
+                />
+              </div>
             ))}
           <div className={stackedListStyles.paragraphWrapper}>
             <div>

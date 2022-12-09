@@ -5874,16 +5874,16 @@ export type SystemSettingInput = {
 
 export type TeamLead = {
   __typename?: 'TeamLead';
-  clinic?: Maybe<Clinic>;
-  clinicId?: Maybe<Scalars['UUID']>;
-  id: Scalars['UUID'];
-  insertedDate: Scalars['DateTime'];
-  isActive: Scalars['Boolean'];
-  jobTitle?: Maybe<Scalars['String']>;
-  updatedBy?: Maybe<Scalars['String']>;
-  updatedDate: Scalars['DateTime'];
-  user?: Maybe<ApplicationUser>;
-  userId?: Maybe<Scalars['String']>;
+  Clinic?: Maybe<Clinic>;
+  ClinicId?: Maybe<Scalars['UUID']>;
+  Id: Scalars['UUID'];
+  InsertedDate: Scalars['DateTime'];
+  IsActive: Scalars['Boolean'];
+  JobTitle?: Maybe<Scalars['String']>;
+  UpdatedBy?: Maybe<Scalars['String']>;
+  UpdatedDate: Scalars['DateTime'];
+  User?: Maybe<ApplicationUser>;
+  UserId?: Maybe<Scalars['String']>;
 };
 
 export type TeamLeadFilterInput = {

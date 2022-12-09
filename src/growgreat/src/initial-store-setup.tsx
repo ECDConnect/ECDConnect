@@ -19,7 +19,10 @@ import { userActions, userSelectors, userThunkActions } from '@/store/user';
 import { analyticsActions } from '@/store/analytics';
 import { infantThunkActions } from '@/store/infant';
 import { useSelector } from 'react-redux';
-import { healthCareWorkerThunkActions } from './store/healthCareWorker';
+import {
+  healthCareWorkerSelectors,
+  healthCareWorkerThunkActions,
+} from './store/healthCareWorker';
 
 type IntialStoreSetupContextValues = {
   initloading: boolean;
@@ -46,6 +49,9 @@ function InitialStoreSetup(props: Props) {
   const userData = useSelector(userSelectors?.getUser);
   const [staticDataLoading, setStaticDataLoading] = useState(false);
   const [otherLoading, setOtherLoading] = useState(false);
+  const healthCareWorker = useSelector(
+    healthCareWorkerSelectors.getHealthCareWorker
+  );
 
   useEffect(() => {
     if (userData) {
@@ -57,6 +63,17 @@ function InitialStoreSetup(props: Props) {
         ).unwrap())();
     }
   }, [appDispatch, userData]);
+
+  useEffect(() => {
+    if (healthCareWorker) {
+      (async () =>
+        await appDispatch(
+          caregiverThunkActions.getCaregiversForHealthCareWorker({
+            id: healthCareWorker?.id!,
+          })
+        ).unwrap())();
+    }
+  }, [appDispatch, healthCareWorker]);
 
   const values = {
     initloading,
@@ -118,7 +135,6 @@ function InitialStoreSetup(props: Props) {
     await appDispatch(infantThunkActions.getInfants({}));
     await appDispatch(userThunkActions.getUser({})).unwrap();
     await appDispatch(userThunkActions.getUserConsents({})).unwrap();
-    await appDispatch(caregiverThunkActions.getCaregivers({})).unwrap();
     await appDispatch(documentThunkActions.getDocuments({})).unwrap();
     setOtherLoading(false);
   }

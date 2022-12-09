@@ -60,12 +60,12 @@ export const getCaregivers = createAsyncThunk<
 export const getCaregiversForHealthCareWorker = createAsyncThunk<
   CaregiverDto[],
   // eslint-disable-next-line @typescript-eslint/ban-types
-  {},
+  { id: string },
   ThunkApiType<RootState>
 >(
   CaregiverActions.GET_CAREGIVERS_HEALTH_CARE_WORKER,
   // eslint-disable-next-line no-empty-pattern
-  async ({}, { getState, rejectWithValue }) => {
+  async ({ id }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
       caregivers: { caregivers: caregiversCache },
@@ -78,7 +78,7 @@ export const getCaregiversForHealthCareWorker = createAsyncThunk<
         if (userAuth?.auth_token) {
           caregivers = await new CaregiverService(
             userAuth?.auth_token
-          ).getCaregiversForHealthCareWorker(userAuth?.id);
+          ).getCaregiversForHealthCareWorker(id);
         } else {
           return rejectWithValue('no access token, profile check required');
         }
