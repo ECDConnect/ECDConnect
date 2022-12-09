@@ -29,6 +29,7 @@ import { settingActions } from '@store/settings';
 // import * as styles from './verify-phone-number.styles';
 import { VerifyPhoneNumberRouteState } from './verify-phone-number.types';
 import { version } from '../../../../package.json';
+import ROUTES from '@/routes/routes';
 
 export const VerifyPhoneNumber = () => {
   const history = useHistory();
@@ -123,7 +124,7 @@ export const VerifyPhoneNumber = () => {
             isAuthenticated?.payload?.response?.status !== 401
           ) {
             await appDispatch(settingActions.setApplicationVersion(version));
-            history.push('/');
+            history.push(ROUTES.DASHBOARD, { isSignUp: true });
             setIsLoading(false);
           } else {
             setIsLoading(false);

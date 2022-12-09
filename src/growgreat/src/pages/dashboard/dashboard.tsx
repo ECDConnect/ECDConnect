@@ -47,7 +47,8 @@ export const Dashboard: React.FC = () => {
   const history = useHistory();
   const { theme } = useTheme();
   const location = useLocation<DashboardRouteState>();
-  const isFromLogin = location?.state?.isFromLogin;
+  const isFromLogin =
+    location?.state?.isFromLogin || location?.state?.isFromSignUp;
   const userData = useSelector(userSelectors.getUser);
   const shouldUserSync = useSelector(settingSelectors.getShouldUserSync);
   const appDispatch = useAppDispatch();
