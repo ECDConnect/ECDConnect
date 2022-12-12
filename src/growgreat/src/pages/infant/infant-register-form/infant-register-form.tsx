@@ -205,7 +205,7 @@ export const InfantRegisterForm: React.FC = () => {
           weightAtBirth: weightAtBirth,
           lengthAtBirth: lengthAtBirth,
           genderId: child?.genderId ?? '',
-          caregiverId: child?.caregiver?.id,
+          caregiverId: caregiverInput.id,
           caregiver: caregiverInput,
         };
 
@@ -268,7 +268,7 @@ export const InfantRegisterForm: React.FC = () => {
         user: user,
         weightAtBirth: weightAtBirth,
         lengthAtBirth: lengthAtBirth,
-        caregiverId: caregiverDetails?.id || details?.id || '',
+        caregiverId: caregiverInput.id,
         caregiver: caregiverInput,
       };
 
