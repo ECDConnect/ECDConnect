@@ -92,18 +92,18 @@ export const InfantAddress: React.FC<InfantAddressProps> = ({
           height={window.screen.height - COMPONENT_HEIGHT}
           onChange={setAddress}
         />
-        <div className="min-h-64 absolute bottom-0 z-50 w-full flex-1 rounded-t-2xl bg-white px-5">
+        <div className="min-h-64 absolute bottom-0 w-full flex-1 rounded-t-2xl bg-white px-5">
           <Typography
             type="h2"
             color={'textDark'}
             text={`Is this address/location correct?`}
-            className="z-50 pt-6"
+            className="pt-6"
           />
           <Typography
             type="h4"
             color={'textMid'}
             text={'Move the pin to change address'}
-            className="z-50 w-11/12 pt-2"
+            className="w-11/12 pt-2"
           />
           <Typography
             type="h4"
@@ -148,13 +148,13 @@ export const InfantAddress: React.FC<InfantAddressProps> = ({
           type="h2"
           color={'textDark'}
           text={`${details?.name}`}
-          className="z-50 pt-6"
+          className="pt-6"
         />
         <Typography
           type="h4"
           color={'textMid'}
           text={'Address'}
-          className="z-50 w-11/12 pt-2"
+          className="w-11/12 pt-2"
         />
       </div>
       <div>
@@ -163,7 +163,7 @@ export const InfantAddress: React.FC<InfantAddressProps> = ({
             type="h4"
             color={'textMid'}
             text={`Add ${details?.name} name address`}
-            className="z-50 w-11/12 pt-2"
+            className="w-11/12 pt-2"
           />
           <div className="mt-2">
             <ButtonGroup<boolean>

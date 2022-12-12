@@ -47,13 +47,13 @@ export const MotherContactInformation: React.FC<
           type="h2"
           color={'textDark'}
           text={`${details?.name}`}
-          className="z-50 pt-6"
+          className="pt-6"
         />
         <Typography
           type="h4"
           color={'textMid'}
           text={'Contact information'}
-          className="z-50 w-11/12 pt-2"
+          className="w-11/12 pt-2"
         />
       </div>
       <div className="flex w-11/12 justify-center text-red-400">
@@ -73,7 +73,7 @@ export const MotherContactInformation: React.FC<
             type="h4"
             color={'textMid'}
             text={`Does ${details?.name} use this cellphone number for WhatsApp?`}
-            className="z-50 w-11/12 pt-2"
+            className="w-11/12 pt-2"
           />
           <div className="mt-2">
             <ButtonGroup<boolean>

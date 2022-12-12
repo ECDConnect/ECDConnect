@@ -82,13 +82,13 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
           type="h2"
           color={'textDark'}
           text={'Caregiver'}
-          className="z-50 pt-6"
+          className="pt-6"
         />
         <Typography
           type="h4"
           color={'textMid'}
           text={'Details'}
-          className="z-50 w-11/12 pt-2"
+          className="w-11/12 pt-2"
         />
       </div>
       <div className="flex w-11/12 justify-center text-red-400">
@@ -104,7 +104,7 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
                   type="h3"
                   color={'textDark'}
                   text={`Relationship to ${child?.firstName}`}
-                  className="bt-1 z-50 w-11/12 pt-2"
+                  className="bt-1 w-11/12 pt-2"
                 />
                 <Dropdown
                   key={index + 3}
@@ -153,7 +153,7 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
               type="h3"
               color={'textDark'}
               text={`Relationship to ${infantDetails?.firstName}`}
-              className="bt-1 z-50 w-11/12 pt-2"
+              className="bt-1 w-11/12 pt-2"
             />
             <Controller
               name="relationshipId"
@@ -187,7 +187,7 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
           type="h3"
           color={'textDark'}
           text={'Is the caregiver already on CHW Connect?'}
-          className="z-50 w-11/12 pt-2"
+          className="w-11/12 pt-2"
         />
         <div className="mt-2">
           <ButtonGroup<boolean>
@@ -235,7 +235,7 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
                 type="h4"
                 color={'textMid'}
                 text={'years'}
-                className="z-50 mt-12"
+                className="mt-12"
               />
             </div>
           </>
@@ -246,7 +246,7 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
               type="h3"
               color={'textDark'}
               text={`Choose caregiver`}
-              className="bt-1 z-50 w-11/12 pt-2"
+              className="bt-1 w-11/12 pt-2"
             />
             <Controller
               name="id"

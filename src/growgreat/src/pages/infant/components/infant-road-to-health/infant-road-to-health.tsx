@@ -81,13 +81,13 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
           type="h2"
           color={'textDark'}
           text={`${infantDetails?.firstName}`}
-          className="z-50 pt-6"
+          className="pt-6"
         />
         <Typography
           type="h4"
           color={'textMid'}
           text={'Road to Health Book'}
-          className="z-50 w-11/12 pt-2"
+          className="w-11/12 pt-2"
         />
       </div>
       <div>
@@ -95,7 +95,7 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
           type="h4"
           color={'textMid'}
           text={`Does the caregiver have ${infantDetails?.firstName}'s Road to Health Book?`}
-          className="z-50 mt-8 w-9/12"
+          className="mt-8 w-9/12"
         />
         <div className="mt-4">
           <ButtonGroup<boolean>
@@ -115,7 +115,7 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
                 type="h2"
                 color={'textDark'}
                 text={'Please confirm'}
-                className="z-50 pt-6"
+                className="pt-6"
               />
             </div>
             <div className="mt-4 flex w-11/12 items-center justify-between">
@@ -152,7 +152,7 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
                 weight="bold"
                 color={'textMid'}
                 text={'Take a photo of page ii of the Road to Health Book.'}
-                className="z-50 w-9/12 pt-2"
+                className="w-9/12 pt-2"
               />
               <div
                 onClick={() => setMaternalRecordExampleVisible(true)}
@@ -194,7 +194,7 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
                   type="h4"
                   color={'textMid'}
                   text={'kg'}
-                  className="z-50 mt-12"
+                  className="mt-12"
                 />
               </div>
               <div className="flex items-center gap-1">
@@ -210,7 +210,7 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
                   type="h4"
                   color={'textMid'}
                   text={'cm'}
-                  className="z-50 mt-12"
+                  className="mt-12"
                 />
               </div>
               {String(getRoadToHealthFormValues('weightAtBirth'))?.length > 0 &&
