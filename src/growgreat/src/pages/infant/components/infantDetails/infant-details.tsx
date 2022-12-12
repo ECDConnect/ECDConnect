@@ -113,13 +113,13 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
         text={
           numberOfChildren! > 1 ? `Child ${multipleChildrenCount}` : 'Child'
         }
-        className="z-50 pt-6"
+        className="pt-6"
       />
       <Typography
         type="h4"
         color={'textMid'}
         text={'Details'}
-        className="z-50 w-11/12 pt-2"
+        className="w-11/12 pt-2"
       />
       <div className="flex w-11/12 justify-center text-red-400">
         <Divider dividerType="dashed" />
@@ -137,7 +137,7 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
           type="h4"
           color={'textMid'}
           text={'Date of birth:'}
-          className="z-50 mt-4 w-11/12 pt-2"
+          className="mt-4 w-11/12 pt-2"
         />
         <div className="flex items-center gap-1">
           <DatePicker
@@ -180,7 +180,7 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
         type="h3"
         color={'textDark'}
         text={'Sex'}
-        className="z-50 w-11/12 pt-2"
+        className="w-11/12 pt-2"
       />
       <div className="mt-2">
         <ButtonGroup<string>
