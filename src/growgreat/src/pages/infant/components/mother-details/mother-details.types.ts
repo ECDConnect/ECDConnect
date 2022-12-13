@@ -16,6 +16,7 @@ export interface MotherDetailsProps
   infantDetails?: InfantDetailsModel;
   multipleChildrenArray?: MultipleChildrenProps[];
   setMultipleChildrenArray?: any;
+  isMother?: boolean;
 }
 
 export const yesNoOptions = [

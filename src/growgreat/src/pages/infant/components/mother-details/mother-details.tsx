@@ -23,6 +23,7 @@ import {
 import { useSelector } from 'react-redux';
 import { MultipleChildrenProps } from '../../infant-register-form/infant-register-form.types';
 import { caregiverSelectors } from '@/store/caregiver';
+import { motherSelectors } from '@/store/mother';
 
 export const MotherDetails: React.FC<MotherDetailsProps> = ({
   onSubmit,
@@ -53,6 +54,20 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
     useState<MultipleChildrenProps[]>();
 
   const caregivers = useSelector(caregiverSelectors.getCaregivers);
+  const mothers = useSelector(motherSelectors?.getMothers);
+
+  const mothersUpdatedToCaregivers = mothers?.map((item) => ({
+    firstName: item?.user?.firstName,
+    surname: item?.user?.surname,
+    phoneNumber: item?.user?.phoneNumber,
+    siteAddress: item?.siteAddress,
+    isActive: item?.isActive,
+    id: item?.user?.id,
+    isMother: true,
+    age: '',
+  }));
+
+  const motherAndCaregivers = [...caregivers!, ...mothersUpdatedToCaregivers!];
 
   useEffect(() => {
     const uniqueChildrenArray = relationshipChildrenArray?.filter(
@@ -257,8 +272,8 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
                   fillType="clear"
                   selectedValue={value}
                   list={
-                    (caregivers &&
-                      caregivers
+                    (motherAndCaregivers &&
+                      motherAndCaregivers
                         .filter((x) => x.id && x.firstName?.length! > 0)
                         .map((item) => {
                           return {
@@ -269,7 +284,7 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
                     []
                   }
                   onChange={(value) => {
-                    const caregiver = caregivers?.find(
+                    const caregiver = motherAndCaregivers?.find(
                       (item) => item.id === value
                     );
 
@@ -285,6 +300,9 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
                     setMotherDetailsFormValue('name', caregiver?.firstName);
                     setMotherDetailsFormValue('surname', caregiver?.surname);
                     setMotherDetailsFormValue('age', caregiver?.age);
+                    if (caregiver?.isMother === true) {
+                      setMotherDetailsFormValue('isMother', true);
+                    }
                     onChange(value);
                   }}
                 />
