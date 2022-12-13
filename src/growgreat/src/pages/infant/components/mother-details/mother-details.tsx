@@ -255,7 +255,7 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
             </div>
           </>
         )}
-        {isAlreadyClient && !!caregivers?.length && (
+        {isAlreadyClient && !!motherAndCaregivers?.length && (
           <div className="mt-4 w-full">
             <Typography
               type="h3"
@@ -311,7 +311,7 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
           </div>
         )}
       </div>
-      {isAlreadyClient !== false && !caregivers?.length && (
+      {isAlreadyClient !== false && !motherAndCaregivers?.length && (
         <Alert
           className={'mt-5 mb-3'}
           message={
