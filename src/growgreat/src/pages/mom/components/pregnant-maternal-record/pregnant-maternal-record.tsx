@@ -250,10 +250,10 @@ export const PregnantMaternalCaseRecord: React.FC<
             />
             <div
               onClick={() => setMaternalRecordExampleVisible(true)}
-              className="bg-infoDark grid h-10 w-10 place-items-center rounded-full"
+              className="bg-infoDark grid h-8 w-8 place-items-center rounded-full"
             >
               <InformationCircleIcon
-                className="bg-trasparent h-5 w-5 text-white"
+                className="bg-trasparent h-auto w-auto text-white"
                 aria-hidden="true"
               />
             </div>
@@ -264,6 +264,7 @@ export const PregnantMaternalCaseRecord: React.FC<
               label={''}
               nameProp="maternalCaseRecord"
               icon="CameraIcon"
+              iconContainerColor="tertiary"
               className={'pt-1'}
               currentImageString={registrationFormPhotoUrl}
               overrideOnClick={() => setPhotoActionBarVisible(true)}
@@ -327,11 +328,11 @@ export const PregnantMaternalCaseRecord: React.FC<
         fullScreen
         visible={maternalRecordExampleVisible}
         position={DialogPosition.Middle}
-        className="overflow-auto"
+        className="m-5 overflow-auto rounded-2xl"
       >
-        <div className="mt-12 flex justify-center overflow-auto ">
-          <div className="bg-infoDark grid h-16 w-16 place-items-center rounded-full">
-            <InformationCircleIcon className="h-12 w-12 bg-transparent text-white" />
+        <div className="flex h-full flex-col items-center overflow-auto px-4 pt-7 pb-6">
+          <div className="bg-infoDark grid h-11 w-11 place-items-center rounded-full">
+            <InformationCircleIcon className="h-auto w-auto bg-transparent text-white" />
           </div>
           <div className="mt-4 flex justify-center">
             <Typography
@@ -340,7 +341,7 @@ export const PregnantMaternalCaseRecord: React.FC<
               weight="bold"
               color={'textDark'}
               text={'First page of Maternal Case Record'}
-              className="z-50 w-9/12 pt-2"
+              className="pt-2"
             />
           </div>
           <div className="h-11/12 mt-6 flex w-full justify-center">
@@ -358,14 +359,14 @@ export const PregnantMaternalCaseRecord: React.FC<
               text={
                 "The first page of the document should have the client's basic details, including their name, ID number, etc."
               }
-              className="z-50 w-9/12 pt-2"
+              className="pt-2"
             />
           </div>
-          <div className={'mt-4 ml-4 flex w-11/12 justify-center'}>
+          <div className={'mt-4 flex h-full w-full items-end justify-center'}>
             <Button
               type={'filled'}
               color={'primary'}
-              className={'max-h-10 w-11/12'}
+              className={'max-h-10 w-full'}
               textColor={'white'}
               text={`Close`}
               icon={'XIcon'}
