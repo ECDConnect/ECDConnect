@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using EcdLink.Api.CoreApi.GraphApi.Models;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
@@ -9,6 +10,7 @@ using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Azure.Documents;
 using Microsoft.EntityFrameworkCore;
 
 namespace EcdLink.Api.CoreApi.Managers.Users
@@ -39,7 +41,15 @@ namespace EcdLink.Api.CoreApi.Managers.Users
         {
             var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
             var infantUser = GetUserFromInputModel(input);
-            var caregiver = GetCaregiverFromInput(input);
+            
+
+            var caregiverRepo = _repoFactory.CreateGenericRepository<Caregiver>(userContext: applicationUserId);
+            Caregiver caregiver = (Caregiver)caregiverRepo.GetAll().Where(x => x.Id.Equals(input.CaregiverId)).FirstOrDefault();
+
+            if (caregiver == null)
+            {
+                caregiver = GetCaregiverFromInput(input);
+            }
 
             var infant = new Infant()
             {
@@ -50,21 +60,20 @@ namespace EcdLink.Api.CoreApi.Managers.Users
                 UpdatedBy = applicationUserId,
                 UserId = input.UserId,
                 User = infantUser,
-                CaregiverId = input.CaregiverId,
+                CaregiverId = caregiver.Id,
                 Caregiver = caregiver,
                 GenderId = input.GenderId,
                 WeightAtBirth = input.WeightAtBirth,
                 LengthAtBirth = input.LengthAtBirth
             };
-
-            var infantRepo = _repoFactory.CreateRepository<Infant>(userContext: applicationUserId);
-
+            var infantRepo = _repoFactory.CreateGenericRepository<Infant>(userContext: applicationUserId);
             try
             {
                 return infantRepo.Insert(infant);
-            } catch(Exception e)
+            }
+            catch (Exception e)
             {
-                return null;
+                return new Infant();
             }
         }
 
@@ -121,11 +130,26 @@ namespace EcdLink.Api.CoreApi.Managers.Users
             }
 
             var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
+            var addressRepo = _repoFactory.CreateRepository<SiteAddress>(userContext: applicationUserId);
+
             var healthCareWorkerId = _healthCareWorkerManager.GetHealthCareWorkerIdByUserId(applicationUserId);
+            if (healthCareWorkerId != null)
+            {
+                caregiverInput.HealthCareWorkerId = healthCareWorkerId;
+            }
+            SiteAddress siteAddress = (SiteAddress)addressRepo.GetAll().Where(x => x.Id.Equals(caregiverInput.SiteAddress.Id)).FirstOrDefault();
+            if (siteAddress == null)
+            {
+                caregiverInput.SiteAddress.Id = Guid.NewGuid();
+            }
+            else
+            {
+                caregiverInput.SiteAddress = siteAddress;
+            }
 
             return new Caregiver()
             {
-                Id = input.CaregiverId ?? Guid.NewGuid(),
+                Id = GetCaregiverIdOrGenerateNew(input.CaregiverId),
                 IsActive = true,
                 InsertedDate = DateTime.Now,
                 UpdatedDate = DateTime.Now,
@@ -138,10 +162,16 @@ namespace EcdLink.Api.CoreApi.Managers.Users
                 RelationId = caregiverInput.RelationId,
                 Age = caregiverInput.Age,
                 WhatsAppNumber = caregiverInput.WhatsAppNumber,
-                HealthCareWorkerId = healthCareWorkerId,
+                HealthCareWorkerId = caregiverInput.HealthCareWorkerId,
                 SiteAddressId = caregiverInput.SiteAddressId,
-                SiteAddress = caregiverInput.SiteAddress,
+                SiteAddress = caregiverInput.SiteAddress
             };
+            
+        }
+
+        private Guid GetCaregiverIdOrGenerateNew(Guid? caregiverId)
+        {
+            return caregiverId ?? Guid.NewGuid();
         }
     }
 }
