@@ -58,6 +58,7 @@ const BANNER_HEIGHT = 64;
 
 interface onSubmit {
   caregiverDetails?: MotherDetailsModel;
+  caregiverAddress?: string;
 }
 
 export const InfantRegisterForm: React.FC = () => {
@@ -139,8 +140,43 @@ export const InfantRegisterForm: React.FC = () => {
     setActiveStep(InfantRegisterSteps.motherDetails);
   };
 
-  const completeAllSteps = ({ caregiverDetails }: onSubmit) => {
+  const completeAllSteps = ({
+    caregiverDetails,
+    caregiverAddress,
+  }: onSubmit) => {
     const newCaregiverId = newGuid();
+    const siteAddressId = newGuid();
+
+    const siteAddress: SiteAddressDto = {
+      id: siteAddressId,
+      addressLine1: address || caregiverAddress || '',
+    };
+
+    const [firstChild] = multipleChildrenArray;
+
+    const caregiverInput: CaregiverDto = {
+      id:
+        firstChild.caregiver?.id ||
+        caregiverDetails?.id ||
+        details?.id ||
+        newCaregiverId,
+      firstName: caregiverDetails?.name || details?.name || '',
+      surname: caregiverDetails?.surname || details?.surname || '',
+      phoneNumber: contactInformation?.cellphone ?? '',
+      whatsAppNumber:
+        contactInformation?.whatsapp || contactInformation?.cellphone,
+      age: caregiverDetails?.age || details?.age || '',
+      siteAddress: siteAddress,
+      isActive: true,
+      relationId:
+        caregiverDetails?.relationshipId ||
+        firstChild?.relationshipId ||
+        details?.relationshipId ||
+        '',
+      healthCareWorkerId: user?.id,
+    };
+
+    appDispatch(caregiverActions.createCaregiver(caregiverInput));
 
     if (multipleChildrenArray?.length >= 1) {
       for (const child of multipleChildrenArray) {
@@ -152,30 +188,14 @@ export const InfantRegisterForm: React.FC = () => {
         }
 
         const childUserId = newGuid();
-        const siteAddressId = newGuid();
-        const siteAddress: SiteAddressDto = {
-          id: siteAddressId,
-          addressLine1: address ?? '',
-        };
+
         const userInput: UserDto = {
           phoneNumber: contactInformation?.cellphone ?? '',
           firstName: caregiverDetails?.name || details?.name || '',
           surname: caregiverDetails?.surname || details?.surname || '',
           dateOfBirth: infantDetails?.dateOfBirth?.toISOString(),
         };
-        const caregiverInput: CaregiverDto = {
-          id: child.caregiver?.id || newCaregiverId,
-          firstName: caregiverDetails?.name || details?.name || '',
-          surname: caregiverDetails?.surname || details?.surname || '',
-          phoneNumber: contactInformation?.cellphone ?? '',
-          whatsAppNumber:
-            contactInformation?.whatsapp ?? contactInformation?.cellphone,
-          age: caregiverDetails?.age || details?.age || '',
-          siteAddress: siteAddress,
-          isActive: true,
-          relationId: child?.relationshipId || details?.relationshipId || '', // TODO we need to get the relation ids here // child?.relationship ?? '',
-          healthCareWorkerId: user?.id,
-        };
+
         const infantInputModel: InfantDto = {
           dateOfBirth: child?.dateOfBirth?.toISOString(),
           firstName: child?.firstName,
@@ -189,7 +209,6 @@ export const InfantRegisterForm: React.FC = () => {
           caregiver: caregiverInput,
         };
 
-        appDispatch(caregiverActions.createCaregiver(caregiverInput));
         appDispatch(infantActions.addInfant(infantInputModel));
         appDispatch(
           infantThunkActions.addInfant({ infant: infantInputModel })
@@ -233,31 +252,13 @@ export const InfantRegisterForm: React.FC = () => {
       }
 
       const childUserId = newGuid();
-      const caregiverId = newGuid();
-      const siteAddressId = newGuid();
-      const siteAddress: SiteAddressDto = {
-        id: siteAddressId,
-        addressLine1: address ?? '',
-      };
       const user: UserDto = {
         phoneNumber: contactInformation?.cellphone ?? '',
         firstName: caregiverDetails?.name || details?.name || '',
         surname: caregiverDetails?.surname || details?.surname || '',
         dateOfBirth: infantDetails?.dateOfBirth?.toISOString(),
       };
-      const caregiverInput: CaregiverDto = {
-        id: caregiverId,
-        firstName: caregiverDetails?.name || details?.name || '',
-        surname: caregiverDetails?.surname || details?.surname || '',
-        phoneNumber: contactInformation?.cellphone ?? '',
-        whatsAppNumber: contactInformation?.whatsapp,
-        age: caregiverDetails?.age || details?.age || '',
-        healthCareWorkerId: user?.id,
-        isActive: true,
-        siteAddress: siteAddress,
-        relationId:
-          caregiverDetails?.relationshipId || details?.relationshipId || '',
-      };
+
       const infantInputModel: InfantDto = {
         dateOfBirth: infantDetails?.dateOfBirth?.toISOString(),
         firstName: infantDetails?.firstName,
@@ -271,7 +272,6 @@ export const InfantRegisterForm: React.FC = () => {
         caregiver: caregiverInput,
       };
 
-      appDispatch(caregiverActions.createCaregiver(caregiverInput));
       appDispatch(infantActions.addInfant(infantInputModel));
       appDispatch(
         infantThunkActions.addInfant({ infant: infantInputModel })
@@ -381,7 +381,7 @@ export const InfantRegisterForm: React.FC = () => {
             onSubmit={(value) => {
               setLabel(`step 6 of 6`);
               setAddress(value.address);
-              completeAllSteps({});
+              completeAllSteps({ caregiverAddress: value.address });
             }}
           />
         );
