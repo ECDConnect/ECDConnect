@@ -5,6 +5,7 @@ import { PregnantDetailsModel } from '@/schemas/pregnant/pregnant-details';
 export interface PregnantAddressProps
   extends FormComponentProps<PregnantRegisterModel> {
   address?: string;
+  addressLine1?: string;
   details?: PregnantDetailsModel | undefined;
 }
 
