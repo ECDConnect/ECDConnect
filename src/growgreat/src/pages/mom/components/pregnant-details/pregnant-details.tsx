@@ -7,9 +7,10 @@ import {
   ButtonGroupTypes,
   FormInput,
   Dropdown,
+  Alert,
 } from '@ecdlink/ui';
-import { useForm, useFormState } from 'react-hook-form';
-import { useState, useMemo, useEffect } from 'react';
+import { Controller, useForm, useFormState } from 'react-hook-form';
+import { useCallback, useEffect } from 'react';
 import {
   EditPregnantDetailsProps,
   yesNoOptions,
@@ -18,8 +19,8 @@ import {
   pregnantDetailsModelSchema,
   PregnantDetailsModel,
 } from '@/schemas/pregnant/pregnant-details';
-import { motherSelectors } from '@/store/mother';
 import { useSelector } from 'react-redux';
+import { caregiverSelectors } from '@/store/caregiver';
 
 export const PregnantDetails: React.FC<EditPregnantDetailsProps> = ({
   onSubmit,
@@ -29,7 +30,7 @@ export const PregnantDetails: React.FC<EditPregnantDetailsProps> = ({
   isAlreadyClient,
 }) => {
   const {
-    // watch,
+    watch,
     getValues: getPregnantDetailsFormValues,
     // formState: pregnantDetailsFormState,
     setValue: setPregnantDetailsFormValue,
@@ -38,29 +39,33 @@ export const PregnantDetails: React.FC<EditPregnantDetailsProps> = ({
     control: momDetailsFormControl,
   } = useForm<PregnantDetailsModel>({
     resolver: yupResolver(pregnantDetailsModelSchema),
-    mode: 'onBlur',
+    mode: 'onChange',
     // defaultValues: playgroup,
     reValidateMode: 'onChange',
   });
 
   const { isValid } = useFormState({ control: momDetailsFormControl });
 
-  const [userId, setUserId] = useState('');
-  const mothers = useSelector(motherSelectors.getMothers);
-  const handleAddExistingUser = useMemo(() => {
-    const existingUser = mothers.find(
-      (item) => item?.user?.id === userId.toString()
-    );
-    return existingUser;
-  }, [userId, mothers]);
+  const caregivers = useSelector(caregiverSelectors.getCaregivers);
+
+  const onChangeClient = useCallback(
+    (id) => {
+      const caregiver = caregivers?.find(
+        (currentlyCaregiver) => currentlyCaregiver.id === id
+      );
+
+      setPregnantDetailsFormValue('age', caregiver?.age);
+      setPregnantDetailsFormValue('name', caregiver?.firstName);
+      setPregnantDetailsFormValue('surname', caregiver?.surname);
+      setAddress(caregiver?.siteAddress);
+      setContactInformation({ cellphone: caregiver?.phoneNumber });
+    },
+    [caregivers, setAddress, setContactInformation, setPregnantDetailsFormValue]
+  );
 
   useEffect(() => {
-    if (isAlreadyClient) {
-      setPregnantDetailsFormValue('name', handleAddExistingUser?.firstName!);
-      setPregnantDetailsFormValue('surname', handleAddExistingUser?.surname!);
-      setPregnantDetailsFormValue('age', handleAddExistingUser?.age!);
-    }
-  }, [isAlreadyClient, setPregnantDetailsFormValue, handleAddExistingUser]);
+    watch();
+  }, [watch]);
 
   return (
     <>
@@ -89,9 +94,13 @@ export const PregnantDetails: React.FC<EditPregnantDetailsProps> = ({
         <div className="mt-2">
           <ButtonGroup<boolean>
             options={yesNoOptions}
-            onOptionSelected={(value: boolean | boolean[]) =>
-              setIsAlreadyClient(value)
-            }
+            onOptionSelected={(value: boolean | boolean[]) => {
+              setPregnantDetailsFormValue('age', '');
+              setPregnantDetailsFormValue('name', '');
+              setPregnantDetailsFormValue('surname', '');
+              setPregnantDetailsFormValue('id', '');
+              setIsAlreadyClient(value);
+            }}
             color="secondary"
             type={ButtonGroupTypes.Button}
             className={'w-full'}
@@ -133,27 +142,45 @@ export const PregnantDetails: React.FC<EditPregnantDetailsProps> = ({
             </div>
           </>
         )}
-        {isAlreadyClient === true && (
+        {isAlreadyClient === true && !!caregivers?.length && (
           <div className="mt-4 w-full">
-            <Dropdown
-              placeholder={'Please choose the client:'}
-              fillType="clear"
-              // selectedValue={getMomDetailsFormValues()}
-              list={
-                (mothers &&
-                  mothers
-                    .filter((x) => x.firstName?.length! > 0)
-                    .map((item) => {
-                      return {
-                        label: item.firstName!,
-                        value: item.id,
-                      };
-                    })) ||
-                []
-              }
-              onChange={(value) => setUserId(value!)}
+            <Controller
+              name="id"
+              control={momDetailsFormControl}
+              render={({ field: { onChange, value } }) => (
+                <Dropdown
+                  placeholder={'Please choose the client:'}
+                  fillType="clear"
+                  selectedValue={value}
+                  list={
+                    (caregivers &&
+                      caregivers
+                        .filter((x) => x.id && x.firstName?.length! > 0)
+                        .map((item) => {
+                          return {
+                            label: item.firstName!,
+                            value: item.id,
+                          };
+                        })) ||
+                    []
+                  }
+                  onChange={(value) => {
+                    onChangeClient(value);
+                    onChange(value);
+                  }}
+                />
+              )}
             />
           </div>
+        )}
+        {isAlreadyClient !== false && !caregivers?.length && (
+          <Alert
+            className={'mt-5 mb-3'}
+            message={
+              "You don't have any clients yet! Choose &quot;No&quot; above to continue."
+            }
+            type={'info'}
+          />
         )}
       </div>
       <div className="flex h-full items-end">
@@ -167,10 +194,12 @@ export const PregnantDetails: React.FC<EditPregnantDetailsProps> = ({
           iconPosition={'start'}
           onClick={() => {
             onSubmit(getPregnantDetailsFormValues());
-            setAddress(handleAddExistingUser?.siteAddressId);
-            setContactInformation(handleAddExistingUser?.phoneNumber);
           }}
-          disabled={!isValid}
+          disabled={
+            (isAlreadyClient && !getPregnantDetailsFormValues('id')) ||
+            (!isAlreadyClient &&
+              (!isValid || !getPregnantDetailsFormValues('age')))
+          }
         />
       </div>
     </>
