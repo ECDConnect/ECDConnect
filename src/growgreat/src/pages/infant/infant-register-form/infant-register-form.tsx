@@ -140,7 +140,7 @@ export const InfantRegisterForm: React.FC = () => {
     setActiveStep(InfantRegisterSteps.motherDetails);
   };
 
-  const completeAllSteps = ({
+  const completeAllSteps = async ({
     caregiverDetails,
     caregiverAddress,
   }: onSubmit) => {
@@ -176,7 +176,7 @@ export const InfantRegisterForm: React.FC = () => {
       healthCareWorkerId: user?.id,
     };
     if (!details?.isMother) {
-      appDispatch(caregiverActions.createCaregiver(caregiverInput));
+      await appDispatch(caregiverActions.createCaregiver(caregiverInput));
     }
 
     if (multipleChildrenArray?.length >= 1) {
@@ -210,8 +210,8 @@ export const InfantRegisterForm: React.FC = () => {
           caregiver: caregiverInput,
         };
 
-        appDispatch(infantActions.addInfant(infantInputModel));
-        appDispatch(
+        await appDispatch(infantActions.addInfant(infantInputModel));
+        await appDispatch(
           infantThunkActions.addInfant({ infant: infantInputModel })
         ).unwrap();
 
@@ -233,8 +233,8 @@ export const InfantRegisterForm: React.FC = () => {
           file: infantRoadToHealthBook?.roadToHealthBook,
           fileType: FileTypeEnum.RoadToHealthBook,
         };
-        appDispatch(documentActions.createDocument(documentInputModel));
-        appDispatch(
+        await appDispatch(documentActions.createDocument(documentInputModel));
+        await appDispatch(
           documentThunkActions.createDocument(documentInputModel)
         ).unwrap();
       }
@@ -273,8 +273,8 @@ export const InfantRegisterForm: React.FC = () => {
         caregiver: caregiverInput,
       };
 
-      appDispatch(infantActions.addInfant(infantInputModel));
-      appDispatch(
+      await appDispatch(infantActions.addInfant(infantInputModel));
+      await appDispatch(
         infantThunkActions.addInfant({ infant: infantInputModel })
       ).unwrap();
 
@@ -296,8 +296,8 @@ export const InfantRegisterForm: React.FC = () => {
         file: infantRoadToHealthBook?.roadToHealthBook,
         fileType: FileTypeEnum.RoadToHealthBook,
       };
-      appDispatch(documentActions.createDocument(documentInputModel));
-      appDispatch(
+      await appDispatch(documentActions.createDocument(documentInputModel));
+      await appDispatch(
         documentThunkActions.createDocument(documentInputModel)
       ).unwrap();
     }
