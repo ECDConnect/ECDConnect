@@ -66,6 +66,11 @@ namespace ECDLink.DataAccessLayer.Entities.Caregiver
         [ForeignKey(nameof(HealthCareWorkerId))]
         public virtual HealthCareWorker HealthCareWorker { get; set; }
         public Guid? HealthCareWorkerId { get; set; }
+
+        [ForeignKey(nameof(LanguageId))]
+        public virtual Language Language { get; set; }
+        public Guid? LanguageId { get; set; }
+
     }
 
     public interface CaregiverJoin<TKey>

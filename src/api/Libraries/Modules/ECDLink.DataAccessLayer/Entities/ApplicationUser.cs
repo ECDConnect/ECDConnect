@@ -98,6 +98,10 @@ namespace ECDLink.DataAccessLayer.Entities
         }
 
         public Guid? TenantId { get; set; }
+
+        [ForeignKey(nameof(LanguageId))]
+        public virtual Language Language { get; set; }
+        public Guid? LanguageId { get; set; }
     }
 
     public interface ApplicationUserJoin

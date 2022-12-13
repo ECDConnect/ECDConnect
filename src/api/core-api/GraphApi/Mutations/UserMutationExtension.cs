@@ -40,7 +40,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 ContactPreference = input.ContactPreference,
                 IsActive = true,
                 ProfileImageUrl = input.ProfileImageUrl,
-                TenantId = tenantId
+                TenantId = tenantId,
+                LanguageId = input.LanguageId
             };
 
             var userCreatedResult = userManager.CreateAsync(newUser).Result;
