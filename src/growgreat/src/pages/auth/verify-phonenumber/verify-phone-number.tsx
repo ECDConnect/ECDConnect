@@ -124,7 +124,7 @@ export const VerifyPhoneNumber = () => {
             isAuthenticated?.payload?.response?.status !== 401
           ) {
             await appDispatch(settingActions.setApplicationVersion(version));
-            history.push(ROUTES.DASHBOARD, { isSignUp: true });
+            history.push(ROUTES.DASHBOARD, { isFromSignUp: true });
             setIsLoading(false);
           } else {
             setIsLoading(false);

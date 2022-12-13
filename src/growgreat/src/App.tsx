@@ -79,7 +79,7 @@ function App() {
   });
 
   return (
-    <IonApp className="m-auto h-screen w-screen bg-white">
+    <IonApp className="m-auto max-w-4xl bg-white">
       <IonReactRouter>
         <IonRouterOutlet>{getRoutes()}</IonRouterOutlet>
       </IonReactRouter>
