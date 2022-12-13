@@ -175,8 +175,9 @@ export const InfantRegisterForm: React.FC = () => {
         '',
       healthCareWorkerId: user?.id,
     };
-
-    appDispatch(caregiverActions.createCaregiver(caregiverInput));
+    if (!details?.isMother) {
+      appDispatch(caregiverActions.createCaregiver(caregiverInput));
+    }
 
     if (multipleChildrenArray?.length >= 1) {
       for (const child of multipleChildrenArray) {

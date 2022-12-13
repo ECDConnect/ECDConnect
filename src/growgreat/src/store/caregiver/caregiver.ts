@@ -20,7 +20,9 @@ const caregiverSlice = createSlice({
     },
     createCaregiver: (state, action: PayloadAction<CaregiverDto>) => {
       if (!state.caregivers) state.caregivers = [];
-      state.caregivers?.push(action.payload);
+      state.caregivers
+        ?.filter((item) => item?.id !== action.payload?.id)
+        ?.push(action.payload);
     },
     updateCaregiver: (state, action: PayloadAction<CaregiverDto>) => {
       if (state.caregivers) {
@@ -92,7 +94,9 @@ const caregiverSlice = createSlice({
       createCaregiver.fulfilled,
       (state, action: PayloadAction<CaregiverDto>) => {
         if (!state.caregivers) state.caregivers = [];
-        state.caregivers?.push(action.payload);
+        state.caregivers
+          ?.filter((item) => item?.id !== action.payload?.id)
+          .push(action.payload);
       }
     );
   },
