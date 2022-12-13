@@ -69,16 +69,48 @@ export const EditPractitionerProfile: React.FC = () => {
     // const healthCareWorkerForm = healthCareWorker;
 
     const copy = Object.assign({}, healthCareWorker);
+
+    const copyUpdated: any = {
+      userId: copy?.id,
+      isRegistered: true,
+      languageId: language! as string,
+      teamLead: {
+        JobTitle: copy?.teamLead?.jobTitle,
+        IsActive: true,
+        Clinic: {
+          Name: copy?.teamLead?.clinic?.name,
+          PhoneNumber: copy?.teamLead?.clinic?.phoneNumber,
+          SiteAddress: copy?.teamLead?.clinic?.siteAddress,
+          IsActive: true,
+        },
+        User: {
+          firstName: copy?.teamLead?.user?.firstName,
+          surname: copy?.teamLead?.user?.surname,
+          phoneNumber: copy?.teamLead?.user?.phoneNumber,
+          emailConfirmed: true,
+          phoneNumberConfirmed: true,
+          twoFactorEnabled: false,
+          isSouthAfricanCitizen: true,
+          verifiedByHomeAffairs: true,
+          dateOfBirth: new Date(),
+          isActive: true,
+          lastSeen: new Date(),
+        },
+      },
+      user: copy?.user,
+    };
     if (copy) {
       copy.languageId = language! as string;
       copy.isRegistered = true;
       // copy.user!.emailConfirmed! = true;
 
-      await appDispatch(healthCareWorkerActions.updateHealthCareWorker(copy));
+      await appDispatch(
+        healthCareWorkerActions.updateHealthCareWorker(copyUpdated)
+      );
       await appDispatch(
         healthCareWorkerThunkActions.updateHealthCareWorkerById({
           userId: user?.id!,
-          input: copy,
+          input: copyUpdated,
         })
       );
       await appDispatch(
