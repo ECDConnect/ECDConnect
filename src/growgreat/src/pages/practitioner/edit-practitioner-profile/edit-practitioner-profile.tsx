@@ -69,7 +69,7 @@ export const EditPractitionerProfile: React.FC = () => {
     // const healthCareWorkerForm = healthCareWorker;
 
     const copy = Object.assign({}, healthCareWorker);
-    console.log({ copy });
+
     const copyUpdated: any = {
       userId: copy?.id,
       isRegistered: true,
