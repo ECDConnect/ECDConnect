@@ -302,10 +302,11 @@ export const PregnantMaternalCaseRecord: React.FC<
       </div>
       <Dialog
         visible={photoActionBarVisible}
-        position={DialogPosition.Middle}
+        position={DialogPosition.Bottom}
         stretch
       >
         <PhotoPrompt
+          hideEmojiOption
           title="Maternal case record form"
           onClose={() => setPhotoActionBarVisible(false)}
           onAction={(imageUrl: string) => setPhotoUrl(imageUrl)}
