@@ -68,8 +68,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         string userId)
         {
             //this was used wrong in FE, so adjust to align with FE
-            Coach coach = GetCoachByUserId(contextAccessor,dbFactory, repoFactory, userId);
-            return (coach.User!=null ? coach.User.FullName : "N/A");
+            Coach coach = GetCoachByCoachUserId(contextAccessor,dbFactory,repoFactory,userId);
+            return (coach!=null? coach.User!=null ? coach.User.FullName : null : null);
         }
 
 
