@@ -1,7 +1,6 @@
 import { useDialog, useTheme } from '@ecdlink/core';
 import { IonContent } from '@ionic/react';
-import { ActionModal, BannerWrapper } from '@ecdlink/ui';
-import { DialogPosition } from '@ecdlink/ui';
+import { ActionModal, BannerWrapper, DialogPosition } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
@@ -10,7 +9,6 @@ import { AddPhoto } from './components/add-photo/add-photo';
 import { EditPractitionerSteps } from './edit-practitioner-profile.types';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
-// import { authSelectors } from '@/store/auth';
 import { PractitionerSetup } from './components/practitioner-setup/practitioner-setup';
 import { WelcomePage } from '@/components/welcome-page';
 
@@ -29,7 +27,6 @@ export const EditPractitionerProfile: React.FC = () => {
   const dialog = useDialog();
   const { isOnline } = useOnlineStatus();
 
-  // const userAuth = useSelector(authSelectors.getAuthUser);
   const user = useSelector(userSelectors.getUser);
   const healthCareWorker = useSelector(
     healthCareWorkerSelectors?.getHealthCareWorker
@@ -66,8 +63,6 @@ export const EditPractitionerProfile: React.FC = () => {
   };
 
   const onAllStepsComplete = async () => {
-    // const healthCareWorkerForm = healthCareWorker;
-
     const copy = Object.assign({}, healthCareWorker);
 
     const copyUpdated: any = {
@@ -100,9 +95,8 @@ export const EditPractitionerProfile: React.FC = () => {
       user: copy?.user,
     };
     if (copy) {
-      copy.languageId = language! as string;
+      copy.languageId = language;
       copy.isRegistered = true;
-      // copy.user!.emailConfirmed! = true;
 
       await appDispatch(
         healthCareWorkerActions.updateHealthCareWorker(copyUpdated)
@@ -136,7 +130,7 @@ export const EditPractitionerProfile: React.FC = () => {
         return (
           <PractitionerSetup
             onSubmit={(form: string) => {
-              setLanguage(form!);
+              setLanguage(form);
               setActiveStep(EditPractitionerSteps.ADD_PHOTO);
             }}
           />
@@ -202,13 +196,13 @@ export const EditPractitionerProfile: React.FC = () => {
 
   const onBack = () => {
     switch (activeStep) {
-      case EditPractitionerSteps.WELCOME:
-      default:
-        return history.goBack();
       case EditPractitionerSteps.SETUP_PRACTITIONER:
         return setActiveStep(EditPractitionerSteps.WELCOME);
       case EditPractitionerSteps.ADD_PHOTO:
         return setActiveStep(EditPractitionerSteps.SETUP_PRACTITIONER);
+      case EditPractitionerSteps.WELCOME:
+      default:
+        return history.goBack();
     }
   };
 
@@ -236,9 +230,7 @@ export const EditPractitionerProfile: React.FC = () => {
           }
           displayOffline={!isOnline}
         >
-          <div className={'px-4'}>
-            {steps(activeStep as EditPractitionerSteps)}
-          </div>
+          <div className={'px-4'}>{steps(activeStep)}</div>
         </BannerWrapper>
       </IonContent>
     </>

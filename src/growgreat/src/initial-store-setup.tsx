@@ -1,4 +1,3 @@
-// import { getYear, getMonth, getWeek } from 'date-fns';
 import { ReactNode, useEffect, useState, createContext } from 'react';
 import Loader from '@/components/loader/loader';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
@@ -28,13 +27,12 @@ type IntialStoreSetupContextValues = {
   initloading: boolean;
   resetAuth: () => Promise<void>;
   getLoadingMessage: () => string;
-  syncClassroom: () => Promise<void>;
   initStoreSetup: () => Promise<void>;
   resetAppStore: (showLoading?: boolean) => Promise<void>;
 };
 
 type Props = {
-  children?: ReactNode | undefined;
+  children?: ReactNode;
 };
 
 export const IntialStoreSetupContext =
@@ -69,7 +67,7 @@ function InitialStoreSetup(props: Props) {
       (async () =>
         await appDispatch(
           caregiverThunkActions.getCaregiversForHealthCareWorker({
-            id: healthCareWorker?.id!,
+            id: healthCareWorker?.id || '',
           })
         ).unwrap())();
     }
@@ -79,7 +77,6 @@ function InitialStoreSetup(props: Props) {
     initloading,
     resetAuth,
     resetAppStore,
-    syncClassroom,
     initStoreSetup,
     getLoadingMessage,
   };
@@ -161,8 +158,6 @@ function InitialStoreSetup(props: Props) {
     await appDispatch(staticDataThunkActions.getWorkflowStatuses({})).unwrap();
     setStaticDataLoading(false);
   }
-
-  async function syncClassroom() {}
 
   function getLoadingMessage() {
     let message = 'Loading . . .';

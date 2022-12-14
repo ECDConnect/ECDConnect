@@ -1,6 +1,5 @@
 import { api } from '../axios.helper';
-import { Config } from '@ecdlink/core';
-import { DocumentDto, FileReturnModel } from '@ecdlink/core';
+import { DocumentDto, FileReturnModel, Config } from '@ecdlink/core';
 import { DocumentInput } from '@ecdlink/graphql';
 class DocumentService {
   _accessToken: string;
@@ -10,7 +9,7 @@ class DocumentService {
   }
 
   async getdocuments(userId: string): Promise<DocumentDto[]> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         query GetAllDocument($createdUserId: String) {
@@ -51,7 +50,7 @@ class DocumentService {
   }
 
   async updateDocument(id: string, input: DocumentInput): Promise<boolean> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         mutation updateDocument($id: UUID!,$input: DocumentInput) {
@@ -78,7 +77,7 @@ class DocumentService {
     fileName: string,
     fileType: string
   ): Promise<FileReturnModel> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         mutation fileUpload($file: String, $fileName: String, $fileType: FileTypeEnum!) {

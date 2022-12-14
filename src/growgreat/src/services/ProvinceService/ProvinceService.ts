@@ -1,6 +1,6 @@
 import { api } from '../axios.helper';
-import { Config } from '@ecdlink/core';
-import { ProvinceDto } from '@ecdlink/core';
+import { Config, ProvinceDto } from '@ecdlink/core';
+
 class ProvinceService {
   _accessToken: string;
 
@@ -9,7 +9,7 @@ class ProvinceService {
   }
 
   async getProvinces(): Promise<ProvinceDto[]> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         query {

@@ -4,7 +4,7 @@ import { PregnantRegisterModel } from '@/schemas/pregnant/pregnant-register-form
 export interface EditConsentAgreementProps
   extends FormComponentProps<PregnantRegisterModel> {
   hasConsent?: boolean;
-  numberOfChildren?: number | undefined;
+  numberOfChildren?: number;
   multipleChildren?: boolean;
   setMultipleChildren?: any;
 }

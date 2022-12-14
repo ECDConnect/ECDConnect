@@ -1,6 +1,5 @@
 import { ChildDto, UserDto } from '@ecdlink/core';
-import { ActionModal } from '@ecdlink/ui';
-import { ComponentBaseProps } from '@ecdlink/ui';
+import { ActionModal, ComponentBaseProps } from '@ecdlink/ui';
 
 interface RemoveChildPromptProps extends ComponentBaseProps {
   child?: ChildDto;

@@ -1,10 +1,5 @@
 import { api } from '../axios.helper';
-import {
-  Config,
-  // UserDto,
-  PractitionerDto,
-  HealthCareWorkerDto,
-} from '@ecdlink/core';
+import { Config, PractitionerDto, HealthCareWorkerDto } from '@ecdlink/core';
 import { MutationUpdateHealthCareWorkerArgs } from '@ecdlink/graphql';
 
 class HealthCareWorkerService {
@@ -17,7 +12,7 @@ class HealthCareWorkerService {
   async getHealthCareWorkerByUserId(
     userId: string
   ): Promise<HealthCareWorkerDto> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
       query getHealthCareWorkerByUserId($userId: String) {
@@ -84,7 +79,7 @@ class HealthCareWorkerService {
   }
 
   async getPractitionerByUserId(userId: string): Promise<PractitionerDto> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         query GetPractitionerByUserId($userId: String) {
@@ -148,7 +143,7 @@ class HealthCareWorkerService {
     practitionerId: string,
     status: boolean = true
   ): Promise<boolean> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         mutation UpdatePractitionerRegistered(
@@ -176,43 +171,11 @@ class HealthCareWorkerService {
     return response.data.data.updatePractitionerRegistered;
   }
 
-  // async UpdatePractitionerProgress(
-  //   practitionerId: string,
-  //   progress: any
-  // ): Promise<boolean> {
-  //   const apiInstance = await api(Config.graphQlApi, this._accessToken);
-  //   const response = await apiInstance.post<any>(``, {
-  //     query: `
-  //       mutation updatePractitionerProgress(
-  //         $practitionerId: String
-  //         $progress: Decimal!
-  //       ) {
-  //         updatePractitionerProgress(
-  //           practitionerId: $practitionerId
-  //           progress: $progress
-  //         )
-  //       }
-  //     `,
-  //     variables: {
-  //       practitionerId,
-  //       progress,
-  //     },
-  //   });
-
-  //   if (response.status !== 200) {
-  //     throw new Error(
-  //       'UpdatePractitionerProgress Failed - Server connection error'
-  //     );
-  //   }
-
-  //   return response.data.data.updatePractitionerProgress;
-  // }
-
   async UpdateHealthCareWorker(
     userId: string,
     input: MutationUpdateHealthCareWorkerArgs
   ): Promise<HealthCareWorkerDto> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
       mutation updateHealthCareWorker(

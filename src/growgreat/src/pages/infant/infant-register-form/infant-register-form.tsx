@@ -37,14 +37,8 @@ import { infantActions, infantThunkActions } from '@/store/infant';
 import momImage from '@/assets/happyMom.svg';
 import { useSelector } from 'react-redux';
 import { userSelectors } from '@store/user';
-import {
-  caregiverActions,
-  caregiverThunkActions,
-  // caregiverThunkActions
-} from '@/store/caregiver';
+import { caregiverActions, caregiverThunkActions } from '@/store/caregiver';
 import { MotherDetailsProps } from '../components/mother-details/mother-details.types';
-// import { AddressInfo } from 'net';
-// import { InfantAddressProps } from '../components/infant-address/infant-address.types';
 import { useStaticData } from '@/hooks/useStaticData';
 import { FileTypeEnum, WorkflowStatusEnum } from '@ecdlink/graphql';
 import { documentActions, documentThunkActions } from '@/store/document';
@@ -104,8 +98,6 @@ export const InfantRegisterForm: React.FC = () => {
     setLabel('step 1 of 6');
   }, []);
 
-  // const { data } = useQuery(GenderList, { fetchPolicy: 'cache-and-network' });
-
   useEffect(() => {
     if (infantRoadToHealthBook) {
       const multipleChildrenRecords = {
@@ -130,7 +122,7 @@ export const InfantRegisterForm: React.FC = () => {
   };
 
   const handleMultipleChildrenSteps = () => {
-    if (multipleChildrenCount < Number(numberOfChildren!)) {
+    if (multipleChildrenCount < Number(numberOfChildren)) {
       setActiveStep(InfantRegisterSteps.infantDetails);
       setMultipleChildrenCount(multipleChildrenCount + 1);
       setLabel(`step 2 of 6`);
@@ -305,19 +297,6 @@ export const InfantRegisterForm: React.FC = () => {
 
   const steps = (step: InfantRegisterSteps) => {
     switch (step) {
-      case InfantRegisterSteps.consentAgreement:
-      default:
-        return (
-          <ConsentAgreement
-            multipleChildren={multipleChildren}
-            setMultipleChildren={setMultipleChildren}
-            onSubmit={(value) => {
-              setActiveStep(InfantRegisterSteps.infantDetails);
-              setHasConsent(value as any);
-              setLabel(`step 2 of 6`);
-            }}
-          />
-        );
       case InfantRegisterSteps.infantDetails:
         return (
           <InfantDetails
@@ -336,7 +315,6 @@ export const InfantRegisterForm: React.FC = () => {
             infantDetails={infantDetails}
             onSubmit={(value) => {
               handleMultipleChildrenSteps();
-              // setActiveStep(InfantRegisterSteps.motherDetails);
               setInfantRoadToHealthBook(value);
             }}
           />
@@ -386,6 +364,19 @@ export const InfantRegisterForm: React.FC = () => {
             }}
           />
         );
+      case InfantRegisterSteps.consentAgreement:
+      default:
+        return (
+          <ConsentAgreement
+            multipleChildren={multipleChildren}
+            setMultipleChildren={setMultipleChildren}
+            onSubmit={(value) => {
+              setActiveStep(InfantRegisterSteps.infantDetails);
+              setHasConsent(value as any);
+              setLabel(`step 2 of 6`);
+            }}
+          />
+        );
     }
   };
 
@@ -417,7 +408,8 @@ export const InfantRegisterForm: React.FC = () => {
                 className="mt-4 text-center"
                 lineHeight="snug"
                 text={
-                  hasConsent?.numberOfChildren! > 0
+                  hasConsent?.numberOfChildren &&
+                  hasConsent.numberOfChildren > 0
                     ? `Great job ${user?.firstName}, you've registered ${hasConsent?.numberOfChildren} children this month.`
                     : `Great job ${user?.firstName}, you've registered 1 child this month.`
                 }
@@ -496,7 +488,7 @@ export const InfantRegisterForm: React.FC = () => {
         className={'flex flex-col overflow-auto px-4 pb-5'}
         style={{ height: height - BANNER_HEIGHT }}
       >
-        {steps(activeStep as InfantRegisterSteps)}
+        {steps(activeStep)}
       </div>
     </div>
   );
