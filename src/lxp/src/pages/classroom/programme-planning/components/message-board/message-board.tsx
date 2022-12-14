@@ -7,8 +7,8 @@ import {
   Divider,
   FormInput,
   Typography,
+  DialogPosition,
 } from '@ecdlink/ui';
-import { DialogPosition } from '@ecdlink/ui';
 import { DateFormats } from '../../../../../constants/Dates';
 import {
   MessageBoardModel,
@@ -51,7 +51,7 @@ export const MessageBoard: React.FC<MessageBoardProps> = ({
         onBack={onClose}
         displayOffline={!isOnline}
       >
-        <div className={'h-full w-full p-4 bg-uiBg'}>
+        <div className={'bg-uiBg h-full w-full p-4'}>
           <Typography
             type={'body'}
             text={'What messages would you like to share for today?'}
@@ -73,7 +73,7 @@ export const MessageBoard: React.FC<MessageBoardProps> = ({
             type={'body'}
             text={'Here are some ideas of messages you can share:'}
           />
-          <ul className={'list-disc ml-6'}>
+          <ul className={'ml-6 list-disc'}>
             <li>
               <Typography type={'help'} text={'today’s weather'} />
             </li>

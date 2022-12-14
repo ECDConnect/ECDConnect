@@ -37,9 +37,6 @@ export const PractitionersList: React.FC = () => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [practitionerListData, setPractitionerListData] =
     useState<UserAlertListDataItem[]>();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [addChildButtonExpanded, setAddChildButtonExpanded] =
-    useState<boolean>(true);
   const [practitionersMessages, setPractitionersMessages] = useState<any[]>();
   const [loading, setLoading] = useState(false);
 

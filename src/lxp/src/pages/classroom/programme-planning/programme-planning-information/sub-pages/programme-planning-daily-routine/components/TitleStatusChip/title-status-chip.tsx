@@ -1,5 +1,4 @@
-import { StatusChip, Typography } from '@ecdlink/ui';
-import { classNames } from '@ecdlink/ui';
+import { StatusChip, Typography, classNames } from '@ecdlink/ui';
 import { TitleStatusChipProps } from './title-status-chip.types';
 
 export const TitleStatusChip: React.FC<TitleStatusChipProps> = ({
