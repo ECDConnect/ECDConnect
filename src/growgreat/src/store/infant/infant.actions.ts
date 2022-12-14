@@ -22,41 +22,37 @@ export const getInfants = createAsyncThunk<
   // eslint-disable-next-line @typescript-eslint/ban-types
   {},
   ThunkApiType<RootState>
->(
-  InfantActions.GET_INFANTS,
-  // eslint-disable-next-line no-empty-pattern
-  async ({}, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-      infants: { infants: infantsCache },
-    } = getState();
+>(InfantActions.GET_INFANTS, async (_, { getState, rejectWithValue }) => {
+  const {
+    auth: { userAuth },
+    infants: { infants: infantsCache },
+  } = getState();
 
-    if (!infantsCache) {
-      try {
-        let infants: InfantDto[] | undefined;
-        const id = userAuth?.id;
+  if (!infantsCache) {
+    try {
+      let infants: InfantDto[] | undefined;
+      const id = userAuth?.id;
 
-        if (userAuth?.auth_token && id) {
-          infants = await new InfantService(
-            userAuth?.auth_token
-          ).GetAllInfantsForMother(id);
-        } else {
-          return rejectWithValue('no access token, profile check required');
-        }
-
-        if (!infants) {
-          return rejectWithValue('Error getting mothers');
-        }
-
-        return infants;
-      } catch (err) {
-        return rejectWithValue(err);
+      if (userAuth?.auth_token && id) {
+        infants = await new InfantService(
+          userAuth?.auth_token
+        ).GetAllInfantsForMother(id);
+      } else {
+        return rejectWithValue('no access token, profile check required');
       }
-    } else {
-      return infantsCache;
+
+      if (!infants) {
+        return rejectWithValue('Error getting mothers');
+      }
+
+      return infants;
+    } catch (err) {
+      return rejectWithValue(err);
     }
+  } else {
+    return infantsCache;
   }
-);
+});
 
 type CreateInfantRequest = {
   infant: InfantDto;

@@ -41,35 +41,31 @@ export const getAllPractitioners = createAsyncThunk<
   PractitionerDto[],
   {},
   ThunkApiType<RootState>
->(
-  'getAllPractitioners',
-  // eslint-disable-next-line no-empty-pattern
-  async ({}, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-    } = getState();
+>('getAllPractitioners', async (_, { getState, rejectWithValue }) => {
+  const {
+    auth: { userAuth },
+  } = getState();
 
-    try {
-      let practitioners: PractitionerDto[] | undefined;
+  try {
+    let practitioners: PractitionerDto[] | undefined;
 
-      if (userAuth?.auth_token) {
-        practitioners = await new PractitionerService(
-          userAuth?.auth_token
-        ).getAllPractitioners();
-      } else {
-        return rejectWithValue('no access token, profile check required');
-      }
-
-      if (!practitioners) {
-        return rejectWithValue('Error getting practitioner');
-      }
-
-      return practitioners;
-    } catch (err) {
-      return rejectWithValue(err);
+    if (userAuth?.auth_token) {
+      practitioners = await new PractitionerService(
+        userAuth?.auth_token
+      ).getAllPractitioners();
+    } else {
+      return rejectWithValue('no access token, profile check required');
     }
+
+    if (!practitioners) {
+      return rejectWithValue('Error getting practitioner');
+    }
+
+    return practitioners;
+  } catch (err) {
+    return rejectWithValue(err);
   }
-);
+});
 
 export type UpdatePractitionerRequest = {
   id: string;
@@ -82,7 +78,6 @@ export const updatePractitionerById = createAsyncThunk<
   ThunkApiType<RootState>
 >(
   'updatePractitionerById',
-  // eslint-disable-next-line no-empty-pattern
   async ({ input, id }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },

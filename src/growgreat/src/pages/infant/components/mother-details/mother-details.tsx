@@ -74,14 +74,11 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
       (elem, index, self) =>
         self.findIndex((t) => {
           return (
-            // TODO: Fix this expression
-            // REASON: The expression is duplicated on both sides of a logical operator.
-            // deepcode ignore CopyPasteError: <We will address this in the next phase>
-            t.firstName === elem.firstName && t.firstName === elem.firstName
+            t.firstName && elem.firstName && t.firstName === elem.firstName
           );
         }) === index
     );
-    // if (uniqueChildrenArray)
+
     setMultipleChildrenArray(uniqueChildrenArray);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [relationshipChildrenArray]);
