@@ -1,8 +1,8 @@
 import { ActionReducerMapBuilder } from '@reduxjs/toolkit';
-import { ThunkActionStatuses, ThunkStateStatus } from './types';
+import { ThunkActionStatuses } from './types';
 
 export const setThunkActionStatus = (
-  builder: ActionReducerMapBuilder<any & ThunkStateStatus>,
+  builder: ActionReducerMapBuilder<any>,
   action: any
 ) =>
   builder

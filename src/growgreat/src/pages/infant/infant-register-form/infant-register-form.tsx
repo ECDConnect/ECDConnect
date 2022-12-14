@@ -37,14 +37,8 @@ import { infantActions, infantThunkActions } from '@/store/infant';
 import momImage from '@/assets/happyMom.svg';
 import { useSelector } from 'react-redux';
 import { userSelectors } from '@store/user';
-import {
-  caregiverActions,
-  caregiverThunkActions,
-  // caregiverThunkActions
-} from '@/store/caregiver';
+import { caregiverActions, caregiverThunkActions } from '@/store/caregiver';
 import { MotherDetailsProps } from '../components/mother-details/mother-details.types';
-// import { AddressInfo } from 'net';
-// import { InfantAddressProps } from '../components/infant-address/infant-address.types';
 import { useStaticData } from '@/hooks/useStaticData';
 import { FileTypeEnum, WorkflowStatusEnum } from '@ecdlink/graphql';
 import { documentActions, documentThunkActions } from '@/store/document';
@@ -103,8 +97,6 @@ export const InfantRegisterForm: React.FC = () => {
   useEffect(() => {
     setLabel('step 1 of 6');
   }, []);
-
-  // const { data } = useQuery(GenderList, { fetchPolicy: 'cache-and-network' });
 
   useEffect(() => {
     if (infantRoadToHealthBook) {
@@ -336,7 +328,6 @@ export const InfantRegisterForm: React.FC = () => {
             infantDetails={infantDetails}
             onSubmit={(value) => {
               handleMultipleChildrenSteps();
-              // setActiveStep(InfantRegisterSteps.motherDetails);
               setInfantRoadToHealthBook(value);
             }}
           />

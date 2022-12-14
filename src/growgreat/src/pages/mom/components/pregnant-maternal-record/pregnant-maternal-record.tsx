@@ -50,10 +50,7 @@ export const PregnantMaternalCaseRecord: React.FC<
     control: pregnantMaternalCaseRecordControl,
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [useMap, setUseMap] = useState(false);
-  const [hasMaternalCaseRecord, setHasMaternalCaseRecord] =
-    useState<any>(false);
+  const [hasMaternalCaseRecord, setHasMaternalCaseRecord] = useState<boolean>();
   const acceptedFormats = ['jpg', 'pdf', 'jpeg'];
   const [registrationFormPhotoUrl, setRegistrationFormPhotoUrl] =
     useState<string>();
@@ -61,10 +58,8 @@ export const PregnantMaternalCaseRecord: React.FC<
     useState<boolean>(false);
   const [maternalRecordExampleVisible, setMaternalRecordExampleVisible] =
     useState(false);
-  //   const handleConsentAccept = () => {
-  //     setConsentFormValue('hasConsent', !accept);
-  //   };
   const [confirmHasNoRecord, setConfirmHasNoRecord] = useState(false);
+
   const currentDate = new Date();
 
   const [myMonth, setMyMonth] = useState(currentDate);
@@ -201,7 +196,7 @@ export const PregnantMaternalCaseRecord: React.FC<
           color="secondary"
           type={ButtonGroupTypes.Button}
           className={'mt-2 w-full'}
-          selectedOptions={useMap}
+          selectedOptions={hasMaternalCaseRecord}
         />
       </div>
       {hasMaternalCaseRecord === false && (

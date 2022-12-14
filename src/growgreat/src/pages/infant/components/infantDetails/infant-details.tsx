@@ -18,7 +18,6 @@ import {
 import { intervalToDuration } from 'date-fns';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-// import { getGenders } from '@/store/static-data/static-data.selectors';
 import { useSelector } from 'react-redux';
 import { staticDataSelectors } from '@store/static-data';
 

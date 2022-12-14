@@ -10,7 +10,6 @@ import { AddPhoto } from './components/add-photo/add-photo';
 import { EditPractitionerSteps } from './edit-practitioner-profile.types';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
-// import { authSelectors } from '@/store/auth';
 import { PractitionerSetup } from './components/practitioner-setup/practitioner-setup';
 import { WelcomePage } from '@/components/welcome-page';
 
@@ -29,7 +28,6 @@ export const EditPractitionerProfile: React.FC = () => {
   const dialog = useDialog();
   const { isOnline } = useOnlineStatus();
 
-  // const userAuth = useSelector(authSelectors.getAuthUser);
   const user = useSelector(userSelectors.getUser);
   const healthCareWorker = useSelector(
     healthCareWorkerSelectors?.getHealthCareWorker
@@ -66,13 +64,10 @@ export const EditPractitionerProfile: React.FC = () => {
   };
 
   const onAllStepsComplete = async () => {
-    // const healthCareWorkerForm = healthCareWorker;
-
     const copy = Object.assign({}, healthCareWorker);
     if (copy) {
       copy.languageId = language! as string;
       copy.isRegistered = true;
-      // copy.user!.emailConfirmed! = true;
 
       await appDispatch(healthCareWorkerActions.updateHealthCareWorker(copy));
       await appDispatch(

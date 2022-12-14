@@ -4,7 +4,6 @@ import localForage from 'localforage';
 import { ThunkStateStatus, ThunkActionStatuses } from '../types';
 import { setThunkActionStatus } from '../utils';
 import { getInfants, addInfant } from './infant.actions';
-// import { createMother, getMothers, updateMother } from './mother.actions';
 import { InfantState } from './infant.types';
 
 const initialState: InfantState & ThunkStateStatus = {
@@ -47,28 +46,6 @@ const infantSlice = createSlice({
         state.infants = infants;
       }
     });
-    //   builder.addCase(
-    //     updateMother.fulfilled,
-    //     (state, action: PayloadAction<MotherDto>) => {
-    //       if (state.mothers) {
-    //         const motherIndex = state.mothers.findIndex(
-    //           (mother) => mother.id === action.payload.id
-    //         );
-
-    //         if (motherIndex < 0) return;
-
-    //         state.mothers[motherIndex] = action.payload;
-    //       }
-    //     }
-    //   );
-    //   builder.addCase(
-    //     createMother.fulfilled,
-    //     (state, action: PayloadAction<MotherDto>) => {
-    //       if (!state.mothers) state.mothers = [];
-    //       state.mothers?.push(action.payload);
-    //     }
-    //   );
-    // },
   },
 });
 

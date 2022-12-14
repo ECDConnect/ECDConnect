@@ -331,8 +331,6 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
           iconPosition={'start'}
           onClick={() => {
             onSubmit(getMotherDetailsFormValues());
-            // setAddress(handleAddExistingUser?.siteAddress);
-            // setContactInformation(handleAddExistingUser?.phoneNumber);
           }}
           disabled={
             (!multipleChildrenArray && !isValid) ||

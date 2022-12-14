@@ -89,8 +89,6 @@ export const updatePractitionerById = createAsyncThunk<
     } = getState();
 
     try {
-      // let mappedCaregiverInput = mapPractitioner(input);
-
       if (userAuth?.auth_token) {
         await new PractitionerService(
           userAuth?.auth_token
@@ -103,10 +101,3 @@ export const updatePractitionerById = createAsyncThunk<
     }
   }
 );
-
-const mapPractitioner = (x: Partial<any>): any => ({
-  User: {
-    firstName: x.firstName,
-    surname: x.surname,
-  },
-});

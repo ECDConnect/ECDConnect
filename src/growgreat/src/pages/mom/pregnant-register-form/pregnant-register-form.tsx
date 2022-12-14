@@ -45,12 +45,13 @@ import { documentActions, documentThunkActions } from '@/store/document';
 const BANNER_HEIGHT = 64;
 
 export const PregnantRegisterForm: React.FC = () => {
-  const [label, setLabel] = useState('');
   const { isOnline } = useOnlineStatus();
+
   const appDispatch = useAppDispatch();
+
   const history = useHistory();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [hasConsent, setHasConsent] = useState(false);
+
+  const [label, setLabel] = useState('');
   const [details, setDetails] = useState<EditPregnantDetailsProps>();
   const [contactInformation, setContactInformation] =
     useState<EditPregnantContactInformationProps>();
@@ -172,7 +173,6 @@ export const PregnantRegisterForm: React.FC = () => {
           <ConsentAgreement
             onSubmit={(value) => {
               setActiveStep(PregnantRegisterSteps.pregnantDetails);
-              setHasConsent(Boolean(value));
               setLabel(`step 2 of 5`);
             }}
           />

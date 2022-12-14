@@ -1,11 +1,7 @@
 import { MotherDto } from '@ecdlink/core';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
-import {
-  // addMother,
-  getMothers,
-  // updateMother
-} from './mother.actions';
+import { getMothers } from './mother.actions';
 import { MotherState } from './mother.types';
 
 const initialState: MotherState = {};
@@ -41,27 +37,6 @@ const motherSlice = createSlice({
         state.mothers = mothers;
       }
     });
-    //   builder.addCase(
-    //     updateMother.fulfilled,
-    //     (state, action: PayloadAction<MotherDto>) => {
-    //       if (state.mothers) {
-    //         const motherIndex = state.mothers.findIndex(
-    //           (mother) => mother.id === action.payload.id
-    //         );
-
-    //         if (motherIndex < 0) return;
-
-    //         state.mothers[motherIndex] = action.payload;
-    //       }
-    //     }
-    //   );
-    //   builder.addCase(
-    //     createMother.fulfilled,
-    //     (state, action: PayloadAction<MotherDto>) => {
-    //       if (!state.mothers) state.mothers = [];
-    //       state.mothers?.push(action.payload);
-    //     }
-    //   );
   },
 });
 

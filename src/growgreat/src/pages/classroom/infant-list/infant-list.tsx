@@ -28,9 +28,6 @@ export const InfantList: React.FC<ComponentBaseProps> = () => {
   const [infantsListItems, setInfantsListItems] = useState<
     ActionListDataItem[]
   >([]);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [addChildButtonExpanded, setAddChildButtonExpanded] =
-    useState<boolean>(true);
 
   useEffect(() => {
     const infantsList: UserAlertListDataItem[] = infants.map((infant) => {
@@ -88,7 +85,7 @@ export const InfantList: React.FC<ComponentBaseProps> = () => {
         title={'Add a child'}
         icon={'PlusIcon'}
         iconDirection={'left'}
-        textToggle={addChildButtonExpanded}
+        textToggle
         type={'filled'}
         color={'primary'}
         shape={'round'}
