@@ -1,6 +1,6 @@
 import { api } from '../axios.helper';
-import { Config } from '@ecdlink/core';
-import { RaceDto } from '@ecdlink/core';
+import { Config, RaceDto } from '@ecdlink/core';
+
 class RaceService {
   _accessToken: string;
 

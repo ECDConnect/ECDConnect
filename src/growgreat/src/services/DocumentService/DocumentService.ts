@@ -1,6 +1,5 @@
 import { api } from '../axios.helper';
-import { Config } from '@ecdlink/core';
-import { DocumentDto, FileReturnModel } from '@ecdlink/core';
+import { DocumentDto, FileReturnModel, Config } from '@ecdlink/core';
 import { DocumentInput } from '@ecdlink/graphql';
 class DocumentService {
   _accessToken: string;

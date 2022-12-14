@@ -1,7 +1,6 @@
 import { useDialog, useTheme } from '@ecdlink/core';
 import { IonContent } from '@ionic/react';
-import { ActionModal, BannerWrapper } from '@ecdlink/ui';
-import { DialogPosition } from '@ecdlink/ui';
+import { ActionModal, BannerWrapper, DialogPosition } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';

@@ -5,9 +5,9 @@ import {
   Divider,
   ProfileAvatar,
   Typography,
+  DialogPosition,
+  renderIcon,
 } from '@ecdlink/ui';
-import { DialogPosition } from '@ecdlink/ui';
-import { renderIcon } from '@ecdlink/ui';
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { PhotoPrompt } from '../../../../../components/photo-prompt/photo-prompt';

@@ -1,6 +1,6 @@
 import { api } from '../axios.helper';
-import { Config } from '@ecdlink/core';
-import { GenderDto } from '@ecdlink/core';
+import { Config, GenderDto } from '@ecdlink/core';
+
 class GenderService {
   _accessToken: string;
 

@@ -7,7 +7,7 @@ import {
   ActionModal,
 } from '@ecdlink/ui';
 import { format } from 'date-fns';
-import { useDialog } from '@ecdlink/core';
+import { useDialog, getAvatarColor } from '@ecdlink/core';
 import { IconInformationIndicator } from '@/components/icon-information-indicator/icon-information-indicator';
 import * as styles from './infant-list.styles';
 import { useSelector } from 'react-redux';
@@ -16,7 +16,6 @@ import ROUTES from '@/routes/routes';
 import { useHistory } from 'react-router-dom';
 import { getInfants } from '@/store/infant/infant.selectors';
 import { motherSelectors } from '@/store/mother';
-import { getAvatarColor } from '@ecdlink/core';
 import Infant from '@/assets/infant.svg';
 
 export const ClientList: React.FC<ComponentBaseProps> = () => {

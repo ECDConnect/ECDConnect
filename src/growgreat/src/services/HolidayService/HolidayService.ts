@@ -1,6 +1,6 @@
 import { api } from '../axios.helper';
-import { Config } from '@ecdlink/core';
-import { HolidayDto } from '@ecdlink/core';
+import { Config, HolidayDto } from '@ecdlink/core';
+
 class HolidayService {
   _accessToken: string;
 

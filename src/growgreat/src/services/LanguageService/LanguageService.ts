@@ -1,6 +1,6 @@
 import { api } from '../axios.helper';
-import { Config } from '@ecdlink/core';
-import { LanguageDto } from '@ecdlink/core';
+import { Config, LanguageDto } from '@ecdlink/core';
+
 class LanguageService {
   async getLanguages(): Promise<LanguageDto[]> {
     const apiInstance = api(Config.graphQlApi);

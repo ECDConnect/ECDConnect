@@ -1,5 +1,4 @@
-import { ActionModal } from '@ecdlink/ui';
-import { DialogPosition, Dialog } from '@ecdlink/ui';
+import { DialogPosition, Dialog, ActionModal } from '@ecdlink/ui';
 import { useStoreSetup } from '@/hooks/useStoreSetup';
 import { useHistory } from 'react-router-dom';
 import ROUTES from '@/routes/routes';

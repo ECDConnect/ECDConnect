@@ -1,6 +1,6 @@
 import { api } from '../axios.helper';
-import { Config } from '@ecdlink/core';
-import { ProvinceDto } from '@ecdlink/core';
+import { Config, ProvinceDto } from '@ecdlink/core';
+
 class ProvinceService {
   _accessToken: string;
 

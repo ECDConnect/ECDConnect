@@ -1,6 +1,6 @@
 import { api } from '../axios.helper';
-import { Config } from '@ecdlink/core';
-import { ReasonForLeavingDto } from '@ecdlink/core';
+import { Config, ReasonForLeavingDto } from '@ecdlink/core';
+
 class ReasonForLeavingService {
   _accessToken: string;
 

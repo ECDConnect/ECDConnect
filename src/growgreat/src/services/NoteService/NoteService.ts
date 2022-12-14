@@ -1,7 +1,7 @@
 import { api } from '../axios.helper';
-import { Config } from '@ecdlink/core';
-import { NoteDto } from '@ecdlink/core';
+import { Config, NoteDto } from '@ecdlink/core';
 import { NoteInput } from '@ecdlink/graphql';
+
 class NoteService {
   _accessToken: string;
 

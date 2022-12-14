@@ -7,7 +7,7 @@ import {
   UserAlertListDataItem,
 } from '@ecdlink/ui';
 import { format } from 'date-fns';
-import { useDialog } from '@ecdlink/core';
+import { useDialog, getAvatarColor } from '@ecdlink/core';
 import { IconInformationIndicator } from '@/components/icon-information-indicator/icon-information-indicator';
 import * as styles from './infant-list.styles';
 import { useSelector } from 'react-redux';
@@ -17,7 +17,6 @@ import { useHistory } from 'react-router-dom';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { getInfants } from '@/store/infant/infant.selectors';
-import { getAvatarColor } from '@ecdlink/core';
 import Infant from '@/assets/infant.svg';
 
 export const InfantList: React.FC<ComponentBaseProps> = () => {

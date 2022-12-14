@@ -1,6 +1,6 @@
 import { api } from '../axios.helper';
-import { Config } from '@ecdlink/core';
-import { RelationDto } from '@ecdlink/core';
+import { Config, RelationDto } from '@ecdlink/core';
+
 class RelationsService {
   _accessToken: string;
 

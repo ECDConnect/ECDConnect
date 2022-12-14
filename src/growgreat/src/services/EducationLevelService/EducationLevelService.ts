@@ -1,6 +1,6 @@
 import { api } from '../axios.helper';
-import { Config } from '@ecdlink/core';
-import { EducationLevelDto } from '@ecdlink/core';
+import { Config, EducationLevelDto } from '@ecdlink/core';
+
 class EducationLevelService {
   _accessToken: string;
 
