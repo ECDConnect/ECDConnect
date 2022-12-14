@@ -11,7 +11,7 @@ import {
   Dialog,
   DialogPosition,
 } from '@ecdlink/ui';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
 import * as styles from './login.styles';
@@ -25,7 +25,7 @@ import { authActions, authThunkActions } from '@store/auth';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { settingActions } from '@store/settings';
 import ROUTES from '@routes/routes';
-import DeviceInfo from 'react-native-device-info';
+// import DeviceInfo from 'react-native-device-info';
 import { StorageFull } from './storage-full/storage-full';
 const { version } = require('../../../../package.json');
 
@@ -39,24 +39,11 @@ export const Login: React.FC = () => {
   const [freeMemory, setFreeMemory] = useState(0);
   const [errorMessage, setErrorMessage] = useState(false);
 
-  function getFreeDiskStorage() {
-    DeviceInfo.getFreeDiskStorage().then((freeDiskStorage) => {
-      let freeStorageInMB = freeDiskStorage / 1024 / 1024;
-      freeStorageInMB = parseInt(freeStorageInMB + '');
-      setFreeMemory(freeStorageInMB);
-      return freeStorageInMB;
-    });
-  }
-
-  useEffect(() => {
-    let isMounted = true;
-    if (isMounted) {
-      getFreeDiskStorage();
-    }
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  navigator.storage.estimate().then((estimate) => {
+    const freMemoryResult = estimate?.quota! / 1024 / 1024;
+    setFreeMemory(Number(freMemoryResult.toFixed(0)));
+    return estimate;
+  });
 
   const {
     register: loginRegister,
@@ -73,7 +60,7 @@ export const Login: React.FC = () => {
   const submitForm = async () => {
     setDisplayError(false);
     if (isValid) {
-      if (freeMemory > 50) {
+      if (freeMemory > 50 || freeMemory === 0) {
         setIsLoading(true);
         const body: LoginRequestModel = {
           username: loginFormGetValues().preferId

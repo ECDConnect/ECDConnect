@@ -1,29 +1,37 @@
-import { IonSlides, IonSlide, IonContent } from '@ionic/react';
 import { ComponentBaseProps } from '../../models/ComponentBaseProps';
 import {
   ChipColourPalette,
   ChipStatus,
 } from '../status-chip/models/ChipStatus';
-import StatusChip, { StatusChipProps } from '../status-chip/status-chip';
+import StatusChip from '../status-chip/status-chip';
 import * as styles from './header-slider.styles';
 import { HeaderSlide } from './models/HeaderSlide';
-import { SliderPagination } from '../slider-pagination/slider-pagination';
-import { useState } from 'react';
-import HeaderCard from '../header-card/header-card';
+import { Carousel, CarouselProps } from 'react-responsive-carousel';
+import { useWindowSize } from '@reach/window-size';
+import { classNames } from '../../utils';
+import 'react-responsive-carousel/lib/styles/carousel.min.css';
 
 export interface HeaderSliderProps extends ComponentBaseProps {
   slides: HeaderSlide[];
+  infiniteLoop?: boolean;
+  autoPlay?: boolean;
+  transitionTime?: number;
+  className?: string;
+  cardClassName?: string;
 }
 
-interface SliderOptions {
-  autoplay: boolean;
-}
+const MARGIN = 32;
 
-export const HeaderSlider: React.FC<HeaderSliderProps> = ({ slides }) => {
-  const [activeIndex, setActiveIndex] = useState<number>(0);
-  const sliderOptions: SliderOptions = {
-    autoplay: false,
-  };
+export const HeaderSlider: React.FC<HeaderSliderProps> = ({
+  slides,
+  infiniteLoop,
+  autoPlay,
+  transitionTime,
+  className,
+  cardClassName,
+}) => {
+  const { width } = useWindowSize();
+
   const getChipStatusText = (status?: ChipStatus): string => {
     switch (status) {
       case 1:
@@ -55,54 +63,81 @@ export const HeaderSlider: React.FC<HeaderSliderProps> = ({ slides }) => {
     }
   };
 
-  return (
-    <>
-      <IonSlides
-        pager={false}
-        options={sliderOptions}
-        className={styles.swiperContainer}
-        onIonSlideNextEnd={() => {
-          setActiveIndex(activeIndex + 1);
-        }}
-        onIonSlidePrevEnd={() => {
-          setActiveIndex(activeIndex - 1);
-        }}
-      >
-        {slides.map((slide, idx) => {
-          const palette = getChipStatusColourPalette(slide.status);
-          return (
-            <IonSlide key={`header-slide-${idx}`} className={styles.slide}>
-              <div data-testid={`header-slide-${idx}`} className={styles.card}>
-                <div className={styles.imageWrapper}>
-                  <img
-                    src={slide.image}
-                    style={{ width: '100%' }}
-                    className={styles.cardBanner}
-                  />
-                </div>
-                <div className={styles.cardInformation}>
-                  {slide.status && (
-                    <StatusChip
-                      backgroundColour={palette.backgroundColour}
-                      textColour={palette.textColour}
-                      borderColour={palette.borderColour}
-                      text={getChipStatusText(slide.status)}
-                      className={styles.statusChip}
-                    />
-                  )}
-                  <div className={styles.cardTitle}>{slide.title}</div>
-                  <div className={styles.cardText}>{slide.text}</div>
-                </div>
-              </div>
-            </IonSlide>
-          );
-        })}
-      </IonSlides>
-      <SliderPagination
-        totalItems={slides.length || 0}
-        activeIndex={activeIndex}
+  const renderIndicator: CarouselProps['renderIndicator'] = (
+    onClickHandler,
+    isSelected,
+    index,
+    label
+  ) => {
+    if (isSelected) {
+      return (
+        <li
+          className={styles.activePaginationItem}
+          aria-label={`Selected: ${label} ${index + 1}`}
+          title={`Selected: ${label} ${index + 1}`}
+        />
+      );
+    }
+    return (
+      <li
+        className={styles.paginationItem}
+        onClick={onClickHandler}
+        onKeyDown={onClickHandler}
+        value={index}
+        key={index}
+        role="button"
+        tabIndex={0}
+        title={`${label} ${index + 1}`}
+        aria-label={`${label} ${index + 1}`}
       />
-    </>
+    );
+  };
+
+  return (
+    <Carousel
+      className={className}
+      infiniteLoop={infiniteLoop}
+      autoPlay={autoPlay}
+      renderIndicator={renderIndicator}
+      {...(transitionTime && { transitionTime })}
+    >
+      {slides.map((slide, idx) => {
+        const palette = getChipStatusColourPalette(slide.status);
+        return (
+          <div
+            key={`header-slide-${idx}`}
+            className={classNames(styles.slide, cardClassName)}
+          >
+            <div
+              data-testid={`header-slide-${idx}`}
+              className={styles.card}
+              style={{ width: width - MARGIN }}
+            >
+              <div className={styles.imageWrapper}>
+                <img
+                  src={slide.image}
+                  style={{ width: '100%' }}
+                  className={styles.cardBanner}
+                />
+              </div>
+              <div className={styles.cardInformation}>
+                {slide.status && (
+                  <StatusChip
+                    backgroundColour={palette.backgroundColour}
+                    textColour={palette.textColour}
+                    borderColour={palette.borderColour}
+                    text={getChipStatusText(slide.status)}
+                    className={styles.statusChip}
+                  />
+                )}
+                <div className={styles.cardTitle}>{slide.title}</div>
+                <div className={styles.cardText}>{slide.text}</div>
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </Carousel>
   );
 };
 

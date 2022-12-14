@@ -13,16 +13,16 @@ export type SideMenuItemProps = {
 export default function SideMenuItem({ item, onNavigation }) {
   return (
     <Fragment key={item.name}>
-      <div className={`group items-center w-full`}>
+      <div className={`group w-full items-center`}>
         {item.showDivider && <Divider dividerType="dashed" />}
         <div
           onClick={() => onNavigation(item)}
           className={classNames(
-            item.current ? 'text-white bg-primary' : 'text-primary',
-            'h-full flex flex-row items-center p-2.5 text-base font-medium rounded-lg cursor-pointer'
+            item.current ? 'bg-primary text-white' : 'text-primary',
+            'flex h-full cursor-pointer flex-row items-center rounded-lg p-2.5 text-base font-medium'
           )}
         >
-          <div className={'w-1/12 items-center justify-center mr-4 '}>
+          <div className={'mr-4 w-1/12 items-center justify-center '}>
             {item.icon && renderIcon(item.icon, 'flex-shrink-0 h-6 w-6')}
           </div>
           <Typography

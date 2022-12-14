@@ -15,5 +15,19 @@ namespace ECDLink.Security.Helpers
 
             return $"{new string('x', pivotPoint)}{number.Substring(pivotPoint)}";
         }
+
+        public static string ObscureIdNumber(string number)
+        {
+            var pivotPoint = number.Length - 4;
+
+            return $"{new string('x', pivotPoint)}{number.Substring(pivotPoint)}";
+        }
+        public static string ObscureText(string number)
+        {
+            var pivotPoint = number.Length - 4;
+
+            return $"{new string('x', pivotPoint)}{number.Substring(pivotPoint)}";
+        }
+
     }
 }

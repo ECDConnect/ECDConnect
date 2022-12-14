@@ -10,13 +10,11 @@ import {
 import { useSelector } from 'react-redux';
 import { userSelectors } from '@/store/user';
 import { AddOrEditPractitioner } from './add-or-edit-practitioner';
-import { AddPractitionerModel } from '@/schemas/practitioner/add-practitioner';
 import { useAppDispatch } from '@/store';
 import {
   practitionerActions,
   practitionerSelectors,
 } from '@/store/practitioner';
-import { PractitionerDto } from '@ecdlink/core';
 import {
   ConfirmPractitionersSteps,
   OnNext,
@@ -32,9 +30,11 @@ export default function ConfirmPractitioners({
   onNext,
   page,
   setConfirmPractitionerPage,
+  isFundaAppAdmin,
 }: {
   onNext: OnNext;
   page: ConfirmPractitionersSteps;
+  isFundaAppAdmin: any;
   setConfirmPractitionerPage: React.Dispatch<
     React.SetStateAction<ConfirmPractitionersSteps>
   >;
@@ -54,7 +54,7 @@ export default function ConfirmPractitioners({
     {
       title: user?.fullName ?? '',
       idNumber: user?.idNumber ?? '',
-      subTitle: 'Principal/owner',
+      subTitle: isFundaAppAdmin ? 'Funda App Administrator' : 'Principal/owner',
       titleStyle:
         'text-textDark font-body text-base font-semibold leading-snug ',
       subTitleStyle: 'text-textMid font-body text-sm leading-5 ',
@@ -234,10 +234,10 @@ export default function ConfirmPractitioners({
               </div>
             </div>
 
-            <div className="self-end -mb-4">
+            <div className="-mb-4 self-end">
               <Button
                 size="normal"
-                className="w-full mb-4"
+                className="mb-4 w-full"
                 type="filled"
                 color="quatenary"
                 text="Confirm"

@@ -44,6 +44,9 @@ namespace ECDLink.DataAccessLayer.Entities
         public string NickFirstName { get; set; }
         public string NickSurname { get; set; }
         public string NickFullName { get; set; }
+        public string EmergencyContactPhoneNumber { get; set; }
+        public string EmergencyContactFirstName { get; set; }
+        public string EmergencyContactSurname { get; set; }
 
         public virtual Franchisor franchisorObjectData { get; set; }
         public virtual Coach coachObjectData { get; set; }
@@ -95,6 +98,10 @@ namespace ECDLink.DataAccessLayer.Entities
         }
 
         public Guid? TenantId { get; set; }
+
+        [ForeignKey(nameof(LanguageId))]
+        public virtual Language Language { get; set; }
+        public Guid? LanguageId { get; set; }
     }
 
     public interface ApplicationUserJoin

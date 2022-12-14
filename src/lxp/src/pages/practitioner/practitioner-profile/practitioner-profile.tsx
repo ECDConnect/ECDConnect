@@ -28,6 +28,7 @@ export const PractitionerProfile: React.FC = () => {
   const { resetAuth, resetAppStore } = useStoreSetup();
   const user = useSelector(userSelectors.getUser);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  const practitioners = useSelector(practitionerSelectors?.getPractitioners);
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const classroomForPractitionerAnyType: any = classroom;
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
@@ -37,6 +38,10 @@ export const PractitionerProfile: React.FC = () => {
   const { isOnline } = useOnlineStatus();
   const history = useHistory();
   const dialog = useDialog();
+
+  const principalPractitioner = practitioners?.find(
+    (item) => item?.userId === user?.id
+  );
 
   useEffect(() => {
     if (!isOnline) {
@@ -69,7 +74,7 @@ export const PractitionerProfile: React.FC = () => {
         iconColor: 'white',
         showIcon: profilePc === undefined,
         onActionClick: () => {
-          history.push(ROUTES.PRACTITIONER.ABOUT);
+          history.push(ROUTES.PRACTITIONER.ABOUT.ROOT);
         },
       },
       {
@@ -186,7 +191,7 @@ export const PractitionerProfile: React.FC = () => {
               return (
                 <ActionModal
                   className={'mx-4'}
-                  title={'Are you sure want to log out'}
+                  title={'Are you sure you want to log out?'}
                   importantText={''}
                   icon={'ExclamationCircleIcon'}
                   iconColor={'alertDark'}
@@ -231,7 +236,10 @@ export const PractitionerProfile: React.FC = () => {
       initActive: true,
       child: (
         <div>
-          {practitioner?.isRegistered ? null : <CompleteProfile />}
+          {principalPractitioner?.isRegistered ||
+          practitioner?.isRegistered ? null : (
+            <CompleteProfile />
+          )}
           <StackedList
             listItems={getStackedMenuList()}
             type={'MenuList'}
@@ -253,7 +261,7 @@ export const PractitionerProfile: React.FC = () => {
       displayOffline={!isOnline}
     >
       <div className="bg-white">
-        <TabList className="bg-white mb-1" tabItems={tabItem} />
+        <TabList className="mb-1 bg-white" tabItems={tabItem} />
       </div>
     </BannerWrapper>
   );

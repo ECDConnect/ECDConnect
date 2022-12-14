@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import { useDialog, useTheme } from '@ecdlink/core';
 import {
   ActionModal,
@@ -30,6 +30,8 @@ import * as styles from '@/pages/dashboard/dashboard.styles';
 import ROUTES from '@routes/routes';
 import { getInfants } from '@/store/infant/infant.selectors';
 import { version } from '@/../package.json';
+import { healthCareWorkerSelectors } from '@/store/healthCareWorker';
+import { DashboardRouteState } from './dashboard.types';
 
 export enum NavigationTypes {
   Home = 'Home',
@@ -44,6 +46,9 @@ export enum NavigationTypes {
 export const Dashboard: React.FC = () => {
   const history = useHistory();
   const { theme } = useTheme();
+  const location = useLocation<DashboardRouteState>();
+  const isFromLogin =
+    location?.state?.isFromLogin || location?.state?.isFromSignUp;
   const userData = useSelector(userSelectors.getUser);
   const shouldUserSync = useSelector(settingSelectors.getShouldUserSync);
   const appDispatch = useAppDispatch();
@@ -55,9 +60,78 @@ export const Dashboard: React.FC = () => {
   const dashboardNotification = useSelector(
     notificationsSelectors.getDashboardNotification
   );
+  const healthCareWorker = useSelector(
+    healthCareWorkerSelectors?.getHealthCareWorker
+  );
+
   const { userProfilePicture } = useDocuments();
   const mothers = useSelector(motherSelectors.getMothers);
   const infants = useSelector(getInfants);
+
+  function goToProfile() {
+    history.push(ROUTES.PRACTITIONER.PROFILE.ROOT);
+  }
+
+  function goToClientFolders() {
+    if (mothers.length > 0 || infants.length > 0) {
+      history.push(ROUTES.CLASSROOM, { activeTabIndex: 1 });
+      return;
+    } else {
+      showCompleteProfileBlockingDialog();
+    }
+  }
+
+  useEffect(() => {
+    if (healthCareWorker && isFromLogin) {
+      if (healthCareWorker?.isRegistered !== true) {
+        history?.push(ROUTES?.HEALTH_CAREWORKER_PROFILE_SETUP);
+        return;
+      }
+    }
+  }, [healthCareWorker, isFromLogin]);
+
+  function onNavigation(navItem: any) {
+    history.push(navItem.href, navItem.params);
+  }
+
+  function showCompleteProfileBlockingDialog() {
+    dialog({
+      blocking: true,
+      position: DialogPosition.Middle,
+      render: (onSubmit, onCancel) => {
+        return (
+          <ActionModal
+            className="z-50"
+            title="Open a new folder"
+            actionButtons={[
+              {
+                colour: 'primary',
+                text: 'Pregnant mom',
+                textColour: 'white',
+                type: 'filled',
+                leadingIcon: 'UserAddIcon',
+                onClick: async () => {
+                  onSubmit();
+                  history.push(ROUTES.MOM_REGISTER);
+                },
+              },
+              {
+                colour: 'primary',
+                text: 'Child',
+                textColour: 'primary',
+                type: 'outlined',
+                leadingIcon: 'UserGroupIcon',
+                onClick: () => {
+                  onSubmit();
+                  history.push(ROUTES.INFANT_REGISTER);
+                },
+              },
+            ]}
+          />
+        );
+      },
+    });
+  }
 
   useEffect(() => {
     if (!isOnline) {
@@ -111,7 +185,7 @@ export const Dashboard: React.FC = () => {
     },
     {
       name: NavigationTypes.Logout,
-      href: ROUTES.LOGIN,
+      href: ROUTES.LOGOUT,
       icon: 'ExternalLinkIcon',
       current: false,
       showDivider: true,
@@ -146,70 +220,14 @@ export const Dashboard: React.FC = () => {
     }
   }, [shouldUserSync]);
 
-  const goToProfile = () => {
-    history.push(ROUTES.PRACTITIONER.PROFILE.ROOT);
-  };
-
-  const goToClientFolders = () => {
-    if (mothers.length > 0 || infants.length > 0) {
-      history.push(ROUTES.CLASSROOM, { activeTabIndex: 1 });
-      return;
-    } else {
-      showCompleteProfileBlockingDialog();
-    }
-  };
-
-  const onNavigation = (navItem: any) => {
-    history.push(navItem.href, navItem.params);
-  };
-
-  const showCompleteProfileBlockingDialog = () => {
-    dialog({
-      blocking: true,
-      position: DialogPosition.Middle,
-      render: (onSubmit, onCancel) => {
-        return (
-          <ActionModal
-            className="z-50"
-            title="Open a new folder"
-            actionButtons={[
-              {
-                colour: 'primary',
-                text: 'Pregnant mom',
-                textColour: 'white',
-                type: 'filled',
-                leadingIcon: 'UserAddIcon',
-                onClick: async () => {
-                  onSubmit();
-                  history.push(ROUTES.MOM_REGISTER);
-                },
-              },
-              {
-                colour: 'primary',
-                text: 'Child',
-                textColour: 'primary',
-                type: 'outlined',
-                leadingIcon: 'UserGroupIcon',
-                onClick: () => {
-                  onSubmit();
-                  history.push(ROUTES.INFANT_REGISTER);
-                },
-              },
-            ]}
-          />
-        );
-      },
-    });
-  };
-
   return (
     <BannerWrapper
       backgroundColour={'white'}
       backgroundImageColour={'primary'}
       avatar={
-        userProfilePicture?.file ? (
+        userProfilePicture?.file || userData?.profileImageUrl ? (
           <Avatar
-            dataUrl={userProfilePicture?.file}
+            dataUrl={userProfilePicture?.file || userData?.profileImageUrl!}
             size={'sm'}
             displayBorder={true}
           />

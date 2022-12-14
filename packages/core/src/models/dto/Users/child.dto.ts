@@ -18,6 +18,7 @@ export interface ChildDto extends EntityBase {
   documents?: DocumentDto[];
   workflowStatus?: WorkflowStatusDto;
   workflowStatusId?: string;
+  insertedBy?: string;
 }
 
 export interface AddChildTokenDto {

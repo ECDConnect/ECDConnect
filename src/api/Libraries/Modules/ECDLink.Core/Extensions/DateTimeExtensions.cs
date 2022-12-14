@@ -30,6 +30,10 @@ namespace ECDLink.Core.Extensions
         {
             return new DateTime(date.Year, date.Month, 1);
         }
+        public static DateTime GetStartOfPreviousMonth(this DateTime date)
+        {
+            return new DateTime(date.Year, date.Month, 1).AddMonths(-1);
+        }
 
         public static DateTime GetStartOfYear(this DateTime date)
         {
@@ -44,6 +48,14 @@ namespace ECDLink.Core.Extensions
         public static DateTime GetEndOfMonth(this DateTime date)
         {
             var start = date.GetStartOfMonth();
+
+            return start.AddMonths(1).AddDays(-1);
+        }
+
+        public static DateTime GetEndOfPreviousMonth(this DateTime date)
+        {
+
+            var start = GetStartOfPreviousMonth(date);
 
             return start.AddMonths(1).AddDays(-1);
         }

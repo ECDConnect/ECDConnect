@@ -41,18 +41,18 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
   };
 
   return (
-    <div className="h-full h-screen px-4">
+    <>
       <Typography
         type="h2"
         color={'textDark'}
         text={'Agreements'}
-        className="z-50 pt-6"
+        className="pt-6"
       />
 
       <Typography
         type="h4"
         color={'textMid'}
-        className="z-50 py-2"
+        className="py-2"
         text={
           'Ask your client to read the consent agreement and tap the box if they agree.'
         }
@@ -64,11 +64,11 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
         type="h4"
         color={'textDark'}
         text={'Check to confirm that you agree with the following:'}
-        className="z-50 w-full py-2"
+        className="w-full py-2"
       />
 
       <div className="flex w-full flex-col">
-        <div className="flex flex-row items-center gap-3">
+        <div className="flex flex-row items-center justify-around gap-3">
           <input
             type="checkbox"
             className={accept ? 'bg-secondary' : 'bg-uiBg'}
@@ -77,26 +77,26 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
               handleConsentAccept();
             }}
           />
+
           <Typography
             type="body"
             color={'textMid'}
             text={'I accept the consent agreement'}
           />
-        </div>
 
-        <Button type="filled" color="secondary" className={'my-4'}>
           <Typography
-            type="body"
             text={'View'}
-            className="w-full cursor-pointer text-white"
-            onClick={() => {
+            type="body"
+            color={'secondary'}
+            className="cursor-pointer text-right underline"
+            onClick={() =>
               displayArticle(
                 ContentConsentTypeEnum.ConsentAgreement,
-                'Consent Agreement'
-              );
-            }}
+                'Photo Permissions'
+              )
+            }
           />
-        </Button>
+        </div>
         <Alert
           type={'info'}
           className="mt-4 flex w-full items-center justify-center"
@@ -106,7 +106,7 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
         />
       </div>
 
-      <div className="mt-10 flex h-full w-full justify-center align-bottom">
+      <div className="flex h-full items-end">
         <Button
           text={`Next`}
           type={'filled'}
@@ -115,7 +115,7 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
           textColor={'white'}
           iconPosition={'start'}
           icon={'ArrowCircleRightIcon'}
-          className={'absolute bottom-10 m-auto mt-2 max-h-10 w-11/12'}
+          className={'mt-4 w-full'}
           onClick={() => onSubmit(getConsentFormValues())}
         />
       </div>
@@ -125,6 +125,6 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
         consentEnumType={contentConsentTypeEnum}
         onClose={() => setPresentArticle(false)}
       />
-    </div>
+    </>
   );
 };

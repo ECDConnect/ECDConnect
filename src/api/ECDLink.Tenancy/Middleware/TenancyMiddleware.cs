@@ -65,7 +65,7 @@ namespace ECDLink.Tenancy.Middleware
 
                 if (!string.IsNullOrWhiteSpace(refererUrl))
                 {
-                    var urlTenant = tenancyService.GetTenantByUrl(refererUrl);
+                   var urlTenant = tenancyService.GetTenantByUrl(refererUrl);
                     if (urlTenant != null && urlTenant != default(TenantModel))
                     {
                         tenant = urlTenant;

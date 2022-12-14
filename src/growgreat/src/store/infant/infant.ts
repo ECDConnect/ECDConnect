@@ -1,11 +1,15 @@
 import { InfantDto } from '@ecdlink/core';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
-import { getInfants } from './infant.actions';
+import { ThunkStateStatus, ThunkActionStatuses } from '../types';
+import { setThunkActionStatus } from '../utils';
+import { getInfants, addInfant } from './infant.actions';
 // import { createMother, getMothers, updateMother } from './mother.actions';
 import { InfantState } from './infant.types';
 
-const initialState: InfantState = {};
+const initialState: InfantState & ThunkStateStatus = {
+  status: ThunkActionStatuses.Unset,
+};
 
 const infantSlice = createSlice({
   name: 'infant',
@@ -28,6 +32,10 @@ const infantSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
+    setThunkActionStatus(builder, addInfant);
+    builder.addCase(addInfant.fulfilled, (state) => {
+      state.status = ThunkActionStatuses.Fulfilled;
+    });
     builder.addCase(getInfants.fulfilled, (state, action) => {
       if (!state.infants) {
         const infants = Object.assign([], action.payload) as InfantDto[];

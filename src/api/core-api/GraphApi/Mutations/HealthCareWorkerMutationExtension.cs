@@ -9,6 +9,7 @@ using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Azure.Documents;
 using System;
 using System.Linq;
 
@@ -33,9 +34,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 UpdatedDate = DateTime.Now,
                 UpdatedBy = applicationUserId,
                 UserId = input.UserId,
-                LanguageId = input.LangaugeId,
-                SiteAddress = input.SiteAddress,
-                TeamLeadId = input.TeamLeadId
+                LanguageId = input.LanguageId,
+                TeamLeadId = input.TeamLeadId,
             };
 
             var healthCareWorkerRepo = repoFactory.CreateRepository<HealthCareWorker>(userContext: applicationUserId);
@@ -47,18 +47,37 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         public HealthCareWorker UpdateHealthCareWorker(
             [Service] IHttpContextAccessor contextAccessor,
             [Service] IGenericRepositoryFactory repoFactory,
-            string id,
+            string userId,
             HealthCareWorkerModel input)
         {
             var applicationUserId = contextAccessor.HttpContext.GetUser().Id;
             var healthCareWorkerRepo = repoFactory.CreateRepository<HealthCareWorker>(userContext: applicationUserId);
-            var healthCareWorkerToUpdate = healthCareWorkerRepo.GetAll().Where(x => x.Id.Equals(Guid.Parse(id))).FirstOrDefault();
+            var healthCareWorkerToUpdate = healthCareWorkerRepo.GetByUserId(userId);
 
-            healthCareWorkerToUpdate.UpdatedDate = DateTime.Now;
-            healthCareWorkerToUpdate.UpdatedBy = applicationUserId;
-            healthCareWorkerToUpdate.LanguageId = input.LangaugeId;
-            healthCareWorkerToUpdate.SiteAddress = input.SiteAddress;
-            healthCareWorkerToUpdate.TeamLeadId = input.TeamLeadId;
+            if (input.IsRegistered)
+            {
+                healthCareWorkerToUpdate.IsRegistered = input.IsRegistered;
+            }
+
+            if (input.LanguageId != null)
+            {
+                healthCareWorkerToUpdate.LanguageId = input.LanguageId;
+            }
+
+            if (input.TeamLeadId != null)
+            {
+                healthCareWorkerToUpdate.TeamLeadId = input.TeamLeadId;
+            }
+
+            if (input.User?.PhoneNumber != null)
+            {
+                healthCareWorkerToUpdate.User.PhoneNumber = input.User.PhoneNumber;
+            }
+
+            if (input.User?.Email != null)
+            {
+                healthCareWorkerToUpdate.User.Email = input.User.Email;
+            }
 
             return healthCareWorkerRepo.Update(healthCareWorkerToUpdate);
         }

@@ -9,6 +9,7 @@ import {
 import {
   MutationAddPractitionerToPrincipalArgs,
   MutationUpdatePractitionerContactInfoArgs,
+  PractitionerInput,
 } from '@ecdlink/graphql';
 
 class PractitionerService {
@@ -76,11 +77,13 @@ class PractitionerService {
             isPrincipal
             isRegistered
             principalHierarchy
+            coachHierarchy
             attendanceRegisterLink
             maxChildren
             consentForPhoto
             parentFees
             languageUsedInGroups
+            signingSignature
             startDate
             monthSinceFranchisee
             shareInfo
@@ -142,6 +145,7 @@ class PractitionerService {
             consentForPhoto
             parentFees
             languageUsedInGroups
+            signingSignature
             startDate
             monthSinceFranchisee
             shareInfo
@@ -187,6 +191,9 @@ class PractitionerService {
             dateToBeRemoved
             isLeaving
             user {
+              emergencyContactFirstName
+              emergencyContactSurname
+              emergencyContactPhoneNumber
               idNumber
               fullName
               firstName
@@ -581,7 +588,7 @@ class PractitionerService {
     return response.data.data.updatePractitionerRegistered;
   }
 
-  async displayMetrics(): Promise<PractitionerDto[]> {
+  async displayMetrics(type: string): Promise<PractitionerDto[]> {
     const apiInstance = await api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
@@ -592,6 +599,9 @@ class PractitionerService {
         }
       }
       `,
+      variables: {
+        type,
+      },
     });
 
     if (response.status !== 200) {
@@ -625,6 +635,72 @@ class PractitionerService {
     }
 
     return response.data.data.practitionerColleagues;
+  }
+
+  async updatePractitionerEmergencyContact(
+    userId: string,
+    firstname: string,
+    surname: string,
+    contactno: string
+  ): Promise<boolean> {
+    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        mutation updatePractitionerEmergencyContact(
+          $userId: String
+          $firstname: String
+          $surname: String
+          $contactno: String
+        ) {
+          updatePractitionerEmergencyContact(
+            userId: $userId
+            firstname: $firstname
+            surname: $surname
+            contactno: $contactno
+          )
+        }
+      `,
+      variables: {
+        userId,
+        firstname,
+        surname,
+        contactno,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Update Emergency contact information failed - Server connection error'
+      );
+    }
+
+    return response.data.data.updatePractitionerEmergencyContact;
+  }
+
+  async updatePractitioner(
+    userId: PractitionerInput['Id'],
+    practitioner: PractitionerInput
+  ): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      mutation updatePractitioner($input: PractitionerInput, $id: UUID) {
+        updatePractitioner(input: $input, id: $id) {
+          id
+        }
+      }
+      `,
+      variables: {
+        id: userId,
+        input: practitioner,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error('Updating Practitioner failed - Server connection error');
+    }
+
+    return true;
   }
 }
 

@@ -50,12 +50,12 @@ export const PractitionerProfile: React.FC = () => {
       {
         title: `${user?.firstName} ${user?.surname}`,
         subTitle: 'About me',
-        menuIconUrl: userProfilePicture?.file,
+        menuIconUrl: userProfilePicture?.file || user?.profileImageUrl,
         menuIcon: 'UserIcon',
         iconBackgroundColor: 'primary',
         iconColor: 'white',
 
-        showIcon: userProfilePicture?.file === undefined,
+        showIcon: !userProfilePicture?.file && !user?.profileImageUrl,
         onActionClick() {
           return history.push(ROUTES.PRACTITIONER.ABOUT);
         },
@@ -86,10 +86,7 @@ export const PractitionerProfile: React.FC = () => {
               return (
                 <ActionModal
                   className={'mx-4'}
-                  title={'Logout & reset data'}
-                  importantText={
-                    'Please note that by doing this, all your data will be reset and you will loose all data that has not been synced up.'
-                  }
+                  title={'Are you sure you want to log out?'}
                   icon={'ExclamationCircleIcon'}
                   iconColor={'alertDark'}
                   iconBorderColor={'alertBg'}

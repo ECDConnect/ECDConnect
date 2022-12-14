@@ -11,6 +11,7 @@ export interface ImageInputProps<T extends FieldValues>
   nameProp: Path<T>;
   label: string;
   icon?: string;
+  iconContainerColor?: Colours;
   iconColour?: Colours;
   acceptedFormats: string[];
   disabled?: boolean;
@@ -27,6 +28,7 @@ export const ImageInput = <T extends FieldValues>({
   disabled = false,
   register,
   icon = 'UploadIcon',
+  iconContainerColor = 'secondary',
   iconColour,
   className,
   currentImageString,
@@ -160,8 +162,16 @@ export const ImageInput = <T extends FieldValues>({
             backgroundImage: `url(${currentImage})`,
           }}
         >
-          <div className={styles.iconBaseStyle}>
-            {renderIcon(icon, classNames(getIconStyle()))}
+          <div
+            className={classNames(
+              styles.iconBaseStyle,
+              `bg-${iconContainerColor}`
+            )}
+          >
+            {renderIcon(
+              icon,
+              classNames(getIconStyle(), `bg-${iconContainerColor}`)
+            )}
           </div>
           <Typography
             className={`${

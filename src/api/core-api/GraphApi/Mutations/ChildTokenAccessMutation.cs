@@ -43,6 +43,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             [Service] ITokenManager<ApplicationUser, OpenAccessTokenManager> tokenManager,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
+            [Service] UserManager<ApplicationUser> userManager,
+            [Service] IHttpContextAccessor contextAccessor,
             string token,
             AddChildCaregiverTokenModel caregiver,
             AddChildLearnerTokenModel learner,
@@ -69,10 +71,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             try
             {
                 var siteAddressEntity = AddSiteAddress(siteAddress, siteRepo);
-
+               
                 var caregiverEntity = AddCaregiver(caregiver, siteAddressEntity, caregiverRepo);
 
-                var childEntity = AddChild(child, tokenModel, caregiverEntity, childRepo);
+                var childEntity = AddChild(contextAccessor, child, tokenModel, caregiverEntity, childRepo, userManager);
 
                 AddLearner(childEntity, learner, tokenModel, scope);
 
@@ -175,8 +177,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return updated;
         }
 
-        private Child AddChild(AddChildTokenModel child, ChildTokenWrapperModel tokenModel, Caregiver caregiver, IGenericRepository<Child, Guid> repoFactory)
+        private Child AddChild([Service] IHttpContextAccessor contextAccessor, AddChildTokenModel child, ChildTokenWrapperModel tokenModel, Caregiver caregiver, IGenericRepository<Child, Guid> repoFactory, [Service] UserManager<ApplicationUser> userManager)
         {
+
+            var insertingUser = contextAccessor.HttpContext.GetUser().FullName;
+
             var childEntity = new Child
             {
                 Id = tokenModel.ChildId,
@@ -186,7 +191,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 LanguageId = child.LanguageId,
                 OtherHealthConditions = child.OtherHealthConditions,
                 WorkflowStatusId = child.WorkflowStatusId,
-                CaregiverId = caregiver.Id
+                CaregiverId = caregiver.Id,
+                InsertedBy = (!string.IsNullOrEmpty(insertingUser) ? insertingUser : "N/A")
             };
 
             var updated = repoFactory.Update(childEntity);
@@ -218,10 +224,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var workflowStatusRepo = repoFactory.CreateRepository<WorkflowStatus>(userContext: httpContext.HttpContext.GetUser().Id);
             var workflowStatus = workflowStatusRepo.GetAll().Where(x => x.EnumId == WorkflowStatusEnum.ChildExternalLink).FirstOrDefault();
 
+            var insertingUser = httpContext.HttpContext.GetUser().FullName;
+
             var child = new Child
             {
                 UserId = appUser.Id,
-                WorkflowStatusId = workflowStatus.Id
+                WorkflowStatusId = workflowStatus.Id,
+                InsertedBy = (!string.IsNullOrEmpty(insertingUser) ? insertingUser : "N/A")
             };
 
             child.TenantId = tenantId;

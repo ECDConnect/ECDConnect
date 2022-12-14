@@ -81,20 +81,24 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public List<Caregiver> GetAllCaregiversForHealthCareWorker([Service] IHttpContextAccessor contextAccessor,
+            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
             string id)
         {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            var careGiverRepo = repoFactory.CreateRepository<Caregiver>(userContext: uId);
-            var healthCareWorkerRepo = repoFactory.CreateRepository<HealthCareWorker>(userContext: uId);
-            var healthCareWorker = healthCareWorkerRepo.GetAll().Where(x => x.UserId.Equals(uId)).FirstOrDefault();
+            using var scope = dbFactory.CreateDbContext();
+            using var dbContextTransaction = scope.Database.BeginTransaction();
 
-            if(healthCareWorker == null)
+            var healtCareWorkerIdGuid = new Guid(id);
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var careGiverRepo = repoFactory.CreateGenericRepository<Caregiver>(userContext: uId);
+            List<Caregiver> caregivers = new List<Caregiver>();
+
+            if (healtCareWorkerIdGuid != null)
             {
-                return new List<Caregiver>();
+                caregivers = careGiverRepo.GetAll().Where(x => x.HealthCareWorkerId.Equals(healtCareWorkerIdGuid)).ToList();
             }
 
-            return careGiverRepo.GetAll().Where(x => x.HealthCareWorkerId.Equals(healthCareWorker.Id)).ToList();
+            return caregivers;
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]

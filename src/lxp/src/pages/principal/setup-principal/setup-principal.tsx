@@ -225,6 +225,7 @@ export const SetupPrincipal: React.FC = () => {
             page={confirmPractitionerPage}
             setConfirmPractitionerPage={setConfirmPractitionerPage}
             onNext={setPage}
+            isFundaAppAdmin={isFundaAppAdmin}
           />
         );
 

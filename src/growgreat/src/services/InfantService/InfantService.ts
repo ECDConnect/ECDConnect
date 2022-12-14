@@ -8,7 +8,7 @@ class InfantService {
     this._accessToken = accessToken;
   }
 
-  async GetAllInfantsForMother(): Promise<InfantDto[]> {
+  async GetAllInfantsForMother(id: string): Promise<InfantDto[]> {
     const apiInstance = await api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
@@ -26,12 +26,14 @@ class InfantService {
           }
         }        
       `,
+      variables: {
+        id: id,
+      },
     });
 
     if (response.status !== 200) {
       throw new Error('Getting Mothers failed - Server connection error');
     }
-
     return response.data.data.allInfantsForHealthCareWorker;
   }
 

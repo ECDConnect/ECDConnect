@@ -39,12 +39,20 @@ import { syncReducer } from '../sync';
 import { userPersistConfig, userReducer } from '../user/user';
 import type { RootState } from './types';
 import { infantPersistConfig, infantReducer } from '../infant/infant';
+import {
+  healthCareWorkerPersistConfig,
+  healthCareWorkerReducer,
+} from '../healthCareWorker/healthCareWorker';
 
 const persistedReducers = {
   analytics: persistReducer(analyticsPersistConfig, analyticsReducer),
   auth: persistReducer(authPersistConfig, authReducer),
   caregivers: persistReducer(caregiverPersistConfig, caregiverReducer),
   contentConsentData: contentConsentReducer,
+  healthCareWorker: persistReducer(
+    healthCareWorkerPersistConfig,
+    healthCareWorkerReducer
+  ),
   mothers: persistReducer(motherPersistConfig, motherReducer),
   infants: persistReducer(infantPersistConfig, infantReducer),
   documents: persistReducer(documentPersistConfig, documentReducer),

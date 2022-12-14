@@ -113,7 +113,11 @@ export default function PractitionerAccount() {
         onBack={() => history.goBack()}
         displayOffline={!isOnline}
       >
-        <StackedList listItems={stackedActionList} type={'ActionList'} />
+        <StackedList
+          className="mx-4"
+          listItems={stackedActionList}
+          type={'ActionList'}
+        />
       </BannerWrapper>
       <Dialog
         borderRadius="normal"

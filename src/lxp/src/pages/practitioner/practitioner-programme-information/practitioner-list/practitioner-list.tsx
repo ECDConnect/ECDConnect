@@ -102,9 +102,9 @@ export const PractitionerList: React.FC<PractitionerListProps> = ({
               ? item?.user?.roles[0]?.name
               : '',
             switchTextStyles: true,
-            actionName: 'Edit',
+            actionName: 'Remove',
             actionIcon: 'PencilIcon',
-            onActionClick: () => setEditiPractitionerVisible(true),
+            onActionClick: () => {}, // Disabled the editPractitioner view state
           };
         })
       : otherColleaguesFiltered?.map((item: any) => {

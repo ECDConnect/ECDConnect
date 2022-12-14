@@ -26,7 +26,7 @@ export const Logout: React.FC = () => {
         iconColor={'alertDark'}
         iconBorderColor={'alertBg'}
         icon={'ExclamationCircleIcon'}
-        title={'Are you sure want to log out'}
+        title={'Are you sure you want to log out?'}
         actionButtons={[
           {
             text: 'Yes, log out',

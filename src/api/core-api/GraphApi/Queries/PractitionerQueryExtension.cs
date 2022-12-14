@@ -340,15 +340,15 @@ string userId)
                             string practiNumber = practitioner.User.PhoneNumber;
                             string practiClassroomNames = "";
                             string practiType = "";
+                            if (practitioner.IsFundaAppAdmin.HasValue && practitioner.IsFundaAppAdmin != false)
+                            {
+                                practiType = "Funda App Admin";
+                            }
                             if (practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal != false)
                             {
                                 practiType = "Principal/Owner";
                             }
-                            else if (practitioner.IsFundaAppAdmin.HasValue && practitioner.IsFundaAppAdmin != false)
-                            {
-                                practiType = "Funda App Admin";
-                            }
-                            else
+                            if (practiType == "")//if neither of the above, its a default
                             {
                                 practiType = "Practitioner";
                             }

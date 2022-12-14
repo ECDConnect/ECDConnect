@@ -28,4 +28,12 @@ namespace ECDLink.DataAccessLayer.Entities
         //TODO: CB Map userId to display
         //public string RoleType { get; set; }
     }
+
+    public class DisplaySet
+    {
+        public string Subject { get; set; }
+        public string Icon { get; set; }
+        public string Color { get; set; }
+        public string Notes { get; set; }
+    }
 }

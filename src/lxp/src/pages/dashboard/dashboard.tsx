@@ -40,8 +40,7 @@ import { settingThunkActions } from '@store/settings';
 import { programmeThemeThunkActions } from '@store/content/programme-theme';
 import { storyBookThunkActions } from '@store/content/story-book';
 import { activityThunkActions } from '@store/content/activity';
-import getFreeDiskStorage from '@/functions/DeviceInfo';
-import DeviceInfo from 'react-native-device-info';
+import { browserName, browserVersion } from 'react-device-detect';
 const { version } = require('../../../package.json');
 
 export enum NavigationTypes {
@@ -72,30 +71,13 @@ export const Dashboard: React.FC = () => {
   const newNotificationCount = useSelector(
     notificationsSelectors.getNewNotificationCount
   );
-  const [freeMemory, setFreeMemory] = useState(0);
 
   const dashboardNotification = useSelector(
     notificationsSelectors.getDashboardNotification
   );
+  console.log({ browserName });
 
-  function getFreeDiskStorage() {
-    DeviceInfo.getFreeDiskStorage().then((freeDiskStorage) => {
-      let freeStorageInMB = freeDiskStorage / 1024 / 1024;
-      freeStorageInMB = parseInt(freeStorageInMB + '');
-      setFreeMemory(freeStorageInMB);
-      return freeStorageInMB;
-    });
-  }
-
-  useEffect(() => {
-    let isMounted = true;
-    if (isMounted) {
-      getFreeDiskStorage();
-    }
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  console.log({ browserVersion });
 
   const { userProfilePicture } = useDocuments();
 
@@ -543,7 +525,7 @@ export const Dashboard: React.FC = () => {
       <Typography
         type={'h1'}
         color="white"
-        text={`Welcome ${userData && userData?.firstName}`.slice(0, 25)}
+        text={`Welcome ${userData && userData?.firstName}`}
         className={styles.welcomeText}
       />
 

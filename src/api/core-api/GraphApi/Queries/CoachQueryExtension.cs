@@ -33,8 +33,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
          [Service] IGenericRepositoryFactory repoFactory,
          string userId)
         {
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var dbRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
             List<Practitioner> practitioners = dbRepo.GetAll().Where(x => x.CoachHierarchy.HasValue).ToList();
@@ -49,8 +47,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             [Service] IGenericRepositoryFactory repoFactory,
             string userId)
         {
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var dbRepo = repoFactory.CreateGenericRepository<Coach>(userContext: uId);
             return dbRepo.GetByUserId(userId);
@@ -65,6 +61,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             //this was used wrong in FE, so adjust to align with FE
             return GetCoachByPractitionerId(contextAccessor,dbFactory, repoFactory, userId);
         }
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public string GetCoachNameByUserId([Service] IHttpContextAccessor contextAccessor,
+        [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+        [Service] IGenericRepositoryFactory repoFactory,
+        string userId)
+        {
+            //this was used wrong in FE, so adjust to align with FE
+            Coach coach = GetCoachByCoachUserId(contextAccessor,dbFactory,repoFactory,userId);
+            return (coach!=null? coach.User!=null ? coach.User.FullName : null : null);
+        }
+
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public Coach GetCoachByPractitionerId([Service] IHttpContextAccessor contextAccessor,
@@ -72,8 +79,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
          [Service] IGenericRepositoryFactory repoFactory,
          string practitionerId)
         {
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var dbRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
 
@@ -119,9 +124,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 [Service] IGenericRepositoryFactory repoFactory,
 string userId)
         {
-
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var classRepo = repoFactory.CreateRepository<Classroom>(userContext: uId);
 
@@ -142,9 +144,6 @@ string userId)
 [Service] IGenericRepositoryFactory repoFactory,
 string userId)
         {
-
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var classRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);
 

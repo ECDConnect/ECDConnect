@@ -15,6 +15,7 @@ import {
   renderIcon,
   StackedList,
   Typography,
+  Alert,
 } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
@@ -195,45 +196,74 @@ export const PractitionerProgrammeInformation: React.FC = () => {
       {
         title: 'Programme name',
         subTitle:
-          classroomForPractitionerAnyType && practitioner?.isPrincipal !== true
+          classroomForPractitionerAnyType?.classroomId &&
+          practitioner?.isPrincipal !== true &&
+          practitioner?.isRegistered
             ? classroomForPractitionerAnyType?.classroomName
-            : classroom?.name || 'N/A',
+            : practitioner?.isRegistered
+            ? classroom?.name || 'None'
+            : 'None',
         switchTextStyles: true,
-        actionName: 'Edit',
+        actionName:
+          practitioner?.isRegistered && practitioner?.isPrincipal !== true
+            ? ''
+            : 'Edit',
         actionIcon: 'PencilIcon',
         onActionClick:
-          classroomForPractitionerAnyType && practitioner?.isPrincipal !== true
-            ? () => {}
-            : () => setEditFieldVisible(true),
-      },
-      {
-        title: 'Location - N/A',
-        subTitle: 'N/A',
-        switchTextStyles: true,
-        actionName: undefined,
-        actionIcon: 'PlusIcon',
-        onActionClick: () => {},
-      },
-      {
-        title: 'Type of ECD service',
-        subTitle: programmeType?.description,
-        switchTextStyles: true,
+          practitioner?.isRegistered !== null ||
+          practitioner?.isLeaving !== null
+            ? classroomForPractitionerAnyType?.classroomId &&
+              practitioner?.isPrincipal !== true
+              ? () => {}
+              : () => setEditFieldVisible(true)
+            : practitioner?.isPrincipal !== true
+            ? () => history.push(ROUTES.PRACTITIONER?.PROFILE?.EDIT)
+            : () => {
+                history.push(ROUTES?.PRINCIPAL.SETUP_PROFILE);
+                return;
+              },
       },
     ];
 
-    if (practitioners?.length! > 0 || otherColleaguesFiltered?.length! > 0) {
+    if (
+      (practitioner?.isRegistered !== null && isPrincipal !== false) ||
+      practitioner?.isLeaving !== null
+    ) {
+      stackedActionList.push(
+        {
+          title: 'Location - N/A',
+          subTitle: 'N/A',
+          switchTextStyles: true,
+          actionName: undefined,
+          actionIcon: 'PlusIcon',
+          onActionClick: () => {},
+        },
+        {
+          title: 'Type of ECD service',
+          subTitle: programmeType?.description,
+          switchTextStyles: true,
+        }
+      );
+    }
+
+    if (
+      (practitioners?.length! > 0 || otherColleaguesFiltered?.length! > 0) &&
+      (practitioner?.isRegistered !== null ||
+        isPrincipal !== false ||
+        practitioner?.isLeaving !== null)
+    ) {
       stackedActionList.push({
         title: 'Other practitioners on site',
-        subTitle:
-          practitionersList?.map((x) => x?.user?.firstName).join(', ') ||
-          otherColleaguesFiltered?.map((x: any) => x?.name).join(', '),
+        subTitle: isPrincipal
+          ? practitionersList?.map((x) => x?.user?.firstName).join(', ')
+          : otherColleaguesFiltered?.map((x: any) => x?.name).join(', '),
         switchTextStyles: true,
         actionName:
           practitioners?.length! > 1 || otherColleaguesFiltered?.length! > 0
             ? isPrincipal
               ? 'Edit'
               : 'View'
-            : undefined,
+            : 'Add',
         actionIcon: isPrincipal ? 'PencilIcon' : 'EyeIcon',
         onActionClick: () => {
           history.push(ROUTES.PRINCIPAL.PRACTITIONER_LIST, {
@@ -297,7 +327,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
         onBack={() => history.push(ROUTES.PRACTITIONER.PROFILE.ROOT)}
         displayOffline={!isOnline}
       >
-        <div className={'w-full inline-flex justify-center pt-8'}>
+        <div className={'inline-flex w-full justify-center pt-8'}>
           <ProfileAvatar
             dataUrl={classroomImage?.file || ''}
             size={'header'}
@@ -305,6 +335,58 @@ export const PractitionerProgrammeInformation: React.FC = () => {
             hasConsent={true}
           />
         </div>
+        {practitioner?.isRegistered === null &&
+          practitioner?.principalHierarchy &&
+          !isPrincipal && (
+            <div className="flex justify-center">
+              <Alert
+                type="info"
+                title={`You have been added to ${classroomForPractitionerAnyType?.classroomName}`}
+                list={[`Edit your profile to accept or disagree. `]}
+                className={'mt-4 w-11/12'}
+                button={
+                  <Button
+                    text="Edit profile"
+                    icon="PencilIcon"
+                    type={'filled'}
+                    color={'primary'}
+                    textColor={'white'}
+                    onClick={() =>
+                      history.push(ROUTES.PRACTITIONER?.PROFILE?.EDIT)
+                    }
+                  />
+                }
+              />
+            </div>
+          )}
+
+        {practitioner?.isRegistered === null &&
+          !practitioner?.principalHierarchy &&
+          !isPrincipal && (
+            <div className="flex justify-center">
+              <Alert
+                type="error"
+                title={`You have not been added to a programme.`}
+                list={[
+                  `Ask the principal/owner of your programme to add you to Funda App. `,
+                  `If you are the principal/owner of the programme, edit your profile. `,
+                ]}
+                className={'mt-4 w-11/12'}
+                button={
+                  <Button
+                    text="Edit profile"
+                    icon="PencilIcon"
+                    type={'filled'}
+                    color={'primary'}
+                    textColor={'white'}
+                    onClick={() =>
+                      history.push(ROUTES?.PRINCIPAL.SETUP_PROFILE)
+                    }
+                  />
+                }
+              />
+            </div>
+          )}
         <StackedList
           className="px-4"
           listItems={listItems}

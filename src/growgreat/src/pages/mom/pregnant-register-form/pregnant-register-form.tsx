@@ -1,7 +1,13 @@
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { useCallback, useEffect, useState } from 'react';
-import { BannerWrapper, Card, Button, Typography } from '@ecdlink/ui';
+import {
+  BannerWrapper,
+  Card,
+  Button,
+  Typography,
+  DialogPosition,
+} from '@ecdlink/ui';
 import { FileTypeEnum, WorkflowStatusEnum } from '@ecdlink/graphql';
 import {
   Document,
@@ -9,12 +15,14 @@ import {
   SiteAddressDto,
   UserDto,
   CaregiverDto,
+  useDialog,
 } from '@ecdlink/core/lib';
 import ROUTES from '@/routes/routes';
-import momImage from '@/assets/momImage.png';
+import momImage from '@/assets/happyMom.svg';
 import { newGuid } from '@/utils/common/uuid.utils';
 import { useStaticData } from '@/hooks/useStaticData';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { useWindowSize } from '@reach/window-size';
 
 import { PregnantAddress } from '@/pages/mom/components/pregnant-address/pregnant-address';
 import { ConsentAgreement } from '@/pages/mom/components/consent-agreement/consent-agreement';
@@ -34,6 +42,8 @@ import { staticDataSelectors } from '@/store/static-data';
 import { motherActions, motherThunkActions } from '@/store/mother';
 import { documentActions, documentThunkActions } from '@/store/document';
 
+const BANNER_HEIGHT = 64;
+
 export const PregnantRegisterForm: React.FC = () => {
   const [label, setLabel] = useState('');
   const { isOnline } = useOnlineStatus();
@@ -52,10 +62,13 @@ export const PregnantRegisterForm: React.FC = () => {
     PregnantRegisterSteps.consentAgreement
   );
   const user = useSelector(userSelectors.getUser);
-  const [registeredClientVisible, setRegisteredClientVisible] = useState(false);
   const { getWorkflowStatusIdByEnum, getDocumentTypeIdByEnum } =
     useStaticData();
   const relations = useSelector(staticDataSelectors.getRelations);
+
+  const dialog = useDialog();
+
+  const { height } = useWindowSize();
 
   const handleExistingUser = () => {
     if (isAlreadyClient) {
@@ -76,7 +89,7 @@ export const PregnantRegisterForm: React.FC = () => {
     const motherId = newGuid();
     const motherUserId = newGuid();
     const siteAddressDto: SiteAddressDto = {
-      addressLine1: address?.address ?? '',
+      addressLine1: address?.address || address?.addressLine1 || '',
     };
     const userInput: UserDto = {
       phoneNumber: contactInformation?.cellphone ?? '',
@@ -91,7 +104,7 @@ export const PregnantRegisterForm: React.FC = () => {
       user: userInput,
       phoneNumber: contactInformation?.cellphone ?? '',
       siteAddress: siteAddressDto,
-      siteAddressId: address?.address ?? '',
+      siteAddressId: address?.id || address?.address || '',
       healthCareWorkerId: user?.id ?? '',
       age: details?.age,
       expectedDateOfDelivery:
@@ -103,7 +116,8 @@ export const PregnantRegisterForm: React.FC = () => {
       firstName: details?.name ?? '',
       surname: details?.surname ?? '',
       phoneNumber: contactInformation?.cellphone ?? '',
-      whatsAppNumber: contactInformation?.whatsapp,
+      whatsAppNumber:
+        contactInformation?.whatsapp ?? contactInformation?.cellphone,
       age: details?.age,
       isActive: true,
       siteAddress: siteAddressDto,
@@ -206,7 +220,7 @@ export const PregnantRegisterForm: React.FC = () => {
             onSubmit={(value) => {
               setLabel(`step 5 of 5`);
               setPregnantMaternalCaseRecord(value as any);
-              setRegisteredClientVisible(true);
+              showSuccessMessage();
             }}
           />
         );
@@ -216,6 +230,54 @@ export const PregnantRegisterForm: React.FC = () => {
   useEffect(() => {
     setLabel('step 1 of 5');
   }, []);
+
+  const showSuccessMessage = () =>
+    dialog({
+      position: DialogPosition.Middle,
+      color: 'bg-transparent',
+      render(onSubmit, onClose) {
+        return (
+          <Card
+            shadowSize={'lg'}
+            borderRaduis={'3xl'}
+            className="flex flex-col items-center justify-center px-4 py-6"
+          >
+            <div className="bg-tertiary flex h-28 w-28 justify-center overflow-hidden rounded-full">
+              <img className={'mt-6'} src={momImage} alt="card" />
+            </div>
+            <Typography
+              type="h3"
+              weight="bold"
+              className="mt-4"
+              lineHeight="snug"
+              text={'New client registered!'}
+            />
+            <Typography
+              type="body"
+              color="textMid"
+              className="mt-4 text-center"
+              lineHeight="snug"
+              text={`Great job ${user?.firstName}, you've registered 1 pregnant mom this month.`}
+            />
+            <div className={'mt-4 flex w-full justify-center'}>
+              <Button
+                text={`Close`}
+                icon={'XIcon'}
+                type={'filled'}
+                color={'primary'}
+                textColor={'white'}
+                className={'max-h-10 w-full'}
+                iconPosition={'start'}
+                onClick={() => {
+                  history.push(ROUTES.DASHBOARD);
+                  onClose();
+                }}
+              />
+            </div>
+          </Card>
+        );
+      },
+    });
 
   return (
     <div className="text-textMid">
@@ -227,45 +289,12 @@ export const PregnantRegisterForm: React.FC = () => {
         onBack={() => history.goBack()}
         title={'Pregnant mom registration'}
       />
-      {!!registeredClientVisible && (
-        <div className="flex h-full w-full items-center justify-center px-4">
-          <Card
-            shadowSize={'lg'}
-            borderRaduis={'md'}
-            className="flex flex-col items-center justify-center"
-          >
-            <div className="bg-tertiary flex h-28 w-28 items-center justify-center rounded-full">
-              <img className={'m-auto'} src={momImage} alt="card" />
-            </div>
-            <Typography
-              type="h3"
-              weight="bold"
-              className="mt-6"
-              lineHeight="snug"
-              text={'New client registered!'}
-            />
-            <Typography
-              type="body"
-              className="mt-4"
-              lineHeight="snug"
-              text={`Great job ${user?.firstName}, you've registered 1 pregnant mom this month.`}
-            />
-            <div className={'mt-4 flex w-full justify-center'}>
-              <Button
-                text={`Close`}
-                icon={'XIcon'}
-                type={'filled'}
-                color={'primary'}
-                textColor={'white'}
-                className={'max-h-10'}
-                iconPosition={'start'}
-                onClick={() => history.push(ROUTES.DASHBOARD)}
-              />
-            </div>
-          </Card>
-        </div>
-      )}
-      {!registeredClientVisible && steps(activeStep as PregnantRegisterSteps)}
+      <div
+        className={'flex flex-col overflow-auto px-4 pb-5'}
+        style={{ height: height - BANNER_HEIGHT }}
+      >
+        {steps(activeStep as PregnantRegisterSteps)}
+      </div>
     </div>
   );
 };

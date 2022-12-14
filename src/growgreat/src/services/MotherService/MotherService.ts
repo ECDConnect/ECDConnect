@@ -45,7 +45,7 @@ class MotherService {
     if (response.status !== 200) {
       throw new Error('Getting Mothers failed - Server connection error');
     }
-    console.log(response);
+
     return response.data.data.allMothersForHealthCareWorker;
   }
 

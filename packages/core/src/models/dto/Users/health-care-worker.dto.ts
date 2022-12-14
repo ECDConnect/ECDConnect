@@ -10,7 +10,24 @@ export interface HealthCareWorkerDto extends EntityBase {
   siteAddress?: SiteAddressDto;
   siteAddressId?: string;
   consentForPhoto?: boolean;
+  isRegistered?: boolean;
   language?: string;
   languageId?: string;
   documents?: DocumentDto[];
+  emergencyContactPerson?: string;
+  emergencyContactNumber?: string;
+  teamLeadId?: string;
+  teamLead?: {
+    jobTitle?: string;
+    clinic?: {
+      name?: string;
+      phoneNumber?: string;
+      siteAddress?: SiteAddressDto;
+    };
+    user?: {
+      firstName?: string;
+      surname?: string;
+      phoneNumber?: string;
+    };
+  };
 }

@@ -1,7 +1,10 @@
 const plugin = require('tailwindcss/plugin');
 
 module.exports = {
-  purge: ['./src/**/*.{js,jsx,ts,tsx}', './public/index.html'],
+  // purge: {
+  //   enabled: process.env.NODE_ENV === 'production',
+  //   content: ['./src/**/*.{js,jsx,ts,tsx}', './public/index.html']
+  // },
   important: true,
   mode: 'aot',
   darkMode: false, // or 'media' or 'class'
@@ -10,8 +13,16 @@ module.exports = {
       width: {
         headercard: '328px',
       },
+      maxWidth: {
+        '27': '27rem',
+      },
       height: {
-        bannerimage: '300px',
+        bannerimage: '200px',
+        '8.75': '8.75rem',
+        '100': '26rem',
+      },
+      minHeight: {
+        '64': '16rem',
       },
       borderRadius: {
         10: '0.625rem',
@@ -23,15 +34,15 @@ module.exports = {
         18: '18px',
         22: '22px',
         30: '30px',
+        54:  '54px',
+        102: '102px',
         112: '112px',
         116: '116px',
         120: '120px',
         177: '177px',
         180: '180px',
-        360: '360px',
         244: '244px',
-        54: '54px',
-        102: '102px',
+        360: '360px',
       },
       fontFamily: {
         h1: 'var(--h1-font)',
@@ -105,6 +116,9 @@ module.exports = {
           '100%': { transform: 'rotate(360deg)' },
         },
       },
+      screens: {
+        'sm-mobile': '370px',
+      }
     },
   },
   variants: {

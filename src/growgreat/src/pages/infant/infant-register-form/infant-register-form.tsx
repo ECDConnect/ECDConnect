@@ -1,8 +1,14 @@
-import { BannerWrapper, Card, Typography, Button } from '@ecdlink/ui';
+import {
+  BannerWrapper,
+  Card,
+  Typography,
+  Button,
+  DialogPosition,
+} from '@ecdlink/ui';
 import { useHistory } from 'react-router-dom';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useAppDispatch } from '@store';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import ROUTES from '@routes/routes';
 import {
   InfantRegisterSteps,
@@ -24,14 +30,16 @@ import {
   InfantDto,
   SiteAddressDto,
   UserDto,
-} from '@/../../../packages/core/lib';
+  useDialog,
+} from '@ecdlink/core/lib';
 import { EditConsentAgreementProps } from '../components/consent-agrement/consent-agreement.types';
 import { infantActions, infantThunkActions } from '@/store/infant';
-import momImage from '../../../assets/momImage.png';
+import momImage from '@/assets/happyMom.svg';
 import { useSelector } from 'react-redux';
 import { userSelectors } from '@store/user';
 import {
   caregiverActions,
+  caregiverThunkActions,
   // caregiverThunkActions
 } from '@/store/caregiver';
 import { MotherDetailsProps } from '../components/mother-details/mother-details.types';
@@ -40,6 +48,18 @@ import { MotherDetailsProps } from '../components/mother-details/mother-details.
 import { useStaticData } from '@/hooks/useStaticData';
 import { FileTypeEnum, WorkflowStatusEnum } from '@ecdlink/graphql';
 import { documentActions, documentThunkActions } from '@/store/document';
+import { useWindowSize } from '@reach/window-size';
+import { MotherDetailsModel } from '@/schemas/infant/mother-details';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { usePrevious } from '@/hooks/usePrevious';
+import { healthCareWorkerSelectors } from '@/store/healthCareWorker';
+
+const BANNER_HEIGHT = 64;
+
+interface onSubmit {
+  caregiverDetails?: MotherDetailsModel;
+  caregiverAddress?: string;
+}
 
 export const InfantRegisterForm: React.FC = () => {
   const [label, setLabel] = useState('');
@@ -65,9 +85,21 @@ export const InfantRegisterForm: React.FC = () => {
   >([]);
   let numberOfChildren: number | undefined = hasConsent?.numberOfChildren;
   const [multipleChildrenCount, setMultipleChildrenCount] = useState<number>(1);
-  const [registeredClientVisible, setRegisteredClientVisible] = useState(false);
+
+  const { height } = useWindowSize();
+
+  const dialog = useDialog();
+
   const { getWorkflowStatusIdByEnum, getDocumentTypeIdByEnum } =
     useStaticData();
+
+  const healthCareWorker = useSelector(
+    healthCareWorkerSelectors.getHealthCareWorker
+  );
+
+  const { isLoading, isRejected } = useThunkFetchCall('infants');
+  const wasLoading = usePrevious(isLoading);
+
   useEffect(() => {
     setLabel('step 1 of 6');
   }, []);
@@ -88,10 +120,10 @@ export const InfantRegisterForm: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [infantRoadToHealthBook]);
 
-  const handleExistingUser = () => {
+  const handleExistingUser = ({ caregiverDetails }: onSubmit) => {
     if (isAlreadyClient) {
-      completeAllSteps();
-      history.push(ROUTES.DASHBOARD);
+      completeAllSteps({ caregiverDetails });
+      showSuccessMessage();
       return;
     }
     setActiveStep(InfantRegisterSteps.pregnantContactInformation);
@@ -101,13 +133,53 @@ export const InfantRegisterForm: React.FC = () => {
     if (multipleChildrenCount < Number(numberOfChildren!)) {
       setActiveStep(InfantRegisterSteps.infantDetails);
       setMultipleChildrenCount(multipleChildrenCount + 1);
+      setLabel(`step 2 of 6`);
       return;
     }
+    setLabel(`step 4 of 6`);
     setActiveStep(InfantRegisterSteps.motherDetails);
   };
 
-  const completeAllSteps = () => {
-    if (multipleChildrenArray.length >= 1) {
+  const completeAllSteps = async ({
+    caregiverDetails,
+    caregiverAddress,
+  }: onSubmit) => {
+    const newCaregiverId = newGuid();
+    const siteAddressId = newGuid();
+
+    const siteAddress: SiteAddressDto = {
+      id: siteAddressId,
+      addressLine1: address || caregiverAddress || '',
+    };
+
+    const [firstChild] = multipleChildrenArray;
+
+    const caregiverInput: CaregiverDto = {
+      id:
+        firstChild.caregiver?.id ||
+        caregiverDetails?.id ||
+        details?.id ||
+        newCaregiverId,
+      firstName: caregiverDetails?.name || details?.name || '',
+      surname: caregiverDetails?.surname || details?.surname || '',
+      phoneNumber: contactInformation?.cellphone ?? '',
+      whatsAppNumber:
+        contactInformation?.whatsapp || contactInformation?.cellphone,
+      age: caregiverDetails?.age || details?.age || '',
+      siteAddress: siteAddress,
+      isActive: true,
+      relationId:
+        caregiverDetails?.relationshipId ||
+        firstChild?.relationshipId ||
+        details?.relationshipId ||
+        '',
+      healthCareWorkerId: user?.id,
+    };
+    if (!details?.isMother) {
+      await appDispatch(caregiverActions.createCaregiver(caregiverInput));
+    }
+
+    if (multipleChildrenArray?.length >= 1) {
       for (const child of multipleChildrenArray) {
         let weightAtBirth = undefined;
         let lengthAtBirth = undefined;
@@ -117,45 +189,29 @@ export const InfantRegisterForm: React.FC = () => {
         }
 
         const childUserId = newGuid();
-        const caregiverId = newGuid();
-        const siteAddressId = newGuid();
-        const siteAddress: SiteAddressDto = {
-          id: siteAddressId,
-          addressLine1: address ?? '',
-        };
-        const user: UserDto = {
+
+        const userInput: UserDto = {
           phoneNumber: contactInformation?.cellphone ?? '',
-          firstName: details?.name ?? '',
-          surname: details?.surname ?? '',
+          firstName: caregiverDetails?.name || details?.name || '',
+          surname: caregiverDetails?.surname || details?.surname || '',
           dateOfBirth: infantDetails?.dateOfBirth?.toISOString(),
         };
-        const caregiverInput: CaregiverDto = {
-          id: caregiverId,
-          firstName: details?.name ?? '',
-          surname: details?.surname ?? '',
-          phoneNumber: contactInformation?.cellphone ?? '',
-          whatsAppNumber:
-            contactInformation?.whatsapp ?? contactInformation?.cellphone,
-          age: details?.age,
-          siteAddress: siteAddress,
-          isActive: true,
-          relationId: details?.relationshipId, // TODO we need to get the relation ids here // child?.relationship ?? '',
-        };
+
         const infantInputModel: InfantDto = {
           dateOfBirth: child?.dateOfBirth?.toISOString(),
           firstName: child?.firstName,
           documents: child?.roadToHealthBook,
           userId: childUserId ?? '',
-          user: user,
+          user: userInput,
           weightAtBirth: weightAtBirth,
           lengthAtBirth: lengthAtBirth,
           genderId: child?.genderId ?? '',
-          caregiverId: details?.id,
+          caregiverId: caregiverInput.id,
           caregiver: caregiverInput,
         };
-        appDispatch(caregiverActions.createCaregiver(caregiverInput));
-        appDispatch(infantActions.addInfant(infantInputModel));
-        appDispatch(
+
+        await appDispatch(infantActions.addInfant(infantInputModel));
+        await appDispatch(
           infantThunkActions.addInfant({ infant: infantInputModel })
         ).unwrap();
 
@@ -177,8 +233,8 @@ export const InfantRegisterForm: React.FC = () => {
           file: infantRoadToHealthBook?.roadToHealthBook,
           fileType: FileTypeEnum.RoadToHealthBook,
         };
-        appDispatch(documentActions.createDocument(documentInputModel));
-        appDispatch(
+        await appDispatch(documentActions.createDocument(documentInputModel));
+        await appDispatch(
           documentThunkActions.createDocument(documentInputModel)
         ).unwrap();
       }
@@ -186,7 +242,6 @@ export const InfantRegisterForm: React.FC = () => {
       let weightAtBirth = undefined;
       let lengthAtBirth = undefined;
       if (!infantRoadToHealthBook?.notRoadToHealthBook) {
-        console.log(infantRoadToHealthBook?.notRoadToHealthBook);
         weightAtBirth =
           (infantRoadToHealthBook?.weightAtBirth &&
             +infantRoadToHealthBook?.weightAtBirth) ??
@@ -198,29 +253,13 @@ export const InfantRegisterForm: React.FC = () => {
       }
 
       const childUserId = newGuid();
-      const caregiverId = newGuid();
-      const siteAddressId = newGuid();
-      const siteAddress: SiteAddressDto = {
-        id: siteAddressId,
-        addressLine1: address ?? '',
-      };
       const user: UserDto = {
         phoneNumber: contactInformation?.cellphone ?? '',
-        firstName: details?.name ?? '',
-        surname: details?.surname ?? '',
+        firstName: caregiverDetails?.name || details?.name || '',
+        surname: caregiverDetails?.surname || details?.surname || '',
         dateOfBirth: infantDetails?.dateOfBirth?.toISOString(),
       };
-      const caregiverInput: CaregiverDto = {
-        id: caregiverId,
-        firstName: details?.name ?? '',
-        surname: details?.surname ?? '',
-        phoneNumber: contactInformation?.cellphone ?? '',
-        whatsAppNumber: contactInformation?.whatsapp,
-        age: details?.age,
-        isActive: true,
-        siteAddress: siteAddress,
-        relationId: details?.relationshipId,
-      };
+
       const infantInputModel: InfantDto = {
         dateOfBirth: infantDetails?.dateOfBirth?.toISOString(),
         firstName: infantDetails?.firstName,
@@ -230,12 +269,12 @@ export const InfantRegisterForm: React.FC = () => {
         user: user,
         weightAtBirth: weightAtBirth,
         lengthAtBirth: lengthAtBirth,
-        caregiverId: details?.id,
+        caregiverId: caregiverInput.id,
         caregiver: caregiverInput,
       };
-      appDispatch(caregiverActions.createCaregiver(caregiverInput));
-      appDispatch(infantActions.addInfant(infantInputModel));
-      appDispatch(
+
+      await appDispatch(infantActions.addInfant(infantInputModel));
+      await appDispatch(
         infantThunkActions.addInfant({ infant: infantInputModel })
       ).unwrap();
 
@@ -257,8 +296,8 @@ export const InfantRegisterForm: React.FC = () => {
         file: infantRoadToHealthBook?.roadToHealthBook,
         fileType: FileTypeEnum.RoadToHealthBook,
       };
-      appDispatch(documentActions.createDocument(documentInputModel));
-      appDispatch(
+      await appDispatch(documentActions.createDocument(documentInputModel));
+      await appDispatch(
         documentThunkActions.createDocument(documentInputModel)
       ).unwrap();
     }
@@ -269,97 +308,179 @@ export const InfantRegisterForm: React.FC = () => {
       case InfantRegisterSteps.consentAgreement:
       default:
         return (
-          <div className="text-textMid">
-            <ConsentAgreement
-              multipleChildren={multipleChildren}
-              setMultipleChildren={setMultipleChildren}
-              onSubmit={(value) => {
-                setActiveStep(InfantRegisterSteps.infantDetails);
-                setHasConsent(value as any);
-                setLabel(`step 2 of 6`);
-              }}
-            />
-          </div>
+          <ConsentAgreement
+            multipleChildren={multipleChildren}
+            setMultipleChildren={setMultipleChildren}
+            onSubmit={(value) => {
+              setActiveStep(InfantRegisterSteps.infantDetails);
+              setHasConsent(value as any);
+              setLabel(`step 2 of 6`);
+            }}
+          />
         );
       case InfantRegisterSteps.infantDetails:
         return (
-          <div className="text-textMid">
-            <InfantDetails
-              multipleChildrenCount={multipleChildrenCount}
-              numberOfChildren={numberOfChildren}
-              onSubmit={(value) => {
-                setLabel(`step 3 of 6`);
-                setInfantDetails(value);
-                setActiveStep(InfantRegisterSteps.infantRoadToHealth);
-              }}
-            />
-          </div>
+          <InfantDetails
+            multipleChildrenCount={multipleChildrenCount}
+            numberOfChildren={numberOfChildren}
+            onSubmit={(value) => {
+              setLabel(`step 3 of 6`);
+              setInfantDetails(value);
+              setActiveStep(InfantRegisterSteps.infantRoadToHealth);
+            }}
+          />
         );
       case InfantRegisterSteps.infantRoadToHealth:
         return (
-          <div className="text-textMid">
-            <InfantRoadToHealth
-              infantDetails={infantDetails}
-              onSubmit={(value) => {
-                setLabel(`step 4 of 6`);
-                handleMultipleChildrenSteps();
-                // setActiveStep(InfantRegisterSteps.motherDetails);
-                setInfantRoadToHealthBook(value);
-              }}
-            />
-          </div>
+          <InfantRoadToHealth
+            infantDetails={infantDetails}
+            onSubmit={(value) => {
+              handleMultipleChildrenSteps();
+              // setActiveStep(InfantRegisterSteps.motherDetails);
+              setInfantRoadToHealthBook(value);
+            }}
+          />
         );
       case InfantRegisterSteps.motherDetails:
         return (
-          <div className="text-textMid">
-            <MotherDetails
-              setMultipleChildrenArray={setMultipleChildrenArray}
-              multipleChildrenArray={multipleChildrenArray}
-              infantDetails={infantDetails}
-              setContactInformation={setContactInformation}
-              setAddress={setAddress}
-              setIsAlreadyClient={setIsAlreadyClient}
-              isAlreadyClient={isAlreadyClient}
-              onSubmit={(value) => {
-                setLabel(`step 5 of 6`);
-                setDetails(value as any);
-                handleExistingUser();
-              }}
-            />
-          </div>
+          <MotherDetails
+            setMultipleChildrenArray={setMultipleChildrenArray}
+            multipleChildrenArray={multipleChildrenArray}
+            infantDetails={infantDetails}
+            setContactInformation={setContactInformation}
+            setAddress={setAddress}
+            setIsAlreadyClient={setIsAlreadyClient}
+            isAlreadyClient={isAlreadyClient}
+            onSubmit={(value) => {
+              setDetails(value as any);
+              handleExistingUser({ caregiverDetails: value });
+
+              if (isAlreadyClient) {
+                return setLabel(`step 4 of 4`);
+              }
+
+              return setLabel(`step 5 of 6`);
+            }}
+          />
         );
       case InfantRegisterSteps.pregnantContactInformation:
         return (
-          <div className="text-textMid">
-            <MotherContactInformation
-              details={details}
-              onSubmit={(value) => {
-                setLabel(`step 4 of 5`);
-                setActiveStep(InfantRegisterSteps.pregnantAddress);
-                setContactInformation(value);
-              }}
-            />
-          </div>
+          <MotherContactInformation
+            details={details}
+            onSubmit={(value) => {
+              setLabel(`step 6 of 6`);
+              setActiveStep(InfantRegisterSteps.pregnantAddress);
+              setContactInformation(value);
+            }}
+          />
         );
       case InfantRegisterSteps.pregnantAddress:
         return (
-          <div className="text-textMid">
-            <InfantAddress
-              details={details}
-              infantDetails={infantDetails}
-              onSubmit={(value) => {
-                setLabel(`step 6 of 6`);
-                // setActiveStep(InfantRegisterSteps.pregnantMaternalRecord);
-                setAddress(value.address);
-                completeAllSteps();
-                // history.push(ROUTES.DASHBOARD);
-                setRegisteredClientVisible(true);
-              }}
-            />
-          </div>
+          <InfantAddress
+            details={details}
+            infantDetails={infantDetails}
+            onSubmit={(value) => {
+              setLabel(`step 6 of 6`);
+              setAddress(value.address);
+              completeAllSteps({ caregiverAddress: value.address });
+            }}
+          />
         );
     }
   };
+
+  const showSuccessMessage = useCallback(
+    () =>
+      dialog({
+        position: DialogPosition.Middle,
+        color: 'bg-transparent',
+        render(onSubmit, onClose) {
+          return (
+            <Card
+              shadowSize={'lg'}
+              borderRaduis={'3xl'}
+              className="flex flex-col items-center justify-center px-4 py-6"
+            >
+              <div className="bg-tertiary flex h-28 w-28 justify-center overflow-hidden rounded-full">
+                <img className={'mt-6'} src={momImage} alt="card" />
+              </div>
+              <Typography
+                type="h3"
+                weight="bold"
+                className="mt-4"
+                lineHeight="snug"
+                text={'New client registered!'}
+              />
+              <Typography
+                type="body"
+                color="textMid"
+                className="mt-4 text-center"
+                lineHeight="snug"
+                text={
+                  hasConsent?.numberOfChildren! > 0
+                    ? `Great job ${user?.firstName}, you've registered ${hasConsent?.numberOfChildren} children this month.`
+                    : `Great job ${user?.firstName}, you've registered 1 child this month.`
+                }
+              />
+              <Typography
+                className="mt-7"
+                color="textDark"
+                text={`Keep going!`}
+                type="body"
+                lineHeight="snug"
+              />
+              <div className={'mt-4 flex w-full justify-center'}>
+                <Button
+                  text={`Close`}
+                  icon={'XIcon'}
+                  type={'filled'}
+                  color={'primary'}
+                  textColor={'white'}
+                  className={'max-h-10 w-full'}
+                  iconPosition={'start'}
+                  onClick={() => {
+                    history.push(ROUTES.DASHBOARD);
+                    onClose();
+                  }}
+                />
+              </div>
+            </Card>
+          );
+        },
+      }),
+    [dialog, hasConsent?.numberOfChildren, history, user?.firstName]
+  );
+
+  useEffect(() => {
+    if (activeStep === InfantRegisterSteps.motherDetails && isAlreadyClient) {
+      setLabel('step 4 of 4');
+    }
+
+    if (activeStep === InfantRegisterSteps.motherDetails && !isAlreadyClient) {
+      setLabel('step 4 of 6');
+    }
+  }, [activeStep, isAlreadyClient]);
+
+  useEffect(() => {
+    if (!isLoading && wasLoading) {
+      showSuccessMessage();
+      if (!isRejected && healthCareWorker) {
+        (async () =>
+          await appDispatch(
+            caregiverThunkActions.getCaregiversForHealthCareWorker({
+              id: healthCareWorker?.id!,
+            })
+          ).unwrap())();
+      }
+    }
+  }, [
+    appDispatch,
+    healthCareWorker,
+    isLoading,
+    isRejected,
+    showSuccessMessage,
+    wasLoading,
+  ]);
 
   return (
     <div className="text-textMid">
@@ -371,66 +492,12 @@ export const InfantRegisterForm: React.FC = () => {
         onBack={() => history.goBack()}
         displayOffline={!isOnline}
       ></BannerWrapper>
-      {registeredClientVisible ? (
-        <div className="mt-40 flex h-full w-full items-center justify-center">
-          <Card
-            borderRaduis={'md'}
-            shadowSize={'lg'}
-            className="flex w-11/12 flex-col items-center justify-center p-4"
-          >
-            <div className="bg-tertiary flex h-28 w-28 items-center justify-center rounded-full">
-              <img className={'m-auto'} src={momImage} alt="card" />
-            </div>
-            <div>
-              <Typography
-                className="mt-6"
-                text={'New client registered!'}
-                type="h3"
-                weight="bold"
-                lineHeight="snug"
-              />
-            </div>
-            <div>
-              <Typography
-                className="mt-4 text-center"
-                color="textMid"
-                text={
-                  hasConsent?.numberOfChildren! > 0
-                    ? `Great job ${user?.firstName}, you've registered ${hasConsent?.numberOfChildren} children this month.`
-                    : `Great job ${user?.firstName}, you've registered 1 child this month.`
-                }
-                type="body"
-                lineHeight="snug"
-              />
-            </div>
-            <div>
-              <Typography
-                className="mt-8"
-                color="textMid"
-                text={`Keep going`}
-                type="body"
-                lineHeight="snug"
-              />
-            </div>
-            <div className={'mt-4 flex w-full justify-center'}>
-              <Button
-                type={'filled'}
-                color={'primary'}
-                className={'max-h-10 w-11/12'}
-                textColor={'white'}
-                text={`Close`}
-                icon={'XIcon'}
-                iconPosition={'start'}
-                onClick={() => history.push(ROUTES.DASHBOARD)}
-              />
-            </div>
-          </Card>
-        </div>
-      ) : (
-        <div className={'px-4 pb-5'}>
-          {steps(activeStep as InfantRegisterSteps)}
-        </div>
-      )}
+      <div
+        className={'flex flex-col overflow-auto px-4 pb-5'}
+        style={{ height: height - BANNER_HEIGHT }}
+      >
+        {steps(activeStep as InfantRegisterSteps)}
+      </div>
     </div>
   );
 };

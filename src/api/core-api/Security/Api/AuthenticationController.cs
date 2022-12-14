@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using NPOI.OpenXml4Net.OPC;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 
@@ -59,12 +60,10 @@ namespace ECDLink.Security.Api
             {
                 return Unauthorized(new { Error = "Some of the information you have entered is incorrect. Please contact the SmartStart call centre to find out more: 0800 014 817" });
             }
-
-            //TODO: hook in JWT obfuscation in here
+            
             var jwt = await _securityManager.GenerateJwtForUserAsync(user, JwtEncoderEnum.Standard);
-
-            var package = new OkObjectResult(JsonConvert.DeserializeObject<JwtObject>(jwt));
-
+            var jwtObj = JsonConvert.DeserializeObject<JwtObject>(jwt);
+            var package = new OkObjectResult(jwtObj);
             return package;
         }
 

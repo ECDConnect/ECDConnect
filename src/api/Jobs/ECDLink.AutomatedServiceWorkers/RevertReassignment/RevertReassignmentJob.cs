@@ -1,0 +1,50 @@
+﻿using ECDLink.AutomatedJobs.Cron;
+using ECDLink.Core.Services.Interfaces;
+using ECDLink.PostgresTenancy.Services;
+using ECDLink.Tenancy.Context;
+using Microsoft.Extensions.DependencyInjection;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace ECDLink.AutomatedJobs.Anonymise
+{
+    public class RevertReassignment : CronJobService
+    {
+        private readonly IServiceScopeFactory _scopeFactory;
+
+        public RevertReassignment(IServiceScopeFactory scopeFactory, IScheduleConfig<ExpireInvitationsJob> config)
+            : base(config.CronExpression, config.TimeZoneInfo)
+        {
+            _scopeFactory = scopeFactory;
+        }
+
+        public override async Task DoWork(CancellationToken cancellationToken)
+        {
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                SetTenantContext(scope);
+
+                var anonChildService = scope.ServiceProvider.GetRequiredService<IChildrenAnonymiseService>();
+
+                //anonChildService.AnonymiseChild();
+
+                //AssignFutureAbsentees //settle Future dated absentees first
+                //ReassignAbsentees
+            }
+        }
+
+        // TODO: Convert to multi-tenancy jobs
+        //Single Tenant for now
+        private void SetTenantContext(IServiceScope scope)
+        {
+            var tenancyRepo = scope.ServiceProvider.GetRequiredService<TenantService>();
+
+            var tenant = tenancyRepo.GetAllTenants()
+                .Where(x => x.TenantType == Tenancy.Enums.TenantType.Tenant)
+                .FirstOrDefault();
+
+            TenantExecutionContext.SetTenant(tenant);
+        }
+    }
+}

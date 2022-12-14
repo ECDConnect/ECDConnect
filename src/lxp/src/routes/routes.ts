@@ -41,7 +41,9 @@ const ROUTES = {
     NOTES: '/notes',
   }),
   PRACTITIONER: addPrefix('/practitioner', {
-    ABOUT: '/about',
+    ABOUT: addPrefix('/about', {
+      SIGNATURE: '/signature',
+    }),
     ACCOUNT: '/account',
     PROGRAMME_INFORMATION: '/programme-information',
     PROFILE: addPrefix('/profile', {

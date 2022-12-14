@@ -3,7 +3,7 @@ import { CoachDto } from '@ecdlink/core';
 import localForage from 'localforage';
 
 import { CoachState } from './coach.types';
-import { getCoachByUserId, getCoachByCoachId } from './coach.actions';
+import { getCoachByCoachId } from './coach.actions';
 
 const initialState: CoachState = {
   coach: undefined,
