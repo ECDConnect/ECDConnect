@@ -35,6 +35,10 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public virtual Caregiver.Caregiver Caregiver { get; set; }
         public Guid? CaregiverId { get; set; }
 
+        [ForeignKey(nameof(MotherCaregiverId))]
+        public virtual Mother Mother { get; set; }
+        public Guid? MotherCaregiverId { get; set; }
+
         public decimal? WeightAtBirth { get; set; }
 
         public decimal? LengthAtBirth { get; set; }
