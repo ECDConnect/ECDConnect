@@ -19,7 +19,6 @@ import {
   ChildBasicInfoModel,
 } from '@schemas/child/child-registration/child-basic-info';
 import { classroomsSelectors } from '@store/classroom';
-import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 import { practitionerSelectors } from '@/store/practitioner';
 import { childrenSelectors } from '@/store/children';
 import { UserDto } from '@/../../../packages/core/src/models/dto/Users/user.dto';
@@ -28,7 +27,6 @@ import { format } from 'date-fns';
 export const ChildBasicInfo: React.FC<
   FormComponentProps<ChildBasicInfoModel>
 > = ({ onSubmit }) => {
-  const classrooms = useSelector(classroomsSelectors.getClassroomGroups);
   const getAllClassroomGroups = useSelector(
     classroomsSelectors?.getAllClassroomGroups
   );
@@ -37,20 +35,15 @@ export const ChildBasicInfo: React.FC<
     return item?.userId === practitioner?.userId || item?.isActive !== true;
   });
   const children = useSelector(childrenSelectors?.getChildren);
-  console.log({ children });
+
   const classroomsForPractitioner = useSelector(
     classroomsSelectors.getClassroom
   );
-  console.log({ classroomsForPractitioner });
+
   const isPrincipal = practitioner?.isPrincipal;
-  const [
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    classroomsForPractitionerAnyType,
-    setClassroomsForPractitionerAnyType,
-  ] = useState<any>([]);
   const [childUserListData, setChildUserListData] =
     useState<UserAlertListDataItem[]>();
-  console.log({ childUserListData });
+
   const classroomGroupLearners = useSelector(
     classroomsSelectors.getClassroomGroupLearners
   );
@@ -71,10 +64,9 @@ export const ChildBasicInfo: React.FC<
     control: childInfoFormControl,
   });
   const childAlreadyAdded = children?.find(
-    (item) => item?.user?.fullName === firstName! + ' ' + surname!
+    (item) =>
+      item?.user?.firstName === firstName! && item?.user?.surname === surname!
   );
-  console.log({ childAlreadyAdded });
-  console.log({ firstName, surname });
 
   useEffect(() => {
     if (childAlreadyAdded) {
@@ -95,38 +87,26 @@ export const ChildBasicInfo: React.FC<
     childRecord: ChildDto,
     childLearner?: LearnerDto
   ): UserAlertListDataItem => {
-    console.log(childRecord, childLearner);
     const childUser = childAlreadyAdded as UserDto;
-
-    // const childAlert = getChildAlertModel(
-    //   childLearner,
-    //   pendingStatusId,
-    //   childUser,
-    //   childRecord,
-    //   childDocuments,
-    //   attendanceData,
-    //   getAllClassroomGroups,
-    //   classroomGroupProgrammes,
-    //   reports
-    // );
 
     return {
       id: childRecord.id,
       profileDataUrl: childUser?.profileImageUrl,
       title: `${childAlreadyAdded?.user?.firstName} ${childAlreadyAdded?.user?.surname}`,
       subTitle:
-        `Added on ${format(
+        `Added by ${childAlreadyAdded?.insertedBy?.split(' ')[0]} on ${format(
           new Date(childAlreadyAdded?.insertedDate!),
           'LLL d'
         )}` ?? '',
       profileText: `${
-        childUser?.firstName && childUser?.firstName[0]?.toUpperCase()
-      }${childUser?.surname && childUser?.surname[0]?.toUpperCase()}`,
+        childAlreadyAdded?.user?.firstName &&
+        childAlreadyAdded?.user?.firstName[0]?.toUpperCase()
+      }${
+        childAlreadyAdded?.user?.surname &&
+        childAlreadyAdded?.user?.surname[0]?.toUpperCase()
+      }`,
       alertSeverity: 'none',
       avatarColor: getAvatarColor() || '',
-      // onActionClick: () => {
-      //   onChildListItemAction(childRecord.id as string);
-      // },
     };
   };
 
@@ -186,7 +166,9 @@ export const ChildBasicInfo: React.FC<
         <div>
           <Alert
             title={`There is already a child named ${
-              childAlreadyAdded?.user?.fullName
+              childAlreadyAdded?.user?.firstName +
+              ' ' +
+              childAlreadyAdded?.user?.surname
             } at ${classroomsForPractitioner?.name}, born on ${format(
               new Date(childAlreadyAdded?.user?.dateOfBirth!),
               'dd MMM yyyy'
@@ -202,7 +184,6 @@ export const ChildBasicInfo: React.FC<
               className={'mt-4'}
               listItems={childUserListData!}
               type={'UserAlertList'}
-              // onScroll={(scrollTop: number) => handleListScroll(scrollTop)}
             />
           )}
         </div>
