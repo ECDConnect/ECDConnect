@@ -36,10 +36,10 @@ export const getInfants = createAsyncThunk<
         let infants: InfantDto[] | undefined;
         const id = userAuth?.id;
 
-        if (userAuth?.auth_token) {
+        if (userAuth?.auth_token && id) {
           infants = await new InfantService(
             userAuth?.auth_token
-          ).GetAllInfantsForMother(id!);
+          ).GetAllInfantsForMother(id);
         } else {
           return rejectWithValue('no access token, profile check required');
         }

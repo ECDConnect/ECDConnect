@@ -110,7 +110,9 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
         type="h2"
         color={'textDark'}
         text={
-          numberOfChildren! > 1 ? `Child ${multipleChildrenCount}` : 'Child'
+          numberOfChildren && numberOfChildren > 1
+            ? `Child ${multipleChildrenCount}`
+            : 'Child'
         }
         className="pt-6"
       />

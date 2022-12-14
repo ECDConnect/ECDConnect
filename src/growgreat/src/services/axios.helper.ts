@@ -61,8 +61,7 @@ const blacklistCheckup = ($url: string, blacklist: string[]): boolean => {
   let returnValue = false;
   blacklist.forEach((i) => {
     if ($url.includes(i)) {
-      returnValue = true;
-      return;
+      return (returnValue = true);
     }
   });
   return returnValue;

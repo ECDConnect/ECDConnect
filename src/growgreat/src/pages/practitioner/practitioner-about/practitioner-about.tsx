@@ -186,8 +186,7 @@ export const PractitionerAbout: React.FC = () => {
   ) => {
     if (formInputToLoad.label === 'Language') {
       setDialogFormInput(formInputToLoad);
-      setEditLanguageFieldVisible(true);
-      return;
+      return setEditLanguageFieldVisible(true);
     } else {
       setDialogFormInput(formInputToLoad);
       setEditFieldVisible(true);
@@ -401,7 +400,7 @@ export const PractitionerAbout: React.FC = () => {
               (languages &&
                 languages.map((language: LanguageDto) => ({
                   label: language.description,
-                  value: language.id!,
+                  value: language.id || '',
                 }))) ||
               []
             }

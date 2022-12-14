@@ -33,7 +33,7 @@ type IntialStoreSetupContextValues = {
 };
 
 type Props = {
-  children?: ReactNode | undefined;
+  children?: ReactNode;
 };
 
 export const IntialStoreSetupContext =
@@ -68,7 +68,7 @@ function InitialStoreSetup(props: Props) {
       (async () =>
         await appDispatch(
           caregiverThunkActions.getCaregiversForHealthCareWorker({
-            id: healthCareWorker?.id!,
+            id: healthCareWorker?.id || '',
           })
         ).unwrap())();
     }

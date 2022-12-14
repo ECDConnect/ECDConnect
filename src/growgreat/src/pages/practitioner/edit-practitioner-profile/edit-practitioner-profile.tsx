@@ -65,7 +65,7 @@ export const EditPractitionerProfile: React.FC = () => {
   const onAllStepsComplete = async () => {
     const copy = Object.assign({}, healthCareWorker);
     if (copy) {
-      copy.languageId = language! as string;
+      copy.languageId = language;
       copy.isRegistered = true;
 
       await appDispatch(healthCareWorkerActions.updateHealthCareWorker(copy));
@@ -98,7 +98,7 @@ export const EditPractitionerProfile: React.FC = () => {
         return (
           <PractitionerSetup
             onSubmit={(form: string) => {
-              setLanguage(form!);
+              setLanguage(form);
               setActiveStep(EditPractitionerSteps.ADD_PHOTO);
             }}
           />
@@ -198,9 +198,7 @@ export const EditPractitionerProfile: React.FC = () => {
           }
           displayOffline={!isOnline}
         >
-          <div className={'px-4'}>
-            {steps(activeStep as EditPractitionerSteps)}
-          </div>
+          <div className={'px-4'}>{steps(activeStep)}</div>
         </BannerWrapper>
       </IonContent>
     </>

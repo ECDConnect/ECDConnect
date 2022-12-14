@@ -110,7 +110,7 @@ export const SignUp: React.FC = () => {
   }, []);
 
   const errorStrings = Object.keys(errors).map(
-    (x: string) => (errors as any)[x].message
+    (x) => errors[x as keyof SignUpModel]?.message || ''
   );
 
   watch();

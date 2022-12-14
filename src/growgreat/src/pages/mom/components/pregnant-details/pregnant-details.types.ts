@@ -3,13 +3,13 @@ import { PregnantRegisterModel } from '@/schemas/pregnant/pregnant-register-form
 
 export interface EditPregnantDetailsProps
   extends FormComponentProps<PregnantRegisterModel> {
-  name?: string | undefined;
-  surname?: string | undefined;
-  age?: string | undefined;
-  setContactInformation?: any | undefined;
-  setAddress?: any | undefined;
-  setIsAlreadyClient?: any | undefined;
-  isAlreadyClient?: boolean | undefined;
+  name?: string;
+  surname?: string;
+  age?: string;
+  setContactInformation?: any;
+  setAddress?: any;
+  setIsAlreadyClient?: any;
+  isAlreadyClient?: boolean;
 }
 
 export const yesNoOptions = [

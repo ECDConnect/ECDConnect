@@ -53,7 +53,7 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
   const [relationshipChildrenArray, setRelationshipChildrenArray] =
     useState<MultipleChildrenProps[]>();
 
-  const caregivers = useSelector(caregiverSelectors.getCaregivers);
+  const caregivers = useSelector(caregiverSelectors.getCaregivers) || [];
   const mothers = useSelector(motherSelectors?.getMothers);
 
   const mothersUpdatedToCaregivers = mothers?.map((item) => ({
@@ -67,7 +67,7 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
     age: '',
   }));
 
-  const motherAndCaregivers = [...caregivers!, ...mothersUpdatedToCaregivers!];
+  const motherAndCaregivers = [...caregivers, ...mothersUpdatedToCaregivers];
 
   useEffect(() => {
     const uniqueChildrenArray = relationshipChildrenArray?.filter(
@@ -148,14 +148,14 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
                             ...multipleChildrenArray[index],
                             relationshipId: value,
                           },
-                          ...relationshipChildrenArray!,
+                          ...relationshipChildrenArray,
                         ])
                       : setRelationshipChildrenArray([
                           {
                             ...multipleChildrenArray[index],
                             relationshipId: value,
                           },
-                          ...multipleChildrenArray!,
+                          ...multipleChildrenArray,
                         ]);
                   }}
                 />

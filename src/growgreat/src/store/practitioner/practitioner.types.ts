@@ -6,7 +6,7 @@ export type PrincipalPractitioners = Partial<
   }
 >;
 export interface PractitionerState {
-  practitioner?: PractitionerDto | undefined;
-  practitioners?: PractitionerDto[] | undefined;
+  practitioner?: PractitionerDto;
+  practitioners?: PractitionerDto[];
   principalPractitioners?: PrincipalPractitioners[];
 }

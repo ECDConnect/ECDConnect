@@ -10,7 +10,7 @@ export interface PregnantRegisterModel {
   address?: string;
   deliveryDate?: Date;
   maternalCaseRecord?: string;
-  numberOfChildren?: number | undefined;
+  numberOfChildren?: number;
   age?: string;
 }
 

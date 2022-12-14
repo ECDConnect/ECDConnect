@@ -122,7 +122,7 @@ export const InfantRegisterForm: React.FC = () => {
   };
 
   const handleMultipleChildrenSteps = () => {
-    if (multipleChildrenCount < Number(numberOfChildren!)) {
+    if (multipleChildrenCount < Number(numberOfChildren)) {
       setActiveStep(InfantRegisterSteps.infantDetails);
       setMultipleChildrenCount(multipleChildrenCount + 1);
       setLabel(`step 2 of 6`);
@@ -408,7 +408,8 @@ export const InfantRegisterForm: React.FC = () => {
                 className="mt-4 text-center"
                 lineHeight="snug"
                 text={
-                  hasConsent?.numberOfChildren! > 0
+                  hasConsent?.numberOfChildren &&
+                  hasConsent.numberOfChildren > 0
                     ? `Great job ${user?.firstName}, you've registered ${hasConsent?.numberOfChildren} children this month.`
                     : `Great job ${user?.firstName}, you've registered 1 child this month.`
                 }
@@ -487,7 +488,7 @@ export const InfantRegisterForm: React.FC = () => {
         className={'flex flex-col overflow-auto px-4 pb-5'}
         style={{ height: height - BANNER_HEIGHT }}
       >
-        {steps(activeStep as InfantRegisterSteps)}
+        {steps(activeStep)}
       </div>
     </div>
   );

@@ -186,7 +186,7 @@ export const PregnantRegisterForm: React.FC = () => {
             isAlreadyClient={isAlreadyClient}
             onSubmit={(value) => {
               setLabel(`step 3 of 5`);
-              setDetails(value as any);
+              setDetails(value as EditPregnantDetailsProps);
               handleExistingUser();
             }}
           />
@@ -198,7 +198,9 @@ export const PregnantRegisterForm: React.FC = () => {
             onSubmit={(value) => {
               setLabel(`step 4 of 5`);
               setActiveStep(PregnantRegisterSteps.pregnantAddress);
-              setContactInformation(value as any);
+              setContactInformation(
+                value as EditPregnantContactInformationProps
+              );
             }}
           />
         );
@@ -209,7 +211,7 @@ export const PregnantRegisterForm: React.FC = () => {
             onSubmit={(value) => {
               setLabel(`step 5 of 5`);
               setActiveStep(PregnantRegisterSteps.pregnantMaternalRecord);
-              setAddress(value as any);
+              setAddress(value as PregnantAddressProps);
             }}
           />
         );
@@ -219,7 +221,9 @@ export const PregnantRegisterForm: React.FC = () => {
             details={details as any}
             onSubmit={(value) => {
               setLabel(`step 5 of 5`);
-              setPregnantMaternalCaseRecord(value as any);
+              setPregnantMaternalCaseRecord(
+                value as PregnantMaternalCaseRecordProps
+              );
               showSuccessMessage();
             }}
           />
