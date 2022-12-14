@@ -200,7 +200,7 @@ export const PractitionerAbout: React.FC = () => {
     } else {
       setEditFieldVisible(false);
       setEditLanguageFieldVisible(false);
-      await savePractitionerUserData();
+      savePractitionerUserData();
     }
   };
 

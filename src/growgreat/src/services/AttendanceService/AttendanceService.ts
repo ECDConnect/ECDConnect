@@ -19,7 +19,7 @@ class AttendanceService {
     monthOfYear: number,
     weekOfYear: number
   ): Promise<AttendanceDto[]> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
       query attendance($year: Int!, $monthOfYear: Int, $weekOfYear: Int) {
@@ -57,7 +57,7 @@ class AttendanceService {
     startDate: Date,
     endDate: Date
   ): Promise<MonthlyAttendanceRecord[]> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
       query monthlyAttendanceReport(
@@ -101,7 +101,7 @@ class AttendanceService {
     startDate: Date,
     endDate: Date
   ): Promise<ChildAttendanceReportModel> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         query childAttendanceReport(
@@ -157,7 +157,7 @@ class AttendanceService {
   async trackAttendance(
     attendance: TrackAttendanceModelInput
   ): Promise<boolean> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         mutation trackAttendance($attendance: TrackAttendanceModelInput) {

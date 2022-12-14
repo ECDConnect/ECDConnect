@@ -12,7 +12,7 @@ class HealthCareWorkerService {
   async getHealthCareWorkerByUserId(
     userId: string
   ): Promise<HealthCareWorkerDto> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
       query getHealthCareWorkerByUserId($userId: String) {
@@ -79,7 +79,7 @@ class HealthCareWorkerService {
   }
 
   async getPractitionerByUserId(userId: string): Promise<PractitionerDto> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         query GetPractitionerByUserId($userId: String) {
@@ -143,7 +143,7 @@ class HealthCareWorkerService {
     practitionerId: string,
     status: boolean = true
   ): Promise<boolean> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         mutation UpdatePractitionerRegistered(
@@ -175,7 +175,7 @@ class HealthCareWorkerService {
     userId: string,
     input: MutationUpdateHealthCareWorkerArgs
   ): Promise<HealthCareWorkerDto> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
       mutation updateHealthCareWorker(
