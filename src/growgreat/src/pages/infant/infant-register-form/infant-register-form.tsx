@@ -297,19 +297,6 @@ export const InfantRegisterForm: React.FC = () => {
 
   const steps = (step: InfantRegisterSteps) => {
     switch (step) {
-      case InfantRegisterSteps.consentAgreement:
-      default:
-        return (
-          <ConsentAgreement
-            multipleChildren={multipleChildren}
-            setMultipleChildren={setMultipleChildren}
-            onSubmit={(value) => {
-              setActiveStep(InfantRegisterSteps.infantDetails);
-              setHasConsent(value as any);
-              setLabel(`step 2 of 6`);
-            }}
-          />
-        );
       case InfantRegisterSteps.infantDetails:
         return (
           <InfantDetails
@@ -374,6 +361,19 @@ export const InfantRegisterForm: React.FC = () => {
               setLabel(`step 6 of 6`);
               setAddress(value.address);
               completeAllSteps({ caregiverAddress: value.address });
+            }}
+          />
+        );
+      case InfantRegisterSteps.consentAgreement:
+      default:
+        return (
+          <ConsentAgreement
+            multipleChildren={multipleChildren}
+            setMultipleChildren={setMultipleChildren}
+            onSubmit={(value) => {
+              setActiveStep(InfantRegisterSteps.infantDetails);
+              setHasConsent(value as any);
+              setLabel(`step 2 of 6`);
             }}
           />
         );

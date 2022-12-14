@@ -167,16 +167,6 @@ export const PregnantRegisterForm: React.FC = () => {
 
   const steps = (step: PregnantRegisterSteps) => {
     switch (step) {
-      case PregnantRegisterSteps.consentAgreement:
-      default:
-        return (
-          <ConsentAgreement
-            onSubmit={(value) => {
-              setActiveStep(PregnantRegisterSteps.pregnantDetails);
-              setLabel(`step 2 of 5`);
-            }}
-          />
-        );
       case PregnantRegisterSteps.pregnantDetails:
         return (
           <PregnantDetails
@@ -225,6 +215,16 @@ export const PregnantRegisterForm: React.FC = () => {
                 value as PregnantMaternalCaseRecordProps
               );
               showSuccessMessage();
+            }}
+          />
+        );
+      case PregnantRegisterSteps.consentAgreement:
+      default:
+        return (
+          <ConsentAgreement
+            onSubmit={(value) => {
+              setActiveStep(PregnantRegisterSteps.pregnantDetails);
+              setLabel(`step 2 of 5`);
             }}
           />
         );

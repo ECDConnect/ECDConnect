@@ -27,7 +27,6 @@ type IntialStoreSetupContextValues = {
   initloading: boolean;
   resetAuth: () => Promise<void>;
   getLoadingMessage: () => string;
-  syncClassroom: () => Promise<void>;
   initStoreSetup: () => Promise<void>;
   resetAppStore: (showLoading?: boolean) => Promise<void>;
 };
@@ -78,7 +77,6 @@ function InitialStoreSetup(props: Props) {
     initloading,
     resetAuth,
     resetAppStore,
-    syncClassroom,
     initStoreSetup,
     getLoadingMessage,
   };
@@ -160,8 +158,6 @@ function InitialStoreSetup(props: Props) {
     await appDispatch(staticDataThunkActions.getWorkflowStatuses({})).unwrap();
     setStaticDataLoading(false);
   }
-
-  async function syncClassroom() {}
 
   function getLoadingMessage() {
     let message = 'Loading . . .';

@@ -164,13 +164,13 @@ export const EditPractitionerProfile: React.FC = () => {
 
   const onBack = () => {
     switch (activeStep) {
-      case EditPractitionerSteps.WELCOME:
-      default:
-        return history.goBack();
       case EditPractitionerSteps.SETUP_PRACTITIONER:
         return setActiveStep(EditPractitionerSteps.WELCOME);
       case EditPractitionerSteps.ADD_PHOTO:
         return setActiveStep(EditPractitionerSteps.SETUP_PRACTITIONER);
+      case EditPractitionerSteps.WELCOME:
+      default:
+        return history.goBack();
     }
   };
 
