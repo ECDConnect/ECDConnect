@@ -99,6 +99,7 @@ export const mapChildDto = (
     otherHealthConditions: healthInformationForm?.healthConditions ?? '',
     workflowStatusId: childStatusId,
     insertedDate: new Date().toISOString(),
+    insertedBy: '',
   };
 };
 

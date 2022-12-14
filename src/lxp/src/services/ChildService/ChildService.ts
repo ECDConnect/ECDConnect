@@ -43,6 +43,7 @@ class ChildService {
             disabilities
             otherHealthConditions
             isActive
+            insertedBy
           }
         }
       `,
