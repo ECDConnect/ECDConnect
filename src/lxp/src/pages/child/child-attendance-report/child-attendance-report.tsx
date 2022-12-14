@@ -8,8 +8,8 @@ import {
   Divider,
   StatusChip,
   Typography,
+  renderIcon,
 } from '@ecdlink/ui';
-import { renderIcon } from '@ecdlink/ui';
 import { getYear } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';

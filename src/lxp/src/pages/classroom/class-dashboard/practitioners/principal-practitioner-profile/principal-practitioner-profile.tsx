@@ -24,13 +24,15 @@ import { CreateNote } from './components/create-note/create-note';
 import { getLastNoteDate } from '@utils/child/child-profile-utils';
 import { notesSelectors } from '@store/notes';
 import { useSelector } from 'react-redux';
-import { practitionerSelectors } from '@/store/practitioner';
+import {
+  practitionerSelectors,
+  practitionerThunkActions,
+} from '@/store/practitioner';
 import { classroomsSelectors } from '@/store/classroom';
 import { useAppDispatch } from '@store';
 import { authSelectors } from '@/store/auth';
 import { PractitionerNotRegistered } from './practitioner-not-registered/practitioner-not-registered';
 import { PractitionerService } from '@/services/PractitionerService';
-import { practitionerThunkActions } from '@/store/practitioner';
 import { ClassroomGroupService } from '@/services/ClassroomGroupService';
 import { getMonthName } from '@utils/classroom/attendance/track-attendance-utils';
 import { getMonth } from 'date-fns';
@@ -42,7 +44,6 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const { isOnline } = useOnlineStatus();
   const location = useLocation<PractitionerProfileRouteState>();
   const practitionerId = location.state.practitionerId;
-  // const isFromProgrammeView = location.state.isFromProgrammeView;
   const classroom = useSelector(classroomsSelectors?.getClassroom);
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
@@ -53,8 +54,6 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const practitionerClassroomGroups = classroomGroups?.filter((item: any) => {
     return item?.userId === practitionerId;
   });
-  // const learners = useSelector(classroomsSelectors.getClassroomGroupLearners);
-  // const learners = useSelector(classroomsSelectors.)
   const { theme } = useTheme();
 
   const [createPractitionerNoteVisible, setCreatePractitionerdNoteVisible] =
@@ -110,7 +109,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
 
   useEffect(() => {
     let count = 0;
-    if (practitionerClassrooms?.length! > 0) {
+    if (practitionerClassrooms?.length && practitionerClassrooms?.length > 0) {
       // eslint-disable-next-line array-callback-return
       practitionerClassrooms?.map((item: any) => {
         count += item?.childCount;
@@ -228,7 +227,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                   className={'px-3 py-1.5'}
                 />
               )}
-              {childrenCount && (
+              {!!childrenCount && (
                 <StatusChip
                   backgroundColour="secondary"
                   borderColour="secondary"
@@ -304,7 +303,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                 </div>
               </div>
             </Card>
-            {practitionerClassrooms?.length! > 0
+            {practitionerClassrooms && practitionerClassrooms?.length > 0
               ? practitionerClassrooms?.map((item: any, index: number) => {
                   const classroomItem: any = practitionerClassroomGroups?.find(
                     (x) => {

@@ -30,8 +30,8 @@ import {
   progressTrackingActions,
   progressTrackingThunkActions,
 } from './store/progress-tracking';
-import { settingActions, settingThunkActions } from './store/settings';
-import { staticDataActions, staticDataThunkActions } from './store/static-data';
+import { settingActions } from './store/settings';
+import { staticDataActions } from './store/static-data';
 import { userActions, userThunkActions } from './store/user';
 import { coachActions, coachThunkActions } from './store/coach';
 import {
@@ -48,11 +48,7 @@ import localforage from 'localforage';
 import hash from 'object-hash';
 import { userSelectors } from '@store/user';
 import { useSelector } from 'react-redux';
-import {
-  childrenForPractitionerActions,
-  childrenForPractitionerThunkActions,
-} from './store/childrenForPractitioner';
-import { PractitionerDto } from '@ecdlink/core';
+import { childrenForPractitionerThunkActions } from './store/childrenForPractitioner';
 
 type IntialStoreSetupContextValues = {
   initloading: boolean;
@@ -88,7 +84,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   );
 
   const resetAuth = async () => {
-    await appDispatch(authActions.resetAuthState());
+    appDispatch(authActions.resetAuthState());
   };
 
   useEffect(() => {
@@ -107,7 +103,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
       if (practitioners && practitioners?.length > 0) {
         const currentPractitioner = practitioners.find(
           (item) => item?.userId === userData?.id!
-        ) as PractitionerDto;
+        );
         (async () =>
           await appDispatch(
             practitionerThunkActions.getPractitionerById({
@@ -143,30 +139,30 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   };
 
   const resetStaticStoreSetup = async () => {
-    await appDispatch(staticDataActions.resetStaticDataState());
-    await appDispatch(progressTrackingActions.resetProgressTrackingState());
-    await appDispatch(programmeRoutineActions.resetProgrammeThemeState());
-    await appDispatch(activityActions.resetActivityState());
-    await appDispatch(storyBookActions.resetStoryBookState());
-    await appDispatch(programmeThemeActions.resetProgrammeThemeState());
-    await appDispatch(contentConsentActions.resetContentConsentState());
-    await appDispatch(notificationActions.resetNotificationState());
-    await appDispatch(settingActions.resetSettingsState());
-    await appDispatch(analyticsActions.resetAnalyticsState());
+    appDispatch(staticDataActions.resetStaticDataState());
+    appDispatch(progressTrackingActions.resetProgressTrackingState());
+    appDispatch(programmeRoutineActions.resetProgrammeThemeState());
+    appDispatch(activityActions.resetActivityState());
+    appDispatch(storyBookActions.resetStoryBookState());
+    appDispatch(programmeThemeActions.resetProgrammeThemeState());
+    appDispatch(contentConsentActions.resetContentConsentState());
+    appDispatch(notificationActions.resetNotificationState());
+    appDispatch(settingActions.resetSettingsState());
+    appDispatch(analyticsActions.resetAnalyticsState());
   };
 
   const resetAdditionalStoreSetup = async () => {
-    await appDispatch(notesActions.resetNotesState());
-    await appDispatch(classroomsActions.resetClassroomState());
-    await appDispatch(userActions.resetUserState());
-    await appDispatch(coachActions.resetCoachState());
-    await appDispatch(practitionerActions.resetPractitionerState());
-    await appDispatch(practitionerForCoachActions.resetPractitionerState());
-    await appDispatch(childrenActions.resetChildrenState());
-    await appDispatch(caregiverActions.resetCaregiverState());
-    await appDispatch(documentActions.resetDocumentsState());
-    await appDispatch(attendanceActions.resetAttendanceState());
-    await appDispatch(contentReportActions.resetContentReportState());
+    appDispatch(notesActions.resetNotesState());
+    appDispatch(classroomsActions.resetClassroomState());
+    appDispatch(userActions.resetUserState());
+    appDispatch(coachActions.resetCoachState());
+    appDispatch(practitionerActions.resetPractitionerState());
+    appDispatch(practitionerForCoachActions.resetPractitionerState());
+    appDispatch(childrenActions.resetChildrenState());
+    appDispatch(caregiverActions.resetCaregiverState());
+    appDispatch(documentActions.resetDocumentsState());
+    appDispatch(attendanceActions.resetAttendanceState());
+    appDispatch(contentReportActions.resetContentReportState());
   };
 
   const initStoreSetup = async () => {
@@ -174,7 +170,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
       setInitLoading(true);
       await initStaticStoreSetup();
       await initAdditionalStoreSetup();
-      await appDispatch(settingActions.setLastDataSync());
+      appDispatch(settingActions.setLastDataSync());
       setInitLoading(false);
       setShouldSaveStateHash(true);
     }
@@ -201,8 +197,6 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     ).unwrap();
     await appDispatch(userThunkActions.getUser({})).unwrap();
     await appDispatch(userThunkActions.getUserConsents({})).unwrap();
-    // await appDispatch(coachThunkActions.getCoachByCoachId({})).unwrap();
-    // await appDispatch(coachThunkActions.getCoachByUserId({})).unwrap();
     await appDispatch(
       practitionerForCoachThunkActions.getPractitionersForCoach({})
     ).unwrap();

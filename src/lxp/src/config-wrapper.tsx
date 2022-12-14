@@ -1,5 +1,9 @@
-import { Config, DialogServiceProvider } from '@ecdlink/core';
-import { ThemeProvider, useConfig } from '@ecdlink/core';
+import {
+  Config,
+  DialogServiceProvider,
+  ThemeProvider,
+  useConfig,
+} from '@ecdlink/core';
 import { useEffect, useState } from 'react';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';

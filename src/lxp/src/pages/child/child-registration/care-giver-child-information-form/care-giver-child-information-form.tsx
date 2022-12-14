@@ -7,8 +7,8 @@ import {
   FormInput,
   Typography,
   classNames,
+  renderIcon,
 } from '@ecdlink/ui';
-import { renderIcon } from '@ecdlink/ui';
 import { useEffect } from 'react';
 import { useForm, useFormState } from 'react-hook-form';
 import { useSelector } from 'react-redux';

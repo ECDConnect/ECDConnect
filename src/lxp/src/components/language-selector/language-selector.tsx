@@ -1,6 +1,5 @@
 import { LanguageDto } from '@ecdlink/core';
-import { Dropdown } from '@ecdlink/ui';
-import { ComponentBaseProps } from '@ecdlink/ui';
+import { Dropdown, ComponentBaseProps } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { staticDataSelectors } from '@store/static-data';
@@ -50,7 +49,7 @@ export const LanguageSelector = ({
           []
         }
         onChange={(item) => {
-          setLanguage(item as string);
+          setLanguage(item);
         }}
       />
     </div>

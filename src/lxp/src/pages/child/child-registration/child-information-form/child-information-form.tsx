@@ -1,8 +1,4 @@
-import {
-  ClassroomGroupDto,
-  getArrayRange,
-  ProgrammeAttendanceReasonDto,
-} from '@ecdlink/core';
+import { getArrayRange, ProgrammeAttendanceReasonDto } from '@ecdlink/core';
 import {
   Alert,
   AlertProps,
@@ -363,10 +359,7 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
               }
               selectedValue={getChildInformationFormValues().reason}
               onChange={(item) => {
-                setChildInformationFormValue(
-                  'reason',
-                  item as ProgrammeAttendanceReasonDto
-                );
+                setChildInformationFormValue('reason', item);
                 triggerChildInformationForm();
               }}
             />

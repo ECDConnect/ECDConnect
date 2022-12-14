@@ -69,7 +69,7 @@ export const ChildBasicInfo: React.FC<
   });
   const childAlreadyAdded = children?.find(
     (item) =>
-      item?.user?.firstName === firstName! && item?.user?.surname === surname!
+      item?.user?.firstName === firstName && item?.user?.surname === surname
   );
 
   useEffect(() => {
@@ -186,7 +186,7 @@ export const ChildBasicInfo: React.FC<
           {childUserListData && (
             <StackedList
               className={'mt-4'}
-              listItems={childUserListData!}
+              listItems={childUserListData}
               type={'UserAlertList'}
             />
           )}
