@@ -55,7 +55,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users
             if (caregiver == null && mother == null)
             {
                 caregiver = GetCaregiverFromInput(input);
-            } else
+            }
+            else
             {
                 if (caregiver == null && mother != null)
                 {
@@ -74,7 +75,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users
                         WeightAtBirth = input.WeightAtBirth,
                         LengthAtBirth = input.LengthAtBirth
                     };
-                } else 
+                }
+                else
                 {
                     infant = new Infant()
                     {
@@ -94,7 +96,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users
                 }
             }
 
-            
+
             var infantRepo = _repoFactory.CreateGenericRepository<Infant>(userContext: applicationUserId);
             try
             {
@@ -196,7 +198,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users
                 SiteAddress = caregiverInput.SiteAddress,
                 TenantId = tenantId
             };
-            
+
         }
 
         private Guid GetCaregiverIdOrGenerateNew(Guid? caregiverId)
@@ -205,4 +207,3 @@ namespace EcdLink.Api.CoreApi.Managers.Users
         }
     }
 }
-
