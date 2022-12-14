@@ -1,7 +1,8 @@
-import { ChildDto, LearnerDto } from '@ecdlink/core';
-import { getAvatarColor } from '@ecdlink/core';
-import { SearchDropDown, StackedList, BannerWrapper } from '@ecdlink/ui';
+import { ChildDto, LearnerDto, getAvatarColor } from '@ecdlink/core';
 import {
+  SearchDropDown,
+  StackedList,
+  BannerWrapper,
   AlertSeverityType,
   ComponentBaseProps,
   FilterInfo,
@@ -47,9 +48,6 @@ export const PrincipalPractitionerChildList: React.FC<
   const history = useHistory();
   const attendanceData = useSelector(attendanceSelectors.getAttendance);
   const children = useSelector(childrenSelectors.getChildren);
-  // const childrenForPractitioner = useSelector(
-  //   childrenForPractitionerSelectors.getChildrenForPractitioner
-  // );
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const practitionerClassroomGroups = classroomGroups?.filter((item: any) => {
     return item?.userId === practitionerId;
@@ -329,7 +327,7 @@ export const PrincipalPractitionerChildList: React.FC<
       alertSeverity: childAlert.status as AlertSeverityType,
       avatarColor: getAvatarColor() || '',
       onActionClick: () => {
-        onChildListItemAction(childRecord.id as string);
+        onChildListItemAction(String(childRecord.id));
       },
     };
   };
@@ -349,15 +347,6 @@ export const PrincipalPractitionerChildList: React.FC<
       ) || []
     );
   };
-
-  // const showOnlineOnly = () => {
-  //   dialog({
-  //     position: DialogPosition.Bottom,
-  //     render: (onSubmit) => {
-  //       return <OnlineOnlyModal onSubmit={onSubmit}></OnlineOnlyModal>;
-  //     },
-  //   });
-  // };
 
   return (
     <>

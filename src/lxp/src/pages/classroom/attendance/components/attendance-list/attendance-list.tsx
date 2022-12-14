@@ -84,10 +84,6 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
 
   useEffect(() => {
     if (classroomGroups) {
-      // if (!isPlaygroup) {
-      //   setShouldFilter(false);
-      // }
-
       const selectedGroups = isPrincipal
         ? classroomGroupsForPrincipal.filter(
             (x) => x.id === primaryClassProgramme?.classroomGroupId

@@ -441,7 +441,7 @@ const PractitionerForm: React.FC<any> = ({
         className={'mt-3 w-full'}
         selectedValue={getChildInformationFormValues().playgroupId}
         onChange={(item) => {
-          setChildInformationFormValue('playgroupId', item as string);
+          setChildInformationFormValue('playgroupId', item);
           triggerChildInformationForm();
         }}
       />

@@ -9,13 +9,10 @@ import {
   LoadingSpinner,
 } from '@ecdlink/ui';
 import { getAvatarColor } from '@ecdlink/core';
-// import SearchHeader from '../../../../../components/search-header/search-header';
-// import { format } from 'date-fns';
 import { useHistory } from 'react-router-dom';
 import * as styles from './practitioners-list.styles';
 import ROUTES from '@routes/routes';
 import { useSelector } from 'react-redux';
-// import { practitionerForCoachSelectors } from '@/store/practitionerForCoach';
 import {
   practitionerSelectors,
   practitionerThunkActions,
@@ -23,10 +20,6 @@ import {
 import { EmptyPractitioners } from './components/empty-practitioners/empty-practitioners';
 import { PractitionerDto } from '@/../../../packages/core/lib';
 import { useAppDispatch } from '@store';
-// import { getPractitionerAlertModel } from '@/utils/practitioner/practitioner-alert-message-util';
-// import { childrenSelectors } from '@store/children';
-// import { classroomsSelectors } from '@store/classroom';
-// import { contentReportSelectors } from '@store/content/report';
 import { authSelectors } from '@/store/auth';
 import { PractitionerService } from '@/services/PractitionerService';
 
@@ -34,20 +27,12 @@ export const PractitionersList: React.FC = () => {
   const userAuth = useSelector(authSelectors.getAuthUser);
   const appDispatch = useAppDispatch();
   const history = useHistory();
-  // const progressReports = useSelector(
-  //   contentReportSelectors?.getAllChildProgressObservationReports
-  // );
 
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const practitionersList = practitioners?.filter(
     (item) => item.userId !== practitioner?.userId
   );
-  // const children = useSelector(childrenSelectors.getChildren);
-  // const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
-  // const classroomGroupLearners = useSelector(
-  //   classroomsSelectors.getClassroomGroupLearners
-  // );
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [practitionerListData, setPractitionerListData] =
@@ -76,7 +61,8 @@ export const PractitionersList: React.FC = () => {
     if (
       practitionersList &&
       practitionersList?.length > 0 &&
-      practitionersMessages?.length! > 0
+      practitionersMessages?.length &&
+      practitionersMessages?.length > 0
     ) {
       const practitionerListItem: UserAlertListDataItem[] = [];
       for (const practitioner of practitionersList) {
@@ -113,34 +99,6 @@ export const PractitionersList: React.FC = () => {
     const currentPractitionerMessage = practitionersMessages?.find((item) => {
       return item?.userId === practitionerRecord?.userId;
     });
-
-    // const practitionerClassroomGroups = classroomGroups?.filter((item: any) => {
-    //   return item?.userId === practitioner?.userId;
-    // });
-    // const practitionerLearners = classroomGroupLearners.filter((el) => {
-    //   return practitionerClassroomGroups.some((f) => {
-    //     return f.id === el.classroomGroupId;
-    //   });
-    // });
-    // const childrenForPractitioner = practitionerLearners.filter((el) => {
-    //   return children?.some((f) => {
-    //     return f.userId === el.userId;
-    //   });
-    // });
-
-    // const practitionerChildrenReports = progressReports?.filter((item) => {
-    //   return childrenForPractitioner?.some((f) => {
-    //     return f.id === item?.childId;
-    //   });
-    // });
-
-    // const practitionerAlert = getPractitionerAlertModel(
-    //   practitionerRecord,
-    //   practitioners,
-    //   childrenForPractitioner,
-    //   practitionerChildrenReports,
-    //   children
-    // );
 
     return {
       id: practitioner?.id,

@@ -25,12 +25,7 @@ import ProgrammeDashboard from '../programme-planning/programme-dashboard/progra
 import * as styles from './class-dashboard.styles';
 import { ClassDashboardRouteState } from './class-dashboard.types';
 import ROUTES from '@routes/routes';
-import { userSelectors } from '@store/user';
-import {
-  practitionerActions,
-  practitionerSelectors,
-  practitionerThunkActions,
-} from '@/store/practitioner';
+import { practitionerSelectors } from '@/store/practitioner';
 import PractitionersList from './practitioners/practitioners-list/practitioners-list';
 import { PractitionerService } from '@/services/PractitionerService';
 import { authSelectors } from '@/store/auth';

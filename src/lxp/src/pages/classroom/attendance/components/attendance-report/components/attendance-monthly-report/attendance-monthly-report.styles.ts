@@ -1,5 +1,4 @@
-import { Colours } from '@ecdlink/ui';
-import { classNames } from '@ecdlink/ui';
+import { Colours, classNames } from '@ecdlink/ui';
 import {
   averageScoreThreshold,
   goodScoreThreshold,
