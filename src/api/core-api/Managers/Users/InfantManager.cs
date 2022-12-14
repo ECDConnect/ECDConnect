@@ -8,6 +8,7 @@ using ECDLink.DataAccessLayer.Entities.Caregiver;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.Security.Extensions;
+using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.Documents;
@@ -41,31 +42,59 @@ namespace EcdLink.Api.CoreApi.Managers.Users
         {
             var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
             var infantUser = GetUserFromInputModel(input);
-            
+            var infant = new Infant();
 
+            // The caregiverId arriving here, could be a caregiver or mother from select box when adding an infant
             var caregiverRepo = _repoFactory.CreateGenericRepository<Caregiver>(userContext: applicationUserId);
             Caregiver caregiver = (Caregiver)caregiverRepo.GetAll().Where(x => x.Id.Equals(input.CaregiverId)).FirstOrDefault();
 
-            if (caregiver == null)
+            var motherRepo = _repoFactory.CreateGenericRepository<Mother>(userContext: applicationUserId);
+            Mother mother = (Mother)motherRepo.GetAll().Where(x => x.UserId.Equals(input.CaregiverId.ToString())).FirstOrDefault();
+
+            // if both are null we create a new caregiver from request data
+            if (caregiver == null && mother == null)
             {
                 caregiver = GetCaregiverFromInput(input);
+            } else
+            {
+                if (caregiver == null && mother != null)
+                {
+                    infant = new Infant()
+                    {
+                        Id = Guid.NewGuid(),
+                        IsActive = true,
+                        InsertedDate = DateTime.Now,
+                        UpdatedDate = DateTime.Now,
+                        UpdatedBy = applicationUserId,
+                        UserId = input.UserId,
+                        User = infantUser,
+                        MotherCaregiverId = mother.Id,
+                        Mother = mother,
+                        GenderId = input.GenderId,
+                        WeightAtBirth = input.WeightAtBirth,
+                        LengthAtBirth = input.LengthAtBirth
+                    };
+                } else 
+                {
+                    infant = new Infant()
+                    {
+                        Id = Guid.NewGuid(),
+                        IsActive = true,
+                        InsertedDate = DateTime.Now,
+                        UpdatedDate = DateTime.Now,
+                        UpdatedBy = applicationUserId,
+                        UserId = input.UserId,
+                        User = infantUser,
+                        CaregiverId = caregiver.Id,
+                        Caregiver = caregiver,
+                        GenderId = input.GenderId,
+                        WeightAtBirth = input.WeightAtBirth,
+                        LengthAtBirth = input.LengthAtBirth
+                    };
+                }
             }
 
-            var infant = new Infant()
-            {
-                Id = Guid.NewGuid(),
-                IsActive = true,
-                InsertedDate = DateTime.Now,
-                UpdatedDate = DateTime.Now,
-                UpdatedBy = applicationUserId,
-                UserId = input.UserId,
-                User = infantUser,
-                CaregiverId = caregiver.Id,
-                Caregiver = caregiver,
-                GenderId = input.GenderId,
-                WeightAtBirth = input.WeightAtBirth,
-                LengthAtBirth = input.LengthAtBirth
-            };
+            
             var infantRepo = _repoFactory.CreateGenericRepository<Infant>(userContext: applicationUserId);
             try
             {
@@ -83,7 +112,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users
             var infantRepo = _repoFactory.CreateRepository<Infant>(userContext: applicationUserId);
             var infantToUpdate = infantRepo.GetAll().Where(x => x.Id.Equals(Guid.Parse(id))).FirstOrDefault();
             var infantUser = GetUserFromInputModel(input);
-            //var mother = _motherManager.GetMotherFromInputModel(input.Mother);
 
             infantToUpdate.UpdatedDate = DateTime.Now;
             infantToUpdate.UpdatedBy = applicationUserId;
@@ -131,6 +159,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users
 
             var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
             var addressRepo = _repoFactory.CreateRepository<SiteAddress>(userContext: applicationUserId);
+            Guid tenantId = TenantExecutionContext.Tenant.Id;
 
             var healthCareWorkerId = _healthCareWorkerManager.GetHealthCareWorkerIdByUserId(applicationUserId);
             if (healthCareWorkerId != null)
@@ -164,7 +193,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users
                 WhatsAppNumber = caregiverInput.WhatsAppNumber,
                 HealthCareWorkerId = caregiverInput.HealthCareWorkerId,
                 SiteAddressId = caregiverInput.SiteAddressId,
-                SiteAddress = caregiverInput.SiteAddress
+                SiteAddress = caregiverInput.SiteAddress,
+                TenantId = tenantId
             };
             
         }

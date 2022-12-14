@@ -13,6 +13,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public DateTime DateOfBirth { get; set; }
         public decimal? WeightAtBirth { get; set; }
         public decimal? LengthAtBirth { get; set; }
+        public Guid? MotherCaregiverId { get; set; }
+        public MotherModel Mother { get; set; }
     }
 }
 
