@@ -1,5 +1,9 @@
-import { ChildDto, FormComponentProps, LearnerDto } from '@ecdlink/core';
-import { getAvatarColor } from '@ecdlink/core';
+import {
+  ChildDto,
+  FormComponentProps,
+  LearnerDto,
+  getAvatarColor,
+} from '@ecdlink/core';
 import {
   Divider,
   Dropdown,
