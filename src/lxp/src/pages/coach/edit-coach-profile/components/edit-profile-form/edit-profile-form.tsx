@@ -133,23 +133,23 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
         (item) =>
           item?.description === franchisorSiteAddress?.province?.description
       );
-      setCoachProfileFormValue('name', franchisorSiteAddress?.name!);
+      setCoachProfileFormValue('name', franchisorSiteAddress?.name || '');
       setCoachProfileFormValue(
         'addressLine1',
         franchisorSiteAddress?.addressLine1
       );
       setCoachProfileFormValue(
         'addressLine2',
-        franchisorSiteAddress?.addressLine2!
+        franchisorSiteAddress?.addressLine2 || ''
       );
       setCoachProfileFormValue(
         'addressLine3',
-        franchisorSiteAddress?.addressLine3!
+        franchisorSiteAddress?.addressLine3 || ''
       );
-      setCoachProfileFormValue('provinceId', selectedProvince?.id!);
+      setCoachProfileFormValue('provinceId', selectedProvince?.id || '');
       setCoachProfileFormValue(
         'postalCode',
-        franchisorSiteAddress?.postalCode!
+        franchisorSiteAddress?.postalCode || ''
       );
       setCoachProfileFormValue('ward', franchisorSiteAddress?.ward ?? '');
     }
@@ -308,7 +308,7 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
                 (provinces &&
                   provinces.map((province: ProvinceDto) => ({
                     label: province.description,
-                    value: province.id!,
+                    value: province.id || '',
                   }))) ||
                 []
               }

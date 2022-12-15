@@ -1,6 +1,5 @@
 import { EditClassModel } from '@/schemas/practitioner/edit-class';
 import { practitionerSelectors } from '@/store/practitioner';
-import { userSelectors } from '@/store/user';
 import { getWeekdayValue } from '@/utils/practitioner/playgroups-utils';
 import { ClassProgrammeDto, ClassroomGroupDto } from '@ecdlink/core';
 import {
@@ -59,7 +58,7 @@ export const ConfirmClasses = ({
 
   useEffect(() => {
     const list = [];
-    for (const classroomGroup of classroomGroups as ClassroomGroupDto[]) {
+    for (const classroomGroup of classroomGroups) {
       const current =
         currentPractitioner?.userId === classroomGroup.practitionerId
           ? currentPractitioner?.user?.firstName
@@ -111,7 +110,7 @@ export const ConfirmClasses = ({
         {classroomGroups.length ? (
           <div>
             <StackedList
-              className={'bg-white w-full'}
+              className={'w-full bg-white'}
               listItems={actionList}
               type={'ActionList'}
             />
@@ -145,7 +144,7 @@ export const ConfirmClasses = ({
       </div>
 
       {classroomGroups.length > 0 && (
-        <div className="absolute bottom-0 left-0 right-0 p-4 bg-white max-h-20">
+        <div className="absolute bottom-0 left-0 right-0 max-h-20 bg-white p-4">
           <Button
             size="normal"
             className="w-full"

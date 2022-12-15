@@ -81,8 +81,9 @@ export const Practitioners: React.FC = () => {
   useEffect(() => {
     if (
       practitionersList &&
+      practitionersMessages &&
       practitionersList?.length > 0 &&
-      practitionersMessages?.length! > 0
+      practitionersMessages?.length > 0
     ) {
       const practitionerListItem: UserAlertListDataItem[] = [];
       for (const practitioner of practitionersList) {

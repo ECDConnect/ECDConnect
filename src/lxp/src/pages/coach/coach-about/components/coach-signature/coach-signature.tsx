@@ -48,9 +48,8 @@ export const CoachSignature: React.FC = () => {
   };
 
   const submitSignature = () => {
-    const signatureString = signature!
-      .getTrimmedCanvas()
-      .toDataURL('image/png');
+    const signatureString =
+      signature || ''.getTrimmedCanvas().toDataURL('image/png');
     saveSignature(signatureString);
 
     history.push(ROUTES.COACH.ABOUT.ROOT);

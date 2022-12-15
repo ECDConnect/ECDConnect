@@ -271,7 +271,7 @@ export const CoachChildProfile: React.FC = () => {
 
     const attendanceNotification = getAttendanceNotification(
       child?.userId || '',
-      attendanceData!,
+      attendanceData || [],
       playGroup?.id || ''
     );
 
@@ -349,8 +349,6 @@ export const CoachChildProfile: React.FC = () => {
             childAttendancePercentage.daysExpected
           ),
       };
-
-    return;
   };
 
   const viewChildProgressObservationReports = () => {

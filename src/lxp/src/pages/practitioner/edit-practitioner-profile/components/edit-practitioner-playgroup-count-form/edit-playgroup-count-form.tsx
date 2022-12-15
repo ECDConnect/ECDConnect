@@ -1,7 +1,12 @@
 import { FormComponentProps } from '@ecdlink/core';
-import { Button, ButtonGroup, Divider, Typography } from '@ecdlink/ui';
-import { ButtonGroupTypes } from '@ecdlink/ui';
-import { renderIcon } from '@ecdlink/ui';
+import {
+  Button,
+  ButtonGroup,
+  Divider,
+  Typography,
+  ButtonGroupTypes,
+  renderIcon,
+} from '@ecdlink/ui';
 import { useState } from 'react';
 import * as styles from '../../edit-practitioner-profile.styles';
 import { playgroupsOptions } from './edit-playgroup-count-form.types';

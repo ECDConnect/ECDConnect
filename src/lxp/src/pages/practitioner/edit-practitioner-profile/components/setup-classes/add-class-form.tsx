@@ -23,7 +23,6 @@ import { classroomsActions, classroomsSelectors } from '@store/classroom';
 import { newGuid } from '@/utils/common/uuid.utils';
 import { useSelector } from 'react-redux';
 import { practitionerSelectors } from '@/store/practitioner';
-import { userSelectors } from '@/store/user';
 import { isFullDayOptions } from '../../edit-practitioner-profile.types';
 
 export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
@@ -288,7 +287,7 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
         />
       </div>
 
-      <div className="absolute bottom-0 left-0 right-0 p-4 bg-white max-h-20">
+      <div className="absolute bottom-0 left-0 right-0 max-h-20 bg-white p-4">
         <Button
           size="normal"
           className="w-full"

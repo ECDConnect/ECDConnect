@@ -264,7 +264,7 @@ export const CoachAddress: React.FC = () => {
       setCoachAddressFormValue('provinceId', selectedProvince?.id || '');
       setCoachAddressFormValue(
         'postalCode',
-        franchisorSiteAddress?.postalCode!
+        franchisorSiteAddress?.postalCode || ''
       );
       setCoachAddressFormValue('ward', franchisorSiteAddress?.ward ?? '');
     }

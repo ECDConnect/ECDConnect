@@ -1,5 +1,4 @@
-import { ChildDto, LearnerDto } from '@ecdlink/core';
-import { getAvatarColor } from '@ecdlink/core';
+import { ChildDto, LearnerDto, getAvatarColor } from '@ecdlink/core';
 import {
   AlertSeverityType,
   ComponentBaseProps,

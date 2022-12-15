@@ -107,7 +107,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
         (async () =>
           await appDispatch(
             practitionerThunkActions.getPractitionerById({
-              id: currentPractitioner?.id!,
+              id: currentPractitioner?.id || '',
             })
           ).unwrap())();
       }

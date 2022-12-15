@@ -1,4 +1,3 @@
-import { getAge } from '@/utils/child/child-profile-utils';
 import { Typography, Card } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -52,7 +51,7 @@ export const ChildrenPerAgeGroup: React.FC<ChildrenPerAgeGroupProps> = ({
 
         const childAgeInMonths = differenceInCalendarMonths(
           new Date(),
-          new Date(childBirthDate!)
+          new Date(childBirthDate || new Date())
         );
 
         handleAgeGroups(childAgeInMonths);

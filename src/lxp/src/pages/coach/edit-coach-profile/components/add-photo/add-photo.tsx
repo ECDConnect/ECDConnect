@@ -5,18 +5,18 @@ import { userActions, userSelectors, userThunkActions } from '@/store/user';
 import * as styles from '../../edit-coach-profile.styles';
 import { useDocuments } from '@hooks/useDocuments';
 import { AddPhotoProps } from './add-photo.types';
-import { DialogPosition } from '@ecdlink/ui';
-import { useSelector } from 'react-redux';
-import { renderIcon } from '@ecdlink/ui';
-import { useAppDispatch } from '@store';
-import { useState } from 'react';
 import {
+  DialogPosition,
+  renderIcon,
   Button,
   Dialog,
   Divider,
   ProfileAvatar,
   Typography,
 } from '@ecdlink/ui';
+import { useSelector } from 'react-redux';
+import { useAppDispatch } from '@store';
+import { useState } from 'react';
 import { cloneDeep } from 'lodash';
 
 export const AddPhoto: React.FC<AddPhotoProps> = ({ onSubmit }) => {
@@ -53,9 +53,9 @@ export const AddPhoto: React.FC<AddPhotoProps> = ({ onSubmit }) => {
     if (!userProfilePicture) {
       await createNewDocument({
         data: imageBaseString,
-        userId: coach!.user?.id || '',
+        userId: coach?.user?.id || '',
         fileType: FileTypeEnum.ProfileImage,
-        fileName: `ProfilePicture_${coach!.user?.id}.png`,
+        fileName: `ProfilePicture_${coach?.user?.id}.png`,
       });
     } else {
       updateDocument(userProfilePicture, imageBaseString);

@@ -445,7 +445,7 @@ export const CoachProgrammeInformation: React.FC = () => {
               <div className="flex w-11/12 justify-center">
                 <StackedList
                   className={styles.stackedList}
-                  listItems={practitionersForCoachListItems!}
+                  listItems={practitionersForCoachListItems}
                   type={'UserAlertList'}
                 ></StackedList>
               </div>
