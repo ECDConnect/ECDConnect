@@ -194,9 +194,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var classGroupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: userId);
             var LearnerRepo = repoFactory.CreateRepository<Learner>(userContext: userId);
 
-            var fromDate = (startMonth!=null? startMonth : new DateTime(reference.Year, reference.Month, 1));
+            var fromDate = (startMonth != null ? startMonth : new DateTime(reference.Year, reference.Month, 1));
             fromDate = fromDate.AddMonths(-1);
-            var toDate = (endMonth!=null? endMonth:reference); // start of month - day is end of last month
+            var toDate = endMonth;
+            if (endMonth == null)
+            {
+                toDate = reference;
+            }
+
 
             var classroomGroups = classGroupRepo.GetAll().Where(x => x.UserId.ToString().Contains(userId)).ToList();
             if (classroomGroups != null)
