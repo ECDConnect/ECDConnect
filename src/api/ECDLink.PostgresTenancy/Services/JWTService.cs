@@ -1,5 +1,4 @@
-﻿//using ECDLink.PostgresJWT.Entities;
-using ECDLink.PostgresTenancy.Context;
+﻿using ECDLink.PostgresTenancy.Context;
 using ECDLink.PostgresTenancy.Entities;
 using ECDLink.PostgresTenancy.Repository;
 using ECDLink.Tenancy.Enums;
@@ -67,13 +66,6 @@ namespace ECDLink.PostgresTenancy.Services
             {
                 return default;
             }
-
-            //if (string.IsNullOrWhiteSpace(tenant.ConnectionString) && tenant.TenantType == Tenancy.Enums.TenantType.Tenant)
-            //{
-            //    throw new InvalidOperationException("No connection string provided");
-            //}
-
-            //var connection = new NpgsqlConnectionStringBuilder(tenant.ConnectionString);
 
             var tokenEntity = _repository.Insert(entity);
 

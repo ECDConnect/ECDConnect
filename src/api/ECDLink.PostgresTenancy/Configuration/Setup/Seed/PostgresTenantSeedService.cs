@@ -50,10 +50,6 @@ namespace ECDLink.PostgresTenancy.Configuration.Setup.Seed
                 Name = "GlobalAdmin",
                 UserName = "GlobalAdmin"
             };
-
-            var createResult = _userManager.CreateAsync(user).Result;
-
-            var passwordResult = _userManager.AddPasswordAsync(user, "2NeYDWfdQ9@8").Result;
         }
     }
 }

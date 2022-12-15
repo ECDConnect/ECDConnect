@@ -38,25 +38,8 @@ namespace ECDLink.EGraphQL
 
             services.AddTransient<IDomainEventService, EventServiceWrapper>();
             services.AddTransient<ISystemSettingsService, SystemSettingsService>();
-            //services.AddTransient<IInvitationReassignmentService, InvitationReassignmentService>();
 
             services.AddMediatR(Assembly.GetExecutingAssembly());
-
-            //if (!isDevelop)
-            //{
-            //  Audit.Core.Configuration.Setup()
-            //  .UseAzureTableStorage(_ => _
-            //      .ConnectionString(config.GetConnectionString("AzureStorage"))
-            //      .TableName("Events")
-            //      .EntityBuilder(e => e
-            //          .PartitionKey(ev => $"Events{ev.StartDate:yyyyMM}")
-            //          .RowKey(ev => Guid.NewGuid().ToString())
-            //          .Columns(c => c.FromObject(ev => new { Date = ev.StartDate, AuditEventJson = ev.ToJson() }))));
-            //}
-
-            //var service = services.BuildServiceProvider().GetService<AzureContentDefinition>();
-
-            //service.CreateContentLinkTable();
         }
 
         public static void AddDataAccessConfiguration(IApplicationBuilder app, IWebHostEnvironment env)

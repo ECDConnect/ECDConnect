@@ -34,7 +34,6 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.SeedFunctions
             SeedRoles();
             SeedPermissions();
             SeedUserRoles();
-            var t = SeedRolePermissions().Result;
         }
 
         private void SeedUsers()
@@ -54,10 +53,6 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.SeedFunctions
                 IsActive = true,
                 TenantId = tenantId,
             };
-
-            var result = userManager.CreateAsync(newUser).Result;
-
-            var passResult = userManager.AddPasswordAsync(newUser, "Hello123!").Result;
 
             var engine = serviceProvider.GetService<HierarchyEngine>();
             engine.AddHierarchyEntity<ApplicationUser>(newUser.Id, newUser.Id);
@@ -112,8 +107,6 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.SeedFunctions
             {
                 foreach (var command in commandList)
                 {
-                    var name = item.DisplayName();
-
                     var grouping = item.ClrType.GetCustomAttribute<EntityPermissionAttribute>();
 
                     var permissionName = grouping?.PermissionName ?? string.Empty;

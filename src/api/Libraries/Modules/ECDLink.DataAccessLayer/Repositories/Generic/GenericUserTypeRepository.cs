@@ -129,7 +129,6 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
 
         public override T GetById(Guid id)
         {
-            Guid tenantId = TenantExecutionContext.Tenant.Id;
             var record = base.GetById(id);
 
             var castRecord = record as IUserType;
@@ -252,7 +251,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                     }
 
                 }
-                return (List<T>)record;//.OrderByDescending(y => y.InsertedDate);
+                return (List<T>)record;
             }
             return null;
         }

@@ -15,8 +15,6 @@ namespace ECDLink.Development
     {
         public static void ConfigureLocalDevServices(IServiceCollection services, IConfiguration config)
         {
-            // OverrideNotifications(services);
-
             OverrideHolidayService(services);
 
         }

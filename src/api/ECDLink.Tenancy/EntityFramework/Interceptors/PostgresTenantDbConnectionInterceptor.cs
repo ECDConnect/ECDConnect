@@ -18,8 +18,6 @@ namespace EcdLink.Api.CoreApi.Tenancy.Context
 {
     public class PostgresTenantDbConnectionInterceptor : DbConnectionInterceptor
     {
-        private readonly IConfiguration _config;
-
         public override InterceptionResult ConnectionOpening(
         DbConnection connection,
         ConnectionEventData eventData,

@@ -71,7 +71,6 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
             Type type = typeof(T);
             if (type.GetProperty("UserId") != null)
             {
-                //var val = entities.AsQueryable().Where(x => x.GetType().GetProperty("UserId").GetValue(type,null).Equals(id)).FirstOrDefault();
                 Guid tenantId = TenantExecutionContext.Tenant.Id;
                 var qq = entities.FromSqlRaw("SELECT * FROM \"" + type.Name + "\" WHERE \"UserId\" = '" + id + "' AND \"TenantId\" = '" + tenantId + "'").ToList();////.OrderByDescending(y => y.InsertedDate);
                 return qq.ToList();
@@ -88,7 +87,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
             {
                 entity.Id = Guid.NewGuid();
             }
-            entity.TenantId = tenantId; //always insert teh tenantId for all data
+            entity.TenantId = tenantId; 
 
             entities.Add(entity);
             context.SaveChanges();
@@ -126,15 +125,11 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
         {
             Guid tenantId = TenantExecutionContext.Tenant.Id;
             T entity = entities.Where(e => e.TenantId == tenantId).SingleOrDefault(s => s.Id == id);
-            //entities.Remove(entity);
-            //context.SaveChanges();
-            //softdelete
             entities.Update(entity);
             entity.IsActive = false;
             entities.Update(entity);
             _domainEventService.NotifyUpdate<T>(_userId, entity);
 
-            //_domainEventService.NotifyDelete<T>(_userId, entity);
         }
 
         public virtual bool Exists(Guid id)
