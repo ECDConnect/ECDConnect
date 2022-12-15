@@ -25,7 +25,7 @@ class AuthService {
     baseEndPoint: string,
     body: LoginRequestModel
   ): Promise<AuthUser> {
-    const apiInstance = await api(baseEndPoint);
+    const apiInstance = api(baseEndPoint);
     const response = await apiInstance.post(
       APIs.authLogin,
       JSON.stringify(body),
