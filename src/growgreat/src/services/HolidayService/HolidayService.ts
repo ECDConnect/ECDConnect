@@ -1,6 +1,6 @@
 import { api } from '../axios.helper';
-import { Config } from '@ecdlink/core';
-import { HolidayDto } from '@ecdlink/core';
+import { Config, HolidayDto } from '@ecdlink/core';
+
 class HolidayService {
   _accessToken: string;
 
@@ -9,7 +9,7 @@ class HolidayService {
   }
 
   async getHolidaysByYear(year: number): Promise<HolidayDto[]> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         query holidaysByYear($year: Int!) {
@@ -34,7 +34,7 @@ class HolidayService {
     startMonth: string,
     endMonth: string
   ): Promise<HolidayDto[]> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         query holidaysByMonth($startMonth: DateTime!, $endMonth: DateTime!) {

@@ -14,7 +14,6 @@ import { useHistory } from 'react-router-dom';
 import { useDocuments } from '@/hooks/useDocuments';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useStoreSetup } from '@/hooks/useStoreSetup';
-// import { OfflineSyncModal } from '../../../modals';
 import { useAppDispatch } from '@/store';
 import { userSelectors } from '@/store/user';
 import { analyticsActions } from '@/store/analytics';
@@ -23,10 +22,10 @@ import ROUTES from '@/routes/routes';
 export const PractitionerProfile: React.FC = () => {
   const { resetAuth, resetAppStore } = useStoreSetup();
   const user = useSelector(userSelectors.getUser);
-  // const lastDataSyncDate = useSelector(settingSelectors.getLastDataSync);
+
   const appDispatch = useAppDispatch();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { userProfilePicture, classroomImage } = useDocuments();
+
+  const { userProfilePicture } = useDocuments();
   const { isOnline } = useOnlineStatus();
   const history = useHistory();
   const dialog = useDialog();

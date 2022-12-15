@@ -9,7 +9,7 @@ class MotherService {
   }
 
   async getMothers(id: string): Promise<MotherDto[]> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         query GetAllMothersForHealthCareWorker($id: String) {
@@ -50,7 +50,7 @@ class MotherService {
   }
 
   async updateMother(id: string, input: MotherModelInput): Promise<MotherDto> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         mutation updateMother($input: MotherModelInput, $id: String) {
@@ -89,7 +89,7 @@ class MotherService {
   }
 
   async addMother(input: MotherModelInput): Promise<MotherDto> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         mutation addMother($input: MotherModelInput) {

@@ -1,4 +1,3 @@
-export const passwordResetContainer = 'p-4';
 export const buttonSpace = 'mt-3';
 export const bigSpace = 'mt-1';
 export const errorDisplay = 'mb-3';

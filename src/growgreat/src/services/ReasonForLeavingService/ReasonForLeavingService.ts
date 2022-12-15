@@ -1,6 +1,6 @@
 import { api } from '../axios.helper';
-import { Config } from '@ecdlink/core';
-import { ReasonForLeavingDto } from '@ecdlink/core';
+import { Config, ReasonForLeavingDto } from '@ecdlink/core';
+
 class ReasonForLeavingService {
   _accessToken: string;
 
@@ -9,7 +9,7 @@ class ReasonForLeavingService {
   }
 
   async getReasonsForLeaving(): Promise<ReasonForLeavingDto[]> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         query {

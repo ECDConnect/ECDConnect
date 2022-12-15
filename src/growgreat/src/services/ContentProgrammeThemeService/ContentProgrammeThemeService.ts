@@ -1,6 +1,6 @@
 import { api } from '../axios.helper';
-import { Config } from '@ecdlink/core';
-import { ProgrammeThemeDto } from '@ecdlink/core';
+import { Config, ProgrammeThemeDto } from '@ecdlink/core';
+
 class ContentProgrammeThemeService {
   _accessToken: string;
 
@@ -9,7 +9,7 @@ class ContentProgrammeThemeService {
   }
 
   async getProgrammeThemes(locale: string): Promise<ProgrammeThemeDto[]> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         query GetAllTheme($locale: String) {

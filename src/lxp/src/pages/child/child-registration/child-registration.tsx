@@ -347,6 +347,7 @@ export const ChildRegistration: React.FC = () => {
     );
     childInputModel.caregiverId = caregiverDto.id;
     childInputModel.workflowStatusId = childStatusId;
+    childInputModel.insertedBy = user?.fullName;
 
     await updateChild(childInputModel);
 

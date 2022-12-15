@@ -10,121 +10,109 @@ export const getUser = createAsyncThunk<
   // eslint-disable-next-line @typescript-eslint/ban-types
   {},
   ThunkApiType<RootState>
->(
-  'getUser',
-  // eslint-disable-next-line no-empty-pattern
-  async ({}, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-      user: { user: userCache },
-    } = getState();
+>('getUser', async (_, { getState, rejectWithValue }) => {
+  const {
+    auth: { userAuth },
+    user: { user: userCache },
+  } = getState();
 
-    if (!userCache) {
-      try {
-        let user: UserDto | undefined;
+  if (!userCache) {
+    try {
+      let user: UserDto | undefined;
 
-        if (userAuth?.auth_token) {
-          user = await new UserService(userAuth?.auth_token).getUserById(
-            userAuth.id
-          );
-        } else {
-          return rejectWithValue('no access token, profile check required');
-        }
-
-        if (!user) {
-          return rejectWithValue('Error getting User');
-        }
-
-        return user;
-      } catch (err) {
-        return rejectWithValue(err);
+      if (userAuth?.auth_token) {
+        user = await new UserService(userAuth?.auth_token).getUserById(
+          userAuth.id
+        );
+      } else {
+        return rejectWithValue('no access token, profile check required');
       }
-    } else {
-      return userCache as UserDto;
+
+      if (!user) {
+        return rejectWithValue('Error getting User');
+      }
+
+      return user;
+    } catch (err) {
+      return rejectWithValue(err);
     }
+  } else {
+    return userCache as UserDto;
   }
-);
+});
 
 export const getUserConsents = createAsyncThunk<
   UserConsentDto[],
   // eslint-disable-next-line @typescript-eslint/ban-types
   {},
   ThunkApiType<RootState>
->(
-  'getUserConsents',
-  // eslint-disable-next-line no-empty-pattern
-  async ({}, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-      user: { userConsent: userConsentCache },
-    } = getState();
+>('getUserConsents', async (_, { getState, rejectWithValue }) => {
+  const {
+    auth: { userAuth },
+    user: { userConsent: userConsentCache },
+  } = getState();
 
-    if (!userConsentCache) {
-      try {
-        let userConsent: UserConsentDto[] | undefined;
+  if (!userConsentCache) {
+    try {
+      let userConsent: UserConsentDto[] | undefined;
 
-        if (userAuth?.auth_token) {
-          userConsent = await new UserService(
-            userAuth?.auth_token
-          ).getUserConsents(userAuth.id);
-        } else {
-          return rejectWithValue('no access token, profile check required');
-        }
-
-        if (!userConsent) {
-          return rejectWithValue('Error getting User Consent');
-        }
-
-        return userConsent;
-      } catch (err) {
-        return rejectWithValue(err);
+      if (userAuth?.auth_token) {
+        userConsent = await new UserService(
+          userAuth?.auth_token
+        ).getUserConsents(userAuth.id);
+      } else {
+        return rejectWithValue('no access token, profile check required');
       }
-    } else {
-      return userConsentCache;
+
+      if (!userConsent) {
+        return rejectWithValue('Error getting User Consent');
+      }
+
+      return userConsent;
+    } catch (err) {
+      return rejectWithValue(err);
     }
+  } else {
+    return userConsentCache;
   }
-);
+});
 
 export const upsertUserConsents = createAsyncThunk<
   boolean[],
   // eslint-disable-next-line @typescript-eslint/ban-types
   {},
   ThunkApiType<RootState>
->(
-  'upsertUserConsents',
-  // eslint-disable-next-line no-empty-pattern
-  async ({}, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-      user: { userConsent },
-    } = getState();
+>('upsertUserConsents', async (_, { getState, rejectWithValue }) => {
+  const {
+    auth: { userAuth },
+    user: { userConsent },
+  } = getState();
 
-    try {
-      let promises: Promise<boolean>[] = [];
+  try {
+    let promises: Promise<boolean>[] = [];
 
-      if (userAuth?.auth_token && userConsent) {
-        promises = userConsent.map(async (x) => {
-          const input: UserConsentInput = {
-            Id: x.id,
-            ConsentId: x.consentId,
-            ConsentType: x.consentType,
-            CreatedUserId: x.createdUserId,
-            UserId: x.userId,
-            IsActive: true,
-          };
+    if (userAuth?.auth_token && userConsent) {
+      promises = userConsent.map(async (x) => {
+        const input: UserConsentInput = {
+          Id: x.id,
+          ConsentId: x.consentId,
+          ConsentType: x.consentType,
+          CreatedUserId: x.createdUserId,
+          UserId: x.userId,
+          IsActive: true,
+        };
 
-          return await new UserService(userAuth?.auth_token).updateUserConsents(
-            x.id ?? '',
-            input
-          );
-        });
-      }
-      return Promise.all(promises);
-    } catch (err) {
-      return rejectWithValue(err);
+        return await new UserService(userAuth?.auth_token).updateUserConsents(
+          x.id ?? '',
+          input
+        );
+      });
     }
+    return Promise.all(promises);
+  } catch (err) {
+    return rejectWithValue(err);
   }
-);
+});
 
 export const resetUserPassword = createAsyncThunk<
   boolean,
@@ -132,7 +120,6 @@ export const resetUserPassword = createAsyncThunk<
   ThunkApiType<RootState>
 >(
   'resetUserPassword',
-  // eslint-disable-next-line no-empty-pattern
   async ({ newPassword }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
@@ -165,39 +152,35 @@ export const updateUser = createAsyncThunk<
   boolean[],
   {},
   ThunkApiType<RootState>
->(
-  'updateUser',
-  // eslint-disable-next-line no-empty-pattern
-  async ({}, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-      user: { user },
-    } = getState();
+>('updateUser', async (_, { getState, rejectWithValue }) => {
+  const {
+    auth: { userAuth },
+    user: { user },
+  } = getState();
 
-    try {
-      let update: boolean | undefined;
+  try {
+    let update: boolean | undefined;
 
-      if (userAuth?.auth_token && user) {
-        const userModelInput: UserModelInput = mapUser(user);
+    if (userAuth?.auth_token && user) {
+      const userModelInput: UserModelInput = mapUser(user);
 
-        update = await new UserService(userAuth?.auth_token).updateUser(
-          userAuth.id,
-          userModelInput
-        );
-      } else {
-        return rejectWithValue('no access token, profile check required');
-      }
-
-      if (!update) {
-        return rejectWithValue('Error updating user');
-      }
-
-      return [update];
-    } catch (err) {
-      return rejectWithValue(err);
+      update = await new UserService(userAuth?.auth_token).updateUser(
+        userAuth.id,
+        userModelInput
+      );
+    } else {
+      return rejectWithValue('no access token, profile check required');
     }
+
+    if (!update) {
+      return rejectWithValue('Error updating user');
+    }
+
+    return [update];
+  } catch (err) {
+    return rejectWithValue(err);
   }
-);
+});
 
 type AddUserRequest = {
   user: UserDto;

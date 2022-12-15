@@ -30,6 +30,7 @@ class ChildService {
               id
               firstName
               surname
+              fullName
               email
               genderId
               dateOfBirth
@@ -43,6 +44,7 @@ class ChildService {
             disabilities
             otherHealthConditions
             isActive
+            insertedBy
           }
         }
       `,

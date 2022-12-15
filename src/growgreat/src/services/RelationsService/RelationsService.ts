@@ -1,6 +1,6 @@
 import { api } from '../axios.helper';
-import { Config } from '@ecdlink/core';
-import { RelationDto } from '@ecdlink/core';
+import { Config, RelationDto } from '@ecdlink/core';
+
 class RelationsService {
   _accessToken: string;
 
@@ -9,7 +9,7 @@ class RelationsService {
   }
 
   async getRelations(): Promise<RelationDto[]> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         query {

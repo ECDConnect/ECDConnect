@@ -1704,7 +1704,7 @@ export type IdentityRole = {
   permissions?: Maybe<Array<Maybe<Permission>>>;
 };
 
-export type Infant = {
+export declare type Infant = {
   __typename?: 'Infant';
   caregiver?: Maybe<Caregiver>;
   caregiverId?: Maybe<Scalars['UUID']>;
@@ -1714,6 +1714,8 @@ export type Infant = {
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
   lengthAtBirth?: Maybe<Scalars['Decimal']>;
+  mother?: Maybe<Mother>;
+  motherCaregiverId?: Maybe<Scalars['UUID']>;
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
   user?: Maybe<ApplicationUser>;
