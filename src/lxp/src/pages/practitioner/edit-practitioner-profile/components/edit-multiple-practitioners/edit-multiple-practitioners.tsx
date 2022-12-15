@@ -132,28 +132,6 @@ export default function EditMultiplePractitioners({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [practitioners]);
 
-  // useEffect(() => {
-  //   if(practitioners) {
-  //     const practitionersFormatted: StackListItems = practitioners?.map(item => {
-  //       return {
-  //         title: `${item?.user?.firstName} ${item?.user?.surname}`,
-  //         idNumber: String(item?.user?.idNumber),
-  //         subTitle: 'Practitioner',
-  //         titleStyle:
-  //           'text-textDark font-body text-base font-semibold leading-snug ',
-  //         subTitleStyle: 'text-textMid font-body text-sm leading-5',
-  //         actionName: 'Edit',
-  //         actionIcon: 'PencilIcon',
-  //         buttonType: 'filled',
-  //         onActionClick() {
-  //           // setEditPractitioner(item);
-  //           setCurrentPage(SetupPractitionersPage.editPractitioners);
-  //         },
-  //       }
-  //     })
-  //     setListItems(practitionersFormatted)
-  // }, [practitioners])
-
   const handleAddOrEditPractitionerSubmit = (data: AddPractitionerModel) => {
     const indexToEdit = listItems.findIndex(
       (d) => d.idNumber === editPractitioner?.idNumber
@@ -260,10 +238,10 @@ export default function EditMultiplePractitioners({
               </div>
             </div>
 
-            <div className="self-end -mb-4">
+            <div className="-mb-4 self-end">
               <Button
                 size="normal"
-                className="w-full mb-4"
+                className="mb-4 w-full"
                 type="filled"
                 color="quatenary"
                 text="Confirm"

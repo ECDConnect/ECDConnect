@@ -144,7 +144,7 @@ export const PasswordReset: React.FC = () => {
         renderBorder={true}
         onBack={goBack}
       >
-        <div className={styles.passwordResetContainer}>
+        <div className={styles.pResetContainer}>
           {!displaySuccess && (
             <div>
               <Typography

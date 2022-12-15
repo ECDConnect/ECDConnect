@@ -222,10 +222,10 @@ export const getMissedAttendanceSummaryGroups = (
 ) => {
   const meetingDays = getClassroomGroupSchoolDays(classProgrammes);
 
-  if (classroomGroups && classroomGroups?.length > 0) {
+  if (classroomGroups?.length > 0) {
     const attendanceToDoList: MissedAttendanceGroups[] = [];
 
-    if (classroomGroups && classroomGroups.length > 0) {
+    if (classroomGroups?.length > 0) {
       const missedAttendance = getMissedClassAttendance(
         classroomGroups,
         classProgrammes,

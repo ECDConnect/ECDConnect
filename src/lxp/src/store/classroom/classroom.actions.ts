@@ -1,5 +1,3 @@
-// import { PrincipalInput } from './../../../../../packages/graphql/src/graphql/generatedGraphql';
-// import { PrincipalDto } from './../../../../../packages/core/lib/models/dto/Users/principal.dto.d';
 import {
   ClassProgrammeDto,
   ClassroomDto,

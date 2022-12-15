@@ -24,6 +24,7 @@ export const VerifyPhoneNumber = () => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [disableNewCodeSend, setDisableNewCodeSend] = useState<boolean>(false);
 
+  // eslint-disable-next-line no-empty-pattern
   const {} = useForm({
     resolver: yupResolver(verifyPhoneNumberSchema),
     mode: 'all',

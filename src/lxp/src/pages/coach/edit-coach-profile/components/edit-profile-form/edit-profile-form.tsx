@@ -170,7 +170,7 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
   const handleFormSubmit = (): void => {
     if (isValid /*  && onSubmit */) {
       const profileFormValues = getCoachProfileFormValues();
-      // const copy = Object.assign({}, coach);
+
       const newCoachProfileInformation = Object.assign(
         {},
         coachProfileInformation

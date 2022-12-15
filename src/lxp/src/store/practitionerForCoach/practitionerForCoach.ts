@@ -40,7 +40,6 @@ const practitionerForCoachSlice = createSlice({
 
         state.practitionersForCoach = practitionersForCoach;
       }
-      // state.practitionersForCoach = action.payload;
     });
   },
 });

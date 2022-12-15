@@ -82,7 +82,6 @@ export const Dashboard: React.FC = () => {
 
   const initStaticStoreSetup = async () => {
     const today = new Date();
-    // setStaticDataLoading(true);
     await appDispatch(settingThunkActions.getSettings({})).unwrap();
     await appDispatch(staticDataThunkActions.getRelations({})).unwrap();
     await appDispatch(staticDataThunkActions.getProgrammeTypes({})).unwrap();

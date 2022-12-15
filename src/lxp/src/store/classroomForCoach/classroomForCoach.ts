@@ -7,12 +7,7 @@ import {
 } from '@ecdlink/core';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
-import {
-  getClassroomForCoach,
-  // getClassroomGroupLearners,
-  // getClassroomGroups,
-  // getClassroomProgrammes,
-} from './classroomForCoach.actions';
+import { getClassroomForCoach } from './classroomForCoach.actions';
 import { ClassroomForCoachState } from './classroomForCoach.types';
 
 const initialState: ClassroomForCoachState = {
@@ -135,21 +130,6 @@ const classroomsSlice = createSlice({
         state.classroomForCoach = action.payload;
       }
     });
-    // builder.addCase(getClassroomGroups.fulfilled, (state, action) => {
-    //   if (action.payload) {
-    //     state.classroomGroups = action.payload;
-    //   }
-    // });
-    // builder.addCase(getClassroomProgrammes.fulfilled, (state, action) => {
-    //   if (action.payload) {
-    //     state.classroomProgrammes = action.payload;
-    //   }
-    // });
-    // builder.addCase(getClassroomGroupLearners.fulfilled, (state, action) => {
-    //   if (action.payload) {
-    //     state.classroomGroupLearners = action.payload;
-    //   }
-    // });
   },
 });
 

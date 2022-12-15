@@ -114,34 +114,6 @@ export const PractitionerAbout: React.FC = () => {
 
   const setNewStackListItems = (currentUser: UserDto) => {
     const list: ActionListDataItem[] = [
-      // {
-      //   title: 'First Name',
-      //   subTitle: currentUser?.firstName,
-      //   actionName: 'Edit',
-      //   actionIcon: 'PencilIcon',
-      //   switchTextStyles: true,
-      //   onActionClick: () => {
-      //     editField({
-      //       label: 'First Name',
-      //       formFieldName: 'name',
-      //       value: practitionerAboutFormGetValues().name,
-      //     });
-      //   },
-      // },
-      // {
-      //   title: 'Surname',
-      //   subTitle: currentUser?.surname,
-      //   actionName: 'Edit',
-      //   actionIcon: 'PencilIcon',
-      //   switchTextStyles: true,
-      //   onActionClick: () => {
-      //     editField({
-      //       label: 'Surname',
-      //       formFieldName: 'surname',
-      //       value: practitionerAboutFormGetValues().surname,
-      //     });
-      //   },
-      // },
       {
         title: 'Cellphone Number',
         subTitle: currentUser?.phoneNumber || 'Add an Cellphone Number',
@@ -151,11 +123,6 @@ export const PractitionerAbout: React.FC = () => {
         buttonType: currentUser?.phoneNumber ? 'outlined' : 'filled',
         onActionClick: () => {
           setEditiCellPhoneNumber(true);
-          // editField({
-          //   label: 'Cellphone Number',
-          //   formFieldName: 'cellphone',
-          //   value: practitionerAboutFormGetValues().cellphone,
-          // });
         },
       },
       {
@@ -192,16 +159,6 @@ export const PractitionerAbout: React.FC = () => {
         title: 'Your SmartStart coach',
         subTitle: practitioner?.coachHierarchy || 'N/A',
         switchTextStyles: true,
-        // actionName: currentUser?.email ? 'Edit' : 'Add',
-        // actionIcon: currentUser?.email ? 'PencilIcon' : 'PlusIcon',
-        // buttonType: currentUser?.email ? 'outlined' : 'filled',
-        // onActionClick: () => {
-        //   editField({
-        //     label: 'Email Address',
-        //     formFieldName: 'email',
-        //     value: practitionerAboutFormGetValues().email,
-        //   });
-        // },
       },
       {
         title: 'Next of kin',

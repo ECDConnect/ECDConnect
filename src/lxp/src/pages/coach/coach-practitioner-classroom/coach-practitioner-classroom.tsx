@@ -93,13 +93,9 @@ export const CoachPractitionerClassroom: React.FC = () => {
   }, [classMetrics]);
 
   const classroomsDetailsForPractitioner = async () => {
-    // setLoading(true);
     const practitionersMessageData = await new PractitionerService(
       userAuth?.auth_token!
     ).displayMetrics('practitioner');
-
-    // setPractitionersMessages(practitionersMessageData);
-    // setLoading(false);
 
     return practitionersMessageData;
   };
@@ -142,15 +138,6 @@ export const CoachPractitionerClassroom: React.FC = () => {
         displayOffline={!isOnline}
       ></BannerWrapper>
       <div className="flex w-full flex-wrap justify-center">
-        {/* {listItems.length > 0 ? (
-          <div className="flex justify-center w-11/12 mt-4">
-            <StackedList
-              className={styles.stackedList}
-              listItems={listItems}
-              type={'MenuList'}
-            ></StackedList>
-          </div>
-        ) : null} */}
         <>
           <Card
             className={styles.registeredChildrenCard}
