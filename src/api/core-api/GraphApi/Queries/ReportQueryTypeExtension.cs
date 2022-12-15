@@ -81,12 +81,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         public int GetPractitionerNewSignupMetric([Service] IHttpContextAccessor contextAccessor, [Service] IGenericRepositoryFactory repoFactory, DateTime fromDate, DateTime toDate)
         {
             var userId = contextAccessor.HttpContext.GetUser().Id;
-
             var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: userId);
             var allPractitioners = practitionerRepo.GetAll();            
-
-            var practitionerCount = allPractitioners.Where(x => x.IsActive).Count();            
-            var date = DateTime.Now.AddDays(-30);
             var newPractitioners = allPractitioners.Where(f => f.InsertedDate >= fromDate && f.InsertedDate < toDate).Count();        
 
             return newPractitioners;
@@ -117,7 +113,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
             var allWorkflowStatus = workflowStatusRepo.GetAll();
             var allChildren = childRepo.GetAll().ToList();
-            var allDocuments = documentRepo.GetAll();
 
             childrenMetricReport.TotalChildren = allChildren.Count();
             childrenMetricReport.TotalChildProgressReports = childProgressReportRepo.GetAll().Count();
@@ -147,8 +142,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             DateTime fromDate,
             DateTime toDate)
         {
-            var userId = contextAccessor.HttpContext.GetUser().Id;
-
             var attendedVsAbsent = new List<MetricReportStatItem>();
 
             var attendaceRepo = attendanceRepo.GetAllByDateRange(fromDate, toDate);
@@ -198,13 +191,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             DateTime reference = DateTime.Now;
 
             List<ClassroomMetricReport> metric = new List<ClassroomMetricReport>();
-            var classRepo = repoFactory.CreateRepository<Classroom>(userContext: userId);
             var classGroupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: userId);
             var LearnerRepo = repoFactory.CreateRepository<Learner>(userContext: userId);
 
             var fromDate = (startMonth!=null? startMonth : new DateTime(reference.Year, reference.Month, 1));
             fromDate = fromDate.AddMonths(-1);
-            var toDate = (endMonth!=null? endMonth:reference);//fromDate.GetEndOfMonth();///reference.AddDays(-1); //start of month - day is end of last month
+            var toDate = (endMonth!=null? endMonth:reference); // start of month - day is end of last month
 
             var classroomGroups = classGroupRepo.GetAll().Where(x => x.UserId.ToString().Contains(userId)).ToList();
             if (classroomGroups != null)
@@ -247,11 +239,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var uId = contextAccessor.HttpContext.GetUser().Id;
 
             DateTime reference = DateTime.Now;
-            //var fromDate = new DateTime(reference.Year, reference.Month, 1);
 
             List<ClassroomMetricReport> metrics = new List<ClassroomMetricReport>();
             var classRepo = repoFactory.CreateRepository<Classroom>(userContext: uId);
-            var classGroupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
             var classes = classRepo.GetAll(); //get all classrooms assigned to user
 
             for (int idx = 1; idx <= 12; idx++)

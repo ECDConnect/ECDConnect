@@ -54,6 +54,9 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.SeedFunctions
                 TenantId = tenantId,
             };
 
+            var result = userManager.CreateAsync(newUser).Result;
+            var passResult = userManager.AddPasswordAsync(newUser, "Hello123!").Result;
+
             var engine = serviceProvider.GetService<HierarchyEngine>();
             engine.AddHierarchyEntity<ApplicationUser>(newUser.Id, newUser.Id);
         }

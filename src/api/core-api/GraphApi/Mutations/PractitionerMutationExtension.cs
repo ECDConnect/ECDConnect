@@ -61,17 +61,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             {
                 if (practitioner != null)
                 {
-                    //Type t = practitioner.GetType(); //practitioner
-                    //Type i = input.GetType(); //input
-                    //foreach (PropertyInfo prop in i.GetProperties())
-                    //{
-                    //    if (t.GetProperty(prop.Name)!=null && prop.Name!="Id") { //do not attempt to update the PK
-                    //        PropertyInfo pinfo = t.GetProperty(prop.Name);
-                    //        pinfo.SetValue(t, prop.GetValue(input, null));
-                    //        //t.GetProperty(prop.Name).SetValue(prop.Name, prop.GetValue(practitioner, null));
-                    //    }
-                    //}
-                    //practitioner = input; //update the entity
 
                     if (input.CoachHierarchy != null) practitioner.CoachHierarchy = input.CoachHierarchy;
                     practitioner.IsActive = input.IsActive;
@@ -100,7 +89,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                             address.PostalCode = input.SiteAddress.PostalCode;
                         if (input.SiteAddress.ProvinceId != null)
                             address.ProvinceId = input.SiteAddress.ProvinceId;
-                        var updateAddressResult = addressRepo.Update(address);
+                        addressRepo.Update(address);
                         //TODO: create address if not exists, but it really should
                     }
                     if (input.SiteAddress != null && input.SiteAddressId == null)
@@ -144,7 +133,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         // 8 = MaxChildren
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]        
         public bool PractitionerImport(
-          //[Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
           [Service] IGenericRepositoryFactory repoFactory,
           [Service] IHttpContextAccessor httpContextAccessor,
           [Service] ILocaleService<Language> localeService,
@@ -258,7 +246,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             foreach (var prac in templist)
             {
                 prac.TenantId = tenantId;
-                var addedPractitioner = practitionerRepo.Insert(prac);
+                practitionerRepo.Insert(prac);
             }
 
             return true;
@@ -267,7 +255,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public bool ImportAll(
-                    //[Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
                     [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
                     [Service] InvitationNotificationManager notificationManager,
                       [Service] IGenericRepositoryFactory repoFactory,
@@ -286,7 +273,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 var uId = httpContextAccessor.HttpContext.GetUser().Id;
                 var dbRepo = repoFactory.CreateRepository<SL_Ingestion_User>(userContext: uId);
 
-                //SendInvitationMutationExtension invite = new SendInvitationMutationExtension();
                 var sheet1 = workbook.GetSheetAt(0);
                 for (var row = 1; row <= sheet1.LastRowNum; row++)
                 {
@@ -338,7 +324,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public bool ImportAllChildren(
-                    //[Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
                     [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
                     [Service] InvitationNotificationManager notificationManager,
                       [Service] IGenericRepositoryFactory repoFactory,
@@ -440,14 +425,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 Guid tenantId = TenantExecutionContext.Tenant.Id;
                 List<ImportAllStaffItem> practitionerImportList = new List<ImportAllStaffItem>();
 
-
-                //var headerRow = sheet.GetRow(0);
-
-                //set sharedinfo needed between rows
-                //bool matchWithSite = false;
-                //string siteIndicator = "";
-                //string parentUserId = null;
-
                 var password = "AQAAAAEAACcQAAAAEG8HH4NQmDeD+mt5aV4WZLhKb4LnQN3HdkzGloeqmaH6qbA37HSVhysm+hPEq1NKZg==";
                 var securityStamp = "NXAOZGBIVGAMGCHVNGN2WFJXPLPS67YD";
                 var concurrencystamp = "d0797595-3855-4e5c-aebf-cf7300ddae02";
@@ -465,18 +442,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 var classroomRepo = repoFactory.CreateRepository<Classroom>(userContext: uId);
                 var classroomGenericRepo = repoFactory.CreateGenericRepository<Classroom>(userContext: uId);
 
-                var staticHierarchyRepo = repoFactory.CreateGenericRepository<UserHierarchyEntity>(userContext: uId);
-
-                //SendInvitationMutationExtension invite = new SendInvitationMutationExtension();
                 var dbRepo = repoFactory.CreateRepository<SL_Ingestion_User>(userContext: uId);
 
                 List<SL_Ingestion_User> userList = dbRepo.GetAll().Where(x => x.ProcessedDate == null).ToList();
                 foreach(var user in userList) { 
                     if (user != null)
                     {
-                        //var programme_indicator = ExcelHelper.GetCellValue(currentRow.GetCell(2));
-                        //var prograammeArr = programme_indicator.Split("_");
-
                         var fullname = user.FullName.Trim();
                         fullname = Regex.Replace(fullname, @"\s+", " ");
                         if (!string.IsNullOrEmpty(fullname))
@@ -488,14 +459,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                             var programmeTypeDesc = user.ECDType;
                             var programmeType = programmeTypeRepo.GetAll().Where(x => x.Description.Equals(programmeTypeDesc)).FirstOrDefault();
 
-                            char[] digits = user.IDNumber.ToCharArray();//new String(idNumber.TakeWhile(Char.IsDigit).ToArray());
+                            char[] digits = user.IDNumber.ToCharArray();
                             var dob = new DateTime(Int32.Parse("19" + digits[0] + digits[1]), Int32.Parse(digits[2].ToString() + digits[3].ToString()), Int32.Parse(digits[4].ToString() + digits[5].ToString()));
 
                             var currentItem = practitionerImportList.Where(x => x.IDNumber == user.IDNumber).FirstOrDefault();
                             var item = currentItem != null ? currentItem : new ImportAllStaffItem();
                             item.MatchWithSite = (user.SameSite!=null && user.SameSite == "YES"? true:false);
                             item.SiteIndicator = user.Indicator;
-                            //item.ParentUserId = (parentUserId!=null?parentUserId: null);
                             item.FirstName = firstname;
                             item.Surname = surname;
                             item.FullName = fullname;
@@ -511,17 +481,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                             item.FranchisorhName = user.FranchisorName;
                             item.CoachNumber = user.CoachContactNumber;
                             item.ParentUserIdNumber = user.ParentId;
-                            item.Dob = dob;//dobDateInt > 0 ? DateTime.FromOADate(dobDateInt) : DateTime.Now;
+                            item.Dob = dob;
 
                             if (currentItem == null) practitionerImportList.Add(item);
                         }
                     }
                 }
 
-                //first accumulate list of COACH and create coach users
+                // First accumulate list of COACH and create coach users
                 if (practitionerImportList.Count > 0)
                 {
-                    //get franchisor overseeing everything
+                    // Get franchisor overseeing everything
                     var franchisor = franchisorRepo.GetAll().Where(x => x.User.FullName == practitionerImportList.FirstOrDefault().FranchisorhName).FirstOrDefault();//all is assigned to same franchisor
                     franchisorId = franchisor.UserId;
 
@@ -534,10 +504,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
                         var firstname = (nameArr.Count() > 2 ? nameArr[0] + " " + nameArr[1] : nameArr[0]);
                         var surname = (nameArr.Count() > 2 ? nameArr[2] : nameArr[1]);
-                        char[] coachdigits = coach.CoachID.ToCharArray();//new String(idNumber.TakeWhile(Char.IsDigit).ToArray());
+                        char[] coachdigits = coach.CoachID.ToCharArray();
                         var coachdob = new DateTime(Int32.Parse("19" + coachdigits[0] + coachdigits[1]), Int32.Parse(coachdigits[2].ToString() + coachdigits[3].ToString()), Int32.Parse(coachdigits[4].ToString() + coachdigits[5].ToString()));
 
-                        //check user dont exist first
+                        // check user dont exist first
                         var existingUser = userManager.Users.Where(x => x.IdNumber == coach.CoachID).FirstOrDefault();
 
                         if (existingUser == null)
@@ -553,7 +523,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                                 DateOfBirth = coachdob,
                                 FirstName = firstname,
                                 Surname = surname,
-                                FullName = fullname,//$"{practitioner.FirstName} {practitioner.Surname}",
+                                FullName = fullname,
                                 ContactPreference = "sms",
                                 IsActive = true,
                                 PasswordHash = password,
@@ -571,16 +541,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                                 SiteAddressId = siteaddressid,
                                 AreaOfOperation = "Office",
                                 FranchisorId = Guid.Parse(franchisorId),
-                                //MaxChildren = practitioner.MaxChildren,
-                                //ConsentForPhoto = practitioner.ConsentForPhoto,
-                                //ParentFees = practitioner.ParentFees,
                                 StartDate = DateTime.Now.AddMonths(-1),
                                 IsActive = true
                             };
                             coachRepo.Insert(cc);
 
-                            //    //invite to application
-                            //    //invite.SendInviteToApplication(invitationManager, notificationManager, userManager, prac.UserId);
                         }
                     }
                 }
@@ -597,7 +562,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                             var coachUser = userManager.Users.Where(x => x.IdNumber == practitioner.CoachID).FirstOrDefault();
 
                             var parentUser = (practitioner.ParentUserIdNumber != null ? userManager.Users.Where(x => x.IdNumber == practitioner.ParentUserIdNumber).FirstOrDefault() : null);
-                            //var principalUser = userManager.Users.Where(x => x.IdNumber == practitioner.CoachID).FirstOrDefault();
                             string userId = Guid.NewGuid().ToString();
                             var newUser = new ApplicationUser
                             {
@@ -610,12 +574,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                                 DateOfBirth = practitioner.Dob,
                                 FirstName = practitioner.FirstName,
                                 Surname = practitioner.Surname,
-                                FullName = practitioner.FullName,//$"{practitioner.FirstName} {practitioner.Surname}",
+                                FullName = practitioner.FullName,
                                 ContactPreference = "sms",
                                 IsActive = true,
                                 PasswordHash = password,
-                                //SecurityStamp = securityStamp,
-                                //ConcurrencyStamp = concurrencystamp
                                 TenantId = tenantId
                             };
                             var userCreatedResult = userManager.CreateAsync(newUser).Result;
@@ -625,11 +587,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                                 Id = Guid.NewGuid(),
                                 UserId = userId,
                                 CoachHierarchy = Guid.Parse(coachUser?.Id),
-                                //PrincipalHierarchy = (practitioner.ParentUserId!=null?Guid.Parse(practitioner.ParentUserId): null),
-                                //MaxChildren = practitioner.MaxChildren,
-                                //ConsentForPhoto = practitioner.ConsentForPhoto,
-                                //ParentFees = practitioner.ParentFees,
-                                //StartDate = practitioner.StartDate,
                                 IsActive = true,
                                 TenantId = tenantId
 
@@ -663,7 +620,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                             }
                             else
                             {
-                                //var userRole = userManager.AddToRoleAsync(newUser, Roles.PRINCIPAL).Result;
                                 var userRole = userManager.AddToRoleAsync(newUser, Roles.PRACTITIONER).Result;
                                 if (parentUser != null)
                                 {
@@ -671,8 +627,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                                     practitionerRepo.Update(addedPractitioner);
                                 }
                             }
-                            //    //invite to application
-                            //    //invite.SendInviteToApplication(invitationManager, notificationManager, userManager, prac.UserId);
 
                             //create classrooms and classroomgroups and programmes
                             Classroom pracClass = new Classroom()
@@ -728,34 +682,22 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 var languages = localeService.GetAvailableLocale().ToList();
 
                 var programmeTypeRepo = repoFactory.CreateGenericRepository<ProgrammeType>(userContext: uId);
-
-                var addressRepo = repoFactory.CreateGenericRepository<SiteAddress>(userContext: uId);
                 var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
 
-                var classroomRepo = repoFactory.CreateRepository<Classroom>(userContext: uId);
                 var classroomGenericRepo = repoFactory.CreateGenericRepository<Classroom>(userContext: uId);
-                var classroomGroupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
                 var classroomGroupGenericRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);
-                var classProgrammeRepo = repoFactory.CreateRepository<ClassProgramme>(userContext: uId);
                 var classProgrammeGenericRepo = repoFactory.CreateGenericRepository<ClassProgramme>(userContext: uId);
-                var learnerRepo = repoFactory.CreateRepository<Learner>(userContext: uId);
                 var learnerGenericRepo = repoFactory.CreateGenericRepository<Learner>(userContext: uId);
 
                 var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
                 var childGenericRepo = repoFactory.CreateGenericRepository<Child>(userContext: uId);
                 var caregiverRepo = repoFactory.CreateGenericRepository<Caregiver>(userContext: uId);
 
-                var staticLanguageRepo = repoFactory.CreateGenericRepository<Language>(userContext: uId);
-                var staticEducationRepo = repoFactory.CreateGenericRepository<Education>(userContext: uId);
                 var staticRelationRepo = repoFactory.CreateGenericRepository<Relation>(userContext: uId);
                 var staticGenderRepo = repoFactory.CreateGenericRepository<Gender>(userContext: uId);
                 var staticGrantRepo = repoFactory.CreateGenericRepository<Grant>(userContext: uId);
-                var staticConsentRepo = repoFactory.CreateGenericRepository<UserConsent>(userContext: uId);
-                var staticProgrammeTypeRepo = repoFactory.CreateGenericRepository<ProgrammeType>(userContext: uId);
                 var staticRaceRepo = repoFactory.CreateGenericRepository<Race>(userContext: uId);
-
                 var staticHierarchyRepo = repoFactory.CreateGenericRepository<UserHierarchyEntity>(userContext: uId);
-
                 var staticWorkflowRepo = repoFactory.CreateGenericRepository<WorkflowStatus>(userContext: uId);
 
 
@@ -776,11 +718,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                             string calcdob = null;
                             if (user.IDNumber != null)
                             {
-                                //if (int.TryParse(user.IDNumber))
                                 char[] childdigits = user.IDNumber.ToCharArray();
                                 calcdob = new DateTime(Int32.Parse("20" + childdigits[0] + childdigits[1]), Int32.Parse(childdigits[2].ToString() + childdigits[3].ToString()), Int32.Parse(childdigits[4].ToString() + childdigits[5].ToString())).ToString();
                             }
-                            Dob = calcdob;//(Dob != null ? Dob.Replace("/", "-") : calcdob);
+                            Dob = calcdob;
 
                             ImportAllChildInfoItem childItem = new ImportAllChildInfoItem()
                             {
@@ -838,7 +779,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                             if (parentUser != null)
                             {
 
-                                var practiParent = practitionerRepo.GetByUserId(parentUser.Id);//(parentUser.practitionerObjectData != null ? parentUser.practitionerObjectData.Hierarchy : (parentUser.principalObjectData != null ? parentUser.principalObjectData.Hierarchy : ""));
+                                var practiParent = practitionerRepo.GetByUserId(parentUser.Id);
                                 string parentHierarchy = practiParent.Hierarchy;
                                 var caregivefullname = Regex.Replace(childItem.PrimaryCaregiver, @"\s+", " ");
                                 var nameArr = caregivefullname.Split(' ');
@@ -967,7 +908,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                                     AdditionalSurname = emersurname
 
                                 };
-                                var addedCaregiver = caregiverRepo.Insert(newCaregiver);
+                                caregiverRepo.Insert(newCaregiver);
 
                                 //create child user
                                 string userId = Guid.NewGuid().ToString();
@@ -975,7 +916,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                                 var newUser = new ApplicationUser
                                 {
                                     Id = userId.ToString(),
-                                    //PhoneNumber = childItem.CaregiverContactNo,
                                     UserName = childItem?.IDNumber,
                                     IdNumber = childItem?.IDNumber,
                                     IsSouthAfricanCitizen = true,
@@ -986,9 +926,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                                     FullName = childItem.Fullname,
                                     ContactPreference = "sms",
                                     IsActive = true,
-                                    //PasswordHash = password,
-                                    //SecurityStamp = securityStamp,
-                                    //ConcurrencyStamp = concurrencystamp
                                     TenantId = tenantId
                                 };
                                 if (childItem.Gender != null)
@@ -1012,11 +949,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                                     TenantId = tenantId,
                                     Allergies = childItem.TypeofAllergies,
                                     Disabilities = childItem.TypeofDisabilities,
-                                    //Hierarchy = parentHierarchy,
-                                    //OtherHealthConditions = (childItem.HealthConditions?true:false),
                                     WorkflowStatusId = workflow.Id
                                 };
-                                var addedChild = childRepo.Insert(newChild);
+                                childRepo.Insert(newChild);
                                 //add child role
                                 var userRole = userManager.AddToRoleAsync(newUser, Roles.CHILD).Result;
 
@@ -1050,7 +985,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                                     var programmeType = programmeTypeRepo.GetAll().Where(x => x.Description.Equals(childItem.ECDType)).FirstOrDefault();
 
                                     //check if this specific group exists already
-                                    var fullListGroups = classroomGroupGenericRepo.GetAll();//.Where(x => x.UserId.Equals(parentUser.Id)).ToList(); //classroomGroupGenericRepo.GetAll().ToList();//.Where(x => x.UserId.Equals(parentUser.Id)).ToList();//GetListByUserId(parentUser.Id).ToList();
+                                    var fullListGroups = classroomGroupGenericRepo.GetAll();
                                     List<ClassroomGroup> parentClassroomGroups = new List<ClassroomGroup>();
                                     foreach (ClassroomGroup group in fullListGroups)
                                     {
@@ -1072,12 +1007,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                                                 UserId = Guid.Parse(parentUser.Id),
                                                 IsActive = true,
                                                 TenantId = tenantId,
-                                                Name = childItem.PlayGroupGroup, //practitioner.SiteName,
+                                                Name = childItem.PlayGroupGroup, 
                                                 ClassroomId = existingClassroom.Id,
                                                 Hierarchy = parentHierarchy,
                                                 ProgrammeTypeId = programmeType.Id
                                             };
-                                            var retClassGroup = classroomGroupGenericRepo.Insert(pracClassGroup);
+                                            classroomGroupGenericRepo.Insert(pracClassGroup);
 
                                             for (var iidx = 1; iidx <= 5; iidx++)
                                             {
@@ -1092,7 +1027,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                                                     ClassroomGroupId = pracClassGroup.Id,
                                                     Hierarchy = parentHierarchy
                                                 };
-                                                var retClassGroupProgramme = classProgrammeGenericRepo.Insert(pracClassGroupProgramme);
+                                                classProgrammeGenericRepo.Insert(pracClassGroupProgramme);
                                             }
                                             programmeGroupId = pracClassGroup.Id.ToString();
                                         }
@@ -1113,7 +1048,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                                             StartedAttendance = DateTime.Now,
                                             Hierarchy = parentHierarchy
                                         };
-                                        var newLearnerRet = learnerGenericRepo.Insert(newLearner);
+                                        learnerGenericRepo.Insert(newLearner);
                                     }
                                 }
                                 //update the SL Ingestion record as processed and save userId
@@ -1154,7 +1089,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 if (practitioner != null)
                 {
                     practitioner.ShareInfo = true;
-                    var updateResult = practitionerRepo.Update(practitioner);
+                    practitionerRepo.Update(practitioner);
                     return true;
                 }
             }
@@ -1174,7 +1109,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 if (practitioner != null)
                 {
                     practitioner.IsRegistered = status;
-                    var updateResult = practitionerRepo.Update(practitioner);
+                    practitionerRepo.Update(practitioner);
                     return true;
                 }
             }
@@ -1194,7 +1129,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 if (practitioner != null)
                 {
                     practitioner.IsFundaAppAdmin = true;
-                    var updateResult = practitionerRepo.Update(practitioner);
+                    practitionerRepo.Update(practitioner);
                     return true;
                 }
             }
@@ -1214,7 +1149,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 if (practitioner != null)
                 {
                     practitioner.Progress = progress;
-                    var updateResult = practitionerRepo.Update(practitioner);
+                    practitionerRepo.Update(practitioner);
                     return practitioner.Progress;
                 }
             }

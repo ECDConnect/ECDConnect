@@ -27,15 +27,6 @@ namespace ECDLink.Development
             services.AddTransient(typeof(IHolidayService<Holiday>), typeof(HolidayServiceOverride));
         }
 
-        private static void OverrideNotifications(IServiceCollection services)
-        {
-            var notificationFactory = services.FirstOrDefault(x => x.ServiceType == typeof(INotificationProviderFactory<ApplicationUser>));
-            services.Remove(notificationFactory);
-
-            services.AddTransient<INotificationProviderFactory<ApplicationUser>, DevNotificationProviderFactory>();
-            services.AddTransient<INotificationProvider<ApplicationUser>, DevNotificationProvider>();
-        }
-
         public static void AddNotificationConfiguration(IApplicationBuilder app)
         {
 

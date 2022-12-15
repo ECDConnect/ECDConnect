@@ -81,9 +81,6 @@ namespace ECDLink.Notifications.BulkSms
             if (response.IsSuccessStatusCode)
             {
                 // TODO: Something with the SMS reply
-                //using var responseStream = await response.Content.ReadAsStreamAsync();
-                //var smsReponseBody = await System.Text.Json.JsonSerializer.DeserializeAsync
-                //        <IEnumerable<BulkSmsResponse>>(responseStream);
             }
             else
             {

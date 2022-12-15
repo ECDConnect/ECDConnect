@@ -82,7 +82,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var dbRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
 
-            //List<Practitioner> practitioners = dbRepo.GetAll().Where(x => x.CoachHierarchy.HasValue).ToList();
             Practitioner pract = dbRepo.GetByUserId(practitionerId);
             if (pract != null && pract.CoachHierarchy.HasValue)
             {
@@ -90,13 +89,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 return coachRepo.GetByUserId(pract.CoachHierarchy.ToString());
             }
             else return null;
-            /*practitioners = practitioners.Where(x => x.UserId.Contains(practitionerId)).ToList();
-            Coach coach = new Coach();
-            if (practitioners.Count > 0)
-            {
-                coach = this.GetCoachByCoachUserId(contextAccessor,dbFactory,repoFactory, practitioners.FirstOrDefault().CoachHierarchy.ToString());
-            }
-            return coach;*/
         }
 
         public List<Child> GetAllChildrenForCoach([Service] IHttpContextAccessor contextAccessor,

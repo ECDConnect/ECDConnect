@@ -134,8 +134,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             var updateResult = userManager.UpdateAsync(user).Result;
 
-            // var deleteResult = userManager.DeleteAsync(user).Result;
-
             return updateResult.Succeeded;
         }
 

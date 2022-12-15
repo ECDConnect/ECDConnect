@@ -19,14 +19,12 @@ namespace ECDLink.SmartStart.Reports.ChildProgressReport
 {
     public class ChildProgressReportService
     {
-        private readonly IDbContextFactory<AuthenticationDbContext> _dbFactory;
         private readonly IGenericRepositoryFactory _repoFactory;
         private readonly IFillableFieldService _fieldService;
         private readonly IFileService _fileService;
 
-        public ChildProgressReportService(IDbContextFactory<AuthenticationDbContext> dbFactory, IGenericRepositoryFactory repoFactory, IFillableFieldService fieldService, IFileService fileService)
+        public ChildProgressReportService(IGenericRepositoryFactory repoFactory, IFillableFieldService fieldService, IFileService fileService)
         {
-            _dbFactory = dbFactory;
             _repoFactory = repoFactory;
             _fieldService = fieldService;
             _fileService = fileService;

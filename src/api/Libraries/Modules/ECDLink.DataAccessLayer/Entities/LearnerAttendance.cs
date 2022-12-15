@@ -9,7 +9,5 @@ namespace ECDLink.DataAccessLayer.Entities.Classroom
     public class LearnerAttendanc
     {
        Attendance Attendance { get; set; }
-
-
     }
 }

@@ -17,11 +17,11 @@ namespace ECDLink.PDFGenerator.FormFields
 
                 var fieldMetaData = form.GetFieldRectangle(key, i);
 
-                AddSingleInstance(form, font, desc, fieldMetaData, pdfStamper);
+                AddSingleInstance(font, desc, fieldMetaData, pdfStamper);
             }
         }
 
-        private void AddSingleInstance(AcroFields form, Font font, PdfFieldDescriptor desc, RectangleWrapper wrapper, PdfStamper stamper)
+        private void AddSingleInstance(Font font, PdfFieldDescriptor desc, RectangleWrapper wrapper, PdfStamper stamper)
         {
             if (string.IsNullOrWhiteSpace(desc?.Value?.ToString()))
             {

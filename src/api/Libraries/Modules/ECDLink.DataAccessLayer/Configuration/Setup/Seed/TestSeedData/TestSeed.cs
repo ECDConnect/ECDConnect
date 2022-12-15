@@ -65,7 +65,6 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
             } catch (Exception e) { }
 
             try { 
-            var classroomId = SeedClassroom();
                 SeedClassProgrammes();
                 SeedAttendance(serviceProvider, _practitionerId);
             }

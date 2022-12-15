@@ -41,7 +41,6 @@ using EcdLink.Api.CoreApi.Middleware;
 using ECDLink.Core.Services;
 using ECDLink.PostgresTenancy.Repository;
 using ECDLink.Tenancy.Services;
-//using ECDLink.PostgresJWT.Entities;
 using ECDLink.PostgresTenancy.Services;
 using ECDLink.PostgresTenancy.Entities;
 
@@ -122,9 +121,6 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<IPasswordManager<ApplicationUser>, PasswordManager>();
             services.AddTransient<IAuthenticationManager<ApplicationUser>, SecurityManager>();
 
-            //services.AddTransient<IJWTRepository<JWTUserTokensEntity>, JWTRepository>();
-            //services.AddTransient<JWTRepository>();//IJWTRepository jwtRepository
-            //services.AddTransient<IJWTService>();//IJWTRepository jwtRepository
             services.AddTransient<IJWTService, JWTService>();
             services.AddTransient<IJWTRepository, JWTRepository>();
             services.AddTransient<SecurityNotificationManager>();
@@ -141,7 +137,6 @@ namespace EcdLink.Api.CoreApi
 
             ConfigureJobs(services);
 
-            //services.AddControllers().AddApplicationPart(Assembly.Load(new AssemblyName("ECDLink.Security")));
             services.AddControllers();
         }
 
@@ -153,19 +148,11 @@ namespace EcdLink.Api.CoreApi
                 DiagnosticListener.AllListeners.Subscribe(new DiagnosticObserver());
 
                 app.UseDeveloperExceptionPage();
-
-                //using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
-                //{
-                //    serviceScope.ServiceProvider.GetRequiredService<PostgresTenancyContext>().Database.Migrate();
-                //    serviceScope.ServiceProvider.GetRequiredService<PostgresTenantSeedService>().Seed();
-                //}
             }
 
             app.UseCors("CorsPolicy");
 
-            //app.UseHttpsRedirection();
             app.UseCookiePolicy();
-
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();

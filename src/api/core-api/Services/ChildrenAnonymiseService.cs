@@ -58,7 +58,7 @@ namespace EcdLink.Api.CoreApi.Services
             // Remove Document
             // Remove photo
             // Remove bith documents
-            var isDeleted = _documentManagementService.DeleteUserDocument(child.UserId, FileTypeEnum.Child);
+            _documentManagementService.DeleteUserDocument(child.UserId, FileTypeEnum.Child);
         }
 
         private List<Child> GetChildrenToRemove(IGenericRepository<Child, Guid> childRepo)

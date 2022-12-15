@@ -85,7 +85,6 @@ namespace ECDLink.Core.Services
         public void ExpireRelationshipLinks()
         {
             var adminId = _hierarchyEngine.GetAdminUserId();
-            int hrsToReassign = int.Parse(_invitationDelay.Value.InvitationCutoffDelay);
             var practiRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: adminId);
             var pracsToExpire = practiRepo.GetAll()
                                         .Where(x => x.IsLeaving == true)
@@ -157,7 +156,7 @@ namespace ECDLink.Core.Services
                             //reassign classroomGroups - populate the other objects done insid ethe classroomgroups function
                             ReassignmentLists reassignment = UpdateClassroomGroups(uId, fromUserId, toUserId, fromUserHierarchy, toUserHierarchy, classroomGroup);
                             //reassign attendance
-                            UpdateAttendance(uId, startDate, fromUserId, toUserId, fromUserHierarchy, toUserHierarchy, reassignment.ClassProgrammesReassigned, reassignment.LearnersReassigned);
+                            UpdateAttendance(fromUserId, toUserId, toUserHierarchy, reassignment.ClassProgrammesReassigned, reassignment.LearnersReassigned);
                             //update the history line with classes, children and classroomgroups also moved
                             if (reassignment.ClassroomGroupsReassigned != null) historySaved.ReassignedClassroomGroups = string.Join(";", reassignment.ClassroomGroupsReassigned);
                             if (reassignment.ClassroomsReassigned != null) historySaved.ReassignedClassrooms = string.Join(";", reassignment.ClassroomsReassigned);
@@ -211,8 +210,6 @@ namespace ECDLink.Core.Services
                         reassignment.LearnersReassigned = UpdateLearners(uId, classroomGroupObj.Id, fromUserHierarchy, toUserHierarchy);
                         //reassign children
                         reassignment.ChildrenReassignedUserIds = UpdateChildren(uId, fromUserHierarchy, toUserHierarchy, reassignment.LearnersReassigned);
-                        //reassign learner docs parentuserid
-                        //UpdateDocs(uId, fromUserId, toUserId, toUserHierarchy, reassignment.LearnersReassigned);
                     }
                 }
                 else
@@ -235,8 +232,6 @@ namespace ECDLink.Core.Services
                             reassignment.LearnersReassigned = UpdateLearners(uId, classGroup.Id, fromUserHierarchy, toUserHierarchy);
                             //reassign children
                             reassignment.ChildrenReassignedUserIds = UpdateChildren(uId, fromUserHierarchy, toUserHierarchy, reassignment.LearnersReassigned);
-                            //reassign learner docs parentuserid
-                            //UpdateDocs(uId, fromUserId, toUserId, toUserHierarchy, reassignment.LearnersReassigned);
                         }
                     }
                     //update classroom
@@ -354,11 +349,9 @@ namespace ECDLink.Core.Services
             return childrenReassigned;
         }
 
-        private bool UpdateAttendance(string uId, DateTime startDate, string fromUserId, string toUserId, string oldHierarchy, string newHierarchy, List<string> classProgrammes, List<string> learnerIds)
+        private void UpdateAttendance(string fromUserId, string toUserId, string newHierarchy, List<string> classProgrammes, List<string> learnerIds)
         {
             //TODO: work in start end dates to attendance to prevent a history record being edited/overridden and incorrectly allocated to new practitioner
-            List<string> attendanceReassigned = new List<string>();
-            bool isDone = false;
             foreach (var program in classProgrammes)
             {
                 if (learnerIds != null && !string.IsNullOrWhiteSpace(newHierarchy))
@@ -377,9 +370,7 @@ namespace ECDLink.Core.Services
                         }
                     }
                 }
-                isDone = true;
             }
-            return isDone;
         }
 
         private List<string> UpdateDocs(string uId, string fromUserId, string toUserId, string oldHierarchy, string newHierarchy, List<string> learnerIds)
@@ -426,7 +417,6 @@ namespace ECDLink.Core.Services
                     history = history.Where(x => x.ReassignedBackToDate == null).ToList();
                     foreach (var historyItem in history)
                     {
-                        //if (historyItem.ReassignedToDate <= DateTime.Now.AddHours(-hrsToReassign))
                         if (!string.IsNullOrEmpty(historyItem.ReassignedToUser) && !string.IsNullOrEmpty(historyItem.HierarchyToUser) && !string.IsNullOrEmpty(historyItem.HierarchyBackToUser))
                         {
                             if (!string.IsNullOrEmpty(historyItem.ReassignedClassroomGroups))
@@ -434,14 +424,14 @@ namespace ECDLink.Core.Services
                                 if (!string.IsNullOrEmpty(historyItem.ReassignedClassroomGroups))
                                 {
 
-                                    string[] reassignedClassroomGroups = historyItem.ReassignedClassroomGroups.Split(";");// (historyItem.ReassignedClassroomGroups.Contains(";") ? historyItem.ReassignedClassroomGroups.Split(";") : historyItem.ReassignedClassroomGroups.);
-                                                                                                                          //if a list of groups exist, then split them up and reassign back to initial user for each classroomgroup, and subsequently, learners,m children, classrooms and programmes
+                                    string[] reassignedClassroomGroups = historyItem.ReassignedClassroomGroups.Split(";");
+
                                     foreach (string reassignedGroup in reassignedClassroomGroups)
                                     {
                                         //Log to the history table the reassignment back to original user as a new row for continuation                                    
                                         ReassignmentLists newReassignment = UpdateClassroomGroups(uId, historyItem.ReassignedToUser, historyItem.UserId, historyItem.HierarchyToUser, historyItem.HierarchyBackToUser, reassignedGroup);
                                         //reassign attendance
-                                        UpdateAttendance(uId, DateTime.Now, historyItem.UserId, historyItem.ReassignedToUser, historyItem.HierarchyBackToUser, historyItem.HierarchyToUser, newReassignment.ClassProgrammesReassigned, newReassignment.LearnersReassigned);
+                                        UpdateAttendance(historyItem.UserId, historyItem.ReassignedToUser, historyItem.HierarchyToUser, newReassignment.ClassProgrammesReassigned, newReassignment.LearnersReassigned);
 
                                         //Log to the history table for the inverse of the presvious historyitem to indicate reassignment to how it was before
                                         var newReassignmentHistory = new ClassReassignmentHistory

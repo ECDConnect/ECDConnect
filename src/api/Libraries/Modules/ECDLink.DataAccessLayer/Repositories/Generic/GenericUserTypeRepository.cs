@@ -61,34 +61,6 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             _hierarchyEngine.RemoveHierarchy(((IUserType)entity).UserId);
         }
 
-        private void processUserRemoval(string userId)
-        {
-            var user = _userManager.FindByIdAsync(userId).Result;
-
-            if (user == default(ApplicationUser))
-            {
-                return;
-            }
-
-            ApplicationUserHelper.AnonymizeUser(user);
-
-            var updateResult = _userManager.UpdateAsync(user).Result;
-
-            if (!updateResult.Succeeded)
-            {
-                throw new Exception("Unable to anonymise user");
-            }
-
-            // Remove all roles from user
-            var roles = _userManager.GetRolesAsync(user).Result;
-
-            var removeRolesResult = _userManager.RemoveFromRolesAsync(user, roles).Result;
-
-            if (!removeRolesResult.Succeeded)
-            {
-                //TODO: Add logging here if roles cannot be removed
-            }
-        }
 
         public override IQueryable<T> GetAll()
         {

@@ -111,7 +111,6 @@ namespace ECDLink.DataAccessLayer.Repositories
             {
                 Guid tenantId = TenantExecutionContext.Tenant.Id;
                 //get all programmes under classroom
-                IQueryable<ClassProgramme> programmes = _context.ClassProgrammes.Where(x => x.ClassroomGroupId.Equals(classroomId)).AsQueryable();
                 List<Attendance> attendance = _context.Attendances.Where(f => f.UserId == userId)
                     .Where(g => g.ClassroomProgrammeId == classroomId)
                     .Where(y => y.ParentRecordId == parentRecordId)

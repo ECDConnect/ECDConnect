@@ -50,10 +50,10 @@ namespace ECDLink.EGraphQL.Registration.Modules
 
             var definitions = settingsService.GetSystemSettings().Result;
 
-            CreateObjectType(context, definitions, types);
+            CreateObjectType(definitions, types);
         }
 
-        private void CreateObjectType(IDescriptorContext context, IEnumerable<ISetting> settings, List<ITypeSystemMember> types)
+        private void CreateObjectType(IEnumerable<ISetting> settings, List<ITypeSystemMember> types)
         {
             var settingsGroup = settings.GroupBy(x => x.Grouping);
 

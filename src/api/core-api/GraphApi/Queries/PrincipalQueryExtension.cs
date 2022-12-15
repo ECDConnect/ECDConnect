@@ -192,21 +192,8 @@ string userId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
-            var learnerRepo = repoFactory.CreateRepository<Learner>(userContext: uId);
             List<Child> children = new List<Child>();
-            //List < ClassroomGroup> cGroups = this.GetAllClassroomGroupsByPrincipal(contextAccessor, dbFactory,repoFactory, userId).ToList();
-            //foreach (var cg in cGroups)
-            //{
-            //    List<Learner> learnerList = new List<Learner>();
-            //    learnerList = learnerRepo.GetAll().Where(x => x.ClassroomGroupId.Equals(cg.Id)).ToList();
-
-            //    foreach(Learner learner in learnerList)
-            //    {
-            //        var child = childRepo.GetByUserId(learner.UserId);
-            //        children.Add(child);
-            //    }                
-            //}
-            //return children;
+            
             if (userId != null)
             {
                 var dbRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
