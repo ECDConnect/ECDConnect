@@ -146,15 +146,6 @@ export const CoachAddress: React.FC = () => {
     { text: 'Other location', value: false },
   ];
 
-  // const formatSiteAddressAsText = (siteAddress: SiteAddressDto): string => {
-  //   const address = siteAddress.ward ? `${siteAddress.ward}<br/>` : '';
-
-  //   return address.concat(`
-  //     ${siteAddress.addressLine1}<br/>
-  //     ${siteAddress.addressLine2}, ${siteAddress?.addressLine3} ${siteAddress?.postalCode}
-  //     <br/>${siteAddress?.province?.description}`);
-  // };
-
   const {
     getValues: getCoachAddressFormValues,
     setValue: setCoachAddressFormValue,
@@ -171,16 +162,10 @@ export const CoachAddress: React.FC = () => {
     control: coachAddressFormControl,
   });
 
-  const {
-    name,
-    addressLine1,
-    addressLine2,
-    addressLine3,
-    postalCode,
-    provinceId,
-  } = useWatch({
-    control: coachAddressFormControl,
-  });
+  const { addressLine1, addressLine2, addressLine3, postalCode, provinceId } =
+    useWatch({
+      control: coachAddressFormControl,
+    });
 
   const disabledButton =
     !addressLine1 ||
@@ -230,8 +215,6 @@ export const CoachAddress: React.FC = () => {
           };
 
           copy.siteAddress = tempAddress;
-          // history.push(ROUTES.COACH.ABOUT.ROOT);
-          // return;
         }
         setIsOfficeAddress(true);
       } else {
@@ -265,20 +248,20 @@ export const CoachAddress: React.FC = () => {
         (item) =>
           item?.description === franchisorSiteAddress?.province?.description
       );
-      setCoachAddressFormValue('name', franchisorSiteAddress?.name!);
+      setCoachAddressFormValue('name', franchisorSiteAddress?.name || '');
       setCoachAddressFormValue(
         'addressLine1',
         franchisorSiteAddress?.addressLine1
       );
       setCoachAddressFormValue(
         'addressLine2',
-        franchisorSiteAddress?.addressLine2!
+        franchisorSiteAddress?.addressLine2 || ''
       );
       setCoachAddressFormValue(
         'addressLine3',
-        franchisorSiteAddress?.addressLine3!
+        franchisorSiteAddress?.addressLine3 || ''
       );
-      setCoachAddressFormValue('provinceId', selectedProvince?.id!);
+      setCoachAddressFormValue('provinceId', selectedProvince?.id || '');
       setCoachAddressFormValue(
         'postalCode',
         franchisorSiteAddress?.postalCode!
@@ -333,36 +316,8 @@ export const CoachAddress: React.FC = () => {
               />
             </div>
 
-            {/* {isOfficeAddress && franchisorAddress && (
-            <>
-              <Typography
-                type={'h5'}
-                text={franchisorAddress.name}
-                color={'textDark'}
-                className={'my-3'}
-              />
-              <Typography
-                type={'body'}
-                text={formatSiteAddressAsText(franchisorAddress)}
-                color={'textDark'}
-                hasMarkup={true}
-              />
-            </>
-          )} */}
             {isOfficeAddress === true && franchisorSiteAddress && (
               <>
-                {/* <Typography
-              type={'h5'}
-              text={franchisorSiteAddress?.name}
-              color={'textDark'}
-              className={'my-3'}
-            />
-            <Typography
-              type={'body'}
-              text={formatSiteAddressAsText(franchisorSiteAddress)}
-              color={'textDark'}
-              hasMarkup={true}
-            /> */}
                 <Alert
                   type="info"
                   title={`${franchisorSiteAddress?.name}`}
@@ -413,7 +368,7 @@ export const CoachAddress: React.FC = () => {
                     (provinces &&
                       provinces.map((province: ProvinceDto) => ({
                         label: province.description,
-                        value: province.id!,
+                        value: province.id || '',
                       }))) ||
                     []
                   }

@@ -1,9 +1,14 @@
-import { BannerWrapper, Button, Divider, Typography } from '@ecdlink/ui';
+import {
+  BannerWrapper,
+  Button,
+  Divider,
+  Typography,
+  renderIcon,
+} from '@ecdlink/ui';
 import { progressTrackingSelectors } from '@store/progress-tracking';
 import * as styles from './progress-tracking-category.styles';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
-import { renderIcon } from '@ecdlink/ui';
 import { ProgressObsersvationSubCategoryCard } from '../components/progress-observation-sub-category-card/progress-observation-sub-category-card';
 import { useChildProgressObservation } from '@hooks/useChildProgressObservations';
 import { useEffect } from 'react';

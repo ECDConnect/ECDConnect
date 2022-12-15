@@ -5,8 +5,9 @@ import {
   Divider,
   IconTitleDescriptionTile,
   Typography,
+  classNames,
+  renderIcon,
 } from '@ecdlink/ui';
-import { classNames, renderIcon } from '@ecdlink/ui';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import ChildDevelopmentLevelsList from '../child-development-levels-list/child-development-levels-list';
 import * as styles from './progress-tracking-tutorial.styles';
@@ -82,7 +83,7 @@ export const ProgressTrackingTutorial = ({
             }
           />
         </div>
-        <div className={'flex flex-row py-4 px-4 bg-infoMain items-center'}>
+        <div className={'bg-infoMain flex flex-row items-center py-4 px-4'}>
           <div className={'mr-4 flex items-center'}>
             <div className={classNames('rounded-full p-2', `bg-infoDark`)}>
               {renderIcon('GiftIcon', `w-5 h-5 text-white`)}

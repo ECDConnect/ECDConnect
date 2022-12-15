@@ -90,7 +90,6 @@ export const CoachChildProfile: React.FC = () => {
   const childUser = useSelector(
     childrenSelectors.getChildUserById(child?.userId)
   );
-  // const notes = useSelector(notesSelectors.getNotesByUserId(child?.userId));
   const attendanceData = useSelector(attendanceSelectors.getAttendance);
   const authUser = useSelector(authSelectors.getAuthUser);
   const childDocuments = useSelector(
@@ -126,8 +125,6 @@ export const CoachChildProfile: React.FC = () => {
     )
   );
 
-  // const [createChildNoteVisible, setCreateChildNoteVisible] =
-  //   useState<boolean>(false);
   const [editProfilePictureVisible, setEditProfilePictureVisible] =
     useState(false);
 
@@ -252,8 +249,6 @@ export const CoachChildProfile: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    // if (!attendanceData || !child || !playGroup) return;
-
     const childBirthDate = childUser?.dateOfBirth
       ? new Date(childUser?.dateOfBirth)
       : currentDate;
@@ -358,19 +353,11 @@ export const CoachChildProfile: React.FC = () => {
     return;
   };
 
-  // const onCreateChildNoteBack = () => {
-  //   setCreateChildNoteVisible(false);
-  // };
-
   const viewChildProgressObservationReports = () => {
     history.push(ROUTES.COMPLETED_CHILD_PROGRESS_OBSERVATION_REPORTS, {
       childId: child?.id,
     });
   };
-
-  // const onNoteCreated = () => {
-  //   setCreateChildNoteVisible(false);
-  // };
 
   const goToRemoveChild = () => {
     history.push(ROUTES.REMOVE_CHILD, {
@@ -618,7 +605,7 @@ export const CoachChildProfile: React.FC = () => {
         </div>
       </BannerWrapper>
       <Dialog
-        className={'px-4 mb-16'}
+        className={'mb-16 px-4'}
         stretch={true}
         visible={removeChildConfirmationVisible}
         position={DialogPosition.Bottom}

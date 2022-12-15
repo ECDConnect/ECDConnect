@@ -5,7 +5,6 @@ import {
   Button,
   renderIcon,
   Typography,
-  StackedList,
   Card,
 } from '@ecdlink/ui';
 import { PractitionerProfileRouteState } from './coach-practitioner-classroom.types';
@@ -29,79 +28,7 @@ import { authSelectors } from '@/store/auth';
 import { PractitionerService } from '@/services/PractitionerService';
 import { ClassroomGroupService } from '@/services/ClassroomGroupService';
 
-// import { CreateNote } from '../components/create-note/create-note';
-// import { NoteTypeEnum } from '@ecdlink/graphql';
-// import { getLastNoteDate } from '@utils/child/child-profile-utils';
-// import { notesSelectors } from '@store/notes';
-// import { useSelector } from 'react-redux';
-
 export const CoachPractitionerClassroom: React.FC = () => {
-  const listItems = [];
-  // const listItems = [
-  //   {
-  //     title: '75% attendance rate',
-  //     titleStyle: 'text-textDark font-semibold text-base leading-snug',
-  //     subTitle: 'Little stars - June 2021',
-  //     subTitleStyle:
-  //       'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
-  //     menuIcon: 'ExclamationIcon',
-  //     menuIconClassName: 'bg-secondary text-white',
-  //     showIcon: true,
-  //     iconBackgroundColor: 'alertMain',
-  //     chipConfig: {
-  //       colorPalette: {
-  //         backgroundColour: 'white',
-  //         borderColour: 'errorMain',
-  //         textColour: 'errorMain',
-  //       },
-  //     },
-  //     text: '1',
-  //     onActionClick: () => {},
-  //     classNames: 'bg-uiBg',
-  //   },
-  //   {
-  //     title: '5 overdue progress reports',
-  //     titleStyle: 'text-textDark font-semibold text-base leading-snug',
-  //     subTitle: 'January to June 2021',
-  //     subTitleStyle:
-  //       'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
-  //     menuIcon: 'ExclamationIcon',
-  //     menuIconClassName: 'bg-secondary text-white',
-  //     showIcon: true,
-  //     iconBackgroundColor: 'alertMain',
-  //     chipConfig: {
-  //       colorPalette: {
-  //         backgroundColour: 'white',
-  //         borderColour: 'errorMain',
-  //         textColour: 'errorMain',
-  //       },
-  //     },
-  //     text: '1',
-  //     onActionClick: () => {},
-  //   },
-  //   {
-  //     title: "5 children haven't progressed",
-  //     titleStyle: 'text-textDark font-semibold text-base leading-snug',
-  //     subTitle: 'For 2 reporting periods',
-  //     subTitleStyle:
-  //       'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
-  //     menuIcon: 'ExclamationIcon',
-  //     menuIconClassName: 'bg-secondary text-white',
-  //     showIcon: true,
-  //     iconBackgroundColor: 'alertMain',
-  //     chipConfig: {
-  //       colorPalette: {
-  //         backgroundColour: 'white',
-  //         borderColour: 'errorMain',
-  //         textColour: 'errorMain',
-  //       },
-  //     },
-  //     text: '1',
-  //     onActionClick: () => {},
-  //     classNames: 'bg-uiBg',
-  //   },
-  // ];
-
   const appDispatch = useAppDispatch();
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
