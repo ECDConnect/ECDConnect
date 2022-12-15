@@ -23,6 +23,7 @@ import {
 import { useSelector } from 'react-redux';
 import { MultipleChildrenProps } from '../../infant-register-form/infant-register-form.types';
 import { caregiverSelectors } from '@/store/caregiver';
+import { motherSelectors } from '@/store/mother';
 
 export const MotherDetails: React.FC<MotherDetailsProps> = ({
   onSubmit,
@@ -53,6 +54,20 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
     useState<MultipleChildrenProps[]>();
 
   const caregivers = useSelector(caregiverSelectors.getCaregivers);
+  const mothers = useSelector(motherSelectors?.getMothers);
+
+  const mothersUpdatedToCaregivers = mothers?.map((item) => ({
+    firstName: item?.user?.firstName,
+    surname: item?.user?.surname,
+    phoneNumber: item?.user?.phoneNumber,
+    siteAddress: item?.siteAddress,
+    isActive: item?.isActive,
+    id: item?.user?.id,
+    isMother: true,
+    age: '',
+  }));
+
+  const motherAndCaregivers = [...caregivers!, ...mothersUpdatedToCaregivers!];
 
   useEffect(() => {
     const uniqueChildrenArray = relationshipChildrenArray?.filter(
@@ -82,13 +97,13 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
           type="h2"
           color={'textDark'}
           text={'Caregiver'}
-          className="z-50 pt-6"
+          className="pt-6"
         />
         <Typography
           type="h4"
           color={'textMid'}
           text={'Details'}
-          className="z-50 w-11/12 pt-2"
+          className="w-11/12 pt-2"
         />
       </div>
       <div className="flex w-11/12 justify-center text-red-400">
@@ -104,7 +119,7 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
                   type="h3"
                   color={'textDark'}
                   text={`Relationship to ${child?.firstName}`}
-                  className="bt-1 z-50 w-11/12 pt-2"
+                  className="bt-1 w-11/12 pt-2"
                 />
                 <Dropdown
                   key={index + 3}
@@ -153,7 +168,7 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
               type="h3"
               color={'textDark'}
               text={`Relationship to ${infantDetails?.firstName}`}
-              className="bt-1 z-50 w-11/12 pt-2"
+              className="bt-1 w-11/12 pt-2"
             />
             <Controller
               name="relationshipId"
@@ -187,7 +202,7 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
           type="h3"
           color={'textDark'}
           text={'Is the caregiver already on CHW Connect?'}
-          className="z-50 w-11/12 pt-2"
+          className="w-11/12 pt-2"
         />
         <div className="mt-2">
           <ButtonGroup<boolean>
@@ -235,18 +250,18 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
                 type="h4"
                 color={'textMid'}
                 text={'years'}
-                className="z-50 mt-12"
+                className="mt-12"
               />
             </div>
           </>
         )}
-        {isAlreadyClient && !!caregivers?.length && (
+        {isAlreadyClient && !!motherAndCaregivers?.length && (
           <div className="mt-4 w-full">
             <Typography
               type="h3"
               color={'textDark'}
               text={`Choose caregiver`}
-              className="bt-1 z-50 w-11/12 pt-2"
+              className="bt-1 w-11/12 pt-2"
             />
             <Controller
               name="id"
@@ -257,8 +272,8 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
                   fillType="clear"
                   selectedValue={value}
                   list={
-                    (caregivers &&
-                      caregivers
+                    (motherAndCaregivers &&
+                      motherAndCaregivers
                         .filter((x) => x.id && x.firstName?.length! > 0)
                         .map((item) => {
                           return {
@@ -269,7 +284,7 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
                     []
                   }
                   onChange={(value) => {
-                    const caregiver = caregivers?.find(
+                    const caregiver = motherAndCaregivers?.find(
                       (item) => item.id === value
                     );
 
@@ -285,6 +300,9 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
                     setMotherDetailsFormValue('name', caregiver?.firstName);
                     setMotherDetailsFormValue('surname', caregiver?.surname);
                     setMotherDetailsFormValue('age', caregiver?.age);
+                    if (caregiver?.isMother === true) {
+                      setMotherDetailsFormValue('isMother', true);
+                    }
                     onChange(value);
                   }}
                 />
@@ -293,7 +311,7 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
           </div>
         )}
       </div>
-      {isAlreadyClient !== false && !caregivers?.length && (
+      {isAlreadyClient !== false && !motherAndCaregivers?.length && (
         <Alert
           className={'mt-5 mb-3'}
           message={

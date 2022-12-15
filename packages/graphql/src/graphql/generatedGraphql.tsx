@@ -172,6 +172,8 @@ export type ApplicationUser = {
   idNumber?: Maybe<Scalars['String']>;
   isActive: Scalars['Boolean'];
   isSouthAfricanCitizen: Scalars['Boolean'];
+  language?: Maybe<Language>;
+  languageId?: Maybe<Scalars['UUID']>;
   lastSeen: Scalars['DateTime'];
   nickFirstName?: Maybe<Scalars['String']>;
   nickFullName?: Maybe<Scalars['String']>;
@@ -215,6 +217,8 @@ export type ApplicationUserFilterInput = {
   idNumber?: InputMaybe<StringOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
   isSouthAfricanCitizen?: InputMaybe<BooleanOperationFilterInput>;
+  language?: InputMaybe<LanguageFilterInput>;
+  languageId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   lastSeen?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   nickFirstName?: InputMaybe<StringOperationFilterInput>;
   nickFullName?: InputMaybe<StringOperationFilterInput>;
@@ -257,6 +261,8 @@ export type ApplicationUserInput = {
   idNumber?: InputMaybe<Scalars['String']>;
   isActive: Scalars['Boolean'];
   isSouthAfricanCitizen: Scalars['Boolean'];
+  language?: InputMaybe<LanguageInput>;
+  languageId?: InputMaybe<Scalars['UUID']>;
   lastSeen: Scalars['DateTime'];
   nickFirstName?: InputMaybe<Scalars['String']>;
   nickFullName?: InputMaybe<Scalars['String']>;
@@ -384,6 +390,8 @@ export type Caregiver = {
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
   joinReferencePanel: Scalars['Boolean'];
+  language?: Maybe<Language>;
+  languageId?: Maybe<Scalars['UUID']>;
   phoneNumber?: Maybe<Scalars['String']>;
   relation?: Maybe<Relation>;
   relationId?: Maybe<Scalars['UUID']>;
@@ -417,6 +425,8 @@ export type CaregiverFilterInput = {
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
   joinReferencePanel?: InputMaybe<BooleanOperationFilterInput>;
+  language?: InputMaybe<LanguageFilterInput>;
+  languageId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   or?: InputMaybe<Array<CaregiverFilterInput>>;
   phoneNumber?: InputMaybe<StringOperationFilterInput>;
   relation?: InputMaybe<RelationFilterInput>;
@@ -449,6 +459,8 @@ export type CaregiverInput = {
   IdNumber?: InputMaybe<Scalars['String']>;
   IsActive: Scalars['Boolean'];
   JoinReferencePanel: Scalars['Boolean'];
+  Language?: InputMaybe<LanguageInput>;
+  LanguageId?: InputMaybe<Scalars['UUID']>;
   PhoneNumber?: InputMaybe<Scalars['String']>;
   Relation?: InputMaybe<RelationInput>;
   RelationId?: InputMaybe<Scalars['UUID']>;
@@ -4370,6 +4382,7 @@ export type Query = {
   coachByCoachUserId?: Maybe<Coach>;
   coachByPractitionerId?: Maybe<Coach>;
   coachByUserId?: Maybe<Coach>;
+  coachNameByUserId?: Maybe<Scalars['String']>;
   contentDefinitions?: Maybe<Array<Maybe<ContentDefinitionModel>>>;
   contentDefinitionsExcelTemplateGenerator?: Maybe<FileModel>;
   contentTypes?: Maybe<Array<Maybe<ContentType>>>;
@@ -5166,6 +5179,10 @@ export type QueryCoachByUserIdArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
+export type QueryCoachNameByUserIdArgs = {
+  userId?: InputMaybe<Scalars['String']>;
+};
+
 export type QueryContentDefinitionsExcelTemplateGeneratorArgs = {
   contentTypeId: Scalars['Int'];
 };
@@ -5569,114 +5586,9 @@ export type Sl_Ingestion_UserInput = {
   UserId?: InputMaybe<Scalars['String']>;
 };
 
-export type Setting_AbsenteeCutoffDelay = {
-  __typename?: 'Setting_AbsenteeCutoffDelay';
-  AbsenteeCutoffDelay: Scalars['String'];
-};
-
-export type Setting_Azure = {
-  __typename?: 'Setting_Azure';
-  BlobStorageConnection: Scalars['String'];
-};
-
-export type Setting_BulkSms = {
-  __typename?: 'Setting_BulkSms';
-  BaseUrl: Scalars['String'];
-  BasicAuthToken: Scalars['String'];
-  Name: Scalars['String'];
-  TokenId: Scalars['String'];
-  TokenSecret: Scalars['String'];
-};
-
-export type Setting_Children = {
-  __typename?: 'Setting_Children';
-  ChildExpiryTime: Scalars['String'];
-  ChildInitialObservationPeriod: Scalars['String'];
-};
-
-export type Setting_Google = {
-  __typename?: 'Setting_Google';
-  DashboardGoogleReport: Scalars['String'];
-  GoogleAnalyticsTag: Scalars['String'];
-  GoogleTagManager: Scalars['String'];
-};
-
-export type Setting_InvitationCutoffDelay = {
-  __typename?: 'Setting_InvitationCutoffDelay';
-  InvitationCutoffDelay: Scalars['String'];
-};
-
-export type Setting_Invitations = {
-  __typename?: 'Setting_Invitations';
-  Signup: Scalars['String'];
-};
-
-export type Setting_Jwts = {
-  __typename?: 'Setting_Jwts';
-  LongJwtLifespan: Scalars['String'];
-  ShortJwtLifespan: Scalars['String'];
-};
-
-export type Setting_RapidApi = {
-  __typename?: 'Setting_RapidApi';
-  BaseUrl: Scalars['String'];
-  Host: Scalars['String'];
-  Key: Scalars['String'];
-  Name: Scalars['String'];
-};
-
-export type Setting_Reporting = {
-  __typename?: 'Setting_Reporting';
-  ChildProgressReportMonths: Scalars['String'];
-};
-
-export type Setting_Security = {
-  __typename?: 'Setting_Security';
-  ForgotPassword: Scalars['String'];
-  Login: Scalars['String'];
-};
-
-export type Setting_SendGrid = {
-  __typename?: 'Setting_SendGrid';
-  FromEmail: Scalars['String'];
-  Key: Scalars['String'];
-  User: Scalars['String'];
-};
-
-export type Setting_SyncDelay = {
-  __typename?: 'Setting_SyncDelay';
-  SyncDelay: Scalars['String'];
-};
-
-export type Setting_Tokens = {
-  __typename?: 'Setting_Tokens';
-  InvitationLinkExpiry: Scalars['String'];
-  OpenAccessInvitationExpiry: Scalars['String'];
-};
-
-export type Setting_UrlShortner = {
-  __typename?: 'Setting_UrlShortner';
-  RedirectUrl: Scalars['String'];
-};
-
 export type SettingsType = {
   __typename?: 'SettingsType';
-  AbsenteeCutoffDelay: Setting_AbsenteeCutoffDelay;
-  Azure: Setting_Azure;
-  BulkSms: Setting_BulkSms;
-  Children: Setting_Children;
-  Google: Setting_Google;
   Holder?: Maybe<Scalars['String']>;
-  InvitationCutoffDelay: Setting_InvitationCutoffDelay;
-  Invitations: Setting_Invitations;
-  Jwts: Setting_Jwts;
-  RapidApi: Setting_RapidApi;
-  Reporting: Setting_Reporting;
-  Security: Setting_Security;
-  SendGrid: Setting_SendGrid;
-  SyncDelay: Setting_SyncDelay;
-  Tokens: Setting_Tokens;
-  UrlShortner: Setting_UrlShortner;
 };
 
 export type ShortenUrlEntity = {
@@ -5874,16 +5786,16 @@ export type SystemSettingInput = {
 
 export type TeamLead = {
   __typename?: 'TeamLead';
-  Clinic?: Maybe<Clinic>;
-  ClinicId?: Maybe<Scalars['UUID']>;
-  Id: Scalars['UUID'];
-  InsertedDate: Scalars['DateTime'];
-  IsActive: Scalars['Boolean'];
-  JobTitle?: Maybe<Scalars['String']>;
-  UpdatedBy?: Maybe<Scalars['String']>;
-  UpdatedDate: Scalars['DateTime'];
-  User?: Maybe<ApplicationUser>;
-  UserId?: Maybe<Scalars['String']>;
+  clinic?: Maybe<Clinic>;
+  clinicId?: Maybe<Scalars['UUID']>;
+  id: Scalars['UUID'];
+  insertedDate: Scalars['DateTime'];
+  isActive: Scalars['Boolean'];
+  jobTitle?: Maybe<Scalars['String']>;
+  updatedBy?: Maybe<Scalars['String']>;
+  updatedDate: Scalars['DateTime'];
+  user?: Maybe<ApplicationUser>;
+  userId?: Maybe<Scalars['String']>;
 };
 
 export type TeamLeadFilterInput = {
@@ -6109,6 +6021,7 @@ export type UserModelInput = {
   id?: InputMaybe<Scalars['String']>;
   idNumber?: InputMaybe<Scalars['String']>;
   isSouthAfricanCitizen: Scalars['Boolean'];
+  languageId?: InputMaybe<Scalars['UUID']>;
   password?: InputMaybe<Scalars['String']>;
   phoneNumber?: InputMaybe<Scalars['String']>;
   profileImageUrl?: InputMaybe<Scalars['String']>;

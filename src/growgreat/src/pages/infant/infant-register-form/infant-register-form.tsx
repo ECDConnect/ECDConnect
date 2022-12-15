@@ -140,7 +140,7 @@ export const InfantRegisterForm: React.FC = () => {
     setActiveStep(InfantRegisterSteps.motherDetails);
   };
 
-  const completeAllSteps = ({
+  const completeAllSteps = async ({
     caregiverDetails,
     caregiverAddress,
   }: onSubmit) => {
@@ -175,8 +175,9 @@ export const InfantRegisterForm: React.FC = () => {
         '',
       healthCareWorkerId: user?.id,
     };
-
-    appDispatch(caregiverActions.createCaregiver(caregiverInput));
+    if (!details?.isMother) {
+      await appDispatch(caregiverActions.createCaregiver(caregiverInput));
+    }
 
     if (multipleChildrenArray?.length >= 1) {
       for (const child of multipleChildrenArray) {
@@ -205,12 +206,12 @@ export const InfantRegisterForm: React.FC = () => {
           weightAtBirth: weightAtBirth,
           lengthAtBirth: lengthAtBirth,
           genderId: child?.genderId ?? '',
-          caregiverId: child?.caregiver?.id,
+          caregiverId: caregiverInput.id,
           caregiver: caregiverInput,
         };
 
-        appDispatch(infantActions.addInfant(infantInputModel));
-        appDispatch(
+        await appDispatch(infantActions.addInfant(infantInputModel));
+        await appDispatch(
           infantThunkActions.addInfant({ infant: infantInputModel })
         ).unwrap();
 
@@ -232,8 +233,8 @@ export const InfantRegisterForm: React.FC = () => {
           file: infantRoadToHealthBook?.roadToHealthBook,
           fileType: FileTypeEnum.RoadToHealthBook,
         };
-        appDispatch(documentActions.createDocument(documentInputModel));
-        appDispatch(
+        await appDispatch(documentActions.createDocument(documentInputModel));
+        await appDispatch(
           documentThunkActions.createDocument(documentInputModel)
         ).unwrap();
       }
@@ -268,12 +269,12 @@ export const InfantRegisterForm: React.FC = () => {
         user: user,
         weightAtBirth: weightAtBirth,
         lengthAtBirth: lengthAtBirth,
-        caregiverId: caregiverDetails?.id || details?.id || '',
+        caregiverId: caregiverInput.id,
         caregiver: caregiverInput,
       };
 
-      appDispatch(infantActions.addInfant(infantInputModel));
-      appDispatch(
+      await appDispatch(infantActions.addInfant(infantInputModel));
+      await appDispatch(
         infantThunkActions.addInfant({ infant: infantInputModel })
       ).unwrap();
 
@@ -295,8 +296,8 @@ export const InfantRegisterForm: React.FC = () => {
         file: infantRoadToHealthBook?.roadToHealthBook,
         fileType: FileTypeEnum.RoadToHealthBook,
       };
-      appDispatch(documentActions.createDocument(documentInputModel));
-      appDispatch(
+      await appDispatch(documentActions.createDocument(documentInputModel));
+      await appDispatch(
         documentThunkActions.createDocument(documentInputModel)
       ).unwrap();
     }

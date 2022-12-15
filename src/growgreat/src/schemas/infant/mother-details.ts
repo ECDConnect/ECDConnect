@@ -6,6 +6,7 @@ export interface MotherDetailsModel {
   age?: string;
   id?: string;
   relationshipId?: string;
+  isMother?: boolean;
 }
 
 export const initialMotherDetailsValues: MotherDetailsModel = {
@@ -14,6 +15,7 @@ export const initialMotherDetailsValues: MotherDetailsModel = {
   age: '',
   id: '',
   relationshipId: '',
+  isMother: false,
 };
 
 export const motherDetailsModelSchema = Yup.object().shape({

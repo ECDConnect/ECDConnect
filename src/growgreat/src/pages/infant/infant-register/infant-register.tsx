@@ -41,7 +41,7 @@ export const InfantRegister: React.FC = () => {
           type="h1"
           color={'white'}
           text={'Register a new child!'}
-          className="w-ful z-50 mb-7 pt-6"
+          className="w-ful mb-7 pt-6"
         />
 
         <div className="text-textMid bg-uiBg ml-1/2 relative z-40 flex justify-center rounded-2xl py-4 shadow-md">
@@ -54,7 +54,7 @@ export const InfantRegister: React.FC = () => {
                 type="h3"
                 color={'textDark'}
                 text={'Please share this information with the caregiver:'}
-                className="z-50 w-10/12"
+                className="w-10/12"
                 align="center"
               />
             </div>
@@ -67,7 +67,7 @@ export const InfantRegister: React.FC = () => {
               type="h2"
               color="textDark"
               text={'What you can expect from these visits'}
-              className="z-50 pt-4"
+              className="pt-4"
             />
 
             <div className="flex items-center gap-2 pt-4">
@@ -80,7 +80,7 @@ export const InfantRegister: React.FC = () => {
                 text={
                   "Track your child's weight and length to see how they are growing"
                 }
-                className="z-50 w-9/12"
+                className="w-9/12"
               />
             </div>
             <div className="flex items-center gap-2 pt-4">
@@ -93,7 +93,7 @@ export const InfantRegister: React.FC = () => {
                 text={
                   'Support with breastfeeding and when and how to start solid foods'
                 }
-                className="z-50 w-9/12"
+                className="w-9/12"
               />
             </div>
             <div className="flex items-center gap-2 pt-4">
@@ -104,7 +104,7 @@ export const InfantRegister: React.FC = () => {
                 type="body"
                 color={'textMid'}
                 text={'Immunisation, vitamin A and deworming reminders'}
-                className="z-50 w-9/12"
+                className="w-9/12"
               />
             </div>
             <div className="flex items-center gap-2 pt-4">
@@ -115,7 +115,7 @@ export const InfantRegister: React.FC = () => {
                 type="body"
                 color={'textMid'}
                 text={'Fun developmental activities for you and baby'}
-                className="z-50 w-9/12"
+                className="w-9/12"
               />
             </div>
             <div className="flex items-center gap-2 pt-4">
@@ -126,7 +126,7 @@ export const InfantRegister: React.FC = () => {
                 type="body"
                 color={'textMid'}
                 text={'Support with accessing a child support grant early   '}
-                className="z-50 w-9/12"
+                className="w-9/12"
               />
             </div>
             <div className="flex w-11/12 justify-center text-red-400">
@@ -136,7 +136,7 @@ export const InfantRegister: React.FC = () => {
               type="h2"
               color="textDark"
               text={'Why should you participate?'}
-              className="border-primaryAccent1 z-50 mt-3 border-t border-dashed pt-4"
+              className="border-primaryAccent1 mt-3 border-t border-dashed pt-4"
             />
             <div className="flex items-center gap-2 pt-4">
               <div className="bg-secondary mr-2 flex h-12 w-12 items-center justify-center rounded-full">
@@ -148,7 +148,7 @@ export const InfantRegister: React.FC = () => {
                 text={
                   'Be supported during the first thousand days of your babies life'
                 }
-                className="z-50 w-9/12"
+                className="w-9/12"
               />
             </div>
             <div className="flex items-center gap-2 pt-4">
@@ -161,7 +161,7 @@ export const InfantRegister: React.FC = () => {
                 text={
                   'Access information and support to help your baby grow great and healthy'
                 }
-                className="z-50 w-9/12"
+                className="w-9/12"
               />
             </div>
             <div className="flex items-center gap-2 pt-4">
@@ -174,7 +174,7 @@ export const InfantRegister: React.FC = () => {
                 text={
                   'Regular follow up visits from your community health worker'
                 }
-                className="z-50 w-9/12"
+                className="w-9/12"
               />
             </div>
             <div className={'mt-9 w-full'}>

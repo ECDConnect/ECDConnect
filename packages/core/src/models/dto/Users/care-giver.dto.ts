@@ -26,4 +26,5 @@ export interface CaregiverDto extends EntityBase {
   contribution?: boolean;
   grants?: string[] | undefined;
   healthCareWorkerId?: string;
+  isMother?: boolean;
 }

@@ -89,7 +89,7 @@ export const PregnantRegisterForm: React.FC = () => {
     const motherId = newGuid();
     const motherUserId = newGuid();
     const siteAddressDto: SiteAddressDto = {
-      addressLine1: address?.address ?? '',
+      addressLine1: address?.address || address?.addressLine1 || '',
     };
     const userInput: UserDto = {
       phoneNumber: contactInformation?.cellphone ?? '',
@@ -104,7 +104,7 @@ export const PregnantRegisterForm: React.FC = () => {
       user: userInput,
       phoneNumber: contactInformation?.cellphone ?? '',
       siteAddress: siteAddressDto,
-      siteAddressId: address?.address ?? '',
+      siteAddressId: address?.id || address?.address || '',
       healthCareWorkerId: user?.id ?? '',
       age: details?.age,
       expectedDateOfDelivery:
@@ -116,7 +116,8 @@ export const PregnantRegisterForm: React.FC = () => {
       firstName: details?.name ?? '',
       surname: details?.surname ?? '',
       phoneNumber: contactInformation?.cellphone ?? '',
-      whatsAppNumber: contactInformation?.whatsapp,
+      whatsAppNumber:
+        contactInformation?.whatsapp ?? contactInformation?.cellphone,
       age: details?.age,
       isActive: true,
       siteAddress: siteAddressDto,
