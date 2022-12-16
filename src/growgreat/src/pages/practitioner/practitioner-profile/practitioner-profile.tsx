@@ -18,6 +18,7 @@ import { useAppDispatch } from '@/store';
 import { userSelectors } from '@/store/user';
 import { analyticsActions } from '@/store/analytics';
 import ROUTES from '@/routes/routes';
+import Loader from '@/components/loader/loader';
 
 export const PractitionerProfile: React.FC = () => {
   const { resetAuth, resetAppStore } = useStoreSetup();
@@ -97,7 +98,8 @@ export const PractitionerProfile: React.FC = () => {
                         onSubmit();
                         await resetAuth();
                         await resetAppStore();
-                        history.push(ROUTES.ROOT);
+                        window.location.reload();
+                        window.onload = () => history.push(ROUTES.LOGIN);
                       },
                       type: 'filled',
                       textColour: 'white',
@@ -137,7 +139,7 @@ export const PractitionerProfile: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOnline]);
 
-  return (
+  return user ? (
     <BannerWrapper
       size="normal"
       color={'primary'}
@@ -145,11 +147,13 @@ export const PractitionerProfile: React.FC = () => {
       backgroundColour="white"
       displayOffline={!isOnline}
       onBack={() => history.push(ROUTES.ROOT)}
-      title={`${user?.firstName} ${user?.surname}`}
+      title={user ? `${user?.firstName} ${user?.surname}` : ''}
     >
       <div className="secondary text-textDark flex flex-col justify-between bg-white px-5">
         <TabList tabItems={tabItem} />
       </div>
     </BannerWrapper>
+  ) : (
+    <Loader loadingMessage="Loading ..." />
   );
 };
