@@ -124,25 +124,26 @@ export const PregnantMaternalCaseRecord: React.FC<
         type="h2"
         color={'textDark'}
         text={`${details?.name}`}
-        className="z-50 pt-6"
+        className="pt-6"
       />
       <Typography
         type="h4"
         color={'textMid'}
         text={'Maternal Case Record'}
-        className="z-50 w-11/12 pt-2"
+        className="w-11/12 pt-2"
       />
       <div className="mt-4">
         <Typography
           type="h4"
           color={'textMid'}
           text={'Expected delivery date:'}
-          className="z-50 w-11/12 pt-2"
+          className="w-11/12 pt-2"
         />
         <div className="flex items-center gap-1">
           <DatePicker
             placeholderText={'Please select a date'}
-            className="text-primary bg-uiBg focus:border-primary focus:ring-primary mt-1 w-full rounded-md border-none text-lg shadow-sm"
+            className="text-primary bg-uiBg focus:border-primary focus:ring-primary z-50 mt-1 w-full rounded-md border-none text-lg shadow-sm"
+            popperClassName="z-50"
             selected={myDay}
             onChange={(date: Date) => setMyDay(date)}
             dateFormat="dd"
@@ -153,6 +154,7 @@ export const PregnantMaternalCaseRecord: React.FC<
           <DatePicker
             placeholderText={'Please select a date'}
             className="text-primary bg-uiBg focus:border-primary focus:ring-primary mt-1 w-full rounded-md border-none text-lg shadow-sm"
+            popperClassName="z-50"
             selected={myMonth}
             onChange={(date: Date) => setMyMonth(date)}
             renderCustomHeader={() => <div>Month</div>}
@@ -163,7 +165,8 @@ export const PregnantMaternalCaseRecord: React.FC<
           />
           <DatePicker
             placeholderText={'Please select a date'}
-            className="bg-uiBg text-primary focus:border-primary focus:ring-primary mt-1 w-full rounded-md border-none text-lg shadow-sm"
+            className="bg-uiBg text-primary focus:border-primary focus:ring-primary z-50 mt-1 w-full rounded-md border-none text-lg shadow-sm"
+            popperClassName="z-50"
             selected={myYear}
             onChange={(date: Date) => setMyYear(date)}
             dateFormat="yyyy"
@@ -186,7 +189,7 @@ export const PregnantMaternalCaseRecord: React.FC<
           type="h4"
           color={'textMid'}
           text={`Does ${details?.name} have her Maternal Case Record?`}
-          className="z-50 mb-2 w-11/12 pt-2"
+          className="mb-2 w-11/12 pt-2"
         />
         <ButtonGroup<boolean>
           options={yesNoOptions}
@@ -241,7 +244,7 @@ export const PregnantMaternalCaseRecord: React.FC<
               weight="bold"
               color={'textMid'}
               text={"Take a photo of the client's Maternal Case Record"}
-              className="z-50 w-9/12 pt-2"
+              className="w-9/12 pt-2"
             />
             <div
               onClick={() => setMaternalRecordExampleVisible(true)}
