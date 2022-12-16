@@ -170,9 +170,7 @@ export const EditCoachProfile: React.FC = () => {
           backgroundColour={'white'}
           displayOffline={!isOnline}
         >
-          <div className={'px-4 pb-5'}>
-            {steps(activeStep as EditCoachSteps)}
-          </div>
+          <div className={'px-4 pb-5'}>{steps(activeStep)}</div>
         </BannerWrapper>
       </IonContent>
     </>

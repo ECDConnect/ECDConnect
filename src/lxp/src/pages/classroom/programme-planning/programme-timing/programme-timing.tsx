@@ -94,7 +94,7 @@ const ProgrammeTiming: React.FC = () => {
 
     const validatedDate = validateStartDate(new Date(selectedDate));
 
-    let endDate = validatedDate;
+    let endDate;
 
     let daysLength = 20;
 
@@ -200,7 +200,7 @@ const ProgrammeTiming: React.FC = () => {
 
         <DatePicker
           placeholderText={`Please select a date`}
-          className="w-full border-uiLight rounded-md"
+          className="border-uiLight w-full rounded-md"
           selected={selectedDate ? new Date(selectedDate) : undefined}
           onChange={(date: Date) =>
             setValue('date', date ? date.toString() : '')

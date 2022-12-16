@@ -81,8 +81,9 @@ export const Practitioners: React.FC = () => {
   useEffect(() => {
     if (
       practitionersList &&
+      practitionersMessages &&
       practitionersList?.length > 0 &&
-      practitionersMessages?.length! > 0
+      practitionersMessages?.length > 0
     ) {
       const practitionerListItem: UserAlertListDataItem[] = [];
       for (const practitioner of practitionersList) {
@@ -128,9 +129,6 @@ export const Practitioners: React.FC = () => {
 
   const onSortItemsChanges = (column: string) => {
     if (practitionersList && practitionersList.length > 0) {
-      // const filteredPractitioners = practitionersList.filter((practitioner) =>
-      //   childUserListData?.some((x) => x.id === practitioner.id)
-      // );
       const sorted = [...practitionersList].sort(
         (a: PractitionerDto, b: PractitionerDto) => {
           const practitionerOne = practitioners?.find(
@@ -207,7 +205,6 @@ export const Practitioners: React.FC = () => {
         subTitle={format(new Date(), 'dd MMM yyyy')}
         color={'primary'}
         onBack={() => history.push(ROUTES.DASHBOARD)}
-        // displayOffline={!isOnline}
       >
         <SearchHeader<UserAlertListDataItem>
           searchItems={filteredChildData || []}

@@ -29,10 +29,6 @@ import {
 } from './add-practitioner.types';
 import { userSelectors } from '@store/user';
 
-// type UserWithPractitionerData = UserDto & {
-//   practitionerObjectData?: PractitionerDto;
-// };
-
 export const AddPractitioner = ({
   onSubmit,
   formData,
@@ -45,7 +41,6 @@ export const AddPractitioner = ({
     register,
     control,
     formState: { errors, isValid },
-    // getValues,
     setValue,
     reset,
   } = useForm({
@@ -153,8 +148,8 @@ export const AddPractitioner = ({
         displayOffline={!isOnline}
       ></BannerWrapper>
       <div className="wrapper-with-sticky-button">
-        <div className="flex flex-wrap justify-center w-full">
-          <div className="flex flex-col gap-4 mt-4 w-11/12">
+        <div className="flex w-full flex-wrap justify-center">
+          <div className="mt-4 flex w-11/12 flex-col gap-4">
             <div>
               {preferId && (
                 <FormInput<AddPractitionerModel>
@@ -297,10 +292,10 @@ export const AddPractitioner = ({
               </div>
             )}
           </div>
-          <div className="self-end -mb-4 w-11/12 mt-4">
+          <div className="-mb-4 mt-4 w-11/12 self-end">
             <Button
               size="normal"
-              className="w-full mb-4"
+              className="mb-4 w-full"
               type="filled"
               color="primary"
               text="Save"
@@ -312,7 +307,7 @@ export const AddPractitioner = ({
             {isValidPractitioner === false && (
               <Button
                 size="normal"
-                className="w-full mb-4"
+                className="mb-4 w-full"
                 type="outlined"
                 color="primary"
                 text="Skip"

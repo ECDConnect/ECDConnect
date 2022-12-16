@@ -4,6 +4,7 @@ import {
   ChildProgressObservationReport,
   ProgressTrackingCategoryDto,
   ProgressTrackingSkillDto,
+  ChildProgressObservationStatus,
 } from '@ecdlink/core';
 import { useEffect, useState } from 'react';
 
@@ -17,7 +18,6 @@ import {
   contentReportThunkActions,
 } from '@store/content/report';
 import { ProgressTrackingLevels } from '@enums/ProgressTrackingLevels';
-import { ChildProgressObservationStatus } from '@ecdlink/core';
 
 export interface SeperatedCategoryResult {
   notStartedCategories: ProgressTrackingCategoryDto[];

@@ -16,7 +16,7 @@ class ChildService {
   }
 
   async getChildren(): Promise<ChildDto[]> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         query {
@@ -130,7 +130,7 @@ class ChildService {
   }
 
   async updateChild(id: string, input: ChildInput): Promise<boolean> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         mutation updateChild($input: ChildInput, $id: UUID) {
@@ -153,7 +153,7 @@ class ChildService {
   }
 
   async createChild(input: ChildInput): Promise<ChildDto> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         mutation createChild($input: ChildInput) {
@@ -179,7 +179,7 @@ class ChildService {
     surname: string,
     classgroupId: string
   ): Promise<string> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         mutation generateCaregiverChildToken($firstname: String, $surname: String, $classgroupId: UUID!) {
@@ -206,7 +206,7 @@ class ChildService {
     childId: string,
     classgroupId: string
   ): Promise<string> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         mutation refreshCaregiverChildToken($childId: UUID!,$classgroupId: UUID!) {
@@ -231,7 +231,7 @@ class ChildService {
   async openAccessAddChildDetail(
     token: string
   ): Promise<ChildRegistrationDetails> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         query openAccessAddChildDetail($token:String) {

@@ -66,7 +66,7 @@ export const PointsSuccessCard: React.FC<PointsSuccessCardProps> = ({
                         />
                       </div>
                       <div className={'flex flex-row'}>
-                        {points && (
+                        {!!points && (
                           <Typography
                             type={'body'}
                             weight={'bold'}

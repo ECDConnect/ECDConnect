@@ -1,7 +1,5 @@
 import { ProgressTrackingLevelDto } from '@ecdlink/core';
-import { Typography } from '@ecdlink/ui';
-import { ComponentBaseProps } from '@ecdlink/ui';
-import { classNames } from '@ecdlink/ui';
+import { Typography, ComponentBaseProps, classNames } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { progressTrackingSelectors } from '@store/progress-tracking';

@@ -46,7 +46,7 @@ class PractitionerService {
   }
 
   async getPractitionerById(id: string): Promise<PractitionerDto> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         query GetPractitionerById($id: UUID) {
@@ -108,7 +108,7 @@ class PractitionerService {
   }
 
   async getPractitionerByUserId(userId: string): Promise<PractitionerDto> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         query GetPractitionerByUserId($userId: String) {
@@ -170,7 +170,7 @@ class PractitionerService {
   }
 
   async getAllPractitioners(): Promise<PractitionerDto[]> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         query GetAllPractitioners {
@@ -225,7 +225,7 @@ class PractitionerService {
   }
 
   async getPractitionerByIdNumber(idNumber: string): Promise<UserDto> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
        query GetPractitionerByIdNumber($idNumber: String) {
@@ -270,7 +270,7 @@ class PractitionerService {
 
   // promotePractitionerToPrincipal(userId: String): Practitioner
   async PromotePractitionerToPrincipal(userId: string): Promise<UserDto> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         mutation promotePractitionerToPrincipal($userId: String) {
@@ -303,7 +303,7 @@ class PractitionerService {
   async getClassroomDetailsForPractitioner(
     userId: string
   ): Promise<{ principalName: string; classroomName: string }> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         query classroomDetailsForPractitioner($userId: String) {
@@ -333,7 +333,7 @@ class PractitionerService {
   async getClassroomGroupClassroomsForPractitioner(
     userId: string
   ): Promise<{ classroom: ClassroomDto }> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
       query GetClassroomGroupClassroomsForPractitioner($userId: String) {
@@ -390,7 +390,7 @@ class PractitionerService {
     practitionerId: string,
     principalId: string
   ): Promise<boolean> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         mutation updatePractitionerShareInfo(
@@ -419,7 +419,7 @@ class PractitionerService {
     practitionerId: string,
     status: boolean = true
   ): Promise<boolean> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         mutation UpdatePractitionerRegistered(
@@ -451,7 +451,7 @@ class PractitionerService {
     practitionerId: string,
     progress: any
   ): Promise<boolean> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         mutation updatePractitionerProgress(
@@ -482,7 +482,7 @@ class PractitionerService {
   async AddPractitionerToPrincipal(
     input: MutationAddPractitionerToPrincipalArgs
   ): Promise<UserDto> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         mutation addPractitionerToPrincipal ($firstName: String, $idNumber: String, $lastName: String, $userId: String) {
@@ -518,7 +518,7 @@ class PractitionerService {
     practitionerId: string,
     input: MutationUpdatePractitionerContactInfoArgs
   ): Promise<PractitionerDto> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
       mutation updatePractitionerContactInfo($practitionerId: String, $firstName: String, $lastName: String, $phoneNumber: String, $email: String) {
@@ -552,7 +552,7 @@ class PractitionerService {
     principalId: string,
     accepted: boolean = true
   ): Promise<boolean> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
       mutation updatePrincipalInvitation(
@@ -589,7 +589,7 @@ class PractitionerService {
   }
 
   async displayMetrics(type: string): Promise<PractitionerDto[]> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
       query displayMetrics($type: String) {
@@ -614,7 +614,7 @@ class PractitionerService {
   async practitionerColleagues(
     userId: string
   ): Promise<PractitionerColleagues[]> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
       query practitionerColleagues($userId: String) {
@@ -643,7 +643,7 @@ class PractitionerService {
     surname: string,
     contactno: string
   ): Promise<boolean> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         mutation updatePractitionerEmergencyContact(

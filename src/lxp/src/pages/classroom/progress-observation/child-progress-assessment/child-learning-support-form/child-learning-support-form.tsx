@@ -5,14 +5,13 @@ import {
   FormInput,
   Typography,
   classNames,
+  renderIcon,
 } from '@ecdlink/ui';
-import { useFormState } from 'react-hook-form';
-import { useForm } from 'react-hook-form';
+import { useFormState, useForm } from 'react-hook-form';
 import {
   ChildLearningSupportFormModel,
   childLearningSupportFormSchema,
 } from '@schemas/classroom/child-progress-observations/child-learning-support-form';
-import { renderIcon } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { childrenSelectors } from '@store/children';
 import { progressTrackingSelectors } from '@store/progress-tracking';
@@ -51,7 +50,7 @@ export const ChildLearningSupportForm: React.FC<
   };
 
   return (
-    <div className={'bg-uiBg pt-2 px-4'}>
+    <div className={'bg-uiBg px-4 pt-2'}>
       <Typography
         type={'h1'}
         text={`Supporting ${currentChildUser?.firstName}'s learning`}

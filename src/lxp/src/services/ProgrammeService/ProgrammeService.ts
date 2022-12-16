@@ -10,7 +10,7 @@ class ProgrammeService {
   }
 
   async getProgrammes(userId: string): Promise<ProgrammeDto[]> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
       query GetAllProgramme($createdUserId: String) {
@@ -50,7 +50,7 @@ class ProgrammeService {
   }
 
   async updateProgramme(id: string, input: ProgrammeInput): Promise<boolean> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         mutation updateProgramme($input: ProgrammeInput, $id: UUID) {
@@ -76,7 +76,7 @@ class ProgrammeService {
     id: string,
     input: DailyProgrammeInput
   ): Promise<boolean> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         mutation updateDailyProgramme($input: DailyProgrammeInput, $id: UUID) {

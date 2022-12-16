@@ -5,9 +5,9 @@ import {
   Divider,
   ProfileAvatar,
   Typography,
+  DialogPosition,
+  renderIcon,
 } from '@ecdlink/ui';
-import { DialogPosition } from '@ecdlink/ui';
-import { renderIcon } from '@ecdlink/ui';
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { PhotoPrompt } from '../../../../../components/photo-prompt/photo-prompt';
@@ -91,7 +91,7 @@ export const AddPhoto: React.FC<AddPhotoProps> = ({ onSubmit, isLoading }) => {
         className="font-medium"
       />
 
-      <div className={'w-full inline-flex justify-center pt-16 pb-12'}>
+      <div className={'inline-flex w-full justify-center pt-16 pb-12'}>
         <ProfileAvatar
           dataUrl={userProfilePicture?.file ?? ''}
           size={'header'}

@@ -1,6 +1,4 @@
-import { Typography } from '@ecdlink/ui';
-import { ComponentBaseProps } from '@ecdlink/ui';
-import { renderIcon } from '@ecdlink/ui';
+import { Typography, renderIcon, ComponentBaseProps } from '@ecdlink/ui';
 import { getMonthName } from '@utils/classroom/attendance/track-attendance-utils';
 import * as styles from './attendance-monthly-report.styles';
 import {
@@ -56,7 +54,7 @@ export const AttendanceMonthlyReport: React.FC<
                     lineHeight={'none'}
                   ></Typography>
 
-                  <div className={'flex flex-row mt-1'} id="month-with-points">
+                  <div className={'mt-1 flex flex-row'} id="month-with-points">
                     {renderIcon(
                       'GiftIcon',
                       styles.icon(attendanceItem.attendanceScore)

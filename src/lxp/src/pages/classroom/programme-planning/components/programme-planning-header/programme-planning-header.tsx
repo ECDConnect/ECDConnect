@@ -1,5 +1,4 @@
-import { StatusChip, Typography } from '@ecdlink/ui/';
-import { classNames } from '@ecdlink/ui/';
+import { StatusChip, Typography, classNames } from '@ecdlink/ui/';
 import { ProgrammePlanningHeaderProps } from './programme-planning-header.types';
 
 export const ProgrammePlanningHeader: React.FC<

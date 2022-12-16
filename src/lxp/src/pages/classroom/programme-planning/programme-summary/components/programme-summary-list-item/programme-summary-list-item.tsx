@@ -1,5 +1,10 @@
-import { BaseListItem, StatusChip, Typography } from '@ecdlink/ui';
-import { classNames, renderIcon } from '@ecdlink/ui';
+import {
+  BaseListItem,
+  StatusChip,
+  Typography,
+  classNames,
+  renderIcon,
+} from '@ecdlink/ui';
 import * as styles from './programme-summary-list-item.styles';
 import { ProgrammeSummaryListItemProps } from './programme-summary-list-item.types';
 

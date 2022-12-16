@@ -5,8 +5,8 @@ import {
   Divider,
   FormInput,
   Typography,
+  renderIcon,
 } from '@ecdlink/ui';
-import { renderIcon } from '@ecdlink/ui';
 import { useEffect } from 'react';
 import { useForm, useFormState } from 'react-hook-form';
 import { useSelector } from 'react-redux';
@@ -65,7 +65,7 @@ export const ChildProgressObservationNote: React.FC = () => {
       data-testId={'child-progress-observation-banner-wrapper'}
       renderOverflow
     >
-      <div className={'bg-uiBg pt-2 px-4'}>
+      <div className={'bg-uiBg px-4 pt-2'}>
         <Typography type={'h1'} text={`Your notes`} color={'primary'} />
         <Typography
           type={'body'}

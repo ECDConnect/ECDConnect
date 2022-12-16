@@ -1,17 +1,9 @@
 import { useTheme, useDialog, ClassroomGroupDto } from '@ecdlink/core';
-import {
-  ActionModal,
-  BannerWrapper,
-  Button,
-  Card,
-  DialogPosition,
-  Typography,
-} from '@ecdlink/ui';
+import { ActionModal, BannerWrapper, DialogPosition } from '@ecdlink/ui';
 import {
   MutationAddPractitionerToPrincipalArgs,
   ProgrammeTypeEnum,
 } from '@ecdlink/graphql';
-import { label } from '@/pages/child/child-notes/child-notes.styles';
 import { IonContent } from '@ionic/react';
 import React, { useEffect, useState } from 'react';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
@@ -20,20 +12,17 @@ import { authSelectors } from '@/store/auth';
 import { classroomsActions, classroomsSelectors } from '@/store/classroom';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
-import { ReactComponent as Cebisa } from '@/assets/cebisa.svg';
 import { AddProgrammeForm } from '../components/add-programme-form/add-programme-form';
 import ConfirmPractitioners from '../components/confirm-practitioners/confirm-practitioners';
 import {
   PractitionerSetupSteps,
   ConfirmPractitionersSteps,
   ConfirmClassesSteps,
-  RegisterPractitioner,
 } from './setup-principal.types';
 import {
   practitionerSelectors,
   practitionerThunkActions,
 } from '@/store/practitioner';
-import { AddPractitionerModel } from '@/schemas/practitioner/add-practitioner';
 import { SetupClasses } from '../components/setup-classes/setup-classes';
 import { AddPhoto } from '@/pages/practitioner/edit-practitioner-profile/components/add-photo/add-photo';
 import { WelcomePage } from '@/components/welcome-page';
@@ -57,9 +46,7 @@ export const SetupPrincipal: React.FC = () => {
   const programmeTypes = useSelector(staticDataSelectors.getProgrammeTypes);
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const user = useSelector(userSelectors.getUser);
-  const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const programmeType = useSelector(classroomsSelectors.getProgrammeType());
-  const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const principalPractitioners = useSelector(
     practitionerSelectors.getPrincipalPractitioners
   );

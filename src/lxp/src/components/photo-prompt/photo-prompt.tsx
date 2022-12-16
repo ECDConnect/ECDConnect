@@ -1,10 +1,11 @@
 // @ts-nocheck
-import { ActionSelect } from '@ecdlink/ui';
-import { ActionSelectItem, ComponentBaseProps } from '@ecdlink/ui';
 import {
   getImageSourceFromCamera,
   getImageSourceFromFileSystem,
   renderIcon,
+  ActionSelect,
+  ActionSelectItem,
+  ComponentBaseProps,
 } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import * as styles from './photo-prompt.styles';

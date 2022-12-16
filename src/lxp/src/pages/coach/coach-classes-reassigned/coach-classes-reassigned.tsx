@@ -1,6 +1,11 @@
 import { useHistory, useLocation } from 'react-router';
-import { renderIcon } from '@ecdlink/ui';
-import { BannerWrapper, Button, Typography, Alert } from '@ecdlink/ui';
+import {
+  renderIcon,
+  BannerWrapper,
+  Button,
+  Typography,
+  Alert,
+} from '@ecdlink/ui';
 import { PhoneIcon } from '@heroicons/react/solid';
 import { PractitionerProfileRouteState } from './coach-classes-reassigned.types';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
@@ -9,12 +14,6 @@ import ROUTES from '@routes/routes';
 import { practitionerSelectors } from '@/store/practitioner';
 import { useSelector } from 'react-redux';
 import { getLogo, LogoSvgs } from '@utils/common/svg.utils';
-
-// import { CreateNote } from '../components/create-note/create-note';
-// import { NoteTypeEnum } from '@ecdlink/graphql';
-// import { getLastNoteDate } from '@utils/child/child-profile-utils';
-// import { notesSelectors } from '@store/notes';
-// import { useSelector } from 'react-redux';
 
 export const CoachClassesReassigned: React.FC = () => {
   const history = useHistory();
@@ -50,8 +49,8 @@ export const CoachClassesReassigned: React.FC = () => {
         }
         displayOffline={!isOnline}
       ></BannerWrapper>
-      <div className="flex w-full items-center mt-4 ml-4">
-        <div className="rounded-full bg-alertMain mr-4 w-8 h-6 grid place-items-center">
+      <div className="mt-4 ml-4 flex w-full items-center">
+        <div className="bg-alertMain mr-4 grid h-6 w-8 place-items-center rounded-full">
           <Typography
             type={'body'}
             weight={'bold'}
@@ -107,7 +106,7 @@ export const CoachClassesReassigned: React.FC = () => {
               size={'normal'}
               onClick={whatsapp}
             >
-              <div className="flex justify-center items-center">
+              <div className="flex items-center justify-center">
                 <img
                   src={getLogo(LogoSvgs.whatsapp)}
                   alt="whatsapp"
@@ -128,9 +127,9 @@ export const CoachClassesReassigned: React.FC = () => {
               size={'small'}
               onClick={call}
             >
-              <div className="flex justify-center items-center">
+              <div className="flex items-center justify-center">
                 <PhoneIcon
-                  className="h-6 w-5 text-primary mr-2"
+                  className="text-primary mr-2 h-6 w-5"
                   aria-hidden="true"
                 />
                 <Typography

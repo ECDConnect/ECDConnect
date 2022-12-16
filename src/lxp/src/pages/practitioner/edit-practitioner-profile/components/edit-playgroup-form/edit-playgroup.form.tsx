@@ -8,9 +8,9 @@ import {
   FormInput,
   Typography,
   Dropdown,
+  ButtonGroupTypes,
+  renderIcon,
 } from '@ecdlink/ui';
-import { ButtonGroupTypes } from '@ecdlink/ui';
-import { renderIcon } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useForm, useWatch, Controller } from 'react-hook-form';
 import * as styles from '../../edit-practitioner-profile.styles';
@@ -315,7 +315,7 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
         <Button
           type="filled"
           color="primary"
-          className={'w-full mt-10'}
+          className={'mt-10 w-full'}
           onClick={() => {
             onSubmit(getPlaygroupFormValues());
           }}
@@ -336,7 +336,7 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
           <Button
             type="outlined"
             color="primary"
-            className="w-full mt-10"
+            className="mt-10 w-full"
             onClick={confirmDelete}
           >
             {renderIcon('TrashIcon', styles.iconPrimary)}

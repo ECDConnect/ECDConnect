@@ -1,6 +1,5 @@
 import { capitalizeFirstLetter, capitalizeWords } from '@ecdlink/core';
-import { Button, Typography } from '@ecdlink/ui';
-import { classNames, renderIcon } from '@ecdlink/ui';
+import { Button, Typography, classNames, renderIcon } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { progressTrackingSelectors } from '@store/progress-tracking';
 import * as styles from './observation-category-card.styles';

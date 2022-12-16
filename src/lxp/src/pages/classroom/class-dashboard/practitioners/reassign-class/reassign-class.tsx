@@ -20,48 +20,12 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm, useWatch } from 'react-hook-form';
 import { InformationCircleIcon } from '@heroicons/react/solid';
 import * as styles from './reassign-class.styles';
-import {
-  practitionerActions,
-  practitionerSelectors,
-} from '@/store/practitioner';
+import { practitionerSelectors } from '@/store/practitioner';
 import { useSelector } from 'react-redux';
 import { ClassroomGroupService } from '@/services/ClassroomGroupService';
 import { authSelectors } from '@/store/auth';
 import { userSelectors } from '@store/user';
 import { classroomsSelectors } from '@/store/classroom';
-
-const mockedData = [
-  {
-    id: 1,
-    title: 'John Buffalo',
-    subTitle: 'Progress report overdue',
-    avatarColor: '#6974af',
-    profileText: 'Jb',
-    alertSeverity: 'error',
-    phoneNumber: '2138471324',
-    email: 'johnbf@gmail.com',
-  },
-  {
-    id: 2,
-    title: 'Pedro Machado',
-    subTitle: 'Progress report overdue',
-    avatarColor: '#6974af',
-    profileText: 'Pm',
-    alertSeverity: 'error',
-    phoneNumber: '23984123490',
-    email: 'pedroM@gmail.com',
-  },
-  {
-    id: 3,
-    title: 'Carlos Vieira',
-    subTitle: 'Progress report overdue',
-    avatarColor: '#6974af',
-    profileText: 'Cv',
-    alertSeverity: 'error',
-    phoneNumber: '314874393',
-    email: 'carlosvieira1234@gmail.com',
-  },
-];
 
 const absentInfo = [
   {
@@ -171,11 +135,6 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
       })
       .filter(Boolean) as { label: string; value: any }[];
 
-    // _list.push({
-    //   label: currentPractitioner?.user?.fullName || '',
-    //   value: currentPractitioner?.userId,
-    // });
-
     setPractitionersList(_list);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -192,11 +151,6 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
         return undefined;
       })
       .filter(Boolean) as { label: string; value: any }[];
-
-    // _list.push({
-    //   label: currentPractitioner?.user?.fullName || '',
-    //   value: currentPractitioner?.userId,
-    // });
 
     setClassroomGroupsList(_list);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -278,7 +232,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
         )}
         <Dropdown
           placeholder={'Select the class'}
-          list={(classroomGroupsList && classroomGroupsList) || []}
+          list={classroomGroupsList || []}
           fillType="clear"
           label={'Which class needs the assignment?'}
           fullWidth
@@ -290,7 +244,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
         />
         <Dropdown
           placeholder={'Select practitioner'}
-          list={(practitionersList && practitionersList) || []}
+          list={practitionersList || []}
           fillType="clear"
           label={'Which practitioner is absent on this date?'}
           fullWidth
@@ -302,7 +256,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
         />
         <Dropdown
           placeholder={'Select practitioner'}
-          list={(practitionersList && practitionersList) || []}
+          list={practitionersList || []}
           fillType="clear"
           label={'Which practitioner will teach this class instead?'}
           fullWidth

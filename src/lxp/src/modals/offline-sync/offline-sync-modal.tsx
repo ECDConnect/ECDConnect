@@ -44,7 +44,6 @@ const OfflineSyncModal: React.FC<OfflineSyncModalProps> = ({
   const handleSync = () => {
     if (practitioner?.isPrincipal === true) {
       dispatch(syncThunkActions.syncOfflineData({}));
-      // TODO: is it okay that we set this even if the sync isn't successful yet? BTW we already do this inside initStoreSetup()
     } else {
       dispatch(syncThunkActions.syncOfflineDataForPractitioner({}));
     }

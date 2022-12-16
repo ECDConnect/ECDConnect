@@ -1,13 +1,5 @@
-import {
-  FormInput,
-  Button,
-  BannerWrapper,
-  Typography,
-  ButtonGroup,
-  ButtonGroupTypes,
-} from '@ecdlink/ui';
-import { useState } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
+import { FormInput, Button, BannerWrapper, Typography } from '@ecdlink/ui';
+import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { EditCellPhoneNUmberProps } from './next-to-kin.types';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
@@ -45,15 +37,11 @@ export const NextToKin: React.FC<EditCellPhoneNUmberProps> = ({
   const {
     getValues: getNextOfKinInfoFormValues,
     register: nextOfKinInfoFormRegister,
-    control: nextOfKinInfoFormControl,
   } = useForm({
     resolver: yupResolver(editCelphoneNumberSchema),
     defaultValues: getDefaultFormvalues(),
     mode: 'onBlur',
     reValidateMode: 'onChange',
-  });
-  const { whatsapp } = useWatch({
-    control: nextOfKinInfoFormControl,
   });
 
   const savePractitionerUserData = () => {

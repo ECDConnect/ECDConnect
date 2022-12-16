@@ -10,7 +10,7 @@ class ClassroomService {
   }
 
   async getClassrooms(): Promise<ClassroomDto[]> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         query {
@@ -37,7 +37,7 @@ class ClassroomService {
   }
 
   async updateClassroom(id: string, input: ClassroomInput): Promise<boolean> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         mutation updateClassroom($id: UUID!,$input: ClassroomInput) {

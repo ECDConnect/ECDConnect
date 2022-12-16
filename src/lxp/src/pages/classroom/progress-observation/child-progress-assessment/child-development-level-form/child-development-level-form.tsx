@@ -8,20 +8,18 @@ import {
   Dialog,
   Divider,
   Typography,
-} from '@ecdlink/ui';
-import {
   ButtonGroupOption,
   ButtonGroupTypes,
   DialogPosition,
+  renderIcon,
+  classNames,
 } from '@ecdlink/ui';
-import { useFormState, useWatch } from 'react-hook-form';
-import { useForm } from 'react-hook-form';
+import { useFormState, useWatch, useForm } from 'react-hook-form';
 import {
   ChildDevelopmentLevelFormModel,
   childDevelopmentLevelFormSchema,
 } from '@schemas/classroom/child-progress-observations/child-development-level-form';
 import * as styles from './child-development-level-form.styles';
-import { renderIcon, classNames } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { useChildProgressObservation } from '@hooks/useChildProgressObservations';
 import { childrenSelectors } from '@store/children';
@@ -44,7 +42,6 @@ export const ChildDevelopmentLevelForm: React.FC<
   childAchievedLevelId,
   onSubmit,
 }) => {
-  // const dialog = useDialog();
   const currentChild = useSelector(childrenSelectors.getChildById(childId));
   const [developmentLevelsDisplayActive, setDevelopmentLevelsDisplayActive] =
     useState(false);
@@ -100,7 +97,7 @@ export const ChildDevelopmentLevelForm: React.FC<
 
   return (
     <>
-      <div className={'bg-uiBg pt-2 px-4'}>
+      <div className={'bg-uiBg px-4 pt-2'}>
         <Typography
           type={'h1'}
           text={`${currentChildUser?.firstName}’s developmental level:`}

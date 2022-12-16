@@ -2,7 +2,6 @@ import {
   AttendanceDto,
   ClassroomGroupDto,
   LocalStorageKeys,
-  PractitionerDto,
   sortDateFunction,
 } from '@ecdlink/core';
 import { Holiday } from '@ecdlink/graphql';
@@ -324,7 +323,7 @@ export const AttendanceSummary: React.FC = () => {
 
   return (
     <>
-      <div className={'flex flex-1 h-full flex-col px-4 pt-4 gap-4'}>
+      <div className={'flex h-full flex-1 flex-col gap-4 px-4 pt-4'}>
         {isValidAttendanceDay ? (
           <PointsSuccessCard
             visible={successMessageVisible}
@@ -346,33 +345,34 @@ export const AttendanceSummary: React.FC = () => {
           </div>
         )}
 
-        {attendanceActionList.length > 0 && missedAttendanceGroups.length > 0 && (
-          <div className={'flex flex-col'}>
-            <div className={'flex flex-row items-center'}>
-              <div className={styles.iconRound}>
+        {attendanceActionList.length > 0 &&
+          missedAttendanceGroups.length > 0 && (
+            <div className={'flex flex-col'}>
+              <div className={'flex flex-row items-center'}>
+                <div className={styles.iconRound}>
+                  <Typography
+                    type={'help'}
+                    weight={'bold'}
+                    text={attendanceActionList.length.toString()}
+                    color={'white'}
+                  />
+                </div>
                 <Typography
-                  type={'help'}
+                  type={'body'}
                   weight={'bold'}
-                  text={attendanceActionList.length.toString()}
-                  color={'white'}
+                  text={'incomplete registers this week.'}
+                  color={'alertMain'}
                 />
               </div>
               <Typography
+                className={'pt-2'}
                 type={'body'}
                 weight={'bold'}
-                text={'incomplete registers this week.'}
-                color={'alertMain'}
+                text={'Let’s get them done:'}
+                color={'textMid'}
               />
             </div>
-            <Typography
-              className={'pt-2'}
-              type={'body'}
-              weight={'bold'}
-              text={'Let’s get them done:'}
-              color={'textMid'}
-            />
-          </div>
-        )}
+          )}
 
         <StackedList
           listItems={attendanceActionList}

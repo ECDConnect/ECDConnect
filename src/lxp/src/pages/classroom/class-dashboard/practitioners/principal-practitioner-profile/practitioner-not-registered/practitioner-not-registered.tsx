@@ -1,8 +1,7 @@
 import { BannerWrapper, Button, Alert } from '@ecdlink/ui';
 import { format, addDays } from 'date-fns';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import { useTheme } from '@ecdlink/core';
-import { useHistory, useLocation } from 'react-router';
+import { useHistory } from 'react-router';
 import { PractitionerNotRegisterProps } from './practitioner-not-registered.types';
 import { PractitionerService } from '@/services/PractitionerService';
 import { authSelectors } from '@/store/auth';

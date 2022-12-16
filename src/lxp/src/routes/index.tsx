@@ -102,8 +102,6 @@ const PublicRoutes: React.FC = () => {
   );
 };
 
-// const ProgrammeRoutes = () => <></>;
-
 const AuthRoutes: React.FC = () => {
   return (
     <Switch>
