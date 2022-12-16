@@ -24,6 +24,8 @@ import { useSelector } from 'react-redux';
 import { MultipleChildrenProps } from '../../infant-register-form/infant-register-form.types';
 import { caregiverSelectors } from '@/store/caregiver';
 import { motherSelectors } from '@/store/mother';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { InfantActions } from '@/store/infant/infant.actions';
 
 export const MotherDetails: React.FC<MotherDetailsProps> = ({
   onSubmit,
@@ -55,6 +57,12 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
 
   const caregivers = useSelector(caregiverSelectors.getCaregivers) || [];
   const mothers = useSelector(motherSelectors?.getMothers);
+
+  const { isLoading } = useThunkFetchCall('infants', InfantActions.ADD_INFANTS);
+  const { isLoading: isLoadingInfantCount } = useThunkFetchCall(
+    'infants',
+    InfantActions.GET_INFANT_COUNT_FOR_MONTH
+  );
 
   const mothersUpdatedToCaregivers = mothers?.map((item) => ({
     firstName: item?.user?.firstName,
@@ -329,7 +337,10 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
           onClick={() => {
             onSubmit(getMotherDetailsFormValues());
           }}
+          isLoading={isLoading || isLoadingInfantCount}
           disabled={
+            isLoading ||
+            isLoadingInfantCount ||
             (!multipleChildrenArray && !isValid) ||
             (isAlreadyClient && !getMotherDetailsFormValues('id')) ||
             (!isAlreadyClient && !getMotherDetailsFormValues('age')) ||

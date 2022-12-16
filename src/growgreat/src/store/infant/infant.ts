@@ -1,13 +1,17 @@
 import { InfantDto } from '@ecdlink/core';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
-import { ThunkStateStatus, ThunkActionStatuses } from '../types';
-import { setThunkActionStatus } from '../utils';
-import { getInfants, addInfant } from './infant.actions';
+import { ThunkStateStatus } from '../types';
+import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
+import {
+  getInfants,
+  addInfant,
+  getInfantCountForMonth,
+} from './infant.actions';
 import { InfantState } from './infant.types';
 
 const initialState: InfantState & ThunkStateStatus = {
-  status: ThunkActionStatuses.Unset,
+  status: [],
 };
 
 const infantSlice = createSlice({
@@ -32,8 +36,14 @@ const infantSlice = createSlice({
   },
   extraReducers: (builder) => {
     setThunkActionStatus(builder, addInfant);
-    builder.addCase(addInfant.fulfilled, (state) => {
-      state.status = ThunkActionStatuses.Fulfilled;
+    setThunkActionStatus(builder, getInfantCountForMonth);
+    builder.addCase(getInfantCountForMonth.fulfilled, (state, action) => {
+      state.infantCountForMonth = action.payload;
+
+      setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(addInfant.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(getInfants.fulfilled, (state, action) => {
       if (!state.infants) {
