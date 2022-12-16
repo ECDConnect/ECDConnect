@@ -223,4 +223,5 @@ const mapUser = (user: Partial<UserDto>): UserModelInput => ({
   phoneNumber: user.phoneNumber,
   email: user.email,
   profileImageUrl: user.profileImageUrl,
+  languageId: user.languageId,
 });
