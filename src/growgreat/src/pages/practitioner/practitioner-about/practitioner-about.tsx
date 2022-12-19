@@ -79,7 +79,7 @@ export const PractitionerAbout: React.FC = () => {
         surname: user.surname || '',
         cellphone: user.phoneNumber || '',
         email: user.email || '',
-        languageId: user?.languageId || '',
+        languageId: healthCareWorker?.languageId || user?.languageId || '',
       };
       return tempPractitioner;
     } else {
@@ -110,7 +110,7 @@ export const PractitionerAbout: React.FC = () => {
 
   const setNewStackListItems = (currentUser: UserDto) => {
     const selectedLanguage = languages?.find(
-      (item) => item?.id === currentUser?.languageId
+      (item) => item?.id === practitionerAboutFormGetValues('languageId')
     );
     const list: ActionListDataItem[] = [
       {
@@ -408,7 +408,6 @@ export const PractitionerAbout: React.FC = () => {
             fillType="clear"
             fullWidth={true}
             label={'Language'}
-            // className={classNames(styles.divider, 'w-full')}
             selectedValue={practitionerAboutFormGetValues().languageId}
             onChange={(item: string) => {
               practitionerAboutFormSetValue('languageId', item, {
