@@ -168,46 +168,44 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
   }, [isOfficeAddress]);
 
   const handleFormSubmit = (): void => {
-    if (isValid /*  && onSubmit */) {
-      const profileFormValues = getCoachProfileFormValues();
+    const profileFormValues = getCoachProfileFormValues();
 
-      const newCoachProfileInformation = Object.assign(
-        {},
-        coachProfileInformation
-      );
+    const newCoachProfileInformation = Object.assign(
+      {},
+      coachProfileInformation
+    );
 
-      newCoachProfileInformation.siteAddress = {
-        name: isOfficeAddress ? profileFormValues.name : '',
-        addressLine1: profileFormValues.addressLine1,
-        addressLine2: profileFormValues.addressLine2,
-        addressLine3: profileFormValues.addressLine3,
-        postalCode: profileFormValues.postalCode,
-        ward: profileFormValues.ward,
-        provinceId: profileFormValues.provinceId,
-        province: profileFormValues.province,
-      };
+    newCoachProfileInformation.siteAddress = {
+      name: isOfficeAddress ? profileFormValues.name : '',
+      addressLine1: profileFormValues.addressLine1,
+      addressLine2: profileFormValues.addressLine2,
+      addressLine3: profileFormValues.addressLine3,
+      postalCode: profileFormValues.postalCode,
+      ward: profileFormValues.ward,
+      provinceId: profileFormValues.provinceId,
+      province: profileFormValues.province,
+    };
 
-      newCoachProfileInformation.email = profileFormValues.email;
+    newCoachProfileInformation.email = profileFormValues.email;
 
-      if (isOfficeAddress) {
-        if (franchisorSiteAddress?.addressLine1 !== undefined) {
-          newCoachProfileInformation.siteAddressId =
-            coachProfileInformation?.franchisorAddressId;
-        } else {
-          let tempAddress = {
-            addressLine1: '',
-            addressLine2: '',
-            addressLine3: '',
-            postalCode: '',
-            provinceId: provinces[0].id,
-          };
+    if (isOfficeAddress) {
+      if (franchisorSiteAddress?.addressLine1 !== undefined) {
+        newCoachProfileInformation.siteAddressId =
+          coachProfileInformation?.franchisorAddressId;
+      } else {
+        let tempAddress = {
+          addressLine1: '',
+          addressLine2: '',
+          addressLine3: '',
+          postalCode: '',
+          provinceId: provinces[0].id,
+        };
 
-          newCoachProfileInformation.siteAddress = tempAddress;
-        }
+        newCoachProfileInformation.siteAddress = tempAddress;
       }
-
-      onSubmit(newCoachProfileInformation);
     }
+
+    onSubmit(newCoachProfileInformation);
   };
 
   return (
