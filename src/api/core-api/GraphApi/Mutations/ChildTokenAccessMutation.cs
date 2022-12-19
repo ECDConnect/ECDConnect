@@ -208,7 +208,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 UserName = $"External_Edit_{Guid.NewGuid()}"
             };
             appUser.TenantId = tenantId;
-            var result = await userManager.CreateAsync(appUser);
+            await userManager.CreateAsync(appUser);
 
             var childRepo = repoFactory.CreateRepository<Child>(userContext: httpContext.HttpContext.GetUser().Id);
             var workflowStatusRepo = repoFactory.CreateRepository<WorkflowStatus>(userContext: httpContext.HttpContext.GetUser().Id);
@@ -235,7 +235,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 ChildUserId = appUser.Id
             };
 
-            var role = await userManager.AddToRoleAsync(appUser, "Child");
+            await userManager.AddToRoleAsync(appUser, "Child");
 
             return TokenHelper.EncodeToken(JsonConvert.SerializeObject(tokenWrapper));
         }

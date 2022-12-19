@@ -23,7 +23,6 @@ namespace ECDLink.Core.Services
     public class ReassignmentService : IReassignmentService
     {
         private readonly IGenericRepositoryFactory _repositoryFactory;
-        private readonly ISystemSetting<InvitationCutoffDelayOptions> _invitationDelay;
         private readonly ISystemSetting<AbsenteeCutoffDelayOptions> _absenteeDelay;
         private readonly HierarchyEngine _hierarchyEngine;
         private readonly AttendanceTrackingRepository _attendanceRepo;
@@ -34,7 +33,6 @@ namespace ECDLink.Core.Services
             ISystemSetting<InvitationCutoffDelayOptions> invitationDelay, [Service] AttendanceTrackingRepository attendanceRepo)
         {
             _repositoryFactory = repositoryFactory;
-            _invitationDelay = invitationDelay;
             _hierarchyEngine = hierarchyEngine;
             _attendanceRepo = attendanceRepo;
         }
@@ -373,35 +371,6 @@ namespace ECDLink.Core.Services
             }
         }
 
-        private List<string> UpdateDocs(string uId, string fromUserId, string toUserId, string oldHierarchy, string newHierarchy, List<string> learnerIds)
-        {
-            //CB/Karel TODO: finish reassign docs
-            List<string> docsReassigned = new List<string>();
-
-            var docRepo = _repositoryFactory.CreateGenericRepository<Document>(userContext: uId);
-
-            if (learnerIds != null && !string.IsNullOrWhiteSpace(newHierarchy))
-            {
-                foreach (var learnerId in learnerIds)
-                {
-                    List<Document> docs = docRepo.GetAll().Where(x => x.UserId == learnerId).Where(y => y.CreatedUserId == fromUserId).ToList();
-                    if (docs != null)
-                    {
-                        foreach (var doc in docs)
-                        {
-                            doc.CreatedUserId = toUserId;
-                            doc.Hierarchy = doc.Hierarchy.Replace(oldHierarchy, newHierarchy);
-                            docRepo.Update(doc);
-
-                            docsReassigned.Add(doc.Id.ToString());
-                        }
-                    }
-                }
-            }
-            return docsReassigned;
-        }
-
-
         public bool ReassignClassroomsFromHistory(string uId, string userId = null)
         {
             var historyRepo = _repositoryFactory.CreateGenericRepository<ClassReassignmentHistory>(userContext: uId);
@@ -461,7 +430,7 @@ namespace ECDLink.Core.Services
                             //update the original history row to teh date its reassigned
                             historyItem.ReassignedBackToDate = DateTime.Now;
                             historyItem.ReassignedBackToUserId = historyItem.UserId;
-                            var historySaved = historyRepo.Update(historyItem);
+                            historyRepo.Update(historyItem);
                             reAssigned = true;
                         }
                         else reAssigned = false;

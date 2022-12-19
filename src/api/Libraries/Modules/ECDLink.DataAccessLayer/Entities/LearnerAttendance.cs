@@ -6,8 +6,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace ECDLink.DataAccessLayer.Entities.Classroom
 {
     [EntityPermission(PermissionGroups.CLASSROOM)]
-    public class LearnerAttendanc
+    public class LearnerAttendance
     {
-       Attendance Attendance { get; set; }
+       // Attendance Attendance { get; set; }
     }
 }

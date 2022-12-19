@@ -32,7 +32,7 @@ namespace ECDLink.Notifications.BulkSms
             {
                 if (_smsClient == null)
                 {
-                    _smsClient = new HttpClient(); ;
+                    _smsClient = new HttpClient();
                     _smsClient.BaseAddress = new Uri(_smsOptions.Value.BaseUrl);
 
                     _smsClient.DefaultRequestHeaders.Add("Accept", "application/json");

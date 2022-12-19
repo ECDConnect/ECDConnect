@@ -127,7 +127,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         TenantId = tenantId
                     };
 
-                    var userCreatedResult = userManager.CreateAsync(newUser).Result;
+                    userManager.CreateAsync(newUser);
 
                     templist.Add(new Practitioner
                     {
@@ -141,7 +141,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         TenantId = tenantId
                     });
 
-                    var userRole = userManager.AddToRoleAsync(newUser, Roles.PRACTITIONER).Result;
+                    userManager.AddToRoleAsync(newUser, Roles.PRACTITIONER);
                 }
             }
 

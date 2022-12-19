@@ -98,10 +98,10 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
                 IsActive = true,
             };
 
-            var result = userManager.CreateAsync(pUserFranchisor).Result;
+            userManager.CreateAsync(pUserFranchisor);
             var franchisorId = pUserFranchisor.Id;
 
-            var passwordResult = userManager.AddPasswordAsync(pUserFranchisor, "Hello123!").Result;
+            userManager.AddPasswordAsync(pUserFranchisor, "Hello123!");
 
             fraRepo.Insert(new Franchisor
             {
@@ -122,10 +122,10 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
                 IsActive = true
             };
 
-            var result2 = userManager.CreateAsync(pUserCoach).Result;
+            userManager.CreateAsync(pUserCoach);
             var coachId = pUserCoach.Id;
 
-            var passwordResult2 = userManager.AddPasswordAsync(pUserCoach, "Hello123!").Result;
+            userManager.AddPasswordAsync(pUserCoach, "Hello123!");
 
             coaRepo.Insert(new Coach
             {
@@ -154,10 +154,10 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
                 IsActive = true
             };
 
-            var result = userManager.CreateAsync(pUserOne).Result;
+            userManager.CreateAsync(pUserOne);
             _practitionerId = pUserOne.Id;
 
-            var passwordResult = userManager.AddPasswordAsync(pUserOne, "Hello123!").Result;
+            userManager.AddPasswordAsync(pUserOne, "Hello123!");
 
             pracRepo.Insert(new Practitioner
             {
@@ -184,9 +184,8 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
                 IsActive = true
             };
 
-            var result2 = userManager.CreateAsync(pUser2).Result;
-
-            var passwordResult2 = userManager.AddPasswordAsync(pUser2, "Hello123!").Result;
+            userManager.CreateAsync(pUser2);
+            userManager.AddPasswordAsync(pUser2, "Hello123!");
 
             pracRepo.Insert(new Practitioner
             {
@@ -326,10 +325,10 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
         private void SeedChild(ApplicationUser user, Guid classroomGroupId, Guid statusId, IServiceProvider serviceProvider)
         {
             var userManager = serviceProvider.GetService<UserManager<ApplicationUser>>();
-            var addUserResult = userManager.CreateAsync(user).Result;
+            userManager.CreateAsync(user);
             var currentChild = userManager.FindByIdAsync(user.Id).Result;
 
-            var addUserRole = userManager.AddToRoleAsync(currentChild, "Child").Result;
+            userManager.AddToRoleAsync(currentChild, "Child");
 
             var repo = _repositoryFactory.CreateRepository<Child>();
             repo.SetUserContext(_practitionerId);
@@ -623,30 +622,6 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
             });
 
             return siteAddress.Id;
-        }
-
-        private Guid SeedClassroom()
-        {
-            var repo = _repositoryFactory.CreateRepository<Classroom>(userContext: _practitionerId);
-
-            var startDate = DateTime.Parse("April 7, 2021");
-
-            var classroom = repo.Insert(new Classroom
-            {
-                Id = TestSeedId.ClassroomId,
-                UserId = _practitionerId,
-                DoesOwnerTeach = true,
-                IsPrinciple = true,
-                NumberOfAssistants = 1,
-                NumberOfOtherAssistants = 2,
-                NumberPractitioners = 3,
-                SiteAddressId = TestSeedId.SiteAddressId,
-                Name = "Seeded Test Classroom",
-                InsertedDate = startDate,
-                IsActive = true
-            });
-
-            return classroom.Id;
         }
     }
 }

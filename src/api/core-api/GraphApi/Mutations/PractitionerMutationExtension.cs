@@ -150,7 +150,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var languages = localeService.GetAvailableLocale().ToList();
             
             List<PractitionerImportItem> practitionerImportList = new List<PractitionerImportItem>();
-            var headerRow = sheet.GetRow(0);
 
             for (var row = 1; row <= sheet.LastRowNum; row++)
             {
@@ -222,7 +221,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         TenantId = tenantId
                     };
 
-                    var userCreatedResult = userManager.CreateAsync(newUser).Result;
+                    userManager.CreateAsync(newUser);
 
                     templist.Add(new Practitioner
                     {
@@ -236,7 +235,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         TenantId = tenantId
                     });
 
-                    var userRole = userManager.AddToRoleAsync(newUser, Roles.PRACTITIONER).Result;
+                    userManager.AddToRoleAsync(newUser, Roles.PRACTITIONER);
                 }
             }
 
@@ -333,7 +332,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                       string file)
         {
             try { 
-                Guid tenantId = TenantExecutionContext.Tenant.Id;
                 var bytes = Convert.FromBase64String(file);
                 using MemoryStream fileStream = new MemoryStream(bytes);
 
@@ -421,7 +419,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         {
             try
             {
-                var languages = localeService.GetAvailableLocale().ToList();
                 Guid tenantId = TenantExecutionContext.Tenant.Id;
                 List<ImportAllStaffItem> practitionerImportList = new List<ImportAllStaffItem>();
 
@@ -439,7 +436,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 var addressRepo = repoFactory.CreateGenericRepository<SiteAddress>(userContext: uId);
                 var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
 
-                var classroomRepo = repoFactory.CreateRepository<Classroom>(userContext: uId);
                 var classroomGenericRepo = repoFactory.CreateGenericRepository<Classroom>(userContext: uId);
 
                 var dbRepo = repoFactory.CreateRepository<SL_Ingestion_User>(userContext: uId);
@@ -530,8 +526,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                                 SecurityStamp = securityStamp,
                                 ConcurrencyStamp = concurrencystamp
                             };
-                            var userCreatedResult = userManager.CreateAsync(newUser).Result;
-                            var userRole = userManager.AddToRoleAsync(newUser, Roles.COACH).Result;
+                            userManager.CreateAsync(newUser);
+                            userManager.AddToRoleAsync(newUser, Roles.COACH);
                             var siteaddressid = addressRepo.GetAll().Where(x => x.AddressLine1 == "Kellner St").FirstOrDefault().Id;
 
                             var cc = new Coach
@@ -580,7 +576,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                                 PasswordHash = password,
                                 TenantId = tenantId
                             };
-                            var userCreatedResult = userManager.CreateAsync(newUser).Result;
+                            userManager.CreateAsync(newUser);
 
                             var newPractitioner = new Practitioner
                             {
@@ -616,11 +612,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                             //sort roles
                             if (practitioner.SiteIndicator != "Principal")
                             {
-                                var userRole = userManager.AddToRoleAsync(newUser, Roles.PRACTITIONER).Result;
+                                userManager.AddToRoleAsync(newUser, Roles.PRACTITIONER);
                             }
                             else
                             {
-                                var userRole = userManager.AddToRoleAsync(newUser, Roles.PRACTITIONER).Result;
+                                userManager.AddToRoleAsync(newUser, Roles.PRACTITIONER);
                                 if (parentUser != null)
                                 {
                                     addedPractitioner.PrincipalHierarchy = Guid.Parse(parentUser.Id);
@@ -640,7 +636,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                                 NumberPractitioners = 1,
                                 Hierarchy = usersHierarchy
                             };
-                            var retClass = classroomGenericRepo.Insert(pracClass);
+                            classroomGenericRepo.Insert(pracClass);
                             //update the SL Ingestion record as processed and save userId
                             SL_Ingestion_User slUser = dbRepo.GetAll().Where(x => x.IDNumber == practitioner.IDNumber).FirstOrDefault();
                             if (slUser != null) {
@@ -936,7 +932,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                                 {
                                     newUser.RaceId = race;
                                 }
-                                var userCreatedResult = userManager.CreateAsync(newUser).Result;
+                                userManager.CreateAsync(newUser);
 
                                 var workflow = staticWorkflowRepo.GetAll().Where(x => x.Description == "Active").FirstOrDefault();
                                 //create child record
@@ -953,7 +949,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                                 };
                                 childRepo.Insert(newChild);
                                 //add child role
-                                var userRole = userManager.AddToRoleAsync(newUser, Roles.CHILD).Result;
+                                userManager.AddToRoleAsync(newUser, Roles.CHILD);
 
                                 //update the children hierarchy
                                 string childNewHierarchy = "";
@@ -1163,7 +1159,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     string userId, string firstname, string surname, string contactno)
 
         {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
             var user = userManager.FindByIdAsync(userId).Result;
             user.EmergencyContactFirstName = firstname;
             user.EmergencyContactSurname = surname;

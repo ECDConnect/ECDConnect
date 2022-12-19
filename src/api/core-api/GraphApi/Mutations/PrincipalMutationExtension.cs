@@ -62,7 +62,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         user.NickSurname = lastName;
                         user.NickFullName = firstName + " " + lastName;
 
-                        var userUpdateResult = userManager.UpdateAsync(user).Result;
+                        userManager.UpdateAsync(user);
                     }
                     else return null;
 
@@ -87,7 +87,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             user.PhoneNumber = phoneNumber;
             user.Email = email;
 
-            var userUpdateResult = userManager.UpdateAsync(user).Result;
+            userManager.UpdateAsync(user);
 
             return user;
         }
