@@ -18,24 +18,16 @@ export const getChildrenForPractitioner = createAsyncThunk<
       children: { children: childrenCache },
     } = getState();
 
-    if (!childrenCache) {
-      try {
-        let children: ChildDto[] | undefined;
+    let children: ChildDto[] | undefined;
 
-        if (userAuth?.auth_token) {
-          children = await new ChildService(
-            userAuth?.auth_token
-          ).getChildrenForPractitioner(id);
-        } else {
-          return rejectWithValue('no access token, profile check required');
-        }
-
-        return children;
-      } catch (err) {
-        return rejectWithValue(err);
-      }
+    if (userAuth?.auth_token) {
+      children = await new ChildService(
+        userAuth?.auth_token
+      ).getChildrenForPractitioner(id);
     } else {
-      return childrenCache;
+      return rejectWithValue('no access token, profile check required');
     }
+
+    return children;
   }
 );
