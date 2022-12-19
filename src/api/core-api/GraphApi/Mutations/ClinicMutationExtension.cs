@@ -35,7 +35,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 UpdatedBy = applicationUserId,
                 Name = input.Name,
                 PhoneNumber = input.PhoneNumber,
-                SiteAddress = input.SiteAddress,
+                SiteAddressId = input.SiteAddressId,
                 EmergencyContactPerson = input.EmergencyContactPerson,
                 EmergencyContactNumber = input.EmergencyContactNumber
             };
