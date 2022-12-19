@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { ClinicDetailsProps } from './clinic-details.types';
 import {
   BannerWrapper,
@@ -16,6 +17,18 @@ export const ClinicDetails: React.FC<ClinicDetailsProps> = ({
   setClinicDetails,
 }) => {
   const { isOnline } = useOnlineStatus();
+
+  const { addressLine1, addressLine3, postalCode } =
+    healthCareWorker?.teamLead?.clinic?.siteAddress || {};
+
+  const healthCareWorkerAddress = useMemo(
+    () =>
+      `${addressLine1 && addressLine1 + ', '}${
+        addressLine3 && addressLine3 + ', '
+      }${postalCode}`,
+    [addressLine1, addressLine3, postalCode]
+  );
+
   const call = (phoneNumber: string) => {
     window.open(`tel:${phoneNumber}`);
   };
@@ -44,42 +57,37 @@ export const ClinicDetails: React.FC<ClinicDetailsProps> = ({
             className={'mt-4'}
           />
         </div>
-        <div>
+        {!!healthCareWorkerAddress && (
           <div>
-            <Typography
-              text={`Clinic address:`}
-              type="h3"
-              color="textDark"
-              className={'mt-4'}
-            />
-            <Typography
-              text={
-                healthCareWorker?.teamLead?.clinic?.siteAddress
-                  ? `${healthCareWorker?.teamLead?.clinic?.siteAddress}`
-                  : ''
-              }
-              type="h3"
-              color="textDark"
-              className={'mt-2'}
-            />
+            <div>
+              <Typography
+                text={`Clinic address:`}
+                type="h3"
+                color="textDark"
+                className={'mt-4'}
+              />
+              <Typography
+                text={!!healthCareWorkerAddress ? healthCareWorkerAddress : ''}
+                type="h3"
+                color="textMid"
+                className={'mt-2'}
+              />
+            </div>
+            <Button
+              size="small"
+              shape="normal"
+              color="primary"
+              type="outlined"
+              className="mt-2"
+              onClick={() => {
+                navigator.clipboard.writeText(healthCareWorkerAddress);
+              }}
+            >
+              <Typography type="help" color="primary" text="Copy address" />
+              {renderIcon('DocumentDuplicateIcon', styles.buttonIcon)}
+            </Button>
           </div>
-          <Button
-            size="small"
-            shape="normal"
-            color="primary"
-            type="outlined"
-            className="mt-2"
-            onClick={() => {
-              navigator.clipboard.writeText(
-                healthCareWorker?.teamLead?.clinic?.siteAddress!?.addressLine1 +
-                  healthCareWorker?.teamLead?.clinic?.siteAddress!?.addressLine2
-              );
-            }}
-          >
-            <Typography type="help" color="primary" text="Copy address" />
-            {renderIcon('DocumentDuplicateIcon', styles.buttonIcon)}
-          </Button>
-        </div>
+        )}
         <div>
           <div>
             <Typography
