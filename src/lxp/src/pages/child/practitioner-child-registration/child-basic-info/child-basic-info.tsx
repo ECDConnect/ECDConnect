@@ -166,7 +166,7 @@ export const ChildBasicInfo: React.FC<
         }}
       />
 
-      {childAlreadyAdded && (
+      {childAlreadyAdded && childAlreadyAdded?.user?.dateOfBirth && (
         <div>
           <Alert
             title={`There is already a child named ${
@@ -174,7 +174,7 @@ export const ChildBasicInfo: React.FC<
               ' ' +
               childAlreadyAdded?.user?.surname
             } at ${classroomsForPractitioner?.name}, born on ${format(
-              new Date(childAlreadyAdded?.user?.dateOfBirth!),
+              new Date(childAlreadyAdded?.user?.dateOfBirth),
               'dd MMM yyyy'
             )}.`}
             type="warning"
