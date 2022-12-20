@@ -49,10 +49,7 @@ export class ChildProgressReportNotificationValidator
       !this.isLastDateOfReportingPeriod(reportingPeriod)
     )
       return [];
-    console.log(
-      getDate(this.currentDate) > 1 &&
-        !this.isLastDateOfReportingPeriod(reportingPeriod)
-    );
+
     const notifications: Message[] = [];
     for (const child of childrenState.children || []) {
       const childProgressReport = (
