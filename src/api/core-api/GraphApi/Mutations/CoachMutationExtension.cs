@@ -80,7 +80,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                             address.PostalCode = input.SiteAddress.PostalCode;
                         if (input.SiteAddress.ProvinceId != null)
                             address.ProvinceId = input.SiteAddress.ProvinceId;
-                        addressRepo.Update(address);
+                        var updateAddressResult = addressRepo.Update(address);
                         //TODO: create address if not exists, but it really should
                     }
                     if (input.SiteAddress!=null && input.SiteAddressId == null)
@@ -105,7 +105,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                             coach.SiteAddressId = updateAddressResult.Id;
                     }
 
-                    dbRepo.Update(coach);
+                    var updateResult = dbRepo.Update(coach);
                 }
                 return coach;
             }
@@ -125,7 +125,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             if (practitioner != null)
             {
                 practitioner.CoachHierarchy = Guid.Parse(coachId);
-                practitionerRepo.Update(practitioner);
+                var updateResult = practitionerRepo.Update(practitioner);
                 return practitioner;
             }
             else return new Practitioner();
@@ -146,7 +146,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             if (practitioner != null)
             {
                 practitioner.CoachHierarchy = null;
-                practitionerRepo.Update(practitioner);
+                var updateResult = practitionerRepo.Update(practitioner);
             }
 
             return practitioner;
@@ -164,9 +164,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var dbRepo = repoFactory.CreateRepository<Coach>(userContext: uId);
-            Coach coach = new CoachQueryExtension().GetCoachByCoachUserId(contextAccessor, dbFactory, repoFactory, coachId);
+            Coach coach = new CoachQueryExtension().GetCoachByCoachUserId(contextAccessor, repoFactory, coachId);
             coach.FranchisorId = null;
-            dbRepo.Update(coach);
+            var updateResult = dbRepo.Update(coach);
 
             return coach;
         }
@@ -181,11 +181,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var dbRepo = repoFactory.CreateRepository<Coach>(userContext: uId);
-            Coach coach = new CoachQueryExtension().GetCoachByCoachUserId(contextAccessor, dbFactory, repoFactory, coachId);
+            Coach coach = new CoachQueryExtension().GetCoachByCoachUserId(contextAccessor, repoFactory, coachId);
             if (coach != null)
             {
                 coach.FranchisorId = new Guid(franchisorId);
-                dbRepo.Update(coach);
+                var updateResult = dbRepo.Update(coach);
 
                 return coach;
             }
