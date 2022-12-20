@@ -25,7 +25,6 @@ import { authActions, authThunkActions } from '@store/auth';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { settingActions } from '@store/settings';
 import ROUTES from '@routes/routes';
-// import DeviceInfo from 'react-native-device-info';
 import { StorageFull } from './storage-full/storage-full';
 const { version } = require('../../../../package.json');
 
@@ -40,9 +39,11 @@ export const Login: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState(false);
 
   navigator.storage.estimate().then((estimate) => {
-    const freMemoryResult = estimate?.quota! / 1024 / 1024;
-    setFreeMemory(Number(freMemoryResult.toFixed(0)));
-    return estimate;
+    if (estimate?.quota) {
+      const freMemoryResult = estimate?.quota / 1024 / 1024;
+      setFreeMemory(Number(freMemoryResult.toFixed(0)));
+      return estimate;
+    }
   });
 
   const {

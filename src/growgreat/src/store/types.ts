@@ -14,10 +14,15 @@ export enum ThunkActionStatuses {
   Rejected = 'rejected',
 }
 
-export interface ThunkStateStatus {
-  status?:
+export interface Status {
+  actionName: string;
+  value:
     | ThunkActionStatuses.Unset
     | ThunkActionStatuses.Pending
     | ThunkActionStatuses.Fulfilled
     | ThunkActionStatuses.Rejected;
+}
+
+export interface ThunkStateStatus {
+  status?: Status[];
 }

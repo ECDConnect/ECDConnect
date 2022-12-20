@@ -8,9 +8,9 @@ import {
   Divider,
   FormInput,
   Typography,
+  DialogPosition,
+  renderIcon,
 } from '@ecdlink/ui';
-import { DialogPosition } from '@ecdlink/ui';
-import { renderIcon } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
@@ -144,7 +144,7 @@ export const PasswordReset: React.FC = () => {
         renderBorder={true}
         onBack={goBack}
       >
-        <div className={styles.passwordResetContainer}>
+        <div className={styles.pResetContainer}>
           {!displaySuccess && (
             <div>
               <Typography
@@ -302,7 +302,7 @@ export const PasswordReset: React.FC = () => {
       </BannerWrapper>
 
       <Dialog
-        className={'px-4 mb-16'}
+        className={'mb-16 px-4'}
         stretch={true}
         visible={displayCallHelp}
         position={DialogPosition.Bottom}

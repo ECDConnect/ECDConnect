@@ -1,7 +1,6 @@
 import { useTheme } from '@ecdlink/core';
 import {
   BannerWrapper,
-  Divider,
   Typography,
   Button,
   ActionListDataItem,
@@ -14,7 +13,6 @@ import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useHistory } from 'react-router-dom';
 // import ROUTES from '@routes/routes';
 import * as styles from './practitioner-list.styles';
-import { classroomsSelectors } from '@store/classroom';
 import { useSelector } from 'react-redux';
 import { useState, useEffect } from 'react';
 import { PractitionerListProps } from './practitioner-list.types';
@@ -27,16 +25,12 @@ import { authSelectors } from '@/store/auth';
 import { OtherPractitionerProfile } from './other-practitioner-view/other-practitioner';
 import ROUTES from '@routes/routes';
 
-export const PractitionerList: React.FC<PractitionerListProps> = ({
-  setPractitionerList,
-}) => {
+export const PractitionerList: React.FC<PractitionerListProps> = () => {
   const history = useHistory();
   const { theme } = useTheme();
   const user = useSelector(userSelectors.getUser);
   const userAuth = useSelector(authSelectors.getAuthUser);
   const { isOnline } = useOnlineStatus();
-  // const classroom = useSelector(classroomsSelectors.getClassroom);
-  // const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const [practitionerInfo, setPractitionerInfo] = useState(false);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const practitioners = useSelector(practitionerSelectors.getPractitioners);

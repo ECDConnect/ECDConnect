@@ -22,6 +22,7 @@ import {
   healthCareWorkerSelectors,
   healthCareWorkerThunkActions,
 } from './store/healthCareWorker';
+import useClearSiteData from '@ecdlink/core/lib/hooks/useClearSiteData';
 
 type IntialStoreSetupContextValues = {
   initloading: boolean;
@@ -50,6 +51,8 @@ function InitialStoreSetup(props: Props) {
   const healthCareWorker = useSelector(
     healthCareWorkerSelectors.getHealthCareWorker
   );
+
+  const clearSiteData = useClearSiteData();
 
   useEffect(() => {
     if (userData) {
@@ -93,6 +96,7 @@ function InitialStoreSetup(props: Props) {
     await resetStaticStoreSetup();
     await resetAdditionalStoreSetup();
 
+    clearSiteData();
     setInitLoading(false);
   }
 

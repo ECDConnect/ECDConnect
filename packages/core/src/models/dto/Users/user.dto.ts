@@ -28,6 +28,6 @@ export interface UserDto extends EntityBase {
   emergencyContactFirstName?: string;
   emergencyContactSurname?: string;
   emergencyContactPhoneNumber?: string;
-  language?: string;
+  languageId?: string;
   emailConfirmed?: boolean;
 }

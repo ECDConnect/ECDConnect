@@ -6,8 +6,8 @@ import {
   StackedList,
   StackedListItemType,
   Typography,
+  MenuListDataItem,
 } from '@ecdlink/ui';
-import { MenuListDataItem } from '@ecdlink/ui';
 import { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import Article from '../../../../../components/article/article';

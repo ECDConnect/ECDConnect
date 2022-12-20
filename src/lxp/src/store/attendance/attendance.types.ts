@@ -30,17 +30,6 @@ export type TrackAttendanceModelInput = {
   attendanceDate: Date | string;
 };
 
-// export type Attendance = {
-//   classProgrammeId?: number;
-//   classProgrammeCacheId: string;
-//   userId?: string;
-//   userId?: string;
-//   weekOfYear?: number;
-//   year?: number;
-//   attended?: boolean;
-//   attendanceDate?: Date | string;
-// };
-
 export interface ChildAttendance {
   userId: string;
   attended: boolean;

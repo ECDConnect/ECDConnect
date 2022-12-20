@@ -9,7 +9,7 @@ class ClassroomGroupLearnerService {
   }
 
   async getClassroomGroupLearners(): Promise<LearnerDto[]> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         query {
@@ -35,7 +35,7 @@ class ClassroomGroupLearnerService {
   }
 
   async updateLearner(id: string, input: LearnerInput): Promise<boolean> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         mutation updateLearner($id: UUID!, $input: LearnerInput) {
@@ -58,7 +58,7 @@ class ClassroomGroupLearnerService {
   }
 
   async createLearner(input: LearnerInput): Promise<LearnerDto> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         mutation createLearner($input: LearnerInput) {

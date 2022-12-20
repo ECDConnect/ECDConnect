@@ -6,10 +6,10 @@ import {
   DialogPosition,
   Divider,
   Typography,
+  renderIcon,
+  classNames,
 } from '@ecdlink/ui';
-import { renderIcon } from '@ecdlink/ui';
 import { format } from 'date-fns';
-import { classNames } from '@ecdlink/ui';
 import { useAppDispatch } from '@store';
 import { notesActions } from '@store/notes';
 import { ViewNoteProps } from './view-note.types';
@@ -78,12 +78,12 @@ export const ViewNote: React.FC<ViewNoteProps> = ({
       onBack={() => onBack && onBack()}
       displayOffline={!isOnline}
     >
-      <div className={'px-4 pb-4 overflow-auto'}>
+      <div className={'overflow-auto px-4 pb-4'}>
         <Typography
           type={'h1'}
           text={note.name}
           color={'primary'}
-          className={'pt-1 break-words w-full'}
+          className={'w-full break-words pt-1'}
         />
         {note.insertedDate && (
           <Typography
@@ -96,7 +96,7 @@ export const ViewNote: React.FC<ViewNoteProps> = ({
           type={'body'}
           text={note.bodyText}
           color={'textMid'}
-          className={'pt-4 break-words'}
+          className={'break-words pt-4'}
         />
         <div className={'py-4'}>
           <Divider></Divider>

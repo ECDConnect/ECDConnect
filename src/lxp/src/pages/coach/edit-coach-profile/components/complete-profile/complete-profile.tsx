@@ -1,5 +1,4 @@
-import { Typography } from '@ecdlink/ui';
-import { renderIcon } from '@ecdlink/ui';
+import { Typography, renderIcon } from '@ecdlink/ui';
 import ROUTES from '@routes/routes';
 import { useHistory } from 'react-router-dom';
 import * as styles from './complete-profile.styles';

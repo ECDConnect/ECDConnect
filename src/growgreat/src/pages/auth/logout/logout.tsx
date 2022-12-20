@@ -31,7 +31,7 @@ export const Logout: React.FC = () => {
             onClick: async () => {
               await resetAuth();
               await resetAppStore();
-              history.push('/');
+              window.location.reload();
             },
             leadingIcon: 'CheckCircleIcon',
           },

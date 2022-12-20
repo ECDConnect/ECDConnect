@@ -15,7 +15,7 @@ import { differenceInWeeks } from 'date-fns';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { useForm, useFormState } from 'react-hook-form';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   PregnantMaternalCaseRecordProps,
   yesNoOptions,
@@ -60,21 +60,11 @@ export const PregnantMaternalCaseRecord: React.FC<
     useState(false);
   const [confirmHasNoRecord, setConfirmHasNoRecord] = useState(false);
 
-  const currentDate = new Date();
+  const currentDate = useMemo(() => new Date(), []);
 
-  const [myMonth, setMyMonth] = useState(currentDate);
-  const [myYear, setMyYear] = useState(currentDate);
-  const [myDay, setMyDay] = useState(currentDate);
+  const [deliveryDate, setDeliveryDate] = useState(currentDate);
 
-  const minDate = new Date(myYear.getFullYear(), myMonth.getMonth(), 1);
-  const maxDate = new Date(myYear.getFullYear(), myMonth.getMonth() + 1, 0);
-
-  const renderDayContents = (day: any, date: any) => {
-    if (date < minDate || date > maxDate) {
-      return <span></span>;
-    }
-    return <span>{date.getDate()}</span>;
-  };
+  const isMinDate = deliveryDate.getFullYear() === currentDate.getFullYear();
 
   const setPhotoUrl = (imageUrl: string) => {
     setPregnantMaternalCaseRecordFormValue('maternalCaseRecord', imageUrl);
@@ -84,14 +74,10 @@ export const PregnantMaternalCaseRecord: React.FC<
   };
 
   useEffect(() => {
-    setMyDay(new Date(myYear.getFullYear(), myMonth.getMonth(), 1));
-  }, [myMonth, myYear, setMyDay]);
-
-  useEffect(() => {
-    if (myDay) {
-      setPregnantMaternalCaseRecordFormValue('deliveryDate', myDay);
+    if (deliveryDate) {
+      setPregnantMaternalCaseRecordFormValue('deliveryDate', deliveryDate);
     }
-  }, [myDay, setPregnantMaternalCaseRecordFormValue]);
+  }, [deliveryDate, setPregnantMaternalCaseRecordFormValue]);
 
   const handleConsentAccept = () => {
     setPregnantMaternalCaseRecordFormValue(
@@ -100,7 +86,7 @@ export const PregnantMaternalCaseRecord: React.FC<
     );
   };
 
-  const diffDates = differenceInWeeks(myDay, currentDate);
+  const diffDates = differenceInWeeks(deliveryDate, currentDate);
   const actualGestationWeek = 40 - diffDates;
 
   const getDate = (point: 'min' | 'max') => {
@@ -118,54 +104,69 @@ export const PregnantMaternalCaseRecord: React.FC<
     event.preventDefault();
   };
 
+  const onYearChange = useCallback(
+    (date: Date) => {
+      if (deliveryDate.getFullYear() !== currentDate.getFullYear()) {
+        return setDeliveryDate(currentDate);
+      }
+
+      return setDeliveryDate(date);
+    },
+    [currentDate, deliveryDate]
+  );
+
   return (
     <>
       <Typography
         type="h2"
         color={'textDark'}
         text={`${details?.name}`}
-        className="z-50 pt-6"
+        className="pt-6"
       />
       <Typography
         type="h4"
         color={'textMid'}
         text={'Maternal Case Record'}
-        className="z-50 w-11/12 pt-2"
+        className="w-11/12 pt-2"
       />
       <div className="mt-4">
         <Typography
           type="h4"
           color={'textMid'}
           text={'Expected delivery date:'}
-          className="z-50 w-11/12 pt-2"
+          className="w-11/12 pt-2"
         />
         <div className="flex items-center gap-1">
           <DatePicker
             placeholderText={'Please select a date'}
-            className="text-primary bg-uiBg focus:border-primary focus:ring-primary mt-1 w-full rounded-md border-none text-lg shadow-sm"
-            selected={myDay}
-            onChange={(date: Date) => setMyDay(date)}
+            className="text-primary bg-uiBg focus:border-primary focus:ring-primary z-50 mt-1 w-full rounded-md border-none text-lg shadow-sm"
+            popperClassName="z-50"
+            selected={deliveryDate}
+            onChange={(date: Date) => setDeliveryDate(date)}
             dateFormat="dd"
-            renderDayContents={renderDayContents}
+            {...(isMinDate && { minDate: currentDate })}
             renderCustomHeader={() => <div>Day</div>}
             onKeyDown={onKeyDown}
           />
           <DatePicker
             placeholderText={'Please select a date'}
             className="text-primary bg-uiBg focus:border-primary focus:ring-primary mt-1 w-full rounded-md border-none text-lg shadow-sm"
-            selected={myMonth}
-            onChange={(date: Date) => setMyMonth(date)}
+            popperClassName="z-50"
+            selected={deliveryDate}
+            onChange={(date: Date) => setDeliveryDate(date)}
             renderCustomHeader={() => <div>Month</div>}
             dateFormat="MMMM"
+            {...(isMinDate && { minDate: currentDate })}
             showMonthYearPicker
             showPopperArrow={true}
             onKeyDown={onKeyDown}
           />
           <DatePicker
             placeholderText={'Please select a date'}
-            className="bg-uiBg text-primary focus:border-primary focus:ring-primary mt-1 w-full rounded-md border-none text-lg shadow-sm"
-            selected={myYear}
-            onChange={(date: Date) => setMyYear(date)}
+            className="bg-uiBg text-primary focus:border-primary focus:ring-primary z-50 mt-1 w-full rounded-md border-none text-lg shadow-sm"
+            popperClassName="z-50"
+            selected={deliveryDate}
+            onChange={onYearChange}
             dateFormat="yyyy"
             minDate={getDate('min')}
             maxDate={getDate('max')}
@@ -186,7 +187,7 @@ export const PregnantMaternalCaseRecord: React.FC<
           type="h4"
           color={'textMid'}
           text={`Does ${details?.name} have her Maternal Case Record?`}
-          className="z-50 mb-2 w-11/12 pt-2"
+          className="mb-2 w-11/12 pt-2"
         />
         <ButtonGroup<boolean>
           options={yesNoOptions}
@@ -241,7 +242,7 @@ export const PregnantMaternalCaseRecord: React.FC<
               weight="bold"
               color={'textMid'}
               text={"Take a photo of the client's Maternal Case Record"}
-              className="z-50 w-9/12 pt-2"
+              className="w-9/12 pt-2"
             />
             <div
               onClick={() => setMaternalRecordExampleVisible(true)}

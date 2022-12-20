@@ -1,7 +1,13 @@
 import { ProgressTrackingSkillDto } from '@ecdlink/core';
-import { Button, CoreRadioGroup, Divider, Typography } from '@ecdlink/ui';
-import { RadioGroupOption } from '@ecdlink/ui';
-import { classNames, renderIcon } from '@ecdlink/ui';
+import {
+  Button,
+  CoreRadioGroup,
+  Divider,
+  Typography,
+  RadioGroupOption,
+  classNames,
+  renderIcon,
+} from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { childrenSelectors } from '@store/children';
@@ -46,7 +52,7 @@ export const ChildUndevelopedSkillForm: React.FC<
   };
 
   return (
-    <div className={'px-4 pt-2 bg-uiBg'}>
+    <div className={'bg-uiBg px-4 pt-2'}>
       <Typography
         type={'h1'}
         color={'primary'}

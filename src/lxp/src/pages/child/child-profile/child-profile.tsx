@@ -414,8 +414,6 @@ export const ChildProfile: React.FC = () => {
             childAttendancePercentage.daysExpected
           ),
       };
-
-    return;
   };
 
   const onCreateChildNoteBack = () => {

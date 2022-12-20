@@ -1,4 +1,3 @@
-// import { NoPlaygroupClassroomType } from './../../enums/ProgrammeType';
 import {
   ChildDto,
   ChildProgressObservationReport,
@@ -28,7 +27,7 @@ export const getPractitionerAlertModel = (
     practitionerFilteredChildren?.map((item) => {
       const daysSinceInsertedDate = differenceInDays(
         new Date(),
-        new Date(item?.insertedDate!)
+        new Date(item?.insertedDate || new Date())
       );
       if (daysSinceInsertedDate > 30) {
         passedDaysGreaterThanThirty++;
@@ -38,7 +37,7 @@ export const getPractitionerAlertModel = (
   }
 
   if (practitionerFilteredChildren) {
-    practitionerFilteredChildren.map((item) => {
+    practitionerFilteredChildren.forEach((item) => {
       if (
         !item?.caregiverId ||
         !item?.user?.firstName ||
@@ -95,19 +94,6 @@ export const getPractitionerAlertModel = (
       alertMessage = `Invite not accepted yet`;
     }
   }
-
-  //   if (classroomGroups && learner) {
-  //     const classroomGroup = classroomGroups.find(
-  //       (x) => x.id === learner?.classroomGroupId
-  //     );
-
-  //     if (classroomGroup?.name === NoPlaygroupClassroomType.name) {
-  //       alert = 'error';
-  //       alertMessage = 'No playgroup assigned';
-
-  //       return { status: alert, message: alertMessage, severity: 1 };
-  //     }
-  //   }
 
   return { status: alert, message: alertMessage, severity: 3 };
 };

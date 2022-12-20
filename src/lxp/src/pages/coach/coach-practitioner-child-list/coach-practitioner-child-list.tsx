@@ -1,6 +1,4 @@
-import { ChildDto, LearnerDto } from '@ecdlink/core';
-import { getAvatarColor } from '@ecdlink/core';
-import { SearchDropDown, StackedList, BannerWrapper } from '@ecdlink/ui';
+import { ChildDto, LearnerDto, getAvatarColor } from '@ecdlink/core';
 import {
   AlertSeverityType,
   ComponentBaseProps,
@@ -8,6 +6,9 @@ import {
   SearchDropDownOption,
   SearchSortOptions,
   UserAlertListDataItem,
+  SearchDropDown,
+  StackedList,
+  BannerWrapper,
 } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -312,7 +313,7 @@ export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
       alertSeverity: childAlert.status as AlertSeverityType,
       avatarColor: getAvatarColor() || '',
       onActionClick: () => {
-        onChildListItemAction(childRecord.id as string);
+        onChildListItemAction(String(childRecord.id));
       },
     };
   };
@@ -332,15 +333,6 @@ export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
       ) || []
     );
   };
-
-  // const showOnlineOnly = () => {
-  //   dialog({
-  //     position: DialogPosition.Bottom,
-  //     render: (onSubmit) => {
-  //       return <OnlineOnlyModal onSubmit={onSubmit}></OnlineOnlyModal>;
-  //     },
-  //   });
-  // };
 
   return (
     <>

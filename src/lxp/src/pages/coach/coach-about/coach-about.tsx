@@ -234,7 +234,7 @@ export const CoachAbout: React.FC = () => {
       setDisplayError(true);
     } else {
       setEditFieldVisible(false);
-      await saveCoachUserData();
+      saveCoachUserData();
     }
   };
 
@@ -291,7 +291,7 @@ export const CoachAbout: React.FC = () => {
       updateDocument(userProfilePicture, imageBaseString);
     }
 
-    await saveCoachUserData(imageBaseString);
+    saveCoachUserData(imageBaseString);
   };
 
   const saveCoachUserData = (imageBaseString: string = '') => {

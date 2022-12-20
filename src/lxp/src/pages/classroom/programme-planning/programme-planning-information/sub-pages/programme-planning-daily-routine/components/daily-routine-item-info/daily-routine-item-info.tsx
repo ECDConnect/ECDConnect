@@ -10,9 +10,9 @@ export const DailyRoutineItemInfo: React.FC<DailyRoutineItemInfoProps> = ({
   routineItem,
 }) => {
   return (
-    <div className={'w-full flex flex-col mt-4'}>
+    <div className={'mt-4 flex w-full flex-col'}>
       <div
-        className={'rounded-md flex flex-col items-center justify-center'}
+        className={'flex flex-col items-center justify-center rounded-md'}
         style={{ backgroundColor: routineItem.imageBackgroundColor }}
       >
         <img src={routineItem.image} alt="routine item" />
@@ -42,7 +42,7 @@ export const DailyRoutineItemInfoHeader: React.FC<
   DailyRoutineItemInfoHeaderProps
 > = ({ routineItem }) => {
   return (
-    <div className={'flex flex-row items-center justify-start mt-2'}>
+    <div className={'mt-2 flex flex-row items-center justify-start'}>
       <RoundIcon
         hexBackgroundColor={routineItem.iconBackgroundColor}
         imageUrl={routineItem.icon}
@@ -53,7 +53,7 @@ export const DailyRoutineItemInfoHeader: React.FC<
         titleTypographyProps={{
           type: 'unspecified',
           fontSize: '16',
-          text: `${routineItem.sequence ? `${routineItem.sequence}.` : ''} ${
+          text: `${routineItem.sequence ? routineItem.sequence : ''} ${
             routineItem.name
           }`,
         }}

@@ -1,8 +1,14 @@
 import { ProgrammeTypeDto } from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Alert, Button, ButtonGroup, FormInput, Typography } from '@ecdlink/ui';
-import { ButtonGroupTypes } from '@ecdlink/ui';
-import { renderIcon } from '@ecdlink/ui';
+import {
+  Alert,
+  Button,
+  ButtonGroup,
+  FormInput,
+  Typography,
+  ButtonGroupTypes,
+  renderIcon,
+} from '@ecdlink/ui';
 import { useEffect } from 'react';
 import { useForm, useFormState, useWatch, Controller } from 'react-hook-form';
 import { useSelector } from 'react-redux';

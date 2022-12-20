@@ -1,5 +1,4 @@
-import { BannerWrapper, Button, Typography } from '@ecdlink/ui';
-import { renderIcon } from '@ecdlink/ui';
+import { BannerWrapper, Button, Typography, renderIcon } from '@ecdlink/ui';
 import { useHistory } from 'react-router';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { ExclamationCircleIcon } from '@heroicons/react/solid';

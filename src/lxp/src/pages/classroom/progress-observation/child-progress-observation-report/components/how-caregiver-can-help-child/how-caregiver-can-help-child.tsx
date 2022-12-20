@@ -1,6 +1,11 @@
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Button, Divider, FormInput, Typography } from '@ecdlink/ui';
-import { renderIcon } from '@ecdlink/ui';
+import {
+  Button,
+  Divider,
+  FormInput,
+  Typography,
+  renderIcon,
+} from '@ecdlink/ui';
 import { useChildProgressObservation } from '@hooks/useChildProgressObservations';
 import { childrenSelectors } from '@store/children';
 import {

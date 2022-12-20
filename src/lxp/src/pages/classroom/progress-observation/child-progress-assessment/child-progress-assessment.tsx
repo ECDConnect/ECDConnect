@@ -1,7 +1,9 @@
-import { LocalStorageKeys, ProgressTrackingSkillDto } from '@ecdlink/core';
-import { useStepNavigation } from '@ecdlink/core';
-import { BannerWrapper, Dialog } from '@ecdlink/ui';
-import { DialogPosition } from '@ecdlink/ui';
+import {
+  LocalStorageKeys,
+  ProgressTrackingSkillDto,
+  useStepNavigation,
+} from '@ecdlink/core';
+import { BannerWrapper, Dialog, DialogPosition } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
@@ -229,7 +231,6 @@ export const ChildProgressAssessment: React.FC = () => {
 
     if (!childIsCompetentWithLevelTwo) {
       setProgressTrackingLevelTwoAlertVisible(true);
-      return;
     }
   };
 

@@ -87,6 +87,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             user.DateOfBirth = input.DateOfBirth;
             user.GenderId = input.GenderId;
             user.RaceId = input.RaceId;
+            user.LanguageId = input.LanguageId;
             user.FirstName = input.FirstName;
             user.Surname = input.Surname;
             user.FullName = $"{input.FirstName} {input.Surname}";

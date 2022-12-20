@@ -1,6 +1,12 @@
-import { Alert, Button, Divider, Typography } from '@ecdlink/ui';
-import { CheckboxChange } from '@ecdlink/ui';
-import { classNames, renderIcon } from '@ecdlink/ui';
+import {
+  Alert,
+  Button,
+  Divider,
+  Typography,
+  CheckboxChange,
+  classNames,
+  renderIcon,
+} from '@ecdlink/ui';
 import { useChildProgressObservation } from '@hooks/useChildProgressObservations';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -124,7 +130,7 @@ export const CategoryLevelForm: React.FC<CategoryLevelFormProps> = ({
   return (
     <>
       <ProgressLevelBar currentLevelId={levelId} />
-      <div className={'px-4 pt-2 bg-uiBg'}>
+      <div className={'bg-uiBg px-4 pt-2'}>
         <Typography
           type={'h1'}
           color={'primary'}

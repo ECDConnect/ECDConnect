@@ -11,7 +11,7 @@ class ContentService {
     id: number,
     localeId: string
   ): Promise<boolean> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         query hasContentTypeBeenTranslated($id: Int!, $localeId: UUID!) {

@@ -1,5 +1,4 @@
-import { Button, classNames, Typography } from '@ecdlink/ui';
-import { renderIcon } from '@ecdlink/ui';
+import { Button, classNames, Typography, renderIcon } from '@ecdlink/ui';
 import ChildDevelopmentLevelsList from '../child-development-levels-list/child-development-levels-list';
 import * as styles from './child-development-levels-display.styles';
 import { ChildDevelopmentLevelsDisplayProps } from './child-development-levels-display.types';
@@ -9,7 +8,7 @@ export const ChildDevelopmentLevelsDisplay = ({
   className,
 }: ChildDevelopmentLevelsDisplayProps) => {
   return (
-    <div className={classNames(className, 'bg-white flex flex-col p-4')}>
+    <div className={classNames(className, 'flex flex-col bg-white p-4')}>
       <Typography
         color={'textDark'}
         type={'body'}

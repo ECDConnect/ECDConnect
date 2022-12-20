@@ -1,14 +1,11 @@
-import { ActionModal, BannerWrapper } from '@ecdlink/ui';
-import { DialogPosition, Dialog } from '@ecdlink/ui';
+import { ActionModal, DialogPosition, Dialog } from '@ecdlink/ui';
 import { useStoreSetup } from '@hooks/useStoreSetup';
 import { useHistory } from 'react-router-dom';
-import { useDialog } from '@ecdlink/core';
 import ROUTES from '@/routes/routes';
 
 export const Logout: React.FC = () => {
   const { resetAuth, resetAppStore } = useStoreSetup();
   const history = useHistory();
-  const dialog = useDialog();
 
   return (
     <Dialog
@@ -29,7 +26,6 @@ export const Logout: React.FC = () => {
             text: 'Yes, log out',
             colour: 'primary',
             onClick: async () => {
-              //   onSubmit();
               await resetAuth();
               await resetAppStore();
               history.push('/');

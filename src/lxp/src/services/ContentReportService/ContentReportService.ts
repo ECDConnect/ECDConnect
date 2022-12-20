@@ -19,7 +19,7 @@ class ContentReportService {
   }
 
   async getUserContentChildProgressReports(userId: string): Promise<any[]> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         query GetUserContentChildProgressReport($UserId: String, $Locale: String) {
@@ -52,7 +52,7 @@ class ContentReportService {
   async createChildProgressReport(
     input: ChildProgressReportInput
   ): Promise<ChildProgressReport> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         mutation createChildProgressReport($input: ChildProgressReportInput) {
@@ -80,7 +80,7 @@ class ContentReportService {
   async syncChildProgressReport(
     input: ChildProgressReportInput
   ): Promise<boolean> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         mutation createChildProgressReport($input: ChildProgressReportInput) {
@@ -109,7 +109,7 @@ class ContentReportService {
     input: ChildProgressReportInput,
     id: string
   ): Promise<ChildProgressReport> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         mutation updateChildProgressReport($input: ChildProgressReportInput,$id:UUID!) {
@@ -142,7 +142,7 @@ class ContentReportService {
     classgroupId: string,
     reportDate: Date
   ): Promise<string> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         query generateChildProgressReport($childId: UUID!,$classgroupId:UUID!,$reportDate:DateTime!) {
@@ -166,7 +166,7 @@ class ContentReportService {
   async getChildProgressReportsSummary(
     count: number = 5
   ): Promise<ChildProgressReportSummaryModel[]> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         query childProgressReportSummary($count: Int!) {
@@ -199,7 +199,7 @@ class ContentReportService {
   async getDetailedProgressReport(
     reportId: string
   ): Promise<ChildProgressObservationReport> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         query childProgressReport($reportId: UUID!) {

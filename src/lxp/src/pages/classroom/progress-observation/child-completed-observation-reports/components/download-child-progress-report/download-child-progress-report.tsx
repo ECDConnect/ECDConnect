@@ -5,8 +5,8 @@ import {
   Dropdown,
   DropDownOption,
   Typography,
+  renderIcon,
 } from '@ecdlink/ui';
-import { renderIcon } from '@ecdlink/ui';
 import { childrenSelectors } from '@store/children';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
@@ -114,7 +114,7 @@ export const DownloadChildProgressReport: React.FC = () => {
       }}
       displayOffline={!isOnline}
     >
-      <div className={'p-4 flex flex-col'}>
+      <div className={'flex flex-col p-4'}>
         <Typography
           type={'h1'}
           color={'primary'}
@@ -136,7 +136,7 @@ export const DownloadChildProgressReport: React.FC = () => {
           text={'Tips for sharing the report'}
           weight={'bold'}
         />
-        <div className={'px-5 text-textLight'}>
+        <div className={'text-textLight px-5'}>
           <ul className={'list-disc'}>
             <li className={'mt-2'}>
               <Typography

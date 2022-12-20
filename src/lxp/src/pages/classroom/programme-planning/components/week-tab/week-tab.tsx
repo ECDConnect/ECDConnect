@@ -1,5 +1,4 @@
-import { classNames, renderIcon } from '@ecdlink/ui';
-import { Typography } from '@ecdlink/ui';
+import { classNames, renderIcon, Typography } from '@ecdlink/ui';
 import { WeekTabProps, WeekDayBreakdown } from './week-tab.types';
 
 export const WeekTab: React.FC<WeekTabProps> = ({
@@ -18,9 +17,9 @@ export const WeekTab: React.FC<WeekTabProps> = ({
     if (step.isDisabled) {
       return (
         <div
-          className={`h-4 w-4 flex flex-row items-center justify-center rounded-full bg-transparent`}
+          className={`flex h-4 w-4 flex-row items-center justify-center rounded-full bg-transparent`}
         >
-          <div className={`h-2 w-2 rounded-full bg-uiLight`}></div>
+          <div className={`bg-uiLight h-2 w-2 rounded-full`}></div>
         </div>
       );
     }
@@ -28,9 +27,9 @@ export const WeekTab: React.FC<WeekTabProps> = ({
     if (step.isHoliday) {
       return (
         <div
-          className={`h-4 w-4 flex flex-row items-center justify-center rounded-full bg-transparent`}
+          className={`flex h-4 w-4 flex-row items-center justify-center rounded-full bg-transparent`}
         >
-          <div className={`h-2 w-2 rounded-full bg-alertMain`}></div>
+          <div className={`bg-alertMain h-2 w-2 rounded-full`}></div>
         </div>
       );
     }
@@ -44,7 +43,7 @@ export const WeekTab: React.FC<WeekTabProps> = ({
 
     return (
       <div
-        className={`h-4 w-4 flex flex-row items-center justify-center rounded-full bg-${
+        className={`flex h-4 w-4 flex-row items-center justify-center rounded-full bg-${
           isActiveStep ? 'uiLight' : 'transparent'
         }`}
       >
@@ -58,14 +57,14 @@ export const WeekTab: React.FC<WeekTabProps> = ({
   };
 
   return (
-    <div className={classNames(className, 'w-full flex flex-row bg-white')}>
+    <div className={classNames(className, 'flex w-full flex-row bg-white')}>
       {steps.map((step, idx) => {
         const isActiveStep = idx === activeStepIndex;
 
         return (
           <div
             key={step.weekDay}
-            className={`flex-shrink py-4 px-2 flex flex-1 flex-row items-center border-b-2 border-${
+            className={`flex flex-1 flex-shrink flex-row items-center border-b-2 py-4 px-2 border-${
               isActiveStep ? 'primary' : 'transparent'
             }`}
             onClick={() => handleStepClick(step, idx)}

@@ -14,7 +14,9 @@ import { InfantService } from '@/services/InfantService';
 import { RootState, ThunkApiType } from '../types';
 
 export const InfantActions = {
+  ADD_INFANTS: 'addInfant',
   GET_INFANTS: 'getInfants',
+  GET_INFANT_COUNT_FOR_MONTH: 'getInfantCountForMonth',
 };
 
 export const getInfants = createAsyncThunk<
@@ -62,24 +64,62 @@ export const addInfant = createAsyncThunk<
   InfantDto,
   CreateInfantRequest,
   ThunkApiType<RootState>
->('addInfant', async ({ infant }, { getState, rejectWithValue }) => {
-  const {
-    auth: { userAuth },
-  } = getState();
-  try {
-    let mappedInfantInput = mapInfant(infant);
+>(
+  InfantActions.ADD_INFANTS,
+  async ({ infant }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+    try {
+      let mappedInfantInput = mapInfant(infant);
 
-    if (userAuth?.auth_token) {
-      return await new InfantService(userAuth?.auth_token).addInfant(
-        mappedInfantInput
-      );
-    } else {
-      return rejectWithValue('no access token, profile check required');
+      if (userAuth?.auth_token) {
+        return await new InfantService(userAuth?.auth_token).addInfant(
+          mappedInfantInput
+        );
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
     }
-  } catch (err) {
-    return rejectWithValue(err);
   }
-});
+);
+
+export const getInfantCountForMonth = createAsyncThunk<
+  number,
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  {},
+  ThunkApiType<RootState> // @ts-ignore
+>(
+  InfantActions.GET_INFANT_COUNT_FOR_MONTH,
+  async (_, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      let count: number;
+      const id = userAuth?.id;
+
+      if (userAuth?.auth_token && id) {
+        count = await new InfantService(
+          userAuth?.auth_token
+        ).getInfantCountForHealthCareWorkerForMonth(id);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      if (!count) {
+        return rejectWithValue('Error getting count');
+      }
+
+      return count;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
 
 export type UpdateMotherRequest = {
   id: string;

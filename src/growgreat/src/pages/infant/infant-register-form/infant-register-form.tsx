@@ -47,6 +47,7 @@ import { MotherDetailsModel } from '@/schemas/infant/mother-details';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { usePrevious } from '@/hooks/usePrevious';
 import { healthCareWorkerSelectors } from '@/store/healthCareWorker';
+import { InfantActions } from '@/store/infant/infant.actions';
 
 const BANNER_HEIGHT = 64;
 
@@ -91,7 +92,15 @@ export const InfantRegisterForm: React.FC = () => {
     healthCareWorkerSelectors.getHealthCareWorker
   );
 
-  const { isLoading, isRejected } = useThunkFetchCall('infants');
+  const { isLoading, isRejected } = useThunkFetchCall(
+    'infants',
+    InfantActions.ADD_INFANTS
+  );
+  const { isRejected: isRejectInfantCount } = useThunkFetchCall(
+    'infants',
+    InfantActions.GET_INFANT_COUNT_FOR_MONTH
+  );
+
   const wasLoading = usePrevious(isLoading);
 
   useEffect(() => {
@@ -115,7 +124,6 @@ export const InfantRegisterForm: React.FC = () => {
   const handleExistingUser = ({ caregiverDetails }: onSubmit) => {
     if (isAlreadyClient) {
       completeAllSteps({ caregiverDetails });
-      showSuccessMessage();
       return;
     }
     setActiveStep(InfantRegisterSteps.pregnantContactInformation);
@@ -168,7 +176,7 @@ export const InfantRegisterForm: React.FC = () => {
       healthCareWorkerId: user?.id,
     };
     if (!details?.isMother) {
-      await appDispatch(caregiverActions.createCaregiver(caregiverInput));
+      appDispatch(caregiverActions.createCaregiver(caregiverInput));
     }
 
     if (multipleChildrenArray?.length >= 1) {
@@ -202,7 +210,7 @@ export const InfantRegisterForm: React.FC = () => {
           caregiver: caregiverInput,
         };
 
-        await appDispatch(infantActions.addInfant(infantInputModel));
+        appDispatch(infantActions.addInfant(infantInputModel));
         await appDispatch(
           infantThunkActions.addInfant({ infant: infantInputModel })
         ).unwrap();
@@ -225,7 +233,7 @@ export const InfantRegisterForm: React.FC = () => {
           file: infantRoadToHealthBook?.roadToHealthBook,
           fileType: FileTypeEnum.RoadToHealthBook,
         };
-        await appDispatch(documentActions.createDocument(documentInputModel));
+        appDispatch(documentActions.createDocument(documentInputModel));
         await appDispatch(
           documentThunkActions.createDocument(documentInputModel)
         ).unwrap();
@@ -265,7 +273,7 @@ export const InfantRegisterForm: React.FC = () => {
         caregiver: caregiverInput,
       };
 
-      await appDispatch(infantActions.addInfant(infantInputModel));
+      appDispatch(infantActions.addInfant(infantInputModel));
       await appDispatch(
         infantThunkActions.addInfant({ infant: infantInputModel })
       ).unwrap();
@@ -288,7 +296,7 @@ export const InfantRegisterForm: React.FC = () => {
         file: infantRoadToHealthBook?.roadToHealthBook,
         fileType: FileTypeEnum.RoadToHealthBook,
       };
-      await appDispatch(documentActions.createDocument(documentInputModel));
+      appDispatch(documentActions.createDocument(documentInputModel));
       await appDispatch(
         documentThunkActions.createDocument(documentInputModel)
       ).unwrap();
@@ -381,7 +389,7 @@ export const InfantRegisterForm: React.FC = () => {
   };
 
   const showSuccessMessage = useCallback(
-    () =>
+    (count?: number) =>
       dialog({
         position: DialogPosition.Middle,
         color: 'bg-transparent',
@@ -408,10 +416,9 @@ export const InfantRegisterForm: React.FC = () => {
                 className="mt-4 text-center"
                 lineHeight="snug"
                 text={
-                  hasConsent?.numberOfChildren &&
-                  hasConsent.numberOfChildren > 0
-                    ? `Great job ${user?.firstName}, you've registered ${hasConsent?.numberOfChildren} children this month.`
-                    : `Great job ${user?.firstName}, you've registered 1 child this month.`
+                  !!count && !isRejectInfantCount
+                    ? `Great job ${user?.firstName}, you've registered ${count} children this month.`
+                    : `Great job ${user?.firstName}, you've registered a child.`
                 }
               />
               <Typography
@@ -440,7 +447,7 @@ export const InfantRegisterForm: React.FC = () => {
           );
         },
       }),
-    [dialog, hasConsent?.numberOfChildren, history, user?.firstName]
+    [dialog, history, isRejectInfantCount, user?.firstName]
   );
 
   useEffect(() => {
@@ -453,26 +460,30 @@ export const InfantRegisterForm: React.FC = () => {
     }
   }, [activeStep, isAlreadyClient]);
 
+  const onSuccess = useCallback(async () => {
+    if (!isRejected) {
+      const count = await appDispatch(
+        infantThunkActions.getInfantCountForMonth({})
+      ).unwrap();
+
+      showSuccessMessage(count);
+      if (healthCareWorker) {
+        await appDispatch(
+          caregiverThunkActions.getCaregiversForHealthCareWorker({
+            id: healthCareWorker?.id!,
+          })
+        ).unwrap();
+      }
+    } else {
+      showSuccessMessage();
+    }
+  }, [appDispatch, healthCareWorker, isRejected, showSuccessMessage]);
+
   useEffect(() => {
     if (!isLoading && wasLoading) {
-      showSuccessMessage();
-      if (!isRejected && healthCareWorker) {
-        (async () =>
-          await appDispatch(
-            caregiverThunkActions.getCaregiversForHealthCareWorker({
-              id: healthCareWorker?.id!,
-            })
-          ).unwrap())();
-      }
+      onSuccess();
     }
-  }, [
-    appDispatch,
-    healthCareWorker,
-    isLoading,
-    isRejected,
-    showSuccessMessage,
-    wasLoading,
-  ]);
+  }, [isLoading, onSuccess, wasLoading]);
 
   return (
     <div className="text-textMid">

@@ -19,7 +19,6 @@ import { userSelectors } from '@/store/user';
 import { useAppDispatch } from '@/store';
 import { authSelectors } from '@/store/auth';
 import { PractitionerService } from '@/services/PractitionerService';
-import { OnNext } from '@/pages/principal/setup-principal/setup-principal.types';
 import { PractitionerFormData } from '../../edit-practitioner-profile.types';
 import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
@@ -82,7 +81,6 @@ export const PractitionerSetup = ({
   const checkClassroomNeedsToBeRemove = async () => {
     if (!practitionerToProgramme) {
       await appDispatch(classroomsActions.resetClassroomState());
-      return;
     }
   };
 

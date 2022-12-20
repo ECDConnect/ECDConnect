@@ -6,16 +6,16 @@ import {
   FormInput,
   Typography,
   classNames,
+  ButtonGroupOption,
+  ButtonGroupTypes,
+  renderIcon,
 } from '@ecdlink/ui';
-import { ButtonGroupOption, ButtonGroupTypes } from '@ecdlink/ui';
-import { useFormState } from 'react-hook-form';
-import { useForm } from 'react-hook-form';
+import { useFormState, useForm } from 'react-hook-form';
 import {
   ChildEmergencyContactFormModel,
   childEmergencyContactFormSchema,
 } from '@schemas/child/child-registration/child-emergency-contact-form';
 import * as styles from './child-emergency-contact-form.styles';
-import { renderIcon } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { ChildEmergencyContactFormProps } from './child-emergency-contact-form.types';
 
@@ -80,7 +80,7 @@ export const ChildEmergencyContactForm: React.FC<
   };
 
   return (
-    <div className={'bg-uiBg pt-2 pb-4 px-4'}>
+    <div className={'bg-uiBg px-4 pt-2 pb-4'}>
       <Typography
         type={'h1'}
         text={'Person to contact in an emergency'}

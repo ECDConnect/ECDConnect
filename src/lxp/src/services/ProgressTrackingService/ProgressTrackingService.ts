@@ -16,7 +16,7 @@ class ProgressTrackingService {
   async getProgressTrackingCategories(
     locale: string
   ): Promise<ProgressTrackingCategoryDto[]> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
       query GetAllProgressTrackingCategory($locale: String) {
@@ -50,7 +50,7 @@ class ProgressTrackingService {
   async getProgressTrackingSubCategories(
     locale: string
   ): Promise<ProgressTrackingSubCategoryDto[]> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
       query GetAllProgressTrackingSubCategory($locale: String) {
@@ -82,7 +82,7 @@ class ProgressTrackingService {
   async getProgressTrackingSkills(
     locale: string
   ): Promise<ProgressTrackingSkillDto[]> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
       query GetAllProgressTrackingSkill($locale: String) {
@@ -110,7 +110,7 @@ class ProgressTrackingService {
   async getProgressTrackingLevels(
     locale: string
   ): Promise<ProgressTrackingLevelDto[]> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
       query GetAllProgressTrackingLevel($locale: String) {

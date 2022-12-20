@@ -1,5 +1,4 @@
-import { Button, Card, Typography } from '@ecdlink/ui';
-import { classNames, renderIcon } from '@ecdlink/ui';
+import { Button, Card, Typography, classNames, renderIcon } from '@ecdlink/ui';
 import { ChildProgressNoteCardProps } from './child-progress-note-card.types';
 
 export const ChildProgressNoteCard: React.FC<ChildProgressNoteCardProps> = ({

@@ -28,6 +28,7 @@ class UserService {
             genderId
             phoneNumber
             profileImageUrl
+            languageId
             roles {
               id
               name
@@ -176,6 +177,7 @@ class UserService {
           genderId
           phoneNumber
           profileImageUrl
+          languageId
           roles {
             id
             name

@@ -1,6 +1,4 @@
-import { Card, Typography } from '@ecdlink/ui';
-import { ComponentBaseProps } from '@ecdlink/ui';
-import { classNames } from '@ecdlink/ui';
+import { Card, Typography, ComponentBaseProps, classNames } from '@ecdlink/ui';
 import * as styles from './progress-observation-sub-category-card.styles';
 
 interface ProgressObservationSubCategoryCardProps extends ComponentBaseProps {

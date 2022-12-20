@@ -9,7 +9,7 @@ class RaceService {
   }
 
   async getRaces(): Promise<RaceDto[]> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         query {

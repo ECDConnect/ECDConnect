@@ -52,7 +52,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
   const isPrincipal = practitioner?.isPrincipal === true;
   const [isButtonActive, setIsButtonActive] = useState<boolean>(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [shouldFilter, setShouldFilter] = useState<boolean>(true);
+  const [shouldFilter] = useState<boolean>(true);
 
   const [attendanceGroups, setAttendanceGroups] = useState<AttendanceState[]>();
   const [selectedClassroomGroups, setSelectedClassroomGroups] = useState<
@@ -84,10 +84,6 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
 
   useEffect(() => {
     if (classroomGroups) {
-      // if (!isPlaygroup) {
-      //   setShouldFilter(false);
-      // }
-
       const selectedGroups = isPrincipal
         ? classroomGroupsForPrincipal.filter(
             (x) => x.id === primaryClassProgramme?.classroomGroupId
