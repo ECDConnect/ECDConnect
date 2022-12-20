@@ -12,7 +12,6 @@ import {
   AddUsersToRole,
   CreateHealthCareWorker,
   CreateUser,
-  HealthCareWorkerModelInput,
   RoleList,
   UserModelInput,
 } from '@ecdlink/graphql';

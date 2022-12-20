@@ -1,13 +1,18 @@
 /* This example requires Tailwind CSS v2.0+ */
 import { useMutation } from '@apollo/client';
 import { CreateRace, RaceInput, UpdateRace } from '@ecdlink/graphql';
-import { RaceDto } from '@ecdlink/core';
-import { initialRaceValues, raceSchema } from '@ecdlink/core';
+import {
+  RaceDto,
+  initialRaceValues,
+  raceSchema,
+  NOTIFICATION,
+  useNotifications,
+} from '@ecdlink/core';
+
 import { yupResolver } from '@hookform/resolvers/yup';
 import FormField from '../../../../../../components/form-field/form-field';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { NOTIFICATION, useNotifications } from '@ecdlink/core';
 
 /* eslint-disable-next-line */
 export interface RaceProps {
@@ -98,18 +103,18 @@ export default function RacePanel(props: RaceProps) {
       <div className="space-y-8 divide-y divide-gray-200">
         <div className="pt-8">
           <div className="grid grid-cols-2">
-            <span className="text-lg leading-6 font-medium text-gray-900"></span>
+            <span className="text-lg font-medium leading-6 text-gray-900"></span>
             <div className="flex justify-end">
               <button
                 onClick={() => emitCloseDialog(false)}
                 type="button"
-                className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                className="focus:outline-none focus:ring-primary rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-offset-2"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary hover:bg-uiLight focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                className="bg-primary hover:bg-uiLight focus:outline-none focus:ring-primary ml-3 inline-flex justify-center rounded-md border border-transparent py-2 px-4 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
               >
                 {!isEdit ? <span> Save & Continue </span> : <span> Save </span>}
               </button>

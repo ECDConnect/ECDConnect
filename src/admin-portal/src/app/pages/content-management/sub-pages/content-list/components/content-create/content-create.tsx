@@ -4,6 +4,7 @@ import {
   ContentTypeDto,
   ContentTypeFieldDto,
   LanguageDto,
+  camelCaseToSentanceCase,
 } from '@ecdlink/core';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -13,7 +14,6 @@ import {
   FormTemplateField,
 } from '../../../../content-management-models';
 import LanguageSelector from '../../../../../../components/language-selector/language-selector';
-import { camelCaseToSentanceCase } from '@ecdlink/core';
 import { ContentLoader } from '../../../../../../components/content-loader/content-loader';
 
 export interface ContentCreateProps {
@@ -127,7 +127,7 @@ export default function ContentCreate({
           onSubmit={handleSubmit(onSubmit)}
           className="space-y-8 divide-y divide-gray-200"
         >
-          <div className="-ml-4 -mt-2 flex items-center justify-between flex-wrap sm:flex-nowrap">
+          <div className="-ml-4 -mt-2 flex flex-wrap items-center justify-between sm:flex-nowrap">
             <div className="ml-4 mt-2">
               <LanguageSelector
                 disabled={true}
@@ -139,13 +139,13 @@ export default function ContentCreate({
               <button
                 onClick={() => closeDialog(false)}
                 type="button"
-                className="mr-2 inline-flex items-center px-4 py-2.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-uiMid hover:bg-primary focus:outline-none focus:ring-2 focus:ring-offset-2"
+                className="bg-uiMid hover:bg-primary focus:outline-none mr-2 inline-flex items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="inline-flex items-center px-4 py-2.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-uiMid focus:outline-none focus:ring-2 focus:ring-offset-2"
+                className="bg-primary hover:bg-uiMid focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
               >
                 Save
               </button>

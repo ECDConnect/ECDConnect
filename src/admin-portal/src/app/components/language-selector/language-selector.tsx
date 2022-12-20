@@ -1,6 +1,5 @@
 import { LanguageDto } from '@ecdlink/core';
-import { Dropdown } from '@ecdlink/ui';
-import { ComponentBaseProps } from '@ecdlink/ui';
+import { Dropdown, ComponentBaseProps } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 
 export interface LanguageSelectorProps extends ComponentBaseProps {
