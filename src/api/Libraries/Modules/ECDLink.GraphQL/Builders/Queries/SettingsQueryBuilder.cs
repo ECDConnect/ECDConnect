@@ -26,7 +26,7 @@ namespace ECDLink.EGraphQL.Builders.Queries
                 foreach (var setting in settingGroup)
                 {
                     AddSettingsQuery(config, setting.Key);
-                };
+                }
             });
 
             return queryExtension;

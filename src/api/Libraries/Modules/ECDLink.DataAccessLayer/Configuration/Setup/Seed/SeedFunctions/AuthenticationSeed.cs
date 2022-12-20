@@ -34,7 +34,6 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.SeedFunctions
             SeedRoles();
             SeedPermissions();
             SeedUserRoles();
-            var t = SeedRolePermissions().Result;
         }
 
         private void SeedUsers()
@@ -55,9 +54,8 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.SeedFunctions
                 TenantId = tenantId,
             };
 
-            var result = userManager.CreateAsync(newUser).Result;
-
-            var passResult = userManager.AddPasswordAsync(newUser, "Hello123!").Result;
+            userManager.CreateAsync(newUser);
+            userManager.AddPasswordAsync(newUser, "Hello123!");
 
             var engine = serviceProvider.GetService<HierarchyEngine>();
             engine.AddHierarchyEntity<ApplicationUser>(newUser.Id, newUser.Id);
@@ -83,7 +81,7 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.SeedFunctions
 
                 if (!roleExists)
                 {
-                    var result = roleManager.CreateAsync(new IdentityRole(role)).Result;
+                    roleManager.CreateAsync(new IdentityRole(role));
                 }
             }
         }
@@ -112,8 +110,6 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.SeedFunctions
             {
                 foreach (var command in commandList)
                 {
-                    var name = item.DisplayName();
-
                     var grouping = item.ClrType.GetCustomAttribute<EntityPermissionAttribute>();
 
                     var permissionName = grouping?.PermissionName ?? string.Empty;
@@ -155,30 +151,8 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.SeedFunctions
 
             foreach (var user in allUsers)
             {
-                var result = userManager.AddToRolesAsync(user, allRoles).Result;
+                userManager.AddToRolesAsync(user, allRoles);
             }
-        }
-
-        private async Task<bool> SeedRolePermissions()
-        {
-            var roleManager = serviceProvider.GetService<RoleManager<IdentityRole>>();
-
-            var repositoryFactory = serviceProvider.GetService<IGenericRepositoryFactory>();
-
-            var permissionManager = repositoryFactory.CreateRepository<Permission>();
-
-            var allRoles = roleManager.Roles.ToList();
-
-            var allPermissions = permissionManager.GetAll().Select(x => x.Id);
-
-            var rolePermissionRepository = serviceProvider.GetService<RolePermissionRepository>();
-
-            foreach (var role in allRoles)
-            {
-                await rolePermissionRepository.AddPermissionsToRole(role.Id, allPermissions);
-            }
-
-            return true;
         }
 
         private void SeedHierarchy()

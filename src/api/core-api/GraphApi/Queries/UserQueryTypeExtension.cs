@@ -35,24 +35,21 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
     [ExtendObjectType(OperationTypeNames.Query)]
     public class UserQueryTypeExtension
     {
-        private readonly ITokenManager<ApplicationUser, InvitationTokenManager> _invitationManager;
 
-        public UserQueryTypeExtension(ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager)
+        public UserQueryTypeExtension()
         {
-            _invitationManager = invitationManager;
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public IEnumerable<ApplicationUser> GetUsers([Service] UserManager<ApplicationUser> userManager)
         {
             Guid tenantId = TenantExecutionContext.Tenant.Id;
-            return userManager.Users.Where(x => x.TenantId.Equals(tenantId));//.OrderBy(y => y.FirstName);
+            return userManager.Users.Where(x => x.TenantId.Equals(tenantId));
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public ApplicationUser GetUserById([Service] IServiceProvider serviceProvider,[Service] UserManager<ApplicationUser> userManager, [Service] RoleManager<IdentityRole> roleManager, [Service] IHttpContextAccessor contextAccessor, [Service] IDbContextFactory<AuthenticationDbContext> dbFactory, [Service] IGenericRepositoryFactory repoFactory, string userId)
         {
-            //new TestSeed(serviceProvider);
             var user = userManager.FindByIdAsync(userId).Result;
 
             var roles = new ObjectTypes.ApplicationUserExtension().GetRoles(user, roleManager, userManager);

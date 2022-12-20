@@ -19,15 +19,15 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
 {
     public static class TestSeedId
     {
-        public static Guid ClassroomId = Guid.NewGuid();// Guid.Parse("a917d764-96eb-4400-9848-d43c3dbc897e");
-        public static Guid SiteAddressId = Guid.NewGuid();//Guid.Parse("43eb37ae-3fbc-4381-be2f-7b95021a646d");
+        public static Guid ClassroomId = Guid.NewGuid();
+        public static Guid SiteAddressId = Guid.NewGuid();
 
-        public static Guid ClassgroupOne = Guid.NewGuid();//Guid.Parse("7068f956-df68-4336-b39b-09363b0e441b");
-        public static Guid ClassgroupTwo = Guid.NewGuid();//Guid.Parse("fbcd4ab4-5933-4034-8946-fe1251f431c6");
+        public static Guid ClassgroupOne = Guid.NewGuid();
+        public static Guid ClassgroupTwo = Guid.NewGuid();
 
-        public static Guid ProgrammeOne = Guid.NewGuid();//Guid.Parse("ee193f81-fb1f-4c30-8b50-4607a68be563");
-        public static Guid ProgrammeTwo = Guid.NewGuid();//Guid.Parse("2229f847-a390-4a12-bb67-e09b15ad427e");
-        public static Guid ProgrammeThree = Guid.NewGuid();//Guid.Parse("49e220cf-75d8-4618-9502-fc8b2520bdd5");
+        public static Guid ProgrammeOne = Guid.NewGuid();
+        public static Guid ProgrammeTwo = Guid.NewGuid();
+        public static Guid ProgrammeThree = Guid.NewGuid();
     }
 
     public class ChildrenTest
@@ -65,7 +65,6 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
             } catch (Exception e) { }
 
             try { 
-            var classroomId = SeedClassroom();
                 SeedClassProgrammes();
                 SeedAttendance(serviceProvider, _practitionerId);
             }
@@ -99,17 +98,15 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
                 IsActive = true,
             };
 
-            var result = userManager.CreateAsync(pUserFranchisor).Result;
+            userManager.CreateAsync(pUserFranchisor);
             var franchisorId = pUserFranchisor.Id;
 
-            var passwordResult = userManager.AddPasswordAsync(pUserFranchisor, "Hello123!").Result;
-            //var siteAddressId2 = SeedSiteAddress(new Guid(), "Franchise Coach Address");
+            userManager.AddPasswordAsync(pUserFranchisor, "Hello123!");
 
             fraRepo.Insert(new Franchisor
             {
                 Id = Guid.NewGuid(),
                 UserId = _practitionerId,
-                //SiteAddressId = siteAddressId2,
                 AreaOfOperation = "Office"
             });
 
@@ -125,16 +122,15 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
                 IsActive = true
             };
 
-            var result2 = userManager.CreateAsync(pUserCoach).Result;
+            userManager.CreateAsync(pUserCoach);
             var coachId = pUserCoach.Id;
 
-            var passwordResult2 = userManager.AddPasswordAsync(pUserCoach, "Hello123!").Result;
+            userManager.AddPasswordAsync(pUserCoach, "Hello123!");
 
             coaRepo.Insert(new Coach
             {
                 Id = Guid.NewGuid(),
                 UserId = pUserCoach.Id,
-                //SiteAddressId = siteAddressId2,
                 AreaOfOperation = "Office",
                 FranchisorId = Guid.Parse(franchisorId)
             });
@@ -158,10 +154,10 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
                 IsActive = true
             };
 
-            var result = userManager.CreateAsync(pUserOne).Result;
+            userManager.CreateAsync(pUserOne);
             _practitionerId = pUserOne.Id;
 
-            var passwordResult = userManager.AddPasswordAsync(pUserOne, "Hello123!").Result;
+            userManager.AddPasswordAsync(pUserOne, "Hello123!");
 
             pracRepo.Insert(new Practitioner
             {
@@ -188,9 +184,8 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
                 IsActive = true
             };
 
-            var result2 = userManager.CreateAsync(pUser2).Result;
-
-            var passwordResult2 = userManager.AddPasswordAsync(pUser2, "Hello123!").Result;
+            userManager.CreateAsync(pUser2);
+            userManager.AddPasswordAsync(pUser2, "Hello123!");
 
             pracRepo.Insert(new Practitioner
             {
@@ -330,10 +325,10 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
         private void SeedChild(ApplicationUser user, Guid classroomGroupId, Guid statusId, IServiceProvider serviceProvider)
         {
             var userManager = serviceProvider.GetService<UserManager<ApplicationUser>>();
-            var addUserResult = userManager.CreateAsync(user).Result;
+            userManager.CreateAsync(user);
             var currentChild = userManager.FindByIdAsync(user.Id).Result;
 
-            var addUserRole = userManager.AddToRoleAsync(currentChild, "Child").Result;
+            userManager.AddToRoleAsync(currentChild, "Child");
 
             var repo = _repositoryFactory.CreateRepository<Child>();
             repo.SetUserContext(_practitionerId);
@@ -627,30 +622,6 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
             });
 
             return siteAddress.Id;
-        }
-
-        private Guid SeedClassroom()
-        {
-            var repo = _repositoryFactory.CreateRepository<Classroom>(userContext: _practitionerId);
-
-            var startDate = DateTime.Parse("April 7, 2021");
-
-            var classroom = repo.Insert(new Classroom
-            {
-                Id = TestSeedId.ClassroomId,
-                UserId = _practitionerId,
-                DoesOwnerTeach = true,
-                IsPrinciple = true,
-                NumberOfAssistants = 1,
-                NumberOfOtherAssistants = 2,
-                NumberPractitioners = 3,
-                SiteAddressId = TestSeedId.SiteAddressId,
-                Name = "Seeded Test Classroom",
-                InsertedDate = startDate,
-                IsActive = true
-            });
-
-            return classroom.Id;
         }
     }
 }

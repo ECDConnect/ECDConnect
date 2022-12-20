@@ -48,8 +48,6 @@ namespace EcdLink.Api.CoreApi.Documents
         {
             var repo = _repositoryFactory.CreateRepository<Document>();
 
-            //var userGuid = Guid.Parse(userId);
-
             var documents = repo.GetAll()
                                 .Where(x => string.Equals(x.UserId, userId) 
                                 && x.DocumentType.EnumId == fileType)

@@ -15,32 +15,25 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-//using ECDLink.PostgresJWT.Entities;
 using ECDLink.PostgresTenancy.Entities;
 using ECDLink.Tenancy.Context;
 using ECDLink.Tenancy.Services;
 using ECDLink.PostgresTenancy.Services;
 using HotChocolate;
 using Newtonsoft.Json.Linq;
-//using ECDLink.DataAccessLayer.Context;
-//using Microsoft.EntityFrameworkCore;
 
 namespace ECDLink.Security.JwtSecurity.Managers
 {
     public class JwtTokenManager
     {
         private IJwtFactory _jwtFactory;
-        //private IJWTRepository _jwtRepository;
         private IJWTService _jwtService;
         private readonly IClaimsManager _claimsManager;
         private readonly TokenValidationParameters _parameters;
-        //private readonly AuthenticationDbContext _dbContext;
-        //private readonly DbSet<ShortenUrlEntity> _entities;
 
         public JwtTokenManager(
             IJwtFactory jwtFactory, 
             IClaimsManager claimsManager, 
-            //IJWTRepository jwtRepository,
             [Service] IJWTService jWTService,
             TokenValidationParameters parameters
             )
@@ -48,7 +41,6 @@ namespace ECDLink.Security.JwtSecurity.Managers
             _jwtFactory = jwtFactory;
             _claimsManager = claimsManager;
             _parameters = parameters;
-            //_jwtRepository = jwtRepository;
             _jwtService = jWTService;
         }
 
@@ -162,15 +154,11 @@ namespace ECDLink.Security.JwtSecurity.Managers
 
         public async Task<bool> InvalidateExistingTokens(string contextIdentifier)
         {
-            Guid tenantId = TenantExecutionContext.Tenant.Id;
-
             return _jwtService.InvalidateExistingTokens(contextIdentifier);
         }
 
         public async Task<JWTUserTokensEntity> GetJWTTokenByToken(string auth_token)
         {
-            Guid tenantId = TenantExecutionContext.Tenant.Id;
-
             return _jwtService.GetByToken(auth_token);            
         }
         public async Task<JWTUserTokensEntity> GetJWTTokenById(string id)

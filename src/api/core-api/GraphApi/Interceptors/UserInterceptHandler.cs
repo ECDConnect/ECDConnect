@@ -29,7 +29,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Interceptors
             if (applicationUser.LastSeen <= DateTime.UtcNow.AddMinutes(-10))
             {
                 applicationUser.LastSeen = DateTime.UtcNow;
-                var updateResult = userManager.UpdateAsync(applicationUser).Result;
+                userManager.UpdateAsync(applicationUser);
             }
         }
     }

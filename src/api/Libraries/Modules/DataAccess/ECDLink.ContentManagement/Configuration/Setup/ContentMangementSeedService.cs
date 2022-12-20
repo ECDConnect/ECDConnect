@@ -25,8 +25,6 @@ namespace ECDLink.ContentManagement.Configuration.Setup
             _context = context;
             _jsonFileService = jsonFileService;
             _localeService = localeService;
-
-            //contentReloader.InvokeUpdate(EventArgs.Empty);
         }
 
         public void SeedContent()
@@ -57,8 +55,6 @@ namespace ECDLink.ContentManagement.Configuration.Setup
             };
 
             var fieldDefinitions = _context.FieldTypes.ToList();
-
-            var matchingFields = new Dictionary<string, int>();
 
             foreach (var field in workWithMe.ContentDefinition.SeedFields)
             {

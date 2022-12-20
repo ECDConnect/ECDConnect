@@ -125,17 +125,6 @@ namespace ECDLink.Security.Api
                 return BadRequest();
             }
 
-            // NOT REQUIRED
-            //if (!AuthenticationHeaderValue.TryParse(authorization, out var headerValue))
-            //{
-            //    return BadRequest();
-            //}
-
-            // we have a valid AuthenticationHeaderValue that has the following details:
-
-            //var scheme = headerValue.Scheme;
-            //var parameter = headerValue.Parameter;
-
             // scheme will be "Bearer"
             // parmameter will be the token itself.
 

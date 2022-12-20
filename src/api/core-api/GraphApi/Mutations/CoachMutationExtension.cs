@@ -80,7 +80,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                             address.PostalCode = input.SiteAddress.PostalCode;
                         if (input.SiteAddress.ProvinceId != null)
                             address.ProvinceId = input.SiteAddress.ProvinceId;
-                        var updateAddressResult = addressRepo.Update(address);
+                        addressRepo.Update(address);
                         //TODO: create address if not exists, but it really should
                     }
                     if (input.SiteAddress!=null && input.SiteAddressId == null)
@@ -105,7 +105,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                             coach.SiteAddressId = updateAddressResult.Id;
                     }
 
-                    var updateResult = dbRepo.Update(coach);
+                    dbRepo.Update(coach);
                 }
                 return coach;
             }
@@ -125,7 +125,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             if (practitioner != null)
             {
                 practitioner.CoachHierarchy = Guid.Parse(coachId);
-                var updateResult = practitionerRepo.Update(practitioner);
+                practitionerRepo.Update(practitioner);
                 return practitioner;
             }
             else return new Practitioner();
@@ -146,7 +146,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             if (practitioner != null)
             {
                 practitioner.CoachHierarchy = null;
-                var updateResult = practitionerRepo.Update(practitioner);
+                practitionerRepo.Update(practitioner);
             }
 
             return practitioner;
@@ -166,7 +166,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var dbRepo = repoFactory.CreateRepository<Coach>(userContext: uId);
             Coach coach = new CoachQueryExtension().GetCoachByCoachUserId(contextAccessor, dbFactory, repoFactory, coachId);
             coach.FranchisorId = null;
-            var updateResult = dbRepo.Update(coach);
+            dbRepo.Update(coach);
 
             return coach;
         }
@@ -185,7 +185,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             if (coach != null)
             {
                 coach.FranchisorId = new Guid(franchisorId);
-                var updateResult = dbRepo.Update(coach);
+                dbRepo.Update(coach);
 
                 return coach;
             }

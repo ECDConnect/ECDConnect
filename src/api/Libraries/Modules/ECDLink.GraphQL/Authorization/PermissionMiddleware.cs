@@ -88,8 +88,6 @@ namespace ECDLink.EGraphQL.Authorization
 
             //TODO: CB Remove ROL again when portal login errors have been resolved
             return _claimsManager.GetClaimRoles(principal); //to remove obfuscation
-            //var idClaim = principal.Claims.FirstOrDefault(x => string.Equals(x.Type, SecurityConstants.Strings.JwtClaimIdentifiers.Id));
-            //return _jwtTokenManager.GetJWTTokenRole(idClaim.Value);
 
         }
     }

@@ -59,7 +59,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         public bool ExpireRelationshipLinksService([Service] IHttpContextAccessor contextAccessor,
     [Service] IReassignmentService reassignmentService)
         {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
             reassignmentService.ExpireRelationshipLinks();
             return true;
         }

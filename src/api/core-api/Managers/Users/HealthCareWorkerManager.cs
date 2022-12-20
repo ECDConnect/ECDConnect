@@ -13,16 +13,13 @@ namespace EcdLink.Api.CoreApi.Managers.Users
     public class HealthCareWorkerManager
     {
         private IHttpContextAccessor _contextAccessor;
-        private IDbContextFactory<AuthenticationDbContext> _dbFactory;
         private IGenericRepositoryFactory _repoFactory;
 
         public HealthCareWorkerManager(
             IHttpContextAccessor contextAccessor,
-            IDbContextFactory<AuthenticationDbContext> dbFactory,
             IGenericRepositoryFactory repoFactory)
         {
             _contextAccessor = contextAccessor;
-            _dbFactory = dbFactory;
             _repoFactory = repoFactory;
         }
 

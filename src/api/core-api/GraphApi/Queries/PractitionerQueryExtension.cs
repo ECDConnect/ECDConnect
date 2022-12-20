@@ -139,10 +139,8 @@ string userId)
 [Service] IGenericRepositoryFactory repoFactory,
 string userId)
         {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
             var classRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: userId);
             return classRepo.GetListByUserId(userId);
-            //return classRepo.GetAll().Where(x => x.UserId.ToString() == userId).ToList();
         }
 
         public async Task<FileModel> PractitionerExcelTemplateGenerator(
@@ -223,15 +221,6 @@ string userId)
             [Service] IGenericRepositoryFactory repoFactory,
             string userId)
         {
-            ////return this.GetAllClassroomGroupsForPractitioner(contextAccessor, repoFactory, userId);
-            //var uId = contextAccessor.HttpContext.GetUser().Id;
-            //var classroomGroupRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);
-            //List<ClassroomGroup> classroomGroup = classroomGroupRepo.GetListByUserId(userId);
-            //if (classroomGroup != null)
-            //{
-            //    return classroomGroup;
-            //}
-            //return null;
             return this.GetAllClassroomGroupsForPractitioner(contextAccessor,repoFactory, userId);
         }
 
@@ -240,12 +229,11 @@ string userId)
     string userId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
-            //var classroomGroupRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);
             var classroomRepo = repoFactory.CreateGenericRepository<Classroom>(userContext: uId);
             var coachRepo = repoFactory.CreateGenericRepository<Coach>(userContext: uId);
             var practiRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
             List<PractitionerClassroomName> classrooms = new List<PractitionerClassroomName>();
-            List<ClassroomGroup> classroomGroup = this.GetAllClassroomGroupsForPractitioner(contextAccessor, repoFactory, userId); //classroomGroupRepo.GetListByUserId(userId);
+            List<ClassroomGroup> classroomGroup = this.GetAllClassroomGroupsForPractitioner(contextAccessor, repoFactory, userId);
             if (classroomGroup.Count>0)
             {
                 foreach (var group in classroomGroup)
