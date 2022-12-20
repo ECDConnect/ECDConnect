@@ -82,6 +82,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users
                 ExpectedDateOfDelivery = input.ExpectedDateOfDelivery,
                 HealthCareWorkerId = healthCareWorkerId,
                 SiteAddress = input.SiteAddress,
+                LinkedCaregiverId = input.LinkedCaregiverId
             };
         }
 

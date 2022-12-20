@@ -1704,7 +1704,7 @@ export type IdentityRole = {
   permissions?: Maybe<Array<Maybe<Permission>>>;
 };
 
-export declare type Infant = {
+export type Infant = {
   __typename?: 'Infant';
   caregiver?: Maybe<Caregiver>;
   caregiverId?: Maybe<Scalars['UUID']>;
@@ -1733,6 +1733,8 @@ export type InfantFilterInput = {
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
   lengthAtBirth?: InputMaybe<ComparableNullableOfDecimalOperationFilterInput>;
+  mother?: InputMaybe<MotherFilterInput>;
+  motherCaregiverId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   or?: InputMaybe<Array<InfantFilterInput>>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
@@ -1749,6 +1751,8 @@ export type InfantInput = {
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
   LengthAtBirth?: InputMaybe<Scalars['Decimal']>;
+  Mother?: InputMaybe<MotherInput>;
+  MotherCaregiverId?: InputMaybe<Scalars['UUID']>;
   UpdatedBy?: InputMaybe<Scalars['String']>;
   User?: InputMaybe<ApplicationUserInput>;
   UserId?: InputMaybe<Scalars['String']>;
@@ -1762,6 +1766,8 @@ export type InfantModelInput = {
   firstName?: InputMaybe<Scalars['String']>;
   genderId?: InputMaybe<Scalars['UUID']>;
   lengthAtBirth?: InputMaybe<Scalars['Decimal']>;
+  mother?: InputMaybe<MotherModelInput>;
+  motherCaregiverId?: InputMaybe<Scalars['UUID']>;
   userId?: InputMaybe<Scalars['String']>;
   weightAtBirth?: InputMaybe<Scalars['Decimal']>;
 };
@@ -1954,12 +1960,14 @@ export type MonthlyAttendanceReportModel = {
 export type Mother = {
   __typename?: 'Mother';
   age?: Maybe<Scalars['String']>;
+  caregiver?: Maybe<Caregiver>;
   expectedDateOfDelivery?: Maybe<Scalars['DateTime']>;
   healthCareWorker?: Maybe<HealthCareWorker>;
   healthCareWorkerId?: Maybe<Scalars['UUID']>;
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
+  linkedCaregiverId?: Maybe<Scalars['UUID']>;
   siteAddress?: Maybe<SiteAddress>;
   siteAddressId?: Maybe<Scalars['UUID']>;
   updatedBy?: Maybe<Scalars['String']>;
@@ -1972,12 +1980,14 @@ export type Mother = {
 export type MotherFilterInput = {
   age?: InputMaybe<StringOperationFilterInput>;
   and?: InputMaybe<Array<MotherFilterInput>>;
+  caregiver?: InputMaybe<CaregiverFilterInput>;
   expectedDateOfDelivery?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   healthCareWorker?: InputMaybe<HealthCareWorkerFilterInput>;
   healthCareWorkerId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
+  linkedCaregiverId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   or?: InputMaybe<Array<MotherFilterInput>>;
   siteAddress?: InputMaybe<SiteAddressFilterInput>;
   siteAddressId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
@@ -1990,11 +2000,13 @@ export type MotherFilterInput = {
 
 export type MotherInput = {
   Age?: InputMaybe<Scalars['String']>;
+  Caregiver?: InputMaybe<CaregiverInput>;
   ExpectedDateOfDelivery?: InputMaybe<Scalars['DateTime']>;
   HealthCareWorker?: InputMaybe<HealthCareWorkerInput>;
   HealthCareWorkerId?: InputMaybe<Scalars['UUID']>;
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
+  LinkedCaregiverId?: InputMaybe<Scalars['UUID']>;
   SiteAddress?: InputMaybe<SiteAddressInput>;
   SiteAddressId?: InputMaybe<Scalars['UUID']>;
   UpdatedBy?: InputMaybe<Scalars['String']>;
@@ -2009,6 +2021,7 @@ export type MotherModelInput = {
   expectedDateOfDelivery?: InputMaybe<Scalars['DateTime']>;
   firstName?: InputMaybe<Scalars['String']>;
   healthCareWorkerId?: InputMaybe<Scalars['UUID']>;
+  linkedCaregiverId?: InputMaybe<Scalars['UUID']>;
   phoneNumber?: InputMaybe<Scalars['String']>;
   relation?: InputMaybe<RelationInput>;
   relationId?: InputMaybe<Scalars['UUID']>;
@@ -4396,6 +4409,7 @@ export type Query = {
   healthCareWorkerByUserId?: Maybe<HealthCareWorker>;
   holidaysByMonth?: Maybe<Array<Maybe<Holiday>>>;
   holidaysByYear?: Maybe<Array<Maybe<Holiday>>>;
+  infantCountForHealthCareWorkerForMonth: Scalars['Int'];
   mapPractitionerToPrincipal?: Maybe<Principal>;
   monthlyAttendanceRecordCSV?: Maybe<FileModel>;
   monthlyAttendanceReport?: Maybe<Array<Maybe<MonthlyAttendanceReportModel>>>;
@@ -5225,6 +5239,10 @@ export type QueryHolidaysByYearArgs = {
   year: Scalars['Int'];
 };
 
+export type QueryInfantCountForHealthCareWorkerForMonthArgs = {
+  userId?: InputMaybe<Scalars['String']>;
+};
+
 export type QueryMapPractitionerToPrincipalArgs = {
   practitioner?: InputMaybe<PractitionerInput>;
 };
@@ -5588,9 +5606,127 @@ export type Sl_Ingestion_UserInput = {
   UserId?: InputMaybe<Scalars['String']>;
 };
 
+export type Setting_AbsenteeCutoffDelay = {
+  __typename?: 'Setting_AbsenteeCutoffDelay';
+  AbsenteeCutoffDelay: Scalars['String'];
+};
+
+export type Setting_Azure = {
+  __typename?: 'Setting_Azure';
+  BlobStorageConnection: Scalars['String'];
+};
+
+export type Setting_BulkSms = {
+  __typename?: 'Setting_BulkSms';
+  BaseUrl: Scalars['String'];
+  BasicAuthToken: Scalars['String'];
+  Name: Scalars['String'];
+  TokenId: Scalars['String'];
+  TokenSecret: Scalars['String'];
+};
+
+export type Setting_Children = {
+  __typename?: 'Setting_Children';
+  ChildExpiryTime: Scalars['String'];
+  ChildInitialObservationPeriod: Scalars['String'];
+};
+
+export type Setting_Google = {
+  __typename?: 'Setting_Google';
+  DashboardGoogleReport: Scalars['String'];
+  GoogleAnalyticsTag: Scalars['String'];
+  GoogleTagManager: Scalars['String'];
+};
+
+export type Setting_IntegrationDelay = {
+  __typename?: 'Setting_IntegrationDelay';
+  IntegrationDelay: Scalars['String'];
+};
+
+export type Setting_InvitationCutoffDelay = {
+  __typename?: 'Setting_InvitationCutoffDelay';
+  InvitationCutoffDelay: Scalars['String'];
+};
+
+export type Setting_Invitations = {
+  __typename?: 'Setting_Invitations';
+  Signup: Scalars['String'];
+};
+
+export type Setting_Jwts = {
+  __typename?: 'Setting_Jwts';
+  LongJwtLifespan: Scalars['String'];
+  ShortJwtLifespan: Scalars['String'];
+};
+
+export type Setting_RapidApi = {
+  __typename?: 'Setting_RapidApi';
+  BaseUrl: Scalars['String'];
+  Host: Scalars['String'];
+  Key: Scalars['String'];
+  Name: Scalars['String'];
+};
+
+export type Setting_Reporting = {
+  __typename?: 'Setting_Reporting';
+  ChildProgressReportMonths: Scalars['String'];
+};
+
+export type Setting_Security = {
+  __typename?: 'Setting_Security';
+  ForgotPassword: Scalars['String'];
+  Login: Scalars['String'];
+};
+
+export type Setting_SendGrid = {
+  __typename?: 'Setting_SendGrid';
+  FromEmail: Scalars['String'];
+  Key: Scalars['String'];
+  User: Scalars['String'];
+};
+
+export type Setting_SmartLinkApi = {
+  __typename?: 'Setting_SmartLinkApi';
+  BaseUrl: Scalars['String'];
+  Key: Scalars['String'];
+};
+
+export type Setting_SyncDelay = {
+  __typename?: 'Setting_SyncDelay';
+  SyncDelay: Scalars['String'];
+};
+
+export type Setting_Tokens = {
+  __typename?: 'Setting_Tokens';
+  InvitationLinkExpiry: Scalars['String'];
+  OpenAccessInvitationExpiry: Scalars['String'];
+};
+
+export type Setting_UrlShortner = {
+  __typename?: 'Setting_UrlShortner';
+  RedirectUrl: Scalars['String'];
+};
+
 export type SettingsType = {
   __typename?: 'SettingsType';
+  AbsenteeCutoffDelay: Setting_AbsenteeCutoffDelay;
+  Azure: Setting_Azure;
+  BulkSms: Setting_BulkSms;
+  Children: Setting_Children;
+  Google: Setting_Google;
   Holder?: Maybe<Scalars['String']>;
+  IntegrationDelay: Setting_IntegrationDelay;
+  InvitationCutoffDelay: Setting_InvitationCutoffDelay;
+  Invitations: Setting_Invitations;
+  Jwts: Setting_Jwts;
+  RapidApi: Setting_RapidApi;
+  Reporting: Setting_Reporting;
+  Security: Setting_Security;
+  SendGrid: Setting_SendGrid;
+  SmartLinkApi: Setting_SmartLinkApi;
+  SyncDelay: Setting_SyncDelay;
+  Tokens: Setting_Tokens;
+  UrlShortner: Setting_UrlShortner;
 };
 
 export type ShortenUrlEntity = {
