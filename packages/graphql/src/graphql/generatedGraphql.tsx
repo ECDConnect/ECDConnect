@@ -5847,6 +5847,7 @@ export type TenantModel = {
   themePathVar?: Maybe<Scalars['String']>;
   var1?: Maybe<Scalars['String']>;
   var2?: Maybe<Scalars['String']>;
+  moodleUrlVar?: Maybe<Scalars['String']>;
 };
 
 export enum TenantType {
