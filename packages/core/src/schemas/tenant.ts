@@ -9,6 +9,7 @@ export const initialTenantValues = {
   tenantType: '',
   var1: '',
   var2: '',
+  moodleUrlVar: '',
   Id: '',
 };
 
@@ -21,5 +22,6 @@ export const tenantSchema = Yup.object().shape({
   tenantType: Yup.string(),
   var1: Yup.string(),
   var2: Yup.string(),
+  moodleUrlVar: Yup.string(),
   Id: Yup.string(),
 });
