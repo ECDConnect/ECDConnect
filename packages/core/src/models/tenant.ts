@@ -7,6 +7,7 @@ export interface TenantModel {
   tenantType: TenantType;
   var1: string;
   var2: string;
+  moodleUrlVar: string;
   Id: string;
 }
 
