@@ -23,12 +23,11 @@ namespace ECDLink.Security
 
             ConfigureSecurityTokenTimers(services);
 
-            SetSecurityIoC(services, configuration);
+            SetSecurityIoC(services);
         }
 
         public static void AddSecurityConfiguration(IApplicationBuilder app)
         {
-            //app.UseMiddleware<JwtMiddleware>();
         }
 
         private static void ConfigureSecurityPolicies(IServiceCollection services)
@@ -55,7 +54,7 @@ namespace ECDLink.Security
                 );
         }
 
-        private static void SetSecurityIoC(IServiceCollection services, IConfiguration configuration)
+        private static void SetSecurityIoC(IServiceCollection services)
         {
             services.AddTransient<IJwtFactory, JwtFactory>();
             services.AddTransient<JwtTokenManager>();

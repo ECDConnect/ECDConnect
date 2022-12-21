@@ -63,11 +63,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                             address.PostalCode = input.SiteAddress.PostalCode;
                         if (input.SiteAddress.ProvinceId != null)
                             address.ProvinceId = input.SiteAddress.ProvinceId;
-                        var updateAddressResult = addressRepo.Update(address);
+                        addressRepo.Update(address);
                         //TODO: create address if not exists, but it really should
                     }
 
-                    var updateResult = dbRepo.Update(franchisor);
+                    dbRepo.Update(franchisor);
                 }
                 return franchisor;
             }

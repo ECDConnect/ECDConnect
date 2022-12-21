@@ -10,7 +10,7 @@ import {
   Alert,
 } from '@ecdlink/ui';
 import { Controller, useForm, useFormState } from 'react-hook-form';
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import {
   MotherDetailsProps,
   yesNoOptions,
@@ -21,7 +21,6 @@ import {
   motherDetailsModelSchema,
 } from '@/schemas/infant/mother-details';
 import { useSelector } from 'react-redux';
-import { MultipleChildrenProps } from '../../infant-register-form/infant-register-form.types';
 import { caregiverSelectors } from '@/store/caregiver';
 import { motherSelectors } from '@/store/mother';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
@@ -50,11 +49,7 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
     // defaultValues: playgroup,
     reValidateMode: 'onChange',
   });
-
   const { isValid } = useFormState({ control: motherDetailsFormControl });
-  const [relationshipChildrenArray, setRelationshipChildrenArray] =
-    useState<MultipleChildrenProps[]>();
-
   const caregivers = useSelector(caregiverSelectors.getCaregivers) || [];
   const mothers = useSelector(motherSelectors?.getMothers);
 
@@ -76,20 +71,6 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
   }));
 
   const motherAndCaregivers = [...caregivers, ...mothersUpdatedToCaregivers];
-
-  useEffect(() => {
-    const uniqueChildrenArray = relationshipChildrenArray?.filter(
-      (elem, index, self) =>
-        self.findIndex((t) => {
-          return (
-            t.firstName && elem.firstName && t.firstName === elem.firstName
-          );
-        }) === index
-    );
-
-    setMultipleChildrenArray(uniqueChildrenArray);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [relationshipChildrenArray]);
 
   useEffect(() => {
     watch();
@@ -147,21 +128,13 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
                     []
                   }
                   onChange={(value) => {
-                    relationshipChildrenArray
-                      ? setRelationshipChildrenArray([
-                          {
-                            ...multipleChildrenArray[index],
-                            relationshipId: value,
-                          },
-                          ...relationshipChildrenArray,
-                        ])
-                      : setRelationshipChildrenArray([
-                          {
-                            ...multipleChildrenArray[index],
-                            relationshipId: value,
-                          },
-                          ...multipleChildrenArray,
-                        ]);
+                    setMultipleChildrenArray(
+                      multipleChildrenArray.map((item, currentIndex) =>
+                        currentIndex === index
+                          ? { ...item, relationshipId: value }
+                          : item
+                      )
+                    );
                   }}
                 />
               </div>

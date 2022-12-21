@@ -19,22 +19,16 @@ namespace EcdLink.Api.CoreApi.Managers.Users
     public class InfantManager
     {
         private IHttpContextAccessor _contextAccessor;
-        private IDbContextFactory<AuthenticationDbContext> _dbFactory;
         private IGenericRepositoryFactory _repoFactory;
-        private MotherManager _motherManager;
         private HealthCareWorkerManager _healthCareWorkerManager;
 
         public InfantManager(
             IHttpContextAccessor contextAccessor,
-            IDbContextFactory<AuthenticationDbContext> dbFactory,
             IGenericRepositoryFactory repoFactory,
-            MotherManager motherManager,
             HealthCareWorkerManager healthCareWorkerManager)
         {
             _contextAccessor = contextAccessor;
-            _dbFactory = dbFactory;
             _repoFactory = repoFactory;
-            _motherManager = motherManager;
             _healthCareWorkerManager = healthCareWorkerManager;
         }
 

@@ -18,8 +18,6 @@ namespace ECDLink.Core.Extensions
         {
             var local = locale.Replace("-", string.Empty);
 
-            //var data = locale.Split("-");
-            //var newLocale = $"{data[0]}{data[1]}"; 
             return local.ToUpper();
         }
     }

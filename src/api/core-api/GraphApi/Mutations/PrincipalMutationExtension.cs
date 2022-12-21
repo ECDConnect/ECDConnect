@@ -54,7 +54,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     {
                         practitioner.DateLinked = DateTime.Now;
                         practitioner.PrincipalHierarchy = Guid.Parse(principalUser.UserId);
-                        var practitionerUpdateResult = practitionerRepo.Update(practitioner);
+                        practitionerRepo.Update(practitioner);
 
                         //update users nicknames
                         var user = userManager.FindByIdAsync(practitioner.UserId).Result;
@@ -62,7 +62,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         user.NickSurname = lastName;
                         user.NickFullName = firstName + " " + lastName;
 
-                        var userUpdateResult = userManager.UpdateAsync(user).Result;
+                        userManager.UpdateAsync(user);
                     }
                     else return null;
 
@@ -79,7 +79,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         {
             using var scope = dbFactory.CreateDbContext();
             using var dbContextTransaction = scope.Database.BeginTransaction();
-            var uId = contextAccessor.HttpContext.GetUser().Id;
             //update users nicknames
             var user = userManager.FindByIdAsync(practitionerId).Result;
             user.NickFirstName = firstName;
@@ -88,7 +87,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             user.PhoneNumber = phoneNumber;
             user.Email = email;
 
-            var userUpdateResult = userManager.UpdateAsync(user).Result;
+            userManager.UpdateAsync(user);
 
             return user;
         }
@@ -106,7 +105,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             {
                 practitioner.PrincipalHierarchy = null;
                 practitioner.ShareInfo = false;
-                var updateResult = practitionerRepo.Update(practitioner);
+                practitionerRepo.Update(practitioner);
             }
 
             return practitioner;
@@ -155,7 +154,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 practitionerToPromote = practitioners.FirstOrDefault();
                 practitionerToPromote.IsPrincipal = true;
                 practitionerToPromote.ShareInfo = true;
-                var updateResult = practitionerRepo.Update(practitionerToPromote);
+                practitionerRepo.Update(practitionerToPromote);
 
                 //now add user to principal
                 var user = userManager.FindByIdAsync(userId).Result;
@@ -181,7 +180,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             {
                 practitionerToDemote = practitioners.FirstOrDefault();
                 practitionerToDemote.IsPrincipal = false;
-                var updateResult = practitionerRepo.Update(practitionerToDemote);
+                practitionerRepo.Update(practitionerToDemote);
 
                 //now list through all practitioners and remove the principalhierarchies
                 List<Practitioner> allPrincipalPractitioners = practitionerRepo.GetAll().Where(x => x.PrincipalHierarchy.Equals(userId)).ToList();
@@ -258,7 +257,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         practitioner.DateAccepted = null;
                         practitioner.IsLeaving = true;
 
-                    status.LeavingDate = DateTime.Now.AddHours(hrsToReassign);
+                        status.LeavingDate = DateTime.Now.AddHours(hrsToReassign);
                         status.Leaving = true;
                     }
                 }
@@ -273,7 +272,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     status.Leaving = false;
                 }
                 //update practitioner with column changes
-                var updateResult = practitionerRepo.Update(practitioner);    
+                practitionerRepo.Update(practitioner);    
             }
             else return null;
 
@@ -306,8 +305,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 SigningSignature = practitioner?.SigningSignature,
                 ShareInfo = practitioner?.ShareInfo,
                 IsRegistered = practitioner.IsRegistered,
-                //Signature = practitioner.Signature,
-                //PrincipalHierarchy = practitioner?.PrincipalHierarchy,           
             };
 
             return userToMap;
