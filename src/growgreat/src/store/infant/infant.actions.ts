@@ -90,7 +90,7 @@ export const getInfantCountForMonth = createAsyncThunk<
   number,
   // eslint-disable-next-line @typescript-eslint/ban-types
   {},
-  ThunkApiType<RootState> // @ts-ignore
+  ThunkApiType<RootState>
 >(
   InfantActions.GET_INFANT_COUNT_FOR_MONTH,
   async (_, { getState, rejectWithValue }) => {
