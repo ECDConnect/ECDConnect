@@ -8,7 +8,7 @@ import {
 import { useHistory } from 'react-router-dom';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useAppDispatch } from '@store';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import ROUTES from '@routes/routes';
 import {
   InfantRegisterSteps,
@@ -102,6 +102,14 @@ export const InfantRegisterForm: React.FC = () => {
   );
 
   const wasLoading = usePrevious(isLoading);
+
+  const successMessage = useMemo(
+    () =>
+      multipleChildrenArray.length > 1
+        ? multipleChildrenArray.length + ' children.'
+        : '1 child.',
+    [multipleChildrenArray.length]
+  );
 
   useEffect(() => {
     setLabel('step 1 of 6');
@@ -418,11 +426,7 @@ export const InfantRegisterForm: React.FC = () => {
                 text={
                   !!count && !isRejectInfantCount
                     ? `Great job ${user?.firstName}, you've registered ${count} children this month.`
-                    : `Great job ${user?.firstName}, you've registered ${
-                        multipleChildrenArray.length > 1
-                          ? multipleChildrenArray.length + ' children.'
-                          : '1 child.'
-                      }`
+                    : `Great job ${user?.firstName}, you've registered ${successMessage}`
                 }
               />
               <Typography
@@ -451,13 +455,7 @@ export const InfantRegisterForm: React.FC = () => {
           );
         },
       }),
-    [
-      dialog,
-      history,
-      isRejectInfantCount,
-      multipleChildrenArray.length,
-      user?.firstName,
-    ]
+    [dialog, history, isRejectInfantCount, successMessage, user?.firstName]
   );
 
   useEffect(() => {

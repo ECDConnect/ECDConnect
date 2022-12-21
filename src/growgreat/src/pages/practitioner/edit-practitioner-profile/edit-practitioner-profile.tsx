@@ -70,7 +70,7 @@ export const EditPractitionerProfile: React.FC = () => {
     const copyUpdated: any = {
       userId: copy?.id,
       isRegistered: true,
-      languageId: language! as string,
+      languageId: language,
       teamLead: {
         JobTitle: copy?.teamLead?.jobTitle,
         IsActive: true,
