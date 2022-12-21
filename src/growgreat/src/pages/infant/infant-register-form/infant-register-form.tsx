@@ -48,6 +48,7 @@ import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { usePrevious } from '@/hooks/usePrevious';
 import { healthCareWorkerSelectors } from '@/store/healthCareWorker';
 import { InfantActions } from '@/store/infant/infant.actions';
+import { getInfantCountForMonth } from '@/store/infant/infant.selectors';
 
 const BANNER_HEIGHT = 64;
 
@@ -91,6 +92,8 @@ export const InfantRegisterForm: React.FC = () => {
   const healthCareWorker = useSelector(
     healthCareWorkerSelectors.getHealthCareWorker
   );
+
+  const childrenCount = useSelector(getInfantCountForMonth);
 
   const { isLoading, isRejected } = useThunkFetchCall(
     'infants',
@@ -416,9 +419,13 @@ export const InfantRegisterForm: React.FC = () => {
                 className="mt-4 text-center"
                 lineHeight="snug"
                 text={
-                  !!count && !isRejectInfantCount
-                    ? `Great job ${user?.firstName}, you've registered ${count} children this month.`
-                    : `Great job ${user?.firstName}, you've registered a child.`
+                  !!childrenCount && childrenCount >= 1 && !isRejectInfantCount
+                    ? `Great job ${user?.firstName}, you've registered ${childrenCount} children this month.`
+                    : `Great job ${user?.firstName}, you've registered ${
+                        multipleChildrenArray.length > 1
+                          ? multipleChildrenArray.length + 'children'
+                          : '1 child'
+                      } children.`
                 }
               />
               <Typography
@@ -447,7 +454,14 @@ export const InfantRegisterForm: React.FC = () => {
           );
         },
       }),
-    [dialog, history, isRejectInfantCount, user?.firstName]
+    [
+      childrenCount,
+      dialog,
+      history,
+      isRejectInfantCount,
+      multipleChildrenArray.length,
+      user?.firstName,
+    ]
   );
 
   useEffect(() => {
@@ -460,19 +474,21 @@ export const InfantRegisterForm: React.FC = () => {
     }
   }, [activeStep, isAlreadyClient]);
 
-  const onSuccess = useCallback(async () => {
+  const onSuccess = useCallback(() => {
     if (!isRejected) {
-      const count = await appDispatch(
-        infantThunkActions.getInfantCountForMonth({})
-      ).unwrap();
-
-      showSuccessMessage(count);
-      if (healthCareWorker) {
+      (async () =>
         await appDispatch(
-          caregiverThunkActions.getCaregiversForHealthCareWorker({
-            id: healthCareWorker?.id!,
-          })
-        ).unwrap();
+          infantThunkActions.getInfantCountForMonth({})
+        ).unwrap())();
+
+      showSuccessMessage();
+      if (healthCareWorker) {
+        (async () =>
+          await appDispatch(
+            caregiverThunkActions.getCaregiversForHealthCareWorker({
+              id: healthCareWorker?.id || '',
+            })
+          ).unwrap())();
       }
     } else {
       showSuccessMessage();
