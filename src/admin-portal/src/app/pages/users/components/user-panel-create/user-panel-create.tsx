@@ -10,7 +10,6 @@ import {
 } from '@ecdlink/core';
 import {
   AddUsersToRole,
-  CreateHealthCareWorker,
   CreateUser,
   RoleList,
   UserModelInput,
@@ -37,7 +36,6 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
 
   const [createUser] = useMutation(CreateUser);
   const [addRolesToUser] = useMutation(AddUsersToRole);
-  const [addHealthCareWorker] = useMutation(CreateHealthCareWorker);
 
   const [selectedUserRoles, setUserRoles] = useState<RoleDto[]>([]);
   const [filteredRoles, setFilteredRoles] = useState<RoleDto[]>([]);

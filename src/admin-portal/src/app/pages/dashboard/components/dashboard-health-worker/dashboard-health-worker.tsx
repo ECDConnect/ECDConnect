@@ -1,5 +1,5 @@
 import { useQuery } from '@apollo/client';
-import { PractitionerMetricReport, useDialog } from '@ecdlink/core';
+import { PractitionerMetricReport } from '@ecdlink/core';
 import { practitionerMetrics } from '@ecdlink/graphql';
 import { BadgeCheckIcon, ExclamationIcon } from '@heroicons/react/outline';
 import { useEffect, useState } from 'react';
@@ -7,8 +7,6 @@ import ContentLoader from '../../../../components/content-loader/content-loader'
 import StatsBar from '../stats-bar/stats-bar';
 
 export default function HealthWorkerDashboard() {
-  const dialog = useDialog();
-
   const { data } = useQuery(practitionerMetrics, {
     fetchPolicy: 'cache-and-network',
   });
