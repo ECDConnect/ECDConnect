@@ -33,8 +33,6 @@ import { version } from '@/../package.json';
 import { healthCareWorkerSelectors } from '@/store/healthCareWorker';
 import { DashboardRouteState } from './dashboard.types';
 import { useNotificationService } from '@/hooks/useNotificationService';
-import { ContextService } from '@/services/ContextService';
-import { authSelectors } from '@store/auth';
 
 export enum NavigationTypes {
   Home = 'Home',
@@ -47,7 +45,6 @@ export enum NavigationTypes {
 }
 
 export const Dashboard: React.FC = () => {
-  const userAuth = useSelector(authSelectors.getAuthUser);
   const history = useHistory();
   const { theme } = useTheme();
   const location = useLocation<DashboardRouteState>();
@@ -104,14 +101,6 @@ export const Dashboard: React.FC = () => {
   function onNavigation(navItem: any) {
     history.push(navItem.href, navItem.params);
   }
-
-  useEffect(() => {
-    getContext();
-  }, []);
-
-  const getContext = async () => {
-    await new ContextService(userAuth?.auth_token!).tenantContext();
-  };
 
   function showCompleteProfileBlockingDialog() {
     dialog({
