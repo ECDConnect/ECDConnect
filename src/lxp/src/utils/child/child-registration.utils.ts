@@ -99,6 +99,7 @@ export const mapChildDto = (
     otherHealthConditions: healthInformationForm?.healthConditions ?? '',
     workflowStatusId: childStatusId,
     insertedDate: new Date().toISOString(),
+    insertedBy: '',
   };
 };
 
@@ -202,6 +203,7 @@ export const mapCaregiverDto = (
       siteAddressId: siteAddressInputModel?.id,
       siteAddress: siteAddressInputModel,
       educationId: childCareGiverExtraInformationForm?.highestEducationId,
+      grants: childCareGiverExtraInformationForm?.familyGrants,
       emergencyContactFirstName: childEmergencyContactForm?.firstname ?? '',
       emergencyContactSurname: childEmergencyContactForm?.surname ?? '',
       emergencyContactPhoneNumber: childEmergencyContactForm?.phoneNumber ?? '',
@@ -227,6 +229,7 @@ export const mapCaregiverDto = (
     surname: caregiverInformationForm?.surname ?? '',
     insertedDate: new Date().toISOString(),
     relationId: caregiverInformationForm?.relationId,
+    grants: childCareGiverExtraInformationForm?.familyGrants,
     siteAddress: siteAddressInputModel,
     educationId: childCareGiverExtraInformationForm?.highestEducationId,
     emergencyContactFirstName: childEmergencyContactForm?.firstname ?? '',

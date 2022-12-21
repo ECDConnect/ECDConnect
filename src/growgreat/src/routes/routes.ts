@@ -3,6 +3,7 @@ import addPrefix from './withParentPrefix';
 const ROUTES = {
   ROOT: '/',
   LOGIN: '/login',
+  LOGOUT: '/logout',
   PASSWORD_RESET: '/password-reset',
   NEW_PASSWORD: '/new-password',
   SIGN_UP: '/sign-up',
@@ -37,6 +38,7 @@ const ROUTES = {
       EDIT: '/edit',
     }),
   }),
+  HEALTH_CAREWORKER_PROFILE_SETUP: '/healthcare-worker-profile-setup',
   CHILD_NOTES: '/child-notes',
   CHILD_PROFILE: '/child-profile',
   CHILD_CAREGIVERS: '/child-caregivers',

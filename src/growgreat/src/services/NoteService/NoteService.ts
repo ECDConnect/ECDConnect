@@ -1,7 +1,7 @@
 import { api } from '../axios.helper';
-import { Config } from '@ecdlink/core';
-import { NoteDto } from '@ecdlink/core';
+import { Config, NoteDto } from '@ecdlink/core';
 import { NoteInput } from '@ecdlink/graphql';
+
 class NoteService {
   _accessToken: string;
 
@@ -10,7 +10,7 @@ class NoteService {
   }
 
   async getNotes(userId: string): Promise<NoteDto[]> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         query GetAllNote($createdUserId: String) {
@@ -42,7 +42,7 @@ class NoteService {
   }
 
   async updateNote(id: string, input: NoteInput): Promise<boolean> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         mutation updateNote($input: NoteInput, $id: UUID) {

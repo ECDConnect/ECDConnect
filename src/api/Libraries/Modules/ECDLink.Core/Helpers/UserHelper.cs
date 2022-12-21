@@ -6,12 +6,18 @@ namespace ECDLink.Core.Helpers
     {
         public static string NormalizePhoneNumber(string phoneNumber)
         {
+
             if (string.IsNullOrWhiteSpace(phoneNumber))
             {
                 return string.Empty;
             }
 
             var noSpacePhoneNumber = phoneNumber.Replace(" ", "");
+
+            if (noSpacePhoneNumber.Contains("<"))
+            {
+                throw new Exception("Phone number not valid, try again");
+            }
 
             if (noSpacePhoneNumber.StartsWith("+27"))
             {

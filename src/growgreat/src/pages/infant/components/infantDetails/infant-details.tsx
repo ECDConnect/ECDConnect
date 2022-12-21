@@ -17,7 +17,7 @@ import {
 } from '@/schemas/infant/infant-details';
 import { intervalToDuration } from 'date-fns';
 import DatePicker from 'react-datepicker';
-// import { getGenders } from '@/store/static-data/static-data.selectors';
+import 'react-datepicker/dist/react-datepicker.css';
 import { useSelector } from 'react-redux';
 import { staticDataSelectors } from '@store/static-data';
 
@@ -27,7 +27,7 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
   multipleChildrenCount,
 }) => {
   const {
-    watch,
+    // watch,
     getValues: getInfantDetailsFormValues,
     // formState: InfantDetailsFormState,
     setValue: setInfantDetailsFormValue,
@@ -41,7 +41,6 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
   });
   const genders = useSelector(staticDataSelectors.getGenders);
   const currentDate = new Date();
-  console.log({ multipleChildrenCount });
 
   const genderOptionsUpdated = genders
     ?.filter((gender) => gender?.description !== 'Other')
@@ -59,12 +58,10 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
   const minDate = new Date(myYear.getFullYear(), myMonth.getMonth(), 1);
   const maxDate = new Date(myYear.getFullYear(), myMonth.getMonth() + 1, 0);
   const { years, months } = intervalToDuration({
-    start: myDay,
+    start: myDay > new Date() ? new Date() : myDay,
     end: currentDate,
   });
   const { isValid } = useFormState({ control: infantDetailsFormControl });
-
-  console.log(getInfantDetailsFormValues());
 
   useEffect(() => {
     setMyDay(new Date(myYear.getFullYear(), myMonth.getMonth(), 1));
@@ -83,60 +80,81 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
     return <span>{date.getDate()}</span>;
   };
 
-  console.log(watch());
+  const setYearDate = (date: Date) => {
+    if (date > new Date()) {
+      setMyYear(new Date());
+      return;
+    }
+    setMyYear(date);
+  };
+
+  const setMonthDate = (date: Date) => {
+    if (date > new Date()) {
+      setMyMonth(new Date());
+      return;
+    }
+    setMyMonth(date);
+  };
+
+  const setDayDate = (date: Date) => {
+    if (date > new Date()) {
+      setMyDay(new Date());
+      return;
+    }
+    setMyDay(date);
+  };
+
   return (
-    <div className="h-screen ">
-      <div>
-        <Typography
-          type="h2"
-          color={'textDark'}
-          text={
-            numberOfChildren! > 1 ? `Child ${multipleChildrenCount}` : 'Child'
-          }
-          className="z-50 pt-6"
-        />
-        <Typography
-          type="h4"
-          color={'textMid'}
-          text={'Details'}
-          className="z-50 pt-2 w-11/12"
-        />
-      </div>
-      <div className="flex justify-center w-11/12 text-red-400">
+    <>
+      <Typography
+        type="h2"
+        color={'textDark'}
+        text={
+          numberOfChildren && numberOfChildren > 1
+            ? `Child ${multipleChildrenCount}`
+            : 'Child'
+        }
+        className="pt-6"
+      />
+      <Typography
+        type="h4"
+        color={'textMid'}
+        text={'Details'}
+        className="w-11/12 pt-2"
+      />
+      <div className="flex w-11/12 justify-center text-red-400">
         <Divider dividerType="dashed" />
       </div>
-      <>
-        <FormInput<InfantDetailsModel>
-          label={'First name'}
-          register={infantFormRegister}
-          nameProp={'firstName'}
-          placeholder={'First name'}
-          type={'text'}
-          className="mt-4"
-        ></FormInput>
-      </>
+      <FormInput<InfantDetailsModel>
+        label={'First name'}
+        register={infantFormRegister}
+        nameProp={'firstName'}
+        placeholder={'First name'}
+        type={'text'}
+        className="mt-4"
+      ></FormInput>
       <div className="mt-4">
         <Typography
           type="h4"
           color={'textMid'}
           text={'Date of birth:'}
-          className="z-50 pt-2 w-11/12"
+          className="mt-4 w-11/12 pt-2"
         />
         <div className="flex items-center gap-1">
           <DatePicker
             placeholderText={'Please select a date'}
-            className="mt-1 w-full text-textMid bg-uiBg border-none rounded-md text-lg focus:border-primary focus:ring-primary shadow-sm"
+            className="text-textMid bg-uiBg focus:border-primary focus:ring-primary mt-1 w-full rounded-md border-none text-lg shadow-sm"
             selected={myDay}
-            onChange={(date: Date) => setMyDay(date)}
+            onChange={(date: Date) => setDayDate(date)}
             dateFormat="dd"
             renderDayContents={renderDayContents}
             renderCustomHeader={({ date }) => <div></div>}
           />
           <DatePicker
             placeholderText={'Please select a date'}
-            className="mt-1 w-full text-primtextMidary bg-uiBg border-none rounded-md text-lg focus:border-primary focus:ring-primary shadow-sm"
+            className="text-textMid bg-uiBg focus:border-primary focus:ring-primary mt-1 w-full rounded-md border-none text-lg shadow-sm"
             selected={myMonth}
-            onChange={(date: Date) => setMyMonth(date)}
+            onChange={(date: Date) => setMonthDate(date)}
             renderCustomHeader={({ date }) => <div></div>}
             dateFormat="MMMM"
             showMonthYearPicker
@@ -144,59 +162,55 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
           />
           <DatePicker
             placeholderText={'Please select a date'}
-            className="mt-1 w-full bg-uiBg text-textMid border-none rounded-md text-lg focus:border-primary focus:ring-primary shadow-sm"
+            className="bg-uiBg text-textMid focus:border-primary focus:ring-primary mt-1 w-full rounded-md border-none text-lg shadow-sm"
             selected={myYear}
-            onChange={(date: Date) => setMyYear(date)}
+            onChange={(date: Date) => setYearDate(date)}
             dateFormat="yyyy"
             showYearPicker
           />
         </div>
-        <div className="flex justify-start mt-6 w-full">
+        <div className="mt-6 flex w-full justify-start">
           <Alert
             type={'info'}
             message={`${years} years and ${months} months old`}
             className="w-full"
-          ></Alert>
+          />
         </div>
       </div>
-      <div>
-        <Typography
-          type="h3"
-          color={'textDark'}
-          text={'Sex'}
-          className="z-50 pt-2 w-11/12"
+      <Typography
+        type="h3"
+        color={'textDark'}
+        text={'Sex'}
+        className="w-11/12 pt-2"
+      />
+      <div className="mt-2">
+        <ButtonGroup<string>
+          options={genderOptionsUpdated}
+          onOptionSelected={(value: string | string[]) => {
+            setInfantDetailsFormValue('genderId', value as string, {
+              shouldValidate: true,
+            });
+          }}
+          color="secondary"
+          type={ButtonGroupTypes.Button}
+          className={'w-full'}
         />
-        <div className="mt-2">
-          <ButtonGroup<string>
-            options={genderOptionsUpdated}
-            onOptionSelected={(value: string | string[]) => {
-              setInfantDetailsFormValue('genderId', value as string, {
-                shouldValidate: true,
-              });
-            }}
-            color="secondary"
-            type={ButtonGroupTypes.Button}
-            className={'w-full'}
-          />
-        </div>
       </div>
-      <div className="flex w-full h-full align-bottom">
-        <div className={'mt-10 w-11/12 flex justify-center align-bottom'}>
-          <Button
-            type={'filled'}
-            color={'primary'}
-            className={'mt-2 ml-6 w-11/12 max-h-10 absolute bottom-10'}
-            textColor={'white'}
-            text={`Next`}
-            icon={'ArrowCircleRightIcon'}
-            iconPosition={'start'}
-            onClick={() => {
-              onSubmit(getInfantDetailsFormValues());
-            }}
-            disabled={!isValid}
-          />
-        </div>
+      <div className="flex h-full items-end">
+        <Button
+          type={'filled'}
+          color={'primary'}
+          className={'bottom-10 mt-2 max-h-10 w-full'}
+          textColor={'white'}
+          text={`Next`}
+          icon={'ArrowCircleRightIcon'}
+          iconPosition={'start'}
+          onClick={() => {
+            onSubmit(getInfantDetailsFormValues());
+          }}
+          disabled={!isValid}
+        />
       </div>
-    </div>
+    </>
   );
 };

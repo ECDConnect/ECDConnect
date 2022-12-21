@@ -57,7 +57,7 @@ namespace ECDLink.Security.Api
                 return BadRequest();
             }
 
-            var updatedUser = _passwordManager.AddPasswordAsync(user, invitationModel.Password).Result;
+            await _passwordManager.AddPasswordAsync(user, invitationModel.Password);
 
             _shortUrlManager.RemoveShortUrl(user.Id, TemplateTypeConstants.Invitation);
 

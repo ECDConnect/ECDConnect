@@ -5,6 +5,7 @@
     "noImplicitAny": false,
     "removeComments": true,
     "noLib": false,
+    "preserveConstEnums": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "target": "es6",

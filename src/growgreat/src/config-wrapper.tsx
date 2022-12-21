@@ -1,40 +1,34 @@
-import { Config, DialogServiceProvider } from '@ecdlink/core';
-import { ThemeProvider, useConfig } from '@ecdlink/core';
-import { useEffect, useState } from 'react';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
-import App from './App';
-import Loader from './components/loader/loader';
-import { persistor, store } from './store';
 
-const ConfigWrapper: React.FC = () => {
+import {
+  ThemeProvider,
+  useConfig,
+  Config,
+  DialogServiceProvider,
+} from '@ecdlink/core';
+import App from '@/App';
+import { persistor, store } from '@/store';
+import Loader from '@/components/loader/loader';
+
+function ConfigWrapper() {
   const { loading } = useConfig();
-  const [loader, setLoader] = useState(true);
 
-  useEffect(() => {
-    // minimum loading effect
-    if (!loading) {
-      setTimeout(() => {
-        setLoader(false);
-      }, 2500);
-    }
-  }, [loading]);
-
-  if (loader) {
+  if (loading) {
     return <Loader />;
-  } else {
-    return (
-      <Provider store={store}>
-        <PersistGate loading={null} persistor={persistor}>
-          <ThemeProvider themeEndPoint={Config.themeUrl} overRideCache={true}>
-            <DialogServiceProvider>
-              <App />
-            </DialogServiceProvider>
-          </ThemeProvider>
-        </PersistGate>
-      </Provider>
-    );
   }
-};
+
+  return (
+    <Provider store={store}>
+      <PersistGate loading={null} persistor={persistor}>
+        <ThemeProvider themeEndPoint={Config.themeUrl} overRideCache={true}>
+          <DialogServiceProvider>
+            <App />
+          </DialogServiceProvider>
+        </ThemeProvider>
+      </PersistGate>
+    </Provider>
+  );
+}
 
 export default ConfigWrapper;

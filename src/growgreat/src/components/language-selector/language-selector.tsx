@@ -1,13 +1,12 @@
-import { LanguageDto } from '@ecdlink/core';
-import { Dropdown } from '@ecdlink/ui';
-import { ComponentBaseProps } from '@ecdlink/ui';
-import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { staticDataSelectors } from '@store/static-data';
-import * as styles from './language-selector.styles';
+import { useEffect, useState } from 'react';
+import { LanguageDto } from '@ecdlink/core';
+import { ComponentBaseProps, Dropdown } from '@ecdlink/ui';
+import { staticDataSelectors } from '@/store/static-data';
+import * as styles from '@/components/language-selector/language-selector.styles';
 
 export interface LanguageSelectorProps extends ComponentBaseProps {
-  currentLocale: string;
+  currentLocale?: string;
   selectLanguage: (value: LanguageDto) => void;
 }
 
@@ -28,30 +27,30 @@ export const LanguageSelector = ({
   };
 
   useEffect(() => {
-    if (currentLocale) setLocale(currentLocale); // LOCALE SELECT OVERRIDE
+    if (currentLocale) {
+      // LOCALE SELECT OVERRIDE
+      setLocale(currentLocale);
+    }
   }, [currentLocale]);
 
   return (
     <div className={styles.localeDropDownWrapper}>
       <label className={styles.languageLabel}>{'Change Language:'}</label>
       <Dropdown
+        fullWidth={true}
         fillType="clear"
         selectedValue={locale}
         list={
           (languages &&
             languages
               .filter((x) => x.locale?.length > 0)
-              .map((language: LanguageDto) => {
-                return {
-                  label: language.description,
-                  value: language.locale,
-                };
-              })) ||
+              .map((language: LanguageDto) => ({
+                value: language.locale,
+                label: language.description,
+              }))) ||
           []
         }
-        onChange={(item) => {
-          setLanguage(item as string);
-        }}
+        onChange={(item) => setLanguage(item)}
       />
     </div>
   );

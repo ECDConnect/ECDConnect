@@ -28,12 +28,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public Child GetChildByUserId([Service] IHttpContextAccessor contextAccessor,
-            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
         string userId)
         {
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var dbRepo = repoFactory.CreateRepository<Child>(userContext: uId);
             Child child = new Child();
@@ -48,19 +45,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public List<Child> GetChildrenByClassroomId([Service] IHttpContextAccessor contextAccessor,
-    [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
     [Service] IGenericRepositoryFactory repoFactory,
 string classroomId)
         {
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var dbRepo = repoFactory.CreateRepository<Child>(userContext: uId);
-            var classroomRepo = repoFactory.CreateRepository<Classroom>(userContext: uId);
             var classroomGrooupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
-            var learnerRepo = repoFactory.CreateRepository<Learner>(userContext: uId);
             List<Child> children = new List<Child>();
-            List<ClassroomGroup> groupAll = classroomGrooupRepo.GetAll().ToList();
             List<ClassroomGroup> group = classroomGrooupRepo.GetAll().Where(x => x.Classroom.Id.Equals(classroomId)).ToList();
             foreach (var groupItem in group)
             {

@@ -8,13 +8,13 @@ import {
 } from '../../../models';
 import { useEffect } from 'react';
 import { useState } from 'react';
-import { FieldError } from 'react-hook-form';
+import { FieldError, FieldValues } from 'react-hook-form';
 import { Path, UseFormRegister } from 'react-hook-form';
 import { PasswordStrength } from '../../password-strength-meter/models/PasswordStrength';
 import { FormFieldType, FormInput } from '../form-input/form-input';
 import Typography from '../../typography/typography';
 
-interface PasswordInputProps<T> extends ComponentBaseProps {
+interface PasswordInputProps<T extends FieldValues> extends ComponentBaseProps {
   label?: string;
   nameProp?: Path<T>;
   error?: FieldError;
@@ -39,7 +39,7 @@ interface PasswordConstraints {
   numeric: boolean;
 }
 
-export const PasswordInput = <T,>({
+export const PasswordInput = <T extends FieldValues>({
   nameProp,
   register,
   className,
@@ -171,15 +171,21 @@ export const PasswordInput = <T,>({
 
   return (
     <>
+      <label
+        htmlFor={nameProp}
+        className="font-body text-textMid block text-base font-semibold leading-snug"
+      >
+        {label}
+      </label>
       {strengthMeterVisible &&
         Object.values(passwordConstraintMessage).some((a) => !a) && (
-          <ul className="list-disc text-uiMidDark pl-5 mb-4 mt-4">
+          <ul className="text-textMid mb-4 list-disc pl-5">
             {!passwordConstraintMessage.characterCount && (
               <li>
                 <Typography // TODO: Fix help text font-family
                   text={'At least 8 characters'}
                   type={'help'}
-                  color={'uiMidDark'}
+                  color={'textMid'}
                 />
               </li>
             )}
@@ -188,7 +194,7 @@ export const PasswordInput = <T,>({
                 <Typography
                   text={'At least 1 number'}
                   type={'help'}
-                  color={'uiMidDark'}
+                  color={'textMid'}
                 />
               </li>
             )}
@@ -197,7 +203,7 @@ export const PasswordInput = <T,>({
                 <Typography
                   text={'At least 1 capital letter'}
                   type={'help'}
-                  color={'uiMidDark'}
+                  color={'textMid'}
                 />
               </li>
             )}
@@ -206,7 +212,7 @@ export const PasswordInput = <T,>({
                 <Typography
                   text={'At least 1 lowercase letter'}
                   type={'help'}
-                  color={'uiMidDark'}
+                  color={'textMid'}
                 />
               </li>
             )}
@@ -220,7 +226,6 @@ export const PasswordInput = <T,>({
           register={register}
           disabled={disabled}
           error={error}
-          label={label}
           placeholder={placeholder}
           type={inputType}
           suffixIcon={suffixIcon}

@@ -64,8 +64,8 @@ export const AddOrEditPractitioner = ({
     }
 
     if (validPassportOrIdNumber) {
-      getPractitionerDetailsByIdNumber().then((p) => {
-        setIsValidPractitioner(!!p?.idNumber);
+      getPractitionerDetailsByIdNumber().then((p: any) => {
+        setIsValidPractitioner(!!p?.appUser?.idNumber);
       });
     }
 
@@ -92,26 +92,30 @@ export const AddOrEditPractitioner = ({
   const handleSubmit = async () => {
     const { firstName, idNumber, passport, surname } = getValues();
 
-    const practitionerUserDetails: UserWithPractitionerData =
+    const practitionerUserDetails: any =
       await getPractitionerDetailsByIdNumber();
 
     onSubmit({
-      id: practitionerUserDetails?.practitionerObjectData?.id ?? '',
-      userId: practitionerUserDetails.id ?? '',
+      id: practitionerUserDetails?.appUser?.practitionerObjectData?.id ?? '',
+      userId: practitionerUserDetails.appUser?.id ?? '',
       idNumber: idNumber || passport,
       firstName: firstName,
       surname: surname,
       passport: '',
       preferId: !!idNumber,
       isRegistered: Boolean(
-        practitionerUserDetails.practitionerObjectData?.isRegistered
+        practitionerUserDetails?.appUser?.practitionerObjectData?.isRegistered
       ),
     });
   };
 
+  const callForHelp = () => {
+    window.open('tel:+27800014817');
+  };
+
   return (
     <div className="wrapper-with-sticky-button">
-      <div className="flex flex-col gap-4 mt-4">
+      <div className="mt-4 flex flex-col gap-4">
         <div>
           {preferId && (
             <FormInput<AddPractitionerModel>
@@ -191,16 +195,17 @@ export const AddOrEditPractitioner = ({
                   type={'filled'}
                   color={'primary'}
                   textColor={'white'}
+                  onClick={callForHelp}
                 />
               }
             />
           </div>
         )}
       </div>
-      <div className="self-end -mb-4">
+      <div className="-mb-4 self-end">
         <Button
           size="normal"
-          className="w-full mb-4"
+          className="mb-4 w-full"
           type="filled"
           color="primary"
           text="Save"
@@ -212,7 +217,7 @@ export const AddOrEditPractitioner = ({
         {isValidPractitioner === false && (
           <Button
             size="normal"
-            className="w-full mb-4"
+            className="mb-4 w-full"
             type="outlined"
             color="primary"
             text="Skip"

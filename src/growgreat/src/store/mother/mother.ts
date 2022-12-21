@@ -1,7 +1,7 @@
 import { MotherDto } from '@ecdlink/core';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
-// import { createMother, getMothers, updateMother } from './mother.actions';
+import { getMothers } from './mother.actions';
 import { MotherState } from './mother.types';
 
 const initialState: MotherState = {};
@@ -26,40 +26,18 @@ const motherSlice = createSlice({
       }
     },
   },
-  // extraReducers: (builder) => {
-  //   builder.addCase(getMothers.fulfilled, (state, action) => {
-  //     if (!state.mothers) {
-  //       const mothers = Object.assign([], action.payload) as MotherDto[];
+  extraReducers: (builder) => {
+    builder.addCase(getMothers.fulfilled, (state, action) => {
+      if (!state.mothers) {
+        const mothers = Object.assign([], action.payload) as MotherDto[];
 
-  //       for (let i = 0; i < mothers.length; i++) {
-  //         mothers[i].isActive = true;
-  //       }
-
-  //       state.mothers = mothers;
-  //     }
-  //   });
-  //   builder.addCase(
-  //     updateMother.fulfilled,
-  //     (state, action: PayloadAction<MotherDto>) => {
-  //       if (state.mothers) {
-  //         const motherIndex = state.mothers.findIndex(
-  //           (mother) => mother.id === action.payload.id
-  //         );
-
-  //         if (motherIndex < 0) return;
-
-  //         state.mothers[motherIndex] = action.payload;
-  //       }
-  //     }
-  //   );
-  //   builder.addCase(
-  //     createMother.fulfilled,
-  //     (state, action: PayloadAction<MotherDto>) => {
-  //       if (!state.mothers) state.mothers = [];
-  //       state.mothers?.push(action.payload);
-  //     }
-  //   );
-  // },
+        for (let i = 0; i < mothers.length; i++) {
+          mothers[i].isActive = true;
+        }
+        state.mothers = mothers;
+      }
+    });
+  },
 });
 
 const { reducer: motherReducer, actions: motherActions } = motherSlice;

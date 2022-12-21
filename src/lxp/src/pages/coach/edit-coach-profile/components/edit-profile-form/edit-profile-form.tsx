@@ -8,9 +8,10 @@ import {
   Typography,
   classNames,
   renderIcon,
+  Alert,
 } from '@ecdlink/ui';
 
-import { /* FieldPath,  */ useForm, useFormState } from 'react-hook-form';
+import { useForm, useFormState, useWatch } from 'react-hook-form';
 import { EditProfileFormProps } from './edit-profile-form.types';
 import * as styles from '../../edit-coach-profile.styles';
 import { staticDataSelectors } from '@store/static-data';
@@ -21,45 +22,35 @@ import {
   EditCoachProfileModel,
   editCoachProfileSchema,
 } from '@schemas/coach/edit-profile';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import { coachSelectors } from '@store/coach';
+import { authSelectors } from '@store/auth';
+import { SiteAddressService } from '@/services/SiteAddressService';
 
 export const EditProfileForm: React.FC<EditProfileFormProps> = ({
   coachProfileInformation,
   onSubmit,
 }) => {
+  const userAuth = useSelector(authSelectors.getAuthUser);
   const provinces = useSelector(staticDataSelectors.getProvinces);
-  const franchisorAddress = coachProfileInformation?.franchisorAddress;
   const siteAddress = coachProfileInformation?.siteAddress;
+  const coach = useSelector(coachSelectors.getCoach);
 
   const [isOfficeAddress, setIsOfficeAddress] = useState<boolean | undefined>();
-
-  useEffect(() => {
-    if (isOfficeAddress && franchisorAddress) {
-      resetCoachProfileFormValue(franchisorAddress);
-    } else {
-      resetCoachProfileFormValue(siteAddress);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOfficeAddress]);
+  const [franchisorSiteAddress, setFranchisorSetAddress] =
+    useState<SiteAddressDto>();
+  const [differentProvinceNotification, setDifferentProvinceNotification] =
+    useState(false);
 
   const isAtOfficeLocation: ButtonGroupOption<boolean>[] = [
     { text: 'At the office', value: true },
     { text: 'Other location', value: false },
   ];
 
-  const formatSiteAddressAsText = (siteAddress: SiteAddressDto): string => {
-    const address = siteAddress.ward ? `${siteAddress.ward}<br/>` : '';
-
-    return address.concat(`
-      ${siteAddress.addressLine1}<br/>
-      ${siteAddress.addressLine2}, ${siteAddress?.addressLine3} ${siteAddress?.postalCode}
-      <br/>${siteAddress?.province?.description}`);
-  };
-
   const {
     getValues: getCoachProfileFormValues,
     setValue: setCoachProfileFormValue,
-    reset: resetCoachProfileFormValue,
+    // reset: resetCoachProfileFormValue,
     register: coachProfileFormRegister,
     control: coachProfileFormControl,
   } = useForm<EditCoachProfileModel>({
@@ -74,36 +65,147 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
   const { isValid, errors } = useFormState({
     control: coachProfileFormControl,
   });
+  const {
+    name,
+    addressLine1,
+    addressLine2,
+    addressLine3,
+    email,
+    postalCode,
+    provinceId,
+  } = useWatch({
+    control: coachProfileFormControl,
+  });
+
+  const disabledButton =
+    !name ||
+    !addressLine1 ||
+    !addressLine2 ||
+    !addressLine3 ||
+    !email ||
+    !postalCode ||
+    !provinceId;
+
+  const getFranchisorSiteAdress = useCallback(async () => {
+    const res: SiteAddressDto = await new SiteAddressService(
+      userAuth?.auth_token || ''
+    ).getFranchisorSiteAddressById(coach?.franchisorId || '');
+    setFranchisorSetAddress({
+      name: res?.name,
+      addressLine1: res?.addressLine1,
+      addressLine2: res?.addressLine2,
+      addressLine3: res?.addressLine3,
+      province: {
+        description: res?.province?.description ?? '',
+        enumId: '',
+      },
+      postalCode: res?.postalCode,
+      ward: res?.ward ?? '',
+    });
+    return res;
+  }, [coach?.franchisorId, userAuth?.auth_token]);
+
+  useEffect(() => {
+    getFranchisorSiteAdress();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    const currentProvince: any = provinces?.find(
+      (item) => item?.id === provinceId
+    );
+
+    if (
+      currentProvince?.description &&
+      provinceId !== '' &&
+      currentProvince?.description !==
+        franchisorSiteAddress?.province?.description
+    ) {
+      setDifferentProvinceNotification(true);
+    } else {
+      setDifferentProvinceNotification(false);
+    }
+  }, [franchisorSiteAddress?.province?.description, provinceId, provinces]);
+
+  useEffect(() => {
+    if (isOfficeAddress && franchisorSiteAddress && provinces) {
+      const selectedProvince = provinces?.find(
+        (item) =>
+          item?.description === franchisorSiteAddress?.province?.description
+      );
+      setCoachProfileFormValue('name', franchisorSiteAddress?.name || '');
+      setCoachProfileFormValue(
+        'addressLine1',
+        franchisorSiteAddress?.addressLine1
+      );
+      setCoachProfileFormValue(
+        'addressLine2',
+        franchisorSiteAddress?.addressLine2 || ''
+      );
+      setCoachProfileFormValue(
+        'addressLine3',
+        franchisorSiteAddress?.addressLine3 || ''
+      );
+      setCoachProfileFormValue('provinceId', selectedProvince?.id || '');
+      setCoachProfileFormValue(
+        'postalCode',
+        franchisorSiteAddress?.postalCode || ''
+      );
+      setCoachProfileFormValue('ward', franchisorSiteAddress?.ward ?? '');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [franchisorSiteAddress, isOfficeAddress, provinces]);
+
+  useEffect(() => {
+    if (isOfficeAddress === false) {
+      setCoachProfileFormValue('addressLine1', '');
+      setCoachProfileFormValue('addressLine2', '');
+      setCoachProfileFormValue('addressLine3', '');
+      setCoachProfileFormValue('provinceId', '');
+      setCoachProfileFormValue('postalCode', '');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOfficeAddress]);
 
   const handleFormSubmit = (): void => {
-    if (isValid /*  && onSubmit */) {
-      const profileFormValues = getCoachProfileFormValues();
+    const profileFormValues = getCoachProfileFormValues();
 
-      const newCoachProfileInformation = Object.assign(
-        {},
-        coachProfileInformation
-      );
+    const newCoachProfileInformation = Object.assign(
+      {},
+      coachProfileInformation
+    );
 
-      newCoachProfileInformation.siteAddress = {
-        name: isOfficeAddress ? profileFormValues.name : '',
-        addressLine1: profileFormValues.addressLine1,
-        addressLine2: profileFormValues.addressLine2,
-        addressLine3: profileFormValues.addressLine3,
-        postalCode: profileFormValues.postalCode,
-        ward: profileFormValues.ward,
-        provinceId: profileFormValues.provinceId,
-        province: profileFormValues.province,
-      };
+    newCoachProfileInformation.siteAddress = {
+      name: isOfficeAddress ? profileFormValues.name : '',
+      addressLine1: profileFormValues.addressLine1,
+      addressLine2: profileFormValues.addressLine2,
+      addressLine3: profileFormValues.addressLine3,
+      postalCode: profileFormValues.postalCode,
+      ward: profileFormValues.ward,
+      provinceId: profileFormValues.provinceId,
+      province: profileFormValues.province,
+    };
 
-      newCoachProfileInformation.email = profileFormValues.email;
+    newCoachProfileInformation.email = profileFormValues.email;
 
-      if (isOfficeAddress) {
+    if (isOfficeAddress) {
+      if (franchisorSiteAddress?.addressLine1 !== undefined) {
         newCoachProfileInformation.siteAddressId =
           coachProfileInformation?.franchisorAddressId;
-      }
+      } else {
+        let tempAddress = {
+          addressLine1: '',
+          addressLine2: '',
+          addressLine3: '',
+          postalCode: '',
+          provinceId: provinces[0].id,
+        };
 
-      onSubmit(newCoachProfileInformation);
+        newCoachProfileInformation.siteAddress = tempAddress;
+      }
     }
+
+    onSubmit(newCoachProfileInformation);
   };
 
   return (
@@ -140,19 +242,25 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
           </div>
         </div>
 
-        {isOfficeAddress === true && franchisorAddress && (
+        {isOfficeAddress === true && franchisorSiteAddress && (
           <>
-            <Typography
+            {/* <Typography
               type={'h5'}
-              text={franchisorAddress.name}
+              text={franchisorSiteAddress?.name}
               color={'textDark'}
               className={'my-3'}
             />
             <Typography
               type={'body'}
-              text={formatSiteAddressAsText(franchisorAddress)}
+              text={formatSiteAddressAsText(franchisorSiteAddress)}
               color={'textDark'}
               hasMarkup={true}
+            /> */}
+            <Alert
+              type="info"
+              title={`${franchisorSiteAddress?.name}`}
+              message={`${franchisorSiteAddress?.addressLine1} <br/> ${franchisorSiteAddress?.addressLine2} <br/> ${franchisorSiteAddress?.addressLine3}`}
+              className={'mt-4'}
             />
           </>
         )}
@@ -198,7 +306,7 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
                 (provinces &&
                   provinces.map((province: ProvinceDto) => ({
                     label: province.description,
-                    value: province.id!,
+                    value: province.id || '',
                   }))) ||
                 []
               }
@@ -213,6 +321,15 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
                 });
               }}
             />
+
+            {differentProvinceNotification && (
+              <Alert
+                type={'warning'}
+                message={
+                  'Your Franchisor does not operate in this province. Please choose a different province.'
+                }
+              />
+            )}
             <FormInput<EditCoachProfileModel>
               label={'Postal Code'}
               register={coachProfileFormRegister}
@@ -229,7 +346,7 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
           type="filled"
           color="primary"
           className={styles.button}
-          disabled={!isValid}
+          disabled={disabledButton || differentProvinceNotification}
           onClick={handleFormSubmit}
         >
           {renderIcon('ArrowCircleRightIcon', styles.icon)}

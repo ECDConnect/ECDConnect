@@ -1,11 +1,10 @@
 import { useHistory, useLocation } from 'react-router';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
   BannerWrapper,
   Button,
   renderIcon,
   Typography,
-  StackedList,
   Card,
 } from '@ecdlink/ui';
 import { PractitionerProfileRouteState } from './coach-practitioner-classroom.types';
@@ -25,83 +24,15 @@ import { ChildrenPerAgeGroup } from './components/childrenPerAgeGroup/childrenPe
 import { classroomsSelectors } from '@/store/classroom';
 import { classroomsForCoachSelectors } from '@/store/classroomForCoach';
 import { ClassroomAttendance } from './components/classroom-attendance/classroom-attendance';
-
-// import { CreateNote } from '../components/create-note/create-note';
-// import { NoteTypeEnum } from '@ecdlink/graphql';
-// import { getLastNoteDate } from '@utils/child/child-profile-utils';
-// import { notesSelectors } from '@store/notes';
-// import { useSelector } from 'react-redux';
+import { authSelectors } from '@/store/auth';
+import { PractitionerService } from '@/services/PractitionerService';
+import { ClassroomGroupService } from '@/services/ClassroomGroupService';
 
 export const CoachPractitionerClassroom: React.FC = () => {
-  const listItems = [];
-  // const listItems = [
-  //   {
-  //     title: '75% attendance rate',
-  //     titleStyle: 'text-textDark font-semibold text-base leading-snug',
-  //     subTitle: 'Little stars - June 2021',
-  //     subTitleStyle:
-  //       'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
-  //     menuIcon: 'ExclamationIcon',
-  //     menuIconClassName: 'bg-secondary text-white',
-  //     showIcon: true,
-  //     iconBackgroundColor: 'alertMain',
-  //     chipConfig: {
-  //       colorPalette: {
-  //         backgroundColour: 'white',
-  //         borderColour: 'errorMain',
-  //         textColour: 'errorMain',
-  //       },
-  //     },
-  //     text: '1',
-  //     onActionClick: () => {},
-  //     classNames: 'bg-uiBg',
-  //   },
-  //   {
-  //     title: '5 overdue progress reports',
-  //     titleStyle: 'text-textDark font-semibold text-base leading-snug',
-  //     subTitle: 'January to June 2021',
-  //     subTitleStyle:
-  //       'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
-  //     menuIcon: 'ExclamationIcon',
-  //     menuIconClassName: 'bg-secondary text-white',
-  //     showIcon: true,
-  //     iconBackgroundColor: 'alertMain',
-  //     chipConfig: {
-  //       colorPalette: {
-  //         backgroundColour: 'white',
-  //         borderColour: 'errorMain',
-  //         textColour: 'errorMain',
-  //       },
-  //     },
-  //     text: '1',
-  //     onActionClick: () => {},
-  //   },
-  //   {
-  //     title: "5 children haven't progressed",
-  //     titleStyle: 'text-textDark font-semibold text-base leading-snug',
-  //     subTitle: 'For 2 reporting periods',
-  //     subTitleStyle:
-  //       'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
-  //     menuIcon: 'ExclamationIcon',
-  //     menuIconClassName: 'bg-secondary text-white',
-  //     showIcon: true,
-  //     iconBackgroundColor: 'alertMain',
-  //     chipConfig: {
-  //       colorPalette: {
-  //         backgroundColour: 'white',
-  //         borderColour: 'errorMain',
-  //         textColour: 'errorMain',
-  //       },
-  //     },
-  //     text: '1',
-  //     onActionClick: () => {},
-  //     classNames: 'bg-uiBg',
-  //   },
-  // ];
-
   const appDispatch = useAppDispatch();
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
+  const userAuth = useSelector(authSelectors.getAuthUser);
   const children = useSelector(childrenSelectors.getChildren);
   const childrenForPractitioner = useSelector(
     childrenForPractitionerSelectors.getChildrenForPractitioner
@@ -125,6 +56,54 @@ export const CoachPractitionerClassroom: React.FC = () => {
   const childrenForPractitionerList = children?.filter((item) =>
     childrenForPractitioner?.find((item2) => item.id === item2.id)
   );
+  const [classMetrics, setClassMetrics] = useState<any>();
+  const [practitionerClassroomsData, setPractitionerClassroomsData] =
+    useState<any[]>();
+
+  const classroomsMetrics = async () => {
+    const today = new Date();
+    const firstDayPrevMonth = new Date(
+      today.getFullYear(),
+      today.getMonth() - 1,
+      1
+    );
+    const lastDayPrevMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+    const metricsData = await new ClassroomGroupService(
+      userAuth?.auth_token!
+    ).getClassAttendanceMetrics(firstDayPrevMonth, lastDayPrevMonth);
+    setClassMetrics(metricsData);
+    return metricsData;
+  };
+
+  useEffect(() => {
+    classroomsMetrics();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (classMetrics) {
+      const practitionerClassroomData = classMetrics?.filter((item: any) => {
+        return practitionerClassroomGroups.some((x) => {
+          return item?.practitionerId === x?.userId;
+        });
+      });
+      setPractitionerClassroomsData(practitionerClassroomData);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [classMetrics]);
+
+  const classroomsDetailsForPractitioner = async () => {
+    const practitionersMessageData = await new PractitionerService(
+      userAuth?.auth_token!
+    ).displayMetrics('practitioner');
+
+    return practitionersMessageData;
+  };
+
+  useEffect(() => {
+    classroomsDetailsForPractitioner();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     resetChildrenForPractitioner();
@@ -158,16 +137,7 @@ export const CoachPractitionerClassroom: React.FC = () => {
         }
         displayOffline={!isOnline}
       ></BannerWrapper>
-      <div className="w-full flex flex-wrap justify-center">
-        {/* {listItems.length > 0 ? (
-          <div className="flex justify-center w-11/12 mt-4">
-            <StackedList
-              className={styles.stackedList}
-              listItems={listItems}
-              type={'MenuList'}
-            ></StackedList>
-          </div>
-        ) : null} */}
+      <div className="flex w-full flex-wrap justify-center">
         <>
           <Card
             className={styles.registeredChildrenCard}
@@ -201,7 +171,8 @@ export const CoachPractitionerClassroom: React.FC = () => {
             </div>
           </Card>
           <ClassroomAttendance
-          // practitionerClassroomGroups={practitionerClassroomGroups}
+            practitionerClassroomGroups={practitionerClassroomGroups}
+            practitionerClassroomsData={practitionerClassroomsData}
           />
           <div className="w-full">
             <ChildrenPerAgeGroup

@@ -9,92 +9,84 @@ export const getDocuments = createAsyncThunk<
   // eslint-disable-next-line @typescript-eslint/ban-types
   {},
   ThunkApiType<RootState>
->(
-  'getDocuments',
-  // eslint-disable-next-line no-empty-pattern
-  async ({}, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-      documents: { documents: documentCache },
-    } = getState();
+>('getDocuments', async (_, { getState, rejectWithValue }) => {
+  const {
+    auth: { userAuth },
+    documents: { documents: documentCache },
+  } = getState();
 
-    if (!documentCache) {
-      try {
-        let documents: DocumentDto[] | undefined;
+  if (!documentCache) {
+    try {
+      let documents: DocumentDto[] | undefined;
 
-        if (userAuth?.auth_token) {
-          documents = await new DocumentService(
-            userAuth?.auth_token
-          ).getdocuments(userAuth.id);
-        } else {
-          return rejectWithValue('no access token, profile check required');
-        }
-
-        if (!documents) {
-          return rejectWithValue('Error getting Documents');
-        }
-
-        return documents;
-      } catch (err) {
-        return rejectWithValue(err);
+      if (userAuth?.auth_token) {
+        documents = await new DocumentService(
+          userAuth?.auth_token
+        ).getdocuments(userAuth.id);
+      } else {
+        return rejectWithValue('no access token, profile check required');
       }
-    } else {
-      return documentCache;
+
+      if (!documents) {
+        return rejectWithValue('Error getting Documents');
+      }
+
+      return documents;
+    } catch (err) {
+      return rejectWithValue(err);
     }
+  } else {
+    return documentCache;
   }
-);
+});
 
 export const createDocument = createAsyncThunk<
   boolean[],
   // eslint-disable-next-line @typescript-eslint/ban-types
   {},
   ThunkApiType<RootState>
->(
-  'createDocument',
-  // eslint-disable-next-line no-empty-pattern
-  async ({}, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-      documents: { documents },
-    } = getState();
+>('createDocument', async (_, { getState, rejectWithValue }) => {
+  const {
+    auth: { userAuth },
+    documents: { documents },
+  } = getState();
 
-    try {
-      if (userAuth?.auth_token && documents) {
-        for (const document of documents) {
-          if (document.file) {
-            const splitString = getBase64FromBaseString(document.file);
+  try {
+    if (userAuth?.auth_token && documents) {
+      for (const document of documents) {
+        if (document.file) {
+          const splitString = getBase64FromBaseString(document.file);
 
-            const _documentService = new DocumentService(userAuth?.auth_token);
+          const _documentService = new DocumentService(userAuth?.auth_token);
 
-            const fileReturnModel = await _documentService.fileUpload(
-              splitString,
-              document.name,
-              document.fileType ?? ''
+          const fileReturnModel = await _documentService.fileUpload(
+            splitString,
+            document.name,
+            document.fileType ?? ''
+          );
+
+          if (fileReturnModel) {
+            const documentInputModel: DocumentInput = {
+              Id: document.id,
+              UserId: document.userId,
+              WorkflowStatusId: document.workflowStatusId,
+              DocumentTypeId: document.documentTypeId,
+              Name: fileReturnModel.name,
+              Reference: fileReturnModel.url,
+              CreatedUserId: document.createdUserId,
+              IsActive: true,
+            };
+
+            await _documentService.updateDocument(
+              document.id ?? '',
+              documentInputModel
             );
-
-            if (fileReturnModel) {
-              const documentInputModel: DocumentInput = {
-                Id: document.id,
-                UserId: document.userId,
-                WorkflowStatusId: document.workflowStatusId,
-                DocumentTypeId: document.documentTypeId,
-                Name: fileReturnModel.name,
-                Reference: fileReturnModel.url,
-                CreatedUserId: document.createdUserId,
-                IsActive: true,
-              };
-
-              await _documentService.updateDocument(
-                document.id ?? '',
-                documentInputModel
-              );
-            }
           }
         }
       }
-      return [true];
-    } catch (err) {
-      return rejectWithValue(err);
     }
+    return [true];
+  } catch (err) {
+    return rejectWithValue(err);
   }
-);
+});

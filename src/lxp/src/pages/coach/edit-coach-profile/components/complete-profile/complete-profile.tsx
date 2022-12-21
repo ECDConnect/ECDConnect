@@ -1,5 +1,4 @@
-import { Typography } from '@ecdlink/ui';
-import { renderIcon } from '@ecdlink/ui';
+import { Typography, renderIcon } from '@ecdlink/ui';
 import ROUTES from '@routes/routes';
 import { useHistory } from 'react-router-dom';
 import * as styles from './complete-profile.styles';
@@ -11,7 +10,7 @@ export const CompleteProfile: React.FC = () => {
       <div className={styles.content}>
         <Typography
           type={'h3'}
-          text={'Tell us more about you!'}
+          text={'Complete your Profile'}
           color={'textDark'}
           className={styles.header}
         />
@@ -27,7 +26,7 @@ export const CompleteProfile: React.FC = () => {
               type={'help'}
               weight={'bold'}
               color={'primary'}
-              text={'Tell us more about you!'}
+              text={'Complete your Profile'}
               className={styles.texthover}
             />
           </div>

@@ -8,8 +8,8 @@ class InfantService {
     this._accessToken = accessToken;
   }
 
-  async GetAllInfantsForMother(): Promise<InfantDto[]> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+  async GetAllInfantsForMother(id: string): Promise<InfantDto[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         query getAllInfantsForHealthCareWorker($id: String) {
@@ -26,17 +26,19 @@ class InfantService {
           }
         }        
       `,
+      variables: {
+        id: id,
+      },
     });
 
     if (response.status !== 200) {
       throw new Error('Getting Mothers failed - Server connection error');
     }
-
-    return response.data.data.GetAllMother;
+    return response.data.data.allInfantsForHealthCareWorker;
   }
 
   async addInfant(input: InfantModelInput): Promise<InfantDto> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         mutation addInfant($input: InfantModelInput) {
@@ -63,6 +65,29 @@ class InfantService {
     }
 
     return response.data.data.createInfant;
+  }
+
+  async getInfantCountForHealthCareWorkerForMonth(id: string): Promise<number> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        query getInfantCountForHealthCareWorkerForMonth($userId: String) {
+          infantCountForHealthCareWorkerForMonth(userId: $userId) {
+          }
+        }       
+      `,
+      variables: {
+        userId: id,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Getting count for health care worker for month failed - Server connection error'
+      );
+    }
+
+    return response.data.data.infantCountForHealthCareWorkerForMonth;
   }
 }
 

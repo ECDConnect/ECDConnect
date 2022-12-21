@@ -38,6 +38,8 @@ import {
 import EditAttendanceRegister from '../edit-attendance-register/edit-attendance-register';
 import * as styles from './attendance-summary.styles';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
+import { userSelectors } from '@store/user';
+import { practitionerSelectors } from '@/store/practitioner';
 
 export const AttendanceSummary: React.FC = () => {
   const [displaySmartStartMessage, setDisplaySmartStartMessage] =
@@ -49,6 +51,11 @@ export const AttendanceSummary: React.FC = () => {
     ActionListDataItem[]
   >([]);
 
+  const userData = useSelector(userSelectors.getUser);
+  const practitioners = useSelector(practitionerSelectors.getPractitioners);
+  const practitioner: any = practitioners?.find(
+    (item) => item?.userId === userData?.id
+  );
   const [attendanceEditDay, setAttendanceEditDay] = useState<Date>();
   const [missedAttendanceGroups, setMissedAttendanceGroups] = useState<
     MissedAttendanceGroups[]
@@ -62,15 +69,28 @@ export const AttendanceSummary: React.FC = () => {
     useState<boolean>(false);
   const [currentEditClassroomGroupId, setCurrentEditClassroomGroupId] =
     useState<string>();
-
   const todayDate = new Date();
-  const classProgrammes = useSelector(classroomsSelectors.getClassProgrammes);
   const allClassroomGroups = useSelector(
     classroomsSelectors.getClassroomGroups
   );
   const classroomGroups = allClassroomGroups.filter(
     (x) => x.name !== NoPlaygroupClassroomType.name
   );
+  const classroomGroupsForPrincipal = classroomGroups.filter(
+    (item) => item?.userId === userData?.id
+  );
+
+  const classProgrammes = useSelector(classroomsSelectors.getClassProgrammes);
+  const classProgrammesForPrincipal = classProgrammes.filter((el) => {
+    return classroomGroupsForPrincipal.some((f) => {
+      return f.id === el.classroomGroupId;
+    });
+  });
+
+  const classProgrammesUpdated =
+    practitioner?.isPrincipal === true
+      ? classProgrammesForPrincipal
+      : classProgrammes;
   const publicHolidays = useSelector(staticDataSelectors.getHolidays);
   const attendanceData = useSelector(attendanceSelectors.getAttendance);
 
@@ -103,16 +123,19 @@ export const AttendanceSummary: React.FC = () => {
       const attendance = attendanceData as AttendanceDto[];
       const holidays = publicHolidays as Holiday[];
 
-      const meetingDays: number[] =
-        getClassroomGroupSchoolDays(classProgrammes);
+      const meetingDays: number[] = getClassroomGroupSchoolDays(
+        classProgrammesUpdated
+      );
 
       setIsValidAttendanceDay(
         isValidAttendableDate(todayDate, meetingDays || [], holidays)
       );
       const attendanceToDoList: MissedAttendanceGroups[] =
         getMissedAttendanceSummaryGroups(
-          classroomGroups || [],
-          classProgrammes,
+          practitioner?.isPrincipal === true
+            ? classroomGroupsForPrincipal
+            : classroomGroups || [],
+          classProgrammesUpdated,
           attendance,
           holidays,
           todayDate
@@ -123,14 +146,14 @@ export const AttendanceSummary: React.FC = () => {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [publicHolidays, attendanceData, classProgrammes]);
+  }, [publicHolidays, attendanceData, classProgrammesUpdated]);
 
   useEffect(() => {
     if (
       !isValidAttendanceDay &&
       missedAttendanceGroups &&
       missedAttendanceGroups.length === 0 &&
-      classProgrammes
+      classProgrammesUpdated
     ) {
       const startOfWeekDate = startOfWeek(todayDate, { weekStartsOn: 1 });
       let actionListToDisplayWrapper: {
@@ -138,10 +161,15 @@ export const AttendanceSummary: React.FC = () => {
         item: ActionListDataItem;
         group: ClassroomGroupDto;
       }[] = [];
-      for (const classProgramme of classProgrammes) {
-        const group = classroomGroups?.find(
-          (x) => x.id === classProgramme.classroomGroupId
-        );
+      for (const classProgramme of classProgrammesUpdated) {
+        const group =
+          practitioner?.isPrincipal === true
+            ? classroomGroupsForPrincipal?.find(
+                (x) => x.id === classProgramme.classroomGroupId
+              )
+            : classroomGroups?.find(
+                (x) => x.id === classProgramme.classroomGroupId
+              );
 
         if (group) {
           const dayDate = addDays(
@@ -181,7 +209,7 @@ export const AttendanceSummary: React.FC = () => {
       setAttendanceActionList([]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isValidAttendanceDay, missedAttendanceGroups, classProgrammes]);
+  }, [isValidAttendanceDay, missedAttendanceGroups, classProgrammesUpdated]);
 
   useEffect(() => {
     if (missedAttendanceGroups && missedAttendanceGroups.length > 0) {
@@ -263,7 +291,6 @@ export const AttendanceSummary: React.FC = () => {
       if (updatedMissedAttendanceItemIndex >= 0) {
         updatedMissedAttendance.splice(updatedMissedAttendanceItemIndex, 1);
       }
-
       setMissedAttendanceGroups(updatedMissedAttendance);
 
       const allMissedAttendanceDays =
@@ -296,7 +323,7 @@ export const AttendanceSummary: React.FC = () => {
 
   return (
     <>
-      <div className={'flex flex-1 h-full flex-col px-4 pt-4 gap-4'}>
+      <div className={'flex h-full flex-1 flex-col gap-4 px-4 pt-4'}>
         {isValidAttendanceDay ? (
           <PointsSuccessCard
             visible={successMessageVisible}
@@ -318,33 +345,34 @@ export const AttendanceSummary: React.FC = () => {
           </div>
         )}
 
-        {attendanceActionList.length > 0 && missedAttendanceGroups.length > 0 && (
-          <div className={'flex flex-col'}>
-            <div className={'flex flex-row items-center'}>
-              <div className={styles.iconRound}>
+        {attendanceActionList.length > 0 &&
+          missedAttendanceGroups.length > 0 && (
+            <div className={'flex flex-col'}>
+              <div className={'flex flex-row items-center'}>
+                <div className={styles.iconRound}>
+                  <Typography
+                    type={'help'}
+                    weight={'bold'}
+                    text={attendanceActionList.length.toString()}
+                    color={'white'}
+                  />
+                </div>
                 <Typography
-                  type={'help'}
+                  type={'body'}
                   weight={'bold'}
-                  text={attendanceActionList.length.toString()}
-                  color={'white'}
+                  text={'incomplete registers this week.'}
+                  color={'alertMain'}
                 />
               </div>
               <Typography
+                className={'pt-2'}
                 type={'body'}
                 weight={'bold'}
-                text={'incomplete registers this week.'}
-                color={'alertMain'}
+                text={'Let’s get them done:'}
+                color={'textMid'}
               />
             </div>
-            <Typography
-              className={'pt-2'}
-              type={'body'}
-              weight={'bold'}
-              text={'Let’s get them done:'}
-              color={'textMid'}
-            />
-          </div>
-        )}
+          )}
 
         <StackedList
           listItems={attendanceActionList}

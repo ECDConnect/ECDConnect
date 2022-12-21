@@ -28,6 +28,8 @@ namespace ECDLink.DataAccessLayer.Entities.Classroom
 
         [ForeignKey(nameof(UserId))]
         public virtual ApplicationUser User { get; set; }
-        public string UserId { get; set; }        
+        public string UserId { get; set; }
+
+        public Guid TenantId { get; set; }
     }
 }

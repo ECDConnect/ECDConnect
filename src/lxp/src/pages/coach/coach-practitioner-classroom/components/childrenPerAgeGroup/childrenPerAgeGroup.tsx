@@ -1,4 +1,3 @@
-import { getAge } from '@/utils/child/child-profile-utils';
 import { Typography, Card } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -6,6 +5,7 @@ import { childrenSelectors } from '@store/children';
 import { childrenForPractitionerSelectors } from '@/store/childrenForPractitioner';
 import * as styles from './childrenPerAgeGroup.styles';
 import { ChildrenPerAgeGroupProps } from './childrenperAgeGroup.types';
+import { differenceInCalendarMonths } from 'date-fns';
 
 export const ChildrenPerAgeGroup: React.FC<ChildrenPerAgeGroupProps> = ({
   practitionerId,
@@ -18,26 +18,26 @@ export const ChildrenPerAgeGroup: React.FC<ChildrenPerAgeGroupProps> = ({
   const childrenForPractitionerList = children?.filter((item) =>
     childrenForPractitioner?.find((item2) => item.id === item2.id)
   );
+
   const [ageGroup1, setAgeGroup1] = useState(0);
   const [ageGroup2, setAgeGroup2] = useState(0);
   const [ageGroup3, setAgeGroup3] = useState(0);
   const [ageGroup4, setAgeGroup4] = useState(0);
 
-  const handleAgeGroups = (childAge: any) => {
-    if (childAge?.years < 2 && childAge?.months < 7) {
+  const handleAgeGroups = (childAgeInMonths: any) => {
+    if (childAgeInMonths < 18) {
       setAgeGroup1((prevState) => prevState + 1);
       return;
     }
-    if (childAge?.years < 3 && childAge?.years > 1 && childAge?.months > 6) {
+    if (childAgeInMonths >= 18 && childAgeInMonths < 36) {
       setAgeGroup2((prevState) => prevState + 1);
       return;
     }
-    if (childAge?.years >= 3 && childAge?.years < 6) {
+    if (childAgeInMonths >= 36 && childAgeInMonths < 60) {
       setAgeGroup3((prevState) => prevState + 1);
       return;
     }
-    if (childAge?.years >= 6 && childAge?.years < 10)
-      setAgeGroup4((prevState) => prevState + 1);
+    if (childAgeInMonths > 60) setAgeGroup4((prevState) => prevState + 1);
   };
 
   useEffect(() => {
@@ -49,8 +49,12 @@ export const ChildrenPerAgeGroup: React.FC<ChildrenPerAgeGroupProps> = ({
           ? new Date(item?.user?.dateOfBirth)
           : undefined;
 
-        const childAge = getAge(childBirthDate);
-        handleAgeGroups(childAge);
+        const childAgeInMonths = differenceInCalendarMonths(
+          new Date(),
+          new Date(childBirthDate || new Date())
+        );
+
+        handleAgeGroups(childAgeInMonths);
       });
       return () => {
         setAgeGroup1(0);
@@ -98,7 +102,7 @@ export const ChildrenPerAgeGroup: React.FC<ChildrenPerAgeGroupProps> = ({
               </div>
               <Typography text={'3 - 5 years'} type="body" className="mb-4" />
             </div>
-            <div className="pb-2 mr-10">
+            <div className="mr-10 pb-2">
               <div className="mt-4 mb-3 text-4xl font-semibold text-black">
                 {ageGroup4}
               </div>

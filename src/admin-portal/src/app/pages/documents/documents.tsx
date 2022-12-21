@@ -34,6 +34,10 @@ export default function Documents() {
             : 'System',
           type: item.documentType?.name,
           status: item.workflowStatus?.description,
+          createddate:
+            item.insertedDate !== null
+              ? new Date(item.insertedDate).toISOString()
+              : '',
           _view: undefined,
           _edit: undefined,
           _url: undefined,
@@ -77,13 +81,14 @@ export default function Documents() {
       <div>
         <div className="flex flex-col">
           <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-            <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-              <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+            <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+              <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
                 <UiTable
                   columns={[
                     { field: 'fullName', use: 'user' },
                     { field: 'name', use: 'name' },
                     { field: 'type', use: 'type' },
+                    { field: 'createddate', use: 'date' },
                     { field: 'status', use: 'status' },
                   ]}
                   rows={tableData}

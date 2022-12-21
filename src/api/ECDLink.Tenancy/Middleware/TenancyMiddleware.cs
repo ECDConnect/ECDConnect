@@ -23,8 +23,6 @@ namespace ECDLink.Tenancy.Middleware
 
         public async Task InvokeAsync(HttpContext context, ITenantService tenancyService)
         {
-            var _ = tenancyService ?? throw new NotImplementedException("Missing instance definition ITenancyService");
-
             TenantModel tenantModel = GetTenant(context, tenancyService);
 
             if (tenantModel == null)
@@ -43,7 +41,6 @@ namespace ECDLink.Tenancy.Middleware
         {
             string path = "";
             TenantModel tenant = new TenantModel();
-            var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
 
             var claim = context.User.Claims
                                 .Where(x => string.Equals(x.Type, TenancyConstants.Jwt.TenantJwtClaim))
@@ -59,14 +56,13 @@ namespace ECDLink.Tenancy.Middleware
                 path = "JWT:" + claim?.Value;
                     
             } else { 
-
-            //if (tenant == default(TenantModel)) {  //means we dont have a tenant from the JWt            
-                                                    // Check url making request
+            
+                // Check url making request
                 var refererUrl = context?.Request?.GetTypedHeaders()?.Referer?.AbsoluteUri ?? context.Request.Host.Host ?? String.Empty;
 
                 if (!string.IsNullOrWhiteSpace(refererUrl))
                 {
-                    var urlTenant = tenancyService.GetTenantByUrl(refererUrl);
+                   var urlTenant = tenancyService.GetTenantByUrl(refererUrl);
                     if (urlTenant != null && urlTenant != default(TenantModel))
                     {
                         tenant = urlTenant;

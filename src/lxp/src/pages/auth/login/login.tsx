@@ -8,6 +8,8 @@ import {
   FormInput,
   PasswordInput,
   Typography,
+  Dialog,
+  DialogPosition,
 } from '@ecdlink/ui';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -23,6 +25,7 @@ import { authActions, authThunkActions } from '@store/auth';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { settingActions } from '@store/settings';
 import ROUTES from '@routes/routes';
+import { StorageFull } from './storage-full/storage-full';
 const { version } = require('../../../../package.json');
 
 export const Login: React.FC = () => {
@@ -32,6 +35,16 @@ export const Login: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [idFieldVisible, setIdFieldVisible] = useState(true);
   const { isOnline, Offline } = useOnlineStatus();
+  const [freeMemory, setFreeMemory] = useState(0);
+  const [errorMessage, setErrorMessage] = useState(false);
+
+  navigator.storage.estimate().then((estimate) => {
+    if (estimate?.quota) {
+      const freMemoryResult = estimate?.quota / 1024 / 1024;
+      setFreeMemory(Number(freMemoryResult.toFixed(0)));
+      return estimate;
+    }
+  });
 
   const {
     register: loginRegister,
@@ -48,33 +61,37 @@ export const Login: React.FC = () => {
   const submitForm = async () => {
     setDisplayError(false);
     if (isValid) {
-      setIsLoading(true);
-      const body: LoginRequestModel = {
-        username: loginFormGetValues().preferId
-          ? loginFormGetValues().idField
-          : loginFormGetValues().passportField,
-        password: loginFormGetValues().password,
-      };
+      if (freeMemory > 50 || freeMemory === 0) {
+        setIsLoading(true);
+        const body: LoginRequestModel = {
+          username: loginFormGetValues().preferId
+            ? loginFormGetValues().idField
+            : loginFormGetValues().passportField,
+          password: loginFormGetValues().password,
+        };
 
-      appDispatch(authThunkActions.login(body))
-        .then((isAuthenticated: any) => {
-          if (
-            isAuthenticated &&
-            isAuthenticated?.payload?.response?.status !== 401
-          ) {
-            appDispatch(settingActions.setApplicationVersion(version));
-            appDispatch(authActions.setUserExpired());
-            setIsLoading(false);
-            history.push(ROUTES.DASHBOARD);
-          } else {
+        appDispatch(authThunkActions.login(body))
+          .then((isAuthenticated: any) => {
+            if (
+              isAuthenticated &&
+              isAuthenticated?.payload?.response?.status !== 401
+            ) {
+              appDispatch(settingActions.setApplicationVersion(version));
+              appDispatch(authActions.setUserExpired());
+              setIsLoading(false);
+              history.push(ROUTES.DASHBOARD);
+            } else {
+              setDisplayError(true);
+              setIsLoading(false);
+            }
+          })
+          .catch(() => {
             setDisplayError(true);
             setIsLoading(false);
-          }
-        })
-        .catch(() => {
-          setDisplayError(true);
-          setIsLoading(false);
-        });
+          });
+      } else {
+        setErrorMessage(true);
+      }
     }
   };
 
@@ -102,6 +119,9 @@ export const Login: React.FC = () => {
       displayOffline={!isOnline}
     >
       <div className={styles.loginContainer}>
+        <Dialog fullScreen visible={errorMessage} position={DialogPosition.Top}>
+          <StorageFull />
+        </Dialog>
         <form>
           <div>
             {idFieldVisible && (
@@ -192,18 +212,17 @@ export const Login: React.FC = () => {
           <Offline>
             <Alert
               className={'mt-5 mb-3'}
-              title="You are offline"
-              message={'You need to be online to log in to the app'}
+              title="Your internet connection is unstable."
               type={'warning'}
             />
           </Offline>
           <Button
             id="gtm-login"
-            className={'w-full mt-3'}
+            className={'mt-3 w-full'}
             type="filled"
             isLoading={isLoading}
             color="primary"
-            disabled={!isValid || !isOnline}
+            disabled={!isValid}
             onClick={submitForm}
           >
             <Typography type="help" color="white" text={'Log in'}></Typography>

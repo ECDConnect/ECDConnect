@@ -10,6 +10,7 @@ namespace ECDLink.PostgresTenancy.Context
     public class PostgresTenancyContext : IdentityDbContext<TenancyIdentityUser>
     {
         internal DbSet<TenantEntity> Tenants { get; set; }
+        internal DbSet<JWTUserTokensEntity> JWTTokens { get; set; }
 
         public PostgresTenancyContext(DbContextOptions<PostgresTenancyContext> options)
           : base(options)
@@ -24,9 +25,6 @@ namespace ECDLink.PostgresTenancy.Context
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
-            // Customize the ASP.NET Identity model and override the defaults if needed.
-            // For example, you can rename the ASP.NET Identity table names and more.
-            // Add your customizations after calling base.OnModelCreating(builder);
         }
     }
 }

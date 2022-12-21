@@ -53,7 +53,6 @@ export const getImageDimensionsBasedOnSizeType = (
         width: '120px',
       };
     case 'lg':
-    default:
       return {
         ...base,
         height: '56px',
@@ -75,7 +74,6 @@ export const avatar = (avatarSize: AvatarSize, displayBorder: boolean) => {
     case 'header':
       return `rounded-full ${displayBorder ? `border-4` : ''}`;
     case 'lg':
-    default:
       return `rounded-full ${displayBorder ? `border-4` : ''}`;
   }
 };

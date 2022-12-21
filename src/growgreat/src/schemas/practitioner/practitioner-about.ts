@@ -6,6 +6,7 @@ export interface PractitionerAboutModel {
   surname: string;
   cellphone: string;
   email: string;
+  languageId: string;
 }
 
 export const initialPractitionerAboutValues: PractitionerAboutModel = {
@@ -13,6 +14,7 @@ export const initialPractitionerAboutValues: PractitionerAboutModel = {
   surname: '',
   cellphone: '',
   email: '',
+  languageId: '',
 };
 
 export const practitionerAboutModelSchema = Yup.object().shape({

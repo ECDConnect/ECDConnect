@@ -37,6 +37,13 @@ using Microsoft.Extensions.Hosting;
 using System;
 using System.Diagnostics;
 using ECDLink.Tenancy.EntityFramework.Extensions;
+using System.Threading.Tasks;
+using EcdLink.Api.CoreApi.Middleware;
+using ECDLink.Core.Services;
+using ECDLink.PostgresTenancy.Repository;
+using ECDLink.Tenancy.Services;
+using ECDLink.PostgresTenancy.Services;
+using ECDLink.PostgresTenancy.Entities;
 
 namespace EcdLink.Api.CoreApi
 {
@@ -60,10 +67,21 @@ namespace EcdLink.Api.CoreApi
 
             services.AddHttpContextAccessor();
 
+            // We are explicitly setting these because of CORS issues on .datafree.co
+            var allowedDomains = new[] { "https://ecdconnect.co.za",
+                "https://ecdconnect-co-za-fundasmartstart.datafree.co",
+                "https://*.ecdconnect.co.za ",
+                "https://*.ecdlink.co.za",
+                "https://*.azurewebsites.net",
+                "http://localhost:3001",
+                "http://localhost:3000" };
+
             services.AddCors(options => options.AddPolicy("CorsPolicy", builder => builder
                           .AllowAnyMethod()
                           .AllowAnyHeader()
+                          .SetIsOriginAllowedToAllowWildcardSubdomains()
                           .SetIsOriginAllowed(origin => true)
+                          .WithOrigins(allowedDomains)
                           .WithExposedHeaders("WWW-Authenticate")
                      ));
 
@@ -106,6 +124,8 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<IPasswordManager<ApplicationUser>, PasswordManager>();
             services.AddTransient<IAuthenticationManager<ApplicationUser>, SecurityManager>();
 
+            services.AddTransient<IJWTService, JWTService>();
+            services.AddTransient<IJWTRepository, JWTRepository>();
             services.AddTransient<SecurityNotificationManager>();
             services.AddTransient<InvitationNotificationManager>();
             services.AddTransient<HealthCareWorkerManager>();
@@ -116,10 +136,10 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<IUserInterceptHandler, UserInterceptHandler>();
             services.AddTransient<IChildrenAnonymiseService, ChildrenAnonymiseService>();
             services.AddTransient<IDocumentManagementService, DocumentManagementService>();
+            services.AddTransient<IReassignmentService, ReassignmentService>();
 
             ConfigureJobs(services);
 
-            //services.AddControllers().AddApplicationPart(Assembly.Load(new AssemblyName("ECDLink.Security")));
             services.AddControllers();
         }
 
@@ -131,23 +151,16 @@ namespace EcdLink.Api.CoreApi
                 DiagnosticListener.AllListeners.Subscribe(new DiagnosticObserver());
 
                 app.UseDeveloperExceptionPage();
-
-                //using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
-                //{
-                //    serviceScope.ServiceProvider.GetRequiredService<PostgresTenancyContext>().Database.Migrate();
-                //    serviceScope.ServiceProvider.GetRequiredService<PostgresTenantSeedService>().Seed();
-                //}
             }
 
             app.UseCors("CorsPolicy");
 
-            //app.UseHttpsRedirection();
             app.UseCookiePolicy();
-
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseTenancy();
+            app.UseInputSanitizer();
 
             app.UseEndpoints(endpoints =>
             {

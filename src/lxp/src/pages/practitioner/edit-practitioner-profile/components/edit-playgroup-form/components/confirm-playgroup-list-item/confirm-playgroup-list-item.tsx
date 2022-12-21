@@ -1,11 +1,12 @@
-import { Button, Typography } from '@ecdlink/ui';
-import { renderIcon } from '@ecdlink/ui';
+import { Button, Typography, renderIcon } from '@ecdlink/ui';
 import {
   getWeekdayValue,
   Weekdays,
 } from '@utils/practitioner/playgroups-utils';
 import * as styles from './confirm-playgroup-list-item.styles';
 import { ConfirmPlaygroupListItemProps } from './confirm-playgroup-list-item.types';
+import { practitionerSelectors } from '@/store/practitioner';
+import { useSelector } from 'react-redux';
 
 export const ConfirmPlayGroupListItem: React.FC<
   ConfirmPlaygroupListItemProps
@@ -15,10 +16,12 @@ export const ConfirmPlayGroupListItem: React.FC<
       .map((day) => getWeekdayValue(day as Weekdays))
       .join(' & ');
   };
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  const isPrincipal = practitioner?.isPrincipal === true;
 
   return (
     <div className={styles.wrapper} key={`confirm-playgroup-item-${index}`}>
-      <div className="flex-1 flex-column">
+      <div className="flex-column flex-1">
         <Typography
           type="body"
           color={'textMid'}
@@ -34,18 +37,20 @@ export const ConfirmPlayGroupListItem: React.FC<
           />
         </div>
       </div>
-      <div>
-        <Button
-          size="small"
-          shape="normal"
-          color="primary"
-          type="outlined"
-          onClick={onPlayGroupEdit}
-        >
-          <Typography type="help" color="primary" text="Edit" />
-          {renderIcon('PencilIcon', styles.buttonIcon)}
-        </Button>
-      </div>
+      {isPrincipal && (
+        <div>
+          <Button
+            size="small"
+            shape="normal"
+            color="primary"
+            type="outlined"
+            onClick={onPlayGroupEdit}
+          >
+            <Typography type="help" color="primary" text="Edit" />
+            {renderIcon('PencilIcon', styles.buttonIcon)}
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

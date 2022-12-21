@@ -6,8 +6,8 @@ import {
   FormInput,
   Typography,
   classNames,
+  renderIcon,
 } from '@ecdlink/ui';
-import { renderIcon } from '@ecdlink/ui';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useSelector } from 'react-redux';
@@ -76,6 +76,7 @@ export const CareGiverInformationForm: React.FC<
         fullWidth
         fillType="clear"
         label={`Relationship to ${childName || 'child'}?`}
+        selectedValue={getCareGiverInformationFormValues().relationId}
         className={'mt-3'}
         onChange={(item: any) => {
           setCareGiverInformationFormValue('relationId', item, {

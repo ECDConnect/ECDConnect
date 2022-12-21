@@ -5,19 +5,20 @@ import {
   Divider,
   ProfileAvatar,
   Typography,
+  DialogPosition,
+  renderIcon,
 } from '@ecdlink/ui';
-import { DialogPosition } from '@ecdlink/ui';
-import { renderIcon } from '@ecdlink/ui';
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { PhotoPrompt } from '../../../../../components/photo-prompt/photo-prompt';
 import { useDocuments } from '@hooks/useDocuments';
 import { useAppDispatch } from '@store';
-import { userActions, userSelectors } from '@store/user';
+import { userActions, userSelectors, userThunkActions } from '@/store/user';
 import * as styles from '../../edit-practitioner-profile.styles';
 import { AddPhotoProps } from './add-photo.types';
+import { cloneDeep } from 'lodash';
 
-export const AddPhoto: React.FC<AddPhotoProps> = ({ onSubmit }) => {
+export const AddPhoto: React.FC<AddPhotoProps> = ({ onSubmit, isLoading }) => {
   const user = useSelector(userSelectors.getUser);
   const appDispatch = useAppDispatch();
   const {
@@ -52,6 +53,17 @@ export const AddPhoto: React.FC<AddPhotoProps> = ({ onSubmit }) => {
     } else {
       updateDocument(userProfilePicture, imageBaseString);
     }
+
+    // save details with request updateUser
+    const userCopy = cloneDeep(user);
+
+    if (userCopy) {
+      if (imageBaseString?.length > 0) {
+        userCopy.profileImageUrl = imageBaseString;
+      }
+      appDispatch(userActions.updateUser(userCopy));
+      appDispatch(userThunkActions.updateUser(userCopy));
+    }
   };
 
   const handleDelete = () => {
@@ -79,7 +91,7 @@ export const AddPhoto: React.FC<AddPhotoProps> = ({ onSubmit }) => {
         className="font-medium"
       />
 
-      <div className={'w-full inline-flex justify-center pt-16 pb-12'}>
+      <div className={'inline-flex w-full justify-center pt-16 pb-12'}>
         <ProfileAvatar
           dataUrl={userProfilePicture?.file ?? ''}
           size={'header'}
@@ -97,6 +109,7 @@ export const AddPhoto: React.FC<AddPhotoProps> = ({ onSubmit }) => {
         onClick={() => {
           onSubmit(userProfilePicture?.file ? '' : undefined);
         }}
+        isLoading={isLoading}
       >
         {renderIcon(
           userProfilePicture?.file ? 'SaveIcon' : 'ClockIcon',

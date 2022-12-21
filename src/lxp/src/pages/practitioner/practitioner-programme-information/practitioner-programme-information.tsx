@@ -1,7 +1,7 @@
 import { ClassroomDto, useTheme } from '@ecdlink/core';
 import {
   FileTypeEnum,
-  ProgrammeTypeEnum,
+  PractitionerColleagues,
   WorkflowStatusEnum,
 } from '@ecdlink/graphql';
 import {
@@ -15,6 +15,7 @@ import {
   renderIcon,
   StackedList,
   Typography,
+  Alert,
 } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
@@ -40,6 +41,8 @@ import * as styles from './practitioner-programme-information.styles';
 import ROUTES from '@routes/routes';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 import { practitionerSelectors } from '@/store/practitioner';
+import { PractitionerService } from '@/services/PractitionerService';
+import { authSelectors } from '@/store/auth';
 
 export const PractitionerProgrammeInformation: React.FC = () => {
   const history = useHistory();
@@ -48,21 +51,24 @@ export const PractitionerProgrammeInformation: React.FC = () => {
   const appDispatch = useAppDispatch();
 
   const user = useSelector(userSelectors.getUser);
+  const userAuth = useSelector(authSelectors.getAuthUser);
 
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const programmeType = useSelector(
     classroomsSelectors.getClassroomProgrammeType()
   );
-  const classroomsForPractitioner = useSelector(
-    classroomsSelectors.getClassroom
+  const [otherColleagues, setOtherColleagues] = useState<any[]>([]);
+  const [otherColleaguesFiltered, setOtherColleaguesFiltered] = useState<any>(
+    []
   );
-  const classroomForPractitionerAnyType: any = classroomsForPractitioner;
+  const classroomForPractitionerAnyType: any = classroom;
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const practitionersList = practitioners?.filter(
     (item) => item.userId !== practitioner?.userId
   );
+  const isPrincipal = practitioner?.isPrincipal === true;
 
   const { createNewDocument, classroomImage, updateDocument, deleteDocument } =
     useDocuments();
@@ -100,14 +106,14 @@ export const PractitionerProgrammeInformation: React.FC = () => {
   });
 
   useEffect(() => {
-    if (classroomGroups) {
+    if (classroomGroups || otherColleaguesFiltered) {
       getStackedListItems();
     }
     if (classroom) {
       setProgrammeNameValue('name', classroom?.name || '');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [classroom, classroomGroups, programmeType]);
+  }, [classroom, classroomGroups, programmeType, otherColleaguesFiltered]);
 
   const displayProfilePicturePrompt = () => {
     setEditProfilePictureVisible(!editProfilePictureVisible);
@@ -153,48 +159,119 @@ export const PractitionerProgrammeInformation: React.FC = () => {
     displayProfilePicturePrompt();
   };
 
+  const getPractitionerColleagues = async () => {
+    // Check if the practitioner exists
+    let practitionerColleagues: PractitionerColleagues[] = [];
+
+    if (userAuth) {
+      practitionerColleagues = await new PractitionerService(
+        userAuth.auth_token
+      ).practitionerColleagues(user?.id!);
+    }
+
+    setOtherColleagues(practitionerColleagues);
+    return practitionerColleagues;
+  };
+
+  useEffect(() => {
+    getPractitionerColleagues();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (otherColleagues && user?.firstName) {
+      const filteredColleagues = otherColleagues?.filter(
+        (item) => !item?.name.includes(user?.firstName)
+      );
+      const firstNameFilteredColleagues = filteredColleagues.map((item) => ({
+        name: item?.name.split(' ')[0],
+        title: item?.title,
+      }));
+      setOtherColleaguesFiltered(firstNameFilteredColleagues);
+    }
+  }, [otherColleagues, user?.firstName]);
+
   const getStackedListItems = () => {
     const stackedActionList: ActionListDataItem[] = [
       {
         title: 'Programme name',
         subTitle:
-          classroomsForPractitioner && practitioner?.isPrincipal !== true
-            ? classroomForPractitionerAnyType?.classroom?.name
-            : classroom?.name,
+          classroomForPractitionerAnyType?.classroomId &&
+          practitioner?.isPrincipal !== true &&
+          practitioner?.isRegistered
+            ? classroomForPractitionerAnyType?.classroomName
+            : practitioner?.isRegistered
+            ? classroom?.name || 'None'
+            : 'None',
         switchTextStyles: true,
-        actionName: 'Edit',
+        actionName:
+          practitioner?.isRegistered && practitioner?.isPrincipal !== true
+            ? ''
+            : 'Edit',
         actionIcon: 'PencilIcon',
         onActionClick:
-          classroomsForPractitioner && practitioner?.isPrincipal !== true
-            ? () => {}
-            : () => setEditFieldVisible(true),
+          practitioner?.isRegistered !== null ||
+          practitioner?.isLeaving !== null
+            ? classroomForPractitionerAnyType?.classroomId &&
+              practitioner?.isPrincipal !== true
+              ? () => {}
+              : () => setEditFieldVisible(true)
+            : practitioner?.isPrincipal !== true
+            ? () => history.push(ROUTES.PRACTITIONER?.PROFILE?.EDIT)
+            : () => {
+                history.push(ROUTES?.PRINCIPAL.SETUP_PROFILE);
+                return;
+              },
       },
-      {
-        title: 'Location - N/A',
-        subTitle: 'N/A',
+    ];
+
+    if (
+      (practitioner?.isRegistered !== null && isPrincipal !== false) ||
+      practitioner?.isLeaving !== null
+    ) {
+      stackedActionList.push(
+        {
+          title: 'Location - N/A',
+          subTitle: 'N/A',
+          switchTextStyles: true,
+          actionName: undefined,
+          actionIcon: 'PlusIcon',
+          onActionClick: () => {},
+        },
+        {
+          title: 'Type of ECD service',
+          subTitle: programmeType?.description,
+          switchTextStyles: true,
+        }
+      );
+    }
+
+    if (
+      (practitioners?.length! > 0 || otherColleaguesFiltered?.length! > 0) &&
+      (practitioner?.isRegistered !== null ||
+        isPrincipal !== false ||
+        practitioner?.isLeaving !== null)
+    ) {
+      stackedActionList.push({
+        title: 'Other practitioners on site',
+        subTitle: isPrincipal
+          ? practitionersList?.map((x) => x?.user?.firstName).join(', ')
+          : otherColleaguesFiltered?.map((x: any) => x?.name).join(', '),
         switchTextStyles: true,
-        actionName: 'Add',
-        actionIcon: 'PlusIcon',
-        onActionClick: () => {},
-      },
-      {
-        title: 'Type of ECD service',
-        subTitle: programmeType?.description,
-        switchTextStyles: true,
-      },
-      {
-        title: 'Other participants on the site',
-        subTitle: practitionersList?.map((x) => x?.user?.firstName).join(', '),
-        switchTextStyles: true,
-        actionName: 'Edit',
-        actionIcon: 'PencilIcon',
+        actionName:
+          practitioners?.length! > 1 || otherColleaguesFiltered?.length! > 0
+            ? isPrincipal
+              ? 'Edit'
+              : 'View'
+            : 'Add',
+        actionIcon: isPrincipal ? 'PencilIcon' : 'EyeIcon',
         onActionClick: () => {
           history.push(ROUTES.PRINCIPAL.PRACTITIONER_LIST, {
             returnRoute: ROUTES.PRACTITIONER.PROGRAMME_INFORMATION,
           });
         },
-      },
-    ];
+      });
+    }
 
     if (classroomGroups.length > 0) {
       stackedActionList.push({
@@ -204,8 +281,8 @@ export const PractitionerProgrammeInformation: React.FC = () => {
           .map((x) => x.name)
           .join(', '),
         switchTextStyles: true,
-        actionName: 'Edit',
-        actionIcon: 'PencilIcon',
+        actionName: isPrincipal ? 'Edit' : 'View',
+        actionIcon: isPrincipal ? 'PencilIcon' : 'EyeIcon',
         onActionClick: () => {
           history.push(ROUTES.PRACTITIONER.PROFILE.PLAYGROUPS, { a: 'hello' });
         },
@@ -250,7 +327,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
         onBack={() => history.push(ROUTES.PRACTITIONER.PROFILE.ROOT)}
         displayOffline={!isOnline}
       >
-        <div className={'w-full inline-flex justify-center pt-8'}>
+        <div className={'inline-flex w-full justify-center pt-8'}>
           <ProfileAvatar
             dataUrl={classroomImage?.file || ''}
             size={'header'}
@@ -258,6 +335,58 @@ export const PractitionerProgrammeInformation: React.FC = () => {
             hasConsent={true}
           />
         </div>
+        {practitioner?.isRegistered === null &&
+          practitioner?.principalHierarchy &&
+          !isPrincipal && (
+            <div className="flex justify-center">
+              <Alert
+                type="info"
+                title={`You have been added to ${classroomForPractitionerAnyType?.classroomName}`}
+                list={[`Edit your profile to accept or disagree. `]}
+                className={'mt-4 w-11/12'}
+                button={
+                  <Button
+                    text="Edit profile"
+                    icon="PencilIcon"
+                    type={'filled'}
+                    color={'primary'}
+                    textColor={'white'}
+                    onClick={() =>
+                      history.push(ROUTES.PRACTITIONER?.PROFILE?.EDIT)
+                    }
+                  />
+                }
+              />
+            </div>
+          )}
+
+        {practitioner?.isRegistered === null &&
+          !practitioner?.principalHierarchy &&
+          !isPrincipal && (
+            <div className="flex justify-center">
+              <Alert
+                type="error"
+                title={`You have not been added to a programme.`}
+                list={[
+                  `Ask the principal/owner of your programme to add you to Funda App. `,
+                  `If you are the principal/owner of the programme, edit your profile. `,
+                ]}
+                className={'mt-4 w-11/12'}
+                button={
+                  <Button
+                    text="Edit profile"
+                    icon="PencilIcon"
+                    type={'filled'}
+                    color={'primary'}
+                    textColor={'white'}
+                    onClick={() =>
+                      history.push(ROUTES?.PRINCIPAL.SETUP_PROFILE)
+                    }
+                  />
+                }
+              />
+            </div>
+          )}
         <StackedList
           className="px-4"
           listItems={listItems}

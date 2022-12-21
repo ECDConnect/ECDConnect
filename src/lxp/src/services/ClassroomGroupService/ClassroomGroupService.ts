@@ -9,7 +9,7 @@ class ClassroomGroupService {
   }
 
   async getClassroomGroupById(id: string): Promise<any> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         query GetClassroomGroupById($id:UUID) {
@@ -39,7 +39,7 @@ class ClassroomGroupService {
   }
 
   async getClassroomGroups(): Promise<ClassroomGroupDto[]> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         query {
@@ -70,7 +70,7 @@ class ClassroomGroupService {
     id: string,
     input: ClassroomGroupInput
   ): Promise<boolean> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         mutation updateClassroomGroup($id: UUID!,$input: ClassroomGroupInput) {
@@ -92,6 +92,74 @@ class ClassroomGroupService {
     }
 
     return true;
+  }
+
+  async updateReassignClassroomGroup(
+    practitionerId: string,
+    reassignedToPractitioner: string,
+    reason: string,
+    absentDate: Date,
+    loggedByUser: string,
+    classProgram: string
+  ): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      mutation addAbsenteeForPractitioner ($practitionerId: String,$reason: String, $absentDate: DateTime!,$loggedByUser: String,$classProgram: String,$reassignedToPractitioner: String)
+       { 
+        addAbsenteeForPractitioner (practitionerId: $practitionerId, reason: $reason, absentDate: $absentDate, loggedByUser: $loggedByUser, classProgram: $classProgram, reassignedToPractitioner: $reassignedToPractitioner) {
+           id 
+            }   
+            }
+      `,
+      variables: {
+        practitionerId: practitionerId,
+        reassignedToPractitioner: reassignedToPractitioner,
+        reason: reason,
+        absentDate: absentDate,
+        loggedByUser: loggedByUser,
+        classProgram: classProgram,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Updating classroom group failed - Server connection error'
+      );
+    }
+
+    return true;
+  }
+
+  async getClassAttendanceMetrics(
+    startMonth: Date,
+    endMonth: Date
+  ): Promise<ClassroomGroupDto> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      query classAttendanceMetrics(        
+        $startMonth: DateTime! $endMonth: DateTime!) 
+        {        
+          classAttendanceMetrics(          
+            startMonth: $startMonth endMonth: $endMonth 
+          ) 
+          {          
+            childCount  attendancePercentage month year classroomId practitionerId weekOfYear classroomGroupId       
+          }      
+        }  
+      `,
+      variables: {
+        startMonth: startMonth,
+        endMonth: endMonth,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error('Get class metrics Failed - Server connection error');
+    }
+
+    return response.data.data.classAttendanceMetrics;
   }
 }
 

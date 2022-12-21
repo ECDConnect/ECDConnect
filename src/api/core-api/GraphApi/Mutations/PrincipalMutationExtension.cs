@@ -21,98 +21,64 @@ using System.IO;
 using System.Linq;
 using EcdLink.Api.CoreApi.GraphApi.Queries;
 using ECDLink.Tenancy.Context;
+using Microsoft.Azure.Documents;
+using System.Collections.Concurrent;
+using NPOI.SS.Formula.Functions;
+using ECDLink.DataAccessLayer.Entities.Classroom;
+using ECDLink.Core.SystemSettings.SystemOptions;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class PrincipalMutationExtension
-    {
-
-        public Practitioner AddPractitionerToPrincipal([Service] IServiceProvider serviceProvider, [Service] IHttpContextAccessor contextAccessor,
+    {        
+        public Practitioner AddPractitionerToPrincipal([Service] IHttpContextAccessor contextAccessor,
     [Service] UserManager<ApplicationUser> userManager,
-    [Service] RoleManager<IdentityRole> roleManager,
-    [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
     [Service] IGenericRepositoryFactory repoFactory,
     string firstName,
     string lastName,
     string idNumber,
     string userId)
         {
-            List<Practitioner> practitioners = new List<Practitioner>();
-
-            var principal = userManager.FindByIdAsync(userId).Result;
-            Guid tenantId = TenantExecutionContext.Tenant.Id;
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
+            //ensure only principals or FAAs can be assigned to be a parent of another practitioner, so they cannot be joined to themselves or unrelated users
             var uId = contextAccessor.HttpContext.GetUser().Id;
-            var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            var practitionerUser = new PractitionerQueryExtension().GetPractitionerByIdNumber(serviceProvider, contextAccessor,userManager,roleManager,dbFactory, repoFactory, idNumber);            
-            if (practitionerUser != null)
+            var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
+            var practitionerUser = new PractitionerQueryExtension().GetPractitionerByIdNumberInternal(contextAccessor,userManager, repoFactory, idNumber);
+            var principalUser = practitionerRepo.GetByUserId(userId);
+            if (principalUser != null && (principalUser.IsPrincipal == true || principalUser.IsFundaAppAdmin == true)) //make sure the principal user exists and is a principal or a FAA
             {
-                Practitioner practitioner = (practitionerUser.practitionerObjectData != null ? practitionerUser.practitionerObjectData : practitionerUser.principalObjectData);
-                if (practitioner != null)
+                if (practitionerUser != null)
                 {
-                    practitioner.PrincipalHierarchy = Guid.Parse(userId);
-                    var practitionerUpdateResult = practitionerRepo.Update(practitioner);
+                    Practitioner practitioner = practitionerRepo.GetByUserId(practitionerUser.Id);
+                    if (practitioner != null && principalUser != null && (practitioner.CoachHierarchy == principalUser.CoachHierarchy) && (principalUser.UserId != practitioner.UserId)) //only allow the same coach line sto be added to each other,a nd the user ids are different
+                    {
+                        practitioner.DateLinked = DateTime.Now;
+                        practitioner.PrincipalHierarchy = Guid.Parse(principalUser.UserId);
+                        practitionerRepo.Update(practitioner);
 
-                    //update users nicknames
-                    var user = userManager.FindByIdAsync(practitioner.UserId).Result;
-                    user.NickFirstName = firstName;
-                    user.NickSurname = lastName;
-                    user.NickFullName = firstName + " " + lastName;
+                        //update users nicknames
+                        var user = userManager.FindByIdAsync(practitioner.UserId).Result;
+                        user.NickFirstName = firstName;
+                        user.NickSurname = lastName;
+                        user.NickFullName = firstName + " " + lastName;
 
-                    var userUpdateResult = userManager.UpdateAsync(user).Result;
+                        userManager.UpdateAsync(user);
+                    }
+                    else return null;
+
+                    return practitioner;
                 }
-
-                return practitioner;
-            }
-            else
-            {
-                //Create basic user and practitioner
-                var pracRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-
-                var pOne = new ApplicationUser
-                {
-                    FirstName =firstName,
-                    Surname = lastName,
-                    FullName = firstName + " " + lastName,
-                    UserName = idNumber,
-                    IdNumber = idNumber,
-                    IsActive = true,
-                    NickFirstName = firstName,
-                    NickSurname = lastName,
-                    NickFullName = firstName + " " + lastName,
-                    TenantId = tenantId
-                };
-
-                var result = userManager.CreateAsync(pOne).Result;
-                string practitionerId = pOne.Id;
-
-                var passwordResult = userManager.AddPasswordAsync(pOne, idNumber).Result;
-
-                pracRepo.Insert(new Practitioner
-                {                    
-                    Id = Guid.NewGuid(),
-                    UserId = practitionerId,
-                    IsPrincipal = false,
-                    PrincipalHierarchy = Guid.Parse(userId),
-                    IsRegistered = true, 
-                    TenantId = tenantId});
-
-                return new PractitionerQueryExtension().GetPractitionerByUserId(contextAccessor, dbFactory, repoFactory, practitionerId);
-            }
+                else return null;              
+            } else return null;
         }
 
         public ApplicationUser UpdatePractitionerContactInfo([Service] IHttpContextAccessor contextAccessor,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] UserManager<ApplicationUser> userManager,
-            [Service] IGenericRepositoryFactory repoFactory,
             string practitionerId, string firstName, string lastName, string phoneNumber, string email)
         {
-            bool bReturn = false;
             using var scope = dbFactory.CreateDbContext();
             using var dbContextTransaction = scope.Database.BeginTransaction();
-            var uId = contextAccessor.HttpContext.GetUser().Id;
             //update users nicknames
             var user = userManager.FindByIdAsync(practitionerId).Result;
             user.NickFirstName = firstName;
@@ -121,13 +87,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             user.PhoneNumber = phoneNumber;
             user.Email = email;
 
-            var userUpdateResult = userManager.UpdateAsync(user).Result;
+            userManager.UpdateAsync(user);
 
             return user;
         }
 
         public Practitioner DeletePractitionerFromPrincipal([Service] IHttpContextAccessor contextAccessor,
-            [Service] UserManager<ApplicationUser> userManager,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
             string userId, string principalId)
@@ -140,10 +105,36 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             {
                 practitioner.PrincipalHierarchy = null;
                 practitioner.ShareInfo = false;
-                var updateResult = practitionerRepo.Update(practitioner);
+                practitionerRepo.Update(practitioner);
             }
 
             return practitioner;
+        }
+
+        public Practitioner RemapPrincipalToPrincipal([Service] IHttpContextAccessor contextAccessor,
+     [Service] IGenericRepositoryFactory repoFactory,
+     string oldPrincipalId, string newPrincipalId)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+            Practitioner oldPrincipal = practitionerRepo.GetByUserId(oldPrincipalId);
+            Practitioner newPrincipal = practitionerRepo.GetByUserId(newPrincipalId);
+
+            //reassign all practitioners to the new principal
+            if (oldPrincipal != null && newPrincipal != null)
+            {
+                List<Practitioner> allPrincipalPractitioners = practitionerRepo.GetAll().Where(x => x.PrincipalHierarchy.Equals(oldPrincipal.UserId)).ToList();
+                if (allPrincipalPractitioners.Count > 0)
+                {
+                    foreach (var practi in allPrincipalPractitioners)
+                    {
+                        practi.PrincipalHierarchy = Guid.Parse(newPrincipal.UserId);
+                        practi.ShareInfo = true;
+                        practitionerRepo.Update(practi);
+                    }
+                }
+            }
+            return newPrincipal;
         }
 
         public Principal PromotePractitionerToPrincipal([Service] IHttpContextAccessor contextAccessor,
@@ -162,7 +153,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             {
                 practitionerToPromote = practitioners.FirstOrDefault();
                 practitionerToPromote.IsPrincipal = true;
-                var updateResult = practitionerRepo.Update(practitionerToPromote);
+                practitionerToPromote.ShareInfo = true;
+                practitionerRepo.Update(practitionerToPromote);
 
                 //now add user to principal
                 var user = userManager.FindByIdAsync(userId).Result;
@@ -188,7 +180,19 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             {
                 practitionerToDemote = practitioners.FirstOrDefault();
                 practitionerToDemote.IsPrincipal = false;
-                var updateResult = practitionerRepo.Update(practitionerToDemote);
+                practitionerRepo.Update(practitionerToDemote);
+
+                //now list through all practitioners and remove the principalhierarchies
+                List<Practitioner> allPrincipalPractitioners = practitionerRepo.GetAll().Where(x => x.PrincipalHierarchy.Equals(userId)).ToList();
+                if (allPrincipalPractitioners.Count > 0)
+                {
+                    foreach (var practi in allPrincipalPractitioners)
+                    {
+                        practi.PrincipalHierarchy = null;
+                        practi.ShareInfo = false;
+                        practitionerRepo.Update(practi);
+                    }
+                }
 
                 //now add user back to practitioner
                 var user = userManager.FindByIdAsync(userId).Result;
@@ -198,6 +202,83 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             return practitionerToDemote;
         }
+
+        public PrincipalInvitationStatus UpdatePrincipalInvitation([Service] IHttpContextAccessor contextAccessor,
+    [Service] IGenericRepositoryFactory repoFactory,
+    [Service] ISystemSetting<InvitationCutoffDelayOptions> invitationDelay,
+    [Service] IReassignmentService reassignmentService,
+    string practitionerId, string principalId, bool accepted)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
+            Practitioner principal = practitionerRepo.GetByUserId(principalId);
+            Practitioner practitioner = practitionerRepo.GetByUserId(practitionerId);
+            PrincipalInvitationStatus status = new PrincipalInvitationStatus();
+            //reassign all practitioners to the new principal
+            if (principal != null && practitioner != null)
+            {
+                status.LinkedDate = practitioner.DateLinked;
+                if (accepted == false)
+                {
+                    //reset the classroomgroups away from this practitioner and back to teh principal
+                    if (principal.UserId != null && practitioner.UserId != null)
+                    {
+                        //Reassign all classes and programmes back to principal
+                        reassignmentService.AddReassignmentForPractitioner(uId, practitioner.UserId, principal.UserId, "Removing link between Principal and Practitioner", DateTime.Now, uId, null, true);
+                    }
+
+                    status.AcceptedDate = null;
+                    //if the function is run twice and the leaving date is already set, remove immediately, this is the principal confirming removal of this practitioner link
+                    if (practitioner.DateToBeRemoved!=null)
+                    {
+                        practitioner.DateToBeRemoved = DateTime.Now;
+                        practitioner.DateAccepted = null;
+                        practitioner.DateLinked = null;
+                        practitioner.IsLeaving = true;
+                        //update and clear the principals details
+                        practitioner.PrincipalHierarchy = null;
+                        practitioner.ShareInfo = false;
+                        
+                        status.LeavingDate = DateTime.Now;
+                        status.Leaving = true;
+                    } 
+                    else
+                    {
+                        //reset the classroomgroups away from this practitioner and back to teh principal
+                        if (principal.UserId != null && practitioner.UserId != null)
+                        {
+                            //Reassign all classes and programmes back to principal
+                            reassignmentService.AddReassignmentForPractitioner(uId, practitioner.UserId, principal.UserId, "Removing link between Principal and Practitioner", DateTime.Now, uId, null, true);
+                        }
+
+                        int hrsToReassign = int.Parse(invitationDelay.Value.InvitationCutoffDelay);
+
+                        practitioner.DateToBeRemoved = DateTime.Now.AddHours(hrsToReassign);
+                        practitioner.DateAccepted = null;
+                        practitioner.IsLeaving = true;
+
+                        status.LeavingDate = DateTime.Now.AddHours(hrsToReassign);
+                        status.Leaving = true;
+                    }
+                }
+                else
+                {
+                    practitioner.DateToBeRemoved = null;
+                    practitioner.DateAccepted = DateTime.Now;
+                    practitioner.IsLeaving = false;
+                        
+                    status.LeavingDate = null;
+                    status.AcceptedDate = DateTime.Now;
+                    status.Leaving = false;
+                }
+                //update practitioner with column changes
+                practitionerRepo.Update(practitioner);    
+            }
+            else return null;
+
+            return status;
+        }
+
         public Principal MapPractitionerToPrincipal(Practitioner practitioner)
         {
             Principal userToMap = new Principal()
@@ -224,8 +305,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 SigningSignature = practitioner?.SigningSignature,
                 ShareInfo = practitioner?.ShareInfo,
                 IsRegistered = practitioner.IsRegistered,
-                //Signature = practitioner.Signature,
-                //PrincipalHierarchy = practitioner?.PrincipalHierarchy,           
             };
 
             return userToMap;

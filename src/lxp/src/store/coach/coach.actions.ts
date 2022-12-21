@@ -111,8 +111,11 @@ export const updateCoach = createAsyncThunk<
           coachModelInput.SiteAddressId = addressInput.Id;
         }
 
+        coachModelInput.UserId = userAuth.id;
+        coachModelInput.SiteAddressId = null;
+
         update = await new CoachService(userAuth?.auth_token).updateCoach(
-          userAuth.id,
+          coachModelInput.Id,
           coachModelInput
         );
       } else {

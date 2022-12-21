@@ -13,7 +13,7 @@ import { useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
 import ROUTES from '@/routes/routes';
 import { useHistory } from 'react-router-dom';
-import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
+import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 
 export const MotherList: React.FC<ComponentBaseProps> = () => {
@@ -24,14 +24,11 @@ export const MotherList: React.FC<ComponentBaseProps> = () => {
   const [mothersListItems, setMothersListItems] = useState<
     ActionListDataItem[]
   >([]);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [addChildButtonExpanded, setAddChildButtonExpanded] =
-    useState<boolean>(true);
 
   useEffect(() => {
     const mothersList: ActionListDataItem[] = mothers.map((mother) => {
       return {
-        title: mother.firstName! + mother?.surname,
+        title: mother?.user?.firstName! + ' ' + mother?.user?.surname,
         subTitle: mother?.siteAddressId,
         switchTextStyles: true,
         onActionClick: () => {},
@@ -67,19 +64,19 @@ export const MotherList: React.FC<ComponentBaseProps> = () => {
           subTitle="Tap the add a child button below to start"
         />
       )}
-      {mothers.length > 0 ? (
+      {mothers.length > 0 && (
         <StackedList
+          type={'MenuList'}
           className={styles.stackedList}
           listItems={mothersListItems}
-          type={'MenuList'}
           onScroll={(scrollTop: number) => {}}
-        ></StackedList>
-      ) : null}
+        />
+      )}
       <FADButton
         title={'Add a mother'}
         icon={'PlusIcon'}
         iconDirection={'left'}
-        textToggle={addChildButtonExpanded}
+        textToggle
         type={'filled'}
         color={'primary'}
         shape={'round'}

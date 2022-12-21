@@ -19,10 +19,11 @@ import { userSelectors } from '@/store/user';
 import { useAppDispatch } from '@/store';
 import { authSelectors } from '@/store/auth';
 import { PractitionerService } from '@/services/PractitionerService';
-import { OnNext } from '@/pages/principal/setup-principal/setup-principal.types';
 import { PractitionerFormData } from '../../edit-practitioner-profile.types';
 import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
+import { practitionerSelectors } from '@/store/practitioner';
+import { classroomsActions } from '@/store/classroom';
 
 export const PractitionerSetup = ({
   onSubmit,
@@ -32,6 +33,7 @@ export const PractitionerSetup = ({
     allowPermissions,
   }: PractitionerFormData) => void;
 }) => {
+  const appDispatch = useAppDispatch();
   const history = useHistory();
   const [principalName, setPrincipalName] = useState<string>('Principal');
   const [programName, setProgramName] = useState<string>('Programme');
@@ -45,6 +47,7 @@ export const PractitionerSetup = ({
     },
   });
 
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const userAuth = useSelector(authSelectors.getAuthUser);
   const user = useSelector(userSelectors.getUser);
 
@@ -63,11 +66,27 @@ export const PractitionerSetup = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const getPractitionerResponse = async () => {
+    await new PractitionerService(
+      userAuth?.auth_token || ''
+    ).UpdatePrincipalInvitation(
+      user?.id!,
+      practitioner?.principalHierarchy!,
+      practitionerToProgramme
+    );
+  };
+
   const { practitionerToProgramme, allowPermissions } = watch();
+
+  const checkClassroomNeedsToBeRemove = async () => {
+    if (!practitionerToProgramme) {
+      await appDispatch(classroomsActions.resetClassroomState());
+    }
+  };
 
   return (
     <>
-      <div className="mt-4 wrapper-with-sticky-button">
+      <div className="wrapper-with-sticky-button mt-4">
         <div className="grid gap-4">
           <div>
             <Typography
@@ -142,7 +161,7 @@ export const PractitionerSetup = ({
                 <Typography
                   underline
                   color="secondary"
-                  className="ml-2 flex-0 flex items-center font-medium cursor-pointer"
+                  className="flex-0 ml-2 flex cursor-pointer items-center font-medium"
                   type="body"
                   text="Learn more"
                   onClick={() => setViewPermissionToShare(true)}
@@ -155,7 +174,7 @@ export const PractitionerSetup = ({
         <div className="self-end">
           <Button
             size="normal"
-            className="w-full mb-4"
+            className="mb-4 w-full"
             type="filled"
             color="primary"
             text="Next"
@@ -168,12 +187,18 @@ export const PractitionerSetup = ({
             }
             onClick={
               practitionerToProgramme === false
-                ? () => history.push(ROUTES.PRINCIPAL.SETUP_PROFILE)
-                : () =>
+                ? () => {
+                    getPractitionerResponse();
+                    history.push(ROUTES.PRINCIPAL.SETUP_PROFILE);
+                    checkClassroomNeedsToBeRemove();
+                  }
+                : () => {
+                    getPractitionerResponse();
                     onSubmit({
                       practitionerToProgramme: !!practitionerToProgramme,
                       allowPermissions: !!allowPermissions,
-                    })
+                    });
+                  }
             }
           />
         </div>

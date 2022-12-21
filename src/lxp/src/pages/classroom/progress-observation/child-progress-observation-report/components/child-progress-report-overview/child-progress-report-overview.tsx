@@ -1,7 +1,12 @@
 import { ProgressTrackingCategoryDto, useDialog } from '@ecdlink/core';
-import { Alert, Button, Divider, Typography } from '@ecdlink/ui';
-import { DialogPosition } from '@ecdlink/ui';
-import { renderIcon } from '@ecdlink/ui';
+import {
+  Alert,
+  Button,
+  Divider,
+  Typography,
+  DialogPosition,
+  renderIcon,
+} from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
 import { useChildProgressObservation } from '@hooks/useChildProgressObservations';
@@ -115,7 +120,7 @@ export const ChildProgressReportOverview: React.FC<
 
   return (
     <>
-      <div className={'h-full w-full flex flex-col px-4'}>
+      <div className={'flex h-full w-full flex-col px-4'}>
         <Typography
           type={'h1'}
           color={'primary'}
@@ -155,7 +160,7 @@ export const ChildProgressReportOverview: React.FC<
                 childName={`${childUser?.firstName}`}
                 helpingSkillId={categoryFromReport?.supportingTask?.taskId || 0}
                 toDoNote={categoryFromReport?.supportingTask?.todoText || ''}
-                onEdit={() => onCategoryNavigation(cat.id as number)}
+                onEdit={() => onCategoryNavigation(cat.id)}
               />
             );
           })}

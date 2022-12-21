@@ -1,6 +1,6 @@
 import { api } from '../axios.helper';
-import { Config } from '@ecdlink/core';
-import { GenderDto } from '@ecdlink/core';
+import { Config, GenderDto } from '@ecdlink/core';
+
 class GenderService {
   _accessToken: string;
 
@@ -9,7 +9,7 @@ class GenderService {
   }
 
   async getGenders(): Promise<GenderDto[]> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         query {

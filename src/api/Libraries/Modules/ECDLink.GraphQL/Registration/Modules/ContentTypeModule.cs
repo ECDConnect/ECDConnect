@@ -36,30 +36,6 @@ namespace ECDLink.EGraphQL.Registration.Modules
             CreateEndpoints(context, types);
 
             return new ValueTask<IReadOnlyCollection<ITypeSystemMember>>(types);
-
-            //await using var file = File.OpenRead(_file);
-            //using var json = await JsonDocument.ParseAsync(file, cancellationToken: cancellationToken);
-
-            //foreach (var type in json.RootElement.EnumerateArray())
-            //{
-            //  var typeDefinition = new ObjectTypeDefinition(type.GetProperty("name").GetString()!);
-
-            //  foreach (var field in type.GetProperty("fields").EnumerateArray())
-            //  {
-            //    typeDefinition.Fields.Add(
-            //        new ObjectFieldDefinition(
-            //            field.GetString()!,
-            //            type: TypeReference.Parse("String!"),
-            //            pureResolver: ctx => "foo"));
-            //  }
-
-            //  types.Add(
-            //      type.GetProperty("extension").GetBoolean()
-            //          ? ObjectTypeExtension.CreateUnsafe(typeDefinition)
-            //          : ObjectType.CreateUnsafe(typeDefinition));
-            //}
-
-            //return types;
         }
 
         private void CreateEndpoints(IDescriptorContext context, List<ITypeSystemMember> types)

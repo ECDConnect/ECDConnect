@@ -1,17 +1,9 @@
 import { useTheme, useDialog, ClassroomGroupDto } from '@ecdlink/core';
-import {
-  ActionModal,
-  BannerWrapper,
-  Button,
-  Card,
-  DialogPosition,
-  Typography,
-} from '@ecdlink/ui';
+import { ActionModal, BannerWrapper, DialogPosition } from '@ecdlink/ui';
 import {
   MutationAddPractitionerToPrincipalArgs,
   ProgrammeTypeEnum,
 } from '@ecdlink/graphql';
-import { label } from '@/pages/child/child-notes/child-notes.styles';
 import { IonContent } from '@ionic/react';
 import React, { useEffect, useState } from 'react';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
@@ -20,7 +12,6 @@ import { authSelectors } from '@/store/auth';
 import { classroomsActions, classroomsSelectors } from '@/store/classroom';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
-import { ReactComponent as Cebisa } from '@/assets/cebisa.svg';
 import { AddProgrammeForm } from '../components/add-programme-form/add-programme-form';
 import ConfirmPractitioners from '../components/confirm-practitioners/confirm-practitioners';
 import {
@@ -28,8 +19,10 @@ import {
   ConfirmPractitionersSteps,
   ConfirmClassesSteps,
 } from './setup-principal.types';
-import { AddPractitionerModel } from '@/schemas/practitioner/add-practitioner';
-import { practitionerSelectors } from '@/store/practitioner';
+import {
+  practitionerSelectors,
+  practitionerThunkActions,
+} from '@/store/practitioner';
 import { SetupClasses } from '../components/setup-classes/setup-classes';
 import { AddPhoto } from '@/pages/practitioner/edit-practitioner-profile/components/add-photo/add-photo';
 import { WelcomePage } from '@/components/welcome-page';
@@ -40,6 +33,7 @@ import { userSelectors } from '@/store/user';
 import { useStoreSetup } from '@/hooks/useStoreSetup';
 import { PractitionerService } from '@/services/PractitionerService';
 import ROUTES from '@/routes/routes';
+import { notificationActions } from '@/store/notifications';
 
 export const SetupPrincipal: React.FC = () => {
   const history = useHistory();
@@ -52,17 +46,17 @@ export const SetupPrincipal: React.FC = () => {
   const programmeTypes = useSelector(staticDataSelectors.getProgrammeTypes);
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const user = useSelector(userSelectors.getUser);
-  const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const programmeType = useSelector(classroomsSelectors.getProgrammeType());
-  const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const principalPractitioners = useSelector(
     practitionerSelectors.getPrincipalPractitioners
   );
-
+  const [isNotPrincipal, setIsNotPrincipal] = useState(false);
+  const [isFundaAppAdmin, setIsFundaAppAdmin] = useState(false);
   const [label, setLabel] = useState('Welcome');
   const [page, setPage] = useState<PractitionerSetupSteps>(
     PractitionerSetupSteps.WELCOME
   );
+  const [isLoading, setIsLoading] = useState(false);
 
   const [confirmPractitionerPage, setConfirmPractitionerPage] =
     useState<ConfirmPractitionersSteps>(
@@ -85,6 +79,11 @@ export const SetupPrincipal: React.FC = () => {
   }, [page]);
 
   const onAllStepsComplete = async () => {
+    if (isNotPrincipal === true) {
+      history.push(ROUTES.ROOT);
+      return;
+    }
+    setIsLoading(true);
     const playGroupProgrammeType = programmeTypes.find(
       (x) => x.enumId === ProgrammeTypeEnum.Playgroup
     );
@@ -96,7 +95,7 @@ export const SetupPrincipal: React.FC = () => {
         isActive: true,
         programmeTypeId: programmeType?.id,
         name: NoPlaygroupClassroomType.name,
-        practitionerId: user?.id, // Unsure classroom will belong to the principal
+        userId: user?.id, // Unsure classroom will belong to the principal
       };
       appDispatch(
         classroomsActions.createClassroomGroup(unsureClassProgrammeInputModel)
@@ -137,9 +136,13 @@ export const SetupPrincipal: React.FC = () => {
             userAuth?.auth_token
           ).AddPractitionerToPrincipal(input);
         });
+        await appDispatch(
+          practitionerThunkActions.getAllPractitioners({})
+        ).unwrap();
       }
     }
-
+    setIsLoading(false);
+    appDispatch(notificationActions.resetNotificationState());
     history.push(ROUTES.ROOT);
   };
 
@@ -194,7 +197,14 @@ export const SetupPrincipal: React.FC = () => {
         );
 
       case PractitionerSetupSteps.SETUP_PROGRAMME:
-        return <AddProgrammeForm onNext={setPage} />;
+        return (
+          <AddProgrammeForm
+            onNext={setPage}
+            setIsNotPrincipal={setIsNotPrincipal}
+            isFundaAppAdmin={isFundaAppAdmin}
+            setIsFundaAppAdmin={setIsFundaAppAdmin}
+          />
+        );
 
       case PractitionerSetupSteps.CONFIRM_PRACTITIONERS:
         return (
@@ -202,6 +212,7 @@ export const SetupPrincipal: React.FC = () => {
             page={confirmPractitionerPage}
             setConfirmPractitionerPage={setConfirmPractitionerPage}
             onNext={setPage}
+            isFundaAppAdmin={isFundaAppAdmin}
           />
         );
 
@@ -220,6 +231,7 @@ export const SetupPrincipal: React.FC = () => {
             onSubmit={() => {
               onAllStepsComplete();
             }}
+            isLoading={isLoading}
           />
         );
 
@@ -275,7 +287,11 @@ export const SetupPrincipal: React.FC = () => {
         showBackground={page === PractitionerSetupSteps.WELCOME}
         title={'Edit Profile'}
         subTitle={label}
-        onBack={onBack}
+        onBack={
+          !isFundaAppAdmin && isNotPrincipal
+            ? () => setPage(PractitionerSetupSteps.SETUP_PROGRAMME)
+            : onBack
+        }
         onClose={exitPrompt}
         backgroundColour={'white'}
         className={page === PractitionerSetupSteps.WELCOME ? 'relative' : ''}

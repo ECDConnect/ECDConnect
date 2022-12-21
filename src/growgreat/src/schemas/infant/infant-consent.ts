@@ -2,7 +2,7 @@ import * as Yup from 'yup';
 
 export interface InfantConsentModel {
   hasConsent: boolean;
-  numberOfChildren?: number | undefined;
+  numberOfChildren?: number;
 }
 
 export const initialInfantDetailsValues: InfantConsentModel = {

@@ -1,30 +1,36 @@
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { useHistory } from 'react-router';
+
 import { LoginRequestModel } from '@ecdlink/core';
 import {
-  ActionModal,
   Alert,
   Button,
   Divider,
   FormInput,
-  PasswordInput,
   Typography,
+  ActionModal,
+  PasswordInput,
 } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { useHistory } from 'react-router';
-import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import { useStoreSetup } from '@hooks/useStoreSetup';
+
+import { useStoreSetup } from '@/hooks/useStoreSetup';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+
+import { useAppDispatch } from '@/store';
+import { settingActions } from '@/store/settings';
+import { authActions, authThunkActions } from '@/store/auth';
+
 import {
-  initialLoginValues,
   LoginModel,
   loginSchema,
-} from '@schemas/auth/login/login';
-import { useAppDispatch } from '@store';
-import { authActions, authThunkActions } from '@store/auth';
-import { settingActions } from '@store/settings';
-import * as styles from './login-modal.styles';
-import ROUTES from '@routes/routes';
-const { version } = require('../../../../package.json');
+  initialLoginValues,
+} from '@/schemas/auth/login/login';
+
+import * as styles from '@/pages/auth/login-modal/login-modal.styles';
+
+import ROUTES from '@/routes/routes';
+import packageInfo from '@@/package.json';
 
 interface LoginModalProps {
   loginSuccessful: () => void;
@@ -36,7 +42,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ loginSuccessful }) => {
   const [displayError, setDisplayError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [idFieldVisible, setIdFieldVisible] = useState(true);
-  const { resetAppStaticStores } = useStoreSetup();
+  const { resetAppStore } = useStoreSetup();
 
   const { isOnline, Offline } = useOnlineStatus();
 
@@ -70,8 +76,10 @@ export const LoginModal: React.FC<LoginModalProps> = ({ loginSuccessful }) => {
             isAuthenticated?.payload?.response?.status !== 401
           ) {
             loginSuccessful();
-            await appDispatch(settingActions.setApplicationVersion(version));
-            await appDispatch(authActions.setUserExpired());
+            appDispatch(
+              settingActions.setApplicationVersion(packageInfo.version)
+            );
+            appDispatch(authActions.setUserExpired());
             setIsLoading(false);
           } else {
             setDisplayError(true);
@@ -164,7 +172,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ loginSuccessful }) => {
               value={loginFormGetValues().password}
               register={loginRegister}
             />
-            <Divider></Divider>
+            <Divider />
             {displayError && (
               <Alert
                 className={'mt-5 mb-3'}
@@ -176,30 +184,29 @@ export const LoginModal: React.FC<LoginModalProps> = ({ loginSuccessful }) => {
           <Offline>
             <Alert
               className={'mt-5 mb-3'}
-              title="You are offline"
-              message={'You need to be online to log in to the app'}
+              title="Your internet connection is unstable."
               type={'warning'}
             />
           </Offline>
 
           <Button
-            className={'w-full mt-3'}
+            className={'mt-3 w-full'}
             type="filled"
             isLoading={isLoading}
             color="primary"
             disabled={!isValid || !isOnline}
             onClick={submitForm}
           >
-            <Typography type="help" color="white" text={'Log in'}></Typography>
+            <Typography type="help" color="white" text={'Log in'} />
           </Button>
 
           <Button
-            className={'w-full mt-3'}
+            className={'mt-3 w-full'}
             type="filled"
             color="alertMain"
             onClick={async () => {
               appDispatch(authActions.resetAuthState());
-              resetAppStaticStores && (await resetAppStaticStores());
+              resetAppStore && (await resetAppStore());
               history && history.push(ROUTES.LOGIN);
             }}
           >
@@ -207,7 +214,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ loginSuccessful }) => {
               type="help"
               color="white"
               text={'Reset & Go back to login'}
-            ></Typography>
+            />
           </Button>
         </form>
       </div>

@@ -39,11 +39,12 @@ export const EditClass = ({
 }) => {
   const appDispatch = useAppDispatch();
   const practitioners = useSelector(
-    practitionerSelectors.getPrincipalPractitioners
+    practitionerSelectors?.getPrincipalPractitioners
   );
   const currentPractitioner = useSelector(
     practitionerSelectors.getPractitioner
   );
+
   const { setValue, getValues, formState, register, control, trigger } =
     useForm<EditClassModel>({
       defaultValues: {
@@ -68,8 +69,11 @@ export const EditClass = ({
   useEffect(() => {
     const _list = practitioners
       ?.map((p) => {
-        if (p.firstName && p.surname) {
-          return { label: `${p.firstName} ${p.surname}`, value: p.userId };
+        if (p?.firstName && p?.surname) {
+          return {
+            label: `${p?.firstName} ${p?.surname}`,
+            value: p.userId,
+          };
         }
         return undefined;
       })

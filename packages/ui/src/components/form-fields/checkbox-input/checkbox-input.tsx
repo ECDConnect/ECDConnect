@@ -1,10 +1,11 @@
 import { Typography } from '../../../components';
 import { ComponentBaseProps, Colours, CheckboxChange } from '../../../models';
 
-import { Path, UseFormRegister } from 'react-hook-form';
+import { FieldValues, Path, UseFormRegister } from 'react-hook-form';
 import { classNames } from '../../../utils/style-class.utils';
 import * as styles from './checkbox-input.styles';
-export interface CheckboxProps<T> extends ComponentBaseProps {
+export interface CheckboxProps<T extends FieldValues>
+  extends ComponentBaseProps {
   description?: string;
   descriptionColor?: Colours;
   checkboxColor?: Colours;
@@ -17,7 +18,7 @@ export interface CheckboxProps<T> extends ComponentBaseProps {
   value?: number;
 }
 
-export const Checkbox = <T,>({
+export const Checkbox = <T extends FieldValues>({
   description,
   descriptionColor = 'textMid',
   testId,

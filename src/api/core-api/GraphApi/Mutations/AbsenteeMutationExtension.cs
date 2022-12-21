@@ -1,30 +1,19 @@
-using EcdLink.Api.CoreApi.Managers.Notifications;
-using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
-using EcdLink.Api.CoreApi.GraphApi.Models;
 using ECDLink.Abstractrions.GraphQL.Enums;
-using ECDLink.Core.Helpers;
-using ECDLink.Core.Services.Interfaces;
-using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
-using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
-using ECDLink.Security.Managers;
 using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using NPOI.SS.UserModel;
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
-using EcdLink.Api.CoreApi.GraphApi.Queries;
+using ECDLink.DataAccessLayer.Entities.Classroom;
+using ECDLink.DataAccessLayer.Hierarchy;
+using Microsoft.Azure.Documents;
+using ECDLink.Core.Services.Interfaces;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
@@ -33,35 +22,50 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     {
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
 
-        public Absentees AddAbsenteeForPractitioner([Service] IHttpContextAccessor contextAccessor, 
-            [Service] UserManager<ApplicationUser> userManager, 
-            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+        public Absentees AddAbsenteeForPractitioner([Service] IHttpContextAccessor contextAccessor,
             [Service] IGenericRepositoryFactory repoFactory,
-            string practitionerId, 
+            [Service] HierarchyEngine engine,
+            [Service] IReassignmentService reassignmentService,
+            string practitionerId,
+            string reassignedToPractitioner,
             string reason,
             DateTime absentDate,
             string loggedByUser,
-            string classProgram,
-            string reassignedToPractitioner)
+            string classProgram = null)
         {
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
-            var absenteeRepo = repoFactory.CreateRepository<Absentees>(userContext: uId);
-
-            var absent = new Absentees
+            var absenteeRepo = repoFactory.CreateRepository<Absentees>(userContext: uId);            
+            var updated = new Absentees();
+            if (classProgram != null)
             {
-                UserId = practitionerId,
-                Reason = reason,
-                AbsentDate = absentDate,
-                LoggedBy = loggedByUser,
-                ReassignedClass = classProgram,
-                ReassignedToPractitioner = reassignedToPractitioner
-            };
+                reason = (string.IsNullOrEmpty(reason)?"Practitioner Marked Absent":reason);
+                var absent = new Absentees
+                {
+                    UserId = practitionerId,
+                    Reason = reason,
+                    AbsentDate = absentDate,
+                    LoggedBy = loggedByUser,
+                    ReassignedClass = classProgram,
+                    ReassignedToPractitioner = reassignedToPractitioner,
+                    UpdatedBy = loggedByUser,
+                    UpdatedDate = DateTime.Now
+                };
+                updated = absenteeRepo.Insert(absent);
 
-            var updated = absenteeRepo.Insert(absent);
+                //Log to the history table for reassignment back to owner user
+                reassignmentService.AddReassignmentForPractitioner(uId, practitionerId, reassignedToPractitioner, reason, absentDate, loggedByUser, classProgram, false);
+            }
 
+            //Save the history so it can be reassigned
             return updated;            
+        }
+
+        public bool ReassignAbsenteeFromHistory([Service] IHttpContextAccessor contextAccessor,
+            [Service] IReassignmentService reassignmentService,
+            string userId)
+        {            
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            return reassignmentService.ReassignClassroomsFromHistory(uId, userId);
         }
 
     }

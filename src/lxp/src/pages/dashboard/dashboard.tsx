@@ -23,19 +23,23 @@ import { useAppDispatch } from '@store';
 import { classroomsForCoachThunkActions } from '../../store/classroomForCoach';
 import { classroomsSelectors, classroomsThunkActions } from '@store/classroom';
 import { notificationsSelectors } from '@store/notifications';
-import { settingSelectors } from '@store/settings';
+import { settingSelectors, settingThunkActions } from '@store/settings';
 import { userSelectors } from '@store/user';
 import { analyticsActions } from '@store/analytics';
 import { DashboardItems } from './components/dashboard-items/dashboard-items';
 import { practitionerForCoachThunkActions } from '@/store/practitionerForCoach';
 import {
-  practitionerActions,
   practitionerSelectors,
   practitionerThunkActions,
 } from '@/store/practitioner';
 import { childrenThunkActions } from '@/store/children';
 import * as styles from './dashboard.styles';
 import ROUTES from '@routes/routes';
+import { staticDataThunkActions } from '@store/static-data';
+import { programmeThemeThunkActions } from '@store/content/programme-theme';
+import { storyBookThunkActions } from '@store/content/story-book';
+import { activityThunkActions } from '@store/content/activity';
+import { browserName, browserVersion } from 'react-device-detect';
 const { version } = require('../../../package.json');
 
 export enum NavigationTypes {
@@ -53,6 +57,7 @@ export enum NavigationTypes {
 export const Dashboard: React.FC = () => {
   const shouldUserSync = useSelector(settingSelectors.getShouldUserSync);
   const classroom = useSelector(classroomsSelectors.getClassroom);
+  const classroomGroup = useSelector(classroomsSelectors.getClassroomGroups);
   const userData = useSelector(userSelectors.getUser);
   const practitionerData = useSelector(practitionerSelectors.getPractitioners);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
@@ -69,8 +74,50 @@ export const Dashboard: React.FC = () => {
   const dashboardNotification = useSelector(
     notificationsSelectors.getDashboardNotification
   );
+  console.log({ browserName });
+
+  console.log({ browserVersion });
 
   const { userProfilePicture } = useDocuments();
+
+  const initStaticStoreSetup = async () => {
+    const today = new Date();
+    await appDispatch(settingThunkActions.getSettings({})).unwrap();
+    await appDispatch(staticDataThunkActions.getRelations({})).unwrap();
+    await appDispatch(staticDataThunkActions.getProgrammeTypes({})).unwrap();
+    await appDispatch(
+      staticDataThunkActions.getProgrammeAttendanceReasons({})
+    ).unwrap();
+    await appDispatch(staticDataThunkActions.getGenders({})).unwrap();
+    await appDispatch(staticDataThunkActions.getRaces({})).unwrap();
+    await appDispatch(staticDataThunkActions.getLanguages({})).unwrap();
+    await appDispatch(staticDataThunkActions.getEducationLevels({})).unwrap();
+    await appDispatch(
+      staticDataThunkActions.getHolidays({ year: today.getFullYear() })
+    ).unwrap();
+    await appDispatch(staticDataThunkActions.getProvinces({})).unwrap();
+    await appDispatch(staticDataThunkActions.getReasonsForLeaving({})).unwrap();
+    await appDispatch(staticDataThunkActions.getGrants({})).unwrap();
+    await appDispatch(staticDataThunkActions.getDocumentTypes({})).unwrap();
+    await appDispatch(staticDataThunkActions.getNoteTypes({})).unwrap();
+    await appDispatch(staticDataThunkActions.getWorkflowStatuses({})).unwrap();
+
+    await appDispatch(
+      activityThunkActions.getActivities({ locale: 'en-za' })
+    ).unwrap();
+
+    await appDispatch(
+      storyBookThunkActions.getStoryBooks({ locale: 'en-za' })
+    ).unwrap();
+
+    await appDispatch(
+      programmeThemeThunkActions.getProgrammeThemes({ locale: 'en-za' })
+    ).unwrap();
+  };
+
+  useEffect(() => {
+    initStaticStoreSetup();
+  }, []);
 
   useEffect(() => {
     if (!isOnline) {
@@ -114,7 +161,6 @@ export const Dashboard: React.FC = () => {
         (x) => x?.user?.id === userData.id
       );
       const _current = currentPrincipal?.at(0);
-
       if (_current) {
         (async () =>
           await appDispatch(
@@ -124,7 +170,7 @@ export const Dashboard: React.FC = () => {
           ).unwrap())();
       }
     }
-  }, []);
+  }, [userData]);
 
   useEffect(() => {
     (async () =>
@@ -135,14 +181,26 @@ export const Dashboard: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    (async () =>
-      await appDispatch(
-        classroomsThunkActions.getClassroomGroupClassroomsForPractitioner({
-          userId: userData?.id!,
-        })
-      ).unwrap())();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    if (practitioner?.userId && !classroom) {
+      (async () =>
+        await appDispatch(
+          classroomsThunkActions.getClassroomDetailsForPractitioner({
+            id: practitioner?.userId!,
+          })
+        ).unwrap())();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }
+  }, [practitioner?.userId]);
+
+  // useEffect(() => {
+  //   (async () =>
+  //     await appDispatch(
+  //       classroomsThunkActions.getClassroomGroupClassroomsForPractitioner({
+  //         userId: userData?.id!,
+  //       })
+  //     ).unwrap())();
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, []);
 
   const navigation: (NavigationRouteItem | NavigationDropdown)[] = [
     {
@@ -353,7 +411,10 @@ export const Dashboard: React.FC = () => {
   };
 
   const goToClassroom = () => {
-    if (classroom && classroom.id) {
+    if (
+      (classroom && classroom.id) ||
+      (classroomGroup && classroomGroup.length > 0)
+    ) {
       history.push(ROUTES.CLASSROOM, { activeTabIndex: 1 });
     } else {
       showCompleteProfileBlockingDialog();
@@ -414,17 +475,18 @@ export const Dashboard: React.FC = () => {
     });
   };
 
+  const profilePc =
+    userProfilePicture?.file ||
+    userData?.profileImageUrl ||
+    userProfilePicture?.reference;
+
   return (
     <BannerWrapper
       backgroundColour={'white'}
       backgroundImageColour={'primary'}
       avatar={
-        userProfilePicture?.file || userData?.profileImageUrl ? (
-          <Avatar
-            dataUrl={userProfilePicture?.file || userData?.profileImageUrl!}
-            size={'sm'}
-            displayBorder={true}
-          />
+        profilePc ? (
+          <Avatar dataUrl={profilePc} size={'sm'} displayBorder={true} />
         ) : (
           <UserAvatar
             size="sm-md"

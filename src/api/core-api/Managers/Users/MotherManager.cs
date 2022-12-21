@@ -16,18 +16,15 @@ namespace EcdLink.Api.CoreApi.Managers.Users
     public class MotherManager
     {
         private IHttpContextAccessor _contextAccessor;
-        private IDbContextFactory<AuthenticationDbContext> _dbFactory;
         private IGenericRepositoryFactory _repoFactory;
         private HealthCareWorkerManager _healthCareWorkerManager;
 
         public MotherManager(
             IHttpContextAccessor contextAccessor,
-            IDbContextFactory<AuthenticationDbContext> dbFactory,
             IGenericRepositoryFactory repoFactory,
             HealthCareWorkerManager healthCareWorkerManager)
         {
             _contextAccessor = contextAccessor;
-            _dbFactory = dbFactory;
             _repoFactory = repoFactory;
             _healthCareWorkerManager = healthCareWorkerManager;
         }
@@ -88,14 +85,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users
             };
         }
 
-        private Caregiver AddMotherAsCareGiver(Mother mother)
-        {
-            return new Caregiver() {
-                Id = Guid.NewGuid(),
-
-            };
-        }
-
         private ApplicationUser GetUserFromInputModel(MotherModel input)
         {
             return new ApplicationUser()
@@ -118,23 +107,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users
         {
             return userId ?? Guid.NewGuid().ToString();
         }
-
-        private Guid? GetRelationId(Guid? relationId)
-        {
-            return relationId ?? GetDefaultRelationIdForMother();
-        }
-
-        private Guid? GetDefaultRelationIdForMother()
-        {
-            var uId = _contextAccessor.HttpContext.GetUser().Id;
-            var relationRepo = _repoFactory.CreateRepository<Relation>(userContext: uId);
-            Relation relation = relationRepo.GetAll().Where(x => x.Description.Contains("Mother")).FirstOrDefault();
-            if (relation != null)
-            {
-                return relation.Id;
-            }
-            return null;
-        }
+        
     }
 }
 

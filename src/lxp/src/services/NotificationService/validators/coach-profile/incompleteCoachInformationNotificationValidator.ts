@@ -41,15 +41,14 @@ export class IncompleteCoachInformationNotificationValidator
       (!userState?.user?.firstName ||
         !userState?.user?.surname ||
         !userState?.user?.phoneNumber ||
-        !userState?.user?.email ||
-        !userState?.user?.genderId);
+        !userState?.user?.email);
 
     if (!userState?.user || showNotification) {
       return [
         {
           reference: `coach-profile`,
-          title: 'Complete your profile',
-          message: 'Share more information to make Funda App useful for you',
+          title: 'Complete your Profile',
+          message: 'Share more information to make Funda App useful for you.',
           dateCreated: new Date().toISOString(),
           priority: NotificationPriority.lower,
           viewOnDashboard: true,

@@ -1,10 +1,15 @@
-import { Checkbox, Typography } from '@ecdlink/ui';
-import { CheckboxChange, Colours, ComponentBaseProps } from '@ecdlink/ui';
-import { classNames } from '@ecdlink/ui';
-import { Path, UseFormRegister } from 'react-hook-form';
+import {
+  CheckboxChange,
+  Colours,
+  ComponentBaseProps,
+  Checkbox,
+  Typography,
+  classNames,
+} from '@ecdlink/ui';
+import { Path, UseFormRegister, FieldValues } from 'react-hook-form';
 import * as styles from './checkbox-card.styles';
-
-export interface CheckboxCardProps<T> extends ComponentBaseProps {
+export interface CheckboxCardProps<T extends FieldValues>
+  extends ComponentBaseProps {
   description?: string;
   descriptionColor?: Colours;
   checked?: boolean;
@@ -19,7 +24,7 @@ export interface CheckboxCardProps<T> extends ComponentBaseProps {
   value?: number;
 }
 
-export const CheckboxCard = <T,>({
+export const CheckboxCard = <T extends FieldValues>({
   description,
   descriptionColor = 'textMid',
   className,

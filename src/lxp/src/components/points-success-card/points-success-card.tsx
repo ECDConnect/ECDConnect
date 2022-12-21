@@ -54,7 +54,7 @@ export const PointsSuccessCard: React.FC<PointsSuccessCardProps> = ({
                   )}
                   {isSmartStartUser && (
                     <div>
-                      <div className={'flex flex-row mt-2'}>
+                      <div className={'mt-2 flex flex-row'}>
                         <div>
                           {renderIcon('GiftIcon', 'h-5 w-5 text-white mr-1.5')}
                         </div>
@@ -66,7 +66,7 @@ export const PointsSuccessCard: React.FC<PointsSuccessCardProps> = ({
                         />
                       </div>
                       <div className={'flex flex-row'}>
-                        {points && (
+                        {!!points && (
                           <Typography
                             type={'body'}
                             weight={'bold'}
@@ -86,9 +86,9 @@ export const PointsSuccessCard: React.FC<PointsSuccessCardProps> = ({
                   )}
                 </div>
                 <div className={styles.closeWrapper}>
-                  <div onClick={() => onClose && onClose()}>
+                  {/* <div onClick={() => onClose && onClose()}>
                     {renderIcon('XIcon', 'h-6 w-6 text-white')}
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </div>

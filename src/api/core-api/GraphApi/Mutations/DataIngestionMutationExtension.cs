@@ -56,7 +56,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var languages = localeService.GetAvailableLocale().ToList();
             
             List<PractitionerImportItem> practitionerImportList = new List<PractitionerImportItem>();
-            var headerRow = sheet.GetRow(0);
 
             for (var row = 1; row <= sheet.LastRowNum; row++)
             {
@@ -128,7 +127,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         TenantId = tenantId
                     };
 
-                    var userCreatedResult = userManager.CreateAsync(newUser).Result;
+                    userManager.CreateAsync(newUser);
 
                     templist.Add(new Practitioner
                     {
@@ -142,18 +141,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         TenantId = tenantId
                     });
 
-                    var userRole = userManager.AddToRoleAsync(newUser, Roles.PRACTITIONER).Result;
+                    userManager.AddToRoleAsync(newUser, Roles.PRACTITIONER);
                 }
             }
 
             var importerUserId = httpContextAccessor.HttpContext.GetUser().Id;
-            //var context = dbFactory.CreateDbContext();
             var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: importerUserId);
 
             foreach (var prac in templist)
             {
                 prac.TenantId = tenantId;
-                var addedPractitioner = practitionerRepo.Insert(prac);
+                practitionerRepo.Insert(prac);
             }
 
             return true;

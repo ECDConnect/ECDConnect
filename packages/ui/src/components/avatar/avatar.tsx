@@ -20,11 +20,12 @@ export const Avatar: React.FC<AvatarProps> = ({
   return (
     <div
       className={`${styles.avatar(size, displayBorder)} ${className}`}
-      style={styles.getImageDimensionsBasedOnSizeType(
-        size,
-        borderColor,
-        dataUrl
-      )}
+      style={{
+        ...styles.getImageDimensionsBasedOnSizeType(size, borderColor, dataUrl),
+        backfaceVisibility: 'hidden',
+        WebkitBackfaceVisibility: 'hidden',
+        imageOrientation: 'none',
+      }}
     ></div>
   );
 };

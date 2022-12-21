@@ -64,7 +64,11 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public string SigningSignature { get; set; }
         public bool? IsRegistered { get; set; }
         public bool? ShareInfo { get; set; }
-
+        public DateTime? DateLinked { get; set; }
+        public DateTime? DateAccepted { get; set; }
+        public DateTime? DateToBeRemoved { get; set; }
+        public bool? IsLeaving { get; set; }
+        public decimal Progress { get; set; }
     }
 
     public interface PractitionerJoin<TKey>

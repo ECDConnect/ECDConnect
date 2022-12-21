@@ -13,6 +13,7 @@ import {
   getClassroomGroupLearners,
   getClassroomGroups,
   getClassroomProgrammes,
+  getClassroomDetailsForPractitioner,
 } from './classroom.actions';
 import { ClassroomState } from './classroom.types';
 
@@ -201,6 +202,15 @@ const classroomsSlice = createSlice({
       (state, action) => {
         if (action.payload) {
           state.classroom = action.payload;
+        }
+      }
+    );
+    builder.addCase(
+      getClassroomDetailsForPractitioner.fulfilled,
+      (state, action: any) => {
+        if (action.payload) {
+          const classroomProgramme = action?.payload;
+          state.classroom = classroomProgramme;
         }
       }
     );

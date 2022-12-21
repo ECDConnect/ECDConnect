@@ -28,11 +28,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public List<Document> GetAllDocument([Service] IHttpContextAccessor contextAccessor,
-        [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
         [Service] IGenericRepositoryFactory repoFactory,
         string userId)
-        {
-            using var scope = dbFactory.CreateDbContext();            
+        {           
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var dbRepo = repoFactory.CreateRepository<Document>(userContext: uId);
             List<Document> docs = dbRepo.GetAll().ToList();

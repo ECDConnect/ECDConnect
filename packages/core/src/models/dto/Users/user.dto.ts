@@ -24,4 +24,10 @@ export interface UserDto extends EntityBase {
   raceId?: string;
   race?: RaceDto;
   profileImageUrl?: string;
+  whatsappNumber?: string;
+  emergencyContactFirstName?: string;
+  emergencyContactSurname?: string;
+  emergencyContactPhoneNumber?: string;
+  languageId?: string;
+  emailConfirmed?: boolean;
 }

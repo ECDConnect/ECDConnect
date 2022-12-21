@@ -8,6 +8,7 @@ import { coachSelectors } from '@store/coach';
 import { useSelector } from 'react-redux';
 import { useDialog } from '@ecdlink/core';
 import { useAppDispatch } from '@store';
+import { userSelectors } from '@store/user';
 import ROUTES from '@routes/routes';
 import { useEffect } from 'react';
 import {
@@ -22,6 +23,7 @@ import {
 
 export const CoachProfile: React.FC = () => {
   const { resetAuth, resetAppStore } = useStoreSetup();
+  const user = useSelector(userSelectors.getUser);
   const { userProfilePicture } = useDocuments();
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
@@ -45,22 +47,27 @@ export const CoachProfile: React.FC = () => {
   const getStackedMenuList = (): MenuListDataItem[] => {
     const titleStyle = 'text-textDark font-semibold text-base leading-snug';
     const subTitleStyle = 'text-sm font-h1 font-normal text-textMid';
+    const profilePc =
+      userProfilePicture?.file ||
+      user?.profileImageUrl ||
+      userProfilePicture?.reference;
     const stackedMenuList: MenuListDataItem[] = [
       {
-        title: `${coach?.user?.firstName} ${coach?.user?.surname}`,
+        title: `${coach?.user?.firstName} ${coach?.user?.surname}`.slice(0, 25),
         titleStyle,
         subTitle: 'About me',
         subTitleStyle,
-        menuIconUrl: userProfilePicture?.file,
+        menuIconUrl: profilePc,
         menuIcon: 'UserIcon',
         iconBackgroundColor: 'tertiary',
         iconColor: 'white',
 
-        showIcon: userProfilePicture?.file === undefined,
+        showIcon: profilePc === undefined,
         onActionClick: () => {
           history.push(ROUTES.COACH.ABOUT.ROOT);
         },
       },
+
       {
         title: 'Account',
         titleStyle,
@@ -91,16 +98,14 @@ export const CoachProfile: React.FC = () => {
               return (
                 <ActionModal
                   className={'mx-4'}
-                  title={'Logout & reset data'}
-                  importantText={
-                    'Please note that by doing this, all your data will be reset and you will loose all data that has not been synced up.'
-                  }
+                  title={'Are you sure you want to log out?'}
+                  importantText={''}
                   icon={'ExclamationCircleIcon'}
                   iconColor={'alertDark'}
                   iconBorderColor={'alertBg'}
                   actionButtons={[
                     {
-                      text: 'Okay',
+                      text: 'Yes, log out',
                       colour: 'primary',
                       onClick: async () => {
                         onSubmit();
@@ -113,7 +118,7 @@ export const CoachProfile: React.FC = () => {
                       leadingIcon: 'CheckCircleIcon',
                     },
                     {
-                      text: 'Cancel',
+                      text: 'No, cancel',
                       textColour: 'white',
                       colour: 'primary',
                       type: 'filled',
@@ -148,7 +153,7 @@ export const CoachProfile: React.FC = () => {
           <StackedList
             listItems={getStackedMenuList()}
             type={'MenuList'}
-            className={'-mt-0.5 px-4 flex flex-col gap-1'}
+            className={'-mt-0.5 flex flex-col gap-1 px-4'}
           ></StackedList>
         </div>
       ),

@@ -12,7 +12,7 @@ import {
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
-import * as styles from './login.styles';
+import * as styles from '@/pages/auth/login/login.styles';
 import {
   initialLoginValues,
   LoginModel,
@@ -23,16 +23,20 @@ import { authActions, authThunkActions } from '@store/auth';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { settingActions } from '@store/settings';
 import ROUTES from '@routes/routes';
-const { version } = require('../../../../package.json');
+import { version } from '@@/package.json';
 
 export const Login: React.FC = () => {
-  const appDispatch = useAppDispatch();
+  const { theme } = useTheme();
+
   const history = useHistory();
-  const [displayError, setDisplayError] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [idFieldVisible, setIdFieldVisible] = useState(true);
+
+  const appDispatch = useAppDispatch();
 
   const { isOnline, Offline } = useOnlineStatus();
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [displayError, setDisplayError] = useState(false);
+  const [idFieldVisible, setIdFieldVisible] = useState(true);
 
   const {
     register: loginRegister,
@@ -44,9 +48,10 @@ export const Login: React.FC = () => {
     defaultValues: initialLoginValues,
     mode: 'onChange',
   });
+
   const { isValid, errors } = loginFormState;
 
-  const submitForm = async () => {
+  async function submitForm() {
     setDisplayError(false);
     if (isValid) {
       setIsLoading(true);
@@ -66,165 +71,156 @@ export const Login: React.FC = () => {
             appDispatch(settingActions.setApplicationVersion(version));
             appDispatch(authActions.setUserExpired());
             setIsLoading(false);
-            history.push(ROUTES.DASHBOARD);
+            history.push(ROUTES.DASHBOARD, { isFromLogin: true });
           } else {
             setDisplayError(true);
             setIsLoading(false);
           }
         })
-        .catch(() => {
+        .catch((error: unknown) => {
           setDisplayError(true);
           setIsLoading(false);
+          console.error(error);
         });
     }
-  };
+  }
 
-  const forgotPasswordClicked = () => {
+  function forgotPasswordClicked() {
     history.push(ROUTES.PASSWORD_RESET);
-  };
+  }
 
-  const toggleIdAndpassport = (visible: boolean) => {
+  function toggleIdAndpassport(visible: boolean) {
     const flag = !visible;
     loginSetValue(flag ? 'passportField' : 'idField', '');
     loginSetValue('preferId', flag);
     setIdFieldVisible(flag);
-  };
-
-  const { theme } = useTheme();
+  }
 
   return (
     <BannerWrapper
-      showBackground={true}
-      backgroundUrl={theme?.images.graphicOverlayUrl}
-      backgroundImageColour={'primary'}
+      size="medium"
       color="primary"
-      size="sub-normal"
       renderBorder={false}
+      showBackground={true}
       displayOffline={!isOnline}
+      backgroundImageColour={'primary'}
+      backgroundUrl={theme?.images.graphicOverlayUrl}
     >
-      <div className={styles.loginContainer}>
-        <form>
-          <div>
-            {idFieldVisible && (
-              <FormInput<LoginModel>
-                label={'ID number'}
-                visible={true}
-                nameProp={'idField'}
-                register={loginRegister}
-                error={errors['idField']}
-                placeholder={'E.g. 7601010338089'}
-              />
-            )}
-            {!idFieldVisible && (
-              <FormInput<LoginModel>
-                label={'Passport number'}
-                visible={true}
-                nameProp={'passportField'}
-                error={errors['passportField']}
-                register={loginRegister}
-              />
-            )}
-            {!idFieldVisible && (
-              <Button
-                className={'mt-3 mb-2'}
-                type="outlined"
-                color="primary"
-                background={'transparent'}
-                size="small"
-                onClick={() => toggleIdAndpassport(idFieldVisible)}
-              >
-                <Typography
-                  type="small"
-                  color="primary"
-                  text={'Enter ID number instead'}
-                ></Typography>
-              </Button>
-            )}
-            {idFieldVisible && (
-              <Button
-                className={'mt-3 mb-2'}
-                type="outlined"
-                color="primary"
-                size="small"
-                background={'transparent'}
-                onClick={() => toggleIdAndpassport(idFieldVisible)}
-              >
-                <Typography
-                  type="small"
-                  color="primary"
-                  text={'Enter passport number instead'}
-                ></Typography>
-              </Button>
-            )}
-            <PasswordInput<LoginModel>
-              label={'Password'}
-              className={'mt-1 mb-2'}
-              nameProp={'password'}
-              sufficIconColor={'uiMidDark'}
-              value={loginFormGetValues().password}
-              register={loginRegister}
-            />
-            <div>
-              <Button
-                className={'mt-1 mb-3'}
-                type="outlined"
-                color="primary"
-                background={'transparent'}
-                size="small"
-                disabled={!isOnline}
-                onClick={forgotPasswordClicked}
-              >
-                <Typography
-                  type="small"
-                  color="primary"
-                  text={'Forgot my password'}
-                ></Typography>
-              </Button>
-            </div>
-            <Divider></Divider>
-            {displayError && (
-              <Alert
-                className={'mt-5 mb-3'}
-                message={'Password or ID incorrect. Please try again'}
-                type={'error'}
-              />
-            )}
-          </div>
-          <Offline>
-            <Alert
-              className={'mt-5 mb-3'}
-              title="You are offline"
-              message={'You need to be online to log in to the app'}
-              type={'warning'}
-            />
-          </Offline>
+      <form className={styles.loginContainer}>
+        {idFieldVisible && (
+          <FormInput<LoginModel>
+            label={'ID number'}
+            visible={true}
+            nameProp={'idField'}
+            register={loginRegister}
+            error={errors['idField']}
+            placeholder={'E.g. 7601010338089'}
+          />
+        )}
+        {!idFieldVisible && (
+          <FormInput<LoginModel>
+            label={'Passport number'}
+            visible={true}
+            nameProp={'passportField'}
+            error={errors['passportField']}
+            register={loginRegister}
+          />
+        )}
+        {!idFieldVisible && (
           <Button
-            id="gtm-login"
-            className={'w-full mt-3'}
-            type="filled"
-            isLoading={isLoading}
-            color="primary"
-            disabled={!isValid || !isOnline}
-            onClick={submitForm}
-          >
-            <Typography type="help" color="white" text={'Log in'}></Typography>
-          </Button>
-          <Button
-            id="gtm-signup"
-            className={'w-full mt-3'}
+            className={'mt-3 mb-2'}
             type="outlined"
             color="primary"
-            disabled={!isOnline}
             background={'transparent'}
+            size="small"
+            onClick={() => toggleIdAndpassport(idFieldVisible)}
           >
             <Typography
-              type="help"
+              type="buttonSmall"
               color="primary"
-              text={'Sign up'}
+              text={'Enter ID number instead'}
+            />
+          </Button>
+        )}
+        {idFieldVisible && (
+          <Button
+            className={'mt-3 mb-2'}
+            type="outlined"
+            color="primary"
+            size="small"
+            background={'transparent'}
+            onClick={() => toggleIdAndpassport(idFieldVisible)}
+          >
+            <Typography
+              type="buttonSmall"
+              color="primary"
+              text={'Enter passport number instead'}
             ></Typography>
           </Button>
-        </form>
-      </div>
+        )}
+        <PasswordInput<LoginModel>
+          label={'Password'}
+          className={'mt-1 mb-2'}
+          nameProp={'password'}
+          sufficIconColor={'uiMidDark'}
+          value={loginFormGetValues().password}
+          register={loginRegister}
+        />
+
+        <Button
+          className={'mt-1 mb-3'}
+          type="outlined"
+          color="primary"
+          background={'transparent'}
+          size="small"
+          disabled={!isOnline}
+          onClick={forgotPasswordClicked}
+        >
+          <Typography
+            type="buttonSmall"
+            color="primary"
+            text={'Forgot my password'}
+          />
+        </Button>
+
+        <Divider dividerType="dashed" />
+
+        {displayError && (
+          <Alert
+            className={'mt-5 mb-3'}
+            message={'Password or ID incorrect. Please try again'}
+            type={'error'}
+          />
+        )}
+        <Offline>
+          <Alert
+            className={'mt-5 mb-3'}
+            title="Your internet connection is unstable."
+            type={'warning'}
+          />
+        </Offline>
+        <Button
+          id="gtm-login"
+          className={'mt-3 w-full'}
+          type="filled"
+          isLoading={isLoading}
+          color="primary"
+          disabled={!isValid || !isOnline}
+          onClick={submitForm}
+        >
+          <Typography type="help" color="white" text={'Log in'} />
+        </Button>
+        <Button
+          id="gtm-signup"
+          type="outlined"
+          color={'primary'}
+          disabled={!isOnline || isLoading}
+          className={'mt-3 w-full'}
+          onClick={() => history.push(ROUTES.SIGN_UP)}
+        >
+          <Typography type="help" color="primary" text={'Sign up'} />
+        </Button>
+      </form>
     </BannerWrapper>
   );
 };

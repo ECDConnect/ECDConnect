@@ -45,7 +45,6 @@ namespace ECDLink.EGraphQL.Registration.ContentTypes
             descriptor.Field(GraphFieldNamingHelper.GetFieldName(GraphFieldTypeEnum.Update, definition.ContentName))
                   .ConfigureContextData(data =>
                   {
-                      //data.Add(ContextDataConstants.ContentManagement.MetaData, definition.MetaData);
                       data.Add(ContextDataConstants.ContentManagement.Identifier, definition.Identifier);
                   })
                   .Argument(ArgumentConstants.Id, a => a.Type<NonNullType<StringType>>())
@@ -66,7 +65,6 @@ namespace ECDLink.EGraphQL.Registration.ContentTypes
             descriptor.Field(GraphFieldNamingHelper.GetFieldName(GraphFieldTypeEnum.Delete, definition.ContentName))
                   .ConfigureContextData(data =>
                   {
-                      //data.Add(ContextDataConstants.ContentManagement.MetaData, definition.MetaData);
                       data.Add(ContextDataConstants.ContentManagement.Identifier, definition.Identifier);
                   })
                   .Argument(ArgumentConstants.Id, a => a.Type<NonNullType<StringType>>())
@@ -86,7 +84,6 @@ namespace ECDLink.EGraphQL.Registration.ContentTypes
             descriptor.Field(GraphFieldNamingHelper.GetFieldName(GraphFieldTypeEnum.Create, definition.ContentName))
                   .ConfigureContextData(data =>
                   {
-                      //data.Add(ContextDataConstants.ContentManagement.MetaData, definition.MetaData);
                       data.Add(ContextDataConstants.ContentManagement.Identifier, definition.Identifier);
                   })
                   .Argument(ArgumentConstants.Input, a => a.Type(new DynamicTypeBuilder(definition.ContentName).Input().Required().Build()))

@@ -63,13 +63,16 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
 
   const [provideReason, setProvideReason] = useState(false);
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
+  const allClassroomGroups = useSelector(
+    classroomsSelectors.getAllClassroomGroups
+  );
   const reasons = useSelector(
     staticDataSelectors.getProgrammeAttendanceReasons
   );
   const [updatedPlaygroups, setUpdatedPlaygroups] = useState<
     DropDownOption<string>[]
   >([]);
-  console.log({ updatedPlaygroups });
+
   const classroomsForPractitioner = useSelector(
     classroomsSelectors.getClassroom
   );
@@ -84,10 +87,6 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
       setClassroomsForPractitionerAnyType([classroomsForPractitioner]);
     }
   }, [classroomsForPractitioner]);
-  console.log(
-    practitioner?.isPrincipal !== true &&
-      classroomsForPractitionerAnyType.length > 0
-  );
 
   const {
     getValues: getChildInformationFormValues,
@@ -153,7 +152,6 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
       const groupedItems: DropDownOption<string>[] = [];
 
       classroomsForPractitionerAnyType.forEach((groupedItem: any) => {
-        console.log(groupedItem);
         groupedItems.push({
           label: groupedItem.name,
           value: groupedItem.id ?? '',
@@ -164,7 +162,7 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
     if (classroomGroups.length > 0) {
       const groupedItems: DropDownOption<string>[] = [];
 
-      classroomGroups.forEach((groupedItem) => {
+      allClassroomGroups.forEach((groupedItem) => {
         groupedItems.push({
           label: groupedItem.name,
           value: groupedItem.id ?? '',
@@ -173,7 +171,7 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
       setUpdatedPlaygroups(groupedItems);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [classroomGroups, classroomsForPractitionerAnyType]);
+  }, [classroomGroups, classroomsForPractitionerAnyType, allClassroomGroups]);
 
   const validateDateOfBirth = () => {
     const alertsArray: AlertProps[] = [];
@@ -361,10 +359,7 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
               }
               selectedValue={getChildInformationFormValues().reason}
               onChange={(item) => {
-                setChildInformationFormValue(
-                  'reason',
-                  item as ProgrammeAttendanceReasonDto
-                );
+                setChildInformationFormValue('reason', item);
                 triggerChildInformationForm();
               }}
             />
@@ -446,7 +441,7 @@ const PractitionerForm: React.FC<any> = ({
         className={'mt-3 w-full'}
         selectedValue={getChildInformationFormValues().playgroupId}
         onChange={(item) => {
-          setChildInformationFormValue('playgroupId', item as string);
+          setChildInformationFormValue('playgroupId', item);
           triggerChildInformationForm();
         }}
       />

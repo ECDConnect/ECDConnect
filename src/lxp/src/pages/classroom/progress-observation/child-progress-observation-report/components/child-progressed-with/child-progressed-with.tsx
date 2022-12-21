@@ -1,6 +1,12 @@
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Button, Card, Divider, FormInput, Typography } from '@ecdlink/ui';
-import { renderIcon } from '@ecdlink/ui';
+import {
+  Button,
+  Card,
+  Divider,
+  FormInput,
+  Typography,
+  renderIcon,
+} from '@ecdlink/ui';
 import { getYear } from 'date-fns';
 import { useForm, useFormState } from 'react-hook-form';
 import { useChildProgressObservation } from '@hooks/useChildProgressObservations';
@@ -67,7 +73,7 @@ export const ChildProgressedWith: React.FC<ChildProgressedWithProps> = ({
       />
 
       {currentReport && currentReport.observationNote && (
-        <Card shadowSize="lg" borderRaduis={'lg'} className={'p-4 mt-4'}>
+        <Card shadowSize="lg" borderRaduis={'lg'} className={'mt-4 p-4'}>
           <Typography
             type={'body'}
             weight={'bold'}

@@ -59,7 +59,7 @@ export const Messages: React.FC = () => {
       backgroundColour="white"
       displayOffline={!isOnline}
     >
-      <div className="divide-y-2 divide-uiLight divide-dashed">
+      <div className="divide-uiLight divide-y-2 divide-dashed">
         {paging.visibleItems.length === 0 && (
           <IconInformationIndicator
             title="You don't have any messages"
@@ -71,7 +71,7 @@ export const Messages: React.FC = () => {
           return (
             <MessageCard
               key={`message-card-${notification.message.reference}`}
-              className={idx > 0 ? '' : ''}
+              className={''}
               status={notification.isNew ? 'new' : 'viewed'}
               title={notification.message.title}
               message={notification.message.message}
@@ -88,7 +88,7 @@ export const Messages: React.FC = () => {
         paging.visibleItems &&
         paging.visibleItems.length > 0 && (
           <div
-            className={'p-4 bg-uiBg flex flex-row items-center justify-center'}
+            className={'bg-uiBg flex flex-row items-center justify-center p-4'}
           >
             <Typography
               hasMarkup

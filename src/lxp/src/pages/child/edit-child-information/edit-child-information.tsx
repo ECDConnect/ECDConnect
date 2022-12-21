@@ -2,8 +2,11 @@ import {
   ContentConsentTypeEnum,
   SiteAddressDto,
   useTheme,
+  CaregiverDto,
+  ChildDto,
+  LearnerDto,
+  Document,
 } from '@ecdlink/core';
-import { CaregiverDto, ChildDto, LearnerDto, Document } from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
   ActionModal,
@@ -15,9 +18,10 @@ import {
   StackedList,
   Typography,
   DropDownOption,
+  ActionListDataItem,
+  DialogPosition,
+  renderIcon,
 } from '@ecdlink/ui';
-import { ActionListDataItem, DialogPosition } from '@ecdlink/ui';
-import { renderIcon } from '@ecdlink/ui';
 import format from 'date-fns/format';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -358,7 +362,9 @@ export const EditChildInformation: React.FC = () => {
 
         list.push({
           title: 'Address',
-          subTitle: `${caregiver?.siteAddress?.ward} ${caregiver?.siteAddress?.addressLine1}, ${caregiver?.siteAddress?.addressLine2}`,
+          subTitle: caregiver?.siteAddress?.ward
+            ? `${caregiver?.siteAddress?.ward} ${caregiver?.siteAddress?.addressLine1}, ${caregiver?.siteAddress?.addressLine2}`
+            : 'Add address',
           switchTextStyles: true,
           actionName: 'View',
           actionIcon: 'EyeIcon',
@@ -662,7 +668,7 @@ export const EditChildInformation: React.FC = () => {
         displayOffline={!isOnline}
       >
         <div
-          className={'w-full flex flex-col items-center justify-center pt-8'}
+          className={'flex w-full flex-col items-center justify-center pt-8'}
         >
           <ProfileAvatar
             dataUrl={profilePicture?.file || childUser?.profileImageUrl || ''}
@@ -672,7 +678,7 @@ export const EditChildInformation: React.FC = () => {
             onPressed={displayProfilePicturePrompt}
           />
           <StackedList
-            className={'bg-white w-full px-4'}
+            className={'w-full bg-white px-4'}
             listItems={listItems}
             type={'ActionList'}
           />
@@ -742,7 +748,7 @@ export const EditChildInformation: React.FC = () => {
               editChildInformationFormSetValues('classroomGroupId', item);
             }}
           />
-          <div className={'pt-6 w-full'}>
+          <div className={'w-full pt-6'}>
             <Button
               size="small"
               type="filled"
@@ -763,7 +769,7 @@ export const EditChildInformation: React.FC = () => {
       </Dialog>
 
       <Dialog
-        className={'px-4 mb-16'}
+        className={'mb-16 px-4'}
         stretch={true}
         visible={changeClassroomGroupPromptVisible}
         position={DialogPosition.Bottom}

@@ -24,5 +24,7 @@ export interface CaregiverDto extends EntityBase {
   additionalPhoneNumber?: string;
   joinReferencePanel?: boolean;
   contribution?: boolean;
-  grants?: GrantDto[];
+  grants?: string[] | undefined;
+  healthCareWorkerId?: string;
+  isMother?: boolean;
 }

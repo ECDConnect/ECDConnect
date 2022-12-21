@@ -32,7 +32,6 @@ export const api = (baseUrl: string, token?: string): AxiosInstance => {
     async (config) => {
       if (store && !blacklistCheckup(config.url ?? '', blackList)) {
         const user = store?.getState()?.auth?.userAuth;
-
         let currentDate = new Date();
         if (user?.auth_token) {
           const decodedToken: { exp: number } = jwt_decode(user?.auth_token);
@@ -46,7 +45,6 @@ export const api = (baseUrl: string, token?: string): AxiosInstance => {
           }
         }
       }
-
       return config;
     },
     (error) => {
@@ -62,7 +60,6 @@ const blacklistCheckup = ($url: string, blacklist: string[]): boolean => {
   blacklist.forEach((i) => {
     if ($url.includes(i)) {
       returnValue = true;
-      return;
     }
   });
   return returnValue;

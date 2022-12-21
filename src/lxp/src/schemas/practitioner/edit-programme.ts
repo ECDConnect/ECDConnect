@@ -23,14 +23,18 @@ export const editProgrammeSchema = Yup.object().shape({
     is: true,
     then: Yup.string().required(),
   }),
-  smartStartPractitioners: Yup.string().when('isPrincipalOrLeader', {
-    is: true,
-    then: Yup.string().required(),
-    otherwise: Yup.string(),
-  }),
-  nonSmartStartPractitioners: Yup.string().when('isPrincipalOrLeader', {
-    is: true,
-    then: Yup.string().required(),
-    otherwise: Yup.string(),
-  }),
+  smartStartPractitioners: Yup.number()
+    .min(0)
+    .when('isPrincipalOrLeader', {
+      is: true,
+      then: Yup.number().min(0).required(),
+      otherwise: Yup.number(),
+    }),
+  nonSmartStartPractitioners: Yup.number()
+    .min(0)
+    .when('isPrincipalOrLeader', {
+      is: true,
+      then: Yup.number().min(0).required(),
+      otherwise: Yup.number(),
+    }),
 });

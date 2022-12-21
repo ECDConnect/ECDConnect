@@ -71,6 +71,4 @@ export const syncOfflineData = createAsyncThunk<
   if (error) {
     return rejectWithValue(error.message);
   }
-
-  return;
 });

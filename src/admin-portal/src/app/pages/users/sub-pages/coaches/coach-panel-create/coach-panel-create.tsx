@@ -126,7 +126,10 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
       idNumber: userDetailForm.idNumber,
       verifiedByHomeAffairs: userDetailForm.verifiedByHomeAffairs,
       dateOfBirth: userDetailForm.dateOfBirth,
-      genderId: userDetailForm.genderId && +userDetailForm.genderId,
+      genderId:
+        userDetailForm.genderId && userDetailForm.genderId.length
+          ? userDetailForm.genderId
+          : null,
       firstName: userDetailForm.firstName,
       surname: userDetailForm.surname,
       contactPreference: userDetailForm.contactPreference,
@@ -271,9 +274,9 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
   const getComponent = () => {
     return (
       <>
-        <div className="bg-uiBg px-4 py-5 border-b border-gray-200 rounded-lg">
+        <div className="bg-uiBg rounded-lg border-b border-gray-200 px-4 py-5">
           <div className="pb-2">
-            <h3 className="text-lg leading-6 font-medium text-uiMidDark">
+            <h3 className="text-uiMidDark text-lg font-medium leading-6">
               User Detail
             </h3>
           </div>
@@ -287,9 +290,9 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
           />
         </div>
 
-        <div className="mt-5 bg-uiBg px-4 py-5 border-b border-gray-200 rounded-lg">
+        <div className="bg-uiBg mt-5 rounded-lg border-b border-gray-200 px-4 py-5">
           <div className="pb-2">
-            <h3 className="text-lg leading-6 font-medium text-uiMidDark">
+            <h3 className="text-uiMidDark text-lg font-medium leading-6">
               Coach Detail
             </h3>
           </div>
@@ -300,9 +303,9 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
             errors={coachFormErrors}
           />
 
-          <div className="mt-5 bg-uiBg px-4 py-5 border-b border-gray-200 rounded-lg">
+          <div className="bg-uiBg mt-5 rounded-lg border-b border-gray-200 px-4 py-5">
             <div className="pb-2">
-              <h3 className="text-lg leading-6 font-medium text-uiMidDark">
+              <h3 className="text-uiMidDark text-lg font-medium leading-6">
                 Address Detail
               </h3>
             </div>
@@ -314,9 +317,9 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
           </div>
         </div>
 
-        <div className="mt-5 bg-uiBg px-4 py-5 border-b border-gray-200 rounded-lg">
+        <div className="bg-uiBg mt-5 rounded-lg border-b border-gray-200 px-4 py-5">
           <div className="pb-2">
-            <h3 className="text-lg leading-6 font-medium text-uiMidDark">
+            <h3 className="text-uiMidDark text-lg font-medium leading-6">
               Password
             </h3>
           </div>
@@ -336,7 +339,7 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
     <article>
       <UserPanelSave disabled={!getIsValid()} onSave={onSave} />
 
-      <div className="mt-5 max-w-5xl mx-auto">{getComponent()}</div>
+      <div className="mx-auto mt-5 max-w-5xl">{getComponent()}</div>
     </article>
   );
 }

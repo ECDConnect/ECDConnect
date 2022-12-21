@@ -28,7 +28,7 @@ const OfflineSyncError: React.FC<OfflineSyncErrorProps> = ({
       textColour: 'white',
       colour: 'primary',
       type: 'filled',
-      onClick: () => onCancel && onCancel(),
+      onClick: () => onCancel(),
       leadingIcon: 'XIcon',
     });
   }

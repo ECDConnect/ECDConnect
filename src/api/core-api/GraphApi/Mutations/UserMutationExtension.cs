@@ -43,7 +43,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 ContactPreference = input.ContactPreference,
                 IsActive = true,
                 ProfileImageUrl = input.ProfileImageUrl,
-                TenantId = tenantId
+                TenantId = tenantId,
+                LanguageId = input.LanguageId
             };
 
             var userCreatedResult = userManager.CreateAsync(newUser).Result;
@@ -103,6 +104,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             user.DateOfBirth = input.DateOfBirth;
             user.GenderId = input.GenderId;
             user.RaceId = input.RaceId;
+            user.LanguageId = input.LanguageId;
             user.FirstName = input.FirstName;
             user.Surname = input.Surname;
             user.FullName = $"{input.FirstName} {input.Surname}";
@@ -149,8 +151,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             user.IsActive = false;
 
             var updateResult = userManager.UpdateAsync(user).Result;
-
-            // var deleteResult = userManager.DeleteAsync(user).Result;
 
             return updateResult.Succeeded;
         }

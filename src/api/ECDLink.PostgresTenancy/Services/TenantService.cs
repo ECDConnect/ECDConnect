@@ -51,7 +51,7 @@ namespace ECDLink.PostgresTenancy.Services
         public TenantModel GetTenantByUrl(string url)
         {
             var tenant = _repository.GetAll()
-                            .Where(x => url.Contains(x.SiteAddress) || url.Contains(x.AdminSiteAddress))
+                            .Where(x => url.Contains(x.SiteAddress) || url.Contains(x.AdminSiteAddress) || url.Contains(x.TestSiteAddress) || url.Contains(x.AdminTestSiteAddress))
                             .FirstOrDefault();
 
             if (tenant == null)
@@ -69,13 +69,6 @@ namespace ECDLink.PostgresTenancy.Services
                 return default;
             }
 
-            //if (string.IsNullOrWhiteSpace(tenant.ConnectionString) && tenant.TenantType == Tenancy.Enums.TenantType.Tenant)
-            //{
-            //    throw new InvalidOperationException("No connection string provided");
-            //}
-
-            //var connection = new NpgsqlConnectionStringBuilder(tenant.ConnectionString);
-
             var entity =_repository.Insert(new TenantEntity
             {
                 ApplicationName = tenant.ApplicationName,
@@ -88,7 +81,9 @@ namespace ECDLink.PostgresTenancy.Services
                 //Server = connection["Server"]?.ToString() ?? string.Empty,
                 //ConnectionString = tenant.ConnectionString,
                 DbProvider = "postgressql",
-                TenantType = tenant.TenantType
+                TenantType = tenant.TenantType,
+                TestSiteAddress = tenant.TestSiteAddress,
+                AdminTestSiteAddress = tenant.AdminTestSiteAddress
             });
 
             return Cast(entity);
@@ -106,7 +101,9 @@ namespace ECDLink.PostgresTenancy.Services
                 TenantType = tenantEntity.TenantType,
                 ThemePathVar = tenantEntity.ThemePathVar,
                 Var1 = tenantEntity.Var1,
-                Var2 = tenantEntity.Var2
+                Var2 = tenantEntity.Var2,
+                TestSiteAddress = tenantEntity.TestSiteAddress,
+                AdminTestSiteAddress = tenantEntity.AdminTestSiteAddress
             };
         }
     }

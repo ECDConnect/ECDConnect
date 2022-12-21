@@ -172,6 +172,7 @@ const mapCaregiver = (x: Partial<CaregiverDto>): CaregiverInput => ({
   FullName: `${x.firstName} ${x.surname}`,
   PhoneNumber: x.phoneNumber,
   SiteAddressId: x.siteAddressId,
+  SiteAddress: mapSiteAddress(x.siteAddress!),
   RelationId: x.relationId,
   EducationId: x.educationId,
   EmergencyContactFirstName: x.emergencyContactFirstName,

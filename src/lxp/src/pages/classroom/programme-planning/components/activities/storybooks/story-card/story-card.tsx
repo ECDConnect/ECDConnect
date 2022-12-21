@@ -5,9 +5,9 @@ import {
   StatusChip,
   Typography,
   Dialog,
+  DialogPosition,
+  classNames,
 } from '@ecdlink/ui';
-import { DialogPosition } from '@ecdlink/ui';
-import { classNames } from '@ecdlink/ui';
 import { useState } from 'react';
 import StoryActivityDetails from '../story-activity-details/story-activity-details';
 import { StoryCardProps } from './story-card.types';
@@ -37,15 +37,15 @@ const StoryCard: React.FC<StoryCardProps> = ({
       <Card
         className={classNames(
           className,
-          `flex flex-col w-full relative mt-4 ${
-            selected ? 'border-2 border-secondary' : ''
+          `relative mt-4 flex w-full flex-col ${
+            selected ? 'border-secondary border-2' : ''
           }`
         )}
         shadowSize={'lg'}
         borderRaduis="lg"
       >
         <div className="p-4">
-          <div className="flex flex-row justify-between items-center">
+          <div className="flex flex-row items-center justify-between">
             <Typography type="body" text={title} color={'textDark'} />
 
             <StatusChip
@@ -96,7 +96,7 @@ const StoryCard: React.FC<StoryCardProps> = ({
           background={'transparent'}
           color={selected ? 'white' : 'uiMidDark'}
           shape={'normal'}
-          className={`py-4 w-full border-t ${selected ? 'bg-secondary ' : ''}`}
+          className={`w-full border-t py-4 ${selected ? 'bg-secondary ' : ''}`}
           click={onSelected}
         />
       </Card>

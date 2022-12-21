@@ -5,6 +5,7 @@ import {
   SearchSortOptions,
   UserAlertListDataItem,
   SearchDropDown,
+  LoadingSpinner,
 } from '@ecdlink/ui';
 import { getAvatarColor } from '@ecdlink/core';
 import SearchHeader from '../../../components/search-header/search-header';
@@ -17,8 +18,11 @@ import { practitionerForCoachSelectors } from '@/store/practitionerForCoach';
 import { practitionerSelectors } from '@/store/practitioner';
 import { EmptyPractitioners } from './components/empty-practitioners/empty-practitioners';
 import { PractitionerDto } from '@/../../../packages/core/lib';
+import { authSelectors } from '@/store/auth';
+import { PractitionerService } from '@/services/PractitionerService';
 
 export const Practitioners: React.FC = () => {
+  const userAuth = useSelector(authSelectors.getAuthUser);
   const history = useHistory();
   const isCoach = true;
   const practitionersForCoach = useSelector(
@@ -28,9 +32,9 @@ export const Practitioners: React.FC = () => {
   const practitionersList = practitioners?.filter((item) =>
     practitionersForCoach?.find((item2) => item.id === item2.id)
   );
-
+  const [practitionersMessages, setPractitionersMessages] = useState<any[]>();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [childUserListData, setChildUserListData] =
+  const [practitionerUserListData, setPractitionerUserListData] =
     useState<UserAlertListDataItem[]>();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [addChildButtonExpanded, setAddChildButtonExpanded] =
@@ -41,6 +45,7 @@ export const Practitioners: React.FC = () => {
   const [filteredChildData, setFilteredChildData] = useState<
     UserAlertListDataItem[]
   >([]);
+  const [loading, setLoading] = useState(false);
 
   const handleClick = (practitionerId: string) => {
     if (isCoach) {
@@ -56,11 +61,6 @@ export const Practitioners: React.FC = () => {
 
   const sortOptions: SearchSortOptions = {
     columns: [
-      {
-        id: '1',
-        label: 'Priority',
-        value: 'priority',
-      },
       {
         id: '2',
         label: 'First Name',
@@ -79,14 +79,35 @@ export const Practitioners: React.FC = () => {
   };
 
   useEffect(() => {
-    if (practitionersList && practitionersList?.length > 0) {
+    if (
+      practitionersList &&
+      practitionersMessages &&
+      practitionersList?.length > 0 &&
+      practitionersMessages?.length > 0
+    ) {
       const practitionerListItem: UserAlertListDataItem[] = [];
       for (const practitioner of practitionersList) {
         practitionerListItem.push(mapUserListDataItem(practitioner));
       }
-      setChildUserListData(practitionerListItem);
+      setPractitionerUserListData(practitionerListItem);
       setFilteredChildData(practitionerListItem);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [practitionersMessages]);
+
+  const classroomsDetailsForPractitioner = async () => {
+    setLoading(true);
+    const practitionersMessageData = await new PractitionerService(
+      userAuth?.auth_token!
+    ).displayMetrics('practitioner');
+
+    setPractitionersMessages(practitionersMessageData);
+    setLoading(false);
+    return practitionersMessageData;
+  };
+
+  useEffect(() => {
+    classroomsDetailsForPractitioner();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -100,7 +121,7 @@ export const Practitioners: React.FC = () => {
 
   const onSearchChange = (value: string) => {
     setFilteredChildData(
-      childUserListData?.filter((x) =>
+      practitionerUserListData?.filter((x) =>
         x.title.toLowerCase().includes(value.toLowerCase())
       ) || []
     );
@@ -108,9 +129,6 @@ export const Practitioners: React.FC = () => {
 
   const onSortItemsChanges = (column: string) => {
     if (practitionersList && practitionersList.length > 0) {
-      // const filteredPractitioners = practitionersList.filter((practitioner) =>
-      //   childUserListData?.some((x) => x.id === practitioner.id)
-      // );
       const sorted = [...practitionersList].sort(
         (a: PractitionerDto, b: PractitionerDto) => {
           const practitionerOne = practitioners?.find(
@@ -121,43 +139,6 @@ export const Practitioners: React.FC = () => {
           );
 
           switch (column) {
-            // case 'priority': {
-            //   const childUserDocumentsOne = documents?.filter(
-            //     (x) => x.userId === a.userId
-            //   );
-            //   const childReportsOne = childReportSummaries?.filter(
-            //     (x) => x.childId === a?.id
-            //   );
-            //   const childAlertOne = getChildAlertModel(
-            //     childLearnerOne,
-            //     pendingStatusId,
-            //     childUserOne,
-            //     a,
-            //     childUserDocumentsOne,
-            //     attendanceData,
-            //     classroomGroups,
-            //     classroomGroupProgrammes,
-            //     childReportsOne
-            //   );
-            //   const childUserDocumentsTwo = documents?.filter(
-            //     (x) => x.userId === b.userId
-            //   );
-            //   const childReportsTwo = childReportSummaries?.filter(
-            //     (x) => x.childId === b?.id
-            //   );
-            //   const childAlertTwo = getChildAlertModel(
-            //     childLearnerTwo,
-            //     pendingStatusId,
-            //     childUserTwo,
-            //     b,
-            //     childUserDocumentsTwo,
-            //     attendanceData,
-            //     classroomGroups,
-            //     classroomGroupProgrammes,
-            //     childReportsTwo
-            //   );
-            //   return childAlertOne.severity > childAlertTwo.severity ? 1 : -1;
-            // }
             case 'surname':
               return (practitionerOne !== undefined &&
                 practitionerOne?.user?.surname!) >
@@ -181,7 +162,7 @@ export const Practitioners: React.FC = () => {
       for (const practitioner of sorted) {
         practitionerListItem.push(mapUserListDataItem(practitioner));
       }
-      setChildUserListData(practitionerListItem || []);
+      setPractitionerUserListData(practitionerListItem || []);
     }
   };
 
@@ -192,27 +173,24 @@ export const Practitioners: React.FC = () => {
       (x) => x.userId === practitionerRecord.userId
     );
 
-    // const childAlert = getChildAlertModel(
-    //   childLearner,
-    //   pendingStatusId,
-    //   childUser,
-    //   childRecord,
-    //   childDocuments,
-    //   attendanceData,
-    //   classroomGroups,
-    //   classroomGroupProgrammes,
-    //   reports
-    // );
+    const currentPractitionerMessage = practitionersMessages?.find((item) => {
+      return item?.userId === practitionerRecord?.userId;
+    });
 
     return {
       id: practitioner?.id,
       profileDataUrl: practitioner?.user?.profileImageUrl,
       title: `${practitioner?.user?.firstName} ${practitioner?.user?.surname}`,
-      subTitle: '',
+      subTitle: `${currentPractitionerMessage?.subject}`,
       profileText: `${
         practitioner?.user?.firstName && practitioner?.user?.firstName[0]
       }${practitioner?.user?.surname && practitioner?.user?.surname[0]}`,
-      alertSeverity: 'none',
+      alertSeverity:
+        currentPractitionerMessage?.color === 'Success'
+          ? 'success'
+          : currentPractitionerMessage?.color === 'Warning'
+          ? 'warning'
+          : 'error',
       avatarColor: getAvatarColor() || '',
       onActionClick: () => handleClick(practitioner?.userId!),
     };
@@ -227,7 +205,6 @@ export const Practitioners: React.FC = () => {
         subTitle={format(new Date(), 'dd MMM yyyy')}
         color={'primary'}
         onBack={() => history.push(ROUTES.DASHBOARD)}
-        // displayOffline={!isOnline}
       >
         <SearchHeader<UserAlertListDataItem>
           searchItems={filteredChildData || []}
@@ -256,13 +233,24 @@ export const Practitioners: React.FC = () => {
         </SearchHeader>
         {practitionersList?.length! > 0 || practitionersList !== undefined ? (
           <div className="flex justify-center">
-            <div className="w-11/12">
-              <StackedList
-                className={styles.stackedList}
-                listItems={childUserListData ? childUserListData : []}
-                type={'UserAlertList'}
-              ></StackedList>
-            </div>
+            {loading ? (
+              <LoadingSpinner
+                className="mt-6"
+                size={'medium'}
+                spinnerColor={'primary'}
+                backgroundColor={'uiLight'}
+              />
+            ) : (
+              <div className="w-11/12">
+                <StackedList
+                  className={styles.stackedList}
+                  listItems={
+                    practitionerUserListData ? practitionerUserListData : []
+                  }
+                  type={'UserAlertList'}
+                ></StackedList>
+              </div>
+            )}
           </div>
         ) : (
           <EmptyPractitioners />

@@ -5,7 +5,8 @@ import { PregnantDetailsModel } from '@/schemas/pregnant/pregnant-details';
 export interface PregnantAddressProps
   extends FormComponentProps<PregnantRegisterModel> {
   address?: string;
-  details?: PregnantDetailsModel | undefined;
+  addressLine1?: string;
+  details?: PregnantDetailsModel;
 }
 
 export const yesNoOptions = [

@@ -1,12 +1,6 @@
 import { useDialog, useTheme } from '@ecdlink/core';
-import {
-  ClassProgrammeDto,
-  ClassroomDto,
-  ClassroomGroupDto,
-} from '@ecdlink/core';
 import { IonContent } from '@ionic/react';
-import { ActionModal, BannerWrapper } from '@ecdlink/ui';
-import { DialogPosition } from '@ecdlink/ui';
+import { ActionModal, BannerWrapper, DialogPosition } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
@@ -22,10 +16,16 @@ import { authSelectors } from '@/store/auth';
 import { PractitionerSetup } from './components/practitioner-setup/practitioner-setup';
 import { WelcomePage } from '@/components/welcome-page';
 import { PractitionerService } from '@/services/PractitionerService';
-import { practitionerSelectors } from '@/store/practitioner';
+import {
+  practitionerSelectors,
+  practitionerThunkActions,
+} from '@/store/practitioner';
 import ROUTES from '@/routes/routes';
+import { useAppDispatch } from '@store';
+import { notificationActions } from '@/store/notifications';
 
 export const EditPractitionerProfile: React.FC = () => {
+  const appDispatch = useAppDispatch();
   const history = useHistory();
   const { theme } = useTheme();
   const dialog = useDialog();
@@ -73,7 +73,8 @@ export const EditPractitionerProfile: React.FC = () => {
             userAuth.auth_token
           ).UpdatePractitionerRegistered(user.id, true);
         }
-
+        appDispatch(notificationActions.resetNotificationState());
+        appDispatch(practitionerThunkActions.getAllPractitioners({}));
         history.push(ROUTES.ROOT);
       }
     } else {
@@ -203,9 +204,7 @@ export const EditPractitionerProfile: React.FC = () => {
           }
           displayOffline={!isOnline}
         >
-          <div className={'px-4'}>
-            {steps(activeStep as EditPractitionerSteps)}
-          </div>
+          <div className={'px-4'}>{steps(activeStep)}</div>
         </BannerWrapper>
       </IonContent>
     </>

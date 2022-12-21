@@ -4,6 +4,7 @@ import localForage from 'localforage';
 import {
   createCaregiver,
   getCaregivers,
+  getCaregiversForHealthCareWorker,
   updateCaregiver,
 } from './caregiver.actions';
 import { CaregiverContactHistory, CaregiverState } from './caregiver.types';
@@ -19,7 +20,9 @@ const caregiverSlice = createSlice({
     },
     createCaregiver: (state, action: PayloadAction<CaregiverDto>) => {
       if (!state.caregivers) state.caregivers = [];
-      state.caregivers?.push(action.payload);
+      state.caregivers
+        ?.filter((item) => item?.id !== action.payload?.id)
+        ?.push(action.payload);
     },
     updateCaregiver: (state, action: PayloadAction<CaregiverDto>) => {
       if (state.caregivers) {
@@ -57,6 +60,23 @@ const caregiverSlice = createSlice({
       }
     });
     builder.addCase(
+      getCaregiversForHealthCareWorker.fulfilled,
+      (state, action) => {
+        if (!state.caregivers) {
+          const caregivers = Object.assign(
+            [],
+            action.payload
+          ) as CaregiverDto[];
+
+          for (let i = 0; i < caregivers.length; i++) {
+            caregivers[i].isActive = true;
+          }
+
+          state.caregivers = caregivers;
+        }
+      }
+    );
+    builder.addCase(
       updateCaregiver.fulfilled,
       (state, action: PayloadAction<CaregiverDto>) => {
         if (state.caregivers) {
@@ -74,7 +94,9 @@ const caregiverSlice = createSlice({
       createCaregiver.fulfilled,
       (state, action: PayloadAction<CaregiverDto>) => {
         if (!state.caregivers) state.caregivers = [];
-        state.caregivers?.push(action.payload);
+        state.caregivers
+          ?.filter((item) => item?.id !== action.payload?.id)
+          .push(action.payload);
       }
     );
   },

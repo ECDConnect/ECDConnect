@@ -4,7 +4,6 @@ import {
   initialPractitionerValues,
   initialSiteAddressValues,
   NOTIFICATION,
-  PractitionerDto,
   practitionerSchema,
   siteAddressSchema,
   useNotifications,
@@ -146,6 +145,7 @@ export default function HealthCareWorkerPanelEdit({
         practitionerForm.monthSinceFranchisee &&
         +practitionerForm.monthSinceFranchisee,
       IsActive: true,
+      Progress: 0,
     };
 
     await updatePractitioner({
@@ -204,9 +204,9 @@ export default function HealthCareWorkerPanelEdit({
   const getComponent = () => {
     return (
       <>
-        <div className="mt-5 bg-uiBg px-4 py-5 border-b border-gray-200 rounded-lg">
+        <div className="bg-uiBg mt-5 rounded-lg border-b border-gray-200 px-4 py-5">
           <div className="pb-2">
-            <h3 className="text-lg leading-6 font-medium text-uiMidDark">
+            <h3 className="text-uiMidDark text-lg font-medium leading-6">
               Practitioner Detail
             </h3>
           </div>
@@ -219,9 +219,9 @@ export default function HealthCareWorkerPanelEdit({
           />
         </div>
 
-        <div className="mt-5 bg-uiBg px-4 py-5 border-b border-gray-200 rounded-lg">
+        <div className="bg-uiBg mt-5 rounded-lg border-b border-gray-200 px-4 py-5">
           <div className="pb-2">
-            <h3 className="text-lg leading-6 font-medium text-uiMidDark">
+            <h3 className="text-uiMidDark text-lg font-medium leading-6">
               Address Detail
             </h3>
           </div>
@@ -236,7 +236,7 @@ export default function HealthCareWorkerPanelEdit({
   };
 
   return (
-    <div className="flex flex-col min-w-0 flex-1 overflow-hidden">
+    <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
       <article>
         <UserPanelSave
           user={practitioner.user}
@@ -244,7 +244,7 @@ export default function HealthCareWorkerPanelEdit({
           onSave={onSave}
         />
 
-        <div className="mt-6 max-w-5xl mx-auto sm:px-6 lg:px-8">
+        <div className="mx-auto mt-6 max-w-5xl sm:px-6 lg:px-8">
           {getComponent()}
         </div>
       </article>

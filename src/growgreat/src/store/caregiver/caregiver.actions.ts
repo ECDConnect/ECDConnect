@@ -12,6 +12,7 @@ import { CaregiverContactHistory } from './caregiver.types';
 
 export const CaregiverActions = {
   GET_CAREGIVERS: 'getCaregivers',
+  GET_CAREGIVERS_HEALTH_CARE_WORKER: 'getCaregiversHealthCareWorker',
   UPDATE_CONTACT_HISTORY: 'updateContactCaregiverHistory',
   ADD_CONTACT_HISTORY: 'addContactCaregiverHistory',
 };
@@ -21,10 +22,45 @@ export const getCaregivers = createAsyncThunk<
   // eslint-disable-next-line @typescript-eslint/ban-types
   {},
   ThunkApiType<RootState>
+>(CaregiverActions.GET_CAREGIVERS, async (_, { getState, rejectWithValue }) => {
+  const {
+    auth: { userAuth },
+    caregivers: { caregivers: caregiversCache },
+  } = getState();
+
+  if (!caregiversCache) {
+    try {
+      let caregivers: CaregiverDto[] | undefined;
+
+      if (userAuth?.auth_token) {
+        caregivers = await new CaregiverService(
+          userAuth?.auth_token
+        ).getCaregivers();
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      if (!caregivers) {
+        return rejectWithValue('Error getting caregivers');
+      }
+
+      return caregivers;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  } else {
+    return caregiversCache;
+  }
+});
+
+export const getCaregiversForHealthCareWorker = createAsyncThunk<
+  CaregiverDto[],
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  { id: string },
+  ThunkApiType<RootState>
 >(
-  CaregiverActions.GET_CAREGIVERS,
-  // eslint-disable-next-line no-empty-pattern
-  async ({}, { getState, rejectWithValue }) => {
+  CaregiverActions.GET_CAREGIVERS_HEALTH_CARE_WORKER,
+  async ({ id }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
       caregivers: { caregivers: caregiversCache },
@@ -37,7 +73,7 @@ export const getCaregivers = createAsyncThunk<
         if (userAuth?.auth_token) {
           caregivers = await new CaregiverService(
             userAuth?.auth_token
-          ).getCaregivers();
+          ).getCaregiversForHealthCareWorker(id);
         } else {
           return rejectWithValue('no access token, profile check required');
         }
@@ -69,41 +105,38 @@ export const upsertCareGivers = createAsyncThunk<
   // eslint-disable-next-line @typescript-eslint/ban-types
   {},
   ThunkApiType<RootState>
->(
-  'upsertCareGivers',
-  // eslint-disable-next-line no-empty-pattern
-  async ({}, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-      caregivers: { caregivers },
-    } = getState();
+>('upsertCareGivers', async (_, { getState, rejectWithValue }) => {
+  const {
+    auth: { userAuth },
+    caregivers: { caregivers },
+  } = getState();
 
-    try {
-      if (userAuth?.auth_token && caregivers) {
-        for (const caregiver of caregivers) {
-          const input = mapCaregiver(caregiver);
+  try {
+    if (userAuth?.auth_token && caregivers) {
+      for (const caregiver of caregivers) {
+        const input = mapCaregiver(caregiver);
 
-          if (caregiver.siteAddress) {
-            const addressInput = mapSiteAddress(caregiver.siteAddress);
-            await new SiteAddressService(
-              userAuth?.auth_token
-            ).updateSiteAddress(caregiver.siteAddress.id ?? '', addressInput);
-
-            input.SiteAddressId = addressInput.Id;
-          }
-
-          await new CaregiverService(userAuth?.auth_token).updateCareGiver(
-            caregiver.id ?? '',
-            input
+        if (caregiver.siteAddress) {
+          const addressInput = mapSiteAddress(caregiver.siteAddress);
+          await new SiteAddressService(userAuth?.auth_token).updateSiteAddress(
+            caregiver.siteAddress.id ?? '',
+            addressInput
           );
+
+          input.SiteAddressId = addressInput.Id;
         }
+
+        await new CaregiverService(userAuth?.auth_token).updateCareGiver(
+          caregiver.id ?? '',
+          input
+        );
       }
-      return [true];
-    } catch (err) {
-      return rejectWithValue(err);
     }
+    return [true];
+  } catch (err) {
+    return rejectWithValue(err);
   }
-);
+});
 
 type CreateCaregiverRequest = {
   caregiver: CaregiverDto;

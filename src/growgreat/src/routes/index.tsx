@@ -1,5 +1,6 @@
 import { Redirect, Route, Switch } from 'react-router-dom';
-import { Login } from '@auth-p/login/login';
+import { Login } from '@/pages/auth/login/login';
+import { Logout } from '@/pages/auth/logout/logout';
 import { NewPassword } from '@auth-p/new-password/new-password';
 import PasswordReset from '@auth-p/password-reset/password-reset';
 import { SignUp } from '@auth-p/sign-up/sign-up';
@@ -10,12 +11,21 @@ import { PregnantRegister } from '@/pages/mom/pregnant-register/pregnant-registe
 import { PregnantRegisterForm } from '@/pages/mom/pregnant-register-form/pregnant-register-form';
 import { InfantRegister } from '@/pages/infant/infant-register/infant-register';
 import { InfantRegisterForm } from '@/pages/infant/infant-register-form/infant-register-form';
-import ROUTES from './routes';
+import { PractitionerAbout } from '@practitioner-p/practitioner-about/practitioner-about';
+import PractitionerAccount from '@practitioner-p/practitioner-account/practitioner-account';
+import { PractitionerProfile } from '@practitioner-p/practitioner-profile/practitioner-profile';
+import ROUTES from '@/routes/routes';
+import ClassDashboard from '@/pages/classroom/class-dashboard/class-dashboard';
+import { EditPractitionerProfile } from '@/pages/practitioner/edit-practitioner-profile/edit-practitioner-profile';
 
-const PublicRoutes: React.FC = () => {
+function PublicRoutes() {
   return (
     <Switch>
-      <Route exact path={ROUTES.ROOT} render={() => <Redirect to="/login" />} />
+      <Route
+        exact
+        path={ROUTES.ROOT}
+        render={() => <Redirect to={ROUTES.LOGIN} />}
+      />
       <Route path={ROUTES.LOGIN} component={Login} exact={true} />
       <Route
         path={ROUTES.PASSWORD_RESET}
@@ -29,13 +39,12 @@ const PublicRoutes: React.FC = () => {
         component={VerifyPhoneNumber}
         exact={true}
       />
+      <Route render={() => <Redirect to={ROUTES.LOGIN} />} />
     </Switch>
   );
-};
+}
 
-// const ProgrammeRoutes = () => <></>;
-
-const AuthRoutes: React.FC = () => {
+function AuthRoutes() {
   return (
     <Switch>
       <Route
@@ -50,10 +59,30 @@ const AuthRoutes: React.FC = () => {
         component={VerifyPhoneNumber}
         exact={true}
       />
+      <Route path={ROUTES.LOGOUT} component={Logout} exact={true} />
 
       <Route path={ROUTES.ROOT} component={Dashboard} exact={true} />
       <Route path={ROUTES.DASHBOARD} component={Dashboard} exact={true} />
+      <Route
+        exact
+        path={ROUTES.PRACTITIONER.ABOUT}
+        component={PractitionerAbout}
+      />
+      <Route
+        exact
+        path={ROUTES.PRACTITIONER.ACCOUNT}
+        component={PractitionerAccount}
+      />
+      <Route
+        exact
+        path={ROUTES.PRACTITIONER.PROFILE.ROOT}
+        component={PractitionerProfile}
+      />
+
+      <Route path={ROUTES.CLASSROOM} component={ClassDashboard} />
+
       <Route path={ROUTES.MESSAGES} component={Messages} />
+
       <Route path={ROUTES.MOM_REGISTER} component={PregnantRegister} />
       <Route path={ROUTES.MOM_REGISTER_FORM} component={PregnantRegisterForm} />
       <Route path={ROUTES.INFANT_REGISTER} component={InfantRegister} />
@@ -61,8 +90,12 @@ const AuthRoutes: React.FC = () => {
         path={ROUTES.INFANT_REGISTER_FORM}
         component={InfantRegisterForm}
       />
+      <Route
+        path={ROUTES.HEALTH_CAREWORKER_PROFILE_SETUP}
+        component={EditPractitionerProfile}
+      />
     </Switch>
   );
-};
+}
 
 export { PublicRoutes, AuthRoutes };

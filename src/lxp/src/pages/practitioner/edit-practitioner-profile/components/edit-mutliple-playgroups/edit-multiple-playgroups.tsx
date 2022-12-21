@@ -1,5 +1,4 @@
-import { useEffect } from 'react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { generateEmptyPlaygroups } from '@utils/practitioner/playgroups-utils';
 import { EditPlaygroupForm } from '../edit-playgroup-form/edit-playgroup.form';
 import { EditPlaygroupModel } from '@schemas/practitioner/edit-playgroups';
@@ -54,7 +53,7 @@ export const EditMultiplePlayGroups: React.FC<EditMultiplePlayGroupsProps> = ({
     <EditPlaygroupForm
       isNew={editPlaygroupAtIndex === undefined}
       playgroup={currentPlayGroup}
-      title={`Playgroup ${currentPlayGroupIndex + 1}`}
+      title={`Class ${currentPlayGroupIndex + 1}`}
       onSubmit={onPlayGroupSubmitted}
       onDelete={() => {
         deletePlaygroup(currentPlayGroup);

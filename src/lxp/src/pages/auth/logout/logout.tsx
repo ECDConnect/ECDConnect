@@ -1,14 +1,11 @@
-import { ActionModal, BannerWrapper } from '@ecdlink/ui';
-import { DialogPosition, Dialog } from '@ecdlink/ui';
+import { ActionModal, DialogPosition, Dialog } from '@ecdlink/ui';
 import { useStoreSetup } from '@hooks/useStoreSetup';
 import { useHistory } from 'react-router-dom';
-import { useDialog } from '@ecdlink/core';
 import ROUTES from '@/routes/routes';
 
 export const Logout: React.FC = () => {
   const { resetAuth, resetAppStore } = useStoreSetup();
   const history = useHistory();
-  const dialog = useDialog();
 
   return (
     <Dialog
@@ -19,19 +16,16 @@ export const Logout: React.FC = () => {
     >
       <ActionModal
         className={'mx-4'}
-        title={'Logout & reset data'}
-        importantText={
-          'Please note that by doing this, all your data will be reset and you will loose all data that has not been synced up.'
-        }
+        title={'Are you sure you want to log out?'}
+        importantText={''}
         icon={'ExclamationCircleIcon'}
         iconColor={'alertDark'}
         iconBorderColor={'alertBg'}
         actionButtons={[
           {
-            text: 'Okay',
+            text: 'Yes, log out',
             colour: 'primary',
             onClick: async () => {
-              //   onSubmit();
               await resetAuth();
               await resetAppStore();
               history.push('/');
@@ -41,7 +35,7 @@ export const Logout: React.FC = () => {
             leadingIcon: 'CheckCircleIcon',
           },
           {
-            text: 'Cancel',
+            text: 'No, cancel',
             textColour: 'white',
             colour: 'primary',
             type: 'filled',

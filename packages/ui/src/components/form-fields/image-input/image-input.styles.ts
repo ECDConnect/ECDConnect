@@ -4,8 +4,8 @@ export const containerStyle = 'border-uiLight';
 export const fileContainerStyle = 'border-successMain';
 export const errorContainerStyle = 'border-errorMain';
 export const iconBaseStyle =
-  'bg-secondary h-12 w-12 rounded-full flex justify-center items-center';
-export const iconStyle = 'bg-secondary text-white h-6 w-6 rounded-full';
+  'h-12 w-12 rounded-full flex justify-center items-center';
+export const iconStyle = 'text-white h-6 w-6 rounded-full';
 export const fileIconStyle = 'text-successMain';
 export const errorIconStyle = 'text-errorMain';
 export const buttonlabelStyle = 'mt-2 block break-all';

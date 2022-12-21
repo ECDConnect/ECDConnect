@@ -39,7 +39,6 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public virtual Franchisor Franchisor { get; set; }
         public Guid? FranchisorId { get; set; }
 
-        //public virtual List<Practitioner> Practitioners { get; set; }
     }
 
     public interface CoachJoin<TKey>

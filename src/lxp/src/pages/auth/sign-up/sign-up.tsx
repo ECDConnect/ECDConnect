@@ -37,13 +37,11 @@ import AuthService from '@services/AuthService/AuthService';
 import { useAppDispatch } from '@store';
 import { staticDataThunkActions } from '@store/static-data';
 import * as styles from './sign-up.styles';
+import { UserService } from '@/services/UserService';
 
-const headerSlide: HeaderSlide = {
-  status: ChipStatus.Available,
-  title: 'Manage your classroom',
-  text: 'Take attendance, track progress, and plan your programme',
-  image: '../../../assets/banner-ss.jpg',
-};
+const token = new URLSearchParams(window.location.search).get('token');
+
+let headerSlide: HeaderSlide;
 
 export const SignUp: React.FC = () => {
   const appDispatch = useAppDispatch();
@@ -76,6 +74,27 @@ export const SignUp: React.FC = () => {
   const queryParams = useQueryParams(location.search);
   const authToken = queryParams.getValue('token');
   const { isOnline, Offline } = useOnlineStatus();
+  const [userDetails, setUserDetails] = useState<any>();
+
+  if (userDetails) {
+    // coach
+    if (userDetails.roleName === 'Coach') {
+      headerSlide = {
+        status: ChipStatus.Available,
+        title: 'Manage practitioners',
+        text: 'View practitioner details, see classroom information and fill in important forms.',
+        image: '../../../assets/banner-coach.jpg',
+      };
+    }
+  } else {
+    // practitioner & principal
+    headerSlide = {
+      status: ChipStatus.Available,
+      title: 'Manage your classroom',
+      text: 'Take attendance, track progress, and plan your programme',
+      image: '../../../assets/banner-ss.jpg',
+    };
+  }
 
   useEffect(() => {
     async function init() {
@@ -90,8 +109,25 @@ export const SignUp: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const getUserDetailsByToken = async () => {
+    let user_details_from_request;
+    if (token) {
+      user_details_from_request = await new UserService('').getUserByToken(
+        token
+      );
+      setUserDetails(user_details_from_request);
+    } else {
+      console.log('user not found');
+    }
+  };
+  useEffect(() => {
+    if (token) {
+      getUserDetailsByToken();
+    }
+  }, []);
+
   const errorStrings = Object.keys(errors).map(
-    (x: string) => (errors as any)[x].message
+    (x) => errors[x as keyof SignUpModel]?.message || ''
   );
 
   watch();
@@ -130,7 +166,6 @@ export const SignUp: React.FC = () => {
     token: string
   ) => {
     setIsLoading(true);
-    await new AuthService().SendAuthCode(username, token);
 
     setIsLoading(false);
     history.push('/verify-phone', {
@@ -171,7 +206,8 @@ export const SignUp: React.FC = () => {
         renderBorder={false}
         renderOverflow={false}
       >
-        <HeaderCard className={'mt-4'} slide={headerSlide} />
+        {headerSlide && <HeaderCard className={'mt-4'} slide={headerSlide} />}
+
         <SliderPagination totalItems={1} activeIndex={0} className={'p-4'} />
         <form style={{ maxWidth: '442px' }} className={styles.formStyle}>
           {preferId && (
@@ -333,14 +369,7 @@ export const SignUp: React.FC = () => {
               className={styles.marginTop}
             />
           )}
-          <Offline>
-            <Alert
-              className={'mt-5 mb-3'}
-              title="You are offline"
-              message={'You need to be online to sign up for the app'}
-              type={'warning'}
-            />
-          </Offline>
+
           <Button
             id="gtm-register"
             className={styles.formButton}
@@ -421,6 +450,13 @@ export const SignUp: React.FC = () => {
           ]}
         />
       </Dialog>
+      <Offline>
+        <Alert
+          className={'mt-5 mb-3'}
+          title="Your internet connection is unstable."
+          type={'warning'}
+        />
+      </Offline>
     </div>
   );
 };

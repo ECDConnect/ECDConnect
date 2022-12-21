@@ -1,5 +1,6 @@
 using ECDLink.Core.Extensions;
 using ECDLink.Core.Helpers;
+using ECDLink.PostgresTenancy.Repository;
 using ECDLink.Security.JwtSecurity.Configuration;
 using ECDLink.Security.JwtSecurity.Enums;
 using ECDLink.Security.JwtSecurity.Factories;
@@ -14,24 +15,33 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using ECDLink.PostgresTenancy.Entities;
+using ECDLink.Tenancy.Context;
+using ECDLink.Tenancy.Services;
+using ECDLink.PostgresTenancy.Services;
+using HotChocolate;
+using Newtonsoft.Json.Linq;
 
 namespace ECDLink.Security.JwtSecurity.Managers
 {
     public class JwtTokenManager
     {
         private IJwtFactory _jwtFactory;
+        private IJWTService _jwtService;
         private readonly IClaimsManager _claimsManager;
         private readonly TokenValidationParameters _parameters;
 
         public JwtTokenManager(
             IJwtFactory jwtFactory, 
             IClaimsManager claimsManager, 
+            [Service] IJWTService jWTService,
             TokenValidationParameters parameters
             )
         {
             _jwtFactory = jwtFactory;
             _claimsManager = claimsManager;
             _parameters = parameters;
+            _jwtService = jWTService;
         }
 
         public async Task<string> GenerateJwt(ClaimsIdentity identity, string userId, JwtEncoderEnum encoderType)
@@ -130,5 +140,39 @@ namespace ECDLink.Security.JwtSecurity.Managers
                 throw;
             }
         }
+
+        public async Task<JWTUserTokensEntityReturn> StoreJWTToken(string auth_token, string expiresIn, string contextIdentifier, string role)
+        {
+            Guid tenantId = TenantExecutionContext.Tenant.Id;
+
+            //remove previous tokens first
+            _jwtService.InvalidateExistingTokens(contextIdentifier);
+            
+            var insertedJWTToken = _jwtService.InsertToken(new JWTUserTokensEntity() { InsertedDate = DateTime.Now,  UserId = contextIdentifier, Token = auth_token, TokenKey = Guid.NewGuid().ToString(), ExpiresIn = expiresIn, TenantId = tenantId, Role = role });
+            return new JWTUserTokensEntityReturn() { id = insertedJWTToken.TokenKey, auth_token = insertedJWTToken.TokenKey, expires_in = insertedJWTToken.ExpiresIn };
+        }
+
+        public async Task<bool> InvalidateExistingTokens(string contextIdentifier)
+        {
+            return _jwtService.InvalidateExistingTokens(contextIdentifier);
+        }
+
+        public async Task<JWTUserTokensEntity> GetJWTTokenByToken(string auth_token)
+        {
+            return _jwtService.GetByToken(auth_token);            
+        }
+        public async Task<JWTUserTokensEntity> GetJWTTokenById(string id)
+        {
+            return _jwtService.GetById(id);
+        }
+
+
+        public List<string> GetJWTTokenRole(string id)
+        {
+            var obfuscatedToken = GetJWTTokenById(id);
+
+            return obfuscatedToken.Result.Role.Split(',').ToList();
+        }
+
     }
 }

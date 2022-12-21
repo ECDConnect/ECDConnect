@@ -10,9 +10,6 @@ namespace ECDLink.Core.Helpers
             var exePath = Path.GetDirectoryName(System.Reflection
                               .Assembly.GetExecutingAssembly().CodeBase);
 
-            //Regex appPathMatcher = new Regex(@"(?<!fil)[A-Za-z]:\\+[\S\s]*?(?=\\+bin)");
-            //var appRoot = appPathMatcher.Match(exePath).Value;
-
             Regex appPathMatcher = new Regex(@"(?<!fil)[A-Za-z]:\\+[\S\s]*");
             var appRoot = appPathMatcher.Match(exePath).Value;
 

@@ -61,34 +61,6 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             _hierarchyEngine.RemoveHierarchy(((IUserType)entity).UserId);
         }
 
-        private void processUserRemoval(string userId)
-        {
-            var user = _userManager.FindByIdAsync(userId).Result;
-
-            if (user == default(ApplicationUser))
-            {
-                return;
-            }
-
-            ApplicationUserHelper.AnonymizeUser(user);
-
-            var updateResult = _userManager.UpdateAsync(user).Result;
-
-            if (!updateResult.Succeeded)
-            {
-                throw new Exception("Unable to anonymise user");
-            }
-
-            // Remove all roles from user
-            var roles = _userManager.GetRolesAsync(user).Result;
-
-            var removeRolesResult = _userManager.RemoveFromRolesAsync(user, roles).Result;
-
-            if (!removeRolesResult.Succeeded)
-            {
-                //TODO: Add logging here if roles cannot be removed
-            }
-        }
 
         public override IQueryable<T> GetAll()
         {
@@ -105,7 +77,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             var query = entities.Where(e => e.TenantId == null || e.TenantId.Equals(tenantId)).AsQueryable();//.Where(e => e.TenantId.Equals(tenantId))
             if (isAdmin)
             {
-                return query;
+                return query.OrderByDescending(x => x.InsertedDate);
             }
             else
             {
@@ -115,7 +87,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                     {
                         if (!hh.Contains(null)) //dont run any null values through teh check, nothing should be null
                         {
-                            return query.Where(x => hh.Contains(((IUserType)x).Hierarchy));
+                            return query.Where(x => hh.Contains(((IUserType)x).Hierarchy)).OrderByDescending(y => y.InsertedDate);
                         }
                     }
                 }
@@ -129,7 +101,6 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
 
         public override T GetById(Guid id)
         {
-            Guid tenantId = TenantExecutionContext.Tenant.Id;
             var record = base.GetById(id);
 
             var castRecord = record as IUserType;

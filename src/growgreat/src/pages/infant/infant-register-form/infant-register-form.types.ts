@@ -1,3 +1,5 @@
+import { CaregiverDto } from '@ecdlink/core/lib';
+
 export enum InfantRegisterSteps {
   consentAgreement = 0,
   infantDetails = 1,
@@ -17,4 +19,5 @@ export interface MultipleChildrenProps {
   lengthAtBirth?: number;
   motherId?: '';
   relationshipId?: string;
+  caregiver?: CaregiverDto;
 }

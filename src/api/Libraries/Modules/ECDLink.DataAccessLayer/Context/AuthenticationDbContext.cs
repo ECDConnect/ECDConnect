@@ -3,6 +3,7 @@ using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.AuditLog;
 using ECDLink.DataAccessLayer.Entities.Caregiver;
 using ECDLink.DataAccessLayer.Entities.Classroom;
+using ECDLink.DataAccessLayer.Entities.DataIngestion;
 using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.Navigation;
 using ECDLink.DataAccessLayer.Entities.Notes;
@@ -15,6 +16,7 @@ using ECDLink.DataAccessLayer.Hierarchy.Entities;
 using ECDLink.DataAccessLayer.Jobs;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using ECDLink.Security.JwtSecurity;
 
 namespace ECDLink.DataAccessLayer.Context
 {
@@ -35,6 +37,10 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<ShortenUrlEntity> ShortUrls { get; set; }
         public DbSet<UserConsent> UserConsents { get; set; }
         public DbSet<Absentees> Absents { get; set; }
+        public DbSet<ProgrammeType> ProgrammeTypes { get; set; }
+        public DbSet<SL_Ingestion_User> SL_Ingestion_Users { get; set; }
+        public DbSet<SL_Ingestion_ChildCaregiver> SL_Ingestion_ChildCaregivers { get; set; }
+        public DbSet<SystemLog> SystemLogs { get; set; }        
 
         // Notes
         public DbSet<Note> Notes { get; set; }
@@ -43,6 +49,7 @@ namespace ECDLink.DataAccessLayer.Context
         // Classroom
         public DbSet<Classroom> Classrooms { get; set; }
         public DbSet<ClassProgramme> ClassProgrammes { get; set; }
+        public DbSet<ClassroomGroup> ClassroomGroupss { get; set; }
         public DbSet<Learner> Learners { get; set; }
         public DbSet<ProgrammeAttendanceReason> ProgrammeAttendanceReasons { get; set; }
         public DbSet<Attendance> Attendances { get; set; }
@@ -50,13 +57,15 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<Programme> Programmes { get; set; }
 
         public DbSet<DailyProgramme> DailyProgrammes { get; set; }
+        public DbSet<ClassReassignmentHistory> ClassReassignmentHistories { get; set; }
+
 
         // Security
         public DbSet<Permission> Permissions { get; set; }
         public DbSet<RolePermission> RolePermissions { get; set; }
         public DbSet<UserHierarchyEntity> UserHierarchy { get; set; }
         public DbSet<HierarchyEntity> Hierarchy { get; set; }
-        public DbSet<ProgrammeType> ProgrammeTypes { get; set; }
+        public DbSet<AspNetJWTSession> AspNetJWTSession { get; set; }
 
         // Navigation
         public DbSet<NavigationPermission> NavigationPermissions { get; set; }
@@ -70,7 +79,7 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<Franchisor> Franchisors { get; set; }
         public DbSet<HealthCareWorker> HealthCareWorkers { get; set; }
         public DbSet<Mother> Mothers { get; set; }
-        public DbSet<Infant> Infants { get; set; }
+        public DbSet<Infant> Infants { get; set; }        
 
         //Reports
         public DbSet<ChildProgressReport> ChildProgressReports { get; set; }
@@ -94,16 +103,12 @@ namespace ECDLink.DataAccessLayer.Context
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            // optionsBuilder.LogTo(System.Console.WriteLine, Microsoft.Extensions.Logging.LogLevel.Information);
             base.OnConfiguring(optionsBuilder);
         }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
-            // Customize the ASP.NET Identity model and override the defaults if needed.
-            // For example, you can rename the ASP.NET Identity table names and more.
-            // Add your customizations after calling base.OnModelCreating(builder);
 
             builder.Entity<ApplicationUser>(x =>
             {

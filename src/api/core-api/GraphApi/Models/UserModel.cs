@@ -18,5 +18,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public string Email { get; set; }
         public string Password { get; set; }
         public string ProfileImageUrl { get; set; }
+        public Guid? LanguageId { get; set; }
     }
 }

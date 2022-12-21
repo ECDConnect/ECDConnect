@@ -9,7 +9,7 @@ class UserService {
   }
 
   async getUserById(userId: string): Promise<UserDto> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         query userById($userId: String) {
@@ -28,6 +28,7 @@ class UserService {
             genderId
             phoneNumber
             profileImageUrl
+            languageId
             roles {
               id
               name
@@ -48,7 +49,7 @@ class UserService {
   }
 
   async getUserConsents(userId: string): Promise<UserConsentDto[]> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         query GetAllUserConsent($createdUserId: String) {
@@ -85,7 +86,7 @@ class UserService {
     id: string,
     input: UserConsentInput
   ): Promise<boolean> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         mutation updateUserConsent($id: UUID!,$input: UserConsentInput) {
@@ -111,7 +112,7 @@ class UserService {
     userId: string,
     newPassword: string
   ): Promise<boolean> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         mutation resetUserPassword($id: String!, $newPassword: String!) {
@@ -134,7 +135,7 @@ class UserService {
   }
 
   async updateUser(userId: string, user: UserModelInput): Promise<boolean> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         mutation updateUser($id: String!, $input: UserModelInput) {
@@ -157,7 +158,7 @@ class UserService {
   }
 
   async addUser(user: UserModelInput): Promise<UserDto> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
       mutation addUser($input: UserModelInput) {
@@ -176,6 +177,7 @@ class UserService {
           genderId
           phoneNumber
           profileImageUrl
+          languageId
           roles {
             id
             name

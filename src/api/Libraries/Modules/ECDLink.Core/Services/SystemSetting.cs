@@ -100,11 +100,5 @@ namespace ECDLink.Core.Services
             _cacheService.SetCacheItem(CacheKeyConstants.SystemSettingCache, cacheToAdd);
         }
 
-        private void CacheSettings(string settingGroup, object settings)
-        {
-            SettingsCache.Add(settingGroup, JsonConvert.SerializeObject(settings));
-
-            _cacheService.SetCacheItem(CacheKeyConstants.SystemSettingCache, SettingsCache);
-        }
     }
 }

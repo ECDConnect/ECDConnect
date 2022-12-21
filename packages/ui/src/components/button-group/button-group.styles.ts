@@ -2,8 +2,7 @@ import { classNames } from '../../utils/style-class.utils';
 import { Colours } from '../../models/Colours';
 import { ButtonGroupTypes } from './models/ButtonGroupTypes';
 
-export const buttonTypeWrapper =
-  'relative z-0 inline-flex gap-2 cursor-pointer w-full';
+export const buttonTypeWrapper = 'relative z-0 inline-flex gap-2 w-full';
 export const chipTypeWrapper = 'relative z-0 inline-flex flex-wrap';
 
 export const chip = (disabled?: boolean) => {
@@ -17,11 +16,13 @@ const sharedButtonStyles = (disabled?: boolean) =>
     disabled ? 'bg-uiLight opacity-80' : ''
   }`;
 
-export const notSelectedChip = 'text-secondary bg-secondaryAccent2';
-export const notSelectedButtonOrChip = 'text-secondary bg-secondaryAccent2';
+export const notSelectedChip =
+  'text-secondary cursor-pointer bg-secondaryAccent2';
+export const notSelectedButtonOrChip =
+  'text-secondary cursor-pointer bg-secondaryAccent2';
 
 export const selected = (colour: Colours) => {
-  return `z-10 outline-none text-white bg-${colour}`;
+  return `z-10 outline-none cursor-pointer text-white bg-${colour}`;
 };
 
 export const getOptionStyle = (type: ButtonGroupTypes, disabled?: boolean) => {

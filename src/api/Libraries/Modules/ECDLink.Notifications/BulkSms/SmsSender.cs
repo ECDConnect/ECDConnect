@@ -32,7 +32,7 @@ namespace ECDLink.Notifications.BulkSms
             {
                 if (_smsClient == null)
                 {
-                    _smsClient = new HttpClient(); ;
+                    _smsClient = new HttpClient();
                     _smsClient.BaseAddress = new Uri(_smsOptions.Value.BaseUrl);
 
                     _smsClient.DefaultRequestHeaders.Add("Accept", "application/json");
@@ -81,9 +81,6 @@ namespace ECDLink.Notifications.BulkSms
             if (response.IsSuccessStatusCode)
             {
                 // TODO: Something with the SMS reply
-                //using var responseStream = await response.Content.ReadAsStreamAsync();
-                //var smsReponseBody = await System.Text.Json.JsonSerializer.DeserializeAsync
-                //        <IEnumerable<BulkSmsResponse>>(responseStream);
             }
             else
             {

@@ -1,5 +1,3 @@
-import { PrincipalInput } from './../../../../../packages/graphql/src/graphql/generatedGraphql';
-import { PrincipalDto } from './../../../../../packages/core/lib/models/dto/Users/principal.dto.d';
 import {
   ClassProgrammeDto,
   ClassroomDto,
@@ -20,6 +18,7 @@ import { ClassroomGroupService } from '@services/ClassroomGroupService';
 import { ClassroomService } from '@services/ClassroomService';
 import { newGuid } from '@utils/common/uuid.utils';
 import { RootState, ThunkApiType } from '../types';
+import { PractitionerService } from '@/services/PractitionerService';
 
 export const getClassroom = createAsyncThunk<
   ClassroomDto,
@@ -52,6 +51,44 @@ export const getClassroom = createAsyncThunk<
         }
 
         return classrooms[0];
+      } catch (err) {
+        return rejectWithValue(err);
+      }
+    } else {
+      return classroomsCache;
+    }
+  }
+);
+
+export const getClassroomDetailsForPractitioner = createAsyncThunk<
+  ClassroomDto,
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  { id: string },
+  ThunkApiType<RootState>
+>(
+  'getClassroomDetailsForPractitioner',
+  // eslint-disable-next-line no-empty-pattern
+  async ({ id }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      classroomData: { classroom: classroomsCache },
+    } = getState();
+
+    if (!classroomsCache) {
+      try {
+        let classrooms: any | undefined;
+        if (userAuth?.auth_token) {
+          classrooms = await new PractitionerService(
+            userAuth?.auth_token
+          ).getClassroomDetailsForPractitioner(id);
+        } else {
+          return rejectWithValue('no access token, profile check required');
+        }
+
+        if (!classrooms) {
+          return rejectWithValue('Error getting Classrooms');
+        }
+        return classrooms;
       } catch (err) {
         return rejectWithValue(err);
       }
@@ -287,7 +324,7 @@ export const upsertClassroomGroups = createAsyncThunk<
             ProgrammeTypeId: x.programmeTypeId,
             Name: x.name,
             IsActive: x.isActive === false ? false : true,
-            UserId: x.practitionerId,
+            UserId: x.userId,
           };
 
           return await new ClassroomGroupService(

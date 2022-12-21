@@ -32,6 +32,9 @@ import { analyticsActions } from '@store/analytics';
 import { setStorageItem } from '@utils/common/local-storage.utils';
 import * as styles from './practitioner-about.styles';
 import ROUTES from '@routes/routes';
+import { EditCellPhoneNumber } from './edit-cellphone-number/edit-cellphone-number';
+import { practitionerSelectors } from '@/store/practitioner';
+import { NextToKin } from './next-to-kin/next-to-kin';
 
 export const PractitionerAbout: React.FC = () => {
   const history = useHistory();
@@ -48,6 +51,8 @@ export const PractitionerAbout: React.FC = () => {
   const [displayError, setDisplayError] = useState<boolean>(false);
   const [editProfilePictureVisible, setEditProfilePictureVisible] =
     useState(false);
+  const [editiCellPhoneNumber, setEditiCellPhoneNumber] = useState(false);
+  const [addNextToKin, setAddNextToKin] = useState(false);
 
   useEffect(() => {
     if (!isOnline) {
@@ -62,7 +67,7 @@ export const PractitionerAbout: React.FC = () => {
   }, [isOnline]);
 
   const user = useSelector(userSelectors.getUser);
-
+  const practitioner = useSelector(practitionerSelectors?.getPractitioner);
   const pictureStorageKey = LocalStorageKeys.practitionerProfilePicture;
   const [listItems, setListItems] = useState<ActionListDataItem[]>([]);
 
@@ -110,34 +115,6 @@ export const PractitionerAbout: React.FC = () => {
   const setNewStackListItems = (currentUser: UserDto) => {
     const list: ActionListDataItem[] = [
       {
-        title: 'First Name',
-        subTitle: currentUser?.firstName,
-        actionName: 'Edit',
-        actionIcon: 'PencilIcon',
-        switchTextStyles: true,
-        onActionClick: () => {
-          editField({
-            label: 'First Name',
-            formFieldName: 'name',
-            value: practitionerAboutFormGetValues().name,
-          });
-        },
-      },
-      {
-        title: 'Surname',
-        subTitle: currentUser?.surname,
-        actionName: 'Edit',
-        actionIcon: 'PencilIcon',
-        switchTextStyles: true,
-        onActionClick: () => {
-          editField({
-            label: 'Surname',
-            formFieldName: 'surname',
-            value: practitionerAboutFormGetValues().surname,
-          });
-        },
-      },
-      {
         title: 'Cellphone Number',
         subTitle: currentUser?.phoneNumber || 'Add an Cellphone Number',
         switchTextStyles: true,
@@ -145,11 +122,7 @@ export const PractitionerAbout: React.FC = () => {
         actionIcon: currentUser?.phoneNumber ? 'PencilIcon' : 'PlusIcon',
         buttonType: currentUser?.phoneNumber ? 'outlined' : 'filled',
         onActionClick: () => {
-          editField({
-            label: 'Cellphone Number',
-            formFieldName: 'cellphone',
-            value: practitionerAboutFormGetValues().cellphone,
-          });
+          setEditiCellPhoneNumber(true);
         },
       },
       {
@@ -165,6 +138,54 @@ export const PractitionerAbout: React.FC = () => {
             formFieldName: 'email',
             value: practitionerAboutFormGetValues().email,
           });
+        },
+      },
+      {
+        title: 'Your SmartStart club',
+        subTitle: 'N/A',
+        switchTextStyles: true,
+        actionName: currentUser?.email ? 'Edit' : 'Add',
+        actionIcon: currentUser?.email ? 'PencilIcon' : 'PlusIcon',
+        buttonType: currentUser?.email ? 'outlined' : 'filled',
+        // onActionClick: () => {
+        //   editField({
+        //     label: 'Email Address',
+        //     formFieldName: 'email',
+        //     value: practitionerAboutFormGetValues().email,
+        //   });
+        // },
+      },
+      {
+        title: 'Your SmartStart coach',
+        subTitle: practitioner?.coachHierarchy || 'N/A',
+        switchTextStyles: true,
+      },
+      {
+        title: 'Next of kin',
+        subTitle: currentUser?.emergencyContactFirstName || 'Add next of kin',
+        switchTextStyles: true,
+        actionName: currentUser?.emergencyContactFirstName ? 'Edit' : 'Add',
+        actionIcon: currentUser?.emergencyContactFirstName
+          ? 'PencilIcon'
+          : 'PlusIcon',
+        buttonType: currentUser?.emergencyContactFirstName
+          ? 'outlined'
+          : 'filled',
+        onActionClick: () => {
+          setAddNextToKin(true);
+        },
+      },
+      {
+        title: 'Signature',
+        subTitle: practitioner?.signingSignature
+          ? 'Replace your signature'
+          : 'Add your signature',
+        switchTextStyles: true,
+        actionName: practitioner?.signingSignature ? 'Edit' : 'Add',
+        actionIcon: practitioner?.signingSignature ? 'PencilIcon' : 'PlusIcon',
+        buttonType: 'filled',
+        onActionClick: () => {
+          history.push(ROUTES.PRACTITIONER.ABOUT.SIGNATURE);
         },
       },
     ];
@@ -216,7 +237,6 @@ export const PractitionerAbout: React.FC = () => {
     if (copy) {
       copy.profileImageUrl = imageBaseString;
       appDispatch(userActions.updateUser(copy));
-      // appDispatch(userThunkActions.updateUser(copy));
     }
 
     if (!userProfilePicture) {
@@ -229,9 +249,11 @@ export const PractitionerAbout: React.FC = () => {
     } else {
       updateDocument(userProfilePicture, imageBaseString);
     }
+
+    await savePractitionerUserData(imageBaseString);
   };
 
-  const savePractitionerUserData = () => {
+  const savePractitionerUserData = (imageBaseString: string = '') => {
     const practitionerForm = practitionerAboutFormGetValues();
     const copy = Object.assign({}, user);
     if (copy) {
@@ -239,6 +261,9 @@ export const PractitionerAbout: React.FC = () => {
       copy.surname = practitionerForm.surname;
       copy.phoneNumber = practitionerForm.cellphone;
       copy.email = practitionerForm.email;
+      if (imageBaseString?.length > 0) {
+        copy.profileImageUrl = imageBaseString;
+      }
 
       appDispatch(userActions.updateUser(copy));
       appDispatch(userThunkActions.updateUser(copy));
@@ -249,6 +274,19 @@ export const PractitionerAbout: React.FC = () => {
 
   return (
     <div className={styles.container}>
+      <Dialog
+        fullScreen
+        visible={editiCellPhoneNumber}
+        position={DialogPosition.Top}
+      >
+        <EditCellPhoneNumber
+          setEditiCellPhoneNumber={setEditiCellPhoneNumber}
+          user={user}
+        />
+      </Dialog>
+      <Dialog fullScreen visible={addNextToKin} position={DialogPosition.Top}>
+        <NextToKin setAddNextToKin={setAddNextToKin} user={user} />
+      </Dialog>
       <BannerWrapper
         showBackground={true}
         backgroundUrl={theme?.images.graphicOverlayUrl}
@@ -261,19 +299,28 @@ export const PractitionerAbout: React.FC = () => {
         onBack={() => history.push(ROUTES.PRACTITIONER.PROFILE.ROOT)}
         displayOffline={!isOnline}
       >
-        <div className={'w-full inline-flex justify-center pt-8'}>
-          <ProfileAvatar
-            dataUrl={userProfilePicture?.file || user?.profileImageUrl}
-            size={'header'}
-            onPressed={displayProfilePicturePrompt}
-            hasConsent={true}
-          />
+        <div className="px-4">
+          <div className={'inline-flex w-full justify-center pt-8'}>
+            <ProfileAvatar
+              dataUrl={userProfilePicture?.file || user?.profileImageUrl}
+              size={'header'}
+              onPressed={displayProfilePicturePrompt}
+              hasConsent={true}
+            />
+          </div>
+          <StackedList
+            className={'bg-uiBg h-auto'}
+            listItems={listItems}
+            type={'ActionList'}
+          ></StackedList>
+          {practitioner?.signingSignature && (
+            <img
+              alt="signature"
+              className="max-h-24 py-4"
+              src={practitioner.signingSignature}
+            />
+          )}
         </div>
-        <StackedList
-          className={'bg-uiBg px-4'}
-          listItems={listItems}
-          type={'ActionList'}
-        ></StackedList>
       </BannerWrapper>
 
       <Dialog

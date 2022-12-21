@@ -1,11 +1,16 @@
 import { Colours, ComponentBaseProps } from '../../../models';
 import { renderIcon } from '../../../utils';
-import { FieldError, Path, UseFormRegister } from 'react-hook-form';
+import {
+  FieldError,
+  Path,
+  UseFormRegister,
+  FieldValues,
+} from 'react-hook-form';
 import * as styles from './form-input.style';
 export type FormFieldType = 'text' | 'number' | 'password';
 export type TextInputType = 'input' | 'textarea' | 'date';
 
-interface FormFieldProps<T> extends ComponentBaseProps {
+interface FormFieldProps<T extends FieldValues> extends ComponentBaseProps {
   label?: string;
   nameProp?: Path<T>;
   type?: FormFieldType;
@@ -23,7 +28,7 @@ interface FormFieldProps<T> extends ComponentBaseProps {
   suffixIconAction?: () => void;
 }
 
-export const FormInput = <T,>({
+export const FormInput = <T extends FieldValues>({
   label,
   nameProp,
   type = 'text',
@@ -40,6 +45,7 @@ export const FormInput = <T,>({
   value,
   hint,
   maxLength,
+  ...restProps
 }: FormFieldProps<T>) => {
   const getInputToRender = () => {
     switch (textInputType) {
@@ -55,6 +61,7 @@ export const FormInput = <T,>({
               {...register(nameProp)}
               className={error ? styles.errorStyle : styles.defaultInputStyle}
               defaultValue={''}
+              {...restProps}
             />
           );
         } else {
@@ -67,6 +74,7 @@ export const FormInput = <T,>({
               maxLength={maxLength}
               className={error ? styles.errorStyle : styles.defaultInputStyle}
               defaultValue={value ?? ''}
+              {...restProps}
             />
           );
         }
@@ -82,6 +90,8 @@ export const FormInput = <T,>({
               maxLength={maxLength}
               {...register(nameProp)}
               className={error ? styles.errorStyle : styles.defaultInputStyle}
+              style={suffixIcon ? { paddingRight: 38 } : { paddingRight: 16 }}
+              {...restProps}
             />
           );
         } else {
@@ -94,6 +104,8 @@ export const FormInput = <T,>({
               value={value ?? ''}
               maxLength={maxLength}
               className={error ? styles.errorStyle : styles.defaultInputStyle}
+              style={suffixIcon ? { paddingRight: 38 } : { paddingRight: 16 }}
+              {...restProps}
             />
           );
         }
@@ -104,9 +116,11 @@ export const FormInput = <T,>({
     <>
       {visible && (
         <div className={className}>
-          <label htmlFor={nameProp} className={styles.label}>
-            {label}
-          </label>
+          {label && (
+            <label htmlFor={nameProp} className={styles.label}>
+              {label}
+            </label>
+          )}
           {hint && <label className={styles.hintStyle}>{hint}</label>}
           <div className={styles.inputWrapper}>
             {getInputToRender()}
@@ -117,7 +131,7 @@ export const FormInput = <T,>({
             </div>
           </div>
 
-          <span className="text-xs text-errorMain"> {error?.message} </span>
+          <span className="text-errorMain text-xs"> {error?.message} </span>
         </div>
       )}
     </>

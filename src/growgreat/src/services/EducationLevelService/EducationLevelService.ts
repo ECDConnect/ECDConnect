@@ -1,6 +1,6 @@
 import { api } from '../axios.helper';
-import { Config } from '@ecdlink/core';
-import { EducationLevelDto } from '@ecdlink/core';
+import { Config, EducationLevelDto } from '@ecdlink/core';
+
 class EducationLevelService {
   _accessToken: string;
 
@@ -9,7 +9,7 @@ class EducationLevelService {
   }
 
   async getEducationLevels(): Promise<EducationLevelDto[]> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         query {

@@ -1,5 +1,6 @@
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Context;
+using ECDLink.DataAccessLayer.Entities.Caregiver;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
@@ -8,7 +9,9 @@ using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Azure.Documents;
 using Microsoft.EntityFrameworkCore;
+using NPOI.SS.Formula.Functions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -35,31 +38,41 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public List<Infant> GetAllInfantsForHealthCareWorker([Service] IHttpContextAccessor contextAccessor,
-         [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
          [Service] IGenericRepositoryFactory repoFactory,
          string id)
         {
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
+            List<Infant> infants = new List<Infant>();
             var uId = contextAccessor.HttpContext.GetUser().Id;
-            var healthCareWorkerId = GetHealthCareWorkerIdByUserId(contextAccessor, dbFactory, repoFactory);
-            var childRepo = repoFactory.CreateRepository<Infant>(userContext: uId);
-            List<Infant> children = childRepo.GetAll().Where(x => x.Mother.HealthCareWorkerId.Equals(healthCareWorkerId)).ToList();
+            var childRepo = repoFactory.CreateGenericRepository<Infant>(userContext: uId);
+            List<Infant> children = childRepo.GetAll().Where(x => x.Caregiver.HealthCareWorker.UserId.Equals(id)).ToList();
+            List<Infant> childrenMother = childRepo.GetAll().Where(x => x.Mother.HealthCareWorker.UserId.Equals(id)).ToList();
 
-            return children;
+            infants.AddRange(children);
+            infants.AddRange(childrenMother);
+            return infants;
         }
 
-        private Guid? GetHealthCareWorkerIdByUserId(
-            [Service] IHttpContextAccessor contextAccessor,
-            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
-            [Service] IGenericRepositoryFactory repoFactory)
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public int GetInfantCountForHealthCareWorkerForMonth([Service] IHttpContextAccessor contextAccessor,
+         [Service] IGenericRepositoryFactory repoFactory,
+         string userId)
         {
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
+            DateTime today = DateTime.Today;
+
+            var childCount = 0;
             var uId = contextAccessor.HttpContext.GetUser().Id;
-            var healthCareWorkerRepo = repoFactory.CreateRepository<HealthCareWorker>(userContext: uId);
-            HealthCareWorker healthCareWorker = healthCareWorkerRepo.GetAll().Where(x => x.UserId.Contains(uId)).FirstOrDefault();
-            return healthCareWorker.Id;
+            var childRepo = repoFactory.CreateGenericRepository<Infant>(userContext: uId);
+            List<Infant> childrenCaregiver = childRepo.GetAll().Where(x => x.Caregiver.HealthCareWorker.UserId.Equals(userId) && (
+                                                                            x.InsertedDate.Month == today.Month &&
+                                                                            x.InsertedDate.Year == today.Year)).ToList();
+            List<Infant> childrenMother = childRepo.GetAll().Where(x => x.Mother.HealthCareWorker.UserId.Equals(userId) &&
+                                                                            x.InsertedDate.Month == today.Month &&
+                                                                            x.InsertedDate.Year == today.Year).ToList();
+
+            childCount = childrenCaregiver.Count + childrenMother.Count;
+
+            return childCount;
         }
+
     }
 }

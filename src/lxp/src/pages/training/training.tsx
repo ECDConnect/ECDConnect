@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import { BannerWrapper, LoadingSpinner } from '@ecdlink/ui';
-// import { IconInformationIndicator } from '../classroom/programme-planning/components/icon-information-indicator/icon-information-indicator';
 import { useHistory } from 'react-router';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 
@@ -31,7 +30,7 @@ export const Training: React.FC = () => {
           title="ECD Moodle"
           height="800px"
           width="90%"
-          className="divide-y-2 divide-uiLight divide-dashed mx-auto"
+          className="divide-uiLight mx-auto divide-y-2 divide-dashed"
         ></iframe>
       );
     }
@@ -47,7 +46,7 @@ export const Training: React.FC = () => {
       backgroundColour="white"
       displayOffline={!isOnline}
     >
-      <div className="divide-y-2 divide-uiLight divide-dashed">
+      <div className="divide-uiLight divide-y-2 divide-dashed">
         <div>{renderIframe}</div>
       </div>
     </BannerWrapper>

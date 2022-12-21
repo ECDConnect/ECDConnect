@@ -64,6 +64,8 @@ import { contentReportSelectors } from '@store/content/report';
 import { analyticsActions } from '@store/analytics';
 import ROUTES from '@routes/routes';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
+import { childrenForPractitionerSelectors } from '@/store/childrenForPractitioner';
+import { practitionerSelectors } from '@/store/practitioner';
 
 const baseNotificationListItem: ListItemProps = {
   key: 'message-caregiver',
@@ -89,7 +91,6 @@ export const ChildProfile: React.FC = () => {
   const appDispatch = useAppDispatch();
   const location = useLocation<ChildProfileRouteState>();
   const childId = location.state.childId;
-
   const { getDocumentTypeIdByEnum, getWorkflowStatusIdByEnum } =
     useStaticData();
   const workflowDocumentVerified = getWorkflowStatusIdByEnum(
@@ -98,7 +99,18 @@ export const ChildProfile: React.FC = () => {
   const workflowDocumentPendingVerified = getWorkflowStatusIdByEnum(
     WorkflowStatusEnum.DocumentPendingVerification
   );
+  const practitioner = useSelector(practitionerSelectors?.getPractitioner);
+  const isPrincipal = practitioner?.isPrincipal;
+  const childrenForPrincipal = useSelector(
+    childrenForPractitionerSelectors?.getChildrenForPractitioner
+  );
+
   const child = useSelector(childrenSelectors.getChildById(childId));
+
+  const isPrincipalChild = childrenForPrincipal?.find(
+    (item) => item?.userId === child?.userId
+  );
+
   const classGroupId = useSelector(
     classroomsSelectors.getLearnerClassGroupId(child?.userId)
   );
@@ -388,7 +400,11 @@ export const ChildProfile: React.FC = () => {
 
     // Check when the child was register and determine wether attendance should have been recorded
 
-    if (childAttendancePercentage.percentage < 50 && !caregiverHasBeenContacted)
+    if (
+      childAttendancePercentage.percentage < 50 &&
+      childAttendancePercentage?.percentage !== 0 &&
+      !caregiverHasBeenContacted
+    )
       return {
         ...baseNotificationListItem,
         subTitle: `Attended ${childAttendancePercentage.daysAttended} days last week`,
@@ -398,8 +414,6 @@ export const ChildProfile: React.FC = () => {
             childAttendancePercentage.daysExpected
           ),
       };
-
-    return;
   };
 
   const onCreateChildNoteBack = () => {
@@ -615,17 +629,21 @@ export const ChildProfile: React.FC = () => {
           />
         )}
 
-        {notifications && child && (
-          <div className={styles.notificationsStacklist}>
-            {notifications.map((notification) => (
-              <ListItem
-                {...notification}
-                key={`child-profile-notification-${notification.key}`}
-              />
-            ))}
-            <ChildProgressReportAlert child={child} />
-          </div>
-        )}
+        {((isPrincipal && isPrincipalChild) ||
+          (!isPrincipal && !isPrincipalChild)) &&
+          notifications &&
+          child && (
+            <div className={styles.notificationsStacklist}>
+              {notifications.map((notification) => (
+                <ListItem
+                  {...notification}
+                  key={`child-profile-notification-${notification.key}`}
+                />
+              ))}
+              <ChildProgressReportAlert child={child} />
+            </div>
+          )}
+
         <div className={styles.profileOptionsWrapper}>
           {profileOptions.map((options) => (
             <ListItem
@@ -672,7 +690,7 @@ export const ChildProfile: React.FC = () => {
         </div>
       </Dialog>
       <Dialog
-        className={'px-4 mb-16'}
+        className={'mb-16 px-4'}
         stretch={true}
         visible={removeChildConfirmationVisible}
         position={DialogPosition.Bottom}

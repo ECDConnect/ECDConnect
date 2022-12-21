@@ -9,7 +9,7 @@ class MotherService {
   }
 
   async getMothers(id: string): Promise<MotherDto[]> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         query GetAllMothersForHealthCareWorker($id: String) {
@@ -20,6 +20,7 @@ class MotherService {
               surname
               phoneNumber
             }
+            expectedDateOfDelivery
             siteAddress {
               id
               province {
@@ -45,11 +46,11 @@ class MotherService {
       throw new Error('Getting Mothers failed - Server connection error');
     }
 
-    return response.data.data.GetAllMother;
+    return response.data.data.allMothersForHealthCareWorker;
   }
 
   async updateMother(id: string, input: MotherModelInput): Promise<MotherDto> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         mutation updateMother($input: MotherModelInput, $id: String) {
@@ -88,7 +89,7 @@ class MotherService {
   }
 
   async addMother(input: MotherModelInput): Promise<MotherDto> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         mutation addMother($input: MotherModelInput) {

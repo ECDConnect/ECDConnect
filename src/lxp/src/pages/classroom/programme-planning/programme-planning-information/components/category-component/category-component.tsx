@@ -1,6 +1,5 @@
 import { ProgressTrackingCategoryDto } from '@ecdlink/core';
-import { Typography } from '@ecdlink/ui';
-import { renderIcon } from '@ecdlink/ui';
+import { Typography, renderIcon } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 
 import { progressTrackingSelectors } from '@store/progress-tracking';

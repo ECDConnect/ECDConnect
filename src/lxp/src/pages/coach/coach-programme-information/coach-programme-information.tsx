@@ -10,6 +10,7 @@ import {
   Typography,
   StackedList,
 } from '@ecdlink/ui';
+import { PractitionerColleagues } from '@ecdlink/graphql';
 import { getLogo, LogoSvgs } from '@utils/common/svg.utils';
 import { PractitionerProfileRouteState } from './coach-programme-information.types';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
@@ -18,9 +19,12 @@ import ROUTES from '@routes/routes';
 import { PhoneIcon } from '@heroicons/react/solid';
 import { useSelector } from 'react-redux';
 import { practitionerSelectors } from '@/store/practitioner';
-import { practitionerForCoachSelectors } from '@/store/practitionerForCoach';
-import { classroomsSelectors } from '@/store/classroom';
+// import { practitionerForCoachSelectors } from '@/store/practitionerForCoach';
 import { classroomsForCoachSelectors } from '@/store/classroomForCoach';
+import { useEffect, useState } from 'react';
+import { PractitionerService } from '@/services/PractitionerService';
+import { authSelectors } from '@store/auth';
+import { getClassroomGroupSchoolDays } from '@/utils/classroom/attendance/track-attendance-utils';
 
 export const CoachProgrammeInformation: React.FC = () => {
   const history = useHistory();
@@ -29,72 +33,38 @@ export const CoachProgrammeInformation: React.FC = () => {
   const location = useLocation<PractitionerProfileRouteState>();
   const practitionerId = location.state.practitionerId;
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
-  const practitionersForCoach = useSelector(
-    practitionerForCoachSelectors.getPractitionersForCoach
-  );
   const isFromProgrammeView = true;
+  const [practitionerClassroomDetails, setPractitionerClassroomDetails] =
+    useState<any>();
+  const userAuth = useSelector(authSelectors.getAuthUser);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [otherColleagues, setOtherColleagues] = useState<any[]>([]);
 
-  const listItems = [
-    {
-      title: 'Programme location updated',
-      titleStyle: 'text-textDark font-semibold text-base leading-snug',
-      subTitle: 'SmartSpace check required',
-      subTitleStyle:
-        'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
-      menuIcon: 'ExclamationIcon',
-      menuIconClassName: 'bg-secondary text-white',
-      showIcon: true,
-      iconBackgroundColor: 'alertMain',
-      chipConfig: {
-        colorPalette: {
-          backgroundColour: 'white',
-          borderColour: 'errorMain',
-          textColour: 'errorMain',
-        },
-      },
-      text: '1',
-      onActionClick: () => {},
-      classNames: 'bg-uiBg',
-    },
-    {
-      title: 'Classes reassigned',
-      titleStyle: 'text-textDark font-semibold text-base leading-snug',
-      subTitle: 'Classes have been assigned to a different practitioner',
-      subTitleStyle:
-        'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
-      menuIcon: 'ExclamationIcon',
-      menuIconClassName: 'bg-secondary text-white',
-      showIcon: true,
-      iconBackgroundColor: 'alertMain',
-      chipConfig: {
-        colorPalette: {
-          backgroundColour: 'white',
-          borderColour: 'errorMain',
-          textColour: 'errorMain',
-        },
-      },
-      text: '1',
-      onActionClick: () =>
-        history.push(ROUTES.COACH.CLASSES_REASSIGNED, {
-          practitionerId,
-        }),
-      classNames: 'bg-uiBg',
-    },
+  const weekday = [
+    'Sunday',
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
   ];
-
-  const practitionersList = practitioners?.filter((item) =>
-    practitionersForCoach?.find((item2) => item.id === item2.id)
-  );
 
   const practitioner = practitioners?.find(
     (practitioner) => practitioner?.userId === practitionerId
   );
-  const practitionersForCoachListItems = practitionersList?.map((item) => {
+  const isPrincipal = practitioner?.isPrincipal === true;
+
+  const practitionersForCoachListItems = practitioners?.map((item) => {
     const titleStyle = 'text-textMid';
     return {
       title: item.user?.firstName + ' ' + item?.user?.surname,
       titleStyle,
-      subTitle: 'Practitioner',
+      subTitle: item?.isPrincipal
+        ? 'Principal / owner'
+        : item?.user?.roles
+        ? item?.user?.roles[0]?.name
+        : '',
       avatarColor: '#6974af',
       alertSeverity: 'none',
       profileText:
@@ -104,21 +74,6 @@ export const CoachProgrammeInformation: React.FC = () => {
       id: item?.userId,
     };
   });
-
-  const otherPractitionersOnSite = practitionersForCoachListItems?.filter(
-    (item) => item.id !== practitionerId
-  );
-
-  const coachClassrooms = useSelector(
-    classroomsForCoachSelectors.getClassroomForCoach
-  );
-  const practitionerClassroom = coachClassrooms?.find(
-    (item) => item.userId === practitionerId
-  );
-  const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
-  const practitionerClassroomGroups = classroomGroups.filter(
-    (item) => item.classroomId === practitionerClassroom?.id
-  );
 
   const call = () => {
     window.open(`tel:${practitioner?.user?.phoneNumber}`);
@@ -143,6 +98,40 @@ export const CoachProgrammeInformation: React.FC = () => {
 
   const { theme } = useTheme();
 
+  const classroomsDetailsForPractitioner = async () => {
+    const classroomDetails = await new PractitionerService(
+      userAuth?.auth_token!
+    ).getClassroomGroupClassroomsForPractitioner(practitioner?.userId!);
+    setPractitionerClassroomDetails(classroomDetails);
+    return classroomDetails;
+  };
+
+  useEffect(() => {
+    classroomsDetailsForPractitioner();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const getPractitionerColleagues = async () => {
+    // Check if the practitioner exists
+    let practitionerColleagues: PractitionerColleagues[] = [];
+
+    if (userAuth) {
+      practitionerColleagues = await new PractitionerService(
+        userAuth?.auth_token
+      ).practitionerColleagues(practitioner?.userId!);
+    }
+
+    setOtherColleagues(practitionerColleagues);
+    return practitionerColleagues;
+  };
+
+  useEffect(() => {
+    if (practitioner) {
+      getPractitionerColleagues();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <div className={styles.contentWrapper}>
       <BannerWrapper
@@ -165,7 +154,7 @@ export const CoachProgrammeInformation: React.FC = () => {
           <ProfileAvatar
             hasConsent={true}
             canChangeImage={false}
-            dataUrl={''}
+            dataUrl={practitioner?.user?.profileImageUrl || ''}
             size={'header'}
             // eslint-disable-next-line @typescript-eslint/no-empty-function
             onPressed={() => {}}
@@ -176,7 +165,7 @@ export const CoachProgrammeInformation: React.FC = () => {
           <StatusChip
             backgroundColour="primary"
             borderColour="primary"
-            text={'SmartStarter'}
+            text={isPrincipal ? 'Principal/Owner' : 'Practitioner'}
             textColour={'white'}
             className={'mr-2 px-3 py-1.5'}
           />
@@ -189,7 +178,7 @@ export const CoachProgrammeInformation: React.FC = () => {
             size={'small'}
             onClick={call}
           >
-            <PhoneIcon className="h-5 w-5 text-primary" aria-hidden="true" />
+            <PhoneIcon className="text-primary h-5 w-5" aria-hidden="true" />
           </Button>
           <Button
             color={'primary'}
@@ -206,16 +195,7 @@ export const CoachProgrammeInformation: React.FC = () => {
           </Button>
         </div>
       </BannerWrapper>
-      <div className="flex justify-center mt-4">
-        <div className="w-11/12">
-          <StackedList
-            className="w-full rounded-2xl -mt-0.5 flex flex-col gap-1"
-            type="MenuList"
-            listItems={listItems}
-          />
-        </div>
-      </div>
-      <div className="flex justify-center my-6">
+      <div className="my-6 flex justify-center">
         <Button
           type="outlined"
           color="primary"
@@ -232,23 +212,27 @@ export const CoachProgrammeInformation: React.FC = () => {
         </Button>
       </div>
       <>
-        <div className={styles.infoWrapper}>
-          <div>
-            <Typography
-              text={'Programme name'}
-              type="h5"
-              color="textMid"
-              className={'mt-4'}
-            />
-            <Typography
-              text={practitionerClassroom?.name}
-              type="h4"
-              color="textDark"
-              className={'mt-1'}
-            />
-          </div>
-        </div>
-        <Divider dividerType="dashed" className="my-4" />
+        {practitionerClassroomDetails?.length > 0 && (
+          <>
+            <div className={styles.infoWrapper}>
+              <div>
+                <Typography
+                  text={'Programme name'}
+                  type="h5"
+                  color="textMid"
+                  className={'mt-4'}
+                />
+                <Typography
+                  text={practitionerClassroomDetails[0].classroom?.name || ''}
+                  type="h4"
+                  color="textDark"
+                  className={'mt-1'}
+                />
+              </div>
+            </div>
+            <Divider dividerType="dashed" className="my-4" />
+          </>
+        )}
         <div className={styles.infoWrapper}>
           <div>
             <Typography
@@ -258,90 +242,7 @@ export const CoachProgrammeInformation: React.FC = () => {
               className={'mt-1'}
             />
             <Typography
-              text={'12 1st Avenue, Mamelodi, Gauteng, 77001'}
-              type="h4"
-              color="textDark"
-              className={'mt-1'}
-            />
-          </div>
-        </div>
-        <Divider dividerType="dashed" className="my-4" />
-        <div className={styles.infoWrapper}>
-          <div>
-            <Typography
-              text={'Type of ECD service'}
-              type="h5"
-              color="textMid"
-              className={'mt-1'}
-            />
-            <Typography
-              text={'Playgroup'}
-              type="h4"
-              color="textDark"
-              className={'mt-1'}
-            />
-          </div>
-        </div>
-        <div className={styles.infoWrapper}>
-          <div className="ml-6">
-            <Typography
-              text={'Monday & Wednesday, Half day'}
-              type="h5"
-              color="textMid"
-              className={'mt-1'}
-            />
-            <Typography
-              text={'Playgroup 1: Little Stars'}
-              type="h4"
-              color="textDark"
-              className={'mt-1'}
-            />
-          </div>
-        </div>
-        <div className={styles.infoWrapper}>
-          <div className="ml-6">
-            <Typography
-              text={'Tuesday, Full day'}
-              type="h5"
-              color="textMid"
-              className={'mt-1'}
-            />
-            <Typography
-              text={'Playgroup 2: Lions'}
-              type="h4"
-              color="textDark"
-              className={'mt-1'}
-            />
-          </div>
-        </div>
-        <Divider dividerType="dashed" className="my-4" />
-        <div className={styles.infoWrapper}>
-          <div>
-            <Typography
-              text={'Number of non-SmartStart assistants'}
-              type="h5"
-              color="textMid"
-              className={'mt-1'}
-            />
-            <Typography
-              text={'2'}
-              type="h4"
-              color="textDark"
-              className={'mt-1'}
-            />
-          </div>
-        </div>
-        <Divider dividerType="dashed" className="my-4" />
-        <div className={styles.infoWrapper}>
-          <div>
-            <Typography
-              text={'Other assistants'}
-              type="h5"
-              color="textMid"
-              className={'mt-1'}
-            />
-            <Typography
-              text={'1'}
+              text={practitionerClassroomDetails?.siteAddress || ''}
               type="h4"
               color="textDark"
               className={'mt-1'}
@@ -350,28 +251,131 @@ export const CoachProgrammeInformation: React.FC = () => {
         </div>
         <Divider dividerType="dashed" className="my-4" />
         <div>
-          <div className="flex my-4 ml-4">
-            <div className="rounded-full bg-successMain mr-4 w-8 h-8 grid place-items-center">
+          {practitionerClassroomDetails?.map((item: any, index: number) => {
+            const meetingDays = getClassroomGroupSchoolDays(
+              item?.classProgrammes
+            );
+
+            const weekMeetingDays = meetingDays
+              .sort()
+              .map((item) => weekday[item]);
+            const stringMeetingDays = weekMeetingDays.join(', ').toString();
+            const halfOrFullDayMeeting =
+              item?.classProgrammes.length > 0 &&
+              item?.classProgrammes[0].isFullDay === true
+                ? 'Full day'
+                : 'Half day';
+
+            return (
+              <div key={index}>
+                <div className={styles.infoWrapper}>
+                  <div>
+                    <Typography
+                      text={'Type of ECD service'}
+                      type="h5"
+                      color="textMid"
+                      className={'mt-1'}
+                    />
+                    <Typography
+                      text={item?.programmeType?.description || ''}
+                      type="h4"
+                      color="textDark"
+                      className={'mt-1'}
+                    />
+                  </div>
+                </div>
+                <div className={styles.infoWrapper}>
+                  <div className="ml-6">
+                    <Typography
+                      text={stringMeetingDays + ', ' + halfOrFullDayMeeting}
+                      type="h5"
+                      color="textMid"
+                      className={'mt-1'}
+                    />
+                    <Typography
+                      text={`Class ${index + 1}: ${item?.name}`}
+                      type="h4"
+                      color="textDark"
+                      className={'mt-1'}
+                    />
+                  </div>
+                </div>
+                <Divider dividerType="dashed" className="my-4" />
+              </div>
+            );
+          })}
+          <div className={styles.infoWrapper}>
+            <div>
               <Typography
-                type={'body'}
-                weight={'bold'}
-                text={String(practitionersForCoachListItems?.length!)}
-                color={'white'}
+                text={'Number of non-SmartStart assistants'}
+                type="h5"
+                color="textMid"
+                className={'mt-1'}
+              />
+              <Typography
+                text={
+                  practitionerClassroomDetails?.length > 0
+                    ? String(
+                        practitionerClassroomDetails[0].classroom
+                          ?.numberOfOtherAssistants
+                      )
+                    : ''
+                }
+                type="h4"
+                color="textDark"
+                className={'mt-1'}
               />
             </div>
-            <Typography
-              text={'SmartStart practitioners on site'}
-              type="h4"
-              color="textDark"
-              className={'mt-1'}
-            />
+          </div>
+          <Divider dividerType="dashed" className="my-4" />
+          <div className={styles.infoWrapper}>
+            <div>
+              <Typography
+                text={'Other assistants'}
+                type="h5"
+                color="textMid"
+                className={'mt-1'}
+              />
+              <Typography
+                text={
+                  practitionerClassroomDetails?.length > 0
+                    ? String(
+                        practitionerClassroomDetails[0].classroom
+                          ?.numberPractitioners
+                      )
+                    : ''
+                }
+                type="h4"
+                color="textDark"
+                className={'mt-1'}
+              />
+            </div>
+          </div>
+          <Divider dividerType="dashed" className="my-4" />
+          <div>
+            <div className="my-4 ml-4 flex">
+              <div className="bg-successMain mr-4 grid h-8 w-8 place-items-center rounded-full">
+                <Typography
+                  type={'body'}
+                  weight={'bold'}
+                  text={String(practitionersForCoachListItems?.length!)}
+                  color={'white'}
+                />
+              </div>
+              <Typography
+                text={'SmartStart practitioners on site'}
+                type="h4"
+                color="textDark"
+                className={'mt-1'}
+              />
+            </div>
           </div>
           {practitionersForCoachListItems ? (
             <div className="flex justify-center">
-              <div className="w-11/12 flex justify-center">
+              <div className="flex w-11/12 justify-center">
                 <StackedList
                   className={styles.stackedList}
-                  listItems={otherPractitionersOnSite!}
+                  listItems={practitionersForCoachListItems}
                   type={'UserAlertList'}
                 ></StackedList>
               </div>

@@ -1,6 +1,5 @@
 import { ProgressTrackingLevelDto } from '@ecdlink/core';
-import { Typography } from '@ecdlink/ui';
-import { classNames } from '@ecdlink/ui';
+import { Typography, classNames } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { progressTrackingSelectors } from '@store/progress-tracking';
@@ -31,7 +30,7 @@ export const ProgressLevelBar: React.FC<ProgressLevelBarProps> = ({
             <div
               className={classNames(
                 styles.levelWrapper,
-                currentLevelId === level.id ? 'border-b-2 border-b-primary' : ''
+                currentLevelId === level.id ? 'border-b-primary border-b-2' : ''
               )}
               key={`progress-traking-level-` + index}
             >

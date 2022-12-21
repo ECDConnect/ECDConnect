@@ -22,7 +22,6 @@ import { classroomsActions, classroomsSelectors } from '@/store/classroom';
 import { useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
 import { newGuid } from '@/utils/common/uuid.utils';
-import { userSelectors } from '@/store/user';
 import { practitionerSelectors } from '@/store/practitioner';
 import { isFullDayOptions } from '../../edit-practitioner-profile.types';
 

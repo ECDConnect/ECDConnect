@@ -171,7 +171,7 @@ export default function ChildrenDashboard() {
       position: DialogPosition.Middle,
       render: (onSubmit: any, onCancel: any) => (
         <DateRangeModal
-          title="Filter Attedance (Attended vs Absent)"
+          title="Filter Attendance (Attended vs Absent)"
           onCancel={onCancel}
           onSubmit={(body) => {
             setAttendedAbsentDate(
@@ -202,7 +202,7 @@ export default function ChildrenDashboard() {
         )}
 
         <div className="mt-4 grid grid-cols-2 gap-4">
-          <div className="bg-uiBg pt-5 px-4 pb-12 sm:pt-6 sm:px-6 rounded-lg overflow-hidden">
+          <div className="bg-uiBg overflow-hidden rounded-lg px-4 pt-5 pb-12 sm:px-6 sm:pt-6">
             {childStatusdata && (
               <DoughnutChart
                 data={childStatusdata}
@@ -210,24 +210,24 @@ export default function ChildrenDashboard() {
               />
             )}
           </div>
-          <div className="relative bg-uiBg pt-5 px-4 pb-12 sm:pt-6 sm:px-6 rounded-lg overflow-hidden">
+          <div className="bg-uiBg relative overflow-hidden rounded-lg px-4 pt-5 pb-12 sm:px-6 sm:pt-6">
             <CogIcon
-              className="absolute text-primary h-8 w-8 cursor-pointer right-5"
+              className="text-primary absolute right-5 h-8 w-8 cursor-pointer"
               onClick={showAttendAbsentDialog}
             />
             {childAttendacedata && (
               <HorizontalBarChart
                 data={childAttendacedata}
-                graphTitle={`Attedance (Attended vs Absent) - ${attendedAbsentDate}`}
+                graphTitle={`Attendance (Attended vs Absent) - ${attendedAbsentDate}`}
               />
             )}
           </div>
         </div>
-        <div className="mt-4 bg-uiBg pt-5 px-4 pb-12 sm:pt-6 sm:px-6 rounded-lg overflow-hidden">
+        <div className="bg-uiBg mt-4 overflow-hidden rounded-lg px-4 pt-5 pb-12 sm:px-6 sm:pt-6">
           {childAttendancePerMonthdata && (
             <VerticalBarChart
               data={childAttendancePerMonthdata}
-              graphTitle={'Average Attedance per month'}
+              graphTitle={'Average Attendance per month'}
             />
           )}
         </div>
