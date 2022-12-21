@@ -65,6 +65,8 @@ export const EditPractitionerProfile: React.FC = () => {
   const onAllStepsComplete = async () => {
     const copy = Object.assign({}, healthCareWorker);
 
+    const siteAddress = copy?.teamLead?.clinic?.siteAddress;
+
     const copyUpdated: any = {
       userId: copy?.id,
       isRegistered: true,
@@ -75,7 +77,18 @@ export const EditPractitionerProfile: React.FC = () => {
         Clinic: {
           Name: copy?.teamLead?.clinic?.name,
           PhoneNumber: copy?.teamLead?.clinic?.phoneNumber,
-          SiteAddress: copy?.teamLead?.clinic?.siteAddress,
+          SiteAddress: {
+            AddressLine1: siteAddress?.addressLine1,
+            AddressLine2: siteAddress?.addressLine2,
+            AddressLine3: siteAddress?.addressLine3,
+            Name: siteAddress?.name,
+            PostalCode: siteAddress?.postalCode,
+            Province: {
+              Description: siteAddress?.province?.description,
+              IsActive: true,
+            },
+            IsActive: true,
+          },
           IsActive: true,
         },
         User: {
