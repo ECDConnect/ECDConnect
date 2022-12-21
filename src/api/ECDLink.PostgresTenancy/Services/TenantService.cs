@@ -69,13 +69,6 @@ namespace ECDLink.PostgresTenancy.Services
                 return default;
             }
 
-            //if (string.IsNullOrWhiteSpace(tenant.ConnectionString) && tenant.TenantType == Tenancy.Enums.TenantType.Tenant)
-            //{
-            //    throw new InvalidOperationException("No connection string provided");
-            //}
-
-            //var connection = new NpgsqlConnectionStringBuilder(tenant.ConnectionString);
-
             var entity =_repository.Insert(new TenantEntity
             {
                 ApplicationName = tenant.ApplicationName,

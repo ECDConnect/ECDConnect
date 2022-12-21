@@ -66,7 +66,7 @@ namespace ECDLink.AutomatedJobs.Notifications
                         });
 
                         continue;
-                    };
+                    }
 
                     if (practitioner.User.LastSeen.Date == threeZero)
                     {
@@ -79,7 +79,7 @@ namespace ECDLink.AutomatedJobs.Notifications
                         });
 
                         continue;
-                    };
+                    }
                 }
 
                 dbContext.SaveChanges();

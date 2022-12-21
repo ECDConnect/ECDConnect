@@ -24,17 +24,9 @@ namespace ECDLink.AutomatedJobs.Anonymise
             using (var scope = _scopeFactory.CreateScope())
             {
                 SetTenantContext(scope);
-
-                var anonChildService = scope.ServiceProvider.GetRequiredService<IChildrenAnonymiseService>();
-
-                //anonChildService.AnonymiseChild();
-                //AssignFutureAbsentees //settle Future dated absentees first
-                //ReassignAbsentees
             }
         }
 
-        // TODO: Convert to multi-tenancy jobs
-        //Single Tenant for now
         private void SetTenantContext(IServiceScope scope)
         {
             var tenancyRepo = scope.ServiceProvider.GetRequiredService<TenantService>();

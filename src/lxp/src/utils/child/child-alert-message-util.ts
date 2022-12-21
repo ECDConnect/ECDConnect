@@ -112,7 +112,12 @@ export const getChildAlertModel = (
       classProgrammes || []
     );
 
-    if (childAttendancePercentage) {
+    const daysSinceInsertedDate = differenceInDays(
+      new Date(),
+      new Date(learner?.startedAttendance)
+    );
+
+    if (childAttendancePercentage && daysSinceInsertedDate >= 7) {
       if (childAttendancePercentage.percentage < 50) {
         alert = 'warning';
       }

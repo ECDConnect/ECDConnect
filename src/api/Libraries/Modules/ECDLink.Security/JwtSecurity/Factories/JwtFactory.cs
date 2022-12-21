@@ -15,13 +15,11 @@ namespace ECDLink.Security.JwtSecurity.Factories
     public class JwtFactory : IJwtFactory
     {
         private readonly JwtIssuerOptions _jwtIssuerOptions;
-        private readonly TokenValidationParameters _parameters;
         private ISystemSetting<JwtOptions> _jwtOptions;
 
-        public JwtFactory(IOptions<JwtIssuerOptions> jwtIssuerOptions, ISystemSetting<JwtOptions> jwtOptions, TokenValidationParameters parameters)
+        public JwtFactory(IOptions<JwtIssuerOptions> jwtIssuerOptions, ISystemSetting<JwtOptions> jwtOptions)
         {
             _jwtIssuerOptions = jwtIssuerOptions.Value;
-            _parameters = parameters;
             _jwtOptions = jwtOptions;
         }
 

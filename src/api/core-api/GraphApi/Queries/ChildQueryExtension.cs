@@ -50,11 +50,8 @@ string classroomId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var dbRepo = repoFactory.CreateRepository<Child>(userContext: uId);
-            var classroomRepo = repoFactory.CreateRepository<Classroom>(userContext: uId);
             var classroomGrooupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
-            var learnerRepo = repoFactory.CreateRepository<Learner>(userContext: uId);
             List<Child> children = new List<Child>();
-            List<ClassroomGroup> groupAll = classroomGrooupRepo.GetAll().ToList();
             List<ClassroomGroup> group = classroomGrooupRepo.GetAll().Where(x => x.Classroom.Id.Equals(classroomId)).ToList();
             foreach (var groupItem in group)
             {

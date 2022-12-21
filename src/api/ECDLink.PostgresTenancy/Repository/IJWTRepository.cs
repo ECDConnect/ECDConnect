@@ -1,5 +1,4 @@
-﻿//using ECDLink.PostgresTenancy.Entities;
-using ECDLink.PostgresTenancy.Entities;
+﻿using ECDLink.PostgresTenancy.Entities;
 using ECDLink.Tenancy.Model;
 using System;
 using System.Collections.Generic;
@@ -10,8 +9,6 @@ namespace ECDLink.PostgresTenancy.Repository
 {
     public interface IJWTRepository
     {
-        //IQueryable<TenantEntity> GetAll();
-
         JWTUserTokensEntity GetByKey(string key);
         JWTUserTokensEntity GetByUserId(string id);
         JWTUserTokensEntity GetByToken(string token);

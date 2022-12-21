@@ -85,7 +85,7 @@ namespace EcdLink.Api.CoreApi.Security.Managers
             }
 
             var isRetracted = await _userManager.UpdateSecurityStampAsync(user);
-            var updateUser = await _userManager.UpdateAsync(user);
+            await _userManager.UpdateAsync(user);
 
             return isRetracted.Succeeded;
         }

@@ -10,6 +10,5 @@ namespace ECDLink.Core.Models.ContentManagement
 
         public IEnumerable<FieldDefinitionModel> Fields { get; set; }
 
-        //public MetaDataDefinitionModel MetaData { get; set; }
     }
 }

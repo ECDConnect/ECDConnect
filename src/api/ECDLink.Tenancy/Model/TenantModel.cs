@@ -17,11 +17,6 @@ namespace ECDLink.Tenancy.Model
 
         public string OrganisationName { get; set; }
 
-        // DB Configuration
-        //public string ConnectionString { get; set; }
-
-        //public string DbProvider { get; set; }
-
         public TenantType TenantType { get; set; } = TenantType.Tenant;
         public string ThemePathVar { get; set; }
         public string Var1 { get; set; }

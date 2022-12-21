@@ -121,8 +121,6 @@ namespace ECDLink.ContentManagement.Repositories
                 return default;
             }
 
-            var contentFieldKey = content.Select(x => x.ContentValues.Select(x => x.ContentTypeField).Distinct());
-
             var dynamicContentList = new List<object>();
 
             foreach (var item in content)

@@ -54,10 +54,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             if (classRoom != null)
             {
 
-                ReassignmentMutationExtension reassignment = new ReassignmentMutationExtension();
-                //reassignment.AddReassignmentForPractitioner(contextAccessor, repoFactory, engine, uId, , "Principal Linked Practitioner", DateTime.Now, uId, classRoom.Id.ToString(), true);
                 reassignmentService.AddReassignmentForPractitioner(uId, uId, userId, "Principal Linked Practitioner", DateTime.Now, uId, classroomId, true);
-
                 return classRoom;
             }
 
@@ -92,7 +89,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     };
 
                     var newClassRoomGroup = classRepo.Insert(classRoomCreate);
-                    this.UpdateClassProgrammeForPractitioner(contextAccessor, dbFactory, repoFactory, input.ClassroomId, hierarchy);
+                    this.UpdateClassProgrammeForPractitioner(contextAccessor, repoFactory, input.ClassroomId, hierarchy);
                     return newClassRoomGroup;
 
                 }
@@ -104,10 +101,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
                     if (hierarchy != null)
                     {
-                        //newHierarchy = userHierarchy.Hierarchy;                       
                         classRoom.Hierarchy = hierarchy;
 
-                        var reassignmentRepo = repoFactory.CreateGenericRepository<ClassReassignmentHistory>(userContext: uId);
                         newReassignment.LoggedBy = uId;
                         newReassignment.IsActive = true;
                         newReassignment.Reason = "Principal Linked Practitioner";
@@ -115,7 +110,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         newReassignment.ReassignedToDate = DateTime.Now;
                         newReassignment.ReassignedToUser = input.UserId.ToString();
                         newReassignment.UserId = input.UserId.ToString();
-                        newReassignment.ReassignedBackToUserId = uId;//classRoom.UserId.ToString();
+                        newReassignment.ReassignedBackToUserId = uId;
                         newReassignment.ReassignedBackToDate = DateTime.Now;
                     }                    
                 }
@@ -124,10 +119,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 classRoom.Name = input.Name;
                 classRoom.IsActive = input.IsActive;
                 classRoom.ProgrammeTypeId = input.ProgrammeTypeId;
-                var updateResult = classRepo.Update(classRoom);
 
                 //also update the userhierarchy on classroomgroup, as well as classProgramme so that a practitioner can see this
-                this.UpdateClassProgrammeForPractitioner(contextAccessor, dbFactory, repoFactory, input.ClassroomId, hierarchy);
+                this.UpdateClassProgrammeForPractitioner(contextAccessor, repoFactory, input.ClassroomId, hierarchy);
 
                 return classRoom;
             }
@@ -187,11 +181,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return new ClassProgramme();
         }
 
-        private bool UpdateClassProgrammeForPractitioner([Service] IHttpContextAccessor contextAccessor,
-    [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
-    [Service] IGenericRepositoryFactory repoFactory, Guid classroomId,  string newHierarchy)
+        private void UpdateClassProgrammeForPractitioner([Service] IHttpContextAccessor contextAccessor,
+                                                         [Service] IGenericRepositoryFactory repoFactory, 
+                                                         Guid classroomId,  
+                                                         string newHierarchy)
         {
-            bool updated = false;
             var uId = contextAccessor.HttpContext.GetUser().Id;
 
             var classProgrammeRepo = repoFactory.CreateGenericRepository<ClassProgramme>(userContext: uId);
@@ -200,24 +194,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             {
                 classProgramme.Hierarchy = newHierarchy;
                 classProgrammeRepo.Update(classProgramme);
-            } //else
-            //{
-            //    ClassProgramme classRoomCreate = new ClassProgramme()
-            //    {
-            //        Id = input.Id,
-            //        ClassroomGroupId = input.ClassroomGroupId,
-            //        IsActive = true,
-            //        UpdatedBy = uId.ToString(),
-            //        ProgrammeStartDate = input.ProgrammeStartDate,
-            //        MeetingDay = input.MeetingDay,
-            //        IsFullDay = input.IsFullDay,
-            //        UpdatedDate = DateTime.Now,
-            //        Hierarchy = hierarchy
-            //    };
-
-            //    return programmeRepo.Insert(classRoomCreate);
-            //}
-            return updated;
+            } 
         }
     }
 }

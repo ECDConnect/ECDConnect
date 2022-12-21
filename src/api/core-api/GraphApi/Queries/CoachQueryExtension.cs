@@ -29,7 +29,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public List<Practitioner> GetAllPractitionersForCoach([Service] IHttpContextAccessor contextAccessor,
-         [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
          [Service] IGenericRepositoryFactory repoFactory,
          string userId)
         {
@@ -43,46 +42,42 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public Coach GetCoachByCoachUserId([Service] IHttpContextAccessor contextAccessor,
-            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
             string userId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var dbRepo = repoFactory.CreateGenericRepository<Coach>(userContext: uId);
+
             return dbRepo.GetByUserId(userId);
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public Coach GetCoachByUserId([Service] IHttpContextAccessor contextAccessor,
-        [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
         [Service] IGenericRepositoryFactory repoFactory,
         string userId)
         {
             //this was used wrong in FE, so adjust to align with FE
-            return GetCoachByPractitionerId(contextAccessor,dbFactory, repoFactory, userId);
+            return GetCoachByPractitionerId(contextAccessor, repoFactory, userId);
         }
+
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public string GetCoachNameByUserId([Service] IHttpContextAccessor contextAccessor,
-        [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
         [Service] IGenericRepositoryFactory repoFactory,
         string userId)
         {
-            //this was used wrong in FE, so adjust to align with FE
-            Coach coach = GetCoachByCoachUserId(contextAccessor,dbFactory,repoFactory,userId);
+            Coach coach = GetCoachByCoachUserId(contextAccessor,repoFactory,userId);
             return (coach!=null? coach.User!=null ? coach.User.FullName : null : null);
         }
 
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public Coach GetCoachByPractitionerId([Service] IHttpContextAccessor contextAccessor,
-         [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
          [Service] IGenericRepositoryFactory repoFactory,
          string practitionerId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var dbRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
 
-            //List<Practitioner> practitioners = dbRepo.GetAll().Where(x => x.CoachHierarchy.HasValue).ToList();
             Practitioner pract = dbRepo.GetByUserId(practitionerId);
             if (pract != null && pract.CoachHierarchy.HasValue)
             {
@@ -90,13 +85,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 return coachRepo.GetByUserId(pract.CoachHierarchy.ToString());
             }
             else return null;
-            /*practitioners = practitioners.Where(x => x.UserId.Contains(practitionerId)).ToList();
-            Coach coach = new Coach();
-            if (practitioners.Count > 0)
-            {
-                coach = this.GetCoachByCoachUserId(contextAccessor,dbFactory,repoFactory, practitioners.FirstOrDefault().CoachHierarchy.ToString());
-            }
-            return coach;*/
         }
 
         public List<Child> GetAllChildrenForCoach([Service] IHttpContextAccessor contextAccessor,
@@ -120,7 +108,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
 
         public List<Classroom> GetAllClassroomsForCoach([Service] IHttpContextAccessor contextAccessor,
-[Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
 [Service] IGenericRepositoryFactory repoFactory,
 string userId)
         {
@@ -140,7 +127,6 @@ string userId)
         }
 
         public List<ClassroomGroup> GetAllClassroomGroupsForCoach([Service] IHttpContextAccessor contextAccessor,
-[Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
 [Service] IGenericRepositoryFactory repoFactory,
 string userId)
         {
