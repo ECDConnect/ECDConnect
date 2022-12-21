@@ -145,7 +145,6 @@ export default function FranchisorPanelCreate(props: UserPanelCreateProps) {
         const userId = response.data.addUser.id;
         await saveRoles(userId);
         await saveSiteAddress(userId);
-        //await saveFranchisor(userId);
       })
       .catch((error) => {
         console.log(error);
