@@ -48,7 +48,6 @@ import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { usePrevious } from '@/hooks/usePrevious';
 import { healthCareWorkerSelectors } from '@/store/healthCareWorker';
 import { InfantActions } from '@/store/infant/infant.actions';
-import { getInfantCountForMonth } from '@/store/infant/infant.selectors';
 
 const BANNER_HEIGHT = 64;
 
@@ -92,8 +91,6 @@ export const InfantRegisterForm: React.FC = () => {
   const healthCareWorker = useSelector(
     healthCareWorkerSelectors.getHealthCareWorker
   );
-
-  const childrenCount = useSelector(getInfantCountForMonth);
 
   const { isLoading, isRejected } = useThunkFetchCall(
     'infants',
@@ -419,13 +416,13 @@ export const InfantRegisterForm: React.FC = () => {
                 className="mt-4 text-center"
                 lineHeight="snug"
                 text={
-                  !!childrenCount && childrenCount >= 1 && !isRejectInfantCount
-                    ? `Great job ${user?.firstName}, you've registered ${childrenCount} children this month.`
+                  !!count && !isRejectInfantCount
+                    ? `Great job ${user?.firstName}, you've registered ${count} children this month.`
                     : `Great job ${user?.firstName}, you've registered ${
                         multipleChildrenArray.length > 1
-                          ? multipleChildrenArray.length + 'children'
-                          : '1 child'
-                      } children.`
+                          ? multipleChildrenArray.length + ' children.'
+                          : '1 child.'
+                      }`
                 }
               />
               <Typography
@@ -455,7 +452,6 @@ export const InfantRegisterForm: React.FC = () => {
         },
       }),
     [
-      childrenCount,
       dialog,
       history,
       isRejectInfantCount,
@@ -476,12 +472,14 @@ export const InfantRegisterForm: React.FC = () => {
 
   const onSuccess = useCallback(() => {
     if (!isRejected) {
-      (async () =>
-        await appDispatch(
+      (async () => {
+        const count = await appDispatch(
           infantThunkActions.getInfantCountForMonth({})
-        ).unwrap())();
+        ).unwrap();
 
-      showSuccessMessage();
+        showSuccessMessage(count);
+      })();
+
       if (healthCareWorker) {
         (async () =>
           await appDispatch(
