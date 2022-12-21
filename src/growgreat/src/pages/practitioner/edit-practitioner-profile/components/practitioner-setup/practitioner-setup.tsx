@@ -3,8 +3,14 @@ import { Alert, Button, Divider, Typography, Dropdown } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm } from 'react-hook-form';
 import { useSelector } from 'react-redux';
-import { setupPractitioner } from '@/schemas/practitioner/add-practitioner';
 import { staticDataSelectors } from '@/store/static-data';
+import {
+  initialPractitionerSetupValues,
+  practitionerSetupModelSchema,
+} from '@/schemas/practitioner/practitioner-setup';
+import { getHealthCareWorker } from '@/store/healthCareWorker/healthCareWorker.selectors';
+import { useEffect } from 'react';
+
 export const PractitionerSetup = ({
   onSubmit,
 }: {
@@ -12,13 +18,17 @@ export const PractitionerSetup = ({
 }) => {
   const languages = useSelector(staticDataSelectors?.getLanguages);
   const { watch, setValue } = useForm({
-    resolver: yupResolver(setupPractitioner),
-    defaultValues: {
-      language: '',
-    },
+    resolver: yupResolver(practitionerSetupModelSchema),
+    defaultValues: initialPractitionerSetupValues,
   });
 
-  const { language } = watch();
+  const healthCareWorker = useSelector(getHealthCareWorker);
+
+  const { languageId } = watch();
+
+  useEffect(() => {
+    setValue('languageId', healthCareWorker?.languageId);
+  }, [healthCareWorker?.languageId, setValue]);
 
   return (
     <>
@@ -51,9 +61,9 @@ export const PractitionerSetup = ({
               fullWidth
               // label={'Language'}
               className="mb-4"
-              selectedValue={language}
+              selectedValue={languageId}
               onChange={(item: any) => {
-                setValue('language', item);
+                setValue('languageId', item);
               }}
             />
             <Alert
@@ -77,8 +87,9 @@ export const PractitionerSetup = ({
             text="Next"
             textColor="white"
             icon="ArrowCircleRightIcon"
+            disabled={!languageId}
             onClick={() => {
-              onSubmit(language);
+              onSubmit(languageId || '');
             }}
           />
         </div>
