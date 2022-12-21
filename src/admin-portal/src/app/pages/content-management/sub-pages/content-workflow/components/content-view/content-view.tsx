@@ -124,14 +124,13 @@ export default function ContentView({
   if (contentType && contentValues) {
     return (
       <div className="flex flex-col">
-        {contentValues &&
-          contentValues
-            .filter((x) => x.localeId === selectedLanguageId)
-            .map((item: ContentValueDto, index: number) => (
-              <div key={index} className="mt-2">
-                {getRenderElement(item)}
-              </div>
-            ))}
+        {contentValues
+          .filter((x) => x.localeId === selectedLanguageId)
+          .map((item: ContentValueDto, index: number) => (
+            <div key={index} className="mt-2">
+              {getRenderElement(item)}
+            </div>
+          ))}
       </div>
     );
   } else {
