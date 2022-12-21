@@ -6,7 +6,7 @@ export interface PregnantAddressProps
   extends FormComponentProps<PregnantRegisterModel> {
   address?: string;
   addressLine1?: string;
-  details?: PregnantDetailsModel | undefined;
+  details?: PregnantDetailsModel;
 }
 
 export const yesNoOptions = [

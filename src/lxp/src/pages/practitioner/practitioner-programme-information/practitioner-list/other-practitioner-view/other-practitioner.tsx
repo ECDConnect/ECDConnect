@@ -15,12 +15,6 @@ import { PractitionerProfileRouteState } from './other-colleagues.types';
 import * as styles from './other-colleagues.styles';
 import { useTheme } from '@ecdlink/core';
 
-// import { CreateNote } from '../components/create-note/create-note';
-// import { NoteTypeEnum } from '@ecdlink/graphql';
-// import { getLastNoteDate } from '@utils/child/child-profile-utils';
-// import { notesSelectors } from '@store/notes';
-// import { useSelector } from 'react-redux';
-
 export const OtherPractitionerProfile: React.FC<
   PractitionerProfileRouteState
 > = ({ practitionerId, setPractitionerInfo, colleagueProfile }) => {

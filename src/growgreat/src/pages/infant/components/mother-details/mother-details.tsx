@@ -24,6 +24,8 @@ import { useSelector } from 'react-redux';
 import { MultipleChildrenProps } from '../../infant-register-form/infant-register-form.types';
 import { caregiverSelectors } from '@/store/caregiver';
 import { motherSelectors } from '@/store/mother';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { InfantActions } from '@/store/infant/infant.actions';
 
 export const MotherDetails: React.FC<MotherDetailsProps> = ({
   onSubmit,
@@ -53,8 +55,14 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
   const [relationshipChildrenArray, setRelationshipChildrenArray] =
     useState<MultipleChildrenProps[]>();
 
-  const caregivers = useSelector(caregiverSelectors.getCaregivers);
+  const caregivers = useSelector(caregiverSelectors.getCaregivers) || [];
   const mothers = useSelector(motherSelectors?.getMothers);
+
+  const { isLoading } = useThunkFetchCall('infants', InfantActions.ADD_INFANTS);
+  const { isLoading: isLoadingInfantCount } = useThunkFetchCall(
+    'infants',
+    InfantActions.GET_INFANT_COUNT_FOR_MONTH
+  );
 
   const mothersUpdatedToCaregivers = mothers?.map((item) => ({
     firstName: item?.user?.firstName,
@@ -67,21 +75,18 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
     age: '',
   }));
 
-  const motherAndCaregivers = [...caregivers!, ...mothersUpdatedToCaregivers!];
+  const motherAndCaregivers = [...caregivers, ...mothersUpdatedToCaregivers];
 
   useEffect(() => {
     const uniqueChildrenArray = relationshipChildrenArray?.filter(
       (elem, index, self) =>
         self.findIndex((t) => {
           return (
-            // TODO: Fix this expression
-            // REASON: The expression is duplicated on both sides of a logical operator.
-            // deepcode ignore CopyPasteError: <We will address this in the next phase>
-            t.firstName === elem.firstName && t.firstName === elem.firstName
+            t.firstName && elem.firstName && t.firstName === elem.firstName
           );
         }) === index
     );
-    // if (uniqueChildrenArray)
+
     setMultipleChildrenArray(uniqueChildrenArray);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [relationshipChildrenArray]);
@@ -148,14 +153,14 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
                             ...multipleChildrenArray[index],
                             relationshipId: value,
                           },
-                          ...relationshipChildrenArray!,
+                          ...relationshipChildrenArray,
                         ])
                       : setRelationshipChildrenArray([
                           {
                             ...multipleChildrenArray[index],
                             relationshipId: value,
                           },
-                          ...multipleChildrenArray!,
+                          ...multipleChildrenArray,
                         ]);
                   }}
                 />
@@ -331,10 +336,11 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
           iconPosition={'start'}
           onClick={() => {
             onSubmit(getMotherDetailsFormValues());
-            // setAddress(handleAddExistingUser?.siteAddress);
-            // setContactInformation(handleAddExistingUser?.phoneNumber);
           }}
+          isLoading={isLoading || isLoadingInfantCount}
           disabled={
+            isLoading ||
+            isLoadingInfantCount ||
             (!multipleChildrenArray && !isValid) ||
             (isAlreadyClient && !getMotherDetailsFormValues('id')) ||
             (!isAlreadyClient && !getMotherDetailsFormValues('age')) ||

@@ -55,7 +55,7 @@ function useGoogleMap(ref: MutableRefObject<HTMLElement> | any) {
     let map: GoogleMap = await GoogleMap.create({
       id: 'google-map',
       element: ref.current,
-      apiKey: process.env.REACT_APP_MAP_API_KEY as string,
+      apiKey: process.env.REACT_APP_MAP_API_KEY || '',
       config: {
         center: {
           lat: latitude,
@@ -130,7 +130,7 @@ function useGoogleMap(ref: MutableRefObject<HTMLElement> | any) {
 
 function CustomGoogleMapComponent(
   props: ComponentBaseProps & {
-    children?: React.ReactNode | undefined;
+    children?: React.ReactNode;
     height?: number;
     onChange?: (address?: Address[]) => void;
   }

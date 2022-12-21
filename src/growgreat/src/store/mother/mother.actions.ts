@@ -15,81 +15,74 @@ export const getMothers = createAsyncThunk<
   // eslint-disable-next-line @typescript-eslint/ban-types
   {},
   ThunkApiType<RootState>
->(
-  MotherActions.GET_MOTHERS,
-  // eslint-disable-next-line no-empty-pattern
-  async ({}, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-      mothers: { mothers: mothersCache },
-    } = getState();
+>(MotherActions.GET_MOTHERS, async (_, { getState, rejectWithValue }) => {
+  const {
+    auth: { userAuth },
+    mothers: { mothers: mothersCache },
+  } = getState();
 
-    if (!mothersCache) {
-      try {
-        let mothers: MotherDto[] | undefined;
+  if (!mothersCache) {
+    try {
+      let mothers: MotherDto[] | undefined;
 
-        if (userAuth?.auth_token) {
-          mothers = await new MotherService(userAuth?.auth_token).getMothers(
-            userAuth.id
-          );
-        } else {
-          return rejectWithValue('no access token, profile check required');
-        }
-
-        if (!mothers) {
-          return rejectWithValue('Error getting mothers');
-        }
-
-        return mothers;
-      } catch (err) {
-        return rejectWithValue(err);
+      if (userAuth?.auth_token) {
+        mothers = await new MotherService(userAuth?.auth_token).getMothers(
+          userAuth.id
+        );
+      } else {
+        return rejectWithValue('no access token, profile check required');
       }
-    } else {
-      return mothersCache;
+
+      if (!mothers) {
+        return rejectWithValue('Error getting mothers');
+      }
+
+      return mothers;
+    } catch (err) {
+      return rejectWithValue(err);
     }
+  } else {
+    return mothersCache;
   }
-);
+});
 
 export const upsertMothers = createAsyncThunk<
   boolean[],
   // eslint-disable-next-line @typescript-eslint/ban-types
   {},
   ThunkApiType<RootState>
->(
-  'upsertMothers',
-  // eslint-disable-next-line no-empty-pattern
-  async ({}, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-      mothers: { mothers },
-    } = getState();
+>('upsertMothers', async (_, { getState, rejectWithValue }) => {
+  const {
+    auth: { userAuth },
+    mothers: { mothers },
+  } = getState();
 
-    try {
-      if (userAuth?.auth_token && mothers) {
-        for (const mother of mothers) {
-          const input = mapMother(mother);
+  try {
+    if (userAuth?.auth_token && mothers) {
+      for (const mother of mothers) {
+        const input = mapMother(mother);
 
-          if (mother.siteAddress) {
-            const addressInput = mapSiteAddress(mother.siteAddress);
-            await new SiteAddressService(
-              userAuth?.auth_token
-            ).updateSiteAddress(mother.siteAddress.id ?? '', addressInput);
-
-            input.siteAddressId = addressInput.Id;
-          }
-
-          await new MotherService(userAuth?.auth_token).updateMother(
-            mother.id ?? '',
-            input
+        if (mother.siteAddress) {
+          const addressInput = mapSiteAddress(mother.siteAddress);
+          await new SiteAddressService(userAuth?.auth_token).updateSiteAddress(
+            mother.siteAddress.id ?? '',
+            addressInput
           );
+
+          input.siteAddressId = addressInput.Id;
         }
+
+        await new MotherService(userAuth?.auth_token).updateMother(
+          mother.id ?? '',
+          input
+        );
       }
-      return [true];
-    } catch (err) {
-      return rejectWithValue(err);
     }
+    return [true];
+  } catch (err) {
+    return rejectWithValue(err);
   }
-);
+});
 
 type CreateMotherRequest = {
   mother: MotherDto;
@@ -156,7 +149,7 @@ const mapMother = (x: Partial<MotherDto>): MotherModelInput => ({
   healthCareWorkerId: x.healthCareWorkerId,
   phoneNumber: x.phoneNumber,
   whatsAppNumber: x.whatsAppNumber,
-  siteAddress: mapSiteAddress(x.siteAddress!),
+  siteAddress: x.siteAddress && mapSiteAddress(x.siteAddress),
 });
 
 const mapSiteAddress = (x: Partial<SiteAddressDto>): SiteAddressInput => ({

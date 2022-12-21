@@ -16,6 +16,7 @@ import { DialogPosition } from '@ecdlink/ui';
 import { AuthRoutes, PublicRoutes } from '@/routes';
 import InitialStoreSetup from '@/initial-store-setup';
 import InitialNotificationSetup from '@/initial-notifications-setup';
+import useClearSiteData from '@ecdlink/core/lib/hooks/useClearSiteData';
 
 import { authSelectors } from '@/store/auth';
 import { settingSelectors } from '@/store/settings';
@@ -31,6 +32,8 @@ function App() {
   const applicationSettings = useSelector(
     settingSelectors.getApplicationSettings
   );
+
+  const clearSiteData = useClearSiteData();
 
   function getRoutes() {
     // show auth routes for auth users
@@ -77,6 +80,12 @@ function App() {
       });
     }
   });
+
+  useEffect(() => {
+    if (!user) {
+      clearSiteData();
+    }
+  }, [clearSiteData, user]);
 
   return (
     <IonApp className="m-auto max-w-4xl bg-white">

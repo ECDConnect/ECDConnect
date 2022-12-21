@@ -1,9 +1,14 @@
 import { ReactNode } from 'react';
 import { Menu } from '@headlessui/react';
 import { SearchIcon } from '@heroicons/react/solid';
-import { DialogPosition, Typography } from '@ecdlink/ui';
-import { classNames, renderIcon } from '@ecdlink/ui';
-import { StackedList, Dialog } from '@ecdlink/ui';
+import {
+  DialogPosition,
+  Typography,
+  classNames,
+  renderIcon,
+  StackedList,
+  Dialog,
+} from '@ecdlink/ui';
 import * as styles from './search-header.styles';
 
 export type SearchHeaderAlternativeRenderItem<T> = {
@@ -65,7 +70,7 @@ const SeachHeader = <T extends {}>({
             />
           </div>
           <div
-            className={`flex flex-col h-full flex-1 overflow-y-auto ${
+            className={`flex h-full flex-1 flex-col overflow-y-auto ${
               alternativeSearchItemRender ? 'px-4 pt-4 pb-24' : ''
             }  `}
           >

@@ -1,12 +1,6 @@
 import { useDialog, useTheme } from '@ecdlink/core';
-import {
-  ClassProgrammeDto,
-  ClassroomDto,
-  ClassroomGroupDto,
-} from '@ecdlink/core';
 import { IonContent } from '@ionic/react';
-import { ActionModal, BannerWrapper } from '@ecdlink/ui';
-import { DialogPosition } from '@ecdlink/ui';
+import { ActionModal, BannerWrapper, DialogPosition } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
@@ -210,9 +204,7 @@ export const EditPractitionerProfile: React.FC = () => {
           }
           displayOffline={!isOnline}
         >
-          <div className={'px-4'}>
-            {steps(activeStep as EditPractitionerSteps)}
-          </div>
+          <div className={'px-4'}>{steps(activeStep)}</div>
         </BannerWrapper>
       </IonContent>
     </>

@@ -9,7 +9,7 @@ class CaregiverService {
   }
 
   async getCaregivers(): Promise<CaregiverDto[]> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         query {
@@ -67,7 +67,7 @@ class CaregiverService {
     id: string,
     input: CaregiverInput
   ): Promise<CaregiverDto> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         mutation updateCaregiver($input: CaregiverInput, $id: UUID) {
@@ -124,7 +124,7 @@ class CaregiverService {
   }
 
   async createCaregiver(input: CaregiverInput): Promise<CaregiverDto> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         mutation createCaregiver($input: CaregiverInput) {
@@ -183,7 +183,7 @@ class CaregiverService {
     childUserId: string,
     grantIds: string[]
   ): Promise<CaregiverDto> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
       mutation updateCareGiverGrants($childUserId: UUID!, $grantIds: [UUID!] ) {

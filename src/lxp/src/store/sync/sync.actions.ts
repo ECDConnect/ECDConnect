@@ -12,7 +12,6 @@ import { programmeThunkActions } from '../programme';
 import { RootState, ThunkApiType } from '../types';
 import { userThunkActions } from '../user';
 import { practitionerThunkActions } from '../practitioner';
-// import { coachThunkActions } from '../coach';
 
 import { SyncOfflineDataProps, SyncOfflineDataReturnType } from './sync.types';
 

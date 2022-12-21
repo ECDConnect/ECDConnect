@@ -1,5 +1,4 @@
-import { Button, RoundIcon, Typography } from '@ecdlink/ui';
-import { classNames } from '@ecdlink/ui';
+import { Button, RoundIcon, Typography, classNames } from '@ecdlink/ui';
 import * as styles from './icon-information-indicator.styles';
 import { IconInformationIndicatorProps } from './icon-information-indicator.types';
 

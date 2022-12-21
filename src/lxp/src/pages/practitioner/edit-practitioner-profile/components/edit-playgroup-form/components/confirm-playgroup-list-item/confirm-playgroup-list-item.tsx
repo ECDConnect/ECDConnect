@@ -1,5 +1,4 @@
-import { Button, Typography } from '@ecdlink/ui';
-import { renderIcon } from '@ecdlink/ui';
+import { Button, Typography, renderIcon } from '@ecdlink/ui';
 import {
   getWeekdayValue,
   Weekdays,
@@ -22,7 +21,7 @@ export const ConfirmPlayGroupListItem: React.FC<
 
   return (
     <div className={styles.wrapper} key={`confirm-playgroup-item-${index}`}>
-      <div className="flex-1 flex-column">
+      <div className="flex-column flex-1">
         <Typography
           type="body"
           color={'textMid'}

@@ -1,6 +1,5 @@
 import { NoteDto } from '@ecdlink/core';
-import { StackedList } from '@ecdlink/ui';
-import { ActionListDataItem } from '@ecdlink/ui';
+import { StackedList, ActionListDataItem } from '@ecdlink/ui';
 import { format } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { NotesListProps } from './notes-list.types';

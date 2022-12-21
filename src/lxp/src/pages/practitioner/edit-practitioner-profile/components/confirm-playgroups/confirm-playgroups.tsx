@@ -1,6 +1,5 @@
 import { FormComponentProps } from '@ecdlink/core';
-import { Button, Divider, Typography } from '@ecdlink/ui';
-import { renderIcon } from '@ecdlink/ui';
+import { Button, Divider, Typography, renderIcon } from '@ecdlink/ui';
 import { useEffect } from 'react';
 import { useState } from 'react';
 import { newGuid } from '@utils/common/uuid.utils';

@@ -133,23 +133,23 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
         (item) =>
           item?.description === franchisorSiteAddress?.province?.description
       );
-      setCoachProfileFormValue('name', franchisorSiteAddress?.name!);
+      setCoachProfileFormValue('name', franchisorSiteAddress?.name || '');
       setCoachProfileFormValue(
         'addressLine1',
         franchisorSiteAddress?.addressLine1
       );
       setCoachProfileFormValue(
         'addressLine2',
-        franchisorSiteAddress?.addressLine2!
+        franchisorSiteAddress?.addressLine2 || ''
       );
       setCoachProfileFormValue(
         'addressLine3',
-        franchisorSiteAddress?.addressLine3!
+        franchisorSiteAddress?.addressLine3 || ''
       );
-      setCoachProfileFormValue('provinceId', selectedProvince?.id!);
+      setCoachProfileFormValue('provinceId', selectedProvince?.id || '');
       setCoachProfileFormValue(
         'postalCode',
-        franchisorSiteAddress?.postalCode!
+        franchisorSiteAddress?.postalCode || ''
       );
       setCoachProfileFormValue('ward', franchisorSiteAddress?.ward ?? '');
     }
@@ -168,46 +168,44 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
   }, [isOfficeAddress]);
 
   const handleFormSubmit = (): void => {
-    if (isValid /*  && onSubmit */) {
-      const profileFormValues = getCoachProfileFormValues();
-      // const copy = Object.assign({}, coach);
-      const newCoachProfileInformation = Object.assign(
-        {},
-        coachProfileInformation
-      );
+    const profileFormValues = getCoachProfileFormValues();
 
-      newCoachProfileInformation.siteAddress = {
-        name: isOfficeAddress ? profileFormValues.name : '',
-        addressLine1: profileFormValues.addressLine1,
-        addressLine2: profileFormValues.addressLine2,
-        addressLine3: profileFormValues.addressLine3,
-        postalCode: profileFormValues.postalCode,
-        ward: profileFormValues.ward,
-        provinceId: profileFormValues.provinceId,
-        province: profileFormValues.province,
-      };
+    const newCoachProfileInformation = Object.assign(
+      {},
+      coachProfileInformation
+    );
 
-      newCoachProfileInformation.email = profileFormValues.email;
+    newCoachProfileInformation.siteAddress = {
+      name: isOfficeAddress ? profileFormValues.name : '',
+      addressLine1: profileFormValues.addressLine1,
+      addressLine2: profileFormValues.addressLine2,
+      addressLine3: profileFormValues.addressLine3,
+      postalCode: profileFormValues.postalCode,
+      ward: profileFormValues.ward,
+      provinceId: profileFormValues.provinceId,
+      province: profileFormValues.province,
+    };
 
-      if (isOfficeAddress) {
-        if (franchisorSiteAddress?.addressLine1 !== undefined) {
-          newCoachProfileInformation.siteAddressId =
-            coachProfileInformation?.franchisorAddressId;
-        } else {
-          let tempAddress = {
-            addressLine1: '',
-            addressLine2: '',
-            addressLine3: '',
-            postalCode: '',
-            provinceId: provinces[0].id,
-          };
+    newCoachProfileInformation.email = profileFormValues.email;
 
-          newCoachProfileInformation.siteAddress = tempAddress;
-        }
+    if (isOfficeAddress) {
+      if (franchisorSiteAddress?.addressLine1 !== undefined) {
+        newCoachProfileInformation.siteAddressId =
+          coachProfileInformation?.franchisorAddressId;
+      } else {
+        let tempAddress = {
+          addressLine1: '',
+          addressLine2: '',
+          addressLine3: '',
+          postalCode: '',
+          provinceId: provinces[0].id,
+        };
+
+        newCoachProfileInformation.siteAddress = tempAddress;
       }
-
-      onSubmit(newCoachProfileInformation);
     }
+
+    onSubmit(newCoachProfileInformation);
   };
 
   return (
@@ -308,7 +306,7 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
                 (provinces &&
                   provinces.map((province: ProvinceDto) => ({
                     label: province.description,
-                    value: province.id!,
+                    value: province.id || '',
                   }))) ||
                 []
               }

@@ -347,6 +347,7 @@ export const ChildRegistration: React.FC = () => {
     );
     childInputModel.caregiverId = caregiverDto.id;
     childInputModel.workflowStatusId = childStatusId;
+    childInputModel.insertedBy = user?.fullName;
 
     await updateChild(childInputModel);
 
@@ -358,7 +359,10 @@ export const ChildRegistration: React.FC = () => {
       const updateGrants = async () => {
         await new CaregiverService(
           authUser?.auth_token ?? ''
-        ).updateCareGiverGrants(existingChild?.userId!, caregiverData?.grants!);
+        ).updateCareGiverGrants(
+          existingChild?.userId!,
+          caregiverData?.grants || []
+        );
       };
       updateGrants();
     }
@@ -369,7 +373,7 @@ export const ChildRegistration: React.FC = () => {
     if (!child && caregiverData) return;
 
     await appDispatch(
-      childrenThunkActions.updateChild({ child: child, id: child.id as string })
+      childrenThunkActions.updateChild({ child: child, id: String(child.id) })
     ).unwrap();
     appDispatch(childrenActions.updateChild(child));
     setSendGrants(true);

@@ -6,8 +6,8 @@ export interface EditInfantDetailsProps
   name?: string;
   dateOfBirth?: Date;
   genderId?: string;
-  numberOfChildren?: number | undefined;
-  multipleChildrenCount?: number | undefined;
+  numberOfChildren?: number;
+  multipleChildrenCount?: number;
 }
 
 export const yesNoOptions = [

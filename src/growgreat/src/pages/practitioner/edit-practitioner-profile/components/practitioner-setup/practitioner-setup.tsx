@@ -4,15 +4,12 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import { setupPractitioner } from '@/schemas/practitioner/add-practitioner';
-// import { useHistory } from 'react-router';
-// import ROUTES from '@/routes/routes';
 import { staticDataSelectors } from '@/store/static-data';
 export const PractitionerSetup = ({
   onSubmit,
 }: {
   onSubmit: (item: string) => void;
 }) => {
-  // const history = useHistory();
   const languages = useSelector(staticDataSelectors?.getLanguages);
   const { watch, setValue } = useForm({
     resolver: yupResolver(setupPractitioner),
@@ -20,9 +17,6 @@ export const PractitionerSetup = ({
       language: '',
     },
   });
-
-  // const userAuth = useSelector(authSelectors.getAuthUser);
-  // const user = useSelector(userSelectors.getUser);
 
   const { language } = watch();
 
@@ -83,13 +77,7 @@ export const PractitionerSetup = ({
             text="Next"
             textColor="white"
             icon="ArrowCircleRightIcon"
-            // disabled={
-            //   (practitionerToProgramme === true && !allowPermissions) ||
-            //   practitionerToProgramme === null ||
-            //   practitionerToProgramme === undefined
-            // }
             onClick={() => {
-              // getPractitionerResponse();
               onSubmit(language);
             }}
           />

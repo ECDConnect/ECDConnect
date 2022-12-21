@@ -99,7 +99,7 @@ export const ChildProgressObservationReport: React.FC = () => {
   };
 
   const renderStep = () => {
-    switch (activeStepKey as number) {
+    switch (activeStepKey) {
       case ChildProgressObservationReportSteps.ChildEnjoys:
         return (
           <ChildEnjoys childId={childId} onSubmit={onChildEnjoysSubmitted} />

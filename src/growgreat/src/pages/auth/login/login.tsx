@@ -8,16 +8,8 @@ import {
   FormInput,
   PasswordInput,
   Typography,
-  // Dialog,
-  // DialogPosition,
 } from '@ecdlink/ui';
-// import {
-//   StorageFull
-// } from './storage-full/storage-full';
-import {
-  // useEffect,
-  useState,
-} from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
 import * as styles from '@/pages/auth/login/login.styles';
@@ -31,31 +23,20 @@ import { authActions, authThunkActions } from '@store/auth';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { settingActions } from '@store/settings';
 import ROUTES from '@routes/routes';
-// import DeviceInfo from 'react-native-device-info';
 import { version } from '@@/package.json';
 
 export const Login: React.FC = () => {
   const { theme } = useTheme();
+
   const history = useHistory();
+
   const appDispatch = useAppDispatch();
+
   const { isOnline, Offline } = useOnlineStatus();
-  // const [freeMemory, setFreeMemory] = useState(0);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [errorMessage, setErrorMessage] = useState(false);
+
   const [isLoading, setIsLoading] = useState(false);
   const [displayError, setDisplayError] = useState(false);
   const [idFieldVisible, setIdFieldVisible] = useState(true);
-
-  // function getFreeDiskStorage() {
-  //   DeviceInfo.getFreeDiskStorage()
-  //     .then((freeDiskStorage) => {
-  //       let freeStorageInMB = freeDiskStorage / 1024 / 1024;
-  //       freeStorageInMB = parseInt(freeStorageInMB + '');
-  //       setFreeMemory(freeStorageInMB);
-  //       return freeStorageInMB;
-  //     })
-  //     .catch((error: unknown) => console.log(error));
-  // }
 
   const {
     register: loginRegister,
@@ -101,8 +82,6 @@ export const Login: React.FC = () => {
           setIsLoading(false);
           console.error(error);
         });
-    } else {
-      setErrorMessage(true);
     }
   }
 

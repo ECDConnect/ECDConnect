@@ -61,6 +61,7 @@ export const PractitionerAbout: React.FC = () => {
     useState(false);
 
   const user = useSelector(userSelectors.getUser);
+
   const healthCareWorker = useSelector(
     healthCareWorkerSelectors?.getHealthCareWorker
   );
@@ -78,7 +79,7 @@ export const PractitionerAbout: React.FC = () => {
         surname: user.surname || '',
         cellphone: user.phoneNumber || '',
         email: user.email || '',
-        language: user?.language || '',
+        languageId: healthCareWorker?.languageId || user?.languageId || '',
       };
       return tempPractitioner;
     } else {
@@ -109,7 +110,7 @@ export const PractitionerAbout: React.FC = () => {
 
   const setNewStackListItems = (currentUser: UserDto) => {
     const selectedLanguage = languages?.find(
-      (item) => item?.id === currentUser?.language
+      (item) => item?.id === practitionerAboutFormGetValues('languageId')
     );
     const list: ActionListDataItem[] = [
       {
@@ -171,8 +172,8 @@ export const PractitionerAbout: React.FC = () => {
         onActionClick: () => {
           editField({
             label: 'Language',
-            formFieldName: 'language',
-            value: practitionerAboutFormGetValues().language,
+            formFieldName: 'languageId',
+            value: practitionerAboutFormGetValues().languageId,
           });
         },
       },
@@ -186,8 +187,7 @@ export const PractitionerAbout: React.FC = () => {
   ) => {
     if (formInputToLoad.label === 'Language') {
       setDialogFormInput(formInputToLoad);
-      setEditLanguageFieldVisible(true);
-      return;
+      return setEditLanguageFieldVisible(true);
     } else {
       setDialogFormInput(formInputToLoad);
       setEditFieldVisible(true);
@@ -200,7 +200,7 @@ export const PractitionerAbout: React.FC = () => {
     } else {
       setEditFieldVisible(false);
       setEditLanguageFieldVisible(false);
-      await savePractitionerUserData();
+      savePractitionerUserData();
     }
   };
 
@@ -256,7 +256,7 @@ export const PractitionerAbout: React.FC = () => {
       copy.surname = practitionerForm.surname;
       copy.phoneNumber = practitionerForm.cellphone;
       copy.email = practitionerForm.email;
-      copy.language = practitionerForm.language;
+      copy.languageId = practitionerForm.languageId;
 
       appDispatch(userActions.updateUser(copy));
       appDispatch(userThunkActions.updateUser(copy));
@@ -401,17 +401,16 @@ export const PractitionerAbout: React.FC = () => {
               (languages &&
                 languages.map((language: LanguageDto) => ({
                   label: language.description,
-                  value: language.id!,
+                  value: language.id || '',
                 }))) ||
               []
             }
             fillType="clear"
             fullWidth={true}
             label={'Language'}
-            // className={classNames(styles.divider, 'w-full')}
-            selectedValue={practitionerAboutFormGetValues().language}
+            selectedValue={practitionerAboutFormGetValues().languageId}
             onChange={(item: string) => {
-              practitionerAboutFormSetValue('language', item, {
+              practitionerAboutFormSetValue('languageId', item, {
                 shouldValidate: true,
               });
             }}

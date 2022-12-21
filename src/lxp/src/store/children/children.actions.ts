@@ -375,6 +375,7 @@ const mapChildInput = (child: Partial<ChildDto>): ChildInput => ({
   OtherHealthConditions: child.otherHealthConditions,
   WorkflowStatusId: child.workflowStatusId,
   IsActive: child.isActive === false ? false : true,
+  InsertedBy: child?.insertedBy,
 });
 
 const mapUserInput = (child: Partial<UserDto>): UserModelInput => ({

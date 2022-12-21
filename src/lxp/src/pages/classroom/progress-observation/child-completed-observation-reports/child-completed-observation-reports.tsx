@@ -7,8 +7,8 @@ import {
   Divider,
   ListItem,
   Typography,
+  renderIcon,
 } from '@ecdlink/ui';
-import { renderIcon } from '@ecdlink/ui';
 import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
@@ -126,7 +126,7 @@ export const ChildCompletedObservationReports: React.FC = () => {
       title={`${currentChildUser?.firstName}'s progress`}
       onBack={history.goBack}
     >
-      <div className={'px-4 pb-4 flex flex-col'}>
+      <div className={'flex flex-col px-4 pb-4'}>
         <Typography
           className={'mt-4'}
           type="h1"
@@ -140,19 +140,19 @@ export const ChildCompletedObservationReports: React.FC = () => {
         />
 
         <div
-          className={'flex flex-col items-stretch border-b border-uiLight mt-4'}
+          className={'border-uiLight mt-4 flex flex-col items-stretch border-b'}
         >
           <div
             className={
-              'flex flex-row items-center justify-between border-b border-uiLight pl-4'
+              'border-uiLight flex flex-row items-center justify-between border-b pl-4'
             }
           >
             <Typography type={'body'} className={'w-1/2'} text={''} />
-            <div className={'flex flex-row flex-shrink-0'}>
+            <div className={'flex flex-shrink-0 flex-row'}>
               {latestCompletedSummary && (
                 <Typography
                   type={'small'}
-                  className={`uppercase mr-8`}
+                  className={`mr-8 uppercase`}
                   align="center"
                   text={`${new Date(
                     latestCompletedSummary?.reportDate
@@ -166,7 +166,7 @@ export const ChildCompletedObservationReports: React.FC = () => {
               {previouslyCompletedSummary && (
                 <Typography
                   type={'small'}
-                  className={'uppercase mr-5'}
+                  className={'mr-5 uppercase'}
                   align="center"
                   text={`${new Date(
                     previouslyCompletedSummary.reportDate
@@ -197,7 +197,7 @@ export const ChildCompletedObservationReports: React.FC = () => {
               return (
                 <div
                   key={cat.categoryId}
-                  className={`flex flex-row justify-between items-center min-w-0 p-4 bg-${
+                  className={`flex min-w-0 flex-row items-center justify-between p-4 bg-${
                     idx % 2 === 0 ? 'white' : 'transparent'
                   }`}
                 >
@@ -206,10 +206,10 @@ export const ChildCompletedObservationReports: React.FC = () => {
                     className={'w-1/2 overflow-ellipsis'}
                     text={categoryDetails?.name || ''}
                   />
-                  <div className={'flex flex-row flex-shrink-0'}>
+                  <div className={'flex flex-shrink-0 flex-row'}>
                     {achievedLevel && (
                       <div
-                        className={'flex flex-row items-center flex-shrink-0'}
+                        className={'flex flex-shrink-0 flex-row items-center'}
                       >
                         <img
                           className={'m-auto'}
@@ -228,7 +228,7 @@ export const ChildCompletedObservationReports: React.FC = () => {
                     {prevAchievedLevel && (
                       <div
                         className={
-                          'flex flex-row items-center flex-shrink-0 mx-1'
+                          'mx-1 flex flex-shrink-0 flex-row items-center'
                         }
                       >
                         <img

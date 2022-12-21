@@ -1,12 +1,9 @@
-import { ChildDto, LearnerDto, useDialog } from '@ecdlink/core';
-import { getAvatarColor } from '@ecdlink/core';
+import { ChildDto, LearnerDto, useDialog, getAvatarColor } from '@ecdlink/core';
 import {
   DialogPosition,
   FADButton,
   SearchDropDown,
   StackedList,
-} from '@ecdlink/ui';
-import {
   AlertSeverityType,
   ComponentBaseProps,
   FilterInfo,
@@ -105,7 +102,6 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
   const classroomGroupLearners = useSelector(
     classroomsSelectors.getClassroomGroupLearners
   );
-  // const isPlaygroup = useSelector(classroomsSelectors.isPlaygroup());
   const [addChildButtonExpanded, setAddChildButtonExpanded] =
     useState<boolean>(true);
   const [searchTextActive, setSearchTextActive] = useState(false);
@@ -239,7 +235,6 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
           }
         } else {
           for (const child of children) {
-            // TODO: change to display all children
             const learner = classroomGroupLearners.find(
               (x) => x.userId === child.userId && x.stoppedAttendance == null
             );
@@ -269,7 +264,6 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
           }
         } else {
           for (const child of principalChildren) {
-            // TODO: change to display all children
             const learner = principalLearners.find(
               (x) => x.userId === child.userId && x.stoppedAttendance == null
             );
@@ -296,85 +290,87 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
         : children?.filter((child) =>
             childUserListData?.some((x) => x.id === child.id)
           );
-      const sorted = [...filteredChildren!].sort((a: ChildDto, b: ChildDto) => {
-        const childUserOne = childUsers?.find((x) => x.id === a.userId);
-        const childUserTwo = childUsers?.find((x) => x.id === b.userId);
-        const childLearnerOne = classroomGroupLearners?.find(
-          (x) => x.userId === a.userId
-        );
-        const childLearnerTwo = classroomGroupLearners?.find(
-          (x) => x.userId === b.userId
-        );
+      const sorted = [...(filteredChildren || [])].sort(
+        (a: ChildDto, b: ChildDto) => {
+          const childUserOne = childUsers?.find((x) => x.id === a.userId);
+          const childUserTwo = childUsers?.find((x) => x.id === b.userId);
+          const childLearnerOne = classroomGroupLearners?.find(
+            (x) => x.userId === a.userId
+          );
+          const childLearnerTwo = classroomGroupLearners?.find(
+            (x) => x.userId === b.userId
+          );
 
-        switch (column) {
-          case 'priority': {
-            const childUserDocumentsOne = documents?.filter(
-              (x) => x.userId === a.userId
-            );
-            const childReportsOne = childReportSummaries?.filter(
-              (x) => x.childId === a?.id
-            );
-            const childAlertOne = getChildAlertModel(
-              childLearnerOne,
-              pendingStatusId,
-              childUserOne,
-              a,
-              childUserDocumentsOne,
-              attendanceData,
-              getAllClassroomGroups,
-              classroomGroupProgrammes,
-              childReportsOne
-            );
-            const childUserDocumentsTwo = documents?.filter(
-              (x) => x.userId === b.userId
-            );
-            const childReportsTwo = childReportSummaries?.filter(
-              (x) => x.childId === b?.id
-            );
-            const childAlertTwo = getChildAlertModel(
-              childLearnerTwo,
-              pendingStatusId,
-              childUserTwo,
-              b,
-              childUserDocumentsTwo,
-              attendanceData,
-              getAllClassroomGroups,
-              classroomGroupProgrammes,
-              childReportsTwo
-            );
-            return childAlertOne.severity > childAlertTwo.severity ? 1 : -1;
-          }
-          case 'surname':
-            return (childUserOne !== undefined &&
-              childUserOne?.surname?.toUpperCase()!) >
-              (childUserTwo !== undefined &&
-                childUserTwo.surname?.toUpperCase()!)
-              ? 1
-              : -1;
-          case 'age':
-            if (
-              childUserOne !== undefined &&
-              childUserOne?.dateOfBirth !== undefined &&
-              childUserTwo !== undefined &&
-              childUserTwo?.dateOfBirth !== undefined
-            ) {
-              return isBefore(
-                new Date(childUserOne.dateOfBirth),
-                new Date(childUserTwo.dateOfBirth)
-              )
+          switch (column) {
+            case 'priority': {
+              const childUserDocumentsOne = documents?.filter(
+                (x) => x.userId === a.userId
+              );
+              const childReportsOne = childReportSummaries?.filter(
+                (x) => x.childId === a?.id
+              );
+              const childAlertOne = getChildAlertModel(
+                childLearnerOne,
+                pendingStatusId,
+                childUserOne,
+                a,
+                childUserDocumentsOne,
+                attendanceData,
+                getAllClassroomGroups,
+                classroomGroupProgrammes,
+                childReportsOne
+              );
+              const childUserDocumentsTwo = documents?.filter(
+                (x) => x.userId === b.userId
+              );
+              const childReportsTwo = childReportSummaries?.filter(
+                (x) => x.childId === b?.id
+              );
+              const childAlertTwo = getChildAlertModel(
+                childLearnerTwo,
+                pendingStatusId,
+                childUserTwo,
+                b,
+                childUserDocumentsTwo,
+                attendanceData,
+                getAllClassroomGroups,
+                classroomGroupProgrammes,
+                childReportsTwo
+              );
+              return childAlertOne.severity > childAlertTwo.severity ? 1 : -1;
+            }
+            case 'surname':
+              return (childUserOne !== undefined &&
+                childUserOne?.surname?.toUpperCase()!) >
+                (childUserTwo !== undefined &&
+                  childUserTwo.surname?.toUpperCase()!)
                 ? 1
                 : -1;
-            } else return 1;
-          case 'firstName':
-          default:
-            return (childUserOne !== undefined &&
-              childUserOne.firstName?.toUpperCase()!) >
-              (childUserTwo !== undefined &&
-                childUserTwo.firstName?.toUpperCase()!)
-              ? 1
-              : -1;
+            case 'age':
+              if (
+                childUserOne !== undefined &&
+                childUserOne?.dateOfBirth !== undefined &&
+                childUserTwo !== undefined &&
+                childUserTwo?.dateOfBirth !== undefined
+              ) {
+                return isBefore(
+                  new Date(childUserOne.dateOfBirth),
+                  new Date(childUserTwo.dateOfBirth)
+                )
+                  ? 1
+                  : -1;
+              } else return 1;
+            case 'firstName':
+            default:
+              return (childUserOne !== undefined &&
+                childUserOne.firstName?.toUpperCase()!) >
+                (childUserTwo !== undefined &&
+                  childUserTwo.firstName?.toUpperCase()!)
+                ? 1
+                : -1;
+          }
         }
-      });
+      );
 
       const childListItem: UserAlertListDataItem[] = [];
       for (const child of sorted) {
@@ -423,7 +419,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
       alertSeverity: childAlert.status as AlertSeverityType,
       avatarColor: getAvatarColor() || '',
       onActionClick: () => {
-        onChildListItemAction(childRecord.id as string);
+        onChildListItemAction(String(childRecord.id));
       },
     };
   };

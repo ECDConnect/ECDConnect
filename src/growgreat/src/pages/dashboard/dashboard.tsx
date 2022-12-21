@@ -74,8 +74,7 @@ export const Dashboard: React.FC = () => {
 
   function goToClientFolders() {
     if (mothers.length > 0 || infants.length > 0) {
-      history.push(ROUTES.CLASSROOM, { activeTabIndex: 1 });
-      return;
+      return history.push(ROUTES.CLASSROOM, { activeTabIndex: 1 });
     } else {
       showCompleteProfileBlockingDialog();
     }

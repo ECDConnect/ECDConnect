@@ -1,12 +1,14 @@
-import { ProgrammeThemeDto as ProgrammeThemeModel } from '@ecdlink/core';
-import { useDialog } from '@ecdlink/core';
+import {
+  ProgrammeThemeDto as ProgrammeThemeModel,
+  useDialog,
+} from '@ecdlink/core';
 import {
   ActionModal,
   BannerWrapper,
   IconImageListItem,
   Typography,
+  DialogPosition,
 } from '@ecdlink/ui';
-import { DialogPosition } from '@ecdlink/ui';
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
@@ -86,7 +88,7 @@ const ProgrammeTheme: React.FC = () => {
           onClick={() => handelThemeSelected(theme)}
         />
       ))}
-      <div className="mt-4 mx-4" onClick={handleNoTheme}>
+      <div className="mx-4 mt-4" onClick={handleNoTheme}>
         <Typography
           type="body"
           text="Or create your own programme →"

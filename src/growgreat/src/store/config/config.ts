@@ -85,7 +85,6 @@ const store = configureStore({
 });
 
 const persistor = persistStore(store);
-// persistor.purge();
 
 export type AppDispatch = typeof store.dispatch;
 const useAppDispatch = (): AppDispatch => useDispatch<AppDispatch>();

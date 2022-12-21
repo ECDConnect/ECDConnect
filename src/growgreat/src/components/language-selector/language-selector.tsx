@@ -50,7 +50,7 @@ export const LanguageSelector = ({
               }))) ||
           []
         }
-        onChange={(item) => setLanguage(item as string)}
+        onChange={(item) => setLanguage(item)}
       />
     </div>
   );

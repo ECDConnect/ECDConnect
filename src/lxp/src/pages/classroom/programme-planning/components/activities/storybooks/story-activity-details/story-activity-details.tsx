@@ -110,11 +110,6 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
   );
 
   const onBookLocationClicked = (bookLocation: string) => {
-    /**
-     * Strip default <p>...</p> in string from CMS text.
-     * This should be done in the CMS
-     * #TODO remove <p></p> tag from string
-     **/
     const _strippedHtml = stripPTag(bookLocation);
     if (_strippedHtml.match(URL)) {
       window.open(_strippedHtml, '_blank');
@@ -128,7 +123,7 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
 
         <div
           className={
-            'p-4 mb-24 w-full flex flex-col items-stetch justify-start'
+            'items-stetch mb-24 flex w-full flex-col justify-start p-4'
           }
         >
           <div className={'flex flex-row items-center justify-start'}>
@@ -171,7 +166,7 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
               />
             ))}
           {linkedActivity && (
-            <div className={'flex flex-col mt-2'}>
+            <div className={'mt-2 flex flex-col'}>
               <Typography type={'body'} text={'Linked activity'} />
               <StoryActivityCard
                 title={linkedActivity.name}
@@ -189,14 +184,14 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
         </div>
 
         {storyBook?.type !== StoryBookTypes.other && (
-          <div className={'bg-uiLight p-4 mt-2'}>
+          <div className={'bg-uiLight mt-2 p-4'}>
             {storyBook?.type === StoryBookTypes.storyBook && (
               <>
                 <Typography
                   text={'Where can you find a copy of this story book'}
                   type={'unspecified'}
                 />
-                <ul className={'ml-4 list-disc mt-4'}>
+                <ul className={'ml-4 mt-4 list-disc'}>
                   <li>
                     <Typography
                       text={storyBook.bookLocation}
@@ -242,7 +237,7 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
                   }
                   type={'unspecified'}
                 />
-                <ul className={'ml-4 list-disc mt-4'}>
+                <ul className={'ml-4 mt-4 list-disc'}>
                   <li>
                     <Typography
                       text={storyBook.bookLocation}
@@ -266,14 +261,14 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
           </div>
         )}
 
-        <div className={'px-4 flex flex-col'}>
+        <div className={'flex flex-col px-4'}>
           {storyBook?.type === StoryBookTypes.other && (
             <div className={'flex flex-col items-start justify-start'}>
               <Typography
                 text={'Ideas for finding story books for this week’s theme:'}
                 type={'unspecified'}
               />
-              <ul className={'ml-4 list-disc mt-4'}>
+              <ul className={'ml-4 mt-4 list-disc'}>
                 <li>
                   <Typography
                     text={'Visit your local library'}
@@ -338,7 +333,7 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
               >
                 <img
                   src={getLogo(LogoSvgs.whatsapp)}
-                  className={'h-5 w-5 text-primary mr-1'}
+                  className={'text-primary mr-1 h-5 w-5'}
                   alt="whatsapp"
                 />
                 <Typography
@@ -360,7 +355,7 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
                 text={'Ideas for making your own stories:'}
                 type={'unspecified'}
               />
-              <ul className={'ml-4 list-disc mt-4'}>
+              <ul className={'ml-4 mt-4 list-disc'}>
                 <li>
                   <Typography
                     text={`Find pictures of this week's theme in a magazine and make your own book for the children`}
@@ -405,13 +400,13 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
             storyBookParts.map((bookPart) => (
               <div
                 key={bookPart.id}
-                className={'flex flex-col items-stretch justify-start mt-4'}
+                className={'mt-4 flex flex-col items-stretch justify-start'}
               >
                 <div className={'flex flex-row items-start justify-start'}>
-                  <div className={'mr-4 flex flex-row justify-center w-1/12'}>
+                  <div className={'mr-4 flex w-1/12 flex-row justify-center'}>
                     <div
                       className={
-                        'rounded-full flex flex-shrink-0 flex-col justify-center items-center h-9 w-9'
+                        'flex h-9 w-9 flex-shrink-0 flex-col items-center justify-center rounded-full'
                       }
                       style={{ backgroundColor: getAvatarColor() }}
                     >
@@ -424,7 +419,7 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
                     </div>
                   </div>
 
-                  <div className={'flex flex-col w-11/12'}>
+                  <div className={'flex w-11/12 flex-col'}>
                     <Typography
                       type={'markdown'}
                       fontSize={'14'}
@@ -435,10 +430,10 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
 
                 {bookPart.storyBookPartQuestions.map((question) => (
                   <div
-                    className={'flex flex-row items-start mt-2'}
+                    className={'mt-2 flex flex-row items-start'}
                     key={question.id}
                   >
-                    <div className={'mr-4 flex flex-row justify-center w-1/12'}>
+                    <div className={'mr-4 flex w-1/12 flex-row justify-center'}>
                       <RoundIcon
                         size={{ h: '7', w: '7' }}
                         icon={'PhotographIcon'}
@@ -446,7 +441,7 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
                         className={'bg-primary text-white'}
                       />
                     </div>
-                    <div className={'flex flex-col w-11/12'}>
+                    <div className={'flex w-11/12 flex-col'}>
                       <Typography
                         type={'markdown'}
                         fontSize={'14'}
@@ -460,7 +455,7 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
             ))}
         </div>
         <div
-          className={'p-4 mb-20 w-full flex flex-col items-start justify-start'}
+          className={'mb-20 flex w-full flex-col items-start justify-start p-4'}
         >
           {!disabled &&
             (isSelected ? (
@@ -566,16 +561,16 @@ const StorybookActivityDetails: React.FC<StorybookActivityDetailsProps> = ({
           </div>
         )}
 
-        <div className="px-4 mt-4">
+        <div className="mt-4 px-4">
           <Typography
             type="markdown"
             fontSize="14"
             text={activity.description}
           />
         </div>
-        <div className="p-4 mt-2">
+        <div className="mt-2 p-4">
           <Typography
-            className="p-4 mt-2"
+            className="mt-2 p-4"
             type="markdown"
             text={activity.notes}
           />

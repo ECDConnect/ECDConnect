@@ -1,14 +1,17 @@
 import { InfantDto } from '@ecdlink/core';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
-import { ThunkStateStatus, ThunkActionStatuses } from '../types';
-import { setThunkActionStatus } from '../utils';
-import { getInfants, addInfant } from './infant.actions';
-// import { createMother, getMothers, updateMother } from './mother.actions';
+import { ThunkStateStatus } from '../types';
+import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
+import {
+  getInfants,
+  addInfant,
+  getInfantCountForMonth,
+} from './infant.actions';
 import { InfantState } from './infant.types';
 
 const initialState: InfantState & ThunkStateStatus = {
-  status: ThunkActionStatuses.Unset,
+  status: [],
 };
 
 const infantSlice = createSlice({
@@ -33,8 +36,14 @@ const infantSlice = createSlice({
   },
   extraReducers: (builder) => {
     setThunkActionStatus(builder, addInfant);
-    builder.addCase(addInfant.fulfilled, (state) => {
-      state.status = ThunkActionStatuses.Fulfilled;
+    setThunkActionStatus(builder, getInfantCountForMonth);
+    builder.addCase(getInfantCountForMonth.fulfilled, (state, action) => {
+      state.infantCountForMonth = action.payload;
+
+      setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(addInfant.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(getInfants.fulfilled, (state, action) => {
       if (!state.infants) {
@@ -47,28 +56,6 @@ const infantSlice = createSlice({
         state.infants = infants;
       }
     });
-    //   builder.addCase(
-    //     updateMother.fulfilled,
-    //     (state, action: PayloadAction<MotherDto>) => {
-    //       if (state.mothers) {
-    //         const motherIndex = state.mothers.findIndex(
-    //           (mother) => mother.id === action.payload.id
-    //         );
-
-    //         if (motherIndex < 0) return;
-
-    //         state.mothers[motherIndex] = action.payload;
-    //       }
-    //     }
-    //   );
-    //   builder.addCase(
-    //     createMother.fulfilled,
-    //     (state, action: PayloadAction<MotherDto>) => {
-    //       if (!state.mothers) state.mothers = [];
-    //       state.mothers?.push(action.payload);
-    //     }
-    //   );
-    // },
   },
 });
 

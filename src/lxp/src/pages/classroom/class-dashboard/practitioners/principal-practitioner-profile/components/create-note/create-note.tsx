@@ -8,13 +8,13 @@ import {
   Divider,
   FormInput,
   Typography,
+  DialogPosition,
+  renderIcon,
+  classNames,
 } from '@ecdlink/ui';
-import { DialogPosition } from '@ecdlink/ui';
-import { renderIcon } from '@ecdlink/ui';
 import { format } from 'date-fns';
 import { useAppDispatch } from '@store/config';
 import { authSelectors } from '@store/auth';
-import { classNames } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useForm, useFormState, useWatch } from 'react-hook-form';
 import { useSelector } from 'react-redux';
@@ -166,7 +166,7 @@ export const CreateNote: React.FC<CreateNoteProps> = ({
       </BannerWrapper>
 
       <Dialog
-        className={'px-4 mb-16'}
+        className={'mb-16 px-4'}
         stretch={true}
         visible={confirmGoBackPromptVisible}
         position={DialogPosition.Middle}

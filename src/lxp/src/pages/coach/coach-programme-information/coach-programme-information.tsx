@@ -33,13 +33,11 @@ export const CoachProgrammeInformation: React.FC = () => {
   const location = useLocation<PractitionerProfileRouteState>();
   const practitionerId = location.state.practitionerId;
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
-  // const practitionersForCoach = useSelector(
-  //   practitionerForCoachSelectors.getPractitionersForCoach
-  // );
   const isFromProgrammeView = true;
   const [practitionerClassroomDetails, setPractitionerClassroomDetails] =
     useState<any>();
   const userAuth = useSelector(authSelectors.getAuthUser);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [otherColleagues, setOtherColleagues] = useState<any[]>([]);
 
   const weekday = [
@@ -51,58 +49,6 @@ export const CoachProgrammeInformation: React.FC = () => {
     'Friday',
     'Saturday',
   ];
-
-  // const listItems = [
-  //   {
-  //     title: 'Programme location updated',
-  //     titleStyle: 'text-textDark font-semibold text-base leading-snug',
-  //     subTitle: 'SmartSpace check required',
-  //     subTitleStyle:
-  //       'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
-  //     menuIcon: 'ExclamationIcon',
-  //     menuIconClassName: 'bg-secondary text-white',
-  //     showIcon: true,
-  //     iconBackgroundColor: 'alertMain',
-  //     chipConfig: {
-  //       colorPalette: {
-  //         backgroundColour: 'white',
-  //         borderColour: 'errorMain',
-  //         textColour: 'errorMain',
-  //       },
-  //     },
-  //     text: '1',
-  //     onActionClick: () => {},
-  //     classNames: 'bg-uiBg',
-  //   },
-  //   {
-  //     title: 'Classes reassigned',
-  //     titleStyle: 'text-textDark font-semibold text-base leading-snug',
-  //     subTitle: 'Classes have been assigned to a different practitioner',
-  //     subTitleStyle:
-  //       'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
-  //     menuIcon: 'ExclamationIcon',
-  //     menuIconClassName: 'bg-secondary text-white',
-  //     showIcon: true,
-  //     iconBackgroundColor: 'alertMain',
-  //     chipConfig: {
-  //       colorPalette: {
-  //         backgroundColour: 'white',
-  //         borderColour: 'errorMain',
-  //         textColour: 'errorMain',
-  //       },
-  //     },
-  //     text: '1',
-  //     onActionClick: () =>
-  //       history.push(ROUTES.COACH.CLASSES_REASSIGNED, {
-  //         practitionerId,
-  //       }),
-  //     classNames: 'bg-uiBg',
-  //   },
-  // ];
-
-  // const practitionersList = practitioners?.filter((item) =>
-  //   practitionersForCoach?.find((item2) => item.id === item2.id)
-  // );
 
   const practitioner = practitioners?.find(
     (practitioner) => practitioner?.userId === practitionerId
@@ -128,13 +74,6 @@ export const CoachProgrammeInformation: React.FC = () => {
       id: item?.userId,
     };
   });
-
-  const coachClassrooms = useSelector(
-    classroomsForCoachSelectors.getClassroomForCoach
-  );
-  const practitionerClassroom = coachClassrooms?.find(
-    (item) => item.userId === practitionerId
-  );
 
   const call = () => {
     window.open(`tel:${practitioner?.user?.phoneNumber}`);
@@ -256,15 +195,6 @@ export const CoachProgrammeInformation: React.FC = () => {
           </Button>
         </div>
       </BannerWrapper>
-      {/* <div className="flex justify-center mt-4">
-        <div className="w-11/12">
-          <StackedList
-            className="w-full rounded-2xl -mt-0.5 flex flex-col gap-1"
-            type="MenuList"
-            listItems={listItems}
-          />
-        </div>
-      </div> */}
       <div className="my-6 flex justify-center">
         <Button
           type="outlined"
@@ -445,7 +375,7 @@ export const CoachProgrammeInformation: React.FC = () => {
               <div className="flex w-11/12 justify-center">
                 <StackedList
                   className={styles.stackedList}
-                  listItems={practitionersForCoachListItems!}
+                  listItems={practitionersForCoachListItems}
                   type={'UserAlertList'}
                 ></StackedList>
               </div>

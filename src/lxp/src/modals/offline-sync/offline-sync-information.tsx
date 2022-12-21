@@ -43,7 +43,7 @@ export const OfflineSyncInformation: React.FC<OfflineSyncInformationProps> = ({
       textColour: 'primary',
       colour: 'primary',
       type: 'outlined',
-      onClick: () => onCancel && onCancel(),
+      onClick: () => onCancel(),
       leadingIcon: 'XIcon',
     });
   }

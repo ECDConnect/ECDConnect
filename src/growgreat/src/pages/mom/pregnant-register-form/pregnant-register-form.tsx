@@ -45,12 +45,13 @@ import { documentActions, documentThunkActions } from '@/store/document';
 const BANNER_HEIGHT = 64;
 
 export const PregnantRegisterForm: React.FC = () => {
-  const [label, setLabel] = useState('');
   const { isOnline } = useOnlineStatus();
+
   const appDispatch = useAppDispatch();
+
   const history = useHistory();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [hasConsent, setHasConsent] = useState(false);
+
+  const [label, setLabel] = useState('');
   const [details, setDetails] = useState<EditPregnantDetailsProps>();
   const [contactInformation, setContactInformation] =
     useState<EditPregnantContactInformationProps>();
@@ -166,17 +167,6 @@ export const PregnantRegisterForm: React.FC = () => {
 
   const steps = (step: PregnantRegisterSteps) => {
     switch (step) {
-      case PregnantRegisterSteps.consentAgreement:
-      default:
-        return (
-          <ConsentAgreement
-            onSubmit={(value) => {
-              setActiveStep(PregnantRegisterSteps.pregnantDetails);
-              setHasConsent(Boolean(value));
-              setLabel(`step 2 of 5`);
-            }}
-          />
-        );
       case PregnantRegisterSteps.pregnantDetails:
         return (
           <PregnantDetails
@@ -186,7 +176,7 @@ export const PregnantRegisterForm: React.FC = () => {
             isAlreadyClient={isAlreadyClient}
             onSubmit={(value) => {
               setLabel(`step 3 of 5`);
-              setDetails(value as any);
+              setDetails(value as EditPregnantDetailsProps);
               handleExistingUser();
             }}
           />
@@ -198,7 +188,9 @@ export const PregnantRegisterForm: React.FC = () => {
             onSubmit={(value) => {
               setLabel(`step 4 of 5`);
               setActiveStep(PregnantRegisterSteps.pregnantAddress);
-              setContactInformation(value as any);
+              setContactInformation(
+                value as EditPregnantContactInformationProps
+              );
             }}
           />
         );
@@ -209,7 +201,7 @@ export const PregnantRegisterForm: React.FC = () => {
             onSubmit={(value) => {
               setLabel(`step 5 of 5`);
               setActiveStep(PregnantRegisterSteps.pregnantMaternalRecord);
-              setAddress(value as any);
+              setAddress(value as PregnantAddressProps);
             }}
           />
         );
@@ -219,8 +211,20 @@ export const PregnantRegisterForm: React.FC = () => {
             details={details as any}
             onSubmit={(value) => {
               setLabel(`step 5 of 5`);
-              setPregnantMaternalCaseRecord(value as any);
+              setPregnantMaternalCaseRecord(
+                value as PregnantMaternalCaseRecordProps
+              );
               showSuccessMessage();
+            }}
+          />
+        );
+      case PregnantRegisterSteps.consentAgreement:
+      default:
+        return (
+          <ConsentAgreement
+            onSubmit={(value) => {
+              setActiveStep(PregnantRegisterSteps.pregnantDetails);
+              setLabel(`step 2 of 5`);
             }}
           />
         );

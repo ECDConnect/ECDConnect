@@ -101,7 +101,7 @@ export const CoachRegistration: React.FC = () => {
 
   const { errors } = useFormState({ control });
   const errorStrings = Object.keys(errors).map(
-    (x: string) => (errors as any)[x].message
+    (x) => errors[x as keyof SignUpModel]?.message || ''
   );
 
   const submitForm = async (formValue: SignUpModel) => {

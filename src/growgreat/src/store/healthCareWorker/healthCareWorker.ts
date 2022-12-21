@@ -1,5 +1,4 @@
-// eslint-disable-next-line
-import { HealthCareWorkerDto, PractitionerDto } from '@ecdlink/core';
+import { HealthCareWorkerDto } from '@ecdlink/core';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import {
@@ -37,9 +36,6 @@ const healthCareWorkerSlice = createSlice({
     builder.addCase(updateHealthCareWorkerById.fulfilled, (state, action) => {
       state.healthCareWorker = action.payload;
     });
-    // builder.addCase(getAllPractitioners.fulfilled, (state, action) => {
-    //   state.healthCareWorkers = action.payload;
-    // });
   },
 });
 

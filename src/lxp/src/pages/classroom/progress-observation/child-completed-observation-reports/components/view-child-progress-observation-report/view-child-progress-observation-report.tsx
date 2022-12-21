@@ -1,5 +1,10 @@
-import { BannerWrapper, Button, Divider, Typography } from '@ecdlink/ui';
-import { renderIcon } from '@ecdlink/ui';
+import {
+  BannerWrapper,
+  Button,
+  Divider,
+  Typography,
+  renderIcon,
+} from '@ecdlink/ui';
 import getYear from 'date-fns/getYear';
 import { childrenSelectors } from '@store/children';
 import { progressTrackingSelectors } from '@store/progress-tracking';

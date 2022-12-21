@@ -10,8 +10,7 @@ import { useState } from 'react';
 import { useHistory } from 'react-router';
 import { ChildBasicInfoModel } from '@schemas/child/child-registration/child-basic-info';
 import { useAppDispatch } from '@store';
-import { childrenThunkActions } from '@store/children';
-import { childrenActions } from '@store/children';
+import { childrenThunkActions, childrenActions } from '@store/children';
 import * as childRegisterUtils from '@utils/child/child-registration.utils';
 import { WorkflowStatusEnum } from '@ecdlink/graphql';
 import { useStaticData } from '@hooks/useStaticData';
@@ -187,7 +186,7 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
   };
 
   return (
-    <div className="bg-uiBg p-4 h-full w-full flex flex-col">
+    <div className="bg-uiBg flex h-full w-full flex-col p-4">
       <Typography
         type="unspecified"
         weight="normal"

@@ -151,7 +151,7 @@ export const ChildProgressObservationPage: React.FC = () => {
     if (!newReport) {
       newReport = {
         categories: categories.map((cat) => ({
-          categoryId: cat.id as number,
+          categoryId: cat.id,
           achievedLevelId: 0,
           status: ChildProgressObservationStatus.NotStarted,
           tasks: [],

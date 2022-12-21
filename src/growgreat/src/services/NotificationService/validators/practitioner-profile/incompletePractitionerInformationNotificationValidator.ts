@@ -22,8 +22,7 @@ export class IncompletePractitionerInformationNotificationValidator
   }
 
   getNotifications = (): Message[] => {
-    const { user: userState, healthCareWorker: practitionerState } =
-      this.store.getState();
+    const { healthCareWorker: practitionerState } = this.store.getState();
 
     /**
      * Notification is returned when

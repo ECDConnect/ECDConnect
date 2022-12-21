@@ -5,9 +5,9 @@ import {
   Dialog,
   StatusChip,
   Typography,
+  DialogPosition,
+  renderIcon,
 } from '@ecdlink/ui';
-import { DialogPosition } from '@ecdlink/ui';
-import { renderIcon } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
@@ -84,9 +84,9 @@ export const ContactChildCaregiver: React.FC = () => {
         title={`Contact ${childUser?.firstName}'s caregiver`}
         displayOffline={!isOnline}
       >
-        <div className={'h-full overflow-y-scroll flex flex-col pb-20'}>
-          <div className={'w-full p-4 flex flex-col'}>
-            <div className={'w-full flex flex-row items-center'}>
+        <div className={'flex h-full flex-col overflow-y-scroll pb-20'}>
+          <div className={'flex w-full flex-col p-4'}>
+            <div className={'flex w-full flex-row items-center'}>
               <StatusChip
                 backgroundColour={attendanceColor}
                 text={`${actualDaysAttended ?? 0}/${expectedDaysAttended ?? 0}`}
@@ -124,7 +124,7 @@ export const ContactChildCaregiver: React.FC = () => {
               }
             />
           </div>
-          <div className={'w-full bg-uiLight p-4'}>
+          <div className={'bg-uiLight w-full p-4'}>
             <Typography
               type="body"
               color={'black'}
@@ -134,7 +134,7 @@ export const ContactChildCaregiver: React.FC = () => {
             <Button
               type={'outlined'}
               color={'errorMain'}
-              className={'w-full mt-4'}
+              className={'mt-4 w-full'}
             >
               {renderIcon('TrashIcon', 'w-5 h-5 text-errorMain mr-1')}
               <Typography
@@ -163,7 +163,7 @@ export const ContactChildCaregiver: React.FC = () => {
         </div>
       </BannerWrapper>
       <Dialog
-        className={'px-4 mb-16'}
+        className={'mb-16 px-4'}
         stretch={true}
         visible={removeChildConfirmationVisible}
         position={DialogPosition.Bottom}

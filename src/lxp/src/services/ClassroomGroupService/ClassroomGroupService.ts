@@ -9,7 +9,7 @@ class ClassroomGroupService {
   }
 
   async getClassroomGroupById(id: string): Promise<any> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         query GetClassroomGroupById($id:UUID) {
@@ -39,7 +39,7 @@ class ClassroomGroupService {
   }
 
   async getClassroomGroups(): Promise<ClassroomGroupDto[]> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         query {
@@ -70,7 +70,7 @@ class ClassroomGroupService {
     id: string,
     input: ClassroomGroupInput
   ): Promise<boolean> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         mutation updateClassroomGroup($id: UUID!,$input: ClassroomGroupInput) {
@@ -102,7 +102,7 @@ class ClassroomGroupService {
     loggedByUser: string,
     classProgram: string
   ): Promise<boolean> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
       mutation addAbsenteeForPractitioner ($practitionerId: String,$reason: String, $absentDate: DateTime!,$loggedByUser: String,$classProgram: String,$reassignedToPractitioner: String)
@@ -135,7 +135,7 @@ class ClassroomGroupService {
     startMonth: Date,
     endMonth: Date
   ): Promise<ClassroomGroupDto> {
-    const apiInstance = await api(Config.graphQlApi, this._accessToken);
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
       query classAttendanceMetrics(        
