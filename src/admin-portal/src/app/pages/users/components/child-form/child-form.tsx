@@ -18,7 +18,7 @@ export interface ChildFormProps {
 }
 
 const ChildForm: React.FC<ChildFormProps> = ({ formKey, errors, register }) => {
-  const { loading, data } = useQuery(GetAllLanguage, {
+  const { data } = useQuery(GetAllLanguage, {
     fetchPolicy: 'cache-and-network',
   });
 
