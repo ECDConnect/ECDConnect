@@ -41,6 +41,7 @@ export enum NavigationTypes {
   Child = 'Child',
   Profile = 'Profile',
   Messages = 'Messages',
+  Training = 'Training',
   Logout = 'Logout',
 }
 
@@ -190,6 +191,13 @@ export const Dashboard: React.FC = () => {
       getNotificationCount: () => {
         return Number(newNotificationCount);
       },
+    },
+    {
+      name: NavigationTypes.Training,
+      href: ROUTES.TRAINING,
+      icon: 'BellIcon',
+      current: false,
+      showDivider: true,
     },
     {
       name: NavigationTypes.Logout,
