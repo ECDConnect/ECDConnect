@@ -62,11 +62,11 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
     mode: 'onChange',
   });
 
-  const { isValid, errors } = useFormState({
+  const { errors } = useFormState({
     control: coachProfileFormControl,
   });
+
   const {
-    name,
     addressLine1,
     addressLine2,
     addressLine3,
@@ -78,7 +78,6 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
   });
 
   const disabledButton =
-    !name ||
     !addressLine1 ||
     !addressLine2 ||
     !addressLine3 ||
@@ -244,18 +243,6 @@ export const EditProfileForm: React.FC<EditProfileFormProps> = ({
 
         {isOfficeAddress === true && franchisorSiteAddress && (
           <>
-            {/* <Typography
-              type={'h5'}
-              text={franchisorSiteAddress?.name}
-              color={'textDark'}
-              className={'my-3'}
-            />
-            <Typography
-              type={'body'}
-              text={formatSiteAddressAsText(franchisorSiteAddress)}
-              color={'textDark'}
-              hasMarkup={true}
-            /> */}
             <Alert
               type="info"
               title={`${franchisorSiteAddress?.name}`}
