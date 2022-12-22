@@ -39,7 +39,11 @@ import { setStorageItem } from '@/utils/common/local-storage.utils';
 import * as styles from '@/pages/practitioner/practitioner-about/practitioner-about.styles';
 import ROUTES from '@/routes/routes';
 import { staticDataSelectors } from '@/store/static-data';
-import { healthCareWorkerSelectors } from '@/store/healthCareWorker';
+import {
+  healthCareWorkerActions,
+  healthCareWorkerSelectors,
+  healthCareWorkerThunkActions,
+} from '@/store/healthCareWorker';
 import { ClinicDetails } from './components/clinicDetails/clinic-details';
 
 export const PractitionerAbout: React.FC = () => {
@@ -65,6 +69,7 @@ export const PractitionerAbout: React.FC = () => {
   const healthCareWorker = useSelector(
     healthCareWorkerSelectors?.getHealthCareWorker
   );
+
   // eslint-disable-next-line
   const languages = useSelector(staticDataSelectors.getLanguages);
 
@@ -79,7 +84,7 @@ export const PractitionerAbout: React.FC = () => {
         surname: user.surname || '',
         cellphone: user.phoneNumber || '',
         email: user.email || '',
-        languageId: healthCareWorker?.languageId || user?.languageId || '',
+        languageId: user?.languageId || healthCareWorker?.languageId || '',
       };
       return tempPractitioner;
     } else {
@@ -260,6 +265,21 @@ export const PractitionerAbout: React.FC = () => {
 
       appDispatch(userActions.updateUser(copy));
       appDispatch(userThunkActions.updateUser(copy));
+      appDispatch(
+        healthCareWorkerActions.updateHealthCareWorker({
+          ...healthCareWorker,
+          languageId: copy.languageId,
+        })
+      );
+      appDispatch(
+        healthCareWorkerThunkActions.updateHealthCareWorkerById({
+          userId: user?.id!,
+          input: {
+            languageId: copy.languageId,
+            isRegistered: healthCareWorker?.isRegistered,
+          },
+        })
+      );
 
       setNewStackListItems(copy);
     }
