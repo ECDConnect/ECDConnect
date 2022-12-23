@@ -39,13 +39,14 @@ import { staticDataThunkActions } from '@store/static-data';
 import { programmeThemeThunkActions } from '@store/content/programme-theme';
 import { storyBookThunkActions } from '@store/content/story-book';
 import { activityThunkActions } from '@store/content/activity';
-import { browserName, browserVersion } from 'react-device-detect';
+// import { browserName, browserVersion } from 'react-device-detect';
 const { version } = require('../../../package.json');
 
 export enum NavigationTypes {
   Home = 'Home',
   ClientFolders = 'Classroom',
   Attendance = 'Attendance',
+  Practitioner = 'Practitioner',
   Children = 'Children',
   Programme = 'Programme',
   Profile = 'Profile',
@@ -62,6 +63,7 @@ export const Dashboard: React.FC = () => {
   const userData = useSelector(userSelectors.getUser);
   const practitionerData = useSelector(practitionerSelectors.getPractitioners);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  const practitioners = useSelector(practitionerSelectors?.getPractitioners);
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
   const history = useHistory();
@@ -71,13 +73,11 @@ export const Dashboard: React.FC = () => {
   const newNotificationCount = useSelector(
     notificationsSelectors.getNewNotificationCount
   );
+  const isPrincipal = practitioner?.isPrincipal;
 
   const dashboardNotification = useSelector(
     notificationsSelectors.getDashboardNotification
   );
-  console.log({ browserName });
-
-  console.log({ browserVersion });
 
   const { userProfilePicture } = useDocuments();
 
@@ -204,26 +204,54 @@ export const Dashboard: React.FC = () => {
       name: NavigationTypes.ClientFolders,
       icon: 'UsersIcon',
       current: false,
-      nestedChildren: [
-        {
-          name: NavigationTypes.Attendance,
-          href: ROUTES.CLASSROOM,
-          params: { activeTabIndex: 0 },
-          current: false,
-        },
-        {
-          name: NavigationTypes.Children,
-          href: ROUTES.CLASSROOM,
-          params: { activeTabIndex: 1 },
-          current: false,
-        },
-        {
-          name: NavigationTypes.Programme,
-          href: ROUTES.CLASSROOM,
-          params: { activeTabIndex: 2 },
-          current: false,
-        },
-      ],
+      nestedChildren:
+        practitioners && isPrincipal && practitioners?.length > 0
+          ? [
+              {
+                name: NavigationTypes.Attendance,
+                href: ROUTES.CLASSROOM,
+                params: { activeTabIndex: 0 },
+                current: false,
+              },
+              {
+                name: NavigationTypes.Practitioners,
+                href: ROUTES.CLASSROOM,
+                params: { activeTabIndex: 1 },
+                current: false,
+              },
+              {
+                name: NavigationTypes.Children,
+                href: ROUTES.CLASSROOM,
+                params: { activeTabIndex: 2 },
+                current: false,
+              },
+              {
+                name: NavigationTypes.Programme,
+                href: ROUTES.CLASSROOM,
+                params: { activeTabIndex: 3 },
+                current: false,
+              },
+            ]
+          : [
+              {
+                name: NavigationTypes.Attendance,
+                href: ROUTES.CLASSROOM,
+                params: { activeTabIndex: 0 },
+                current: false,
+              },
+              {
+                name: NavigationTypes.Children,
+                href: ROUTES.CLASSROOM,
+                params: { activeTabIndex: 1 },
+                current: false,
+              },
+              {
+                name: NavigationTypes.Programme,
+                href: ROUTES.CLASSROOM,
+                params: { activeTabIndex: 2 },
+                current: false,
+              },
+            ],
     },
     {
       name: NavigationTypes.Profile,
@@ -420,7 +448,10 @@ export const Dashboard: React.FC = () => {
   };
 
   const onNavigation = (navItem: any) => {
-    if (classroom && classroom.id && navItem.href.includes('classroom')) {
+    if (
+      ((classroom && classroom.id) || (classroom && classroom.classroomId)) &&
+      navItem.href.includes('classroom')
+    ) {
       history.push(navItem.href, navItem.params);
     } else if (navItem.href.includes('classroom')) {
       showCompleteProfileBlockingDialog();
