@@ -212,10 +212,10 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
             placeholderText={`Please select a date`}
             wrapperClassName="text-center"
             className="border-uiLight text-textMid mx-auto w-11/12 rounded-md"
-            selected={new Date()}
-            onChange={(date: Date) =>
-              setReassignClassValue('date', date ? date.toString() : '')
-            }
+            selected={selectedDate ? new Date(selectedDate) : undefined}
+            onChange={(date: Date) => {
+              setReassignClassValue('date', date ? date.toString() : '');
+            }}
             dateFormat="EEE, dd MMM yyyy"
           />
         ) : (
@@ -224,9 +224,9 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
             wrapperClassName="text-center"
             className="border-uiLight text-textMid mx-auto w-11/12 rounded-md"
             selected={selectedDate ? new Date(selectedDate) : undefined}
-            onChange={(date: Date) =>
-              setReassignClassValue('date', date ? date.toString() : '')
-            }
+            onChange={(date: Date) => {
+              setReassignClassValue('date', date ? date.toString() : '');
+            }}
             dateFormat="EEE, dd MMM yyyy"
           />
         )}
