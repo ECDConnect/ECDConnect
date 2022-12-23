@@ -207,29 +207,16 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
         <label className="text-md mt-2 mb-1 block w-11/12 font-medium text-gray-700">
           What date would you like to reassign the class?
         </label>
-        {practitionerId ? (
-          <DatePicker
-            placeholderText={`Please select a date`}
-            wrapperClassName="text-center"
-            className="border-uiLight text-textMid mx-auto w-11/12 rounded-md"
-            selected={selectedDate ? new Date(selectedDate) : undefined}
-            onChange={(date: Date) => {
-              setReassignClassValue('date', date ? date.toString() : '');
-            }}
-            dateFormat="EEE, dd MMM yyyy"
-          />
-        ) : (
-          <DatePicker
-            placeholderText={`Please select a date`}
-            wrapperClassName="text-center"
-            className="border-uiLight text-textMid mx-auto w-11/12 rounded-md"
-            selected={selectedDate ? new Date(selectedDate) : undefined}
-            onChange={(date: Date) => {
-              setReassignClassValue('date', date ? date.toString() : '');
-            }}
-            dateFormat="EEE, dd MMM yyyy"
-          />
-        )}
+        <DatePicker
+          placeholderText={`Please select a date`}
+          wrapperClassName="text-center"
+          className="border-uiLight text-textMid mx-auto w-11/12 rounded-md"
+          selected={selectedDate ? new Date(selectedDate) : undefined}
+          onChange={(date: Date) => {
+            setReassignClassValue('date', date ? date.toString() : '');
+          }}
+          dateFormat="EEE, dd MMM yyyy"
+        />
         <Dropdown
           placeholder={'Select the class'}
           list={classroomGroupsList || []}
