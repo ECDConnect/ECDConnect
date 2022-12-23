@@ -108,14 +108,14 @@ namespace EcdLink.Api.CoreApi.Managers.Users
 
 
             var infantRepo = _repoFactory.CreateGenericRepository<Infant>(userContext: applicationUserId);
-            try
-            {
+           try
+           {
                 return infantRepo.Insert(infant);
-            }
-            catch (Exception e)
-            {
+           }
+           catch (Exception e)
+           {
                 return new Infant();
-            }
+           }
         }
 
         public Infant UpdateInfant(string id, InfantModel input)

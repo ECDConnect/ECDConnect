@@ -50,6 +50,7 @@ export enum NavigationTypes {
   Programme = 'Programme',
   Profile = 'Profile',
   Messages = 'Messages',
+  Training = 'Training',
   Logout = 'Logout',
   Practitioners = 'Practitioners',
 }
@@ -192,16 +193,6 @@ export const Dashboard: React.FC = () => {
     }
   }, [practitioner?.userId]);
 
-  // useEffect(() => {
-  //   (async () =>
-  //     await appDispatch(
-  //       classroomsThunkActions.getClassroomGroupClassroomsForPractitioner({
-  //         userId: userData?.id!,
-  //       })
-  //     ).unwrap())();
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, []);
-
   const navigation: (NavigationRouteItem | NavigationDropdown)[] = [
     {
       name: NavigationTypes.Home,
@@ -252,6 +243,13 @@ export const Dashboard: React.FC = () => {
       getNotificationCount: () => {
         return newNotificationCount;
       },
+    },
+    {
+      name: NavigationTypes.Training,
+      href: ROUTES.TRAINING,
+      icon: 'BellIcon',
+      current: false,
+      showDivider: true,
     },
     {
       name: NavigationTypes.Logout,
