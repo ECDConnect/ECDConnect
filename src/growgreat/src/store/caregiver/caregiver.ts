@@ -20,9 +20,10 @@ const caregiverSlice = createSlice({
     },
     createCaregiver: (state, action: PayloadAction<CaregiverDto>) => {
       if (!state.caregivers) state.caregivers = [];
-      state.caregivers
-        ?.filter((item) => item?.id !== action.payload?.id)
-        ?.push(action.payload);
+
+      if (!state.caregivers?.find((item) => item?.id === action.payload?.id)) {
+        state.caregivers?.push(action.payload);
+      }
     },
     updateCaregiver: (state, action: PayloadAction<CaregiverDto>) => {
       if (state.caregivers) {
