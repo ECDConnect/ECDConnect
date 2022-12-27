@@ -94,6 +94,7 @@ class CoachService {
       query: `
       query coachByCoachUserId($userId: String) { 
               coachByCoachUserId(userId: $userId) { 
+               signingSignature
                id       
                startDate     
                user { 
