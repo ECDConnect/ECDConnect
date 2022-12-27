@@ -19,8 +19,6 @@ import ROUTES from '@routes/routes';
 import { PhoneIcon } from '@heroicons/react/solid';
 import { useSelector } from 'react-redux';
 import { practitionerSelectors } from '@/store/practitioner';
-// import { practitionerForCoachSelectors } from '@/store/practitionerForCoach';
-import { classroomsForCoachSelectors } from '@/store/classroomForCoach';
 import { useEffect, useState } from 'react';
 import { PractitionerService } from '@/services/PractitionerService';
 import { authSelectors } from '@store/auth';
@@ -37,8 +35,6 @@ export const CoachProgrammeInformation: React.FC = () => {
   const [practitionerClassroomDetails, setPractitionerClassroomDetails] =
     useState<any>();
   const userAuth = useSelector(authSelectors.getAuthUser);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [otherColleagues, setOtherColleagues] = useState<any[]>([]);
 
   const weekday = [
     'Sunday',
@@ -57,14 +53,15 @@ export const CoachProgrammeInformation: React.FC = () => {
 
   const practitionersForCoachListItems = practitioners?.map((item) => {
     const titleStyle = 'text-textMid';
+    const [userRole] = item?.user?.roles || [];
+
+    const roleName =
+      userRole.name === 'Practitioner' ? 'SmartStarter' : userRole.name;
+
     return {
       title: item.user?.firstName + ' ' + item?.user?.surname,
       titleStyle,
-      subTitle: item?.isPrincipal
-        ? 'Principal / owner'
-        : item?.user?.roles
-        ? item?.user?.roles[0]?.name
-        : '',
+      subTitle: item?.isPrincipal ? 'Principal / owner' : roleName,
       avatarColor: '#6974af',
       alertSeverity: 'none',
       profileText:
@@ -121,7 +118,6 @@ export const CoachProgrammeInformation: React.FC = () => {
       ).practitionerColleagues(practitioner?.userId!);
     }
 
-    setOtherColleagues(practitionerColleagues);
     return practitionerColleagues;
   };
 
@@ -165,7 +161,7 @@ export const CoachProgrammeInformation: React.FC = () => {
           <StatusChip
             backgroundColour="primary"
             borderColour="primary"
-            text={isPrincipal ? 'Principal/Owner' : 'Practitioner'}
+            text={isPrincipal ? 'Principal/Owner' : 'SmartStarter'}
             textColour={'white'}
             className={'mr-2 px-3 py-1.5'}
           />
