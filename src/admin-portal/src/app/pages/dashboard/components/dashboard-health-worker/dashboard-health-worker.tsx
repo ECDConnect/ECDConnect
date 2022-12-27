@@ -1,24 +1,12 @@
-import { useLazyQuery, useQuery } from '@apollo/client';
-import { PractitionerMetricReport, useDialog } from '@ecdlink/core';
-import {
-  practitionerMetrics,
-  practitionerNewSignupMetric,
-} from '@ecdlink/graphql';
-import { DialogPosition } from '@ecdlink/ui';
-import {
-  AcademicCapIcon,
-  BadgeCheckIcon,
-  ExclamationIcon,
-  UsersIcon,
-} from '@heroicons/react/outline';
-import { format } from 'date-fns';
+import { useQuery } from '@apollo/client';
+import { PractitionerMetricReport } from '@ecdlink/core';
+import { practitionerMetrics } from '@ecdlink/graphql';
+import { BadgeCheckIcon, ExclamationIcon } from '@heroicons/react/outline';
 import { useEffect, useState } from 'react';
 import ContentLoader from '../../../../components/content-loader/content-loader';
 import StatsBar from '../stats-bar/stats-bar';
 
 export default function HealthWorkerDashboard() {
-  const dialog = useDialog();
-
   const { data } = useQuery(practitionerMetrics, {
     fetchPolicy: 'cache-and-network',
   });

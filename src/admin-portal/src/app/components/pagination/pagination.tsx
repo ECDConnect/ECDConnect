@@ -69,11 +69,11 @@ const Pagination: React.FC<PaginationProps> = ({
 
   if (items && pager && pager.pages.length > 1) {
     return (
-      <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-        <div className="flex-1 flex justify-between sm:hidden">
+      <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
+        <div className="flex flex-1 justify-between sm:hidden">
           <a
             href="#!"
-            className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+            className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
             onClick={(e) => {
               e.preventDefault();
               getData(currentPageRef?.current - 1);
@@ -83,7 +83,7 @@ const Pagination: React.FC<PaginationProps> = ({
           </a>
           <a
             href="#!"
-            className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+            className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
             onClick={(e) => {
               e.preventDefault();
               getData(currentPageRef?.current + 1);
@@ -92,7 +92,7 @@ const Pagination: React.FC<PaginationProps> = ({
             Next
           </a>
         </div>
-        <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+        <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
           <div>
             <p className="text-sm text-gray-700">
               Showing{' '}
@@ -103,12 +103,12 @@ const Pagination: React.FC<PaginationProps> = ({
           </div>
           <div>
             <nav
-              className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
+              className="relative z-0 inline-flex -space-x-px rounded-md shadow-sm"
               aria-label="Pagination"
             >
               <a
                 href="#!"
-                className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+                className="relative inline-flex items-center rounded-l-md border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50"
                 onClick={(e) => {
                   e.preventDefault();
                   getData(currentPageRef.current - 1);
@@ -118,35 +118,33 @@ const Pagination: React.FC<PaginationProps> = ({
                 <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
               </a>
 
-              {pager &&
-                pager.pages &&
-                pager.pages.map((page: number, index: number) => {
-                  return (
-                    <li
-                      key={index}
-                      className={
-                        currentPage === page
-                          ? 'z-10 bg-uiMidDark border-uiMidDark text-white relative inline-flex items-center px-4 py-2 border text-sm font-medium'
-                          : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium'
-                      }
-                      onClick={(e) => {
-                        e.preventDefault();
-                        getData(page);
-                      }}
-                    >
-                      <a className="page-link" href="#!">
-                        {page}
-                      </a>
-                    </li>
-                  );
-                })}
+              {pager.pages.map((page: number, index: number) => {
+                return (
+                  <li
+                    key={index}
+                    className={
+                      currentPage === page
+                        ? 'bg-uiMidDark border-uiMidDark relative z-10 inline-flex items-center border px-4 py-2 text-sm font-medium text-white'
+                        : 'relative inline-flex items-center border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50'
+                    }
+                    onClick={(e) => {
+                      e.preventDefault();
+                      getData(page);
+                    }}
+                  >
+                    <a className="page-link" href="#!">
+                      {page}
+                    </a>
+                  </li>
+                );
+              })}
               <a
                 href="#!"
                 onClick={(e) => {
                   e.preventDefault();
                   getData(currentPageRef.current + 1);
                 }}
-                className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+                className="relative inline-flex items-center rounded-r-md border border-gray-300 bg-white px-2 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50"
               >
                 <span className="sr-only">Next</span>
                 <ChevronRightIcon className="h-5 w-5" aria-hidden="true" />

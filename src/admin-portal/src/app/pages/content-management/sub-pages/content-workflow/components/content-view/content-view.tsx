@@ -3,11 +3,11 @@ import {
   ContentTypeDto,
   ContentTypeFieldDto,
   ContentValueDto,
+  camelCaseToSentanceCase,
 } from '@ecdlink/core';
 import { Typography } from '@ecdlink/ui';
 import DynamicSelector from '../../../../../../components/dynamic-selector/dynamic-selector';
 import { FieldType } from '../../../../content-management-models';
-import { camelCaseToSentanceCase } from '@ecdlink/core';
 import DynamicStaticSelector from '../../../../../../components/dynamic-static-selector/dynamic-static-selector';
 import { ContentLoader } from '../../../../../../components/content-loader/content-loader';
 
@@ -86,9 +86,9 @@ export default function ContentView({
           return (
             <div className={contentWrapper}>
               {getFieldHeader(field)}
-              <div className="relative bg-uiBg">
+              <div className="bg-uiBg relative">
                 <div className="relative">
-                  <div className="h-32 flex flex-wrap content-center">
+                  <div className="flex h-32 flex-wrap content-center">
                     <img
                       src={item.value}
                       className="mx-auto max-h-24 min-h-full rounded-md"
@@ -124,14 +124,13 @@ export default function ContentView({
   if (contentType && contentValues) {
     return (
       <div className="flex flex-col">
-        {contentValues &&
-          contentValues
-            .filter((x) => x.localeId === selectedLanguageId)
-            .map((item: ContentValueDto, index: number) => (
-              <div key={index} className="mt-2">
-                {getRenderElement(item)}
-              </div>
-            ))}
+        {contentValues
+          .filter((x) => x.localeId === selectedLanguageId)
+          .map((item: ContentValueDto, index: number) => (
+            <div key={index} className="mt-2">
+              {getRenderElement(item)}
+            </div>
+          ))}
       </div>
     );
   } else {

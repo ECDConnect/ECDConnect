@@ -10,9 +10,10 @@ import {
   SendInviteToApplication,
   CreateSiteAddress,
 } from '@ecdlink/graphql';
-import { NOTIFICATION, useNotifications } from '@ecdlink/core';
-import { RoleDto } from '@ecdlink/core';
 import {
+  NOTIFICATION,
+  useNotifications,
+  RoleDto,
   coachSchema,
   initialCoachValues,
   initialPasswordValue,
