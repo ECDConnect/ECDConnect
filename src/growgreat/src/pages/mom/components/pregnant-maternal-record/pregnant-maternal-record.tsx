@@ -11,7 +11,6 @@ import {
   Checkbox,
 } from '@ecdlink/ui';
 import { PhotoPrompt } from '../../../../components/photo-prompt/photo-prompt';
-import { differenceInWeeks } from 'date-fns';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { useForm, useFormState } from 'react-hook-form';
@@ -27,6 +26,7 @@ import {
 } from '@/schemas/pregnant/pregnant-maternal-case-record';
 import { InformationCircleIcon } from '@heroicons/react/outline';
 import maternalRecord from '../../../../assets/maternalRecord.png';
+import { getWeeksDiff } from '@ecdlink/core';
 
 export const PregnantMaternalCaseRecord: React.FC<
   PregnantMaternalCaseRecordProps
@@ -86,7 +86,7 @@ export const PregnantMaternalCaseRecord: React.FC<
     );
   };
 
-  const diffDates = differenceInWeeks(deliveryDate, currentDate);
+  const diffDates = getWeeksDiff(currentDate, deliveryDate);
   const actualGestationWeek = 40 - diffDates;
 
   const getDate = (point: 'min' | 'max') => {

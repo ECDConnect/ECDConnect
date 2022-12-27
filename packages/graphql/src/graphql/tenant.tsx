@@ -12,6 +12,7 @@ export const GetTenantContext = gql`
       themePathVar
       var1
       var2
+      moodleUrlVar
     }
   }
 `;

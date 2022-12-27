@@ -20,6 +20,7 @@ const ROUTES = {
       DEVELOPING_CHILDREN: '/developing-children',
     }),
   }),
+  TRAINING: '/training',
   DASHBOARD: '/dashboard',
   CLASSROOM: '/classroom',
   CHILD: addPrefix('/child', {
