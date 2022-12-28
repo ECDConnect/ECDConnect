@@ -2,9 +2,11 @@
 
 import { useQuery } from '@apollo/client';
 import { GetAllLanguage } from '@ecdlink/graphql';
-import { LanguageDto } from '@ecdlink/core';
-import { initialChildValues } from '@ecdlink/core';
-import { camelCaseToSentanceCase } from '@ecdlink/core';
+import {
+  LanguageDto,
+  initialChildValues,
+  camelCaseToSentanceCase,
+} from '@ecdlink/core';
 import { get, UseFormRegister } from 'react-hook-form';
 import FormField from '../../../../components/form-field/form-field';
 import FormSelectorField from '../../../../components/form-selector-field/form-selector-field';
@@ -16,7 +18,7 @@ export interface ChildFormProps {
 }
 
 const ChildForm: React.FC<ChildFormProps> = ({ formKey, errors, register }) => {
-  const { loading, data } = useQuery(GetAllLanguage, {
+  const { data } = useQuery(GetAllLanguage, {
     fetchPolicy: 'cache-and-network',
   });
 

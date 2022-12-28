@@ -33,8 +33,11 @@ export class ChildProgressReportNotificationValidator
   };
 
   getNotifications = (): Message[] => {
-    const { children: childrenState, contentReportData: contentReportState } =
-      this.store.getState();
+    const {
+      children: childrenState,
+      contentReportData: contentReportState,
+      user: userState,
+    } = this.store.getState();
 
     if (!childrenState || !contentReportState) return [];
     const monthOfDate = getMonth(this.currentDate);
@@ -49,12 +52,15 @@ export class ChildProgressReportNotificationValidator
       !this.isLastDateOfReportingPeriod(reportingPeriod)
     )
       return [];
-    console.log(
-      getDate(this.currentDate) > 1 &&
-        !this.isLastDateOfReportingPeriod(reportingPeriod)
-    );
+
     const notifications: Message[] = [];
-    for (const child of childrenState.children || []) {
+    const [currentUser] = userState.userConsent || [];
+    const filteredChildren =
+      childrenState.children?.filter(
+        (item) => item.userId === currentUser.userId
+      ) || [];
+
+    for (const child of filteredChildren) {
       const childProgressReport = (
         contentReportState.childProgressionReports || []
       ).find(

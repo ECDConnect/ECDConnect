@@ -17,7 +17,6 @@ import {
   CreateTeamLead,
   CreateUser,
   RoleList,
-  SendInviteToApplication,
   SiteAddressInput,
   TeamLeadModelInput,
   UserModelInput,
@@ -53,7 +52,6 @@ export default function TeamLeadPanelCreate(props: UserPanelCreateProps) {
   const [createSiteAddress] = useMutation(CreateSiteAddress);
   const [createTeamLead] = useMutation(CreateTeamLead);
   const [addRolesToUser] = useMutation(AddUsersToRole);
-  const [sendInviteToApplication] = useMutation(SendInviteToApplication);
 
   const [selectedUserRoles, setUserRoles] = useState<RoleDto[]>([]);
 

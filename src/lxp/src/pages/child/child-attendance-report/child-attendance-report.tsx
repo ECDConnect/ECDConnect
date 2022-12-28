@@ -198,25 +198,32 @@ export const ChildAttendanceReportPage: React.FC = () => {
                   (idx + 1) % 2 === 0 ? 'uiBg' : 'white'
                 }`}
               >
-                <Typography
-                  className={'w-1/2 pl-6'}
-                  type="body"
-                  weight="bold"
-                  color={'black'}
-                  text={report.month}
-                />
-                <div className={'flex w-1/2 flex-row items-center pl-6'}>
-                  <div
-                    className={getShapeClass(reportItemShape, reportItemColor)}
-                  ></div>
-                  <Typography
-                    align={'center'}
-                    className={'ml-2'}
-                    type="body"
-                    color={reportItemColor}
-                    text={`${report.actualAttendance} out of ${report.expectedAttendance}`}
-                  />
-                </div>
+                {report?.expectedAttendance > 0 && (
+                  <>
+                    <Typography
+                      className={'w-1/2 pl-6'}
+                      type="body"
+                      weight="bold"
+                      color={'black'}
+                      text={report.month}
+                    />
+                    <div className={'flex w-1/2 flex-row items-center pl-6'}>
+                      <div
+                        className={getShapeClass(
+                          reportItemShape,
+                          reportItemColor
+                        )}
+                      ></div>
+                      <Typography
+                        align={'center'}
+                        className={'ml-2'}
+                        type="body"
+                        color={reportItemColor}
+                        text={`${report.actualAttendance} out of ${report.expectedAttendance}`}
+                      />
+                    </div>
+                  </>
+                )}
               </div>
             );
           })}

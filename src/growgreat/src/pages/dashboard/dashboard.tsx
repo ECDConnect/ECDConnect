@@ -32,6 +32,7 @@ import { getInfants } from '@/store/infant/infant.selectors';
 import { version } from '@/../package.json';
 import { healthCareWorkerSelectors } from '@/store/healthCareWorker';
 import { DashboardRouteState } from './dashboard.types';
+import { useNotificationService } from '@/hooks/useNotificationService';
 
 export enum NavigationTypes {
   Home = 'Home',
@@ -40,6 +41,7 @@ export enum NavigationTypes {
   Child = 'Child',
   Profile = 'Profile',
   Messages = 'Messages',
+  Training = 'Training',
   Logout = 'Logout',
 }
 
@@ -68,6 +70,8 @@ export const Dashboard: React.FC = () => {
   const mothers = useSelector(motherSelectors.getMothers);
   const infants = useSelector(getInfants);
 
+  const { startService } = useNotificationService();
+
   function goToProfile() {
     history.push(ROUTES.PRACTITIONER.PROFILE.ROOT);
   }
@@ -88,6 +92,12 @@ export const Dashboard: React.FC = () => {
       }
     }
   }, [healthCareWorker, isFromLogin]);
+
+  useEffect(() => {
+    if (!healthCareWorker?.isRegistered || !healthCareWorker.languageId) {
+      startService();
+    }
+  }, []);
 
   function onNavigation(navItem: any) {
     history.push(navItem.href, navItem.params);
@@ -181,6 +191,13 @@ export const Dashboard: React.FC = () => {
       getNotificationCount: () => {
         return Number(newNotificationCount);
       },
+    },
+    {
+      name: NavigationTypes.Training,
+      href: ROUTES.TRAINING,
+      icon: 'BellIcon',
+      current: false,
+      showDivider: true,
     },
     {
       name: NavigationTypes.Logout,

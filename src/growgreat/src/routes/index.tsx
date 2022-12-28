@@ -17,6 +17,7 @@ import { PractitionerProfile } from '@practitioner-p/practitioner-profile/practi
 import ROUTES from '@/routes/routes';
 import ClassDashboard from '@/pages/classroom/class-dashboard/class-dashboard';
 import { EditPractitionerProfile } from '@/pages/practitioner/edit-practitioner-profile/edit-practitioner-profile';
+import { Training } from '@/pages/training/training';
 
 function PublicRoutes() {
   return (
@@ -94,6 +95,7 @@ function AuthRoutes() {
         path={ROUTES.HEALTH_CAREWORKER_PROFILE_SETUP}
         component={EditPractitionerProfile}
       />
+      <Route path={ROUTES.TRAINING} component={Training} exact={true} />
     </Switch>
   );
 }

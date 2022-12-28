@@ -44,17 +44,21 @@ export class IncompletePractitionerInformationNotificationValidator
         (role) => role.name === 'Practitioner'
       );
 
+      const hasPrincipalRole = userState?.user?.roles?.some(
+        (role) => role.name === 'Principal'
+      );
+
       const notRegistered = !Boolean(
         practitionerState.practitioner?.isRegistered
       );
       const addedByPrincipal =
-        Boolean(practitionerState.practitioner?.principalHierarchy) &&
+        Boolean(practitionerState.practitioner?.principalHierarchy) ||
         !practitionerState.practitioner?.isPrincipal;
 
       const showNotificationForPractitionerFlow =
         hasPractitionerRole && notRegistered && addedByPrincipal;
       const showNotificationForPrincipalFlow =
-        hasPractitionerRole && notRegistered && !addedByPrincipal;
+        hasPrincipalRole && notRegistered && !addedByPrincipal;
 
       if (showNotificationForPrincipalFlow) {
         return [

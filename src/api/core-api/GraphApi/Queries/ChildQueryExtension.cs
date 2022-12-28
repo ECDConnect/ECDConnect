@@ -33,14 +33,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var dbRepo = repoFactory.CreateRepository<Child>(userContext: uId);
-            Child child = new Child();
-            List<Child> children = dbRepo.GetAll().Where(x => x.UserId.Contains(userId)).ToList();
-            if (children.Count > 0)
-            {
-                child = children.FirstOrDefault();
-            }
-
-            return child;
+            return dbRepo.GetByUserId(userId);
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
@@ -66,6 +59,26 @@ string classroomId)
             }
 
             return children;
+        }
+
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public ChildCreatedByDetail GetChildCreatedByDetail([Service] IHttpContextAccessor contextAccessor,
+            [Service] IGenericRepositoryFactory repoFactory,
+        string firstName, string surname)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var dbRepo = repoFactory.CreateGenericRepository<Child>(userContext: uId);
+            //var practiRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
+            //TODO: ensure children returned is only based on same sitename as the uId belongs to
+
+            var child = dbRepo.GetAll().Where(x => x.User.FirstName.ToLower() == firstName.ToLower() && x.User.Surname.ToLower() == surname.ToLower()).FirstOrDefault();
+
+            if (child != null && child.User != null)
+            {
+                return new ChildCreatedByDetail() { ChildUserId = child.UserId, CreatedById = child.UpdatedBy, CreatedByName = child.InsertedBy, CreatedByDate = child.InsertedDate, FullName = child.User.FullName };
+            } else return null;
+            
         }
 
     }

@@ -34,6 +34,7 @@ import { useStoreSetup } from '@/hooks/useStoreSetup';
 import { PractitionerService } from '@/services/PractitionerService';
 import ROUTES from '@/routes/routes';
 import { notificationActions } from '@/store/notifications';
+import { useNotificationService } from '@/hooks/useNotificationService';
 
 export const SetupPrincipal: React.FC = () => {
   const history = useHistory();
@@ -65,6 +66,8 @@ export const SetupPrincipal: React.FC = () => {
   const [classesPage, setClassesPage] = useState<ConfirmClassesSteps>(
     ConfirmClassesSteps.CONFIRM_CLASSES
   );
+
+  const { stopService } = useNotificationService();
 
   useEffect(() => {
     if (page === PractitionerSetupSteps.WELCOME) {
@@ -118,9 +121,12 @@ export const SetupPrincipal: React.FC = () => {
         userAuth?.auth_token
       ).PromotePractitionerToPrincipal(user?.id);
 
-      await new PractitionerService(
-        userAuth.auth_token
-      ).UpdatePractitionerRegistered(user.id, true);
+      appDispatch(
+        practitionerThunkActions.updatePractitionerRegistered({
+          practitionerId: user.id,
+          status: true,
+        })
+      );
     }
 
     if (principalPractitioners?.length) {
@@ -142,6 +148,7 @@ export const SetupPrincipal: React.FC = () => {
       }
     }
     setIsLoading(false);
+    stopService();
     appDispatch(notificationActions.resetNotificationState());
     history.push(ROUTES.ROOT);
   };
