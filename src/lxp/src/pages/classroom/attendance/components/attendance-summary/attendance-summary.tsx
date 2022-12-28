@@ -40,6 +40,7 @@ import * as styles from './attendance-summary.styles';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 import { userSelectors } from '@store/user';
 import { practitionerSelectors } from '@/store/practitioner';
+import { usePrevious } from '@ecdlink/core/lib/hooks/usePrevious';
 
 export const AttendanceSummary: React.FC = () => {
   const [displaySmartStartMessage, setDisplaySmartStartMessage] =
@@ -94,6 +95,10 @@ export const AttendanceSummary: React.FC = () => {
   const publicHolidays = useSelector(staticDataSelectors.getHolidays);
   const attendanceData = useSelector(attendanceSelectors.getAttendance);
 
+  const previousMissedAttendanceGroups =
+    usePrevious(missedAttendanceGroups) || [];
+  const previousAttendanceData = usePrevious(attendanceData);
+
   useEffect(() => {
     let hasClosedPointsMessage = getStorageItem<boolean>(
       LocalStorageKeys.hasClosedAttendanceSmartStartPointsMessage
@@ -119,7 +124,12 @@ export const AttendanceSummary: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (classProgrammes && attendanceData && publicHolidays) {
+    if (
+      classProgrammes &&
+      attendanceData &&
+      publicHolidays &&
+      previousAttendanceData !== attendanceData
+    ) {
       const attendance = attendanceData as AttendanceDto[];
       const holidays = publicHolidays as Holiday[];
 
@@ -146,9 +156,20 @@ export const AttendanceSummary: React.FC = () => {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [publicHolidays, attendanceData, classProgrammesUpdated]);
+  }, [
+    publicHolidays,
+    attendanceData,
+    previousAttendanceData,
+    classProgrammesUpdated,
+  ]);
 
   useEffect(() => {
+    if (
+      !!previousMissedAttendanceGroups.length &&
+      previousMissedAttendanceGroups.length === missedAttendanceGroups.length
+    )
+      return;
+
     if (
       !isValidAttendanceDay &&
       missedAttendanceGroups &&
@@ -209,7 +230,13 @@ export const AttendanceSummary: React.FC = () => {
       setAttendanceActionList([]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isValidAttendanceDay, missedAttendanceGroups, classProgrammesUpdated]);
+  }, [
+    isValidAttendanceDay,
+    missedAttendanceGroups,
+    previousMissedAttendanceGroups,
+    attendanceActionList,
+    classProgrammesUpdated,
+  ]);
 
   useEffect(() => {
     if (missedAttendanceGroups && missedAttendanceGroups.length > 0) {
