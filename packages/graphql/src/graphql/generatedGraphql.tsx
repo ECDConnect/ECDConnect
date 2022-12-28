@@ -5624,6 +5624,11 @@ export type Sl_Ingestion_UserInput = {
   UserId?: InputMaybe<Scalars['String']>;
 };
 
+export type SettingsType = {
+  __typename?: 'SettingsType';
+  Holder?: Maybe<Scalars['String']>;
+};
+
 export type ShortenUrlEntity = {
   __typename?: 'ShortenUrlEntity';
   clicked: Scalars['Int'];
