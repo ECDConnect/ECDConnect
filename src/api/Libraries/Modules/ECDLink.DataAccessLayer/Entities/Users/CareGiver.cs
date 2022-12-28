@@ -70,6 +70,7 @@ namespace ECDLink.DataAccessLayer.Entities.Caregiver
         [ForeignKey(nameof(LanguageId))]
         public virtual Language Language { get; set; }
         public Guid? LanguageId { get; set; }
+        public Boolean isMother { get; set; }
 
     }
 

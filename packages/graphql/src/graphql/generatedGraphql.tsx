@@ -389,6 +389,7 @@ export type Caregiver = {
   idNumber?: Maybe<Scalars['String']>;
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
+  isMother: Scalars['Boolean'];
   joinReferencePanel: Scalars['Boolean'];
   language?: Maybe<Language>;
   languageId?: Maybe<Scalars['UUID']>;
@@ -424,6 +425,7 @@ export type CaregiverFilterInput = {
   idNumber?: InputMaybe<StringOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
+  isMother?: InputMaybe<BooleanOperationFilterInput>;
   joinReferencePanel?: InputMaybe<BooleanOperationFilterInput>;
   language?: InputMaybe<LanguageFilterInput>;
   languageId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
@@ -469,6 +471,7 @@ export type CaregiverInput = {
   Surname?: InputMaybe<Scalars['String']>;
   UpdatedBy?: InputMaybe<Scalars['String']>;
   WhatsAppNumber?: InputMaybe<Scalars['String']>;
+  isMother: Scalars['Boolean'];
 };
 
 export type CaregiverModelInput = {
@@ -536,6 +539,15 @@ export type ChildAttendanceReportModel = {
   >;
   totalActualAttendance: Scalars['Int'];
   totalExpectedAttendance: Scalars['Int'];
+};
+
+export type ChildCreatedByDetail = {
+  __typename?: 'ChildCreatedByDetail';
+  childUserId?: Maybe<Scalars['String']>;
+  createdByDate: Scalars['DateTime'];
+  createdById?: Maybe<Scalars['String']>;
+  createdByName?: Maybe<Scalars['String']>;
+  fullName?: Maybe<Scalars['String']>;
 };
 
 export type ChildFilterInput = {
@@ -4380,6 +4392,7 @@ export type Query = {
   caregiverGrants?: Maybe<Array<Maybe<UserGrant>>>;
   childAttendanceReport?: Maybe<ChildAttendanceReportModel>;
   childByUserId?: Maybe<Child>;
+  childCreatedByDetail?: Maybe<ChildCreatedByDetail>;
   childProgressReport?: Maybe<ChildProgressReportDetailedModel>;
   childProgressReportSummary?: Maybe<
     Array<Maybe<ChildProgressReportSummaryModel>>
@@ -5141,6 +5154,11 @@ export type QueryChildAttendanceReportArgs = {
 
 export type QueryChildByUserIdArgs = {
   userId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryChildCreatedByDetailArgs = {
+  firstName?: InputMaybe<Scalars['String']>;
+  surname?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryChildProgressReportArgs = {
@@ -5976,6 +5994,7 @@ export type TenantModel = {
   adminTestSiteAddress?: Maybe<Scalars['String']>;
   applicationName?: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
+  moodleUrlVar?: Maybe<Scalars['String']>;
   organisationName?: Maybe<Scalars['String']>;
   siteAddress?: Maybe<Scalars['String']>;
   tenantType: TenantType;
@@ -5983,7 +6002,6 @@ export type TenantModel = {
   themePathVar?: Maybe<Scalars['String']>;
   var1?: Maybe<Scalars['String']>;
   var2?: Maybe<Scalars['String']>;
-  moodleUrlVar?: Maybe<Scalars['String']>;
 };
 
 export enum TenantType {
