@@ -213,7 +213,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
       attendanceThunkActions.getAttendance({
         year: getYear(new Date()),
         monthOfYear: getMonth(new Date()) + 1,
-        weekOfYear: getWeek(new Date(), { weekStartsOn: 1 }) - 1,
+        weekOfYear: getWeek(new Date()) - 1,
       })
     ).unwrap();
 

@@ -225,7 +225,8 @@ export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
               attendanceData,
               classroomGroups,
               classroomGroupProgrammes,
-              childReportsOne
+              childReportsOne,
+              'coach'
             );
             const childUserDocumentsTwo = documents?.filter(
               (x) => x.userId === b.userId
@@ -242,7 +243,8 @@ export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
               attendanceData,
               classroomGroups,
               classroomGroupProgrammes,
-              childReportsTwo
+              childReportsTwo,
+              'coach'
             );
             return childAlertOne.severity > childAlertTwo.severity ? 1 : -1;
           }
@@ -299,7 +301,8 @@ export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
       attendanceData,
       classroomGroups,
       classroomGroupProgrammes,
-      reports
+      reports,
+      'coach'
     );
 
     return {

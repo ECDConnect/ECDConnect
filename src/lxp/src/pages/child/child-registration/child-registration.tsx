@@ -59,6 +59,8 @@ import {
 import ROUTES from '@routes/routes';
 import { CaregiverService } from '@/services/CaregiverService';
 import { authSelectors } from '@store/auth';
+import { childrenForPractitionerThunkActions } from '@/store/childrenForPractitioner';
+import { practitionerSelectors } from '@/store/practitioner';
 
 export const ChildRegistration: React.FC = () => {
   const history = useHistory();
@@ -74,6 +76,9 @@ export const ChildRegistration: React.FC = () => {
   const consentList = useSelector(contentConsentSelectors.getConsent);
   const existingChild = useSelector(childrenSelectors.getChildById(childId));
   const authUser = useSelector(authSelectors.getAuthUser);
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  const practitionerUserId = practitioner?.userId;
+  const isPrincipal = practitioner?.isPrincipal === true;
 
   const existingLearner = useSelector(
     classroomsSelectors.getChildLearner(existingChild)
@@ -364,6 +369,17 @@ export const ChildRegistration: React.FC = () => {
           caregiverData?.grants || []
         );
       };
+
+      if (isPrincipal && practitionerUserId) {
+        const updatePrincipalChildren = async () => {
+          await appDispatch(
+            childrenForPractitionerThunkActions.getChildrenForPractitioner({
+              id: practitionerUserId,
+            })
+          ).unwrap();
+        };
+        updatePrincipalChildren();
+      }
       updateGrants();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

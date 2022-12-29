@@ -45,7 +45,7 @@ import { documentActions, documentThunkActions } from '@/store/document';
 import { useWindowSize } from '@reach/window-size';
 import { MotherDetailsModel } from '@/schemas/infant/mother-details';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
-import { usePrevious } from '@/hooks/usePrevious';
+import { usePrevious } from '@ecdlink/core/lib/hooks/usePrevious';
 import { healthCareWorkerSelectors } from '@/store/healthCareWorker';
 import { InfantActions } from '@/store/infant/infant.actions';
 
