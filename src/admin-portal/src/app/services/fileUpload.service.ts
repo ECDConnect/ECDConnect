@@ -10,44 +10,57 @@ class CustomUploadAdapter {
     this.loader = loader;
   }
 
+  async readFileAsBase64Async(file) {
+    return new Promise((resolve, reject) => {
+      let reader = new FileReader();
+
+      reader.onload = () => {
+        resolve(reader.result?.toString().split('base64,')[1]);
+      };
+
+      reader.onerror = reject;
+
+      reader.readAsDataURL(file);
+    });
+  }
+
   // Starts the upload process.
   async upload() {
-    return this.loader.file.then(
-      (file) =>
-        new Promise(async (resolve, reject) => {
-          const loader = this.loader;
-          const genericErrorText = `Couldn't upload file: ${file.name}.`;
-          let compressedImage = await getCompressedImage(file);
+    let file = await this.loader.file;
+    let result = new Promise(async (resolve, reject) => {
+      const loader = this.loader;
+      const genericErrorText = `Couldn't upload file: ${file.name}.`;
+      let compressedImage = await getCompressedImage(file);
+      const base64Result = await this.readFileAsBase64Async(compressedImage);
 
-          const reader = new FileReader();
-          reader.readAsDataURL(compressedImage);
-          reader.onload = (onload: any) => {
-            const base64Result = reader.result?.toString().split('base64,')[1];
-            apolloClient
-              .mutate({
-                mutation: FileUpload,
-                variables: {
-                  file: base64Result,
-                  fileName: file.name,
-                  fileType: FileTypeEnum.ContentImage, // TODO: Use new entry: FileTypeEnum.ContentImage
-                },
-              })
-              .then((result) => {
-                if (result && result.data) {
-                  loader.uploadTotal = result.data.total;
-                  loader.uploaded = true;
-                  resolve(result.data.fileUpload.url);
-                }
-              })
-              .catch(() => {
-                loader.uploaded = false;
-                loader.uploadTotal = 0;
-                reject(genericErrorText);
-              })
-              .finally(() => console.log('Upload done running.'));
-          };
+      apolloClient
+        .mutate({
+          mutation: FileUpload,
+          variables: {
+            file: base64Result,
+            fileName: file.name,
+            fileType: FileTypeEnum.ContentImage,
+          },
         })
-    );
+        .then((result) => {
+          if (result && result.data) {
+            loader.uploadTotal = result.data.total;
+            loader.uploaded = true;
+            resolve({
+              urls: { default: encodeURI(result.data.fileUpload.url) },
+            });
+          } else {
+            reject(genericErrorText);
+          }
+        })
+        .catch(() => {
+          loader.uploaded = false;
+          loader.uploadTotal = 0;
+          reject(genericErrorText);
+        });
+    });
+
+    return result;
   }
 
   // Aborts the upload process.
