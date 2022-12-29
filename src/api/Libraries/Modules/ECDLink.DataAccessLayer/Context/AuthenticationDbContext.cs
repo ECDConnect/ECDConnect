@@ -17,6 +17,7 @@ using ECDLink.DataAccessLayer.Jobs;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using ECDLink.Security.JwtSecurity;
+using ECDLink.DataAccessLayer.Entities.Integration.IntegrationMapping;
 
 namespace ECDLink.DataAccessLayer.Context
 {
@@ -94,6 +95,9 @@ namespace ECDLink.DataAccessLayer.Context
 
         //JOBS
         public DbSet<JobNotification> JobNotifications { get; set; }
+
+        // Integration
+        public DbSet<IntegrationMapping> IntegrationMappings { get; set; }
 
 
         public AuthenticationDbContext(DbContextOptions<AuthenticationDbContext> options)

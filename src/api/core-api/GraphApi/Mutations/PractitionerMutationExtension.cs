@@ -39,12 +39,18 @@ using System.Text.RegularExpressions;
 using static NPOI.HSSF.Util.HSSFColor;
 using ECDLink.DataAccessLayer.Entities.DataIngestion;
 using System.Reflection;
+using ECDLink.DataAccessLayer.Entities.Integration.MappedEntities;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class PractitionerMutationExtension
     {
+        public static string password = "AQAAAAEAACcQAAAAEG8HH4NQmDeD+mt5aV4WZLhKb4LnQN3HdkzGloeqmaH6qbA37HSVhysm+hPEq1NKZg==";
+        public static string securityStamp = "NXAOZGBIVGAMGCHVNGN2WFJXPLPS67YD";
+        public static string concurrencystamp = "d0797595-3855-4e5c-aebf-cf7300ddae02";
+
+
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public Practitioner UpdatePractitioner([Service] IHttpContextAccessor contextAccessor,
           [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
@@ -503,46 +509,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         char[] coachdigits = coach.CoachID.ToCharArray();
                         var coachdob = new DateTime(Int32.Parse("19" + coachdigits[0] + coachdigits[1]), Int32.Parse(coachdigits[2].ToString() + coachdigits[3].ToString()), Int32.Parse(coachdigits[4].ToString() + coachdigits[5].ToString()));
 
-                        // check user dont exist first
-                        var existingUser = userManager.Users.Where(x => x.IdNumber == coach.CoachID).FirstOrDefault();
-
-                        if (existingUser == null)
+                        MappedCoach newMappedCoach = new MappedCoach()
                         {
-                            var newUser = new ApplicationUser
-                            {
-                                Id = userId.ToString(),
-                                PhoneNumber = coach.CoachNumber,
-                                UserName = coach?.CoachID,
-                                IdNumber = coach?.CoachID,
-                                IsSouthAfricanCitizen = true,
-                                VerifiedByHomeAffairs = true,
-                                DateOfBirth = coachdob,
-                                FirstName = firstname,
-                                Surname = surname,
-                                FullName = fullname,
-                                ContactPreference = "sms",
-                                IsActive = true,
-                                PasswordHash = password,
-                                SecurityStamp = securityStamp,
-                                ConcurrencyStamp = concurrencystamp
-                            };
-                            userManager.CreateAsync(newUser);
-                            userManager.AddToRoleAsync(newUser, Roles.COACH);
-                            var siteaddressid = addressRepo.GetAll().Where(x => x.AddressLine1 == "Kellner St").FirstOrDefault().Id;
+                            FirstName = firstname,
+                            Surname = surname,
+                            ContactNumber = coach.CoachNumber,
+                            FullName = fullname,
 
-                            var cc = new Coach
-                            {
-                                Id = Guid.NewGuid(),
-                                UserId = userId,
-                                SiteAddressId = siteaddressid,
-                                AreaOfOperation = "Office",
-                                FranchisorId = Guid.Parse(franchisorId),
-                                StartDate = DateTime.Now.AddMonths(-1),
-                                IsActive = true
-                            };
-                            coachRepo.Insert(cc);
-
-                        }
+                        };
+                        Coach newCoach = CreateCoachUser(repoFactory,httpContextAccessor,userManager, newMappedCoach, franchisorId);
+                            //    //invite to application
+                            //    //invite.SendInviteToApplication(invitationManager, notificationManager, userManager, prac.UserId);                        
                     }
                 }
 
@@ -576,7 +553,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                                 PasswordHash = password,
                                 TenantId = tenantId
                             };
-                            userManager.CreateAsync(newUser);
+                            var userCreatedResult = userManager.CreateAsync(newUser).Result;
 
                             var newPractitioner = new Practitioner
                             {
@@ -1070,6 +1047,70 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             }
 
             return true;
+        }
+
+        public Coach CreateCoachUser([Service] IGenericRepositoryFactory repoFactory,
+              [Service] IHttpContextAccessor httpContextAccessor,
+              [Service] UserManager<ApplicationUser> userManager,
+              MappedCoach coach,
+              string franchisorId)
+        {
+
+            string userId = Guid.NewGuid().ToString();
+            var uId = httpContextAccessor.HttpContext.GetUser().Id;
+            var coachRepo = repoFactory.CreateGenericRepository<Coach>(userContext: uId);
+            //check user dont exist first
+            var existingUser = userManager.Users.Where(x => x.IdNumber == coach.IdNumber).FirstOrDefault();
+
+            if (existingUser == null)
+            {
+                char[] coachdigits = coach.IdNumber.ToCharArray();//new String(idNumber.TakeWhile(Char.IsDigit).ToArray());
+                var coachdob = new DateTime(Int32.Parse("19" + coachdigits[0] + coachdigits[1]), Int32.Parse(coachdigits[2].ToString() + coachdigits[3].ToString()), Int32.Parse(coachdigits[4].ToString() + coachdigits[5].ToString()));
+
+                var newUser = new ApplicationUser
+                {
+                    Id = userId.ToString(),
+                    PhoneNumber = coach.ContactNumber,
+                    UserName = coach?.IdNumber,
+                    IdNumber = coach?.IdNumber,
+                    IsSouthAfricanCitizen = true,
+                    VerifiedByHomeAffairs = true,
+                    DateOfBirth = coachdob,
+                    FirstName = coach.FirstName,
+                    Surname = coach.Surname,
+                    FullName = coach.FullName,//$"{practitioner.FirstName} {practitioner.Surname}",
+                    ContactPreference = "sms",
+                    IsActive = true,
+                    PasswordHash = password,
+                    SecurityStamp = securityStamp,
+                    ConcurrencyStamp = concurrencystamp
+                };
+                var userCreatedResult = userManager.CreateAsync(newUser).Result;
+                var userRole = userManager.AddToRoleAsync(newUser, Roles.COACH).Result;
+                //pull address from franchisor, 
+
+                var franchisorRepo = repoFactory.CreateGenericRepository<Franchisor>(userContext: uId);
+
+                var franchisor = franchisorRepo.GetAll().Where(f => f.Id.Equals(franchisorId)).FirstOrDefault();
+                //var siteaddressid = addressRepo.GetAll().Where(x => x.AddressLine1 == "Kellner St").FirstOrDefault().Id;
+
+                var cc = new Coach
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = userId,
+                    SiteAddressId = franchisor.SiteAddressId,
+                    AreaOfOperation = "Office",
+                    FranchisorId = Guid.Parse(franchisorId),
+                    StartDate = DateTime.Now.AddMonths(-1),
+                    IsActive = true
+                };
+                coachRepo.Insert(cc);
+
+                //    //invite to application
+                //    //invite.SendInviteToApplication(invitationManager, notificationManager, userManager, prac.UserId);
+                return cc;
+            } else { return coachRepo.GetAll().Where(x => x.UserId == existingUser.Id).FirstOrDefault(); }
+
         }
 
         public bool UpdatePractitionerShareInfo([Service] IHttpContextAccessor contextAccessor,
