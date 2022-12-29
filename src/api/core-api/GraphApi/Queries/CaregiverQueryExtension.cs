@@ -15,6 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
+using Microsoft.Azure.Documents.SystemFunctions;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
@@ -81,23 +82,37 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public List<Caregiver> GetAllCaregiversForHealthCareWorker([Service] IHttpContextAccessor contextAccessor,
-            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
             string id)
         {
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
-
             var healtCareWorkerIdGuid = new Guid(id);
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var careGiverRepo = repoFactory.CreateGenericRepository<Caregiver>(userContext: uId);
+            var motherRepo = repoFactory.CreateGenericRepository<Mother>(userContext: uId);
+
             List<Caregiver> caregivers = new List<Caregiver>();
+            List<Mother> mother_caregivers = new List<Mother>();
 
             if (healtCareWorkerIdGuid != null)
             {
+                // get all caregivers linked to HCW
                 caregivers = careGiverRepo.GetAll().Where(x => x.HealthCareWorkerId.Equals(healtCareWorkerIdGuid)).ToList();
-            }
 
+                // get all mothers linked to HCW that is also registered as caregivers
+                mother_caregivers = motherRepo.GetAll().Where(x => x.HealthCareWorkerId.Equals(healtCareWorkerIdGuid) && x.LinkedCaregiverId.HasValue).ToList();
+
+                // loop through both lists and mark the caregiver as a mother
+                foreach (var caregiver in caregivers)
+                {
+                    foreach (var mother in mother_caregivers)
+                    {
+                        if (caregiver.Id == mother.LinkedCaregiverId)
+                        {
+                            caregiver.isMother = true;
+                        }
+                    }
+                }
+            }
             return caregivers;
         }
 
