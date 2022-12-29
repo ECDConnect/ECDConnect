@@ -538,6 +538,15 @@ export type ChildAttendanceReportModel = {
   totalExpectedAttendance: Scalars['Int'];
 };
 
+export type ChildCreatedByDetail = {
+  __typename?: 'ChildCreatedByDetail';
+  childUserId?: Maybe<Scalars['String']>;
+  createdByDate: Scalars['DateTime'];
+  createdById?: Maybe<Scalars['String']>;
+  createdByName?: Maybe<Scalars['String']>;
+  fullName?: Maybe<Scalars['String']>;
+};
+
 export type ChildFilterInput = {
   allergies?: InputMaybe<StringOperationFilterInput>;
   and?: InputMaybe<Array<ChildFilterInput>>;
@@ -4374,6 +4383,7 @@ export type Query = {
   caregiverGrants?: Maybe<Array<Maybe<UserGrant>>>;
   childAttendanceReport?: Maybe<ChildAttendanceReportModel>;
   childByUserId?: Maybe<Child>;
+  childCreatedByDetail?: Maybe<ChildCreatedByDetail>;
   childProgressReport?: Maybe<ChildProgressReportDetailedModel>;
   childProgressReportSummary?: Maybe<
     Array<Maybe<ChildProgressReportSummaryModel>>
@@ -5135,6 +5145,11 @@ export type QueryChildAttendanceReportArgs = {
 
 export type QueryChildByUserIdArgs = {
   userId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryChildCreatedByDetailArgs = {
+  firstName?: InputMaybe<Scalars['String']>;
+  surname?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryChildProgressReportArgs = {
@@ -5970,6 +5985,7 @@ export type TenantModel = {
   adminTestSiteAddress?: Maybe<Scalars['String']>;
   applicationName?: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
+  moodleUrlVar?: Maybe<Scalars['String']>;
   organisationName?: Maybe<Scalars['String']>;
   siteAddress?: Maybe<Scalars['String']>;
   tenantType: TenantType;
@@ -5977,7 +5993,6 @@ export type TenantModel = {
   themePathVar?: Maybe<Scalars['String']>;
   var1?: Maybe<Scalars['String']>;
   var2?: Maybe<Scalars['String']>;
-  moodleUrlVar?: Maybe<Scalars['String']>;
 };
 
 export enum TenantType {
