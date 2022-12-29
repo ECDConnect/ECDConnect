@@ -548,7 +548,6 @@ export const ChildProfile: React.FC = () => {
             onPressed={() => setEditProfilePictureVisible(true)}
           />
         </div>
-
         <div className={styles.chipsWrapper}>
           <StatusChip
             backgroundColour="infoDark"
@@ -567,7 +566,6 @@ export const ChildProfile: React.FC = () => {
             className={'mr-2'}
           />
         </div>
-
         {belongsToNoPlaygroup && (
           <Alert
             className="m-4"
@@ -600,7 +598,6 @@ export const ChildProfile: React.FC = () => {
             }
           />
         )}
-
         {showCertificateError() && (
           <Alert
             className="m-4"
@@ -643,7 +640,6 @@ export const ChildProfile: React.FC = () => {
               <ChildProgressReportAlert child={child} />
             </div>
           )}
-
         <div className={styles.profileOptionsWrapper}>
           {profileOptions.map((options) => (
             <ListItem

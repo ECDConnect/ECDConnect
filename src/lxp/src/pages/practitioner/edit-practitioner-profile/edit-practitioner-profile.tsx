@@ -23,6 +23,7 @@ import {
 import ROUTES from '@/routes/routes';
 import { useAppDispatch } from '@store';
 import { notificationActions } from '@/store/notifications';
+import { useNotificationService } from '@/hooks/useNotificationService';
 
 export const EditPractitionerProfile: React.FC = () => {
   const appDispatch = useAppDispatch();
@@ -41,6 +42,8 @@ export const EditPractitionerProfile: React.FC = () => {
     practitionerToProgramme: false,
     allowPermissions: false,
   });
+
+  const { stopService } = useNotificationService();
 
   useEffect(() => {
     if (activeStep === EditPractitionerSteps.WELCOME) {
@@ -75,6 +78,7 @@ export const EditPractitionerProfile: React.FC = () => {
         }
         appDispatch(notificationActions.resetNotificationState());
         appDispatch(practitionerThunkActions.getAllPractitioners({}));
+        stopService();
         history.push(ROUTES.ROOT);
       }
     } else {

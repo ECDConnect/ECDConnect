@@ -52,53 +52,6 @@ export default function ContentList({
 
   const [displayFields, setDisplayFields] = useState<string[]>();
 
-  // const [getContentDefinitionsExcelTemplateGenerator, { data: templateData }] = useLazyQuery(
-  //   contentDefinitionsExcelTemplateGenerator,
-  //   {
-  //     variables: {
-  //       contentTypeId: contentType.id,
-  //     },
-  //     fetchPolicy: 'cache-and-network',
-  //   }
-  // );
-
-  // const [templateDownloaded, setTemplateDownloaded] = useState<boolean>(false);
-
-  // useEffect(() => {
-  //   if (
-  //     templateData &&
-  //     templateData.contentDefinitionsExcelTemplateGenerator &&
-  //     !templateDownloaded
-  //   ) {
-  //     const b64Data = templateData.contentDefinitionsExcelTemplateGenerator.base64File;
-  //     const contentType = templateData.contentDefinitionsExcelTemplateGenerator.fileType;
-  //     const fileName = templateData.contentDefinitionsExcelTemplateGenerator.fileName;
-  //     const extension = templateData.contentDefinitionsExcelTemplateGenerator.extension;
-  //     const blob = b64toBlob(b64Data, contentType);
-
-  //     const link = document.createElement('a');
-
-  //     if (link.download !== undefined) {
-  //       const url = URL.createObjectURL(blob);
-  //       link.setAttribute('href', url);
-  //       link.setAttribute('download', `${fileName}${extension}`);
-  //       link.style.visibility = 'hidden';
-  //       document.body.appendChild(link);
-  //       link.click();
-  //       document.body.removeChild(link);
-  //     }
-
-  //     setTemplateDownloaded(true);
-  //   }
-  // }, [templateData, templateDownloaded]);
-
-  // const downloadContentTypeTemplate = async () => {
-  //   setTemplateDownloaded(false);
-  //   await getContentDefinitionsExcelTemplateGenerator({
-  //     variables: { contentTypeId: contentType.id },
-  //   });
-  // };
-
   useEffect(() => {
     if (contentType && contentType.fields) {
       const displayFields: string[] = [];
@@ -232,28 +185,6 @@ export default function ContentList({
     });
   };
 
-  // const UploadContent = () => {
-  //   panel({
-  //     noPadding: true,
-  //     title: `Upload Content - ${type}`,
-  //     render: (onSubmit: any) => (
-  //       <UploadContentTemplate
-  //         contentType={contentType}
-  //         closeDialog={(created: boolean) => {
-  //           onSubmit();
-
-  //           if (created) {
-  //             refetchContent({
-  //               localeId: languageId.toString(),
-  //             });
-  //             refreshParent();
-  //           }
-  //         }}
-  //       />
-  //     ),
-  //   });
-  // };
-
   const deleteAndRefresh = async (item: any) => {
     dialog({
       position: DialogPosition.Middle,
@@ -295,7 +226,7 @@ export default function ContentList({
       <div>
         <div className="flex flex-col">
           <div className="pb-5 sm:flex sm:items-center sm:justify-between">
-            <h3 className="text-lg leading-6 font-medium text-white">{type}</h3>
+            <h3 className="text-lg font-medium leading-6 text-white">{type}</h3>
             <div className="flex flex-row">
               <div className="flex flex-col">
                 <LanguageSelector
@@ -311,83 +242,19 @@ export default function ContentList({
                     <button
                       onClick={() => displayCreatePanel()}
                       type="button"
-                      className="inline-flex items-center px-4 py-2.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-uiMid hover:bg-uiLight focus:outline-none focus:ring-2 focus:ring-offset-2"
+                      className="bg-uiMid hover:bg-uiLight focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
                     >
                       Create {camelCaseToSentanceCase(contentType.name)}
                     </button>
                   )}
                 </div>
               </div>
-
-              {/* <div className="flex flex-col">
-                <div className="mt-1 ml-4">
-                  <Menu as="div" className=" inline-block text-right">
-                    {({ open }) => (
-                      <>
-                        <div>
-                          <Menu.Button
-                            onClick={() => displayCreatePanel()}
-                            type="button"
-                            className="inline-flex items-center px-4 py-2.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-uiMid hover:bg-uiLight focus:outline-none focus:ring-2 focus:ring-offset-2"
-                          >
-                            <span className="sr-only">Open options</span>
-                            <CogIcon className="h-5 w-5" aria-hidden="true" />
-                          </Menu.Button>
-                        </div>
-
-                        <Transition
-                          show={open}
-                          as={Fragment}
-                          enter="transition ease-out duration-100"
-                          enterFrom="transform opacity-0 scale-95"
-                          enterTo="transform opacity-100 scale-100"
-                          leave="transition ease-in duration-75"
-                          leaveFrom="transform opacity-100 scale-100"
-                          leaveTo="transform opacity-0 scale-95"
-                        >
-                          <Menu.Items
-                            static
-                            className="z-50 origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
-                          >
-                            <div className="py-1">
-                              <Menu.Item>
-                                <div
-                                  onClick={() => downloadContentTypeTemplate()}
-                                  className="text-gray-700 flex px-4 py-2 text-sm"
-                                >
-                                  <DownloadIcon
-                                    className="mr-3 h-5 w-5 text-gray-400"
-                                    aria-hidden="true"
-                                  />
-                                  Download {camelCaseToSentanceCase(contentType.name)} template
-                                </div>
-                              </Menu.Item>
-                              <Menu.Item>
-                                <div
-                                  onClick={() => UploadContent()}
-                                  className="text-gray-700 flex px-4 py-2 text-sm"
-                                >
-                                  <UploadIcon
-                                    className="mr-3 h-5 w-5 text-gray-400"
-                                    aria-hidden="true"
-                                  />
-                                  Upload {camelCaseToSentanceCase(contentType.name)} template
-                                </div>
-                              </Menu.Item>
-                            </div>
-                          </Menu.Items>
-                        </Transition>
-                      </>
-                    )}
-                  </Menu>
-                </div>
-              </div> */}
             </div>
           </div>
 
           <div className=" -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-            <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-              <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+            <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+              <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
                 <UiTable
                   columns={displayFields.map((item) => {
                     return { field: item, use: item };

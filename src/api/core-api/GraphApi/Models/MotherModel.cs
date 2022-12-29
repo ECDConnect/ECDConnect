@@ -18,6 +18,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public Guid? RelationId { get; set; }
         public Relation Relation { get; set; }
         public SiteAddress SiteAddress { get; set; }
+        public Guid? LinkedCaregiverId { get; set; }
     }
 }
 

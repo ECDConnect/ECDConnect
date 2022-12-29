@@ -18,11 +18,11 @@ export default function StatsBar({
         {stats.map((item) => (
           <div
             key={item.id}
-            className="relative bg-uiBg pt-5 px-4  sm:pt-6 sm:px-6 rounded-lg overflow-hidden"
+            className="bg-uiBg relative overflow-hidden rounded-lg  px-4 pt-5 sm:px-6 sm:pt-6"
           >
             {item.showDateRange && (
               <CogIcon
-                className="absolute text-primary h-6 w-6 cursor-pointer right-2 top-2"
+                className="text-primary absolute right-2 top-2 h-6 w-6 cursor-pointer"
                 onClick={() => showDialog(item)}
               />
             )}
@@ -31,16 +31,13 @@ export default function StatsBar({
                 <item.icon className="h-6 w-6 text-white" aria-hidden="true" />
               </div>
               <p
-                className="ml-16 text-sm font-medium text-gray-500 truncate"
+                className="ml-16 truncate text-sm font-medium text-gray-500"
                 title={item.name}
               >
                 {item.name}
               </p>
-              {/* {item.miniText && (
-                <p className="ml-16 text-sm font-medium text-gray-500 truncate">{item.miniText}</p>
-              )} */}
             </dt>
-            <dd className="ml-16 pb-6 flex items-baseline sm:pb-7">
+            <dd className="ml-16 flex items-baseline pb-6 sm:pb-7">
               <p className="text-2xl font-semibold text-gray-900">
                 {item.stat}
               </p>
@@ -54,7 +51,7 @@ export default function StatsBar({
               ></p>
             </dd>
             {item.miniText && (
-              <span className="absolute text-sm font-medium text-gray-500 truncate bottom-2 right-2">
+              <span className="absolute bottom-2 right-2 truncate text-sm font-medium text-gray-500">
                 {item.miniText}
               </span>
             )}
