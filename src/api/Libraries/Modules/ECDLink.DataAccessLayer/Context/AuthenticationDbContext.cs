@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using ECDLink.Security.JwtSecurity;
 using ECDLink.DataAccessLayer.Entities.Integration.IntegrationMapping;
+using ECDLink.DataAccessLayer.Entities.IncomeStatements;
 
 namespace ECDLink.DataAccessLayer.Context
 {
@@ -99,6 +100,19 @@ namespace ECDLink.DataAccessLayer.Context
         // Integration
         public DbSet<IntegrationMapping> IntegrationMappings { get; set; }
 
+        // Service Scheduling
+        public DbSet<ServiceScheduler> ServiceScheduler { get; set; }
+
+        // Income Statements
+        public DbSet<StatementsContributionType> StatementsContributionTypes { get; set; }
+        public DbSet<StatementsExpenses> StatementsExpenses { get; set; }
+        public DbSet<StatementsExpenseType> StatementsExpenseTypes { get; set; }
+        public DbSet<StatementsFeeType> StatementsFeeTypes { get; set; }
+        public DbSet<StatementsIncome> StatementsIncomes { get; set; }
+        public DbSet<StatementsIncomeStatement> StatementsIncomeStatements { get; set; }
+        public DbSet<StatementsIncomeType> StatementsIncomeTypes { get; set; }
+        public DbSet<StatementsPayType> StatementsPayTypes { get; set; }
+        public DbSet<StatementsStartupSupport> StatementsStartupSupports { get; set; }
 
         public AuthenticationDbContext(DbContextOptions<AuthenticationDbContext> options)
                : base(options)
