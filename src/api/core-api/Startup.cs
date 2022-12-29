@@ -157,7 +157,8 @@ namespace EcdLink.Api.CoreApi
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseTenancy();
-            app.UseInputSanitizer();
+            // TODO: Can't upload images through CKEditor without bypassing Json sanitizer, update or replace.
+            //app.UseInputSanitizer();
 
             app.UseEndpoints(endpoints =>
             {
