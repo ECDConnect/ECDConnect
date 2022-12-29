@@ -7,7 +7,7 @@
     "build": "craco build"
   },
   "dependencies": {
-    "@ckeditor/ckeditor5-upload": "^35.4.0",
+    "@ckeditor/ckeditor5-upload": "^32.0.0",
     "@ecdlink/core": "^1.0.0",
     "@ecdlink/graphql": "^1.0.0",
     "@ecdlink/ui": "^1.0.0"
