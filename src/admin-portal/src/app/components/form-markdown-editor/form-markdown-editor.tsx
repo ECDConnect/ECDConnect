@@ -43,7 +43,6 @@ export default function Editor({ label, onStateChange, currentValue }) {
             disabled={false}
             onChange={handleChange}
             onReady={(editor) => {
-              console.log(editor.config.plugins);
               editor.editing.view.change((writer) => {
                 writer.setStyle(
                   'min-height',
