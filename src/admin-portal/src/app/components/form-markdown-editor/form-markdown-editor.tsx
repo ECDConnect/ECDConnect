@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import ContentLoader from '../content-loader/content-loader';
-import { CKEditorCustomUploadAdapterPlugin } from '../../services/fileUpload.service';
+import { CKEditorCustomUploadAdapterPlugin } from '../../utils/custom-upload-adapter';
 
 export default function Editor({ label, onStateChange, currentValue }) {
   const [editorLoaded, setEditorLoaded] = useState(false);
