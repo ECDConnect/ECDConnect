@@ -1,11 +1,10 @@
-// @ts-nocheck
 import {
-  getImageSourceFromCamera,
   getImageSourceFromFileSystem,
   renderIcon,
   ActionSelect,
   ActionSelectItem,
   ComponentBaseProps,
+  Camera,
 } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import * as styles from './photo-prompt.styles';
@@ -32,6 +31,7 @@ export const PhotoPrompt: React.FC<PhotoPromptProps> = ({
   const [actions, setActions] = useState<
     ActionSelectItem<PhotoPromptActionType>[]
   >([]);
+  const [isOpenCamera, setIsOpenCamera] = useState(false);
 
   useEffect(() => {
     getActions();
@@ -66,10 +66,7 @@ export const PhotoPrompt: React.FC<PhotoPromptProps> = ({
   };
 
   const openCamera = async () => {
-    const imageBaseString = await getImageSourceFromCamera();
-    if (imageBaseString && onAction) {
-      onAction(imageBaseString);
-    }
+    setIsOpenCamera(true);
   };
 
   const openGallery = () => {
@@ -92,23 +89,16 @@ export const PhotoPrompt: React.FC<PhotoPromptProps> = ({
     }
   };
 
+  const onGetPhoto = (photo: string) => {
+    if (onAction) {
+      onAction(photo);
+    }
+  };
+
   const actionSelected = (value: PhotoPromptActionType) => {
     switch (value) {
       case 'camera':
         openCamera();
-        // added logic to flip camera using JS and CSS
-        // some logic from: https://github.com/ionic-team/pwa-elements/issues/11
-        // some logic from CSS knowledge
-        setTimeout(() => {
-          const video = document
-            .querySelector('pwa-camera-modal-instance')
-            .shadowRoot.querySelector('pwa-camera')
-            .shadowRoot.querySelector('video');
-          if (video !== null) {
-            video.style.transform = 'none';
-            video.style.transform = 'scaleX(-1)';
-          }
-        }, 100);
         break;
       case 'delete':
         deletePhoto();
@@ -123,11 +113,15 @@ export const PhotoPrompt: React.FC<PhotoPromptProps> = ({
   };
 
   return (
-    <ActionSelect
-      actions={actions}
-      title={title}
-      onActionSelected={actionSelected}
-      onClose={close}
-    />
+    <>
+      <ActionSelect
+        actions={actions}
+        title={title}
+        onActionSelected={actionSelected}
+        onClose={close}
+      />
+
+      {isOpenCamera && <Camera onGetPhoto={onGetPhoto} onClose={close} />}
+    </>
   );
 };

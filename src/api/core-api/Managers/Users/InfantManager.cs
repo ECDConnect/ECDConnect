@@ -49,10 +49,26 @@ namespace EcdLink.Api.CoreApi.Managers.Users
             if (caregiver == null && mother == null)
             {
                 caregiver = GetCaregiverFromInput(input);
+                
+                infant = new Infant()
+                {
+                    Id = Guid.NewGuid(),
+                    IsActive = true,
+                    InsertedDate = DateTime.Now,
+                    UpdatedDate = DateTime.Now,
+                    UpdatedBy = applicationUserId,
+                    UserId = input.UserId,
+                    User = infantUser,
+                    CaregiverId = caregiver.Id,
+                    Caregiver = caregiver,
+                    GenderId = input.GenderId,
+                    WeightAtBirth = input.WeightAtBirth,
+                    LengthAtBirth = input.LengthAtBirth
+                };
             }
             else
             {
-                if (caregiver == null && mother != null)
+                if (mother != null)
                 {
                     infant = new Infant()
                     {
@@ -92,14 +108,14 @@ namespace EcdLink.Api.CoreApi.Managers.Users
 
 
             var infantRepo = _repoFactory.CreateGenericRepository<Infant>(userContext: applicationUserId);
-            try
-            {
+           try
+           {
                 return infantRepo.Insert(infant);
-            }
-            catch (Exception e)
-            {
+           }
+           catch (Exception e)
+           {
                 return new Infant();
-            }
+           }
         }
 
         public Infant UpdateInfant(string id, InfantModel input)

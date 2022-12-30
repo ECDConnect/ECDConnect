@@ -8,7 +8,7 @@ import {
 import { useHistory } from 'react-router-dom';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useAppDispatch } from '@store';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import ROUTES from '@routes/routes';
 import {
   InfantRegisterSteps,
@@ -45,7 +45,7 @@ import { documentActions, documentThunkActions } from '@/store/document';
 import { useWindowSize } from '@reach/window-size';
 import { MotherDetailsModel } from '@/schemas/infant/mother-details';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
-import { usePrevious } from '@/hooks/usePrevious';
+import { usePrevious } from '@ecdlink/core/lib/hooks/usePrevious';
 import { healthCareWorkerSelectors } from '@/store/healthCareWorker';
 import { InfantActions } from '@/store/infant/infant.actions';
 
@@ -102,6 +102,14 @@ export const InfantRegisterForm: React.FC = () => {
   );
 
   const wasLoading = usePrevious(isLoading);
+
+  const successMessage = useMemo(
+    () =>
+      multipleChildrenArray.length > 1
+        ? multipleChildrenArray.length + ' children.'
+        : '1 child.',
+    [multipleChildrenArray.length]
+  );
 
   useEffect(() => {
     setLabel('step 1 of 6');
@@ -418,7 +426,7 @@ export const InfantRegisterForm: React.FC = () => {
                 text={
                   !!count && !isRejectInfantCount
                     ? `Great job ${user?.firstName}, you've registered ${count} children this month.`
-                    : `Great job ${user?.firstName}, you've registered a child.`
+                    : `Great job ${user?.firstName}, you've registered ${successMessage}`
                 }
               />
               <Typography
@@ -447,7 +455,7 @@ export const InfantRegisterForm: React.FC = () => {
           );
         },
       }),
-    [dialog, history, isRejectInfantCount, user?.firstName]
+    [dialog, history, isRejectInfantCount, successMessage, user?.firstName]
   );
 
   useEffect(() => {
@@ -460,19 +468,23 @@ export const InfantRegisterForm: React.FC = () => {
     }
   }, [activeStep, isAlreadyClient]);
 
-  const onSuccess = useCallback(async () => {
+  const onSuccess = useCallback(() => {
     if (!isRejected) {
-      const count = await appDispatch(
-        infantThunkActions.getInfantCountForMonth({})
-      ).unwrap();
-
-      showSuccessMessage(count);
-      if (healthCareWorker) {
-        await appDispatch(
-          caregiverThunkActions.getCaregiversForHealthCareWorker({
-            id: healthCareWorker?.id!,
-          })
+      (async () => {
+        const count = await appDispatch(
+          infantThunkActions.getInfantCountForMonth({})
         ).unwrap();
+
+        showSuccessMessage(count);
+      })();
+
+      if (healthCareWorker) {
+        (async () =>
+          await appDispatch(
+            caregiverThunkActions.getCaregiversForHealthCareWorker({
+              id: healthCareWorker?.id || '',
+            })
+          ).unwrap())();
       }
     } else {
       showSuccessMessage();

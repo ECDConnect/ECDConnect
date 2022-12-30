@@ -39,7 +39,7 @@
 
     <PackageReference Include="Microsoft.NETCore.Targets" Version="3.0.0" PrivateAssets="all" />
     
-    <PackageReference Include="HtmlSanitizer" Version="7.1.542" />
+    <PackageReference Include="HtmlSanitizer" Version="8.0.601" />
   </ItemGroup>
   
   <ItemGroup>

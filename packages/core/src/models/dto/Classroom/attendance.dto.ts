@@ -8,6 +8,7 @@ export interface AttendanceDto {
   userId?: string;
   parentRecordId?: string;
   weekOfYear?: number;
+  monthOfYear?: number;
   year?: number;
   attended?: boolean;
   attendanceDate?: Date | string;

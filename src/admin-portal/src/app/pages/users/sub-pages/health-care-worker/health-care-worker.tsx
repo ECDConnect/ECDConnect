@@ -18,7 +18,6 @@ import AlertModal from '../../../../components/dialog-alert/dialog-alert';
 import UiTable from '../../../../components/ui-table';
 import { useUser } from '../../../../hooks/useUser';
 import HealthCareWorkerPanelCreate from './components/health-care-worker-panel-create/health-care-worker-panel-create';
-//import HealthCareWorkerPanelEdit from './components/health-care-worker-panel-edit/practitioner-panel-edit';
 
 export default function HealthCareWorkers() {
   const { hasPermission } = useUser();
@@ -92,26 +91,6 @@ export default function HealthCareWorkers() {
       ),
     });
   };
-
-  // const displayEditPanel = (practitioner: HealthCareWorkerDto) => {
-  //   panel({
-  //     noPadding: true,
-  //     title: 'Edit Health Worker',
-  //     render: (onSubmit: any) => (
-  //       <HealthCareWorkerPanelEdit
-  //         practitioner={practitioner}
-  //         key={`userPanelCreate`}
-  //         closeDialog={(userCreated: boolean) => {
-  //           onSubmit();
-
-  //           if (userCreated) {
-  //             refetch();
-  //           }
-  //         }}
-  //       />
-  //     ),
-  //   });
-  // };
 
   if (tableData) {
     return (

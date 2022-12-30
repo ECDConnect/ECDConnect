@@ -2,12 +2,12 @@ import { useMemo, useState, useEffect } from 'react';
 import { BannerWrapper, LoadingSpinner } from '@ecdlink/ui';
 import { useHistory } from 'react-router';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
+import { ContextService } from '@/services/ContextService';
+import { authSelectors } from '@store/auth';
+import { useSelector } from 'react-redux';
 
 import React from 'react';
-import { AuthService } from '@/services/AuthService';
-import { useSelector } from 'react-redux';
 import { userSelectors } from '@store/user';
-import { authSelectors } from '@/store/auth';
 import { PractitionerService } from '@/services/PractitionerService';
 
 export const Training: React.FC = () => {
@@ -61,8 +61,20 @@ export const Training: React.FC = () => {
         ></iframe>
       );
     }
+  }, [loading, userSessionId]);
+  const [url, setUrl] = useState('');
+
+  useEffect(() => {
+    getContext();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token, loading]);
+  }, []);
+
+  const getContext = async () => {
+    const data = await new ContextService(
+      userAuth?.auth_token!
+    ).tenantContext();
+    setUrl(data?.moodleUrlVar);
+  };
 
   return (
     <BannerWrapper

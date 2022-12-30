@@ -2,7 +2,14 @@ import { PractitionerDto } from '@ecdlink/core';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { PractitionerService } from '@services/PractitionerService';
 import { RootState, ThunkApiType } from '../types';
-import { PractitionerInput } from '@ecdlink/graphql';
+import {
+  MutationUpdatePractitionerRegisteredArgs,
+  PractitionerInput,
+} from '@ecdlink/graphql';
+
+export const practitionerActions = {
+  UPDATE_PRACTITIONER_REGISTERED: 'updatePractitionerRegistered',
+};
 
 export const getPractitionersForCoach = createAsyncThunk<
   PractitionerDto[],
@@ -167,9 +174,26 @@ export const updatePractitioner = createAsyncThunk<
   }
 );
 
-const mapPractitioner = (x: Partial<any>): any => ({
-  User: {
-    firstName: x.firstName,
-    surname: x.surname,
-  },
-});
+export const updatePractitionerRegistered = createAsyncThunk<
+  any,
+  MutationUpdatePractitionerRegisteredArgs,
+  ThunkApiType<RootState>
+>(
+  practitionerActions.UPDATE_PRACTITIONER_REGISTERED,
+  async (input, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+    const id = input.practitionerId;
+
+    try {
+      if (userAuth?.auth_token && id) {
+        await new PractitionerService(
+          userAuth.auth_token
+        ).UpdatePractitionerRegistered(id, input.status);
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);

@@ -40,6 +40,10 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public string Age { get; set; }
 
         public string WhatsAppNumber { get; set; }
+
+        [ForeignKey(nameof(LinkedCaregiverId))]
+        public virtual Caregiver.Caregiver Caregiver { get; set; }
+        public Guid? LinkedCaregiverId { get; set; }
     }
 
     public interface MotherJoin<TKey>

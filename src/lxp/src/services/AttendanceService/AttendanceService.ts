@@ -33,6 +33,7 @@ class AttendanceService {
           attended
           attendanceDate
           weekOfYear
+          monthOfYear
           year
         }
       }

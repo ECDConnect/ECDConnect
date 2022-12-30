@@ -5,20 +5,17 @@ import { useMutation, useQuery } from '@apollo/client';
 import {
   AddUsersToRole,
   ChildInput,
-  CoachInput,
   CreateChild,
-  CreateCoach,
   CreateUser,
   RoleList,
   UserModelInput,
 } from '@ecdlink/graphql';
-import { NOTIFICATION, useNotifications } from '@ecdlink/core';
-import { RoleDto } from '@ecdlink/core';
 import {
+  NOTIFICATION,
+  useNotifications,
+  RoleDto,
   childSchema,
-  coachSchema,
   initialChildValues,
-  initialCoachValues,
   initialPasswordValue,
   initialUserDetailsValues,
   passwordSchema,
@@ -28,7 +25,6 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import ChildForm from '../../../components/child-form/child-form';
-import CoachForm from '../../../components/coach-form/coach-form';
 import PasswordForm from '../../../components/password-form/password-form';
 import UserDetailsForm from '../../../components/user-details-form/user-details-form';
 import UserPanelSave from '../../../components/user-panel-save/user-panel-save';
@@ -210,9 +206,9 @@ export default function ChildPanelCreate(props: UserPanelCreateProps) {
   const getComponent = () => {
     return (
       <>
-        <div className="bg-uiBg px-4 py-5 border-b border-gray-200 rounded-lg">
+        <div className="bg-uiBg rounded-lg border-b border-gray-200 px-4 py-5">
           <div className="pb-2">
-            <h3 className="text-lg leading-6 font-medium text-uiMidDark">
+            <h3 className="text-uiMidDark text-lg font-medium leading-6">
               User Detail
             </h3>
           </div>
@@ -226,9 +222,9 @@ export default function ChildPanelCreate(props: UserPanelCreateProps) {
           />
         </div>
 
-        <div className="mt-5 bg-uiBg px-4 py-5 border-b border-gray-200 rounded-lg">
+        <div className="bg-uiBg mt-5 rounded-lg border-b border-gray-200 px-4 py-5">
           <div className="pb-2">
-            <h3 className="text-lg leading-6 font-medium text-uiMidDark">
+            <h3 className="text-uiMidDark text-lg font-medium leading-6">
               Child Detail
             </h3>
           </div>
@@ -240,9 +236,9 @@ export default function ChildPanelCreate(props: UserPanelCreateProps) {
           />
         </div>
 
-        <div className="mt-5 bg-uiBg px-4 py-5 border-b border-gray-200 rounded-lg">
+        <div className="bg-uiBg mt-5 rounded-lg border-b border-gray-200 px-4 py-5">
           <div className="pb-2">
-            <h3 className="text-lg leading-6 font-medium text-uiMidDark">
+            <h3 className="text-uiMidDark text-lg font-medium leading-6">
               Password
             </h3>
           </div>
@@ -254,9 +250,9 @@ export default function ChildPanelCreate(props: UserPanelCreateProps) {
             errors={passwordFormErrors}
           />
         </div>
-        <div className="mt-5 bg-uiBg px-4 py-5 border-b border-gray-200 rounded-lg">
+        <div className="bg-uiBg mt-5 rounded-lg border-b border-gray-200 px-4 py-5">
           <div className="pb-2">
-            <h3 className="text-lg leading-6 font-medium text-uiMidDark">
+            <h3 className="text-uiMidDark text-lg font-medium leading-6">
               Roles
             </h3>
           </div>
@@ -274,7 +270,7 @@ export default function ChildPanelCreate(props: UserPanelCreateProps) {
     <article>
       <UserPanelSave disabled={!getIsValid()} onSave={onSave} />
 
-      <div className="mt-5 max-w-5xl mx-auto">{getComponent()}</div>
+      <div className="mx-auto mt-5 max-w-5xl">{getComponent()}</div>
     </article>
   );
 }
