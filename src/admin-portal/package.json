@@ -6,10 +6,11 @@
     "start": "craco start",
     "build": "craco build"
   },
-  "dependencies": {    
+  "dependencies": {
+    "@ckeditor/ckeditor5-upload": "^32.0.0",
     "@ecdlink/core": "^1.0.0",
     "@ecdlink/graphql": "^1.0.0",
-    "@ecdlink/ui": "^1.0.0"    
+    "@ecdlink/ui": "^1.0.0"
   },
   "eslintConfig": {
     "extends": [

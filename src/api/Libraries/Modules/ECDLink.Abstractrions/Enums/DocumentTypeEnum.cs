@@ -31,6 +31,8 @@ namespace ECDLink.Abstractrions.Enums
         [Description("maternal-case-record")]
         MaternalCaseRecord,
         [Description("road-to-health-book")]
-        RoadToHealthBook
+        RoadToHealthBook,
+        [Description("content-image")]
+        ContentImage
     }
 }
