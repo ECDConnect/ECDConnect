@@ -69,7 +69,7 @@ namespace EcdLink.Api.CoreApi
             // We are explicitly setting these because of CORS issues on .datafree.co
             var allowedDomains = new[] { "https://ecdconnect.co.za",
                 "https://ecdconnect-co-za-fundasmartstart.datafree.co",
-                "https://*.ecdconnect.co.za ",
+                "https://*.ecdconnect.co.za",
                 "https://*.ecdlink.co.za",
                 "https://*.azurewebsites.net",
                 "http://localhost:3001",

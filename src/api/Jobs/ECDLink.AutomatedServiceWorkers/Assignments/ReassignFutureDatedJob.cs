@@ -7,13 +7,13 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ECDLink.AutomatedJobs.Anonymise
+namespace ECDLink.AutomatedServiceWorkers.Assignments
 {
-    public class RevertReassignment : CronJobService
+    public class ReassignFutureDatedJob : CronJobService
     {
         private readonly IServiceScopeFactory _scopeFactory;
 
-        public RevertReassignment(IServiceScopeFactory scopeFactory, IScheduleConfig<ExpireInvitationsJob> config)
+        public ReassignFutureDatedJob(IServiceScopeFactory scopeFactory, IScheduleConfig<ReassignFutureDatedJob> config)
             : base(config.CronExpression, config.TimeZoneInfo)
         {
             _scopeFactory = scopeFactory;
@@ -23,22 +23,12 @@ namespace ECDLink.AutomatedJobs.Anonymise
         {
             using (var scope = _scopeFactory.CreateScope())
             {
-                //SetTenantContext(scope);
+//                var anonChildService = scope.ServiceProvider.GetRequiredService<IChildrenAnonymiseService>();
+
                 //anonChildService.AnonymiseChild();
+
                 //AssignFutureAbsentees //settle Future dated absentees first
-                //ReassignAbsentees
             }
-        }
-
-        private void SetTenantContext(IServiceScope scope)
-        {
-            var tenancyRepo = scope.ServiceProvider.GetRequiredService<TenantService>();
-
-            var tenant = tenancyRepo.GetAllTenants()
-                .Where(x => x.TenantType == Tenancy.Enums.TenantType.Tenant)
-                .FirstOrDefault();
-
-            TenantExecutionContext.SetTenant(tenant);
         }
     }
 }

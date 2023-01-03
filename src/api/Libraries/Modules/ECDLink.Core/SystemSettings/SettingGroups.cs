@@ -64,6 +64,15 @@ namespace ECDLink.Core.SystemSettings
 
                 public const string RedirectUrl = "General.Proxies.UrlShortner.RedirectUrl";
             }
+
+            public static class Integration
+            {
+                public const string ProxyGroupBase = "General.Proxies.Integration";
+
+                public const string SmartLinkApiGrouping = "General.Proxies.Integration.SmartLinkApi";
+                public const string Url = "General.Proxies.Integration.SmartLinkApi.BaseUrl";
+                public const string Key = "General.Proxies.Integration.SmartLinkApi.Key";
+            }
         }
 
         public static class Analytics
@@ -152,6 +161,11 @@ namespace ECDLink.Core.SystemSettings
         public static class Absentee
         {
             public const string AbsenteeCutoffDelay = "General.AbsenteeCutoffDelay";
+        }
+
+        public static class Integration
+        {
+            public const string IntegrationDelay = "General.IntegrationDelay";
         }
 
         public static class Sync
