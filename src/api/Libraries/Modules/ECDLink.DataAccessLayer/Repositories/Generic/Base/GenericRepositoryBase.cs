@@ -124,7 +124,6 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
         {
             Guid tenantId = TenantExecutionContext.Tenant.Id;
             T entity = entities.Where(e => e.TenantId == tenantId).SingleOrDefault(s => s.Id == id);
-            //entities.Update(entity);
             entity.IsActive = false;
             entity.UpdatedDate = DateTime.Now;
             entity.UpdatedBy = _userId;
