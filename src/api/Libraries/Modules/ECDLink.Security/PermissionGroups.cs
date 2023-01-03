@@ -14,5 +14,7 @@ namespace ECDLink.Security
         public const string REPORTING = "Report";
         public const string WORKFLOW = "Workflow";
         public const string SYSTEM = "System";
+        public const string INCOMESTATEMENTS = "IncomeStatements";
+        public const string INTEGRATION = "Integration";
     }
 }

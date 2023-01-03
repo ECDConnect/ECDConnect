@@ -55,6 +55,8 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             }
 
             entity.IsActive = false;
+            entity.UpdatedDate = DateTime.Now;
+            entity.UpdatedBy = _userId;
 
             context.SaveChanges();
 
