@@ -553,7 +553,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                                 PasswordHash = password,
                                 TenantId = tenantId
                             };
-                            var userCreatedResult = userManager.CreateAsync(newUser).Result;
+                            userManager.CreateAsync(newUser);
 
                             var newPractitioner = new Practitioner
                             {
@@ -564,7 +564,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                                 TenantId = tenantId
 
                             };
-
 
                             if (practitioner.SiteIndicator == "Franchisee" && parentUser != null)
                             {

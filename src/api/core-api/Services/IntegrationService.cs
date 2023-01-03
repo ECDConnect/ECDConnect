@@ -23,6 +23,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text;
 using JsonSerializer = System.Text.Json.JsonSerializer;
+using DotLiquid.Util;
 
 namespace ECDLink.Core.Services
 {
@@ -89,7 +90,8 @@ namespace ECDLink.Core.Services
                         var payload = JsonSerializer.Serialize(apiEntity);
                         //{ "AllColumns":true,"Columns":null,"Related":null,"Conditions":[{ "Column":"Status","Operator":"Equals","Value":"Active"},{ "Column":"Franchisor","Operator":"Equals","Value":"7911a744-4584-e811-817d-0800274bb0e4"}]}
                         var content = new StringContent(payload, Encoding.UTF8, "application/json");
-                        var response = SmartLinkClient.PostAsync("Coach", content).Result;
+
+                        var response = await SmartLinkClient.PostAsync("Coach", content);
 
                         if (!response.IsSuccessStatusCode)
                         {
@@ -133,7 +135,7 @@ namespace ECDLink.Core.Services
                         var payload = JsonSerializer.Serialize(apiEntity);
                         //{ "AllColumns":true,"Columns":null,"Related":null,"Conditions":[{ "Column":"Status","Operator":"Equals","Value":"Active"},{ "Column":"Franchisor","Operator":"Equals","Value":"7911a744-4584-e811-817d-0800274bb0e4"}]}
                         var content = new StringContent(payload, Encoding.UTF8, "application/json");
-                        var response = SmartLinkClient.PostAsync("Franchisee", content).Result;
+                        var response = await SmartLinkClient.PostAsync("Franchisee", content);
 
                         if (!response.IsSuccessStatusCode)
                         {
@@ -177,7 +179,7 @@ namespace ECDLink.Core.Services
                         var payload = JsonSerializer.Serialize(apiEntity);
                         //{ "AllColumns":true,"Columns":null,"Related":null,"Conditions":[{ "Column":"Status","Operator":"Equals","Value":"Active"},{ "Column":"Franchisor","Operator":"Equals","Value":"7911a744-4584-e811-817d-0800274bb0e4"}]}
                         var content = new StringContent(payload, Encoding.UTF8, "application/json");
-                        var response = SmartLinkClient.PostAsync("Franchisee", content).Result;
+                        var response = await SmartLinkClient.PostAsync("Franchisee", content);
 
                         if (!response.IsSuccessStatusCode)
                         {
