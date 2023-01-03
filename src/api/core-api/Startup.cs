@@ -25,6 +25,7 @@ using ECDLink.Security;
 using ECDLink.Security.AccessModifiers.OpenAccess;
 using ECDLink.Security.Managers;
 using ECDLink.SmartStart;
+using ECDLink.Moodle;
 using ECDLink.Tenancy.Extensions;
 using ECDLink.UrlShortner;
 using Microsoft.AspNetCore.Builder;
@@ -106,6 +107,8 @@ namespace EcdLink.Api.CoreApi
 
             SmartStartStartup.ConfigureSmartStartServices(services, Environment.IsDevelopment());
 
+            MoodleStartup.ConfigureMoodleServices(services, Configuration);
+
             if (Environment.IsDevelopment())
             {
                 DevStartup.ConfigureLocalDevServices(services, Configuration);
@@ -170,6 +173,8 @@ namespace EcdLink.Api.CoreApi
             SecurityStartup.AddSecurityConfiguration(app);
 
             GraphStartup.AddGraphConfiguration(app, env);
+
+            MoodleStartup.AddMoodleConfiguration(app, env);
         }
     }
 }

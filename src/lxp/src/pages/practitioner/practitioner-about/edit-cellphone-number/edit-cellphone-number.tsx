@@ -90,18 +90,18 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
         displayOffline={!isOnline}
         onBack={() => history.goBack()}
       ></BannerWrapper>
-      <div className="w-12/12 px-4 wrapper-with-sticky-button">
-        <div className="flex justify-center w-full">
+      <div className="w-12/12 wrapper-with-sticky-button px-4">
+        <div className="flex w-full justify-center">
           <div className="flex flex-wrap justify-center">
             <div className="w-full">
               <Typography
                 type="h2"
                 text="Cellphone number"
                 color={'textDark'}
-                className="w-11/12 mt-4"
+                className="mt-4 w-11/12"
               />
             </div>
-            <div className="flex flex-col justify-center gap-4 mt-2 w-full">
+            <div className="mt-2 flex w-full flex-col justify-center gap-4">
               <FormInput<EditCellphoneModel>
                 label={'Cellphone number'}
                 visible={true}
@@ -115,7 +115,7 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
                   type="h4"
                   color={'textMid'}
                   text={'Do you use this cellphone number for WhatsApp?'}
-                  className="z-50 pt-2 w-11/12"
+                  className="z-50 w-11/12 pt-2"
                 />
               </div>
               <div>
@@ -142,10 +142,10 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
                 />
               )}
             </div>
-            <div className="self-end mt-4 -mb-4 w-full h-full">
+            <div className="mt-4 -mb-4 h-full w-full self-end">
               <Button
                 size="normal"
-                className="w-full mb-4"
+                className="mb-4 w-full"
                 type="filled"
                 color="primary"
                 text="Save"

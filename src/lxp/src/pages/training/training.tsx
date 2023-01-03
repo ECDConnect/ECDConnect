@@ -7,15 +7,61 @@ import { authSelectors } from '@store/auth';
 import { useSelector } from 'react-redux';
 
 import React from 'react';
+import { userSelectors } from '@store/user';
+import { PractitionerService } from '@/services/PractitionerService';
 
 export const Training: React.FC = () => {
   const { isOnline } = useOnlineStatus();
-  const userAuth = useSelector(authSelectors.getAuthUser);
   const history = useHistory();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [token, setToken] = useState<any>('');
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loading, setLoading] = useState(false);
+  const userData = useSelector(userSelectors.getUser);
+  const userAuth = useSelector(authSelectors.getAuthUser);
+  const [userSessionId, setUserSessionId] = useState('');
+
+  const getUserSessionId = async () => {
+    if (userData?.id) {
+      const data = await new PractitionerService(
+        userAuth?.auth_token!
+      ).getMoodleSessionForUserId(userData?.id);
+      setUserSessionId(data);
+    }
+  };
+
+  useEffect(() => {
+    if (userData?.id) {
+      getUserSessionId();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userData?.id]);
+
+  const renderIframe = useMemo(() => {
+    if (loading) {
+      return (
+        <LoadingSpinner
+          className="mt-6"
+          size={'medium'}
+          spinnerColor={'primary'}
+          backgroundColor={'uiLight'}
+        />
+      );
+    } else {
+      document.cookie = `MoodleSession=${userSessionId};path=/;domain=moodle.ecdlink.co.za`;
+      document.cookie =
+        'teste=1; Max-Age=2600000; Path=/; SameSite=None; Secure';
+      return (
+        <iframe
+          src={`https://moodle.ecdlink.co.za/?service=moodle_mobile_app`}
+          title="ECD Moodle"
+          height="800px"
+          width="90%"
+          className="divide-uiLight mx-auto divide-y-2 divide-dashed"
+        ></iframe>
+      );
+    }
+  }, [loading, userSessionId]);
   const [url, setUrl] = useState('');
 
   useEffect(() => {
@@ -29,32 +75,6 @@ export const Training: React.FC = () => {
     ).tenantContext();
     setUrl(data?.moodleUrlVar);
   };
-
-  const renderIframe = useMemo(() => {
-    if (url) {
-      if (loading) {
-        return (
-          <LoadingSpinner
-            className="mt-6"
-            size={'medium'}
-            spinnerColor={'primary'}
-            backgroundColor={'uiLight'}
-          />
-        );
-      } else {
-        return (
-          <iframe
-            src={`${url}/?service=moodle_mobile_app`}
-            title="ECD Moodle"
-            height="800px"
-            width="90%"
-            className="divide-uiLight mx-auto divide-y-2 divide-dashed"
-          ></iframe>
-        );
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token, loading, url]);
 
   return (
     <BannerWrapper
