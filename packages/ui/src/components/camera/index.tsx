@@ -27,8 +27,9 @@ export const Camera = ({ onGetPhoto, onClose }: CameraProps) => {
   const [preview, setPreview] = useState<string | ArrayBuffer | null>('');
 
   const videoConstraints: MediaTrackConstraints = {
-    width: { min: 480 },
-    aspectRatio: 0.6666666667,
+    width: 480,
+    height: 720,
+    aspectRatio: 0.67,
     facingMode,
   };
 
