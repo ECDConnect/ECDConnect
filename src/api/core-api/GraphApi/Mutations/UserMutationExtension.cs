@@ -3,6 +3,8 @@ using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.EGraphQL.Authorization;
+using ECDLink.Moodle.Managers;
+using ECDLink.Moodle.Models;
 using ECDLink.Security;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
@@ -74,11 +76,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var user = userManager.FindByIdAsync(id).Result;
             Guid tenantId = TenantExecutionContext.Tenant.Id;
             input.Id = id;
-
-            if (user == default(ApplicationUser))
-            {
-                return AddUser(userManager, input);
-            }
 
             user.PhoneNumber = input.PhoneNumber;
             user.IdNumber = input.IdNumber;

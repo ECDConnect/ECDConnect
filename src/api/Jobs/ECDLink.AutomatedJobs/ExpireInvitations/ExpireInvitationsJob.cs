@@ -25,9 +25,8 @@ namespace ECDLink.AutomatedJobs.Anonymise
             {
                 SetTenantContext(scope);
 
-                var anonChildService = scope.ServiceProvider.GetRequiredService<IChildrenAnonymiseService>();
-
-                anonChildService.AnonymiseChild();
+                var reassignmentService = scope.ServiceProvider.GetRequiredService<IReassignmentService>();
+                reassignmentService.ExpireRelationshipLinks();
             }
         }
 

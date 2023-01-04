@@ -23,7 +23,10 @@ namespace ECDLink.AutomatedJobs.Anonymise
         {
             using (var scope = _scopeFactory.CreateScope())
             {
-                SetTenantContext(scope);
+                //SetTenantContext(scope);
+                //anonChildService.AnonymiseChild();
+                //AssignFutureAbsentees //settle Future dated absentees first
+                //ReassignAbsentees
             }
         }
 
