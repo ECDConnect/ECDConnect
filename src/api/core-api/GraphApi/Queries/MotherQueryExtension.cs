@@ -66,13 +66,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public int GetMotherCountForHealthCareWorkerForMonth([Service] IHttpContextAccessor contextAccessor,
          [Service] IGenericRepositoryFactory repoFactory,
-         string userId)
+         string id)
         {
             DateTime today = DateTime.Today;
 
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var motherRepo = repoFactory.CreateGenericRepository<Mother>(userContext: uId);
-            List<Mother> mothers = motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId.Equals(userId) && (
+            List<Mother> mothers = motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId.Equals(id) && (
                                                                   x.InsertedDate.Month == today.Month &&
                                                                   x.InsertedDate.Year == today.Year)).ToList();
 
