@@ -32,7 +32,7 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
       LocalStorageKeys.hasClosedAttendanceSmartStartPointsMessage
     );
   };
-
+  console.log({ classroom });
   const [attendanceData, setAttendanceData] = useState<AttendanceSummary[]>([]);
   const [reportData, setReportData] = useState<MonthlyAttendanceRecord[]>();
   const [attendanceTracked, setAttendanceTracked] = useState<boolean>(false);
@@ -58,10 +58,11 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
     const startDate = new Date(classroom.insertedDate ?? '');
 
     if (attendanceTracked) {
+      console.log('testeeeeeee');
       new AttendanceService(authUser?.auth_token ?? '')
         .getMonthlyAttendanceReport(
           authUser?.id ?? '',
-          classroom?.classroomId || '',
+          classroom?.classroomId || classroom?.id!,
           startDate,
           new Date(lastDayCurrentMonth)
         )
