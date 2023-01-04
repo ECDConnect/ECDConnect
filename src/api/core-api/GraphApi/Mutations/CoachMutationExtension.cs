@@ -104,6 +104,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         if (updateAddressResult != null)
                             coach.SiteAddressId = updateAddressResult.Id;
                     }
+                    if (input.SigningSignature != null)
+                        coach.SigningSignature = input.SigningSignature;
 
                     var updateResult = dbRepo.Update(coach);
                 }
