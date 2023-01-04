@@ -9,5 +9,6 @@ export interface ActionModalButton {
   textColour: Colours;
   type: ButtonType;
   disabled?: boolean;
+  isLoading?: boolean;
   onClick?: () => void;
 }
