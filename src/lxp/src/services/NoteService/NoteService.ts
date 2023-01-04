@@ -63,6 +63,26 @@ class NoteService {
 
     return true;
   }
+
+  async deleteNote(id: string): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        mutation deleteNote($id: UUID!) {
+          deleteNote(id: $id)
+        }
+      `,
+      variables: {
+        id: id,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error('Deleting note failed - Server connection error');
+    }
+
+    return true;
+  }
 }
 
 export default NoteService;
