@@ -25,7 +25,8 @@ export const getChildAlertModel = (
   attendance?: AttendanceDto[],
   classroomGroups?: ClassroomGroupDto[],
   classProgrammes?: ClassProgrammeDto[],
-  childReports?: ChildProgressReportSummaryModel[]
+  childReports?: ChildProgressReportSummaryModel[],
+  userRole: 'practitioner' | 'coach' = 'practitioner'
 ) => {
   const today = new Date();
   let alert = 'success';
@@ -109,15 +110,23 @@ export const getChildAlertModel = (
       child?.userId ?? '',
       attendance,
       classroomGroup?.id ?? '',
-      classProgrammes || []
+      classProgrammes || [],
+      userRole
     );
 
-    if (childAttendancePercentage) {
+    const daysSinceInsertedDate = differenceInDays(
+      new Date(),
+      new Date(learner?.startedAttendance)
+    );
+
+    if (childAttendancePercentage && daysSinceInsertedDate >= 7) {
       if (childAttendancePercentage.percentage < 50) {
         alert = 'warning';
       }
 
-      alertMessage = `Attended ${childAttendancePercentage.daysAttended} of ${childAttendancePercentage.daysExpected} days last week`;
+      alertMessage = `Attended ${childAttendancePercentage.daysAttended} of ${
+        childAttendancePercentage.daysExpected
+      } days last ${userRole === 'coach' ? 'month' : 'week'}`;
     }
   }
 

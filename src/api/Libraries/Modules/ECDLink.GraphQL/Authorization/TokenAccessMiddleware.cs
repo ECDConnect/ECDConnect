@@ -11,12 +11,10 @@ namespace ECDLink.EGraphQL.Authorization
     public class TokenAccessMiddleware : AuthorizationMiddlewareBase
     {
         private readonly FieldDelegate _next;
-        private readonly IAuthorizationManager _authorizationManager;
 
-        public TokenAccessMiddleware(FieldDelegate next, IAuthorizationManager authorizationManager)
+        public TokenAccessMiddleware(FieldDelegate next)
         {
             _next = next ?? throw new ArgumentNullException(nameof(next));
-            _authorizationManager = authorizationManager;
         }
 
         public override async Task InvokeAsync(IDirectiveContext context)

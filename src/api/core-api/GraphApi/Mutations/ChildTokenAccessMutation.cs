@@ -74,7 +74,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                
                 var caregiverEntity = AddCaregiver(caregiver, siteAddressEntity, caregiverRepo);
 
-                var childEntity = AddChild(contextAccessor, child, tokenModel, caregiverEntity, childRepo, userManager);
+                var childEntity = AddChild(contextAccessor, child, tokenModel, caregiverEntity, childRepo);
 
                 AddLearner(childEntity, learner, tokenModel, scope);
 
@@ -127,16 +127,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
         private void AddLearner(Child child, AddChildLearnerTokenModel learner, ChildTokenWrapperModel tokenModel, AuthenticationDbContext context)
         {
-            var exists = context.Learners.AnyAsync(x =>
-                x.ClassroomGroupId == tokenModel.ClassroomGroupId
-                && string.Equals(x.UserId, tokenModel.ChildUserId)
-            ).Result;
-            //learners are allowed to be swopped back to classroomgroups
-            //if (exists)
-            //{
-                //return;
-            //}
-
             context.Learners.Add(new Learner
             {
                 Id = Guid.NewGuid(),
@@ -177,7 +167,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return updated;
         }
 
-        private Child AddChild([Service] IHttpContextAccessor contextAccessor, AddChildTokenModel child, ChildTokenWrapperModel tokenModel, Caregiver caregiver, IGenericRepository<Child, Guid> repoFactory, [Service] UserManager<ApplicationUser> userManager)
+        private Child AddChild([Service] IHttpContextAccessor contextAccessor, AddChildTokenModel child, ChildTokenWrapperModel tokenModel, Caregiver caregiver, IGenericRepository<Child, Guid> repoFactory)
         {
 
             var insertingUser = contextAccessor.HttpContext.GetUser().FullName;
@@ -218,7 +208,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 UserName = $"External_Edit_{Guid.NewGuid()}"
             };
             appUser.TenantId = tenantId;
-            var result = await userManager.CreateAsync(appUser);
+            await userManager.CreateAsync(appUser);
 
             var childRepo = repoFactory.CreateRepository<Child>(userContext: httpContext.HttpContext.GetUser().Id);
             var workflowStatusRepo = repoFactory.CreateRepository<WorkflowStatus>(userContext: httpContext.HttpContext.GetUser().Id);
@@ -245,7 +235,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 ChildUserId = appUser.Id
             };
 
-            var role = await userManager.AddToRoleAsync(appUser, "Child");
+            await userManager.AddToRoleAsync(appUser, "Child");
 
             return TokenHelper.EncodeToken(JsonConvert.SerializeObject(tokenWrapper));
         }

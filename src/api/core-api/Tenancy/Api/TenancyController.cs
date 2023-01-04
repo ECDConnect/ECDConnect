@@ -32,20 +32,7 @@ namespace EcdLink.Api.CoreApi.Tenancy.Api
             _initializationService = initializationService;
         }       
         
-        //// GET: api/<TenancyApi>
-        //[HttpGet]
-        //public IEnumerable<TenantModel> Get()
-        //{
-        //    return _tenantService.GetAllTenants();
-        //}
-
-        //// GET api/<TenancyApi>/5
-        //[HttpGet("{id}")]
         
-        //public TenantModel Get(string id)
-        //{
-        //    return _tenantService.GetTenantById(id);
-        //}
         #if DEBUG
         [AllowAnonymous]
         [HttpGet("seedTenant")]
@@ -93,12 +80,5 @@ namespace EcdLink.Api.CoreApi.Tenancy.Api
 
             return Ok();
         }
-
-        //// DELETE api/<TenancyApi>/5
-        //[HttpDelete("{id}")]
-        //public void Delete(int id)
-        //{
-        //    throw new NotImplementedException();
-        //}
     }
 }

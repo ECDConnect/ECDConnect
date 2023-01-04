@@ -14,7 +14,6 @@ namespace ECDLink.Tenancy.Cache
         private object GetCacheKey(string key)
         {
             var tenantId = TenantExecutionContext.Tenant.Id;
-            //var tenantId = TenantExecutionContext.Tenant?.Id ?? "";
 
             return new
             {

@@ -19,22 +19,16 @@ namespace EcdLink.Api.CoreApi.Managers.Users
     public class InfantManager
     {
         private IHttpContextAccessor _contextAccessor;
-        private IDbContextFactory<AuthenticationDbContext> _dbFactory;
         private IGenericRepositoryFactory _repoFactory;
-        private MotherManager _motherManager;
         private HealthCareWorkerManager _healthCareWorkerManager;
 
         public InfantManager(
             IHttpContextAccessor contextAccessor,
-            IDbContextFactory<AuthenticationDbContext> dbFactory,
             IGenericRepositoryFactory repoFactory,
-            MotherManager motherManager,
             HealthCareWorkerManager healthCareWorkerManager)
         {
             _contextAccessor = contextAccessor;
-            _dbFactory = dbFactory;
             _repoFactory = repoFactory;
-            _motherManager = motherManager;
             _healthCareWorkerManager = healthCareWorkerManager;
         }
 
@@ -55,10 +49,26 @@ namespace EcdLink.Api.CoreApi.Managers.Users
             if (caregiver == null && mother == null)
             {
                 caregiver = GetCaregiverFromInput(input);
+                
+                infant = new Infant()
+                {
+                    Id = Guid.NewGuid(),
+                    IsActive = true,
+                    InsertedDate = DateTime.Now,
+                    UpdatedDate = DateTime.Now,
+                    UpdatedBy = applicationUserId,
+                    UserId = input.UserId,
+                    User = infantUser,
+                    CaregiverId = caregiver.Id,
+                    Caregiver = caregiver,
+                    GenderId = input.GenderId,
+                    WeightAtBirth = input.WeightAtBirth,
+                    LengthAtBirth = input.LengthAtBirth
+                };
             }
             else
             {
-                if (caregiver == null && mother != null)
+                if (mother != null)
                 {
                     infant = new Infant()
                     {
@@ -98,14 +108,14 @@ namespace EcdLink.Api.CoreApi.Managers.Users
 
 
             var infantRepo = _repoFactory.CreateGenericRepository<Infant>(userContext: applicationUserId);
-            try
-            {
+           try
+           {
                 return infantRepo.Insert(infant);
-            }
-            catch (Exception e)
-            {
+           }
+           catch (Exception e)
+           {
                 return new Infant();
-            }
+           }
         }
 
         public Infant UpdateInfant(string id, InfantModel input)

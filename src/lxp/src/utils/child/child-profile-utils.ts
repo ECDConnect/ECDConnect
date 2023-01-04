@@ -7,8 +7,14 @@ import {
   isAfter,
   format,
   getYear,
+  getWeek,
 } from 'date-fns';
-import { AttendanceDto, ClassProgrammeDto, NoteDto } from '@ecdlink/core';
+import {
+  AttendanceDto,
+  ClassProgrammeDto,
+  getWeeksDiff,
+  NoteDto,
+} from '@ecdlink/core';
 import { ChildAttendancePercentageReport } from '@models/classroom/progress-observation/ChildAttendancePercentageReport';
 import { ReportingPeriod } from '@models/classroom/progress-observation/ReportingPeriod';
 
@@ -120,18 +126,47 @@ export const getChildAttendancePercentageAtPlaygroup = (
   childUserId: string,
   attendance: AttendanceDto[],
   classroomGroupId: string,
-  classProgrammes: ClassProgrammeDto[]
+  classProgrammes: ClassProgrammeDto[],
+  userRole: 'coach' | 'practitioner' = 'practitioner'
 ): ChildAttendancePercentageReport => {
+  const currentDate = new Date();
+  const currentYear = currentDate.getFullYear();
+
+  const lastWeek = getWeek(currentDate) - 2;
+  const lastMonth = getMonth(currentDate);
+
+  const firstDayOfLastMonth = new Date(`${currentYear}-${lastMonth}-1`);
+  const lastDayOfLastMonth = new Date(currentYear, lastMonth, 0);
+
   const filteredProgrammes = classProgrammes.filter(
     (x) => x.classroomGroupId === classroomGroupId
   );
   const filteredProgrammesIds = filteredProgrammes.map((x) => x.id);
 
+  const filteredProgrammesWeeks = filteredProgrammes.map((item) => {
+    const startedLastMonth =
+      new Date(item.programmeStartDate).getMonth() + 1 === lastMonth;
+
+    return getWeeksDiff(
+      startedLastMonth
+        ? new Date(item.programmeStartDate)
+        : firstDayOfLastMonth,
+      lastDayOfLastMonth
+    );
+  });
+
+  const totalOfDays = filteredProgrammesWeeks.reduce(
+    (accumulator, value) => accumulator + value,
+    0
+  );
+
   // TODO: figure out how the attendance is created
   let attendanceRecords = attendance.filter(
     (x) =>
       filteredProgrammesIds.includes(x.classroomProgrammeId) &&
-      x.userId === childUserId
+      x.userId === childUserId &&
+      ((userRole === 'coach' && x.monthOfYear === lastMonth) ||
+        (userRole === 'practitioner' && x.weekOfYear === lastWeek))
   );
 
   const attendedCount = attendanceRecords.filter(
@@ -142,7 +177,8 @@ export const getChildAttendancePercentageAtPlaygroup = (
 
   return {
     daysAttended: attendedCount,
-    daysExpected: filteredProgrammes.length,
+    daysExpected:
+      userRole === 'coach' ? totalOfDays : filteredProgrammes.length,
     percentage,
   };
 };

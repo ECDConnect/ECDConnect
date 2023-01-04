@@ -70,11 +70,6 @@ namespace ECDLink.ContentManagement.Repositories
         public IEnumerable<ContentDefinitionModel> UpdateContentDefinition(UpdateContentDefinitionModel contentDefinition)
         {
             throw new NotImplementedException();
-            //var contentType = GetContentTypeById(contentDefinition.Id);
-
-            //contentType.Name = contentDefinition.Name;
-            //contentType.MetaData = contentDefinition.MetaData;
-            //contentType.Description = contentDefinition.Description;
         }
 
         public bool DeleteContentDefinition(int id)

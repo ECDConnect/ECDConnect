@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import ContentLoader from '../content-loader/content-loader';
+import { CKEditorCustomUploadAdapterPlugin } from '../../utils/custom-upload-adapter';
 
 export default function Editor({ label, onStateChange, currentValue }) {
   const [editorLoaded, setEditorLoaded] = useState(false);
@@ -19,15 +20,25 @@ export default function Editor({ label, onStateChange, currentValue }) {
     onStateChange(content);
   };
 
+  const editorConfiguration = {
+    extraPlugins: [CKEditorCustomUploadAdapterPlugin, 'FileRepository'],
+    image: {
+      upload: {
+        types: ['png', 'jpeg'],
+      },
+    },
+  };
+
   return (
     <>
       {editorLoaded ? (
         <div className="relative">
-          <div className="mb-2 text-sm font-medium capitalize text-slate-700">
+          <div className="text-slate-700 mb-2 text-sm font-medium capitalize">
             {label}
           </div>
           <CKEditor
             editor={ClassicEditor}
+            config={editorConfiguration}
             data={currentValue || ''}
             disabled={false}
             onChange={handleChange}

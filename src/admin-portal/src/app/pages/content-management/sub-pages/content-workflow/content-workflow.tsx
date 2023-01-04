@@ -4,8 +4,8 @@ import {
   ContentTypeDto,
   ContentValueDto,
   LanguageDto,
+  camelCaseToSentanceCase,
 } from '@ecdlink/core';
-import { camelCaseToSentanceCase } from '@ecdlink/core';
 import {
   ArrowLeftIcon,
   CheckCircleIcon,
@@ -114,15 +114,15 @@ export default function ContentWorkflow({
   if (contentView && languages && currentContent && defaultLanguageId) {
     return (
       <div className="flex flex-col">
-        <div className="shadow flex-1 min-w-0 bg-white xl:flex rounded bg-white">
+        <div className="min-w-0 flex-1 rounded bg-white bg-white shadow xl:flex">
           {!isCompareMode ? (
             <>
-              <div className="border-b border-gray-200 xl:border-b-0 xl:flex-shrink-0 xl:w-64 xl:border-r xl:border-uiMidDark ">
+              <div className="xl:border-uiMidDark border-b border-gray-200 xl:w-64 xl:flex-shrink-0 xl:border-b-0 xl:border-r ">
                 <div
                   key={'gobackToContentTypes'}
                   onClick={() => goBack()}
                   className={classNames(
-                    'bg-uiMid text-white group flex items-center just px-4 text-sm font-medium h-14 cursor-pointer hover:bg-uiMidDark hover:text-white border-b'
+                    'bg-uiMid just hover:bg-uiMidDark group flex h-14 cursor-pointer items-center border-b px-4 text-sm font-medium text-white hover:text-white'
                   )}
                 >
                   <ArrowLeftIcon width="20px" />
@@ -132,7 +132,7 @@ export default function ContentWorkflow({
                   key={'compareLanguages'}
                   onClick={() => setIsCompareMode(!isEdit)}
                   className={classNames(
-                    'bg-uiMid text-white group flex items-center justify-between just px-4 text-sm font-medium h-14 cursor-pointer hover:bg-uiMidDark hover:text-white'
+                    'bg-uiMid just hover:bg-uiMidDark group flex h-14 cursor-pointer items-center justify-between px-4 text-sm font-medium text-white hover:text-white'
                   )}
                 >
                   Compare Languages
@@ -148,7 +148,7 @@ export default function ContentWorkflow({
                       selectedLanguageId === item.id
                         ? 'bg-uiMidDark text-white'
                         : 'text-textMid hover:bg-uiMidDark hover:text-white',
-                      'group flex items-center px-4 text-sm font-medium h-14 cursor-pointer justify-between'
+                      'group flex h-14 cursor-pointer items-center justify-between px-4 text-sm font-medium'
                     )}
                   >
                     {item.description}
@@ -171,12 +171,12 @@ export default function ContentWorkflow({
                     className="relative h-full"
                     style={{ minHeight: '36rem' }}
                   >
-                    <div className="bg-white px-4 py-5 border-b border-gray-200 sm:px-6 rounded-lg">
+                    <div className="rounded-lg border-b border-gray-200 bg-white px-4 py-5 sm:px-6">
                       {!isEdit ? (
                         <div>
-                          <div className="-ml-4 -mt-2 flex items-center justify-between flex-wrap sm:flex-nowrap">
+                          <div className="-ml-4 -mt-2 flex flex-wrap items-center justify-between sm:flex-nowrap">
                             <div className="ml-4 mt-2">
-                              <h3 className="text-lg leading-6 font-medium text-gray-900">
+                              <h3 className="text-lg font-medium leading-6 text-gray-900">
                                 {camelCaseToSentanceCase(
                                   contentType.name ?? ''
                                 )}
@@ -186,7 +186,7 @@ export default function ContentWorkflow({
                               <button
                                 onClick={() => setIsEdit(!isEdit)}
                                 type="button"
-                                className="inline-flex items-center px-4 py-2.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-uiMid hover:bg-primary focus:outline-none focus:ring-2 focus:ring-offset-2"
+                                className="bg-uiMid hover:bg-primary focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
                               >
                                 {isEdit ? 'Preview' : 'Edit'} content
                               </button>

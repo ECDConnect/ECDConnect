@@ -69,13 +69,6 @@ namespace ECDLink.PostgresTenancy.Services
                 return default;
             }
 
-            //if (string.IsNullOrWhiteSpace(tenant.ConnectionString) && tenant.TenantType == Tenancy.Enums.TenantType.Tenant)
-            //{
-            //    throw new InvalidOperationException("No connection string provided");
-            //}
-
-            //var connection = new NpgsqlConnectionStringBuilder(tenant.ConnectionString);
-
             var entity =_repository.Insert(new TenantEntity
             {
                 ApplicationName = tenant.ApplicationName,
@@ -90,7 +83,8 @@ namespace ECDLink.PostgresTenancy.Services
                 DbProvider = "postgressql",
                 TenantType = tenant.TenantType,
                 TestSiteAddress = tenant.TestSiteAddress,
-                AdminTestSiteAddress = tenant.AdminTestSiteAddress
+                AdminTestSiteAddress = tenant.AdminTestSiteAddress,
+                MoodleUrlVar = tenant.MoodleUrlVar
             });
 
             return Cast(entity);
@@ -110,7 +104,9 @@ namespace ECDLink.PostgresTenancy.Services
                 Var1 = tenantEntity.Var1,
                 Var2 = tenantEntity.Var2,
                 TestSiteAddress = tenantEntity.TestSiteAddress,
-                AdminTestSiteAddress = tenantEntity.AdminTestSiteAddress
+                AdminTestSiteAddress = tenantEntity.AdminTestSiteAddress,
+                MoodleUrlVar = tenantEntity.MoodleUrlVar
+
             };
         }
     }

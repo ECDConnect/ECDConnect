@@ -104,7 +104,7 @@ namespace ECDLink.Notifications.Templates
 
                 Action<TemplateOverrideModel> action = _templateFilters.ReplaceValue(overrideValue);
 
-                foreach (var filterId in GetTemplateFilters(item.Value, _messageBody))
+                foreach (var filterId in GetTemplateFilters(item.Value))
                 {
                     var filter = GetFilter(filterId);
 
@@ -134,7 +134,7 @@ namespace ECDLink.Notifications.Templates
             }
         }
 
-        private string[] GetTemplateFilters(string key, string message)
+        private string[] GetTemplateFilters(string key)
         {
             return key.Split(':').Skip(1).ToArray();
         }

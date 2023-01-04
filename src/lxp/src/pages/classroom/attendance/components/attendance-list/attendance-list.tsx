@@ -15,7 +15,7 @@ import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useAppDispatch } from '@store';
 import { analyticsActions } from '@store/analytics';
-import { attendanceActions } from '@store/attendance';
+import { attendanceActions, attendanceThunkActions } from '@store/attendance';
 import { ChildAttendance } from '@store/attendance/attendance.types';
 import { classroomsSelectors } from '@store/classroom';
 import { userSelectors } from '@store/user';
@@ -184,6 +184,9 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
     );
 
     appDispatch(attendanceActions.trackAttendance(trackAttendanceInput));
+    appDispatch(
+      attendanceThunkActions.trackAttendanceSync(trackAttendanceInput)
+    );
 
     appDispatch(
       analyticsActions.createEventTracking({

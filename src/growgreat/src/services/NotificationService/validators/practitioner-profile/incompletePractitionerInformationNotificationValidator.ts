@@ -23,7 +23,6 @@ export class IncompletePractitionerInformationNotificationValidator
 
   getNotifications = (): Message[] => {
     const { healthCareWorker: practitionerState } = this.store.getState();
-
     /**
      * Notification is returned when
      * 1. The user is a practitioner
@@ -31,14 +30,12 @@ export class IncompletePractitionerInformationNotificationValidator
      * 3. The practitioner is not a principal yet
      */
 
-    // TODO: change conditions for when to show the page
-
     if (practitionerState.healthCareWorker) {
       const notRegistered = !Boolean(
         practitionerState.healthCareWorker?.isRegistered
       );
 
-      if (notRegistered) {
+      if (notRegistered || !practitionerState.healthCareWorker.languageId) {
         return [
           {
             reference: `practitioner-profile`,

@@ -11,12 +11,9 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.SeedFunctions
 {
     public class StaticDataSeed
     {
-        private readonly IServiceProvider serviceProvider;
 
         public StaticDataSeed(IServiceProvider serviceProvider)
         {
-            this.serviceProvider = serviceProvider;
-
             SeedAttendingReasons<ProgrammeAttendanceReason>(serviceProvider);
             SeedGender<Gender>(serviceProvider);
             SeedRace<Race>(serviceProvider);

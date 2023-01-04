@@ -22,7 +22,6 @@ namespace EcdLink.Api.CoreApi.Migrations
         private readonly ContentManagementDbContext _contentManagementDbContext;
         private readonly ContentMangementSeedService _contentManagementSeed;
         private readonly ILogger<DatabaseManagementService> _logger;
-        private readonly IServiceProvider _serviceProvider;
         private readonly IConfiguration _config;
 
         public DatabaseManagementService(
@@ -30,22 +29,20 @@ namespace EcdLink.Api.CoreApi.Migrations
             AuthenticationDbContext authDbContext,
             ContentManagementDbContext contentManagementDbContext,
             ContentMangementSeedService contentManagementSeed,
-            ILogger<DatabaseManagementService> logger,
-            IServiceProvider serviceProvider)
+            ILogger<DatabaseManagementService> logger)
         {
             _postgresSeed = postgresSeed;
             _authDbContext = authDbContext;
             _contentManagementDbContext = contentManagementDbContext;
             _contentManagementSeed = contentManagementSeed;
             _logger = logger;
-            _serviceProvider = serviceProvider;
         }
 
         public bool MigrateTenantInstance(TenantModel tenant)
         {
             try
             {
-                BuildDbStructure(tenant);
+                BuildDbStructure();
             }
             catch (Exception e)
             {
@@ -58,7 +55,7 @@ namespace EcdLink.Api.CoreApi.Migrations
 
         public bool CreateTenantInstance(TenantModel tenant)
         {
-            BuildDbStructure(tenant);
+            BuildDbStructure();
             try
             {
                 _authDbContext.Database.Migrate();
@@ -101,14 +98,14 @@ namespace EcdLink.Api.CoreApi.Migrations
             return await Task.Run<bool>(()=>true);
         }
 
-        private void BuildDbStructure(TenantModel tenant)
+        private void BuildDbStructure()
         {
             var franchisor = _config.GetSection<FranchisorConfiguration>(TenancyConstants.Configuration.TenantSettings);
-            var authDbContextOptions = GetOptions<AuthenticationDbContext>(franchisor.ConnectionString, "ECDLink.DataAccessLayer");//tenant.ConnectionString, "ECDLink.DataAccessLayer");
+            var authDbContextOptions = GetOptions<AuthenticationDbContext>(franchisor.ConnectionString, "ECDLink.DataAccessLayer");
             var authDbContext = new AuthenticationDbContext(authDbContextOptions.Options);
             authDbContext.Database.Migrate();
 
-            var contentManagementDbContextOptions = GetOptions<ContentManagementDbContext>(franchisor.ConnectionString, "ECDLink.ContentManagement");//tenant.ConnectionString, "ECDLink.ContentManagement");
+            var contentManagementDbContextOptions = GetOptions<ContentManagementDbContext>(franchisor.ConnectionString, "ECDLink.ContentManagement");
             var contentManagementDbContext = new ContentManagementDbContext(contentManagementDbContextOptions.Options);
             contentManagementDbContext.Database.Migrate();
         }

@@ -2,7 +2,6 @@ import {
   ApolloClient,
   ApolloLink,
   ApolloProvider,
-  createHttpLink,
   InMemoryCache,
 } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
@@ -22,6 +21,7 @@ import { useAuth } from './hooks/useAuth';
 import { UserProvider } from './hooks/useUser';
 
 const cache = new InMemoryCache({});
+export let apolloClient: ApolloClient<any> = null;
 
 const App: React.FC = () => {
   const { authenticatedUser, getAccessTokenPromise, logout } = useAuth();
@@ -60,10 +60,6 @@ const App: React.FC = () => {
         }
       });
 
-      const linkMain = createHttpLink({
-        uri: Config.graphQlApi,
-      });
-
       const linkTokenHeader = setContext(async (_, { headers }) => {
         const accessToken = await getAccessTokenPromise();
         return {
@@ -79,12 +75,12 @@ const App: React.FC = () => {
           linkTokenHeader,
           linkError,
           createUploadLink({ uri: Config.graphQlApi }),
-          linkMain,
         ]),
         cache,
       });
 
       setClient(client);
+      apolloClient = client;
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
