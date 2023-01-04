@@ -43,34 +43,30 @@ export const getNotes = createAsyncThunk<
 });
 
 export const upsertNotes = createAsyncThunk<
-  boolean[],
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  {},
+  any,
+  NoteDto,
   ThunkApiType<RootState>
->('upsertNotes', async (_, { getState, rejectWithValue }) => {
+>('upsertNotes', async (input, { getState, rejectWithValue }) => {
   const {
     auth: { userAuth },
     notesData: { notes },
   } = getState();
 
   try {
+    if (userAuth?.auth_token && input.id) {
+      return await new NoteService(userAuth?.auth_token).updateNote(
+        input.id,
+        mapNote(input)
+      );
+    }
+
     let promises: Promise<boolean>[] = [];
 
     if (userAuth?.auth_token && notes) {
       promises = notes.map(async (x) => {
-        const input: NoteInput = {
-          Id: x.id,
-          Name: x.name,
-          BodyText: x.bodyText,
-          NoteTypeId: x.noteTypeId,
-          UserId: x.userId,
-          CreatedUserId: x.createdUserId,
-          IsActive: x.isActive === false ? false : true,
-        };
-
         return await new NoteService(userAuth?.auth_token).updateNote(
           x.id ?? '',
-          input
+          mapNote(x)
         );
       });
     }
@@ -96,4 +92,14 @@ export const deleteNote = createAsyncThunk<
   } catch (err) {
     return rejectWithValue(err);
   }
+});
+
+const mapNote = (note: NoteDto): NoteInput => ({
+  Id: note.id,
+  Name: note.name,
+  BodyText: note.bodyText,
+  NoteTypeId: note.noteTypeId,
+  UserId: note.userId,
+  CreatedUserId: note.createdUserId,
+  IsActive: note.isActive === false ? false : true,
 });
