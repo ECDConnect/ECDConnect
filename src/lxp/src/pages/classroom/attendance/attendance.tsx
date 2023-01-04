@@ -95,7 +95,6 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       );
 
       const showChildInRegister =
-        startedAttendanceDay <= getDayOfYear(currentDate) &&
         startedAttendanceDay >= getDayOfYear(programmeStartDate);
       if (showChildInRegister) {
         currentLearners.push(learner);
