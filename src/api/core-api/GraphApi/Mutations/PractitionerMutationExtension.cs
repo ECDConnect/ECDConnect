@@ -40,6 +40,8 @@ using static NPOI.HSSF.Util.HSSFColor;
 using ECDLink.DataAccessLayer.Entities.DataIngestion;
 using System.Reflection;
 using ECDLink.DataAccessLayer.Entities.Integration.MappedEntities;
+using System.Threading.Tasks;
+using ECDLink.UrlShortner.Managers;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
@@ -1206,6 +1208,25 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             var userUpdateResult = userManager.UpdateAsync(user).Result;
             return userUpdateResult.Succeeded;
+        }
+
+        public async Task<bool> SendPractitionerInviteToApplication(
+         [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
+         [Service] InvitationNotificationManager notificationManager,
+         [Service] UserManager<ApplicationUser> userManager,
+         [Service] ShortUrlManager shortUrlManager,
+         string userId)
+        {
+            var messageType = "invitation";
+            var inviteCount = shortUrlManager.GetMessageCountForUser(userId, messageType);
+
+            if (inviteCount < 6)
+            {
+                SendInvitationMutationExtension invite = new SendInvitationMutationExtension();
+                return await invite.SendInviteToApplication(invitationManager, notificationManager, userManager, userId);
+            }
+
+            return false;
         }
 
     }
