@@ -52,11 +52,11 @@ export class IncompletePractitionerInformationNotificationValidator
         practitionerState.practitioner?.isRegistered
       );
       const addedByPrincipal =
-        Boolean(practitionerState.practitioner?.principalHierarchy) ||
+        Boolean(practitionerState.practitioner?.principalHierarchy) &&
         !practitionerState.practitioner?.isPrincipal;
 
       const showNotificationForPractitionerFlow =
-        hasPractitionerRole && notRegistered && addedByPrincipal;
+        (hasPractitionerRole || addedByPrincipal) && notRegistered;
       const showNotificationForPrincipalFlow =
         hasPrincipalRole && notRegistered && !addedByPrincipal;
 
