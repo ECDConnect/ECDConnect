@@ -31,7 +31,7 @@ namespace ECDLink.EGraphQL.Registration.AutoGenerateTypes.Queries
               .Type<ListType<ObjectType<T>>>()
               .Directive(metadata)
               .UseDbContext<AuthenticationDbContext>()
-              .ResolveWith<GenericQueryResolvers<T>>(r => r.GetAll(default, default))
+              .ResolveWith<GenericQueryResolvers<T>>(r => r.GetAllAsync(default, default))
               .UseFiltering();
 
             descriptor.Field(GraphFieldNamingHelper.GetFieldName(GraphFieldTypeEnum.GetById, typeof(T).Name))
