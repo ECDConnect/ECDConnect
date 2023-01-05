@@ -6022,7 +6022,24 @@ export type Setting_UrlShortner = {
 
 export type SettingsType = {
   __typename?: 'SettingsType';
+  AbsenteeCutoffDelay: Setting_AbsenteeCutoffDelay;
+  Azure: Setting_Azure;
+  BulkSms: Setting_BulkSms;
+  Children: Setting_Children;
+  Google: Setting_Google;
   Holder?: Maybe<Scalars['String']>;
+  IntegrationDelay: Setting_IntegrationDelay;
+  InvitationCutoffDelay: Setting_InvitationCutoffDelay;
+  Invitations: Setting_Invitations;
+  Jwts: Setting_Jwts;
+  RapidApi: Setting_RapidApi;
+  Reporting: Setting_Reporting;
+  Security: Setting_Security;
+  SendGrid: Setting_SendGrid;
+  SmartLinkApi: Setting_SmartLinkApi;
+  SyncDelay: Setting_SyncDelay;
+  Tokens: Setting_Tokens;
+  UrlShortner: Setting_UrlShortner;
 };
 
 export type ShortenUrlEntity = {

@@ -40,15 +40,15 @@ namespace ECDLink.EGraphQL.Builders.Queries
                 ObjectType = PermissionGroups.GENERAL
             };
 
-            // descriptor.Field(key.Split(".").Last())
-            //   .Type(new DynamicTypeBuilder($"Setting_{key.Split(".").Last()}").Required().Build())
-            //   .Directive(metadata)
-            //   .Resolve(context => 
-            //   {
-            //       var settings = context.Service<ISystemSetting<Dictionary<string, string>>>();
+            descriptor.Field(key.Split(".").Last())
+             .Type(new DynamicTypeBuilder($"Setting_{key.Split(".").Last()}").Required().Build())
+             .Directive(metadata)
+             .Resolve(context => 
+             {
+                 var settings = context.Service<ISystemSetting<Dictionary<string, string>>>();
 
-            //       return settings.GetSettings(key);
-            //   });
+                 return settings.GetSettings(key);
+             });
         }
     }
 }
