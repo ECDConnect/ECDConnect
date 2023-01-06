@@ -1,4 +1,9 @@
-import { useTheme, useDialog, ClassroomGroupDto } from '@ecdlink/core';
+import {
+  useTheme,
+  useDialog,
+  ClassroomGroupDto,
+  usePrevious,
+} from '@ecdlink/core';
 import { ActionModal, BannerWrapper, DialogPosition } from '@ecdlink/ui';
 import {
   MutationAddPractitionerToPrincipalArgs,
@@ -33,7 +38,6 @@ import { userSelectors } from '@/store/user';
 import { useStoreSetup } from '@/hooks/useStoreSetup';
 import { PractitionerService } from '@/services/PractitionerService';
 import ROUTES from '@/routes/routes';
-import { notificationActions } from '@/store/notifications';
 import { useNotificationService } from '@/hooks/useNotificationService';
 
 export const SetupPrincipal: React.FC = () => {
@@ -67,9 +71,27 @@ export const SetupPrincipal: React.FC = () => {
     ConfirmClassesSteps.CONFIRM_CLASSES
   );
 
+  const previousPage = usePrevious(page);
+
   const { stopService } = useNotificationService();
 
   useEffect(() => {
+    if (previousPage === page) return;
+
+    if (
+      previousPage === PractitionerSetupSteps.SETUP_PROGRAMME &&
+      page === PractitionerSetupSteps.ADD_PHOTO
+    ) {
+      return setLabel('step 2 of 2');
+    }
+
+    if (
+      previousPage === PractitionerSetupSteps.WELCOME &&
+      page === PractitionerSetupSteps.SETUP_PROGRAMME
+    ) {
+      setIsFundaAppAdmin(false);
+    }
+
     if (page === PractitionerSetupSteps.WELCOME) {
       setLabel('Welcome');
     } else {
@@ -79,10 +101,20 @@ export const SetupPrincipal: React.FC = () => {
         }`
       );
     }
-  }, [page]);
+  }, [page, previousPage]);
 
   const onAllStepsComplete = async () => {
     if (isNotPrincipal === true) {
+      if (user) {
+        await appDispatch(
+          practitionerThunkActions.updatePractitionerRegistered({
+            practitionerId: user.id,
+            status: true,
+          })
+        );
+        stopService();
+      }
+
       history.push(ROUTES.ROOT);
       return;
     }
@@ -121,7 +153,7 @@ export const SetupPrincipal: React.FC = () => {
         userAuth?.auth_token
       ).PromotePractitionerToPrincipal(user?.id);
 
-      appDispatch(
+      await appDispatch(
         practitionerThunkActions.updatePractitionerRegistered({
           practitionerId: user.id,
           status: true,
@@ -149,7 +181,6 @@ export const SetupPrincipal: React.FC = () => {
     }
     setIsLoading(false);
     stopService();
-    appDispatch(notificationActions.resetNotificationState());
     history.push(ROUTES.ROOT);
   };
 
@@ -170,7 +201,7 @@ export const SetupPrincipal: React.FC = () => {
               text: 'Exit',
               onClick: () => {
                 onSubmit();
-                history.goBack();
+                history.push('/');
               },
               textColour: 'white',
               type: 'filled',
@@ -192,6 +223,18 @@ export const SetupPrincipal: React.FC = () => {
     });
   };
 
+  const onChangeIsPrincipal = (value: boolean) => {
+    if (value) {
+      setLabel('step 1 of 2');
+    } else {
+      setLabel(
+        `step ${page} of ${
+          Object.values(PractitionerSetupSteps).filter(Number).length
+        }`
+      );
+    }
+  };
+
   const renderStep = (step: PractitionerSetupSteps) => {
     switch (step) {
       case PractitionerSetupSteps.WELCOME:
@@ -210,6 +253,7 @@ export const SetupPrincipal: React.FC = () => {
             setIsNotPrincipal={setIsNotPrincipal}
             isFundaAppAdmin={isFundaAppAdmin}
             setIsFundaAppAdmin={setIsFundaAppAdmin}
+            onChangeIsPrincipal={onChangeIsPrincipal}
           />
         );
 
@@ -282,7 +326,7 @@ export const SetupPrincipal: React.FC = () => {
 
       case PractitionerSetupSteps.WELCOME:
       default:
-        return history.goBack();
+        return history.push('/');
     }
   };
 

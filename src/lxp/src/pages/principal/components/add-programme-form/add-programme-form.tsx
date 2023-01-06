@@ -28,7 +28,14 @@ export const AddProgrammeForm: React.FC<{
   setIsNotPrincipal: any;
   isFundaAppAdmin: any;
   setIsFundaAppAdmin: any;
-}> = ({ onNext, setIsNotPrincipal, isFundaAppAdmin, setIsFundaAppAdmin }) => {
+  onChangeIsPrincipal: (value: boolean) => void;
+}> = ({
+  onNext,
+  setIsNotPrincipal,
+  isFundaAppAdmin,
+  setIsFundaAppAdmin,
+  onChangeIsPrincipal,
+}) => {
   const user = useSelector(userSelectors.getUser);
   const appDispatch = useAppDispatch();
 
@@ -244,15 +251,16 @@ export const AddProgrammeForm: React.FC<{
             <div className="mt-1">
               <ButtonGroup<boolean>
                 options={yesNoOptions}
-                onOptionSelected={(value: boolean | boolean[]) =>
+                onOptionSelected={(value: boolean | boolean[]) => {
+                  onChangeIsPrincipal(value as boolean);
                   setProgrammeFormValue(
                     'isPrincipleOrOwnerSmartStarter',
                     value as boolean,
                     {
                       shouldValidate: true,
                     }
-                  )
-                }
+                  );
+                }}
                 selectedOptions={[
                   getProgrammeFormValues().isPrincipleOrOwnerSmartStarter,
                 ]}
