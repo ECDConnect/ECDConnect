@@ -139,6 +139,30 @@ class MotherService {
 
     return response.data.data.createMother;
   }
+
+  async getMotherCountForHealthCareWorkerForMonth(id: string): Promise<number> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        query GetMotherCountForHealthCareWorkerForMonth($id: String) {
+          motherCountForHealthCareWorkerForMonth(id: $id) {
+        
+          }
+        }   
+      `,
+      variables: {
+        userId: id,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Getting count for health care worker for month failed - Server connection error'
+      );
+    }
+
+    return response.data.data.motherCountForHealthCareWorkerForMonth;
+  }
 }
 
 export default MotherService;
