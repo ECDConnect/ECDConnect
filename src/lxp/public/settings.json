@@ -1,5 +1,5 @@
 {
-  "graphQlApi": "http://localhost:5000/graphql",
-  "authApi": "http://localhost:5000/",
+  "graphQlApi": "https://ecdlink-develop-api.azurewebsites.net/graphql/",
+  "authApi": "https://ecdlink-develop-api.azurewebsites.net",
   "themeUrl": "https://ecdlinkstoragedev.blob.core.windows.net/theme/smartstart.json"
 }
