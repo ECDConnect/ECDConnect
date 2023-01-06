@@ -39,6 +39,7 @@ import { authSelectors } from '@store/auth';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import OnlineOnlyModal from '../../../../../modals/offline-sync/online-only-modal';
 import { practitionerSelectors } from '@/store/practitioner';
+import { classroomsSelectors } from '@/store/classroom';
 
 export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
   isNew,
@@ -52,6 +53,9 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
   const [classroomGroup, setClassroomGroup] =
     useState<RecursivePartial<ClassroomGroupDto>>();
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
+  const programmeType = useSelector(
+    classroomsSelectors.getClassroomProgrammeType()
+  );
 
   const { isOnline } = useOnlineStatus();
 
@@ -294,7 +298,9 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
       </div>
       <div className="mt-1">
         <span className={styles.label}>
-          Do children attend this playgroup for half the day or the full day?
+          Do children attend this{' '}
+          {programmeType ? programmeType?.description : 'class'} for half the
+          day or the full day?
         </span>
         <div className="mt-2">
           <ButtonGroup<boolean>
