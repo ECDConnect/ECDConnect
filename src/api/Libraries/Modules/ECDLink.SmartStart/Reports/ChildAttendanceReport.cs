@@ -49,7 +49,8 @@ namespace ECDLink.SmartStart.Reports
                         var attendedClasses = attendanceForPeriod
                                               .Where(x => string.Equals(x.UserId, userId)
                                               && x.ClassroomProgrammeId == programme.Id
-                                              && x.MonthOfYear == dt.Month);
+                                              && x.MonthOfYear == dt.Month
+                                              && x.Year == dt.Year);
 
                         attendance.Add(Tuple.Create(daysOfClass.Count(), attendedClasses.Count()));
                     }
@@ -89,12 +90,15 @@ namespace ECDLink.SmartStart.Reports
                     {
                         var daysOfClass = attendanceForPeriod.Where(x => string.Equals(x.UserId, userId)
                                               && x.ClassroomProgrammeId == programme.Id
-                                              && x.MonthOfYear == dt.Month); 
+                                              && x.MonthOfYear == dt.Month
+                                              && x.Year == dt.Year); 
 
                         var attendedClasses = attendanceForPeriod
                                               .Where(x => string.Equals(x.UserId, userId)
                                               && x.ClassroomProgrammeId == programme.Id
-                                              && x.MonthOfYear == dt.Month && x.Attended==true);
+                                              && x.MonthOfYear == dt.Month
+                                              && x.Year == dt.Year
+                                              && x.Attended==true);
 
                         attendance.Add(Tuple.Create(daysOfClass.Count(), (attendedClasses!=null?attendedClasses.Count():0)));
 
@@ -179,6 +183,7 @@ namespace ECDLink.SmartStart.Reports
                 report.Add(new ChildAttendanceMonthlyReportModel
                 {
                     Month = item.Key.ToString("MMMM"),
+                    Year = item.Key.Year,
                     MonthNumber = item.Key.Month,
                     ActualAttendance = actualAttendance,
                     ExpectedAttendance = totalAttendance,
@@ -186,7 +191,7 @@ namespace ECDLink.SmartStart.Reports
                 });
             }
 
-            return report.OrderBy(report => report.MonthNumber);
+            return report.OrderByDescending(report => report.Year).ThenBy(x => x.MonthNumber);
         }
 
     }

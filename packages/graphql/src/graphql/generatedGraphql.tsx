@@ -529,6 +529,7 @@ export type ChildAttendanceMonthlyReportModel = {
   expectedAttendance: Scalars['Int'];
   month?: Maybe<Scalars['String']>;
   monthNumber: Scalars['Int'];
+  year: Scalars['Int'];
 };
 
 export type ChildAttendanceReportModel = {
