@@ -43,6 +43,9 @@ export const EditPlaygroups: React.FC = () => {
   );
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const isPrincipal = practitioner?.isPrincipal === true;
+  const programmeType = useSelector(
+    classroomsSelectors.getClassroomProgrammeType()
+  );
 
   const [updatedPlaygroups, setUpdatedPlaygroups] = useState<
     EditPlaygroupModel[]
@@ -165,6 +168,7 @@ export const EditPlaygroups: React.FC = () => {
           appDispatch(
             classroomsActions.updateClassroomGroup({
               ...currentPlayGroup,
+              programmeTypeId: programmeType?.id,
               name: playGroup.name,
             })
           );
