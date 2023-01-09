@@ -25,8 +25,6 @@ export const CoachContactPractitioner: React.FC = () => {
     (practitioner) => practitioner?.userId === practitionerId
   );
 
-  const reassignedGroups = false;
-
   const call = () => {
     window.open(`tel:${practitioner?.user?.phoneNumber}`);
   };
@@ -43,7 +41,7 @@ export const CoachContactPractitioner: React.FC = () => {
         size="small"
         renderOverflow={false}
         onBack={() =>
-          history.push(ROUTES.COACH.PROGRAMME_INFORMATION, {
+          history.push(ROUTES.COACH.PRACTITIONER_PROFILE_INFO, {
             practitionerId,
           })
         }

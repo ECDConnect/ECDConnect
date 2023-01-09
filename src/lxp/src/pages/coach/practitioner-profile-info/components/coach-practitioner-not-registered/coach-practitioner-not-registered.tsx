@@ -18,6 +18,7 @@ export const CoachPractitionerNotRegistered: React.FC<
   const practitionerId = practitioner?.userId;
   const [inviteCount, setInviteCount] = useState(0);
   const [inviteDates, setInviteDates] = useState<Date>();
+  const disableButton = inviteCount >= 3;
 
   useEffect(() => {
     getClassroomDetails();
@@ -39,6 +40,7 @@ export const CoachPractitionerNotRegistered: React.FC<
     await new PractitionerService(
       userAuth?.auth_token || ''
     ).SendPractitionerInviteToApplication(practitioner?.userId || '');
+    getClassroomDetails();
   };
 
   return (
@@ -49,7 +51,7 @@ export const CoachPractitionerNotRegistered: React.FC<
         size="medium"
         renderBorder={true}
         renderOverflow={false}
-        onBack={() => history.goBack()}
+        onBack={() => history.push(ROUTES.COACH.PRACTITIONERS)}
         displayOffline={!isOnline}
       />
       <div className="flex w-full justify-center">
@@ -120,6 +122,7 @@ export const CoachPractitionerNotRegistered: React.FC<
             textColor={'white'}
             className="mt-4 w-11/12"
             onClick={sendPractitionerInvite}
+            disabled={disableButton}
           />
         </div>
         <div className="flex w-full justify-center">
