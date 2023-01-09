@@ -13,12 +13,8 @@ class DocumentService {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-        query GetAllDocument($createdUserId: String) {
-          GetAllDocument (where: {
-            and: [{ 
-              createdUserId: {eq: $createdUserId}
-            }]
-          }) {
+        query GetAllDocument {
+          GetAllDocument {
             id
             isActive
             user {
