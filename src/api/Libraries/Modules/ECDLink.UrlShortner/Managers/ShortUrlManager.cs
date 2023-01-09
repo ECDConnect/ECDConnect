@@ -88,7 +88,6 @@ namespace ECDLink.UrlShortner.Managers
         {
             return _entities.Where(x => string.Equals(x.UserId, userId) && string.Equals(x.MessageType, messageType)).Count();
         }
-
         public string GetLastMessageDateForUser(string userId, string messageType)
         {
             return _entities.Where(x => string.Equals(x.UserId, userId) && string.Equals(x.MessageType, messageType)).OrderBy(x => x.InsertedDate).Last().InsertedDate.ToString();
