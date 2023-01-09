@@ -69,7 +69,9 @@ export const getCaregiversForHealthCareWorker = createAsyncThunk<
     if (!caregiversCache) {
       try {
         let caregivers: CaregiverDto[] | undefined;
-
+        if (id === null || id.trim() === '') {
+          return rejectWithValue('no caregiver id supplied');
+        }
         if (userAuth?.auth_token) {
           caregivers = await new CaregiverService(
             userAuth?.auth_token
