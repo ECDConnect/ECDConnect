@@ -8,6 +8,7 @@ using IdentityServer4.Models;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace ECDLink.UrlShortner.Managers
@@ -87,10 +88,13 @@ namespace ECDLink.UrlShortner.Managers
         {
             return _entities.Where(x => string.Equals(x.UserId, userId) && string.Equals(x.MessageType, messageType)).Count();
         }
-
         public string GetLastMessageDateForUser(string userId, string messageType)
         {
-            return _entities.OrderBy(x => x.InsertedDate).Where(x => string.Equals(x.UserId, userId) && string.Equals(x.MessageType, messageType)).Last().InsertedDate.ToString();
+            return _entities.Where(x => string.Equals(x.UserId, userId) && string.Equals(x.MessageType, messageType)).OrderBy(x => x.InsertedDate).Last().InsertedDate.ToString();
+        }
+        public List<System.DateTime> GetAllMessageInvitesForUser(string userId, string messageType)
+        {
+            return _entities.Where(x => string.Equals(x.UserId, userId) && string.Equals(x.MessageType, messageType)).OrderBy(x => x.InsertedDate).Select(x => x.InsertedDate).ToList();
         }
     }
 }
