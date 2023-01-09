@@ -1,27 +1,19 @@
 ﻿using ECDLink.Abstractrions.Services;
 using ECDLink.Core.Caching;
-using ECDLink.DataAccessLayer.Context;
-using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Hierarchy.Entities;
 using ECDLink.DataAccessLayer.Repositories.Factories;
-using ECDLink.DataAccessLayer.Repositories.Generic;
+using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
-using HotChocolate;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.Azure.Documents;
 using Microsoft.EntityFrameworkCore;
-using NPOI.SS.Formula.Functions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection.Metadata.Ecma335;
-using System.Text;
 using Document = ECDLink.DataAccessLayer.Entities.Documents.Document;
 
 namespace ECDLink.DataAccessLayer.Hierarchy
@@ -103,122 +95,159 @@ namespace ECDLink.DataAccessLayer.Hierarchy
             return newHierarchy;
         }
 
+        // Case on type, and depending on type, iterate through different levels of collecting a list of hierarchies to use
         public List<string> GetHierarchyByParentList<T>(
-        UserManager<ApplicationUser> _userManager,
+        HttpContext httpContext,
         string userId)
         {
-            List<string> hierarchyList = new List<string>();
             if (string.IsNullOrEmpty(userId))
             {
                 throw new Exception("No user specified");
             }
-            //case on type, and depending on type, iterate through different levels of collecting a list of hierarchies to use
-            var coachRepo = _repoFactory.CreateGenericRepository<Coach>(userContext: userId);
-            var practRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: userId);
-            var user = _userManager.FindByIdAsync(userId).Result;
-            var roles = _userManager.GetRolesAsync(user).Result;            
-            var isFranchisor = roles.Contains(Roles.FRANCHISOR);
-            var isCoach = roles.Contains(Roles.COACH);
-            var isPrincipal = roles.Contains(Roles.PRINCIPAL);
-            var isPractitioner = roles.Contains(Roles.PRACTITIONER);
 
-            hierarchyList.Add(this.GetUserHierarchy(userId));
-            if (isFranchisor) {
-                List<Coach> franchisorCoaches = coachRepo.GetAll().ToList();
-                franchisorCoaches = franchisorCoaches.Where(c => c.FranchisorId.Equals(userId)).ToList();
-                if (franchisorCoaches.Count > 0)
+            var practRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: userId);
+            
+            var userIdGuid = Guid.Parse(userId);
+            var isFranchisor = httpContext.IsInRole(Roles.FRANCHISOR);
+            var isCoach = httpContext.IsInRole(Roles.COACH);
+            var isPrincipal = httpContext.IsInRole(Roles.PRINCIPAL);
+            var isPractitioner = httpContext.IsInRole(Roles.PRACTITIONER);
+
+            // Add userId to list of hierarchies to fetch
+            var userIdsToFetch = new List<string>() { userId };
+
+            if (isFranchisor)
                 {
-                    foreach (var c in franchisorCoaches)
-                    {
-                        hierarchyList.Add(this.GetUserHierarchy(c.UserId));
-                        List<Practitioner> franchisorsPractitioners = practRepo.GetAll().ToList();
-                        if (franchisorsPractitioners.Count > 0)
-                        {
-                            foreach (var p in franchisorsPractitioners)
-                            {
-                                if (p.User != null)
-                                {
-                                    hierarchyList.Add(this.GetUserHierarchy(p.UserId));
-                                }
-                            }
-                        }
-                    }
-                }
-            } else if (isCoach) {
-                List<Practitioner> coachPractitioners = practRepo.GetAll().ToList();
-                coachPractitioners = coachPractitioners.Where(c => c.CoachHierarchy.HasValue).ToList();
-                coachPractitioners = coachPractitioners.Where(c => c.CoachHierarchy.ToString() == userId).ToList();
-                if (coachPractitioners.Count > 0)
-                {
-                    foreach (var p in coachPractitioners)
-                    {
-                        if (p.User != null)
-                        {
-                            hierarchyList.Add(this.GetUserHierarchy(p.UserId));
-                        }
-                    }
-                }
-            } else if (isPrincipal || isPractitioner) {
-                List<Practitioner> practitioners = practRepo.GetAll().ToList();
-                practitioners = practitioners.Where(c => c.PrincipalHierarchy.HasValue || c.IsPrincipal == true).ToList(); // some practitioners can be principal as owner with only themselves as owner
-                var principalPractitioners = practitioners.Where(c => c.PrincipalHierarchy.ToString() == userId).ToList();
-                if (principalPractitioners.Count > 0)
-                {
-                    foreach (var p in principalPractitioners)
-                    {
-                        if (p.User != null)
-                        {
-                            hierarchyList.Add(this.GetUserHierarchy(p.UserId));
-                        }
-                    }
-                }
+                userIdsToFetch.AddRange(
+                    GetFranchisorIds(practRepo, userIdGuid));
             }
+            else if (isCoach)
+                    {
+                userIdsToFetch.AddRange(
+                    GetCoachIds(practRepo, userIdGuid));
+                                }
+            else if (isPrincipal || isPractitioner)
+                {
+                userIdsToFetch.AddRange(
+                    GetPrincipalPractitionerIds(practRepo, userIdGuid));
+                        }
+            // Fetch all user hierarchies before they are used
+            var userHierarchies = GetManyUserHierarchy(userIdsToFetch);
+            
+            var hierarchyList = new List<string>();
+            if (userHierarchies?.Any() ?? false)
+                {
+                hierarchyList.AddRange(userHierarchies.Distinct());
+                        }
+            
             //in some cases like a child, we need to get the relevant children hierarchy in addition for the generic repository selectionlist
             if (typeof(T) == typeof(Child))
             {
                 var childRepo = _repoFactory.CreateGenericRepository<Child>(userContext: userId);
+                var childHierarchies = new List<string>();
+
                 //use the parent list to determine
-                List<string> childHierarchyList = hierarchyList.Copy();
-                foreach (var hierarchy in childHierarchyList)
+                foreach (var hierarchy in hierarchyList)
                 {
-                    List<string> childHierarchy = childRepo.GetAll().Where(c => c.Hierarchy.StartsWith(hierarchy)).Select(p => p.Hierarchy).ToList();
+                    List<string> childHierarchy = childRepo.GetAll()
+                        .Where(c => c.Hierarchy.StartsWith(hierarchy)).Select(p => p.Hierarchy)
+                        .ToList();
                     if (childHierarchy.Any())
                     {
-                        hierarchyList.AddRange(childHierarchy);
+                        childHierarchies.AddRange(childHierarchy);
                     }
                 }
+
+                hierarchyList.AddRange(childHierarchies);
             }
             //in some cases like a learner, similarly to a child, we need to get the relevant children hierarchy in addition for the generic repository selectionlist
             if (typeof(T) == typeof(Learner))
             {
                 var childRepo = _repoFactory.CreateGenericRepository<Learner>(userContext: userId);
+                var learnerHierarchies = new List<string>();
+
                 //use the parent list to determine
-                List<string> learnerHierarchyList = hierarchyList.Copy();
-                foreach (var hierarchy in learnerHierarchyList)
+                foreach (var hierarchy in hierarchyList)
                 {
                     List<string> learnerHierarchy = childRepo.GetAll().Where(c => c.Hierarchy.StartsWith(hierarchy)).Select(p => p.Hierarchy).ToList();
                     if (learnerHierarchy.Any())
                     {
-                        hierarchyList.AddRange(learnerHierarchy);
+                        learnerHierarchies.AddRange(learnerHierarchy);
                     }
                 }
+
+                hierarchyList.AddRange(learnerHierarchies);
             }
             if (typeof(T) == typeof(Document))
             {
                 var documentRepo = _repoFactory.CreateGenericRepository<Document>(userContext: userId);
-                //use the parent list to determine
-                List<string> documentHierarchyList = hierarchyList.Copy();
-                foreach (var hierarchy in documentHierarchyList)
-                {
-                    List<string> documentHierarchy = documentRepo.GetAll().Where(c => c.Hierarchy.StartsWith(hierarchy)).Select(p => p.Hierarchy).ToList();
+                
+                var documentHierarchy = GetManyDocumentsByHierarchy(documentRepo, hierarchyList);
+                
                     if (documentHierarchy.Any())
                     {
                         hierarchyList.AddRange(documentHierarchy);
                     }
                 }
-            }
-            return hierarchyList;
 
+            return hierarchyList.Distinct().ToList();
+            }
+
+        private List<string> GetFranchisorIds(IGenericRepository<Practitioner, Guid> practRepo, Guid userIdGuid)
+        {
+            var coachRepo = _repoFactory.CreateGenericRepository<Coach>(userContext: userIdGuid.ToString());
+            List<Guid> franchisorCoachIds = coachRepo.GetAll()
+                .Where(c => c.FranchisorId == userIdGuid)
+                .Select(f => Guid.Parse(f.UserId))
+                .ToList();
+            
+            List<string> userIdsToFetch = new List<string>();
+            if (franchisorCoachIds?.Count > 0)
+            {
+                var coachIdsToFetch = franchisorCoachIds.Where(f => f != null).Select(f => f.ToString());
+                userIdsToFetch.AddRange(coachIdsToFetch);
+            }
+
+            List<Practitioner> franchisorsPractitioners = practRepo.GetAll()
+                    .Where(p => franchisorCoachIds.Contains(p.CoachHierarchy ?? Guid.Empty))
+                    .ToList();
+
+            if (franchisorsPractitioners?.Count > 0)
+            {
+                userIdsToFetch.AddRange(franchisorsPractitioners.Select(f => f.UserId));
+            }
+
+            return userIdsToFetch;
+        }
+
+        private static List<string> GetCoachIds(IGenericRepository<Practitioner, Guid> practRepo, Guid userIdGuid)
+        {
+            var coachPractitioners = practRepo.GetAll()
+                .Where(c => c.CoachHierarchy == userIdGuid 
+                    && c != null)?
+                .Select(p => p.UserId)?
+                .ToList();
+
+            return coachPractitioners ?? new List<string>();
+        }
+
+        private static List<string> GetPrincipalPractitionerIds(IGenericRepository<Practitioner, Guid> practitionerRepo, Guid userIdGuid)
+        {
+            // some practitioners can be principal as owner with only themselves as owner
+            var principalPractitioners = practitionerRepo.GetAll()
+                .Where(c => (c.PrincipalHierarchy!=null && c.PrincipalHierarchy == userIdGuid) || (c.IsPrincipal == true && c.UserId == userIdGuid.ToString()))
+                .Select(p => p.UserId.ToString())
+                .ToList();
+            
+            List<string> ids = new List<string>();
+
+            if (principalPractitioners.Count > 0)
+            {
+                ids = principalPractitioners.Where(u => u != null)
+                    .ToList();
+        }
+
+            return ids;
         }
 
         public string GetHierarchy<TChild>(string parentId, string childId)
@@ -261,6 +290,42 @@ namespace ECDLink.DataAccessLayer.Hierarchy
 
             return entity?.Hierarchy;
         }
+        public IQueryable<string> GetManyUserHierarchy(IEnumerable<string> userIds)
+        {
+            if (!(userIds?.Any() ?? false))
+            {
+                throw new Exception("No user specified");
+            }
+
+            var userHierarchyRepo = _repoFactory.CreateRepository<UserHierarchyEntity>();
+
+            var entites = userHierarchyRepo.GetAll()
+                .Where(x => userIds.Contains(x.UserId))
+                .Select(e => e.Hierarchy);
+
+            return entites;
+        }
+
+        public IEnumerable<string> GetManyDocumentsByHierarchy(IGenericRepository<Document, Guid> docRepo, IEnumerable<string> hierarchyIds)
+        {
+            if (!(hierarchyIds?.Any() ?? false))
+            {
+                return new List<string>().AsQueryable();
+            }
+
+            var hierarchies = new List<string>();
+            foreach (var hierarchyId in hierarchyIds)
+            {
+                var a = docRepo.GetAll()
+                    .Where(x => ((IUserScoped)x).Hierarchy.StartsWith(hierarchyId))
+                    .Select(p => p.Hierarchy)
+                    .ToList();
+                hierarchies.AddRange(a);
+            }
+
+            return hierarchies;
+        }
+
 
         public string GetAdminUserId()
         {

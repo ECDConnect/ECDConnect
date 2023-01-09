@@ -122,7 +122,7 @@ string userId)
             var dbRepo = repoFactory.CreateRepository<Practitioner>(userContext: userId);
             Practitioner practitioner = dbRepo.GetByUserId(userId);
 
-            List<Child> children = childRepo.GetAll().Where(x => x.Hierarchy.Contains(practitioner.Hierarchy)).ToList();
+            var children = childRepo.GetAll().Where(x => practitioner.Hierarchy.StartsWith(x.Hierarchy)).ToList();
             return children;
         }
 
@@ -284,7 +284,7 @@ string userId)
                         children = new PrincipalQueryExtension().GetAllChildrenUnderPrincipal(contextAccessor, repoFactory, userId);
                         break;
                     case "Practitioner":
-                        children = this.GetAllChildrenForPractitioner(contextAccessor,repoFactory, userId);
+                        children = this.GetAllChildrenForPractitioner(contextAccessor, repoFactory, userId);
                             break;
                     default:
                         break;

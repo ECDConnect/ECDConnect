@@ -9,5 +9,14 @@ namespace ECDLink.Security.Extensions
         {
             return context.Items[SecurityConstants.ContextKeys.User] as ApplicationIdentityUser;
         }
+        public static bool IsAdmin(this HttpContext context)
+        {
+            return context.User.HasClaim("rol", Roles.ADMINISTRATOR);
+        }
+
+        public static bool IsInRole(this HttpContext context, string role)
+        {
+            return context.User.HasClaim("rol", role);
+        }
     }
 }
