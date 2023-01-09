@@ -91,11 +91,11 @@ namespace ECDLink.UrlShortner.Managers
 
         public string GetLastMessageDateForUser(string userId, string messageType)
         {
-            return _entities.OrderBy(x => x.InsertedDate).Where(x => string.Equals(x.UserId, userId) && string.Equals(x.MessageType, messageType)).Last().InsertedDate.ToString();
+            return _entities.Where(x => string.Equals(x.UserId, userId) && string.Equals(x.MessageType, messageType)).OrderBy(x => x.InsertedDate).Last().InsertedDate.ToString();
         }
         public List<System.DateTime> GetAllMessageInvitesForUser(string userId, string messageType)
         {
-            return _entities.OrderBy(x => x.InsertedDate).Where(x => string.Equals(x.UserId, userId) && string.Equals(x.MessageType, messageType)).Select(x => x.InsertedDate).ToList();
+            return _entities.Where(x => string.Equals(x.UserId, userId) && string.Equals(x.MessageType, messageType)).OrderBy(x => x.InsertedDate).Select(x => x.InsertedDate).ToList();
         }
     }
 }
