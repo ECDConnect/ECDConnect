@@ -1,20 +1,13 @@
-using ECDLink.Abstractrions.Services;
-using ECDLink.Core.Caching;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities.Base;
 using ECDLink.DataAccessLayer.Events;
-
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
-using Namotion.Reflection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using ECDLink.Tenancy.Context;
-using ECDLink.Tenancy.Cache;
-using Microsoft.Azure.Documents.SystemFunctions;
 
 namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
 {
@@ -27,7 +20,6 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
         protected DbSet<T> entities;
 
         protected string _userId;
-
         protected string errorMessage = string.Empty;
 
         public GenericRepositoryBase(AuthenticationDbContext context, IDomainEventService domainEventService)
@@ -60,8 +52,8 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
             if (type.GetProperty("UserId") != null)
             {
                 Guid tenantId = TenantExecutionContext.Tenant.Id;
-                var qq = entities.FromSqlRaw("SELECT * FROM \"" + type.Name + "\" WHERE \"UserId\" = '" + id + "' AND \"TenantId\" = '" + tenantId + "'").ToList();
-                return qq.FirstOrDefault();
+                var qq = entities.FromSqlRaw("SELECT * FROM \"" + type.Name + "\" WHERE \"UserId\" = '" + id + "' AND \"TenantId\" = '" + tenantId + "'").FirstOrDefault();
+                return qq;
             } else return default;        
         }
 
@@ -72,7 +64,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
             {
                 Guid tenantId = TenantExecutionContext.Tenant.Id;
                 var qq = entities.FromSqlRaw("SELECT * FROM \"" + type.Name + "\" WHERE \"UserId\" = '" + id + "' AND \"TenantId\" = '" + tenantId + "'").ToList();////.OrderByDescending(y => y.InsertedDate);
-                return qq.ToList();
+                return qq;
             }
             else return default;
         }

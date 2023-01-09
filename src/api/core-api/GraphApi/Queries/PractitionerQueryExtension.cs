@@ -125,7 +125,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var dbRepo = repoFactory.CreateRepository<Practitioner>(userContext: userId);
             Practitioner practitioner = dbRepo.GetByUserId(userId);
 
-            List<Child> children = childRepo.GetAll().Where(x => x.Hierarchy.Contains(practitioner.Hierarchy)).ToList();
+            var children = childRepo.GetAll().Where(x => practitioner.Hierarchy.StartsWith(x.Hierarchy)).ToList();
             return children;
         }
 
@@ -286,7 +286,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                         children = new PrincipalQueryExtension().GetAllChildrenUnderPrincipal(contextAccessor, repoFactory, userId);
                         break;
                     case "Practitioner":
-                        children = this.GetAllChildrenForPractitioner(contextAccessor,repoFactory, userId);
+                        children = this.GetAllChildrenForPractitioner(contextAccessor, repoFactory, userId);
                             break;
                     default:
                         break;

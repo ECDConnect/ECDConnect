@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ECDLink.Security
+﻿namespace ECDLink.Security
 {
     public static class Roles
     {
