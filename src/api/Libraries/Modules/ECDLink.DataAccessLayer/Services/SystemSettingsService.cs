@@ -23,7 +23,7 @@ namespace ECDLink.DataAccessLayer.Services
             _context = provider.CreateScope().ServiceProvider.GetService<AuthenticationDbContext>();
         }
 
-        public async Task<IEnumerable<ISetting>> GetSystemSettings()
+        public IEnumerable<ISetting> GetSystemSettings()
         {
             if (!_context.Database.CanConnect())
             {

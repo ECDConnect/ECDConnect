@@ -8,6 +8,6 @@ namespace ECDLink.Core.Services.Interfaces
 {
     public interface ISystemSettingsService
     {
-        public Task<IEnumerable<ISetting>> GetSystemSettings();
+        public IEnumerable<ISetting> GetSystemSettings();
     }
 }

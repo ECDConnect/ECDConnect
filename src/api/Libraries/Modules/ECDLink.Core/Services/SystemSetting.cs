@@ -83,7 +83,7 @@ namespace ECDLink.Core.Services
                 return;
             }
 
-            var settings = _settingsService.GetSystemSettings().Result;
+            var settings = _settingsService.GetSystemSettings();
 
             var cacheToAdd = new Dictionary<string, string>();
 
