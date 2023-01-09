@@ -94,8 +94,8 @@ export const PregnantMaternalCaseRecord: React.FC<
   const actualGestationWeek = 40 - diffDates;
 
   const getDate = (point: 'min' | 'max') => {
-    const day = new Date().getDay();
-    const month = new Date().getMonth();
+    const day = new Date().getDate();
+    const month = new Date().getMonth() + 1;
     const year =
       point === 'max'
         ? new Date().getFullYear() + 1
