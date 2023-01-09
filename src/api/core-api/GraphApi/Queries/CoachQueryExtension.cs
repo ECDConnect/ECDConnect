@@ -11,6 +11,7 @@ using HotChocolate;
 using HotChocolate.Types;
 using HotChocolate.Utilities;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Azure.Documents;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -63,10 +64,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public string GetCoachNameByUserId([Service] IHttpContextAccessor contextAccessor,
         [Service] IGenericRepositoryFactory repoFactory,
+        [Service] UserManager<ApplicationUser> userManager,
         string userId)
         {
-            Coach coach = GetCoachByCoachUserId(contextAccessor,repoFactory,userId);
-            return (coach!=null? coach.User!=null ? coach.User.FullName : null : null);
+            var user = userManager.FindByIdAsync(userId).Result;
+            return (user != null ? user.FullName : null);
         }
 
 
