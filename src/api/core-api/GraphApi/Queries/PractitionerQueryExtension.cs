@@ -375,6 +375,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return shortUrlManager.GetLastMessageDateForUser(userId, messageType);
         }
 
+        public List<System.DateTime> GetAllPractitionerInvites([Service] IHttpContextAccessor contextAccessor,
+            [Service] ShortUrlManager shortUrlManager,
+            string userId)
+        {
+            var messageType = "invitation";
+            return shortUrlManager.GetAllMessageInvitesForUser(userId, messageType);
+        }
+
     }
 
     }
