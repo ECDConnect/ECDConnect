@@ -1,7 +1,13 @@
 import { MotherDto } from '@ecdlink/core';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
-import { getMothers } from './mother.actions';
+import { getInfantCountForMonth } from '../infant/infant.actions';
+import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
+import {
+  addMother,
+  getMotherCountForMonth,
+  getMothers,
+} from './mother.actions';
 import { MotherState } from './mother.types';
 
 const initialState: MotherState = {};
@@ -27,6 +33,16 @@ const motherSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
+    setThunkActionStatus(builder, addMother);
+    setThunkActionStatus(builder, getMotherCountForMonth);
+    builder.addCase(getInfantCountForMonth.fulfilled, (state, action) => {
+      state.motherCountForMonth = action.payload;
+
+      setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(addMother.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
+    });
     builder.addCase(getMothers.fulfilled, (state, action) => {
       if (!state.mothers) {
         const mothers = Object.assign([], action.payload) as MotherDto[];

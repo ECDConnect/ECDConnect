@@ -16,6 +16,7 @@ import {
   UserDto,
   CaregiverDto,
   useDialog,
+  usePrevious,
 } from '@ecdlink/core/lib';
 import ROUTES from '@/routes/routes';
 import momImage from '@/assets/happyMom.svg';
@@ -41,6 +42,8 @@ import { caregiverActions } from '@/store/caregiver';
 import { staticDataSelectors } from '@/store/static-data';
 import { motherActions, motherThunkActions } from '@/store/mother';
 import { documentActions, documentThunkActions } from '@/store/document';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { MotherActions } from '@/store/mother/mother.actions';
 
 const BANNER_HEIGHT = 64;
 
@@ -70,6 +73,18 @@ export const PregnantRegisterForm: React.FC = () => {
   const dialog = useDialog();
 
   const { height } = useWindowSize();
+
+  const { isLoading, isRejected } = useThunkFetchCall(
+    'mothers',
+    MotherActions.ADD_MOTHER
+  );
+
+  const { isRejected: isRejectedGetMotherCount } = useThunkFetchCall(
+    'mothers',
+    MotherActions.GET_MOTHER_COUNT_FOR_MONTH
+  );
+
+  const wasLoading = usePrevious(isLoading);
 
   const handleExistingUser = () => {
     if (isAlreadyClient) {
@@ -214,7 +229,6 @@ export const PregnantRegisterForm: React.FC = () => {
               setPregnantMaternalCaseRecord(
                 value as PregnantMaternalCaseRecordProps
               );
-              showSuccessMessage();
             }}
           />
         );
@@ -235,53 +249,77 @@ export const PregnantRegisterForm: React.FC = () => {
     setLabel('step 1 of 5');
   }, []);
 
-  const showSuccessMessage = () =>
-    dialog({
-      position: DialogPosition.Middle,
-      color: 'bg-transparent',
-      render(onSubmit, onClose) {
-        return (
-          <Card
-            shadowSize={'lg'}
-            borderRaduis={'3xl'}
-            className="flex flex-col items-center justify-center px-4 py-6"
-          >
-            <div className="bg-tertiary flex h-28 w-28 justify-center overflow-hidden rounded-full">
-              <img className={'mt-6'} src={momImage} alt="card" />
-            </div>
-            <Typography
-              type="h3"
-              weight="bold"
-              className="mt-4"
-              lineHeight="snug"
-              text={'New client registered!'}
-            />
-            <Typography
-              type="body"
-              color="textMid"
-              className="mt-4 text-center"
-              lineHeight="snug"
-              text={`Great job ${user?.firstName}, you've registered 1 pregnant mom this month.`}
-            />
-            <div className={'mt-4 flex w-full justify-center'}>
-              <Button
-                text={`Close`}
-                icon={'XIcon'}
-                type={'filled'}
-                color={'primary'}
-                textColor={'white'}
-                className={'max-h-10 w-full'}
-                iconPosition={'start'}
-                onClick={() => {
-                  history.push(ROUTES.DASHBOARD);
-                  onClose();
-                }}
+  const showSuccessMessage = useCallback(
+    (count?: number) =>
+      dialog({
+        position: DialogPosition.Middle,
+        color: 'bg-transparent',
+        render(onSubmit, onClose) {
+          return (
+            <Card
+              shadowSize={'lg'}
+              borderRaduis={'3xl'}
+              className="flex flex-col items-center justify-center px-4 py-6"
+            >
+              <div className="bg-tertiary flex h-28 w-28 justify-center overflow-hidden rounded-full">
+                <img className={'mt-6'} src={momImage} alt="card" />
+              </div>
+              <Typography
+                type="h3"
+                weight="bold"
+                className="mt-4"
+                lineHeight="snug"
+                text={'New client registered!'}
               />
-            </div>
-          </Card>
-        );
-      },
-    });
+              <Typography
+                type="body"
+                color="textMid"
+                className="mt-4 text-center"
+                lineHeight="snug"
+                text={`Great job ${user?.firstName}, you've registered ${
+                  !!count && !isRejectedGetMotherCount
+                    ? `${count} pregnant mom this month.`
+                    : '1 pregnant mom.'
+                }`}
+              />
+              <div className={'mt-4 flex w-full justify-center'}>
+                <Button
+                  text={`Close`}
+                  icon={'XIcon'}
+                  type={'filled'}
+                  color={'primary'}
+                  textColor={'white'}
+                  className={'max-h-10 w-full'}
+                  iconPosition={'start'}
+                  onClick={() => {
+                    history.push(ROUTES.DASHBOARD);
+                    onClose();
+                  }}
+                />
+              </div>
+            </Card>
+          );
+        },
+      }),
+    [dialog, history, isRejectedGetMotherCount, user?.firstName]
+  );
+
+  const onSuccess = useCallback(async () => {
+    if (!isRejected) {
+      const count = await appDispatch(
+        motherThunkActions.getMotherCountForMonth()
+      ).unwrap();
+      showSuccessMessage(count);
+    } else {
+      showSuccessMessage();
+    }
+  }, [appDispatch, isRejected, showSuccessMessage]);
+
+  useEffect(() => {
+    if (wasLoading && !isLoading) {
+      onSuccess();
+    }
+  }, [isLoading, isRejected, onSuccess, wasLoading]);
 
   return (
     <div className="text-textMid">
