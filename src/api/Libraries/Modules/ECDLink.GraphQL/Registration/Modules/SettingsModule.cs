@@ -27,35 +27,34 @@ namespace ECDLink.EGraphQL.Registration.Modules
         {
             var types = new List<ITypeSystemMember>();
 
-            CreateContentObjects(context, types);
-
-            CreateEndpoints(context, types);
+            types.AddRange(CreateContentObjects(context));
+            types.Add(CreateEndpoints(context));
 
             return new ValueTask<IReadOnlyCollection<ITypeSystemMember>>(types);
         }
 
-        private void CreateEndpoints(IDescriptorContext context, List<ITypeSystemMember> types)
+        private ObjectTypeExtension CreateEndpoints(IDescriptorContext context)
         {
             var settingsService = context.Services.GetService<ISystemSettingsService>();
 
-            var definitions = settingsService.GetSystemSettings().Result;
+            var definitions = settingsService.GetSystemSettings();
 
-            var safeQueryExtension = SettingsQueryBuilder.BuildSettingsQueries(context, definitions);
-            types.Add(safeQueryExtension);
+            return SettingsQueryBuilder.BuildSettingsQueries(context, definitions);
         }
 
-        private void CreateContentObjects(IDescriptorContext context, List<ITypeSystemMember> types)
+        private List<ObjectType> CreateContentObjects(IDescriptorContext context)
         {
             var settingsService = context.Services.GetService<ISystemSettingsService>();
 
-            var definitions = settingsService.GetSystemSettings().Result;
+            var definitions = settingsService.GetSystemSettings();
 
-            CreateObjectType(definitions, types);
+            return CreateObjectType(definitions);
         }
 
-        private void CreateObjectType(IEnumerable<ISetting> settings, List<ITypeSystemMember> types)
+        private List<ObjectType> CreateObjectType(IEnumerable<ISetting> settings)
         {
             var settingsGroup = settings.GroupBy(x => x.Grouping);
+            var types = new List<ObjectType>();
 
             foreach (var setting in settingsGroup)
             {
@@ -70,9 +69,10 @@ namespace ECDLink.EGraphQL.Registration.Modules
 
                     typeDefinition.Fields.Add(definition);
                 }
-
                 types.Add(ObjectType.CreateUnsafe(typeDefinition));
             }
+
+            return types;
         }
     }
 }
