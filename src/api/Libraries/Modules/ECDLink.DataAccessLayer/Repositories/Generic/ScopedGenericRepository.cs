@@ -233,6 +233,8 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                 context.Entry(dbEntity).CurrentValues.SetValues(entity);
                 _domainEventService.NotifyUpdate<T>(_userId, entity);
             }
+            entity.UpdatedDate = DateTime.Now;
+            entity.UpdatedBy = _userId;
 
             context.SaveChanges();
 

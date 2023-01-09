@@ -3,6 +3,8 @@ using ECDLink.Core.SystemSettings.SystemOptions;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Notifications;
+using HotChocolate.Types;
+using IdentityServer4.Models;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -79,6 +81,16 @@ namespace ECDLink.UrlShortner.Managers
 
                 _dbContext.SaveChanges();
             }
+        }
+
+        public int GetMessageCountForUser(string userId, string messageType)
+        {
+            return _entities.Where(x => string.Equals(x.UserId, userId) && string.Equals(x.MessageType, messageType)).Count();
+        }
+
+        public string GetLastMessageDateForUser(string userId, string messageType)
+        {
+            return _entities.OrderBy(x => x.InsertedDate).Where(x => string.Equals(x.UserId, userId) && string.Equals(x.MessageType, messageType)).Last().InsertedDate.ToString();
         }
     }
 }

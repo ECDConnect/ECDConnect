@@ -41,3 +41,4 @@ export * from '../components/stacked-list/components/icon-image-list-item/icon-i
 export * from '../components/side-menu/side-menu';
 export * from '../components/icon-badge/icon-badge';
 export * from '../components/loading-spinner/loading-spinner';
+export * from './camera';

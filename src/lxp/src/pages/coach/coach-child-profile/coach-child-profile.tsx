@@ -142,26 +142,6 @@ export const CoachChildProfile: React.FC = () => {
   const [notifications, setNotifications] = useState<ListItemProps[]>([]);
   const [profileOptions, setProfileOptions] = useState<ListItemProps[]>([
     {
-      key: 'progress',
-      title: 'Progress',
-      subTitle: 'See observations & reports',
-      buttonType: 'outlined',
-      buttonIcon: 'EyeIcon',
-      buttonText: 'View',
-      buttonTextColor: 'secondary',
-      buttonColor: 'secondaryAccent2',
-      showButton: true,
-      showDivider: true,
-      dividerType: 'dashed',
-      withPaddingY: true,
-      onButtonClick: () => {
-        history.push(ROUTES.CHILD_PROGRESS_OBSERVATION, {
-          childId: child?.id,
-          reportingDate: new Date(),
-        });
-      },
-    },
-    {
       key: 'personal-information',
       title: 'Personal Information',
       subTitle: 'Child & caregiver information',

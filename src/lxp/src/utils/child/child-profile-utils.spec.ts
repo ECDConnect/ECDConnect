@@ -1,6 +1,51 @@
-import { getAge, hasMonthPassed, isReportDue } from './child-profile-utils';
+import {
+  getAge,
+  getChildAttendancePercentageAtPlaygroup,
+  hasMonthPassed,
+  isReportDue,
+} from './child-profile-utils';
+import {
+  attendance,
+  childUserId,
+  classProgrammes,
+  classroomGroupId,
+} from './child-profile-utils.mock';
 
 describe('child-profile-utils', () => {
+  describe('getChildAttendancePercentageAtPlaygroup', () => {
+    test('it should return the weekly attendance status', () => {
+      const result = getChildAttendancePercentageAtPlaygroup(
+        childUserId,
+        attendance,
+        classroomGroupId,
+        classProgrammes,
+        'practitioner'
+      );
+
+      expect(result).toStrictEqual({
+        daysAttended: 1,
+        daysExpected: 5,
+        percentage: 100,
+      });
+    });
+
+    test('it should return the monthly attendance status', () => {
+      const result = getChildAttendancePercentageAtPlaygroup(
+        childUserId,
+        attendance,
+        classroomGroupId,
+        classProgrammes,
+        'coach'
+      );
+
+      expect(result).toStrictEqual({
+        daysAttended: 2,
+        daysExpected: 20,
+        percentage: 100,
+      });
+    });
+  });
+
   describe('getAge', () => {
     test('should return difference in age', () => {
       const result = getAge(new Date('2018-02-03'));

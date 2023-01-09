@@ -24,6 +24,7 @@ export interface ChildGroupingAttendanceReportModel {
 }
 
 export interface ChildAttendanceMonthlyReportModel {
+  year: number;
   month: string;
   monthNumber: number;
   actualAttendance: number;

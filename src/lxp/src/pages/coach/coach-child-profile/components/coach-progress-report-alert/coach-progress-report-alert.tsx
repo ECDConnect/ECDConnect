@@ -115,10 +115,6 @@ export const CoachChildProgressReportAlert: React.FC<
 
     return {
       ...baseProgressReportListItem,
-      title: 'Progress observations',
-      subTitle: `Next report due 30 ${reportingPeriod.monthName} ${reportingPeriod.year}`,
-      subTitleColor: 'black',
-      onButtonClick: navigateToChildProgressObservation,
     };
   };
 

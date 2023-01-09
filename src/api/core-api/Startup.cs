@@ -25,6 +25,7 @@ using ECDLink.Security;
 using ECDLink.Security.AccessModifiers.OpenAccess;
 using ECDLink.Security.Managers;
 using ECDLink.SmartStart;
+using ECDLink.Moodle;
 using ECDLink.Tenancy.Extensions;
 using ECDLink.UrlShortner;
 using Microsoft.AspNetCore.Builder;
@@ -69,7 +70,7 @@ namespace EcdLink.Api.CoreApi
             // We are explicitly setting these because of CORS issues on .datafree.co
             var allowedDomains = new[] { "https://ecdconnect.co.za",
                 "https://ecdconnect-co-za-fundasmartstart.datafree.co",
-                "https://*.ecdconnect.co.za ",
+                "https://*.ecdconnect.co.za",
                 "https://*.ecdlink.co.za",
                 "https://*.azurewebsites.net",
                 "http://localhost:3001",
@@ -105,6 +106,8 @@ namespace EcdLink.Api.CoreApi
             PdfGeneratorStartup.ConfigureAzureStorageServices(services, Configuration);
 
             SmartStartStartup.ConfigureSmartStartServices(services, Environment.IsDevelopment());
+
+            MoodleStartup.ConfigureMoodleServices(services, Configuration);
 
             if (Environment.IsDevelopment())
             {
@@ -157,7 +160,8 @@ namespace EcdLink.Api.CoreApi
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseTenancy();
-            app.UseInputSanitizer();
+            // TODO: Can't upload images through CKEditor without bypassing Json sanitizer, update or replace.
+            //app.UseInputSanitizer();
 
             app.UseEndpoints(endpoints =>
             {
@@ -169,6 +173,8 @@ namespace EcdLink.Api.CoreApi
             SecurityStartup.AddSecurityConfiguration(app);
 
             GraphStartup.AddGraphConfiguration(app, env);
+
+            MoodleStartup.AddMoodleConfiguration(app, env);
         }
     }
 }

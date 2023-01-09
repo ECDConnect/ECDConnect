@@ -39,7 +39,7 @@
 
     <PackageReference Include="Microsoft.NETCore.Targets" Version="3.0.0" PrivateAssets="all" />
     
-    <PackageReference Include="HtmlSanitizer" Version="7.1.542" />
+    <PackageReference Include="HtmlSanitizer" Version="8.0.601" />
   </ItemGroup>
   
   <ItemGroup>
@@ -58,6 +58,7 @@
     <ProjectReference Include="..\Libraries\Modules\ECDLink.Security\ECDLink.Security.csproj" />
     <ProjectReference Include="..\Libraries\Modules\ECDLink.SmartStart\ECDLink.SmartStart.csproj" />
     <ProjectReference Include="..\Libraries\Modules\ECDLink.UrlShortner\ECDLink.UrlShortner.csproj" />
+    <ProjectReference Include="..\ECDLink.Moodle\ECDLink.Moodle.csproj" />
   </ItemGroup>
   
   <ItemGroup>

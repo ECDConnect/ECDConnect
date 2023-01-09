@@ -27,6 +27,9 @@ using ECDLink.Security.Extensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Azure.Documents;
 using EcdLink.Api.CoreApi.GraphApi.Models;
+using EcdLink.Api.CoreApi.Managers.Notifications;
+using ECDLink.UrlShortner.Managers;
+using ECDLink.DataAccessLayer.Entities.Notifications;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
@@ -94,10 +97,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
 
         public ApplicationUser GetPractitionerByIdNumberInternal(
-    [Service] IHttpContextAccessor contextAccessor,
-    [Service] UserManager<ApplicationUser> userManager,
-    [Service] IGenericRepositoryFactory repoFactory,
-    string idNumber)
+            [Service] IHttpContextAccessor contextAccessor,
+            [Service] UserManager<ApplicationUser> userManager,
+            [Service] IGenericRepositoryFactory repoFactory,
+            string idNumber)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practionerUser = userManager.FindByNameAsync(idNumber).Result;
@@ -114,8 +117,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
 
         public List<Child> GetAllChildrenForPractitioner([Service] IHttpContextAccessor contextAccessor,
-[Service] IGenericRepositoryFactory repoFactory,
-string userId)
+            [Service] IGenericRepositoryFactory repoFactory,
+            string userId)
         {
             var childRepo = repoFactory.CreateRepository<Child>(userContext: userId);
 
@@ -127,8 +130,8 @@ string userId)
         }
 
         public List<Classroom> GetAllClassroomsForPractitioner([Service] IHttpContextAccessor contextAccessor,
-[Service] IGenericRepositoryFactory repoFactory,
-string userId)
+            [Service] IGenericRepositoryFactory repoFactory,
+            string userId)
         {
             var classRepo = repoFactory.CreateGenericRepository<Classroom>(userContext: userId);
 
@@ -136,8 +139,8 @@ string userId)
         }
 
         public List<ClassroomGroup> GetAllClassroomGroupsForPractitioner([Service] IHttpContextAccessor contextAccessor,
-[Service] IGenericRepositoryFactory repoFactory,
-string userId)
+            [Service] IGenericRepositoryFactory repoFactory,
+            string userId)
         {
             var classRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: userId);
             return classRepo.GetListByUserId(userId);
@@ -225,8 +228,8 @@ string userId)
         }
 
         public List<PractitionerClassroomName> GetClassroomNamesForPractitioner([Service] IHttpContextAccessor contextAccessor,
-    [Service] IGenericRepositoryFactory repoFactory,
-    string userId)
+            [Service] IGenericRepositoryFactory repoFactory,
+            string userId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var classroomRepo = repoFactory.CreateGenericRepository<Classroom>(userContext: uId);
@@ -261,7 +264,6 @@ string userId)
             return classrooms;
         }
 
-
         public List<Child> GetAllChildrenByRole([Service] IHttpContextAccessor contextAccessor,
             [Service] UserManager<ApplicationUser> userManager,
             [Service] RoleManager<IdentityRole> roleManager,
@@ -294,8 +296,8 @@ string userId)
         }
 
         public List<PractitionerColleagues> GetPractitionerColleagues([Service] IHttpContextAccessor contextAccessor,
-    [Service] IGenericRepositoryFactory repoFactory,
-    string userId)
+            [Service] IGenericRepositoryFactory repoFactory,
+            string userId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practiRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
@@ -354,6 +356,23 @@ string userId)
                 }
             }
             return practitionerColleagues;
+        }
+
+
+        public int GetPractitionerInviteCount([Service] IHttpContextAccessor contextAccessor,
+            [Service] ShortUrlManager shortUrlManager,
+            string userId)
+        {
+            var messageType = "invitation";
+            return shortUrlManager.GetMessageCountForUser(userId, messageType);
+        }
+
+        public string GetLastPractitionerInviteDate([Service] IHttpContextAccessor contextAccessor,
+            [Service] ShortUrlManager shortUrlManager,
+            string userId)
+        {
+            var messageType = "invitation";
+            return shortUrlManager.GetLastMessageDateForUser(userId, messageType);
         }
 
     }

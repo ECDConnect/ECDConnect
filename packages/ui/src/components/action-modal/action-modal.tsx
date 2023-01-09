@@ -128,6 +128,7 @@ export const ActionModal: React.FC<ActionModalProps> = ({
           color={button.colour}
           onClick={button.onClick}
           disabled={button.disabled}
+          isLoading={button.isLoading}
           testId="close-button"
         >
           <div className="flex flex-row items-center">
