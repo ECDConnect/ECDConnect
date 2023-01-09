@@ -80,30 +80,6 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
     return <span>{date.getDate()}</span>;
   };
 
-  const setYearDate = (date: Date) => {
-    if (date > new Date()) {
-      setMyYear(new Date());
-      return;
-    }
-    setMyYear(date);
-  };
-
-  const setMonthDate = (date: Date) => {
-    if (date > new Date()) {
-      setMyMonth(new Date());
-      return;
-    }
-    setMyMonth(date);
-  };
-
-  const setDayDate = (date: Date) => {
-    if (date > new Date()) {
-      setMyDay(new Date());
-      return;
-    }
-    setMyDay(date);
-  };
-
   return (
     <>
       <Typography
@@ -145,28 +121,35 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
             placeholderText={'Please select a date'}
             className="text-textMid bg-uiBg focus:border-primary focus:ring-primary mt-1 w-full rounded-md border-none text-lg shadow-sm"
             selected={myDay}
-            onChange={(date: Date) => setDayDate(date)}
+            onChange={(date: Date) => setMyDay(date)}
             dateFormat="dd"
             renderDayContents={renderDayContents}
-            renderCustomHeader={({ date }) => <div></div>}
+            renderCustomHeader={() => <></>}
+            {...(myMonth.getMonth() === currentDate.getMonth() && {
+              maxDate: currentDate,
+            })}
           />
           <DatePicker
             placeholderText={'Please select a date'}
             className="text-textMid bg-uiBg focus:border-primary focus:ring-primary mt-1 w-full rounded-md border-none text-lg shadow-sm"
             selected={myMonth}
-            onChange={(date: Date) => setMonthDate(date)}
-            renderCustomHeader={({ date }) => <div></div>}
+            onChange={(date: Date) => setMyMonth(date)}
+            renderCustomHeader={() => <></>}
             dateFormat="MMMM"
             showMonthYearPicker
             showPopperArrow={true}
+            {...(myYear.getFullYear() === currentDate.getFullYear() && {
+              maxDate: currentDate,
+            })}
           />
           <DatePicker
             placeholderText={'Please select a date'}
             className="bg-uiBg text-textMid focus:border-primary focus:ring-primary mt-1 w-full rounded-md border-none text-lg shadow-sm"
             selected={myYear}
-            onChange={(date: Date) => setYearDate(date)}
+            onChange={(date: Date) => setMyYear(date)}
             dateFormat="yyyy"
             showYearPicker
+            maxDate={currentDate}
           />
         </div>
         <div className="mt-6 flex w-full justify-start">
