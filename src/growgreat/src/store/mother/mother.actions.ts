@@ -8,6 +8,8 @@ import { RootState, ThunkApiType } from '../types';
 
 export const MotherActions = {
   GET_MOTHERS: 'getMothers',
+  ADD_MOTHER: 'addMother',
+  GET_MOTHER_COUNT_FOR_MONTH: 'getMotherCountForMonth',
 };
 
 export const getMothers = createAsyncThunk<
@@ -92,24 +94,27 @@ export const addMother = createAsyncThunk<
   MotherDto,
   CreateMotherRequest,
   ThunkApiType<RootState>
->('addMother', async ({ mother }, { getState, rejectWithValue }) => {
-  const {
-    auth: { userAuth },
-  } = getState();
-  try {
-    let mappedMotherInput = mapMother(mother);
+>(
+  MotherActions.ADD_MOTHER,
+  async ({ mother }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+    try {
+      let mappedMotherInput = mapMother(mother);
 
-    if (userAuth?.auth_token) {
-      return await new MotherService(userAuth?.auth_token).addMother(
-        mappedMotherInput
-      );
-    } else {
-      return rejectWithValue('no access token, profile check required');
+      if (userAuth?.auth_token) {
+        return await new MotherService(userAuth?.auth_token).addMother(
+          mappedMotherInput
+        );
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
     }
-  } catch (err) {
-    return rejectWithValue(err);
   }
-});
+);
 
 export type UpdateMotherRequest = {
   id: string;
@@ -139,6 +144,38 @@ export const updateMother = createAsyncThunk<
     return rejectWithValue(err);
   }
 });
+
+export const getMotherCountForMonth = createAsyncThunk<
+  number,
+  undefined,
+  ThunkApiType<RootState>
+>(
+  MotherActions.GET_MOTHER_COUNT_FOR_MONTH,
+  async (_, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      let count: number;
+      const id = userAuth?.id;
+
+      if (userAuth?.auth_token && id) {
+        count = await new MotherService(
+          userAuth?.auth_token
+        ).getMotherCountForHealthCareWorkerForMonth(id);
+
+        console.log({ count });
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      return count;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
 
 const mapMother = (x: Partial<MotherDto>): MotherModelInput => ({
   userId: x.userId,

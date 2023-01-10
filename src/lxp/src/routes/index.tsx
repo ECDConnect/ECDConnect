@@ -66,6 +66,7 @@ import ReassignClass from '@/pages/classroom/class-dashboard/practitioners/reass
 import { AddPractitioner } from '@/pages/principal/components/add-practitioner/add-practitioner';
 import ConfirmPractitioner from '@/pages/principal/components/add-practitioner/confirm-practitioner';
 import { PractitionerSignature } from '@/pages/practitioner/practitioner-about/components/practitioner-signature/practitioner-signature';
+import { CoachContactPractitioner } from '@/pages/coach/practitioner-profile-info/coach-contact-practitioner/coach-contact-practitioner';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -318,6 +319,11 @@ const AuthRoutes: React.FC = () => {
         exact
         path={ROUTES.COACH.CHILD_PROFILE}
         component={CoachChildProfile}
+      />
+      <Route
+        exact
+        path={ROUTES.COACH.CONTACT_PRACTITIONER}
+        component={CoachContactPractitioner}
       />
       <Route exact path={ROUTES.COACH.ABOUT.ADDRESS} component={CoachAddress} />
 

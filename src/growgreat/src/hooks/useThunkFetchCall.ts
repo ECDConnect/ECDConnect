@@ -5,7 +5,7 @@ type RootStateKeys = keyof RootState;
 
 export const useThunkFetchCall = (slice: RootStateKeys, actionName: string) => {
   const status: Status | undefined = useSelector((state: RootState | any) =>
-    state[slice]?.status.find(
+    state[slice]?.status?.find(
       (currentStatus: Status) => currentStatus.actionName === actionName
     )
   );

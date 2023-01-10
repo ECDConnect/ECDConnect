@@ -56,7 +56,7 @@ export const CoachProgrammeInformation: React.FC = () => {
     const [userRole] = item?.user?.roles || [];
 
     const roleName =
-      userRole.name === 'Practitioner' ? 'SmartStarter' : userRole.name;
+      userRole?.name === 'Practitioner' ? 'SmartStarter' : userRole?.name;
 
     return {
       title: item.user?.firstName + ' ' + item?.user?.surname,
