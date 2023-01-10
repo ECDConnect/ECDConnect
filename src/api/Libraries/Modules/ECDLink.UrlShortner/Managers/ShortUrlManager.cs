@@ -90,7 +90,9 @@ namespace ECDLink.UrlShortner.Managers
         }
         public string GetLastMessageDateForUser(string userId, string messageType)
         {
-            return _entities.Where(x => string.Equals(x.UserId, userId) && string.Equals(x.MessageType, messageType)).OrderBy(x => x.InsertedDate).Last().InsertedDate.ToString();
+            var selectedEntities = _entities.Where(x => string.Equals(x.UserId, userId) && string.Equals(x.MessageType, messageType))
+                .OrderBy(x => x.InsertedDate);
+            return selectedEntities?.LastOrDefault()?.InsertedDate.ToString();
         }
         public List<System.DateTime> GetAllMessageInvitesForUser(string userId, string messageType)
         {
