@@ -126,15 +126,15 @@ namespace ECDLink.DataAccessLayer.Hierarchy
                     GetFranchisorIds(practRepo, userIdGuid));
             }
             else if (isCoach)
-                    {
+            {
                 userIdsToFetch.AddRange(
                     GetCoachIds(practRepo, userIdGuid));
-                                }
+            }
             else if (isPrincipal || isPractitioner)
-                {
+            {
                 userIdsToFetch.AddRange(
                     GetPrincipalPractitionerIds(practRepo, userIdGuid));
-                        }
+            }
             // Fetch all user hierarchies before they are used
             var userHierarchies = GetManyUserHierarchy(userIdsToFetch);
             
@@ -239,7 +239,7 @@ namespace ECDLink.DataAccessLayer.Hierarchy
         {
             // some practitioners can be principal as owner with only themselves as owner
             var principalPractitioners = practitionerRepo.GetAll()
-                .Where(c => (c.PrincipalHierarchy!=null && c.PrincipalHierarchy == userIdGuid) || (c.IsPrincipal == true && c.UserId == userIdGuid.ToString()))
+                .Where(c => (c.PrincipalHierarchy.HasValue && c.PrincipalHierarchy == userIdGuid) || (c.IsPrincipal == true && c.UserId == userIdGuid.ToString()))
                 .Select(p => p.UserId.ToString())
                 .ToList();
             
