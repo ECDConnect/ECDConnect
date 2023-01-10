@@ -20,7 +20,6 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { OfflineSyncModal } from '@/modals';
 import OfflineSyncTimeExceeded from '@/modals/offline-sync/offline-sync-time-exceeded';
 import { useAppDispatch } from '@/store';
-import { motherSelectors } from '@/store/mother';
 import { notificationsSelectors } from '@/store/notifications';
 import { settingSelectors } from '@/store/settings';
 import { userSelectors } from '@/store/user';
@@ -28,7 +27,6 @@ import { analyticsActions } from '@/store/analytics';
 import { DashboardItems } from '@/pages/dashboard/components/dashboard-items/dashboard-items';
 import * as styles from '@/pages/dashboard/dashboard.styles';
 import ROUTES from '@routes/routes';
-import { getInfants } from '@/store/infant/infant.selectors';
 import { version } from '@/../package.json';
 import { healthCareWorkerSelectors } from '@/store/healthCareWorker';
 import { DashboardRouteState } from './dashboard.types';
@@ -67,21 +65,11 @@ export const Dashboard: React.FC = () => {
   );
 
   const { userProfilePicture } = useDocuments();
-  const mothers = useSelector(motherSelectors.getMothers);
-  const infants = useSelector(getInfants);
 
   const { startService } = useNotificationService();
 
   function goToProfile() {
     history.push(ROUTES.PRACTITIONER.PROFILE.ROOT);
-  }
-
-  function goToClientFolders() {
-    if (mothers.length > 0 || infants.length > 0) {
-      return history.push(ROUTES.CLASSROOM, { activeTabIndex: 1 });
-    } else {
-      showCompleteProfileBlockingDialog();
-    }
   }
 
   useEffect(() => {
@@ -103,11 +91,11 @@ export const Dashboard: React.FC = () => {
     history.push(navItem.href, navItem.params);
   }
 
-  function showCompleteProfileBlockingDialog() {
+  function showNewFolderDialog() {
     dialog({
-      blocking: true,
+      blocking: false,
       position: DialogPosition.Middle,
-      render: (onSubmit, onCancel) => {
+      render: (onSubmit) => {
         return (
           <ActionModal
             className="z-50"
@@ -133,6 +121,77 @@ export const Dashboard: React.FC = () => {
                 onClick: () => {
                   onSubmit();
                   history.push(ROUTES.INFANT_REGISTER);
+                },
+              },
+            ]}
+          />
+        );
+      },
+    });
+  }
+
+  function showMenuDialog() {
+    dialog({
+      blocking: false,
+      position: DialogPosition.Middle,
+      render: (onSubmit) => {
+        return (
+          <ActionModal
+            className="z-50"
+            title="What do you want to do?"
+            actionButtons={[
+              {
+                colour: 'primary',
+                text: 'Visit clients',
+                textColour: 'white',
+                type: 'filled',
+                leadingIcon: 'HomeIcon',
+                onClick: () => {
+                  onSubmit();
+                  history.push(ROUTES.CLASSROOM, { activeTabIndex: 1 });
+                },
+              },
+              {
+                colour: 'primary',
+                text: 'Find a client folder',
+                textColour: 'primary',
+                type: 'outlined',
+                leadingIcon: 'FolderOpenIcon',
+                onClick: () => {
+                  onSubmit();
+                  history.push(ROUTES.CLASSROOM, { activeTabIndex: 0 });
+                },
+              },
+              {
+                colour: 'primary',
+                text: 'Open a new folder',
+                textColour: 'primary',
+                type: 'outlined',
+                leadingIcon: 'FolderAddIcon',
+                onClick: () => {
+                  onSubmit();
+                  showNewFolderDialog();
+                },
+              },
+              {
+                colour: 'primary',
+                text: 'See my highlights',
+                textColour: 'primary',
+                type: 'outlined',
+                leadingIcon: 'PresentationChartLineIcon',
+                onClick: () => {
+                  onSubmit();
+                  history.push(ROUTES.CLASSROOM, { activeTabIndex: 2 });
+                },
+              },
+              {
+                colour: 'primary',
+                text: 'Something else',
+                textColour: 'primary',
+                type: 'outlined',
+                onClick: () => {
+                  onSubmit();
+                  history.push(ROUTES.CLASSROOM, { activeTabIndex: 0 });
                 },
               },
             ]}
@@ -295,7 +354,7 @@ export const Dashboard: React.FC = () => {
               titleIcon: 'UserGroupIcon',
               titleIconClassName: styles.classRoomIcon,
               onActionClick: () => {
-                goToClientFolders();
+                showMenuDialog();
               },
               classNames: 'bg-secondaryAccent2',
             },
