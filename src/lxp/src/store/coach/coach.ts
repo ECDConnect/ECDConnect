@@ -27,7 +27,7 @@ const coachSlice = createSlice({
       state.coach = action.payload;
     });
     builder.addCase(coachNameByUserId.fulfilled, (state, action) => {
-      state.coach = action.payload;
+      state.coach = { ...state.coach, ...action.payload };
     });
   },
 });
