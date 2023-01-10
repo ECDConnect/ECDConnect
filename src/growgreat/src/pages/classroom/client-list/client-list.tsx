@@ -17,6 +17,7 @@ import { useHistory } from 'react-router-dom';
 import { getInfants } from '@/store/infant/infant.selectors';
 import { motherSelectors } from '@/store/mother';
 import Infant from '@/assets/infant.svg';
+import { ReactComponent as BinocularsIcon } from '@/assets/binocularsIcon.svg';
 
 export const ClientList: React.FC<ComponentBaseProps> = () => {
   const dialog = useDialog();
@@ -83,7 +84,7 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
 
   const showCompleteProfileBlockingDialog = () => {
     dialog({
-      blocking: true,
+      blocking: false,
       position: DialogPosition.Middle,
       render: (onSubmit, onCancel) => {
         return (
@@ -129,8 +130,10 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
       {(!infants || infants.length === 0) &&
         (!mothers || mothers.length === 0) && (
           <IconInformationIndicator
+            className="px-10 pt-28"
             title="You don't have any client yet!"
-            subTitle="Tap the add a client button below to start"
+            subTitle="Tap the “Open a folder” button below to register clients"
+            renderCustomIcon={<BinocularsIcon />}
           />
         )}
       {clientsListItems.length > 0 ? (
