@@ -3,7 +3,7 @@ import { CoachDto } from '@ecdlink/core';
 import localForage from 'localforage';
 
 import { CoachState } from './coach.types';
-import { getCoachByCoachId } from './coach.actions';
+import { coachNameByUserId, getCoachByCoachId } from './coach.actions';
 
 const initialState: CoachState = {
   coach: undefined,
@@ -24,6 +24,9 @@ const coachSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder.addCase(getCoachByCoachId.fulfilled, (state, action) => {
+      state.coach = action.payload;
+    });
+    builder.addCase(coachNameByUserId.fulfilled, (state, action) => {
       state.coach = action.payload;
     });
   },
