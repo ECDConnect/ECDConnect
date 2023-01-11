@@ -44,6 +44,10 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         [ForeignKey(nameof(LinkedCaregiverId))]
         public virtual Caregiver.Caregiver Caregiver { get; set; }
         public Guid? LinkedCaregiverId { get; set; }
+
+        [GraphQLIgnore]
+        public DisplaySet statusInfo = new DisplaySet();
+        
     }
 
     public interface MotherJoin<TKey>
