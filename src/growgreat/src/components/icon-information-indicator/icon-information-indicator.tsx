@@ -10,14 +10,18 @@ export const IconInformationIndicator: React.FC<
   actions,
   className,
   icon = 'PresentationChartBarIcon',
+  renderCustomIcon,
 }) => {
   return (
     <div className={classNames(styles.programmeContainer, className)}>
-      <RoundIcon icon={icon} className={styles.programmeIcon} />
+      {renderCustomIcon || (
+        <RoundIcon icon={icon} className={styles.programmeIcon} />
+      )}
+
       <Typography
         type="body"
-        className="mt-4"
-        fontSize="16"
+        className="mt-4 text-lg"
+        fontSize="18"
         align="center"
         weight="bold"
         text={title}
@@ -25,10 +29,11 @@ export const IconInformationIndicator: React.FC<
       <Typography
         type="body"
         className="mt-1"
+        align="center"
         weight="skinny"
         text={subTitle}
         color={'textMid'}
-        fontSize="14"
+        fontSize="16"
       />
       {actions?.map((buttonProps) => (
         <Button key={buttonProps.text} {...buttonProps} className="mt-4" />
