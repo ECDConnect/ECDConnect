@@ -17,6 +17,7 @@ import { useHistory } from 'react-router-dom';
 import { getInfants } from '@/store/infant/infant.selectors';
 import { motherSelectors } from '@/store/mother';
 import Infant from '@/assets/infant.svg';
+import Pregnant from '@/assets/pregnant.svg';
 import { ReactComponent as BinocularsIcon } from '@/assets/binocularsIcon.svg';
 
 export const ClientList: React.FC<ComponentBaseProps> = () => {
@@ -45,19 +46,18 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
           : `Birth date: ${format(new Date(infant?.dateOfBirth!), 'PP')}`,
         switchTextStyles: true,
         alertSeverity: 'none',
-        avatarColor: getAvatarColor() || '',
+        avatarColor: getAvatarColor('growgreat') || '',
         onActionClick: () => {},
       };
     });
 
     setInfantsListItems(infantsList);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [infants]);
 
   useEffect(() => {
     const mothersList: UserAlertListDataItem[] = mothers.map((mother) => {
       return {
-        icon: Infant,
+        icon: Pregnant,
         title: mother?.firstName || mother?.user?.firstName!,
         subTitle: mother?.expectedDateOfDelivery
           ? `Expected delivery date: ${format(
@@ -66,14 +66,14 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
             )}`
           : `Expected delivery date: -`,
         switchTextStyles: true,
+        profileDataUrl: '@/assets/infant.svg',
         alertSeverity: 'none',
-        avatarColor: getAvatarColor() || '',
+        avatarColor: getAvatarColor('growgreat') || '',
         onActionClick: () => {},
       };
     });
 
     setMothersListItems(mothersList);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mothers]);
 
   useEffect(() => {
@@ -136,14 +136,13 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
             renderCustomIcon={<BinocularsIcon />}
           />
         )}
-      {clientsListItems.length > 0 ? (
+      {clientsListItems.length > 0 && (
         <StackedList
           className={styles.stackedList}
           listItems={clientsListItems || []}
           type={'UserAlertList'}
-          onScroll={(scrollTop: number) => {}}
         />
-      ) : null}
+      )}
       <FADButton
         title={'Open a folder'}
         icon={'PlusIcon'}
