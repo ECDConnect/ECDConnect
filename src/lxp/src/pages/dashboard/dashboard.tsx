@@ -54,6 +54,7 @@ export enum NavigationTypes {
   Training = 'Training',
   Logout = 'Logout',
   Practitioners = 'Practitioners',
+  Business = 'Business',
 }
 
 export const Dashboard: React.FC = () => {
@@ -74,6 +75,7 @@ export const Dashboard: React.FC = () => {
     notificationsSelectors.getNewNotificationCount
   );
   const isPrincipal = practitioner?.isPrincipal;
+  const isFundaAppAdmin = practitioner?.isFundaAppAdmin;
 
   const dashboardNotification = useSelector(
     notificationsSelectors.getDashboardNotification
@@ -288,6 +290,16 @@ export const Dashboard: React.FC = () => {
     },
   ];
 
+  if (isPrincipal || isFundaAppAdmin) {
+    navigation?.splice(3, 0, {
+      name: NavigationTypes.Business,
+      href: ROUTES.CLASSROOM,
+      icon: 'AcademicCapIcon',
+      current: false,
+      showDivider: true,
+    });
+  }
+
   const navigationForCoach: (NavigationRouteItem | NavigationDropdown)[] = [
     {
       name: NavigationTypes.Home,
@@ -345,18 +357,12 @@ export const Dashboard: React.FC = () => {
         titleIcon: 'BriefcaseIcon',
         titleIconClassName: styles.businessIcon,
         onActionClick: () => ({}),
-        chipConfig: {
-          colorPalette: {
-            backgroundColour: 'white',
-            borderColour: 'errorMain',
-            textColour: 'errorMain',
-          },
-          text: 'Coming soon',
-        },
         classNames: 'bg-uiBg',
       }
     );
-  } else {
+  }
+
+  if (!isCoach) {
     dashboardItems.push(
       {
         title: 'Classroom',
@@ -365,21 +371,6 @@ export const Dashboard: React.FC = () => {
         classNames: 'bg-uiBg',
         onActionClick: () => {
           goToClassroom();
-        },
-      },
-      {
-        title: 'Business',
-        titleIcon: 'AcademicCapIcon',
-        titleIconClassName: styles.businessIcon,
-        onActionClick: () => ({}),
-        classNames: 'bg-uiBg',
-        chipConfig: {
-          colorPalette: {
-            backgroundColour: 'alertMain',
-            borderColour: 'alertMain',
-            textColour: 'white',
-          },
-          text: 'Coming soon',
         },
       },
       {
@@ -398,6 +389,16 @@ export const Dashboard: React.FC = () => {
         },
       }
     );
+  }
+
+  if (isPrincipal || isFundaAppAdmin) {
+    dashboardItems.splice(1, 0, {
+      title: 'Business',
+      titleIcon: 'AcademicCapIcon',
+      titleIconClassName: styles.businessIcon,
+      onActionClick: () => ({}),
+      classNames: 'bg-uiBg',
+    });
   }
 
   useEffect(() => {
