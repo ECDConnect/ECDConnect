@@ -54,10 +54,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 var note = i % 2 == 0 ? "pregnant mom" : "pregnant mom and child";
                 var subject = i % 2 == 0 ? "Refer to clinic" : "Visit 1 overdue";
 
-                mother.statusInfo.Icon = icon;
-                mother.statusInfo.Color = icon;
-                mother.statusInfo.Subject = subject;
-                mother.statusInfo.Notes = note;
+                mother.StatusInfo.Icon = icon;
+                mother.StatusInfo.Color = icon;
+                mother.StatusInfo.Subject = subject;
+                mother.StatusInfo.Notes = note;
 
                 i++;
             }

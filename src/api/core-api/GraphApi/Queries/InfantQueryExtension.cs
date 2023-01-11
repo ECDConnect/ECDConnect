@@ -55,10 +55,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 var icon = i % 2 == 0 ? MetricsIconEnum.Error.ToString() : MetricsIconEnum.Warning.ToString();
                 var subject = i % 2 == 0 ? "Refer to clinic" : "Low birth weight";
 
-                child.statusInfo.Icon = icon;
-                child.statusInfo.Color = icon;
-                child.statusInfo.Subject = subject;
-                child.statusInfo.Notes = "child";
+                child.StatusInfo.Icon = icon;
+                child.StatusInfo.Color = icon;
+                child.StatusInfo.Subject = subject;
+                child.StatusInfo.Notes = "child";
 
                 i++;
             }
@@ -69,10 +69,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 var icon = i % 2 == 0 ? MetricsIconEnum.Error.ToString() : MetricsIconEnum.Warning.ToString();
                 var subject = i % 2 == 0 ? "Refer to clinic" : "Low birth weight";
 
-                child.statusInfo.Icon = icon;
-                child.statusInfo.Color = icon;
-                child.statusInfo.Subject = subject;
-                child.statusInfo.Notes = "child";
+                child.StatusInfo.Icon = icon;
+                child.StatusInfo.Color = icon;
+                child.StatusInfo.Subject = subject;
+                child.StatusInfo.Notes = "child";
 
                 i++;
             }

@@ -46,7 +46,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public Guid? LinkedCaregiverId { get; set; }
 
         [GraphQLIgnore]
-        public DisplaySet statusInfo = new DisplaySet();
+        public DisplaySet StatusInfo = new DisplaySet();
         
     }
 
