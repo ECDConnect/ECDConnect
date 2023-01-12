@@ -1,7 +1,8 @@
-import { LocalStorageKeys } from '@ecdlink/core';
+import { LocalStorageKeys, useDialog } from '@ecdlink/core';
 import {
   BannerWrapper,
-  Dialog,
+  Button,
+  Card,
   DialogPosition,
   TabItem,
   TabList,
@@ -14,10 +15,9 @@ import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useAppDispatch } from '@store';
 import { analyticsActions } from '@store/analytics';
 import { getStorageItem } from '@utils/common/local-storage.utils';
-import * as styles from './class-dashboard.styles';
 import { ClassDashboardRouteState } from './class-dashboard.types';
-import ROUTES from '@routes/routes';
 import { ClientList } from '../client-list/client-list';
+import momImage from '@/assets/happyMom.svg';
 
 export const ClassDashboard: React.FC = () => {
   const history = useHistory();
@@ -26,12 +26,12 @@ export const ClassDashboard: React.FC = () => {
 
   const date = format(new Date(), 'EEEE, d LLLL');
 
-  const [attendanceTutorialActive, setAttendanceTutorialActive] =
-    useState<boolean>(false);
+  const dialog = useDialog();
+
   const [attendanceTutorialComplete, setAttendanceTutorialComplete] =
     useState<boolean>(false);
   const [selectedTabIndex, setSelectedTabIndex] = useState<number>(
-    state?.activeTabIndex !== undefined ? state?.activeTabIndex : 1
+    state?.activeTabIndex !== undefined ? state?.activeTabIndex : 0
   );
   const [currentTab, setCurrentTab] = useState<TabItem>();
 
@@ -41,7 +41,12 @@ export const ClassDashboard: React.FC = () => {
 
   const tabItems: TabItem[] = [
     {
-      title: 'Highlights',
+      title: 'Clients',
+      initActive: true,
+      child: <ClientList />,
+    },
+    {
+      title: 'Visits',
       initActive: false,
       child: (
         <Typography
@@ -53,12 +58,7 @@ export const ClassDashboard: React.FC = () => {
       ),
     },
     {
-      title: 'Clients',
-      initActive: true,
-      child: <ClientList />,
-    },
-    {
-      title: 'Visits',
+      title: 'Highlights',
       initActive: false,
       child: (
         <Typography
@@ -83,21 +83,60 @@ export const ClassDashboard: React.FC = () => {
     setSelectedTabIndex(tabIndex);
   }
 
+  // TODO: add walkthrough
+  const showTutorial = () =>
+    dialog({
+      position: DialogPosition.Middle,
+      color: 'bg-transparent',
+      render(_, onClose) {
+        return (
+          <Card
+            shadowSize={'lg'}
+            borderRaduis={'3xl'}
+            className="flex flex-col items-center justify-center px-4 py-6"
+          >
+            <div className="bg-tertiary flex h-28 w-28 justify-center overflow-hidden rounded-full">
+              <img className={'mt-6'} src={momImage} alt="card" />
+            </div>
+            <Typography
+              type="h3"
+              weight="bold"
+              className="mt-4"
+              lineHeight="snug"
+              text={'Hello!'}
+            />
+            <Typography
+              type="body"
+              color="textMid"
+              className="mt-4 text-center"
+              lineHeight="snug"
+              text={'Walkthrough is coming soon'}
+            />
+            <div className={'mt-4 flex w-full justify-center'}>
+              <Button
+                text={`Ok`}
+                icon={'CheckCircleIcon'}
+                type={'filled'}
+                color={'primary'}
+                textColor={'white'}
+                className={'max-h-10 w-full'}
+                iconPosition={'start'}
+                onClick={onClose}
+              />
+            </div>
+          </Card>
+        );
+      },
+    });
+
   function displayTutorial(type?: string) {
+    // TODO: add walkthrough
     switch (type) {
-      case 'Attendance':
-        setAttendanceTutorialActive(true);
-        break;
-      case 'Programme':
-        history.push(ROUTES.PROGRAMMES.TUTORIAL.GETTING_STARTED);
-        break;
       default:
+        showTutorial();
         break;
     }
   }
-
-  const displayHelp =
-    currentTab?.title === 'Attendance' || currentTab?.title === 'Programme';
 
   useEffect(() => {
     const isTutorialComplete = getStorageItem<boolean>(
@@ -129,41 +168,27 @@ export const ClassDashboard: React.FC = () => {
   }, [selectedTabIndex]);
 
   return (
-    <>
-      <BannerWrapper
-        showBackground={false}
-        size="medium"
-        renderBorder={true}
-        title={'Client Folders'}
-        subTitle={date}
-        color={'primary'}
-        onBack={() => backToDashboard()}
-        displayHelp={displayHelp}
-        onHelp={() => displayTutorial(currentTab?.title)}
-        displayOffline={!isOnline}
-      >
-        <TabList
-          className="bg-white"
-          tabItems={tabItems}
-          setSelectedIndex={selectedTabIndex}
-          tabSelected={(tab: TabItem, tabIndex: number) =>
-            setTabSelected(tab, tabIndex)
-          }
-        />
-      </BannerWrapper>
-      <Dialog
-        fullScreen
-        visible={attendanceTutorialActive}
-        position={DialogPosition.Top}
-      >
-        <div className={styles.dialogContent}>
-          {/* <AttendanceTutorial
-            onComplete={completeTutorial}
-            onClose={() => closeAttendanceTutorial()}
-          /> */}
-        </div>
-      </Dialog>
-    </>
+    <BannerWrapper
+      showBackground={false}
+      size="medium"
+      renderBorder={true}
+      title={'Client Folders'}
+      subTitle={date}
+      color={'primary'}
+      onBack={() => backToDashboard()}
+      displayHelp
+      onHelp={() => displayTutorial(currentTab?.title)}
+      displayOffline={!isOnline}
+    >
+      <TabList
+        className="bg-uiBg"
+        tabItems={tabItems}
+        setSelectedIndex={selectedTabIndex}
+        tabSelected={(tab: TabItem, tabIndex: number) =>
+          setTabSelected(tab, tabIndex)
+        }
+      />
+    </BannerWrapper>
   );
 };
 
