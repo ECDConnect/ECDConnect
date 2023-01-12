@@ -1,4 +1,5 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models;
+using ECDLink.Abstractrions.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Caregiver;
 using ECDLink.DataAccessLayer.Entities.Users;
@@ -7,18 +8,8 @@ using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Azure.Documents;
-using NPOI.POIFS.Properties;
-using NPOI.SS.Formula.Eval;
-using NPOI.SS.Formula.Functions;
-using Org.BouncyCastle.Asn1.Ocsp;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using static HotChocolate.ErrorCodes;
-using System.Runtime.Intrinsics.X86;
-using System.Text.RegularExpressions;
-using ECDLink.Abstractrions.Enums;
 
 namespace EcdLink.Api.CoreApi.Managers.Users
 {
