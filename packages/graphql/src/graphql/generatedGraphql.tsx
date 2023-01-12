@@ -4605,6 +4605,7 @@ export type Query = {
   allInfantsForHealthCareWorker?: Maybe<Array<Maybe<Infant>>>;
   allMothers?: Maybe<Array<Maybe<Mother>>>;
   allMothersForHealthCareWorker?: Maybe<Array<Maybe<Mother>>>;
+  allPractitionerInvites?: Maybe<Array<Scalars['DateTime']>>;
   allPractitionersForCoach?: Maybe<Array<Maybe<Practitioner>>>;
   allPractitionersForPrincipal?: Maybe<Array<Maybe<Practitioner>>>;
   allPrincipal?: Maybe<Array<Maybe<Practitioner>>>;
@@ -4650,7 +4651,7 @@ export type Query = {
   mapPractitionerToPrincipal?: Maybe<Principal>;
   monthlyAttendanceRecordCSV?: Maybe<FileModel>;
   monthlyAttendanceReport?: Maybe<Array<Maybe<MonthlyAttendanceReportModel>>>;
-  motherById?: Maybe<Infant>;
+  motherById?: Maybe<Mother>;
   motherCountForHealthCareWorkerForMonth: Scalars['Int'];
   openAccessAddChildDetail?: Maybe<ChildTokenAccessModel>;
   openConsent: Array<Maybe<Consent>>;
@@ -5404,6 +5405,10 @@ export type QueryAllInfantsForHealthCareWorkerArgs = {
 
 export type QueryAllMothersForHealthCareWorkerArgs = {
   id?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryAllPractitionerInvitesArgs = {
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryAllPractitionersForCoachArgs = {
