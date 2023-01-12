@@ -1,13 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="Current">
+﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="Current">
   <PropertyGroup>
 	<TargetFramework>net6.0</TargetFramework>
-    <FileUpgradeFlags>40</FileUpgradeFlags>
-    <UpgradeBackupLocation>E:\Projects\Responsive\DGMT\ECD\ecd-link\packages\api\Backup\Libraries\Modules\ECDLink.Core\</UpgradeBackupLocation>
-    <OldToolsVersion>2.0</OldToolsVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="CsvHelper" Version="27.1.1" />
-    <PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0" />
     <PackageReference Include="MimeTypesMap" Version="1.0.8" />
     <PackageReference Include="NPOI" Version="2.5.5" />
     <PackageReference Include="RestSharp" Version="108.0.3" />
