@@ -1,8 +1,15 @@
-import { Typography, Card, Button, FADButton } from '@ecdlink/ui';
+import { Typography, FADButton, Dialog, DialogPosition } from '@ecdlink/ui';
 import { ReactComponent as MoneyIcon } from '@/assets/moneyIcon.svg';
 import * as styles from './money.styles';
+import { useState } from 'react';
+import AddAmount from '../add-amount/add-amount';
+import ROUTES from '@/routes/routes';
+import { useHistory } from 'react-router-dom';
 
 export const Money = () => {
+  const history = useHistory();
+  const [addIncome, setAddIncome] = useState(false);
+
   return (
     <>
       <div className="h-full pt-7">
@@ -37,7 +44,7 @@ export const Money = () => {
           color={'primary'}
           shape={'round'}
           className={styles.fadButton}
-          click={() => {}}
+          click={() => history.push(ROUTES.BUSINESS_ADD_AMOUNT)}
         />
       </div>
     </>

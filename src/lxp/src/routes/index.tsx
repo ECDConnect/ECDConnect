@@ -68,6 +68,8 @@ import ConfirmPractitioner from '@/pages/principal/components/add-practitioner/c
 import { PractitionerSignature } from '@/pages/practitioner/practitioner-about/components/practitioner-signature/practitioner-signature';
 import { CoachContactPractitioner } from '@/pages/coach/practitioner-profile-info/coach-contact-practitioner/coach-contact-practitioner';
 import Business from '@/pages/business/business';
+import AddAmount from '@/pages/business/add-amount/add-amount';
+import { AddIncome } from '@/pages/business/add-income/add-income';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -124,6 +126,16 @@ const AuthRoutes: React.FC = () => {
       <Route path={ROUTES.ROOT} component={Dashboard} exact={true} />
       <Route path={ROUTES.DASHBOARD} component={Dashboard} exact={true} />
       <Route path={ROUTES.BUSINESS} component={Business} exact={true} />
+      <Route
+        path={ROUTES.BUSINESS_ADD_AMOUNT}
+        component={AddAmount}
+        exact={true}
+      />
+      <Route
+        path={ROUTES.BUSINESS_ADD_INCOME}
+        component={AddIncome}
+        exact={true}
+      />
       <Route path={ROUTES.TRAINING} component={Training} exact={true} />
       <Route
         exact
