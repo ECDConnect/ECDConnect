@@ -87,7 +87,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users
                 WhatsAppNumber = input.WhatsAppNumber,
                 ExpectedDateOfDelivery = input.ExpectedDateOfDelivery,
                 HealthCareWorkerId = healthCareWorkerId,
-                SiteAddress = input.SiteAddress
+                SiteAddress = input.SiteAddress,
+                LinkedCaregiverId = input.LinkedCaregiverId
             };
         }
 
