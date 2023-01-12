@@ -44,6 +44,7 @@ using ECDLink.PostgresTenancy.Repository;
 using ECDLink.Tenancy.Services;
 using ECDLink.PostgresTenancy.Services;
 using ECDLink.PostgresTenancy.Entities;
+using System.Text.Json.Serialization;
 
 namespace EcdLink.Api.CoreApi
 {
@@ -140,7 +141,11 @@ namespace EcdLink.Api.CoreApi
 
             ConfigureJobs(services);
 
-            services.AddControllers();
+            services.AddControllers()
+                // TODO: 
+                // This can be removed if we don't use string number conversion for validation
+                // https://learn.microsoft.com/en-us/dotnet/core/compatibility/serialization/5.0/jsonserializer-allows-reading-numbers-as-strings
+                .AddJsonOptions(options => options.JsonSerializerOptions.NumberHandling = JsonNumberHandling.Strict); ;
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

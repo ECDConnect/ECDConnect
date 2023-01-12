@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk" ToolsVersion="Current">
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+	<TargetFramework>net6.0</TargetFramework>
     <FileUpgradeFlags>40</FileUpgradeFlags>
     <UpgradeBackupLocation>E:\Projects\Responsive\DGMT\ECD\ecd-link\packages\api\Backup\ECDLink.AzureStorage\</UpgradeBackupLocation>
     <OldToolsVersion>2.0</OldToolsVersion>

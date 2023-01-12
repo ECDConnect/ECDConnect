@@ -22,7 +22,6 @@ using ECDLink.Security.Managers;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Types;
-using IdentityServer4.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Azure.Documents;

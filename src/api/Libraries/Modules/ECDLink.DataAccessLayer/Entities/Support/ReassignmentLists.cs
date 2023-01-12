@@ -2,7 +2,6 @@
 using ECDLink.DataAccessLayer.Entities.Base;
 using ECDLink.Security;
 using ECDLink.Security.Attributes;
-using IdentityServer4.Events;
 using Microsoft.Azure.Documents;
 using System;
 using System.Collections.Generic;
