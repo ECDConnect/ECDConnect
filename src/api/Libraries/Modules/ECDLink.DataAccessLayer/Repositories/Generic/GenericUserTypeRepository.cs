@@ -4,13 +4,13 @@ using ECDLink.DataAccessLayer.Entities.Interfaces;
 using ECDLink.DataAccessLayer.Events;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
-using ECDLink.Security.Extensions;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace ECDLink.DataAccessLayer.Repositories.Generic
 {
@@ -74,9 +74,10 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             }
             else
             {
-                try { 
+                try
+                {
                     List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_httpContext, _userId);
-                    if (hh.Count>0)
+                    if (hh.Count > 0)
                     {
                         if (!hh.Contains(null)) //dont run any null values through teh check, nothing should be null
                         {
@@ -102,7 +103,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             {
                 return default;
             }
-            
+
             var isAdmin = _httpContext.IsAdmin();
             if (!isAdmin)
             {
@@ -132,7 +133,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             Type type = typeof(T);
             if (type.GetProperty("UserId") != null)
             {
-                
+
                 var record = base.GetByUserId(id);
                 var castRecord = record as IUserType;
 
@@ -226,7 +227,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                 throw new ArgumentNullException("entity");
             }
 
-            entity.TenantId = tenantId; 
+            entity.TenantId = tenantId;
             entities.Add(entity);
 
             context.SaveChanges();

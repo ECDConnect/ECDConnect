@@ -1,6 +1,6 @@
 ﻿using ECDLink.PostgresTenancy.Entities;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 
 namespace ECDLink.PostgresTenancy.Context
 {

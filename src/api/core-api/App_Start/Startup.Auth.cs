@@ -7,9 +7,8 @@ using ECDLink.Security.Providers.Tokens;
 using ECDLink.Tenancy.EntityFramework.Extensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using System.Linq;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace EcdLink.Api.CoreApi
 {
@@ -32,15 +31,15 @@ namespace EcdLink.Api.CoreApi
                 p.GetRequiredService<IDbContextFactory<AuthenticationDbContext>>()
                 .CreateDbContext());
         }
-         
+
         private void SetIdentityUser(IServiceCollection services)
         {
             services.AddIdentity<ApplicationUser, IdentityRole>(config =>
             {
                 config.Tokens.ProviderMap.Add(
-                    ProviderKeys.Tokens.EMAIL, 
+                    ProviderKeys.Tokens.EMAIL,
                     new TokenProviderDescriptor(typeof(CustomEmailConfirmationTokenProvider<ApplicationUser>))
-                ); 
+                );
 
                 config.Tokens.EmailConfirmationTokenProvider = ProviderKeys.Tokens.EMAIL;
 

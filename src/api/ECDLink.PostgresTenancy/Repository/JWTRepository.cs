@@ -1,15 +1,12 @@
 ﻿using ECDLink.PostgresTenancy.Context;
 using ECDLink.PostgresTenancy.Entities;
 using ECDLink.Tenancy.Context;
-using ECDLink.Tenancy.Model;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
-using NPOI.POIFS.FileSystem;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace ECDLink.PostgresTenancy.Repository
 {
@@ -96,7 +93,7 @@ namespace ECDLink.PostgresTenancy.Repository
         public bool DeleteAllTokensById(string id)
         {
             if (id == null) throw new ArgumentNullException("entity");
-            List<JWTUserTokensEntity> tokens= entities.Where(x => x.UserId.Equals(id)).Where(g => string.Equals(g.TenantId, _tenantId)).ToList();
+            List<JWTUserTokensEntity> tokens = entities.Where(x => x.UserId.Equals(id)).Where(g => string.Equals(g.TenantId, _tenantId)).ToList();
             entities.RemoveRange(tokens);
             _context.SaveChanges();
             return true;

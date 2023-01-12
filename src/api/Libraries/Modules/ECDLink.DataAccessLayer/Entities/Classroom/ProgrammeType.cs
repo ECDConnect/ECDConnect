@@ -1,10 +1,10 @@
 using ECDLink.Abstractrions.Enums;
-using ECDLink.Security.Attributes;
 using ECDLink.DataAccessLayer.Entities.Base;
 using ECDLink.DataAccessLayer.Entities.Interfaces;
+using ECDLink.Security;
+using ECDLink.Security.Attributes;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
-using ECDLink.Security;
 
 namespace ECDLink.DataAccessLayer.Entities.Classroom
 {
@@ -22,7 +22,7 @@ namespace ECDLink.DataAccessLayer.Entities.Classroom
         public ProgrammeTypeEnum EnumId { get; set; }
     }
 
-    public interface ProgrammeTypeJoin<TKey> 
+    public interface ProgrammeTypeJoin<TKey>
     {
         [ForeignKey(nameof(ProgrammeTypeId))]
         public ProgrammeType ProgrammeType { get; set; }

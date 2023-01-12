@@ -1,5 +1,4 @@
 using ECDLink.Abstractrions.GraphQL.Enums;
-using ECDLink.DataAccessLayer;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;

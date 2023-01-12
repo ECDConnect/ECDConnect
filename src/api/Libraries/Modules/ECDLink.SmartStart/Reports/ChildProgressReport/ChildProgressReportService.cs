@@ -1,18 +1,11 @@
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Core.Helpers;
 using ECDLink.Core.Services.Interfaces;
-using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities.Documents;
-using ECDLink.DataAccessLayer.Entities.Reports;
-using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.PDFGenerator.Services.Interfaces;
-using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace ECDLink.SmartStart.Reports.ChildProgressReport

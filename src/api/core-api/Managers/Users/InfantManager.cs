@@ -1,8 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using EcdLink.Api.CoreApi.GraphApi.Models;
-using ECDLink.DataAccessLayer.Context;
+﻿using EcdLink.Api.CoreApi.GraphApi.Models;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Caregiver;
 using ECDLink.DataAccessLayer.Entities.Users;
@@ -11,8 +7,8 @@ using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Azure.Documents;
-using Microsoft.EntityFrameworkCore;
+using System;
+using System.Linq;
 
 namespace EcdLink.Api.CoreApi.Managers.Users
 {
@@ -49,7 +45,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users
             if (caregiver == null && mother == null)
             {
                 caregiver = GetCaregiverFromInput(input);
-                
+
                 infant = new Infant()
                 {
                     Id = Guid.NewGuid(),
@@ -108,14 +104,14 @@ namespace EcdLink.Api.CoreApi.Managers.Users
 
 
             var infantRepo = _repoFactory.CreateGenericRepository<Infant>(userContext: applicationUserId);
-           try
-           {
+            try
+            {
                 return infantRepo.Insert(infant);
-           }
-           catch (Exception e)
-           {
+            }
+            catch (Exception e)
+            {
                 return new Infant();
-           }
+            }
         }
 
         public Infant UpdateInfant(string id, InfantModel input)

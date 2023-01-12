@@ -6,7 +6,6 @@ using ECDLink.EGraphQL.Constants;
 using ECDLink.EGraphQL.Enums;
 using ECDLink.EGraphQL.Resolvers;
 using ECDLink.EGraphQL.Services;
-using ECDLink.Security;
 using ECDLink.Security.Attributes;
 using HotChocolate.Types;
 using System;

@@ -1,8 +1,9 @@
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
-using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Caregiver;
+using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
@@ -10,12 +11,9 @@ using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ECDLink.DataAccessLayer.Entities.Users.Mapping;
-using Microsoft.Azure.Documents.SystemFunctions;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
@@ -61,8 +59,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
             var careGiverRepo = repoFactory.CreateRepository<Caregiver>(userContext: uId);
             var practitionerrRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            List<Practitioner> practitioners = practitionerrRepo.GetAll().Where(x => x.UserId.Equals(practitionerId)).ToList();            
-            if (practitioners.Count>0)
+            List<Practitioner> practitioners = practitionerrRepo.GetAll().Where(x => x.UserId.Equals(practitionerId)).ToList();
+            if (practitioners.Count > 0)
             {
                 List<Child> children = childRepo.GetAll().Where(x => x.Hierarchy.Contains(practitioners.FirstOrDefault().Hierarchy)).ToList();
                 List<Caregiver> caregivers = new List<Caregiver>();
@@ -75,7 +73,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     }
                 }
                 return caregivers;
-            } else {
+            }
+            else
+            {
                 return careGiverRepo.GetAll().ToList();
             }
         }

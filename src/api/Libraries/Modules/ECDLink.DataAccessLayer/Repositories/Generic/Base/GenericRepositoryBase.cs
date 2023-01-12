@@ -1,13 +1,13 @@
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities.Base;
 using ECDLink.DataAccessLayer.Events;
+using ECDLink.Tenancy.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ECDLink.Tenancy.Context;
 
 namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
 {
@@ -47,14 +47,15 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
         }
 
         public virtual T GetByUserId(string id)
-        {            
+        {
             Type type = typeof(T);
             if (type.GetProperty("UserId") != null)
             {
                 Guid tenantId = TenantExecutionContext.Tenant.Id;
                 var qq = entities.FromSqlRaw("SELECT * FROM \"" + type.Name + "\" WHERE \"UserId\" = '" + id + "' AND \"TenantId\" = '" + tenantId + "'").FirstOrDefault();
                 return qq;
-            } else return default;        
+            }
+            else return default;
         }
 
         public virtual List<T> GetListByUserId(string id)
@@ -78,7 +79,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
             {
                 entity.Id = Guid.NewGuid();
             }
-            entity.TenantId = tenantId; 
+            entity.TenantId = tenantId;
 
             entities.Add(entity);
             context.SaveChanges();
@@ -95,7 +96,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
             }
             Guid tenantId = TenantExecutionContext.Tenant.Id;
             if (Exists(entity.Id))
-            {          
+            {
                 entity.UpdatedDate = DateTime.Now;
                 entity.UpdatedBy = _userId;
                 entity.TenantId = tenantId;

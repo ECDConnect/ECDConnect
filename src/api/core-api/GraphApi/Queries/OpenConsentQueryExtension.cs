@@ -1,15 +1,9 @@
-﻿using EcdLink.Api.CoreApi.GraphApi.Models;
-using ECDLink.ContentManagement.Repositories;
+﻿using ECDLink.ContentManagement.Repositories;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
-using ECDLink.DataAccessLayer.Repositories.Factories;
-using ECDLink.EGraphQL.Builders;
-using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
-using Microsoft.AspNetCore.Http;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {

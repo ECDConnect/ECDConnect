@@ -1,7 +1,5 @@
 ﻿using ECDLink.Tenancy.Enums;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ECDLink.Tenancy.Model
 {

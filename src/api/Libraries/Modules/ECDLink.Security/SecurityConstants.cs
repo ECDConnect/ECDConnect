@@ -1,5 +1,3 @@
-using System;
-
 namespace ECDLink.Security
 {
     public static class SecurityConstants

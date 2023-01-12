@@ -1,6 +1,6 @@
+using ECDLink.DataAccessLayer.Configuration.Setup.Seed.SeedData.Notifications;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Repositories.Factories;
-using ECDLink.DataAccessLayer.Configuration.Setup.Seed.SeedData.Notifications;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 

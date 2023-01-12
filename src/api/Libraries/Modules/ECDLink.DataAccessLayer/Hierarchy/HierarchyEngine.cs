@@ -74,7 +74,7 @@ namespace ECDLink.DataAccessLayer.Hierarchy
                                     .Where(x => string.Equals(x.UserId, parentId))
                                     .Where(x => string.Equals(x.UserType, parentHierarchyType.Type))
                                     .FirstOrDefault();
-            } 
+            }
 
             var childHierarchyEntity = new UserHierarchyEntity
             {
@@ -106,7 +106,7 @@ namespace ECDLink.DataAccessLayer.Hierarchy
             }
 
             var practRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: userId);
-            
+
             var userIdGuid = Guid.Parse(userId);
             var isFranchisor = httpContext.IsInRole(Roles.FRANCHISOR);
             var isCoach = httpContext.IsInRole(Roles.COACH);
@@ -117,29 +117,29 @@ namespace ECDLink.DataAccessLayer.Hierarchy
             var userIdsToFetch = new List<string>() { userId };
 
             if (isFranchisor)
-                {
+            {
                 userIdsToFetch.AddRange(
                     GetFranchisorIds(practRepo, userIdGuid));
             }
             else if (isCoach)
-                    {
+            {
                 userIdsToFetch.AddRange(
                     GetCoachIds(practRepo, userIdGuid));
-                                }
+            }
             else if (isPrincipal || isPractitioner)
-                {
+            {
                 userIdsToFetch.AddRange(
                     GetPrincipalPractitionerIds(practRepo, userIdGuid));
-                        }
+            }
             // Fetch all user hierarchies before they are used
             var userHierarchies = GetManyUserHierarchy(userIdsToFetch);
-            
+
             var hierarchyList = new List<string>();
             if (userHierarchies?.Any() ?? false)
-                {
+            {
                 hierarchyList.AddRange(userHierarchies.Distinct());
-                        }
-            
+            }
+
             //in some cases like a child, we need to get the relevant children hierarchy in addition for the generic repository selectionlist
             if (typeof(T) == typeof(Child))
             {
@@ -181,17 +181,17 @@ namespace ECDLink.DataAccessLayer.Hierarchy
             if (typeof(T) == typeof(Document))
             {
                 var documentRepo = _repoFactory.CreateGenericRepository<Document>(userContext: userId);
-                
+
                 var documentHierarchy = GetManyDocumentsByHierarchy(documentRepo, hierarchyList);
-                
-                    if (documentHierarchy.Any())
-                    {
-                        hierarchyList.AddRange(documentHierarchy);
-                    }
+
+                if (documentHierarchy.Any())
+                {
+                    hierarchyList.AddRange(documentHierarchy);
                 }
+            }
 
             return hierarchyList.Distinct().ToList();
-            }
+        }
 
         private List<string> GetFranchisorIds(IGenericRepository<Practitioner, Guid> practRepo, Guid userIdGuid)
         {
@@ -200,7 +200,7 @@ namespace ECDLink.DataAccessLayer.Hierarchy
                 .Where(c => c.FranchisorId == userIdGuid)
                 .Select(f => Guid.Parse(f.UserId))
                 .ToList();
-            
+
             List<string> userIdsToFetch = new List<string>();
             if (franchisorCoachIds?.Count > 0)
             {
@@ -223,7 +223,7 @@ namespace ECDLink.DataAccessLayer.Hierarchy
         private static List<string> GetCoachIds(IGenericRepository<Practitioner, Guid> practRepo, Guid userIdGuid)
         {
             var coachPractitioners = practRepo.GetAll()
-                .Where(c => c.CoachHierarchy == userIdGuid 
+                .Where(c => c.CoachHierarchy == userIdGuid
                     && c != null)?
                 .Select(p => p.UserId)?
                 .ToList();
@@ -235,17 +235,17 @@ namespace ECDLink.DataAccessLayer.Hierarchy
         {
             // some practitioners can be principal as owner with only themselves as owner
             var principalPractitioners = practitionerRepo.GetAll()
-                .Where(c => (c.PrincipalHierarchy!=null && c.PrincipalHierarchy == userIdGuid) || (c.IsPrincipal == true && c.UserId == userIdGuid.ToString()))
+                .Where(c => (c.PrincipalHierarchy != null && c.PrincipalHierarchy == userIdGuid) || (c.IsPrincipal == true && c.UserId == userIdGuid.ToString()))
                 .Select(p => p.UserId.ToString())
                 .ToList();
-            
+
             List<string> ids = new List<string>();
 
             if (principalPractitioners.Count > 0)
             {
                 ids = principalPractitioners.Where(u => u != null)
                     .ToList();
-        }
+            }
 
             return ids;
         }

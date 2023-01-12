@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ECDLink.Core.Models.Options
+﻿namespace ECDLink.Core.Models.Options
 {
     public class HolidayProxyOptions
     {

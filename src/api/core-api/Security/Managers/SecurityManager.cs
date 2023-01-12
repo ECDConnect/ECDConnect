@@ -8,8 +8,6 @@ using ECDLink.Security.JwtSecurity.Enums;
 using ECDLink.Security.JwtSecurity.Factories;
 using ECDLink.Security.JwtSecurity.Managers;
 using ECDLink.Security.Managers;
-using ECDLink.Tenancy;
-using ECDLink.Tenancy.Context;
 using ECDLink.UrlShortner.Managers;
 using Microsoft.AspNetCore.Identity;
 using Newtonsoft.Json;
@@ -146,9 +144,9 @@ namespace EcdLink.Api.CoreApi.Security.Managers
             return await GenerateJwtForUserAsync(user as ApplicationUser, JwtEncoderEnum.Standard);
         }
 
-        public async Task<JWTUserTokensEntityReturn> ObfuscateJwtToken(string auth_token, string expiresIn, string contextIdentifier,string role)
+        public async Task<JWTUserTokensEntityReturn> ObfuscateJwtToken(string auth_token, string expiresIn, string contextIdentifier, string role)
         {
-            return await _jwtTokenManager.StoreJWTToken(auth_token,expiresIn, contextIdentifier, role);
+            return await _jwtTokenManager.StoreJWTToken(auth_token, expiresIn, contextIdentifier, role);
 
         }
     }

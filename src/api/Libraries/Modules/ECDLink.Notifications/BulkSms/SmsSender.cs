@@ -6,7 +6,6 @@ using ECDLink.Core.SystemSettings.SystemOptions;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.Notifications.Model;
 using ECDLink.Notifications.Templates;
-using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;

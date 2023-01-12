@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ECDLink.DataAccessLayer.Hierarchy.Entities
+﻿namespace ECDLink.DataAccessLayer.Hierarchy.Entities
 {
     public interface IHierarchyScoped
     {

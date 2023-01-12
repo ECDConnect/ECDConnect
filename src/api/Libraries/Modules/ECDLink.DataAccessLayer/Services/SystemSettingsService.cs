@@ -1,16 +1,11 @@
 ﻿using ECDLink.Core.Models.Settings;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Context;
-using ECDLink.DataAccessLayer.Entities;
-using ECDLink.DataAccessLayer.Repositories.Factories;
-using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Tenancy.Context;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ECDLink.DataAccessLayer.Services
 {

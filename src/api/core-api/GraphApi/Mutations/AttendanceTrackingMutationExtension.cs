@@ -1,8 +1,6 @@
 using EcdLink.Api.CoreApi.GraphApi.Models;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Extensions;
-using ECDLink.DataAccessLayer;
-using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Repositories;
 using ECDLink.EGraphQL.Authorization;
@@ -10,7 +8,6 @@ using ECDLink.Security;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Types;
-using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

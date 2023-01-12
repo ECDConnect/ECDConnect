@@ -1,15 +1,9 @@
 ﻿using EcdLink.Api.CoreApi.Tenancy.Context;
-using ECDLink.Tenancy.Exceptions;
-using ECDLink.Tenancy.Extensions;
-using ECDLink.Tenancy.Model;
-using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Extensions.Configuration;
 using ECDLink.Core.Extensions;
+using ECDLink.Tenancy.Model;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using System;
 
 namespace ECDLink.Tenancy.EntityFramework.Extensions
 {

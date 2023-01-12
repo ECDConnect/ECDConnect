@@ -1,7 +1,5 @@
 ﻿using ECDLink.Tenancy.Model;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 
 namespace ECDLink.Tenancy.Context
@@ -43,7 +41,7 @@ namespace ECDLink.Tenancy.Context
             if (tenant.Value.TenantType == Enums.TenantType.Host)
             {
                 // Unique tenant context swap when admin needs to create a DB
-                tenant.Value = value;                
+                tenant.Value = value;
                 return;
             }
 

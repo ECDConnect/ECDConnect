@@ -1,8 +1,7 @@
-using ECDLink.Security.Attributes;
 using ECDLink.DataAccessLayer.Entities.Base;
 using ECDLink.DataAccessLayer.Entities.Interfaces;
 using ECDLink.Security;
-using HotChocolate;
+using ECDLink.Security.Attributes;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -14,7 +13,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
     {
     }
 
-    public class Franchisor<TKey> : EntityBase<TKey>, 
+    public class Franchisor<TKey> : EntityBase<TKey>,
         IUserElevatedScoped, SiteAddressJoin<Guid?>,
         ApplicationUserJoin, IUserType
         where TKey : IEquatable<TKey>

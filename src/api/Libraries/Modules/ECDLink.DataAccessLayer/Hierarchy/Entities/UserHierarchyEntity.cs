@@ -2,9 +2,7 @@
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Base;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text;
 
 namespace ECDLink.DataAccessLayer.Hierarchy.Entities
 {
@@ -12,7 +10,7 @@ namespace ECDLink.DataAccessLayer.Hierarchy.Entities
     public class UserHierarchyEntity : EntityBase<Guid>
     {
         public string ParentId { get; set; }
-        
+
         [ForeignKey(nameof(UserId))]
         public virtual ApplicationUser User { get; set; }
         public string UserId { get; set; }

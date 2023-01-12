@@ -1,5 +1,4 @@
-﻿using System;
-namespace ECDLink.Moodle.Models
+﻿namespace ECDLink.Moodle.Models
 {
     public class MoodleUser
     {
@@ -12,7 +11,7 @@ namespace ECDLink.Moodle.Models
         public string Email { get; set; }
         public string Phone1 { get; set; }
         public int Confirmed { get { return 1; } }
-        public int Mnethostid { get { return 1; } } 
+        public int Mnethostid { get { return 1; } }
         public string Timezone { get { return "Africa/Johannesburg"; } }
     }
 }

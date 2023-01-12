@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ECDLink.AutomatedJobs.Configuration
+﻿namespace ECDLink.AutomatedJobs.Configuration
 {
     public static class CronTags
     {

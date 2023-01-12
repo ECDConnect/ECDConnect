@@ -1,10 +1,8 @@
 ﻿using ECDLink.Abstractrions.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text;
 
 namespace ECDLink.DataAccessLayer.Jobs
 {

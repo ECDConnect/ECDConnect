@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ECDLink.Abstractrions.Enums
+﻿namespace ECDLink.Abstractrions.Enums
 {
     public enum WorkflowStatusEnum
     {
@@ -12,7 +8,7 @@ namespace ECDLink.Abstractrions.Enums
         DocumentVerified,
         ChildActive,
         ChildPending,
-        ChildDeactivated, 
+        ChildDeactivated,
         ChildExternalLink
     }
 }

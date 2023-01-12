@@ -1,25 +1,18 @@
-using ECDLink.Abstractrions.Files;
 using ECDLink.Abstractrions.GraphQL.Enums;
-using ECDLink.Abstractrions.Services;
-using ECDLink.DataAccessLayer;
 using ECDLink.DataAccessLayer.Entities;
-using ECDLink.DataAccessLayer.Repositories;
+using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
+using ECDLink.Tenancy.Context;
+using ECDLink.Tenancy.Model;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
-using System;
-using ECDLink.DataAccessLayer.Entities.Users;
-using ECDLink.DataAccessLayer.Repositories.Factories;
-using ECDLink.Tenancy.Context;
-using ECDLink.Tenancy.Model;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
@@ -35,7 +28,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
         public List<Absentees> GetAbsentees([Service] IHttpContextAccessor contextAccessor,
     [Service] IGenericRepositoryFactory repoFactory,
-    string userId, DateTime fromDate,DateTime toDate)
+    string userId, DateTime fromDate, DateTime toDate)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var absenteeRepo = repoFactory.CreateRepository<Absentees>(userContext: uId);

@@ -1,15 +1,5 @@
-﻿using ECDLink.PostgresTenancy.Context;
-using ECDLink.PostgresTenancy.Entities;
+﻿using ECDLink.PostgresTenancy.Entities;
 using ECDLink.PostgresTenancy.Repository;
-using ECDLink.Tenancy.Enums;
-using ECDLink.Tenancy.Model;
-using ECDLink.Tenancy.Services;
-using Npgsql;
-using System;
-using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.Linq;
-using System.Text;
 
 namespace ECDLink.PostgresTenancy.Services
 {

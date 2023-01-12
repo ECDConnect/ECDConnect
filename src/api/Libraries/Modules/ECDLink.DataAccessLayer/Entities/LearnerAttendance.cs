@@ -1,13 +1,11 @@
-using ECDLink.Security.Attributes;
 using ECDLink.Security;
-using System;
-using System.ComponentModel.DataAnnotations.Schema;
+using ECDLink.Security.Attributes;
 
 namespace ECDLink.DataAccessLayer.Entities.Classroom
 {
     [EntityPermission(PermissionGroups.CLASSROOM)]
     public class LearnerAttendance
     {
-       // Attendance Attendance { get; set; }
+        // Attendance Attendance { get; set; }
     }
 }

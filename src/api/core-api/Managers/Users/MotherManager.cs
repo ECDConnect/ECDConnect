@@ -1,15 +1,12 @@
-﻿using System;
-using System.Linq;
-using EcdLink.Api.CoreApi.GraphApi.Models;
-using ECDLink.DataAccessLayer.Context;
+﻿using EcdLink.Api.CoreApi.GraphApi.Models;
 using ECDLink.DataAccessLayer.Entities;
-using ECDLink.DataAccessLayer.Entities.Caregiver;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
+using System;
+using System.Linq;
 
 namespace EcdLink.Api.CoreApi.Managers.Users
 {
@@ -108,7 +105,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users
         {
             return userId ?? Guid.NewGuid().ToString();
         }
-        
+
     }
 }
 

@@ -1,13 +1,10 @@
 ﻿using ECDLink.Tenancy.Context;
 using ECDLink.Tenancy.Exceptions;
-using ECDLink.Tenancy.Extensions;
 using ECDLink.Tenancy.Model;
 using ECDLink.Tenancy.Services;
 using Microsoft.AspNetCore.Http;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace ECDLink.Tenancy.Middleware
@@ -45,24 +42,26 @@ namespace ECDLink.Tenancy.Middleware
             var claim = context.User.Claims
                                 .Where(x => string.Equals(x.Type, TenancyConstants.Jwt.TenantJwtClaim))
                                 .FirstOrDefault();
-            
+
             // If there is a jwt, automatically just use it
             if (!string.IsNullOrEmpty(claim?.Value) && claim?.Value != "00000000-0000-0000-0000-000000000000")
             {
                 var idTenant = tenancyService.GetTenantById(claim.Value);
                 if (idTenant != null && idTenant != default(TenantModel))
                     tenant = idTenant;
-                
+
                 path = "JWT:" + claim?.Value;
-                    
-            } else { 
-            
+
+            }
+            else
+            {
+
                 // Check url making request
                 var refererUrl = context?.Request?.GetTypedHeaders()?.Referer?.AbsoluteUri ?? context.Request.Host.Host ?? String.Empty;
 
                 if (!string.IsNullOrWhiteSpace(refererUrl))
                 {
-                   var urlTenant = tenancyService.GetTenantByUrl(refererUrl);
+                    var urlTenant = tenancyService.GetTenantByUrl(refererUrl);
                     if (urlTenant != null && urlTenant != default(TenantModel))
                     {
                         tenant = urlTenant;
@@ -83,7 +82,7 @@ namespace ECDLink.Tenancy.Middleware
             tenant.Var1 = path;
             tenant.Var2 = context.Request.Host.Value;
 
-            return (tenant!=null?tenant:new TenantModel());
+            return (tenant != null ? tenant : new TenantModel());
         }
     }
 }

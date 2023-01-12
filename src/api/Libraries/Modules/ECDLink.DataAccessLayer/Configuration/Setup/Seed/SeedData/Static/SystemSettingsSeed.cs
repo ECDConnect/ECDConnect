@@ -1,9 +1,7 @@
 ﻿using ECDLink.Core.SystemSettings;
 using ECDLink.DataAccessLayer.Entities;
-using ECDLink.Security;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.SeedData.Static
 {

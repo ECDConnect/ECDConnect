@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Models
 {
@@ -9,7 +7,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public string Fullname { get; set; }
         public string FirstName { get; set; }
         public string Surname { get; set; }
-        public string Dob { get; set; }        
+        public string Dob { get; set; }
         public string IDNumber { get; set; }
 
         public string ProgramType { get; set; }

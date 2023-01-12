@@ -1,5 +1,4 @@
 using ECDLink.Abstractrions.GraphQL.Enums;
-using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Users;
@@ -9,14 +8,11 @@ using ECDLink.Security;
 using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
-using HotChocolate.Utilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Azure.Documents;
-using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
@@ -93,7 +89,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         [Service] IGenericRepositoryFactory repoFactory,
         string userId)
         {
-           
+
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
 

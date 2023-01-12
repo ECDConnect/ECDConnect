@@ -10,16 +10,14 @@ using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
     [ExtendObjectType(OperationTypeNames.Query)]
     public class FranchisorQueryExtension
-    {   
+    {
         public FranchisorQueryExtension()
         {
         }
@@ -77,7 +75,7 @@ string userId)
             var dbRepo = repoFactory.CreateGenericRepository<Franchisor>(userContext: uId);
             var franchisor = dbRepo.GetByUserId(franchisorId);
 
-            if(franchisor == null)
+            if (franchisor == null)
             {
                 return null;
             }
