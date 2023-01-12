@@ -1,12 +1,9 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using ECDLink.DataAccessLayer.Context;
-using ECDLink.DataAccessLayer.Entities.Users;
+﻿using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.Security.Extensions;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
+using System;
+using System.Linq;
 
 namespace EcdLink.Api.CoreApi.Managers.Users
 {

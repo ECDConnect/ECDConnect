@@ -1319,6 +1319,14 @@ export type DailyProgrammeInput = {
   UpdatedBy?: InputMaybe<Scalars['String']>;
 };
 
+export type DisplaySet = {
+  __typename?: 'DisplaySet';
+  color?: Maybe<Scalars['String']>;
+  icon?: Maybe<Scalars['String']>;
+  notes?: Maybe<Scalars['String']>;
+  subject?: Maybe<Scalars['String']>;
+};
+
 export type Document = {
   __typename?: 'Document';
   createdUserId?: Maybe<Scalars['String']>;
@@ -4671,6 +4679,7 @@ export type Query = {
   roleForUser?: Maybe<Scalars['String']>;
   roles?: Maybe<Array<Maybe<IdentityRole>>>;
   settings?: Maybe<SettingsType>;
+  statusInfo?: Maybe<DisplaySet>;
   tenantContext?: Maybe<TenantModel>;
   totalDaysAbsent: Scalars['Int'];
   userById?: Maybe<ApplicationUser>;
@@ -5622,6 +5631,10 @@ export type QueryPrincipalByUserIdArgs = {
 };
 
 export type QueryRoleForUserArgs = {
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryStatusInfoArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
