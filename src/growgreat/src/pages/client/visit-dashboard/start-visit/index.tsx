@@ -1,13 +1,16 @@
+import { useMemo, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { useHistory } from 'react-router';
+import format from 'date-fns/format';
+
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { getInfants } from '@/store/infant/infant.selectors';
 import { getMothers } from '@/store/mother/mother.selectors';
 import { Typography, Dropdown, BannerWrapper, Button } from '@ecdlink/ui';
-import { useMemo, useState } from 'react';
-import { useSelector } from 'react-redux';
-import format from 'date-fns/format';
-import { useHistory } from 'react-router';
 import { useWindowSize } from '@reach/window-size';
 import ROUTES from '@/routes/routes';
+
+import { CLIENT_TABS } from '../../class-dashboard/class-dashboard';
 
 const HEADER_HEIGHT = 64;
 
@@ -46,7 +49,7 @@ export const StartVisit: React.FC = () => {
   const clients = [...motherOptions, ...infantOptions];
 
   const goBack = () => {
-    history.push(ROUTES.CLIENT.ROOT, { activeTabIndex: 1 });
+    history.push(ROUTES.CLIENT.ROOT, { activeTabIndex: CLIENT_TABS.VISIT });
   };
 
   const onStartVisit = () => {

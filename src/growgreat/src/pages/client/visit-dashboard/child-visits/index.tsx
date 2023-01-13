@@ -18,7 +18,7 @@ export const ChildVisits: React.FC = () => {
   const [searchTextActive, setSearchTextActive] = useState(false);
   const [infantsList, setInfantsList] = useState<UserAlertListDataItem[]>([]);
 
-  const infants = useSelector(getInfants);
+  const infants = useSelector(getInfants); // TODO: replace infants selector to visits selector
 
   const { isOnline } = useOnlineStatus();
 

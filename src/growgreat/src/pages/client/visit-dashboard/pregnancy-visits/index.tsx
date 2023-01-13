@@ -17,7 +17,7 @@ export const PregnancyVisits: React.FC = () => {
   const [searchTextActive, setSearchTextActive] = useState(false);
   const [mothersList, setMothersList] = useState<UserAlertListDataItem[]>([]);
 
-  const mothers = useSelector(getMothers);
+  const mothers = useSelector(getMothers); // TODO: replace mothers selector to visits selector
 
   const { isOnline } = useOnlineStatus();
 
