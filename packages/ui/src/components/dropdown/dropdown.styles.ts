@@ -10,9 +10,9 @@ export const menu = 'relative inline-block text-left w-full';
 export const icon = 'h-6 w-6 pr-2 text-white';
 export const iconClear = 'h-6 w-6 mr-2 text-uiMid';
 // BEFORE export const title = 'px-4 pt-3 pb-3';
-export const title = 'px-4 pt-2 pb-2';
+export const title = 'px-4 pt-2 pb-2 text-textMid relative flex';
 export const menuItems =
-  'absolute z-50 mt-1 w-full bg-white max-h-48 rounded-md py-1 text-base overflow-auto border border-transparent focus:border-uiMidDark focus:ring-uiMidDark focus:ring-1';
+  'absolute z-50 mt-1 w-full bg-white max-h-48 rounded-md py-1 text-base overflow-auto border border-tertiaryAccent2 focus:border-uiMidDark focus:ring-uiMidDark focus:ring-1';
 export const menuItem = 'block p-2 text-textMid font-h2 cursor-pointer';
 export const menuItemSm =
   'block px-4 py-2 text-textMid font-h1 text-sm cursor-pointer';
