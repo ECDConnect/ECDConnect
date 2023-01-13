@@ -5,6 +5,8 @@ export const defaultInputStyle =
   'font-h1 bg-uiBg focus:bg-white focus:ring-uiMidDark border border-transparent focus:border focus:border-uiMidDark block w-full sm:text-sm rounded-md text-textDark py-3 pl-4 placeholder-textLight font-h1';
 export const label =
   'block text-base leading-snug font-body font-semibold text-textMid';
+export const subLabel =
+  'block text-base font-body leading-snug text-textMid self-stretch';
 export const navStyle = '-mb-px flex flex-1 space-x-8';
 export const inputValid =
   'focus:ring-textLight focus:border-textLight block w-full text-textDark sm:text-sm border-uiLight rounded-md';

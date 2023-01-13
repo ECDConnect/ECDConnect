@@ -22,8 +22,11 @@ import { userSelectors } from '@store/user';
 import { analyticsActions } from '@store/analytics';
 import * as styles from './add-income.styles';
 import ROUTES from '@routes/routes';
-import { practitionerSelectors } from '@/store/practitioner';
 import PreschoolFees from './components/preschool-fees/preschool-fees';
+import StartupSupport from './components/startup-support/startup-support';
+import DonationsOrVouchers from './components/donations-or-vouchers/donations-or-vouchers';
+import DsdSubsidy from './components/dsd-subsidy/dsd-subsidy';
+import OtherIncome from './components/other-income/other-income';
 
 export const AddIncome: React.FC = () => {
   const history = useHistory();
@@ -43,7 +46,6 @@ export const AddIncome: React.FC = () => {
   }, [isOnline]);
 
   const user = useSelector(userSelectors.getUser);
-  const practitioner = useSelector(practitionerSelectors?.getPractitioner);
   const [listItems, setListItems] = useState<ActionListDataItem[]>([]);
   const [type, setType] = useState('');
 
@@ -81,7 +83,15 @@ export const AddIncome: React.FC = () => {
   const incomeType = (type?: string) => {
     switch (type) {
       case 'PreschoolFees':
-        return <PreschoolFees />;
+        return <PreschoolFees setType={setType} />;
+      case 'StartupSupport':
+        return <StartupSupport setType={setType} />;
+      case 'DonationsOrvouchers':
+        return <DonationsOrVouchers setType={setType} />;
+      case 'DsdSubsidy':
+        return <DsdSubsidy setType={setType} />;
+      case 'OtherIncome':
+        return <OtherIncome setType={setType} />;
       default:
         break;
     }
@@ -107,7 +117,7 @@ export const AddIncome: React.FC = () => {
         actionName: 'Add',
         actionIcon: 'PlusIcon',
         buttonType: 'filled',
-        onActionClick: () => {},
+        onActionClick: () => setType('StartupSupport'),
       },
       {
         title: 'Donations or vouchers',
@@ -117,7 +127,7 @@ export const AddIncome: React.FC = () => {
         actionName: 'Add',
         actionIcon: 'PlusIcon',
         buttonType: 'filled',
-        onActionClick: () => {},
+        onActionClick: () => setType('DonationsOrvouchers'),
       },
       {
         title: 'DBE subsidy',
@@ -127,7 +137,7 @@ export const AddIncome: React.FC = () => {
         actionName: 'Add',
         actionIcon: 'PlusIcon',
         buttonType: 'filled',
-        onActionClick: () => {},
+        onActionClick: () => setType('DsdSubsidy'),
       },
       {
         title: 'Other',
@@ -137,9 +147,7 @@ export const AddIncome: React.FC = () => {
         actionName: 'Add',
         actionIcon: 'PlusIcon',
         buttonType: 'filled',
-        onActionClick: () => {
-          history.push(ROUTES.PRACTITIONER.ABOUT.SIGNATURE);
-        },
+        onActionClick: () => setType('OtherIncome'),
       },
     ];
 
@@ -158,7 +166,7 @@ export const AddIncome: React.FC = () => {
           size="medium"
           renderBorder={true}
           renderOverflow={false}
-          onBack={() => history.push(ROUTES.PRACTITIONER.PROFILE.ROOT)}
+          onBack={() => history.push(ROUTES.BUSINESS_ADD_AMOUNT)}
           displayOffline={!isOnline}
           className="p-4"
         >

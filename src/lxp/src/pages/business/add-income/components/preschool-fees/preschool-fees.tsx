@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import {
-  ComponentBaseProps,
   BannerWrapper,
   Typography,
   Dropdown,
@@ -13,38 +12,24 @@ import {
   FormInput,
 } from '@ecdlink/ui';
 import DatePicker from 'react-datepicker';
-import { useHistory, useLocation } from 'react-router';
+import { useHistory } from 'react-router';
 import {
-  ReassignClassPageState,
+  AddIncomeState,
   ContributionTypes,
   FeeTypes,
 } from './preschool-fees.types';
 import * as styles from './preschool-fees.styles';
-import ROUTES from '@routes/routes';
-import { format } from 'date-fns';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm, useWatch } from 'react-hook-form';
 import { useSelector } from 'react-redux';
-import { authSelectors } from '@/store/auth';
-import { userSelectors } from '@store/user';
 import { childrenSelectors } from '@/store/children';
 import {
   PreschoolFeesModel,
   preschoolFeesSchema,
 } from '@/schemas/income-statements/preschool-fees';
 
-export const PreschoolFees: React.FC<ComponentBaseProps> = () => {
-  const userAuth = useSelector(authSelectors.getAuthUser);
-  const userData = useSelector(userSelectors.getUser);
-  const history = useHistory();
-  const { state: routeState } = useLocation<ReassignClassPageState>();
+export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
   const children = useSelector(childrenSelectors.getChildren);
-  const reportingDate = routeState?.reportingDate
-    ? new Date(routeState?.reportingDate)
-    : new Date();
-  const formattedDate = reportingDate
-    ? format(reportingDate, 'EEEE, d LLLL')
-    : '';
   const [selectedFamilyGrants, setSelectedFamilyGrants] = useState<string[]>(
     []
   );
@@ -56,10 +41,6 @@ export const PreschoolFees: React.FC<ComponentBaseProps> = () => {
   } = useForm<PreschoolFeesModel>({
     resolver: yupResolver(preschoolFeesSchema),
     mode: 'onChange',
-    // defaultValues: {
-    //   date: new Date().toString(),
-    //   practitioner: practitionerId ? practitionerId : '',
-    // },
   });
   const [incomeTypesList, setIncomeTypesList] = useState<
     { label: string; value: any }[]
@@ -82,7 +63,7 @@ export const PreschoolFees: React.FC<ComponentBaseProps> = () => {
     control: control,
   });
 
-  console.log({ date, child, contributionType, grants, note });
+  const disabled = !date || !child || !contributionType || !grants;
 
   useEffect(() => {
     const _list = ContributionTypes?.map((p) => {
@@ -134,45 +115,19 @@ export const PreschoolFees: React.FC<ComponentBaseProps> = () => {
   const handleFamilyGrantSelection = (familyGrants: string[]) => {
     setSelectedFamilyGrants(familyGrants);
     setPreschoolFeesValue('grants', familyGrants);
-    // updateFormValidity();
   };
-
-  // const submitReassignClass = async () => {
-  //   if (
-  //     userAuth?.auth_token &&
-  //     selectedDate &&
-  //     userData?.id &&
-  //     reassignedClass
-  //   ) {
-  //     await new ClassroomGroupService(
-  //       userAuth.auth_token
-  //     ).updateReassignClassroomGroup(
-  //       practitioner,
-  //       practitioner2,
-  //       reason,
-  //       new Date(selectedDate),
-  //       userData?.id,
-  //       reassignedClass
-  //     );
-  //   }
-  //   history.push(ROUTES.DASHBOARD);
-  // };
 
   return (
     <BannerWrapper
-      title={`Progress summary`}
-      subTitle={`${
-        formattedDate ? formattedDate : format(new Date(), 'EEEE, d LLLL')
-      }`}
+      title={`Add preschool fee`}
       color={'primary'}
       size="medium"
       renderBorder={true}
-      onBack={() => history.push(ROUTES.CLASSROOM)}
+      onBack={() => setType('')}
       className="p-4"
-      // displayOffline={!isOnline}
     >
       <div className="mb-3 w-full justify-center">
-        <Typography type="h2" color="textMid" text={'Reassign a class'} />
+        <Typography type="h2" color="textMid" text={'Preschool fee'} />
         <Alert
           type={'info'}
           title={
@@ -181,9 +136,9 @@ export const PreschoolFees: React.FC<ComponentBaseProps> = () => {
           list={[
             'If they cannot afford to pay you may choose to reduce your fee or to allow them to contribute in other ways, such as giving items like food, or volunteering their time.',
           ]}
-          className="mt-6"
+          className="mt-4 mb-2"
         />
-        <label className="text-md mt-2 mb-1 block font-semibold text-gray-700">
+        <label className="text-md text-textDark mt-2 mb-1 block font-semibold">
           When did the caregiver pay this fee?
         </label>
         <DatePicker
@@ -213,6 +168,9 @@ export const PreschoolFees: React.FC<ComponentBaseProps> = () => {
           list={incomeTypesList || []}
           fillType="clear"
           label={'How did the caregiver contribute?'}
+          subLabel={
+            "Caregivers who can't afford to contribute money can contribute by giving food or other items to the programme, or volunteering their time."
+          }
           fullWidth
           className={'mt-3 w-full'}
           selectedValue={contributionType}
@@ -221,9 +179,13 @@ export const PreschoolFees: React.FC<ComponentBaseProps> = () => {
           }}
         />
         <label className={classNames(styles.label, 'mt-4')}>
-          {'Which of these grants does the family receive?'}
+          {'Type of fee'}
         </label>
-        <label className={styles.hintStyle}>{'Select all that apply'}</label>
+        <label className={classNames(styles.subLabel)}>
+          {
+            'Which service did the caregiver pay for? You can choose more than one.'
+          }
+        </label>
         <div className={'mt-2'}>
           <ButtonGroup<string>
             type={ButtonGroupTypes.Chip}
@@ -243,6 +205,7 @@ export const PreschoolFees: React.FC<ComponentBaseProps> = () => {
         </div>
         <FormInput<PreschoolFeesModel>
           label={'Add a note'}
+          subLabel={'Optional'}
           visible={true}
           nameProp={'note'}
           register={register}
@@ -253,6 +216,7 @@ export const PreschoolFees: React.FC<ComponentBaseProps> = () => {
           color="primary"
           className={'mx-auto mt-8 w-full rounded-2xl'}
           onClick={() => {}}
+          disabled={disabled}
         >
           {renderIcon('SaveIcon', styles.buttonIcon)}
           <Typography
@@ -267,6 +231,7 @@ export const PreschoolFees: React.FC<ComponentBaseProps> = () => {
           color="primary"
           className={'mx-auto mt-2 w-full rounded-2xl'}
           onClick={() => {}}
+          disabled={disabled}
         >
           {renderIcon('PlusIcon', styles.buttonIconSaveFees)}
           <Typography

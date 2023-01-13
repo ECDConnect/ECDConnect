@@ -27,6 +27,8 @@ export const leaveFrom = 'transform opacity-100 scale-100';
 export const leaveTo = 'transform opacity-0 scale-95';
 export const label =
   'font-semibold block text-base font-body leading-snug text-textMid';
+export const subLabel =
+  'block text-base font-body leading-snug text-textMid self-stretch';
 
 export const getDropDownFill = (
   fillType: DropDownFillType,

@@ -13,21 +13,17 @@ export const ContributionTypes = [
   },
 ];
 
-export const FeeTypes = [
+export const donationTypes = [
   {
     id: 1,
-    type: 'Regular preschool fee',
+    type: 'Item',
   },
   {
     id: 2,
-    type: 'Aftercare fee',
+    type: 'Money',
   },
   {
     id: 3,
-    type: 'Transport fee',
-  },
-  {
-    id: 4,
-    type: 'Other',
+    type: 'Voucher',
   },
 ];
