@@ -11,6 +11,8 @@ using HotChocolate.Types;
 using HotChocolate.Types.Descriptors;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 
 namespace ECDLink.EGraphQL.Registration.ContentTypes
 {
@@ -42,27 +44,26 @@ namespace ECDLink.EGraphQL.Registration.ContentTypes
             };
 
             descriptor.Field(GraphFieldNamingHelper.GetFieldName(GraphFieldTypeEnum.GetAll, definition.ContentName))
-              .ConfigureContextData(data =>
-              {
-                  data.Add(ContextDataConstants.ContentManagement.Identifier, definition.Identifier);
-              })
               .Argument(ArgumentConstants.Locale, a => a.Type<StringType>())
               .Argument(ArgumentConstants.LocaleId, a => a.Type<StringType>())
               .Type(new DynamicTypeBuilder(definition.ContentName).Enumerable().Required().Build())
               .Directive(metadata)
-              .Resolve(context => resolver.GetAllResolver(context));
+              .Resolve(context => {
+                  int.TryParse(definition.Identifier, out int id);
+                  return resolver.GetAllResolver(context, id);
+              });
 
             descriptor.Field(GraphFieldNamingHelper.GetFieldName(GraphFieldTypeEnum.GetById, definition.ContentName))
-              .ConfigureContextData(data =>
-              {
-                  data.Add(ContextDataConstants.ContentManagement.Identifier, definition.Identifier);
-              })
               .Argument(ArgumentConstants.Id, a => a.Type<IntType>())
               .Argument(ArgumentConstants.Locale, a => a.Type<StringType>())
               .Argument(ArgumentConstants.LocaleId, a => a.Type<StringType>())
               .Type(new DynamicTypeBuilder(definition.ContentName).Enumerable().Required().Build())
               .Directive(metadata)
-              .Resolve(context => resolver.GetResolver(context));
+              .Resolve(context =>
+              {
+                  int.TryParse(definition.Identifier, out int id);
+                  return resolver.GetResolver(context);
+              });
         }
     }
 }

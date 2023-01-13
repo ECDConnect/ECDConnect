@@ -10,16 +10,15 @@ namespace ECDLink.ContentManagement.GraphQL.Resolvers
 {
     public class MutationResolver : ResolverBase, IDynamicMutationResolver
     {
-        public ValueTask<object?> CreateMutationResolver(IResolverContext context)
+        public ValueTask<object?> CreateMutationResolver(IResolverContext context, int identifier)
         {
-            var contentTypeId = base.GetContentIdentifier(context);
             var localeId = base.GetLanguageArgument(context);
 
             var values = context.ArgumentValue<Dictionary<string, object>>(ArgumentConstants.Input);
 
             var repository = context.Services.GetService<ContentManagementRepository>();
 
-            var newId = repository.Create(contentTypeId, localeId, values);
+            var newId = repository.Create(identifier, localeId, values);
 
             return new ValueTask<object?>(newId);
         }

@@ -31,17 +31,5 @@ namespace ECDLink.ContentManagement.GraphQL.Resolvers
 
             return language.Id;
         }
-
-        protected int GetContentIdentifier(IResolverContext context)
-        {
-            if (!context.Selection.Field.ContextData.TryGetValue(ContextDataConstants.ContentManagement.Identifier, out var contentIdentifier))
-            {
-                throw new Exception("No table context data found");
-            }
-
-            var contentTypeId = Convert.ToInt32(contentIdentifier);
-
-            return contentTypeId;
-        }
     }
 }
