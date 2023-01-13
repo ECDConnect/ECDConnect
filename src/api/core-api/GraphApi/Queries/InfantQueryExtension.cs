@@ -1,3 +1,4 @@
+using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities.Caregiver;
@@ -46,6 +47,35 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var childRepo = repoFactory.CreateGenericRepository<Infant>(userContext: uId);
             List<Infant> children = childRepo.GetAll().Where(x => x.Caregiver.HealthCareWorker.UserId.Equals(id)).ToList();
             List<Infant> childrenMother = childRepo.GetAll().Where(x => x.Mother.HealthCareWorker.UserId.Equals(id)).ToList();
+
+
+            var i = 0;
+            foreach (var child in children)
+            {
+                var icon = i % 2 == 0 ? MetricsIconEnum.Error.ToString() : MetricsIconEnum.Warning.ToString();
+                var subject = i % 2 == 0 ? "Refer to clinic" : "Low birth weight";
+
+                child.StatusInfo.Icon = icon;
+                child.StatusInfo.Color = icon;
+                child.StatusInfo.Subject = subject;
+                child.StatusInfo.Notes = "child";
+
+                i++;
+            }
+
+            i = 0;
+            foreach (var child in childrenMother)
+            {
+                var icon = i % 2 == 0 ? MetricsIconEnum.Error.ToString() : MetricsIconEnum.Warning.ToString();
+                var subject = i % 2 == 0 ? "Refer to clinic" : "Low birth weight";
+
+                child.StatusInfo.Icon = icon;
+                child.StatusInfo.Color = icon;
+                child.StatusInfo.Subject = subject;
+                child.StatusInfo.Notes = "child";
+
+                i++;
+            }
 
             infants.AddRange(children);
             infants.AddRange(childrenMother);

@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Caregiver;
+using HotChocolate;
 
 namespace ECDLink.DataAccessLayer.Entities.Users
 {
@@ -42,5 +43,9 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public decimal? WeightAtBirth { get; set; }
 
         public decimal? LengthAtBirth { get; set; }
+
+        [GraphQLIgnore]
+        public DisplaySet StatusInfo = new DisplaySet();
+
     }
 }

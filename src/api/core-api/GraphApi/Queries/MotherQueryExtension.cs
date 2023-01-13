@@ -1,6 +1,8 @@
+using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Caregiver;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
@@ -45,20 +47,32 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var motherRepo = repoFactory.CreateRepository<Mother>(userContext: uId);
             List<Mother> mothers = motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId.Equals(id)).ToList();
 
+            var i = 0;
+            foreach (var mother in mothers)
+            {
+                var icon = i % 2 == 0 ? MetricsIconEnum.Error.ToString() : MetricsIconEnum.Warning.ToString();
+                var note = i % 2 == 0 ? "pregnant mom" : "pregnant mom and child";
+                var subject = i % 2 == 0 ? "Refer to clinic" : "Visit 1 overdue";
+
+                mother.StatusInfo.Icon = icon;
+                mother.StatusInfo.Color = icon;
+                mother.StatusInfo.Subject = subject;
+                mother.StatusInfo.Notes = note;
+
+                i++;
+            }
+
             return mothers;
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public Infant GetMotherById([Service] IHttpContextAccessor contextAccessor,
-         [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+        public Mother GetMotherById([Service] IHttpContextAccessor contextAccessor,
          [Service] IGenericRepositoryFactory repoFactory,
          string id)
         {
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
-            var motherRepo = repoFactory.CreateRepository<Infant>(userContext: uId);
-            Infant mother = motherRepo.GetAll().Where(x => x.Id.Equals(Guid.Parse(id))).FirstOrDefault();
+            var motherRepo = repoFactory.CreateRepository<Mother>(userContext: uId);
+            Mother mother = motherRepo.GetAll().Where(x => x.Id.Equals(Guid.Parse(id))).FirstOrDefault();
 
             return mother;
         }
