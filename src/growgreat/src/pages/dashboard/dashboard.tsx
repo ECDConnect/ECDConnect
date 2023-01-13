@@ -31,6 +31,7 @@ import { version } from '@/../package.json';
 import { healthCareWorkerSelectors } from '@/store/healthCareWorker';
 import { DashboardRouteState } from './dashboard.types';
 import { useNotificationService } from '@/hooks/useNotificationService';
+import { CLIENT_TABS } from '../client/class-dashboard/class-dashboard';
 
 export enum NavigationTypes {
   Home = 'Home',
@@ -148,7 +149,9 @@ export const Dashboard: React.FC = () => {
                 leadingIcon: 'HomeIcon',
                 onClick: () => {
                   onSubmit();
-                  history.push(ROUTES.CLASSROOM, { activeTabIndex: 1 });
+                  history.push(ROUTES.CLIENT.ROOT, {
+                    activeTabIndex: CLIENT_TABS.VISIT,
+                  });
                 },
               },
               {
@@ -159,7 +162,9 @@ export const Dashboard: React.FC = () => {
                 leadingIcon: 'FolderOpenIcon',
                 onClick: () => {
                   onSubmit();
-                  history.push(ROUTES.CLASSROOM, { activeTabIndex: 0 });
+                  history.push(ROUTES.CLIENT.ROOT, {
+                    activeTabIndex: CLIENT_TABS.CLIENT,
+                  });
                 },
               },
               {
@@ -181,7 +186,9 @@ export const Dashboard: React.FC = () => {
                 leadingIcon: 'PresentationChartLineIcon',
                 onClick: () => {
                   onSubmit();
-                  history.push(ROUTES.CLASSROOM, { activeTabIndex: 2 });
+                  history.push(ROUTES.CLIENT.ROOT, {
+                    activeTabIndex: CLIENT_TABS.HIGHLIGHTS,
+                  });
                 },
               },
               {
@@ -191,7 +198,9 @@ export const Dashboard: React.FC = () => {
                 type: 'outlined',
                 onClick: () => {
                   onSubmit();
-                  history.push(ROUTES.CLASSROOM, { activeTabIndex: 0 });
+                  history.push(ROUTES.CLIENT.ROOT, {
+                    activeTabIndex: CLIENT_TABS.CLIENT,
+                  });
                 },
               },
             ]}
