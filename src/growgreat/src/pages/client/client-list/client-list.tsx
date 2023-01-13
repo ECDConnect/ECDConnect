@@ -41,6 +41,7 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
       return {
         icon: Infant,
         title: infant?.firstName ?? infant?.user?.firstName!,
+        // TODO: add correct subTitle (alert status)
         subTitle: infant?.user?.dateOfBirth
           ? `Birth date: ${format(new Date(infant?.user?.dateOfBirth!), 'PP')}`
           : `Birth date: ${format(new Date(infant?.dateOfBirth!), 'PP')}`,
@@ -59,6 +60,7 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
       return {
         icon: Pregnant,
         title: mother?.firstName || mother?.user?.firstName!,
+        // TODO: add correct subTitle (alert status)
         subTitle: mother?.expectedDateOfDelivery
           ? `Expected delivery date: ${format(
               new Date(mother?.expectedDateOfDelivery!),
@@ -66,7 +68,6 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
             )}`
           : `Expected delivery date: -`,
         switchTextStyles: true,
-        profileDataUrl: '@/assets/infant.svg',
         alertSeverity: 'none',
         avatarColor: getAvatarColor('growgreat') || '',
         onActionClick: () => {},

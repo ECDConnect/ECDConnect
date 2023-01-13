@@ -28,7 +28,7 @@ type SearchHeaderProps<T> = {
   className?: string;
 };
 
-const SeachHeader = <T extends {}>({
+export const SearchHeader = <T extends {}>({
   children,
   onSearchChange,
   searchItems,
@@ -47,7 +47,7 @@ const SeachHeader = <T extends {}>({
         className={classNames(styles.quickSearchWrapper, className)}
       >
         <div className={styles.searchIconWrapper} onClick={onSearchButtonClick}>
-          <SearchIcon className={styles.iconFill} />
+          <SearchIcon className={styles.searchIcon} />
         </div>
         {children}
       </Menu>
@@ -102,4 +102,4 @@ const SeachHeader = <T extends {}>({
   );
 };
 
-export default SeachHeader;
+export default SearchHeader;

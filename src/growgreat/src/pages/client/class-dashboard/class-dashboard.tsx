@@ -18,6 +18,13 @@ import { getStorageItem } from '@utils/common/local-storage.utils';
 import { ClassDashboardRouteState } from './class-dashboard.types';
 import { ClientList } from '../client-list/client-list';
 import momImage from '@/assets/happyMom.svg';
+import { VisitList } from '../visit-dashboard/visit-dashboard';
+
+export const CLIENT_TABS = {
+  CLIENT: 0,
+  VISIT: 1,
+  HIGHLIGHTS: 2,
+};
 
 export const ClassDashboard: React.FC = () => {
   const history = useHistory();
@@ -48,14 +55,7 @@ export const ClassDashboard: React.FC = () => {
     {
       title: 'Visits',
       initActive: false,
-      child: (
-        <Typography
-          className={'p-4'}
-          type={'body'}
-          color="textDark"
-          text={'Coming soon'}
-        />
-      ),
+      child: <VisitList />,
     },
     {
       title: 'Highlights',
