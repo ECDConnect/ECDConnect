@@ -286,7 +286,7 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
         />
       </div>
 
-      <div className="absolute bottom-0 left-0 right-0 p-4 bg-white max-h-20">
+      <div className="absolute bottom-0 left-0 right-0 max-h-20 bg-white p-4">
         <Button
           size="normal"
           className="w-full"

@@ -9,79 +9,97 @@ export const getNotes = createAsyncThunk<
   // eslint-disable-next-line @typescript-eslint/ban-types
   {},
   ThunkApiType<RootState>
->(
-  'getNotes',
-  // eslint-disable-next-line no-empty-pattern
-  async ({}, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-      notesData: { notes: notesCache },
-    } = getState();
+>('getNotes', async (_, { getState, rejectWithValue }) => {
+  const {
+    auth: { userAuth },
+    notesData: { notes: notesCache },
+  } = getState();
 
-    if (!notesCache) {
-      try {
-        let notes: NoteDto[] | undefined;
-
-        if (userAuth?.auth_token) {
-          notes = await new NoteService(userAuth?.auth_token).getNotes(
-            userAuth.id
-          );
-        } else {
-          return rejectWithValue('no access token, profile check required');
-        }
-
-        if (!notes) {
-          return rejectWithValue('Error getting notes');
-        }
-
-        return notes;
-      } catch (err) {
-        return rejectWithValue(err);
-      }
-    } else {
-      return notesCache;
-    }
-  }
-);
-
-export const upsertNotes = createAsyncThunk<
-  boolean[],
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  {},
-  ThunkApiType<RootState>
->(
-  'upsertNotes',
-  // eslint-disable-next-line no-empty-pattern
-  async ({}, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-      notesData: { notes },
-    } = getState();
-
+  if (!notesCache) {
     try {
-      let promises: Promise<boolean>[] = [];
+      let notes: NoteDto[] | undefined;
 
-      if (userAuth?.auth_token && notes) {
-        promises = notes.map(async (x) => {
-          const input: NoteInput = {
-            Id: x.id,
-            Name: x.name,
-            BodyText: x.bodyText,
-            NoteTypeId: x.noteTypeId,
-            UserId: x.userId,
-            CreatedUserId: x.createdUserId,
-            IsActive: x.isActive === false ? false : true,
-          };
+      if (userAuth?.auth_token) {
+        const response = await new NoteService(userAuth?.auth_token).getNotes(
+          userAuth.id
+        );
 
-          return await new NoteService(userAuth?.auth_token).updateNote(
-            x.id ?? '',
-            input
-          );
-        });
+        notes = response.filter((note) => !!note.isActive);
+      } else {
+        return rejectWithValue('no access token, profile check required');
       }
-      return Promise.all(promises);
+
+      if (!notes) {
+        return rejectWithValue('Error getting notes');
+      }
+
+      return notes;
     } catch (err) {
       return rejectWithValue(err);
     }
+  } else {
+    return notesCache;
   }
-);
+});
+
+export const upsertNotes = createAsyncThunk<
+  any,
+  NoteDto,
+  ThunkApiType<RootState>
+>('upsertNotes', async (input, { getState, rejectWithValue }) => {
+  const {
+    auth: { userAuth },
+    notesData: { notes },
+  } = getState();
+
+  try {
+    if (userAuth?.auth_token && input.id) {
+      return await new NoteService(userAuth?.auth_token).updateNote(
+        input.id,
+        mapNote(input)
+      );
+    }
+
+    let promises: Promise<boolean>[] = [];
+
+    if (userAuth?.auth_token && notes) {
+      promises = notes.map(async (x) => {
+        return await new NoteService(userAuth?.auth_token).updateNote(
+          x.id ?? '',
+          mapNote(x)
+        );
+      });
+    }
+    return Promise.all(promises);
+  } catch (err) {
+    return rejectWithValue(err);
+  }
+});
+
+export const deleteNote = createAsyncThunk<
+  any,
+  NoteDto['id'],
+  ThunkApiType<RootState>
+>('deleteNote', async (id, { getState, rejectWithValue }) => {
+  const {
+    auth: { userAuth },
+  } = getState();
+
+  try {
+    if (userAuth?.auth_token && id) {
+      return await new NoteService(userAuth?.auth_token).deleteNote(id);
+    }
+  } catch (err) {
+    return rejectWithValue(err);
+  }
+});
+
+const mapNote = (note: NoteDto): NoteInput => ({
+  Id: note.id,
+  Name: note.name,
+  BodyText: note.bodyText,
+  NoteTypeId: note.noteTypeId,
+  UserId: note.userId,
+  CreatedUserId: note.createdUserId,
+  IsActive: note.isActive === false ? false : true,
+});

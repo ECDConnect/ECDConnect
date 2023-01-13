@@ -43,7 +43,15 @@ export const EditPractitionerProfile: React.FC = () => {
     allowPermissions: false,
   });
 
+  const addedByPrincipal = !!practitioner?.principalHierarchy;
+
   const { stopService } = useNotificationService();
+
+  useEffect(() => {
+    if (!addedByPrincipal) {
+      return history.push(ROUTES.PRINCIPAL.SETUP_PROFILE);
+    }
+  }, [addedByPrincipal, history]);
 
   useEffect(() => {
     if (activeStep === EditPractitionerSteps.WELCOME) {

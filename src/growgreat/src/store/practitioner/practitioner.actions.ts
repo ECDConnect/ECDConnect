@@ -17,7 +17,9 @@ export const getPractitionerById = createAsyncThunk<
 
     try {
       let practitioner: PractitionerDto | undefined;
-
+      if (id === null || id.trim() === '') {
+        return rejectWithValue('no practitioner id supplied');
+      }
       if (userAuth?.auth_token) {
         practitioner = await new PractitionerService(
           userAuth?.auth_token

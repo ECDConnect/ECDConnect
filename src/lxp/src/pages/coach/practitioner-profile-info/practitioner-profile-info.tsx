@@ -27,12 +27,15 @@ import { notesSelectors } from '@store/notes';
 import { useSelector } from 'react-redux';
 import { practitionerSelectors } from '@/store/practitioner';
 import { authSelectors } from '@store/auth';
+import { classroomsSelectors } from '@/store/classroom';
+import { CoachPractitionerNotRegistered } from './components/coach-practitioner-not-registered/coach-practitioner-not-registered';
 
 export const CoachPractitionerProfileInfo: React.FC = () => {
   const history = useHistory();
   const userAuth = useSelector(authSelectors.getAuthUser);
   const { isOnline } = useOnlineStatus();
   const location = useLocation<PractitionerProfileRouteState>();
+  const classroom = useSelector(classroomsSelectors?.getClassroom);
   const practitionerId = location.state.practitionerId;
   const isFromProgrammeView = location.state.isFromProgrammeView;
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
@@ -153,232 +156,247 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
   };
 
   return (
-    <div className={styles.contentWrapper}>
-      <BannerWrapper
-        showBackground={true}
-        backgroundUrl={theme?.images.graphicOverlayUrl}
-        title={`${practitioner?.user?.firstName} ${practitioner?.user?.surname}`}
-        color={'primary'}
-        size="medium"
-        renderBorder={true}
-        renderOverflow={false}
-        onBack={() =>
-          isFromProgrammeView
-            ? history.goBack()
-            : history.push(ROUTES.COACH.PRACTITIONERS)
-        }
-        displayOffline={!isOnline}
-      >
-        <div className={styles.avatarWrapper}>
-          <ProfileAvatar
-            hasConsent={true}
-            canChangeImage={false}
-            dataUrl={practitioner?.user?.profileImageUrl || ''}
-            size={'header'}
-            // eslint-disable-next-line @typescript-eslint/no-empty-function
-            onPressed={() => {}}
-          />
-        </div>
-
-        <div className={styles.chipsWrapper}>
-          <StatusChip
-            backgroundColour="primary"
-            borderColour="primary"
-            text={'SmartStarter'}
-            textColour={'white'}
-            className={'px-3 py-1.5'}
-          />
-          {isPrincipal && (
-            <StatusChip
-              backgroundColour="secondary"
-              borderColour="secondary"
-              text={`Owner`}
-              textColour={'white'}
-              className={'mr-2 px-3 py-1.5'}
-            />
-          )}
-        </div>
-        <div className={styles.contactButtons}>
-          <Button
+    <>
+      {practitioner?.isRegistered === null ||
+      practitioner?.isRegistered === false ? (
+        <CoachPractitionerNotRegistered
+          practitioner={practitioner}
+          classroom={classroom}
+        />
+      ) : (
+        <div className={styles.contentWrapper}>
+          <BannerWrapper
+            showBackground={true}
+            backgroundUrl={theme?.images.graphicOverlayUrl}
+            title={`${practitioner?.user?.firstName} ${practitioner?.user?.surname}`}
             color={'primary'}
-            type={'outlined'}
-            className={'rounded-2xl'}
-            size={'small'}
-            onClick={call}
-          >
-            <PhoneIcon className="text-primary h-5 w-5" aria-hidden="true" />
-          </Button>
-          <Button
-            color={'primary'}
-            type={'outlined'}
-            className={'rounded-2xl'}
-            size={'small'}
-            onClick={whatsapp}
-          >
-            <img
-              src={getLogo(LogoSvgs.whatsapp)}
-              alt="whatsapp"
-              className={styles.buttonIconStyle}
-            />
-          </Button>
-        </div>
-      </BannerWrapper>
-      <div className="mt-4 flex justify-center">
-        <div className="w-11/12">
-          <StackedList
-            className="-mt-0.5 flex w-full flex-col gap-1 rounded-2xl"
-            type="MenuList"
-            listItems={
-              practitionerClassroomDetails?.length > 0
-                ? listItems
-                : noClassroomGroupsListItems
+            size="medium"
+            renderBorder={true}
+            renderOverflow={false}
+            onBack={() =>
+              isFromProgrammeView
+                ? history.goBack()
+                : history.push(ROUTES.COACH.PRACTITIONERS)
             }
-          />
-        </div>
-      </div>
-
-      <>
-        <div className={styles.infoWrapper}>
-          <div>
-            <Typography
-              text={'Cellphone number'}
-              type="h5"
-              color="textMid"
-              className={'mt-4'}
-            />
-            <Typography
-              text={practitioner?.user?.phoneNumber}
-              type="h4"
-              color="textDark"
-              className={'mt-1'}
-            />
-          </div>
-          <div>
-            <Button
-              size="small"
-              shape="normal"
-              color="primary"
-              type="outlined"
-              onClick={() => {
-                navigator.clipboard.writeText(practitioner?.user?.phoneNumber!);
-              }}
-            >
-              <Typography type="help" color="primary" text="Copy" />
-              {renderIcon('DocumentDuplicateIcon', styles.buttonIcon)}
-            </Button>
-          </div>
-        </div>
-        <Divider dividerType="dashed" className="my-4" />
-        <div className={styles.infoWrapper}>
-          <div>
-            <Typography
-              text={'Email address'}
-              type="h5"
-              color="textMid"
-              className={'mt-1'}
-            />
-            <Typography
-              text={practitioner?.user?.email}
-              type="h4"
-              color="textDark"
-              className={'mt-1'}
-            />
-          </div>
-          <div>
-            <Button
-              size="small"
-              shape="normal"
-              color="primary"
-              type="outlined"
-              onClick={() => {
-                navigator.clipboard.writeText(practitioner?.user?.email!);
-              }}
-            >
-              <Typography type="help" color="primary" text="Copy" />
-              {renderIcon('DocumentDuplicateIcon', styles.buttonIcon)}
-            </Button>
-          </div>
-        </div>
-        <Divider dividerType="dashed" className="my-4" />
-        <div className={styles.infoWrapper}>
-          <div>
-            <Typography
-              text={'Smartstart club'}
-              type="h5"
-              color="textMid"
-              className={'mt-1'}
-            />
-            <Typography
-              text={'N/A'}
-              type="h4"
-              color="textDark"
-              className={'mt-1'}
-            />
-          </div>
-        </div>
-        <Divider dividerType="dashed" className="my-4" />
-        <div className={styles.infoWrapper}>
-          <div>
-            <Typography
-              text={'Your notes'}
-              type="h5"
-              color="textMid"
-              className={'mt-1'}
-            />
-            {notes.length > 0 ? (
-              <Typography
-                text={getLastNoteDate(notes)}
-                type="h4"
-                color="textDark"
-                className={'mt-1'}
-              />
-            ) : (
-              <Typography
-                text={''}
-                type="h4"
-                color="textDark"
-                className={'mt-1'}
-              />
-            )}
-          </div>
-          <div>
-            <Button
-              size="small"
-              shape="normal"
-              color="primary"
-              type="filled"
-              onClick={
-                () => history.push(ROUTES.COACH.NOTES, { practitionerId })
-                // setCreatePractitionerdNoteVisible(true)
-              }
-            >
-              {renderIcon('EyeIcon', styles.buttonIcon)}
-              <Typography
-                type="help"
-                color="white"
-                text="View"
-                className="ml-1"
-              />
-            </Button>
-          </div>
-          <Dialog
-            fullScreen
-            visible={createPractitionerNoteVisible}
-            position={DialogPosition.Middle}
+            displayOffline={!isOnline}
           >
-            <div className={styles.dialogContent}>
-              <CreateNote
-                userId={practitionerId || ''}
-                noteType={NoteTypeEnum.Unknown}
-                titleText={`Add a note to ${practitioner?.user?.firstName} profile`}
-                onBack={() => onCreatePractitionerNoteBack()}
-                onCreated={() => onCreatePractitionerNoteBack()}
+            <div className={styles.avatarWrapper}>
+              <ProfileAvatar
+                hasConsent={true}
+                canChangeImage={false}
+                dataUrl={practitioner?.user?.profileImageUrl || ''}
+                size={'header'}
+                // eslint-disable-next-line @typescript-eslint/no-empty-function
+                onPressed={() => {}}
               />
             </div>
-          </Dialog>
+
+            <div className={styles.chipsWrapper}>
+              <StatusChip
+                backgroundColour="primary"
+                borderColour="primary"
+                text={'SmartStarter'}
+                textColour={'white'}
+                className={'px-3 py-1.5'}
+              />
+              {isPrincipal && (
+                <StatusChip
+                  backgroundColour="secondary"
+                  borderColour="secondary"
+                  text={`Owner`}
+                  textColour={'white'}
+                  className={'mr-2 px-3 py-1.5'}
+                />
+              )}
+            </div>
+            <div className={styles.contactButtons}>
+              <Button
+                color={'primary'}
+                type={'outlined'}
+                className={'rounded-2xl'}
+                size={'small'}
+                onClick={call}
+              >
+                <PhoneIcon
+                  className="text-primary h-5 w-5"
+                  aria-hidden="true"
+                />
+              </Button>
+              <Button
+                color={'primary'}
+                type={'outlined'}
+                className={'rounded-2xl'}
+                size={'small'}
+                onClick={whatsapp}
+              >
+                <img
+                  src={getLogo(LogoSvgs.whatsapp)}
+                  alt="whatsapp"
+                  className={styles.buttonIconStyle}
+                />
+              </Button>
+            </div>
+          </BannerWrapper>
+          <div className="mt-4 flex justify-center">
+            <div className="w-11/12">
+              <StackedList
+                className="-mt-0.5 flex w-full flex-col gap-1 rounded-2xl"
+                type="MenuList"
+                listItems={
+                  practitionerClassroomDetails?.length > 0
+                    ? listItems
+                    : noClassroomGroupsListItems
+                }
+              />
+            </div>
+          </div>
+
+          <>
+            <div className={styles.infoWrapper}>
+              <div>
+                <Typography
+                  text={'Cellphone number'}
+                  type="h5"
+                  color="textMid"
+                  className={'mt-4'}
+                />
+                <Typography
+                  text={practitioner?.user?.phoneNumber}
+                  type="h4"
+                  color="textDark"
+                  className={'mt-1'}
+                />
+              </div>
+              <div>
+                <Button
+                  size="small"
+                  shape="normal"
+                  color="primary"
+                  type="outlined"
+                  onClick={() => {
+                    navigator.clipboard.writeText(
+                      practitioner?.user?.phoneNumber!
+                    );
+                  }}
+                >
+                  <Typography type="help" color="primary" text="Copy" />
+                  {renderIcon('DocumentDuplicateIcon', styles.buttonIcon)}
+                </Button>
+              </div>
+            </div>
+            <Divider dividerType="dashed" className="my-4" />
+            <div className={styles.infoWrapper}>
+              <div>
+                <Typography
+                  text={'Email address'}
+                  type="h5"
+                  color="textMid"
+                  className={'mt-1'}
+                />
+                <Typography
+                  text={practitioner?.user?.email}
+                  type="h4"
+                  color="textDark"
+                  className={'mt-1'}
+                />
+              </div>
+              <div>
+                <Button
+                  size="small"
+                  shape="normal"
+                  color="primary"
+                  type="outlined"
+                  onClick={() => {
+                    navigator.clipboard.writeText(practitioner?.user?.email!);
+                  }}
+                >
+                  <Typography type="help" color="primary" text="Copy" />
+                  {renderIcon('DocumentDuplicateIcon', styles.buttonIcon)}
+                </Button>
+              </div>
+            </div>
+            <Divider dividerType="dashed" className="my-4" />
+            <div className={styles.infoWrapper}>
+              <div>
+                <Typography
+                  text={'Smartstart club'}
+                  type="h5"
+                  color="textMid"
+                  className={'mt-1'}
+                />
+                <Typography
+                  text={'N/A'}
+                  type="h4"
+                  color="textDark"
+                  className={'mt-1'}
+                />
+              </div>
+            </div>
+            <Divider dividerType="dashed" className="my-4" />
+            <div className={styles.infoWrapper}>
+              <div>
+                <Typography
+                  text={'Your notes'}
+                  type="h5"
+                  color="textMid"
+                  className={'mt-1'}
+                />
+                {notes.length > 0 ? (
+                  <Typography
+                    text={getLastNoteDate(notes)}
+                    type="h4"
+                    color="textDark"
+                    className={'mt-1'}
+                  />
+                ) : (
+                  <Typography
+                    text={''}
+                    type="h4"
+                    color="textDark"
+                    className={'mt-1'}
+                  />
+                )}
+              </div>
+              <div>
+                <Button
+                  size="small"
+                  shape="normal"
+                  color="primary"
+                  type="filled"
+                  onClick={
+                    () => history.push(ROUTES.COACH.NOTES, { practitionerId })
+                    // setCreatePractitionerdNoteVisible(true)
+                  }
+                >
+                  {renderIcon('EyeIcon', styles.buttonIcon)}
+                  <Typography
+                    type="help"
+                    color="white"
+                    text="View"
+                    className="ml-1"
+                  />
+                </Button>
+              </div>
+              <Dialog
+                fullScreen
+                visible={createPractitionerNoteVisible}
+                position={DialogPosition.Middle}
+              >
+                <div className={styles.dialogContent}>
+                  <CreateNote
+                    userId={practitionerId || ''}
+                    noteType={NoteTypeEnum.Unknown}
+                    titleText={`Add a note to ${practitioner?.user?.firstName} profile`}
+                    onBack={() => onCreatePractitionerNoteBack()}
+                    onCreated={() => onCreatePractitionerNoteBack()}
+                  />
+                </div>
+              </Dialog>
+            </div>
+            <Divider dividerType="dashed" className="my-4" />
+          </>
         </div>
-        <Divider dividerType="dashed" className="my-4" />
-      </>
-    </div>
+      )}
+    </>
   );
 };

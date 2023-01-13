@@ -115,7 +115,7 @@ export const AddOrEditPractitioner = ({
 
   return (
     <div className="wrapper-with-sticky-button">
-      <div className="flex flex-col gap-4 mt-4">
+      <div className="mt-4 flex flex-col gap-4">
         <div>
           {preferId && (
             <FormInput<AddPractitionerModel>
@@ -202,10 +202,10 @@ export const AddOrEditPractitioner = ({
           </div>
         )}
       </div>
-      <div className="self-end -mb-4">
+      <div className="-mb-4 self-end">
         <Button
           size="normal"
-          className="w-full mb-4"
+          className="mb-4 w-full"
           type="filled"
           color="primary"
           text="Save"
@@ -217,7 +217,7 @@ export const AddOrEditPractitioner = ({
         {isValidPractitioner === false && (
           <Button
             size="normal"
-            className="w-full mb-4"
+            className="mb-4 w-full"
             type="outlined"
             color="primary"
             text="Skip"

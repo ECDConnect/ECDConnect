@@ -27,6 +27,8 @@ import {
 import { InformationCircleIcon } from '@heroicons/react/outline';
 import maternalRecord from '../../../../assets/maternalRecord.png';
 import { getWeeksDiff } from '@ecdlink/core';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { MotherActions } from '@/store/mother/mother.actions';
 
 export const PregnantMaternalCaseRecord: React.FC<
   PregnantMaternalCaseRecordProps
@@ -66,6 +68,8 @@ export const PregnantMaternalCaseRecord: React.FC<
 
   const isMinDate = deliveryDate.getFullYear() === currentDate.getFullYear();
 
+  const { isLoading } = useThunkFetchCall('mothers', MotherActions.ADD_MOTHER);
+
   const setPhotoUrl = (imageUrl: string) => {
     setPregnantMaternalCaseRecordFormValue('maternalCaseRecord', imageUrl);
     setRegistrationFormPhotoUrl(imageUrl);
@@ -90,8 +94,8 @@ export const PregnantMaternalCaseRecord: React.FC<
   const actualGestationWeek = 40 - diffDates;
 
   const getDate = (point: 'min' | 'max') => {
-    const day = new Date().getDay();
-    const month = new Date().getMonth();
+    const day = new Date().getDate();
+    const month = new Date().getMonth() + 1;
     const year =
       point === 'max'
         ? new Date().getFullYear() + 1
@@ -287,7 +291,9 @@ export const PregnantMaternalCaseRecord: React.FC<
           onClick={() => {
             onSubmit(getPregnantMaternalCaseRecordFormValues());
           }}
+          isLoading={isLoading}
           disabled={
+            isLoading ||
             !isValid ||
             (!hasMaternalCaseRecord &&
               !getPregnantMaternalCaseRecordFormValues()

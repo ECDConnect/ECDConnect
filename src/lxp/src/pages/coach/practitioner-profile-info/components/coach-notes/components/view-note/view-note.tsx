@@ -11,9 +11,10 @@ import {
 } from '@ecdlink/ui';
 import { format } from 'date-fns';
 import { useAppDispatch } from '@store';
-import { notesActions } from '@store/notes';
+import { notesActions, notesThunkActions } from '@store/notes';
 import { ViewNoteProps } from './view-note.types';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
+import { useState } from 'react';
 
 export const ViewNote: React.FC<ViewNoteProps> = ({
   note,
@@ -23,13 +24,20 @@ export const ViewNote: React.FC<ViewNoteProps> = ({
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
   const dialog = useDialog();
+
+  const [isLoading, setIsLoading] = useState(false);
+
   const handleDelete = async (deletedNote: NoteDto) => {
+    if (!note.id) return;
+    setIsLoading(true);
+
+    await appDispatch(notesThunkActions.deleteNote(note.id));
     appDispatch(notesActions.deleteNote(deletedNote));
 
     if (onDelete) {
       onDelete(deletedNote);
     }
-
+    setIsLoading(false);
     onBack && onBack();
   };
 
@@ -48,6 +56,8 @@ export const ViewNote: React.FC<ViewNoteProps> = ({
               textColour: 'white',
               colour: 'primary',
               type: 'filled',
+              isLoading,
+              disabled: isLoading,
               onClick: () => {
                 submit();
                 handleDelete(deletedNote);
@@ -59,6 +69,8 @@ export const ViewNote: React.FC<ViewNoteProps> = ({
               textColour: 'primary',
               colour: 'primary',
               type: 'outlined',
+              isLoading,
+              disabled: isLoading,
               onClick: cancel,
               leadingIcon: 'PencilIcon',
             },
@@ -107,6 +119,8 @@ export const ViewNote: React.FC<ViewNoteProps> = ({
           size="small"
           color="primary"
           type="filled"
+          isLoading={isLoading}
+          disabled={isLoading}
         >
           {renderIcon('TrashIcon', classNames('h-5 w-5 text-white'))}
           <Typography

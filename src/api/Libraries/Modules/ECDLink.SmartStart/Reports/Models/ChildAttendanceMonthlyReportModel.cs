@@ -4,6 +4,8 @@ namespace ECDLink.SmartStart.Reports.Models
     {
         public string Month { get; set; }
 
+        public int Year { get; set; }
+
         public int MonthNumber { get; set; }
 
         public int ActualAttendance { get; set; }

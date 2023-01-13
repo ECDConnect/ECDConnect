@@ -702,6 +702,112 @@ class PractitionerService {
 
     return true;
   }
+
+  async getMoodleSessionForUserId(userId: string): Promise<string> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      query getMoodleSessionForUserId($userId: String) {
+        getMoodleSessionForUserId(userId: $userId) {
+        }
+      }
+      `,
+      variables: {
+        userId,
+      },
+    });
+    if (response.status !== 200) {
+      throw new Error('Get Practitioner Failed - Server connection error');
+    }
+
+    return response.data.data.getMoodleSessionForUserId;
+  }
+
+  async GetPractitionerInviteCount(userId: string): Promise<string> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      query GetPractitionerInviteCount($userId: String) {
+        practitionerInviteCount(userId: $userId) {}
+    }
+      `,
+      variables: {
+        userId,
+      },
+    });
+    if (response.status !== 200) {
+      throw new Error('Get Practitioner Failed - Server connection error');
+    }
+
+    return response.data.data.practitionerInviteCount;
+  }
+
+  async GetLastPractitionerInviteDate(userId: string): Promise<string> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      query GetLastPractitionerInviteDate($userId: String) {
+        lastPractitionerInviteDate(userId: $userId) {
+        }
+    }
+      `,
+      variables: {
+        userId,
+      },
+    });
+    if (response.status !== 200) {
+      throw new Error(
+        'Get Practitioner Invite Date Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.lastPractitionerInviteDate;
+  }
+
+  async GetAllPractitionerInvites(userId: string): Promise<string> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      query GetAllPractitionerInvites($userId: String) {
+        allPractitionerInvites(userId: $userId) {}
+    }
+      `,
+      variables: {
+        userId,
+      },
+    });
+    if (response.status !== 200) {
+      throw new Error(
+        'Get Practitioner Invite Dates Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.allPractitionerInvites;
+  }
+
+  async SendPractitionerInviteToApplication(userId: string): Promise<string> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      mutation SendPractitionerInviteToApplication($userId: String) {
+        sendPractitionerInviteToApplication(userId: $userId) {}
+      }
+      `,
+      variables: {
+        userId,
+      },
+    });
+    if (response.status !== 200) {
+      throw new Error('Get Practitioner Failed - Server connection error');
+    }
+
+    return response.data.data.sendPractitionerInviteToApplication;
+  }
 }
 
 export default PractitionerService;

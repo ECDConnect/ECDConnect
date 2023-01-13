@@ -47,7 +47,7 @@ class CustomUploadAdapter {
             loader.uploadTotal = result.data.total;
             loader.uploaded = true;
             resolve({
-              urls: { default: encodeURI(result.data.fileUpload.url) },
+              urls: { default: result.data.fileUpload.url },
             });
           } else {
             reject(genericErrorText);

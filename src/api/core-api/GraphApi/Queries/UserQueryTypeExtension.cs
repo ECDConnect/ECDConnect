@@ -29,6 +29,8 @@ using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.Security.Helpers;
 using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
 using ECDLink.Security.Managers;
+using ECDLink.Moodle.Managers;
+using ECDLink.Moodle.Models;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
@@ -120,6 +122,45 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 }
             }
             return tokenuser;
-            }
         }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public string getMoodleSessionForUserId(
+            [Service] IHttpContextAccessor contextAccessor,
+            [Service] IGenericRepositoryFactory repoFactory,
+            [Service] MoodleManager moodleManager,
+            [Service] UserManager<ApplicationUser> userManager,
+            string userId)
+        {
+
+            var user = userManager.FindByIdAsync(userId).Result;
+            var moodleUserName = user.IdNumber + "@ecdconnect.co.za";
+            var moodlePassword = "Test@1234";
+            var cohortName = "Grow Great";
+            string orgName = TenantExecutionContext.Tenant.OrganisationName;
+
+            if (orgName == "SmartStart")
+            {
+                cohortName = "Smart Start";
+            }
+
+
+            // create the moodle user
+            var moodleUser = new MoodleUser()
+            {
+                UserName = moodleUserName,
+                Password = moodlePassword,
+                IdNumber = user.IdNumber,
+                Firstname = user.FirstName,
+                Lastname = user.Surname,
+                Email = user.Email,
+                Phone1 = user.PhoneNumber
+            };
+            // create user for moodle
+            moodleManager.CreateUserAsync(moodleUser, cohortName).Wait();
+            // create session for moodle user
+            return moodleManager.CreateUserSessionAsync(moodleUserName).Result;
+        }
+
+    }
 }

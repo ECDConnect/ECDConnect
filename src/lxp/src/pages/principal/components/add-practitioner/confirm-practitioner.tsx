@@ -234,10 +234,10 @@ export default function ConfirmPractitioner({
               </div>
             </div>
 
-            <div className="self-end -mb-4">
+            <div className="-mb-4 self-end">
               <Button
                 size="normal"
-                className="w-full mb-4"
+                className="mb-4 w-full"
                 type="filled"
                 color="quatenary"
                 text="Confirm"

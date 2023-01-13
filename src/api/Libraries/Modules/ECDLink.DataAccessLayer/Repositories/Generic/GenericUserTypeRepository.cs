@@ -1,21 +1,15 @@
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Base;
-using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Interfaces;
-using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Events;
-using ECDLink.DataAccessLayer.Helpers;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ECDLink.Core.Extensions;
-using Microsoft.Extensions.Azure;
 using ECDLink.Tenancy.Context;
 
 namespace ECDLink.DataAccessLayer.Repositories.Generic
@@ -73,7 +67,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             var user = _userManager.FindByIdAsync(_userId).Result;
             var roles = _userManager.GetRolesAsync(user).Result;
             var isAdmin = roles.Contains(Roles.ADMINISTRATOR);
-            
+
             var query = entities.Where(e => e.TenantId == null || e.TenantId.Equals(tenantId)).AsQueryable();//.Where(e => e.TenantId.Equals(tenantId))
             if (isAdmin)
             {
@@ -81,9 +75,10 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             }
             else
             {
-                try { 
+                try
+                {
                     List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId);
-                    if (hh.Count>0)
+                    if (hh.Count > 0)
                     {
                         if (!hh.Contains(null)) //dont run any null values through teh check, nothing should be null
                         {
@@ -109,7 +104,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             {
                 return default;
             }
-            
+
             var user = _userManager.FindByIdAsync(castRecord.UserId).Result;
             var roles = _userManager.GetRolesAsync(user).Result;
 
@@ -143,7 +138,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             Type type = typeof(T);
             if (type.GetProperty("UserId") != null)
             {
-                
+
                 var record = base.GetByUserId(id);
                 var castRecord = record as IUserType;
 
@@ -243,7 +238,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                 throw new ArgumentNullException("entity");
             }
 
-            entity.TenantId = tenantId; 
+            entity.TenantId = tenantId;
             entities.Add(entity);
 
             context.SaveChanges();
