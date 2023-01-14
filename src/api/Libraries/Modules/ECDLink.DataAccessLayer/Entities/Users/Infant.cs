@@ -1,13 +1,10 @@
-using ECDLink.Security.Attributes;
 using ECDLink.DataAccessLayer.Entities.Base;
+using ECDLink.DataAccessLayer.Entities.Caregiver;
 using ECDLink.Security;
+using ECDLink.Security.Attributes;
+using HotChocolate;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Collections.Generic;
-using ECDLink.DataAccessLayer.Entities.Documents;
-using ECDLink.DataAccessLayer.Entities.Interfaces;
-using ECDLink.DataAccessLayer.Entities.Caregiver;
-using HotChocolate;
 
 namespace ECDLink.DataAccessLayer.Entities.Users
 {
