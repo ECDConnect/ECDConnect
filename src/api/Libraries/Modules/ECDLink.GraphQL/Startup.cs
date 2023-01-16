@@ -1,3 +1,6 @@
+using ECDLink.DataAccessLayer.Context;
+using ECDLink.DataAccessLayer.Repositories.Factories;
+using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.EGraphQL.Interceptors;
 using ECDLink.EGraphQL.ObjectTypes;
@@ -23,6 +26,8 @@ namespace ECDLink.EGraphQL
 
             var builder = services
               .AddGraphQLServer()
+              .RegisterService<AuthenticationDbContext>(ServiceKind.Resolver)
+              .RegisterService<IGenericRepositoryFactory>(ServiceKind.Resolver)
               .AddQueryType<Query>()
               .AddTypeModule(sp => new ContentTypeModule(contentReloader))
               .AddTypeModule(sp => new SettingsModule(contentReloader))
