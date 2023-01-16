@@ -48,7 +48,10 @@ namespace EcdLink.Api.CoreApi.Managers.Users
             var mother = GetMotherFromInputModel(input);
             var repository = _repoFactory.CreateGenericRepository<Mother>(userContext: applicationUserId);
             
-            AddVisits(mother.Id, mother.ExpectedDateOfDelivery, mother.InsertedDate);
+            if (mother != null)
+            {
+                AddVisits(mother.Id, mother.ExpectedDateOfDelivery, mother.InsertedDate);
+            }
             return repository.Insert(mother);
         }
 
