@@ -1,6 +1,7 @@
 using ECDLink.DataAccessLayer.Entities.Base;
 using ECDLink.Security;
 using ECDLink.Security.Attributes;
+using HotChocolate;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
