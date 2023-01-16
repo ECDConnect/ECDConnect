@@ -130,8 +130,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users
             var visitTypeRepo = _repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
             var _type = "mother";
 
-            // Get all visit types linked to mother excluding other
-            List <VisitType> visitTypes = visitTypeRepo.GetAll().Where(x => x.Type.Equals(_type) && x.Name != "other").OrderBy(x => x.Order).ToList();
+            // Get all visit types linked to mother excluding additional_visits
+            List<VisitType> visitTypes = visitTypeRepo.GetAll().Where(x => x.Type.Equals(_type) && x.Name != "additional_visits").OrderBy(x => x.Order).ToList();
             
             // Get dates for each visit
             List <VisitModel> visits = getVisitDates(ExpectedDateOfDelivery, InsertedDate, visitTypes);

@@ -14,7 +14,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public MotherModel Mother { get; set; }
         public Guid? InfantId { get; set; }
         public InfantModel Infant { get; set; }
-        public string Risk { get; set; }
+        public string Risk { get; set; }  // high or normal
         public bool Attended { get; set; }
     }
 }

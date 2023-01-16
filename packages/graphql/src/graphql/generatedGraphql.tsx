@@ -2133,6 +2133,7 @@ export type MotherModelInput = {
 export type Mutation = {
   __typename?: 'Mutation';
   addAbsenteeForPractitioner?: Maybe<Absentees>;
+  addAdditionalVisitForMother?: Maybe<Visit>;
   addClinic?: Maybe<Clinic>;
   addCoachToFranchisor?: Maybe<Coach>;
   addHealthCareWorker?: Maybe<HealthCareWorker>;
@@ -2415,6 +2416,10 @@ export type MutationAddAbsenteeForPractitionerArgs = {
   practitionerId?: InputMaybe<Scalars['String']>;
   reason?: InputMaybe<Scalars['String']>;
   reassignedToPractitioner?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationAddAdditionalVisitForMotherArgs = {
+  input?: InputMaybe<VisitModelInput>;
 };
 
 export type MutationAddClinicArgs = {
@@ -6737,6 +6742,19 @@ export type VisitInput = {
   UpdatedBy?: InputMaybe<Scalars['String']>;
   VisitType?: InputMaybe<VisitTypeInput>;
   VisitTypeId: Scalars['UUID'];
+};
+
+export type VisitModelInput = {
+  actualVisitDate: Scalars['DateTime'];
+  attended: Scalars['Boolean'];
+  infant?: InputMaybe<InfantModelInput>;
+  infantId?: InputMaybe<Scalars['UUID']>;
+  mother?: InputMaybe<MotherModelInput>;
+  motherId?: InputMaybe<Scalars['UUID']>;
+  plannedVisitDate: Scalars['DateTime'];
+  risk?: InputMaybe<Scalars['String']>;
+  visitType?: InputMaybe<VisitTypeInput>;
+  visitTypeId?: InputMaybe<Scalars['UUID']>;
 };
 
 export type VisitType = {
