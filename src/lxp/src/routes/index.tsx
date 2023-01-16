@@ -70,6 +70,7 @@ import { CoachContactPractitioner } from '@/pages/coach/practitioner-profile-inf
 import Business from '@/pages/business/business';
 import AddAmount from '@/pages/business/add-amount/add-amount';
 import { AddIncome } from '@/pages/business/add-income/add-income';
+import { AddExpense } from '@/pages/business/add-amount/add-expense/add-expense';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -134,6 +135,11 @@ const AuthRoutes: React.FC = () => {
       <Route
         path={ROUTES.BUSINESS_ADD_INCOME}
         component={AddIncome}
+        exact={true}
+      />
+      <Route
+        path={ROUTES.BUSINESS_ADD_EXPENSE}
+        component={AddExpense}
         exact={true}
       />
       <Route path={ROUTES.TRAINING} component={Training} exact={true} />

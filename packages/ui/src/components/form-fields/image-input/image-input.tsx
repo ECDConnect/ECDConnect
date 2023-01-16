@@ -10,6 +10,7 @@ export interface ImageInputProps<T extends FieldValues>
   extends ComponentBaseProps {
   nameProp: Path<T>;
   label: string;
+  subLabel?: string;
   icon?: string;
   iconContainerColor?: Colours;
   iconColour?: Colours;
@@ -23,6 +24,7 @@ export interface ImageInputProps<T extends FieldValues>
 
 export const ImageInput = <T extends FieldValues>({
   label,
+  subLabel,
   nameProp,
   acceptedFormats,
   disabled = false,
@@ -140,8 +142,16 @@ export const ImageInput = <T extends FieldValues>({
           className={styles.labelStyle}
           weight="bold"
           type={'body'}
-          color={'textMid'}
+          color={'textDark'}
           text={label}
+        ></Typography>
+      </div>
+      <div>
+        <Typography
+          className={styles.labelStyle}
+          type={'body'}
+          color={'textMid'}
+          text={subLabel}
         ></Typography>
       </div>
       <div
