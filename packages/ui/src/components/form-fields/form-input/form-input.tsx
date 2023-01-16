@@ -12,6 +12,7 @@ export type TextInputType = 'input' | 'textarea' | 'date';
 
 interface FormFieldProps<T extends FieldValues> extends ComponentBaseProps {
   label?: string;
+  subLabel?: string;
   nameProp?: Path<T>;
   type?: FormFieldType;
   textInputType?: TextInputType;
@@ -30,6 +31,7 @@ interface FormFieldProps<T extends FieldValues> extends ComponentBaseProps {
 
 export const FormInput = <T extends FieldValues>({
   label,
+  subLabel,
   nameProp,
   type = 'text',
   textInputType = 'input',
@@ -119,6 +121,11 @@ export const FormInput = <T extends FieldValues>({
           {label && (
             <label htmlFor={nameProp} className={styles.label}>
               {label}
+            </label>
+          )}
+          {subLabel && (
+            <label htmlFor={nameProp} className={styles.subLabel}>
+              {subLabel}
             </label>
           )}
           {hint && <label className={styles.hintStyle}>{hint}</label>}

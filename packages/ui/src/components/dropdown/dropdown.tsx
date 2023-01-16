@@ -11,6 +11,7 @@ import { CheckCircleIcon } from '@heroicons/react/solid';
 export interface DropdownProps<T> extends ComponentBaseProps {
   placeholder?: string;
   label?: string;
+  subLabel?: string;
   direction?: string;
   disabled?: boolean;
   list: DropDownOption<T>[];
@@ -28,6 +29,7 @@ export function Dropdown<T>({
   list,
   selectedValue,
   label,
+  subLabel,
   onChange,
   placeholder = '',
   disabled = false,
@@ -141,6 +143,7 @@ export function Dropdown<T>({
   return (
     <div className={className}>
       {label && <label className={styles.label}>{label}</label>}
+      {subLabel && <label className={styles.subLabel}>{subLabel}</label>}
       <Menu
         as="div"
         className={classNames(styles.menu, fullWidth ? 'w-full' : '')}

@@ -21,6 +21,9 @@ const ROUTES = {
     }),
   }),
   DASHBOARD: '/dashboard',
+  BUSINESS: '/business',
+  BUSINESS_ADD_AMOUNT: '/business-add-amount',
+  BUSINESS_ADD_INCOME: '/business-add-income',
   CLASSROOM: '/classroom',
   TRAINING: '/training',
   CHILD: addPrefix('/child', {

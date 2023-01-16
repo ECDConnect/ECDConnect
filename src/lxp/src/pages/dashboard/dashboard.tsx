@@ -293,7 +293,7 @@ export const Dashboard: React.FC = () => {
   if (isPrincipal || isFundaAppAdmin) {
     navigation?.splice(3, 0, {
       name: NavigationTypes.Business,
-      href: ROUTES.CLASSROOM,
+      href: ROUTES.BUSINESS,
       icon: 'AcademicCapIcon',
       current: false,
       showDivider: true,
@@ -396,7 +396,9 @@ export const Dashboard: React.FC = () => {
       title: 'Business',
       titleIcon: 'AcademicCapIcon',
       titleIconClassName: styles.businessIcon,
-      onActionClick: () => ({}),
+      onActionClick: () => {
+        goToBusiness();
+      },
       classNames: 'bg-uiBg',
     });
   }
@@ -445,6 +447,12 @@ export const Dashboard: React.FC = () => {
       history.push(ROUTES.CLASSROOM, { activeTabIndex: 1 });
     } else {
       showCompleteProfileBlockingDialog();
+    }
+  };
+
+  const goToBusiness = () => {
+    if (isPrincipal || isFundaAppAdmin) {
+      history.push(ROUTES.BUSINESS);
     }
   };
 
