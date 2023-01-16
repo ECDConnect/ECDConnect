@@ -16,7 +16,7 @@
     <None Remove="Microsoft.AspNet.WebApi.Client" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Npgsql" Version="6.0.0" />
+    <PackageReference Include="Npgsql" Version="7.0.0" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Managers\" />

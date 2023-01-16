@@ -25,7 +25,7 @@
     <PackageReference Include="NJsonSchema.CodeGeneration" Version="10.4.4" />
     <PackageReference Include="NJsonSchema.CodeGeneration.CSharp" Version="10.4.4" />
     <PackageReference Include="NJsonSchema.CodeGeneration.TypeScript" Version="10.4.4" />
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="6.0.0" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.0" />
   </ItemGroup>
 
   <ItemGroup>
