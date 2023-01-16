@@ -77,7 +77,6 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
     }).filter(Boolean) as { label: string; value: any }[];
 
     setIncomeTypesList(_list);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

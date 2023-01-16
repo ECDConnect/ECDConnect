@@ -20,7 +20,6 @@ export const AddAmount: React.FC<ComponentBaseProps> = () => {
       size="medium"
       renderBorder={true}
       onBack={() => history.push(ROUTES.BUSINESS)}
-      // displayOffline={!isOnline}
       className="w-full p-4"
     >
       <div className="mb-3 flex w-full flex-wrap justify-center">
@@ -40,7 +39,6 @@ export const AddAmount: React.FC<ComponentBaseProps> = () => {
             {renderIcon('PlusIcon', styles.buttonIconPrimary)}
             <Typography
               type="help"
-              //   className="mr-2"
               color="white"
               text={'Income (money in)'}
             ></Typography>
@@ -54,7 +52,6 @@ export const AddAmount: React.FC<ComponentBaseProps> = () => {
             {renderIcon('MinusIcon', styles.buttonIconSecondary)}
             <Typography
               type="help"
-              //   className="mr-2"
               color="primary"
               text={'Expenses (money out)'}
             ></Typography>

@@ -42,8 +42,7 @@ export const AddIncome: React.FC = () => {
         })
       );
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOnline]);
+  }, [appDispatch, isOnline]);
 
   const user = useSelector(userSelectors.getUser);
   const [listItems, setListItems] = useState<ActionListDataItem[]>([]);
@@ -53,7 +52,6 @@ export const AddIncome: React.FC = () => {
     if (user) {
       setNewStackListItems(user);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const getDefaultFormvalues = () => {

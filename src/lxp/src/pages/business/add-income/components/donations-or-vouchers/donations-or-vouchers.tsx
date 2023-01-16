@@ -63,7 +63,6 @@ export const DonationsOrVouchers: React.FC<AddIncomeState> = ({ setType }) => {
       .filter(Boolean) as { label: string; value: any }[];
 
     setDonationTypesList(_list);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleFamilyGrantSelection = (donations: string[]) => {
@@ -79,7 +78,6 @@ export const DonationsOrVouchers: React.FC<AddIncomeState> = ({ setType }) => {
       renderBorder={true}
       onBack={() => setType('')}
       className="p-4"
-      // displayOffline={!isOnline}
     >
       <div className="mb-3 w-full justify-center">
         <Typography type="h2" color="textMid" text={'Donations or vouchers'} />
