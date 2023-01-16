@@ -15,7 +15,6 @@ using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Azure.Documents;
 using System;
 using System.Collections.Generic;
 using System.Globalization;

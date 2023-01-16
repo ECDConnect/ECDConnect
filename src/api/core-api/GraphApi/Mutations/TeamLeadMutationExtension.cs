@@ -9,7 +9,6 @@ using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Azure.Documents;
 using System;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations

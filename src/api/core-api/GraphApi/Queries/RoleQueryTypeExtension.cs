@@ -8,7 +8,6 @@ using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Azure.Documents;
 using System.Collections.Generic;
 using System.Linq;
 
