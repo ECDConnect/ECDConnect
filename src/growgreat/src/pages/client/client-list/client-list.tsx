@@ -17,6 +17,8 @@ import { useHistory } from 'react-router-dom';
 import { getInfants } from '@/store/infant/infant.selectors';
 import { motherSelectors } from '@/store/mother';
 import Infant from '@/assets/infant.svg';
+import Pregnant from '@/assets/pregnant.svg';
+import { ReactComponent as BinocularsIcon } from '@/assets/binocularsIcon.svg';
 
 export const ClientList: React.FC<ComponentBaseProps> = () => {
   const dialog = useDialog();
@@ -39,25 +41,26 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
       return {
         icon: Infant,
         title: infant?.firstName ?? infant?.user?.firstName!,
+        // TODO: add correct subTitle (alert status)
         subTitle: infant?.user?.dateOfBirth
           ? `Birth date: ${format(new Date(infant?.user?.dateOfBirth!), 'PP')}`
           : `Birth date: ${format(new Date(infant?.dateOfBirth!), 'PP')}`,
         switchTextStyles: true,
         alertSeverity: 'none',
-        avatarColor: getAvatarColor() || '',
+        avatarColor: getAvatarColor('growgreat') || '',
         onActionClick: () => {},
       };
     });
 
     setInfantsListItems(infantsList);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [infants]);
 
   useEffect(() => {
     const mothersList: UserAlertListDataItem[] = mothers.map((mother) => {
       return {
-        icon: Infant,
+        icon: Pregnant,
         title: mother?.firstName || mother?.user?.firstName!,
+        // TODO: add correct subTitle (alert status)
         subTitle: mother?.expectedDateOfDelivery
           ? `Expected delivery date: ${format(
               new Date(mother?.expectedDateOfDelivery!),
@@ -66,13 +69,12 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
           : `Expected delivery date: -`,
         switchTextStyles: true,
         alertSeverity: 'none',
-        avatarColor: getAvatarColor() || '',
+        avatarColor: getAvatarColor('growgreat') || '',
         onActionClick: () => {},
       };
     });
 
     setMothersListItems(mothersList);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mothers]);
 
   useEffect(() => {
@@ -83,7 +85,7 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
 
   const showCompleteProfileBlockingDialog = () => {
     dialog({
-      blocking: true,
+      blocking: false,
       position: DialogPosition.Middle,
       render: (onSubmit, onCancel) => {
         return (
@@ -129,18 +131,19 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
       {(!infants || infants.length === 0) &&
         (!mothers || mothers.length === 0) && (
           <IconInformationIndicator
+            className="px-10 pt-28"
             title="You don't have any client yet!"
-            subTitle="Tap the add a client button below to start"
+            subTitle="Tap the “Open a folder” button below to register clients"
+            renderCustomIcon={<BinocularsIcon />}
           />
         )}
-      {clientsListItems.length > 0 ? (
+      {clientsListItems.length > 0 && (
         <StackedList
           className={styles.stackedList}
           listItems={clientsListItems || []}
           type={'UserAlertList'}
-          onScroll={(scrollTop: number) => {}}
         />
-      ) : null}
+      )}
       <FADButton
         title={'Open a folder'}
         icon={'PlusIcon'}

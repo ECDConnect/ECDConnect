@@ -1,5 +1,13 @@
-import { BannerWrapper, Button, Alert, Typography } from '@ecdlink/ui';
-import { format } from 'date-fns';
+import {
+  BannerWrapper,
+  Button,
+  Alert,
+  Typography,
+  Dialog,
+  DialogPosition,
+  renderIcon,
+} from '@ecdlink/ui';
+import { differenceInMinutes, format } from 'date-fns';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useHistory } from 'react-router';
 import { PractitionerNotRegisterProps } from './coach-practitioner-not-registered.types';
@@ -8,6 +16,8 @@ import { authSelectors } from '@/store/auth';
 import { useSelector } from 'react-redux';
 import ROUTES from '@/routes/routes';
 import { useEffect, useState } from 'react';
+import * as styles from './coach-practitioner-not-registered.styles';
+import { ExclamationCircleIcon } from '@heroicons/react/solid';
 
 export const CoachPractitionerNotRegistered: React.FC<
   PractitionerNotRegisterProps
@@ -17,8 +27,13 @@ export const CoachPractitionerNotRegistered: React.FC<
   const userAuth = useSelector(authSelectors.getAuthUser);
   const practitionerId = practitioner?.userId;
   const [inviteCount, setInviteCount] = useState(0);
-  const [inviteDates, setInviteDates] = useState<Date>();
+  const [inviteDates, setInviteDates] = useState<[]>();
+  const [lastInviteDate, setLastInviteDate] = useState<Date>();
   const disableButton = inviteCount >= 3;
+  const [showAlert, setShowAlert] = useState(false);
+  const diffHours = Math.abs(
+    differenceInMinutes(new Date(lastInviteDate as Date), new Date())
+  );
 
   useEffect(() => {
     getClassroomDetails();
@@ -29,9 +44,17 @@ export const CoachPractitionerNotRegistered: React.FC<
     const inviteCountData = await new PractitionerService(
       userAuth?.auth_token || ''
     ).GetPractitionerInviteCount(practitioner?.userId || '');
-    const lastInviteDates = await new PractitionerService(
+    const lastInviteDate = await new PractitionerService(
       userAuth?.auth_token || ''
     ).GetLastPractitionerInviteDate(practitioner?.userId || '');
+    const lastInviteDates = await new PractitionerService(
+      userAuth?.auth_token || ''
+    ).GetAllPractitionerInvites(practitioner?.userId || '');
+    setLastInviteDate(lastInviteDate as any);
+    if (diffHours > 60) {
+      setShowAlert(true);
+      return;
+    }
     setInviteCount(Number(inviteCountData));
     setInviteDates(lastInviteDates as any);
   };
@@ -43,6 +66,10 @@ export const CoachPractitionerNotRegistered: React.FC<
     getClassroomDetails();
   };
 
+  const callForHelp = () => {
+    window.open('tel:+27800014817');
+  };
+
   return (
     <>
       <BannerWrapper
@@ -50,13 +77,13 @@ export const CoachPractitionerNotRegistered: React.FC<
         color={'primary'}
         size="medium"
         renderBorder={true}
-        renderOverflow={false}
+        renderOverflow={true}
         onBack={() => history.push(ROUTES.COACH.PRACTITIONERS)}
         displayOffline={!isOnline}
-      />
-      <div className="flex w-full justify-center">
+        className="w-full justify-center p-2"
+      >
         <Alert
-          className="mt-10 w-11/12 rounded-xl"
+          className="mt-10 rounded-xl"
           type={'error'}
           title={
             practitioner?.isLeaving
@@ -77,70 +104,143 @@ export const CoachPractitionerNotRegistered: React.FC<
             `If ${practitioner?.user?.firstName} did not receive the SMS, you can resend it now.`,
           ]}
         />
-      </div>
-      {inviteCount && inviteDates && (
-        <div className="mt-6 ml-4 flex w-full justify-center">
-          <div className="w-11/12">
-            <div>
+        {inviteCount && inviteDates && (
+          <div className="mt-4">
+            <div className="ml-2">
               <Typography
                 color={'textMid'}
                 text={`${inviteCount} out of 3 invitations sent:`}
                 type="small"
               />
             </div>
-            <div className="mr-4">
-              <Typography
-                color={'textMid'}
-                text={`• You sent ${
-                  practitioner?.user?.firstName
-                } an invitation on ${format(
-                  new Date(inviteDates as Date),
-                  'LLLL d'
-                )}`}
-                type="small"
-              />
+            <div className="mt-2 ml-4 flex w-full flex-wrap justify-center">
+              {inviteDates.length > 0 &&
+                inviteDates?.map((item, index) => {
+                  return (
+                    <div key={index} className="mr-4">
+                      <Typography
+                        color={'textMid'}
+                        text={`• You sent ${
+                          practitioner?.user?.firstName
+                        } an invitation on ${format(
+                          new Date(item as Date),
+                          'LLLL d'
+                        )}`}
+                        type="small"
+                      />
+                    </div>
+                  );
+                })}
             </div>
           </div>
+        )}
+        <Dialog
+          className={styles.dialogContainer}
+          borderRadius="normal"
+          stretch={true}
+          visible={showAlert}
+          position={DialogPosition.Bottom}
+        >
+          <div className={'flex justify-center p-4'}>
+            <div className="w-11/12">
+              <div className={'flex w-full justify-center p-4'}>
+                <ExclamationCircleIcon className="text-errorMain h-20 w-20" />
+              </div>
+              <div className="flex flex-wrap justify-center">
+                <Typography
+                  type="h3"
+                  color="textDark"
+                  text={'You cannot re-send this invitation!'}
+                  weight="bold"
+                  className="w-11/12"
+                ></Typography>
+                <Typography
+                  type="body"
+                  color="textDark"
+                  text={
+                    'You sent an invitation less than 1 hour ago. Please try again later.'
+                  }
+                  className="w-11/12"
+                ></Typography>
+              </div>
+              <Button
+                type="filled"
+                color="primary"
+                className={'mt-4 w-full'}
+                onClick={() => {
+                  setShowAlert(false);
+                }}
+              >
+                {renderIcon('XIcon', styles.buttonIcon)}
+                <Typography
+                  type="help"
+                  className="mr-2"
+                  color="white"
+                  text={'Close'}
+                ></Typography>
+              </Button>
+            </div>
+          </div>
+        </Dialog>
+        {inviteCount === 2 && (
+          <div className="my-4 flex justify-center">
+            <Alert
+              type="info"
+              title="You can send 1 more invitation."
+              className="w-11/12"
+            />
+          </div>
+        )}
+        {inviteCount === 3 && (
+          <div className="my-4 flex justify-center">
+            <Alert
+              type="info"
+              title="You cannot re-send the invitation again."
+              message="Reach out to SmartStart’s call centre if Thandi is having trouble registering for Funda App. "
+              className="w-11/12"
+              button={
+                <Button
+                  text="Contact call centre"
+                  icon="PhoneIcon"
+                  type={'filled'}
+                  color={'primary'}
+                  textColor={'white'}
+                  onClick={() => callForHelp()}
+                />
+              }
+            />
+          </div>
+        )}
+        <div className="my-4 w-full">
+          <div className="flex w-full justify-center">
+            <Button
+              text="Re-send Funda App invitation"
+              icon="ExclamationIcon"
+              type={'filled'}
+              color={'primary'}
+              textColor={'white'}
+              className="mt-4 w-11/12"
+              onClick={sendPractitionerInvite}
+              disabled={disableButton}
+            />
+          </div>
+          <div className="flex w-full justify-center">
+            <Button
+              text="Contact practitioner"
+              icon="ChatIcon"
+              type={'outlined'}
+              color={'primary'}
+              textColor={'primary'}
+              className="mt-4 w-11/12"
+              onClick={() =>
+                history.push(ROUTES.COACH.CONTACT_PRACTITIONER, {
+                  practitionerId,
+                })
+              }
+            />
+          </div>
         </div>
-      )}
-      {inviteCount === 2 && (
-        <div className="my-4 flex justify-center">
-          <Alert
-            type="info"
-            title="You can send 1 more invitation."
-            className="w-11/12"
-          />
-        </div>
-      )}
-      <div className="absolute bottom-4 w-full">
-        <div className="flex w-full justify-center">
-          <Button
-            text="Re-send Funda App invitation"
-            icon="ExclamationIcon"
-            type={'filled'}
-            color={'primary'}
-            textColor={'white'}
-            className="mt-4 w-11/12"
-            onClick={sendPractitionerInvite}
-            disabled={disableButton}
-          />
-        </div>
-        <div className="flex w-full justify-center">
-          <Button
-            text="Contact practitioner"
-            icon="ChatIcon"
-            type={'outlined'}
-            color={'primary'}
-            textColor={'primary'}
-            className="mt-4 w-11/12"
-            onClick={() =>
-              history.push(ROUTES.COACH.CONTACT_PRACTITIONER, {
-                practitionerId,
-              })
-            }
-          />
-        </div>
-      </div>
+      </BannerWrapper>
     </>
   );
 };

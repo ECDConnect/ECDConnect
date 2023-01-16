@@ -1319,6 +1319,14 @@ export type DailyProgrammeInput = {
   UpdatedBy?: InputMaybe<Scalars['String']>;
 };
 
+export type DisplaySet = {
+  __typename?: 'DisplaySet';
+  color?: Maybe<Scalars['String']>;
+  icon?: Maybe<Scalars['String']>;
+  notes?: Maybe<Scalars['String']>;
+  subject?: Maybe<Scalars['String']>;
+};
+
 export type Document = {
   __typename?: 'Document';
   createdUserId?: Maybe<Scalars['String']>;
@@ -4605,6 +4613,7 @@ export type Query = {
   allInfantsForHealthCareWorker?: Maybe<Array<Maybe<Infant>>>;
   allMothers?: Maybe<Array<Maybe<Mother>>>;
   allMothersForHealthCareWorker?: Maybe<Array<Maybe<Mother>>>;
+  allPractitionerInvites?: Maybe<Array<Scalars['DateTime']>>;
   allPractitionersForCoach?: Maybe<Array<Maybe<Practitioner>>>;
   allPractitionersForPrincipal?: Maybe<Array<Maybe<Practitioner>>>;
   allPrincipal?: Maybe<Array<Maybe<Practitioner>>>;
@@ -4650,7 +4659,7 @@ export type Query = {
   mapPractitionerToPrincipal?: Maybe<Principal>;
   monthlyAttendanceRecordCSV?: Maybe<FileModel>;
   monthlyAttendanceReport?: Maybe<Array<Maybe<MonthlyAttendanceReportModel>>>;
-  motherById?: Maybe<Infant>;
+  motherById?: Maybe<Mother>;
   motherCountForHealthCareWorkerForMonth: Scalars['Int'];
   openAccessAddChildDetail?: Maybe<ChildTokenAccessModel>;
   openConsent: Array<Maybe<Consent>>;
@@ -4670,6 +4679,7 @@ export type Query = {
   roleForUser?: Maybe<Scalars['String']>;
   roles?: Maybe<Array<Maybe<IdentityRole>>>;
   settings?: Maybe<SettingsType>;
+  statusInfo?: Maybe<DisplaySet>;
   tenantContext?: Maybe<TenantModel>;
   totalDaysAbsent: Scalars['Int'];
   userById?: Maybe<ApplicationUser>;
@@ -5406,6 +5416,10 @@ export type QueryAllMothersForHealthCareWorkerArgs = {
   id?: InputMaybe<Scalars['String']>;
 };
 
+export type QueryAllPractitionerInvitesArgs = {
+  userId?: InputMaybe<Scalars['String']>;
+};
+
 export type QueryAllPractitionersForCoachArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
@@ -5617,6 +5631,10 @@ export type QueryPrincipalByUserIdArgs = {
 };
 
 export type QueryRoleForUserArgs = {
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryStatusInfoArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 

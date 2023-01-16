@@ -1,4 +1,6 @@
+using EcdLink.Api.CoreApi.Managers.Users;
 using ECDLink.Abstractrions.GraphQL.Enums;
+using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
@@ -21,23 +23,23 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
     {
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public List<Infant> GetAllInfants([Service] IHttpContextAccessor contextAccessor,
-         [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
-         [Service] IGenericRepositoryFactory repoFactory)
+        public List<Infant> GetAllInfants(
+            [Service] IHttpContextAccessor contextAccessor,
+            [Service] IGenericRepositoryFactory repoFactory)
         {
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
-            var childRepo = repoFactory.CreateRepository<Infant>(userContext: uId);
+            var childRepo = repoFactory.CreateGenericRepository<Infant>(userContext: uId);
             List<Infant> children = childRepo.GetAll().ToList();
 
             return children;
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public List<Infant> GetAllInfantsForHealthCareWorker([Service] IHttpContextAccessor contextAccessor,
-         [Service] IGenericRepositoryFactory repoFactory,
-         string id)
+        public List<Infant> GetAllInfantsForHealthCareWorker(
+            [Service] IHttpContextAccessor contextAccessor,
+            [Service] IGenericRepositoryFactory repoFactory,
+            [Service] InfantManager infantManager,
+            string id)
         {
             List<Infant> infants = new List<Infant>();
             var uId = contextAccessor.HttpContext.GetUser().Id;
@@ -45,15 +47,29 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             List<Infant> children = childRepo.GetAll().Where(x => x.Caregiver.HealthCareWorker.UserId.Equals(id)).ToList();
             List<Infant> childrenMother = childRepo.GetAll().Where(x => x.Mother.HealthCareWorker.UserId.Equals(id)).ToList();
 
+
+            foreach (var child in children)
+            {
+
+                child.StatusInfo = infantManager.GetStatusInfo(child);
+
+            }
+
+            foreach (var child in childrenMother)
+            {
+                child.StatusInfo = infantManager.GetStatusInfo(child);
+            }
+
             infants.AddRange(children);
             infants.AddRange(childrenMother);
             return infants;
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public int GetInfantCountForHealthCareWorkerForMonth([Service] IHttpContextAccessor contextAccessor,
-         [Service] IGenericRepositoryFactory repoFactory,
-         string userId)
+        public int GetInfantCountForHealthCareWorkerForMonth(
+            [Service] IHttpContextAccessor contextAccessor,
+            [Service] IGenericRepositoryFactory repoFactory,
+            string userId)
         {
             DateTime today = DateTime.Today;
 
@@ -70,6 +86,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             childCount = childrenCaregiver.Count + childrenMother.Count;
 
             return childCount;
+        }
+
+        public DisplaySet GetStatusInfo(
+            [Service] IHttpContextAccessor contextAccessor,
+            [Service] IGenericRepositoryFactory repoFactory,
+            string userId)
+        {
+            DisplaySet statusInfo = new DisplaySet();
+
+            return statusInfo;
+
         }
 
     }

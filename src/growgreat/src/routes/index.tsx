@@ -15,9 +15,13 @@ import { PractitionerAbout } from '@practitioner-p/practitioner-about/practition
 import PractitionerAccount from '@practitioner-p/practitioner-account/practitioner-account';
 import { PractitionerProfile } from '@practitioner-p/practitioner-profile/practitioner-profile';
 import ROUTES from '@/routes/routes';
-import ClassDashboard from '@/pages/classroom/class-dashboard/class-dashboard';
+import ClassDashboard from '@/pages/client/class-dashboard/class-dashboard';
 import { EditPractitionerProfile } from '@/pages/practitioner/edit-practitioner-profile/edit-practitioner-profile';
 import { Training } from '@/pages/training/training';
+import { StartVisit } from '@/pages/client/visit-dashboard/start-visit';
+import PregnancyVisits from '@/pages/client/visit-dashboard/pregnancy-visits';
+import ChildVisits from '@/pages/client/visit-dashboard/child-visits';
+import BookVisit from '@/pages/client/visit-dashboard/book-visit';
 
 function PublicRoutes() {
   return (
@@ -80,7 +84,27 @@ function AuthRoutes() {
         component={PractitionerProfile}
       />
 
-      <Route path={ROUTES.CLASSROOM} component={ClassDashboard} />
+      <Route exact path={ROUTES.CLIENT.ROOT} component={ClassDashboard} />
+      <Route
+        exact
+        path={ROUTES.CLIENT.VISIT.START_VISIT}
+        component={StartVisit}
+      />
+      <Route
+        exact
+        path={ROUTES.CLIENT.VISIT.BOOK_VISIT}
+        component={BookVisit}
+      />
+      <Route
+        exact
+        path={ROUTES.CLIENT.VISIT.PREGNANCY_VISITS}
+        component={PregnancyVisits}
+      />
+      <Route
+        exact
+        path={ROUTES.CLIENT.VISIT.CHILD_VISITS}
+        component={ChildVisits}
+      />
 
       <Route path={ROUTES.MESSAGES} component={Messages} />
 

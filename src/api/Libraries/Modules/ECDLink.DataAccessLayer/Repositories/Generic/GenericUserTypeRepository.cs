@@ -1,4 +1,5 @@
 using ECDLink.DataAccessLayer.Context;
+using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Base;
 using ECDLink.DataAccessLayer.Entities.Interfaces;
 using ECDLink.DataAccessLayer.Events;
@@ -17,7 +18,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
     public class GenericUserTypeRepository<T> : GenericRepositoryBase<T>
      where T : EntityBase<Guid>
     {
-        private readonly HttpContext _httpContext;
+        private readonly UserManager<ApplicationUser> _userManager;
         private readonly HierarchyEngine _hierarchyEngine;
 
         private string Hierarchy
@@ -27,16 +28,16 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                 return _hierarchyEngine.GetUserHierarchy(_userId);
             }
         }
-        // TODO: HTTPContext to be removed when HotChocolate.Data.EntityFramework 12.16.0 can be used.
+
         public GenericUserTypeRepository(
           AuthenticationDbContext context,
           HierarchyEngine hierarchyEngine,
           IDomainEventService domainEventService,
-          [Service] IHttpContextAccessor contextAccessor)
+          UserManager<ApplicationUser> userManager)
           : base(context, domainEventService)
         {
             _hierarchyEngine = hierarchyEngine;
-            _httpContext = contextAccessor.HttpContext ?? throw new ArgumentNullException("No HttpContextAccessor supplied.");
+            _userManager = userManager;
         }
 
         public override void Delete(Guid id)
@@ -49,8 +50,6 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             }
 
             entity.IsActive = false;
-            entity.UpdatedDate = DateTime.Now;
-            entity.UpdatedBy = _userId;
 
             context.SaveChanges();
 
@@ -66,8 +65,11 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                 throw new UnauthorizedAccessException("User does not have access to this data");
             }
 
+            var user = _userManager.FindByIdAsync(_userId).Result;
+            var roles = _userManager.GetRolesAsync(user).Result;
+            var isAdmin = roles.Contains(Roles.ADMINISTRATOR);
+
             var query = entities.Where(e => e.TenantId == null || e.TenantId.Equals(tenantId)).AsQueryable();//.Where(e => e.TenantId.Equals(tenantId))
-            var isAdmin = _httpContext.IsAdmin();
             if (isAdmin)
             {
                 return query.OrderByDescending(x => x.InsertedDate);
@@ -76,7 +78,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             {
                 try
                 {
-                    List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_httpContext, _userId);
+                    List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId);
                     if (hh.Count > 0)
                     {
                         if (!hh.Contains(null)) //dont run any null values through teh check, nothing should be null
@@ -104,12 +106,16 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                 return default;
             }
 
-            var isAdmin = _httpContext.IsAdmin();
+            var user = _userManager.FindByIdAsync(castRecord.UserId).Result;
+            var roles = _userManager.GetRolesAsync(user).Result;
+
+            var isAdmin = roles.Contains(Roles.ADMINISTRATOR);
+
             if (!isAdmin)
             {
                 if (!string.IsNullOrWhiteSpace(castRecord.Hierarchy))
                 {
-                    List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_httpContext, _userId);
+                    List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId);
                     if (hh != null)
                     {
                         if (!hh.Contains(castRecord.Hierarchy))
@@ -143,12 +149,15 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                 }
 
                 //hierarchy confirmation allowing this to be viewed
-                var isAdmin = _httpContext.IsAdmin();
+                var user = _userManager.FindByIdAsync(_userId).Result;
+                var roles = _userManager.GetRolesAsync(user).Result;
+                var isAdmin = roles.Contains(Roles.ADMINISTRATOR);
+
                 if (!isAdmin)
                 {
                     try
                     {
-                        List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_httpContext, _userId);
+                        List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId);
                         if (hh != null)
                         {
                             if (!hh.Contains(castRecord.Hierarchy))
@@ -187,12 +196,15 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                 }
 
                 //hierarchy confirmation allowing this to be viewed
-                var isAdmin = _httpContext.IsAdmin();
+                var user = _userManager.FindByIdAsync(_userId).Result;
+                var roles = _userManager.GetRolesAsync(user).Result;
+                var isAdmin = roles.Contains(Roles.ADMINISTRATOR);
+
                 if (!isAdmin)
                 {
                     try
                     {
-                        List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_httpContext, _userId);
+                        List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId);
                         if (hh != null)
                         {
                             if (!hh.Contains(castRecord.Hierarchy))

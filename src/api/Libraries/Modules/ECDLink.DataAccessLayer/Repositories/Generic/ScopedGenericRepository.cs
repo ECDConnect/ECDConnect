@@ -19,7 +19,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
       where T : EntityBase<Guid>
     {
         private readonly HierarchyEngine _hierarchyEngine;
-        private readonly HttpContext _httpContext;
+        private readonly UserManager<ApplicationUser> _userManager;
 
         private string Hierarchy
         {
@@ -38,7 +38,8 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
           : base(context, domainEventService)
         {
             _hierarchyEngine = hierarchyEngine;
-            _httpContext = contextAccessor.HttpContext;
+            //_httpContext = contextAccessor.HttpContext;
+            _userManager = userManager;
         }
 
         public override IQueryable<T> GetAll()
@@ -49,7 +50,9 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             }
 
             var query = entities.AsQueryable();
-            var isAdmin = _httpContext.IsAdmin();
+            var user = _userManager.FindByIdAsync(_userId).Result;
+            var roles = _userManager.GetRolesAsync(user).Result;
+            var isAdmin = roles.Contains(Roles.ADMINISTRATOR);
 
             if (isAdmin)
             {
@@ -59,7 +62,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             {
                 try
                 {
-                    List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_httpContext, _userId).ToList();
+                    List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId).ToList();
                     if (hh.Count > 0)
                     {
                         if (!hh.Contains(null)) //dont run any null values through teh check, nothing should be null
@@ -93,12 +96,14 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             }
 
             //if user is in a higher admin role (Principal, Practitioner, Coach, Franchisor, then skip the check as they need to be able to see anyone anywhere due to the shift in roles of Milestone 1.
-            var isAdmin = _httpContext.IsAdmin();
+            var user = _userManager.FindByIdAsync(_userId).Result;
+            var roles = _userManager.GetRolesAsync(user).Result;
+            var isAdmin = roles.Contains(Roles.ADMINISTRATOR);
             if (!isAdmin)
             {
                 if (!string.IsNullOrWhiteSpace(castRecord.Hierarchy))
                 {
-                    List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_httpContext, _userId).ToList();
+                    List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId).ToList();
                     if (hh != null)
                     {
                         if (!hh.Contains(castRecord.Hierarchy))
@@ -133,12 +138,14 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                 }
 
                 //hierarchy confirmation allowing this to be viewed
-                var isAdmin = _httpContext.IsAdmin();
+                var user = _userManager.FindByIdAsync(_userId).Result;
+                var roles = _userManager.GetRolesAsync(user).Result;
+                var isAdmin = roles.Contains(Roles.ADMINISTRATOR);
                 if (!isAdmin)
                 {
                     try
                     {
-                        List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_httpContext, _userId).ToList();
+                        List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId).ToList();
                         if (hh != null)
                         {
                             if (!hh.Contains(castRecord.Hierarchy))
@@ -179,12 +186,14 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                 }
 
                 //hierarchy confirmation allowing this to be viewed
-                var isAdmin = _httpContext.IsAdmin();
+                var user = _userManager.FindByIdAsync(_userId).Result;
+                var roles = _userManager.GetRolesAsync(user).Result;
+                var isAdmin = roles.Contains(Roles.ADMINISTRATOR);
                 if (!isAdmin)
                 {
                     try
                     {
-                        List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_httpContext, _userId).ToList();
+                        List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId).ToList();
                         if (hh != null)
                         {
                             if (!hh.Contains(castRecord.Hierarchy))

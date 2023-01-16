@@ -81,6 +81,44 @@ export const getCoachByCoachId = createAsyncThunk<
   }
 );
 
+export const coachNameByUserId = createAsyncThunk<
+  CoachDto,
+  { coachId: string },
+  ThunkApiType<RootState>
+>(
+  'coachNameByUserId',
+  // eslint-disable-next-line no-empty-pattern
+  async ({ coachId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      coach: { coach: coachCache },
+    } = getState();
+
+    if (!coachCache) {
+      try {
+        let coach: CoachDto | undefined;
+
+        if (userAuth?.auth_token) {
+          coach = await new CoachService(
+            userAuth?.auth_token
+          ).getCoachByCoachId(coachId);
+        } else {
+          return rejectWithValue('no access token, profile check required');
+        }
+
+        if (!coach) {
+          return rejectWithValue('Error getting coach name');
+        }
+        return coach;
+      } catch (err) {
+        return rejectWithValue(err);
+      }
+    } else {
+      return coachCache;
+    }
+  }
+);
+
 export const updateCoach = createAsyncThunk<
   boolean[],
   {},

@@ -21,8 +21,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
     public class CaregiveQueryExtension
     {
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public List<Caregiver> GetAllCaregiver([Service] IHttpContextAccessor contextAccessor,
-    [Service] IGenericRepositoryFactory repoFactory)
+        public List<Caregiver> GetAllCaregiver(
+            [Service] IHttpContextAccessor contextAccessor,
+            [Service] IGenericRepositoryFactory repoFactory)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
@@ -51,7 +52,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public List<Caregiver> GetAllCaregiverByPractitioner([Service] IHttpContextAccessor contextAccessor,
+        public List<Caregiver> GetAllCaregiverByPractitioner(
+            [Service] IHttpContextAccessor contextAccessor,
             [Service] IGenericRepositoryFactory repoFactory,
             string practitionerId)
         {
@@ -60,6 +62,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var careGiverRepo = repoFactory.CreateRepository<Caregiver>(userContext: uId);
             var practitionerrRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
             List<Practitioner> practitioners = practitionerrRepo.GetAll().Where(x => x.UserId.Equals(practitionerId)).ToList();
+            
             if (practitioners.Count > 0)
             {
                 List<Child> children = childRepo.GetAll().Where(x => x.Hierarchy.Contains(practitioners.FirstOrDefault().Hierarchy)).ToList();
@@ -81,7 +84,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public List<Caregiver> GetAllCaregiversForHealthCareWorker([Service] IHttpContextAccessor contextAccessor,
+        public List<Caregiver> GetAllCaregiversForHealthCareWorker(
+            [Service] IHttpContextAccessor contextAccessor,
             [Service] IGenericRepositoryFactory repoFactory,
             string id)
         {
@@ -117,9 +121,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public List<UserGrant> GetCaregiverGrants([Service]
-        AuthenticationDbContext context,
-    Guid careGiverId)
+        public List<UserGrant> GetCaregiverGrants(
+            [Service] AuthenticationDbContext context,
+            Guid careGiverId)
         {
             return context.UserGrants.Where(x => x.UserId == careGiverId.ToString()).ToList();
         }

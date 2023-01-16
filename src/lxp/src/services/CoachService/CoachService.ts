@@ -168,6 +168,28 @@ class CoachService {
     return response.data.data.coachByCoachUserId;
   }
 
+  async coachNameByUserId(userId: string): Promise<CoachDto> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      query coachNameByUserId($userId: String) {
+        coachNameByUserId(userId: $userId) {
+            
+        }
+      }    
+      `,
+      variables: {
+        userId: userId,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error('Get Coach Name Failed - Server connection error');
+    }
+
+    return response.data.data.coachNameByUserId;
+  }
+
   async updateCoach(userId: string, coach: CoachInput): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {

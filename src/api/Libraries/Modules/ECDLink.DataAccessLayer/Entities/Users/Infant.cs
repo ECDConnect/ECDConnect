@@ -39,5 +39,9 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public decimal? WeightAtBirth { get; set; }
 
         public decimal? LengthAtBirth { get; set; }
+
+        [GraphQLIgnore]
+        public DisplaySet StatusInfo = new DisplaySet();
+
     }
 }

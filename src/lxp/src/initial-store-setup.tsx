@@ -88,15 +88,24 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   };
 
   useEffect(() => {
-    if (userData) {
-      if (isCoach) {
+    if (practitioner?.coachHierarchy) {
+      if (!isCoach) {
         (async () =>
           await appDispatch(
-            coachThunkActions.getCoachByCoachId({})
+            coachThunkActions.coachNameByUserId({
+              coachId: practitioner?.coachHierarchy!,
+            })
           ).unwrap())();
       }
     }
-  }, [appDispatch, isCoach, userData]);
+  }, [appDispatch, isCoach, practitioner]);
+
+  useEffect(() => {
+    if (userData) {
+      (async () =>
+        await appDispatch(coachThunkActions.getCoachByCoachId({})).unwrap())();
+    }
+  }, [appDispatch, userData]);
 
   useEffect(() => {
     if (userData) {

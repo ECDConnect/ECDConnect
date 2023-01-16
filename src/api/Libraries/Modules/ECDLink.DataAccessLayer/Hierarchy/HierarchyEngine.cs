@@ -1,5 +1,6 @@
 ﻿using ECDLink.Abstractrions.Services;
 using ECDLink.Core.Caching;
+using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Users;
@@ -7,9 +8,8 @@ using ECDLink.DataAccessLayer.Hierarchy.Entities;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security;
-using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -97,7 +97,7 @@ namespace ECDLink.DataAccessLayer.Hierarchy
 
         // Case on type, and depending on type, iterate through different levels of collecting a list of hierarchies to use
         public List<string> GetHierarchyByParentList<T>(
-        HttpContext httpContext,
+        UserManager<ApplicationUser> _userManager,
         string userId)
         {
             if (string.IsNullOrEmpty(userId))
@@ -108,10 +108,14 @@ namespace ECDLink.DataAccessLayer.Hierarchy
             var practRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: userId);
 
             var userIdGuid = Guid.Parse(userId);
-            var isFranchisor = httpContext.IsInRole(Roles.FRANCHISOR);
-            var isCoach = httpContext.IsInRole(Roles.COACH);
-            var isPrincipal = httpContext.IsInRole(Roles.PRINCIPAL);
-            var isPractitioner = httpContext.IsInRole(Roles.PRACTITIONER);
+
+            var user = _userManager.FindByIdAsync(userId).Result;
+            var roles = _userManager.GetRolesAsync(user).Result;
+
+            var isFranchisor = roles.Contains(Roles.FRANCHISOR);
+            var isCoach = roles.Contains(Roles.COACH);
+            var isPrincipal = roles.Contains(Roles.PRINCIPAL);
+            var isPractitioner = roles.Contains(Roles.PRACTITIONER);
 
             // Add userId to list of hierarchies to fetch
             var userIdsToFetch = new List<string>() { userId };
@@ -235,7 +239,7 @@ namespace ECDLink.DataAccessLayer.Hierarchy
         {
             // some practitioners can be principal as owner with only themselves as owner
             var principalPractitioners = practitionerRepo.GetAll()
-                .Where(c => (c.PrincipalHierarchy != null && c.PrincipalHierarchy == userIdGuid) || (c.IsPrincipal == true && c.UserId == userIdGuid.ToString()))
+                .Where(c => (c.PrincipalHierarchy.HasValue && c.PrincipalHierarchy == userIdGuid) || (c.IsPrincipal == true && c.UserId == userIdGuid.ToString()))
                 .Select(p => p.UserId.ToString())
                 .ToList();
 

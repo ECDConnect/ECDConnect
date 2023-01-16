@@ -114,8 +114,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var dbRepo = repoFactory.CreateRepository<Practitioner>(userContext: userId);
             Practitioner practitioner = dbRepo.GetByUserId(userId);
 
-            var children = childRepo.GetAll().Where(x => practitioner.Hierarchy.StartsWith(x.Hierarchy)).ToList();
-            return children;
+            return childRepo.GetAll().Where(x => x.Hierarchy.StartsWith(practitioner.Hierarchy)).ToList();
         }
 
         public List<Classroom> GetAllClassroomsForPractitioner([Service] IHttpContextAccessor contextAccessor,
