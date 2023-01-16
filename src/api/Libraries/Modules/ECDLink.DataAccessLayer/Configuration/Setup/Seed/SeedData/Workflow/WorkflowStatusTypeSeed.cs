@@ -1,4 +1,3 @@
-using ECDLink.Abstractrions.Enums;
 using ECDLink.DataAccessLayer.Entities.Workflow;
 using System;
 using System.Collections.Generic;
@@ -20,12 +19,12 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.SeedData.Workflow
             {
                 new T
                 {
-                    Id = WorkflowStatusTypeSeedConstants.Document,                    
+                    Id = WorkflowStatusTypeSeedConstants.Document,
                     Description = "Document"
                 },
                 new T
                 {
-                    Id = WorkflowStatusTypeSeedConstants.Child,                    
+                    Id = WorkflowStatusTypeSeedConstants.Child,
                     Description = "Child"
                 }
             };

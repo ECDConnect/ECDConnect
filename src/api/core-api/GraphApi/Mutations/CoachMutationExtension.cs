@@ -1,30 +1,23 @@
+using EcdLink.Api.CoreApi.GraphApi.Queries;
 using EcdLink.Api.CoreApi.Managers.Notifications;
 using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
-using EcdLink.Api.CoreApi.GraphApi.Models;
 using ECDLink.Abstractrions.GraphQL.Enums;
-using ECDLink.Core.Helpers;
-using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
-using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
-using ECDLink.Security.Managers;
 using ECDLink.Security.Extensions;
+using ECDLink.Security.Managers;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using NPOI.SS.UserModel;
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using EcdLink.Api.CoreApi.GraphApi.Queries;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
@@ -54,7 +47,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var dbRepo = repoFactory.CreateGenericRepository<Coach>(userContext: uId);
-            
+
             Coach coach = (Coach)dbRepo.GetAll().Where(x => x.Id.Equals(input.Id)).FirstOrDefault();
             {
                 if (coach != null)
@@ -65,7 +58,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         coach.StartDate = input.StartDate;
                     if (input.AreaOfOperation != null)
                         coach.AreaOfOperation = input.AreaOfOperation;
-                    if (input.SiteAddressId != null) {
+                    if (input.SiteAddressId != null)
+                    {
                         var addressRepo = repoFactory.CreateRepository<SiteAddress>(userContext: uId);
                         SiteAddress address = (SiteAddress)addressRepo.GetAll().Where(x => x.Id.Equals(input.SiteAddressId)).FirstOrDefault();
                         if (input.SiteAddress.Ward != null)
@@ -83,7 +77,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         var updateAddressResult = addressRepo.Update(address);
                         //TODO: create address if not exists, but it really should
                     }
-                    if (input.SiteAddress!=null && input.SiteAddressId == null)
+                    if (input.SiteAddress != null && input.SiteAddressId == null)
                     {
                         //create siteaddress
                         var addressRepo = repoFactory.CreateRepository<SiteAddress>(userContext: uId);
@@ -133,7 +127,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             else return new Practitioner();
         }
 
-        public Practitioner DeletePractitionerForCoach([Service] IHttpContextAccessor contextAccessor,            
+        public Practitioner DeletePractitionerForCoach([Service] IHttpContextAccessor contextAccessor,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
             string practitionerId, string coachId)

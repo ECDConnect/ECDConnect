@@ -1,5 +1,4 @@
 using ECDLink.Abstractrions.GraphQL.Enums;
-using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Users;
@@ -11,10 +10,7 @@ using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.Documents;
-using Microsoft.EntityFrameworkCore;
-using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
@@ -77,8 +73,9 @@ string classroomId)
             if (child != null && child.User != null)
             {
                 return new ChildCreatedByDetail() { ChildUserId = child.UserId, CreatedById = child.UpdatedBy, CreatedByName = child.InsertedBy, CreatedByDate = child.InsertedDate, FullName = child.User.FullName };
-            } else return null;
-            
+            }
+            else return null;
+
         }
 
     }

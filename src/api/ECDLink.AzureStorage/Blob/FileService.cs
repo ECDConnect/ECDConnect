@@ -7,7 +7,6 @@ using ECDLink.Core.SystemSettings.SystemOptions;
 using FileSignatures;
 using FileSignatures.Formats;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -49,7 +48,7 @@ namespace ECDLink.AzureStorage.Blob
                 await blobContainer.CreateIfNotExistsAsync();
                 await blobContainer.SetAccessPolicyAsync(Azure.Storage.Blobs.Models.PublicAccessType.Blob);
 
-                var blobClient = blobContainer.GetBlobClient(fileName);                
+                var blobClient = blobContainer.GetBlobClient(fileName);
 
                 if (!blobClient.Exists())
                 {
@@ -176,17 +175,17 @@ namespace ECDLink.AzureStorage.Blob
         {
             var format = _inspector.DetermineFileFormat(fileStream);
 
-            if(format == null)
+            if (format == null)
             {
                 return true;
             }
 
-            if(format is Image)
+            if (format is Image)
             {
                 return true;
             }
 
-            if(format is Pdf)
+            if (format is Pdf)
             {
                 return true;
             }

@@ -1,16 +1,16 @@
-﻿using ECDLink.Core.Services.Interfaces;
+﻿using ECDLink.Core.Models.Settings;
+using ECDLink.Core.Services.Interfaces;
+using ECDLink.EGraphQL.Builders.Queries;
 using HotChocolate.Execution.Configuration;
 using HotChocolate.Types;
 using HotChocolate.Types.Descriptors;
+using HotChocolate.Types.Descriptors.Definitions;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
-using ECDLink.Core.Models.Settings;
-using System.Linq;
-using HotChocolate.Types.Descriptors.Definitions;
-using ECDLink.EGraphQL.Builders.Queries;
 
 namespace ECDLink.EGraphQL.Registration.Modules
 {

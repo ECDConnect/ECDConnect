@@ -1,5 +1,3 @@
-using DotLiquid;
-using DotLiquid.Tags;
 using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.Managers.Notifications;
 using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
@@ -10,7 +8,8 @@ using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Caregiver;
 using ECDLink.DataAccessLayer.Entities.Classroom;
-using ECDLink.DataAccessLayer.Entities.Documents;
+using ECDLink.DataAccessLayer.Entities.DataIngestion;
+using ECDLink.DataAccessLayer.Entities.Integration.MappedEntities;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Workflow;
 using ECDLink.DataAccessLayer.Hierarchy.Entities;
@@ -20,28 +19,20 @@ using ECDLink.Security;
 using ECDLink.Security.Extensions;
 using ECDLink.Security.Managers;
 using ECDLink.Tenancy.Context;
+using ECDLink.UrlShortner.Managers;
 using HotChocolate;
 using HotChocolate.Types;
-using IdentityServer4.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Azure.Documents;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.OData.UriParser;
 using NPOI.SS.UserModel;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Security;
 using System.Text.RegularExpressions;
-using static NPOI.HSSF.Util.HSSFColor;
-using ECDLink.DataAccessLayer.Entities.DataIngestion;
-using System.Reflection;
-using ECDLink.DataAccessLayer.Entities.Integration.MappedEntities;
 using System.Threading.Tasks;
-using ECDLink.UrlShortner.Managers;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
@@ -139,7 +130,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         // 6 = Parent Fees
         // 7 = StartDate
         // 8 = MaxChildren
-        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]        
+        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public bool PractitionerImport(
           [Service] IGenericRepositoryFactory repoFactory,
           [Service] IHttpContextAccessor httpContextAccessor,
@@ -152,11 +143,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             using MemoryStream fileStream = new MemoryStream(bytes);
 
             var workbook = WorkbookFactory.Create(fileStream);
-                
+
             var sheet = workbook.GetSheetAt(0);
 
             var languages = localeService.GetAvailableLocale().ToList();
-            
+
             List<PractitionerImportItem> practitionerImportList = new List<PractitionerImportItem>();
 
             for (var row = 1; row <= sheet.LastRowNum; row++)
@@ -178,7 +169,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     var dob = ExcelHelper.GetCellValue(currentRow.GetCell(9));
 
                     if (idNumber != null)
-                    {                        
+                    {
                         var languageEntity = languages.Where(x => x.Description == language).FirstOrDefault();
                         if (languageEntity == null)
                         {
@@ -217,10 +208,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         Id = userId.ToString(),
                         PhoneNumber = practitioner.PhoneNumber,
                         UserName = practitioner?.IDNumber,
-                        IdNumber = practitioner?.IDNumber,                        
+                        IdNumber = practitioner?.IDNumber,
                         IsSouthAfricanCitizen = true,
                         VerifiedByHomeAffairs = true,
-                        DateOfBirth = practitioner.Dob,                                                
+                        DateOfBirth = practitioner.Dob,
                         FirstName = practitioner.FirstName,
                         Surname = practitioner.Surname,
                         FullName = $"{practitioner.FirstName} {practitioner.Surname}",
@@ -299,7 +290,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                             siu.IDNumber = ExcelHelper.GetCellValue(currentRow.GetCell(4));
                             siu.PersonalNumber = ExcelHelper.GetCellValue(currentRow.GetCell(5));
                             siu.FranchiseTypeOfProgramme = ExcelHelper.GetCellValue(currentRow.GetCell(6));
-                            siu.ECDType = ExcelHelper.GetCellValue(currentRow.GetCell(7));                            
+                            siu.ECDType = ExcelHelper.GetCellValue(currentRow.GetCell(7));
                             siu.SiteArea = ExcelHelper.GetCellValue(currentRow.GetCell(8));
                             siu.SiteName = ExcelHelper.GetCellValue(currentRow.GetCell(9));
                             siu.ClassName = ExcelHelper.GetCellValue(currentRow.GetCell(10));
@@ -310,7 +301,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                             siu.CoachContactNumber = ExcelHelper.GetCellValue(currentRow.GetCell(15));
 
                             //check we dont reinsert data
-                            List<SL_Ingestion_User> userList = dbRepo.GetAll().Where(x => x.IDNumber==siu.IDNumber).ToList();
+                            List<SL_Ingestion_User> userList = dbRepo.GetAll().Where(x => x.IDNumber == siu.IDNumber).ToList();
                             if (userList.Count == 0)
                             {
 
@@ -320,10 +311,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     }
                 }
                 //now call db ingestion
-                this.ImportAllIngestDB(repoFactory,httpContextAccessor, localeService,userManager);
-            } catch (Exception ex)
+                this.ImportAllIngestDB(repoFactory, httpContextAccessor, localeService, userManager);
+            }
+            catch (Exception ex)
             {
-                throw new Exception (ex.Message);
+                throw new Exception(ex.Message);
             }
             return true;
         }
@@ -339,7 +331,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                       [Service] UserManager<ApplicationUser> userManager,
                       string file)
         {
-            try { 
+            try
+            {
                 var bytes = Convert.FromBase64String(file);
                 using MemoryStream fileStream = new MemoryStream(bytes);
 
@@ -449,7 +442,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 var dbRepo = repoFactory.CreateRepository<SL_Ingestion_User>(userContext: uId);
 
                 List<SL_Ingestion_User> userList = dbRepo.GetAll().Where(x => x.ProcessedDate == null).ToList();
-                foreach(var user in userList) { 
+                foreach (var user in userList)
+                {
                     if (user != null)
                     {
                         var fullname = user.FullName.Trim();
@@ -468,7 +462,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
                             var currentItem = practitionerImportList.Where(x => x.IDNumber == user.IDNumber).FirstOrDefault();
                             var item = currentItem != null ? currentItem : new ImportAllStaffItem();
-                            item.MatchWithSite = (user.SameSite!=null && user.SameSite == "YES"? true:false);
+                            item.MatchWithSite = (user.SameSite != null && user.SameSite == "YES" ? true : false);
                             item.SiteIndicator = user.Indicator;
                             item.FirstName = firstname;
                             item.Surname = surname;
@@ -519,9 +513,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                             FullName = fullname,
 
                         };
-                        Coach newCoach = CreateCoachUser(repoFactory,httpContextAccessor,userManager, newMappedCoach, franchisorId);
-                            //    //invite to application
-                            //    //invite.SendInviteToApplication(invitationManager, notificationManager, userManager, prac.UserId);                        
+                        Coach newCoach = CreateCoachUser(repoFactory, httpContextAccessor, userManager, newMappedCoach, franchisorId);
+                        //    //invite to application
+                        //    //invite.SendInviteToApplication(invitationManager, notificationManager, userManager, prac.UserId);                        
                     }
                 }
 
@@ -617,7 +611,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                             classroomGenericRepo.Insert(pracClass);
                             //update the SL Ingestion record as processed and save userId
                             SL_Ingestion_User slUser = dbRepo.GetAll().Where(x => x.IDNumber == practitioner.IDNumber).FirstOrDefault();
-                            if (slUser != null) {
+                            if (slUser != null)
+                            {
                                 slUser.IsActive = true;
                                 slUser.ProcessedDate = DateTime.Now;
                                 slUser.UserId = newPractitioner.UserId;
@@ -951,9 +946,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                                 childGenericRepo.Update(newChildHierarchyUpdate);
 
                                 //get the classroom
-                                Classroom existingClassroom = classroomGenericRepo.GetAll().Where(x => x.UserId.Equals(parentUser.Id)).FirstOrDefault();                            
+                                Classroom existingClassroom = classroomGenericRepo.GetAll().Where(x => x.UserId.Equals(parentUser.Id)).FirstOrDefault();
                                 if (existingClassroom != null)
-                                {                                
+                                {
                                     //map programme type
                                     childItem.ECDType = (childItem.ECDType == "ECD Centre" ? "Preschool" : childItem.ECDType == "Full Week (Daymothers)" ? "Day Mother" : childItem.ECDType == "SmartStart ECD" ? "Preschool" : childItem.ECDType == "PlayGroup" ? "Preschool" : childItem.ECDType);
                                     var programmeType = programmeTypeRepo.GetAll().Where(x => x.Description.Equals(childItem.ECDType)).FirstOrDefault();
@@ -981,7 +976,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                                                 UserId = Guid.Parse(parentUser.Id),
                                                 IsActive = true,
                                                 TenantId = tenantId,
-                                                Name = childItem.PlayGroupGroup, 
+                                                Name = childItem.PlayGroupGroup,
                                                 ClassroomId = existingClassroom.Id,
                                                 Hierarchy = parentHierarchy,
                                                 ProgrammeTypeId = programmeType.Id
@@ -1014,7 +1009,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                                     //create programme
 
                                     //now create the learner and tie them to the playgroup - if a group exists
-                                    if (programmeGroupId != null) {
+                                    if (programmeGroupId != null)
+                                    {
                                         Learner newLearner = new Learner()
                                         {
                                             UserId = userId,
@@ -1110,7 +1106,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 //    //invite to application
                 //    //invite.SendInviteToApplication(invitationManager, notificationManager, userManager, prac.UserId);
                 return cc;
-            } else { return coachRepo.GetAll().Where(x => x.UserId == existingUser.Id).FirstOrDefault(); }
+            }
+            else { return coachRepo.GetAll().Where(x => x.UserId == existingUser.Id).FirstOrDefault(); }
 
         }
 
@@ -1119,7 +1116,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             string practitionerId)
         {
             bool bReturn = false;
-  
+
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
             Practitioner practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId.Equals(practitionerId)).FirstOrDefault();

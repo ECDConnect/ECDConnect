@@ -1,8 +1,8 @@
-using ECDLink.Security.Attributes;
 using ECDLink.DataAccessLayer.Entities.Base;
 using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.Interfaces;
 using ECDLink.Security;
+using ECDLink.Security.Attributes;
 using HotChocolate;
 using System;
 using System.Collections.Generic;
@@ -17,9 +17,9 @@ namespace ECDLink.DataAccessLayer.Entities.Users
 
     }
 
-    public class Practitioner<TKey> : EntityBase<TKey>, 
-        IDocumentQueryable, 
-        SiteAddressJoin<Guid?>, 
+    public class Practitioner<TKey> : EntityBase<TKey>,
+        IDocumentQueryable,
+        SiteAddressJoin<Guid?>,
         IUserType
          where TKey : IEquatable<TKey>
     {

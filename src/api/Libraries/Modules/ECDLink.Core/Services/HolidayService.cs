@@ -1,4 +1,3 @@
-using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Services;
 using ECDLink.Core.Caching;
 using ECDLink.Core.Models;
@@ -57,7 +56,7 @@ namespace ECDLink.Core.Services
 
         public IEnumerable<Holiday> GetHolidays(int year, string locale = "ZA")
         {
-            if (HolidayCache.TryGetValue(year, out var existingHolidays) )
+            if (HolidayCache.TryGetValue(year, out var existingHolidays))
             {
                 return existingHolidays;
             }

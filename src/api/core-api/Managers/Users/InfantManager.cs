@@ -247,7 +247,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users
             statusInfo.Color = MetricsIconEnum.Success.ToString();
             statusInfo.Icon = MetricsIconEnum.Success.ToString();
             statusInfo.Subject = "Growing well";
-           
+
             //
             // Orange Alerts
             //

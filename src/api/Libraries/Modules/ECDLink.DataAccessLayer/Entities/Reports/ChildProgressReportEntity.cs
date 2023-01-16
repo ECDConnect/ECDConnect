@@ -1,12 +1,12 @@
-using ECDLink.Security.Attributes;
 using ECDLink.DataAccessLayer.Entities.Base;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.Security;
+using ECDLink.Security.Attributes;
 using HotChocolate;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
-using ECDLink.Security;
 
 namespace ECDLink.DataAccessLayer.Entities.Reports
 {
@@ -25,9 +25,9 @@ namespace ECDLink.DataAccessLayer.Entities.Reports
         public TKey ClassroomGroupId { get; set; }
 
         public DateTime ReportDate { get; set; }
-        
+
         [ForeignKey(nameof(ChildId))]
-        public virtual Child Child { get ; set; }
+        public virtual Child Child { get; set; }
         public TKey ChildId { get; set; }
 
         public string ReportContent { get; set; }

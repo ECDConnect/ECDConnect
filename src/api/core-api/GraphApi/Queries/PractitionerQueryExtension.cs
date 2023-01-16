@@ -1,35 +1,22 @@
 using ECDLink.Abstractrions.Files;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Abstractrions.Services;
-using ECDLink.ContentManagement.Entities;
-using ECDLink.ContentManagement.Repositories;
-using ECDLink.Core.Models.ContentManagement;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
+using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
-using ECDLink.EGraphQL.Enums;
 using ECDLink.Security;
+using ECDLink.Security.Extensions;
+using ECDLink.UrlShortner.Managers;
 using HotChocolate;
 using HotChocolate.Types;
-using NPOI.SS.UserModel;
-using NPOI.SS.Util;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using ECDLink.DataAccessLayer.Entities.Users;
-using ECDLink.DataAccessLayer.Context;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
-using ECDLink.Security.Extensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Azure.Documents;
-using EcdLink.Api.CoreApi.GraphApi.Models;
-using EcdLink.Api.CoreApi.Managers.Notifications;
-using ECDLink.UrlShortner.Managers;
-using ECDLink.DataAccessLayer.Entities.Notifications;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
@@ -68,7 +55,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
             var dbRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
             //retrieve principal, check that the coach lines match, that the user to be searched for is not a principal or an FAA
-            
+
             var principal = dbRepo.GetByUserId(uId);
             if (principal != null)
             {
@@ -83,11 +70,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                         if (practitioner.PrincipalHierarchy == null && practitioner.CoachHierarchy == principal.CoachHierarchy) // only allow practitioners assigned to same coach and where they are not assigned to any otehr practitioners
                         {
                             return new PractitionerUserAndNote() { AppUser = practitioner.User };
-                        } else
+                        }
+                        else
                         {
                             return new PractitionerUserAndNote() { AppUser = practitioner.User, Note = "This practitioner is linked to a different SmartStart programme" };
                         }
-                    } else
+                    }
+                    else
                     {
                         return new PractitionerUserAndNote() { AppUser = null, Note = "Not on Funda App" };
                     }
@@ -211,7 +200,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                         //if no classroomgroup is available to look at, use the classroom for principal
                         classroom = classroomRepo.GetByUserId(principal.UserId);
                     }
-                    principalClassroom.ClassroomName = classroom.Name;   
+                    principalClassroom.ClassroomName = classroom.Name;
                     principalClassroom.ClassroomId = classroom.Id.ToString();
                     principalClassroom.InsertedDate = classroom.InsertedDate;
                 }
@@ -223,7 +212,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             [Service] IGenericRepositoryFactory repoFactory,
             string userId)
         {
-            return this.GetAllClassroomGroupsForPractitioner(contextAccessor,repoFactory, userId);
+            return this.GetAllClassroomGroupsForPractitioner(contextAccessor, repoFactory, userId);
         }
 
         public List<PractitionerClassroomName> GetClassroomNamesForPractitioner([Service] IHttpContextAccessor contextAccessor,
@@ -236,14 +225,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var practiRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
             List<PractitionerClassroomName> classrooms = new List<PractitionerClassroomName>();
             List<ClassroomGroup> classroomGroup = this.GetAllClassroomGroupsForPractitioner(contextAccessor, repoFactory, userId);
-            if (classroomGroup.Count>0)
+            if (classroomGroup.Count > 0)
             {
                 foreach (var group in classroomGroup)
                 {
                     string coachName = null;
                     var practitioner = practiRepo.GetByUserId(userId);
-                    if (practitioner != null) {
-                        if (practitioner.CoachHierarchy != null) {
+                    if (practitioner != null)
+                    {
+                        if (practitioner.CoachHierarchy != null)
+                        {
                             var coach = coachRepo.GetByUserId(practitioner.CoachHierarchy.ToString());
                             if (coach != null)
                             {
@@ -269,7 +260,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             [Service] IGenericRepositoryFactory repoFactory,
             string userId)
         {
-            string role = new RoleQueryTypeExtension().GetRoleForUser(contextAccessor, userManager,repoFactory,roleManager, userId);            
+            string role = new RoleQueryTypeExtension().GetRoleForUser(contextAccessor, userManager, repoFactory, roleManager, userId);
             List<Child> children = new List<Child>();
             if (role != null)
             {
@@ -286,7 +277,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                         break;
                     case "Practitioner":
                         children = this.GetAllChildrenForPractitioner(contextAccessor, repoFactory, userId);
-                            break;
+                        break;
                     default:
                         break;
                 }
@@ -307,7 +298,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             {
                 List<Practitioner> practitioners = practiRepo.GetAll().Where(x => (x.PrincipalHierarchy.HasValue ? x.PrincipalHierarchy.Equals(practi.PrincipalHierarchy) : (x.IsPrincipal == true ? x.UserId.Equals(userId) : x.UserId.Equals(userId)))).ToList();
                 //also add principal
-                if (practi.IsPrincipal == true) {
+                if (practi.IsPrincipal == true)
+                {
                     Practitioner practiPrincipal = practiRepo.GetByUserId(practi.UserId.ToString());
                     if (practiPrincipal != null) practitioners.Add(practiPrincipal);
                 }
@@ -384,4 +376,4 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
     }
 
-    }
+}

@@ -44,7 +44,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
 
         [GraphQLIgnore]
         public DisplaySet StatusInfo = new DisplaySet();
-        
+
     }
 
     public interface MotherJoin<TKey>

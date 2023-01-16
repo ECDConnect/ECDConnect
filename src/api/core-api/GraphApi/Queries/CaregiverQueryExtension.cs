@@ -63,7 +63,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var practitionerrRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
             List<Practitioner> practitioners = practitionerrRepo.GetAll().Where(x => x.UserId.Equals(practitionerId)).ToList();
 
-            if (practitioners.Count>0)
+            if (practitioners.Count > 0)
             {
                 List<Child> children = childRepo.GetAll().Where(x => x.Hierarchy.Contains(practitioners.FirstOrDefault().Hierarchy)).ToList();
                 List<Caregiver> caregivers = new List<Caregiver>();
@@ -76,7 +76,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     }
                 }
                 return caregivers;
-            } else {
+            }
+            else
+            {
                 return careGiverRepo.GetAll().ToList();
             }
         }

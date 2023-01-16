@@ -5,21 +5,21 @@ using ECDLink.DataAccessLayer.Entities.Caregiver;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.DataIngestion;
 using ECDLink.DataAccessLayer.Entities.Documents;
+using ECDLink.DataAccessLayer.Entities.IncomeStatements;
+using ECDLink.DataAccessLayer.Entities.Integration.IntegrationMapping;
 using ECDLink.DataAccessLayer.Entities.Navigation;
 using ECDLink.DataAccessLayer.Entities.Notes;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Reports;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
+using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Entities.Workflow;
 using ECDLink.DataAccessLayer.Hierarchy.Entities;
 using ECDLink.DataAccessLayer.Jobs;
+using ECDLink.Security.JwtSecurity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using ECDLink.Security.JwtSecurity;
-using ECDLink.DataAccessLayer.Entities.Integration.IntegrationMapping;
-using ECDLink.DataAccessLayer.Entities.IncomeStatements;
-using ECDLink.DataAccessLayer.Entities.Visits;
 
 namespace ECDLink.DataAccessLayer.Context
 {
@@ -43,7 +43,7 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<ProgrammeType> ProgrammeTypes { get; set; }
         public DbSet<SL_Ingestion_User> SL_Ingestion_Users { get; set; }
         public DbSet<SL_Ingestion_ChildCaregiver> SL_Ingestion_ChildCaregivers { get; set; }
-        public DbSet<SystemLog> SystemLogs { get; set; }        
+        public DbSet<SystemLog> SystemLogs { get; set; }
 
         // Notes
         public DbSet<Note> Notes { get; set; }
@@ -82,7 +82,7 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<Franchisor> Franchisors { get; set; }
         public DbSet<HealthCareWorker> HealthCareWorkers { get; set; }
         public DbSet<Mother> Mothers { get; set; }
-        public DbSet<Infant> Infants { get; set; }        
+        public DbSet<Infant> Infants { get; set; }
 
         //Reports
         public DbSet<ChildProgressReport> ChildProgressReports { get; set; }

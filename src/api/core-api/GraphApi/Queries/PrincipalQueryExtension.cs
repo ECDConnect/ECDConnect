@@ -11,9 +11,7 @@ using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
@@ -118,7 +116,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             if (userId != null)
             {
                 return new PractitionerQueryExtension().GetAllChildrenForPractitioner(contextAccessor, repoFactory, userId);
-            } else return new List<Child>();
+            }
+            else return new List<Child>();
 
         }
 
@@ -178,9 +177,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var classroomGroupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
             List<ClassroomGroup> allClassGroups = new List<ClassroomGroup>();
             List<Classroom> classes = classroomRepo.GetAll().Where(x => x.UserId.Equals(userId)).ToList();
-            foreach(Classroom classroom in classes)
+            foreach (Classroom classroom in classes)
             {
-                List<ClassroomGroup> cgroups = classroomGroupRepo.GetAll().Where(x => x.ClassroomId.Equals(classroom.Id)).ToList(); 
+                List<ClassroomGroup> cgroups = classroomGroupRepo.GetAll().Where(x => x.ClassroomId.Equals(classroom.Id)).ToList();
                 allClassGroups.AddRange(cgroups);
             }
             return allClassGroups;
@@ -193,7 +192,7 @@ string userId)
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
             List<Child> children = new List<Child>();
-            
+
             if (userId != null)
             {
                 var dbRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);

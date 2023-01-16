@@ -1,4 +1,3 @@
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace ECDLink.Abstractrions.Enums
@@ -11,7 +10,7 @@ namespace ECDLink.Abstractrions.Enums
         Error,
         [Display(Name = "orange")]
         Warning,
-        [Display(Name =  "green")]
+        [Display(Name = "green")]
         Success
     }
 }

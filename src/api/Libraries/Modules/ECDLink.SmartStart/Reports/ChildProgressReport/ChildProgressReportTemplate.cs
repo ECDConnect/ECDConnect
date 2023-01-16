@@ -375,7 +375,7 @@ namespace ECDLink.SmartStart.Reports.ChildProgressReport
                 Value = model.PractitionerSurname
             });
 
-            
+
             desc.Add(ChildProgressReportTags.PractitionerPhoto, new PdfFieldDescriptor
             {
                 IsDuplicateKey = false,

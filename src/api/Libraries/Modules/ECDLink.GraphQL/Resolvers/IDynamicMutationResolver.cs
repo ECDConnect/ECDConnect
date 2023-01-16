@@ -5,7 +5,7 @@ namespace ECDLink.EGraphQL.Resolvers
 {
     public interface IDynamicMutationResolver
     {
-        public ValueTask<object?> CreateMutationResolver(IResolverContext context);
+        public ValueTask<object?> CreateMutationResolver(IResolverContext context, int identifier);
 
         public ValueTask<object?> UpdateMutationResolver(IResolverContext context);
 

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ECDLink.DataAccessLayer.Hierarchy
+﻿namespace ECDLink.DataAccessLayer.Hierarchy
 {
     public static class HierarchyHelper
     {

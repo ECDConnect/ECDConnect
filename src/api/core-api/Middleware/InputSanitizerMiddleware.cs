@@ -1,17 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using AngleSharp.Html.Dom;
-using DotLiquid;
-using ECDLink.Core.Services.Interfaces;
+﻿using ECDLink.Core.Services.Interfaces;
 using ECDLink.Core.SystemSettings.SystemOptions;
 using Ganss.Xss;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using SendGrid.Helpers.Errors.Model;
+using System.IO;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.Middleware
 {

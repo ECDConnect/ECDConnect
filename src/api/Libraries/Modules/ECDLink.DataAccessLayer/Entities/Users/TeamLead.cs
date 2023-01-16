@@ -1,11 +1,7 @@
-using ECDLink.Security.Attributes;
 using ECDLink.DataAccessLayer.Entities.Base;
-using ECDLink.DataAccessLayer.Entities.Documents;
-using ECDLink.DataAccessLayer.Entities.Interfaces;
 using ECDLink.Security;
-using HotChocolate;
+using ECDLink.Security.Attributes;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ECDLink.DataAccessLayer.Entities.Users

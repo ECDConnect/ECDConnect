@@ -1,14 +1,9 @@
 using ECDLink.Core.Extensions;
 using ECDLink.DataAccessLayer.Context;
-using ECDLink.DataAccessLayer.Entities;
-using ECDLink.DataAccessLayer.Entities.AuditLog;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.Tenancy.Context;
 using Microsoft.EntityFrameworkCore;
-using NPOI.SS.Formula.Functions;
-using Org.BouncyCastle.Math.EC.Rfc7748;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -17,7 +12,7 @@ namespace ECDLink.DataAccessLayer.Repositories
 {
     public class AttendanceTrackingRepository
     {
-        private AuthenticationDbContext _context;        
+        private AuthenticationDbContext _context;
 
         public AttendanceTrackingRepository(AuthenticationDbContext context)
         {
@@ -65,7 +60,7 @@ namespace ECDLink.DataAccessLayer.Repositories
             Guid tenantId = TenantExecutionContext.Tenant.Id;
             return _context.Attendances
                 .Where(f => f.AttendanceDate >= start && f.AttendanceDate < end)
-                .Where(e => e.TenantId == null || e.TenantId.Equals(tenantId));            
+                .Where(e => e.TenantId == null || e.TenantId.Equals(tenantId));
         }
 
 
@@ -85,9 +80,9 @@ namespace ECDLink.DataAccessLayer.Repositories
 
                 if (attendance.Any())
                 {
-                    
+
                     foreach (var att in attendance)
-                    {                        
+                    {
                         if (programmeIds.Contains(att.ClassroomProgrammeId.ToString()))
                         {
                             if (att != null)
@@ -168,7 +163,8 @@ namespace ECDLink.DataAccessLayer.Repositories
                 Guid tenantId = TenantExecutionContext.Tenant.Id;
                 List<ClassroomGroup> groups = _context.ClassroomGroupss.Where(x => x.UserId == Guid.Parse(parentRecordId)).ToList();
                 int divider = 0;
-                foreach (ClassroomGroup group in groups) {
+                foreach (ClassroomGroup group in groups)
+                {
 
                     List<ClassProgramme> programmes = _context.ClassProgrammes.Where(x => x.ClassroomGroupId.Equals(group.Id)).ToList();
 
@@ -197,7 +193,7 @@ namespace ECDLink.DataAccessLayer.Repositories
                                 }
                             }
                             //calculate attendance percentage
-                            percentageAttendance+=(present>0 ? (int)Math.Round((double)(present / (present + absent)*100)) : 0);
+                            percentageAttendance += (present > 0 ? (int)Math.Round((double)(present / (present + absent) * 100)) : 0);
                         }
 
                     }
@@ -205,8 +201,8 @@ namespace ECDLink.DataAccessLayer.Repositories
 
                 if (percentageAttendance > 0)
                 {
-                    totalPercentageAttendance = (int)Math.Round((double)(percentageAttendance / (divider*100)) * 100);
-                }               
+                    totalPercentageAttendance = (int)Math.Round((double)(percentageAttendance / (divider * 100)) * 100);
+                }
                 return totalPercentageAttendance;
             }
             catch (Exception e)

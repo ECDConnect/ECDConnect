@@ -1,17 +1,15 @@
 ﻿using ECDLink.ContentManagement.Configuration.Setup;
+using ECDLink.Core.Extensions;
 using ECDLink.DataAccessLayer.Configuration.Setup.Seed;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.Tenancy;
 using ECDLink.Tenancy.Model;
 using ECDLink.Tenancy.Services;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
-using ECDLink.Core.Extensions;
 
 namespace EcdLink.Api.CoreApi.Migrations
 {
@@ -77,12 +75,15 @@ namespace EcdLink.Api.CoreApi.Migrations
             return true;
         }
 
-        public async Task<bool> SeedTenantWithTestData(){
-            try{
+        public async Task<bool> SeedTenantWithTestData()
+        {
+            try
+            {
                 var hasUsers = _authDbContext.Users.AnyAsync().Result;
-                if (hasUsers){
+                if (hasUsers)
+                {
                     _logger.LogInformation("Are users already seeded?");
-                    return await Task.Run<bool>(()=>true);
+                    return await Task.Run<bool>(() => true);
                 }
                 _logger.LogInformation("Seeding database.");
                 _postgresSeed.Seed();
@@ -91,11 +92,12 @@ namespace EcdLink.Api.CoreApi.Migrations
                 _contentManagementSeed.SeedFields();
                 _contentManagementSeed.SeedContent();
             }
-            catch(Exception e){
-                    _logger.LogWarning("Unable to seed tenant test data");
-                    return await Task.Run<bool>(()=>false);
+            catch (Exception e)
+            {
+                _logger.LogWarning("Unable to seed tenant test data");
+                return await Task.Run<bool>(() => false);
             }
-            return await Task.Run<bool>(()=>true);
+            return await Task.Run<bool>(() => true);
         }
 
         private void BuildDbStructure()

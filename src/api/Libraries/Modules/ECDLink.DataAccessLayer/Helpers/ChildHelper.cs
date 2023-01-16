@@ -1,12 +1,7 @@
-﻿using ECDLink.Core.Services.Interfaces;
-using ECDLink.DataAccessLayer.Context;
-using ECDLink.DataAccessLayer.Entities;
+﻿using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Caregiver;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Helpers;
-using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Threading.Tasks;
 
 namespace ECDLink.DataAccessLayer.Services
 {
@@ -35,7 +30,7 @@ namespace ECDLink.DataAccessLayer.Services
             caregiver.FullName = "Retracted";
             caregiver.IdNumber = "";
             caregiver.PhoneNumber = "";
-            
+
             caregiver.EmergencyContactFirstName = "Retracted";
             caregiver.EmergencyContactSurname = "Retracted";
             caregiver.EmergencyContactPhoneNumber = "";

@@ -6,11 +6,11 @@ using ECDLink.DataAccessLayer.Events;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security;
+using ECDLink.Tenancy.Context;
 using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ECDLink.Tenancy.Context;
 
 namespace ECDLink.DataAccessLayer.Repositories.Generic
 {

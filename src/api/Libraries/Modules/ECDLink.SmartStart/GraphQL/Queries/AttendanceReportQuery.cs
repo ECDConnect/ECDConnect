@@ -32,7 +32,7 @@ namespace ECDLink.EGraphQL.ObjectTypes.Extentions.Query
           [Service] MonthlyAttendanceReport report,
           [Service] IFileGenerationService fileService,
           DateTime startMonth,
-          DateTime endMonth, 
+          DateTime endMonth,
           string ownerId)
         {
             var startOfMonth = startMonth;

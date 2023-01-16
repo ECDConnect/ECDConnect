@@ -1,8 +1,6 @@
-using ECDLink.DataAccessLayer.Entities.Navigation;
-using ECDLink.DataAccessLayer.Entities.Workflow;
-using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Configuration.Setup.Seed.SeedData.NavigationData;
-using ECDLink.DataAccessLayer.Configuration.Setup.Seed.SeedData.Workflow;
+using ECDLink.DataAccessLayer.Entities.Navigation;
+using ECDLink.DataAccessLayer.Repositories.Factories;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 

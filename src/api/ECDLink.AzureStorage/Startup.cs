@@ -1,4 +1,3 @@
-using Azure.Storage.Blobs;
 using ECDLink.AzureStorage.Blob;
 using ECDLink.Core.Services.Interfaces;
 using Microsoft.Extensions.Configuration;

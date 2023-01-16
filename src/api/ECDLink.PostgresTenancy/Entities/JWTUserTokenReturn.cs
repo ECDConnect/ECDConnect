@@ -1,13 +1,4 @@
-﻿using ECDLink.PostgresTenancy.Entities.Base;
-using ECDLink.Tenancy.Enums;
-using ECDLink.Tenancy.Model;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Text;
-
-namespace ECDLink.PostgresTenancy.Entities
+﻿namespace ECDLink.PostgresTenancy.Entities
 {
     public class JWTUserTokensEntityReturn
     {

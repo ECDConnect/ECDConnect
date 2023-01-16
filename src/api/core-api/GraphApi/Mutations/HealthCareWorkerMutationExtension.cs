@@ -11,7 +11,6 @@ using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.Documents;
 using System;
-using System.Linq;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
@@ -24,7 +23,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             [Service] IGenericRepositoryFactory repoFactory,
             HealthCareWorkerModel input)
         {
-            var applicationUserId = contextAccessor.HttpContext.GetUser().Id;       
+            var applicationUserId = contextAccessor.HttpContext.GetUser().Id;
 
             var healthCareWorker = new HealthCareWorker()
             {

@@ -1,5 +1,4 @@
 using ECDLink.Abstractrions.GraphQL.Enums;
-using ECDLink.DataAccessLayer;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
@@ -24,7 +23,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return roleManager.Roles.ToList();
         }
 
-        public string GetRoleForUser([Service] IHttpContextAccessor contextAccessor, [Service] UserManager<ApplicationUser> userManager, [Service] IGenericRepositoryFactory repoFactory,[Service] RoleManager<IdentityRole> roleManager, string userId = null)
+        public string GetRoleForUser([Service] IHttpContextAccessor contextAccessor, [Service] UserManager<ApplicationUser> userManager, [Service] IGenericRepositoryFactory repoFactory, [Service] RoleManager<IdentityRole> roleManager, string userId = null)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             if (userId == null)
@@ -69,7 +68,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 }
                 else return "Unsure";
             }
-            else return "Unsure"; 
+            else return "Unsure";
         }
     }
 }

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ECDLink.Core.Reporting
+﻿namespace ECDLink.Core.Reporting
 {
     public static class ReportConstants
     {

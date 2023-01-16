@@ -1,10 +1,10 @@
-using ECDLink.Security.Attributes;
 using ECDLink.DataAccessLayer.Entities.Base;
+using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.Security;
+using ECDLink.Security.Attributes;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using ECDLink.DataAccessLayer.Entities.Users;
 
 namespace ECDLink.DataAccessLayer.Entities.Caregiver
 {
