@@ -26,8 +26,8 @@ namespace ECDLink.EGraphQL
 
             var builder = services
               .AddGraphQLServer()
-              .RegisterService<AuthenticationDbContext>(ServiceKind.Resolver)
-              .RegisterService<IGenericRepositoryFactory>(ServiceKind.Resolver)
+              .RegisterService<AuthenticationDbContext>(ServiceKind.Synchronized)
+              .RegisterService<IGenericRepositoryFactory>(ServiceKind.Synchronized)
               .AddQueryType<Query>()
               .AddTypeModule(sp => new ContentTypeModule(contentReloader))
               .AddTypeModule(sp => new SettingsModule(contentReloader))
