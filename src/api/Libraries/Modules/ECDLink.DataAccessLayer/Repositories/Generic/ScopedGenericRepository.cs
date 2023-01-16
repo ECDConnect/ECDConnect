@@ -6,7 +6,6 @@ using ECDLink.DataAccessLayer.Events;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security;
-using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;

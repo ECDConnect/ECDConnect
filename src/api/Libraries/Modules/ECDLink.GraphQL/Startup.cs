@@ -1,6 +1,5 @@
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Repositories.Factories;
-using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.EGraphQL.Interceptors;
 using ECDLink.EGraphQL.ObjectTypes;

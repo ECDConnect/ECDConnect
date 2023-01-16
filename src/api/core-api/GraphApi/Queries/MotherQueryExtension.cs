@@ -81,5 +81,5 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
 
 
-     }
+    }
 }
