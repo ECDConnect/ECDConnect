@@ -137,11 +137,13 @@ namespace EcdLink.Api.CoreApi.Managers.Users
             List <VisitModel> visits = getVisitDates(ExpectedDateOfDelivery, InsertedDate, visitTypes);
 
             if (visits.Count > 0)
-            {
+            {   // Add visits for mother
                 foreach (var visit in visits)
                 {
                     visit.MotherId = motherId;
                     visit.Risk = "normal";
+                    visit.InfantId = null;
+                    visit.Attended = false;
                     _visitManager.AddVisit(visit);
                 }
             }
@@ -152,7 +154,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users
             DateTime RegisteredDate,
             List<VisitType> visitTypes)
         {
-            
+            // https://ecd-connect.atlassian.net/jira/software/projects/EC/boards/1?selectedIssue=EC-56
             // Visit 1
             // Scenario 1: day 97
             // Scenario 2: registered day + 7 days
@@ -248,6 +250,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users
                     visit4Date = startTermDate.AddDays(279);
                 }
 
+                // visit types are ordered, thus we can work on index
                 visitDaySet1.PlannedVisitDate = visit1Date;
                 visitDaySet1.VisitType = visitTypes[0];
 
@@ -294,35 +297,50 @@ namespace EcdLink.Api.CoreApi.Managers.Users
             // Green Alerts
             //
 
-            // 1. show if the visit deadline is 7 days or further away (replace "Visit 2" with the name of the visit;) -> Development pending 12 Jan 2023
-            // 2. show "booked" if a visit has been scheduled in the calendar -> Development pending 12 Jan 2023
-            // 3. don't show a visit date if the booked date has passed; or if the last possible day to conduct that visit has passed (see timing in G5 & G6) -> Development pending 12 Jan 2023
+            // 1. show if the visit deadline is 7 days or further away
+            // 2. show "booked" if a visit has been scheduled in the calendar -> DEVELOPMENT PENDING 
+            // 3. don't show a visit date if the booked date has passed; or if the last possible day to conduct that visit has passed (see timing in G5 & G6) -> DEVELOPMENT PENDING
             // 4. Healthy:- for pregnant mom clients only, show if there are no alerts/flags raised for the mom.
 
+            // Default green status
             statusInfo.Icon = MetricsIconEnum.Success.ToString();
             statusInfo.Color = MetricsColorEnum.Success.ToString();
             statusInfo.Subject = "Healthy";
+
+            // No color alert notification
+            var nextVisitAfter7Days = _visitManager.GetNextVisitMoreThan7DaysAway(motherId, "mother");
+            if (nextVisitAfter7Days != "")
+            {
+                statusInfo.Icon = MetricsIconEnum.None.ToString();
+                statusInfo.Color = MetricsColorEnum.None.ToString();
+                statusInfo.Subject = nextVisitAfter7Days;
+            }
 
             //
             // Orange Alerts
             //
 
-            // 1. show if the visit deadline is less than 7 days away (replace "Visit 2" with the name of the visit;) -> Development pending 12 Jan 2023
-            // Icon and Color -> MetricsIconEnum.Warning.ToString()
+            // 1. show if the visit deadline is less than 7 days away
+            var nextVisitWithin7Days = _visitManager.GetNextVisitLessThan7DaysAway(motherId, "mother");
+            if (nextVisitWithin7Days != "")
+            {
+                statusInfo.Icon = MetricsIconEnum.Warning.ToString();
+                statusInfo.Color = MetricsColorEnum.Warning.ToString();
+                statusInfo.Subject = nextVisitWithin7Days;
+            }
 
             //
             // Red Alerts
             //
 
             // 1. Missed visits for pregnant mom - it could be Visit 1, 2, 3, or 4 
-            var missedVisit = _visitManager.GetFirstMissedVisitForMother(motherId);
+            var missedVisit = _visitManager.GetFirstMissedVisit(motherId, "mother");
             if (missedVisit != "")
             {
                 statusInfo.Icon = MetricsIconEnum.Error.ToString();
                 statusInfo.Color = MetricsColorEnum.Error.ToString();
                 statusInfo.Subject = missedVisit;
             }
-
 
             return statusInfo;
         }

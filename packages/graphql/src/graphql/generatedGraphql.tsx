@@ -4689,6 +4689,7 @@ export type Query = {
   monthlyAttendanceReport?: Maybe<Array<Maybe<MonthlyAttendanceReportModel>>>;
   motherById?: Maybe<Mother>;
   motherCountForHealthCareWorkerForMonth: Scalars['Int'];
+  motherVisits?: Maybe<Array<Maybe<Visit>>>;
   openAccessAddChildDetail?: Maybe<ChildTokenAccessModel>;
   openConsent: Array<Maybe<Consent>>;
   openLanguage: Array<Maybe<Language>>;
@@ -5630,6 +5631,10 @@ export type QueryMotherByIdArgs = {
 };
 
 export type QueryMotherCountForHealthCareWorkerForMonthArgs = {
+  id?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryMotherVisitsArgs = {
   id?: InputMaybe<Scalars['String']>;
 };
 
@@ -6690,6 +6695,7 @@ export type Visit = {
   infantId?: Maybe<Scalars['UUID']>;
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
+  mother?: Maybe<Mother>;
   motherId?: Maybe<Scalars['UUID']>;
   plannedVisitDate: Scalars['DateTime'];
   risk?: Maybe<Scalars['String']>;
@@ -6707,6 +6713,7 @@ export type VisitFilterInput = {
   infantId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
+  mother?: InputMaybe<MotherFilterInput>;
   motherId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   or?: InputMaybe<Array<VisitFilterInput>>;
   plannedVisitDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
@@ -6723,6 +6730,7 @@ export type VisitInput = {
   Id?: InputMaybe<Scalars['UUID']>;
   InfantId?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
+  Mother?: InputMaybe<MotherInput>;
   MotherId?: InputMaybe<Scalars['UUID']>;
   PlannedVisitDate: Scalars['DateTime'];
   Risk?: InputMaybe<Scalars['String']>;

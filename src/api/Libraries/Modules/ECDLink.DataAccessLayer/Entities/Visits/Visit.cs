@@ -20,6 +20,7 @@ namespace ECDLink.DataAccessLayer.Entities.Visits
         [ForeignKey(nameof(VisitTypeId))]
         public virtual VisitType VisitType { get; set; }
         public Guid? MotherId { get; set; }
+        public virtual Mother Mother { get; set; }
         public Guid? InfantId { get; set; }
         public string Risk { get; set; }
     }

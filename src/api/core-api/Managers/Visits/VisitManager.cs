@@ -1,13 +1,9 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models;
-using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyModel;
-using NPOI.OpenXmlFormats.Spreadsheet;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -47,34 +43,116 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             {
                 Id = Guid.NewGuid(),
                 IsActive = true,
+                Attended = input.Attended,
                 InsertedDate = DateTime.Now,
                 UpdatedDate = DateTime.Now,
                 PlannedVisitDate = input.PlannedVisitDate,
                 VisitTypeId = input.VisitType.Id,
                 MotherId = input.MotherId,
-                InfantId = null,
+                InfantId = input.InfantId,
                 Risk = input.Risk,
                 UpdatedBy = applicationUserId
             };
         }
 
-        public string GetFirstMissedVisitForMother(Guid motherId)
+        public string GetFirstMissedVisit(Guid Id, string type)
+        {
+            var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
+            var visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: applicationUserId);
+            var visitTypeRepo = _repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
+            var message = "";
+            Visit missedVisit = null;
+            DateTime today = DateTime.Today;
+
+            if (type == "mother")
+            {
+                missedVisit = (
+                    from visit in visitRepo.GetAll().Where(x => x.MotherId.Equals(Id) && !x.Attended && x.PlannedVisitDate <= today).OrderBy(x => x.PlannedVisitDate)
+                    join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals("mother")) on visit.VisitTypeId equals visitType.Id
+                    select visit
+                ).FirstOrDefault();
+            } else
+            {
+                missedVisit = (
+                    from visit in visitRepo.GetAll().Where(x => x.InfantId.Equals(Id) && !x.Attended && x.PlannedVisitDate <= today).OrderBy(x => x.PlannedVisitDate)
+                    join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals("child")) on visit.VisitTypeId equals visitType.Id
+                    select visit
+                ).FirstOrDefault();
+            }
+
+            if (missedVisit != null )
+            {
+                message = missedVisit.VisitType.NormalizedName + " overdue " + missedVisit.PlannedVisitDate.ToString("dd MMM yyyy");
+            }
+            return message;
+        }
+
+        public string GetNextVisitLessThan7DaysAway(Guid Id, string type)
         {
             var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
             var visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: applicationUserId);
             var visitTypeRepo = _repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
             var message = "";
 
-            var missedVisit = (
-                from visit in visitRepo.GetAll().Where(x => x.MotherId.Equals(motherId) && !x.Attended).OrderBy(x => x.PlannedVisitDate)
-                join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals("mother"))
-                on visit.VisitTypeId equals visitType.Id
-                select visit
-            ).FirstOrDefault();
+            Visit nextVisit = null;
+            DateTime today = DateTime.Today;
+            DateTime next7Days = today.AddDays(7);
 
-            if (missedVisit != null )
+            if (type == "mother")
             {
-                message = missedVisit.VisitType.NormalizedName + " overdue";
+                nextVisit = (
+                    from visit in visitRepo.GetAll().Where(x => x.MotherId.Equals(Id) && !x.Attended && x.PlannedVisitDate < next7Days).OrderBy(x => x.PlannedVisitDate)
+                    join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals("mother")) on visit.VisitTypeId equals visitType.Id
+                    select visit
+                ).LastOrDefault();
+            } else
+            {
+                nextVisit = (
+                    from visit in visitRepo.GetAll().Where(x => x.InfantId.Equals(Id) && !x.Attended && x.PlannedVisitDate < next7Days).OrderBy(x => x.PlannedVisitDate)
+                    join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals("child")) on visit.VisitTypeId equals visitType.Id
+                    select visit
+                ).LastOrDefault();
+            }
+
+            if (nextVisit != null)
+            {
+                message = nextVisit.VisitType.NormalizedName + " due " + nextVisit.PlannedVisitDate.ToString("dd MMM yyyy");
+            }
+
+            return message;
+        }
+
+        public string GetNextVisitMoreThan7DaysAway(Guid Id, string type)
+        {
+            var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
+            var visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: applicationUserId);
+            var visitTypeRepo = _repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
+            var message = "";
+
+            Visit nextVisit = null;
+            DateTime today = DateTime.Today;
+            DateTime next7Days = today.AddDays(7);
+
+            if (type == "mother")
+            {
+                nextVisit = (
+                    from visit in visitRepo.GetAll().Where(x => x.MotherId.Equals(Id) && !x.Attended && x.PlannedVisitDate >= next7Days).OrderBy(x => x.PlannedVisitDate)
+                    join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals("mother")) on visit.VisitTypeId equals visitType.Id
+                    select visit
+                ).FirstOrDefault();
+            }
+            else
+            {
+                nextVisit = (
+                    from visit in visitRepo.GetAll().Where(x => x.InfantId.Equals(Id) && !x.Attended && x.PlannedVisitDate >= next7Days).OrderBy(x => x.PlannedVisitDate)
+                    join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals("child")) on visit.VisitTypeId equals visitType.Id
+                    select visit
+                ).FirstOrDefault();
+            }
+
+            if (nextVisit != null)
+            {
+                message = nextVisit.VisitType.NormalizedName + " due " + nextVisit.PlannedVisitDate.ToString("dd MMM yyyy");
             }
 
             return message;

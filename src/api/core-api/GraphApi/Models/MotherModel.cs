@@ -1,6 +1,5 @@
-﻿using System;
-using ECDLink.DataAccessLayer.Entities;
-using HotChocolate;
+﻿using ECDLink.DataAccessLayer.Entities;
+using System;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Models
 {
