@@ -36,7 +36,6 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         [ForeignKey(nameof(MotherCaregiverId))]
         public virtual Mother Mother { get; set; }
         public Guid? MotherCaregiverId { get; set; }
-
         public decimal? WeightAtBirth { get; set; }
 
         public decimal? LengthAtBirth { get; set; }
@@ -44,5 +43,12 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         [GraphQLIgnore]
         public DisplaySet StatusInfo = new DisplaySet();
 
+    }
+
+    public interface InfantJoin<TKey>
+    {
+        [ForeignKey(nameof(InfantId))]
+        public Infant Infant { get; set; }
+        public TKey InfantId { get; set; }
     }
 }

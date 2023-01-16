@@ -19,6 +19,7 @@ using Microsoft.EntityFrameworkCore;
 using ECDLink.Security.JwtSecurity;
 using ECDLink.DataAccessLayer.Entities.Integration.IntegrationMapping;
 using ECDLink.DataAccessLayer.Entities.IncomeStatements;
+using ECDLink.DataAccessLayer.Entities.Visits;
 
 namespace ECDLink.DataAccessLayer.Context
 {
@@ -113,6 +114,10 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<StatementsIncomeType> StatementsIncomeTypes { get; set; }
         public DbSet<StatementsPayType> StatementsPayTypes { get; set; }
         public DbSet<StatementsStartupSupport> StatementsStartupSupports { get; set; }
+
+        // Visits
+        public DbSet<VisitType> VisitTypes { get; set; }
+        public DbSet<Visit> Visits { get; set; }
 
         public AuthenticationDbContext(DbContextOptions<AuthenticationDbContext> options)
                : base(options)

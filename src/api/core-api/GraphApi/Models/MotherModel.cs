@@ -1,5 +1,5 @@
-﻿using System;
-using ECDLink.DataAccessLayer.Entities;
+﻿using ECDLink.DataAccessLayer.Entities;
+using System;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Models
 {
@@ -19,6 +19,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public Relation Relation { get; set; }
         public SiteAddress SiteAddress { get; set; }
         public Guid? LinkedCaregiverId { get; set; }
+
     }
 }
 

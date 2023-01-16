@@ -45,12 +45,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             List<Infant> children = childRepo.GetAll().Where(x => x.Caregiver.HealthCareWorker.UserId.Equals(id)).ToList();
             List<Infant> childrenMother = childRepo.GetAll().Where(x => x.Mother.HealthCareWorker.UserId.Equals(id)).ToList();
 
-
             foreach (var child in children)
             {
-
                 child.StatusInfo = infantManager.GetStatusInfo(child);
-
             }
 
             foreach (var child in childrenMother)
@@ -84,17 +81,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             childCount = childrenCaregiver.Count + childrenMother.Count;
 
             return childCount;
-        }
-
-        public DisplaySet GetStatusInfo(
-            [Service] IHttpContextAccessor contextAccessor,
-            [Service] IGenericRepositoryFactory repoFactory,
-            string userId)
-        {
-            DisplaySet statusInfo = new DisplaySet();
-
-            return statusInfo;
-
         }
 
     }
