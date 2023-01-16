@@ -23,7 +23,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users
         public Guid? GetHealthCareWorkerIdByUserId(string userId)
         {
             var uId = _contextAccessor.HttpContext.GetUser().Id;
-            var healthCareWorkerRepo = _repoFactory.CreateRepository<HealthCareWorker>(userContext: uId);
+            var healthCareWorkerRepo = _repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: uId);
             var healthCareWorker = healthCareWorkerRepo.GetAll().Where(x => x.UserId.Contains(userId)).FirstOrDefault();
             if (healthCareWorker != null)
             {

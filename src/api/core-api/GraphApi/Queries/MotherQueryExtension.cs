@@ -2,6 +2,7 @@ using EcdLink.Api.CoreApi.Managers.Users;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
@@ -77,6 +78,26 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                                                                   x.InsertedDate.Year == today.Year)).ToList();
 
             return mothers.Count;
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public List<Visit> GetMotherVisits(
+            [Service] IHttpContextAccessor contextAccessor,
+            [Service] IGenericRepositoryFactory repoFactory,
+            string id)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var visitRepo = repoFactory.CreateGenericRepository<Visit>(userContext: uId);
+            var visitTypeRepo = repoFactory.CreateGenericRepository<VisitType>(userContext: uId);
+
+            List<Visit> motherVisits = new List<Visit>();
+            motherVisits = (
+                from visit in visitRepo.GetAll().Where(x => x.Mother.UserId.Equals(id)).OrderBy(x => x.PlannedVisitDate)
+                join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals("mother")) on visit.VisitTypeId equals visitType.Id
+                select visit
+            ).ToList();
+
+            return motherVisits;
         }
 
 

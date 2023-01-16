@@ -13,6 +13,7 @@ using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Reports;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
+using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Entities.Workflow;
 using ECDLink.DataAccessLayer.Hierarchy.Entities;
 using ECDLink.DataAccessLayer.Jobs;
@@ -113,6 +114,10 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<StatementsIncomeType> StatementsIncomeTypes { get; set; }
         public DbSet<StatementsPayType> StatementsPayTypes { get; set; }
         public DbSet<StatementsStartupSupport> StatementsStartupSupports { get; set; }
+
+        // Visits
+        public DbSet<VisitType> VisitTypes { get; set; }
+        public DbSet<Visit> Visits { get; set; }
 
         public AuthenticationDbContext(DbContextOptions<AuthenticationDbContext> options)
                : base(options)

@@ -3,12 +3,14 @@ using ECDLink.Abstractrions.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Caregiver;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace EcdLink.Api.CoreApi.Managers.Users
@@ -125,7 +127,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users
         public Infant UpdateInfant(string id, InfantModel input)
         {
             var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
-            var infantRepo = _repoFactory.CreateRepository<Infant>(userContext: applicationUserId);
+            var infantRepo = _repoFactory.CreateGenericRepository<Infant>(userContext: applicationUserId);
             var infantToUpdate = infantRepo.GetAll().Where(x => x.Id.Equals(Guid.Parse(id))).FirstOrDefault();
             var infantUser = GetUserFromInputModel(input);
 
@@ -174,7 +176,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users
             }
 
             var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
-            var addressRepo = _repoFactory.CreateRepository<SiteAddress>(userContext: applicationUserId);
+            var addressRepo = _repoFactory.CreateGenericRepository<SiteAddress>(userContext: applicationUserId);
             Guid tenantId = TenantExecutionContext.Tenant.Id;
 
             var healthCareWorkerId = _healthCareWorkerManager.GetHealthCareWorkerIdByUserId(applicationUserId);
