@@ -44,6 +44,7 @@ using ECDLink.PostgresTenancy.Repository;
 using ECDLink.Tenancy.Services;
 using ECDLink.PostgresTenancy.Services;
 using ECDLink.PostgresTenancy.Entities;
+using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 
 namespace EcdLink.Api.CoreApi
 {
@@ -131,6 +132,8 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<HealthCareWorkerManager>();
             services.AddTransient<MotherManager>();
             services.AddTransient<InfantManager>();
+            services.AddTransient<PersonnelManager>();
+            services.AddTransient<ChildManager>();
             services.AddTransient<IClaimsManager, ClaimsManager>();
             services.AddTransient<IAuthorizationManager, AuthorizationManager>();
             services.AddTransient<IUserInterceptHandler, UserInterceptHandler>();

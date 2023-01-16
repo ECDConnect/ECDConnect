@@ -1,3 +1,4 @@
+using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
@@ -65,18 +66,41 @@ string classroomId)
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public ChildCreatedByDetail GetChildCreatedByDetail([Service] IHttpContextAccessor contextAccessor,
             [Service] IGenericRepositoryFactory repoFactory,
-        string firstName, string surname)
+            [Service] PersonnelManager personnelManager,
+        string firstName, string surname, string practitionerId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
-            var dbRepo = repoFactory.CreateGenericRepository<Child>(userContext: uId);
-            //var practiRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
-            //TODO: ensure children returned is only based on same sitename as the uId belongs to
-
+            var dbRepo = repoFactory.CreateGenericRepository<Child>(userContext: uId);           
             var child = dbRepo.GetAll().Where(x => x.User.FirstName.ToLower() == firstName.ToLower() && x.User.Surname.ToLower() == surname.ToLower()).FirstOrDefault();
 
             if (child != null && child.User != null)
             {
-                return new ChildCreatedByDetail() { ChildUserId = child.UserId, CreatedById = child.UpdatedBy, CreatedByName = child.InsertedBy, CreatedByDate = child.InsertedDate, FullName = child.User.FullName };
+                //TODO: ensure children returned is only based on same sitename as the uId belongs to
+                var practitioners = personnelManager.GetPractitionerPeers(practitionerId);
+                if (practitioners != null)
+                {
+                    foreach (var practitioner in practitioners)
+                    {
+                        bool childExists = false;
+                        var children = personnelManager.GetAllChildrenForPractitioner(practitioner.UserId).ToList();
+                        if (children.Count > 0)
+                        {
+                            childExists = children.Where(x => x.Equals(child)).Any();
+                        }
+                        if (childExists)
+                        {
+                            return new ChildCreatedByDetail() { ChildUserId = child.UserId,
+                                FullName = child.User.FullName,
+                                CreatedByName = child.InsertedBy,
+                                CreatedById = child.UpdatedBy,
+                                CreatedByDate = child.InsertedDate,
+                                PractitionerName = practitioner.User.FullName
+                            };
+                        }
+                    }
+                }
+
+                return null;
             } else return null;
             
         }

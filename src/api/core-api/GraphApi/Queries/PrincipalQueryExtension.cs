@@ -1,3 +1,4 @@
+using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
@@ -77,49 +78,19 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return principal;
         }
 
-        public Practitioner GetPrincipalById([Service] IHttpContextAccessor contextAccessor,
-            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
-            [Service] IGenericRepositoryFactory repoFactory,
-            string id)
-        {
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            var principalRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            Practitioner principal = new Practitioner();
-            List<Practitioner> principals = principalRepo.GetAll().Where(x => x.Id.Equals(id)).ToList();
-            if (principals.Count > 0)
-            {
-                principal = principals.FirstOrDefault();
-            }
-
-            return principal;
-        }
-
-        public List<Practitioner> GetAllPractitionersForPrincipal([Service] IHttpContextAccessor contextAccessor,
-        [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
-        [Service] IGenericRepositoryFactory repoFactory,
+        public List<Practitioner> GetAllPractitionersForPrincipal([Service] PersonnelManager personnelManager,
         string userId)
         {
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            var principalRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            List<Practitioner> practitioners = principalRepo.GetAll().Where(x => x.PrincipalHierarchy.Equals(userId)).ToList();
-
-            return practitioners;
+            return personnelManager.GetAllPractitionersForPrincipal(userId);
         }
 
-        public List<Child> GetAllChildrenForPrincipal([Service] IHttpContextAccessor contextAccessor,
-        [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
-        [Service] IGenericRepositoryFactory repoFactory,
+        public List<Child> GetAllChildrenForPrincipal([Service] PersonnelManager personnelManager,
         string userId)
         {
             if (userId != null)
             {
-                return new PractitionerQueryExtension().GetAllChildrenForPractitioner(contextAccessor, repoFactory, userId);
+                return personnelManager.GetAllChildrenForPractitioner(userId);
             } else return new List<Child>();
-
         }
 
         public Principal MapPractitionerToPrincipal(Practitioner practitioner)
