@@ -93,7 +93,7 @@ namespace ECDLink.PDFGenerator.Utilities
                 float max = maxFontSize;
                 float size = maxFontSize;
                 size = (min + max) / 2;
-                size = size < (max / 2) ? size = max / 2 : size ;
+                size = size < (max / 2) ? size = max / 2 : size;
                 for (int k = 0; k < 50; ++k)
                 { //just in case it doesn't converge
 

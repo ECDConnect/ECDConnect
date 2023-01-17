@@ -2,7 +2,6 @@
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Repositories.Factories;
-using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
 
@@ -32,7 +31,7 @@ namespace EcdLink.Api.CoreApi.Documents
                 return false;
             }
 
-            var isDeleted =_fileService.DeleteFile(document.Reference, document.DocumentType.EnumId).Result;
+            var isDeleted = _fileService.DeleteFile(document.Reference, document.DocumentType.EnumId).Result;
 
             if (!isDeleted)
             {
@@ -49,7 +48,7 @@ namespace EcdLink.Api.CoreApi.Documents
             var repo = _repositoryFactory.CreateRepository<Document>();
 
             var documents = repo.GetAll()
-                                .Where(x => string.Equals(x.UserId, userId) 
+                                .Where(x => string.Equals(x.UserId, userId)
                                 && x.DocumentType.EnumId == fileType)
                                 .ToList();
 

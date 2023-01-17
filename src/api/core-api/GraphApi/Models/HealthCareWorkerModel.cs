@@ -1,6 +1,6 @@
-using System;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
+using System;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Models
 {

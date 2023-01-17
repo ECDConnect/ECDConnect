@@ -1,7 +1,7 @@
-using ECDLink.Security.Attributes;
 using ECDLink.DataAccessLayer.Entities.Base;
 using ECDLink.DataAccessLayer.Entities.Interfaces;
 using ECDLink.Security;
+using ECDLink.Security.Attributes;
 using HotChocolate;
 using System;
 using System.Collections.Generic;
@@ -15,7 +15,7 @@ namespace ECDLink.DataAccessLayer.Entities.Classroom
     {
     }
 
-    public class Classroom<TKey> : EntityBase<TKey>, IUserScoped, IReversedHierarchy,  SiteAddressJoin<Guid?>, ApplicationUserJoin
+    public class Classroom<TKey> : EntityBase<TKey>, IUserScoped, IReversedHierarchy, SiteAddressJoin<Guid?>, ApplicationUserJoin
         where TKey : IEquatable<TKey>
     {
         [ForeignKey(nameof(UserId))]

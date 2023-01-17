@@ -1,5 +1,4 @@
-﻿using ECDLink.Security.AccessModifiers.OpenAccess;
-using System;
+﻿using System;
 
 namespace ECDLink.EGraphQL.Authorization
 {

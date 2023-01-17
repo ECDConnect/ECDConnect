@@ -1,12 +1,5 @@
 import { LocalStorageKeys } from '@ecdlink/core';
-import {
-  BannerWrapper,
-  Dialog,
-  DialogPosition,
-  TabItem,
-  TabList,
-  Typography,
-} from '@ecdlink/ui';
+import { BannerWrapper, TabItem, TabList, Typography } from '@ecdlink/ui';
 import format from 'date-fns/format';
 import { useEffect, useState } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
@@ -14,18 +7,14 @@ import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useAppDispatch } from '@store';
 import { analyticsActions } from '@store/analytics';
 import { getStorageItem } from '@utils/common/local-storage.utils';
-import * as styles from './class-dashboard.styles';
-import { ClassDashboardRouteState } from './class-dashboard.types';
+import { ClassDashboardRouteState } from './business.types';
 import ROUTES from '@routes/routes';
-import { ClientList } from '../client-list/client-list';
+import { Money } from './money/money';
 
-export const ClassDashboard: React.FC = () => {
+export const Business: React.FC = () => {
   const history = useHistory();
-
   const { state } = useLocation<ClassDashboardRouteState>();
-
   const date = format(new Date(), 'EEEE, d LLLL');
-
   const [attendanceTutorialActive, setAttendanceTutorialActive] =
     useState<boolean>(false);
   const [attendanceTutorialComplete, setAttendanceTutorialComplete] =
@@ -33,71 +22,14 @@ export const ClassDashboard: React.FC = () => {
   const [selectedTabIndex, setSelectedTabIndex] = useState<number>(
     state?.activeTabIndex !== undefined ? state?.activeTabIndex : 1
   );
-  const [currentTab, setCurrentTab] = useState<TabItem>();
-
   const appDispatch = useAppDispatch();
-
+  const [previousTabIndex, setPreviousTabIndex] = useState<number>();
+  const [currentTab, setCurrentTab] = useState<TabItem>();
   const { isOnline } = useOnlineStatus();
 
-  const tabItems: TabItem[] = [
-    {
-      title: 'Highlights',
-      initActive: false,
-      child: (
-        <Typography
-          className={'p-4'}
-          type={'body'}
-          color="textDark"
-          text={'Coming soon'}
-        />
-      ),
-    },
-    {
-      title: 'Clients',
-      initActive: true,
-      child: <ClientList />,
-    },
-    {
-      title: 'Visits',
-      initActive: false,
-      child: (
-        <Typography
-          className={'p-4'}
-          type={'body'}
-          color="textDark"
-          text={'Coming soon'}
-        />
-      ),
-    },
-  ];
-
-  function backToDashboard() {
+  const backToDashboard = () => {
     history.push('/');
-  }
-
-  function setTabSelected(tab: TabItem, tabIndex: number) {
-    if (tab.title === 'Attendance' && !attendanceTutorialComplete) {
-      displayTutorial('Attendance');
-    }
-
-    setSelectedTabIndex(tabIndex);
-  }
-
-  function displayTutorial(type?: string) {
-    switch (type) {
-      case 'Attendance':
-        setAttendanceTutorialActive(true);
-        break;
-      case 'Programme':
-        history.push(ROUTES.PROGRAMMES.TUTORIAL.GETTING_STARTED);
-        break;
-      default:
-        break;
-    }
-  }
-
-  const displayHelp =
-    currentTab?.title === 'Attendance' || currentTab?.title === 'Programme';
+  };
 
   useEffect(() => {
     const isTutorialComplete = getStorageItem<boolean>(
@@ -114,7 +46,7 @@ export const ClassDashboard: React.FC = () => {
       appDispatch(
         analyticsActions.createViewTracking({
           pageView: window.location.pathname,
-          title: 'Clients-Dashboard',
+          title: 'Classroom-Dashboard',
         })
       );
     }
@@ -123,10 +55,48 @@ export const ClassDashboard: React.FC = () => {
 
   useEffect(() => {
     if (selectedTabIndex !== undefined && selectedTabIndex >= 0) {
-      setCurrentTab(tabItems[selectedTabIndex]);
+      setCurrentTab(tabItemsForPrincipal[selectedTabIndex]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTabIndex]);
+
+  const tabItemsForPrincipal: TabItem[] = [
+    {
+      title: 'Money',
+      initActive: true,
+      child: <Money />,
+    },
+    {
+      title: 'Resources',
+      initActive: false,
+      child: (
+        <div className={'p-4'}>
+          <Typography type={'body'} color="textDark" text={'Coming soon'} />
+        </div>
+      ),
+    },
+  ];
+
+  const setTabSelected = (tab: TabItem, tabIndex: number) => {
+    setPreviousTabIndex(selectedTabIndex);
+    setSelectedTabIndex(tabIndex);
+  };
+
+  const displayTutorial = (type?: string) => {
+    switch (type) {
+      case 'Attendance':
+        setAttendanceTutorialActive(true);
+        break;
+      case 'Programme':
+        history.push(ROUTES.PROGRAMMES.TUTORIAL.GETTING_STARTED);
+        break;
+      default:
+        break;
+    }
+  };
+
+  const displayHelp =
+    currentTab?.title === 'Money' || currentTab?.title === 'Programme';
 
   return (
     <>
@@ -134,7 +104,7 @@ export const ClassDashboard: React.FC = () => {
         showBackground={false}
         size="medium"
         renderBorder={true}
-        title={'Client Folders'}
+        title={'Business'}
         subTitle={date}
         color={'primary'}
         onBack={() => backToDashboard()}
@@ -143,28 +113,16 @@ export const ClassDashboard: React.FC = () => {
         displayOffline={!isOnline}
       >
         <TabList
-          className="bg-white"
-          tabItems={tabItems}
+          className="bg-uiBg"
+          tabItems={tabItemsForPrincipal}
           setSelectedIndex={selectedTabIndex}
           tabSelected={(tab: TabItem, tabIndex: number) =>
             setTabSelected(tab, tabIndex)
           }
         />
       </BannerWrapper>
-      <Dialog
-        fullScreen
-        visible={attendanceTutorialActive}
-        position={DialogPosition.Top}
-      >
-        <div className={styles.dialogContent}>
-          {/* <AttendanceTutorial
-            onComplete={completeTutorial}
-            onClose={() => closeAttendanceTutorial()}
-          /> */}
-        </div>
-      </Dialog>
     </>
   );
 };
 
-export default ClassDashboard;
+export default Business;

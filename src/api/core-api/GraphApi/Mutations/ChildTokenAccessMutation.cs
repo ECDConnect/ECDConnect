@@ -3,7 +3,6 @@ using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.Security.Managers;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.GraphQL.Enums;
-using ECDLink.DataAccessLayer;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Caregiver;
@@ -28,9 +27,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Timers;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
@@ -71,7 +68,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             try
             {
                 var siteAddressEntity = AddSiteAddress(siteAddress, siteRepo);
-               
+
                 var caregiverEntity = AddCaregiver(caregiver, siteAddressEntity, caregiverRepo);
 
                 var childEntity = AddChild(contextAccessor, child, tokenModel, caregiverEntity, childRepo);
@@ -300,7 +297,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         });
 
                         var existingGrants = context.UserGrants
-                          .Where(x =>x.UserId == caregiverId.ToString());
+                          .Where(x => x.UserId == caregiverId.ToString());
 
                         try
                         {

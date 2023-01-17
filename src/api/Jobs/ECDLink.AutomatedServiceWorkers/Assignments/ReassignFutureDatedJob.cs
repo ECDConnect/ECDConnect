@@ -1,9 +1,5 @@
 ﻿using ECDLink.AutomatedJobs.Cron;
-using ECDLink.Core.Services.Interfaces;
-using ECDLink.PostgresTenancy.Services;
-using ECDLink.Tenancy.Context;
 using Microsoft.Extensions.DependencyInjection;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -23,7 +19,7 @@ namespace ECDLink.AutomatedServiceWorkers.Assignments
         {
             using (var scope = _scopeFactory.CreateScope())
             {
-//                var anonChildService = scope.ServiceProvider.GetRequiredService<IChildrenAnonymiseService>();
+                //                var anonChildService = scope.ServiceProvider.GetRequiredService<IChildrenAnonymiseService>();
 
                 //anonChildService.AnonymiseChild();
 

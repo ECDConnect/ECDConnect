@@ -1,11 +1,8 @@
-using ECDLink.Security.Attributes;
 using ECDLink.DataAccessLayer.Entities.Base;
-using ECDLink.DataAccessLayer.Entities.Documents;
-using ECDLink.DataAccessLayer.Entities.Interfaces;
 using ECDLink.Security;
+using ECDLink.Security.Attributes;
 using HotChocolate;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ECDLink.DataAccessLayer.Entities.Users
@@ -44,6 +41,10 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         [ForeignKey(nameof(LinkedCaregiverId))]
         public virtual Caregiver.Caregiver Caregiver { get; set; }
         public Guid? LinkedCaregiverId { get; set; }
+
+        [GraphQLIgnore]
+        public DisplaySet StatusInfo = new DisplaySet();
+
     }
 
     public interface MotherJoin<TKey>

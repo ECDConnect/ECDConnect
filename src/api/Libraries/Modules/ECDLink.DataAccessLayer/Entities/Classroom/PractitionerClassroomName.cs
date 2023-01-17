@@ -1,8 +1,4 @@
-using ECDLink.Security.Attributes;
-using ECDLink.DataAccessLayer.Entities.Base;
-using ECDLink.Security;
 using System;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ECDLink.DataAccessLayer.Entities.Classroom
 {

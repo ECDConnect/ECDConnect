@@ -4,38 +4,40 @@ using EcdLink.Api.CoreApi.GraphApi.AccessValidators;
 using EcdLink.Api.CoreApi.GraphApi.Interceptors;
 using EcdLink.Api.CoreApi.Managers.Notifications;
 using EcdLink.Api.CoreApi.Managers.Users;
+using EcdLink.Api.CoreApi.Managers.Visits;
 using EcdLink.Api.CoreApi.Security.Managers;
 using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
 using EcdLink.Api.CoreApi.Services;
 using ECDLink.AzureStorage;
 using ECDLink.ContentManagement;
 using ECDLink.Core;
+using ECDLink.Core.Services;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Diagnostics;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.Development;
 using ECDLink.EGraphQL;
 using ECDLink.EGraphQL.Interceptors;
+using ECDLink.Moodle;
 using ECDLink.Notifications;
 using ECDLink.PDFGenerator;
 using ECDLink.PostgresTenancy;
-using ECDLink.PostgresTenancy.Configuration.Setup.Seed;
-using ECDLink.PostgresTenancy.Context;
+using ECDLink.PostgresTenancy.Repository;
+using ECDLink.PostgresTenancy.Services;
 using ECDLink.Security;
 using ECDLink.Security.AccessModifiers.OpenAccess;
 using ECDLink.Security.Managers;
 using ECDLink.SmartStart;
-using ECDLink.Moodle;
 using ECDLink.Tenancy.Extensions;
 using ECDLink.UrlShortner;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
 using System.Diagnostics;
+using System.Text.Json.Serialization;
 using ECDLink.Tenancy.EntityFramework.Extensions;
 using System.Threading.Tasks;
 using EcdLink.Api.CoreApi.Middleware;
@@ -132,6 +134,7 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<HealthCareWorkerManager>();
             services.AddTransient<MotherManager>();
             services.AddTransient<InfantManager>();
+            services.AddTransient<VisitManager>();
             services.AddTransient<PersonnelManager>();
             services.AddTransient<ChildManager>();
             services.AddTransient<IClaimsManager, ClaimsManager>();
@@ -143,7 +146,11 @@ namespace EcdLink.Api.CoreApi
 
             ConfigureJobs(services);
 
-            services.AddControllers();
+            services.AddControllers()
+                // TODO: 
+                // This can be removed if we don't use string number conversion for validation
+                // https://learn.microsoft.com/en-us/dotnet/core/compatibility/serialization/5.0/jsonserializer-allows-reading-numbers-as-strings
+                .AddJsonOptions(options => options.JsonSerializerOptions.NumberHandling = JsonNumberHandling.Strict); ;
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -35,6 +35,7 @@ import ROUTES from '@routes/routes';
 import { EditCellPhoneNumber } from './edit-cellphone-number/edit-cellphone-number';
 import { practitionerSelectors } from '@/store/practitioner';
 import { NextToKin } from './next-to-kin/next-to-kin';
+import { coachSelectors } from '@/store/coach';
 
 export const PractitionerAbout: React.FC = () => {
   const history = useHistory();
@@ -68,6 +69,7 @@ export const PractitionerAbout: React.FC = () => {
 
   const user = useSelector(userSelectors.getUser);
   const practitioner = useSelector(practitionerSelectors?.getPractitioner);
+  const coach = useSelector(coachSelectors?.getCoach);
   const pictureStorageKey = LocalStorageKeys.practitionerProfilePicture;
   const [listItems, setListItems] = useState<ActionListDataItem[]>([]);
 
@@ -157,7 +159,7 @@ export const PractitionerAbout: React.FC = () => {
       },
       {
         title: 'Your SmartStart coach',
-        subTitle: practitioner?.coachHierarchy || 'N/A',
+        subTitle: coach?.user?.fullName || 'N/A',
         switchTextStyles: true,
       },
       {

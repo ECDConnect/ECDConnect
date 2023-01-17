@@ -137,3 +137,5 @@ export const DefaultAvatarColors = [
   '#359ad1',
   '#1aade2',
 ];
+
+export const DefaultAvatarColorsGG = ['#26ACAF', '#FAAB35', '#F47C24'];

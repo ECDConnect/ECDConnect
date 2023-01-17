@@ -20,10 +20,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
-        public Mother UpdateMother(
-            [Service] MotherManager motherManager,
-            string id,
-            MotherModel input)
+        public Mother UpdateMother([Service] MotherManager motherManager, string id, MotherModel input)
         {
             return motherManager.UpdateMother(id, input);
         }

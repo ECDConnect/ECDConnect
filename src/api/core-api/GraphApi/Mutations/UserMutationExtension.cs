@@ -1,10 +1,7 @@
 using EcdLink.Api.CoreApi.GraphApi.Models;
 using ECDLink.Abstractrions.GraphQL.Enums;
-using ECDLink.DataAccessLayer;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.EGraphQL.Authorization;
-using ECDLink.Moodle.Managers;
-using ECDLink.Moodle.Models;
 using ECDLink.Security;
 using ECDLink.Tenancy.Context;
 using HotChocolate;

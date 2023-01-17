@@ -1,11 +1,7 @@
-﻿using ECDLink.EGraphQL.Enums;
-using ECDLink.Security.AccessModifiers.OpenAccess;
-using HotChocolate.Types;
+﻿using HotChocolate.Types;
 using HotChocolate.Types.Descriptors;
 using System;
-using System.Collections.Generic;
 using System.Reflection;
-using System.Text;
 
 namespace ECDLink.EGraphQL.Authorization
 {
@@ -22,8 +18,8 @@ namespace ECDLink.EGraphQL.Authorization
         {
             if (descriptor is IObjectFieldDescriptor field)
             {
-                field.Directive(new TokenAccessDirective 
-                { 
+                field.Directive(new TokenAccessDirective
+                {
                     Validator = _validator
                 });
             }

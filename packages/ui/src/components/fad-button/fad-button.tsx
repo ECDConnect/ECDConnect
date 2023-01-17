@@ -26,6 +26,7 @@ const FADButton: React.FC<FADButtonProps> = ({
           className={styles.text}
           type="body"
           fontSize={size === 'small' ? '14' : '16'}
+          weight="bold"
           color={type === 'ghost' ? props.color : 'white'}
           text={title}
         ></Typography>

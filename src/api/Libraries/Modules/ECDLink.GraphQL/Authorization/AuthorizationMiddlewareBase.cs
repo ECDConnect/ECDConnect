@@ -1,10 +1,6 @@
-﻿using ECDLink.Abstractrions.Enums;
-using ECDLink.Security.Enums;
+﻿using ECDLink.Security.Enums;
 using HotChocolate;
 using HotChocolate.Resolvers;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace ECDLink.EGraphQL.Authorization

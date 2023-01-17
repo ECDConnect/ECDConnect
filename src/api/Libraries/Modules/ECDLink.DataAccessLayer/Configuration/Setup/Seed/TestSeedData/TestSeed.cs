@@ -1,13 +1,13 @@
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Core.Extensions;
+using ECDLink.DataAccessLayer.Configuration.Setup.Seed.SeedData.Static;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Workflow;
 using ECDLink.DataAccessLayer.Repositories.Factories;
-using ECDLink.DataAccessLayer.Configuration.Setup.Seed.SeedData.Static;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -53,29 +53,34 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
             _userId = user.Id;
 
             var siteAddressId = SeedSiteAddress();
-            try {
+            try
+            {
                 coachId = AddFranchisorCoach(userManager);
             }
             catch (Exception e) { }
 
             try
             {
-                
-                AddPractitioners(userManager, siteAddressId, coachId.ToString());
-            } catch (Exception e) { }
 
-            try { 
+                AddPractitioners(userManager, siteAddressId, coachId.ToString());
+            }
+            catch (Exception e) { }
+
+            try
+            {
                 SeedClassProgrammes();
                 SeedAttendance(serviceProvider, _practitionerId);
             }
             catch (Exception e) { }
 
-            try { 
+            try
+            {
                 SeedChildren(serviceProvider);
             }
             catch (Exception e) { }
 
-            try { 
+            try
+            {
                 SeedChildAttendance(serviceProvider);
             }
             catch (Exception e) { }
@@ -232,7 +237,7 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
                     IsActive = true,
                     IsSouthAfricanCitizen = true,
                     VerifiedByHomeAffairs = false,
-                    DateOfBirth = new DateTime(2019, 5, 25)                    
+                    DateOfBirth = new DateTime(2019, 5, 25)
                 }
             });
 
@@ -340,7 +345,7 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
                 LanguageId = LanguageSeedConstants.English,
                 InsertedDate = DateTime.Now,
                 WorkflowStatusId = statusId
-            });            
+            });
 
             var learnerRepo = _repositoryFactory.CreateRepository<Learner>();
             learnerRepo.SetUserContext(_practitionerId);
@@ -351,7 +356,7 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
                 ClassroomGroupId = classroomGroupId,
                 UserId = newChild.UserId,
                 StartedAttendance = DateTime.Parse("April 7, 2021")
-            });            
+            });
         }
 
         private void SeedAttendance(IServiceProvider serviceProvider, string userId)

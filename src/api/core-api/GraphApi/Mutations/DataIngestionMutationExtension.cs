@@ -2,7 +2,6 @@ using EcdLink.Api.CoreApi.GraphApi.Models;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Helpers;
 using ECDLink.Core.Services.Interfaces;
-using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
@@ -14,7 +13,6 @@ using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using NPOI.SS.UserModel;
 using System;
 using System.Collections.Generic;
@@ -36,7 +34,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         // 6 = Parent Fees
         // 7 = StartDate
         // 8 = MaxChildren
-        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]        
+        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public bool DataIngestionImport(
           //[Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
           [Service] IGenericRepositoryFactory repoFactory,
@@ -50,11 +48,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             using MemoryStream fileStream = new MemoryStream(bytes);
 
             var workbook = WorkbookFactory.Create(fileStream);
-                
+
             var sheet = workbook.GetSheetAt(0);
 
             var languages = localeService.GetAvailableLocale().ToList();
-            
+
             List<PractitionerImportItem> practitionerImportList = new List<PractitionerImportItem>();
 
             for (var row = 1; row <= sheet.LastRowNum; row++)
@@ -76,7 +74,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     var dob = ExcelHelper.GetCellValue(currentRow.GetCell(9));
 
                     if (idNumber != null)
-                    {                        
+                    {
                         var languageEntity = languages.Where(x => x.Description == language).FirstOrDefault();
                         if (languageEntity == null)
                         {
@@ -115,10 +113,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         Id = userId.ToString(),
                         PhoneNumber = practitioner.PhoneNumber,
                         UserName = practitioner?.IDNumber,
-                        IdNumber = practitioner?.IDNumber,                        
+                        IdNumber = practitioner?.IDNumber,
                         IsSouthAfricanCitizen = true,
                         VerifiedByHomeAffairs = true,
-                        DateOfBirth = practitioner.Dob,                                                
+                        DateOfBirth = practitioner.Dob,
                         FirstName = practitioner.FirstName,
                         Surname = practitioner.Surname,
                         FullName = $"{practitioner.FirstName} {practitioner.Surname}",

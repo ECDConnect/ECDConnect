@@ -19,7 +19,7 @@ namespace EcdLink.Api.CoreApi.Services
         private readonly HierarchyEngine _hierarchyEngine;
 
         public ChildrenAnonymiseService(
-            IGenericRepositoryFactory repositoryFactory, 
+            IGenericRepositoryFactory repositoryFactory,
             IDocumentManagementService documentManagementService,
             HierarchyEngine hierarchyEngine)
         {

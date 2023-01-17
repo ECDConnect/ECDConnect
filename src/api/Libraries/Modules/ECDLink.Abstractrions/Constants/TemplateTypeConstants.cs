@@ -11,7 +11,7 @@ namespace ECDLink.Abstractrions.Constants
         public const string ThreeWeekNotLoggedOn = "three-week-notification";
 
         public const string FourWeekNotLoggedOn = "four-week-notification";
-    
+
         public const string TrackAttendanceWeekly = "attendance-weekly";
     }
 }

@@ -1,8 +1,6 @@
-﻿using System;
+﻿using ECDLink.DataAccessLayer.Entities.Integration.MappedEntities;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
-using ECDLink.DataAccessLayer.Entities.Integration.MappedEntities;
 
 namespace ECDLink.Core.Services.Interfaces
 {

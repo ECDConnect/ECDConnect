@@ -1,10 +1,5 @@
-﻿using ECDLink.Tenancy.EntityFramework;
-using ECDLink.Tenancy.Middleware;
+﻿using ECDLink.Tenancy.Middleware;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ECDLink.Tenancy.Extensions
 {

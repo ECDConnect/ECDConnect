@@ -28,7 +28,7 @@ namespace ECDLink.ContentManagement.Repositories
               .Where(x => x.Id == contentTypeId)
               .FirstOrDefault();
 
-            if(contentType == null)
+            if (contentType == null)
             {
                 return new List<object>();
             }

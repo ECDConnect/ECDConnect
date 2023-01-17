@@ -1,11 +1,9 @@
-﻿using System;
+﻿using ECDLink.Moodle.Models;
+using Microsoft.Extensions.Configuration;
+using Npgsql;
+using System;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
-using ECDLink.Moodle.Controllers;
-using ECDLink.Moodle.Models;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using Npgsql;
 
 namespace ECDLink.Moodle.Managers
 {
@@ -40,7 +38,8 @@ namespace ECDLink.Moodle.Managers
             reader.Close();
 
             // Add if new user
-            if (userId == -1) { 
+            if (userId == -1)
+            {
                 await using var cmd = new NpgsqlCommand("INSERT INTO public.mdl_user" +
                     "(confirmed, mnethostid, username, password, idnumber, firstname, lastname, email, phone1)" +
                     "VALUES((@Confirmed),(@Mnethostid),(@UserName),(@Password),(@IdNumber),(@Firstname),(@Lastname),(@Email),(@Phone1));",
@@ -79,7 +78,7 @@ namespace ECDLink.Moodle.Managers
             // get cohort member id
             await using var getCohortMemberId = new NpgsqlCommand("SELECT id FROM public.mdl_cohort_members where cohortid = (@cohortId) and userid = (@userId)", conn)
             {
-                Parameters = { 
+                Parameters = {
                     new NpgsqlParameter("cohortId", cohortId),
                     new NpgsqlParameter("userId", userId)
                 }
@@ -179,7 +178,8 @@ namespace ECDLink.Moodle.Managers
                 };
 
                 await cmd.ExecuteNonQueryAsync();
-            } else
+            }
+            else
             {
                 sessionId = dbSessionId;
             }

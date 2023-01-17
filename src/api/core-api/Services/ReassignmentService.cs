@@ -1,16 +1,15 @@
 ﻿using ECDLink.Core.Services.Interfaces;
 using ECDLink.Core.SystemSettings.SystemOptions;
-using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Hierarchy;
+using ECDLink.DataAccessLayer.Repositories;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using HotChocolate;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ECDLink.DataAccessLayer.Entities.Documents;
-using ECDLink.DataAccessLayer.Repositories;
 
 namespace ECDLink.Core.Services
 {
@@ -45,8 +44,9 @@ namespace ECDLink.Core.Services
             {
                 foreach (var reassign in reassignments)
                 {
-                    if (reassign.ReassignedToDate <= DateTime.Now.AddHours(-hrsToReassign)) {
-                        ReassignClassroomsFromHistory(adminId,reassign.UserId);
+                    if (reassign.ReassignedToDate <= DateTime.Now.AddHours(-hrsToReassign))
+                    {
+                        ReassignClassroomsFromHistory(adminId, reassign.UserId);
                     }
                 }
             }
@@ -166,7 +166,8 @@ namespace ECDLink.Core.Services
                         return true;
                     }
                     else return false;
-                } else return false;
+                }
+                else return false;
             }
             catch (Exception e)
             {
@@ -358,7 +359,7 @@ namespace ECDLink.Core.Services
                             {
 
                                 _attendanceRepo.UpdateAttendance(attendance, toUserId);
-                            }   
+                            }
                         }
                     }
                 }
@@ -430,7 +431,8 @@ namespace ECDLink.Core.Services
                         else reAssigned = false;
                     }
                 }
-            } else
+            }
+            else
             {
                 //run a list from all users whom is meant to be reassigned and loop but resend to same fn with userid
                 List<ClassReassignmentHistory> history = historyRepo.GetAll().Where(x => x.ReassignedBackToDate == null).ToList();
@@ -438,7 +440,7 @@ namespace ECDLink.Core.Services
                 {
                     foreach (var historyItem in history)
                     {
-                        ReassignClassroomsFromHistory(uId,historyItem.UserId);
+                        ReassignClassroomsFromHistory(uId, historyItem.UserId);
                     }
                 }
             }

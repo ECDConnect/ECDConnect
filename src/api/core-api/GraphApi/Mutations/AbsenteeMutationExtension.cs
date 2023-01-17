@@ -1,6 +1,8 @@
 using ECDLink.Abstractrions.GraphQL.Enums;
+using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
@@ -9,11 +11,6 @@ using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using System;
-using System.Linq;
-using ECDLink.DataAccessLayer.Entities.Classroom;
-using ECDLink.DataAccessLayer.Hierarchy;
-using Microsoft.Azure.Documents;
-using ECDLink.Core.Services.Interfaces;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
@@ -34,11 +31,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             string classProgram = null)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
-            var absenteeRepo = repoFactory.CreateRepository<Absentees>(userContext: uId);            
+            var absenteeRepo = repoFactory.CreateRepository<Absentees>(userContext: uId);
             var updated = new Absentees();
             if (classProgram != null)
             {
-                reason = (string.IsNullOrEmpty(reason)?"Practitioner Marked Absent":reason);
+                reason = (string.IsNullOrEmpty(reason) ? "Practitioner Marked Absent" : reason);
                 var absent = new Absentees
                 {
                     UserId = practitionerId,
@@ -57,13 +54,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             }
 
             //Save the history so it can be reassigned
-            return updated;            
+            return updated;
         }
 
         public bool ReassignAbsenteeFromHistory([Service] IHttpContextAccessor contextAccessor,
             [Service] IReassignmentService reassignmentService,
             string userId)
-        {            
+        {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             return reassignmentService.ReassignClassroomsFromHistory(uId, userId);
         }

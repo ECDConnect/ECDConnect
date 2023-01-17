@@ -51,6 +51,6 @@ namespace EcdLink.Api.CoreApi
                 c.TimeZoneInfo = TimeZoneInfo.Local;
                 c.CronExpression = CronTags.EveryTwoHours;
             });
-        } 
+        }
     }
 }

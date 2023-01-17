@@ -1,5 +1,4 @@
 using ECDLink.Abstractrions.GraphQL.Enums;
-using ECDLink.DataAccessLayer;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Interfaces;
@@ -63,6 +62,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.ObjectTypes
             }
 
             return true;
-        }        
+        }
     }
 }

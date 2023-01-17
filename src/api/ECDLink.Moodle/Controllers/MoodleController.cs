@@ -1,22 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
-using ECDLink.Moodle.Managers;
-using ECDLink.Moodle.Models;
+﻿using ECDLink.Moodle.Managers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Npgsql;
-using Microsoft.AspNetCore.Authorization;
+using System.Threading.Tasks;
 
 namespace ECDLink.Moodle.Controllers
 {
     [Route("api/moodle")]
     [ApiController]
     public class MoodleController : ControllerBase
-    {   
+    {
         private readonly ILogger<MoodleController> _logger;
         private readonly IConfiguration _configuration;
 

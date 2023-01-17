@@ -1,6 +1,4 @@
 using ECDLink.Abstractrions.GraphQL.Enums;
-using ECDLink.DataAccessLayer;
-using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Repositories;
 using ECDLink.EGraphQL.Authorization;
@@ -10,7 +8,6 @@ using HotChocolate;
 using HotChocolate.Data;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -24,8 +21,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         public IEnumerable<Attendance> GetAttendance(
             [Service] AttendanceTrackingRepository trackingRepository,
             [Service] IHttpContextAccessor httpContextAccessor,
-            int year, 
-            int? monthOfYear, 
+            int year,
+            int? monthOfYear,
             int? weekOfYear)
         {
             var userId = httpContextAccessor.HttpContext.GetUser().Id;

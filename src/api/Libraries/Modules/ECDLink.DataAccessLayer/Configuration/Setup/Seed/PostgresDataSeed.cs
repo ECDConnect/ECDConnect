@@ -34,7 +34,7 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed
             if (_env.IsDevelopment())
             {
                 new TestSeed(_serviceProvider);
-            } 
+            }
         }
     }
 }

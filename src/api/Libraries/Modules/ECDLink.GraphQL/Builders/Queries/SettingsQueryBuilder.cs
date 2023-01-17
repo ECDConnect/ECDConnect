@@ -2,14 +2,11 @@
 using ECDLink.Core.Models.Settings;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.EGraphQL.Authorization;
-using ECDLink.EGraphQL.ObjectTypes;
 using ECDLink.Security;
 using HotChocolate.Types;
 using HotChocolate.Types.Descriptors;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace ECDLink.EGraphQL.Builders.Queries
 {
@@ -43,7 +40,7 @@ namespace ECDLink.EGraphQL.Builders.Queries
             descriptor.Field(key.Split(".").Last())
              .Type(new DynamicTypeBuilder($"Setting_{key.Split(".").Last()}").Required().Build())
              .Directive(metadata)
-             .Resolve(context => 
+             .Resolve(context =>
              {
                  var settings = context.Service<ISystemSetting<Dictionary<string, string>>>();
 

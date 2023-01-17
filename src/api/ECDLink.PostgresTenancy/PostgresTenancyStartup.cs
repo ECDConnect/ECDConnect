@@ -4,17 +4,12 @@ using ECDLink.PostgresTenancy.Context;
 using ECDLink.PostgresTenancy.Entities;
 using ECDLink.PostgresTenancy.Repository;
 using ECDLink.Tenancy;
-using ECDLink.Tenancy.EntityFramework;
 using ECDLink.Tenancy.Model;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ECDLink.PostgresTenancy
 {

@@ -1,6 +1,4 @@
-using ECDLink.Abstractrions.Enums;
 using ECDLink.DataAccessLayer.Entities.Navigation;
-using ECDLink.DataAccessLayer.Entities.Workflow;
 using System.Collections.Generic;
 
 namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.SeedData.NavigationData

@@ -11,7 +11,6 @@ using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Azure.Documents;
 using Microsoft.EntityFrameworkCore;
 
 namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart

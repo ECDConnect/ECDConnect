@@ -1,5 +1,4 @@
 ﻿using System;
-using ECDLink.DataAccessLayer.Entities.Users;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Models
 {

@@ -2,13 +2,11 @@ using ECDLink.Abstractrions.GraphQL.Attributes;
 using ECDLink.Core.Models;
 using ECDLink.DataAccessLayer.Entities.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Notes;
+using ECDLink.DataAccessLayer.Entities.Users;
 using HotChocolate;
-using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using ECDLink.DataAccessLayer.Entities.Users;
-using ECDLink.DataAccessLayer.Repositories;
 
 namespace ECDLink.DataAccessLayer.Entities
 {

@@ -759,10 +759,34 @@ class PractitionerService {
       },
     });
     if (response.status !== 200) {
-      throw new Error('Get Practitioner Failed - Server connection error');
+      throw new Error(
+        'Get Practitioner Invite Date Failed - Server connection error'
+      );
     }
 
     return response.data.data.lastPractitionerInviteDate;
+  }
+
+  async GetAllPractitionerInvites(userId: string): Promise<string> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      query GetAllPractitionerInvites($userId: String) {
+        allPractitionerInvites(userId: $userId) {}
+    }
+      `,
+      variables: {
+        userId,
+      },
+    });
+    if (response.status !== 200) {
+      throw new Error(
+        'Get Practitioner Invite Dates Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.allPractitionerInvites;
   }
 
   async SendPractitionerInviteToApplication(userId: string): Promise<string> {

@@ -1,12 +1,10 @@
-using EcdLink.Api.CoreApi.GraphApi.Models;
-using ECDLink.Abstractrions.GraphQL.Enums;
-using ECDLink.Core.Helpers;
+using EcdLink.Api.CoreApi.GraphApi.Queries;
 using ECDLink.Core.Services.Interfaces;
+using ECDLink.Core.SystemSettings.SystemOptions;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
-using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
 using HotChocolate;
@@ -14,24 +12,15 @@ using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using NPOI.SS.UserModel;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using EcdLink.Api.CoreApi.GraphApi.Queries;
-using ECDLink.Tenancy.Context;
-using Microsoft.Azure.Documents;
-using System.Collections.Concurrent;
-using NPOI.SS.Formula.Functions;
-using ECDLink.DataAccessLayer.Entities.Classroom;
-using ECDLink.Core.SystemSettings.SystemOptions;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class PrincipalMutationExtension
-    {        
+    {
         public Practitioner AddPractitionerToPrincipal([Service] IHttpContextAccessor contextAccessor,
     [Service] UserManager<ApplicationUser> userManager,
     [Service] IGenericRepositoryFactory repoFactory,
@@ -43,7 +32,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             //ensure only principals or FAAs can be assigned to be a parent of another practitioner, so they cannot be joined to themselves or unrelated users
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
-            var practitionerUser = new PractitionerQueryExtension().GetPractitionerByIdNumberInternal(contextAccessor,userManager, repoFactory, idNumber);
+            var practitionerUser = new PractitionerQueryExtension().GetPractitionerByIdNumberInternal(contextAccessor, userManager, repoFactory, idNumber);
             var principalUser = practitionerRepo.GetByUserId(userId);
             if (principalUser != null && (principalUser.IsPrincipal == true || principalUser.IsFundaAppAdmin == true)) //make sure the principal user exists and is a principal or a FAA
             {
@@ -68,8 +57,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
                     return practitioner;
                 }
-                else return null;              
-            } else return null;
+                else return null;
+            }
+            else return null;
         }
 
         public ApplicationUser UpdatePractitionerContactInfo([Service] IHttpContextAccessor contextAccessor,
@@ -83,7 +73,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var user = userManager.FindByIdAsync(practitionerId).Result;
             user.NickFirstName = firstName;
             user.NickSurname = lastName;
-            user.NickFullName = firstName + " " + lastName;    
+            user.NickFullName = firstName + " " + lastName;
             user.PhoneNumber = phoneNumber;
             user.Email = email;
 
@@ -229,7 +219,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
                     status.AcceptedDate = null;
                     //if the function is run twice and the leaving date is already set, remove immediately, this is the principal confirming removal of this practitioner link
-                    if (practitioner.DateToBeRemoved!=null)
+                    if (practitioner.DateToBeRemoved != null)
                     {
                         practitioner.DateToBeRemoved = DateTime.Now;
                         practitioner.DateAccepted = null;
@@ -238,10 +228,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         //update and clear the principals details
                         practitioner.PrincipalHierarchy = null;
                         practitioner.ShareInfo = false;
-                        
+
                         status.LeavingDate = DateTime.Now;
                         status.Leaving = true;
-                    } 
+                    }
                     else
                     {
                         //reset the classroomgroups away from this practitioner and back to teh principal
@@ -266,13 +256,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     practitioner.DateToBeRemoved = null;
                     practitioner.DateAccepted = DateTime.Now;
                     practitioner.IsLeaving = false;
-                        
+
                     status.LeavingDate = null;
                     status.AcceptedDate = DateTime.Now;
                     status.Leaving = false;
                 }
                 //update practitioner with column changes
-                practitionerRepo.Update(practitioner);    
+                practitionerRepo.Update(practitioner);
             }
             else return null;
 

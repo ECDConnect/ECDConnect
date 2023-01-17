@@ -1,18 +1,17 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using ECDLink.Security.Managers;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
-using Microsoft.AspNetCore.Identity;
-using ECDLink.Security.Managers;
-using Microsoft.AspNetCore.Mvc;
 
 namespace ECDLink.Security.Filters
 {
     public class BasicAuthFilter : IAuthorizationFilter
-    { 
+    {
         public void OnAuthorization(AuthorizationFilterContext context)
         {
             try

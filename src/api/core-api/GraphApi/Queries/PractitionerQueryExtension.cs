@@ -1,35 +1,21 @@
 using ECDLink.Abstractrions.Files;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Abstractrions.Services;
-using ECDLink.ContentManagement.Entities;
-using ECDLink.ContentManagement.Repositories;
-using ECDLink.Core.Models.ContentManagement;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
+using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
-using ECDLink.EGraphQL.Enums;
 using ECDLink.Security;
+using ECDLink.Security.Extensions;
+using ECDLink.UrlShortner.Managers;
 using HotChocolate;
 using HotChocolate.Types;
-using NPOI.SS.UserModel;
-using NPOI.SS.Util;
-using System;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using ECDLink.DataAccessLayer.Entities.Users;
-using ECDLink.DataAccessLayer.Context;
-using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
-using ECDLink.Security.Extensions;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.Azure.Documents;
-using EcdLink.Api.CoreApi.GraphApi.Models;
-using EcdLink.Api.CoreApi.Managers.Notifications;
-using ECDLink.UrlShortner.Managers;
-using ECDLink.DataAccessLayer.Entities.Notifications;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
@@ -63,13 +49,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             [Service] UserManager<ApplicationUser> userManager,
             [Service] IGenericRepositoryFactory repoFactory,
             string idNumber)
-        {
-            //this is the fucntion called from FE to search for practitioners to add practitioners to a principal - so limit to coach lines and non principals only and not practitioners added to any other principals
+        {            
             var uId = contextAccessor.HttpContext.GetUser().Id;
 
             var dbRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
             //retrieve principal, check that the coach lines match, that the user to be searched for is not a principal or an FAA
-            
+
             var principal = dbRepo.GetByUserId(uId);
             if (principal != null)
             {
@@ -84,11 +69,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                         if (practitioner.PrincipalHierarchy == null && practitioner.CoachHierarchy == principal.CoachHierarchy) // only allow practitioners assigned to same coach and where they are not assigned to any otehr practitioners
                         {
                             return new PractitionerUserAndNote() { AppUser = practitioner.User };
-                        } else
+                        }
+                        else
                         {
                             return new PractitionerUserAndNote() { AppUser = practitioner.User, Note = "This practitioner is linked to a different SmartStart programme" };
                         }
-                    } else
+                    }
+                    else
                     {
                         return new PractitionerUserAndNote() { AppUser = null, Note = "Not on Funda App" };
                     }
@@ -269,7 +256,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             {
                 List<Practitioner> practitioners = practiRepo.GetAll().Where(x => (x.PrincipalHierarchy.HasValue ? x.PrincipalHierarchy.Equals(practi.PrincipalHierarchy) : (x.IsPrincipal == true ? x.UserId.Equals(userId) : x.UserId.Equals(userId)))).ToList();
                 //also add principal
-                if (practi.IsPrincipal == true) {
+                if (practi.IsPrincipal == true)
+                {
                     Practitioner practiPrincipal = practiRepo.GetByUserId(practi.UserId.ToString());
                     if (practiPrincipal != null) practitioners.Add(practiPrincipal);
                 }

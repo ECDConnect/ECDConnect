@@ -5,7 +5,7 @@ namespace ECDLink.SmartStart.Reports.ChildProgressReport
 {
     public class ChildProgressReportSummaryModel
     {
-        public string  ChildId { get; set; }
+        public string ChildId { get; set; }
         public string ChildFirstname { get; set; }
 
         public string ChildSurname { get; set; }

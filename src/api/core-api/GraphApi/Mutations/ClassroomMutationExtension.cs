@@ -1,37 +1,20 @@
-using EcdLink.Api.CoreApi.Managers.Notifications;
-using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
-using EcdLink.Api.CoreApi.GraphApi.Models;
 using ECDLink.Abstractrions.GraphQL.Enums;
-using ECDLink.Core.Helpers;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Repositories.Factories;
-using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
-using ECDLink.Security.Managers;
 using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using NPOI.SS.UserModel;
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
-using EcdLink.Api.CoreApi.GraphApi.Queries;
-using ECDLink.DataAccessLayer.Entities.Classroom;
-using Microsoft.EntityFrameworkCore.Metadata.Conventions;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
-using ECDLink.DataAccessLayer.Hierarchy.Entities;
-using Microsoft.Azure.Documents;
-using ECDLink.DataAccessLayer.Hierarchy;
-using System.Drawing;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
@@ -93,10 +76,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     return newClassRoomGroup;
 
                 }
-            } else { 
+            }
+            else
+            {
                 //get the users hierarchy to reuse
                 ClassReassignmentHistory newReassignment = new ClassReassignmentHistory();
-                if (input.UserId != null) {
+                if (input.UserId != null)
+                {
                     //update classrooms hierarchy and send through to next function
 
                     if (hierarchy != null)
@@ -106,13 +92,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         newReassignment.LoggedBy = uId;
                         newReassignment.IsActive = true;
                         newReassignment.Reason = "Principal Linked Practitioner";
-                        newReassignment.ReassignedClassroomGroups = id.ToString()+";";
+                        newReassignment.ReassignedClassroomGroups = id.ToString() + ";";
                         newReassignment.ReassignedToDate = DateTime.Now;
                         newReassignment.ReassignedToUser = input.UserId.ToString();
                         newReassignment.UserId = input.UserId.ToString();
                         newReassignment.ReassignedBackToUserId = uId;
                         newReassignment.ReassignedBackToDate = DateTime.Now;
-                    }                    
+                    }
                 }
                 classRoom.UserId = input.UserId;
                 classRoom.ClassroomId = input.ClassroomId;
@@ -164,7 +150,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         };
 
                         return programmeRepo.Insert(classRoomCreate);
-                    } else
+                    }
+                    else
                     {
                         existingProgramme.UpdatedDate = DateTime.Now;
                         existingProgramme.ClassroomGroupId = input.ClassroomGroupId;
@@ -177,13 +164,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     }
                 }
             }
-          
+
             return new ClassProgramme();
         }
 
         private void UpdateClassProgrammeForPractitioner([Service] IHttpContextAccessor contextAccessor,
-                                                         [Service] IGenericRepositoryFactory repoFactory, 
-                                                         Guid classroomId,  
+                                                         [Service] IGenericRepositoryFactory repoFactory,
+                                                         Guid classroomId,
                                                          string newHierarchy)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
@@ -194,7 +181,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             {
                 classProgramme.Hierarchy = newHierarchy;
                 classProgrammeRepo.Update(classProgramme);
-            } 
+            }
         }
     }
 }

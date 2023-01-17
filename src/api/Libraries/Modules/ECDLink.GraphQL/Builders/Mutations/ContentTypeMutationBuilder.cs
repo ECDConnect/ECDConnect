@@ -43,10 +43,6 @@ namespace ECDLink.EGraphQL.Registration.ContentTypes
         private static void AddUpdate(IObjectTypeDescriptor descriptor, IDynamicMutationResolver resolver, ContentDefinitionModel definition)
         {
             descriptor.Field(GraphFieldNamingHelper.GetFieldName(GraphFieldTypeEnum.Update, definition.ContentName))
-                  .ConfigureContextData(data =>
-                  {
-                      data.Add(ContextDataConstants.ContentManagement.Identifier, definition.Identifier);
-                  })
                   .Argument(ArgumentConstants.Id, a => a.Type<NonNullType<StringType>>())
                   .Argument(ArgumentConstants.Input, a => a.Type(new DynamicTypeBuilder(definition.ContentName).Input().Required().Build()))
                   .Argument(ArgumentConstants.Locale, a => a.Type<StringType>())
@@ -63,10 +59,6 @@ namespace ECDLink.EGraphQL.Registration.ContentTypes
         private static void AddDeleteMutation(IObjectTypeDescriptor descriptor, IDynamicMutationResolver resolver, ContentDefinitionModel definition)
         {
             descriptor.Field(GraphFieldNamingHelper.GetFieldName(GraphFieldTypeEnum.Delete, definition.ContentName))
-                  .ConfigureContextData(data =>
-                  {
-                      data.Add(ContextDataConstants.ContentManagement.Identifier, definition.Identifier);
-                  })
                   .Argument(ArgumentConstants.Id, a => a.Type<NonNullType<StringType>>())
                   .Argument(ArgumentConstants.Locale, a => a.Type<StringType>())
                   .Argument(ArgumentConstants.LocaleId, a => a.Type<StringType>())
@@ -82,10 +74,6 @@ namespace ECDLink.EGraphQL.Registration.ContentTypes
         private static void AddCreateMutation(IObjectTypeDescriptor descriptor, IDynamicMutationResolver resolver, ContentDefinitionModel definition)
         {
             descriptor.Field(GraphFieldNamingHelper.GetFieldName(GraphFieldTypeEnum.Create, definition.ContentName))
-                  .ConfigureContextData(data =>
-                  {
-                      data.Add(ContextDataConstants.ContentManagement.Identifier, definition.Identifier);
-                  })
                   .Argument(ArgumentConstants.Input, a => a.Type(new DynamicTypeBuilder(definition.ContentName).Input().Required().Build()))
                   .Argument(ArgumentConstants.Locale, a => a.Type<StringType>())
                   .Argument(ArgumentConstants.LocaleId, a => a.Type<StringType>())
@@ -95,7 +83,11 @@ namespace ECDLink.EGraphQL.Registration.ContentTypes
                       MethodType = GraphActionEnum.Create,
                       ObjectType = PermissionGroups.GENERAL
                   })
-                  .Resolve(context => resolver.CreateMutationResolver(context));
+                  .Resolve(context =>
+                  {
+                      int.TryParse(definition.Identifier, out int id);
+                      return resolver.CreateMutationResolver(context, id);
+                  });
         }
     }
 }

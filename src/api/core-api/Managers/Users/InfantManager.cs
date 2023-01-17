@@ -1,18 +1,17 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using EcdLink.Api.CoreApi.GraphApi.Models;
-using ECDLink.DataAccessLayer.Context;
+﻿using EcdLink.Api.CoreApi.GraphApi.Models;
+using ECDLink.Abstractrions.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Caregiver;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Azure.Documents;
-using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace EcdLink.Api.CoreApi.Managers.Users
 {
@@ -32,6 +31,13 @@ namespace EcdLink.Api.CoreApi.Managers.Users
             _healthCareWorkerManager = healthCareWorkerManager;
         }
 
+        // GG BUSINESS RULES FOR CREATING A CHILD AND SELECTING AN EXISTING CAREGIVER
+
+        // This existing caregiver is of type mother.
+        // Then we populate MotherCaregiverId on the Infant table to indicate that the mom is linked to this child
+        // If existing caregiver is not of type mother
+        // Then we populate CaregiverId on the Infant table
+
         public Infant AddInfant(InfantModel input)
         {
             var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
@@ -49,7 +55,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users
             if (caregiver == null && mother == null)
             {
                 caregiver = GetCaregiverFromInput(input);
-                
+
                 infant = new Infant()
                 {
                     Id = Guid.NewGuid(),
@@ -108,20 +114,20 @@ namespace EcdLink.Api.CoreApi.Managers.Users
 
 
             var infantRepo = _repoFactory.CreateGenericRepository<Infant>(userContext: applicationUserId);
-           try
-           {
+            try
+            {
                 return infantRepo.Insert(infant);
-           }
-           catch (Exception e)
-           {
+            }
+            catch (Exception e)
+            {
                 return new Infant();
-           }
+            }
         }
 
         public Infant UpdateInfant(string id, InfantModel input)
         {
             var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
-            var infantRepo = _repoFactory.CreateRepository<Infant>(userContext: applicationUserId);
+            var infantRepo = _repoFactory.CreateGenericRepository<Infant>(userContext: applicationUserId);
             var infantToUpdate = infantRepo.GetAll().Where(x => x.Id.Equals(Guid.Parse(id))).FirstOrDefault();
             var infantUser = GetUserFromInputModel(input);
 
@@ -170,7 +176,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users
             }
 
             var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
-            var addressRepo = _repoFactory.CreateRepository<SiteAddress>(userContext: applicationUserId);
+            var addressRepo = _repoFactory.CreateGenericRepository<SiteAddress>(userContext: applicationUserId);
             Guid tenantId = TenantExecutionContext.Tenant.Id;
 
             var healthCareWorkerId = _healthCareWorkerManager.GetHealthCareWorkerIdByUserId(applicationUserId);
@@ -214,6 +220,61 @@ namespace EcdLink.Api.CoreApi.Managers.Users
         private Guid GetCaregiverIdOrGenerateNew(Guid? caregiverId)
         {
             return caregiverId ?? Guid.NewGuid();
+        }
+
+        public int GetChildCountForMother(Guid motherId)
+        {
+            var uId = _contextAccessor.HttpContext.GetUser().Id;
+            var childRepo = _repoFactory.CreateGenericRepository<Infant>(userContext: uId);
+
+            return childRepo.GetAll().Where(x => x.MotherCaregiverId.Equals(motherId)).Count();
+        }
+
+        public DisplaySet GetStatusInfo(Infant child)
+        {
+            DisplaySet statusInfo = new DisplaySet();
+
+            statusInfo.Notes = "child";
+
+            //
+            // Green Alerts
+            //
+            // Visit 2 due/booked 12 April:- show if the visit deadline is 7 days or further away (replace "Visit 2" with the name of the visit; this is relevant for both pregnant mom and child clients)
+            // show "booked" if a visit has been scheduled in the calendar 
+            // don't show a visit date if the booked date has passed; or if the last possible day to conduct that visit has passed (see timing in G5 & G6)
+            // Growing well:- for child clients only, show if the child's weight, length, and MUAC measurements are all in the normal range and the child's growth is NOT faltering (ie, growth has increased in the previous 2 visits)
+            // Icon and Color -> MetricsIconEnum.Success.ToString()
+            statusInfo.Color = MetricsIconEnum.Success.ToString();
+            statusInfo.Icon = MetricsIconEnum.Success.ToString();
+            statusInfo.Subject = "Growing well";
+
+            //
+            // Orange Alerts
+            //
+            // Refer to the clinic:-show if any of these referral items are flagged for child client: Underweight, Growth faltering, Stunted, Obese, Overweight(see G3.8)
+            // Refer to Home Affairs:- show if the referral item No CSG/birth certificate is relevant -- only if no birth certificate
+            // Refer to SASSA:- Show if client is eligible for CSG but has not applied (see G5.7.1 Child documentation)
+            // Visit 2 due 12 April:- show if the visit deadline is less than 7 days away (replace "Visit 2" with the name of the visit; this is relevant for both pregnant mom and child clients)
+            // Icon and Color -> MetricsIconEnum.Warning.ToString()
+            if (child.WeightAtBirth == null)
+            {
+                statusInfo.Color = MetricsIconEnum.Warning.ToString();
+                statusInfo.Icon = MetricsIconEnum.Warning.ToString();
+                statusInfo.Subject = "Low birth weight";
+            }
+            if (child.LengthAtBirth == null)
+            {
+                statusInfo.Color = MetricsIconEnum.Warning.ToString();
+                statusInfo.Icon = MetricsIconEnum.Warning.ToString();
+                statusInfo.Subject = "Growth faltering";
+            }
+
+            //
+            // Red Alerts
+            //
+            // Icon and Color -> MetricsIconEnum.Error.ToString()
+
+            return statusInfo;
         }
     }
 }
