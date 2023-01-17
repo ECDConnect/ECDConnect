@@ -16,6 +16,7 @@ namespace ECDLink.DataAccessLayer.Entities.IncomeStatements
          where TKey : IEquatable<TKey>
     {
         public string Description { get; set; }
+        public string Notes { get; set; }
     }
 
     public interface StatementsExpenseTypeJoin<TKey>

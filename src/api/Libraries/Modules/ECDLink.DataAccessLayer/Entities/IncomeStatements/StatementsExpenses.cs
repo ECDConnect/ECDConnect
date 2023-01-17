@@ -1,15 +1,28 @@
-﻿using ECDLink.PostgresTenancy.Entities.Base;
+﻿using ECDLink.DataAccessLayer.Entities.Base;
 using ECDLink.Security;
 using ECDLink.Security.Attributes;
+using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace ECDLink.DataAccessLayer.Entities
+namespace ECDLink.DataAccessLayer.Entities.IncomeStatements
 {
     [Table(nameof(StatementsExpenses))]
     [EntityPermission(PermissionGroups.INCOMESTATEMENTS)]
-    public class StatementsExpenses : EntityBase
+    public class StatementsExpenses : StatementsExpenses<Guid>
     {
+
+    }
+    public class StatementsExpenses<TKey> : EntityBase<TKey>
+         where TKey : IEquatable<TKey>
+    { 
         public string Notes { get; set; }
 
+    }
+
+    public interface StatementsExpensesJoin<TKey>
+    {
+        [ForeignKey(nameof(StatementsExpensesId))]
+        public StatementsExpenses StatementsExpenses { get; set; }
+        public TKey StatementsExpensesId { get; set; }
     }
 }
