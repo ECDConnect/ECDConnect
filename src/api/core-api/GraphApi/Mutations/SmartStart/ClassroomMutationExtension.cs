@@ -16,7 +16,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Mutations
+namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 {
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class ClassroomMutationExtension
@@ -52,8 +52,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var classRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);
-            ClassroomGroup classRoom = (ClassroomGroup)classRepo.GetAll().Where(x => x.Id.Equals(id)).FirstOrDefault();
-            var hierarchy = engine.GetUserHierarchy((input.UserId != null ? input.UserId.ToString() : uId));
+            ClassroomGroup classRoom = classRepo.GetAll().Where(x => x.Id.Equals(id)).FirstOrDefault();
+            var hierarchy = engine.GetUserHierarchy(input.UserId != null ? input.UserId.ToString() : uId);
             if (classRoom == null)
             {
                 if (!string.IsNullOrEmpty(hierarchy))
@@ -62,7 +62,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     ClassroomGroup classRoomCreate = new ClassroomGroup()
                     {
                         Id = input.Id,
-                        UserId = (input.UserId != null ? input.UserId : null),
+                        UserId = input.UserId != null ? input.UserId : null,
                         ProgrammeTypeId = input.ProgrammeTypeId,
                         IsActive = true,
                         UpdatedBy = uId.ToString(),
@@ -72,7 +72,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     };
 
                     var newClassRoomGroup = classRepo.Insert(classRoomCreate);
-                    this.UpdateClassProgrammeForPractitioner(contextAccessor, repoFactory, input.ClassroomId, hierarchy);
+                    UpdateClassProgrammeForPractitioner(contextAccessor, repoFactory, input.ClassroomId, hierarchy);
                     return newClassRoomGroup;
 
                 }
@@ -107,7 +107,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 classRoom.ProgrammeTypeId = input.ProgrammeTypeId;
 
                 //also update the userhierarchy on classroomgroup, as well as classProgramme so that a practitioner can see this
-                this.UpdateClassProgrammeForPractitioner(contextAccessor, repoFactory, input.ClassroomId, hierarchy);
+                UpdateClassProgrammeForPractitioner(contextAccessor, repoFactory, input.ClassroomId, hierarchy);
 
                 return classRoom;
             }
@@ -124,8 +124,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var classRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);
-            ClassroomGroup classRoom = (ClassroomGroup)classRepo.GetAll().Where(x => x.Id.Equals(input.ClassroomGroupId)).FirstOrDefault();
-            var hierarchy = engine.GetUserHierarchy((classRoom.UserId != null ? classRoom.UserId.ToString() : uId));
+            ClassroomGroup classRoom = classRepo.GetAll().Where(x => x.Id.Equals(input.ClassroomGroupId)).FirstOrDefault();
+            var hierarchy = engine.GetUserHierarchy(classRoom.UserId != null ? classRoom.UserId.ToString() : uId);
             if (classRoom != null)
             {
                 if (!string.IsNullOrEmpty(hierarchy))
@@ -176,7 +176,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var uId = contextAccessor.HttpContext.GetUser().Id;
 
             var classProgrammeRepo = repoFactory.CreateGenericRepository<ClassProgramme>(userContext: uId);
-            ClassProgramme classProgramme = (ClassProgramme)classProgrammeRepo.GetAll().Where(x => x.ClassroomGroupId.Equals(classroomId)).FirstOrDefault();
+            ClassProgramme classProgramme = classProgrammeRepo.GetAll().Where(x => x.ClassroomGroupId.Equals(classroomId)).FirstOrDefault();
             if (classProgramme != null && !string.IsNullOrWhiteSpace(newHierarchy))
             {
                 classProgramme.Hierarchy = newHierarchy;

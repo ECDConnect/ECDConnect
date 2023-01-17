@@ -12,7 +12,7 @@ using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using System;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Mutations
+namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 {
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class AbsenteeMutationExtension
@@ -35,7 +35,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var updated = new Absentees();
             if (classProgram != null)
             {
-                reason = (string.IsNullOrEmpty(reason) ? "Practitioner Marked Absent" : reason);
+                reason = string.IsNullOrEmpty(reason) ? "Practitioner Marked Absent" : reason;
                 var absent = new Absentees
                 {
                     UserId = practitionerId,

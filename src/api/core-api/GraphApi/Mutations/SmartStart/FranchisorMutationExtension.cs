@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Mutations
+namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 {
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class FranchisorMutationExtension
@@ -31,7 +31,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var dbRepo = repoFactory.CreateRepository<Franchisor>(userContext: uId);
 
-            Franchisor franchisor = (Franchisor)dbRepo.GetAll().Where(x => x.Id.Equals(input.Id)).FirstOrDefault();
+            Franchisor franchisor = dbRepo.GetAll().Where(x => x.Id.Equals(input.Id)).FirstOrDefault();
             {
                 if (franchisor != null)
                 {
@@ -42,7 +42,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     if (input.SiteAddressId != null)
                     {
                         var addressRepo = repoFactory.CreateRepository<SiteAddress>(userContext: uId);
-                        SiteAddress address = (SiteAddress)addressRepo.GetAll().Where(x => x.Id.Equals(input.SiteAddressId)).FirstOrDefault();
+                        SiteAddress address = addressRepo.GetAll().Where(x => x.Id.Equals(input.SiteAddressId)).FirstOrDefault();
                         if (input.SiteAddress.Ward != null)
                             address.Ward = input.SiteAddress.Ward;
                         if (input.SiteAddress.AddressLine1 != null)

@@ -33,7 +33,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Mutations
+namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 {
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class PractitionerMutationExtension
@@ -74,7 +74,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     if (input.SiteAddressId != null)
                     {
                         var addressRepo = repoFactory.CreateRepository<SiteAddress>(userContext: uId);
-                        SiteAddress address = (SiteAddress)addressRepo.GetAll().Where(x => x.Id.Equals(input.SiteAddressId)).FirstOrDefault();
+                        SiteAddress address = addressRepo.GetAll().Where(x => x.Id.Equals(input.SiteAddressId)).FirstOrDefault();
                         if (input.SiteAddress.Ward != null)
                             address.Ward = input.SiteAddress.Ward;
                         if (input.SiteAddress.AddressLine1 != null)
@@ -310,7 +310,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     }
                 }
                 //now call db ingestion
-                this.ImportAllIngestDB(repoFactory, httpContextAccessor, localeService, userManager);
+                ImportAllIngestDB(repoFactory, httpContextAccessor, localeService, userManager);
             }
             catch (Exception ex)
             {
@@ -450,18 +450,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         if (!string.IsNullOrEmpty(fullname))
                         {
                             var nameArr = fullname.Split(' ');
-                            var firstname = (nameArr.Count() > 2 ? nameArr[0] + " " + nameArr[1] : nameArr[0]);
-                            var surname = (nameArr.Count() > 2 ? nameArr[2] : nameArr[1]);
+                            var firstname = nameArr.Count() > 2 ? nameArr[0] + " " + nameArr[1] : nameArr[0];
+                            var surname = nameArr.Count() > 2 ? nameArr[2] : nameArr[1];
 
                             var programmeTypeDesc = user.ECDType;
                             var programmeType = programmeTypeRepo.GetAll().Where(x => x.Description.Equals(programmeTypeDesc)).FirstOrDefault();
 
                             char[] digits = user.IDNumber.ToCharArray();
-                            var dob = new DateTime(Int32.Parse("19" + digits[0] + digits[1]), Int32.Parse(digits[2].ToString() + digits[3].ToString()), Int32.Parse(digits[4].ToString() + digits[5].ToString()));
+                            var dob = new DateTime(int.Parse("19" + digits[0] + digits[1]), int.Parse(digits[2].ToString() + digits[3].ToString()), int.Parse(digits[4].ToString() + digits[5].ToString()));
 
                             var currentItem = practitionerImportList.Where(x => x.IDNumber == user.IDNumber).FirstOrDefault();
                             var item = currentItem != null ? currentItem : new ImportAllStaffItem();
-                            item.MatchWithSite = (user.SameSite != null && user.SameSite == "YES" ? true : false);
+                            item.MatchWithSite = user.SameSite != null && user.SameSite == "YES" ? true : false;
                             item.SiteIndicator = user.Indicator;
                             item.FirstName = firstname;
                             item.Surname = surname;
@@ -469,7 +469,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                             item.PhoneNumber = user.PersonalNumber;
                             item.IDNumber = user.IDNumber;
                             item.ProgrammeTypeDesc = programmeTypeDesc;
-                            item.ProgrammeTypeId = (programmeType != null ? programmeType.Id.ToString() : null);
+                            item.ProgrammeTypeId = programmeType != null ? programmeType.Id.ToString() : null;
                             item.SiteArea = user.SiteArea;
                             item.SiteName = user.SiteName;
                             item.ClassName = user.ClassName;
@@ -499,10 +499,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         var fullname = Regex.Replace(coach.CoachName, @"\s+", " ");
                         var nameArr = fullname.Split(' ');
 
-                        var firstname = (nameArr.Count() > 2 ? nameArr[0] + " " + nameArr[1] : nameArr[0]);
-                        var surname = (nameArr.Count() > 2 ? nameArr[2] : nameArr[1]);
+                        var firstname = nameArr.Count() > 2 ? nameArr[0] + " " + nameArr[1] : nameArr[0];
+                        var surname = nameArr.Count() > 2 ? nameArr[2] : nameArr[1];
                         char[] coachdigits = coach.CoachID.ToCharArray();
-                        var coachdob = new DateTime(Int32.Parse("19" + coachdigits[0] + coachdigits[1]), Int32.Parse(coachdigits[2].ToString() + coachdigits[3].ToString()), Int32.Parse(coachdigits[4].ToString() + coachdigits[5].ToString()));
+                        var coachdob = new DateTime(int.Parse("19" + coachdigits[0] + coachdigits[1]), int.Parse(coachdigits[2].ToString() + coachdigits[3].ToString()), int.Parse(coachdigits[4].ToString() + coachdigits[5].ToString()));
 
                         MappedCoach newMappedCoach = new MappedCoach()
                         {
@@ -529,7 +529,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         {
                             var coachUser = userManager.Users.Where(x => x.IdNumber == practitioner.CoachID).FirstOrDefault();
 
-                            var parentUser = (practitioner.ParentUserIdNumber != null ? userManager.Users.Where(x => x.IdNumber == practitioner.ParentUserIdNumber).FirstOrDefault() : null);
+                            var parentUser = practitioner.ParentUserIdNumber != null ? userManager.Users.Where(x => x.IdNumber == practitioner.ParentUserIdNumber).FirstOrDefault() : null;
                             string userId = Guid.NewGuid().ToString();
                             var newUser = new ApplicationUser
                             {
@@ -687,7 +687,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                             if (user.IDNumber != null)
                             {
                                 char[] childdigits = user.IDNumber.ToCharArray();
-                                calcdob = new DateTime(Int32.Parse("20" + childdigits[0] + childdigits[1]), Int32.Parse(childdigits[2].ToString() + childdigits[3].ToString()), Int32.Parse(childdigits[4].ToString() + childdigits[5].ToString())).ToString();
+                                calcdob = new DateTime(int.Parse("20" + childdigits[0] + childdigits[1]), int.Parse(childdigits[2].ToString() + childdigits[3].ToString()), int.Parse(childdigits[4].ToString() + childdigits[5].ToString())).ToString();
                             }
                             Dob = calcdob;
 
@@ -696,23 +696,23 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                                 Fullname = user.ChildFullName.Trim(),
                                 FirstName = user.FirstName,
                                 Surname = user.Surname,
-                                Dob = (Dob != null ? Dob : "2022-01-01"),
-                                IDNumber = (user.IDNumber != null ? user.IDNumber : "0000000000" + idx),
+                                Dob = Dob != null ? Dob : "2022-01-01",
+                                IDNumber = user.IDNumber != null ? user.IDNumber : "0000000000" + idx,
                                 ProgramType = user.FranchiseeType,
                                 ECDType = user.ECDType,
-                                FranchiseeName = (user.FranchiseeName != null ? user.FranchiseeName.Trim() : null),
+                                FranchiseeName = user.FranchiseeName != null ? user.FranchiseeName.Trim() : null,
                                 FranchiseeIDNumber = user.FranchiseeId,
-                                EmergencyContactFullName = (user.EmergencyContactName != null ? user.EmergencyContactName.Trim() : null),
+                                EmergencyContactFullName = user.EmergencyContactName != null ? user.EmergencyContactName.Trim() : null,
                                 EmergencyContactPhoneNumber = user.EmergencyContactNumber,
                                 EthnicGroup = user.EthnicGroup,
                                 Gender = user.Gender,
                                 PlayGroupGroup = user.Playgroup,
-                                PrimaryCaregiver = (user.CaregiverName != null ? user.CaregiverName.Trim() : null),
+                                PrimaryCaregiver = user.CaregiverName != null ? user.CaregiverName.Trim() : null,
                                 GrantRecipient = user.Grant,
                                 HomeLanguage = user.HomeLanguage,
-                                Allergies = (user.HasAllergies != null ? (user.HasAllergies == "No" ? false : true) : false),
-                                Disabilities = (user.HasDisabilities != null ? (user.HasDisabilities == "No" ? false : true) : false),
-                                HealthConditions = (user.HealthConditions != null ? (user.HealthConditions == "No" ? false : true) : false),
+                                Allergies = user.HasAllergies != null ? user.HasAllergies == "No" ? false : true : false,
+                                Disabilities = user.HasDisabilities != null ? user.HasDisabilities == "No" ? false : true : false,
+                                HealthConditions = user.HealthConditions != null ? user.HealthConditions == "No" ? false : true : false,
                                 TypeofAllergies = user.TypesOfAllergies,
                                 TypeofDisabilities = user.TypesOfDisabilities,
                                 CaregiverEducation = user.Education,
@@ -721,8 +721,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                                 CaregiverRelationship = user.CaregiverRelationship,
                                 CaregiverContactNo = user.CaregiverContactNumber,
                                 ParentFees = user.ParentFees,
-                                ConsentForPhoto = (user.PhotoConsent != null ? (user.PhotoConsent == "No" ? false : true) : false),
-                                ConsentForPopia = (user.POPIConsent != null ? (user.POPIConsent == "No" ? false : true) : false)
+                                ConsentForPhoto = user.PhotoConsent != null ? user.PhotoConsent == "No" ? false : true : false,
+                                ConsentForPopia = user.POPIConsent != null ? user.POPIConsent == "No" ? false : true : false
                                 //TODO: Add Grants
                             };
 
@@ -751,8 +751,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                                 string parentHierarchy = practiParent.Hierarchy;
                                 var caregivefullname = Regex.Replace(childItem.PrimaryCaregiver, @"\s+", " ");
                                 var nameArr = caregivefullname.Split(' ');
-                                var cgfirstname = (nameArr.Count() > 2 ? nameArr[0] + " " + nameArr[1] : nameArr[0]);
-                                var cgsurname = (nameArr.Count() > 2 ? nameArr[2] : nameArr[1]);
+                                var cgfirstname = nameArr.Count() > 2 ? nameArr[0] + " " + nameArr[1] : nameArr[0];
+                                var cgsurname = nameArr.Count() > 2 ? nameArr[2] : nameArr[1];
 
                                 var emergencyfullname = "";
                                 var emerfirstname = "";
@@ -761,8 +761,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                                 {
                                     emergencyfullname = Regex.Replace(childItem.EmergencyContactFullName, @"\s+", " ");
                                     var nameArrEmer = caregivefullname.Split(' ');
-                                    emerfirstname = (nameArrEmer.Count() > 2 ? nameArrEmer[0] + " " + nameArrEmer[1] : nameArrEmer[0]);
-                                    emersurname = (nameArrEmer.Count() > 2 ? nameArrEmer[2] : nameArrEmer[1]);
+                                    emerfirstname = nameArrEmer.Count() > 2 ? nameArrEmer[0] + " " + nameArrEmer[1] : nameArrEmer[0];
+                                    emersurname = nameArrEmer.Count() > 2 ? nameArrEmer[2] : nameArrEmer[1];
                                 }
                                 else if (childItem.PrimaryCaregiver != null)
                                 {
@@ -949,7 +949,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                                 if (existingClassroom != null)
                                 {
                                     //map programme type
-                                    childItem.ECDType = (childItem.ECDType == "ECD Centre" ? "Preschool" : childItem.ECDType == "Full Week (Daymothers)" ? "Day Mother" : childItem.ECDType == "SmartStart ECD" ? "Preschool" : childItem.ECDType == "PlayGroup" ? "Preschool" : childItem.ECDType);
+                                    childItem.ECDType = childItem.ECDType == "ECD Centre" ? "Preschool" : childItem.ECDType == "Full Week (Daymothers)" ? "Day Mother" : childItem.ECDType == "SmartStart ECD" ? "Preschool" : childItem.ECDType == "PlayGroup" ? "Preschool" : childItem.ECDType;
                                     var programmeType = programmeTypeRepo.GetAll().Where(x => x.Description.Equals(childItem.ECDType)).FirstOrDefault();
 
                                     //check if this specific group exists already
@@ -1061,7 +1061,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             if (existingUser == null)
             {
                 char[] coachdigits = coach.IdNumber.ToCharArray();//new String(idNumber.TakeWhile(Char.IsDigit).ToArray());
-                var coachdob = new DateTime(Int32.Parse("19" + coachdigits[0] + coachdigits[1]), Int32.Parse(coachdigits[2].ToString() + coachdigits[3].ToString()), Int32.Parse(coachdigits[4].ToString() + coachdigits[5].ToString()));
+                var coachdob = new DateTime(int.Parse("19" + coachdigits[0] + coachdigits[1]), int.Parse(coachdigits[2].ToString() + coachdigits[3].ToString()), int.Parse(coachdigits[4].ToString() + coachdigits[5].ToString()));
 
                 var newUser = new ApplicationUser
                 {
@@ -1118,7 +1118,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            Practitioner practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId.Equals(practitionerId)).FirstOrDefault();
+            Practitioner practitioner = practitionerRepo.GetAll().Where(x => x.UserId.Equals(practitionerId)).FirstOrDefault();
             {
                 if (practitioner != null)
                 {
@@ -1138,7 +1138,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
-            Practitioner practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId.Equals(practitionerId)).FirstOrDefault();
+            Practitioner practitioner = practitionerRepo.GetAll().Where(x => x.UserId.Equals(practitionerId)).FirstOrDefault();
             {
                 if (practitioner != null)
                 {
@@ -1158,7 +1158,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             bool bReturn = false;
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            Practitioner practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId.Equals(practitionerId)).FirstOrDefault();
+            Practitioner practitioner = practitionerRepo.GetAll().Where(x => x.UserId.Equals(practitionerId)).FirstOrDefault();
             {
                 if (practitioner != null)
                 {

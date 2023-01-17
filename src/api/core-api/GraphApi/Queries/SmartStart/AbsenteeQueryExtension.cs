@@ -14,7 +14,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Queries
+namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 {
     [ExtendObjectType(OperationTypeNames.Query)]
     public class AbsenteeQueryExtension

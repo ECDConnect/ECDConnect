@@ -5,7 +5,7 @@ using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using System;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Mutations
+namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 {
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class ReassignmentMutationExtension

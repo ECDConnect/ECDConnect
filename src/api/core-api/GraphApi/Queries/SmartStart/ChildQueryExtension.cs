@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Http;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Queries
+namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 {
     [ExtendObjectType(OperationTypeNames.Query)]
     public class ChildQueryExtension
@@ -65,7 +65,7 @@ string classroomId)
         string firstName, string surname, string practitionerId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
-            var dbRepo = repoFactory.CreateGenericRepository<Child>(userContext: uId);           
+            var dbRepo = repoFactory.CreateGenericRepository<Child>(userContext: uId);
             var child = dbRepo.GetAll().Where(x => x.User.FirstName.ToLower() == firstName.ToLower() && x.User.Surname.ToLower() == surname.ToLower()).FirstOrDefault();
 
             if (child != null && child.User != null)
@@ -84,7 +84,9 @@ string classroomId)
                         }
                         if (childExists)
                         {
-                            return new ChildCreatedByDetail() { ChildUserId = child.UserId,
+                            return new ChildCreatedByDetail()
+                            {
+                                ChildUserId = child.UserId,
                                 FullName = child.User.FullName,
                                 CreatedByName = child.InsertedBy,
                                 CreatedById = child.UpdatedBy,
@@ -96,8 +98,9 @@ string classroomId)
                 }
 
                 return null;
-            } else return null;
-            
+            }
+            else return null;
+
         }
 
     }
