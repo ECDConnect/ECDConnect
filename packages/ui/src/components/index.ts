@@ -42,3 +42,4 @@ export * from '../components/side-menu/side-menu';
 export * from '../components/icon-badge/icon-badge';
 export * from '../components/loading-spinner/loading-spinner';
 export * from './camera';
+export * from './steps';
