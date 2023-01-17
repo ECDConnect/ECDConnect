@@ -33,6 +33,7 @@ export function Tab({
         isOnlyTab
       )}
       onClick={() => selectTabReceived(tabIndex)}
+      style={{ minWidth: 120 }}
     >
       <Typography
         type={isOnlyTab ? 'h2' : 'h4'}
