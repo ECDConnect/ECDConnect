@@ -164,8 +164,6 @@ export const getMotherCountForMonth = createAsyncThunk<
         count = await new MotherService(
           userAuth?.auth_token
         ).getMotherCountForHealthCareWorkerForMonth(id);
-
-        console.log({ count });
       } else {
         return rejectWithValue('no access token, profile check required');
       }
