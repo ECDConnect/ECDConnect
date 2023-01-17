@@ -1712,7 +1712,7 @@ export type Holiday = {
 export type IdentityRole = {
   __typename?: 'IdentityRole';
   concurrencyStamp?: Maybe<Scalars['String']>;
-  id?: Maybe<Scalars['String']>;
+  id: Scalars['String'];
   name?: Maybe<Scalars['String']>;
   normalizedName?: Maybe<Scalars['String']>;
   permissions?: Maybe<Array<Maybe<Permission>>>;
