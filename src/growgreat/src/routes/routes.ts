@@ -22,8 +22,16 @@ const ROUTES = {
   }),
   TRAINING: '/training',
   DASHBOARD: '/dashboard',
-  CLIENT: addPrefix('/client', {
+  CLIENTS: addPrefix('/clients', {
     ROOT: '/',
+    MOM_PROFILE: addPrefix('/mom-profile', {
+      ROOT: '/',
+      VISITS: {
+        RECORD_EVENT: '/:id/record-event',
+        START_VISIT: '/:id/start-visit',
+        BOOK_VISIT: '/:id/book-visit',
+      },
+    }),
     VISIT: {
       START_VISIT: '/start-visit',
       BOOK_VISIT: '/book-visit',

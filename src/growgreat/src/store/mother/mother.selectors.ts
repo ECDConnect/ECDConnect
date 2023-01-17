@@ -4,6 +4,12 @@ import { RootState } from '../types';
 export const getMothers = (state: RootState): MotherDto[] =>
   state.mothers.mothers || [];
 
+export const getMotherById = (
+  state: RootState,
+  id: string
+): MotherDto | undefined =>
+  state.mothers.mothers?.find((mother) => mother?.user?.id === id);
+
 export const getMotherCountForMonth = (state: RootState): number =>
   state.mothers.motherCountForMonth || 0;
 // export const getCaregiverById = (id?: string) =>

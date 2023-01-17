@@ -6,13 +6,13 @@ import ROUTES from '@/routes/routes';
 
 import { CLIENT_TABS } from '../../class-dashboard/class-dashboard';
 
-export const BookVisit: React.FC = () => {
+export const BookVisitFromVisitDashboard: React.FC = () => {
   const { isOnline } = useOnlineStatus();
 
   const history = useHistory();
 
   const goBack = () => {
-    history.push(ROUTES.CLIENT.ROOT, { activeTabIndex: CLIENT_TABS.VISIT });
+    history.push(ROUTES.CLIENTS.ROOT, { activeTabIndex: CLIENT_TABS.VISIT });
   };
 
   return (
@@ -30,4 +30,4 @@ export const BookVisit: React.FC = () => {
     </BannerWrapper>
   );
 };
-export default BookVisit;
+export default BookVisitFromVisitDashboard;

@@ -14,7 +14,7 @@ import { CLIENT_TABS } from '../../class-dashboard/class-dashboard';
 
 const HEADER_HEIGHT = 64;
 
-export const StartVisit: React.FC = () => {
+export const StartVisitFromVisitDashboard: React.FC = () => {
   const [client, setClient] = useState<string | undefined>();
 
   const infants = useSelector(getInfants);
@@ -49,7 +49,7 @@ export const StartVisit: React.FC = () => {
   const clients = [...motherOptions, ...infantOptions];
 
   const goBack = () => {
-    history.push(ROUTES.CLIENT.ROOT, { activeTabIndex: CLIENT_TABS.VISIT });
+    history.push(ROUTES.CLIENTS.ROOT, { activeTabIndex: CLIENT_TABS.VISIT });
   };
 
   const onStartVisit = () => {
@@ -105,4 +105,4 @@ export const StartVisit: React.FC = () => {
     </BannerWrapper>
   );
 };
-export default StartVisit;
+export default StartVisitFromVisitDashboard;

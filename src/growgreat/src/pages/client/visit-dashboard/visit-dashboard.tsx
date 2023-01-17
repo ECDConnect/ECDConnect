@@ -117,7 +117,7 @@ export const VisitList: React.FC = () => {
           textColor="primary"
           className="mt-3 h-8 w-56 rounded-lg"
           iconPosition="start"
-          onClick={navigate(ROUTES.CLIENT.VISIT.PREGNANCY_VISITS)}
+          onClick={navigate(ROUTES.CLIENTS.VISIT.PREGNANCY_VISITS)}
         />
         <Divider className="p-4" dividerType="dashed" />
         <div className="mb-1 flex items-center gap-3">
@@ -158,7 +158,7 @@ export const VisitList: React.FC = () => {
           textColor="primary"
           className="mt-3 h-8 w-2/4 rounded-lg"
           iconPosition="start"
-          onClick={navigate(ROUTES.CLIENT.VISIT.CHILD_VISITS)}
+          onClick={navigate(ROUTES.CLIENTS.VISIT.CHILD_VISITS)}
         />
       </>
     ),
@@ -201,7 +201,7 @@ export const VisitList: React.FC = () => {
           textColor="white"
           className="my-4 w-full"
           iconPosition="start"
-          onClick={navigate(ROUTES.CLIENT.VISIT.START_VISIT)}
+          onClick={navigate(ROUTES.CLIENTS.VISIT.START_VISIT)}
         />
         <Button
           text="Book a visit"
@@ -211,7 +211,7 @@ export const VisitList: React.FC = () => {
           textColor="primary"
           className="w-full"
           iconPosition="start"
-          onClick={navigate(ROUTES.CLIENT.VISIT.BOOK_VISIT)}
+          onClick={navigate(ROUTES.CLIENTS.VISIT.BOOK_VISIT)}
         />
       </div>
     </div>

@@ -149,7 +149,7 @@ export const Dashboard: React.FC = () => {
                 leadingIcon: 'HomeIcon',
                 onClick: () => {
                   onSubmit();
-                  history.push(ROUTES.CLIENT.ROOT, {
+                  history.push(ROUTES.CLIENTS.ROOT, {
                     activeTabIndex: CLIENT_TABS.VISIT,
                   });
                 },
@@ -162,7 +162,7 @@ export const Dashboard: React.FC = () => {
                 leadingIcon: 'FolderOpenIcon',
                 onClick: () => {
                   onSubmit();
-                  history.push(ROUTES.CLIENT.ROOT, {
+                  history.push(ROUTES.CLIENTS.ROOT, {
                     activeTabIndex: CLIENT_TABS.CLIENT,
                   });
                 },
@@ -186,7 +186,7 @@ export const Dashboard: React.FC = () => {
                 leadingIcon: 'PresentationChartLineIcon',
                 onClick: () => {
                   onSubmit();
-                  history.push(ROUTES.CLIENT.ROOT, {
+                  history.push(ROUTES.CLIENTS.ROOT, {
                     activeTabIndex: CLIENT_TABS.HIGHLIGHTS,
                   });
                 },
@@ -198,7 +198,7 @@ export const Dashboard: React.FC = () => {
                 type: 'outlined',
                 onClick: () => {
                   onSubmit();
-                  history.push(ROUTES.CLIENT.ROOT, {
+                  history.push(ROUTES.CLIENTS.ROOT, {
                     activeTabIndex: CLIENT_TABS.CLIENT,
                   });
                 },

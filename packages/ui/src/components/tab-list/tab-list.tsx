@@ -8,6 +8,7 @@ import { classNames } from '../../utils';
 export interface TabListProps extends ComponentBaseProps {
   tabItems: TabItem[];
   setSelectedIndex?: number;
+  tabClassName?: string;
   tabSelected?: (item: TabItem, tabIndex: number) => void;
 }
 
@@ -16,6 +17,7 @@ export const TabList: React.FC<TabListProps> = ({
   tabSelected,
   setSelectedIndex,
   className,
+  tabClassName,
 }) => {
   const [activeTabIndex, setActiveIndexTab] = useState(0);
   const [activeTabItem, setActiveTabItem] = useState<TabItem>();
@@ -58,7 +60,7 @@ export const TabList: React.FC<TabListProps> = ({
             <nav className={styles.navStyle} aria-label="Tabs">
               {tabItems.length === 1 ? (
                 <Tab
-                  className={styles.fullWidth}
+                  className={classNames(styles.fullWidth, tabClassName)}
                   title={tabItems[0].title}
                   tabIndex={0}
                   activeIndex={0}
@@ -68,7 +70,10 @@ export const TabList: React.FC<TabListProps> = ({
                 tabItems.map((item, index) => {
                   return (
                     <Tab
-                      className="font-medium text-textDark"
+                      className={classNames(
+                        'text-textDark font-medium',
+                        tabClassName
+                      )}
                       key={index}
                       title={item.title}
                       tabIndex={index}
