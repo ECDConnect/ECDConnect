@@ -110,10 +110,6 @@ export const getInfantCountForMonth = createAsyncThunk<
         return rejectWithValue('no access token, profile check required');
       }
 
-      if (!count) {
-        return rejectWithValue('Error getting count');
-      }
-
       return count;
     } catch (err) {
       return rejectWithValue(err);
