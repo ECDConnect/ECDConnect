@@ -47,7 +47,7 @@ export const AddAmount: React.FC<ComponentBaseProps> = () => {
             type="outlined"
             color="primary"
             className={'mx-auto mt-4 w-11/12 rounded-xl px-1'}
-            onClick={() => {}}
+            onClick={() => history.push(ROUTES.BUSINESS_ADD_EXPENSE)}
           >
             {renderIcon('MinusIcon', styles.buttonIconSecondary)}
             <Typography
