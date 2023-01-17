@@ -34,7 +34,7 @@ export const PregnancyVisits: React.FC = () => {
   );
 
   const goBack = () => {
-    history.push(ROUTES.CLIENT.ROOT, { activeTabIndex: CLIENT_TABS.VISIT });
+    history.push(ROUTES.CLIENTS.ROOT, { activeTabIndex: CLIENT_TABS.VISIT });
   };
 
   useEffect(() => {

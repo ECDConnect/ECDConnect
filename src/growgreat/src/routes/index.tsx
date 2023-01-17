@@ -18,10 +18,14 @@ import ROUTES from '@/routes/routes';
 import ClassDashboard from '@/pages/client/class-dashboard/class-dashboard';
 import { EditPractitionerProfile } from '@/pages/practitioner/edit-practitioner-profile/edit-practitioner-profile';
 import { Training } from '@/pages/training/training';
-import { StartVisit } from '@/pages/client/visit-dashboard/start-visit';
+import { StartVisitFromVisitDashboard } from '@/pages/client/visit-dashboard/start-visit';
 import PregnancyVisits from '@/pages/client/visit-dashboard/pregnancy-visits';
 import ChildVisits from '@/pages/client/visit-dashboard/child-visits';
-import BookVisit from '@/pages/client/visit-dashboard/book-visit';
+import BookVisitFromVisitDashboard from '@/pages/client/visit-dashboard/book-visit';
+import { PregnantProfile } from '@/pages/mom/pregnant-profile';
+import { RecordEvent } from '@/pages/mom/pregnant-profile/visits/record-event';
+import { StartVisit } from '@/pages/mom/pregnant-profile/visits/start-visit';
+import { BookVisit } from '@/pages/mom/pregnant-profile/visits/book-visit';
 
 function PublicRoutes() {
   return (
@@ -84,25 +88,45 @@ function AuthRoutes() {
         component={PractitionerProfile}
       />
 
-      <Route exact path={ROUTES.CLIENT.ROOT} component={ClassDashboard} />
+      <Route exact path={ROUTES.CLIENTS.ROOT} component={ClassDashboard} />
       <Route
         exact
-        path={ROUTES.CLIENT.VISIT.START_VISIT}
+        path={`${ROUTES.CLIENTS.MOM_PROFILE.ROOT}:id`}
+        component={PregnantProfile}
+      />
+      <Route
+        exact
+        path={ROUTES.CLIENTS.MOM_PROFILE.VISITS.RECORD_EVENT}
+        component={RecordEvent}
+      />
+      <Route
+        exact
+        path={ROUTES.CLIENTS.MOM_PROFILE.VISITS.START_VISIT}
         component={StartVisit}
       />
       <Route
         exact
-        path={ROUTES.CLIENT.VISIT.BOOK_VISIT}
+        path={ROUTES.CLIENTS.MOM_PROFILE.VISITS.BOOK_VISIT}
         component={BookVisit}
       />
       <Route
         exact
-        path={ROUTES.CLIENT.VISIT.PREGNANCY_VISITS}
+        path={ROUTES.CLIENTS.VISIT.START_VISIT}
+        component={StartVisitFromVisitDashboard}
+      />
+      <Route
+        exact
+        path={ROUTES.CLIENTS.VISIT.BOOK_VISIT}
+        component={BookVisitFromVisitDashboard}
+      />
+      <Route
+        exact
+        path={ROUTES.CLIENTS.VISIT.PREGNANCY_VISITS}
         component={PregnancyVisits}
       />
       <Route
         exact
-        path={ROUTES.CLIENT.VISIT.CHILD_VISITS}
+        path={ROUTES.CLIENTS.VISIT.CHILD_VISITS}
         component={ChildVisits}
       />
 

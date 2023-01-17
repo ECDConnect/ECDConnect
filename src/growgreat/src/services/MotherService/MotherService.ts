@@ -163,6 +163,58 @@ class MotherService {
 
     return response.data.data.motherCountForHealthCareWorkerForMonth;
   }
+
+  async addAdditionalVisitForMother(id: string): Promise<any> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        mutation addAdditionalVisitForMother($input: VisitModel) {
+          addAdditionalVisitForMother(input: @input) {
+            id
+          }
+        }
+        `,
+      variables: {
+        userId: id,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Getting Mothers visits failed - Server connection error'
+      );
+    }
+
+    return response.data.data.motherVisits;
+  }
+
+  async getMotherVisits(id: string): Promise<any> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        query GetMotherVisits($userId: String) {
+          motherVisits(id: $userId) {
+              plannedVisitDate,
+              attended,
+              visitType{
+                  normalizedName
+              }        
+          }
+        }
+        `,
+      variables: {
+        userId: id,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Getting Mothers visits failed - Server connection error'
+      );
+    }
+
+    return response.data.data.motherVisits;
+  }
 }
 
 export default MotherService;

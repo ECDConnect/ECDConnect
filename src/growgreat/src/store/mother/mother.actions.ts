@@ -8,7 +8,9 @@ import { RootState, ThunkApiType } from '../types';
 
 export const MotherActions = {
   GET_MOTHERS: 'getMothers',
+  GET_MOTHER_VISITS: 'getMotherVisits',
   ADD_MOTHER: 'addMother',
+  ADD_ADDITIONAL_MOTHER_VISIT: 'addAdditionalMotherVisit',
   GET_MOTHER_COUNT_FOR_MONTH: 'getMotherCountForMonth',
 };
 
@@ -171,6 +173,60 @@ export const getMotherCountForMonth = createAsyncThunk<
       }
 
       return count;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const addAdditionalVisitForMother = createAsyncThunk<
+  any, // TODO: add type
+  any, // TODO: add type
+  ThunkApiType<RootState>
+>(
+  MotherActions.ADD_ADDITIONAL_MOTHER_VISIT,
+  async ({ motherId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        await new MotherService(
+          userAuth?.auth_token
+        ).addAdditionalVisitForMother(motherId);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getMotherVisits = createAsyncThunk<
+  any[], // TODO: add type
+  { motherId: string },
+  ThunkApiType<RootState>
+>(
+  MotherActions.GET_MOTHER_VISITS,
+  async ({ motherId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      let visits: any[];
+
+      if (userAuth?.auth_token) {
+        visits = await new MotherService(userAuth?.auth_token).getMotherVisits(
+          motherId
+        );
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      return visits;
     } catch (err) {
       return rejectWithValue(err);
     }
