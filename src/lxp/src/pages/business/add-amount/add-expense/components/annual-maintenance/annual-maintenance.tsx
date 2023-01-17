@@ -45,16 +45,13 @@ export const AnnualMaintenance: React.FC<AddIncomeState> = ({ setType }) => {
     useState<boolean>(false);
   const [registrationFormPhotoUrl, setRegistrationFormPhotoUrl] =
     useState<string>();
-  const [childBirthDocumentPhotoUrl, setChildBirthDocumentPhotoUrl] =
-    useState<string>();
 
   const disabled = !date || !amount;
   const acceptedFormats = ['jpg', 'jpeg'];
 
   const setPhotoUrl = (imageUrl: string) => {
     setRentValue('expenseInvoice', imageUrl);
-
-    setChildBirthDocumentPhotoUrl(imageUrl);
+    setRegistrationFormPhotoUrl(imageUrl);
     trigger();
     setPhotoActionBarVisible(false);
   };
@@ -118,7 +115,7 @@ export const AnnualMaintenance: React.FC<AddIncomeState> = ({ setType }) => {
           nameProp="expenseInvoice"
           icon="CameraIcon"
           className={'py-4'}
-          currentImageString={childBirthDocumentPhotoUrl}
+          currentImageString={registrationFormPhotoUrl}
           register={register}
           overrideOnClick={() => setPhotoActionBarVisible(true)}
           onValueChange={(imageString: string) => {
