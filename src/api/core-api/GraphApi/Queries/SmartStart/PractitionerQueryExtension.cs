@@ -50,7 +50,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             [Service] IGenericRepositoryFactory repoFactory,
             string idNumber)
         {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var uId = contextAccessor.HttpContext.GetUser()?.Id;
+            
+            if (uId is null)
+                throw new System.Exception("No active user found.");
 
             var dbRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
             //retrieve principal, check that the coach lines match, that the user to be searched for is not a principal or an FAA

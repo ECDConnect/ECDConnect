@@ -20,14 +20,14 @@ namespace ECDLink.EGraphQL
     {
         public static void ConfigureDataAccessServices(IServiceCollection services, IConfiguration config, bool isDevelop = false)
         {
-            services.AddScoped(typeof(IGenericRepositoryFactory), typeof(GenericRepositoryFactory));
+            services.AddTransient(typeof(IGenericRepositoryFactory), typeof(GenericRepositoryFactory));
             services.AddScoped(typeof(RolePermissionRepository));
             services.AddScoped(typeof(NavigationPermissionRepository));
             services.AddScoped(typeof(AuditLogRepository));
 
-            services.AddScoped(typeof(GenericRepository<>));
-            services.AddScoped(typeof(GenericUserTypeRepository<>));
-            services.AddScoped(typeof(ScopedGenericRepository<>));
+            services.AddTransient(typeof(GenericRepository<>));
+            services.AddTransient(typeof(GenericUserTypeRepository<>));
+            services.AddTransient(typeof(ScopedGenericRepository<>));
             services.AddScoped<AttendanceTrackingRepository>();
 
             services.AddScoped<HierarchyEngine>();
