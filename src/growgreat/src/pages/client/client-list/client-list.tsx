@@ -5,6 +5,7 @@ import {
   DialogPosition,
   UserAlertListDataItem,
   ActionModal,
+  AlertSeverityType,
 } from '@ecdlink/ui';
 import { format } from 'date-fns';
 import { useDialog, getAvatarColor, MotherDto } from '@ecdlink/core';
@@ -135,15 +136,13 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
       return {
         icon: Pregnant,
         title: mother?.firstName || mother?.user?.firstName!,
-        // TODO: add correct subTitle (alert status)
-        subTitle: mother?.expectedDateOfDelivery
-          ? `Expected delivery date: ${format(
-              new Date(mother?.expectedDateOfDelivery!),
-              'PP'
-            )}`
-          : `Expected delivery date: -`,
+        subTitle: mother.statusInfo?.subject,
         switchTextStyles: true,
-        alertSeverity: 'none',
+        alertSeverity:
+          (mother.statusInfo?.color?.toLocaleLowerCase() as AlertSeverityType) ||
+          'none',
+        alertSeverityNoneIcon: 'CalendarIcon',
+        alertSeverityNoneColor: 'black',
         avatarColor: getAvatarColor('growgreat') || '',
         onActionClick: () => showClientProfileDialog(mother),
       };
