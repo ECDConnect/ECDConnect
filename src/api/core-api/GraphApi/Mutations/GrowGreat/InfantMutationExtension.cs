@@ -1,5 +1,5 @@
-using EcdLink.Api.CoreApi.GraphApi.Models;
-using EcdLink.Api.CoreApi.Managers.Users;
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+using EcdLink.Api.CoreApi.Managers.Users.GrowGreat;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
@@ -8,7 +8,7 @@ using ECDLink.Security;
 using HotChocolate;
 using HotChocolate.Types;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Mutations
+namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
 {
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class InfantMutationExtension

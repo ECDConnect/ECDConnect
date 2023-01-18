@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Http;
 using System;
 using System.Linq;
 
-namespace EcdLink.Api.CoreApi.Managers.Users
+namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 {
     public class HealthCareWorkerManager
     {

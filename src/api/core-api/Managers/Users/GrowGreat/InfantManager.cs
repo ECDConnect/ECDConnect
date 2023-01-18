@@ -1,4 +1,4 @@
-﻿using EcdLink.Api.CoreApi.GraphApi.Models;
+﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Caregiver;
@@ -13,7 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace EcdLink.Api.CoreApi.Managers.Users
+namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 {
     public class InfantManager
     {
@@ -46,10 +46,10 @@ namespace EcdLink.Api.CoreApi.Managers.Users
 
             // The caregiverId arriving here, could be a caregiver or mother from select box when adding an infant
             var caregiverRepo = _repoFactory.CreateGenericRepository<Caregiver>(userContext: applicationUserId);
-            Caregiver caregiver = (Caregiver)caregiverRepo.GetAll().Where(x => x.Id.Equals(input.CaregiverId)).FirstOrDefault();
+            Caregiver caregiver = caregiverRepo.GetAll().Where(x => x.Id.Equals(input.CaregiverId)).FirstOrDefault();
 
             var motherRepo = _repoFactory.CreateGenericRepository<Mother>(userContext: applicationUserId);
-            Mother mother = (Mother)motherRepo.GetAll().Where(x => x.UserId.Equals(input.CaregiverId.ToString())).FirstOrDefault();
+            Mother mother = motherRepo.GetAll().Where(x => x.UserId.Equals(input.CaregiverId.ToString())).FirstOrDefault();
 
             // if both are null we create a new caregiver from request data
             if (caregiver == null && mother == null)
@@ -184,7 +184,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users
             {
                 caregiverInput.HealthCareWorkerId = healthCareWorkerId;
             }
-            SiteAddress siteAddress = (SiteAddress)addressRepo.GetAll().Where(x => x.Id.Equals(caregiverInput.SiteAddress.Id)).FirstOrDefault();
+            SiteAddress siteAddress = addressRepo.GetAll().Where(x => x.Id.Equals(caregiverInput.SiteAddress.Id)).FirstOrDefault();
             if (siteAddress == null)
             {
                 caregiverInput.SiteAddress.Id = Guid.NewGuid();

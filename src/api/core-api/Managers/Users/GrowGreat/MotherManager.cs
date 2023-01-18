@@ -1,4 +1,4 @@
-﻿using EcdLink.Api.CoreApi.GraphApi.Models;
+﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.DataAccessLayer.Entities;
@@ -13,7 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace EcdLink.Api.CoreApi.Managers.Users
+namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 {
     public class MotherManager
     {
@@ -47,7 +47,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users
             var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
             var mother = GetMotherFromInputModel(input);
             var repository = _repoFactory.CreateGenericRepository<Mother>(userContext: applicationUserId);
-            
+
             if (mother != null)
             {
                 AddVisits(mother.Id, mother.ExpectedDateOfDelivery, mother.InsertedDate);
@@ -135,9 +135,9 @@ namespace EcdLink.Api.CoreApi.Managers.Users
 
             // Get all visit types linked to mother excluding additional_visits
             List<VisitType> visitTypes = visitTypeRepo.GetAll().Where(x => x.Type.Equals(_type) && x.Name != "additional_visits").OrderBy(x => x.Order).ToList();
-            
+
             // Get dates for each visit
-            List <VisitModel> visits = getVisitDates(ExpectedDateOfDelivery, InsertedDate, visitTypes);
+            List<VisitModel> visits = getVisitDates(ExpectedDateOfDelivery, InsertedDate, visitTypes);
 
             if (visits.Count > 0)
             {   // Add visits for mother
@@ -153,7 +153,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users
         }
 
         private List<VisitModel> getVisitDates(
-            DateTime? ExpectedDateOfDelivery, 
+            DateTime? ExpectedDateOfDelivery,
             DateTime RegisteredDate,
             List<VisitType> visitTypes)
         {
@@ -188,7 +188,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users
 
             var dateList = new List<VisitModel>();
 
-            if (ExpectedDateOfDelivery.HasValue) {
+            if (ExpectedDateOfDelivery.HasValue)
+            {
 
                 // Calculation: Pregnancy term calculated: "expected delivery date" - "280 days (40 weeks)"
                 DateTime endTermDate = ExpectedDateOfDelivery.Value;
@@ -202,7 +203,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users
 
                 DateTime day183 = startTermDate.AddDays(183);
                 DateTime day258 = startTermDate.AddDays(258);
-                
+
                 DateTime today = DateTime.Today;
 
                 var visit1Date = today;
@@ -222,7 +223,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users
                     visit2Date = startTermDate.AddDays(168);
                     visit3Date = startTermDate.AddDays(196);
                     visit4Date = startTermDate.AddDays(279);
-                    
+
                 } // Scenario 2: client registered between 98 and 153
                 else if (RegisteredDate >= day98 && RegisteredDate <= day153)
                 {

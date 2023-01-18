@@ -5,6 +5,8 @@ using ECDLink.DataAccessLayer.Entities.Caregiver;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.DataIngestion;
 using ECDLink.DataAccessLayer.Entities.Documents;
+using ECDLink.DataAccessLayer.Entities.EventRecordings;
+using ECDLink.DataAccessLayer.Entities.EventRecords;
 using ECDLink.DataAccessLayer.Entities.IncomeStatements;
 using ECDLink.DataAccessLayer.Entities.Integration.IntegrationMapping;
 using ECDLink.DataAccessLayer.Entities.Navigation;
@@ -118,6 +120,10 @@ namespace ECDLink.DataAccessLayer.Context
         // Visits
         public DbSet<VisitType> VisitTypes { get; set; }
         public DbSet<Visit> Visits { get; set; }
+
+        // Event Records
+        public DbSet<EventRecordType> EventRecordTypes { get; set; }
+        public DbSet<EventRecord> EventRecords { get; set; }
 
         public AuthenticationDbContext(DbContextOptions<AuthenticationDbContext> options)
                : base(options)

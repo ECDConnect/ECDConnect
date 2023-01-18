@@ -1,7 +1,7 @@
 ﻿using ECDLink.DataAccessLayer.Entities;
 using System;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Models
+namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
 {
     public class MotherModel
     {
@@ -10,7 +10,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public string Surname { get; set; }
         public string Age { get; set; }
         public string PhoneNumber { get; set; }
-        public string? WhatsAppNumber { get; set; }
+        public string WhatsAppNumber { get; set; }
         public DateTime? DateOfBirth { get; set; }
         public DateTime? ExpectedDateOfDelivery { get; set; }
         public Guid? HealthCareWorkerId { get; set; }

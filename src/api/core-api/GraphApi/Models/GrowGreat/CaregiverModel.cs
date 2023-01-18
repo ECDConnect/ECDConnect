@@ -1,7 +1,7 @@
 ﻿using ECDLink.DataAccessLayer.Entities;
 using System;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Models
+namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
 {
     public class CaregiverModel
     {
