@@ -1530,6 +1530,17 @@ export type EventRecordInput = {
   UpdatedBy?: InputMaybe<Scalars['String']>;
 };
 
+export type EventRecordModelInput = {
+  eventRecordType?: InputMaybe<EventRecordTypeInput>;
+  eventRecordTypeId?: InputMaybe<Scalars['UUID']>;
+  infant?: InputMaybe<InfantModelInput>;
+  infantId?: InputMaybe<Scalars['UUID']>;
+  linkedVisitId?: InputMaybe<Scalars['String']>;
+  mother?: InputMaybe<MotherModelInput>;
+  motherId?: InputMaybe<Scalars['UUID']>;
+  notes?: InputMaybe<Scalars['String']>;
+};
+
 export type EventRecordType = {
   __typename?: 'EventRecordType';
   description?: Maybe<Scalars['String']>;
@@ -2272,6 +2283,7 @@ export type Mutation = {
   addAdditionalVisitForMother?: Maybe<Visit>;
   addClinic?: Maybe<Clinic>;
   addCoachToFranchisor?: Maybe<Coach>;
+  addEventRecord?: Maybe<EventRecord>;
   addEventRecordType?: Maybe<EventRecordType>;
   addHealthCareWorker?: Maybe<HealthCareWorker>;
   addInfant?: Maybe<Infant>;
@@ -2587,6 +2599,10 @@ export type MutationAddClinicArgs = {
 export type MutationAddCoachToFranchisorArgs = {
   coachId?: InputMaybe<Scalars['String']>;
   franchisorId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationAddEventRecordArgs = {
+  input?: InputMaybe<EventRecordModelInput>;
 };
 
 export type MutationAddEventRecordTypeArgs = {
@@ -3570,8 +3586,8 @@ export type MutationUpdateEducationArgs = {
 };
 
 export type MutationUpdateEventRecordArgs = {
-  id?: InputMaybe<Scalars['UUID']>;
-  input?: InputMaybe<EventRecordInput>;
+  id?: InputMaybe<Scalars['String']>;
+  input?: InputMaybe<EventRecordModelInput>;
 };
 
 export type MutationUpdateEventRecordChildTypeArgs = {
@@ -4913,6 +4929,7 @@ export type Query = {
   allCoachesForFranchisor?: Maybe<Array<Maybe<Coach>>>;
   allDocument?: Maybe<Array<Maybe<Document>>>;
   allEventRecordTypes?: Maybe<Array<Maybe<EventRecordType>>>;
+  allEventRecordTypesForType?: Maybe<Array<Maybe<EventRecordType>>>;
   allHealthCareWorkers?: Maybe<Array<Maybe<HealthCareWorker>>>;
   allInfants?: Maybe<Array<Maybe<Infant>>>;
   allInfantsForHealthCareWorker?: Maybe<Array<Maybe<Infant>>>;
@@ -5791,6 +5808,10 @@ export type QueryAllCoachesForFranchisorArgs = {
 
 export type QueryAllDocumentArgs = {
   userId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryAllEventRecordTypesForTypeArgs = {
+  type?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryAllInfantsForHealthCareWorkerArgs = {
