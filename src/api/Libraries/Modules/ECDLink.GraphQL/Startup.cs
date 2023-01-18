@@ -1,14 +1,18 @@
 using ECDLink.DataAccessLayer.Context;
+using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.EGraphQL.Interceptors;
 using ECDLink.EGraphQL.ObjectTypes;
 using ECDLink.EGraphQL.Registration;
 using ECDLink.EGraphQL.Registration.Modules;
+using ECDLink.PostgresTenancy.Context;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ECDLink.EGraphQL
@@ -25,8 +29,11 @@ namespace ECDLink.EGraphQL
 
             var builder = services
               .AddGraphQLServer()
-              .RegisterService<AuthenticationDbContext>(ServiceKind.Synchronized)
-              .RegisterService<IGenericRepositoryFactory>(ServiceKind.Synchronized)
+              .RegisterDbContext<AuthenticationDbContext>(HotChocolate.Data.DbContextKind.Synchronized)
+              .RegisterDbContext<PostgresTenancyContext>()
+              .RegisterService<IDbContextFactory<AuthenticationDbContext>>()
+              .RegisterService<UserManager<ApplicationUser>>()
+              .RegisterService<IGenericRepositoryFactory>()
               .AddQueryType<Query>()
               .AddTypeModule(sp => new ContentTypeModule(contentReloader))
               .AddTypeModule(sp => new SettingsModule(contentReloader))
