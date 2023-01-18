@@ -42,8 +42,8 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public virtual Caregiver.Caregiver Caregiver { get; set; }
         public Guid? LinkedCaregiverId { get; set; }
 
-        [GraphQLIgnore]
-        public DisplaySet StatusInfo = new DisplaySet();
+        [NotMapped]
+        public virtual DisplaySet StatusInfo { get; set; }
 
     }
 
