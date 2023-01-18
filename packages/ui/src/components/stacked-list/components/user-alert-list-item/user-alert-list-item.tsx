@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { renderIcon } from '../../../../utils';
+import { classNames, renderIcon } from '../../../../utils';
 import { Avatar } from '../../../avatar/avatar';
 import { RoundIcon } from '../../../round-icon/round-icon';
 import Typography from '../../../typography/typography';
@@ -67,11 +67,22 @@ export const UserAlertListItem: React.FC<UserAlertListItemProps> = ({
                 text={item.title}
               ></Typography>
               <div className={styles.menuSubTitle}>
-                <div
-                  className={styles.getShapeClassByAlertSeverity(
-                    item.alertSeverity
-                  )}
-                ></div>
+                {item.alertSeverityNoneIcon && item.alertSeverity === 'none' ? (
+                  renderIcon(
+                    item.alertSeverityNoneIcon,
+                    classNames(
+                      'w-4 h-4',
+                      item.alertSeverityNoneColor &&
+                        `text-${item.alertSeverityNoneColor}`
+                    )
+                  )
+                ) : (
+                  <div
+                    className={styles.getShapeClassByAlertSeverity(
+                      item.alertSeverity
+                    )}
+                  ></div>
+                )}
                 <Typography
                   className="truncate pl-1"
                   type="help"

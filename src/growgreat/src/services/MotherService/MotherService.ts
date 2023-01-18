@@ -14,6 +14,12 @@ class MotherService {
       query: `
         query GetAllMothersForHealthCareWorker($id: String) {
           allMothersForHealthCareWorker(id: $id) {
+            statusInfo {
+              icon
+              color
+              notes
+              subject
+            }
             user {
               id
               firstName
