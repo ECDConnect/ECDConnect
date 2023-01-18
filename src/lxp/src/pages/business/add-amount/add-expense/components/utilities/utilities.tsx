@@ -94,6 +94,7 @@ export const Utilities: React.FC<AddIncomeState> = ({ setType }) => {
           register={register}
           placeholder={'e.g. R 50.00'}
           className="mt-2"
+          type={'number'}
         />
         <FormInput<ExpensesModel>
           label={'Add a description or note'}

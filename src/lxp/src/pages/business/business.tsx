@@ -20,7 +20,7 @@ export const Business: React.FC = () => {
   const [attendanceTutorialComplete, setAttendanceTutorialComplete] =
     useState<boolean>(false);
   const [selectedTabIndex, setSelectedTabIndex] = useState<number>(
-    state?.activeTabIndex !== undefined ? state?.activeTabIndex : 1
+    state?.activeTabIndex !== undefined ? state?.activeTabIndex : 0
   );
   const appDispatch = useAppDispatch();
   const [previousTabIndex, setPreviousTabIndex] = useState<number>();

@@ -294,7 +294,7 @@ export const Dashboard: React.FC = () => {
     navigation?.splice(3, 0, {
       name: NavigationTypes.Business,
       href: ROUTES.BUSINESS,
-      icon: 'AcademicCapIcon',
+      icon: 'BriefcaseIcon',
       current: false,
       showDivider: true,
     });
@@ -394,7 +394,7 @@ export const Dashboard: React.FC = () => {
   if (isPrincipal || isFundaAppAdmin) {
     dashboardItems.splice(1, 0, {
       title: 'Business',
-      titleIcon: 'AcademicCapIcon',
+      titleIcon: 'BriefcaseIcon',
       titleIconClassName: styles.businessIcon,
       onActionClick: () => {
         goToBusiness();
