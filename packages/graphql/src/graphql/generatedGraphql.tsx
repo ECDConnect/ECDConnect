@@ -6486,7 +6486,6 @@ export type SettingsType = {
   BulkSms: Setting_BulkSms;
   Children: Setting_Children;
   Google: Setting_Google;
-  Holder?: Maybe<Scalars['String']>;
   IntegrationDelay: Setting_IntegrationDelay;
   InvitationCutoffDelay: Setting_InvitationCutoffDelay;
   Invitations: Setting_Invitations;
