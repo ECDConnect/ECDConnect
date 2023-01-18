@@ -29,7 +29,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Mutations
+namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 {
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class ChildTokenAccessMutation
@@ -179,7 +179,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 OtherHealthConditions = child.OtherHealthConditions,
                 WorkflowStatusId = child.WorkflowStatusId,
                 CaregiverId = caregiver.Id,
-                InsertedBy = (!string.IsNullOrEmpty(insertingUser) ? insertingUser : "N/A")
+                InsertedBy = !string.IsNullOrEmpty(insertingUser) ? insertingUser : "N/A"
             };
 
             var updated = repoFactory.Update(childEntity);
@@ -217,7 +217,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             {
                 UserId = appUser.Id,
                 WorkflowStatusId = workflowStatus.Id,
-                InsertedBy = (!string.IsNullOrEmpty(insertingUser) ? insertingUser : "N/A")
+                InsertedBy = !string.IsNullOrEmpty(insertingUser) ? insertingUser : "N/A"
             };
 
             child.TenantId = tenantId;

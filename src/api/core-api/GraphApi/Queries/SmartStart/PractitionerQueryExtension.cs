@@ -18,7 +18,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Queries
+namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 {
     [ExtendObjectType(OperationTypeNames.Query)]
     public class PractitionerQueryExtension
@@ -49,7 +49,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             [Service] UserManager<ApplicationUser> userManager,
             [Service] IGenericRepositoryFactory repoFactory,
             string idNumber)
-        {            
+        {
             var uId = contextAccessor.HttpContext.GetUser().Id;
 
             var dbRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
@@ -101,7 +101,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     return practitioner.User;
                 }
             }
-            return default(ApplicationUser);
+            return default;
         }
 
         public List<Child> GetAllChildrenForPractitioner(
@@ -184,14 +184,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var practiRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
             List<PractitionerClassroomName> classrooms = new List<PractitionerClassroomName>();
             List<ClassroomGroup> classroomGroup = practiManager.GetAllClassroomGroupsForPractitioner(userId);
-            if (classroomGroup.Count>0)
+            if (classroomGroup.Count > 0)
             {
                 foreach (var group in classroomGroup)
                 {
                     string coachName = null;
                     var practitioner = practiRepo.GetByUserId(userId);
-                    if (practitioner != null) {
-                        if (practitioner.CoachHierarchy != null) {
+                    if (practitioner != null)
+                    {
+                        if (practitioner.CoachHierarchy != null)
+                        {
                             var coach = coachRepo.GetByUserId(practitioner.CoachHierarchy.ToString());
                             if (coach != null)
                             {
@@ -218,7 +220,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             [Service] PersonnelManager practiManager,
             string userId)
         {
-            string role = new RoleQueryTypeExtension().GetRoleForUser(contextAccessor, userManager,repoFactory,roleManager, userId);            
+            string role = new RoleQueryTypeExtension().GetRoleForUser(contextAccessor, userManager, repoFactory, roleManager, userId);
             List<Child> children = new List<Child>();
             if (role != null)
             {
@@ -235,7 +237,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                         break;
                     case "Practitioner":
                         children = practiManager.GetAllChildrenForPractitioner(userId);
-                            break;
+                        break;
                     default:
                         break;
                 }
@@ -254,7 +256,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             Practitioner practi = practiRepo.GetByUserId(userId);
             if (practi.PrincipalHierarchy.HasValue || practi.IsPrincipal == true)
             {
-                List<Practitioner> practitioners = practiRepo.GetAll().Where(x => (x.PrincipalHierarchy.HasValue ? x.PrincipalHierarchy.Equals(practi.PrincipalHierarchy) : (x.IsPrincipal == true ? x.UserId.Equals(userId) : x.UserId.Equals(userId)))).ToList();
+                List<Practitioner> practitioners = practiRepo.GetAll().Where(x => x.PrincipalHierarchy.HasValue ? x.PrincipalHierarchy.Equals(practi.PrincipalHierarchy) : x.IsPrincipal == true ? x.UserId.Equals(userId) : x.UserId.Equals(userId)).ToList();
                 //also add principal
                 if (practi.IsPrincipal == true)
                 {
@@ -275,7 +277,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                         {
                             string practiProfile = practitioner.User.ProfileImageUrl;
                             string practiName = practitioner.User.FullName;
-                            string practiNickName = (practitioner.User.NickFullName != null ? practitioner.User.NickFullName : "");
+                            string practiNickName = practitioner.User.NickFullName != null ? practitioner.User.NickFullName : "";
                             string practiNumber = practitioner.User.PhoneNumber;
                             string practiClassroomNames = "";
                             string practiType = "";
@@ -334,4 +336,4 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
     }
 
-    }
+}

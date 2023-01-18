@@ -11,7 +11,7 @@ using HotChocolate.Types;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Mutations
+namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 {
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class AttendanceTrackingMutationExtension

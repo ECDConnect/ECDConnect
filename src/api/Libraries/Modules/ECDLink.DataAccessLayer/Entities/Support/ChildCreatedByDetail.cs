@@ -11,7 +11,5 @@ namespace ECDLink.DataAccessLayer.Entities
         public DateTime CreatedByDate { get; set; }
         public string ClassroomName { get; set; }
         public string PractitionerName { get; set; }
-
-
     }
 }

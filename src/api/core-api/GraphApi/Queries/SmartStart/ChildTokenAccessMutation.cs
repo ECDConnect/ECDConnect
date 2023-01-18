@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.Identity;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Queries
+namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 {
     [ExtendObjectType(OperationTypeNames.Query)]
     public class ChildTokenAccessQuery
