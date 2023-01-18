@@ -106,9 +106,7 @@ export const getClassroomProgrammeType = () =>
         [];
 
       if (groups?.length > 0) {
-        return rootState.staticData.programmeTypes?.find(
-          (x) => x.id === groups[0].programmeTypeId
-        );
+        return groups[0].programmeType;
       }
 
       return;
