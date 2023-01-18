@@ -1,10 +1,9 @@
 ﻿using ECDLink.DataAccessLayer.Entities.Base;
-using ECDLink.DataAccessLayer.Entities.EventRecords;
 using ECDLink.DataAccessLayer.Entities.Users;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace ECDLink.DataAccessLayer.Entities.EventRecordings
+namespace ECDLink.DataAccessLayer.Entities.EventRecords
 {
     [Table(nameof(EventRecord))]
     public class EventRecord : EventRecord<Guid>

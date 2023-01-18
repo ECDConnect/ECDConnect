@@ -1,6 +1,5 @@
 using ECDLink.DataAccessLayer.Entities.Base;
 using HotChocolate;
-using HotChocolate.Types;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;

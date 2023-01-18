@@ -1,7 +1,6 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.Managers.EventRecords;
 using ECDLink.Abstractrions.GraphQL.Enums;
-using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.EventRecords;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
@@ -11,25 +10,25 @@ using HotChocolate.Types;
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
 {
     [ExtendObjectType(OperationTypeNames.Mutation)]
-    public class EventRecordTypeMutationExtension
+    public class EventRecordMutationExtension
     {
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
-        public EventRecordType AddEventRecordType(
+        public EventRecord AddEventRecord(
              [Service] EventRecordManager eventRecordManager,
-             EventRecordTypeModel input)
+             EventRecordModel input)
         {
-            return eventRecordManager.AddEventRecordType(input);
+            return eventRecordManager.AddEventRecord(input);
         }
 
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
-        public EventRecordType UpdateEventRecordType(
+        public EventRecord UpdateEventRecord(
              [Service] EventRecordManager eventRecordManager,
              string id,
-             EventRecordTypeModel input)
+             EventRecordModel input)
         {
-            return eventRecordManager.UpdateEventRecordType(id, input);
+            return eventRecordManager.UpdateEventRecord(id, input);
         }
     }
 }
