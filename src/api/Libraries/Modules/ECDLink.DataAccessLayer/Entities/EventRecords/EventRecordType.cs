@@ -20,7 +20,7 @@ namespace ECDLink.DataAccessLayer.Entities.EventRecords
         public string Type { get; set; } // mother or child
         public Guid? ParentId { get; set; }
 
-        [GraphQLIgnore]
+        [NotMapped]
         public virtual ICollection<EventRecordChildType> Children { get; set; }
     }
 
