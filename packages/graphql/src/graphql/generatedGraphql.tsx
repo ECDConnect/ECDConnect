@@ -1444,6 +1444,151 @@ export type EducationInput = {
   UpdatedBy?: InputMaybe<Scalars['String']>;
 };
 
+export type EventRecord = {
+  __typename?: 'EventRecord';
+  eventRecordType?: Maybe<EventRecordType>;
+  eventRecordTypeId: Scalars['UUID'];
+  id: Scalars['UUID'];
+  infant?: Maybe<Infant>;
+  infantId?: Maybe<Scalars['UUID']>;
+  insertedDate: Scalars['DateTime'];
+  isActive: Scalars['Boolean'];
+  linkedVisitId?: Maybe<Scalars['UUID']>;
+  mother?: Maybe<Mother>;
+  motherId?: Maybe<Scalars['UUID']>;
+  notes?: Maybe<Scalars['String']>;
+  updatedBy?: Maybe<Scalars['String']>;
+  updatedDate: Scalars['DateTime'];
+};
+
+export type EventRecordChildType = {
+  __typename?: 'EventRecordChildType';
+  description?: Maybe<Scalars['String']>;
+  id: Scalars['UUID'];
+  insertedDate: Scalars['DateTime'];
+  isActive: Scalars['Boolean'];
+  name?: Maybe<Scalars['String']>;
+  normalizedName?: Maybe<Scalars['String']>;
+  type?: Maybe<Scalars['String']>;
+  updatedBy?: Maybe<Scalars['String']>;
+  updatedDate: Scalars['DateTime'];
+};
+
+export type EventRecordChildTypeFilterInput = {
+  and?: InputMaybe<Array<EventRecordChildTypeFilterInput>>;
+  description?: InputMaybe<StringOperationFilterInput>;
+  id?: InputMaybe<ComparableGuidOperationFilterInput>;
+  insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  isActive?: InputMaybe<BooleanOperationFilterInput>;
+  name?: InputMaybe<StringOperationFilterInput>;
+  normalizedName?: InputMaybe<StringOperationFilterInput>;
+  or?: InputMaybe<Array<EventRecordChildTypeFilterInput>>;
+  type?: InputMaybe<StringOperationFilterInput>;
+  updatedBy?: InputMaybe<StringOperationFilterInput>;
+  updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+};
+
+export type EventRecordChildTypeInput = {
+  Description?: InputMaybe<Scalars['String']>;
+  Id?: InputMaybe<Scalars['UUID']>;
+  IsActive: Scalars['Boolean'];
+  Name?: InputMaybe<Scalars['String']>;
+  NormalizedName?: InputMaybe<Scalars['String']>;
+  Type?: InputMaybe<Scalars['String']>;
+  UpdatedBy?: InputMaybe<Scalars['String']>;
+};
+
+export type EventRecordFilterInput = {
+  and?: InputMaybe<Array<EventRecordFilterInput>>;
+  eventRecordType?: InputMaybe<EventRecordTypeFilterInput>;
+  eventRecordTypeId?: InputMaybe<ComparableGuidOperationFilterInput>;
+  id?: InputMaybe<ComparableGuidOperationFilterInput>;
+  infant?: InputMaybe<InfantFilterInput>;
+  infantId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
+  insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  isActive?: InputMaybe<BooleanOperationFilterInput>;
+  linkedVisitId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
+  mother?: InputMaybe<MotherFilterInput>;
+  motherId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
+  notes?: InputMaybe<StringOperationFilterInput>;
+  or?: InputMaybe<Array<EventRecordFilterInput>>;
+  updatedBy?: InputMaybe<StringOperationFilterInput>;
+  updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+};
+
+export type EventRecordInput = {
+  EventRecordType?: InputMaybe<EventRecordTypeInput>;
+  EventRecordTypeId: Scalars['UUID'];
+  Id?: InputMaybe<Scalars['UUID']>;
+  Infant?: InputMaybe<InfantInput>;
+  InfantId?: InputMaybe<Scalars['UUID']>;
+  IsActive: Scalars['Boolean'];
+  LinkedVisitId?: InputMaybe<Scalars['UUID']>;
+  Mother?: InputMaybe<MotherInput>;
+  MotherId?: InputMaybe<Scalars['UUID']>;
+  Notes?: InputMaybe<Scalars['String']>;
+  UpdatedBy?: InputMaybe<Scalars['String']>;
+};
+
+export type EventRecordModelInput = {
+  eventRecordType?: InputMaybe<EventRecordTypeInput>;
+  eventRecordTypeId?: InputMaybe<Scalars['UUID']>;
+  infant?: InputMaybe<InfantModelInput>;
+  infantId?: InputMaybe<Scalars['UUID']>;
+  linkedVisitId?: InputMaybe<Scalars['String']>;
+  mother?: InputMaybe<MotherModelInput>;
+  motherId?: InputMaybe<Scalars['UUID']>;
+  notes?: InputMaybe<Scalars['String']>;
+};
+
+export type EventRecordType = {
+  __typename?: 'EventRecordType';
+  description?: Maybe<Scalars['String']>;
+  id: Scalars['UUID'];
+  insertedDate: Scalars['DateTime'];
+  isActive: Scalars['Boolean'];
+  name?: Maybe<Scalars['String']>;
+  normalizedName?: Maybe<Scalars['String']>;
+  parentId?: Maybe<Scalars['UUID']>;
+  type?: Maybe<Scalars['String']>;
+  updatedBy?: Maybe<Scalars['String']>;
+  updatedDate: Scalars['DateTime'];
+};
+
+export type EventRecordTypeFilterInput = {
+  and?: InputMaybe<Array<EventRecordTypeFilterInput>>;
+  description?: InputMaybe<StringOperationFilterInput>;
+  id?: InputMaybe<ComparableGuidOperationFilterInput>;
+  insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  isActive?: InputMaybe<BooleanOperationFilterInput>;
+  name?: InputMaybe<StringOperationFilterInput>;
+  normalizedName?: InputMaybe<StringOperationFilterInput>;
+  or?: InputMaybe<Array<EventRecordTypeFilterInput>>;
+  parentId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
+  type?: InputMaybe<StringOperationFilterInput>;
+  updatedBy?: InputMaybe<StringOperationFilterInput>;
+  updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+};
+
+export type EventRecordTypeInput = {
+  Description?: InputMaybe<Scalars['String']>;
+  Id?: InputMaybe<Scalars['UUID']>;
+  IsActive: Scalars['Boolean'];
+  Name?: InputMaybe<Scalars['String']>;
+  NormalizedName?: InputMaybe<Scalars['String']>;
+  ParentId?: InputMaybe<Scalars['UUID']>;
+  Type?: InputMaybe<Scalars['String']>;
+  UpdatedBy?: InputMaybe<Scalars['String']>;
+};
+
+export type EventRecordTypeModelInput = {
+  description?: InputMaybe<Scalars['String']>;
+  name?: InputMaybe<Scalars['String']>;
+  normalizedName?: InputMaybe<Scalars['String']>;
+  parentId?: InputMaybe<Scalars['String']>;
+  type?: InputMaybe<Scalars['String']>;
+};
+
 export type FieldDefinitionModel = {
   __typename?: 'FieldDefinitionModel';
   assemblyDataTypeName?: Maybe<Scalars['String']>;
@@ -2138,6 +2283,8 @@ export type Mutation = {
   addAdditionalVisitForMother?: Maybe<Visit>;
   addClinic?: Maybe<Clinic>;
   addCoachToFranchisor?: Maybe<Coach>;
+  addEventRecord?: Maybe<EventRecord>;
+  addEventRecordType?: Maybe<EventRecordType>;
   addHealthCareWorker?: Maybe<HealthCareWorker>;
   addInfant?: Maybe<Infant>;
   addMother?: Maybe<Mother>;
@@ -2170,6 +2317,9 @@ export type Mutation = {
   createDocument?: Maybe<Document>;
   createDocumentType?: Maybe<DocumentType>;
   createEducation?: Maybe<Education>;
+  createEventRecord?: Maybe<EventRecord>;
+  createEventRecordChildType?: Maybe<EventRecordChildType>;
+  createEventRecordType?: Maybe<EventRecordType>;
   createFranchisor?: Maybe<Franchisor>;
   createGender?: Maybe<Gender>;
   createGrant?: Maybe<Grant>;
@@ -2247,6 +2397,9 @@ export type Mutation = {
   deleteDocument?: Maybe<Scalars['Boolean']>;
   deleteDocumentType?: Maybe<Scalars['Boolean']>;
   deleteEducation?: Maybe<Scalars['Boolean']>;
+  deleteEventRecord?: Maybe<Scalars['Boolean']>;
+  deleteEventRecordChildType?: Maybe<Scalars['Boolean']>;
+  deleteEventRecordType?: Maybe<Scalars['Boolean']>;
   deleteFranchisor?: Maybe<Scalars['Boolean']>;
   deleteGender?: Maybe<Scalars['Boolean']>;
   deleteGrant?: Maybe<Scalars['Boolean']>;
@@ -2352,6 +2505,9 @@ export type Mutation = {
   updateDocument?: Maybe<Document>;
   updateDocumentType?: Maybe<DocumentType>;
   updateEducation?: Maybe<Education>;
+  updateEventRecord?: Maybe<EventRecord>;
+  updateEventRecordChildType?: Maybe<EventRecordChildType>;
+  updateEventRecordType?: Maybe<EventRecordType>;
   updateFranchisor?: Maybe<Franchisor>;
   updateGender?: Maybe<Gender>;
   updateGrant?: Maybe<Grant>;
@@ -2443,6 +2599,14 @@ export type MutationAddClinicArgs = {
 export type MutationAddCoachToFranchisorArgs = {
   coachId?: InputMaybe<Scalars['String']>;
   franchisorId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationAddEventRecordArgs = {
+  input?: InputMaybe<EventRecordModelInput>;
+};
+
+export type MutationAddEventRecordTypeArgs = {
+  input?: InputMaybe<EventRecordTypeModelInput>;
 };
 
 export type MutationAddHealthCareWorkerArgs = {
@@ -2591,6 +2755,18 @@ export type MutationCreateDocumentTypeArgs = {
 
 export type MutationCreateEducationArgs = {
   input?: InputMaybe<EducationInput>;
+};
+
+export type MutationCreateEventRecordArgs = {
+  input?: InputMaybe<EventRecordInput>;
+};
+
+export type MutationCreateEventRecordChildTypeArgs = {
+  input?: InputMaybe<EventRecordChildTypeInput>;
+};
+
+export type MutationCreateEventRecordTypeArgs = {
+  input?: InputMaybe<EventRecordTypeInput>;
 };
 
 export type MutationCreateFranchisorArgs = {
@@ -2927,6 +3103,18 @@ export type MutationDeleteDocumentTypeArgs = {
 };
 
 export type MutationDeleteEducationArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+};
+
+export type MutationDeleteEventRecordArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+};
+
+export type MutationDeleteEventRecordChildTypeArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+};
+
+export type MutationDeleteEventRecordTypeArgs = {
   id?: InputMaybe<Scalars['UUID']>;
 };
 
@@ -3395,6 +3583,21 @@ export type MutationUpdateDocumentTypeArgs = {
 export type MutationUpdateEducationArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   input?: InputMaybe<EducationInput>;
+};
+
+export type MutationUpdateEventRecordArgs = {
+  id?: InputMaybe<Scalars['String']>;
+  input?: InputMaybe<EventRecordModelInput>;
+};
+
+export type MutationUpdateEventRecordChildTypeArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  input?: InputMaybe<EventRecordChildTypeInput>;
+};
+
+export type MutationUpdateEventRecordTypeArgs = {
+  id?: InputMaybe<Scalars['String']>;
+  input?: InputMaybe<EventRecordTypeModelInput>;
 };
 
 export type MutationUpdateFranchisorArgs = {
@@ -4559,6 +4762,9 @@ export type Query = {
   GetAllDocument?: Maybe<Array<Maybe<Document>>>;
   GetAllDocumentType?: Maybe<Array<Maybe<DocumentType>>>;
   GetAllEducation?: Maybe<Array<Maybe<Education>>>;
+  GetAllEventRecord?: Maybe<Array<Maybe<EventRecord>>>;
+  GetAllEventRecordChildType?: Maybe<Array<Maybe<EventRecordChildType>>>;
+  GetAllEventRecordType?: Maybe<Array<Maybe<EventRecordType>>>;
   GetAllFranchisor?: Maybe<Array<Maybe<Franchisor>>>;
   GetAllGender?: Maybe<Array<Maybe<Gender>>>;
   GetAllGrant?: Maybe<Array<Maybe<Grant>>>;
@@ -4641,6 +4847,9 @@ export type Query = {
   GetDocumentById?: Maybe<Document>;
   GetDocumentTypeById?: Maybe<DocumentType>;
   GetEducationById?: Maybe<Education>;
+  GetEventRecordById?: Maybe<EventRecord>;
+  GetEventRecordChildTypeById?: Maybe<EventRecordChildType>;
+  GetEventRecordTypeById?: Maybe<EventRecordType>;
   GetFranchisorById?: Maybe<Franchisor>;
   GetGenderById?: Maybe<Gender>;
   GetGrantById?: Maybe<Grant>;
@@ -4719,6 +4928,8 @@ export type Query = {
   allClinics?: Maybe<Array<Maybe<Clinic>>>;
   allCoachesForFranchisor?: Maybe<Array<Maybe<Coach>>>;
   allDocument?: Maybe<Array<Maybe<Document>>>;
+  allEventRecordTypes?: Maybe<Array<Maybe<EventRecordType>>>;
+  allEventRecordTypesForType?: Maybe<Array<Maybe<EventRecordType>>>;
   allHealthCareWorkers?: Maybe<Array<Maybe<HealthCareWorker>>>;
   allInfants?: Maybe<Array<Maybe<Infant>>>;
   allInfantsForHealthCareWorker?: Maybe<Array<Maybe<Infant>>>;
@@ -4879,6 +5090,18 @@ export type QueryGetAllDocumentTypeArgs = {
 
 export type QueryGetAllEducationArgs = {
   where?: InputMaybe<EducationFilterInput>;
+};
+
+export type QueryGetAllEventRecordArgs = {
+  where?: InputMaybe<EventRecordFilterInput>;
+};
+
+export type QueryGetAllEventRecordChildTypeArgs = {
+  where?: InputMaybe<EventRecordChildTypeFilterInput>;
+};
+
+export type QueryGetAllEventRecordTypeArgs = {
+  where?: InputMaybe<EventRecordTypeFilterInput>;
 };
 
 export type QueryGetAllFranchisorArgs = {
@@ -5195,6 +5418,21 @@ export type QueryGetDocumentTypeByIdArgs = {
 export type QueryGetEducationByIdArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   where?: InputMaybe<EducationFilterInput>;
+};
+
+export type QueryGetEventRecordByIdArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  where?: InputMaybe<EventRecordFilterInput>;
+};
+
+export type QueryGetEventRecordChildTypeByIdArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  where?: InputMaybe<EventRecordChildTypeFilterInput>;
+};
+
+export type QueryGetEventRecordTypeByIdArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  where?: InputMaybe<EventRecordTypeFilterInput>;
 };
 
 export type QueryGetFranchisorByIdArgs = {
@@ -5570,6 +5808,10 @@ export type QueryAllCoachesForFranchisorArgs = {
 
 export type QueryAllDocumentArgs = {
   userId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryAllEventRecordTypesForTypeArgs = {
+  type?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryAllInfantsForHealthCareWorkerArgs = {
@@ -6949,6 +7191,7 @@ export type Visit = {
   actualVisitDate?: Maybe<Scalars['DateTime']>;
   attended: Scalars['Boolean'];
   id: Scalars['UUID'];
+  infant?: Maybe<Infant>;
   infantId?: Maybe<Scalars['UUID']>;
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
@@ -6967,6 +7210,7 @@ export type VisitFilterInput = {
   and?: InputMaybe<Array<VisitFilterInput>>;
   attended?: InputMaybe<BooleanOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
+  infant?: InputMaybe<InfantFilterInput>;
   infantId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
@@ -6985,6 +7229,7 @@ export type VisitInput = {
   ActualVisitDate?: InputMaybe<Scalars['DateTime']>;
   Attended: Scalars['Boolean'];
   Id?: InputMaybe<Scalars['UUID']>;
+  Infant?: InputMaybe<InfantInput>;
   InfantId?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
   Mother?: InputMaybe<MotherInput>;

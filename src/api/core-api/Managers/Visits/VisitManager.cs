@@ -1,11 +1,10 @@
-﻿using EcdLink.Api.CoreApi.GraphApi.Models;
+﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace EcdLink.Api.CoreApi.Managers.Visits

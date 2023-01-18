@@ -1,4 +1,4 @@
-using EcdLink.Api.CoreApi.Managers.Users;
+using EcdLink.Api.CoreApi.Managers.Users.GrowGreat;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
@@ -14,7 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Queries
+namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
 {
     [ExtendObjectType(OperationTypeNames.Query)]
     public class MotherQueryExtension
@@ -73,9 +73,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var motherRepo = repoFactory.CreateGenericRepository<Mother>(userContext: uId);
-            List<Mother> mothers = motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId.Equals(id) && (
+            List<Mother> mothers = motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId.Equals(id) && 
                                                                   x.InsertedDate.Month == today.Month &&
-                                                                  x.InsertedDate.Year == today.Year)).ToList();
+                                                                  x.InsertedDate.Year == today.Year).ToList();
 
             return mothers.Count;
         }

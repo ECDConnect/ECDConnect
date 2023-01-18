@@ -2,7 +2,7 @@
 using ECDLink.DataAccessLayer.Entities.Visits;
 using System;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Models
+namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
 {
     public class VisitModel
     {

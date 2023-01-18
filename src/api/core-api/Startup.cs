@@ -3,7 +3,8 @@ using EcdLink.Api.CoreApi.Documents;
 using EcdLink.Api.CoreApi.GraphApi.AccessValidators;
 using EcdLink.Api.CoreApi.GraphApi.Interceptors;
 using EcdLink.Api.CoreApi.Managers.Notifications;
-using EcdLink.Api.CoreApi.Managers.Users;
+using EcdLink.Api.CoreApi.Managers.Users.GrowGreat;
+using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using EcdLink.Api.CoreApi.Security.Managers;
 using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
@@ -38,15 +39,6 @@ using Microsoft.Extensions.Hosting;
 using System;
 using System.Diagnostics;
 using System.Text.Json.Serialization;
-using ECDLink.Tenancy.EntityFramework.Extensions;
-using System.Threading.Tasks;
-using EcdLink.Api.CoreApi.Middleware;
-using ECDLink.Core.Services;
-using ECDLink.PostgresTenancy.Repository;
-using ECDLink.Tenancy.Services;
-using ECDLink.PostgresTenancy.Services;
-using ECDLink.PostgresTenancy.Entities;
-using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 
 namespace EcdLink.Api.CoreApi
 {

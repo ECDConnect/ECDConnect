@@ -1,4 +1,4 @@
-﻿using EcdLink.Api.CoreApi.GraphApi.Models;
+﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
@@ -12,7 +12,7 @@ using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using System.Linq;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Mutations
+namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
 {
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class VisitMutationExtension
@@ -26,7 +26,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         {
             var applicationUserId = httpContextAccessor.HttpContext.GetUser().Id;
             var visitTypeRepo = repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
-            VisitType visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals("mother") && x.Name == "additional_visits").FirstOrDefault();
+            VisitType visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals("mother") && x.Name == "additional_visits").OrderBy(x => x.NormalizedName).FirstOrDefault();
 
             input.VisitType = visitType;
             input.Attended = false;
@@ -34,6 +34,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             return vistManager.AddVisit(input);
         }
-       
+
     }
 }

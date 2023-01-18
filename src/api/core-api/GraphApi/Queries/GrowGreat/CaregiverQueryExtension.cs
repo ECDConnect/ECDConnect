@@ -15,7 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Queries
+namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
 {
     [ExtendObjectType(OperationTypeNames.Query)]
     public class CaregiveQueryExtension
