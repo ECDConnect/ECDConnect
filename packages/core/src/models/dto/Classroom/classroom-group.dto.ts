@@ -8,7 +8,7 @@ export interface ClassroomGroupDto extends EntityBase {
   classroomId: string;
   practitionerId?: string;
   classroom?: ClassroomDto;
-  programType?: ProgrammeTypeDto;
+  programmeType?: ProgrammeTypeDto;
   programmeTypeId?: string;
   learners?: LearnerDto[];
   classProgrammes?: ClassProgrammeDto[];
