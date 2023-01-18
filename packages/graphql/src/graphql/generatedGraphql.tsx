@@ -1321,6 +1321,30 @@ export type DailyProgrammeInput = {
   UpdatedBy?: InputMaybe<Scalars['String']>;
 };
 
+export type DisplaySet = {
+  __typename?: 'DisplaySet';
+  color?: Maybe<Scalars['String']>;
+  icon?: Maybe<Scalars['String']>;
+  notes?: Maybe<Scalars['String']>;
+  subject?: Maybe<Scalars['String']>;
+};
+
+export type DisplaySetFilterInput = {
+  and?: InputMaybe<Array<DisplaySetFilterInput>>;
+  color?: InputMaybe<StringOperationFilterInput>;
+  icon?: InputMaybe<StringOperationFilterInput>;
+  notes?: InputMaybe<StringOperationFilterInput>;
+  or?: InputMaybe<Array<DisplaySetFilterInput>>;
+  subject?: InputMaybe<StringOperationFilterInput>;
+};
+
+export type DisplaySetInput = {
+  color?: InputMaybe<Scalars['String']>;
+  icon?: InputMaybe<Scalars['String']>;
+  notes?: InputMaybe<Scalars['String']>;
+  subject?: InputMaybe<Scalars['String']>;
+};
+
 export type Document = {
   __typename?: 'Document';
   createdUserId?: Maybe<Scalars['String']>;
@@ -1543,6 +1567,7 @@ export type EventRecordModelInput = {
 
 export type EventRecordType = {
   __typename?: 'EventRecordType';
+  children?: Maybe<Array<Maybe<EventRecordChildType>>>;
   description?: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
@@ -1557,6 +1582,7 @@ export type EventRecordType = {
 
 export type EventRecordTypeFilterInput = {
   and?: InputMaybe<Array<EventRecordTypeFilterInput>>;
+  children?: InputMaybe<ListFilterInputTypeOfEventRecordChildTypeFilterInput>;
   description?: InputMaybe<StringOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
@@ -1571,6 +1597,7 @@ export type EventRecordTypeFilterInput = {
 };
 
 export type EventRecordTypeInput = {
+  Children?: InputMaybe<Array<InputMaybe<EventRecordChildTypeInput>>>;
   Description?: InputMaybe<Scalars['String']>;
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
@@ -2097,6 +2124,13 @@ export type ListFilterInputTypeOfDocumentFilterInput = {
   some?: InputMaybe<DocumentFilterInput>;
 };
 
+export type ListFilterInputTypeOfEventRecordChildTypeFilterInput = {
+  all?: InputMaybe<EventRecordChildTypeFilterInput>;
+  any?: InputMaybe<Scalars['Boolean']>;
+  none?: InputMaybe<EventRecordChildTypeFilterInput>;
+  some?: InputMaybe<EventRecordChildTypeFilterInput>;
+};
+
 export type ListFilterInputTypeOfGrantFilterInput = {
   all?: InputMaybe<GrantFilterInput>;
   any?: InputMaybe<Scalars['Boolean']>;
@@ -2215,6 +2249,7 @@ export type Mother = {
   linkedCaregiverId?: Maybe<Scalars['UUID']>;
   siteAddress?: Maybe<SiteAddress>;
   siteAddressId?: Maybe<Scalars['UUID']>;
+  statusInfo?: Maybe<DisplaySet>;
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
   user?: Maybe<ApplicationUser>;
@@ -2236,6 +2271,7 @@ export type MotherFilterInput = {
   or?: InputMaybe<Array<MotherFilterInput>>;
   siteAddress?: InputMaybe<SiteAddressFilterInput>;
   siteAddressId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
+  statusInfo?: InputMaybe<DisplaySetFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   user?: InputMaybe<ApplicationUserFilterInput>;
@@ -2254,6 +2290,7 @@ export type MotherInput = {
   LinkedCaregiverId?: InputMaybe<Scalars['UUID']>;
   SiteAddress?: InputMaybe<SiteAddressInput>;
   SiteAddressId?: InputMaybe<Scalars['UUID']>;
+  StatusInfo?: InputMaybe<DisplaySetInput>;
   UpdatedBy?: InputMaybe<Scalars['String']>;
   User?: InputMaybe<ApplicationUserInput>;
   UserId?: InputMaybe<Scalars['String']>;
