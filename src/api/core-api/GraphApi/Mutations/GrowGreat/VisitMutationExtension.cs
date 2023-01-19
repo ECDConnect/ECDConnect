@@ -35,5 +35,22 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             return vistManager.AddVisit(input);
         }
 
+        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        public Visit AddAdditionalVisitForInfant(
+            [Service] IHttpContextAccessor httpContextAccessor,
+            [Service] IGenericRepositoryFactory repoFactory,
+            [Service] VisitManager vistManager,
+            VisitModel input)
+        {
+            var applicationUserId = httpContextAccessor.HttpContext.GetUser().Id;
+            var visitTypeRepo = repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
+            VisitType visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals("child") && x.Name == "additional_visits").OrderBy(x => x.NormalizedName).FirstOrDefault();
+
+            input.VisitType = visitType;
+            input.Attended = false;
+            input.MotherId = null;
+
+            return vistManager.AddVisit(input);
+        }
     }
 }
