@@ -130,6 +130,7 @@ export const DonationsOrVouchers: React.FC<AddIncomeState> = ({ setType }) => {
           register={register}
           placeholder={'e.g. Paid for two months'}
           className="mt-4"
+          type={'number'}
         />
         <FormInput<DonationsOrVouchersModel>
           label={'Add a note'}

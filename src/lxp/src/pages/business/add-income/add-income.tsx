@@ -5,6 +5,7 @@ import {
   Divider,
   StackedList,
   Typography,
+  Alert,
 } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
@@ -110,7 +111,7 @@ export const AddIncome: React.FC = () => {
       {
         title: 'Start-up support',
         titleStyle: 'text-textDark font-semibold',
-        subTitle: 'R 1,000, Community Works Pr...',
+        subTitle: 'Organised by SmartStart',
         subTitleStyle: 'text-textMid',
         actionName: 'Add',
         actionIcon: 'PlusIcon',
@@ -168,22 +169,36 @@ export const AddIncome: React.FC = () => {
           displayOffline={!isOnline}
           className="p-4"
         >
-          <div>
-            <Typography type="h3" color={'textDark'} text={'Add your income'} />
-            <Typography
-              type="body"
-              color={'textMid'}
-              text={'What type of money came in'}
+          <>
+            <div>
+              <Typography
+                type="h3"
+                color={'textDark'}
+                text={'Add your income'}
+              />
+              <Typography
+                type="body"
+                color={'textMid'}
+                text={'What type of money came in'}
+              />
+            </div>
+            <Divider dividerType="dashed" className="mt-4" />
+            <div>
+              <StackedList
+                className={'h-auto'}
+                listItems={listItems}
+                type={'ActionList'}
+              ></StackedList>
+            </div>
+            <Alert
+              type={'info'}
+              title={
+                "If you don't see the income type you want to add above, use the “Other” type to add your own."
+              }
+              list={['For example: business grants.']}
+              className="mt-4 mb-4"
             />
-          </div>
-          <Divider dividerType="dashed" className="mt-4" />
-          <div>
-            <StackedList
-              className={'h-auto'}
-              listItems={listItems}
-              type={'ActionList'}
-            ></StackedList>
-          </div>
+          </>
         </BannerWrapper>
       )}
     </div>

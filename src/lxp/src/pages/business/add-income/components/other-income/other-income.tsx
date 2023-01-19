@@ -43,7 +43,7 @@ export const OtherIncome: React.FC<AddIncomeState> = ({ setType }) => {
 
   return (
     <BannerWrapper
-      title={`Add a new income type`}
+      title={`Other income`}
       color={'primary'}
       size="medium"
       renderBorder={true}
@@ -72,6 +72,7 @@ export const OtherIncome: React.FC<AddIncomeState> = ({ setType }) => {
           register={register}
           placeholder={'e.g. R 50.00'}
           className="mt-2"
+          type={'number'}
         />
         <FormInput<OtherIncomeModel>
           label={'Write a short description of this income type'}
