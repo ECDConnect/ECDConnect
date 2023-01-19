@@ -85,9 +85,12 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             var healthCareWorkerId = _healthCareWorkerManager.GetHealthCareWorkerIdByUserId(applicationUserId);
             var motherUser = GetUserFromInputModel(input);
 
+            // Populate province id with N/A option when site address is null
             if (input.SiteAddressId == null)
             {
-                input.SiteAddress.ProvinceId = null;
+                var repository = _repoFactory.CreateGenericRepository<Province>(userContext: applicationUserId);
+                var naProvince = repository.GetAll().Where(x => x.Description.Equals("N/A")).FirstOrDefault();
+                input.SiteAddress.ProvinceId = naProvince.Id;
             }
 
             return new Mother()
