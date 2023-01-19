@@ -1,4 +1,5 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Caregiver;
@@ -20,15 +21,18 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
         private IHttpContextAccessor _contextAccessor;
         private IGenericRepositoryFactory _repoFactory;
         private HealthCareWorkerManager _healthCareWorkerManager;
+        private VisitManager _visitManager;
 
         public InfantManager(
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
-            HealthCareWorkerManager healthCareWorkerManager)
+            HealthCareWorkerManager healthCareWorkerManager,
+            VisitManager visitManager)
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
             _healthCareWorkerManager = healthCareWorkerManager;
+            _visitManager = visitManager;
         }
 
         // GG BUSINESS RULES FOR CREATING A CHILD AND SELECTING AN EXISTING CAREGIVER
@@ -112,16 +116,23 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 }
             }
 
-
             var infantRepo = _repoFactory.CreateGenericRepository<Infant>(userContext: applicationUserId);
+            var createdInfant = new Infant();
             try
             {
-                return infantRepo.Insert(infant);
+                createdInfant = infantRepo.Insert(infant);
             }
             catch (Exception e)
             {
-                return new Infant();
+                createdInfant = new Infant();
             }
+
+            if (createdInfant != null)
+            {
+                AddVisits(infant.Id, infant.User.DateOfBirth);
+            }
+
+            return createdInfant;
         }
 
         public Infant UpdateInfant(string id, InfantModel input)
@@ -256,7 +267,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             // Refer to SASSA:- Show if client is eligible for CSG but has not applied (see G5.7.1 Child documentation)
             // Visit 2 due 12 April:- show if the visit deadline is less than 7 days away (replace "Visit 2" with the name of the visit; this is relevant for both pregnant mom and child clients)
             // Icon and Color -> MetricsIconEnum.Warning.ToString()
-            if (child.WeightAtBirth == null)
+            /*if (child.WeightAtBirth == null)
             {
                 statusInfo.Color = MetricsIconEnum.Warning.ToString();
                 statusInfo.Icon = MetricsIconEnum.Warning.ToString();
@@ -267,7 +278,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 statusInfo.Color = MetricsIconEnum.Warning.ToString();
                 statusInfo.Icon = MetricsIconEnum.Warning.ToString();
                 statusInfo.Subject = "Growth faltering";
-            }
+            }*/
 
             //
             // Red Alerts
@@ -276,5 +287,121 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 
             return statusInfo;
         }
+
+        private void AddVisits(Guid infantId, DateTime BirthDate)
+        {
+            var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
+            var visitTypeRepo = _repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
+            var _type = "child";
+
+            // Get all visit types linked to child excluding additional_visits
+            List<VisitType> visitTypes = visitTypeRepo.GetAll().Where(x => x.Type.Equals(_type) && x.Name != "additional_visits").OrderBy(x => x.Order).ToList();
+
+            // Get dates for each visit
+            List<VisitModel> visits = GetVisitDates(BirthDate, visitTypes);
+
+            if (visits.Count > 0)
+            {   // Add visits for child
+                foreach (var visit in visits)
+                {
+                    visit.InfantId = infantId;
+                    visit.Risk = "normal";
+                    visit.MotherId = null;
+                    visit.Attended = false;
+                    _visitManager.AddVisit(visit);
+                }
+            }
+        }
+
+        private List<VisitModel> GetVisitDates(DateTime BirthDate, List<VisitType> visitTypes) 
+        {
+            var dateList = new List<VisitModel>();
+
+            // Due dates are created normally 1 day before the actual planned visit date
+
+            for (var i=0; i < visitTypes.Count; i++)
+            {
+                var visitDaySet = new VisitModel();
+                visitDaySet.VisitType = visitTypes[i];
+
+                if (visitTypes[i].Name == "day_3")
+                {
+                    visitDaySet.PlannedVisitDate = BirthDate.AddDays(2);
+                } 
+                else if (visitTypes[i].Name == "day_7")
+                {
+                    visitDaySet.PlannedVisitDate = BirthDate.AddDays(6);
+                } 
+                else if (visitTypes[i].Name == "week_2")
+                {
+                    visitDaySet.PlannedVisitDate = BirthDate.AddDays(13);
+                }
+                else if (visitTypes[i].Name == "week_4")
+                {
+                    visitDaySet.PlannedVisitDate = BirthDate.AddDays(27);
+                }
+                else if (visitTypes[i].Name == "week_7_to_8")
+                {
+                    visitDaySet.PlannedVisitDate = BirthDate.AddDays(48);
+                }
+                else if (visitTypes[i].Name == "3_months")
+                {
+                    visitDaySet.PlannedVisitDate = BirthDate.AddMonths(3);
+                    visitDaySet.PlannedVisitDate = visitDaySet.PlannedVisitDate.AddDays(-1);
+                }
+                else if (visitTypes[i].Name == "4_months")
+                {
+                    visitDaySet.PlannedVisitDate = BirthDate.AddMonths(4);
+                    visitDaySet.PlannedVisitDate = visitDaySet.PlannedVisitDate.AddDays(-1);
+                }
+                else if (visitTypes[i].Name == "5_months")
+                {
+                    visitDaySet.PlannedVisitDate = BirthDate.AddMonths(5);
+                    visitDaySet.PlannedVisitDate = visitDaySet.PlannedVisitDate.AddDays(-1);
+                }
+                else if (visitTypes[i].Name == "6_months")
+                {
+                    visitDaySet.PlannedVisitDate = BirthDate.AddMonths(6);
+                    visitDaySet.PlannedVisitDate = visitDaySet.PlannedVisitDate.AddDays(-1);
+                }
+                else if (visitTypes[i].Name == "9_months")
+                {
+                    visitDaySet.PlannedVisitDate = BirthDate.AddMonths(9);
+                    visitDaySet.PlannedVisitDate = visitDaySet.PlannedVisitDate.AddDays(-1);
+                }
+                else if (visitTypes[i].Name == "12_months")
+                {
+                    visitDaySet.PlannedVisitDate = BirthDate.AddMonths(12);
+                    visitDaySet.PlannedVisitDate = visitDaySet.PlannedVisitDate.AddDays(-1);
+                }
+                else if (visitTypes[i].Name == "15_months")
+                {
+                    visitDaySet.PlannedVisitDate = BirthDate.AddMonths(15);
+                    visitDaySet.PlannedVisitDate = visitDaySet.PlannedVisitDate.AddDays(-1);
+                }
+                else if (visitTypes[i].Name == "18_months")
+                {
+                    visitDaySet.PlannedVisitDate = BirthDate.AddMonths(18);
+                    visitDaySet.PlannedVisitDate = visitDaySet.PlannedVisitDate.AddDays(-1);
+                }
+                else if (visitTypes[i].Name == "21_months")
+                {
+                    visitDaySet.PlannedVisitDate = BirthDate.AddMonths(21);
+                    visitDaySet.PlannedVisitDate = visitDaySet.PlannedVisitDate.AddDays(-1);
+                }
+                else if (visitTypes[i].Name == "24_months")
+                {
+                    visitDaySet.PlannedVisitDate = BirthDate.AddMonths(24);
+                    visitDaySet.PlannedVisitDate = visitDaySet.PlannedVisitDate.AddDays(-1);
+                }
+                else if (visitTypes[i].Name == "5_years")
+                {
+                    visitDaySet.PlannedVisitDate = BirthDate.AddYears(5);
+                }
+                dateList.Add(visitDaySet);
+            }
+            return dateList;
+        }
+
     }
 }

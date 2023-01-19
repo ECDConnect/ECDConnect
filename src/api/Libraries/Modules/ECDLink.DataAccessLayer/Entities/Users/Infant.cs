@@ -40,8 +40,8 @@ namespace ECDLink.DataAccessLayer.Entities.Users
 
         public decimal? LengthAtBirth { get; set; }
 
-        [GraphQLIgnore]
-        public DisplaySet StatusInfo = new DisplaySet();
+        [NotMapped]
+        public virtual DisplaySet StatusInfo { get; set; }
 
     }
 

@@ -2,6 +2,7 @@ using EcdLink.Api.CoreApi.Managers.Users.GrowGreat;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
@@ -81,6 +82,26 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             childCount = childrenCaregiver.Count + childrenMother.Count;
 
             return childCount;
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public List<Visit> GetInfantVisits(
+            [Service] IHttpContextAccessor contextAccessor,
+            [Service] IGenericRepositoryFactory repoFactory,
+            string id)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var visitRepo = repoFactory.CreateGenericRepository<Visit>(userContext: uId);
+            var visitTypeRepo = repoFactory.CreateGenericRepository<VisitType>(userContext: uId);
+
+            List<Visit> infantsVisits = new List<Visit>();
+            infantsVisits = (
+                from visit in visitRepo.GetAll().Where(x => x.Infant.UserId.Equals(id)).OrderBy(x => x.PlannedVisitDate)
+                join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals("child")) on visit.VisitTypeId equals visitType.Id
+                select visit
+            ).ToList();
+
+            return infantsVisits;
         }
 
     }
