@@ -1,6 +1,7 @@
-import { MotherDto } from '@ecdlink/core';
+import { MotherDto, VisitDto } from '@ecdlink/core';
 
 export interface MotherState {
   mothers?: MotherDto[];
+  visits?: VisitDto[];
   motherCountForMonth?: number;
 }

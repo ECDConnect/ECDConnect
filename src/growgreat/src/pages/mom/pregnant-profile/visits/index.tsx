@@ -1,4 +1,4 @@
-import React, { useCallback, useLayoutEffect } from 'react';
+import React, { useCallback, useLayoutEffect, useMemo } from 'react';
 import { useWindowSize } from '@reach/window-size';
 
 import {
@@ -15,52 +15,16 @@ import Pregnant from '@/assets/pregnant.svg';
 import { useHistory, useLocation } from 'react-router';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/types';
-import { getMotherById } from '@/store/mother/mother.selectors';
+import {
+  getMotherById,
+  getMotherVisits,
+} from '@/store/mother/mother.selectors';
 import { getWeeksPregnant } from '@/utils/mom/pregnant.utils';
 import { useAppDispatch } from '@/store';
 import { motherThunkActions } from '@/store/mother';
 import { useDialog } from '@ecdlink/core';
 
 const HEADER_HEIGHT = 64;
-
-const MOCK_DATA = {
-  name: 'Lethabo Nkosi',
-  weeks: 10,
-  folderOpened: new Date('03-28-2022'),
-  visit1: new Date('04-04-2022'),
-  visit2: new Date('06-20-2022'),
-};
-
-const MOCK_VISITS: StepItem[] = [
-  {
-    title: 'Folder opened (Static data)',
-    subTitle: `By ${MOCK_DATA.folderOpened.getDate()} ${MOCK_DATA.folderOpened.toLocaleString(
-      'default',
-      { month: 'long' }
-    )} ${MOCK_DATA.folderOpened.getFullYear()}`,
-    type: 'completed',
-  },
-  {
-    title: 'Visit 1 (Static data)',
-    subTitle: `By ${MOCK_DATA.visit1.getDate()} ${MOCK_DATA.visit1.toLocaleString(
-      'default',
-      { month: 'long' }
-    )} ${MOCK_DATA.visit1.getFullYear()}`,
-    inProgressStepIcon: 'CalendarIcon',
-    type: 'inProgress',
-    showActionButton: true,
-    actionButtonIcon: 'ArrowCircleRightIcon',
-    actionButtonText: 'Start visit',
-  },
-  {
-    title: 'Visit 2 (Static data)',
-    subTitle: `By ${MOCK_DATA.visit2.getDate()} ${MOCK_DATA.visit2.toLocaleString(
-      'default',
-      { month: 'long' }
-    )} ${MOCK_DATA.visit2.getFullYear()}`,
-    type: 'todo',
-  },
-];
 
 export const Visits: React.FC = () => {
   const { height } = useWindowSize();
@@ -78,6 +42,69 @@ export const Visits: React.FC = () => {
   const mother = useSelector((state: RootState) =>
     getMotherById(state, motherId)
   );
+
+  const visits = useSelector(getMotherVisits);
+
+  const currentVisit = useMemo(() => {
+    const noAttended = visits.filter((item) => !item.attended) || [];
+
+    return (
+      noAttended.length &&
+      noAttended.reduce((prev, curr) =>
+        (prev.visitType?.order || 0) < (curr.visitType?.order || 0)
+          ? prev
+          : curr
+      )
+    );
+  }, [visits]);
+
+  const insertedDate = useMemo(
+    () => new Date(mother?.insertedDate || ''),
+    [mother?.insertedDate]
+  );
+
+  const visitSteps = useMemo(() => {
+    const array: StepItem[] = visits.map((item) => {
+      const date = new Date(item.plannedVisitDate);
+
+      const getType = (): StepItem['type'] => {
+        if (item.attended) {
+          return 'completed';
+        }
+
+        if (currentVisit && item.visitType?.id === currentVisit.visitType?.id) {
+          return 'inProgress';
+        }
+
+        return 'todo';
+      };
+
+      return {
+        title: item.visitType?.normalizedName || 'Visit',
+        subTitle: `By ${date.getDate()} ${date.toLocaleString('default', {
+          month: 'long',
+        })} ${date.getFullYear()}`,
+        inProgressStepIcon: 'CalendarIcon',
+        type: getType(),
+        showActionButton: getType() === 'inProgress',
+        actionButtonIcon: 'ArrowCircleRightIcon',
+        actionButtonText: 'Start visit',
+        actionButtonOnClick: () =>
+          history.push(`${location.pathname}/start-visit`),
+      };
+    });
+
+    array.unshift({
+      title: 'Folder opened',
+      subTitle: `${insertedDate.getDate()} ${insertedDate.toLocaleString(
+        'default',
+        { month: 'long' }
+      )} ${insertedDate.getFullYear()}`,
+      type: 'completed',
+    });
+
+    return array;
+  }, [currentVisit, history, insertedDate, location.pathname, visits]);
 
   const weeksPregnant = mother?.expectedDateOfDelivery
     ? getWeeksPregnant(mother?.expectedDateOfDelivery)
@@ -163,7 +190,7 @@ export const Visits: React.FC = () => {
         </div>
       </div>
       <div className="px-4 pb-4 pt-7">
-        <Steps items={MOCK_VISITS} />
+        <Steps items={visitSteps} />
         <Divider dividerType="dashed" />
         <div className="my-4 flex items-center gap-3">
           <div className="flex flex-col">
