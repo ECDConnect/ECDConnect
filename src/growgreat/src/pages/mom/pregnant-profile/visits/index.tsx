@@ -72,7 +72,11 @@ export const Visits: React.FC = () => {
           return 'completed';
         }
 
-        if (currentVisit && item.visitType?.id === currentVisit.visitType?.id) {
+        if (
+          currentVisit &&
+          item.visitType?.id === currentVisit.visitType?.id &&
+          mother?.statusInfo?.color !== 'None'
+        ) {
           return 'inProgress';
         }
 
@@ -104,7 +108,14 @@ export const Visits: React.FC = () => {
     });
 
     return array;
-  }, [currentVisit, history, insertedDate, location.pathname, visits]);
+  }, [
+    currentVisit,
+    history,
+    insertedDate,
+    location.pathname,
+    mother?.statusInfo?.color,
+    visits,
+  ]);
 
   const weeksPregnant = mother?.expectedDateOfDelivery
     ? getWeeksPregnant(mother?.expectedDateOfDelivery)
