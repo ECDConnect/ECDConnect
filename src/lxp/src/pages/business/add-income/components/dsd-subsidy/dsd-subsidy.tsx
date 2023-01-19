@@ -76,6 +76,7 @@ export const DsdSubsidy: React.FC<AddIncomeState> = ({ setType }) => {
           register={register}
           placeholder={'e.g. 20'}
           className="mt-2"
+          type={'number'}
         />
         <FormInput<DsdSubsidyModel>
           label={'How much did you receive from the DBE subsidy?'}
@@ -84,6 +85,7 @@ export const DsdSubsidy: React.FC<AddIncomeState> = ({ setType }) => {
           register={register}
           placeholder={'e.g. R 1 000.00'}
           className="mt-2"
+          type={'number'}
         />
         <FormInput<DsdSubsidyModel>
           label={'Add a note'}
