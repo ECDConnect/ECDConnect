@@ -21,7 +21,7 @@ namespace ECDLink.DataAccessLayer.Entities.EventRecords
         public Guid? ParentId { get; set; }
 
         [NotMapped]
-        public virtual ICollection<EventRecordChildType> Children { get; set; }
+        public virtual ICollection<EventRecordType> Children { get; set; }
     }
 
     public interface EventRecordTypeJoin<TKey>
@@ -30,6 +30,4 @@ namespace ECDLink.DataAccessLayer.Entities.EventRecords
         public EventRecordType EventRecordType { get; set; }
         public TKey EventRecordTypeId { get; set; }
     }
-
-
 }
