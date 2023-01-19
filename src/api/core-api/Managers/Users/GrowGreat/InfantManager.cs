@@ -10,9 +10,13 @@ using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
+using NPOI.SS.Formula.Functions;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
+using static ICSharpCode.SharpZipLib.Zip.ExtendedUnixData;
+using static NPOI.HSSF.Util.HSSFColor;
 
 namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 {
@@ -244,29 +248,40 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
         public DisplaySet GetStatusInfo(Infant child)
         {
             DisplaySet statusInfo = new DisplaySet();
-
             statusInfo.Notes = "child";
 
             //
-            // Green Alerts
+            // Green or neutral Alerts
             //
-            // Visit 2 due/booked 12 April:- show if the visit deadline is 7 days or further away (replace "Visit 2" with the name of the visit; this is relevant for both pregnant mom and child clients)
-            // show "booked" if a visit has been scheduled in the calendar 
-            // don't show a visit date if the booked date has passed; or if the last possible day to conduct that visit has passed (see timing in G5 & G6)
-            // Growing well:- for child clients only, show if the child's weight, length, and MUAC measurements are all in the normal range and the child's growth is NOT faltering (ie, growth has increased in the previous 2 visits)
-            // Icon and Color -> MetricsIconEnum.Success.ToString()
+
+            // Visit 2 due / booked 12 April: -show if the visit deadline is 7 days or further away(replace "Visit 2" with the name of the visit; this is relevant for both pregnant mom and child clients)
+            // show "booked" if a visit has been scheduled in the calendar -> DEVELOPMENT PENDING 
+            // don't show a visit date if the booked date has passed; or if the last possible day to conduct that visit has passed (see timing in G5 & G6) -> DEVELOPMENT PENDING 
+            // Growing well:- for child clients only, show if the child's weight, length, and MUAC measurements are all in the normal range and the child's growth is NOT faltering (ie, growth has increased in the previous 2 visits) -> DEVELOPMENT PENDING 
+
             statusInfo.Color = MetricsIconEnum.Success.ToString();
             statusInfo.Icon = MetricsIconEnum.Success.ToString();
             statusInfo.Subject = "Growing well";
 
+            // No color alert notification
+            var nextVisitAfter7Days = _visitManager.GetNextVisitMoreThan7DaysAway(child.Id, "child");
+            if (nextVisitAfter7Days != "")
+            {
+                statusInfo.Icon = MetricsIconEnum.None.ToString();
+                statusInfo.Color = MetricsColorEnum.None.ToString();
+                statusInfo.Subject = nextVisitAfter7Days;
+            }
+
             //
             // Orange Alerts
             //
-            // Refer to the clinic:-show if any of these referral items are flagged for child client: Underweight, Growth faltering, Stunted, Obese, Overweight(see G3.8)
-            // Refer to Home Affairs:- show if the referral item No CSG/birth certificate is relevant -- only if no birth certificate
-            // Refer to SASSA:- Show if client is eligible for CSG but has not applied (see G5.7.1 Child documentation)
-            // Visit 2 due 12 April:- show if the visit deadline is less than 7 days away (replace "Visit 2" with the name of the visit; this is relevant for both pregnant mom and child clients)
+
+            // Refer to the clinic:-show if any of these referral items are flagged for child client: Underweight, Growth faltering, Stunted, Obese, Overweight(see G3.8) -> DEVELOPMENT PENDING 
+            // Refer to Home Affairs:-show if the referral item No CSG/ birth certificate is relevant --only if no birth certificate -> DEVELOPMENT PENDING
+            // Refer to SASSA: -Show if client is eligible for CSG but has not applied(see G5.7.1 Child documentation) -> DEVELOPMENT PENDING
+            // Visit 2 due 12 April:-show if the visit deadline is less than 7 days away(replace "Visit 2" with the name of the visit; this is relevant for both pregnant mom and child clients)
             // Icon and Color -> MetricsIconEnum.Warning.ToString()
+
             /*if (child.WeightAtBirth == null)
             {
                 statusInfo.Color = MetricsIconEnum.Warning.ToString();
@@ -280,9 +295,18 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 statusInfo.Subject = "Growth faltering";
             }*/
 
+            var nextVisitWithin7Days = _visitManager.GetNextVisitLessThan7DaysAway(child.Id, "child");
+            if (nextVisitWithin7Days != "")
+            {
+                statusInfo.Icon = MetricsIconEnum.Warning.ToString();
+                statusInfo.Color = MetricsColorEnum.Warning.ToString();
+                statusInfo.Subject = nextVisitWithin7Days;
+            }
+
             //
             // Red Alerts
             //
+            // Refer to the clinic urgently: -show if there any red items as flagged on G3.8 -> DEVELOPMENT PENDING
             // Icon and Color -> MetricsIconEnum.Error.ToString()
 
             return statusInfo;
