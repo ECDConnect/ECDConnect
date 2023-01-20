@@ -51,7 +51,12 @@ export const MenuListItem: React.FC<MenuListItemProps> = ({ item }) => {
             </div>
           </div>
         </div>
-        <div>
+        <div className="flex">
+          {item?.subItem && (
+            <p className={classNames(styles.menuSubItem, item.titleStyle)}>
+              {item?.subItem}
+            </p>
+          )}
           <ChevronRightIcon className={styles.menuChevron} />
         </div>
       </div>
