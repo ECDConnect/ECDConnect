@@ -2,6 +2,7 @@ using EcdLink.Api.CoreApi.Managers.Users.GrowGreat;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
@@ -42,8 +43,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             List<Infant> infants = new List<Infant>();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var childRepo = repoFactory.CreateGenericRepository<Infant>(userContext: uId);
-            List<Infant> children = childRepo.GetAll().Where(x => x.Caregiver.HealthCareWorker.UserId.Equals(id)).ToList();
-            List<Infant> childrenMother = childRepo.GetAll().Where(x => x.Mother.HealthCareWorker.UserId.Equals(id)).ToList();
+            List<Infant> children = childRepo.GetAll().Where(x => x.Caregiver.HealthCareWorker.UserId.Equals(id) && x.IsActive.Equals(true)).ToList();
+            List<Infant> childrenMother = childRepo.GetAll().Where(x => x.Mother.HealthCareWorker.UserId.Equals(id) && x.IsActive.Equals(true)).ToList();
 
             foreach (var child in children)
             {
@@ -71,16 +72,38 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             var childCount = 0;
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var childRepo = repoFactory.CreateGenericRepository<Infant>(userContext: uId);
-            List<Infant> childrenCaregiver = childRepo.GetAll().Where(x => x.Caregiver.HealthCareWorker.UserId.Equals(userId) && 
-                                                                            x.InsertedDate.Month == today.Month &&
-                                                                            x.InsertedDate.Year == today.Year).ToList();
+            List<Infant> childrenCaregiver = childRepo.GetAll().Where(x => x.Caregiver.HealthCareWorker.UserId.Equals(userId) &&
+                                                                           x.IsActive.Equals(true) &&
+                                                                           x.InsertedDate.Month == today.Month &&
+                                                                           x.InsertedDate.Year == today.Year).ToList();
             List<Infant> childrenMother = childRepo.GetAll().Where(x => x.Mother.HealthCareWorker.UserId.Equals(userId) &&
-                                                                            x.InsertedDate.Month == today.Month &&
-                                                                            x.InsertedDate.Year == today.Year).ToList();
+                                                                        x.IsActive.Equals(true) &&
+                                                                        x.InsertedDate.Month == today.Month &&
+                                                                        x.InsertedDate.Year == today.Year).ToList();
 
             childCount = childrenCaregiver.Count + childrenMother.Count;
 
             return childCount;
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public List<Visit> GetInfantVisits(
+            [Service] IHttpContextAccessor contextAccessor,
+            [Service] IGenericRepositoryFactory repoFactory,
+            string id)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var visitRepo = repoFactory.CreateGenericRepository<Visit>(userContext: uId);
+            var visitTypeRepo = repoFactory.CreateGenericRepository<VisitType>(userContext: uId);
+
+            List<Visit> infantsVisits = new List<Visit>();
+            infantsVisits = (
+                from visit in visitRepo.GetAll().Where(x => x.Infant.UserId.Equals(id)).OrderBy(x => x.PlannedVisitDate)
+                join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals("child")) on visit.VisitTypeId equals visitType.Id
+                select visit
+            ).ToList();
+
+            return infantsVisits;
         }
 
     }

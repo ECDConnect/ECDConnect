@@ -41,6 +41,8 @@ import OnlineOnlyModal from '../../../../../modals/offline-sync/online-only-moda
 import { practitionerSelectors } from '@/store/practitioner';
 import { classroomsSelectors } from '@/store/classroom';
 
+const playgroupId = 'c8858630-bb66-4d93-b93f-295cf7cd9ed5';
+
 export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
   isNew,
   playgroup,
@@ -296,26 +298,26 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
           />
         </div>
       </div>
-      <div className="mt-1">
-        <span className={styles.label}>
-          Do children attend this{' '}
-          {programmeType ? programmeType?.description : 'class'} for half the
-          day or the full day?
-        </span>
-        <div className="mt-2">
-          <ButtonGroup<boolean>
-            onOptionSelected={(value: boolean | boolean[]) =>
-              setPlaygroupFormValue('isFullDay', value as boolean, {
-                shouldValidate: true,
-              })
-            }
-            type={ButtonGroupTypes.Button}
-            options={dayTypes}
-            selectedOptions={isFullDay}
-            color="secondary"
-          />
+      {programmeType?.id === playgroupId && (
+        <div className="mt-1">
+          <span className={styles.label}>
+            Do children attend this playgroup for half the day or the full day?
+          </span>
+          <div className="mt-2">
+            <ButtonGroup<boolean>
+              onOptionSelected={(value: boolean | boolean[]) =>
+                setPlaygroupFormValue('isFullDay', value as boolean, {
+                  shouldValidate: true,
+                })
+              }
+              type={ButtonGroupTypes.Button}
+              options={dayTypes}
+              selectedOptions={isFullDay}
+              color="secondary"
+            />
+          </div>
         </div>
-      </div>
+      )}
       <Divider className="mt-4 mb-2" />
       <>
         <Button

@@ -1,4 +1,4 @@
-import { MotherDto, Config } from '@ecdlink/core';
+import { MotherDto, Config, VisitDto } from '@ecdlink/core';
 import { EventRecordType, MotherModelInput } from '@ecdlink/graphql';
 import { api } from '../axios.helper';
 class MotherService {
@@ -14,12 +14,19 @@ class MotherService {
       query: `
         query GetAllMothersForHealthCareWorker($id: String) {
           allMothersForHealthCareWorker(id: $id) {
+            statusInfo {
+              icon
+              color
+              notes
+              subject
+            }
             user {
               id
               firstName
               surname
               phoneNumber
             }
+            insertedDate
             expectedDateOfDelivery
             siteAddress {
               id
@@ -188,16 +195,21 @@ class MotherService {
     return response.data.data.motherVisits;
   }
 
-  async getMotherVisits(id: string): Promise<any> {
+  async getMotherVisits(id: string): Promise<VisitDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
-    const response = await apiInstance.post<any>(``, {
+    const response = await apiInstance.post<{
+      data: { motherVisits: VisitDto[] };
+    }>(``, {
       query: `
         query GetMotherVisits($userId: String) {
           motherVisits(id: $userId) {
+              actualVisitDate,
               plannedVisitDate,
               attended,
               visitType{
-                  normalizedName
+                id
+                order
+                normalizedName
               }        
           }
         }

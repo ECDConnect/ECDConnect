@@ -8,6 +8,8 @@ export interface UserAlertListDataItem extends ListItem {
   id?: string;
   avatarColor: string;
   alertSeverity: AlertSeverityType;
+  alertSeverityNoneIcon?: string;
+  alertSeverityNoneColor?: Colours;
   profileDataUrl?: string;
   profileText?: string;
   menuIconClassName?: string;

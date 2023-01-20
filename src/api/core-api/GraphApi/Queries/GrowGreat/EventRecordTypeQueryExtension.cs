@@ -24,12 +24,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var eventRecordTypeRepo = repoFactory.CreateGenericRepository<EventRecordType>(userContext: uId);
             // getting all the parents without children
-            List<EventRecordType> eventRecordTypes = eventRecordTypeRepo.GetAll().Where(x => x.ParentId.HasValue).OrderBy(x => x.NormalizedName).ToList();
+            List<EventRecordType> eventRecordTypes = eventRecordTypeRepo.GetAll().Where(x => x.ParentId.Equals(null)).OrderBy(x => x.NormalizedName).ToList();
 
             foreach (var eventType in eventRecordTypes)
             {
                 // get all children for parents
-                eventType.Children = (ICollection<EventRecordChildType>)eventRecordTypeRepo.GetAll().Where(x => x.ParentId.Equals(eventType.Id)).OrderBy(x => x.NormalizedName).ToList();
+                var children = eventRecordTypeRepo.GetAll().Where(x => x.ParentId.Equals(eventType.Id)).ToList();
+                eventType.Children = children;
             }
             return eventRecordTypes;
         }
@@ -43,12 +44,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var eventRecordTypeRepo = repoFactory.CreateGenericRepository<EventRecordType>(userContext: uId);
             // getting all the parents without children
-            List<EventRecordType> eventRecordTypes = eventRecordTypeRepo.GetAll().Where(x => x.ParentId.HasValue && x.Type == type).OrderBy(x => x.NormalizedName).ToList();
+            List<EventRecordType> eventRecordTypes = eventRecordTypeRepo.GetAll().Where(x => x.Type == type && x.ParentId.Equals(null)).OrderBy(x => x.NormalizedName).ToList();
 
             foreach (var eventType in eventRecordTypes)
             {
                 // get all children for parents
-                eventType.Children = (ICollection<EventRecordChildType>)eventRecordTypeRepo.GetAll().Where(x => x.ParentId.Equals(eventType.Id) && x.Type == type).OrderBy(x => x.NormalizedName).ToList();
+               var children = eventRecordTypeRepo.GetAll().Where(x => x.ParentId.Equals(eventType.Id)).ToList();
+               eventType.Children = children;
             }
             return eventRecordTypes;
         }

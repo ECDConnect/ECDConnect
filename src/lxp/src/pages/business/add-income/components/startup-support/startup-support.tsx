@@ -56,12 +56,8 @@ export const StartupSupport: React.FC<AddIncomeState> = ({ setType }) => {
         <Alert
           type={'info'}
           title={
-            'Funding organised by SmartStart to support your business at its start. This may come from SmartStart or partners. Your start-up support information has been filled in below.'
+            'Funding organised by SmartStart to support your business at its start. This may come from SmartStart or partners.'
           }
-          list={[
-            'If the information is incorrect, please edit it.',
-            'If you edit the information, SmartStart will be notified to change the information they have for you.',
-          ]}
           className="mt-4 mb-2"
         />
         <Typography
@@ -90,6 +86,7 @@ export const StartupSupport: React.FC<AddIncomeState> = ({ setType }) => {
           register={register}
           placeholder={'e.g. Paid for two months'}
           className="mt-2"
+          type={'number'}
         />
         <Alert
           type={'info'}

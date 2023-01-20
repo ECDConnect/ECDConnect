@@ -84,7 +84,7 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
       ?.map((p) => {
         if (p?.user?.firstName) {
           return {
-            label: `${p?.user?.firstName}`,
+            label: `${p?.user?.fullName}` || `${p?.user?.firstName}`,
             value: p.id,
           };
         }

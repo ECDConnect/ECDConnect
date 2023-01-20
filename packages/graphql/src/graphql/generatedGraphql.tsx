@@ -1904,6 +1904,7 @@ export type Infant = {
   lengthAtBirth?: Maybe<Scalars['Decimal']>;
   mother?: Maybe<Mother>;
   motherCaregiverId?: Maybe<Scalars['UUID']>;
+  statusInfo?: Maybe<DisplaySet>;
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
   user?: Maybe<ApplicationUser>;
@@ -1924,6 +1925,7 @@ export type InfantFilterInput = {
   mother?: InputMaybe<MotherFilterInput>;
   motherCaregiverId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   or?: InputMaybe<Array<InfantFilterInput>>;
+  statusInfo?: InputMaybe<DisplaySetFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   user?: InputMaybe<ApplicationUserFilterInput>;
@@ -1941,6 +1943,7 @@ export type InfantInput = {
   LengthAtBirth?: InputMaybe<Scalars['Decimal']>;
   Mother?: InputMaybe<MotherInput>;
   MotherCaregiverId?: InputMaybe<Scalars['UUID']>;
+  StatusInfo?: InputMaybe<DisplaySetInput>;
   UpdatedBy?: InputMaybe<Scalars['String']>;
   User?: InputMaybe<ApplicationUserInput>;
   UserId?: InputMaybe<Scalars['String']>;
@@ -2317,6 +2320,7 @@ export type MotherModelInput = {
 export type Mutation = {
   __typename?: 'Mutation';
   addAbsenteeForPractitioner?: Maybe<Absentees>;
+  addAdditionalVisitForInfant?: Maybe<Visit>;
   addAdditionalVisitForMother?: Maybe<Visit>;
   addClinic?: Maybe<Clinic>;
   addCoachToFranchisor?: Maybe<Coach>;
@@ -2623,6 +2627,10 @@ export type MutationAddAbsenteeForPractitionerArgs = {
   practitionerId?: InputMaybe<Scalars['String']>;
   reason?: InputMaybe<Scalars['String']>;
   reassignedToPractitioner?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationAddAdditionalVisitForInfantArgs = {
+  input?: InputMaybe<VisitModelInput>;
 };
 
 export type MutationAddAdditionalVisitForMotherArgs = {
@@ -5014,6 +5022,7 @@ export type Query = {
   holidaysByMonth?: Maybe<Array<Maybe<Holiday>>>;
   holidaysByYear?: Maybe<Array<Maybe<Holiday>>>;
   infantCountForHealthCareWorkerForMonth: Scalars['Int'];
+  infantVisits?: Maybe<Array<Maybe<Visit>>>;
   lastPractitionerInviteDate?: Maybe<Scalars['String']>;
   mapPractitionerToPrincipal?: Maybe<Principal>;
   monthlyAttendanceRecordCSV?: Maybe<FileModel>;
@@ -6003,6 +6012,10 @@ export type QueryInfantCountForHealthCareWorkerForMonthArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
+export type QueryInfantVisitsArgs = {
+  id?: InputMaybe<Scalars['String']>;
+};
+
 export type QueryLastPractitionerInviteDateArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
@@ -6486,7 +6499,6 @@ export type SettingsType = {
   BulkSms: Setting_BulkSms;
   Children: Setting_Children;
   Google: Setting_Google;
-  Holder?: Maybe<Scalars['String']>;
   IntegrationDelay: Setting_IntegrationDelay;
   InvitationCutoffDelay: Setting_InvitationCutoffDelay;
   Invitations: Setting_Invitations;

@@ -5,24 +5,28 @@ import {
   DialogPosition,
   UserAlertListDataItem,
   ActionModal,
+  AlertSeverityType,
 } from '@ecdlink/ui';
 import { format } from 'date-fns';
 import { useDialog, getAvatarColor, MotherDto } from '@ecdlink/core';
 import { IconInformationIndicator } from '@/components/icon-information-indicator/icon-information-indicator';
 import * as styles from './infant-list.styles';
 import { useSelector } from 'react-redux';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import ROUTES from '@/routes/routes';
 import { useHistory } from 'react-router-dom';
 import { getInfants } from '@/store/infant/infant.selectors';
-import { motherSelectors } from '@/store/mother';
+import { motherSelectors, motherThunkActions } from '@/store/mother';
 import Infant from '@/assets/infant.svg';
 import Pregnant from '@/assets/pregnant.svg';
 import { ReactComponent as BinocularsIcon } from '@/assets/binocularsIcon.svg';
 import { PREGNANT_PROFILE_TABS } from '@/pages/mom/pregnant-profile';
+import { useAppDispatch } from '@/store';
 
 export const ClientList: React.FC<ComponentBaseProps> = () => {
   const dialog = useDialog();
+
+  const appDispatch = useAppDispatch();
 
   const history = useHistory();
 
@@ -130,20 +134,18 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
     [dialog, navigate]
   );
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const mothersList: UserAlertListDataItem[] = mothers.map((mother) => {
       return {
         icon: Pregnant,
         title: mother?.firstName || mother?.user?.firstName!,
-        // TODO: add correct subTitle (alert status)
-        subTitle: mother?.expectedDateOfDelivery
-          ? `Expected delivery date: ${format(
-              new Date(mother?.expectedDateOfDelivery!),
-              'PP'
-            )}`
-          : `Expected delivery date: -`,
+        subTitle: mother.statusInfo?.subject,
         switchTextStyles: true,
-        alertSeverity: 'none',
+        alertSeverity:
+          (mother.statusInfo?.color?.toLocaleLowerCase() as AlertSeverityType) ||
+          'none',
+        alertSeverityNoneIcon: 'CalendarIcon',
+        alertSeverityNoneColor: 'black',
         avatarColor: getAvatarColor('growgreat') || '',
         onActionClick: () => showClientProfileDialog(mother),
       };
@@ -200,6 +202,10 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
   const goToClientFolders = () => {
     showCompleteProfileBlockingDialog();
   };
+
+  useLayoutEffect(() => {
+    appDispatch(motherThunkActions.getMothers({})).unwrap();
+  }, [appDispatch]);
 
   return (
     <div className={styles.overlay}>

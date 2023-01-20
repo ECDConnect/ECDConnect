@@ -26,6 +26,8 @@ import { PregnantProfile } from '@/pages/mom/pregnant-profile';
 import { RecordEvent } from '@/pages/mom/pregnant-profile/visits/record-event';
 import { StartVisit } from '@/pages/mom/pregnant-profile/visits/start-visit';
 import { BookVisit } from '@/pages/mom/pregnant-profile/visits/book-visit';
+import { PastVisits } from '@/pages/mom/pregnant-profile/visits/past-visits';
+import { AntenatalVisit } from '@/pages/mom/pregnant-profile/visits/antenatal-visit';
 
 function PublicRoutes() {
   return (
@@ -108,6 +110,16 @@ function AuthRoutes() {
         exact
         path={ROUTES.CLIENTS.MOM_PROFILE.VISITS.BOOK_VISIT}
         component={BookVisit}
+      />
+      <Route
+        exact
+        path={ROUTES.CLIENTS.MOM_PROFILE.VISITS.PAST_VISITS}
+        component={PastVisits}
+      />
+      <Route
+        exact
+        path={ROUTES.CLIENTS.MOM_PROFILE.VISITS.ANTENATAL_VISIT}
+        component={AntenatalVisit}
       />
       <Route
         exact

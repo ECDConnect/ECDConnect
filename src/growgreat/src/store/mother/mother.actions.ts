@@ -1,4 +1,4 @@
-import { MotherDto, SiteAddressDto } from '@ecdlink/core';
+import { MotherDto, SiteAddressDto, VisitDto } from '@ecdlink/core';
 import {
   EventRecordType,
   MotherModelInput,
@@ -27,31 +27,26 @@ export const getMothers = createAsyncThunk<
 >(MotherActions.GET_MOTHERS, async (_, { getState, rejectWithValue }) => {
   const {
     auth: { userAuth },
-    mothers: { mothers: mothersCache },
   } = getState();
 
-  if (!mothersCache) {
-    try {
-      let mothers: MotherDto[] | undefined;
+  try {
+    let mothers: MotherDto[] | undefined;
 
-      if (userAuth?.auth_token) {
-        mothers = await new MotherService(userAuth?.auth_token).getMothers(
-          userAuth.id
-        );
-      } else {
-        return rejectWithValue('no access token, profile check required');
-      }
-
-      if (!mothers) {
-        return rejectWithValue('Error getting mothers');
-      }
-
-      return mothers;
-    } catch (err) {
-      return rejectWithValue(err);
+    if (userAuth?.auth_token) {
+      mothers = await new MotherService(userAuth?.auth_token).getMothers(
+        userAuth.id
+      );
+    } else {
+      return rejectWithValue('no access token, profile check required');
     }
-  } else {
-    return mothersCache;
+
+    if (!mothers) {
+      return rejectWithValue('Error getting mothers');
+    }
+
+    return mothers;
+  } catch (err) {
+    return rejectWithValue(err);
   }
 });
 
@@ -208,7 +203,7 @@ export const addAdditionalVisitForMother = createAsyncThunk<
 );
 
 export const getMotherVisits = createAsyncThunk<
-  any[], // TODO: add type
+  VisitDto[],
   { motherId: string },
   ThunkApiType<RootState>
 >(
@@ -219,7 +214,7 @@ export const getMotherVisits = createAsyncThunk<
     } = getState();
 
     try {
-      let visits: any[];
+      let visits: VisitDto[];
 
       if (userAuth?.auth_token) {
         visits = await new MotherService(userAuth?.auth_token).getMotherVisits(

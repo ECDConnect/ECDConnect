@@ -38,9 +38,10 @@ export const AddAmount: React.FC<ComponentBaseProps> = () => {
           >
             {renderIcon('PlusIcon', styles.buttonIconPrimary)}
             <Typography
-              type="help"
+              type="buttonSmall"
               color="white"
               text={'Income (money in)'}
+              className={'w-full whitespace-nowrap'}
             ></Typography>
           </Button>
           <Button
@@ -51,9 +52,10 @@ export const AddAmount: React.FC<ComponentBaseProps> = () => {
           >
             {renderIcon('MinusIcon', styles.buttonIconSecondary)}
             <Typography
-              type="help"
+              type="buttonSmall"
               color="primary"
               text={'Expenses (money out)'}
+              className={'w-full whitespace-nowrap'}
             ></Typography>
           </Button>
         </div>

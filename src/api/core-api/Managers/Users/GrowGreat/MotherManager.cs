@@ -47,12 +47,12 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
             var mother = GetMotherFromInputModel(input);
             var repository = _repoFactory.CreateGenericRepository<Mother>(userContext: applicationUserId);
-
-            if (mother != null)
+            var createdMom = repository.Insert(mother);
+            if (createdMom != null)
             {
-                AddVisits(mother.Id, mother.ExpectedDateOfDelivery, mother.InsertedDate);
+                AddVisits(createdMom.Id, createdMom.ExpectedDateOfDelivery, createdMom.InsertedDate);
             }
-            return repository.Insert(mother);
+            return createdMom;
         }
 
         public Mother UpdateMother(string id, MotherModel input)
@@ -84,6 +84,14 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
             var healthCareWorkerId = _healthCareWorkerManager.GetHealthCareWorkerIdByUserId(applicationUserId);
             var motherUser = GetUserFromInputModel(input);
+
+            // Populate province id with N/A option when site address is null
+            if (input.SiteAddressId == null)
+            {
+                var repository = _repoFactory.CreateGenericRepository<Province>(userContext: applicationUserId);
+                var naProvince = repository.GetAll().Where(x => x.Description.Equals("N/A")).FirstOrDefault();
+                input.SiteAddress.ProvinceId = naProvince.Id;
+            }
 
             return new Mother()
             {
