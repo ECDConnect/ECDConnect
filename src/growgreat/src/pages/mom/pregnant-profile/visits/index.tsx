@@ -64,6 +64,8 @@ export const Visits: React.FC = () => {
   );
 
   const visitSteps = useMemo(() => {
+    const someAttendedVisit = visits.some((item) => item.attended);
+
     const array: StepItem[] = visits.map((item) => {
       const date = new Date(item.plannedVisitDate);
 
@@ -99,12 +101,19 @@ export const Visits: React.FC = () => {
     });
 
     array.unshift({
-      title: 'Folder opened',
-      subTitle: `${insertedDate.getDate()} ${insertedDate.toLocaleString(
-        'default',
-        { month: 'long' }
-      )} ${insertedDate.getFullYear()}`,
+      title: someAttendedVisit ? 'Past visits' : 'Folder opened',
+      subTitle: someAttendedVisit
+        ? ''
+        : `${insertedDate.getDate()} ${insertedDate.toLocaleString('default', {
+            month: 'long',
+          })} ${insertedDate.getFullYear()}`,
       type: 'completed',
+      showActionButton: someAttendedVisit,
+      actionButtonText: 'See info',
+      actionButtonTextColor: 'secondary',
+      actionButtonColor: 'secondaryAccent2',
+      actionButtonOnClick: () =>
+        history.push(`${location.pathname}/past-visits`),
     });
 
     return array;

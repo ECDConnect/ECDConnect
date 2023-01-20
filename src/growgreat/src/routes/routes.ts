@@ -30,6 +30,8 @@ const ROUTES = {
         RECORD_EVENT: '/:id/record-event',
         START_VISIT: '/:id/start-visit',
         BOOK_VISIT: '/:id/book-visit',
+        PAST_VISITS: '/:id/past-visits',
+        ANTENATAL_VISIT: '/:id/antenatal-visit',
       },
     }),
     VISIT: {
