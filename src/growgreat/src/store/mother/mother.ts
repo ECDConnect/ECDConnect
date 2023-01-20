@@ -1,10 +1,12 @@
 import { MotherDto } from '@ecdlink/core';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
+import { addEventRecord } from '../eventRecord/eventRecord.actions';
 import { getInfantCountForMonth } from '../infant/infant.actions';
 import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
 import {
   addMother,
+  getAllMotherEventRecordTypes,
   getMotherCountForMonth,
   getMothers,
   getMotherVisits,
@@ -55,6 +57,18 @@ const motherSlice = createSlice({
     });
     builder.addCase(getMotherVisits.fulfilled, (state, action) => {
       state.visits = action.payload;
+    });
+    builder.addCase(getAllMotherEventRecordTypes.fulfilled, (state, action) => {
+      state.eventRecordTypes = action.payload;
+    });
+    builder.addCase(addEventRecord.fulfilled, (state, action) => {
+      const motherId = action.payload?.input?.motherId;
+
+      if (motherId && action.payload.isCloseFolder) {
+        state.mothers = state.mothers?.filter(
+          (item) => item.user?.id !== motherId
+        );
+      }
     });
   },
 });

@@ -43,6 +43,10 @@ import {
   healthCareWorkerPersistConfig,
   healthCareWorkerReducer,
 } from '../healthCareWorker/healthCareWorker';
+import {
+  eventRecordPersistConfig,
+  eventRecordReducer,
+} from '../eventRecord/eventRecord';
 
 const persistedReducers = {
   analytics: persistReducer(analyticsPersistConfig, analyticsReducer),
@@ -62,6 +66,7 @@ const persistedReducers = {
   staticData: persistReducer(staticDataPersistConfig, staticDataReducer),
   sync: syncReducer,
   user: persistReducer(userPersistConfig, userReducer),
+  eventRecord: persistReducer(eventRecordPersistConfig, eventRecordReducer),
 };
 
 const rootReducer = combineReducers(persistedReducers);

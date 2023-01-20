@@ -1,3 +1,4 @@
+import { ReactElement } from 'react';
 import { Colours, ComponentBaseProps } from '../../models';
 import { renderIcon } from '../../utils';
 import Button from '../button/button';
@@ -12,6 +13,8 @@ export interface ActionModalProps extends ComponentBaseProps {
   icon?: string;
   iconColor?: Colours;
   iconBorderColor?: Colours;
+  iconClassName?: string;
+  customIcon?: ReactElement;
   title?: string;
   importantText?: string;
   detailText?: string;
@@ -27,6 +30,8 @@ export const ActionModal: React.FC<ActionModalProps> = ({
   icon = '',
   iconColor = 'errorMain',
   iconBorderColor = 'white',
+  iconClassName,
+  customIcon,
   title = '',
   importantText = '',
   detailText = '',
@@ -48,11 +53,13 @@ export const ActionModal: React.FC<ActionModalProps> = ({
           : textAlignment
       )}
     >
-      {icon?.length > 0 && (
+      {customIcon}
+      {!customIcon && icon?.length > 0 && (
         <IconWrapper
           icon={icon}
           iconBorderColor={iconBorderColor}
           iconColor={iconColor}
+          className={iconClassName}
         />
       )}
       {title?.length > 0 && (
