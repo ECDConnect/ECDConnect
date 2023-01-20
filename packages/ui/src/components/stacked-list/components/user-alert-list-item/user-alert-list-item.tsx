@@ -56,7 +56,7 @@ export const UserAlertListItem: React.FC<UserAlertListItemProps> = ({
     >
       <div className={styles.contentWrapper}>
         <div className={stackedListStyles.textRowsWrapper}>
-          {renderAvatar}
+          <div>{renderAvatar}</div>
           <div className={stackedListStyles.paragraphWrapper}>
             <div>
               <Typography
