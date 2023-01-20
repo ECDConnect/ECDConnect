@@ -42,4 +42,11 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public HealthCareWorker HealthCareWorker { get; set; }
         public TKey HealthCareWorkerId { get; set; }
     }
+
+    public class HCWVisitStatus
+    {
+        public int MotherOverDueVisits { get; set; }
+        public int MotherDueVisits { get; set; }
+        public int ChildDueVisits { get; set; }
+    }
 }
