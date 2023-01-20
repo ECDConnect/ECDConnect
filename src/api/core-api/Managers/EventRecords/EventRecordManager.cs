@@ -1,5 +1,6 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models;
 using ECDLink.DataAccessLayer.Entities.EventRecords;
+using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.Security.Extensions;
 using HotChocolate;
@@ -84,6 +85,15 @@ namespace EcdLink.Api.CoreApi.Managers.EventRecords
             var repository = _repoFactory.CreateGenericRepository<EventRecord>(userContext: applicationUserId);
             var eventRecord = GetEventRecordFromInputModel(input, applicationUserId);
 
+            if (eventRecord != null && eventRecord.InfantId != Guid.Empty)
+            {
+                ArchiveInfant(eventRecord.InfantId);
+            }
+            if (eventRecord != null && eventRecord.MotherId != Guid.Empty)
+            {
+                ArchiveMother(eventRecord.InfantId);
+            }
+
             return repository.Insert(eventRecord);
         }
 
@@ -99,6 +109,15 @@ namespace EcdLink.Api.CoreApi.Managers.EventRecords
             entityToUpdate.MotherId = input.MotherId;
             entityToUpdate.InfantId = input.InfantId;
             entityToUpdate.LinkedVisitId = new Guid(input.LinkedVisitId);
+
+            if (entityToUpdate != null && entityToUpdate.InfantId != Guid.Empty)
+            {
+                ArchiveInfant(entityToUpdate.InfantId);
+            }
+            if (entityToUpdate != null && entityToUpdate.MotherId != Guid.Empty)
+            {
+                ArchiveMother(entityToUpdate.InfantId);
+            }
 
             return repository.Update(entityToUpdate);
         }
@@ -123,6 +142,24 @@ namespace EcdLink.Api.CoreApi.Managers.EventRecords
                 InfantId = input.InfantId,
                 LinkedVisitId = new Guid(input.LinkedVisitId)
             };
+        }
+
+        private void ArchiveMother(Guid? motherId)
+        {
+            var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
+            var repository = _repoFactory.CreateGenericRepository<Mother>(userContext: applicationUserId);
+            var entityToUpdate = repository.GetAll().Where(x => x.Id.Equals(motherId)).OrderBy(x => x.Id).FirstOrDefault();
+            entityToUpdate.IsActive = false;
+            repository.Update(entityToUpdate);
+        }
+
+        private void ArchiveInfant(Guid? infantId)
+        {
+            var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
+            var repository = _repoFactory.CreateGenericRepository<Infant>(userContext: applicationUserId);
+            var entityToUpdate = repository.GetAll().Where(x => x.Id.Equals(infantId)).OrderBy(x => x.Id).FirstOrDefault();
+            entityToUpdate.IsActive = false;
+            repository.Update(entityToUpdate);
         }
 
     }

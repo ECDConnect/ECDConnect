@@ -19,29 +19,25 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
     public class HealthCareWorkerQueryExtension
     {
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public List<HealthCareWorker> GetAllHealthCareWorkers([Service] IHttpContextAccessor contextAccessor,
-         [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
-         [Service] IGenericRepositoryFactory repoFactory)
+        public List<HealthCareWorker> GetAllHealthCareWorkers(
+            [Service] IHttpContextAccessor contextAccessor,
+            [Service] IGenericRepositoryFactory repoFactory)
         {
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
-            var healthCareWorkerRepo = repoFactory.CreateRepository<HealthCareWorker>(userContext: uId);
+            var healthCareWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: uId);
             List<HealthCareWorker> healthCareWorkers = healthCareWorkerRepo.GetAll().ToList();
 
             return healthCareWorkers;
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public HealthCareWorker GetHealthCareWorkerByUserId([Service] IHttpContextAccessor contextAccessor,
-         [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
-         [Service] IGenericRepositoryFactory repoFactory,
-         string userId)
+        public HealthCareWorker GetHealthCareWorkerByUserId(
+            [Service] IHttpContextAccessor contextAccessor,
+            [Service] IGenericRepositoryFactory repoFactory,
+            string userId)
         {
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
-            var healthCareWorkerRepo = repoFactory.CreateRepository<HealthCareWorker>(userContext: uId);
+            var healthCareWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: uId);
             HealthCareWorker healthCareWorker = healthCareWorkerRepo.GetAll().Where(x => x.UserId.Equals(userId)).FirstOrDefault();
 
             return healthCareWorker;
