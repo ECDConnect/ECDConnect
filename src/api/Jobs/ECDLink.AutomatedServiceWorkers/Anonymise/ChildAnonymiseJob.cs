@@ -7,7 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ECDLink.AutomatedJobs.Anonymise
+namespace ECDLink.AutomatedServiceWorkers.Anonymise
 {
     public class ChildAnonymiseJob : CronJobService
     {

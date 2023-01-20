@@ -14,6 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\core-api\EcdLink.Api.CoreApi.csproj" />
     <ProjectReference Include="..\..\ECDLink.Tenancy\ECDLink.Tenancy.csproj" />
     <ProjectReference Include="..\..\Libraries\Modules\ECDLink.DataAccessLayer\ECDLink.DataAccessLayer.csproj" />
     <ProjectReference Include="..\..\Libraries\Modules\ECDLink.SmartStart\ECDLink.SmartStart.csproj" />
