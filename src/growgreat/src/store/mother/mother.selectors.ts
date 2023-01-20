@@ -1,4 +1,4 @@
-import { MotherDto } from '@ecdlink/core';
+import { MotherDto, VisitDto } from '@ecdlink/core';
 import { RootState } from '../types';
 
 export const getMothers = (state: RootState): MotherDto[] =>
@@ -12,12 +12,6 @@ export const getMotherById = (
 
 export const getMotherCountForMonth = (state: RootState): number =>
   state.mothers.motherCountForMonth || 0;
-// export const getCaregiverById = (id?: string) =>
-//   createSelector(
-//     (state: RootState) => state.caregivers.caregivers,
-//     (caregivers: CaregiverDto[] | undefined) => {
-//       if (!caregivers || !id) return;
 
-//       return caregivers.find((caregiver) => caregiver.id === id);
-//     }
-//   );
+export const getMotherVisits = (state: RootState): VisitDto[] =>
+  state.mothers.visits || [];

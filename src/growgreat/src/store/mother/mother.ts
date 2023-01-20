@@ -7,6 +7,7 @@ import {
   addMother,
   getMotherCountForMonth,
   getMothers,
+  getMotherVisits,
 } from './mother.actions';
 import { MotherState } from './mother.types';
 
@@ -44,14 +45,16 @@ const motherSlice = createSlice({
       setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(getMothers.fulfilled, (state, action) => {
-      if (!state.mothers) {
-        const mothers = Object.assign([], action.payload) as MotherDto[];
+      const mothers = Object.assign([], action.payload) as MotherDto[];
 
-        for (let i = 0; i < mothers.length; i++) {
-          mothers[i].isActive = true;
-        }
-        state.mothers = mothers;
+      for (let i = 0; i < mothers.length; i++) {
+        mothers[i].isActive = true;
       }
+
+      state.mothers = mothers;
+    });
+    builder.addCase(getMotherVisits.fulfilled, (state, action) => {
+      state.visits = action.payload;
     });
   },
 });

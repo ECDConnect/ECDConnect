@@ -12,6 +12,7 @@ export interface StepItem {
   showActionButton?: boolean;
   actionButtonText?: string;
   actionButtonIcon?: string;
+  actionButtonOnClick?: () => void;
 }
 
 interface StepsProps {
@@ -132,7 +133,7 @@ export const Steps = ({ items }: StepsProps) => {
               {...(item.actionButtonIcon && { icon: item.actionButtonIcon })}
               iconPosition="end"
               className="h-9 w-32"
-              onClick={() => {}}
+              onClick={item.actionButtonOnClick}
               text={item.actionButtonText}
               textColor="white"
             />
