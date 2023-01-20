@@ -1,5 +1,9 @@
 import { MotherDto, SiteAddressDto } from '@ecdlink/core';
-import { MotherModelInput, SiteAddressInput } from '@ecdlink/graphql';
+import {
+  EventRecordType,
+  MotherModelInput,
+  SiteAddressInput,
+} from '@ecdlink/graphql';
 
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { MotherService } from '@services/MotherService';
@@ -9,6 +13,7 @@ import { RootState, ThunkApiType } from '../types';
 export const MotherActions = {
   GET_MOTHERS: 'getMothers',
   GET_MOTHER_VISITS: 'getMotherVisits',
+  GET_MOTHER_EVENT_RECORD_TYPES: 'getMotherEventRecordTypes',
   ADD_MOTHER: 'addMother',
   ADD_ADDITIONAL_MOTHER_VISIT: 'addAdditionalMotherVisit',
   GET_MOTHER_COUNT_FOR_MONTH: 'getMotherCountForMonth',
@@ -225,6 +230,35 @@ export const getMotherVisits = createAsyncThunk<
       }
 
       return visits;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getAllMotherEventRecordTypes = createAsyncThunk<
+  EventRecordType[],
+  undefined,
+  ThunkApiType<RootState>
+>(
+  MotherActions.GET_MOTHER_EVENT_RECORD_TYPES,
+  async (_, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      let eventRecordTypes: EventRecordType[];
+
+      if (userAuth?.auth_token) {
+        eventRecordTypes = await new MotherService(
+          userAuth?.auth_token
+        ).getAllMotherEventRecordTypes();
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      return eventRecordTypes;
     } catch (err) {
       return rejectWithValue(err);
     }
