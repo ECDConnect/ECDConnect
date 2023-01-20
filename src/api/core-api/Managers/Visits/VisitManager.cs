@@ -1,10 +1,13 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+using ECDLink.Core.Extensions;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
+using NPOI.SS.Formula.Functions;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace EcdLink.Api.CoreApi.Managers.Visits
@@ -155,6 +158,50 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
 
             return message;
+        }
+
+        public int GetMissedVisitsForHCWCount(string HCWId, string type)
+        {
+            var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
+            var visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: applicationUserId);
+            var visitCount = 0;
+            DateTime today = DateTime.Today;
+            DateTime monday = StartOfWeek(today, DayOfWeek.Monday);
+            DateTime friday = StartOfWeek(today, DayOfWeek.Friday);
+
+            if (type == "mother")
+            {
+                visitCount = visitRepo.GetAll().Where(x => x.Mother.HealthCareWorker.UserId.Equals(HCWId) && !x.Attended && x.PlannedVisitDate >= monday && x.PlannedVisitDate <= today).Count();
+            }
+
+            return visitCount;
+        }
+
+        public int GetVisitsDueForHCWCount(string HCWId, string type)
+        {
+            var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
+            var visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: applicationUserId);
+            var visitCount = 0;
+            DateTime today = DateTime.Today;
+            DateTime monday = StartOfWeek(today, DayOfWeek.Monday);
+            DateTime sunday = monday.AddDays(6);
+
+            if (type == "mother")
+            {
+                visitCount = visitRepo.GetAll().Where(x => x.Mother.HealthCareWorker.UserId.Equals(HCWId) && !x.Attended && x.PlannedVisitDate >= monday && x.PlannedVisitDate <= sunday).Count();
+            }
+            else
+            {
+                visitCount = visitRepo.GetAll().Where(x => x.Infant.Caregiver.HealthCareWorker.UserId.Equals(HCWId) && !x.Attended && x.PlannedVisitDate >= monday && x.PlannedVisitDate <= sunday).Count();
+            }
+
+            return visitCount;
+        }
+
+        public static DateTime StartOfWeek(DateTime dt, DayOfWeek startOfWeek)
+        {
+            int diff = (7 + (dt.DayOfWeek - startOfWeek)) % 7;
+            return dt.AddDays(-1 * diff).Date;
         }
     }
 }
