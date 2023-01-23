@@ -18,11 +18,13 @@ namespace ECDLink.DataAccessLayer.Entities.IncomeStatements
         public string Notes { get; set; }
         public int Month { get; set; }
         public int Year { get; set; }
+        public int Period { get; set; }
         public bool Submitted { get; set; }
         public decimal IncomeTotal { get; set; }
         public decimal ExpenseTotal { get; set; }
         public decimal Balance { get; set; }
-        public string Period { get; set; }
+        public DateTime? SubmittedDate { get; set; }
+        public string UserId { get; set; }
 
 
     }

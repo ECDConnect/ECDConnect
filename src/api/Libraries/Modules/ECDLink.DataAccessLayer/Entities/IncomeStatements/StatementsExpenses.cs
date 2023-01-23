@@ -21,8 +21,9 @@ namespace ECDLink.DataAccessLayer.Entities.IncomeStatements
         public string Description { get; set; }
         public string PhotoProof { get; set; }
         public bool Submitted { get; set; }
-        public DateTime DatePaid { get; set; }
+        public DateTime? DatePaid { get; set; }
         public string IncomeStatementId { get; set; }
+        public string UserId { get; set; }
 
     }
 

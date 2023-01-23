@@ -12,7 +12,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ECDLink.AutomatedJobs.Notifications
+namespace ECDLink.AutomatedServiceWorkers.Notifications
 {
     public class LogOnNotificationSender : CronJobService
     {
