@@ -22,7 +22,7 @@ import {
 import { getWeeksPregnant } from '@/utils/mom/pregnant.utils';
 import { useAppDispatch } from '@/store';
 import { motherThunkActions } from '@/store/mother';
-import { useDialog } from '@ecdlink/core';
+import { useDialog, VisitDto } from '@ecdlink/core';
 
 const HEADER_HEIGHT = 64;
 
@@ -45,18 +45,24 @@ export const Visits: React.FC = () => {
 
   const visits = useSelector(getMotherVisits);
 
-  const currentVisit = useMemo(() => {
+  const currentVisit = useMemo((): VisitDto | undefined => {
     const noAttended = visits.filter((item) => !item.attended) || [];
 
-    return (
-      noAttended.length &&
-      noAttended.reduce((prev, curr) =>
-        (prev.visitType?.order || 0) < (curr.visitType?.order || 0)
-          ? prev
-          : curr
-      )
-    );
+    return noAttended.length
+      ? noAttended.reduce((prev, curr) =>
+          (prev.visitType?.order || 0) < (curr.visitType?.order || 0)
+            ? prev
+            : curr
+        )
+      : undefined;
   }, [visits]);
+
+  const currentDate = new Date();
+  const next7Days = new Date(new Date().setDate(currentDate.getDate() + 7));
+  const dateToCheck = currentVisit && new Date(currentVisit?.plannedVisitDate);
+
+  const isWeekDeadline =
+    dateToCheck && dateToCheck >= currentDate && dateToCheck <= next7Days;
 
   const insertedDate = useMemo(
     () => new Date(mother?.insertedDate || ''),
@@ -90,6 +96,8 @@ export const Visits: React.FC = () => {
         subTitle: `By ${date.getDate()} ${date.toLocaleString('default', {
           month: 'long',
         })} ${date.getFullYear()}`,
+        ...(isWeekDeadline &&
+          getType() === 'inProgress' && { subTitleColor: 'alertDark' }),
         inProgressStepIcon: 'CalendarIcon',
         type: getType(),
         showActionButton: getType() === 'inProgress',
@@ -121,6 +129,7 @@ export const Visits: React.FC = () => {
     currentVisit,
     history,
     insertedDate,
+    isWeekDeadline,
     location.pathname,
     mother?.statusInfo?.color,
     visits,
