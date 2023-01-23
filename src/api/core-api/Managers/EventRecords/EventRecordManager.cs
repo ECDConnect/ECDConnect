@@ -1,4 +1,5 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models;
+using EcdLink.Api.CoreApi.Managers.Users.GrowGreat;
 using ECDLink.DataAccessLayer.Entities.EventRecords;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
@@ -14,13 +15,16 @@ namespace EcdLink.Api.CoreApi.Managers.EventRecords
     {
         private IHttpContextAccessor _contextAccessor;
         private IGenericRepositoryFactory _repoFactory;
+        private InfantManager _infantManger;
 
         public EventRecordManager(
             IHttpContextAccessor contextAccessor,
-            IGenericRepositoryFactory repoFactory)
+            IGenericRepositoryFactory repoFactory,
+            InfantManager infantManager)
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
+            _infantManger = infantManager;
         }
 
         //
@@ -131,17 +135,20 @@ namespace EcdLink.Api.CoreApi.Managers.EventRecords
 
             if (input.InfantId != null)
             {
-                var repository = _repoFactory.CreateGenericRepository<Infant>(userContext: applicationUserId);
-                var infant = repository.GetAll().Where(x => x.UserId.Equals(input.InfantId.ToString())).FirstOrDefault();
-                input.InfantId = infant?.Id;
+                var infantId = _infantManger.GetInfantIdByUserId(input.InfantId.ToString());
+
+                if (infantId != null)
+                {
+                    input.InfantId = infantId;
+                }
             }
             if (input.MotherId != null)
             {
                 var repository = _repoFactory.CreateGenericRepository<Mother>(userContext: applicationUserId);
-                var mother = repository.GetAll().Where(x => x.UserId.Equals(input.MotherId.ToString())).FirstOrDefault();
+                Mother mother = repository.GetAll().Where(x => x.UserId.Equals(input.MotherId.ToString())).FirstOrDefault();
                 input.MotherId = mother?.Id;
             }
-           
+
 
             return new EventRecord()
             {
@@ -154,7 +161,7 @@ namespace EcdLink.Api.CoreApi.Managers.EventRecords
                 EventRecordTypeId = (Guid)input.EventRecordTypeId,
                 MotherId = input.MotherId,
                 InfantId = input.InfantId//,
-               // LinkedVisitId = input.LinkedVisitId
+                // LinkedVisitId = input.LinkedVisitId
             };
         }
 
