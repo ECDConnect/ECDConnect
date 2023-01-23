@@ -427,5 +427,17 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             return dateList;
         }
 
+        public Guid? GetInfantIdByUserId(string userId)
+        {
+            var uId = _contextAccessor.HttpContext.GetUser().Id;
+            var repo = _repoFactory.CreateGenericRepository<Infant>(userContext: uId);
+            var infant = repo.GetAll().Where(x => x.UserId == userId).FirstOrDefault();
+            if (infant != null)
+            {
+                return infant.Id;
+            }
+            return null;
+        }
+
     }
 }
