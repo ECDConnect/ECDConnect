@@ -13,12 +13,11 @@ import {
 } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import * as styles from './attendance-tutorial.styles';
-import { AttendanceTutorialProps } from './attendance-tutorial.types';
-import ROUTES from '@/routes/routes';
-import { useHistory } from 'react-router-dom';
+import * as styles from './walktrough-tutorial.styles';
+import { AttendanceTutorialProps } from './walktrough-tutorial.types';
+import Joyride, { CallBackProps, STATUS, Step } from 'react-joyride';
 
-export const AttendanceTutorial = ({
+export const WalktroughTutorial = ({
   onComplete,
   onClose,
 }: AttendanceTutorialProps) => {
@@ -38,7 +37,6 @@ export const AttendanceTutorial = ({
     status: AttendanceStatus.Unknown,
     avatarColor: getAvatarColor(),
   });
-  const history = useHistory();
 
   const [attendanceItem2, setAttendanceItem2] =
     useState<AttendanceListDataItem>({
@@ -103,6 +101,25 @@ export const AttendanceTutorial = ({
     }
   };
 
+  const steps: Step[] = [
+    {
+      target: '#test',
+      content: 'This is my awesome feature!',
+      placement: 'bottom-end',
+      styles: {
+        options: {
+          beaconSize: 2,
+        },
+      },
+    },
+    {
+      target: '#attendance-list',
+      content: 'This another awesome feature!',
+      placement: 'bottom-end',
+      offset: 10,
+    },
+  ];
+
   return (
     <BannerWrapper
       size={'medium'}
@@ -110,79 +127,25 @@ export const AttendanceTutorial = ({
       showBackground={false}
       color={'primary'}
       onBack={onClose}
-      title={'Taking child attendance'}
+      title={'Classroom'}
       className={styles.bannerContentWrapper}
       displayOffline={!isOnline}
+      displayHelp={true}
+      onHelp={() => {}}
     >
-      <div className={'bg-uiBg h-full p-4'}>
-        <Typography
-          color={'textDark'}
-          type={'body'}
-          weight={'bold'}
-          text={'Why take attendance daily?'}
-        />
-        <Typography
-          className={'mt-1'}
-          color={'textMid'}
-          type={'body'}
-          weight={'normal'}
-          text={
-            'To receive your monthly stipend, you need to take and submit attendance every day.'
-          }
-        />
-        <p className={styles.paragraphStyle}>
-          If you submit attendance every day in the month, you will get{' '}
-          <span className={styles.boldText}>100 Top Me Up</span> points!
-        </p>
-        <Typography
-          className={'mt-6'}
-          color={'textMid'}
-          type={'body'}
-          weight={'normal'}
-          text={
-            'This record will also help when you talk to  caregivers about any attendance concerns you have.'
-          }
-        />
-        <Card className="bg-uiBg w-11/12 rounded-2xl">
-          <Typography
-            className={'mt-4'}
-            color={'textDark'}
-            type={'h2'}
-            text={'How can I take attendance on Funda App?'}
-          />
-          <Typography
-            className={'mt-4'}
-            color={'textMid'}
-            type={'body'}
-            text={'How can I take attendance on Funda App?'}
-          />
-          <Button
-            text={`Start walkthrough`}
-            icon={'ArrowCircleRightIcon'}
-            type={'filled'}
-            color={'primary'}
-            textColor={'white'}
-            className={'max-h-10 w-11/12'}
-            iconPosition={'start'}
-            onClick={() => history.push(ROUTES.ATTENDANCE_TUTORIAL_WALKTROUGH)}
-          />
-        </Card>
-      </div>
-      {/* <AttendanceListItem
-        className={'bg-white'}
-        item={attendanceItem}
-        onBadgeClick={(currentAttendanceItem: AttendanceListDataItem) =>
-          updateItemAttendance(currentAttendanceItem)
-        }
-      />
-      <AttendanceListItem
-        className={'bg-white'}
-        item={attendanceItem2}
-        onBadgeClick={(currentAttendanceItem: AttendanceListDataItem) =>
-          updateItemAttendance(currentAttendanceItem)
-        }
-      /> */}
+      <div id="test" className="h-0" />
       <div className={'bg-uiBg px-4 pt-2'}>
+        <Joyride
+          // callback={handleJoyrideCallback}
+          continuous
+          run={true}
+          scrollToFirstStep
+          showProgress
+          showSkipButton
+          // stepIndex={stepIndex}
+          spotlightPadding={10}
+          steps={steps}
+        />
         {!displayTutorialComplete && (
           <Alert title={attendanceBadgeTutorialMessage} type={'info'} />
         )}
@@ -192,44 +155,30 @@ export const AttendanceTutorial = ({
             type={'success'}
           />
         )}
-        <Typography
-          className={'mt-4'}
-          color={'textDark'}
-          type={'body'}
-          weight={'bold'}
-          text={
-            'How can I see and mark attendance for children from other playgroups?'
-          }
-        />
-        <Typography
-          color={'textMid'}
-          type={'body'}
-          weight={'normal'}
-          text={
-            'If a child comes on the wrong day, tap the filter button at the top of the screen to see more playgroups.'
-          }
-        />
-        <div className={'mt-3'}>
-          <SearchDropDown<any>
-            displayMenuOverlay={false}
-            menuItemClassName={styles.dropdownStyles}
-            className={'mr-1'}
-            options={[{ label: 'Playgroup', value: 'Playgroup', id: '1' }]}
-            placeholder={'Playgroups'}
-            pluralSelectionText={'Playgroups'}
-            color={'uiMidDark'}
-            selectedOptions={[
-              { label: 'Playgroup', value: 'Playgroup', id: '1' },
-            ]}
+        <div id="attendance-list">
+          <AttendanceListItem
+            className={'bg-successBg mb-1'}
+            item={attendanceItem}
+            onBadgeClick={(currentAttendanceItem: AttendanceListDataItem) =>
+              updateItemAttendance(currentAttendanceItem)
+            }
+          />
+          <AttendanceListItem
+            className={'bg-successBg mb-1'}
+            item={attendanceItem2}
+            onBadgeClick={(currentAttendanceItem: AttendanceListDataItem) =>
+              updateItemAttendance(currentAttendanceItem)
+            }
           />
         </div>
-        <Typography
-          className={'mt-3'}
-          color={'textMid'}
-          type={'body'}
-          weight={'normal'}
-          text={'Mark the child as present or absent, as shown above.'}
+        <AttendanceListItem
+          className={'bg-errorBg'}
+          item={attendanceItem2}
+          onBadgeClick={(currentAttendanceItem: AttendanceListDataItem) =>
+            updateItemAttendance(currentAttendanceItem)
+          }
         />
+
         <div className={'pt-2.5'}>
           <Divider />
         </div>
@@ -251,4 +200,4 @@ export const AttendanceTutorial = ({
   );
 };
 
-export default AttendanceTutorial;
+export default WalktroughTutorial;

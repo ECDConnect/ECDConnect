@@ -71,6 +71,7 @@ import Business from '@/pages/business/business';
 import AddAmount from '@/pages/business/add-amount/add-amount';
 import { AddIncome } from '@/pages/business/add-income/add-income';
 import { AddExpense } from '@/pages/business/add-amount/add-expense/add-expense';
+import WalktroughTutorial from '@/pages/classroom/attendance/components/attendance-tutorial/walktrough-tutorial/walktrough-tutorial';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -143,6 +144,11 @@ const AuthRoutes: React.FC = () => {
         exact={true}
       />
       <Route path={ROUTES.TRAINING} component={Training} exact={true} />
+      <Route
+        path={ROUTES.ATTENDANCE_TUTORIAL_WALKTROUGH}
+        component={WalktroughTutorial}
+        exact={true}
+      />
       <Route
         exact
         path={ROUTES.PRACTITIONER.ABOUT.ROOT}

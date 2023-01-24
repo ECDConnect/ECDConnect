@@ -20,6 +20,7 @@ const ROUTES = {
       DEVELOPING_CHILDREN: '/developing-children',
     }),
   }),
+  ATTENDANCE_TUTORIAL_WALKTROUGH: '/attendance-tutorial-walktrough',
   DASHBOARD: '/dashboard',
   BUSINESS: '/business',
   BUSINESS_ADD_AMOUNT: '/business-add-amount',

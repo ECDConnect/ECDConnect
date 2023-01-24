@@ -30,6 +30,7 @@ import * as styles from './attendance-list.styles';
 import { AttendanceListProps, AttendanceState } from './attendance-list.types';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 import { practitionerSelectors } from '@/store/practitioner';
+import Joyride, { CallBackProps, STATUS, Step } from 'react-joyride';
 
 const filterInfo: FilterInfo = {
   filterName: 'Class',
@@ -204,8 +205,36 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
     setSelectedClassroomGroups([]);
   };
 
+  const steps: Step[] = [
+    {
+      target: 'body',
+      content: 'This is my awesome feature!',
+    },
+    {
+      target: '#attendanceList',
+      content: 'This another awesome feature!',
+      placement: 'bottom-end',
+      offset: 10,
+    },
+  ];
+
   return (
     <div className={styles.wrapper}>
+      <Joyride
+        // callback={handleJoyrideCallback}
+        continuous
+        hideCloseButton
+        run={true}
+        scrollToFirstStep
+        showProgress
+        showSkipButton
+        steps={steps}
+        styles={{
+          options: {
+            zIndex: 10000,
+          },
+        }}
+      />
       <div className={styles.contentWrapper}>
         {shouldFilter && (
           <SearchDropDown<any>
@@ -262,14 +291,16 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
             backgroundColour="successMain"
             text={`${presentChildrenCount} present`}
           />
-          <StatusChip
-            textColour="white"
-            padding={'px-3 py-1.5'}
-            borderColour="errorMain"
-            textType="small"
-            backgroundColour="errorMain"
-            text={`${absentChildrenCount} absent`}
-          />
+          <div id="teste">
+            <StatusChip
+              textColour="white"
+              padding={'px-3 py-1.5'}
+              borderColour="errorMain"
+              textType="small"
+              backgroundColour="errorMain"
+              text={`${absentChildrenCount} absent`}
+            />
+          </div>
         </div>
       </div>
       <div className={styles.attendanceListsWrapper}>
@@ -277,19 +308,22 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
           const isPrimaryList =
             selectedGroup.id === primaryClassProgramme?.classroomGroupId;
           return (
-            <ClassProgrammeAttendanceList
-              key={`class_attencance_list_${idx}`}
-              isPrimaryClass={isPrimaryList}
-              classroomGroup={selectedGroup}
-              attendanceDate={attendanceDate}
-              onAttendanceUpdated={(state) => {
-                validateAttendanceList(
-                  selectedGroup.id ?? '',
-                  state.listItems,
-                  isPrimaryList
-                );
-              }}
-            />
+            <div id="attendanceList">
+              <ClassProgrammeAttendanceList
+                key={`class_attencance_list_${idx}`}
+                isPrimaryClass={isPrimaryList}
+                classroomGroup={selectedGroup}
+                attendanceDate={attendanceDate}
+                onAttendanceUpdated={(state) => {
+                  validateAttendanceList(
+                    selectedGroup.id ?? '',
+                    state.listItems,
+                    isPrimaryList
+                  );
+                }}
+                id="attendance-list"
+              />
+            </div>
           );
         })}
 
