@@ -7,6 +7,7 @@ import {
   getInfants,
   addInfant,
   getInfantCountForMonth,
+  getInfantsWeeklyVisits,
 } from './infant.actions';
 import { InfantState } from './infant.types';
 
@@ -55,6 +56,10 @@ const infantSlice = createSlice({
 
         state.infants = infants;
       }
+    });
+    builder.addCase(getInfantsWeeklyVisits.fulfilled, (state, action) => {
+      console.log(action.payload);
+      state.infantsWeeklyVisits = action.payload;
     });
   },
 });

@@ -16,6 +16,7 @@ import { RootState, ThunkApiType } from '../types';
 export const InfantActions = {
   ADD_INFANTS: 'addInfant',
   GET_INFANTS: 'getInfants',
+  GET_INFANTS_WEEKLY_VISITS: 'getInfantsWeeklyVisits',
   GET_INFANT_COUNT_FOR_MONTH: 'getInfantCountForMonth',
 };
 
@@ -55,6 +56,36 @@ export const getInfants = createAsyncThunk<
     return infantsCache;
   }
 });
+
+export const getInfantsWeeklyVisits = createAsyncThunk<
+  InfantDto[],
+  undefined,
+  ThunkApiType<RootState>
+>(
+  InfantActions.GET_INFANTS_WEEKLY_VISITS,
+  async (_, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      let infants: InfantDto[] | undefined;
+      const id = userAuth?.id;
+
+      if (userAuth?.auth_token && id) {
+        infants = await new InfantService(
+          userAuth?.auth_token
+        ).GetAllInfantsForMother(id, 'due');
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      return infants;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
 
 type CreateInfantRequest = {
   infant: InfantDto;

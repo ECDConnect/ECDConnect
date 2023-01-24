@@ -9,6 +9,7 @@ import {
   getAllMotherEventRecordTypes,
   getMotherCountForMonth,
   getMothers,
+  getMothersWeeklyVisits,
   getMotherVisits,
 } from './mother.actions';
 import { MotherState } from './mother.types';
@@ -54,6 +55,9 @@ const motherSlice = createSlice({
       }
 
       state.mothers = mothers;
+    });
+    builder.addCase(getMothersWeeklyVisits.fulfilled, (state, action) => {
+      state.mothersWeeklyVisits = action.payload;
     });
     builder.addCase(getMotherVisits.fulfilled, (state, action) => {
       state.visits = action.payload;
