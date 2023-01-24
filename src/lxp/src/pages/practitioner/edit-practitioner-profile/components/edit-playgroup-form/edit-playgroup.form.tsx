@@ -11,7 +11,7 @@ import {
   ButtonGroupTypes,
   renderIcon,
 } from '@ecdlink/ui';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useForm, useWatch, Controller } from 'react-hook-form';
 import * as styles from '../../edit-practitioner-profile.styles';
 import {
@@ -85,8 +85,17 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
     isValid,
     errors: { name: playgroupName },
   } = playgroupsFormState;
+
+  const isPlaygroup = useMemo(
+    () => programmeType?.id === playgroupId,
+    [programmeType?.id]
+  );
+
   const isFormValid = () => {
-    return isValid && meetingDays && meetingDays?.length > 1;
+    const isValidFields = isPlaygroup
+      ? typeof isFullDay === 'boolean' && isValid
+      : isValid;
+    return isValidFields && meetingDays && meetingDays?.length > 1;
   };
 
   const [practitionersList, setPractitionersList] = useState<
@@ -298,7 +307,7 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
           />
         </div>
       </div>
-      {programmeType?.id === playgroupId && (
+      {isPlaygroup && (
         <div className="mt-1">
           <span className={styles.label}>
             Do children attend this playgroup for half the day or the full day?
@@ -325,7 +334,11 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
           color="primary"
           className={'mt-10 w-full'}
           onClick={() => {
-            onSubmit(getPlaygroupFormValues());
+            onSubmit(
+              isPlaygroup
+                ? getPlaygroupFormValues()
+                : { ...getPlaygroupFormValues(), isFullDay: undefined }
+            );
           }}
           disabled={!isFormValid()}
         >

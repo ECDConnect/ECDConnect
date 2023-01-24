@@ -26,5 +26,5 @@ export const editPlaygroupSchema = Yup.object().shape({
     })
     .required('This field is required'),
   meetingDays: Yup.number().required(),
-  isFullDay: Yup.boolean().required(),
+  isFullDay: Yup.boolean(),
 });
