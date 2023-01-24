@@ -1,14 +1,20 @@
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { getMothers } from '@/store/mother/mother.selectors';
-import { BannerWrapper, StackedList, UserAlertListDataItem } from '@ecdlink/ui';
-import { useEffect, useMemo, useState } from 'react';
+import {
+  AlertSeverityType,
+  BannerWrapper,
+  StackedList,
+  UserAlertListDataItem,
+} from '@ecdlink/ui';
+import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import format from 'date-fns/format';
 import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
 import Pregnant from '@/assets/pregnant.svg';
 import { getAvatarColor } from '@ecdlink/core';
 import SearchHeader from '@/components/search-header/search-header';
+import { useAppDispatch } from '@/store';
+import { getMothersWeeklyVisits } from '@/store/mother/mother.actions';
+import { getMothersWeeklyVisitsSelector } from '@/store/mother/mother.selectors';
 
 import { CLIENT_TABS } from '../../class-dashboard/class-dashboard';
 
@@ -17,7 +23,9 @@ export const PregnancyVisits: React.FC = () => {
   const [searchTextActive, setSearchTextActive] = useState(false);
   const [mothersList, setMothersList] = useState<UserAlertListDataItem[]>([]);
 
-  const mothers = useSelector(getMothers); // TODO: replace mothers selector to visits selector
+  const appDispatch = useAppDispatch();
+
+  const mothers = useSelector(getMothersWeeklyVisitsSelector);
 
   const { isOnline } = useOnlineStatus();
 
@@ -42,15 +50,13 @@ export const PregnancyVisits: React.FC = () => {
       return {
         icon: Pregnant,
         title: mother?.firstName || mother?.user?.firstName!,
-        // TODO: add correct subTitle (alert status)
-        subTitle: mother?.expectedDateOfDelivery
-          ? `Expected delivery date: ${format(
-              new Date(mother?.expectedDateOfDelivery!),
-              'PP'
-            )}`
-          : `Expected delivery date: -`,
+        subTitle: mother.statusInfo?.subject,
         switchTextStyles: true,
-        alertSeverity: 'none',
+        alertSeverity:
+          (mother.statusInfo?.color?.toLocaleLowerCase() as AlertSeverityType) ||
+          'none',
+        alertSeverityNoneIcon: 'CalendarIcon',
+        alertSeverityNoneColor: 'black',
         avatarColor: getAvatarColor('growgreat') || '',
         onActionClick: () => {},
       };
@@ -58,6 +64,10 @@ export const PregnancyVisits: React.FC = () => {
 
     setMothersList(mothersList);
   }, [mothers]);
+
+  useLayoutEffect(() => {
+    appDispatch(getMothersWeeklyVisits()).unwrap();
+  }, [appDispatch]);
 
   return (
     <BannerWrapper

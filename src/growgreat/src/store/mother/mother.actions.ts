@@ -17,6 +17,7 @@ export const MotherActions = {
   ADD_MOTHER: 'addMother',
   ADD_ADDITIONAL_MOTHER_VISIT: 'addAdditionalMotherVisit',
   GET_MOTHER_COUNT_FOR_MONTH: 'getMotherCountForMonth',
+  GET_MOTHERS_WEEKLY_VISITS: 'getMothersWeeklyVisits',
 };
 
 export const getMothers = createAsyncThunk<
@@ -49,6 +50,41 @@ export const getMothers = createAsyncThunk<
     return rejectWithValue(err);
   }
 });
+
+export const getMothersWeeklyVisits = createAsyncThunk<
+  MotherDto[],
+  undefined,
+  ThunkApiType<RootState>
+>(
+  MotherActions.GET_MOTHERS_WEEKLY_VISITS,
+  async (_, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      let mothers: MotherDto[] | undefined;
+
+      if (userAuth?.auth_token) {
+        const dueVisits = await new MotherService(
+          userAuth?.auth_token
+        ).getMothers(userAuth.id, 'due');
+
+        const overdueVisits = await new MotherService(
+          userAuth?.auth_token
+        ).getMothers(userAuth.id, 'overdue');
+
+        mothers = [...dueVisits, ...overdueVisits];
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      return mothers;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
 
 export const upsertMothers = createAsyncThunk<
   boolean[],

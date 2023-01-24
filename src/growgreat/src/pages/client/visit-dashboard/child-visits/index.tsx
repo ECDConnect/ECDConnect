@@ -1,15 +1,17 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
 import format from 'date-fns/format';
 
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { getInfants } from '@/store/infant/infant.selectors';
+import { getInfantsWeeklyVisitsSelector } from '@/store/infant/infant.selectors';
 import { BannerWrapper, StackedList, UserAlertListDataItem } from '@ecdlink/ui';
 import ROUTES from '@/routes/routes';
 import Infant from '@/assets/infant.svg';
 import { getAvatarColor } from '@ecdlink/core';
 import SearchHeader from '@/components/search-header/search-header';
+import { useAppDispatch } from '@/store';
+import { getInfantsWeeklyVisits } from '@/store/infant/infant.actions';
 
 import { CLIENT_TABS } from '../../class-dashboard/class-dashboard';
 
@@ -18,7 +20,9 @@ export const ChildVisits: React.FC = () => {
   const [searchTextActive, setSearchTextActive] = useState(false);
   const [infantsList, setInfantsList] = useState<UserAlertListDataItem[]>([]);
 
-  const infants = useSelector(getInfants); // TODO: replace infants selector to visits selector
+  const appDispatch = useAppDispatch();
+
+  const infants = useSelector(getInfantsWeeklyVisitsSelector);
 
   const { isOnline } = useOnlineStatus();
 
@@ -56,6 +60,10 @@ export const ChildVisits: React.FC = () => {
 
     setInfantsList(infantsList);
   }, [infants]);
+
+  useLayoutEffect(() => {
+    appDispatch(getInfantsWeeklyVisits()).unwrap();
+  }, [appDispatch]);
 
   return (
     <BannerWrapper
