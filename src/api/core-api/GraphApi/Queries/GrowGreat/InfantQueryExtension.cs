@@ -1,4 +1,5 @@
 using EcdLink.Api.CoreApi.Managers.Users.GrowGreat;
+using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
@@ -39,7 +40,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             [Service] IGenericRepositoryFactory repoFactory,
             [Service] InfantManager infantManager,
             string id,
-            string visitType = "all") // visitType can be all / due)
+            string visitType = Constants.GrowGreatSettings.visitType_all) // visitType can be all / due)
         {
             List<Infant> infants = new List<Infant>();
             var uId = contextAccessor.HttpContext.GetUser().Id;
@@ -48,12 +49,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             List<Infant> children = childRepo.GetAll().Where(x => x.Caregiver.HealthCareWorker.UserId.Equals(id) && x.IsActive.Equals(true)).ToList();
             List<Infant> childrenMother = childRepo.GetAll().Where(x => x.Mother.HealthCareWorker.UserId.Equals(id) && x.IsActive.Equals(true)).ToList();
 
-            if (visitType == "due")
+            if (visitType == Constants.GrowGreatSettings.visitType_due)
             {
                 foreach (var child in children)
                 {
                     child.StatusInfo = infantManager.GetStatusInfo(child, true);
-                    if (child.StatusInfo.Color == "Warning" && child.StatusInfo.Subject.Contains(" due "))
+                    if (child.StatusInfo.Color == MetricsIconEnum.Warning.ToString() && child.StatusInfo.Subject.Contains(" due "))
                     {
                         infants.Add(child);
                     }
@@ -62,7 +63,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 foreach (var child in childrenMother)
                 {
                     child.StatusInfo = infantManager.GetStatusInfo(child, true);
-                    if (child.StatusInfo.Color == "Warning" && child.StatusInfo.Subject.Contains(" due "))
+                    if (child.StatusInfo.Color == MetricsIconEnum.Warning.ToString() && child.StatusInfo.Subject.Contains(" due "))
                     {
                         infants.Add(child);
                     }

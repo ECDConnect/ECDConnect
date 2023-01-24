@@ -8,5 +8,12 @@ namespace EcdLink.Api.CoreApi
 
             public const string GraphEndPoint = "GraphQl:EndPoint";
         }
+
+        public static class GrowGreatSettings
+        {
+            public const string visitType_all = "all";
+            public const string visitType_overdue = "overdue";
+            public const string visitType_due = "due";
+        }
     }
 }
