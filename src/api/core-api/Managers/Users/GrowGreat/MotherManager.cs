@@ -7,7 +7,6 @@ using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.Security.Extensions;
 using HotChocolate;
-using iTextSharp.text;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
@@ -142,7 +141,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             var _type = "mother";
 
             // Get all visit types linked to mother excluding additional_visits
-            List<VisitType> visitTypes = visitTypeRepo.GetAll().Where(x => x.Type.Equals(_type) && x.Name != "additional_visits").OrderBy(x => x.Order).ToList();
+            List<VisitType> visitTypes = visitTypeRepo.GetAll().Where(x => x.Type.Equals(_type) && x.Name != Constants.GrowGreatSettings.additional_visits).OrderBy(x => x.Order).ToList();
 
             // Get dates for each visit
             List<VisitModel> visits = getVisitDates(ExpectedDateOfDelivery, InsertedDate, visitTypes);
@@ -286,21 +285,21 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             return dateList;
         }
 
-        public DisplaySet GetStatusInfo(Guid motherId)
+        public DisplaySet GetStatusInfo(Guid motherId, Boolean withinWeek)
         {
             DisplaySet statusInfo = new DisplaySet();
             DateTime today = DateTime.Today;
 
             // Determine note display for mother
-            var note = "Pregnant mom";
+            var note = Constants.GrowGreatSettings.client_pregnant_mom;
             var childrenCount = _infantManager.GetChildCountForMother(motherId);
             if (childrenCount == 1)
             {
-                note = "Pregnant mom and child";
+                note = Constants.GrowGreatSettings.client_pregnant_mom_and_child;
             }
             else if (childrenCount > 1)
             {
-                note = "Multiple children";
+                note = Constants.GrowGreatSettings.client_pregnant_mom_multiple_children;
             }
 
             statusInfo.Notes = note;
@@ -320,7 +319,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             statusInfo.Subject = "Healthy";
 
             // No color alert notification
-            var nextVisitAfter7Days = _visitManager.GetNextVisitMoreThan7DaysAway(motherId, "mother");
+            var nextVisitAfter7Days = _visitManager.GetNextVisitMoreThan7DaysAway(motherId, Constants.GrowGreatSettings.client_mother);
             if (nextVisitAfter7Days != "")
             {
                 statusInfo.Icon = MetricsIconEnum.None.ToString();
@@ -333,7 +332,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             //
 
             // 1. show if the visit deadline is less than 7 days away
-            var nextVisitWithin7Days = _visitManager.GetNextVisitLessThan7DaysAway(motherId, "mother");
+            var nextVisitWithin7Days = _visitManager.GetNextVisitLessThan7DaysAway(motherId, Constants.GrowGreatSettings.client_mother, withinWeek);
             if (nextVisitWithin7Days != "")
             {
                 statusInfo.Icon = MetricsIconEnum.Warning.ToString();
@@ -346,7 +345,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             //
 
             // 1. Missed visits for pregnant mom - it could be Visit 1, 2, 3, or 4 
-            var missedVisit = _visitManager.GetFirstMissedVisit(motherId, "mother");
+            var missedVisit = _visitManager.GetFirstMissedVisit(motherId, Constants.GrowGreatSettings.client_mother);
             if (missedVisit != "")
             {
                 statusInfo.Icon = MetricsIconEnum.Error.ToString();

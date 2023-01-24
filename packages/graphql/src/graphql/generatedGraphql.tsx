@@ -5857,10 +5857,12 @@ export type QueryAllEventRecordTypesForTypeArgs = {
 
 export type QueryAllInfantsForHealthCareWorkerArgs = {
   id?: InputMaybe<Scalars['String']>;
+  visitType?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryAllMothersForHealthCareWorkerArgs = {
   id?: InputMaybe<Scalars['String']>;
+  visitType?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryAllPractitionerInvitesArgs = {
