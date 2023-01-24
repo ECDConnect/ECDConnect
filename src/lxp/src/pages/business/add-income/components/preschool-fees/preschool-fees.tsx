@@ -27,11 +27,16 @@ import {
   PreschoolFeesModel,
   preschoolFeesSchema,
 } from '@/schemas/income-statements/preschool-fees';
+import { statementsSelectors } from '@/store/statements';
 
 export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
   const children = useSelector(childrenSelectors.getChildren);
   const [selectedFamilyGrants, setSelectedFamilyGrants] = useState<string[]>(
     []
+  );
+  const feeTypes = useSelector(statementsSelectors.getFeeTypes);
+  const contributionTypes = useSelector(
+    statementsSelectors.getContributionTypes
   );
 
   const {
@@ -66,15 +71,17 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
   const disabled = !date || !child || !contributionType || !grants;
 
   useEffect(() => {
-    const _list = ContributionTypes?.map((p) => {
-      if (p?.type) {
-        return {
-          label: `${p?.type}`,
-          value: p.id,
-        };
-      }
-      return undefined;
-    }).filter(Boolean) as { label: string; value: any }[];
+    const _list = contributionTypes
+      ?.map((p) => {
+        if (p?.description) {
+          return {
+            label: `${p?.description}`,
+            value: p.id,
+          };
+        }
+        return undefined;
+      })
+      .filter(Boolean) as { label: string; value: any }[];
 
     setIncomeTypesList(_list);
   }, []);
@@ -97,15 +104,17 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
   }, []);
 
   useEffect(() => {
-    const _list = FeeTypes?.map((p) => {
-      if (p?.type) {
-        return {
-          label: `${p?.type}`,
-          value: p.id,
-        };
-      }
-      return undefined;
-    }).filter(Boolean) as { label: string; value: any }[];
+    const _list = feeTypes
+      ?.map((p) => {
+        if (p?.description) {
+          return {
+            label: `${p?.description}`,
+            value: p.id,
+          };
+        }
+        return undefined;
+      })
+      .filter(Boolean) as { label: string; value: any }[];
 
     setFeeTypesList(_list);
     // eslint-disable-next-line react-hooks/exhaustive-deps

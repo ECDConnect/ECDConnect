@@ -19,6 +19,8 @@ import {
   DonationsOrVouchersModel,
   donationsOrVouchersSchema,
 } from '@/schemas/income-statements/donations-or-vouchers';
+import { useSelector } from 'react-redux';
+import { statementsSelectors } from '@/store/statements';
 
 export const DonationsOrVouchers: React.FC<AddIncomeState> = ({ setType }) => {
   const [selectedDonations, setDonations] = useState<string[]>([]);
@@ -46,15 +48,16 @@ export const DonationsOrVouchers: React.FC<AddIncomeState> = ({ setType }) => {
     control: control,
   });
 
+  const payTypes = useSelector(statementsSelectors.getPayTypes);
   const donationsDisabled = donations?.length === 0;
   const disabled = !date || !donationWorth || !donations || donationsDisabled;
 
   useEffect(() => {
-    const _list = donationTypes
+    const _list = payTypes
       ?.map((p) => {
-        if (p?.type) {
+        if (p?.description) {
           return {
-            label: `${p?.type}`,
+            label: `${p?.description}`,
             value: p.id,
           };
         }

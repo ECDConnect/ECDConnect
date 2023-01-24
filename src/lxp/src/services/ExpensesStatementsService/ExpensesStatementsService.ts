@@ -12,11 +12,20 @@ class ExpensesStatementsService {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-        query {
-            GetAllStatementsExpenses {
-              id insertedDate notes
-          }
+      query GetAllStatementsExpenses() {
+        GetAllStatementsExpenses() {
+            id description
+            insertedDate
+            notes
+            userId
+            submitted
+            amount
+            expenseTypeId
+            incomeStatementId
+            photoProof
+            datePaid
         }
+    }
           `,
     });
 
@@ -27,6 +36,27 @@ class ExpensesStatementsService {
     }
 
     return response.data.data.GetAllStatementsExpenses;
+  }
+
+  async GetAllStatementsExpensesType(): Promise<any[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      query GetAllStatementsExpenseType() {
+        GetAllStatementsExpenseType() {
+            id description insertedDate notes
+        }
+    }
+          `,
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Get all statements expenses Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.GetAllStatementsExpenseType;
   }
 }
 

@@ -39,6 +39,7 @@ import { staticDataThunkActions } from '@store/static-data';
 import { programmeThemeThunkActions } from '@store/content/programme-theme';
 import { storyBookThunkActions } from '@store/content/story-book';
 import { activityThunkActions } from '@store/content/activity';
+import { statementsThunkActions } from '@/store/statements';
 // import { browserName, browserVersion } from 'react-device-detect';
 const { version } = require('../../../package.json');
 
@@ -104,6 +105,15 @@ export const Dashboard: React.FC = () => {
     await appDispatch(staticDataThunkActions.getDocumentTypes({})).unwrap();
     await appDispatch(staticDataThunkActions.getNoteTypes({})).unwrap();
     await appDispatch(staticDataThunkActions.getWorkflowStatuses({})).unwrap();
+    await appDispatch(statementsThunkActions.getAllExpensesTypes({})).unwrap();
+    await appDispatch(statementsThunkActions.getAllIncomeTypes({})).unwrap();
+    await appDispatch(
+      statementsThunkActions.getAllStatementsFeeType({})
+    ).unwrap();
+    await appDispatch(
+      statementsThunkActions.getAllStatementsContributionType({})
+    ).unwrap();
+    await appDispatch(statementsThunkActions.getAllPayType({})).unwrap();
 
     await appDispatch(
       activityThunkActions.getActivities({ locale: 'en-za' })

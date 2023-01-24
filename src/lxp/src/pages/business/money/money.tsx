@@ -9,24 +9,47 @@ import { SubmitIncomeStatements } from './submit-income-statements/submit-income
 import ExpensesStatementsService from '@/services/ExpensesStatementsService/ExpensesStatementsService';
 import { useSelector } from 'react-redux';
 import { authSelectors } from '@store/auth';
+import { useAppDispatch } from '@/store';
+import {
+  statementsActions,
+  statementsSelectors,
+  statementsThunkActions,
+} from '@store/statements';
 
 export const Money = () => {
   const history = useHistory();
   const [addIncome, setAddIncome] = useState(false);
   const [hasIncomeStatements, setHasIncomeStatements] = useState(false);
   const userAuth = useSelector(authSelectors.getAuthUser);
+  const appDispatch = useAppDispatch();
+  const expensesTypes = useSelector(statementsSelectors.getExpensesTypes);
+  const incomeTypes = useSelector(statementsSelectors.getIncomeTypes);
+  const feeTypes = useSelector(statementsSelectors.getFeeTypes);
+  const contributionTypes = useSelector(
+    statementsSelectors.getContributionTypes
+  );
+  const payTypes = useSelector(statementsSelectors.getPayTypes);
 
-  const updatePractitionerProgress = async () => {
+  const updateExpenses = async () => {
     if (userAuth?.auth_token) {
-      await new ExpensesStatementsService(
-        userAuth?.auth_token
-      ).GetAllStatementsExpenses();
+      await appDispatch(
+        statementsThunkActions.getAllExpenses(userAuth?.auth_token)
+      );
+      await appDispatch(
+        statementsThunkActions.getAllIncome(userAuth?.auth_token)
+      );
     }
   };
 
   useEffect(() => {
-    updatePractitionerProgress();
+    updateExpenses();
   });
+
+  console.log({ expensesTypes });
+  console.log({ incomeTypes });
+  console.log({ feeTypes });
+  console.log({ contributionTypes });
+  console.log({ payTypes });
 
   return (
     <>
