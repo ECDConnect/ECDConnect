@@ -7,7 +7,6 @@ using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.Security.Extensions;
 using HotChocolate;
-using iTextSharp.text;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
@@ -286,7 +285,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             return dateList;
         }
 
-        public DisplaySet GetStatusInfo(Guid motherId)
+        public DisplaySet GetStatusInfo(Guid motherId, Boolean withinWeek)
         {
             DisplaySet statusInfo = new DisplaySet();
             DateTime today = DateTime.Today;
@@ -333,7 +332,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             //
 
             // 1. show if the visit deadline is less than 7 days away
-            var nextVisitWithin7Days = _visitManager.GetNextVisitLessThan7DaysAway(motherId, "mother");
+            var nextVisitWithin7Days = _visitManager.GetNextVisitLessThan7DaysAway(motherId, "mother", withinWeek);
             if (nextVisitWithin7Days != "")
             {
                 statusInfo.Icon = MetricsIconEnum.Warning.ToString();

@@ -36,17 +36,42 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             [Service] IHttpContextAccessor contextAccessor,
             [Service] IGenericRepositoryFactory repoFactory,
             [Service] MotherManager motherManager,
-            string id)
+            string id,
+            string visitType = "all") // visitType can be all / overdue / due
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var motherRepo = repoFactory.CreateGenericRepository<Mother>(userContext: uId);
-            List<Mother> mothers = motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId.Equals(id) && x.IsActive.Equals(true)).ToList();
+            List<Mother> allMothers = motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId.Equals(id) && x.IsActive.Equals(true)).ToList();
+            List<Mother> mothers = new List<Mother>();
 
-            foreach (var mother in mothers)
+            if (visitType == "due")
             {
-                mother.StatusInfo = motherManager.GetStatusInfo(mother.Id);
+                foreach (var mother in allMothers)
+                {
+                    mother.StatusInfo = motherManager.GetStatusInfo(mother.Id, true);
+                    if (mother.StatusInfo.Color == "Warning" && mother.StatusInfo.Subject.Contains(" due "))
+                    {
+                        mothers.Add(mother);
+                    }
+                }
+            } else if (visitType == "overdue")
+            {
+                foreach (var mother in allMothers)
+                {
+                    mother.StatusInfo = motherManager.GetStatusInfo(mother.Id, true);
+                    if (mother.StatusInfo.Color == "Error" && mother.StatusInfo.Subject.Contains(" overdue "))
+                    {
+                        mothers.Add(mother);
+                    }
+                }
+            } else
+            {
+                foreach (var mother in allMothers)
+                {
+                    mother.StatusInfo = motherManager.GetStatusInfo(mother.Id, false);
+                    mothers.Add(mother);
+                }
             }
-
             return mothers;
         }
 

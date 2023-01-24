@@ -38,26 +38,50 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             [Service] IHttpContextAccessor contextAccessor,
             [Service] IGenericRepositoryFactory repoFactory,
             [Service] InfantManager infantManager,
-            string id)
+            string id,
+            string visitType = "all") // visitType can be all / due)
         {
             List<Infant> infants = new List<Infant>();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var childRepo = repoFactory.CreateGenericRepository<Infant>(userContext: uId);
+            
             List<Infant> children = childRepo.GetAll().Where(x => x.Caregiver.HealthCareWorker.UserId.Equals(id) && x.IsActive.Equals(true)).ToList();
             List<Infant> childrenMother = childRepo.GetAll().Where(x => x.Mother.HealthCareWorker.UserId.Equals(id) && x.IsActive.Equals(true)).ToList();
 
-            foreach (var child in children)
+            if (visitType == "due")
             {
-                child.StatusInfo = infantManager.GetStatusInfo(child);
-            }
+                foreach (var child in children)
+                {
+                    child.StatusInfo = infantManager.GetStatusInfo(child, true);
+                    if (child.StatusInfo.Color == "Warning" && child.StatusInfo.Subject.Contains(" due "))
+                    {
+                        infants.Add(child);
+                    }
+                }
 
-            foreach (var child in childrenMother)
+                foreach (var child in childrenMother)
+                {
+                    child.StatusInfo = infantManager.GetStatusInfo(child, true);
+                    if (child.StatusInfo.Color == "Warning" && child.StatusInfo.Subject.Contains(" due "))
+                    {
+                        infants.Add(child);
+                    }
+                }
+
+            } else
             {
-                child.StatusInfo = infantManager.GetStatusInfo(child);
-            }
+                foreach (var child in children)
+                {
+                    child.StatusInfo = infantManager.GetStatusInfo(child, false);
+                    infants.Add(child);
+                }
 
-            infants.AddRange(children);
-            infants.AddRange(childrenMother);
+                foreach (var child in childrenMother)
+                {
+                    child.StatusInfo = infantManager.GetStatusInfo(child, false);
+                    infants.Add(child);
+                }
+            }
             return infants;
         }
 

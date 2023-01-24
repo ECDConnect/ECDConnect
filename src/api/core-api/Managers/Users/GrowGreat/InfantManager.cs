@@ -10,13 +10,9 @@ using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
-using NPOI.SS.Formula.Functions;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
-using static ICSharpCode.SharpZipLib.Zip.ExtendedUnixData;
-using static NPOI.HSSF.Util.HSSFColor;
 
 namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 {
@@ -245,7 +241,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             return childRepo.GetAll().Where(x => x.MotherCaregiverId.Equals(motherId)).Count();
         }
 
-        public DisplaySet GetStatusInfo(Infant child)
+        public DisplaySet GetStatusInfo(Infant child, Boolean withinWeek)
         {
             DisplaySet statusInfo = new DisplaySet();
             statusInfo.Notes = "child";
@@ -295,7 +291,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 statusInfo.Subject = "Growth faltering";
             }*/
 
-            var nextVisitWithin7Days = _visitManager.GetNextVisitLessThan7DaysAway(child.Id, "child");
+            var nextVisitWithin7Days = _visitManager.GetNextVisitLessThan7DaysAway(child.Id, "child", withinWeek);
             if (nextVisitWithin7Days != "")
             {
                 statusInfo.Icon = MetricsIconEnum.Warning.ToString();

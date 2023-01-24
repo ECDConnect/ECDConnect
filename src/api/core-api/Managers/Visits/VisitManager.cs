@@ -1,13 +1,10 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
-using ECDLink.Core.Extensions;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
-using NPOI.SS.Formula.Functions;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace EcdLink.Api.CoreApi.Managers.Visits
@@ -89,7 +86,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             return message;
         }
 
-        public string GetNextVisitLessThan7DaysAway(Guid Id, string type)
+        public string GetNextVisitLessThan7DaysAway(Guid Id, string type, Boolean withinWeek)
         {
             var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
             var visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: applicationUserId);
@@ -98,22 +95,49 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             Visit nextVisit = null;
             DateTime today = DateTime.Today;
-            DateTime next7Days = today.AddDays(7);
 
-            if (type == "mother")
+            if (withinWeek)
             {
-                nextVisit = (
-                    from visit in visitRepo.GetAll().Where(x => x.MotherId.Equals(Id) && !x.Attended && x.PlannedVisitDate < next7Days).OrderBy(x => x.PlannedVisitDate)
-                    join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals("mother")) on visit.VisitTypeId equals visitType.Id
-                    select visit
-                ).LastOrDefault();
+                DateTime monday = StartOfWeek(today, DayOfWeek.Monday);
+                DateTime next7Days = monday.AddDays(6);
+
+                if (type == "mother")
+                {
+                    nextVisit = (
+                        from visit in visitRepo.GetAll().Where(x => x.MotherId.Equals(Id) && !x.Attended && x.PlannedVisitDate >= monday && x.PlannedVisitDate <= next7Days).OrderBy(x => x.PlannedVisitDate)
+                        join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals("mother")) on visit.VisitTypeId equals visitType.Id
+                        select visit
+                    ).LastOrDefault();
+                }
+                else
+                {
+                    nextVisit = (
+                        from visit in visitRepo.GetAll().Where(x => x.InfantId.Equals(Id) && !x.Attended && x.PlannedVisitDate >= monday && x.PlannedVisitDate <= next7Days).OrderBy(x => x.PlannedVisitDate)
+                        join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals("child")) on visit.VisitTypeId equals visitType.Id
+                        select visit
+                    ).LastOrDefault();
+                }
+
             } else
             {
-                nextVisit = (
-                    from visit in visitRepo.GetAll().Where(x => x.InfantId.Equals(Id) && !x.Attended && x.PlannedVisitDate < next7Days).OrderBy(x => x.PlannedVisitDate)
-                    join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals("child")) on visit.VisitTypeId equals visitType.Id
-                    select visit
-                ).LastOrDefault();
+                DateTime next7Days = today.AddDays(7);
+
+                if (type == "mother")
+                {
+                    nextVisit = (
+                        from visit in visitRepo.GetAll().Where(x => x.MotherId.Equals(Id) && !x.Attended && x.PlannedVisitDate >= today && x.PlannedVisitDate <= next7Days).OrderBy(x => x.PlannedVisitDate)
+                        join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals("mother")) on visit.VisitTypeId equals visitType.Id
+                        select visit
+                    ).LastOrDefault();
+                }
+                else
+                {
+                    nextVisit = (
+                        from visit in visitRepo.GetAll().Where(x => x.InfantId.Equals(Id) && !x.Attended && x.PlannedVisitDate >= today && x.PlannedVisitDate <= next7Days).OrderBy(x => x.PlannedVisitDate)
+                        join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals("child")) on visit.VisitTypeId equals visitType.Id
+                        select visit
+                    ).LastOrDefault();
+                }
             }
 
             if (nextVisit != null)
