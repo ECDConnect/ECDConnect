@@ -19,14 +19,14 @@ using ECDLink.DataAccessLayer.Entities;
 
 namespace ECDLink.AutomatedServiceWorkers.ExpireInvitations
 {
-    public class ExpireInvitationsJob : BackgroundService
+    public class SmartLinkIntegrationDataSyncJob : BackgroundService
     {
         private readonly ILogger<ExpireInvitationsJob> _logger;
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly IGenericRepositoryFactory _repoFactory;
         private readonly HierarchyEngine _hierarchyEngine;
 
-        public ExpireInvitationsJob(ILogger<ExpireInvitationsJob> logger, IServiceScopeFactory scopeFactory, IGenericRepositoryFactory repoFactory, HierarchyEngine hierarchyEngine)
+        public SmartLinkIntegrationDataSyncJob(ILogger<ExpireInvitationsJob> logger, IServiceScopeFactory scopeFactory, IGenericRepositoryFactory repoFactory, HierarchyEngine hierarchyEngine)
         {
             _scopeFactory = scopeFactory;
             _repoFactory = repoFactory;
@@ -59,20 +59,20 @@ namespace ECDLink.AutomatedServiceWorkers.ExpireInvitations
                 using (var scope = _scopeFactory.CreateScope())
                 {
                     var dbRepo = _repoFactory.CreateGenericRepository<ServiceScheduler>(userContext: adminId);
-                    var expiryJobs = dbRepo.GetAll().Where(x => x.Name == "ExpireInvitationsJob").ToList();
-                    foreach (var expiryJob in expiryJobs)
+                    var datasyncJobs = dbRepo.GetAll().Where(x => x.Name == "SmartLinkIntegrationDataSync").ToList();
+                    foreach (var datasyncJob in datasyncJobs)
                     {
-                        expiryJob.StartTime = DateTime.Now;
-                        timingDelay = int.Parse(expiryJob.TimingDelay);
-                        CronHelper.SetTenantContext(scope, expiryJob.TenantId.ToString());
+                        datasyncJob.StartTime = DateTime.Now;
+                        timingDelay = int.Parse(datasyncJob.TimingDelay);
+                        CronHelper.SetTenantContext(scope, datasyncJob.TenantId.ToString());
 
                         var invitationService = scope.ServiceProvider.GetRequiredService<IReassignmentService>();
 
                         invitationService.ExpireRelationshipLinks();
 
-                        expiryJob.Results = "Success";
-                        expiryJob.EndTime = DateTime.Now;
-                        dbRepo.Update(expiryJob);
+                        datasyncJob.Results = "Success";
+                        datasyncJob.EndTime = DateTime.Now;
+                        dbRepo.Update(datasyncJob);
                     }
                 }
 
