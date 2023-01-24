@@ -7,7 +7,6 @@ using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.Security.Extensions;
 using HotChocolate;
-using iTextSharp.text;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
@@ -142,7 +141,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             var _type = "mother";
 
             // Get all visit types linked to mother excluding additional_visits
-            List<VisitType> visitTypes = visitTypeRepo.GetAll().Where(x => x.Type.Equals(_type) && x.Name != "additional_visits").OrderBy(x => x.Order).ToList();
+            List<VisitType> visitTypes = visitTypeRepo.GetAll().Where(x => x.Type.Equals(_type) && x.Name != Constants.GrowGreatSettings.additional_visits).OrderBy(x => x.Order).ToList();
 
             // Get dates for each visit
             List<VisitModel> visits = getVisitDates(ExpectedDateOfDelivery, InsertedDate, visitTypes);
@@ -225,7 +224,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 var visitDaySet4 = new VisitModel();
 
                 // Scenario 1: client registered before 98 days
-                if (RegisteredDate < day98)
+                if (RegisteredDate.Date < day98.Date)
                 {
                     visit1Date = startTermDate.AddDays(97);
                     visit2Date = startTermDate.AddDays(168);
@@ -233,28 +232,28 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                     visit4Date = startTermDate.AddDays(279);
 
                 } // Scenario 2: client registered between 98 and 153
-                else if (RegisteredDate >= day98 && RegisteredDate <= day153)
+                else if (RegisteredDate.Date >= day98.Date && RegisteredDate.Date <= day153.Date)
                 {
                     visit1Date = RegisteredDate.AddDays(7);
                     visit2Date = startTermDate.AddDays(168);
                     visit3Date = startTermDate.AddDays(196);
                     visit4Date = startTermDate.AddDays(279);
                 } // Scenario 3: client registered between 154 and 182
-                else if (RegisteredDate >= day154 && RegisteredDate <= day182)
+                else if (RegisteredDate.Date >= day154.Date && RegisteredDate.Date <= day182.Date)
                 {
                     visit1Date = RegisteredDate.AddMonths(1);
                     visit2Date = RegisteredDate.AddMonths(2);
                     visit3Date = RegisteredDate.AddMonths(3);
                     visit4Date = startTermDate.AddDays(279);
-                } // Scenario 4: client registered between 1193 and 258
-                else if (RegisteredDate >= day183 && RegisteredDate <= day258)
+                } // Scenario 4: client registered between 183 and 258
+                else if (RegisteredDate.Date >= day183.Date && RegisteredDate <= day258.Date)
                 {
                     visit1Date = RegisteredDate.AddDays(7);
                     visit2Date = RegisteredDate.AddDays(14);
                     visit3Date = RegisteredDate.AddDays(21);
                     visit4Date = startTermDate.AddDays(279);
                 } // Scenario 5: client registered after day 258
-                else if (RegisteredDate > day258 && RegisteredDate <= endTermDate)
+                else if (RegisteredDate.Date > day258.Date && RegisteredDate.Date <= endTermDate.Date)
                 {
                     visit1Date = RegisteredDate.AddDays(7);
                     visit2Date = RegisteredDate.AddDays(14);
@@ -286,21 +285,21 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             return dateList;
         }
 
-        public DisplaySet GetStatusInfo(Guid motherId)
+        public DisplaySet GetStatusInfo(Guid motherId, Boolean withinWeek)
         {
             DisplaySet statusInfo = new DisplaySet();
             DateTime today = DateTime.Today;
 
             // Determine note display for mother
-            var note = "Pregnant mom";
+            var note = Constants.GrowGreatSettings.client_pregnant_mom;
             var childrenCount = _infantManager.GetChildCountForMother(motherId);
             if (childrenCount == 1)
             {
-                note = "Pregnant mom and child";
+                note = Constants.GrowGreatSettings.client_pregnant_mom_and_child;
             }
             else if (childrenCount > 1)
             {
-                note = "Multiple children";
+                note = Constants.GrowGreatSettings.client_pregnant_mom_multiple_children;
             }
 
             statusInfo.Notes = note;
@@ -320,7 +319,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             statusInfo.Subject = "Healthy";
 
             // No color alert notification
-            var nextVisitAfter7Days = _visitManager.GetNextVisitMoreThan7DaysAway(motherId, "mother");
+            var nextVisitAfter7Days = _visitManager.GetNextVisitMoreThan7DaysAway(motherId, Constants.GrowGreatSettings.client_mother);
             if (nextVisitAfter7Days != "")
             {
                 statusInfo.Icon = MetricsIconEnum.None.ToString();
@@ -333,7 +332,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             //
 
             // 1. show if the visit deadline is less than 7 days away
-            var nextVisitWithin7Days = _visitManager.GetNextVisitLessThan7DaysAway(motherId, "mother");
+            var nextVisitWithin7Days = _visitManager.GetNextVisitLessThan7DaysAway(motherId, Constants.GrowGreatSettings.client_mother, withinWeek);
             if (nextVisitWithin7Days != "")
             {
                 statusInfo.Icon = MetricsIconEnum.Warning.ToString();
@@ -346,7 +345,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             //
 
             // 1. Missed visits for pregnant mom - it could be Visit 1, 2, 3, or 4 
-            var missedVisit = _visitManager.GetFirstMissedVisit(motherId, "mother");
+            var missedVisit = _visitManager.GetFirstMissedVisit(motherId, Constants.GrowGreatSettings.client_mother);
             if (missedVisit != "")
             {
                 statusInfo.Icon = MetricsIconEnum.Error.ToString();
