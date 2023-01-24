@@ -47,8 +47,6 @@
   </ItemGroup>
   
   <ItemGroup>
-    <Folder Include="GraphApi\Mutations\GrowGreat\" />
-    <Folder Include="GraphApi\Queries\GrowGreat\" />
     <Folder Include="Middleware\" />
   </ItemGroup>
   <ProjectExtensions><VisualStudio><UserProperties appsettings_1development_1json__JsonSchema="https://download.stackhawk.com/hawk/jsonconfig/hawkconfig.json" /></VisualStudio></ProjectExtensions>
