@@ -69,14 +69,14 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             if (type == "mother")
             {
                 missedVisit = (
-                    from visit in visitRepo.GetAll().Where(x => x.MotherId.Equals(Id) && !x.Attended && x.PlannedVisitDate <= today).OrderBy(x => x.PlannedVisitDate)
+                    from visit in visitRepo.GetAll().Where(x => x.MotherId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date <= today.Date).OrderBy(x => x.PlannedVisitDate)
                     join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals("mother")) on visit.VisitTypeId equals visitType.Id
                     select visit
                 ).FirstOrDefault();
             } else
             {
                 missedVisit = (
-                    from visit in visitRepo.GetAll().Where(x => x.InfantId.Equals(Id) && !x.Attended && x.PlannedVisitDate <= today).OrderBy(x => x.PlannedVisitDate)
+                    from visit in visitRepo.GetAll().Where(x => x.InfantId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date <= today.Date).OrderBy(x => x.PlannedVisitDate)
                     join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals("child")) on visit.VisitTypeId equals visitType.Id
                     select visit
                 ).FirstOrDefault();
@@ -103,14 +103,14 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             if (type == "mother")
             {
                 nextVisit = (
-                    from visit in visitRepo.GetAll().Where(x => x.MotherId.Equals(Id) && !x.Attended && x.PlannedVisitDate < next7Days).OrderBy(x => x.PlannedVisitDate)
+                    from visit in visitRepo.GetAll().Where(x => x.MotherId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date < next7Days.Date).OrderBy(x => x.PlannedVisitDate)
                     join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals("mother")) on visit.VisitTypeId equals visitType.Id
                     select visit
                 ).LastOrDefault();
             } else
             {
                 nextVisit = (
-                    from visit in visitRepo.GetAll().Where(x => x.InfantId.Equals(Id) && !x.Attended && x.PlannedVisitDate < next7Days).OrderBy(x => x.PlannedVisitDate)
+                    from visit in visitRepo.GetAll().Where(x => x.InfantId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date < next7Days.Date).OrderBy(x => x.PlannedVisitDate)
                     join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals("child")) on visit.VisitTypeId equals visitType.Id
                     select visit
                 ).LastOrDefault();
@@ -138,7 +138,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             if (type == "mother")
             {
                 nextVisit = (
-                    from visit in visitRepo.GetAll().Where(x => x.MotherId.Equals(Id) && !x.Attended && x.PlannedVisitDate >= next7Days).OrderBy(x => x.PlannedVisitDate)
+                    from visit in visitRepo.GetAll().Where(x => x.MotherId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date >= next7Days.Date).OrderBy(x => x.PlannedVisitDate)
                     join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals("mother")) on visit.VisitTypeId equals visitType.Id
                     select visit
                 ).FirstOrDefault();
@@ -146,7 +146,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             else
             {
                 nextVisit = (
-                    from visit in visitRepo.GetAll().Where(x => x.InfantId.Equals(Id) && !x.Attended && x.PlannedVisitDate >= next7Days).OrderBy(x => x.PlannedVisitDate)
+                    from visit in visitRepo.GetAll().Where(x => x.InfantId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date >= next7Days.Date).OrderBy(x => x.PlannedVisitDate)
                     join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals("child")) on visit.VisitTypeId equals visitType.Id
                     select visit
                 ).FirstOrDefault();
@@ -171,7 +171,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             if (type == "mother")
             {
-                visitCount = visitRepo.GetAll().Where(x => x.Mother.HealthCareWorker.UserId.Equals(HCWId) && !x.Attended && x.PlannedVisitDate >= monday && x.PlannedVisitDate <= today).Count();
+                visitCount = visitRepo.GetAll().Where(x => x.Mother.HealthCareWorker.UserId.Equals(HCWId) && !x.Attended && x.PlannedVisitDate.Date >= monday.Date && x.PlannedVisitDate.Date <= today.Date).Count();
             }
 
             return visitCount;
@@ -188,11 +188,11 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             if (type == "mother")
             {
-                visitCount = visitRepo.GetAll().Where(x => x.Mother.HealthCareWorker.UserId.Equals(HCWId) && !x.Attended && x.PlannedVisitDate >= monday && x.PlannedVisitDate <= sunday).Count();
+                visitCount = visitRepo.GetAll().Where(x => x.Mother.HealthCareWorker.UserId.Equals(HCWId) && !x.Attended && x.PlannedVisitDate.Date >= monday.Date && x.PlannedVisitDate.Date <= sunday.Date).Count();
             }
             else
             {
-                visitCount = visitRepo.GetAll().Where(x => x.Infant.Caregiver.HealthCareWorker.UserId.Equals(HCWId) && !x.Attended && x.PlannedVisitDate >= monday && x.PlannedVisitDate <= sunday).Count();
+                visitCount = visitRepo.GetAll().Where(x => x.Infant.Caregiver.HealthCareWorker.UserId.Equals(HCWId) && !x.Attended && x.PlannedVisitDate.Date >= monday.Date && x.PlannedVisitDate.Date <= sunday.Date).Count();
             }
 
             return visitCount;
