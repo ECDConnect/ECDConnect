@@ -1,6 +1,7 @@
 import {
   CaregiverDto,
   InfantDto,
+  MotherDto,
   SiteAddressDto,
 } from '@/../../../packages/core/lib';
 import {
@@ -89,15 +90,16 @@ export const getInfantsWeeklyVisits = createAsyncThunk<
 
 type CreateInfantRequest = {
   infant: InfantDto;
+  motherId?: MotherDto['id'];
 };
 
 export const addInfant = createAsyncThunk<
-  InfantDto,
+  { motherId?: MotherDto['id'] },
   CreateInfantRequest,
   ThunkApiType<RootState>
 >(
   InfantActions.ADD_INFANTS,
-  async ({ infant }, { getState, rejectWithValue }) => {
+  async ({ infant, motherId }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
     } = getState();
@@ -105,9 +107,11 @@ export const addInfant = createAsyncThunk<
       let mappedInfantInput = mapInfant(infant);
 
       if (userAuth?.auth_token) {
-        return await new InfantService(userAuth?.auth_token).addInfant(
+        await new InfantService(userAuth?.auth_token).addInfant(
           mappedInfantInput
         );
+
+        return { motherId };
       } else {
         return rejectWithValue('no access token, profile check required');
       }
