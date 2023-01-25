@@ -15,13 +15,13 @@ import { PractitionerAbout } from '@practitioner-p/practitioner-about/practition
 import PractitionerAccount from '@practitioner-p/practitioner-account/practitioner-account';
 import { PractitionerProfile } from '@practitioner-p/practitioner-profile/practitioner-profile';
 import ROUTES from '@/routes/routes';
-import ClassDashboard from '@/pages/client/class-dashboard/class-dashboard';
+import ClassDashboard from '@/pages/client/client-dashboard/class-dashboard';
 import { EditPractitionerProfile } from '@/pages/practitioner/edit-practitioner-profile/edit-practitioner-profile';
 import { Training } from '@/pages/training/training';
-import { StartVisitFromVisitDashboard } from '@/pages/client/visit-dashboard/start-visit';
-import PregnancyVisits from '@/pages/client/visit-dashboard/pregnancy-visits';
-import ChildVisits from '@/pages/client/visit-dashboard/child-visits';
-import BookVisitFromVisitDashboard from '@/pages/client/visit-dashboard/book-visit';
+import { StartVisitFromVisitDashboard } from '@/pages/client/visits-tab/start-visit';
+import PregnancyVisits from '@/pages/client/visits-tab/pregnancy-visits';
+import ChildVisits from '@/pages/client/visits-tab/child-visits';
+import BookVisitFromVisitDashboard from '@/pages/client/visits-tab/book-visit';
 import { PregnantProfile } from '@/pages/mom/pregnant-profile';
 import { RecordEvent } from '@/pages/mom/pregnant-profile/visits/record-event';
 import { StartVisit } from '@/pages/mom/pregnant-profile/visits/start-visit';

@@ -4,7 +4,7 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { BannerWrapper } from '@ecdlink/ui';
 import ROUTES from '@/routes/routes';
 
-import { CLIENT_TABS } from '../../class-dashboard/class-dashboard';
+import { CLIENT_TABS } from '../../client-dashboard/class-dashboard';
 
 export const BookVisitFromVisitDashboard: React.FC = () => {
   const { isOnline } = useOnlineStatus();

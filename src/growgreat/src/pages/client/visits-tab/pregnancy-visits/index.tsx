@@ -1,24 +1,23 @@
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { getMothers } from '@/store/mother/mother.selectors';
+import { BannerWrapper, StackedList, UserAlertListDataItem } from '@ecdlink/ui';
 import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useHistory } from 'react-router';
 import format from 'date-fns/format';
-
-import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { getInfants } from '@/store/infant/infant.selectors';
-import { BannerWrapper, StackedList, UserAlertListDataItem } from '@ecdlink/ui';
+import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
-import Infant from '@/assets/infant.svg';
+import Pregnant from '@/assets/pregnant.svg';
 import { getAvatarColor } from '@ecdlink/core';
 import SearchHeader from '@/components/search-header/search-header';
 
-import { CLIENT_TABS } from '../../class-dashboard/class-dashboard';
+import { CLIENT_TABS } from '../../client-dashboard/class-dashboard';
 
-export const ChildVisits: React.FC = () => {
+export const PregnancyVisits: React.FC = () => {
   const [search, setSearch] = useState('');
   const [searchTextActive, setSearchTextActive] = useState(false);
-  const [infantsList, setInfantsList] = useState<UserAlertListDataItem[]>([]);
+  const [mothersList, setMothersList] = useState<UserAlertListDataItem[]>([]);
 
-  const infants = useSelector(getInfants); // TODO: replace infants selector to visits selector
+  const mothers = useSelector(getMothers); // TODO: replace mothers selector to visits selector
 
   const { isOnline } = useOnlineStatus();
 
@@ -28,10 +27,10 @@ export const ChildVisits: React.FC = () => {
 
   const filteredList = useMemo(
     () =>
-      infantsList.filter((item) =>
+      mothersList.filter((item) =>
         item.title?.toLowerCase().includes(lowerSearch)
       ),
-    [infantsList, lowerSearch]
+    [mothersList, lowerSearch]
   );
 
   const goBack = () => {
@@ -39,14 +38,17 @@ export const ChildVisits: React.FC = () => {
   };
 
   useEffect(() => {
-    const infantsList: UserAlertListDataItem[] = infants.map((infant) => {
+    const mothersList: UserAlertListDataItem[] = mothers.map((mother) => {
       return {
-        icon: Infant,
-        title: infant?.firstName ?? infant?.user?.firstName!,
+        icon: Pregnant,
+        title: mother?.firstName || mother?.user?.firstName!,
         // TODO: add correct subTitle (alert status)
-        subTitle: infant?.user?.dateOfBirth
-          ? `Birth date: ${format(new Date(infant?.user?.dateOfBirth!), 'PP')}`
-          : `Birth date: ${format(new Date(infant?.dateOfBirth!), 'PP')}`,
+        subTitle: mother?.expectedDateOfDelivery
+          ? `Expected delivery date: ${format(
+              new Date(mother?.expectedDateOfDelivery!),
+              'PP'
+            )}`
+          : `Expected delivery date: -`,
         switchTextStyles: true,
         alertSeverity: 'none',
         avatarColor: getAvatarColor('growgreat') || '',
@@ -54,15 +56,15 @@ export const ChildVisits: React.FC = () => {
       };
     });
 
-    setInfantsList(infantsList);
-  }, [infants]);
+    setMothersList(mothersList);
+  }, [mothers]);
 
   return (
     <BannerWrapper
       showBackground={false}
       size="medium"
       renderBorder={true}
-      title={'Child visits'}
+      title={'Pregnancy visits'}
       color={'primary'}
       onBack={goBack}
       displayOffline={!isOnline}
@@ -78,10 +80,10 @@ export const ChildVisits: React.FC = () => {
       </SearchHeader>
       <StackedList
         className="flex flex-col gap-1 px-4 pb-2 pt-4"
-        listItems={infantsList}
+        listItems={mothersList}
         type={'UserAlertList'}
       />
     </BannerWrapper>
   );
 };
-export default ChildVisits;
+export default PregnancyVisits;
