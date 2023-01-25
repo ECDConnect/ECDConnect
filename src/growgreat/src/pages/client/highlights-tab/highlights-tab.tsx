@@ -200,7 +200,7 @@ export const HighlightsTab = () => {
           textColor="white"
           className="mt-4 w-full"
           iconPosition="start"
-          onClick={navigate(ROUTES.CLIENTS.VISIT.START_VISIT)}
+          onClick={navigate(ROUTES.CLIENTS.HIGHLIGHTS_TAB.UPCOMING_VISIT)}
         />
         {isHighlights && (
           <Button
@@ -211,7 +211,7 @@ export const HighlightsTab = () => {
             textColor="primary"
             className="mt-4 w-full"
             iconPosition="start"
-            onClick={navigate(ROUTES.CLIENTS.VISIT.BOOK_VISIT)}
+            onClick={navigate(ROUTES.CLIENTS.HIGHLIGHTS_TAB.POINTS_SUMMARY)}
           />
         )}
       </div>

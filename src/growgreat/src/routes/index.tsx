@@ -28,6 +28,8 @@ import { StartVisit } from '@/pages/mom/pregnant-profile/visits/start-visit';
 import { BookVisit } from '@/pages/mom/pregnant-profile/visits/book-visit';
 import { PastVisits } from '@/pages/mom/pregnant-profile/visits/past-visits';
 import { AntenatalVisit } from '@/pages/mom/pregnant-profile/visits/antenatal-visit';
+import PointsSummary from '@/pages/client/highlights-tab/points-summary';
+import UpcomingVisit from '@/pages/client/highlights-tab/upcoming-visit';
 
 function PublicRoutes() {
   return (
@@ -123,23 +125,34 @@ function AuthRoutes() {
       />
       <Route
         exact
-        path={ROUTES.CLIENTS.VISIT.START_VISIT}
+        path={ROUTES.CLIENTS.VISIT_TAB.START_VISIT}
         component={StartVisitFromVisitDashboard}
       />
       <Route
         exact
-        path={ROUTES.CLIENTS.VISIT.BOOK_VISIT}
+        path={ROUTES.CLIENTS.VISIT_TAB.BOOK_VISIT}
         component={BookVisitFromVisitDashboard}
       />
       <Route
         exact
-        path={ROUTES.CLIENTS.VISIT.PREGNANCY_VISITS}
+        path={ROUTES.CLIENTS.VISIT_TAB.PREGNANCY_VISITS}
         component={PregnancyVisits}
       />
       <Route
         exact
-        path={ROUTES.CLIENTS.VISIT.CHILD_VISITS}
+        path={ROUTES.CLIENTS.VISIT_TAB.CHILD_VISITS}
         component={ChildVisits}
+      />
+
+      <Route
+        exact
+        path={ROUTES.CLIENTS.HIGHLIGHTS_TAB.POINTS_SUMMARY}
+        component={PointsSummary}
+      />
+      <Route
+        exact
+        path={ROUTES.CLIENTS.HIGHLIGHTS_TAB.UPCOMING_VISIT}
+        component={UpcomingVisit}
       />
 
       <Route path={ROUTES.MESSAGES} component={Messages} />
