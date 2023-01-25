@@ -253,7 +253,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                     visit3Date = RegisteredDate.AddDays(21);
                     visit4Date = startTermDate.AddDays(279);
                 } // Scenario 5: client registered after day 258
-                else if (RegisteredDate.Date > day258.Date && RegisteredDate.Date <= endTermDate.Date)
+                else if (RegisteredDate.Date > day258.Date && RegisteredDate.Date < endTermDate.Date)
                 {
                     visit1Date = RegisteredDate.AddDays(7);
                     visit2Date = RegisteredDate.AddDays(14);
