@@ -19,9 +19,20 @@ import {
 } from '@/schemas/income-statements/startup-support';
 import { useState } from 'react';
 import { AddIncomeState } from './startup-support.types';
+import { IncomeStatementsService } from '@/services/IncomeStatementsService';
+import { authSelectors } from '@/store/auth';
+import { useSelector } from 'react-redux';
+import { statementsSelectors } from '@/store/statements';
 
 export const StartupSupport: React.FC<AddIncomeState> = ({ setType }) => {
   const [confirmStartupValue, setConfirmStartupValue] = useState(false);
+  const userAuth = useSelector(authSelectors.getAuthUser);
+  // const feeTypes = useSelector(statementsSelectors.getFeeTypes);
+  const incomeTypes = useSelector(statementsSelectors.getIncomeTypes);
+  const viewTitle = 'Startup Support';
+  const incomeTypeValue = incomeTypes.find(
+    (item) => item.description === viewTitle
+  );
 
   const {
     control,
@@ -41,6 +52,31 @@ export const StartupSupport: React.FC<AddIncomeState> = ({ setType }) => {
   });
 
   const disabled = !date || !startupValue;
+
+  const sendIncomeUpdate = async () => {
+    await new IncomeStatementsService(
+      userAuth?.auth_token!
+    ).UpdateStatementsIncome('e009be2b-ed1a-4559-a386-953c0369bbf0', {
+      IsActive: true,
+      UserId: 'ab2b798b-5de9-4730-990b-472a9e33491e',
+      // ChildUserId: child,
+      Submitted: false,
+      DateReceived: date,
+      // Notes: note,
+      Description: 'Testing',
+      Amount: Number(startupValue),
+      AmountExpected: 400,
+      ChildCoverAmount: 400,
+      // PayTypeId: '18eb51c4-8486-a7f3-4de0-14477870e205',
+      // ContributionTypeId: contributionType,
+      IncomeTypeId: incomeTypeValue?.id,
+    });
+  };
+
+  const handleSaveStartupSupportValues = () => {
+    sendIncomeUpdate();
+    setType('');
+  };
 
   return (
     <BannerWrapper
@@ -75,7 +111,7 @@ export const StartupSupport: React.FC<AddIncomeState> = ({ setType }) => {
           className="bg-uiBg text-textMid mx-auto w-full rounded-md border-none"
           selected={selectedDate ? new Date(selectedDate) : undefined}
           onChange={(date: Date) => {
-            setPreschoolFeesValue('date', date ? date.toString() : '');
+            setPreschoolFeesValue('date', date ? date.toISOString() : '');
           }}
           dateFormat="EEE, dd MMM yyyy"
         />
@@ -129,7 +165,7 @@ export const StartupSupport: React.FC<AddIncomeState> = ({ setType }) => {
               textColour: 'white',
               colour: 'primary',
               type: 'filled',
-              onClick: () => {},
+              onClick: handleSaveStartupSupportValues,
               leadingIcon: 'SaveIcon',
             },
             {

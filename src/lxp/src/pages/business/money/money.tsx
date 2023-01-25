@@ -36,7 +36,7 @@ export const Money = () => {
         statementsThunkActions.getAllExpenses(userAuth?.auth_token)
       );
       await appDispatch(
-        statementsThunkActions.getAllIncome(userAuth?.auth_token)
+        statementsThunkActions.getAllIncome({ userId: userAuth?.auth_token })
       );
     }
   };

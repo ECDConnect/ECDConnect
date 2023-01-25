@@ -21,8 +21,11 @@ import {
 } from '@/schemas/income-statements/donations-or-vouchers';
 import { useSelector } from 'react-redux';
 import { statementsSelectors } from '@/store/statements';
+import { IncomeStatementsService } from '@/services/IncomeStatementsService';
+import { authSelectors } from '@/store/auth';
 
 export const DonationsOrVouchers: React.FC<AddIncomeState> = ({ setType }) => {
+  const userAuth = useSelector(authSelectors.getAuthUser);
   const [selectedDonations, setDonations] = useState<string[]>([]);
 
   const {
@@ -47,6 +50,14 @@ export const DonationsOrVouchers: React.FC<AddIncomeState> = ({ setType }) => {
   } = useWatch({
     control: control,
   });
+  // const feeTypes = useSelector(statementsSelectors.getFeeTypes);
+  const incomeTypes = useSelector(statementsSelectors.getIncomeTypes);
+  const viewTitle = 'Donation';
+  const incomeTypeValue = incomeTypes.find(
+    (item) => item.description === viewTitle
+  );
+
+  console.log({ date, donationWorth, donations, note });
 
   const payTypes = useSelector(statementsSelectors.getPayTypes);
   const donationsDisabled = donations?.length === 0;
@@ -68,9 +79,34 @@ export const DonationsOrVouchers: React.FC<AddIncomeState> = ({ setType }) => {
     setDonationTypesList(_list);
   }, []);
 
-  const handleFamilyGrantSelection = (donations: string[]) => {
+  const handleDonationsValue = (donations: string[]) => {
     setDonations(donations);
     setPreschoolFeesValue('donations', donations);
+  };
+
+  const sendIncomeUpdate = async () => {
+    await new IncomeStatementsService(
+      userAuth?.auth_token!
+    ).UpdateStatementsIncome('e009be2b-ed1a-4559-a386-953c0369bbf0', {
+      IsActive: true,
+      UserId: 'ab2b798b-5de9-4730-990b-472a9e33491e',
+      // ChildUserId: child,
+      Submitted: false,
+      DateReceived: date,
+      // Notes: note,
+      // Description: 'Testing',
+      Amount: Number(donationWorth),
+      AmountExpected: 400,
+      ChildCoverAmount: 400,
+      // PayTypeId: '18eb51c4-8486-a7f3-4de0-14477870e205',
+      // ContributionTypeId: contributionType,
+      IncomeTypeId: incomeTypeValue?.id,
+    });
+  };
+
+  const handleSaveStartupSupportValues = () => {
+    sendIncomeUpdate();
+    setType('');
   };
 
   return (
@@ -83,7 +119,7 @@ export const DonationsOrVouchers: React.FC<AddIncomeState> = ({ setType }) => {
       className="p-4"
     >
       <div className="mb-3 w-full justify-center">
-        <Typography type="h2" color="textMid" text={'Donations or vouchers'} />
+        <Typography type="h2" color="textMid" text={viewTitle} />
         <Alert
           type={'info'}
           title={
@@ -100,7 +136,7 @@ export const DonationsOrVouchers: React.FC<AddIncomeState> = ({ setType }) => {
           className="bg-uiBg text-textMid mx-auto w-full rounded-md border-none"
           selected={selectedDate ? new Date(selectedDate) : undefined}
           onChange={(date: Date) => {
-            setPreschoolFeesValue('date', date ? date.toString() : '');
+            setPreschoolFeesValue('date', date ? date.toISOString() : '');
           }}
           dateFormat="EEE, dd MMM yyyy"
         />
@@ -119,9 +155,9 @@ export const DonationsOrVouchers: React.FC<AddIncomeState> = ({ setType }) => {
               })) || []
             }
             onOptionSelected={(value: string | string[]) =>
-              handleFamilyGrantSelection(value as string[])
+              handleDonationsValue(value as string[])
             }
-            multiple
+            multiple={false}
             selectedOptions={selectedDonations}
             color="secondary"
           />
@@ -148,7 +184,7 @@ export const DonationsOrVouchers: React.FC<AddIncomeState> = ({ setType }) => {
           type="filled"
           color="primary"
           className={'mx-auto mt-8 w-full rounded-2xl'}
-          onClick={() => {}}
+          onClick={handleSaveStartupSupportValues}
           disabled={disabled}
         >
           {renderIcon('SaveIcon', styles.buttonIcon)}

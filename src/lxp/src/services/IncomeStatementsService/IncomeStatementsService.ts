@@ -1,5 +1,6 @@
 import { api } from '../axios.helper';
 import { Config } from '@ecdlink/core';
+import { StatementsIncomeInput } from '@/../../../packages/graphql/lib';
 
 class IncomeStatementsService {
   _accessToken: string;
@@ -122,6 +123,34 @@ class IncomeStatementsService {
     }
 
     return response.data.data.GetAllStatementsPayType;
+  }
+
+  async UpdateStatementsIncome(
+    id: string,
+    input: StatementsIncomeInput
+  ): Promise<any> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      mutation updateStatementsIncome($input: StatementsIncomeInput, $id: UUID) {
+          updateStatementsIncome(input: $input, id: $id) {
+                id    __typename  
+              }
+            }
+      `,
+      variables: {
+        id,
+        input,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Update income statement Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.updateStatementsIncome;
   }
 }
 
