@@ -12,6 +12,7 @@ namespace EcdLink.Api.CoreApi
             // https://www.npgsql.org/efcore/release-notes/6.0.html?tabs=annotations#opting-out-of-the-new-timestamp-mapping-logic
             // We will need to migrate our DateTimes to be in UTC or keep storing "localtime"
             AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+            AppContext.SetSwitch("Npgsql.DisableDateTimeInfinityConversions", true);
 
             CreateHostBuilder(args).Build().Run();
         }
