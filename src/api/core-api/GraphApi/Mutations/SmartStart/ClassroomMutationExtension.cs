@@ -52,9 +52,21 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var classRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);
-            ClassroomGroup classRoom = classRepo.GetAll().Where(x => x.Id.Equals(id)).FirstOrDefault();
+            ClassroomGroup classRoomGroup = classRepo.GetAll().Where(x => x.Id.Equals(id)).FirstOrDefault();
+
+            Guid? programmeType = input.ProgrammeTypeId;
+            //if a programmetype already exists on a previously created classroomgroup, use that to avoid mismatching programmes
+            var existingGroup = classRepo.GetAll()
+                    .Where(x => x.ClassroomId == input.ClassroomId)
+                    .OrderByDescending(x => x.InsertedDate)
+                    .FirstOrDefault();
+
+            if (existingGroup != null) { 
+                programmeType = existingGroup.ProgrammeTypeId;
+            }
+
             var hierarchy = engine.GetUserHierarchy(input.UserId != null ? input.UserId.ToString() : uId);
-            if (classRoom == null)
+            if (classRoomGroup == null)
             {
                 if (!string.IsNullOrEmpty(hierarchy))
                 {
@@ -63,7 +75,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     {
                         Id = input.Id,
                         UserId = input.UserId != null ? input.UserId : null,
-                        ProgrammeTypeId = input.ProgrammeTypeId,
+                        ProgrammeTypeId = programmeType,
                         IsActive = true,
                         UpdatedBy = uId.ToString(),
                         Name = input.Name,
@@ -87,7 +99,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
                     if (hierarchy != null)
                     {
-                        classRoom.Hierarchy = hierarchy;
+                        classRoomGroup.Hierarchy = hierarchy;
 
                         newReassignment.LoggedBy = uId;
                         newReassignment.IsActive = true;
@@ -100,16 +112,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         newReassignment.ReassignedBackToDate = DateTime.Now;
                     }
                 }
-                classRoom.UserId = input.UserId;
-                classRoom.ClassroomId = input.ClassroomId;
-                classRoom.Name = input.Name;
-                classRoom.IsActive = input.IsActive;
-                classRoom.ProgrammeTypeId = input.ProgrammeTypeId;
+                classRoomGroup.UserId = input.UserId;
+                classRoomGroup.ClassroomId = input.ClassroomId;
+                classRoomGroup.Name = input.Name;
+                classRoomGroup.IsActive = input.IsActive;
+                classRoomGroup.ProgrammeTypeId = programmeType;
 
                 //also update the userhierarchy on classroomgroup, as well as classProgramme so that a practitioner can see this
                 UpdateClassProgrammeForPractitioner(contextAccessor, repoFactory, input.ClassroomId, hierarchy);
 
-                return classRoom;
+                return classRoomGroup;
             }
 
             return new ClassroomGroup();

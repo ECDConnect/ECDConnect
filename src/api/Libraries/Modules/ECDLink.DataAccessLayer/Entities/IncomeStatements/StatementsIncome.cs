@@ -19,9 +19,9 @@ namespace ECDLink.DataAccessLayer.Entities.IncomeStatements
         public string? ContributionTypeId { get; set; }
         public string? PayTypeId { get; set; }
         public string? IncomeTypeId { get; set; }
-        public decimal Amount { get; set; }
-        public decimal AmountExpected { get; set; }
-        public decimal ChildCoverAmount { get; set; }        
+        public double Amount { get; set; }
+        public double AmountExpected { get; set; }
+        public double ChildCoverAmount { get; set; }        
         public string Description { get; set; }
         public string PhotoProof { get; set; }
         public bool Submitted { get; set; }

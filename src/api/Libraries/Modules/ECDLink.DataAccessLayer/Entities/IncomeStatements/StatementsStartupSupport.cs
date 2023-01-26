@@ -20,9 +20,9 @@ namespace ECDLink.DataAccessLayer.Entities.IncomeStatements
         public string Description { get; set; }
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
-        public Decimal Amount { get; set; }
-        public Guid ProgrammeId { get; set; }
-        public string ChildUserId { get; set; }
+        public double Amount { get; set; }
+        public Guid? ProgrammeId { get; set; }
+        public string? ChildUserId { get; set; }
         public string UserId { get; set; }
     }
 
