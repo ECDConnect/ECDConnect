@@ -10,7 +10,7 @@ import { Typography, Dropdown, BannerWrapper, Button } from '@ecdlink/ui';
 import { useWindowSize } from '@reach/window-size';
 import ROUTES from '@/routes/routes';
 
-import { CLIENT_TABS } from '../../class-dashboard/class-dashboard';
+import { CLIENT_TABS } from '../../client-dashboard/class-dashboard';
 
 const HEADER_HEIGHT = 64;
 

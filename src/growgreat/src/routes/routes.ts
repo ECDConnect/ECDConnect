@@ -34,11 +34,15 @@ const ROUTES = {
         ANTENATAL_VISIT: '/:id/antenatal-visit',
       },
     }),
-    VISIT: {
+    VISIT_TAB: {
       START_VISIT: '/start-visit',
       BOOK_VISIT: '/book-visit',
       PREGNANCY_VISITS: '/pregnancy-visits',
       CHILD_VISITS: '/child-visits',
+    },
+    HIGHLIGHTS_TAB: {
+      UPCOMING_VISIT: '/upcoming-visit',
+      POINTS_SUMMARY: '/points-summary,',
     },
   }),
   CHILD: addPrefix('/child', {
