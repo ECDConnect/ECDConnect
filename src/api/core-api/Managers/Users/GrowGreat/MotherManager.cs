@@ -164,40 +164,12 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             DateTime RegisteredDate,
             List<VisitType> visitTypes)
         {
-            // https://ecd-connect.atlassian.net/jira/software/projects/EC/boards/1?selectedIssue=EC-56
-            // Visit 1
-            // Scenario 1: day 97
-            // Scenario 2: registered day + 7 days
-            // Scenario 3: registered day + 1 month
-            // Scenario 4: registered day + 7 days
-            // Scenario 5: registered day + 7 days
-
-            // Visit 2
-            // Scenario 1: day 168
-            // Scenario 2: day 168
-            // Scenario 3: registered day + 2 month
-            // Scenario 4: registered day + 14 days
-            // Scenario 5: registered day + 14 days
-
-            // Visit 3
-            // Scenario 1: day 196
-            // Scenario 2: day 196
-            // Scenario 3: registered day + 3 month
-            // Scenario 4: registered day + 21 days
-            // Scenario 5: day before delivery date
-
-            // Visit 4
-            // Scenario 1: day before delivery date
-            // Scenario 2: day before delivery date
-            // Scenario 3: day before delivery date
-            // Scenario 4: day before delivery date
-            // Scenario 5: day before delivery date
-
+            // Business rules implemented -> https://ecd-connect.atlassian.net/jira/software/projects/EC/boards/1?selectedIssue=EC-56
+            
             var dateList = new List<VisitModel>();
 
             if (ExpectedDateOfDelivery.HasValue)
             {
-
                 // Calculation: Pregnancy term calculated: "expected delivery date" - "280 days (40 weeks)"
                 DateTime endTermDate = ExpectedDateOfDelivery.Value;
                 DateTime startTermDate = endTermDate.AddDays(-280);
@@ -211,6 +183,12 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 DateTime day183 = startTermDate.AddDays(183);
                 DateTime day258 = startTermDate.AddDays(258);
 
+                DateTime day259 = startTermDate.AddDays(259);
+                DateTime day265 = startTermDate.AddDays(265);
+
+                DateTime day266 = startTermDate.AddDays(266);
+                DateTime day272 = startTermDate.AddDays(272);
+
                 DateTime today = DateTime.Today;
 
                 var visit1Date = today;
@@ -223,6 +201,11 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 var visitDaySet3 = new VisitModel();
                 var visitDaySet4 = new VisitModel();
 
+                var bAddVisit1 = true;
+                var bAddVisit2 = true;
+                var bAddVisit3 = true;
+                var bAddVisit4 = true;
+
                 // Scenario 1: client registered before 98 days
                 if (RegisteredDate.Date < day98.Date)
                 {
@@ -230,7 +213,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                     visit2Date = startTermDate.AddDays(168);
                     visit3Date = startTermDate.AddDays(196);
                     visit4Date = startTermDate.AddDays(279);
-
+                    bAddVisit1 = bAddVisit2 = bAddVisit3 = bAddVisit4 = true;
                 } // Scenario 2: client registered between 98 and 153
                 else if (RegisteredDate.Date >= day98.Date && RegisteredDate.Date <= day153.Date)
                 {
@@ -238,6 +221,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                     visit2Date = startTermDate.AddDays(168);
                     visit3Date = startTermDate.AddDays(196);
                     visit4Date = startTermDate.AddDays(279);
+                    bAddVisit1 = bAddVisit2 = bAddVisit3 = bAddVisit4 = true;
                 } // Scenario 3: client registered between 154 and 182
                 else if (RegisteredDate.Date >= day154.Date && RegisteredDate.Date <= day182.Date)
                 {
@@ -245,6 +229,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                     visit2Date = RegisteredDate.AddMonths(2);
                     visit3Date = RegisteredDate.AddMonths(3);
                     visit4Date = startTermDate.AddDays(279);
+                    bAddVisit1 = bAddVisit2 = bAddVisit3 = bAddVisit4 = true;
                 } // Scenario 4: client registered between 183 and 258
                 else if (RegisteredDate.Date >= day183.Date && RegisteredDate <= day258.Date)
                 {
@@ -252,32 +237,56 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                     visit2Date = RegisteredDate.AddDays(14);
                     visit3Date = RegisteredDate.AddDays(21);
                     visit4Date = startTermDate.AddDays(279);
-                } // Scenario 5: client registered after day 258
-                else if (RegisteredDate.Date > day258.Date && RegisteredDate.Date < endTermDate.Date)
+                    bAddVisit1 = bAddVisit2 = bAddVisit3 = bAddVisit4 = true;
+                } // Scenario 5: client registered between 258 and 266
+                else if (RegisteredDate.Date >= day259.Date && RegisteredDate.Date <= day265.Date)
                 {
                     visit1Date = RegisteredDate.AddDays(7);
                     visit2Date = RegisteredDate.AddDays(14);
                     visit3Date = startTermDate.AddDays(279);
                     visit4Date = startTermDate.AddDays(279);
+                    bAddVisit1 = bAddVisit2 = bAddVisit3 = bAddVisit4 = true;
+                }// Scenario 6: client registered between 266 and day273
+                else if (RegisteredDate.Date >= day266.Date && RegisteredDate.Date <= day272.Date)
+                {
+                    visit1Date = startTermDate.AddDays(279);
+                    visit2Date = startTermDate.AddDays(279);
+                    bAddVisit3 = bAddVisit4 = false;
+                }// Scenario 7: client registered after day273
+                else if (RegisteredDate.Date > day272.Date)
+                {
+                    visit1Date = startTermDate.AddDays(279);
+                    bAddVisit2 = bAddVisit3 = bAddVisit4 = false;
                 }
 
                 // visit types are ordered, thus we can work on index
-                visitDaySet1.PlannedVisitDate = visit1Date;
-                visitDaySet1.VisitType = visitTypes[0];
+                if (bAddVisit1)
+                {
+                    visitDaySet1.PlannedVisitDate = visit1Date;
+                    visitDaySet1.VisitType = visitTypes[0];
+                    dateList.Add(visitDaySet1);
+                }
 
-                visitDaySet2.PlannedVisitDate = visit2Date;
-                visitDaySet2.VisitType = visitTypes[1];
+                if (bAddVisit2)
+                {
+                    visitDaySet2.PlannedVisitDate = visit2Date;
+                    visitDaySet2.VisitType = visitTypes[1];
+                    dateList.Add(visitDaySet2);
+                }
 
-                visitDaySet3.PlannedVisitDate = visit3Date;
-                visitDaySet3.VisitType = visitTypes[2];
+                if (bAddVisit3)
+                {
+                    visitDaySet3.PlannedVisitDate = visit3Date;
+                    visitDaySet3.VisitType = visitTypes[2];
+                    dateList.Add(visitDaySet3);
+                }
 
-                visitDaySet4.PlannedVisitDate = visit4Date;
-                visitDaySet4.VisitType = visitTypes[3];
-
-                dateList.Add(visitDaySet1);
-                dateList.Add(visitDaySet2);
-                dateList.Add(visitDaySet3);
-                dateList.Add(visitDaySet4);
+                if (bAddVisit4)
+                {
+                    visitDaySet4.PlannedVisitDate = visit4Date;
+                    visitDaySet4.VisitType = visitTypes[3];
+                    dateList.Add(visitDaySet4);
+                }
 
                 dateList = dateList.OrderBy(x => x.VisitType.Order).ToList();
             }
