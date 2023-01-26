@@ -205,6 +205,14 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 caregiverInput.SiteAddress = siteAddress;
             }
 
+            // Populate province id with N/A option when site address is null
+            if (caregiverInput.SiteAddressId == null)
+            {
+                var repository = _repoFactory.CreateGenericRepository<Province>(userContext: applicationUserId);
+                var naProvince = repository.GetAll().Where(x => x.Description.Equals("N/A")).FirstOrDefault();
+                caregiverInput.SiteAddress.ProvinceId = naProvince.Id;
+            }
+
             return new Caregiver()
             {
                 Id = GetCaregiverIdOrGenerateNew(input.CaregiverId),
