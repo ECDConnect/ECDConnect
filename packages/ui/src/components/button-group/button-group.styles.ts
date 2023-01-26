@@ -13,7 +13,7 @@ export const chip = (disabled?: boolean) => {
 
 const sharedButtonStyles = (disabled?: boolean) =>
   `font-body p-3 text-sm font-medium rounded-10 items-center flex items-center justify-center ${
-    disabled ? 'bg-uiLight opacity-80' : ''
+    disabled ? 'opacity-50' : ''
   }`;
 
 export const notSelectedChip =

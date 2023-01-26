@@ -2,7 +2,7 @@ import { MotherDto } from '@ecdlink/core';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import { addEventRecord } from '../eventRecord/eventRecord.actions';
-import { getInfantCountForMonth } from '../infant/infant.actions';
+import { addInfant, getInfantCountForMonth } from '../infant/infant.actions';
 import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
 import {
   addMother,
@@ -69,6 +69,15 @@ const motherSlice = createSlice({
       const motherId = action.payload?.input?.motherId;
 
       if (motherId && action.payload.isCloseFolder) {
+        state.mothers = state.mothers?.filter(
+          (item) => item.user?.id !== motherId
+        );
+      }
+    });
+    builder.addCase(addInfant.fulfilled, (state, action) => {
+      const motherId = action.payload.motherId;
+
+      if (motherId) {
         state.mothers = state.mothers?.filter(
           (item) => item.user?.id !== motherId
         );
