@@ -58,7 +58,6 @@ const infantSlice = createSlice({
       }
     });
     builder.addCase(getInfantsWeeklyVisits.fulfilled, (state, action) => {
-      console.log(action.payload);
       state.infantsWeeklyVisits = action.payload;
     });
   },

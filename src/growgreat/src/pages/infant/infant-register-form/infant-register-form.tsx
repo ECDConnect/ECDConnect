@@ -5,7 +5,7 @@ import {
   Button,
   DialogPosition,
 } from '@ecdlink/ui';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useAppDispatch } from '@store';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -31,6 +31,7 @@ import {
   SiteAddressDto,
   UserDto,
   useDialog,
+  MotherDto,
 } from '@ecdlink/core/lib';
 import { EditConsentAgreementProps } from '../components/consent-agrement/consent-agreement.types';
 import { infantActions, infantThunkActions } from '@/store/infant';
@@ -48,6 +49,9 @@ import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { usePrevious } from '@ecdlink/core/lib/hooks/usePrevious';
 import { healthCareWorkerSelectors } from '@/store/healthCareWorker';
 import { InfantActions } from '@/store/infant/infant.actions';
+import { InfantRouteState } from '../infant.types';
+import { motherSelectors } from '@/store/mother';
+import { RootState } from '@/store/types';
 
 const BANNER_HEIGHT = 64;
 
@@ -82,6 +86,13 @@ export const InfantRegisterForm: React.FC = () => {
   const [multipleChildrenCount, setMultipleChildrenCount] = useState<number>(1);
 
   const { height } = useWindowSize();
+
+  const location = useLocation<InfantRouteState>();
+
+  const motherId: MotherDto['id'] | undefined = location.state?.motherId;
+  const mother = useSelector((state: RootState) =>
+    !!motherId ? motherSelectors.getMotherById(state, motherId) : {}
+  );
 
   const dialog = useDialog();
 
@@ -220,7 +231,7 @@ export const InfantRegisterForm: React.FC = () => {
 
         appDispatch(infantActions.addInfant(infantInputModel));
         await appDispatch(
-          infantThunkActions.addInfant({ infant: infantInputModel })
+          infantThunkActions.addInfant({ infant: infantInputModel, motherId })
         ).unwrap();
 
         const fileName = 'roadtohealthbook.png';
@@ -283,7 +294,7 @@ export const InfantRegisterForm: React.FC = () => {
 
       appDispatch(infantActions.addInfant(infantInputModel));
       await appDispatch(
-        infantThunkActions.addInfant({ infant: infantInputModel })
+        infantThunkActions.addInfant({ infant: infantInputModel, motherId })
       ).unwrap();
 
       const fileName = 'roadtohealthbook.png';
@@ -345,6 +356,7 @@ export const InfantRegisterForm: React.FC = () => {
             setAddress={setAddress}
             setIsAlreadyClient={setIsAlreadyClient}
             isAlreadyClient={isAlreadyClient}
+            motherInfo={mother}
             onSubmit={(value) => {
               setDetails(value as any);
               handleExistingUser({ caregiverDetails: value });
