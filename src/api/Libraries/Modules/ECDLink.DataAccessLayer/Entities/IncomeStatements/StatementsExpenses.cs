@@ -17,7 +17,7 @@ namespace ECDLink.DataAccessLayer.Entities.IncomeStatements
     { 
         public string Notes { get; set; }
         public string ExpenseTypeId { get; set; }
-        public decimal Amount { get; set; }
+        public double Amount { get; set; }
         public string Description { get; set; }
         public string PhotoProof { get; set; }
         public bool Submitted { get; set; }
