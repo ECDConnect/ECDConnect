@@ -34,6 +34,9 @@ import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { EventRecordActions } from '@/store/eventRecord/eventRecord.actions';
 import { useDialog, usePrevious } from '@ecdlink/core';
 import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
+import { getPregnancyWeeks } from '@/utils/mom/pregnant.utils';
+
+const weekNumberToShowCelebratoryMessage = 33;
 
 const eventNames = {
   close: 'close_folder',
@@ -75,6 +78,10 @@ export const RecordEvent: React.FC = () => {
     getMotherById(state, motherId)
   );
 
+  const weeksPregnant = mother?.expectedDateOfDelivery
+    ? getPregnancyWeeks(mother?.expectedDateOfDelivery)
+    : 0;
+
   const eventTypes = useSelector(getAllMotherEventRecordTypes);
 
   const eventOptions = useMemo(
@@ -107,20 +114,27 @@ export const RecordEvent: React.FC = () => {
     history.push(`${ROUTES.CLIENTS.MOM_PROFILE.ROOT}${motherId}`);
   }, [history, motherId]);
 
-  const onSubmit = useCallback(
-    (isCloseFolder?: boolean) => {
-      const input = {
-        eventRecordTypeId: childrenEventRecordTypeId || eventRecordTypeId,
-        notes,
-        motherId,
-      };
+  const onSubmit = useCallback(() => {
+    const input = {
+      eventRecordTypeId: childrenEventRecordTypeId || eventRecordTypeId,
+      notes,
+      motherId,
+    };
 
-      appDispatch(
-        eventRecordThunkActions.addEventRecord({ input, isCloseFolder })
-      );
-    },
-    [appDispatch, childrenEventRecordTypeId, eventRecordTypeId, motherId, notes]
-  );
+    appDispatch(
+      eventRecordThunkActions.addEventRecord({
+        input,
+        isCloseFolder: selectedOption?.name !== eventNames.born,
+      })
+    );
+  }, [
+    appDispatch,
+    childrenEventRecordTypeId,
+    eventRecordTypeId,
+    motherId,
+    notes,
+    selectedOption?.name,
+  ]);
 
   const displayNewFolderDialog = useCallback(() => {
     return dialog({
@@ -140,7 +154,7 @@ export const RecordEvent: React.FC = () => {
                 type: 'filled',
                 leadingIcon: 'CheckIcon',
                 onClick: () => {
-                  history.push(ROUTES.INFANT_REGISTER);
+                  history.push(ROUTES.INFANT_REGISTER, { motherId });
                   onClose();
                 },
               },
@@ -160,7 +174,7 @@ export const RecordEvent: React.FC = () => {
         );
       },
     });
-  }, [dialog, goBack, history]);
+  }, [dialog, goBack, history, motherId]);
 
   const displayCloseFolderDialog = useCallback(() => {
     return dialog({
@@ -190,7 +204,7 @@ export const RecordEvent: React.FC = () => {
                 isLoading,
                 disabled: isLoading,
                 onClick: () => {
-                  onSubmit(true);
+                  onSubmit();
                   onClose();
                 },
               },
@@ -276,14 +290,15 @@ export const RecordEvent: React.FC = () => {
           />
         )}
       />
-      {selectedOption?.name === eventNames.born && (
-        <SuccessCard
-          className="mt-4"
-          customIcon={<CelebrateIcon className="h-14	w-14" />}
-          text={`Congratulations to ${mother?.user?.firstName || ''}!`}
-          color="successMain"
-        />
-      )}
+      {selectedOption?.name === eventNames.born &&
+        weeksPregnant >= weekNumberToShowCelebratoryMessage && (
+          <SuccessCard
+            className="mt-4"
+            customIcon={<CelebrateIcon className="h-14	w-14" />}
+            text={`Congratulations to ${mother?.user?.firstName || ''}!`}
+            color="successMain"
+          />
+        )}
       {!!childrenOptions.length && (
         <Controller
           name="childrenEventRecordTypeId"

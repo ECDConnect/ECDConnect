@@ -13,3 +13,9 @@ export interface VisitDto {
     updatedBy?: string;
   };
 }
+
+export interface VisitStatusDto {
+  childDueVisits?: number;
+  motherDueVisits?: number;
+  motherOverDueVisits?: number;
+}

@@ -4,15 +4,17 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { BannerWrapper } from '@ecdlink/ui';
 import ROUTES from '@/routes/routes';
 
-import { CLIENT_TABS } from '../../class-dashboard/class-dashboard';
+import { CLIENT_TABS } from '../../client-dashboard/class-dashboard';
 
-export const BookVisitFromVisitDashboard: React.FC = () => {
+export const PointsSummary: React.FC = () => {
   const { isOnline } = useOnlineStatus();
 
   const history = useHistory();
 
   const goBack = () => {
-    history.push(ROUTES.CLIENTS.ROOT, { activeTabIndex: CLIENT_TABS.VISIT });
+    history.push(ROUTES.CLIENTS.ROOT, {
+      activeTabIndex: CLIENT_TABS.HIGHLIGHTS,
+    });
   };
 
   return (
@@ -20,7 +22,7 @@ export const BookVisitFromVisitDashboard: React.FC = () => {
       showBackground={false}
       size="medium"
       renderBorder={true}
-      title={'Book a visit'}
+      title={'Coming soon'}
       color={'primary'}
       onBack={goBack}
       displayOffline={!isOnline}
@@ -30,4 +32,4 @@ export const BookVisitFromVisitDashboard: React.FC = () => {
     </BannerWrapper>
   );
 };
-export default BookVisitFromVisitDashboard;
+export default PointsSummary;

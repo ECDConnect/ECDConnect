@@ -19,7 +19,7 @@ import {
   getMotherById,
   getMotherVisits,
 } from '@/store/mother/mother.selectors';
-import { getWeeksPregnant } from '@/utils/mom/pregnant.utils';
+import { getPregnancyWeeks } from '@/utils/mom/pregnant.utils';
 import { useAppDispatch } from '@/store';
 import { motherThunkActions } from '@/store/mother';
 import { useDialog, VisitDto } from '@ecdlink/core';
@@ -136,8 +136,8 @@ export const Visits: React.FC = () => {
   ]);
 
   const weeksPregnant = mother?.expectedDateOfDelivery
-    ? getWeeksPregnant(mother?.expectedDateOfDelivery)
-    : 1;
+    ? getPregnancyWeeks(mother?.expectedDateOfDelivery)
+    : 0;
 
   const onAddVisit = useCallback(() => {
     return dialog({

@@ -1,6 +1,7 @@
 import {
   CaregiverDto,
   InfantDto,
+  MotherDto,
   SiteAddressDto,
 } from '@/../../../packages/core/lib';
 import {
@@ -16,6 +17,7 @@ import { RootState, ThunkApiType } from '../types';
 export const InfantActions = {
   ADD_INFANTS: 'addInfant',
   GET_INFANTS: 'getInfants',
+  GET_INFANTS_WEEKLY_VISITS: 'getInfantsWeeklyVisits',
   GET_INFANT_COUNT_FOR_MONTH: 'getInfantCountForMonth',
 };
 
@@ -56,17 +58,48 @@ export const getInfants = createAsyncThunk<
   }
 });
 
+export const getInfantsWeeklyVisits = createAsyncThunk<
+  InfantDto[],
+  undefined,
+  ThunkApiType<RootState>
+>(
+  InfantActions.GET_INFANTS_WEEKLY_VISITS,
+  async (_, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      let infants: InfantDto[] | undefined;
+      const id = userAuth?.id;
+
+      if (userAuth?.auth_token && id) {
+        infants = await new InfantService(
+          userAuth?.auth_token
+        ).GetAllInfantsForMother(id, 'due');
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      return infants;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
 type CreateInfantRequest = {
   infant: InfantDto;
+  motherId?: MotherDto['id'];
 };
 
 export const addInfant = createAsyncThunk<
-  InfantDto,
+  { motherId?: MotherDto['id'] },
   CreateInfantRequest,
   ThunkApiType<RootState>
 >(
   InfantActions.ADD_INFANTS,
-  async ({ infant }, { getState, rejectWithValue }) => {
+  async ({ infant, motherId }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
     } = getState();
@@ -74,9 +107,11 @@ export const addInfant = createAsyncThunk<
       let mappedInfantInput = mapInfant(infant);
 
       if (userAuth?.auth_token) {
-        return await new InfantService(userAuth?.auth_token).addInfant(
+        await new InfantService(userAuth?.auth_token).addInfant(
           mappedInfantInput
         );
+
+        return { motherId };
       } else {
         return rejectWithValue('no access token, profile check required');
       }
