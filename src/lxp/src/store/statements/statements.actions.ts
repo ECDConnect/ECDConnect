@@ -89,7 +89,7 @@ export const getAllIncome = createAsyncThunk<
       if (userAuth?.auth_token) {
         income = await new IncomeStatementsService(
           userAuth?.auth_token
-        ).GetAllStatementsIncomeStatement();
+        ).allStatementsIncome(userAuth?.id);
       } else {
         return rejectWithValue('no access token, profile check required');
       }

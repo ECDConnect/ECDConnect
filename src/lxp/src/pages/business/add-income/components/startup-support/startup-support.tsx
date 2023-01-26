@@ -23,6 +23,7 @@ import { IncomeStatementsService } from '@/services/IncomeStatementsService';
 import { authSelectors } from '@/store/auth';
 import { useSelector } from 'react-redux';
 import { statementsSelectors } from '@/store/statements';
+import { newGuid } from '@/utils/common/uuid.utils';
 
 export const StartupSupport: React.FC<AddIncomeState> = ({ setType }) => {
   const [confirmStartupValue, setConfirmStartupValue] = useState(false);
@@ -54,21 +55,18 @@ export const StartupSupport: React.FC<AddIncomeState> = ({ setType }) => {
   const disabled = !date || !startupValue;
 
   const sendIncomeUpdate = async () => {
+    const incomeId = newGuid();
+
     await new IncomeStatementsService(
       userAuth?.auth_token!
-    ).UpdateStatementsIncome('e009be2b-ed1a-4559-a386-953c0369bbf0', {
+    ).UpdateStatementsIncome(incomeId, {
       IsActive: true,
-      UserId: 'ab2b798b-5de9-4730-990b-472a9e33491e',
-      // ChildUserId: child,
+      UserId: userAuth?.id,
       Submitted: false,
       DateReceived: date,
-      // Notes: note,
-      Description: 'Testing',
       Amount: Number(startupValue),
       AmountExpected: 400,
       ChildCoverAmount: 400,
-      // PayTypeId: '18eb51c4-8486-a7f3-4de0-14477870e205',
-      // ContributionTypeId: contributionType,
       IncomeTypeId: incomeTypeValue?.id,
     });
   };

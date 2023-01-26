@@ -15,6 +15,7 @@ import {
   statementsSelectors,
   statementsThunkActions,
 } from '@store/statements';
+import { IncomeStatementsService } from '@/services/IncomeStatementsService';
 
 export const Money = () => {
   const history = useHistory();
@@ -29,21 +30,39 @@ export const Money = () => {
     statementsSelectors.getContributionTypes
   );
   const payTypes = useSelector(statementsSelectors.getPayTypes);
+  const income = useSelector(statementsSelectors.getIncome);
 
-  const updateExpenses = async () => {
+  console.log({ income });
+
+  const updateEStatements = async () => {
     if (userAuth?.auth_token) {
+      await appDispatch(statementsThunkActions.getAllExpenses(userAuth?.id));
       await appDispatch(
-        statementsThunkActions.getAllExpenses(userAuth?.auth_token)
+        statementsThunkActions.getAllIncome({ userId: userAuth?.id })
       );
-      await appDispatch(
-        statementsThunkActions.getAllIncome({ userId: userAuth?.auth_token })
-      );
+      await new IncomeStatementsService(
+        userAuth?.auth_token
+      ).allStatementsIncomeStatement(userAuth?.id);
     }
+
+    await new ExpensesStatementsService(
+      userAuth?.auth_token!
+    ).allStatementsExpenses(userAuth?.id!);
+
+    await new IncomeStatementsService(
+      userAuth?.auth_token!
+    ).GetAllStatementsIncome();
   };
 
   useEffect(() => {
-    updateExpenses();
-  });
+    updateEStatements();
+  }, []);
+
+  useEffect(() => {
+    if (income) {
+      setHasIncomeStatements(true);
+    }
+  }, [income]);
 
   console.log({ expensesTypes });
   console.log({ incomeTypes });

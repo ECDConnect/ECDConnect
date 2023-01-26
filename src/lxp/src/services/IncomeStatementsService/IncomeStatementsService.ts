@@ -1,5 +1,5 @@
 import { api } from '../axios.helper';
-import { Config } from '@ecdlink/core';
+import { Config, IncomeStatementsDto } from '@ecdlink/core';
 import { StatementsIncomeInput } from '@/../../../packages/graphql/lib';
 
 class IncomeStatementsService {
@@ -9,24 +9,31 @@ class IncomeStatementsService {
     this._accessToken = accessToken;
   }
 
-  async GetAllStatementsIncomeStatement(): Promise<any[]> {
+  async GetAllStatementsIncome(): Promise<IncomeStatementsDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-      query GetAllStatementsIncomeStatement() {
-        GetAllStatementsIncomeStatement() {
-            id
-            insertedDate
-            notes
-            userId
-            incomeTotal
-            expenseTotal
-            balance
-            submittedDate
-            submitted
-            month
-            year
-            period
+      query GetAllStatementsIncome() {
+        GetAllStatementsIncome() {
+          amount
+          amountExpected
+          childCoverAmount
+          childUserId?
+          contributionTypeId
+          dateReceived
+          description
+          id
+          incomeStatementId
+          incomeTypeId
+          insertedDate
+          isActive
+          notes
+          payTypeId
+          photoProof
+          submitted
+          updatedBy
+          updatedDate
+          userId
         }
     }
           `,
@@ -38,7 +45,7 @@ class IncomeStatementsService {
       );
     }
 
-    return response.data.data.GetAllStatementsIncomeStatement;
+    return response.data.data.GetAllStatementsIncome;
   }
 
   async GetAllStatementsIncomeType(): Promise<any[]> {
@@ -151,6 +158,81 @@ class IncomeStatementsService {
     }
 
     return response.data.data.updateStatementsIncome;
+  }
+
+  async allStatementsIncome(userId: string): Promise<IncomeStatementsDto[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      query allStatementsIncome($userId: String) {
+        allStatementsIncome(userId: $userId) {
+            id description 
+            insertedDate 
+            notes 
+            childUserId 
+            userId 
+            submitted 
+            amount 
+            amountExpected 
+            contributionTypeId 
+            payTypeId 
+            incomeStatementId 
+            incomeTypeId
+            photoProof
+            childCoverAmount
+            dateReceived
+        }
+    }
+          `,
+      variables: {
+        userId,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Get all statements income Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.allStatementsIncome;
+  }
+
+  async allStatementsIncomeStatement(
+    userId: string
+  ): Promise<IncomeStatementsDto[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      query allStatementsIncomeStatement($userId: String) {
+        allStatementsIncomeStatement(userId: $userId) {
+        id 
+        insertedDate 
+        notes 
+        userId 
+        submitted
+        incomeTotal
+        expenseTotal
+        balance
+        submittedDate
+        month
+        year
+        period
+    }
+}
+          `,
+      variables: {
+        userId,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Get all statements income Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.allStatementsIncome;
   }
 }
 

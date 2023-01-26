@@ -12,12 +12,7 @@ import {
   FormInput,
 } from '@ecdlink/ui';
 import DatePicker from 'react-datepicker';
-import { useHistory } from 'react-router';
-import {
-  AddIncomeState,
-  ContributionTypes,
-  FeeTypes,
-} from './preschool-fees.types';
+import { AddIncomeState } from './preschool-fees.types';
 import * as styles from './preschool-fees.styles';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm, useWatch } from 'react-hook-form';
@@ -31,7 +26,7 @@ import { statementsSelectors } from '@/store/statements';
 import { IncomeStatementsService } from '@/services/IncomeStatementsService';
 import { authSelectors } from '@/store/auth';
 import { StatementsIncomeInput } from '@/../../../packages/graphql/lib';
-import { UserService } from '@services/UserService';
+import { newGuid } from '@/utils/common/uuid.utils';
 
 export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
   const children = useSelector(childrenSelectors.getChildren);
@@ -50,6 +45,7 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
   const incomeTypeValue = incomeTypes.find(
     (item) => item.description === viewTitle
   );
+  const moneyContributionTypeId = '8ff95f6e-5116-4412-adf6-81025172970e';
 
   console.log({ incomeTypeValue });
 
@@ -149,11 +145,13 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
   };
 
   const sendIncomeUpdate = async () => {
+    const incomeId = newGuid();
+
     await new IncomeStatementsService(
       userAuth?.auth_token!
-    ).UpdateStatementsIncome('e009be2b-ed1a-4559-a386-953c0369bbf0', {
+    ).UpdateStatementsIncome(incomeId, {
       IsActive: true,
-      UserId: 'ab2b798b-5de9-4730-990b-472a9e33491e',
+      UserId: userAuth?.id,
       ChildUserId: child,
       Submitted: false,
       DateReceived: date,
@@ -229,7 +227,7 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
             setPreschoolFeesValue('contributionType', item);
           }}
         />
-        {contributionType && (
+        {contributionType === moneyContributionTypeId && (
           <FormInput<PreschoolFeesModel>
             label={'How much did the caregiver pay?'}
             visible={true}

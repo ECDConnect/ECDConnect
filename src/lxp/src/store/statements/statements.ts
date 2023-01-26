@@ -47,7 +47,7 @@ const statementsSlice = createSlice({
       state.expensesTypes = action.payload;
     });
     builder.addCase(getAllIncome.fulfilled, (state, action) => {
-      state.expenses = action.payload;
+      state.income = action.payload;
     });
     builder.addCase(getAllIncomeTypes.fulfilled, (state, action) => {
       state.incomeTypes = action.payload;

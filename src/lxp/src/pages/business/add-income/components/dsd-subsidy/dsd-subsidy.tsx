@@ -19,6 +19,7 @@ import { statementsSelectors } from '@/store/statements';
 import { useSelector } from 'react-redux';
 import { authSelectors } from '@/store/auth';
 import { IncomeStatementsService } from '@/services/IncomeStatementsService';
+import { newGuid } from '@/utils/common/uuid.utils';
 
 export const DsdSubsidy: React.FC<AddIncomeState> = ({ setType }) => {
   const userAuth = useSelector(authSelectors.getAuthUser);
@@ -51,11 +52,13 @@ export const DsdSubsidy: React.FC<AddIncomeState> = ({ setType }) => {
   const disabled = !date || !childrenNumber || !subsidyAmount;
 
   const sendIncomeUpdate = async () => {
+    const incomeId = newGuid();
+
     await new IncomeStatementsService(
       userAuth?.auth_token!
-    ).UpdateStatementsIncome('e009be2b-ed1a-4559-a386-953c0369bbf0', {
+    ).UpdateStatementsIncome(incomeId, {
       IsActive: true,
-      UserId: 'ab2b798b-5de9-4730-990b-472a9e33491e',
+      UserId: userAuth?.id,
       // ChildUserId: child,
       Submitted: false,
       DateReceived: date,
