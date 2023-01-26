@@ -1,31 +1,28 @@
-import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import {
-  AlertSeverityType,
-  BannerWrapper,
-  StackedList,
-  UserAlertListDataItem,
-} from '@ecdlink/ui';
 import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
+import format from 'date-fns/format';
+
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { getInfantsWeeklyVisitsSelector } from '@/store/infant/infant.selectors';
+import { BannerWrapper, StackedList, UserAlertListDataItem } from '@ecdlink/ui';
 import ROUTES from '@/routes/routes';
-import Pregnant from '@/assets/pregnant.svg';
+import Infant from '@/assets/infant.svg';
 import { getAvatarColor } from '@ecdlink/core';
 import SearchHeader from '@/components/search-header/search-header';
 import { useAppDispatch } from '@/store';
-import { getMothersWeeklyVisits } from '@/store/mother/mother.actions';
-import { getMothersWeeklyVisitsSelector } from '@/store/mother/mother.selectors';
+import { getInfantsWeeklyVisits } from '@/store/infant/infant.actions';
 
-import { CLIENT_TABS } from '../../class-dashboard/class-dashboard';
+import { CLIENT_TABS } from '../../client-dashboard/class-dashboard';
 
-export const PregnancyVisits: React.FC = () => {
+export const ChildVisits: React.FC = () => {
   const [search, setSearch] = useState('');
   const [searchTextActive, setSearchTextActive] = useState(false);
-  const [mothersList, setMothersList] = useState<UserAlertListDataItem[]>([]);
+  const [infantsList, setInfantsList] = useState<UserAlertListDataItem[]>([]);
 
   const appDispatch = useAppDispatch();
 
-  const mothers = useSelector(getMothersWeeklyVisitsSelector);
+  const infants = useSelector(getInfantsWeeklyVisitsSelector);
 
   const { isOnline } = useOnlineStatus();
 
@@ -35,10 +32,10 @@ export const PregnancyVisits: React.FC = () => {
 
   const filteredList = useMemo(
     () =>
-      mothersList.filter((item) =>
+      infantsList.filter((item) =>
         item.title?.toLowerCase().includes(lowerSearch)
       ),
-    [mothersList, lowerSearch]
+    [infantsList, lowerSearch]
   );
 
   const goBack = () => {
@@ -46,27 +43,26 @@ export const PregnancyVisits: React.FC = () => {
   };
 
   useEffect(() => {
-    const mothersList: UserAlertListDataItem[] = mothers.map((mother) => {
+    const infantsList: UserAlertListDataItem[] = infants.map((infant) => {
       return {
-        icon: Pregnant,
-        title: mother?.firstName || mother?.user?.firstName!,
-        subTitle: mother.statusInfo?.subject,
+        icon: Infant,
+        title: infant?.firstName ?? infant?.user?.firstName!,
+        // TODO: add correct subTitle (alert status)
+        subTitle: infant?.user?.dateOfBirth
+          ? `Birth date: ${format(new Date(infant?.user?.dateOfBirth!), 'PP')}`
+          : `Birth date: ${format(new Date(infant?.dateOfBirth!), 'PP')}`,
         switchTextStyles: true,
-        alertSeverity:
-          (mother.statusInfo?.color?.toLocaleLowerCase() as AlertSeverityType) ||
-          'none',
-        alertSeverityNoneIcon: 'CalendarIcon',
-        alertSeverityNoneColor: 'black',
+        alertSeverity: 'none',
         avatarColor: getAvatarColor('growgreat') || '',
         onActionClick: () => {},
       };
     });
 
-    setMothersList(mothersList);
-  }, [mothers]);
+    setInfantsList(infantsList);
+  }, [infants]);
 
   useLayoutEffect(() => {
-    appDispatch(getMothersWeeklyVisits()).unwrap();
+    appDispatch(getInfantsWeeklyVisits()).unwrap();
   }, [appDispatch]);
 
   return (
@@ -74,7 +70,7 @@ export const PregnancyVisits: React.FC = () => {
       showBackground={false}
       size="medium"
       renderBorder={true}
-      title={'Pregnancy visits'}
+      title={'Child visits'}
       color={'primary'}
       onBack={goBack}
       displayOffline={!isOnline}
@@ -90,10 +86,10 @@ export const PregnancyVisits: React.FC = () => {
       </SearchHeader>
       <StackedList
         className="flex flex-col gap-1 px-4 pb-2 pt-4"
-        listItems={mothersList}
+        listItems={infantsList}
         type={'UserAlertList'}
       />
     </BannerWrapper>
   );
 };
-export default PregnancyVisits;
+export default ChildVisits;
