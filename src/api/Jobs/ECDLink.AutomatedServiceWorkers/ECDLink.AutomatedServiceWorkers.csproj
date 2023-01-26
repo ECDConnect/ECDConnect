@@ -2,6 +2,7 @@
 
   <PropertyGroup>
 	<TargetFramework>net7.0</TargetFramework>
+	<Nullable>disable</Nullable>
     <UserSecretsId>dotnet-ECDLink.AutomatedServiceWorkers-59BE6C62-491F-4ED6-A43D-46BA4C7ACF3E</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <DockerfileContext>..\..</DockerfileContext>

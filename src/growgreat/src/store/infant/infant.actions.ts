@@ -141,7 +141,7 @@ const mapCaregiver = (x: Partial<CaregiverDto>): CaregiverModelInput => ({
   healthCareWorkerId: x.healthCareWorkerId,
   age: x.age,
   relationId: x.relationId,
-  siteAddress: mapSiteAddress(x.siteAddress!),
+  siteAddress: x.siteAddress ? mapSiteAddress(x.siteAddress!) : null,
 });
 
 const mapSiteAddress = (x: Partial<SiteAddressDto>): SiteAddressInput => ({
