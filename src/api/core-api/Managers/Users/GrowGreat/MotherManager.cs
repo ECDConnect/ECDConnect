@@ -184,10 +184,10 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 DateTime day258 = startTermDate.AddDays(258);
 
                 DateTime day259 = startTermDate.AddDays(259);
-                DateTime day265 = startTermDate.AddDays(265);
-
                 DateTime day266 = startTermDate.AddDays(266);
-                DateTime day272 = startTermDate.AddDays(272);
+
+                DateTime day267 = startTermDate.AddDays(267);
+                DateTime day273 = startTermDate.AddDays(273);
 
                 DateTime today = DateTime.Today;
 
@@ -231,7 +231,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                     visit4Date = startTermDate.AddDays(279);
                     bAddVisit1 = bAddVisit2 = bAddVisit3 = bAddVisit4 = true;
                 } // Scenario 4: client registered between 183 and 258
-                else if (RegisteredDate.Date >= day183.Date && RegisteredDate <= day258.Date)
+                else if (RegisteredDate.Date >= day183.Date && RegisteredDate.Date <= day258.Date)
                 {
                     visit1Date = RegisteredDate.AddDays(7);
                     visit2Date = RegisteredDate.AddDays(14);
@@ -239,7 +239,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                     visit4Date = startTermDate.AddDays(279);
                     bAddVisit1 = bAddVisit2 = bAddVisit3 = bAddVisit4 = true;
                 } // Scenario 5: client registered between 258 and 266
-                else if (RegisteredDate.Date >= day259.Date && RegisteredDate.Date <= day265.Date)
+                else if (RegisteredDate.Date >= day259.Date && RegisteredDate.Date <= day266.Date)
                 {
                     visit1Date = RegisteredDate.AddDays(7);
                     visit2Date = RegisteredDate.AddDays(14);
@@ -247,13 +247,13 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                     visit4Date = startTermDate.AddDays(279);
                     bAddVisit1 = bAddVisit2 = bAddVisit3 = bAddVisit4 = true;
                 }// Scenario 6: client registered between 266 and day273
-                else if (RegisteredDate.Date >= day266.Date && RegisteredDate.Date <= day272.Date)
+                else if (RegisteredDate.Date >= day267.Date && RegisteredDate.Date <= day273.Date)
                 {
                     visit1Date = startTermDate.AddDays(279);
                     visit2Date = startTermDate.AddDays(279);
                     bAddVisit3 = bAddVisit4 = false;
                 }// Scenario 7: client registered after day273
-                else if (RegisteredDate.Date > day272.Date)
+                else if (RegisteredDate.Date > day273.Date)
                 {
                     visit1Date = startTermDate.AddDays(279);
                     bAddVisit2 = bAddVisit3 = bAddVisit4 = false;
