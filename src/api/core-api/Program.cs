@@ -13,7 +13,7 @@ namespace EcdLink.Api.CoreApi
             // We will need to migrate our DateTimes to be in UTC or keep storing "localtime"
             AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
             // PGSQL Now breaks DateTime.Min and .Max
-            // https://www.npgsql.org/efcore/release-notes/6.0.html?tabs=annotations#datetime-minmax-values-are-now-conver[…]-postgresql-infinity-values-by-default
+            // https://www.npgsql.org/efcore/release-notes/6.0.html?tabs=annotations#datetime-minmax-values-are-now-converted-to-postgresql-infinity-values-by-default
             AppContext.SetSwitch("Npgsql.DisableDateTimeInfinityConversions", true);
 
             CreateHostBuilder(args).Build().Run();
