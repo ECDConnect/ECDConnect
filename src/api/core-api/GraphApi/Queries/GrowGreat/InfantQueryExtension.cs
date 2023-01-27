@@ -54,6 +54,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 foreach (var child in children)
                 {
                     child.StatusInfo = infantManager.GetStatusInfo(child, true);
+                    child.NextVisitDate = infantManager.GetClientsNextVisitDate(child.Id);
                     if (child.StatusInfo.Color == MetricsIconEnum.Warning.ToString() && child.StatusInfo.Subject.Contains(" due "))
                     {
                         infants.Add(child);
@@ -63,6 +64,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 foreach (var child in childrenMother)
                 {
                     child.StatusInfo = infantManager.GetStatusInfo(child, true);
+                    child.NextVisitDate = infantManager.GetClientsNextVisitDate(child.Id);
                     if (child.StatusInfo.Color == MetricsIconEnum.Warning.ToString() && child.StatusInfo.Subject.Contains(" due "))
                     {
                         infants.Add(child);
@@ -74,12 +76,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 foreach (var child in children)
                 {
                     child.StatusInfo = infantManager.GetStatusInfo(child, false);
+                    child.NextVisitDate = infantManager.GetClientsNextVisitDate(child.Id);
                     infants.Add(child);
                 }
 
                 foreach (var child in childrenMother)
                 {
                     child.StatusInfo = infantManager.GetStatusInfo(child, false);
+                    child.NextVisitDate = infantManager.GetClientsNextVisitDate(child.Id);
                     infants.Add(child);
                 }
             }

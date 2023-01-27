@@ -165,7 +165,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             List<VisitType> visitTypes)
         {
             // Business rules implemented -> https://ecd-connect.atlassian.net/jira/software/projects/EC/boards/1?selectedIssue=EC-56
-            
+
             var dateList = new List<VisitModel>();
 
             if (ExpectedDateOfDelivery.HasValue)
@@ -363,6 +363,11 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             }
 
             return statusInfo;
+        }
+
+        public DateTime? GetClientsNextVisitDate(Guid motherId)
+        {
+            return _visitManager.GetClientsNextVisitDate(motherId, Constants.GrowGreatSettings.client_mother);
         }
     }
 }
