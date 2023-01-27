@@ -1,4 +1,5 @@
 using EcdLink.Api.CoreApi.Managers.Users.GrowGreat;
+using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
@@ -36,17 +37,42 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             [Service] IHttpContextAccessor contextAccessor,
             [Service] IGenericRepositoryFactory repoFactory,
             [Service] MotherManager motherManager,
-            string id)
+            string id,
+            string visitType = Constants.GrowGreatSettings.visitType_all) // visitType can be all / overdue / due
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var motherRepo = repoFactory.CreateGenericRepository<Mother>(userContext: uId);
-            List<Mother> mothers = motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId.Equals(id) && x.IsActive.Equals(true)).ToList();
+            List<Mother> allMothers = motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId.Equals(id) && x.IsActive.Equals(true)).ToList();
+            List<Mother> mothers = new List<Mother>();
 
-            foreach (var mother in mothers)
+            if (visitType == Constants.GrowGreatSettings.visitType_due)
             {
-                mother.StatusInfo = motherManager.GetStatusInfo(mother.Id);
+                foreach (var mother in allMothers)
+                {
+                    mother.StatusInfo = motherManager.GetStatusInfo(mother.Id, true);
+                    if (mother.StatusInfo.Color == MetricsIconEnum.Warning.ToString() && mother.StatusInfo.Subject.Contains(" due "))
+                    {
+                        mothers.Add(mother);
+                    }
+                }
+            } else if (visitType == Constants.GrowGreatSettings.visitType_overdue)
+            {
+                foreach (var mother in allMothers)
+                {
+                    mother.StatusInfo = motherManager.GetStatusInfo(mother.Id, true);
+                    if (mother.StatusInfo.Color == MetricsIconEnum.Error.ToString() && mother.StatusInfo.Subject.Contains(" overdue "))
+                    {
+                        mothers.Add(mother);
+                    }
+                }
+            } else
+            {
+                foreach (var mother in allMothers)
+                {
+                    mother.StatusInfo = motherManager.GetStatusInfo(mother.Id, false);
+                    mothers.Add(mother);
+                }
             }
-
             return mothers;
         }
 

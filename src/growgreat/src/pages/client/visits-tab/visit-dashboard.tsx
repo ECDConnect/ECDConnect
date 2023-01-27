@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useLayoutEffect, useMemo } from 'react';
 import { useHistory } from 'react-router';
 import { useWindowSize } from '@reach/window-size';
 
@@ -8,17 +8,10 @@ import Pregnant from '@/assets/pregnant.svg';
 import ROUTES from '@/routes/routes';
 import { ReactComponent as CelebrateIcon } from '@/assets/celebrateIcon.svg';
 import { getWeekDate } from '@ecdlink/core';
-
-const MOCK_DATA = {
-  pregnancy: {
-    overdue: 5,
-    visits: 25,
-  },
-  child: {
-    overdue: 1,
-    visits: 10,
-  },
-};
+import { useAppDispatch } from '@/store';
+import { visitSelectors, visitThunkActions } from '@/store/visit';
+import { useSelector } from 'react-redux';
+import { userSelectors } from '@/store/user';
 
 const HEADER_HEIGHT = 122;
 
@@ -54,13 +47,14 @@ const SuccessCard = ({ text, subText }: { text: string; subText?: string }) => (
 );
 
 export const VisitList: React.FC = () => {
-  const [isAllVisitsCompleted] = useState(false); // TODO: add integration
-  const [isAllPregnancyVisitsCompleted] = useState(false); // TODO: add integration
-  const [isAllChildVisitsCompleted] = useState(false); // TODO: add integration
-
   const { height } = useWindowSize();
 
   const history = useHistory();
+
+  const appDispatch = useAppDispatch();
+
+  const user = useSelector(userSelectors.getUser);
+  const visitStatus = useSelector(visitSelectors.getVisitStatus);
 
   const startDate = `${getWeekDate('monday').getDate()} ${getWeekDate(
     'monday'
@@ -76,6 +70,14 @@ export const VisitList: React.FC = () => {
     [history]
   );
 
+  useLayoutEffect(() => {
+    if (user?.id) {
+      appDispatch(
+        visitThunkActions.getHealthCareWorkerVisitStatus({ userId: user?.id })
+      ).unwrap();
+    }
+  }, [appDispatch, user?.id]);
+
   const renderContent = useMemo(
     () => (
       <>
@@ -89,23 +91,31 @@ export const VisitList: React.FC = () => {
             text="Pregnancy visits"
           />
         </div>
-        {isAllPregnancyVisitsCompleted ? (
+        {!visitStatus.motherOverDueVisits && !visitStatus.motherDueVisits ? (
           <SuccessCard text="All your pregnancy visits are up to date, no visits due this week!" />
         ) : (
           <>
-            <Typography
-              type="body"
-              weight="normal"
-              color="alertDark"
-              fontSize="16"
-              text={`${MOCK_DATA.pregnancy.overdue} overdue visits`}
-            />
+            {!!visitStatus.motherOverDueVisits && (
+              <Typography
+                type="body"
+                weight="normal"
+                color="alertDark"
+                fontSize="16"
+                text={`${visitStatus.motherOverDueVisits} overdue ${
+                  Number(visitStatus.motherOverDueVisits) > 1
+                    ? 'visits'
+                    : 'visit'
+                }`}
+              />
+            )}
             <Typography
               type="body"
               weight="skinny"
               color="black"
               fontSize="16"
-              text={`${MOCK_DATA.pregnancy.visits} visits due this week`}
+              text={`${visitStatus.motherDueVisits} ${
+                Number(visitStatus.motherDueVisits) > 1 ? 'visits' : 'visit'
+              } due this week`}
             />
           </>
         )}
@@ -117,7 +127,7 @@ export const VisitList: React.FC = () => {
           textColor="primary"
           className="mt-3 h-8 w-56 rounded-lg"
           iconPosition="start"
-          onClick={navigate(ROUTES.CLIENTS.VISIT.PREGNANCY_VISITS)}
+          onClick={navigate(ROUTES.CLIENTS.VISIT_TAB.PREGNANCY_VISITS)}
         />
         <Divider className="p-4" dividerType="dashed" />
         <div className="mb-1 flex items-center gap-3">
@@ -130,25 +140,18 @@ export const VisitList: React.FC = () => {
             text="Child visits"
           />
         </div>
-        {isAllChildVisitsCompleted ? (
+        {!visitStatus.childDueVisits ? (
           <SuccessCard text="All your child visits are up to date, no visits due this week!" />
         ) : (
-          <>
-            <Typography
-              type="body"
-              weight="normal"
-              color="alertDark"
-              fontSize="16"
-              text={`${MOCK_DATA.child.overdue} overdue visits`}
-            />
-            <Typography
-              type="body"
-              weight="skinny"
-              color="black"
-              fontSize="16"
-              text={`${MOCK_DATA.child.visits} visits due this week`}
-            />
-          </>
+          <Typography
+            type="body"
+            weight="skinny"
+            color="black"
+            fontSize="16"
+            text={`${visitStatus.childDueVisits} ${
+              Number(visitStatus.childDueVisits) > 1 ? 'visits' : 'visit'
+            } due this week`}
+          />
         )}
         <Button
           text={`See all child visits`}
@@ -158,11 +161,16 @@ export const VisitList: React.FC = () => {
           textColor="primary"
           className="mt-3 h-8 w-2/4 rounded-lg"
           iconPosition="start"
-          onClick={navigate(ROUTES.CLIENTS.VISIT.CHILD_VISITS)}
+          onClick={navigate(ROUTES.CLIENTS.VISIT_TAB.CHILD_VISITS)}
         />
       </>
     ),
-    [isAllChildVisitsCompleted, isAllPregnancyVisitsCompleted, navigate]
+    [
+      navigate,
+      visitStatus.childDueVisits,
+      visitStatus.motherDueVisits,
+      visitStatus.motherOverDueVisits,
+    ]
   );
 
   return (
@@ -184,7 +192,9 @@ export const VisitList: React.FC = () => {
         text={`${startDate} to ${endDate}`}
       />
       <Divider className="p-4" dividerType="dashed" />
-      {isAllVisitsCompleted ? (
+      {!visitStatus.childDueVisits &&
+      !visitStatus.motherDueVisits &&
+      !visitStatus.motherOverDueVisits ? (
         <SuccessCard
           text="All your visits are up to date, no visits due this week!"
           subText="Stay up to date by booking your next visit"
@@ -201,7 +211,7 @@ export const VisitList: React.FC = () => {
           textColor="white"
           className="my-4 w-full"
           iconPosition="start"
-          onClick={navigate(ROUTES.CLIENTS.VISIT.START_VISIT)}
+          onClick={navigate(ROUTES.CLIENTS.VISIT_TAB.START_VISIT)}
         />
         <Button
           text="Book a visit"
@@ -211,7 +221,7 @@ export const VisitList: React.FC = () => {
           textColor="primary"
           className="w-full"
           iconPosition="start"
-          onClick={navigate(ROUTES.CLIENTS.VISIT.BOOK_VISIT)}
+          onClick={navigate(ROUTES.CLIENTS.VISIT_TAB.BOOK_VISIT)}
         />
       </div>
     </div>

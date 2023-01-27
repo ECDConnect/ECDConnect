@@ -1,7 +1,7 @@
 import { useTheme } from '@ecdlink/core';
 import { BannerWrapper, Button, Typography, Divider } from '@ecdlink/ui';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import * as styles from './infant-register.styles';
 import momImage from '@/assets/momImage.png';
 import {
@@ -15,10 +15,12 @@ import {
   UserIcon,
 } from '@heroicons/react/solid';
 import ROUTES from '@routes/routes';
+import { InfantRouteState } from '../infant.types';
 
 export const InfantRegister: React.FC = () => {
   const { isOnline } = useOnlineStatus();
   const history = useHistory();
+  const location = useLocation<InfantRouteState>();
   const { theme } = useTheme();
 
   return (
@@ -186,7 +188,11 @@ export const InfantRegister: React.FC = () => {
                 text={`Start`}
                 icon={'ArrowCircleRightIcon'}
                 iconPosition={'start'}
-                onClick={() => history.push(ROUTES.INFANT_REGISTER_FORM)}
+                onClick={() =>
+                  history.push(ROUTES.INFANT_REGISTER_FORM, {
+                    motherId: location.state?.motherId,
+                  })
+                }
               />
             </div>
           </div>

@@ -10,13 +10,9 @@ using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
-using NPOI.SS.Formula.Functions;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
-using static ICSharpCode.SharpZipLib.Zip.ExtendedUnixData;
-using static NPOI.HSSF.Util.HSSFColor;
 
 namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 {
@@ -209,6 +205,14 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 caregiverInput.SiteAddress = siteAddress;
             }
 
+            // Populate province id with N/A option when site address is null
+            if (caregiverInput.SiteAddressId == null)
+            {
+                var repository = _repoFactory.CreateGenericRepository<Province>(userContext: applicationUserId);
+                var naProvince = repository.GetAll().Where(x => x.Description.Equals("N/A")).FirstOrDefault();
+                caregiverInput.SiteAddress.ProvinceId = naProvince.Id;
+            }
+
             return new Caregiver()
             {
                 Id = GetCaregiverIdOrGenerateNew(input.CaregiverId),
@@ -245,10 +249,10 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             return childRepo.GetAll().Where(x => x.MotherCaregiverId.Equals(motherId)).Count();
         }
 
-        public DisplaySet GetStatusInfo(Infant child)
+        public DisplaySet GetStatusInfo(Infant child, Boolean withinWeek)
         {
             DisplaySet statusInfo = new DisplaySet();
-            statusInfo.Notes = "child";
+            statusInfo.Notes = Constants.GrowGreatSettings.client_child;
 
             //
             // Green or neutral Alerts
@@ -264,7 +268,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             statusInfo.Subject = "Growing well";
 
             // No color alert notification
-            var nextVisitAfter7Days = _visitManager.GetNextVisitMoreThan7DaysAway(child.Id, "child");
+            var nextVisitAfter7Days = _visitManager.GetNextVisitMoreThan7DaysAway(child.Id, Constants.GrowGreatSettings.client_child);
             if (nextVisitAfter7Days != "")
             {
                 statusInfo.Icon = MetricsIconEnum.None.ToString();
@@ -295,7 +299,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 statusInfo.Subject = "Growth faltering";
             }*/
 
-            var nextVisitWithin7Days = _visitManager.GetNextVisitLessThan7DaysAway(child.Id, "child");
+            var nextVisitWithin7Days = _visitManager.GetNextVisitLessThan7DaysAway(child.Id, Constants.GrowGreatSettings.client_child, withinWeek);
             if (nextVisitWithin7Days != "")
             {
                 statusInfo.Icon = MetricsIconEnum.Warning.ToString();
@@ -319,7 +323,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             var _type = "child";
 
             // Get all visit types linked to child excluding additional_visits
-            List<VisitType> visitTypes = visitTypeRepo.GetAll().Where(x => x.Type.Equals(_type) && x.Name != "additional_visits").OrderBy(x => x.Order).ToList();
+            List<VisitType> visitTypes = visitTypeRepo.GetAll().Where(x => x.Type.Equals(_type) && x.Name != Constants.GrowGreatSettings.additional_visits).OrderBy(x => x.Order).ToList();
 
             // Get dates for each visit
             List<VisitModel> visits = GetVisitDates(BirthDate, visitTypes);

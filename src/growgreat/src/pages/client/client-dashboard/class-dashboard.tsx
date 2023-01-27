@@ -16,9 +16,10 @@ import { useAppDispatch } from '@store';
 import { analyticsActions } from '@store/analytics';
 import { getStorageItem } from '@utils/common/local-storage.utils';
 import { ClassDashboardRouteState } from './class-dashboard.types';
-import { ClientList } from '../client-list/client-list';
+import { ClientList } from '../clients-tab/client-list';
 import momImage from '@/assets/happyMom.svg';
-import { VisitList } from '../visit-dashboard/visit-dashboard';
+import { VisitList } from '../visits-tab/visit-dashboard';
+import { HighlightsTab } from '../highlights-tab/highlights-tab';
 
 export const CLIENT_TABS = {
   CLIENT: 0,
@@ -60,14 +61,7 @@ export const ClassDashboard: React.FC = () => {
     {
       title: 'Highlights',
       initActive: false,
-      child: (
-        <Typography
-          className={'p-4'}
-          type={'body'}
-          color="textDark"
-          text={'Coming soon'}
-        />
-      ),
+      child: <HighlightsTab />,
     },
   ];
 

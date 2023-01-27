@@ -8,12 +8,15 @@ class MotherService {
     this._accessToken = accessToken;
   }
 
-  async getMothers(id: string): Promise<MotherDto[]> {
+  async getMothers(
+    id: string,
+    visitType?: 'all' | 'overdue' | 'due'
+  ): Promise<MotherDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-        query GetAllMothersForHealthCareWorker($id: String) {
-          allMothersForHealthCareWorker(id: $id) {
+        query GetAllMothersForHealthCareWorker($id: String, $visitType: String) {
+          allMothersForHealthCareWorker(id: $id, visitType: $visitType) {
             statusInfo {
               icon
               color
@@ -45,7 +48,8 @@ class MotherService {
         }   
         `,
       variables: {
-        id: id,
+        id,
+        visitType,
       },
     });
 
