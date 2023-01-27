@@ -4,7 +4,9 @@ using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
+using Namotion.Reflection;
 using System;
+using System.Linq;
 
 namespace ECDLink.EGraphQL.Resolvers
 {
@@ -18,6 +20,13 @@ namespace ECDLink.EGraphQL.Resolvers
             input.UpdatedDate = DateTime.Now;
             input.Id = id;
             input.TenantId = _tenantId;
+
+            var inputProperties = input?.GetType().GetProperties().Where(p => p.PropertyType == typeof(Guid?));
+            foreach (var property in inputProperties)
+            {
+                if (property.GetValue(input) as Guid? == Guid.Empty)
+                    property.SetValue(input, null);
+            }
 
             repository.SetUserContext(httpContextAccessor.HttpContext.GetUser().Id);
             return repository.Update(input);
