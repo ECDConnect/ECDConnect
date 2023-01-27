@@ -14,7 +14,7 @@ namespace EcdLink.Api.CoreApi
             AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
             // PGSQL Now breaks DateTime.Min and .Max
             // https://www.npgsql.org/efcore/release-notes/6.0.html?tabs=annotations#datetime-minmax-values-are-now-converted-to-postgresql-infinity-values-by-default
-            AppContext.SetSwitch("Npgsql.DisableDateTimeInfinityConversions", true);
+            AppContext.SetSwitch("Npgsql.DisableDateTimeInfinityConversions", false);
 
             CreateHostBuilder(args).Build().Run();
         }
