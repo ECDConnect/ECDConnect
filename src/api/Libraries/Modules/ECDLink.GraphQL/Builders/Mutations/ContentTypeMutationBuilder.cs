@@ -53,7 +53,11 @@ namespace ECDLink.EGraphQL.Registration.ContentTypes
                       MethodType = GraphActionEnum.Update,
                       ObjectType = PermissionGroups.GENERAL
                   })
-                  .Resolve(context => resolver.UpdateMutationResolver(context));
+                  .Resolve(context =>
+                  {
+                      int.TryParse(definition.Identifier, out int contentId);
+                      return resolver.UpdateMutationResolver(context, contentId);
+                  });
         }
 
         private static void AddDeleteMutation(IObjectTypeDescriptor descriptor, IDynamicMutationResolver resolver, ContentDefinitionModel definition)
@@ -68,7 +72,11 @@ namespace ECDLink.EGraphQL.Registration.ContentTypes
                       MethodType = GraphActionEnum.Delete,
                       ObjectType = PermissionGroups.GENERAL
                   })
-                  .Resolve(context => resolver.DeleteMutationResolver(context));
+                  .Resolve(context =>
+                  {
+                      int.TryParse(definition.Identifier, out int contentId);
+                      return resolver.DeleteMutationResolver(context, contentId);
+                  });
         }
 
         private static void AddCreateMutation(IObjectTypeDescriptor descriptor, IDynamicMutationResolver resolver, ContentDefinitionModel definition)
