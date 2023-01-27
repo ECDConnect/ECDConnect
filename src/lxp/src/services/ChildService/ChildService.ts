@@ -292,6 +292,37 @@ class ChildService {
     }
     return response.data.data.openAccessAddChild;
   }
+
+  async childCreatedByDetail(
+    practitionerId: string,
+    firstName: string,
+    surname: string
+  ): Promise<ChildDto[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      query childCreatedByDetail($firstName: String, $surname: String, $practitionerId: String) {
+        childCreatedByDetail(firstName: $firstName, surname: $surname, practitionerId: $practitionerId) {
+            fullName childUserId createdByName createdById createdByDate practitionerName
+        }
+      }
+      `,
+      variables: {
+        practitionerId,
+        firstName,
+        surname,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Get Children For Practitioner Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.childCreatedByDetail;
+  }
 }
 
 export default ChildService;
