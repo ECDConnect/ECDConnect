@@ -99,6 +99,7 @@ export const AnnualMaintenance: React.FC<AddIncomeState> = ({ setType }) => {
           placeholder={'e.g. R 50.00'}
           className="mt-2"
           type={'number'}
+          textInputType={'moneyInput'}
         />
         <FormInput<ExpensesModel>
           label={'Add a description or note'}

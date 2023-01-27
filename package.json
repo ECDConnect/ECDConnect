@@ -90,6 +90,7 @@
     "react": "^17.0.2",
     "react-chartjs-2": "^4.0.1",
     "react-color-palette": "^6.0.0",
+    "react-currency-input-field": "^3.6.9",
     "react-datepicker": "^4.5.0",
     "react-detect-offline": "^2.4.5",
     "react-device-detect": "^2.2.2",

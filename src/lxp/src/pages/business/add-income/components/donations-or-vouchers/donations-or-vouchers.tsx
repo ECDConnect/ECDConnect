@@ -131,6 +131,7 @@ export const DonationsOrVouchers: React.FC<AddIncomeState> = ({ setType }) => {
           placeholder={'e.g. Paid for two months'}
           className="mt-4"
           type={'number'}
+          textInputType={'moneyInput'}
         />
         <FormInput<DonationsOrVouchersModel>
           label={'Add a note'}
