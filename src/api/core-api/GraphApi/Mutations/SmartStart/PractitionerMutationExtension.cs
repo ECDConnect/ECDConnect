@@ -45,7 +45,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public Practitioner UpdatePractitioner([Service] IHttpContextAccessor contextAccessor,
-          [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
           [Service] IGenericRepositoryFactory repoFactory,
           Guid? id,
           Practitioner input)

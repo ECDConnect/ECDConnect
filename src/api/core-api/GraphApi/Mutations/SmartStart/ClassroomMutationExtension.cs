@@ -23,11 +23,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
     {
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
 
-        public ClassroomGroup UpdatePractitionerToTeachClassroom([Service] IHttpContextAccessor contextAccessor,
-            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+        public ClassroomGroup UpdatePractitionerToTeachClassroom(
+            [Service] IHttpContextAccessor contextAccessor,
             [Service] IGenericRepositoryFactory repoFactory,
-               [Service] HierarchyEngine engine,
-               [Service] IReassignmentService reassignmentService,
+            [Service] IReassignmentService reassignmentService,
             string classroomId,
             string userId)
         {
@@ -43,12 +42,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
             return new ClassroomGroup();
         }
-        public ClassroomGroup UpdateClassroomGroup([Service] IHttpContextAccessor contextAccessor,
-    [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
-    [Service] IGenericRepositoryFactory repoFactory,
-    [Service] HierarchyEngine engine,
-    Guid id,
-    ClassroomGroup input)
+        public ClassroomGroup UpdateClassroomGroup(
+            [Service] IHttpContextAccessor contextAccessor,
+            [Service] IGenericRepositoryFactory repoFactory,
+            [Service] HierarchyEngine engine,
+            Guid id,
+            ClassroomGroup input)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var classRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);
@@ -127,12 +126,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             return new ClassroomGroup();
         }
 
-        public ClassProgramme UpdateClassProgramme([Service] IHttpContextAccessor contextAccessor,
-    [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
-    [Service] IGenericRepositoryFactory repoFactory,
-    [Service] HierarchyEngine engine,
-    Guid id,
-    ClassProgramme input)
+        public ClassProgramme UpdateClassProgramme(
+            [Service] IHttpContextAccessor contextAccessor,
+            [Service] IGenericRepositoryFactory repoFactory,
+            [Service] HierarchyEngine engine,
+            Guid id,
+            ClassProgramme input)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var classRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);
@@ -180,10 +179,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             return new ClassProgramme();
         }
 
-        private void UpdateClassProgrammeForPractitioner([Service] IHttpContextAccessor contextAccessor,
-                                                         [Service] IGenericRepositoryFactory repoFactory,
-                                                         Guid classroomId,
-                                                         string newHierarchy)
+        private void UpdateClassProgrammeForPractitioner(
+            [Service] IHttpContextAccessor contextAccessor,
+            [Service] IGenericRepositoryFactory repoFactory,
+            Guid classroomId,
+            string newHierarchy)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
 
