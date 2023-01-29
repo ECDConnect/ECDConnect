@@ -66,7 +66,7 @@ export const SubmitIncomeStatements: React.FC = () => {
           shadowSize={'md'}
         >
           <Typography
-            text={format(new Date(), 'LLLL')}
+            text={`${format(new Date(), 'LLLL')} balance`}
             type="h4"
             color={'white'}
             className="w-6/12"
