@@ -32,8 +32,6 @@ export const Money = () => {
   const payTypes = useSelector(statementsSelectors.getPayTypes);
   const income = useSelector(statementsSelectors.getIncome);
 
-  console.log({ income });
-
   const updateEStatements = async () => {
     if (userAuth?.auth_token) {
       await appDispatch(statementsThunkActions.getAllExpenses(userAuth?.id));
@@ -63,12 +61,6 @@ export const Money = () => {
       setHasIncomeStatements(true);
     }
   }, [income]);
-
-  console.log({ expensesTypes });
-  console.log({ incomeTypes });
-  console.log({ feeTypes });
-  console.log({ contributionTypes });
-  console.log({ payTypes });
 
   return (
     <>

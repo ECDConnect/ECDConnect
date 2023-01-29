@@ -75,20 +75,6 @@ export const Rent: React.FC<AddIncomeState> = ({ setType }) => {
     await new ExpensesStatementsService(
       userAuth?.auth_token!
     ).UpdateStatementsIncome(incomeId, {
-      // IsActive: true,
-      // UserId: userAuth?.id,
-      // // ChildUserId: child,
-      // Submitted: false,
-      // DateReceived: date,
-      // Notes: note,
-      // // Description: 'Testing',
-      // Amount: Number(amount),
-      // AmountExpected: 400,
-      // ChildCoverAmount: 400,
-      // // PayTypeId: '18eb51c4-8486-a7f3-4de0-14477870e205',
-      // ContributionTypeId: contributionType,
-      // IncomeTypeId: incomeTypeValue?.id,
-
       IsActive: true,
       UserId: userAuth?.id,
       Submitted: false,

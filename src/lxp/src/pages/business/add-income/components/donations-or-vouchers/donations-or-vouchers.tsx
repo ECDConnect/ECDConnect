@@ -51,14 +51,12 @@ export const DonationsOrVouchers: React.FC<AddIncomeState> = ({ setType }) => {
   } = useWatch({
     control: control,
   });
-  // const feeTypes = useSelector(statementsSelectors.getFeeTypes);
+
   const incomeTypes = useSelector(statementsSelectors.getIncomeTypes);
   const viewTitle = 'Donation';
   const incomeTypeValue = incomeTypes.find(
     (item) => item.description === viewTitle
   );
-
-  console.log({ date, donationWorth, donations, note });
 
   const payTypes = useSelector(statementsSelectors.getPayTypes);
   const donationsDisabled = donations?.length === 0;

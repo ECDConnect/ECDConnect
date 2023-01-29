@@ -1,12 +1,29 @@
 import ROUTES from '@/routes/routes';
+import { statementsSelectors } from '@/store/statements';
 import { Typography, StatusChip, Button, Card, FADButton } from '@ecdlink/ui';
-import React, { useEffect, useState } from 'react';
+import { format } from 'date-fns';
+import React, { useState } from 'react';
+import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
-import { SubmitIncomeStatementsList } from './components/submit-income-statements-list/submit-income-statements-list';
 
 export const SubmitIncomeStatements: React.FC = () => {
-  const [incomeStatementsList, setIncomeStatementsList] = useState(false);
   const history = useHistory();
+  const income = useSelector(statementsSelectors.getIncome);
+  const expenses = useSelector(statementsSelectors.getExpenses);
+
+  const totalIncome: any = income?.reduce(function (prev: any, current: any) {
+    return prev + +current.amount;
+  }, 0);
+
+  const totalExpenses: any = expenses?.reduce(function (
+    prev: any,
+    current: any
+  ) {
+    return prev + +current.amount;
+  },
+  0);
+
+  const totalBalance = totalIncome - totalExpenses;
 
   return (
     <>
@@ -49,13 +66,17 @@ export const SubmitIncomeStatements: React.FC = () => {
           shadowSize={'md'}
         >
           <Typography
-            text={'December balance'}
+            text={format(new Date(), 'LLLL')}
             type="h4"
             color={'white'}
             className="w-6/12"
           />
           <Typography
-            text={'+ R 100.25'}
+            text={
+              totalBalance > 0
+                ? `+ R ${String(totalBalance)}`
+                : `- R ${String(totalBalance)}`
+            }
             color={'white'}
             type="h1"
             className="w-8/12 text-right"

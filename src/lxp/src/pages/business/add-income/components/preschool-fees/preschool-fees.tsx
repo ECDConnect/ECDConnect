@@ -47,8 +47,6 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
   );
   const moneyContributionTypeId = '8ff95f6e-5116-4412-adf6-81025172970e';
 
-  console.log({ incomeTypeValue });
-
   const {
     control,
     setValue: setPreschoolFeesValue,
@@ -78,14 +76,6 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
   } = useWatch({
     control: control,
   });
-
-  console.log({ expensesTypes });
-  console.log({ incomeTypes });
-  console.log({ feeTypes });
-  console.log({ contributionTypes });
-  console.log({ payTypes });
-
-  console.log({ date, child, contributionType, feeType, note, amount });
 
   const disabled = !date || !child || !contributionType || !feeType;
 
