@@ -86,7 +86,8 @@ export const StartupSupport: React.FC<AddIncomeState> = ({ setType }) => {
           register={register}
           placeholder={'e.g. Paid for two months'}
           className="mt-2"
-          type={'number'}
+          type={'text'}
+          textInputType={'moneyInput'}
         />
         <Alert
           type={'info'}

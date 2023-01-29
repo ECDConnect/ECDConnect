@@ -94,7 +94,8 @@ export const Rent: React.FC<AddIncomeState> = ({ setType }) => {
           register={register}
           placeholder={'e.g. R 50.00'}
           className="mt-2"
-          type={'number'}
+          type={'text'}
+          textInputType={'moneyInput'}
         />
         <FormInput<ExpensesModel>
           label={'Add a description or note'}
