@@ -97,8 +97,10 @@ export const Visits: React.FC = () => {
   );
 
   const visitSteps = useMemo(() => {
-    const someAttendedVisit = visits.some((item) => item.attended);
-    const sortedVisits = [...visits].sort(
+    const filteredVisits = visits.filter((item) => !item.attended);
+    const someAttendedVisit = visits.length > filteredVisits.length;
+
+    const sortedVisits = filteredVisits.sort(
       (a, b) => (a.visitType?.order || 0) - (b.visitType?.order || 0)
     );
 
@@ -248,7 +250,7 @@ export const Visits: React.FC = () => {
             className="mb-7"
           />
         ) : (
-          <Steps items={visitSteps} />
+          <Steps items={visitSteps.slice(0, 3)} />
         )}
         <Divider dividerType="dashed" />
         <div className="my-4 flex items-center gap-3">

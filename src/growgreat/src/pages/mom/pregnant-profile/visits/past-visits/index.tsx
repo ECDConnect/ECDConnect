@@ -33,7 +33,9 @@ export const PastVisits: React.FC = () => {
   const visits = useSelector(getMotherVisits);
 
   const visitSteps = useMemo(() => {
-    const array: StepItem[] = visits.map((item, index) => {
+    const filteredVisits = visits.filter((item) => item.attended);
+
+    const array: StepItem[] = filteredVisits.map((item, index) => {
       const getType = (): StepItem['type'] => {
         if (
           visits[index - 1]?.attended &&
