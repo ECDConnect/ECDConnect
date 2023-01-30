@@ -2,7 +2,13 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import { RootState, ThunkApiType } from '../types';
 import ExpensesStatementsService from '@/services/ExpensesStatementsService/ExpensesStatementsService';
 import { IncomeStatementsService } from '@/services/IncomeStatementsService';
-import { ExpensesStatementsDto } from '@/../../../packages/core/lib';
+import {
+  ExpensesStatementsDto,
+  ExpensesStatementsTypes,
+  IncomeStatementsDto,
+  IncomeStatementsTypes,
+  StatementsContributionTypes,
+} from '@/../../../packages/core/lib';
 
 export const getAllExpenses = createAsyncThunk<
   any[],
@@ -51,7 +57,7 @@ export const getAllExpensesTypes = createAsyncThunk<
     } = getState();
 
     try {
-      let expensesTypes: any[] | undefined;
+      let expensesTypes: ExpensesStatementsTypes[] | undefined;
 
       if (userAuth?.auth_token) {
         expensesTypes = await new ExpensesStatementsService(
@@ -84,7 +90,7 @@ export const getAllIncome = createAsyncThunk<
     } = getState();
 
     try {
-      let income: any[] | undefined;
+      let income: IncomeStatementsDto[] | undefined;
 
       if (userAuth?.auth_token) {
         income = await new IncomeStatementsService(
@@ -118,7 +124,7 @@ export const getAllIncomeTypes = createAsyncThunk<
     } = getState();
 
     try {
-      let incomeTypes: any[] | undefined;
+      let incomeTypes: IncomeStatementsTypes[] | undefined;
 
       if (userAuth?.auth_token) {
         incomeTypes = await new IncomeStatementsService(
@@ -186,7 +192,7 @@ export const getAllStatementsContributionType = createAsyncThunk<
     } = getState();
 
     try {
-      let contributionTypes: any[] | undefined;
+      let contributionTypes: StatementsContributionTypes[] | undefined;
 
       if (userAuth?.auth_token) {
         contributionTypes = await new IncomeStatementsService(

@@ -79,95 +79,97 @@ export const SubmitIncomeStatements: React.FC = () => {
           />
         </Card>
         <table className="mt-4">
-          <tr className="bg-uiBg text-textDark font-body border-secondary h-12 w-1/3 border-b px-6 py-3">
-            <th className="w-1/3"></th>
-            <th className="text-textDark font-body">
-              <Typography text={`NOV 2021`} type="body" color={'textDark'} />
-            </th>
-            <th className="w-1/3">
-              <Typography text={`DEZ 2021`} type="body" color={'textDark'} />
-            </th>
-          </tr>
-          <tr className="h-14">
-            <td className="w-1/3">
-              <Typography
-                text={`Income`}
-                type="body"
-                color={'textDark'}
-                align={'center'}
-              />
-            </td>
-            <td className="w-1/3">
-              <Typography
-                text={`+ R 2 000.00`}
-                type="body"
-                color={'textDark'}
-                align={'center'}
-              />
-            </td>
-            <td className="w-1/3">
-              <Typography
-                text={`+ R 1 800.00`}
-                type="body"
-                color={'textDark'}
-                align={'center'}
-              />
-            </td>
-          </tr>
-          <tr className="bg-uiBg h-14">
-            <td className="w-1/3">
-              <Typography
-                text={`Expenses`}
-                type="body"
-                color={'textDark'}
-                align={'center'}
-              />
-            </td>
-            <td className="w-1/3">
-              <Typography
-                text={`- R 2 700.00 `}
-                type="body"
-                color={'textDark'}
-                align={'center'}
-              />
-            </td>
-            <td className="w-1/3">
-              <Typography
-                text={`- R 1 700.00 `}
-                type="body"
-                color={'textDark'}
-                align={'center'}
-              />
-            </td>
-          </tr>
-          <tr className=" h-14">
-            <td className="w-1/3">
-              <Typography
-                text={`Balance`}
-                weight="bold"
-                type="body"
-                color={'textDark'}
-                align={'center'}
-                className="font-bold"
-              />
-            </td>
-            <td className="w-1/3">
-              <Typography
-                text={`+ R 300.10 `}
-                type="body"
-                color={'successMain'}
-                align={'center'}
-              />
-            </td>
-            <td className="w-1/3">
-              <Typography
-                text={`+ R 100.10 `}
-                type="body"
-                color={'successMain'}
-                align={'center'}
-              />
-            </td>
-          </tr>
+          <tbody>
+            <tr className="bg-uiBg text-textDark font-body border-secondary h-12 w-1/3 border-b px-6 py-3">
+              <th className="w-1/3"></th>
+              <th className="text-textDark font-body">
+                <Typography text={`NOV 2021`} type="body" color={'textDark'} />
+              </th>
+              <th className="w-1/3">
+                <Typography text={`DEZ 2021`} type="body" color={'textDark'} />
+              </th>
+            </tr>
+            <tr className="h-14">
+              <td className="w-1/3">
+                <Typography
+                  text={`Income`}
+                  type="body"
+                  color={'textDark'}
+                  align={'center'}
+                />
+              </td>
+              <td className="w-1/3">
+                <Typography
+                  text={`+ R 2 000.00`}
+                  type="body"
+                  color={'textDark'}
+                  align={'center'}
+                />
+              </td>
+              <td className="w-1/3">
+                <Typography
+                  text={`+ R 1 800.00`}
+                  type="body"
+                  color={'textDark'}
+                  align={'center'}
+                />
+              </td>
+            </tr>
+            <tr className="bg-uiBg h-14">
+              <td className="w-1/3">
+                <Typography
+                  text={`Expenses`}
+                  type="body"
+                  color={'textDark'}
+                  align={'center'}
+                />
+              </td>
+              <td className="w-1/3">
+                <Typography
+                  text={`- R 2 700.00 `}
+                  type="body"
+                  color={'textDark'}
+                  align={'center'}
+                />
+              </td>
+              <td className="w-1/3">
+                <Typography
+                  text={`- R 1 700.00 `}
+                  type="body"
+                  color={'textDark'}
+                  align={'center'}
+                />
+              </td>
+            </tr>
+            <tr className=" h-14">
+              <td className="w-1/3">
+                <Typography
+                  text={`Balance`}
+                  weight="bold"
+                  type="body"
+                  color={'textDark'}
+                  align={'center'}
+                  className="font-bold"
+                />
+              </td>
+              <td className="w-1/3">
+                <Typography
+                  text={`+ R 300.10 `}
+                  type="body"
+                  color={'successMain'}
+                  align={'center'}
+                />
+              </td>
+              <td className="w-1/3">
+                <Typography
+                  text={`+ R 100.10 `}
+                  type="body"
+                  color={'successMain'}
+                  align={'center'}
+                />
+              </td>
+            </tr>
+          </tbody>
         </table>
         <Button
           shape="normal"
