@@ -15,13 +15,19 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm, useWatch } from 'react-hook-form';
 import { AddIncomeState } from './other.types';
 import { PhotoPrompt } from '@/components/photo-prompt/photo-prompt';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   ExpensesModel,
   expensesSchema,
 } from '@/schemas/expense-statements/expenses';
+import ExpensesStatementsService from '@/services/ExpensesStatementsService/ExpensesStatementsService';
+import { newGuid } from '@/utils/common/uuid.utils';
+import { useSelector } from 'react-redux';
+import { authSelectors } from '@/store/auth';
+import { statementsSelectors } from '@/store/statements';
 
 export const Other: React.FC<AddIncomeState> = ({ setType }) => {
+  const userAuth = useSelector(authSelectors.getAuthUser);
   const {
     trigger,
     control,
@@ -45,9 +51,17 @@ export const Other: React.FC<AddIncomeState> = ({ setType }) => {
     useState<boolean>(false);
   const [registrationFormPhotoUrl, setRegistrationFormPhotoUrl] =
     useState<string>();
+  const [isLoading, setIsLoading] = useState(false);
 
-  const disabled = !date || !amount;
+  const disabled = useMemo(() => {
+    return !date || !amount;
+  }, [amount, date]);
   const acceptedFormats = ['jpg', 'jpeg'];
+  const expensesTypes = useSelector(statementsSelectors.getExpensesTypes);
+  const viewTitle = 'Other';
+  const expensesTypeValue = expensesTypes.find(
+    (item) => item.description === viewTitle
+  );
 
   const setPhotoUrl = (imageUrl: string) => {
     setRentValue('expenseInvoice', imageUrl);
@@ -56,7 +70,26 @@ export const Other: React.FC<AddIncomeState> = ({ setType }) => {
     setPhotoActionBarVisible(false);
   };
 
-  console.log({ date, expenseInvoice, amount, note });
+  const sendIncomeUpdate = async () => {
+    const incomeId = newGuid();
+    setIsLoading(true);
+
+    await new ExpensesStatementsService(
+      userAuth?.auth_token!
+    ).UpdateStatementsIncome(incomeId, {
+      IsActive: true,
+      UserId: userAuth?.id,
+      Submitted: false,
+      DatePaid: date,
+      Notes: note,
+      Amount: Number(amount),
+      ExpenseTypeId: expensesTypeValue?.id,
+      PhotoProof: expenseInvoice,
+    });
+
+    setIsLoading(false);
+    setType('');
+  };
 
   return (
     <BannerWrapper
@@ -78,7 +111,7 @@ export const Other: React.FC<AddIncomeState> = ({ setType }) => {
           className="bg-uiBg text-textMid mx-auto w-full rounded-md border-none"
           selected={selectedDate ? new Date(selectedDate) : undefined}
           onChange={(date: Date) => {
-            setRentValue('date', date ? date.toString() : '');
+            setRentValue('date', date ? date.toISOString() : '');
           }}
           dateFormat="EEE, dd MMM yyyy"
         />
@@ -140,8 +173,9 @@ export const Other: React.FC<AddIncomeState> = ({ setType }) => {
           type="filled"
           color="primary"
           className={'mx-auto mt-8 w-full rounded-2xl'}
-          onClick={() => {}}
+          onClick={sendIncomeUpdate}
           disabled={disabled}
+          isLoading={isLoading}
         >
           {renderIcon('SaveIcon', styles.buttonIcon)}
           <Typography

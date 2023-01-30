@@ -15,8 +15,22 @@ import {
   dsdSubsidySchema,
 } from '@/schemas/income-statements/dsd-subsidy';
 import { AddIncomeState } from './dsd-subsidy.types';
+import { statementsSelectors } from '@/store/statements';
+import { useSelector } from 'react-redux';
+import { authSelectors } from '@/store/auth';
+import { IncomeStatementsService } from '@/services/IncomeStatementsService';
+import { newGuid } from '@/utils/common/uuid.utils';
+import { useMemo } from 'react';
 
 export const DsdSubsidy: React.FC<AddIncomeState> = ({ setType }) => {
+  const userAuth = useSelector(authSelectors.getAuthUser);
+
+  const incomeTypes = useSelector(statementsSelectors.getIncomeTypes);
+  const viewTitle = 'DBE Subsidy';
+  const incomeTypeValue = incomeTypes.find(
+    (item) => item.description === viewTitle
+  );
+
   const {
     control,
     setValue: setPreschoolFeesValue,
@@ -36,7 +50,36 @@ export const DsdSubsidy: React.FC<AddIncomeState> = ({ setType }) => {
     control: control,
   });
 
-  const disabled = !date || !childrenNumber || !subsidyAmount;
+  const disabled = useMemo(() => {
+    return !date || !childrenNumber || !subsidyAmount;
+  }, [childrenNumber, date, subsidyAmount]);
+
+  const sendIncomeUpdate = async () => {
+    const incomeId = newGuid();
+
+    await new IncomeStatementsService(
+      userAuth?.auth_token!
+    ).UpdateStatementsIncome(incomeId, {
+      IsActive: true,
+      UserId: userAuth?.id,
+      // ChildUserId: child,
+      Submitted: false,
+      DateReceived: date,
+      Notes: note,
+      // Description: 'Testing',
+      Amount: Number(subsidyAmount),
+      AmountExpected: 400,
+      ChildCoverAmount: Number(childrenNumber),
+      // PayTypeId: '18eb51c4-8486-a7f3-4de0-14477870e205',
+      // ContributionTypeId: contributionType,
+      IncomeTypeId: incomeTypeValue?.id,
+    });
+  };
+
+  const handleSaveStartupSupportValues = () => {
+    sendIncomeUpdate();
+    setType('');
+  };
 
   return (
     <BannerWrapper
@@ -48,7 +91,7 @@ export const DsdSubsidy: React.FC<AddIncomeState> = ({ setType }) => {
       className="p-4"
     >
       <div className="mb-3 w-full justify-center">
-        <Typography type="h2" color="textMid" text={'DBE subsidy'} />
+        <Typography type="h2" color="textMid" text={viewTitle} />
         <Alert
           type={'info'}
           title={
@@ -65,7 +108,7 @@ export const DsdSubsidy: React.FC<AddIncomeState> = ({ setType }) => {
           className="bg-uiBg text-textMid mx-auto w-full rounded-md border-none"
           selected={selectedDate ? new Date(selectedDate) : undefined}
           onChange={(date: Date) => {
-            setPreschoolFeesValue('date', date ? date.toString() : '');
+            setPreschoolFeesValue('date', date ? date.toISOString() : '');
           }}
           dateFormat="EEE, dd MMM yyyy"
         />
@@ -101,7 +144,7 @@ export const DsdSubsidy: React.FC<AddIncomeState> = ({ setType }) => {
           type="filled"
           color="primary"
           className={'mx-auto mt-8 w-full rounded-2xl'}
-          onClick={() => {}}
+          onClick={handleSaveStartupSupportValues}
           disabled={disabled}
         >
           {renderIcon('SaveIcon', styles.buttonIcon)}

@@ -18,8 +18,22 @@ import {
   otherIncomeSchema,
 } from '@/schemas/income-statements/other-income';
 import { AddIncomeState } from './other-income.types';
+import { IncomeStatementsService } from '@/services/IncomeStatementsService';
+import { useSelector } from 'react-redux';
+import { authSelectors } from '@/store/auth';
+import { statementsSelectors } from '@/store/statements';
+import { newGuid } from '@/utils/common/uuid.utils';
+import { useMemo } from 'react';
 
 export const OtherIncome: React.FC<AddIncomeState> = ({ setType }) => {
+  const userAuth = useSelector(authSelectors.getAuthUser);
+
+  const incomeTypes = useSelector(statementsSelectors.getIncomeTypes);
+  const viewTitle = 'Other';
+  const incomeTypeValue = incomeTypes.find(
+    (item) => item.description === viewTitle
+  );
+
   const {
     control,
     setValue: setPreschoolFeesValue,
@@ -39,7 +53,36 @@ export const OtherIncome: React.FC<AddIncomeState> = ({ setType }) => {
     control: control,
   });
 
-  const disabled = !date || !incomeAmount || !description;
+  const disabled = useMemo(() => {
+    return !date || !incomeAmount || !description;
+  }, [date, description, incomeAmount]);
+
+  const sendIncomeUpdate = async () => {
+    const incomeId = newGuid();
+
+    await new IncomeStatementsService(
+      userAuth?.auth_token!
+    ).UpdateStatementsIncome(incomeId, {
+      IsActive: true,
+      UserId: userAuth?.id,
+      // ChildUserId: child,
+      Submitted: false,
+      DateReceived: date,
+      Notes: note,
+      Description: description,
+      Amount: Number(incomeAmount),
+      AmountExpected: 400,
+      ChildCoverAmount: 10,
+      // PayTypeId: '18eb51c4-8486-a7f3-4de0-14477870e205',
+      // ContributionTypeId: contributionType,
+      IncomeTypeId: incomeTypeValue?.id,
+    });
+  };
+
+  const handleSaveStartupSupportValues = () => {
+    sendIncomeUpdate();
+    setType('');
+  };
 
   return (
     <BannerWrapper
@@ -51,7 +94,7 @@ export const OtherIncome: React.FC<AddIncomeState> = ({ setType }) => {
       className="p-4"
     >
       <div className="mb-3 w-full justify-center">
-        <Typography type="h2" color="textMid" text={'Other income type'} />
+        <Typography type="h2" color="textMid" text={viewTitle} />
         <label className="text-md text-textDark mt-2 mb-1 block font-semibold">
           When did you get this income?
         </label>
@@ -61,7 +104,7 @@ export const OtherIncome: React.FC<AddIncomeState> = ({ setType }) => {
           className="bg-uiBg text-textMid mx-auto w-full rounded-md border-none"
           selected={selectedDate ? new Date(selectedDate) : undefined}
           onChange={(date: Date) => {
-            setPreschoolFeesValue('date', date ? date.toString() : '');
+            setPreschoolFeesValue('date', date ? date.toISOString() : '');
           }}
           dateFormat="EEE, dd MMM yyyy"
         />
@@ -97,7 +140,7 @@ export const OtherIncome: React.FC<AddIncomeState> = ({ setType }) => {
           type="filled"
           color="primary"
           className={'mx-auto mt-8 w-full rounded-2xl'}
-          onClick={() => {}}
+          onClick={handleSaveStartupSupportValues}
           disabled={disabled}
         >
           {renderIcon('SaveIcon', styles.buttonIcon)}
