@@ -6,13 +6,21 @@ import {
   UserAlertListDataItem,
   ActionModal,
   AlertSeverityType,
+  SearchDropDown,
+  SearchDropDownOption,
 } from '@ecdlink/ui';
-import { format } from 'date-fns';
+import { format, intervalToDuration } from 'date-fns';
 import { useDialog, getAvatarColor, MotherDto } from '@ecdlink/core';
 import { IconInformationIndicator } from '@/components/icon-information-indicator/icon-information-indicator';
-import * as styles from './infant-list.styles';
+import * as styles from './client-list.styles';
 import { useSelector } from 'react-redux';
-import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from 'react';
 import ROUTES from '@/routes/routes';
 import { useHistory } from 'react-router-dom';
 import { getInfants } from '@/store/infant/infant.selectors';
@@ -22,6 +30,20 @@ import Pregnant from '@/assets/pregnant.svg';
 import { ReactComponent as BinocularsIcon } from '@/assets/binocularsIcon.svg';
 import { PREGNANT_PROFILE_TABS } from '@/pages/mom/pregnant-profile';
 import { useAppDispatch } from '@/store';
+import SearchHeader from '@/components/search-header/search-header';
+import { infantThunkActions } from '@/store/infant';
+import {
+  ageOptions,
+  clientTypeOptions,
+  ExtraInfantData,
+  ExtraMotherData,
+  filterByAge,
+  filterByClientType,
+  filterBySort,
+  searchList,
+  SortBy,
+  sortOptions,
+} from './filters';
 
 export const ClientList: React.FC<ComponentBaseProps> = () => {
   const dialog = useDialog();
@@ -34,28 +56,67 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
   const mothers = useSelector(motherSelectors.getMothers);
 
   const [infantsListItems, setInfantsListItems] = useState<
-    UserAlertListDataItem[]
+    UserAlertListDataItem<ExtraInfantData>[]
   >([]);
   const [mothersListItems, setMothersListItems] = useState<
-    UserAlertListDataItem[]
+    UserAlertListDataItem<ExtraMotherData>[]
   >([]);
-  const [clientsListItems, setClientsListItems] = useState<any>([]);
+
+  const [search, setSearch] = useState('');
+  const [searchTextActive, setSearchTextActive] = useState(false);
+
+  const [clientType, setClientType] = useState<SearchDropDownOption<string>[]>(
+    []
+  );
+  const [age, setAge] = useState<SearchDropDownOption<string>[]>([]);
+  const [sortBy, setSortBy] = useState<SearchDropDownOption<SortBy>[]>([]);
+
+  const filteredList = useMemo(() => {
+    let list = [...mothersListItems, ...infantsListItems];
+
+    list = filterByClientType(
+      list,
+      mothersListItems,
+      infantsListItems,
+      clientType
+    );
+    list = filterByAge(list, age);
+    list = filterBySort(list, sortBy);
+    list = searchList(list, search);
+
+    return list;
+  }, [mothersListItems, infantsListItems, clientType, age, sortBy, search]);
 
   useEffect(() => {
-    const infantsList: UserAlertListDataItem[] = infants.map((infant) => {
-      return {
-        icon: Infant,
-        title: infant?.firstName ?? infant?.user?.firstName!,
-        // TODO: add correct subTitle (alert status)
-        subTitle: infant?.user?.dateOfBirth
-          ? `Birth date: ${format(new Date(infant?.user?.dateOfBirth!), 'PP')}`
-          : `Birth date: ${format(new Date(infant?.dateOfBirth!), 'PP')}`,
-        switchTextStyles: true,
-        alertSeverity: 'none',
-        avatarColor: getAvatarColor('growgreat') || '',
-        onActionClick: () => {},
-      };
-    });
+    const infantsList: UserAlertListDataItem<ExtraInfantData>[] = infants.map(
+      (infant) => {
+        const { years, months } = intervalToDuration({
+          start: new Date(infant?.user?.dateOfBirth || ''),
+          end: new Date(),
+        });
+
+        return {
+          icon: Infant,
+          title: infant?.firstName ?? infant?.user?.firstName!,
+          // TODO: add correct subTitle (alert status)
+          subTitle: infant?.user?.dateOfBirth
+            ? `Birth date: ${format(
+                new Date(infant?.user?.dateOfBirth!),
+                'PP'
+              )}`
+            : `Birth date: ${format(new Date(infant?.dateOfBirth!), 'PP')}`,
+          switchTextStyles: true,
+          alertSeverity: 'none',
+          avatarColor: getAvatarColor('growgreat') || '',
+          extraData: {
+            ...infant,
+            under6Months: !!years || (!!months && months > 6),
+            age: `${years}.${months}`,
+          },
+          onActionClick: () => {},
+        };
+      }
+    );
 
     setInfantsListItems(infantsList);
   }, [infants]);
@@ -135,30 +196,30 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
   );
 
   useLayoutEffect(() => {
-    const mothersList: UserAlertListDataItem[] = mothers.map((mother) => {
-      return {
-        icon: Pregnant,
-        title: mother?.firstName || mother?.user?.firstName!,
-        subTitle: mother.statusInfo?.subject,
-        switchTextStyles: true,
-        alertSeverity:
-          (mother.statusInfo?.color?.toLocaleLowerCase() as AlertSeverityType) ||
-          'none',
-        alertSeverityNoneIcon: 'CalendarIcon',
-        alertSeverityNoneColor: 'black',
-        avatarColor: getAvatarColor('growgreat') || '',
-        onActionClick: () => showClientProfileDialog(mother),
-      };
-    });
+    const mothersList: UserAlertListDataItem<ExtraMotherData>[] = mothers.map(
+      (mother) => {
+        return {
+          icon: Pregnant,
+          title: mother?.firstName || mother?.user?.firstName!,
+          subTitle: mother.statusInfo?.subject,
+          switchTextStyles: true,
+          alertSeverity:
+            (mother.statusInfo?.color?.toLocaleLowerCase() as AlertSeverityType) ||
+            'none',
+          alertSeverityNoneIcon: 'CalendarIcon',
+          alertSeverityNoneColor: 'black',
+          avatarColor: getAvatarColor('growgreat') || '',
+          extraData: {
+            ...mother,
+            under6Months: true,
+          },
+          onActionClick: () => showClientProfileDialog(mother),
+        };
+      }
+    );
 
     setMothersListItems(mothersList);
   }, [history, mothers, showClientProfileDialog]);
-
-  useEffect(() => {
-    if (infantsListItems || mothersListItems) {
-      setClientsListItems([...infantsListItems, ...mothersListItems]);
-    }
-  }, [infantsListItems, mothersListItems]);
 
   const showCompleteProfileBlockingDialog = () => {
     dialog({
@@ -205,37 +266,96 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
 
   useLayoutEffect(() => {
     appDispatch(motherThunkActions.getMothers({})).unwrap();
+    appDispatch(infantThunkActions.getInfants({})).unwrap();
   }, [appDispatch]);
 
   return (
     <div className={styles.overlay}>
-      {(!infants || infants.length === 0) &&
-        (!mothers || mothers.length === 0) && (
+      <SearchHeader<UserAlertListDataItem>
+        searchItems={filteredList}
+        onSearchChange={setSearch}
+        isTextSearchActive={searchTextActive}
+        onBack={() => setSearchTextActive(false)}
+        onSearchButtonClick={() => setSearchTextActive(true)}
+        className="flex gap-2 overflow-auto"
+      >
+        <SearchDropDown<string>
+          displayMenuOverlay={true}
+          menuItemClassName={'w-11/12 left-4 '}
+          overlayTopOffset={'120'}
+          options={clientTypeOptions}
+          selectedOptions={clientType}
+          onChange={setClientType}
+          placeholder={'Client type'}
+          color={'secondary'}
+          info={{
+            name: `Filter by: Client type`,
+          }}
+        />
+        <SearchDropDown<string>
+          displayMenuOverlay={true}
+          menuItemClassName={'w-11/12 left-4 '}
+          overlayTopOffset={'120'}
+          options={ageOptions}
+          selectedOptions={age}
+          onChange={setAge}
+          placeholder={'Age'}
+          color={'secondary'}
+          info={{
+            name: `Filter by: Age`,
+          }}
+        />
+        <SearchDropDown<SortBy>
+          displayMenuOverlay={true}
+          menuItemClassName={'w-11/12 left-4 '}
+          overlayTopOffset={'120'}
+          options={sortOptions}
+          selectedOptions={sortBy}
+          onChange={setSortBy}
+          placeholder={'Sort by'}
+          color={'secondary'}
+          info={{
+            name: `Sort by:`,
+          }}
+        />
+      </SearchHeader>
+      <div className={styles.content}>
+        {!filteredList.length && (
           <IconInformationIndicator
             className="px-10 pt-28"
-            title="You don't have any client yet!"
-            subTitle="Tap the “Open a folder” button below to register clients"
+            title="No results"
+            subTitle=""
             renderCustomIcon={<BinocularsIcon />}
           />
         )}
-      {clientsListItems.length > 0 && (
-        <StackedList
-          className={styles.stackedList}
-          listItems={clientsListItems || []}
-          type={'UserAlertList'}
+        {(!infants || infants.length === 0) &&
+          (!mothers || mothers.length === 0) && (
+            <IconInformationIndicator
+              className="px-10 pt-28"
+              title="You don't have any client yet!"
+              subTitle="Tap the “Open a folder” button below to register clients"
+              renderCustomIcon={<BinocularsIcon />}
+            />
+          )}
+        {filteredList.length > 0 && (
+          <StackedList
+            className={styles.stackedList}
+            listItems={filteredList || []}
+            type={'UserAlertList'}
+          />
+        )}
+        <FADButton
+          title={'Open a folder'}
+          icon={'PlusIcon'}
+          iconDirection={'left'}
+          textToggle
+          type={'filled'}
+          color={'primary'}
+          shape={'round'}
+          className={styles.fadButton}
+          click={goToClientFolders}
         />
-      )}
-      <FADButton
-        title={'Open a folder'}
-        icon={'PlusIcon'}
-        iconDirection={'left'}
-        textToggle
-        type={'filled'}
-        color={'primary'}
-        shape={'round'}
-        className={styles.fadButton}
-        click={goToClientFolders}
-      />
+      </div>
     </div>
   );
 };

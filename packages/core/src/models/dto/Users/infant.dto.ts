@@ -22,4 +22,5 @@ export interface InfantDto extends EntityBase {
   genderId?: string;
   weightAtBirth?: number;
   lengthAtBirth?: number;
+  nextVisitDate?: string;
 }
