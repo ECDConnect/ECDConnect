@@ -15,6 +15,10 @@ import { useHistory } from 'react-router-dom';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useSelector } from 'react-redux';
 import { statementsSelectors } from '@/store/statements';
+import {
+  ExpensesStatementsDto,
+  IncomeStatementsDto,
+} from '@/../../../packages/core/lib';
 
 export const SubmitIncomeStatementsList: React.FC = () => {
   const history = useHistory();
@@ -28,49 +32,36 @@ export const SubmitIncomeStatementsList: React.FC = () => {
   };
   const income = useSelector(statementsSelectors.getIncome);
   const expenses = useSelector(statementsSelectors.getExpenses);
-  const payTypes = useSelector(statementsSelectors.getPayTypes);
-  const incomeTypes = useSelector(statementsSelectors.getIncomeTypes);
-  const expensesTypes = useSelector(statementsSelectors.getExpensesTypes);
-  const preschoolIncome: any = useSelector(
+  const preschoolIncome = useSelector(
     statementsSelectors.getPreschoolFeeIncome
   );
-  const startupIncome: any = useSelector(
+  const startupIncome = useSelector(
     statementsSelectors.getStartupSupportIncome
   );
-  const donationIncome: any = useSelector(
-    statementsSelectors.getDonationIncome
-  );
-  const dbeSubsidyIncome: any = useSelector(
-    statementsSelectors.getdbeSubsidyIncome
-  );
+  const donationIncome = useSelector(statementsSelectors.getDonationIncome);
+  const dbeSubsidyIncome = useSelector(statementsSelectors.getdbeSubsidyIncome);
 
-  const rentExpense: any = useSelector(statementsSelectors.getRentExpense);
-  const foodExpense: any = useSelector(statementsSelectors.getFoodExpense);
-  const learningMaterialsExpense: any = useSelector(
+  const rentExpense = useSelector(statementsSelectors.getRentExpense);
+  const foodExpense = useSelector(statementsSelectors.getFoodExpense);
+  const learningMaterialsExpense = useSelector(
     statementsSelectors.getLearingMaterialsExpense
   );
-  const maintenanceExpense: any = useSelector(
+  const maintenanceExpense = useSelector(
     statementsSelectors.getMaintenanceExpense
   );
-  const otherExpense: any = useSelector(statementsSelectors.getOtherExpense);
-  const utilitiesExpense: any = useSelector(
-    statementsSelectors.getUtilitiesExpense
-  );
-  const salaryExpense: any = useSelector(statementsSelectors.getSalaryExpense);
+  const otherExpense = useSelector(statementsSelectors.getOtherExpense);
+  const utilitiesExpense = useSelector(statementsSelectors.getUtilitiesExpense);
+  const salaryExpense = useSelector(statementsSelectors.getSalaryExpense);
 
-  const otherIncome: any = useSelector(statementsSelectors.getOtheryIncome);
+  const otherIncome = useSelector(statementsSelectors.getOtheryIncome);
 
-  const totalIncome: any = income?.reduce(function (prev: any, current: any) {
+  const totalIncome = income?.reduce(function (prev: any, current: any) {
     return prev + +current.amount;
   }, 0);
 
-  const totalExpenses: any = expenses?.reduce(function (
-    prev: any,
-    current: any
-  ) {
+  const totalExpenses = expenses?.reduce(function (prev: any, current: any) {
     return prev + +current.amount;
-  },
-  0);
+  }, 0);
 
   const totalBalance = totalIncome - totalExpenses;
 
@@ -98,11 +89,11 @@ export const SubmitIncomeStatementsList: React.FC = () => {
   };
 
   useEffect(() => {
-    const preschoolValue: any = [];
-    const startupValue: any = [];
-    const doantionValue: any = [];
-    const dbeSubsidyValue: any = [];
-    const otherValue: any = [];
+    const preschoolValue: IncomeStatementsDto[] = [];
+    const startupValue: IncomeStatementsDto[] = [];
+    const doantionValue: IncomeStatementsDto[] = [];
+    const dbeSubsidyValue: IncomeStatementsDto[] = [];
+    const otherValue: IncomeStatementsDto[] = [];
 
     income?.map((item: any) => {
       if (item?.incomeTypeId === preschoolIncome?.id) {
@@ -136,13 +127,13 @@ export const SubmitIncomeStatementsList: React.FC = () => {
   ]);
 
   useEffect(() => {
-    const rentValue: any = [];
-    const foodValue: any = [];
-    const learningMaterialsValue: any = [];
-    const maintenanceValue: any = [];
-    const otherValue: any = [];
-    const utilitiesValue: any = [];
-    const salaryValue: any = [];
+    const rentValue: ExpensesStatementsDto[] = [];
+    const foodValue: ExpensesStatementsDto[] = [];
+    const learningMaterialsValue: ExpensesStatementsDto[] = [];
+    const maintenanceValue: ExpensesStatementsDto[] = [];
+    const otherValue: ExpensesStatementsDto[] = [];
+    const utilitiesValue: ExpensesStatementsDto[] = [];
+    const salaryValue: ExpensesStatementsDto[] = [];
 
     expenses?.map((item: any) => {
       if (item?.expenseTypeId === rentExpense?.id) {

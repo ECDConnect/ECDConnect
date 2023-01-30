@@ -2,6 +2,7 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import { RootState, ThunkApiType } from '../types';
 import ExpensesStatementsService from '@/services/ExpensesStatementsService/ExpensesStatementsService';
 import { IncomeStatementsService } from '@/services/IncomeStatementsService';
+import { ExpensesStatementsDto } from '@/../../../packages/core/lib';
 
 export const getAllExpenses = createAsyncThunk<
   any[],
@@ -16,7 +17,7 @@ export const getAllExpenses = createAsyncThunk<
     } = getState();
 
     try {
-      let expenses: any[] | undefined;
+      let expenses: ExpensesStatementsDto[] | undefined;
 
       if (userAuth?.auth_token) {
         expenses = await new ExpensesStatementsService(
@@ -63,7 +64,6 @@ export const getAllExpensesTypes = createAsyncThunk<
       if (!expensesTypes) {
         return rejectWithValue('Error expenses types');
       }
-
       return expensesTypes;
     } catch (err) {
       return rejectWithValue(err);

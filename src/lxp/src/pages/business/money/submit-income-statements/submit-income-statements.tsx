@@ -11,17 +11,13 @@ export const SubmitIncomeStatements: React.FC = () => {
   const income = useSelector(statementsSelectors.getIncome);
   const expenses = useSelector(statementsSelectors.getExpenses);
 
-  const totalIncome: any = income?.reduce(function (prev: any, current: any) {
+  const totalIncome = income?.reduce(function (prev: any, current: any) {
     return prev + +current.amount;
   }, 0);
 
-  const totalExpenses: any = expenses?.reduce(function (
-    prev: any,
-    current: any
-  ) {
+  const totalExpenses = expenses?.reduce(function (prev: any, current: any) {
     return prev + +current.amount;
-  },
-  0);
+  }, 0);
 
   const totalBalance = totalIncome - totalExpenses;
 
