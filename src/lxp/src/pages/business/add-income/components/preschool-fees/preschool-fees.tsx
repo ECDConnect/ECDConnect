@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   BannerWrapper,
   Typography,
@@ -77,7 +77,9 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
     control: control,
   });
 
-  const disabled = !date || !child || !contributionType || !feeType;
+  const disabled = useMemo(() => {
+    return !date || !child || !contributionType || !feeType;
+  }, [child, contributionType, date, feeType]);
 
   useEffect(() => {
     const _list = contributionTypes

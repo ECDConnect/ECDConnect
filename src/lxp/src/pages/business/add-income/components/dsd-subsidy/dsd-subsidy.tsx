@@ -20,6 +20,7 @@ import { useSelector } from 'react-redux';
 import { authSelectors } from '@/store/auth';
 import { IncomeStatementsService } from '@/services/IncomeStatementsService';
 import { newGuid } from '@/utils/common/uuid.utils';
+import { useMemo } from 'react';
 
 export const DsdSubsidy: React.FC<AddIncomeState> = ({ setType }) => {
   const userAuth = useSelector(authSelectors.getAuthUser);
@@ -49,7 +50,9 @@ export const DsdSubsidy: React.FC<AddIncomeState> = ({ setType }) => {
     control: control,
   });
 
-  const disabled = !date || !childrenNumber || !subsidyAmount;
+  const disabled = useMemo(() => {
+    return !date || !childrenNumber || !subsidyAmount;
+  }, [childrenNumber, date, subsidyAmount]);
 
   const sendIncomeUpdate = async () => {
     const incomeId = newGuid();

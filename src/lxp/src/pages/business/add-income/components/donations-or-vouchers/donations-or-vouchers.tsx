@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   BannerWrapper,
   Typography,
@@ -60,7 +60,9 @@ export const DonationsOrVouchers: React.FC<AddIncomeState> = ({ setType }) => {
 
   const payTypes = useSelector(statementsSelectors.getPayTypes);
   const donationsDisabled = donations?.length === 0;
-  const disabled = !date || !donationWorth || !donations || donationsDisabled;
+  const disabled = useMemo(() => {
+    return !date || !donationWorth || !donations || donationsDisabled;
+  }, [date, donationWorth, donations, donationsDisabled]);
 
   useEffect(() => {
     const _list = payTypes

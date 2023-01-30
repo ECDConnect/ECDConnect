@@ -15,7 +15,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm, useWatch } from 'react-hook-form';
 import { AddIncomeState } from './other.types';
 import { PhotoPrompt } from '@/components/photo-prompt/photo-prompt';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   ExpensesModel,
   expensesSchema,
@@ -53,7 +53,9 @@ export const Other: React.FC<AddIncomeState> = ({ setType }) => {
     useState<string>();
   const [isLoading, setIsLoading] = useState(false);
 
-  const disabled = !date || !amount;
+  const disabled = useMemo(() => {
+    return !date || !amount;
+  }, [amount, date]);
   const acceptedFormats = ['jpg', 'jpeg'];
   const expensesTypes = useSelector(statementsSelectors.getExpensesTypes);
   const viewTitle = 'Other';
@@ -86,7 +88,7 @@ export const Other: React.FC<AddIncomeState> = ({ setType }) => {
     });
 
     setIsLoading(false);
-    await setType('');
+    setType('');
   };
 
   return (

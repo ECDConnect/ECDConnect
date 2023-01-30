@@ -17,7 +17,7 @@ import {
   StartupSupportModel,
   StartupSupportSchema,
 } from '@/schemas/income-statements/startup-support';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { AddIncomeState } from './startup-support.types';
 import { IncomeStatementsService } from '@/services/IncomeStatementsService';
 import { authSelectors } from '@/store/auth';
@@ -52,7 +52,9 @@ export const StartupSupport: React.FC<AddIncomeState> = ({ setType }) => {
     control: control,
   });
 
-  const disabled = !date || !startupValue;
+  const disabled = useMemo(() => {
+    return !date || !startupValue;
+  }, [date, startupValue]);
 
   const sendIncomeUpdate = async () => {
     const incomeId = newGuid();
