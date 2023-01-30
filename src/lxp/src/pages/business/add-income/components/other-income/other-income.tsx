@@ -1,16 +1,12 @@
 import {
-  ComponentBaseProps,
   BannerWrapper,
   Typography,
   renderIcon,
   Button,
-  Alert,
   FormInput,
 } from '@ecdlink/ui';
 import DatePicker from 'react-datepicker';
-import { useHistory } from 'react-router';
 import * as styles from './other-income.styles';
-import ROUTES from '@routes/routes';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm, useWatch } from 'react-hook-form';
 import {
@@ -65,16 +61,13 @@ export const OtherIncome: React.FC<AddIncomeState> = ({ setType }) => {
     ).UpdateStatementsIncome(incomeId, {
       IsActive: true,
       UserId: userAuth?.id,
-      // ChildUserId: child,
       Submitted: false,
       DateReceived: date,
       Notes: note,
       Description: description,
-      Amount: Number(incomeAmount),
+      Amount: Number(incomeAmount?.slice(1)),
       AmountExpected: 400,
       ChildCoverAmount: 10,
-      // PayTypeId: '18eb51c4-8486-a7f3-4de0-14477870e205',
-      // ContributionTypeId: contributionType,
       IncomeTypeId: incomeTypeValue?.id,
     });
   };

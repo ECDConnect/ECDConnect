@@ -1,8 +1,7 @@
-import { Typography, FADButton, Dialog, DialogPosition } from '@ecdlink/ui';
+import { Typography, FADButton } from '@ecdlink/ui';
 import { ReactComponent as MoneyIcon } from '@/assets/moneyIcon.svg';
 import * as styles from './money.styles';
 import { useEffect, useState } from 'react';
-import AddAmount from '../add-amount/add-amount';
 import ROUTES from '@/routes/routes';
 import { useHistory } from 'react-router-dom';
 import { SubmitIncomeStatements } from './submit-income-statements/submit-income-statements';
@@ -10,26 +9,14 @@ import ExpensesStatementsService from '@/services/ExpensesStatementsService/Expe
 import { useSelector } from 'react-redux';
 import { authSelectors } from '@store/auth';
 import { useAppDispatch } from '@/store';
-import {
-  statementsActions,
-  statementsSelectors,
-  statementsThunkActions,
-} from '@store/statements';
+import { statementsSelectors, statementsThunkActions } from '@store/statements';
 import { IncomeStatementsService } from '@/services/IncomeStatementsService';
 
 export const Money = () => {
   const history = useHistory();
-  const [addIncome, setAddIncome] = useState(false);
   const [hasIncomeStatements, setHasIncomeStatements] = useState(false);
   const userAuth = useSelector(authSelectors.getAuthUser);
   const appDispatch = useAppDispatch();
-  const expensesTypes = useSelector(statementsSelectors.getExpensesTypes);
-  const incomeTypes = useSelector(statementsSelectors.getIncomeTypes);
-  const feeTypes = useSelector(statementsSelectors.getFeeTypes);
-  const contributionTypes = useSelector(
-    statementsSelectors.getContributionTypes
-  );
-  const payTypes = useSelector(statementsSelectors.getPayTypes);
   const income = useSelector(statementsSelectors.getIncome);
 
   const updateEStatements = async () => {
@@ -54,6 +41,7 @@ export const Money = () => {
 
   useEffect(() => {
     updateEStatements();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

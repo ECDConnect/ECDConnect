@@ -25,7 +25,6 @@ import {
 import { statementsSelectors } from '@/store/statements';
 import { IncomeStatementsService } from '@/services/IncomeStatementsService';
 import { authSelectors } from '@/store/auth';
-import { StatementsIncomeInput } from '@/../../../packages/graphql/lib';
 import { newGuid } from '@/utils/common/uuid.utils';
 
 export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
@@ -38,9 +37,7 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
   const contributionTypes = useSelector(
     statementsSelectors.getContributionTypes
   );
-  const expensesTypes = useSelector(statementsSelectors.getExpensesTypes);
   const incomeTypes = useSelector(statementsSelectors.getIncomeTypes);
-  const payTypes = useSelector(statementsSelectors.getPayTypes);
   const viewTitle = 'Preschool Fee';
   const incomeTypeValue = incomeTypes.find(
     (item) => item.description === viewTitle
@@ -95,6 +92,7 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
       .filter(Boolean) as { label: string; value: any }[];
 
     setIncomeTypesList(_list);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

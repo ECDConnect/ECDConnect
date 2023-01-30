@@ -62,16 +62,12 @@ export const DsdSubsidy: React.FC<AddIncomeState> = ({ setType }) => {
     ).UpdateStatementsIncome(incomeId, {
       IsActive: true,
       UserId: userAuth?.id,
-      // ChildUserId: child,
       Submitted: false,
       DateReceived: date,
       Notes: note,
-      // Description: 'Testing',
-      Amount: Number(subsidyAmount),
+      Amount: Number(subsidyAmount?.slice(1)),
       AmountExpected: 400,
       ChildCoverAmount: Number(childrenNumber),
-      // PayTypeId: '18eb51c4-8486-a7f3-4de0-14477870e205',
-      // ContributionTypeId: contributionType,
       IncomeTypeId: incomeTypeValue?.id,
     });
   };
