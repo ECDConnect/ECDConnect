@@ -443,5 +443,10 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             return null;
         }
 
+        public DateTime? GetClientsNextVisitDate(Guid infantId)
+        {
+            return _visitManager.GetClientsNextVisitDate(infantId, Constants.GrowGreatSettings.client_child);
+        }
+
     }
 }

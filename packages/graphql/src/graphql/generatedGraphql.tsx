@@ -1889,6 +1889,7 @@ export type Infant = {
   lengthAtBirth?: Maybe<Scalars['Decimal']>;
   mother?: Maybe<Mother>;
   motherCaregiverId?: Maybe<Scalars['UUID']>;
+  nextVisitDate?: Maybe<Scalars['DateTime']>;
   statusInfo?: Maybe<DisplaySet>;
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
@@ -1909,6 +1910,7 @@ export type InfantFilterInput = {
   lengthAtBirth?: InputMaybe<ComparableNullableOfDecimalOperationFilterInput>;
   mother?: InputMaybe<MotherFilterInput>;
   motherCaregiverId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
+  nextVisitDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   or?: InputMaybe<Array<InfantFilterInput>>;
   statusInfo?: InputMaybe<DisplaySetFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
@@ -1928,6 +1930,7 @@ export type InfantInput = {
   LengthAtBirth?: InputMaybe<Scalars['Decimal']>;
   Mother?: InputMaybe<MotherInput>;
   MotherCaregiverId?: InputMaybe<Scalars['UUID']>;
+  NextVisitDate?: InputMaybe<Scalars['DateTime']>;
   StatusInfo?: InputMaybe<DisplaySetInput>;
   UpdatedBy?: InputMaybe<Scalars['String']>;
   User?: InputMaybe<ApplicationUserInput>;
@@ -2235,6 +2238,7 @@ export type Mother = {
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
   linkedCaregiverId?: Maybe<Scalars['UUID']>;
+  nextVisitDate?: Maybe<Scalars['DateTime']>;
   siteAddress?: Maybe<SiteAddress>;
   siteAddressId?: Maybe<Scalars['UUID']>;
   statusInfo?: Maybe<DisplaySet>;
@@ -2256,6 +2260,7 @@ export type MotherFilterInput = {
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
   linkedCaregiverId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
+  nextVisitDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   or?: InputMaybe<Array<MotherFilterInput>>;
   siteAddress?: InputMaybe<SiteAddressFilterInput>;
   siteAddressId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
@@ -2276,6 +2281,7 @@ export type MotherInput = {
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
   LinkedCaregiverId?: InputMaybe<Scalars['UUID']>;
+  NextVisitDate?: InputMaybe<Scalars['DateTime']>;
   SiteAddress?: InputMaybe<SiteAddressInput>;
   SiteAddressId?: InputMaybe<Scalars['UUID']>;
   StatusInfo?: InputMaybe<DisplaySetInput>;

@@ -11,6 +11,7 @@ using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
+using NPOI.POIFS.Properties;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -50,6 +51,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 foreach (var mother in allMothers)
                 {
                     mother.StatusInfo = motherManager.GetStatusInfo(mother.Id, true);
+                    mother.NextVisitDate = motherManager.GetClientsNextVisitDate(mother.Id);
                     if (mother.StatusInfo.Color == MetricsIconEnum.Warning.ToString() && mother.StatusInfo.Subject.Contains(" due "))
                     {
                         mothers.Add(mother);
@@ -60,6 +62,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 foreach (var mother in allMothers)
                 {
                     mother.StatusInfo = motherManager.GetStatusInfo(mother.Id, true);
+                    mother.NextVisitDate = motherManager.GetClientsNextVisitDate(mother.Id);
                     if (mother.StatusInfo.Color == MetricsIconEnum.Error.ToString() && mother.StatusInfo.Subject.Contains(" overdue "))
                     {
                         mothers.Add(mother);
@@ -70,6 +73,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 foreach (var mother in allMothers)
                 {
                     mother.StatusInfo = motherManager.GetStatusInfo(mother.Id, false);
+                    mother.NextVisitDate = motherManager.GetClientsNextVisitDate(mother.Id);
                     mothers.Add(mother);
                 }
             }
