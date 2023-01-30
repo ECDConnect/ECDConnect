@@ -29,7 +29,7 @@ import { authSelectors } from '@/store/auth';
 export const Utilities: React.FC<AddIncomeState> = ({ setType }) => {
   const userAuth = useSelector(authSelectors.getAuthUser);
   const expensesTypes = useSelector(statementsSelectors.getExpensesTypes);
-  const viewTitle = 'Utilities';
+  const viewTitle = 'Utilities (electricity, water & other running costs)';
   const expensesTypeValue = expensesTypes.find(
     (item) => item.description === viewTitle
   );
@@ -82,7 +82,7 @@ export const Utilities: React.FC<AddIncomeState> = ({ setType }) => {
       Submitted: false,
       DatePaid: date,
       Notes: note,
-      Amount: Number(amount),
+      Amount: Number(amount?.slice(1)),
       ExpenseTypeId: expensesTypeValue?.id,
       PhotoProof: expenseInvoice,
     });
@@ -127,7 +127,7 @@ export const Utilities: React.FC<AddIncomeState> = ({ setType }) => {
           visible={true}
           nameProp={'amount'}
           register={register}
-          placeholder={'e.g. R 50.00'}
+          placeholder={'e.g. R 700.00'}
           className="mt-2"
           type={'text'}
           textInputType={'moneyInput'}
@@ -138,7 +138,7 @@ export const Utilities: React.FC<AddIncomeState> = ({ setType }) => {
           visible={true}
           nameProp={'note'}
           register={register}
-          placeholder={'e.g. Small grant from local shop'}
+          placeholder={'e.g. Airtime to call caregivers'}
           className="mt-2"
         />
         <ImageInput<ExpensesModel>
@@ -147,6 +147,7 @@ export const Utilities: React.FC<AddIncomeState> = ({ setType }) => {
           subLabel={'Optional'}
           nameProp="expenseInvoice"
           icon="CameraIcon"
+          iconContainerColor={'tertiary'}
           className={'py-4'}
           currentImageString={registrationFormPhotoUrl}
           register={register}

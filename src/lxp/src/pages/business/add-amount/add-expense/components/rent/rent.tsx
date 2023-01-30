@@ -82,7 +82,7 @@ export const Rent: React.FC<AddIncomeState> = ({ setType }) => {
       Submitted: false,
       DatePaid: date,
       Notes: note,
-      Amount: Number(amount),
+      Amount: Number(amount?.slice(1)),
       ExpenseTypeId: expensesTypeValue?.id,
       PhotoProof: expenseInvoice,
     });
@@ -127,7 +127,7 @@ export const Rent: React.FC<AddIncomeState> = ({ setType }) => {
           visible={true}
           nameProp={'amount'}
           register={register}
-          placeholder={'e.g. R 50.00'}
+          placeholder={'e.g. R 500.00'}
           className="mt-2"
           type={'text'}
           textInputType={'moneyInput'}
@@ -138,7 +138,7 @@ export const Rent: React.FC<AddIncomeState> = ({ setType }) => {
           visible={true}
           nameProp={'note'}
           register={register}
-          placeholder={'e.g. Small grant from local shop'}
+          placeholder={'e.g. Paid for two months'}
           className="mt-2"
         />
         <ImageInput<ExpensesModel>
@@ -147,6 +147,7 @@ export const Rent: React.FC<AddIncomeState> = ({ setType }) => {
           subLabel={'Optional'}
           nameProp="expenseInvoice"
           icon="CameraIcon"
+          iconContainerColor={'tertiary'}
           className={'py-4'}
           currentImageString={registrationFormPhotoUrl}
           register={register}

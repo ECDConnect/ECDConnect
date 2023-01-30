@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { LocalStorageKeys } from '@ecdlink/core';
 import { BannerWrapper, TabItem, TabList, Typography } from '@ecdlink/ui';
 import format from 'date-fns/format';
@@ -23,6 +24,7 @@ export const Business: React.FC = () => {
     state?.activeTabIndex !== undefined ? state?.activeTabIndex : 0
   );
   const appDispatch = useAppDispatch();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [previousTabIndex, setPreviousTabIndex] = useState<number>();
   const [currentTab, setCurrentTab] = useState<TabItem>();
   const { isOnline } = useOnlineStatus();

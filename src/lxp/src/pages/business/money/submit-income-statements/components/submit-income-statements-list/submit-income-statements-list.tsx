@@ -116,6 +116,7 @@ export const SubmitIncomeStatementsList: React.FC = () => {
         otherValue.push(item);
         setOtherIncomeValues(otherValue);
       }
+      return null;
     });
   }, [
     dbeSubsidyIncome?.id,
@@ -164,6 +165,7 @@ export const SubmitIncomeStatementsList: React.FC = () => {
         salaryValue.push(item);
         setSalary(salaryValue);
       }
+      return null;
     });
   }, [
     dbeSubsidyIncome.id,

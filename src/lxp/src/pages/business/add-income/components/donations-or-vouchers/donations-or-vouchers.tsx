@@ -11,7 +11,7 @@ import {
   FormInput,
 } from '@ecdlink/ui';
 import DatePicker from 'react-datepicker';
-import { AddIncomeState, donationTypes } from './donations-or-vouchers.types';
+import { AddIncomeState } from './donations-or-vouchers.types';
 import * as styles from './donations-or-vouchers.styles';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm, useWatch } from 'react-hook-form';
@@ -47,7 +47,6 @@ export const DonationsOrVouchers: React.FC<AddIncomeState> = ({ setType }) => {
     date,
     donationWorth,
     donations,
-    note,
   } = useWatch({
     control: control,
   });
@@ -78,6 +77,7 @@ export const DonationsOrVouchers: React.FC<AddIncomeState> = ({ setType }) => {
       .filter(Boolean) as { label: string; value: any }[];
 
     setDonationTypesList(_list);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleDonationsValue = (donations: string[]) => {

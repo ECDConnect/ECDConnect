@@ -3,7 +3,6 @@ import {
   Typography,
   renderIcon,
   Button,
-  Alert,
   FormInput,
   ImageInput,
   Dialog,
@@ -26,7 +25,7 @@ import { useSelector } from 'react-redux';
 import { authSelectors } from '@/store/auth';
 import { statementsSelectors } from '@/store/statements';
 
-export const Other: React.FC<AddIncomeState> = ({ setType }) => {
+export const OtherExpense: React.FC<AddIncomeState> = ({ setType }) => {
   const userAuth = useSelector(authSelectors.getAuthUser);
   const {
     trigger,
@@ -82,7 +81,7 @@ export const Other: React.FC<AddIncomeState> = ({ setType }) => {
       Submitted: false,
       DatePaid: date,
       Notes: note,
-      Amount: Number(amount),
+      Amount: Number(amount?.slice(1)),
       ExpenseTypeId: expensesTypeValue?.id,
       PhotoProof: expenseInvoice,
     });
@@ -116,11 +115,20 @@ export const Other: React.FC<AddIncomeState> = ({ setType }) => {
           dateFormat="EEE, dd MMM yyyy"
         />
         <FormInput<ExpensesModel>
+          label={'Write a short description of the expense'}
+          subLabel={'You can use this expense type in future'}
+          visible={true}
+          nameProp={'typeDescription'}
+          register={register}
+          placeholder={'e.g. Training course for assistant'}
+          className="mt-2"
+        />
+        <FormInput<ExpensesModel>
           label={'How much did you pay?'}
           visible={true}
           nameProp={'amount'}
           register={register}
-          placeholder={'e.g. R 50.00'}
+          placeholder={'e.g. R 200.00'}
           className="mt-2"
           type={'text'}
           textInputType={'moneyInput'}
@@ -131,7 +139,7 @@ export const Other: React.FC<AddIncomeState> = ({ setType }) => {
           visible={true}
           nameProp={'note'}
           register={register}
-          placeholder={'e.g. Small grant from local shop'}
+          placeholder={'e.g. Level 2 training'}
           className="mt-2"
         />
         <ImageInput<ExpensesModel>
@@ -140,6 +148,7 @@ export const Other: React.FC<AddIncomeState> = ({ setType }) => {
           subLabel={'Optional'}
           nameProp="expenseInvoice"
           icon="CameraIcon"
+          iconContainerColor={'tertiary'}
           className={'py-4'}
           currentImageString={registrationFormPhotoUrl}
           register={register}
@@ -190,4 +199,4 @@ export const Other: React.FC<AddIncomeState> = ({ setType }) => {
   );
 };
 
-export default Other;
+export default OtherExpense;
