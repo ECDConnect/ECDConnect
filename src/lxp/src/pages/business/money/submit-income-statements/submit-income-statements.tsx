@@ -70,8 +70,8 @@ export const SubmitIncomeStatements: React.FC = () => {
           <Typography
             text={
               totalBalance > 0
-                ? `+ R ${String(totalBalance)}`
-                : `- R ${String(totalBalance)}`
+                ? `R ${String(totalBalance)}`
+                : `R ${String(totalBalance)}`
             }
             color={'white'}
             type="h1"

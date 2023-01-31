@@ -28,7 +28,7 @@ export const getAllExpenses = createAsyncThunk<
       if (userAuth?.auth_token) {
         expenses = await new ExpensesStatementsService(
           userAuth?.auth_token
-        ).GetAllStatementsExpenses();
+        ).allStatementsExpenses(userAuth?.id);
       } else {
         return rejectWithValue('no access token, profile check required');
       }
