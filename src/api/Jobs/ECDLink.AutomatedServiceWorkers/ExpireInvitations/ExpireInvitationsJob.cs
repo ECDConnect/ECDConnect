@@ -45,38 +45,31 @@ namespace ECDLink.AutomatedServiceWorkers.ExpireInvitations
             while (!stoppingToken.IsCancellationRequested)
             {
                 _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
-                List<int> AllowedDays = new List<int>() { 27, 28, 29, 30, 31 };
-
-                if (!AllowedDays.Contains(DateTime.Today.Day)) return;
                 var services = new ServiceCollection()
                     .AddLogging()
                     .AddSingleton<IReassignmentService, ReassignmentService>()
                     .BuildServiceProvider();
 
-                var adminId = _hierarchyEngine.GetAdminUserId();
-                int timingDelay = 60;
-                //run the Payment Processor
+                int timingDelay = 60;//default
+
+                var jobToRun = CronHelper.GetServiceJobs(_hierarchyEngine, _repoFactory, "ExpireInvitationsJob");
+
                 using (var scope = _scopeFactory.CreateScope())
                 {
-                    var dbRepo = _repoFactory.CreateGenericRepository<ServiceScheduler>(userContext: adminId);
-                    var expiryJobs = dbRepo.GetAll().Where(x => x.Name == "ExpireInvitationsJob").ToList();
-                    foreach (var expiryJob in expiryJobs)
+                    foreach (var expiryJob in jobToRun)
                     {
                         expiryJob.StartTime = DateTime.Now;
                         timingDelay = int.Parse(expiryJob.TimingDelay);
                         CronHelper.SetTenantContext(scope, expiryJob.TenantId.ToString());
 
                         var invitationService = scope.ServiceProvider.GetRequiredService<IReassignmentService>();
-
                         invitationService.ExpireRelationshipLinks();
 
-                        expiryJob.Results = "Success";
-                        expiryJob.EndTime = DateTime.Now;
-                        dbRepo.Update(expiryJob);
+                        CronHelper.UpdateServiceJobResults(_hierarchyEngine, _repoFactory, expiryJob);
                     }
                 }
 
-                await Task.Delay(TimeSpan.FromMinutes(timingDelay), stoppingToken);
+                await Task.Delay(TimeSpan.FromHours(timingDelay), stoppingToken);
             }
        
         }
