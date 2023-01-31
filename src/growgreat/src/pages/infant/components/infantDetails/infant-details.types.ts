@@ -1,4 +1,4 @@
-import { FormComponentProps } from '@ecdlink/core';
+import { FormComponentProps, MotherDto } from '@ecdlink/core';
 import { InfantRegisterModel } from '@/schemas/infant/infant-register-form';
 
 export interface EditInfantDetailsProps
@@ -8,6 +8,7 @@ export interface EditInfantDetailsProps
   genderId?: string;
   numberOfChildren?: number;
   multipleChildrenCount?: number;
+  motherInfo?: MotherDto;
 }
 
 export const yesNoOptions = [

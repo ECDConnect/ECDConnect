@@ -329,6 +329,7 @@ export const InfantRegisterForm: React.FC = () => {
           <InfantDetails
             multipleChildrenCount={multipleChildrenCount}
             numberOfChildren={numberOfChildren}
+            motherInfo={mother}
             onSubmit={(value) => {
               setLabel(`step 3 of 6`);
               setInfantDetails(value);

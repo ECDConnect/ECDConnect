@@ -341,19 +341,17 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
         />
       </SearchHeader>
       <div className={styles.content}>
-        {!filteredList.length && !isEmptyState && (
+        {!filteredList.length && (
           <IconInformationIndicator
             className="px-10 pt-28"
-            title="No results"
-            subTitle=""
-            renderCustomIcon={<BinocularsIcon />}
-          />
-        )}
-        {isEmptyState && (
-          <IconInformationIndicator
-            className="px-10 pt-28"
-            title="You don't have any client yet!"
-            subTitle="Tap the “Open a folder” button below to register clients"
+            title={
+              isEmptyState ? "You don't have any client yet!" : 'No results'
+            }
+            subTitle={
+              isEmptyState
+                ? 'Tap the “Open a folder” button below to register clients'
+                : ''
+            }
             renderCustomIcon={<BinocularsIcon />}
           />
         )}
