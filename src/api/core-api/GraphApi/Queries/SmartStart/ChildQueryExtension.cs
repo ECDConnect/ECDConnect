@@ -91,7 +91,9 @@ string classroomId)
                                 CreatedByName = child.InsertedBy,
                                 CreatedById = child.UpdatedBy,
                                 CreatedByDate = child.InsertedDate,
-                                PractitionerName = practitioner.User.FullName
+                                PractitionerName = practitioner.User.FullName,
+                                DateOfBirth = child.User.DateOfBirth,
+                                ProfileImageUrl = child.User.ProfileImageUrl                                
                             };
                         }
                     }

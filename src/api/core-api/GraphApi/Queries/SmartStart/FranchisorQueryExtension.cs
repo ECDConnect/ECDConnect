@@ -35,7 +35,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public List<Coach> GetAllCoachesForFranchisor([Service] IHttpContextAccessor contextAccessor,
-     [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
      [Service] IGenericRepositoryFactory repoFactory,
      string userId)
         {
@@ -67,7 +66,6 @@ string userId)
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public SiteAddress GetFranchisorSiteAddressById([Service] IHttpContextAccessor contextAccessor,
-            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] IGenericRepositoryFactory repoFactory,
             string franchisorId)
         {
