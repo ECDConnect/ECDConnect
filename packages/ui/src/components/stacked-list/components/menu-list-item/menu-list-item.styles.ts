@@ -5,6 +5,7 @@ export const menuItemIconContainer =
 export const menuItemIconContainerDefault = 'bg-primary text-white';
 export const menuItemIcon = 'flex-shrink-0 h-6 w-6 ';
 export const menuTitle = 'font-medium truncate';
+export const menuSubItem = 'truncate mr-6 font-medium text-base';
 export const menuSubTitle = 'mt-0 flex items-center text-sm';
 export const menuChevron = 'h-6 w-6 text-primary';
 export const menulistItemContainer = 'hover:bg-uiLight cursor-pointer';

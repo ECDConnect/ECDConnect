@@ -31,7 +31,7 @@ import { version } from '@/../package.json';
 import { healthCareWorkerSelectors } from '@/store/healthCareWorker';
 import { DashboardRouteState } from './dashboard.types';
 import { useNotificationService } from '@/hooks/useNotificationService';
-import { CLIENT_TABS } from '../client/class-dashboard/class-dashboard';
+import { CLIENT_TABS } from '../client/client-dashboard/class-dashboard';
 
 export enum NavigationTypes {
   Home = 'Home',

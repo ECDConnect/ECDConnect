@@ -178,7 +178,7 @@ const mapCoach = (coach: Partial<CoachDto>): CoachInput => ({
   SecondaryAreaOfOperation: coach.secondaryAreaOfOperation,
   SigningSignature: coach.signingSignature || undefined,
   SiteAddressId: coach.siteAddressId || undefined,
-  SiteAddress: mapSiteAddress(coach.siteAddress!),
+  SiteAddress: coach.siteAddress ? mapSiteAddress(coach.siteAddress!) : null,
   StartDate: coach.startDate || undefined,
   AreaOfOperation: coach.areaOfOperation,
   IsActive: coach.isActive || false,

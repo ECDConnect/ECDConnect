@@ -43,6 +43,9 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         [NotMapped]
         public virtual DisplaySet StatusInfo { get; set; }
 
+        [NotMapped]
+        public DateTime? NextVisitDate { get; set; }
+
     }
 
     public interface InfantJoin<TKey>

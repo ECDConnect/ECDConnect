@@ -1,4 +1,3 @@
-import { UserDto } from '@ecdlink/core';
 import {
   ActionListDataItem,
   BannerWrapper,
@@ -7,17 +6,10 @@ import {
   Typography,
   Alert,
 } from '@ecdlink/ui';
-import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import {
-  initialPractitionerAboutValues,
-  PractitionerAboutModel,
-  practitionerAboutModelSchema,
-} from '@schemas/practitioner/practitioner-about';
 import { useAppDispatch } from '@store';
 import { userSelectors } from '@store/user';
 import { analyticsActions } from '@store/analytics';
@@ -29,7 +21,7 @@ import SalaryAndWages from './components/salary-and-wages/salaray-and-wages';
 import Food from './components/food/food';
 import LearningMaterials from './components/learning-materials/learning-materials';
 import AnnualMaintenance from './components/annual-maintenance/annual-maintenance';
-import Other from './components/other-income/other';
+import OtherExpense from './components/other-expense/other';
 
 export const AddExpense: React.FC = () => {
   const history = useHistory();
@@ -53,33 +45,9 @@ export const AddExpense: React.FC = () => {
 
   useEffect(() => {
     if (user) {
-      setNewStackListItems(user);
+      setNewStackListItems();
     }
   }, [user]);
-
-  const getDefaultFormvalues = () => {
-    if (user) {
-      const tempPractitioner: PractitionerAboutModel = {
-        name: user.firstName || '',
-        surname: user.surname || '',
-        cellphone: user.phoneNumber || '',
-        email: user?.email! || '',
-      };
-      return tempPractitioner;
-    } else {
-      return initialPractitionerAboutValues;
-    }
-  };
-
-  const {
-    register: expenseRegister,
-    formState: expenseFormState,
-    getValues: expenseFormGetValues,
-  } = useForm({
-    resolver: yupResolver(practitionerAboutModelSchema),
-    defaultValues: getDefaultFormvalues(),
-    mode: 'onChange',
-  });
 
   const incomeType = (type?: string) => {
     switch (type) {
@@ -96,13 +64,13 @@ export const AddExpense: React.FC = () => {
       case 'AnnualMaintenance':
         return <AnnualMaintenance setType={setType} />;
       case 'Other':
-        return <Other setType={setType} />;
+        return <OtherExpense setType={setType} />;
       default:
         break;
     }
   };
 
-  const setNewStackListItems = (currentUser: UserDto) => {
+  const setNewStackListItems = () => {
     const list: ActionListDataItem[] = [
       {
         title: 'Rent',

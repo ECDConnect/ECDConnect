@@ -1,12 +1,11 @@
 import {
   FormInput,
   Button,
-  Typography,
   Alert,
   SA_ID_REGEX,
   SA_PASSPORT_REGEX,
 } from '@ecdlink/ui';
-import { PractitionerDto, UserDto } from '@ecdlink/core';
+import { UserDto } from '@ecdlink/core';
 import { useEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -19,10 +18,6 @@ import { PractitionerService } from '@/services/PractitionerService';
 import { useSelector } from 'react-redux';
 import { authSelectors } from '@/store/auth';
 import { RegisterPractitioner } from '../../setup-principal/setup-principal.types';
-
-type UserWithPractitionerData = UserDto & {
-  practitionerObjectData?: PractitionerDto;
-};
 
 export const AddOrEditPractitioner = ({
   onSubmit,
