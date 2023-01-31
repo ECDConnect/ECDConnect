@@ -1,3 +1,4 @@
-export type ClassDashboardRouteState = {
+export type ClientDashboardRouteState = {
   activeTabIndex?: number;
+  isFindClient?: boolean;
 };

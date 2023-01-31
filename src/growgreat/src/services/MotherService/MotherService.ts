@@ -29,6 +29,8 @@ class MotherService {
               surname
               phoneNumber
             }
+            nextVisitDate
+            age
             insertedDate
             expectedDateOfDelivery
             siteAddress {

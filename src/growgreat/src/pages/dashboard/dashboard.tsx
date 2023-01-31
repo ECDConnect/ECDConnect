@@ -164,6 +164,7 @@ export const Dashboard: React.FC = () => {
                   onSubmit();
                   history.push(ROUTES.CLIENTS.ROOT, {
                     activeTabIndex: CLIENT_TABS.CLIENT,
+                    isFindClient: true,
                   });
                 },
               },

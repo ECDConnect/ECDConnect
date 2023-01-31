@@ -4,7 +4,7 @@ import { ListItem } from './ListItem';
 
 export type AlertSeverityType = 'error' | 'warning' | 'success' | 'none';
 
-export interface UserAlertListDataItem extends ListItem {
+export interface UserAlertListDataItem<T = {}> extends ListItem {
   id?: string;
   avatarColor: string;
   alertSeverity: AlertSeverityType;
@@ -15,4 +15,5 @@ export interface UserAlertListDataItem extends ListItem {
   menuIconClassName?: string;
   icon?: string;
   iconColor?: Colours;
+  extraData?: T;
 }

@@ -18,6 +18,7 @@ class InfantService {
         query getAllInfantsForHealthCareWorker($id: String, $visitType: String) {
           allInfantsForHealthCareWorker(id: $id, visitType: $visitType) {
             id
+            nextVisitDate
             user {
               dateOfBirth
               firstName
