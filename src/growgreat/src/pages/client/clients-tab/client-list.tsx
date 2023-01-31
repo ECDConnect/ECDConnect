@@ -22,7 +22,7 @@ import {
   useState,
 } from 'react';
 import ROUTES from '@/routes/routes';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import { getInfants } from '@/store/infant/infant.selectors';
 import { motherSelectors, motherThunkActions } from '@/store/mother';
 import Infant from '@/assets/infant.svg';
@@ -44,6 +44,7 @@ import {
   SortBy,
   sortOptions,
 } from './filters';
+import { ClientDashboardRouteState } from '../client-dashboard/class-dashboard.types';
 
 export const ClientList: React.FC<ComponentBaseProps> = () => {
   const dialog = useDialog();
@@ -51,6 +52,7 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
   const appDispatch = useAppDispatch();
 
   const history = useHistory();
+  const location = useLocation<ClientDashboardRouteState>();
 
   const infants = useSelector(getInfants);
   const mothers = useSelector(motherSelectors.getMothers);
@@ -268,6 +270,12 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
     appDispatch(motherThunkActions.getMothers({})).unwrap();
     appDispatch(infantThunkActions.getInfants({})).unwrap();
   }, [appDispatch]);
+
+  useEffect(() => {
+    if (location.state?.isFindClient) {
+      setSearchTextActive(true);
+    }
+  }, [location]);
 
   return (
     <div className={styles.overlay}>
