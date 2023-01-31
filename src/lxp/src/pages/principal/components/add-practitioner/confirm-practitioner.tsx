@@ -10,13 +10,11 @@ import {
 import { useSelector } from 'react-redux';
 import { userSelectors } from '@/store/user';
 import { AddPractitioner } from './add-practitioner';
-import { AddPractitionerModel } from '@/schemas/practitioner/add-practitioner';
 import { useAppDispatch } from '@/store';
 import {
   practitionerActions,
   practitionerSelectors,
 } from '@/store/practitioner';
-import { PractitionerDto } from '@ecdlink/core';
 import {
   ConfirmPractitionersSteps,
   OnNext,

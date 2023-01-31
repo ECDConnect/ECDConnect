@@ -7,8 +7,8 @@ namespace ECDLink.EGraphQL.Resolvers
     {
         public ValueTask<object?> CreateMutationResolver(IResolverContext context, int identifier);
 
-        public ValueTask<object?> UpdateMutationResolver(IResolverContext context);
+        public ValueTask<object?> UpdateMutationResolver(IResolverContext context, int contentId);
 
-        public ValueTask<object?> DeleteMutationResolver(IResolverContext context);
+        public ValueTask<object?> DeleteMutationResolver(IResolverContext context, int contentId);
     }
 }

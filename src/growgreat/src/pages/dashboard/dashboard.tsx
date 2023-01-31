@@ -31,7 +31,7 @@ import { version } from '@/../package.json';
 import { healthCareWorkerSelectors } from '@/store/healthCareWorker';
 import { DashboardRouteState } from './dashboard.types';
 import { useNotificationService } from '@/hooks/useNotificationService';
-import { CLIENT_TABS } from '../client/class-dashboard/class-dashboard';
+import { CLIENT_TABS } from '../client/client-dashboard/class-dashboard';
 
 export enum NavigationTypes {
   Home = 'Home',
@@ -164,6 +164,7 @@ export const Dashboard: React.FC = () => {
                   onSubmit();
                   history.push(ROUTES.CLIENTS.ROOT, {
                     activeTabIndex: CLIENT_TABS.CLIENT,
+                    isFindClient: true,
                   });
                 },
               },

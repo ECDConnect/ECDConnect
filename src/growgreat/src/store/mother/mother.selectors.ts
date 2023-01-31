@@ -5,6 +5,9 @@ import { RootState } from '../types';
 export const getMothers = (state: RootState): MotherDto[] =>
   state.mothers.mothers || [];
 
+export const getMothersWeeklyVisitsSelector = (state: RootState): MotherDto[] =>
+  state.mothers.mothersWeeklyVisits || [];
+
 export const getMotherById = (
   state: RootState,
   id: string

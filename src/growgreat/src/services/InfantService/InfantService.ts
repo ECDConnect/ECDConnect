@@ -8,13 +8,17 @@ class InfantService {
     this._accessToken = accessToken;
   }
 
-  async GetAllInfantsForMother(id: string): Promise<InfantDto[]> {
+  async GetAllInfantsForMother(
+    id: string,
+    visitType?: 'all' | 'due'
+  ): Promise<InfantDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-        query getAllInfantsForHealthCareWorker($id: String) {
-          allInfantsForHealthCareWorker(id: $id) {
+        query getAllInfantsForHealthCareWorker($id: String, $visitType: String) {
+          allInfantsForHealthCareWorker(id: $id, visitType: $visitType) {
             id
+            nextVisitDate
             user {
               dateOfBirth
               firstName
@@ -27,7 +31,8 @@ class InfantService {
         }        
       `,
       variables: {
-        id: id,
+        id,
+        visitType,
       },
     });
 

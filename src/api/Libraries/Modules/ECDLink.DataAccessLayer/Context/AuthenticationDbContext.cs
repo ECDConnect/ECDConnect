@@ -102,6 +102,8 @@ namespace ECDLink.DataAccessLayer.Context
         // Integration
         public DbSet<IntegrationMapping> IntegrationMappings { get; set; }
 
+
+
         // Service Scheduling
         public DbSet<ServiceScheduler> ServiceScheduler { get; set; }
 

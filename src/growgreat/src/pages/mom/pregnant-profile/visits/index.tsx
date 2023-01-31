@@ -6,6 +6,7 @@ import {
   Button,
   DialogPosition,
   Divider,
+  LoadingSpinner,
   RoundIcon,
   StepItem,
   Steps,
@@ -19,10 +20,12 @@ import {
   getMotherById,
   getMotherVisits,
 } from '@/store/mother/mother.selectors';
-import { getWeeksPregnant } from '@/utils/mom/pregnant.utils';
+import { getPregnancyWeeks } from '@/utils/mom/pregnant.utils';
 import { useAppDispatch } from '@/store';
 import { motherThunkActions } from '@/store/mother';
 import { useDialog, VisitDto } from '@ecdlink/core';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { MotherActions } from '@/store/mother/mother.actions';
 
 const HEADER_HEIGHT = 64;
 
@@ -45,6 +48,11 @@ export const Visits: React.FC = () => {
 
   const visits = useSelector(getMotherVisits);
 
+  const { isLoading } = useThunkFetchCall(
+    'mothers',
+    MotherActions.GET_MOTHER_VISITS
+  );
+
   const currentVisit = useMemo((): VisitDto | undefined => {
     const noAttended = visits.filter((item) => !item.attended) || [];
 
@@ -57,7 +65,7 @@ export const Visits: React.FC = () => {
       : undefined;
   }, [visits]);
 
-  const currentDate = new Date();
+  const currentDate = useMemo(() => new Date(), []);
   const next7Days = new Date(new Date().setDate(currentDate.getDate() + 7));
   const dateToCheck = currentVisit && new Date(currentVisit?.plannedVisitDate);
 
@@ -69,38 +77,52 @@ export const Visits: React.FC = () => {
     [mother?.insertedDate]
   );
 
+  const getType = useCallback(
+    (item: VisitDto): StepItem['type'] => {
+      if (item.attended) {
+        return 'completed';
+      }
+
+      if (
+        currentVisit &&
+        item.visitType?.id === currentVisit.visitType?.id &&
+        mother?.statusInfo?.color !== 'None'
+      ) {
+        return 'inProgress';
+      }
+
+      return 'todo';
+    },
+    [currentVisit, mother?.statusInfo?.color]
+  );
+
   const visitSteps = useMemo(() => {
-    const someAttendedVisit = visits.some((item) => item.attended);
+    const filteredVisits = visits.filter((item) => !item.attended);
+    const someAttendedVisit = visits.length > filteredVisits.length;
 
-    const array: StepItem[] = visits.map((item) => {
+    const sortedVisits = filteredVisits.sort(
+      (a, b) => (a.visitType?.order || 0) - (b.visitType?.order || 0)
+    );
+
+    const array: StepItem[] = sortedVisits.map((item) => {
       const date = new Date(item.plannedVisitDate);
-
-      const getType = (): StepItem['type'] => {
-        if (item.attended) {
-          return 'completed';
-        }
-
-        if (
-          currentVisit &&
-          item.visitType?.id === currentVisit.visitType?.id &&
-          mother?.statusInfo?.color !== 'None'
-        ) {
-          return 'inProgress';
-        }
-
-        return 'todo';
-      };
+      const isMissedVisit = date < currentDate;
 
       return {
         title: item.visitType?.normalizedName || 'Visit',
-        subTitle: `By ${date.getDate()} ${date.toLocaleString('default', {
-          month: 'long',
-        })} ${date.getFullYear()}`,
-        ...(isWeekDeadline &&
-          getType() === 'inProgress' && { subTitleColor: 'alertDark' }),
-        inProgressStepIcon: 'CalendarIcon',
-        type: getType(),
-        showActionButton: getType() === 'inProgress',
+        subTitle: isMissedVisit
+          ? 'Missed visit deadline'
+          : `By ${date.getDate()} ${date.toLocaleString('default', {
+              month: 'long',
+            })} ${date.getFullYear()}`,
+        ...(((isWeekDeadline &&
+          currentVisit.visitType?.id === item.visitType?.id) ||
+          isMissedVisit) && { subTitleColor: 'alertDark' }),
+        inProgressStepIcon: isMissedVisit
+          ? 'ExclamationCircleIcon'
+          : 'CalendarIcon',
+        type: getType(item),
+        showActionButton: getType(item) === 'inProgress',
         actionButtonIcon: 'ArrowCircleRightIcon',
         actionButtonText: 'Start visit',
         actionButtonOnClick: () =>
@@ -126,18 +148,19 @@ export const Visits: React.FC = () => {
 
     return array;
   }, [
+    currentDate,
     currentVisit,
+    getType,
     history,
     insertedDate,
     isWeekDeadline,
     location.pathname,
-    mother?.statusInfo?.color,
     visits,
   ]);
 
   const weeksPregnant = mother?.expectedDateOfDelivery
-    ? getWeeksPregnant(mother?.expectedDateOfDelivery)
-    : 1;
+    ? getPregnancyWeeks(mother?.expectedDateOfDelivery)
+    : 0;
 
   const onAddVisit = useCallback(() => {
     return dialog({
@@ -219,7 +242,16 @@ export const Visits: React.FC = () => {
         </div>
       </div>
       <div className="px-4 pb-4 pt-7">
-        <Steps items={visitSteps} />
+        {isLoading ? (
+          <LoadingSpinner
+            size="big"
+            spinnerColor="white"
+            backgroundColor="secondary"
+            className="mb-7"
+          />
+        ) : (
+          <Steps items={visitSteps.slice(0, 3)} />
+        )}
         <Divider dividerType="dashed" />
         <div className="my-4 flex items-center gap-3">
           <div className="flex flex-col">

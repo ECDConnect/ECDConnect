@@ -1,0 +1,126 @@
+import { api } from '../axios.helper';
+import { Config } from '@ecdlink/core';
+import { StatementsExpensesInput } from '@/../../../packages/graphql/lib';
+
+class ExpensesStatementsService {
+  _accessToken: string;
+
+  constructor(accessToken: string) {
+    this._accessToken = accessToken;
+  }
+
+  async GetAllStatementsExpenses(): Promise<any[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      query GetAllStatementsExpenses() {
+        GetAllStatementsExpenses() {
+            id description
+            insertedDate
+            notes
+            userId
+            submitted
+            amount
+            expenseTypeId
+            incomeStatementId
+            photoProof
+            datePaid
+        }
+    }
+          `,
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Get all statements expenses Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.GetAllStatementsExpenses;
+  }
+
+  async GetAllStatementsExpensesType(): Promise<any[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      query GetAllStatementsExpenseType() {
+        GetAllStatementsExpenseType() {
+            id description insertedDate notes
+        }
+    }
+          `,
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Get all statements expenses Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.GetAllStatementsExpenseType;
+  }
+
+  async UpdateStatementsIncome(
+    id: string,
+    input: StatementsExpensesInput
+  ): Promise<any> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      mutation updateStatementsExpenses($input: StatementsExpensesInput, $id: UUID) {
+        updateStatementsExpenses(input: $input, id: $id) {
+                id    __typename  
+              }
+            }
+      `,
+      variables: {
+        id,
+        input,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Update expense statement Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.updateStatementsExpenses;
+  }
+
+  async allStatementsExpenses(userId: string): Promise<any[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      query allStatementsExpenses($userId: String) {
+        allStatementsExpenses(userId: $userId) {
+            id description 
+            insertedDate 
+            notes 
+            expenseTypeId 
+            userId 
+            submitted 
+            amount 
+            datePaid
+            insertedDate
+            incomeStatementId
+            photoProof
+        }
+    }
+          `,
+      variables: {
+        userId,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Get all statements expenses Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.allStatementsExpenses;
+  }
+}
+
+export default ExpensesStatementsService;

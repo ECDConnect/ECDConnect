@@ -15,7 +15,12 @@ import { useEffect, useState } from 'react';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import * as styles from './walktrough-tutorial.styles';
 import { AttendanceTutorialProps } from './walktrough-tutorial.types';
-import Joyride, { CallBackProps, STATUS, Step } from 'react-joyride';
+import Joyride, {
+  CallBackProps,
+  STATUS,
+  Step,
+  TooltipRenderProps,
+} from 'react-joyride';
 
 export const WalktroughTutorial = ({
   onComplete,
@@ -103,6 +108,7 @@ export const WalktroughTutorial = ({
 
   const steps: Step[] = [
     {
+      title: 'Hello woerld',
       target: '#test',
       content: 'This is my awesome feature!',
       placement: 'bottom-end',
@@ -119,6 +125,79 @@ export const WalktroughTutorial = ({
       offset: 10,
     },
   ];
+
+  function Tooltip({
+    backProps,
+    continuous,
+    index,
+    isLastStep,
+    primaryProps,
+    skipProps,
+    step,
+    tooltipProps,
+  }: TooltipRenderProps) {
+    return (
+      <div {...tooltipProps} className="min-w-64 min-h-56 rounded-full">
+        {console.log({ step, index, backProps, continuous, skipProps })}
+        <Card
+        // border={false}
+        // maxWidth={420}
+        // minWidth={290}
+        // overflow="hidden"
+        // radius="md"
+        // variant="white"
+        >
+          <div className="p-xl">
+            {step.title && (
+              <Typography
+                color={'primary'}
+                type={'h2'}
+                weight={'normal'}
+                text={String(step?.title)}
+              />
+            )}
+            {step.content && <Card>{step.content}</Card>}
+          </div>
+          <Card>
+            {!isLastStep && (
+              <Button
+                type="filled"
+                color="primary"
+                className={'max-h-10 w-full'}
+                icon={'SaveIcon'}
+                onClick={() => {}}
+              >
+                <Typography
+                  type="help"
+                  className="mr-2"
+                  color="white"
+                  text={'Skip'}
+                />
+              </Button>
+            )}
+            <Divider />
+            <>
+              <Button
+                type="filled"
+                color="primary"
+                className={'max-h-10 w-full'}
+                icon={'SaveIcon'}
+                onClick={() => {}}
+              >
+                <Typography
+                  type="help"
+                  className="mr-2"
+                  color="white"
+                  text={continuous ? 'next' : 'close'}
+                />
+              </Button>
+              <Divider />
+            </>
+          </Card>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <BannerWrapper
@@ -145,6 +224,18 @@ export const WalktroughTutorial = ({
           // stepIndex={stepIndex}
           spotlightPadding={10}
           steps={steps}
+          styles={{
+            options: {
+              arrowColor: '#e3ffeb',
+              backgroundColor: '#e3ffeb',
+              overlayColor: 'rgba(79, 26, 0, 0.4)',
+              primaryColor: '#000',
+              textColor: '#004a14',
+              width: 900,
+              zIndex: 1000,
+            },
+          }}
+          tooltipComponent={Tooltip}
         />
         {!displayTutorialComplete && (
           <Alert title={attendanceBadgeTutorialMessage} type={'info'} />

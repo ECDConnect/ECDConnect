@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   BannerWrapper,
   Typography,
@@ -12,12 +12,7 @@ import {
   FormInput,
 } from '@ecdlink/ui';
 import DatePicker from 'react-datepicker';
-import { useHistory } from 'react-router';
-import {
-  AddIncomeState,
-  ContributionTypes,
-  FeeTypes,
-} from './preschool-fees.types';
+import { AddIncomeState } from './preschool-fees.types';
 import * as styles from './preschool-fees.styles';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm, useWatch } from 'react-hook-form';
@@ -27,12 +22,27 @@ import {
   PreschoolFeesModel,
   preschoolFeesSchema,
 } from '@/schemas/income-statements/preschool-fees';
+import { statementsSelectors } from '@/store/statements';
+import { IncomeStatementsService } from '@/services/IncomeStatementsService';
+import { authSelectors } from '@/store/auth';
+import { newGuid } from '@/utils/common/uuid.utils';
 
 export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
   const children = useSelector(childrenSelectors.getChildren);
-  const [selectedFamilyGrants, setSelectedFamilyGrants] = useState<string[]>(
+  const [selectedFeeTypeValue, setSelectedFeeTypeValue] = useState<string[]>(
     []
   );
+  const userAuth = useSelector(authSelectors.getAuthUser);
+  const feeTypes = useSelector(statementsSelectors.getFeeTypes);
+  const contributionTypes = useSelector(
+    statementsSelectors.getContributionTypes
+  );
+  const incomeTypes = useSelector(statementsSelectors.getIncomeTypes);
+  const viewTitle = 'Preschool Fee';
+  const incomeTypeValue = incomeTypes.find(
+    (item) => item.description === viewTitle
+  );
+  const moneyContributionTypeId = '8ff95f6e-5116-4412-adf6-81025172970e';
 
   const {
     control,
@@ -57,26 +67,32 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
     date,
     child,
     contributionType,
-    grants,
+    feeType,
     note,
+    amount,
   } = useWatch({
     control: control,
   });
 
-  const disabled = !date || !child || !contributionType || !grants;
+  const disabled = useMemo(() => {
+    return !date || !child || !contributionType || !feeType;
+  }, [child, contributionType, date, feeType]);
 
   useEffect(() => {
-    const _list = ContributionTypes?.map((p) => {
-      if (p?.type) {
-        return {
-          label: `${p?.type}`,
-          value: p.id,
-        };
-      }
-      return undefined;
-    }).filter(Boolean) as { label: string; value: any }[];
+    const _list = contributionTypes
+      ?.map((p) => {
+        if (p?.description) {
+          return {
+            label: `${p?.description}`,
+            value: p.id,
+          };
+        }
+        return undefined;
+      })
+      .filter(Boolean) as { label: string; value: any }[];
 
     setIncomeTypesList(_list);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -97,23 +113,47 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
   }, []);
 
   useEffect(() => {
-    const _list = FeeTypes?.map((p) => {
-      if (p?.type) {
-        return {
-          label: `${p?.type}`,
-          value: p.id,
-        };
-      }
-      return undefined;
-    }).filter(Boolean) as { label: string; value: any }[];
+    const _list = feeTypes
+      ?.map((p) => {
+        if (p?.description) {
+          return {
+            label: `${p?.description}`,
+            value: p.id,
+          };
+        }
+        return undefined;
+      })
+      .filter(Boolean) as { label: string; value: any }[];
 
     setFeeTypesList(_list);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleFamilyGrantSelection = (familyGrants: string[]) => {
-    setSelectedFamilyGrants(familyGrants);
-    setPreschoolFeesValue('grants', familyGrants);
+  const handleFeeTypeValue = (feeTypeValue: string[]) => {
+    setSelectedFeeTypeValue(feeTypeValue);
+    setPreschoolFeesValue('feeType', feeTypeValue);
+  };
+
+  const sendIncomeUpdate = async () => {
+    const incomeId = newGuid();
+
+    await new IncomeStatementsService(
+      userAuth?.auth_token!
+    ).UpdateStatementsIncome(incomeId, {
+      IsActive: true,
+      UserId: userAuth?.id,
+      ChildUserId: child,
+      Submitted: false,
+      DateReceived: date,
+      Notes: note,
+      // Description: 'Testing',
+      Amount: Number(amount),
+      AmountExpected: 400,
+      ChildCoverAmount: 400,
+      // PayTypeId: '18eb51c4-8486-a7f3-4de0-14477870e205',
+      ContributionTypeId: contributionType,
+      IncomeTypeId: incomeTypeValue?.id,
+    });
   };
 
   return (
@@ -146,7 +186,7 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
           className="bg-uiBg text-textMid mx-auto w-full rounded-md border-none"
           selected={selectedDate ? new Date(selectedDate) : undefined}
           onChange={(date: Date) => {
-            setPreschoolFeesValue('date', date ? date.toString() : '');
+            setPreschoolFeesValue('date', date ? date.toISOString() : '');
           }}
           dateFormat="EEE, dd MMM yyyy"
         />
@@ -177,6 +217,17 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
             setPreschoolFeesValue('contributionType', item);
           }}
         />
+        {contributionType === moneyContributionTypeId && (
+          <FormInput<PreschoolFeesModel>
+            label={'How much did the caregiver pay?'}
+            visible={true}
+            nameProp={'amount'}
+            register={register}
+            placeholder={'e.g. R 200'}
+            className="mt-4"
+            type={'number'}
+          />
+        )}
         <label className={classNames(styles.label, 'mt-4')}>
           {'Type of fee'}
         </label>
@@ -187,6 +238,7 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
         </label>
         <div className={'mt-2'}>
           <ButtonGroup<string>
+            multiple={false}
             type={ButtonGroupTypes.Chip}
             options={
               feeTypesList?.map((type) => ({
@@ -195,10 +247,9 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
               })) || []
             }
             onOptionSelected={(value: string | string[]) =>
-              handleFamilyGrantSelection(value as string[])
+              handleFeeTypeValue(value as string[])
             }
-            multiple
-            selectedOptions={selectedFamilyGrants}
+            selectedOptions={selectedFeeTypeValue}
             color="secondary"
           />
         </div>
@@ -229,8 +280,8 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
           type="outlined"
           color="primary"
           className={'mx-auto mt-2 w-full rounded-2xl'}
-          onClick={() => {}}
-          disabled={disabled}
+          onClick={sendIncomeUpdate}
+          // disabled={disabled}
         >
           {renderIcon('PlusIcon', styles.buttonIconSaveFees)}
           <Typography

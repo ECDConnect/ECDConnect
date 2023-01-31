@@ -1,4 +1,12 @@
-import { LegacyRef, useCallback, useEffect, useRef, useState } from 'react';
+import {
+  createRef,
+  LegacyRef,
+  RefObject,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import { Colours } from '../../models';
 
 import { classNames, renderIcon } from '../../utils';
@@ -25,12 +33,11 @@ interface StepsProps {
 }
 
 export const Steps = ({ items }: StepsProps) => {
-  const [, updateState] = useState<{}>();
+  const [refs, setRefs] = useState<RefObject<HTMLDivElement>[]>();
 
-  const forceUpdate = useCallback(() => updateState({}), []);
+  const divRefs = useRef<RefObject<HTMLDivElement>[]>([]);
 
-  const containerRef: LegacyRef<HTMLDivElement> = useRef(null);
-  const textRef: LegacyRef<HTMLDivElement> = useRef(null);
+  divRefs.current = Array.from({ length: items.length }, () => createRef());
 
   const typeStyle = useCallback(
     (icon?: string) => ({
@@ -69,94 +76,97 @@ export const Steps = ({ items }: StepsProps) => {
 
   useEffect(() => {
     setTimeout(() => {
-      forceUpdate();
+      setRefs(divRefs.current);
     }, 100);
-  }, [forceUpdate]);
+  }, [items]);
 
   return (
     <div>
-      {items.map((item, index) => (
-        <div
-          key={`step-${item.title}-${index}`}
-          ref={containerRef}
-          className="relative flex gap-5 pb-6"
-        >
-          {items.length !== index + 1 && (
-            <div
-              className={classNames(
-                'absolute top-0 z-0 border-2',
-                getStatus(item.type)?.border
-              )}
-              style={{
-                borderColor:
-                  (!items[index - 1] ||
-                    (items[index - 1] &&
-                      items[index - 1].type === 'completed')) &&
-                  item.type === 'completed' &&
-                  items[index + 1] &&
-                  items[index + 1].type === 'completed'
-                    ? '#26ACAF'
-                    : '#F47C24',
-                height:
-                  item.showActionButton || item.subTitle
-                    ? (containerRef.current?.clientHeight || 0) +
-                      (textRef.current?.clientHeight || 0) / 1.7
-                    : containerRef.current?.clientHeight,
-                left: 14,
-              }}
-            ></div>
-          )}
+      {items &&
+        items.map((item, index) => (
           <div
-            className={classNames(
-              'z-10 flex h-8 w-8 items-center justify-center rounded-full',
-              getStatus(item.type)?.style
+            id={String(index)}
+            key={`step-${item.title}-${index}`}
+            ref={divRefs.current[index]}
+            className="relative flex gap-5 pb-6"
+          >
+            {items.length !== index + 1 && (
+              <div
+                className={classNames(
+                  'absolute top-0 z-0 border-2',
+                  getStatus(item.type)?.border
+                )}
+                style={{
+                  borderColor:
+                    (!items[index - 1] ||
+                      (items[index - 1] &&
+                        items[index - 1].type === 'completed')) &&
+                    item.type === 'completed' &&
+                    items[index + 1] &&
+                    items[index + 1].type === 'completed'
+                      ? '#26ACAF'
+                      : '#F47C24',
+                  height: refs && refs[index].current?.clientHeight,
+                  left: 14,
+                }}
+              ></div>
             )}
-          >
-            {getStatus(item.type)?.icon &&
-              renderIcon(
-                getStatus(item.type, item.inProgressStepIcon)?.icon,
-                'text-white w-5 h-5'
-              )}
-          </div>
-          <div
-            ref={textRef}
-            style={item.showActionButton ? { width: '44%' } : { width: '87%' }}
-          >
-            <Typography
-              type="body"
-              align="left"
-              weight="bold"
-              text={item.title}
-              color="textDark"
-              className="col-span-2 break-words"
-            />
-            {item.subTitle && (
+            <div className="z-10">
+              <div
+                className={classNames(
+                  'min-h-8 min-w-8 flex h-8 w-8 items-center justify-center rounded-full',
+                  getStatus(item.type)?.style
+                )}
+              >
+                {getStatus(item.type)?.icon &&
+                  renderIcon(
+                    getStatus(item.type, item.inProgressStepIcon)?.icon,
+                    'text-white w-5 h-5'
+                  )}
+              </div>
+            </div>
+            <div
+              style={
+                item.showActionButton ? { width: '44%' } : { width: '87%' }
+              }
+            >
               <Typography
-                className="col-span-2 row-span-2 text-sm"
                 type="body"
                 align="left"
-                weight="skinny"
-                text={item.subTitle}
-                color={item.subTitleColor || 'textMid'}
+                weight="bold"
+                text={item.title}
+                color="textDark"
+                className="col-span-2 break-words"
               />
+              {item.subTitle && (
+                <Typography
+                  className="col-span-2 row-span-2 text-sm"
+                  type="body"
+                  align="left"
+                  weight="skinny"
+                  text={item.subTitle}
+                  color={item.subTitleColor || 'textMid'}
+                />
+              )}
+            </div>
+            {item.showActionButton && (
+              <div className="flex w-32 justify-end">
+                <Button
+                  type="filled"
+                  color={item.actionButtonColor || 'primary'}
+                  {...(item.actionButtonIcon && {
+                    icon: item.actionButtonIcon,
+                  })}
+                  iconPosition="end"
+                  className={'h-9 w-auto'}
+                  onClick={item.actionButtonOnClick}
+                  text={item.actionButtonText}
+                  textColor={item.actionButtonTextColor || 'white'}
+                />
+              </div>
             )}
           </div>
-          {item.showActionButton && (
-            <div className="flex w-32 justify-end">
-              <Button
-                type="filled"
-                color={item.actionButtonColor || 'primary'}
-                {...(item.actionButtonIcon && { icon: item.actionButtonIcon })}
-                iconPosition="end"
-                className={'h-9 w-auto'}
-                onClick={item.actionButtonOnClick}
-                text={item.actionButtonText}
-                textColor={item.actionButtonTextColor || 'white'}
-              />
-            </div>
-          )}
-        </div>
-      ))}
+        ))}
     </div>
   );
 };

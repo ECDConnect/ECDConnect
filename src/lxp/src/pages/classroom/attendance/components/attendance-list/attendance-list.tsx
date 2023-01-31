@@ -30,7 +30,6 @@ import * as styles from './attendance-list.styles';
 import { AttendanceListProps, AttendanceState } from './attendance-list.types';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 import { practitionerSelectors } from '@/store/practitioner';
-import Joyride, { CallBackProps, STATUS, Step } from 'react-joyride';
 
 const filterInfo: FilterInfo = {
   filterName: 'Class',
@@ -205,36 +204,8 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
     setSelectedClassroomGroups([]);
   };
 
-  const steps: Step[] = [
-    {
-      target: 'body',
-      content: 'This is my awesome feature!',
-    },
-    {
-      target: '#attendanceList',
-      content: 'This another awesome feature!',
-      placement: 'bottom-end',
-      offset: 10,
-    },
-  ];
-
   return (
     <div className={styles.wrapper}>
-      <Joyride
-        // callback={handleJoyrideCallback}
-        continuous
-        hideCloseButton
-        run={true}
-        scrollToFirstStep
-        showProgress
-        showSkipButton
-        steps={steps}
-        styles={{
-          options: {
-            zIndex: 10000,
-          },
-        }}
-      />
       <div className={styles.contentWrapper}>
         {shouldFilter && (
           <SearchDropDown<any>

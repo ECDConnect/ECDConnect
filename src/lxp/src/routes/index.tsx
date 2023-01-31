@@ -72,6 +72,8 @@ import AddAmount from '@/pages/business/add-amount/add-amount';
 import { AddIncome } from '@/pages/business/add-income/add-income';
 import { AddExpense } from '@/pages/business/add-amount/add-expense/add-expense';
 import WalktroughTutorial from '@/pages/classroom/attendance/components/attendance-tutorial/walktrough-tutorial/walktrough-tutorial';
+import { SubmitIncomeStatementsDescription } from '@/pages/business/money/submit-income-statements/components/submit-income-statement-description/submit-income-statement-description';
+import { SubmitIncomeStatementsList } from '@/pages/business/money/submit-income-statements/components/submit-income-statements-list/submit-income-statements-list';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -141,6 +143,16 @@ const AuthRoutes: React.FC = () => {
       <Route
         path={ROUTES.BUSINESS_ADD_EXPENSE}
         component={AddExpense}
+        exact={true}
+      />
+      <Route
+        path={ROUTES.BUSINESS_SUBMIT_INCOME_STATEMENTS_LIST}
+        component={SubmitIncomeStatementsList}
+        exact={true}
+      />
+      <Route
+        path={ROUTES.BUSINESS_SUBMIT_INCOME_STATEMENTS_DESCRIPTION}
+        component={SubmitIncomeStatementsDescription}
         exact={true}
       />
       <Route path={ROUTES.TRAINING} component={Training} exact={true} />

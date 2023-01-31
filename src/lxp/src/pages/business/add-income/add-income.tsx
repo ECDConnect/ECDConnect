@@ -7,17 +7,10 @@ import {
   Typography,
   Alert,
 } from '@ecdlink/ui';
-import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import {
-  initialPractitionerAboutValues,
-  PractitionerAboutModel,
-  practitionerAboutModelSchema,
-} from '@schemas/practitioner/practitioner-about';
 import { useAppDispatch } from '@store';
 import { userSelectors } from '@store/user';
 import { analyticsActions } from '@store/analytics';
@@ -54,30 +47,6 @@ export const AddIncome: React.FC = () => {
       setNewStackListItems(user);
     }
   }, [user]);
-
-  const getDefaultFormvalues = () => {
-    if (user) {
-      const tempPractitioner: PractitionerAboutModel = {
-        name: user.firstName || '',
-        surname: user.surname || '',
-        cellphone: user.phoneNumber || '',
-        email: user?.email! || '',
-      };
-      return tempPractitioner;
-    } else {
-      return initialPractitionerAboutValues;
-    }
-  };
-
-  const {
-    register: practitionerAboutRegister,
-    formState: practitionerAboutFormState,
-    getValues: practitionerAboutFormGetValues,
-  } = useForm({
-    resolver: yupResolver(practitionerAboutModelSchema),
-    defaultValues: getDefaultFormvalues(),
-    mode: 'onChange',
-  });
 
   const incomeType = (type?: string) => {
     switch (type) {

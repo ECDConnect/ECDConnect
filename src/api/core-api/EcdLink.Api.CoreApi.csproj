@@ -2,6 +2,8 @@
   
   <PropertyGroup>
 	<TargetFramework>net7.0</TargetFramework>
+	<!-- Nullable filters through to Entity Framework 7 and makes DB field FKs required -->
+	<Nullable>disable</Nullable>
   </PropertyGroup>
   
   <ItemGroup>
@@ -47,8 +49,6 @@
   </ItemGroup>
   
   <ItemGroup>
-    <Folder Include="GraphApi\Mutations\GrowGreat\" />
-    <Folder Include="GraphApi\Queries\GrowGreat\" />
     <Folder Include="Middleware\" />
   </ItemGroup>
   <ProjectExtensions><VisualStudio><UserProperties appsettings_1development_1json__JsonSchema="https://download.stackhawk.com/hawk/jsonconfig/hawkconfig.json" /></VisualStudio></ProjectExtensions>

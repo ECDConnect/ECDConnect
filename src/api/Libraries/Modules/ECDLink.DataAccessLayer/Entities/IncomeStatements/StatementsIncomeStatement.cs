@@ -16,6 +16,16 @@ namespace ECDLink.DataAccessLayer.Entities.IncomeStatements
          where TKey : IEquatable<TKey>
     {
         public string Notes { get; set; }
+        public int Month { get; set; }
+        public int Year { get; set; }
+        public int Period { get; set; }
+        public bool Submitted { get; set; }
+        public double IncomeTotal { get; set; }
+        public double ExpenseTotal { get; set; }
+        public double Balance { get; set; }
+        public DateTime? SubmittedDate { get; set; }
+        public string UserId { get; set; }
+
 
     }
 
