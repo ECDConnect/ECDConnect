@@ -15,7 +15,7 @@ import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useAppDispatch } from '@store';
 import { analyticsActions } from '@store/analytics';
 import { getStorageItem } from '@utils/common/local-storage.utils';
-import { ClassDashboardRouteState } from './class-dashboard.types';
+import { ClientDashboardRouteState } from './class-dashboard.types';
 import { ClientList } from '../clients-tab/client-list';
 import momImage from '@/assets/happyMom.svg';
 import { VisitList } from '../visits-tab/visit-dashboard';
@@ -30,7 +30,7 @@ export const CLIENT_TABS = {
 export const ClassDashboard: React.FC = () => {
   const history = useHistory();
 
-  const { state } = useLocation<ClassDashboardRouteState>();
+  const { state } = useLocation<ClientDashboardRouteState>();
 
   const date = format(new Date(), 'EEEE, d LLLL');
 

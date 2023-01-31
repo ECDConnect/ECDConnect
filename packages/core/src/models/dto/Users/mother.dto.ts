@@ -4,6 +4,7 @@ import { UserDto } from './user.dto';
 import {} from '../StaticData/education-level.dto';
 import { DocumentDto } from '../Documents/document.dto';
 import { HealthCareWorkerDto } from './health-care-worker.dto';
+import { string } from 'yup';
 
 export interface MotherDto extends EntityBase {
   user?: UserDto;
@@ -19,6 +20,7 @@ export interface MotherDto extends EntityBase {
   expectedDateOfDelivery?: Date | string;
   phoneNumber?: string;
   whatsAppNumber?: string;
+  nextVisitDate?: string;
   statusInfo?: {
     icon?: string;
     color?: string;

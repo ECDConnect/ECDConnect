@@ -30,3 +30,4 @@ export * from '../domain/progress-tracking-report';
 export * from './dto/Consent';
 export * from './dto/Reports';
 export * from './dto/Visit';
+export * from './dto/Statements';

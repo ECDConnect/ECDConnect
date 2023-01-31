@@ -29,32 +29,27 @@ export const getInfants = createAsyncThunk<
 >(InfantActions.GET_INFANTS, async (_, { getState, rejectWithValue }) => {
   const {
     auth: { userAuth },
-    infants: { infants: infantsCache },
   } = getState();
 
-  if (!infantsCache) {
-    try {
-      let infants: InfantDto[] | undefined;
-      const id = userAuth?.id;
+  try {
+    let infants: InfantDto[] | undefined;
+    const id = userAuth?.id;
 
-      if (userAuth?.auth_token && id) {
-        infants = await new InfantService(
-          userAuth?.auth_token
-        ).GetAllInfantsForMother(id);
-      } else {
-        return rejectWithValue('no access token, profile check required');
-      }
-
-      if (!infants) {
-        return rejectWithValue('Error getting mothers');
-      }
-
-      return infants;
-    } catch (err) {
-      return rejectWithValue(err);
+    if (userAuth?.auth_token && id) {
+      infants = await new InfantService(
+        userAuth?.auth_token
+      ).GetAllInfantsForMother(id);
+    } else {
+      return rejectWithValue('no access token, profile check required');
     }
-  } else {
-    return infantsCache;
+
+    if (!infants) {
+      return rejectWithValue('Error getting mothers');
+    }
+
+    return infants;
+  } catch (err) {
+    return rejectWithValue(err);
   }
 });
 
@@ -176,7 +171,7 @@ const mapCaregiver = (x: Partial<CaregiverDto>): CaregiverModelInput => ({
   healthCareWorkerId: x.healthCareWorkerId,
   age: x.age,
   relationId: x.relationId,
-  siteAddress: mapSiteAddress(x.siteAddress!),
+  siteAddress: x.siteAddress ? mapSiteAddress(x.siteAddress!) : null,
 });
 
 const mapSiteAddress = (x: Partial<SiteAddressDto>): SiteAddressInput => ({
