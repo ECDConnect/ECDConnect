@@ -266,6 +266,11 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
     showCompleteProfileBlockingDialog();
   };
 
+  const onClientTypeChange = useCallback((value) => {
+    setAge([]);
+    setClientType(value);
+  }, []);
+
   useLayoutEffect(() => {
     appDispatch(motherThunkActions.getMothers({})).unwrap();
     appDispatch(infantThunkActions.getInfants({})).unwrap();
@@ -293,26 +298,28 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
           overlayTopOffset={'120'}
           options={clientTypeOptions}
           selectedOptions={clientType}
-          onChange={setClientType}
+          onChange={onClientTypeChange}
           placeholder={'Client type'}
           color={'secondary'}
           info={{
             name: `Filter by: Client type`,
           }}
         />
-        <SearchDropDown<string>
-          displayMenuOverlay={true}
-          menuItemClassName={'w-11/12 left-4 '}
-          overlayTopOffset={'120'}
-          options={ageOptions}
-          selectedOptions={age}
-          onChange={setAge}
-          placeholder={'Age'}
-          color={'secondary'}
-          info={{
-            name: `Filter by: Age`,
-          }}
-        />
+        {clientType[0]?.value !== clientTypeOptions[0].value && (
+          <SearchDropDown<string>
+            displayMenuOverlay={true}
+            menuItemClassName={'w-11/12 left-4 '}
+            overlayTopOffset={'120'}
+            options={ageOptions}
+            selectedOptions={age}
+            onChange={setAge}
+            placeholder={'Age'}
+            color={'secondary'}
+            info={{
+              name: `Filter by: Age`,
+            }}
+          />
+        )}
         <SearchDropDown<SortBy>
           displayMenuOverlay={true}
           menuItemClassName={'w-11/12 left-4 '}
