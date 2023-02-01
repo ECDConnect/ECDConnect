@@ -8,5 +8,6 @@ namespace ECDLink.EGraphQL.Enums
         DynamicRelation = 4,
         StaticRelation = 5,
         ColorPicker = 6,
+        Video = 7
     }
 }
