@@ -22,9 +22,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 
         public Guid? GetHealthCareWorkerIdByUserId(string userId)
         {
-            var uId = _contextAccessor.HttpContext.GetUser().Id;
-            var healthCareWorkerRepo = _repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: uId);
-            var healthCareWorker = healthCareWorkerRepo.GetAll().Where(x => x.UserId.Contains(userId)).FirstOrDefault();
+            var healthCareWorkerRepo = _repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: userId);
+            var healthCareWorker = healthCareWorkerRepo.GetAll().Where(x => x.UserId == userId.ToString()).FirstOrDefault();
             if (healthCareWorker != null)
             {
                 return healthCareWorker.Id;

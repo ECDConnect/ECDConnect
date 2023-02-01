@@ -238,11 +238,7 @@ export const RecordEvent: React.FC = () => {
 
       successDialog();
 
-      if (selectedOption?.name === eventNames.close) {
-        return history.push(ROUTES.CLIENTS.ROOT);
-      }
-
-      return goBack();
+      return history.push(ROUTES.CLIENTS.ROOT);
     }
   }, [
     displayNewFolderDialog,

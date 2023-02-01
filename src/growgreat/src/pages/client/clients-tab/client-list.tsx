@@ -89,6 +89,12 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
     return list;
   }, [mothersListItems, infantsListItems, clientType, age, sortBy, search]);
 
+  const isEmptyState = useMemo(
+    () =>
+      (!infants || infants.length === 0) && (!mothers || mothers.length === 0),
+    [infants, mothers]
+  );
+
   useEffect(() => {
     const infantsList: UserAlertListDataItem<ExtraInfantData>[] = infants.map(
       (infant) => {
@@ -338,20 +344,17 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
         {!filteredList.length && (
           <IconInformationIndicator
             className="px-10 pt-28"
-            title="No results"
-            subTitle=""
+            title={
+              isEmptyState ? "You don't have any client yet!" : 'No results'
+            }
+            subTitle={
+              isEmptyState
+                ? 'Tap the “Open a folder” button below to register clients'
+                : ''
+            }
             renderCustomIcon={<BinocularsIcon />}
           />
         )}
-        {(!infants || infants.length === 0) &&
-          (!mothers || mothers.length === 0) && (
-            <IconInformationIndicator
-              className="px-10 pt-28"
-              title="You don't have any client yet!"
-              subTitle="Tap the “Open a folder” button below to register clients"
-              renderCustomIcon={<BinocularsIcon />}
-            />
-          )}
         {filteredList.length > 0 && (
           <StackedList
             className={styles.stackedList}

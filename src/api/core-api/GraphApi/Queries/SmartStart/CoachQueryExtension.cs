@@ -57,9 +57,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public string GetCoachNameByUserId([Service] IHttpContextAccessor contextAccessor,
-        [Service] IGenericRepositoryFactory repoFactory,
-        [Service] UserManager<ApplicationUser> userManager,
+        public string GetCoachNameByUserId([Service] UserManager<ApplicationUser> userManager,
         string userId)
         {
             var user = userManager.FindByIdAsync(userId).Result;
