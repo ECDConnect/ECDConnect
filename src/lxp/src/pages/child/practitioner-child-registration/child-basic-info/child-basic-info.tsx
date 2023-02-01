@@ -1,9 +1,4 @@
-import {
-  ChildDto,
-  FormComponentProps,
-  LearnerDto,
-  getAvatarColor,
-} from '@ecdlink/core';
+import { FormComponentProps, getAvatarColor } from '@ecdlink/core';
 import {
   Divider,
   Dropdown,
@@ -24,13 +19,17 @@ import {
 } from '@schemas/child/child-registration/child-basic-info';
 import { classroomsSelectors } from '@store/classroom';
 import { practitionerSelectors } from '@/store/practitioner';
-import { childrenSelectors } from '@/store/children';
-import { UserDto } from '@/../../../packages/core/src/models/dto/Users/user.dto';
 import { format } from 'date-fns';
+import { ChildService } from '@/services/ChildService';
+import { authSelectors } from '@/store/auth';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { ChildMatchingDto } from './child-basic-info.types';
 
 export const ChildBasicInfo: React.FC<
   FormComponentProps<ChildBasicInfoModel>
 > = ({ onSubmit }) => {
+  const userAuth = useSelector(authSelectors.getAuthUser);
+  const { isOnline } = useOnlineStatus();
   const getAllClassroomGroups = useSelector(
     classroomsSelectors?.getAllClassroomGroups
   );
@@ -38,19 +37,15 @@ export const ChildBasicInfo: React.FC<
   const getClassroomForPrincipal = getAllClassroomGroups.filter((item) => {
     return item?.userId === practitioner?.userId || item?.isActive !== true;
   });
-  const children = useSelector(childrenSelectors?.getChildren);
 
   const classroomsForPractitioner = useSelector(
     classroomsSelectors.getClassroom
   );
 
   const isPrincipal = practitioner?.isPrincipal;
-  const [childUserListData, setChildUserListData] =
-    useState<UserAlertListDataItem[]>();
 
-  const classroomGroupLearners = useSelector(
-    classroomsSelectors.getClassroomGroupLearners
-  );
+  const [checkChild, setCheckChild] = useState<ChildMatchingDto>();
+  const [listItems, setListItems] = useState<UserAlertListDataItem[]>([]);
 
   const {
     getValues,
@@ -67,52 +62,34 @@ export const ChildBasicInfo: React.FC<
   const { firstName, surname } = useWatch({
     control: childInfoFormControl,
   });
-  const childAlreadyAdded = children?.find(
-    (item) =>
-      item?.user?.firstName === firstName && item?.user?.surname === surname
-  );
+
+  const setNewStackListItems = (checkChild: ChildMatchingDto) => {
+    const list: UserAlertListDataItem[] = [
+      {
+        profileDataUrl: checkChild?.profileImageUrl || '',
+        title: `${checkChild?.fullName}` || '',
+        subTitle:
+          `Added by ${checkChild?.practitionerName} on ${format(
+            new Date(checkChild?.createdByDate!),
+            'dd MMM yyyy'
+          )}.` ?? '',
+        profileText:
+          `${
+            checkChild?.fullName?.split(' ')[0] || ''.toUpperCase()
+          }${checkChild?.fullName?.split(' ')[1].toUpperCase()}` || '',
+        alertSeverity: 'none',
+        avatarColor: getAvatarColor() || '',
+      },
+    ];
+
+    setListItems(list);
+  };
 
   useEffect(() => {
-    if (childAlreadyAdded) {
-      const childListItem: UserAlertListDataItem[] = [];
-
-      const learner = classroomGroupLearners.find(
-        (x) =>
-          x.userId === childAlreadyAdded.userId && x.stoppedAttendance == null
-      );
-      childListItem.push(mapUserListDataItem(childAlreadyAdded, learner));
-
-      setChildUserListData(childListItem);
+    if (checkChild) {
+      setNewStackListItems(checkChild);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [childAlreadyAdded]);
-
-  const mapUserListDataItem = (
-    childRecord: ChildDto,
-    childLearner?: LearnerDto
-  ): UserAlertListDataItem => {
-    const childUser = childAlreadyAdded as UserDto;
-
-    return {
-      id: childRecord.id,
-      profileDataUrl: childUser?.profileImageUrl,
-      title: `${childAlreadyAdded?.user?.firstName} ${childAlreadyAdded?.user?.surname}`,
-      subTitle:
-        `Added by ${childAlreadyAdded?.insertedBy?.split(' ')[0]} on ${format(
-          new Date(childAlreadyAdded?.insertedDate!),
-          'LLL d'
-        )}` ?? '',
-      profileText: `${
-        childAlreadyAdded?.user?.firstName &&
-        childAlreadyAdded?.user?.firstName[0]?.toUpperCase()
-      }${
-        childAlreadyAdded?.user?.surname &&
-        childAlreadyAdded?.user?.surname[0]?.toUpperCase()
-      }`,
-      alertSeverity: 'none',
-      avatarColor: getAvatarColor() || '',
-    };
-  };
+  }, [checkChild]);
 
   const onNext = (formValue: ChildBasicInfoModel) => {
     onSubmit(formValue);
@@ -123,6 +100,20 @@ export const ChildBasicInfo: React.FC<
 
     return values.playgroupId ?? '';
   };
+
+  useEffect(() => {
+    if (firstName && surname && isOnline) {
+      const checkChildMatching = async () => {
+        const res = await new ChildService(
+          userAuth?.auth_token!
+        ).childCreatedByDetail(userAuth?.id!, firstName, surname);
+
+        setCheckChild(res as ChildMatchingDto);
+      };
+
+      checkChildMatching();
+    }
+  }, [firstName, surname, userAuth?.auth_token, userAuth?.id, isOnline]);
 
   return (
     <div className="flex h-full w-full flex-col bg-white p-4">
@@ -166,15 +157,13 @@ export const ChildBasicInfo: React.FC<
         }}
       />
 
-      {childAlreadyAdded && childAlreadyAdded?.user?.dateOfBirth && (
+      {checkChild && (
         <div>
           <Alert
-            title={`There is already a child named ${
-              childAlreadyAdded?.user?.firstName +
-              ' ' +
-              childAlreadyAdded?.user?.surname
-            } at ${classroomsForPractitioner?.name}, born on ${format(
-              new Date(childAlreadyAdded?.user?.dateOfBirth),
+            title={`There is already a child named ${checkChild?.fullName} at ${
+              classroomsForPractitioner?.name
+            }, born on ${format(
+              new Date(checkChild?.dateOfBirth!),
               'dd MMM yyyy'
             )}.`}
             type="warning"
@@ -183,10 +172,10 @@ export const ChildBasicInfo: React.FC<
             ]}
             className={'mt-4'}
           />
-          {childUserListData && (
+          {listItems && (
             <StackedList
               className={'mt-4'}
-              listItems={childUserListData}
+              listItems={listItems}
               type={'UserAlertList'}
             />
           )}
