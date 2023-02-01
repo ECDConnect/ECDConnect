@@ -18,6 +18,7 @@ export const Money = () => {
   const userAuth = useSelector(authSelectors.getAuthUser);
   const appDispatch = useAppDispatch();
   const income = useSelector(statementsSelectors.getIncome);
+  const expense = useSelector(statementsSelectors.getExpenses);
 
   const updateStatements = async () => {
     if (userAuth?.auth_token) {
@@ -41,10 +42,10 @@ export const Money = () => {
   }, []);
 
   useEffect(() => {
-    if (income) {
+    if ((income && income?.length > 0) || (expense && expense?.length! > 0)) {
       setHasIncomeStatements(true);
     }
-  }, [income]);
+  }, [income, expense]);
 
   return (
     <>

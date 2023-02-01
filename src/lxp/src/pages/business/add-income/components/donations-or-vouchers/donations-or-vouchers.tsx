@@ -51,6 +51,8 @@ export const DonationsOrVouchers: React.FC<AddIncomeState> = ({ setType }) => {
     control: control,
   });
 
+  const isNum = /^\d+$/.test(donationWorth?.slice(1)!);
+
   const incomeTypes = useSelector(statementsSelectors.getIncomeTypes);
   const viewTitle = 'Donation';
   const incomeTypeValue = incomeTypes.find(
@@ -93,16 +95,11 @@ export const DonationsOrVouchers: React.FC<AddIncomeState> = ({ setType }) => {
     ).UpdateStatementsIncome(incomeId, {
       IsActive: true,
       UserId: userAuth?.id,
-      // ChildUserId: child,
       Submitted: false,
       DateReceived: date,
-      // Notes: note,
-      // Description: 'Testing',
-      Amount: Number(donationWorth),
+      Amount: Number(donationWorth?.slice(1)),
       AmountExpected: 400,
       ChildCoverAmount: 400,
-      // PayTypeId: '18eb51c4-8486-a7f3-4de0-14477870e205',
-      // ContributionTypeId: contributionType,
       IncomeTypeId: incomeTypeValue?.id,
     });
   };
@@ -170,7 +167,7 @@ export const DonationsOrVouchers: React.FC<AddIncomeState> = ({ setType }) => {
           visible={true}
           nameProp={'donationWorth'}
           register={register}
-          placeholder={'e.g. Paid for two months'}
+          placeholder={'e.g. R 1 000.00'}
           className="mt-4"
           type={'text'}
           textInputType={'moneyInput'}
@@ -181,7 +178,7 @@ export const DonationsOrVouchers: React.FC<AddIncomeState> = ({ setType }) => {
           visible={true}
           nameProp={'note'}
           register={register}
-          placeholder={'e.g. R 1 000.00'}
+          placeholder={'e.g. Food donation from local shop'}
           className="mt-4"
         />
         <Button
@@ -189,7 +186,7 @@ export const DonationsOrVouchers: React.FC<AddIncomeState> = ({ setType }) => {
           color="primary"
           className={'mx-auto mt-8 w-full rounded-2xl'}
           onClick={handleSaveStartupSupportValues}
-          disabled={disabled}
+          disabled={disabled || !isNum}
         >
           {renderIcon('SaveIcon', styles.buttonIcon)}
           <Typography

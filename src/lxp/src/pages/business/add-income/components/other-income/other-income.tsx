@@ -49,6 +49,8 @@ export const OtherIncome: React.FC<AddIncomeState> = ({ setType }) => {
     control: control,
   });
 
+  const isNum = /^\d+$/.test(incomeAmount?.slice(1)!);
+
   const disabled = useMemo(() => {
     return !date || !incomeAmount || !description;
   }, [date, description, incomeAmount]);
@@ -134,7 +136,7 @@ export const OtherIncome: React.FC<AddIncomeState> = ({ setType }) => {
           color="primary"
           className={'mx-auto mt-8 w-full rounded-2xl'}
           onClick={handleSaveStartupSupportValues}
-          disabled={disabled}
+          disabled={disabled || !isNum}
         >
           {renderIcon('SaveIcon', styles.buttonIcon)}
           <Typography

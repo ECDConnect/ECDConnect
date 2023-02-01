@@ -50,6 +50,8 @@ export const DsdSubsidy: React.FC<AddIncomeState> = ({ setType }) => {
     control: control,
   });
 
+  const isNum = /^\d+$/.test(subsidyAmount?.slice(1)!);
+
   const disabled = useMemo(() => {
     return !date || !childrenNumber || !subsidyAmount;
   }, [childrenNumber, date, subsidyAmount]);
@@ -141,7 +143,7 @@ export const DsdSubsidy: React.FC<AddIncomeState> = ({ setType }) => {
           color="primary"
           className={'mx-auto mt-8 w-full rounded-2xl'}
           onClick={handleSaveStartupSupportValues}
-          disabled={disabled}
+          disabled={disabled || !isNum}
         >
           {renderIcon('SaveIcon', styles.buttonIcon)}
           <Typography

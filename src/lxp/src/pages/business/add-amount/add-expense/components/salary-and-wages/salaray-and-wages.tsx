@@ -59,6 +59,7 @@ export const SalaryAndWages: React.FC<AddIncomeState> = ({ setType }) => {
     (item) => item.description === viewTitle
   );
 
+  const isNum = /^\d+$/.test(amount?.slice(1)!);
   const disabled = useMemo(() => {
     return !date || !amount;
   }, [amount, date]);
@@ -183,7 +184,7 @@ export const SalaryAndWages: React.FC<AddIncomeState> = ({ setType }) => {
           color="primary"
           className={'mx-auto mt-8 w-full rounded-2xl'}
           onClick={sendIncomeUpdate}
-          disabled={disabled}
+          disabled={disabled || !isNum}
           isLoading={isLoading}
         >
           {renderIcon('SaveIcon', styles.buttonIcon)}

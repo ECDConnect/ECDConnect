@@ -53,6 +53,7 @@ export const Food: React.FC<AddIncomeState> = ({ setType }) => {
     useState<string>();
   const [isLoading, setIsLoading] = useState(false);
 
+  const isNum = /^\d+$/.test(amount?.slice(1)!);
   const disabled = useMemo(() => {
     return !date || !amount;
   }, [amount, date]);
@@ -63,8 +64,6 @@ export const Food: React.FC<AddIncomeState> = ({ setType }) => {
   const expensesTypeValue = expensesTypes.find(
     (item) => item.description === viewTitle
   );
-
-  console.log({ amount });
 
   const setPhotoUrl = (imageUrl: string) => {
     setRentValue('expenseInvoice', imageUrl);
@@ -183,7 +182,7 @@ export const Food: React.FC<AddIncomeState> = ({ setType }) => {
           color="primary"
           className={'mx-auto mt-8 w-full rounded-2xl'}
           onClick={sendIncomeUpdate}
-          disabled={disabled}
+          disabled={disabled || !isNum}
           isLoading={isLoading}
         >
           {renderIcon('SaveIcon', styles.buttonIcon)}
