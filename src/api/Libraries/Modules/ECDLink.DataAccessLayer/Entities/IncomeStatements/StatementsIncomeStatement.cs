@@ -18,7 +18,7 @@ namespace ECDLink.DataAccessLayer.Entities.IncomeStatements
         public string Notes { get; set; }
         public int Month { get; set; }
         public int Year { get; set; }
-        public int Period { get; set; }
+        public string Period { get; set; }
         public bool Submitted { get; set; }
         public double IncomeTotal { get; set; }
         public double ExpenseTotal { get; set; }
