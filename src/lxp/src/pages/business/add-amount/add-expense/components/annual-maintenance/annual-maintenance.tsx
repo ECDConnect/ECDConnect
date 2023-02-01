@@ -15,13 +15,19 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm, useWatch } from 'react-hook-form';
 import { AddIncomeState } from './annual-maintenance.types';
 import { PhotoPrompt } from '@/components/photo-prompt/photo-prompt';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   ExpensesModel,
   expensesSchema,
 } from '@/schemas/expense-statements/expenses';
+import { useSelector } from 'react-redux';
+import { authSelectors } from '@/store/auth';
+import { statementsSelectors } from '@/store/statements';
+import { newGuid } from '@/utils/common/uuid.utils';
+import ExpensesStatementsService from '@/services/ExpensesStatementsService/ExpensesStatementsService';
 
 export const AnnualMaintenance: React.FC<AddIncomeState> = ({ setType }) => {
+  const userAuth = useSelector(authSelectors.getAuthUser);
   const {
     trigger,
     control,
@@ -45,15 +51,44 @@ export const AnnualMaintenance: React.FC<AddIncomeState> = ({ setType }) => {
     useState<boolean>(false);
   const [registrationFormPhotoUrl, setRegistrationFormPhotoUrl] =
     useState<string>();
+  const [isLoading, setIsLoading] = useState(false);
 
-  const disabled = !date || !amount;
+  const disabled = useMemo(() => {
+    return !date || !amount;
+  }, [amount, date]);
   const acceptedFormats = ['jpg', 'jpeg'];
+  const expensesTypes = useSelector(statementsSelectors.getExpensesTypes);
+  const viewTitle = 'Maintenance';
+  const expensesTypeValue = expensesTypes.find(
+    (item) => item.description === viewTitle
+  );
 
   const setPhotoUrl = (imageUrl: string) => {
     setRentValue('expenseInvoice', imageUrl);
     setRegistrationFormPhotoUrl(imageUrl);
     trigger();
     setPhotoActionBarVisible(false);
+  };
+
+  const sendIncomeUpdate = async () => {
+    const incomeId = newGuid();
+    setIsLoading(true);
+
+    await new ExpensesStatementsService(
+      userAuth?.auth_token!
+    ).UpdateStatementsIncome(incomeId, {
+      IsActive: true,
+      UserId: userAuth?.id,
+      Submitted: false,
+      DatePaid: date,
+      Notes: note,
+      Amount: Number(amount?.slice(1)),
+      ExpenseTypeId: expensesTypeValue?.id,
+      PhotoProof: expenseInvoice,
+    });
+
+    setIsLoading(false);
+    setType('');
   };
 
   return (
@@ -87,7 +122,7 @@ export const AnnualMaintenance: React.FC<AddIncomeState> = ({ setType }) => {
           className="bg-uiBg text-textMid mx-auto w-full rounded-md border-none"
           selected={selectedDate ? new Date(selectedDate) : undefined}
           onChange={(date: Date) => {
-            setRentValue('date', date ? date.toString() : '');
+            setRentValue('date', date ? date.toISOString() : '');
           }}
           dateFormat="EEE, dd MMM yyyy"
         />
@@ -96,7 +131,7 @@ export const AnnualMaintenance: React.FC<AddIncomeState> = ({ setType }) => {
           visible={true}
           nameProp={'amount'}
           register={register}
-          placeholder={'e.g. R 50.00'}
+          placeholder={'e.g. R 1 000.00'}
           className="mt-2"
           type={'text'}
           textInputType={'moneyInput'}
@@ -107,7 +142,7 @@ export const AnnualMaintenance: React.FC<AddIncomeState> = ({ setType }) => {
           visible={true}
           nameProp={'note'}
           register={register}
-          placeholder={'e.g. Small grant from local shop'}
+          placeholder={'e.g. Paint for front gate'}
           className="mt-2"
         />
         <ImageInput<ExpensesModel>
@@ -116,6 +151,7 @@ export const AnnualMaintenance: React.FC<AddIncomeState> = ({ setType }) => {
           subLabel={'Optional'}
           nameProp="expenseInvoice"
           icon="CameraIcon"
+          iconContainerColor={'tertiary'}
           className={'py-4'}
           currentImageString={registrationFormPhotoUrl}
           register={register}
@@ -149,8 +185,9 @@ export const AnnualMaintenance: React.FC<AddIncomeState> = ({ setType }) => {
           type="filled"
           color="primary"
           className={'mx-auto mt-8 w-full rounded-2xl'}
-          onClick={() => {}}
+          onClick={sendIncomeUpdate}
           disabled={disabled}
+          isLoading={isLoading}
         >
           {renderIcon('SaveIcon', styles.buttonIcon)}
           <Typography

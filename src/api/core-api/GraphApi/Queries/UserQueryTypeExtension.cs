@@ -37,9 +37,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public ApplicationUser GetUserById(
-            [Service] UserManager<ApplicationUser> userManager,
-            [Service] RoleManager<IdentityRole> roleManager,
-            IGenericRepositoryFactory repoFactory,
+            [Service] UserManager<ApplicationUser> userManager, 
+            [Service] RoleManager<IdentityRole> roleManager, 
+            IGenericRepositoryFactory repoFactory, 
             string userId)
         {
             var user = userManager.FindByIdAsync(userId).Result;
@@ -92,8 +92,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
 
         public UserByToken GetUserByToken(
-            [Service] UserManager<ApplicationUser> userManager,
-            IGenericRepositoryFactory repoFactory,
+            [Service] UserManager<ApplicationUser> userManager, 
+            IGenericRepositoryFactory repoFactory, 
             string token)
         {
             UserByToken tokenuser = new UserByToken();

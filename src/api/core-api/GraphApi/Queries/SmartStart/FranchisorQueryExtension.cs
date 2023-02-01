@@ -67,8 +67,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public SiteAddress GetFranchisorSiteAddressById(
-            [Service] IHttpContextAccessor contextAccessor,
+        public SiteAddress GetFranchisorSiteAddressById([Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             string franchisorId)
         {

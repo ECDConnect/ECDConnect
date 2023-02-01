@@ -1,4 +1,5 @@
 using EcdLink.Api.CoreApi.GraphApi.Models;
+using EcdLink.Api.CoreApi.Managers.IncomeExpense;
 using EcdLink.Api.CoreApi.Managers.Notifications;
 using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
 using ECDLink.Abstractrions.GraphQL.Enums;
@@ -53,29 +54,19 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         }
 
         [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.Create)]
-        public StatementsIncome CreateStatementIncome(IGenericRepositoryFactory repoFactory,
-              [Service] IHttpContextAccessor httpContextAccessor,
+        public StatementsIncomeStatement CreateStatementIncome([Service] IncomeExpenseManager incomeManager,
               StatementsIncome model)
         {
 
-            string userId = Guid.NewGuid().ToString();
-            var _applicationUserId = httpContextAccessor.HttpContext.GetUser().Id;
-            var incomeRepo = repoFactory.CreateGenericRepository<StatementsIncome>(userContext: _applicationUserId);
-            //check user dont exist first
-            return new StatementsIncome();
+            return incomeManager.CreateStatementIncome(model);
         }
 
         [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.Create)]
-        public StatementsExpenses CreateStatementExpense(IGenericRepositoryFactory repoFactory,
-      [Service] IHttpContextAccessor httpContextAccessor,
+        public StatementsIncomeStatement CreateStatementExpense([Service] IncomeExpenseManager incomeManager,
       StatementsExpenses model)
         {
 
-            string userId = Guid.NewGuid().ToString();
-            var _applicationUserId = httpContextAccessor.HttpContext.GetUser().Id;
-            var incomeRepo = repoFactory.CreateGenericRepository<StatementsExpenses>(userContext: _applicationUserId);
-            //check user dont exist first
-            return new StatementsExpenses();
+            return incomeManager.CreateStatementExpense(model);
         }
 
         [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.Create)]

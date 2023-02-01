@@ -148,7 +148,7 @@ export const InfantRegister: React.FC = () => {
                 type="body"
                 color={'textMid'}
                 text={
-                  'Be supported during the first thousand days of your babies life'
+                  "Be supported during the first thousand days of your baby's life"
                 }
                 className="w-9/12"
               />

@@ -51,6 +51,74 @@ string userId)
             return expenseRepo.GetAll().Where(x => x.UserId.Equals(userId)).ToList();
         }
 
+        public StatementsIncomeStatement CreateStatementIncome(
+StatementsIncome model)
+        {
+            var incomeRepo = _repoFactory.CreateRepository<StatementsIncome>(userContext: _applicationUserId);
+            var statementsRepo = _repoFactory.CreateRepository<StatementsIncomeStatement>(userContext: _applicationUserId);
+            incomeRepo.Insert(model);
+
+            double runningBalance = 0;
+            //do business logic to determine running balance
+            var statements = GetAllStatementsIncomeStatement(model.UserId);
+            var row = statementsRepo.GetAll().Where(x => x.UserId== model.UserId).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
+            runningBalance = (row != null ? runningBalance = row.Balance : 0);
+
+            StatementsIncomeStatement statement = new StatementsIncomeStatement()
+            {
+                Id = model.Id,
+                UserId = model.UserId,
+                TenantId = model.TenantId,
+                Submitted = false,
+                SubmittedDate = null,
+                Month = DateTime.Now.Month,
+                Year = DateTime.Now.Year,
+                Period = "Monthly",
+                IncomeTotal = model.Amount,
+                ExpenseTotal = 0,
+                Notes = model.Notes,
+                Balance = (runningBalance + model.Amount)
+            };
+
+            var ret = statementsRepo.Insert(statement);
+            return statement;
+
+        }
+
+        public StatementsIncomeStatement CreateStatementExpense(
+StatementsExpenses model)
+        {
+            var incomeRepo = _repoFactory.CreateRepository<StatementsExpenses>(userContext: _applicationUserId);
+            var statementsRepo = _repoFactory.CreateRepository<StatementsIncomeStatement>(userContext: _applicationUserId);
+            incomeRepo.Insert(model);
+
+            double runningBalance = 0;
+            //do business logic to determine running balance
+            var statements = GetAllStatementsIncomeStatement(model.UserId);
+            var row = statementsRepo.GetAll().Where(x => x.UserId == model.UserId).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
+            runningBalance = (row != null ? runningBalance = row.Balance : 0);
+
+            StatementsIncomeStatement statement = new StatementsIncomeStatement()
+            {
+                Id = model.Id,
+                UserId = model.UserId,
+                TenantId = model.TenantId,
+                Submitted = false,
+                SubmittedDate = null,
+                Month = DateTime.Now.Month,
+                Year = DateTime.Now.Year,
+                Period = "Monthly",
+                IncomeTotal = 0,
+                ExpenseTotal = model.Amount,
+                Notes = model.Notes,
+                Balance = (runningBalance - model.Amount)
+            };
+
+            var ret = statementsRepo.Insert(statement);
+            return statement;
+
+        }
+
     }
 }
 
