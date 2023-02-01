@@ -83,6 +83,10 @@ import {
   childrenForPractitionerPersistConfig,
   childrenForPractitionerReducer,
 } from '../childrenForPractitioner/childrenForPractitioner';
+import {
+  statementsPersistConfig,
+  statementsReducer,
+} from '../statements/statements';
 
 const persistedReducers = {
   activityData: persistReducer(activityPersistConfig, activityReducer),
@@ -125,6 +129,7 @@ const persistedReducers = {
     progressTrackingReducer
   ),
   settings: persistReducer(settingPersistConfig, settingReducer),
+  statements: persistReducer(statementsPersistConfig, statementsReducer),
   staticData: persistReducer(staticDataPersistConfig, staticDataReducer),
   storyBookData: persistReducer(storyBookPersistConfig, storyBookReducer),
   sync: syncReducer,

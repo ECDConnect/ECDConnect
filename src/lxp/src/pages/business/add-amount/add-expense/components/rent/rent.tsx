@@ -15,13 +15,19 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm, useWatch } from 'react-hook-form';
 import { AddIncomeState } from './rent.types';
 import { PhotoPrompt } from '@/components/photo-prompt/photo-prompt';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   ExpensesModel,
   expensesSchema,
 } from '@/schemas/expense-statements/expenses';
+import ExpensesStatementsService from '@/services/ExpensesStatementsService/ExpensesStatementsService';
+import { useSelector } from 'react-redux';
+import { authSelectors } from '@/store/auth';
+import { newGuid } from '@/utils/common/uuid.utils';
+import { statementsSelectors } from '@/store/statements';
 
 export const Rent: React.FC<AddIncomeState> = ({ setType }) => {
+  const userAuth = useSelector(authSelectors.getAuthUser);
   const {
     trigger,
     control,
@@ -45,8 +51,16 @@ export const Rent: React.FC<AddIncomeState> = ({ setType }) => {
     useState<boolean>(false);
   const [registrationFormPhotoUrl, setRegistrationFormPhotoUrl] =
     useState<string>();
+  const [isLoading, setIsLoading] = useState(false);
 
-  const disabled = !date || !amount;
+  const expensesTypes = useSelector(statementsSelectors.getExpensesTypes);
+  const viewTitle = 'Rent';
+  const expensesTypeValue = expensesTypes.find(
+    (item) => item.description === viewTitle
+  );
+  const disabled = useMemo(() => {
+    return !date || !amount;
+  }, [amount, date]);
   const acceptedFormats = ['jpg', 'jpeg'];
 
   const setPhotoUrl = (imageUrl: string) => {
@@ -54,6 +68,27 @@ export const Rent: React.FC<AddIncomeState> = ({ setType }) => {
     setRegistrationFormPhotoUrl(imageUrl);
     trigger();
     setPhotoActionBarVisible(false);
+  };
+
+  const sendIncomeUpdate = async () => {
+    const incomeId = newGuid();
+    setIsLoading(true);
+
+    await new ExpensesStatementsService(
+      userAuth?.auth_token!
+    ).UpdateStatementsIncome(incomeId, {
+      IsActive: true,
+      UserId: userAuth?.id,
+      Submitted: false,
+      DatePaid: date,
+      Notes: note,
+      Amount: Number(amount?.slice(1)),
+      ExpenseTypeId: expensesTypeValue?.id,
+      PhotoProof: expenseInvoice,
+    });
+
+    setIsLoading(false);
+    setType('');
   };
 
   return (
@@ -66,7 +101,7 @@ export const Rent: React.FC<AddIncomeState> = ({ setType }) => {
       className="p-4"
     >
       <div className="mb-3 w-full justify-center">
-        <Typography type="h2" color="textMid" text={'Rent'} />
+        <Typography type="h2" color="textMid" text={viewTitle} />
         <Alert
           type={'info'}
           title={
@@ -83,7 +118,7 @@ export const Rent: React.FC<AddIncomeState> = ({ setType }) => {
           className="bg-uiBg text-textMid mx-auto w-full rounded-md border-none"
           selected={selectedDate ? new Date(selectedDate) : undefined}
           onChange={(date: Date) => {
-            setRentValue('date', date ? date.toString() : '');
+            setRentValue('date', date ? date.toISOString() : '');
           }}
           dateFormat="EEE, dd MMM yyyy"
         />
@@ -92,9 +127,10 @@ export const Rent: React.FC<AddIncomeState> = ({ setType }) => {
           visible={true}
           nameProp={'amount'}
           register={register}
-          placeholder={'e.g. R 50.00'}
+          placeholder={'e.g. R 500.00'}
           className="mt-2"
-          type={'number'}
+          type={'text'}
+          textInputType={'moneyInput'}
         />
         <FormInput<ExpensesModel>
           label={'Add a description or note'}
@@ -102,7 +138,7 @@ export const Rent: React.FC<AddIncomeState> = ({ setType }) => {
           visible={true}
           nameProp={'note'}
           register={register}
-          placeholder={'e.g. Small grant from local shop'}
+          placeholder={'e.g. Paid for two months'}
           className="mt-2"
         />
         <ImageInput<ExpensesModel>
@@ -111,6 +147,7 @@ export const Rent: React.FC<AddIncomeState> = ({ setType }) => {
           subLabel={'Optional'}
           nameProp="expenseInvoice"
           icon="CameraIcon"
+          iconContainerColor={'tertiary'}
           className={'py-4'}
           currentImageString={registrationFormPhotoUrl}
           register={register}
@@ -144,8 +181,9 @@ export const Rent: React.FC<AddIncomeState> = ({ setType }) => {
           type="filled"
           color="primary"
           className={'mx-auto mt-8 w-full rounded-2xl'}
-          onClick={() => {}}
+          onClick={sendIncomeUpdate}
           disabled={disabled}
+          isLoading={isLoading}
         >
           {renderIcon('SaveIcon', styles.buttonIcon)}
           <Typography

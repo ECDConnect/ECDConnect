@@ -117,15 +117,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             }
 
             var infantRepo = _repoFactory.CreateGenericRepository<Infant>(userContext: applicationUserId);
-            var createdInfant = new Infant();
-            try
-            {
-                createdInfant = infantRepo.Insert(infant);
-            }
-            catch (Exception e)
-            {
-                createdInfant = new Infant();
-            }
+            var createdInfant = infantRepo.Insert(infant);
 
             if (createdInfant != null)
             {
@@ -441,6 +433,11 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 return infant.Id;
             }
             return null;
+        }
+
+        public DateTime? GetClientsNextVisitDate(Guid infantId)
+        {
+            return _visitManager.GetClientsNextVisitDate(infantId, Constants.GrowGreatSettings.client_child);
         }
 
     }

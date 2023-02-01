@@ -228,6 +228,39 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 int diff = (7 + (dt.DayOfWeek - startOfWeek)) % 7;
                 return dt.AddDays(-1 * diff).Date;
             }
+
+        public DateTime? GetClientsNextVisitDate(Guid Id, string type)
+        {
+            var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
+            var visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: applicationUserId);
+            var visitTypeRepo = _repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
+
+            Visit nextVisit = null;
+            DateTime today = DateTime.Today;
+
+            if (type == Constants.GrowGreatSettings.client_mother)
+            {
+                nextVisit = (
+                    from visit in visitRepo.GetAll().Where(x => x.MotherId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date >= today.Date).OrderBy(x => x.PlannedVisitDate)
+                    join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GrowGreatSettings.client_mother)) on visit.VisitTypeId equals visitType.Id
+                    select visit
+                ).FirstOrDefault();
+            }
+            else
+            {
+                nextVisit = (
+                    from visit in visitRepo.GetAll().Where(x => x.InfantId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date >= today.Date).OrderBy(x => x.PlannedVisitDate)
+                    join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GrowGreatSettings.client_child)) on visit.VisitTypeId equals visitType.Id
+                    select visit
+                ).FirstOrDefault();
+            }
+
+            if (nextVisit != null)
+            {
+                return nextVisit.PlannedVisitDate.Date;
+            }
+            return null;
+        }
     }
 }
 

@@ -8,7 +8,8 @@ import {
 } from 'react-hook-form';
 import * as styles from './form-input.style';
 export type FormFieldType = 'text' | 'number' | 'password';
-export type TextInputType = 'input' | 'textarea' | 'date';
+export type TextInputType = 'input' | 'textarea' | 'date' | 'moneyInput';
+import CurrencyInput from 'react-currency-input-field';
 
 interface FormFieldProps<T extends FieldValues> extends ComponentBaseProps {
   label?: string;
@@ -63,6 +64,37 @@ export const FormInput = <T extends FieldValues>({
               {...register(nameProp)}
               className={error ? styles.errorStyle : styles.defaultInputStyle}
               defaultValue={''}
+              {...restProps}
+            />
+          );
+        } else {
+          return (
+            <textarea
+              autoComplete="new-off"
+              placeholder={placeholder}
+              disabled={disabled}
+              rows={4}
+              maxLength={maxLength}
+              className={error ? styles.errorStyle : styles.defaultInputStyle}
+              defaultValue={value ?? ''}
+              {...restProps}
+            />
+          );
+        }
+      case 'moneyInput':
+        if (nameProp && register) {
+          return (
+            <CurrencyInput
+              prefix="R"
+              decimalsLimit={2}
+              autoComplete="new-off"
+              placeholder={placeholder}
+              disabled={disabled}
+              type={type}
+              maxLength={maxLength}
+              {...register(nameProp)}
+              className={error ? styles.errorStyle : styles.defaultInputStyle}
+              style={suffixIcon ? { paddingRight: 38 } : { paddingRight: 16 }}
               {...restProps}
             />
           );

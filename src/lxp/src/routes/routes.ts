@@ -25,6 +25,10 @@ const ROUTES = {
   BUSINESS_ADD_AMOUNT: '/business-add-amount',
   BUSINESS_ADD_INCOME: '/business-add-income',
   BUSINESS_ADD_EXPENSE: '/business-add-expense',
+  BUSINESS_SUBMIT_INCOME_STATEMENTS_LIST:
+    '/business-submit-income-statements-list',
+  BUSINESS_SUBMIT_INCOME_STATEMENTS_DESCRIPTION:
+    '/business-submit-income-statements-description',
   CLASSROOM: '/classroom',
   TRAINING: '/training',
   CHILD: addPrefix('/child', {

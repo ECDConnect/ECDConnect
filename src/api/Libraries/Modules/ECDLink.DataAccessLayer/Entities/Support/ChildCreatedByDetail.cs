@@ -11,5 +11,8 @@ namespace ECDLink.DataAccessLayer.Entities
         public DateTime CreatedByDate { get; set; }
         public string ClassroomName { get; set; }
         public string PractitionerName { get; set; }
+        public DateTime DateOfBirth { get; set; }
+        public string ProfileImageUrl { get; set; }
+
     }
 }

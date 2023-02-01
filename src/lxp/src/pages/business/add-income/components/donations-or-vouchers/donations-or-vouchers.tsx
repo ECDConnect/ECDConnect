@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   BannerWrapper,
   Typography,
@@ -11,7 +11,7 @@ import {
   FormInput,
 } from '@ecdlink/ui';
 import DatePicker from 'react-datepicker';
-import { AddIncomeState, donationTypes } from './donations-or-vouchers.types';
+import { AddIncomeState } from './donations-or-vouchers.types';
 import * as styles from './donations-or-vouchers.styles';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm, useWatch } from 'react-hook-form';
@@ -19,8 +19,14 @@ import {
   DonationsOrVouchersModel,
   donationsOrVouchersSchema,
 } from '@/schemas/income-statements/donations-or-vouchers';
+import { useSelector } from 'react-redux';
+import { statementsSelectors } from '@/store/statements';
+import { IncomeStatementsService } from '@/services/IncomeStatementsService';
+import { authSelectors } from '@/store/auth';
+import { newGuid } from '@/utils/common/uuid.utils';
 
 export const DonationsOrVouchers: React.FC<AddIncomeState> = ({ setType }) => {
+  const userAuth = useSelector(authSelectors.getAuthUser);
   const [selectedDonations, setDonations] = useState<string[]>([]);
 
   const {
@@ -41,20 +47,28 @@ export const DonationsOrVouchers: React.FC<AddIncomeState> = ({ setType }) => {
     date,
     donationWorth,
     donations,
-    note,
   } = useWatch({
     control: control,
   });
 
+  const incomeTypes = useSelector(statementsSelectors.getIncomeTypes);
+  const viewTitle = 'Donation';
+  const incomeTypeValue = incomeTypes.find(
+    (item) => item.description === viewTitle
+  );
+
+  const payTypes = useSelector(statementsSelectors.getPayTypes);
   const donationsDisabled = donations?.length === 0;
-  const disabled = !date || !donationWorth || !donations || donationsDisabled;
+  const disabled = useMemo(() => {
+    return !date || !donationWorth || !donations || donationsDisabled;
+  }, [date, donationWorth, donations, donationsDisabled]);
 
   useEffect(() => {
-    const _list = donationTypes
+    const _list = payTypes
       ?.map((p) => {
-        if (p?.type) {
+        if (p?.description) {
           return {
-            label: `${p?.type}`,
+            label: `${p?.description}`,
             value: p.id,
           };
         }
@@ -63,11 +77,39 @@ export const DonationsOrVouchers: React.FC<AddIncomeState> = ({ setType }) => {
       .filter(Boolean) as { label: string; value: any }[];
 
     setDonationTypesList(_list);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleFamilyGrantSelection = (donations: string[]) => {
+  const handleDonationsValue = (donations: string[]) => {
     setDonations(donations);
     setPreschoolFeesValue('donations', donations);
+  };
+
+  const sendIncomeUpdate = async () => {
+    const incomeId = newGuid();
+
+    await new IncomeStatementsService(
+      userAuth?.auth_token!
+    ).UpdateStatementsIncome(incomeId, {
+      IsActive: true,
+      UserId: userAuth?.id,
+      // ChildUserId: child,
+      Submitted: false,
+      DateReceived: date,
+      // Notes: note,
+      // Description: 'Testing',
+      Amount: Number(donationWorth),
+      AmountExpected: 400,
+      ChildCoverAmount: 400,
+      // PayTypeId: '18eb51c4-8486-a7f3-4de0-14477870e205',
+      // ContributionTypeId: contributionType,
+      IncomeTypeId: incomeTypeValue?.id,
+    });
+  };
+
+  const handleSaveStartupSupportValues = () => {
+    sendIncomeUpdate();
+    setType('');
   };
 
   return (
@@ -80,7 +122,7 @@ export const DonationsOrVouchers: React.FC<AddIncomeState> = ({ setType }) => {
       className="p-4"
     >
       <div className="mb-3 w-full justify-center">
-        <Typography type="h2" color="textMid" text={'Donations or vouchers'} />
+        <Typography type="h2" color="textMid" text={viewTitle} />
         <Alert
           type={'info'}
           title={
@@ -97,7 +139,7 @@ export const DonationsOrVouchers: React.FC<AddIncomeState> = ({ setType }) => {
           className="bg-uiBg text-textMid mx-auto w-full rounded-md border-none"
           selected={selectedDate ? new Date(selectedDate) : undefined}
           onChange={(date: Date) => {
-            setPreschoolFeesValue('date', date ? date.toString() : '');
+            setPreschoolFeesValue('date', date ? date.toISOString() : '');
           }}
           dateFormat="EEE, dd MMM yyyy"
         />
@@ -116,9 +158,9 @@ export const DonationsOrVouchers: React.FC<AddIncomeState> = ({ setType }) => {
               })) || []
             }
             onOptionSelected={(value: string | string[]) =>
-              handleFamilyGrantSelection(value as string[])
+              handleDonationsValue(value as string[])
             }
-            multiple
+            multiple={false}
             selectedOptions={selectedDonations}
             color="secondary"
           />
@@ -130,7 +172,8 @@ export const DonationsOrVouchers: React.FC<AddIncomeState> = ({ setType }) => {
           register={register}
           placeholder={'e.g. Paid for two months'}
           className="mt-4"
-          type={'number'}
+          type={'text'}
+          textInputType={'moneyInput'}
         />
         <FormInput<DonationsOrVouchersModel>
           label={'Add a note'}
@@ -145,7 +188,7 @@ export const DonationsOrVouchers: React.FC<AddIncomeState> = ({ setType }) => {
           type="filled"
           color="primary"
           className={'mx-auto mt-8 w-full rounded-2xl'}
-          onClick={() => {}}
+          onClick={handleSaveStartupSupportValues}
           disabled={disabled}
         >
           {renderIcon('SaveIcon', styles.buttonIcon)}

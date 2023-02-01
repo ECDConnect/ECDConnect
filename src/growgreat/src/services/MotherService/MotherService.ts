@@ -29,6 +29,8 @@ class MotherService {
               surname
               phoneNumber
             }
+            nextVisitDate
+            age
             insertedDate
             expectedDateOfDelivery
             siteAddress {
@@ -210,10 +212,18 @@ class MotherService {
               actualVisitDate,
               plannedVisitDate,
               attended,
+              risk
               visitType{
                 id
                 order
                 normalizedName
+                description
+                insertedDate
+                isActive
+                name
+                type
+                updatedBy
+                updatedDate
               }        
           }
         }
