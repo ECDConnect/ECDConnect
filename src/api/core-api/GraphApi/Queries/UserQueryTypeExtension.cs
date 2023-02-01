@@ -36,7 +36,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public ApplicationUser GetUserById([Service] IServiceProvider serviceProvider, [Service] UserManager<ApplicationUser> userManager, [Service] RoleManager<IdentityRole> roleManager, [Service] IHttpContextAccessor contextAccessor, [Service] IDbContextFactory<AuthenticationDbContext> dbFactory, [Service] IGenericRepositoryFactory repoFactory, string userId)
+        public ApplicationUser GetUserById(
+            [Service] UserManager<ApplicationUser> userManager,
+            [Service] RoleManager<IdentityRole> roleManager,
+            IGenericRepositoryFactory repoFactory,
+            string userId)
         {
             var user = userManager.FindByIdAsync(userId).Result;
 
@@ -87,7 +91,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return default(ApplicationUser);
         }
 
-        public UserByToken GetUserByToken([Service] IServiceProvider serviceProvider, [Service] UserManager<ApplicationUser> userManager, [Service] RoleManager<IdentityRole> roleManager, [Service] IHttpContextAccessor contextAccessor, [Service] IGenericRepositoryFactory repoFactory, string token)
+        public UserByToken GetUserByToken(
+            [Service] UserManager<ApplicationUser> userManager,
+            IGenericRepositoryFactory repoFactory,
+            string token)
         {
             UserByToken tokenuser = new UserByToken();
             if (token != null)
@@ -112,8 +119,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public string getMoodleSessionForUserId(
-            [Service] IHttpContextAccessor contextAccessor,
-            [Service] IGenericRepositoryFactory repoFactory,
             [Service] MoodleManager moodleManager,
             [Service] UserManager<ApplicationUser> userManager,
             string userId)

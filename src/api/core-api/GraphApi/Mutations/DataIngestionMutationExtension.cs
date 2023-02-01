@@ -37,7 +37,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public bool DataIngestionImport(
           //[Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
-          [Service] IGenericRepositoryFactory repoFactory,
+          IGenericRepositoryFactory repoFactory,
           [Service] IHttpContextAccessor httpContextAccessor,
           [Service] ILocaleService<Language> localeService,
           [Service] UserManager<ApplicationUser> userManager,

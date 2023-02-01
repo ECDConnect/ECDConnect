@@ -13,7 +13,10 @@ namespace ECDLink.EGraphQL.Resolvers
         where T : EntityBase<Guid>
     {
         private readonly Guid _tenantId = TenantExecutionContext.Tenant.Id;
-        public T Update([Service] IGenericRepositoryFactory repositoryFactory, [Service] IHttpContextAccessor httpContextAccessor, Guid id, T input)
+        public T Update(
+            IGenericRepositoryFactory repositoryFactory, 
+            [Service] IHttpContextAccessor httpContextAccessor, 
+            Guid id, T input)
         {
             var repository = repositoryFactory.CreateRepository<T>();
             input.UpdatedDate = DateTime.Now;
@@ -31,16 +34,23 @@ namespace ECDLink.EGraphQL.Resolvers
             return repository.Update(input);
         }
 
-        public T Create([Service] IGenericRepositoryFactory repositoryFactory, [Service] IHttpContextAccessor httpContextAccessor, T input)
+        public T Create(
+            IGenericRepositoryFactory repositoryFactory,
+            [Service] IHttpContextAccessor httpContextAccessor,
+            T input)
         {
             var repository = repositoryFactory.CreateRepository<T>();
 
             repository.SetUserContext(httpContextAccessor.HttpContext.GetUser().Id);
             input.TenantId = _tenantId;
+
             return repository.Insert(input);
         }
 
-        public bool Delete([Service] IGenericRepositoryFactory repositoryFactory, [Service] IHttpContextAccessor httpContextAccessor, Guid id)
+        public bool Delete(
+            IGenericRepositoryFactory repositoryFactory,
+            [Service] IHttpContextAccessor httpContextAccessor,
+            Guid id)
         {
             var repository = repositoryFactory.CreateRepository<T>();
 

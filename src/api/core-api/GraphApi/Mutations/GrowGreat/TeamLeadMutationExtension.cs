@@ -19,7 +19,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public TeamLead AddTeamLead(
             [Service] IHttpContextAccessor contextAccessor,
-            [Service] IGenericRepositoryFactory repoFactory,
+            IGenericRepositoryFactory repoFactory,
             TeamLeadModel input)
         {
             var applicationUserId = contextAccessor.HttpContext.GetUser().Id;

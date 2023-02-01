@@ -24,9 +24,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public List<Practitioner> GetAllPractitionersForCoach([Service] IHttpContextAccessor contextAccessor,
-         [Service] IGenericRepositoryFactory repoFactory,
-         string userId)
+        public List<Practitioner> GetAllPractitionersForCoach(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            string userId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var dbRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
@@ -37,8 +38,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public Coach GetCoachByCoachUserId([Service] IHttpContextAccessor contextAccessor,
-            [Service] IGenericRepositoryFactory repoFactory,
+        public Coach GetCoachByCoachUserId(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
             string userId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
@@ -48,19 +50,21 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public Coach GetCoachByUserId([Service] IHttpContextAccessor contextAccessor,
-        [Service] IGenericRepositoryFactory repoFactory,
-        string userId)
+        public Coach GetCoachByUserId(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            string userId)
         {
             //this was used wrong in FE, so adjust to align with FE
             return GetCoachByPractitionerId(contextAccessor, repoFactory, userId);
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public string GetCoachNameByUserId([Service] IHttpContextAccessor contextAccessor,
-        [Service] IGenericRepositoryFactory repoFactory,
-        [Service] UserManager<ApplicationUser> userManager,
-        string userId)
+        public string GetCoachNameByUserId(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            [Service] UserManager<ApplicationUser> userManager,
+            string userId)
         {
             var user = userManager.FindByIdAsync(userId).Result;
             return user != null ? user.FullName : null;
@@ -68,9 +72,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public Coach GetCoachByPractitionerId([Service] IHttpContextAccessor contextAccessor,
-         [Service] IGenericRepositoryFactory repoFactory,
-         string practitionerId)
+        public Coach GetCoachByPractitionerId(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            string practitionerId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var dbRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
@@ -84,9 +89,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             else return null;
         }
 
-        public List<Child> GetAllChildrenForCoach([Service] IHttpContextAccessor contextAccessor,
-        [Service] IGenericRepositoryFactory repoFactory,
-        string userId)
+        public List<Child> GetAllChildrenForCoach(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            string userId)
         {
 
             var uId = contextAccessor.HttpContext.GetUser().Id;
@@ -104,9 +110,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             return children;
         }
 
-        public List<Classroom> GetAllClassroomsForCoach([Service] IHttpContextAccessor contextAccessor,
-[Service] IGenericRepositoryFactory repoFactory,
-string userId)
+        public List<Classroom> GetAllClassroomsForCoach(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            string userId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var classRepo = repoFactory.CreateRepository<Classroom>(userContext: uId);
@@ -123,9 +130,10 @@ string userId)
             return classrooms;
         }
 
-        public List<ClassroomGroup> GetAllClassroomGroupsForCoach([Service] IHttpContextAccessor contextAccessor,
-[Service] IGenericRepositoryFactory repoFactory,
-string userId)
+        public List<ClassroomGroup> GetAllClassroomGroupsForCoach(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            string userId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var classRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);

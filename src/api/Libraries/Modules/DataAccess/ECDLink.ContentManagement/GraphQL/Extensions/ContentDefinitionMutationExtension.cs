@@ -51,7 +51,7 @@ namespace ECDLink.ContentManagement.GraphQL.Extensions
         public bool ContentTypeImport(
           [Service] ContentDefinitionRepository repository,
           [Service] ContentManagementDbContext context,
-          [Service] IGenericRepositoryFactory repoFactory,
+          IGenericRepositoryFactory repoFactory,
           int contentTypeId, string file)
         {
             var contentType = repository.GetContentTypeById(contentTypeId);

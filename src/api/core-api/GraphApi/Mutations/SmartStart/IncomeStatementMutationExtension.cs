@@ -53,7 +53,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         }
 
         [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.Create)]
-        public StatementsIncome CreateStatementIncome([Service] IGenericRepositoryFactory repoFactory,
+        public StatementsIncome CreateStatementIncome(IGenericRepositoryFactory repoFactory,
               [Service] IHttpContextAccessor httpContextAccessor,
               StatementsIncome model)
         {
@@ -66,7 +66,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         }
 
         [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.Create)]
-        public StatementsExpenses CreateStatementExpense([Service] IGenericRepositoryFactory repoFactory,
+        public StatementsExpenses CreateStatementExpense(IGenericRepositoryFactory repoFactory,
       [Service] IHttpContextAccessor httpContextAccessor,
       StatementsExpenses model)
         {
@@ -79,7 +79,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         }
 
         [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.Create)]
-        public StatementsIncomeStatement CreateStatementIncomeStatement([Service] IGenericRepositoryFactory repoFactory,
+        public StatementsIncomeStatement CreateStatementIncomeStatement(IGenericRepositoryFactory repoFactory,
       [Service] IHttpContextAccessor httpContextAccessor,
       StatementsIncomeStatement model)
         {
@@ -92,7 +92,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         }
 
         [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.Create)]
-        public StatementsStartupSupport CreateStatementStartupSupport([Service] IGenericRepositoryFactory repoFactory,
+        public StatementsStartupSupport CreateStatementStartupSupport(IGenericRepositoryFactory repoFactory,
 [Service] IHttpContextAccessor httpContextAccessor,
 StatementsStartupSupport model)
         {

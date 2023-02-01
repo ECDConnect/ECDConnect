@@ -25,7 +25,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             [Service] SecurityManager securityManager,
             [Service] UserManager<ApplicationUser> userManager,
             [Service] ITokenManager<ApplicationUser, OpenAccessTokenManager> tokenManager,
-            [Service] IGenericRepositoryFactory repoFactory,
+            IGenericRepositoryFactory repoFactory,
             string token)
         {
             var tokenModel = JsonConvert.DeserializeObject<ChildTokenWrapperModel>(TokenHelper.DecodeToken(token));

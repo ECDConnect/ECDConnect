@@ -25,9 +25,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public List<Practitioner> GetAllPrincipal([Service] IHttpContextAccessor contextAccessor,
-        [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
-        [Service] IGenericRepositoryFactory repoFactory)
+        public List<Practitioner> GetAllPrincipal(
+            [Service] IHttpContextAccessor contextAccessor,
+            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+            IGenericRepositoryFactory repoFactory)
         {
             using var scope = dbFactory.CreateDbContext();
             using var dbContextTransaction = scope.Database.BeginTransaction();
@@ -38,9 +39,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             return principals;
         }
 
-        public List<Principal> GetAllPrincipals([Service] IHttpContextAccessor contextAccessor,
-[Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
-[Service] IGenericRepositoryFactory repoFactory)
+        public List<Principal> GetAllPrincipals(
+            [Service] IHttpContextAccessor contextAccessor,
+            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+            IGenericRepositoryFactory repoFactory)
         {
             using var scope = dbFactory.CreateDbContext();
             using var dbContextTransaction = scope.Database.BeginTransaction();
@@ -57,10 +59,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             return list;
         }
 
-        public Practitioner GetPrincipalByUserId([Service] IHttpContextAccessor contextAccessor,
-        [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
-        [Service] IGenericRepositoryFactory repoFactory,
-        string userId)
+        public Practitioner GetPrincipalByUserId(
+            [Service] IHttpContextAccessor contextAccessor,
+            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+            IGenericRepositoryFactory repoFactory,
+            string userId)
         {
             using var scope = dbFactory.CreateDbContext();
             using var dbContextTransaction = scope.Database.BeginTransaction();
@@ -127,7 +130,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
         public List<Classroom> GetAllClassroomsForPrincipal([Service] IHttpContextAccessor contextAccessor,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
-            [Service] IGenericRepositoryFactory repoFactory,
+            IGenericRepositoryFactory repoFactory,
             string userId)
         {
             using var scope = dbFactory.CreateDbContext();
@@ -139,9 +142,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             return classes;
         }
 
-        public List<ClassroomGroup> GetAllClassroomGroupsByPrincipal([Service] IHttpContextAccessor contextAccessor,
-    [Service] IGenericRepositoryFactory repoFactory,
-    string userId)
+        public List<ClassroomGroup> GetAllClassroomGroupsByPrincipal(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            string userId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var classroomRepo = repoFactory.CreateRepository<Classroom>(userContext: uId);
@@ -156,9 +160,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             return allClassGroups;
         }
 
-        public List<Child> GetAllChildrenUnderPrincipal([Service] IHttpContextAccessor contextAccessor,
-[Service] IGenericRepositoryFactory repoFactory,
-string userId)
+        public List<Child> GetAllChildrenUnderPrincipal(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            string userId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
@@ -180,9 +185,10 @@ string userId)
             }
             return children;
         }
-        public List<Child> GetAllChildrenUnderPrincipalByClassrooms([Service] IHttpContextAccessor contextAccessor,
-[Service] IGenericRepositoryFactory repoFactory,
-string userId)
+        public List<Child> GetAllChildrenUnderPrincipalByClassrooms(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            string userId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
