@@ -304,7 +304,7 @@ class ChildService {
       query: `
       query childCreatedByDetail($firstName: String, $surname: String, $practitionerId: String) {
         childCreatedByDetail(firstName: $firstName, surname: $surname, practitionerId: $practitionerId) {
-            fullName childUserId createdByName createdById createdByDate practitionerName
+            fullName childUserId createdByName createdById createdByDate practitionerName dateOfBirth profileImageUrl
         }
       }
       `,

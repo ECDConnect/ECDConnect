@@ -161,7 +161,7 @@ export const ChildBasicInfo: React.FC<
             title={`There is already a child named ${checkChild?.fullName} at ${
               classroomsForPractitioner?.name
             }, born on ${format(
-              new Date(checkChild?.createdByDate),
+              new Date(checkChild?.dateOfBirth),
               'dd MMM yyyy'
             )}.`}
             type="warning"
