@@ -19,7 +19,7 @@ export const Money = () => {
   const appDispatch = useAppDispatch();
   const income = useSelector(statementsSelectors.getIncome);
 
-  const updateEStatements = async () => {
+  const updateStatements = async () => {
     if (userAuth?.auth_token) {
       await appDispatch(statementsThunkActions.getAllExpenses(userAuth?.id));
       await appDispatch(
@@ -33,14 +33,10 @@ export const Money = () => {
     await new ExpensesStatementsService(
       userAuth?.auth_token!
     ).allStatementsExpenses(userAuth?.id!);
-
-    await new IncomeStatementsService(
-      userAuth?.auth_token!
-    ).GetAllStatementsIncome();
   };
 
   useEffect(() => {
-    updateEStatements();
+    updateStatements();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
