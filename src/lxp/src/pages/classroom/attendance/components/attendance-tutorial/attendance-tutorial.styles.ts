@@ -11,3 +11,5 @@ export const paragraphStyle = 'text-base font-body mt-6 text-textMid';
 export const boldText = 'font-bold';
 
 export const dropdownStyles = 'w-11/12 left-4';
+
+export const buttonIcon = 'h-4 w-4 text-white mr-2';

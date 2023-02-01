@@ -1,8 +1,7 @@
-import { getAvatarColor } from '@ecdlink/core';
+import { getAvatarColor, useDialog } from '@ecdlink/core';
 import {
   Alert,
   AttendanceListDataItem,
-  AttendanceListItem,
   AttendanceStatus,
   BannerWrapper,
   Button,
@@ -10,6 +9,8 @@ import {
   SearchDropDown,
   Typography,
   Card,
+  DialogPosition,
+  ActionModal,
 } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
@@ -17,11 +18,13 @@ import * as styles from './attendance-tutorial.styles';
 import { AttendanceTutorialProps } from './attendance-tutorial.types';
 import ROUTES from '@/routes/routes';
 import { useHistory } from 'react-router-dom';
+import walktroughImage from '../../../../../assets/walktroughImage.png';
 
 export const AttendanceTutorial = ({
   onComplete,
   onClose,
 }: AttendanceTutorialProps) => {
+  const dialog = useDialog();
   const { isOnline } = useOnlineStatus();
   const tutorialCompleteClicks = 3;
   const tutorialResetClicks = 4;
@@ -39,15 +42,7 @@ export const AttendanceTutorial = ({
     avatarColor: getAvatarColor(),
   });
   const history = useHistory();
-
-  const [attendanceItem2, setAttendanceItem2] =
-    useState<AttendanceListDataItem>({
-      title: 'Baby Sauro',
-      profileText: 'AM',
-      attenendeeId: '1',
-      status: AttendanceStatus.Unknown,
-      avatarColor: getAvatarColor(),
-    });
+  const [attendanceWalktrough, setAttendanceWalktrough] = useState(false);
 
   const updateItemAttendance = (
     currentAttendanceItem: AttendanceListDataItem
@@ -103,6 +98,48 @@ export const AttendanceTutorial = ({
     }
   };
 
+  const handleAttendanceTutorial = () => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (submit, cancel) => (
+        <ActionModal
+          // icon={'InformationCircleIcon'}
+          customIcon={
+            <img src={walktroughImage} alt="profile" className="mb-2" />
+          }
+          iconColor="alertMain"
+          iconBorderColor="alertBg"
+          importantText={`Want to learn how to track attendance on Funda App?`}
+          actionButtons={[
+            {
+              text: 'Yes, help me!',
+              textColour: 'white',
+              colour: 'primary',
+              type: 'filled',
+              // isLoading,
+              // disabled: isLoading,
+              onClick: () => {
+                history.push(ROUTES.ATTENDANCE_TUTORIAL_WALKTROUGH);
+                submit();
+              },
+              leadingIcon: 'ChevronRightIcon',
+            },
+            {
+              text: 'No, skip',
+              textColour: 'white',
+              colour: 'primary',
+              type: 'filled',
+              // isLoading,
+              // disabled: isLoading,
+              onClick: cancel,
+              leadingIcon: 'ClockIcon',
+            },
+          ]}
+        />
+      ),
+    });
+  };
+
   return (
     <BannerWrapper
       size={'medium'}
@@ -114,36 +151,8 @@ export const AttendanceTutorial = ({
       className={styles.bannerContentWrapper}
       displayOffline={!isOnline}
     >
-      <div className={'bg-uiBg h-full p-4'}>
-        <Typography
-          color={'textDark'}
-          type={'body'}
-          weight={'bold'}
-          text={'Why take attendance daily?'}
-        />
-        <Typography
-          className={'mt-1'}
-          color={'textMid'}
-          type={'body'}
-          weight={'normal'}
-          text={
-            'To receive your monthly stipend, you need to take and submit attendance every day.'
-          }
-        />
-        <p className={styles.paragraphStyle}>
-          If you submit attendance every day in the month, you will get{' '}
-          <span className={styles.boldText}>100 Top Me Up</span> points!
-        </p>
-        <Typography
-          className={'mt-6'}
-          color={'textMid'}
-          type={'body'}
-          weight={'normal'}
-          text={
-            'This record will also help when you talk to  caregivers about any attendance concerns you have.'
-          }
-        />
-        <Card className="bg-uiBg w-11/12 rounded-2xl">
+      <div className={'h-full bg-white p-4'}>
+        <Card className="bg-uiBg w-full rounded-2xl p-4">
           <Typography
             className={'mt-4'}
             color={'textDark'}
@@ -162,11 +171,38 @@ export const AttendanceTutorial = ({
             type={'filled'}
             color={'primary'}
             textColor={'white'}
-            className={'max-h-10 w-11/12'}
+            className={'mt-2 max-h-10 w-11/12'}
             iconPosition={'start'}
-            onClick={() => history.push(ROUTES.ATTENDANCE_TUTORIAL_WALKTROUGH)}
+            onClick={handleAttendanceTutorial}
+            // onClick={() => history.push(ROUTES.ATTENDANCE_TUTORIAL_WALKTROUGH)}
           />
         </Card>
+
+        <Typography
+          color={'textDark'}
+          type={'body'}
+          weight={'bold'}
+          text={'Why take attendance daily?'}
+          className="mt-2"
+        />
+        <Typography
+          className={'mt-4'}
+          color={'textMid'}
+          type={'body'}
+          weight={'normal'}
+          text={
+            'To receive your monthly stipend, you need to take and submit attendance every day.'
+          }
+        />
+        <Typography
+          className={'mt-6'}
+          color={'textMid'}
+          type={'body'}
+          weight={'normal'}
+          text={
+            'This record will also help when you talk to  caregivers about any attendance concerns you have.'
+          }
+        />
       </div>
       {/* <AttendanceListItem
         className={'bg-white'}

@@ -10,6 +10,10 @@ import {
   SearchDropDown,
   Typography,
   Card,
+  SliderPagination,
+  TabList,
+  TabItem,
+  renderIcon,
 } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
@@ -21,14 +25,87 @@ import Joyride, {
   Step,
   TooltipRenderProps,
 } from 'react-joyride';
+import WlaktroughImage from '../../../../../../assets/walktroughImage.png';
+import ROUTES from '@/routes/routes';
+import { useHistory } from 'react-router';
+
+const tabItems: TabItem[] = [
+  {
+    title: 'Attendance',
+    initActive: false,
+    child: (
+      <div className={'flex gap-12 p-4'}>
+        <div className="flex items-center gap-2">
+          <Typography type={'h2'} color="successMain" text={'6'} />
+          <Typography type={'h4'} color="textDark" text={'Present'} />
+        </div>
+        <div className="flex items-center gap-2">
+          <Typography type={'h2'} color="textDark" text={'0'} />
+          <Typography type={'body'} color="textDark" text={'Absent'} />
+        </div>
+      </div>
+    ),
+  },
+  {
+    title: 'Children',
+    initActive: false,
+    child: (
+      <div className={'flex gap-12 p-4'}>
+        <div className="flex items-center gap-2">
+          <Typography type={'h2'} color="successMain" text={'6'} />
+          <Typography type={'h4'} color="textDark" text={'Present'} />
+        </div>
+        <div className="flex items-center gap-2">
+          <Typography type={'h2'} color="textDark" text={'0'} />
+          <Typography type={'body'} color="textDark" text={'Absent'} />
+        </div>
+      </div>
+    ),
+  },
+  {
+    title: 'Programme',
+    initActive: false,
+    child: (
+      <div className={'flex gap-12 p-4'}>
+        <div className="flex items-center gap-2">
+          <Typography type={'h2'} color="successMain" text={'6'} />
+          <Typography type={'h4'} color="textDark" text={'Present'} />
+        </div>
+        <div className="flex items-center gap-2">
+          <Typography type={'h2'} color="textDark" text={'0'} />
+          <Typography type={'body'} color="textDark" text={'Absent'} />
+        </div>
+      </div>
+    ),
+  },
+  {
+    title: 'Resources',
+    initActive: false,
+    child: (
+      <div className={'flex gap-12 p-4'}>
+        <div className="flex items-center gap-2">
+          <Typography type={'h2'} color="successMain" text={'6'} />
+          <Typography type={'h4'} color="textDark" text={'Present'} />
+        </div>
+        <div className="flex items-center gap-2">
+          <Typography type={'h2'} color="textDark" text={'0'} />
+          <Typography type={'body'} color="textDark" text={'Absent'} />
+        </div>
+      </div>
+    ),
+  },
+];
 
 export const WalktroughTutorial = ({
   onComplete,
   onClose,
 }: AttendanceTutorialProps) => {
   const { isOnline } = useOnlineStatus();
+  const history = useHistory();
   const tutorialCompleteClicks = 3;
   const tutorialResetClicks = 4;
+  const [walktroughCount, setWalktroughCount] = useState(0);
+  console.log({ walktroughCount });
   const [attendanceBadgeTutorialMessage, setAttendanceBadgeTutorialMessage] =
     useState<string>('Tap the tick mark once to mark Amahle present.');
   const [tutorialProgressClicks, setTutorialProgressClicks] =
@@ -45,7 +122,7 @@ export const WalktroughTutorial = ({
 
   const [attendanceItem2, setAttendanceItem2] =
     useState<AttendanceListDataItem>({
-      title: 'Baby Sauro',
+      title: 'Jane Mokoena',
       profileText: 'AM',
       attenendeeId: '1',
       status: AttendanceStatus.Unknown,
@@ -108,19 +185,27 @@ export const WalktroughTutorial = ({
 
   const steps: Step[] = [
     {
-      title: 'Hello woerld',
-      target: '#test',
-      content: 'This is my awesome feature!',
+      target: '#attendance-list',
+      content: 'All children are automatically marked present',
       placement: 'bottom-end',
-      styles: {
-        options: {
-          beaconSize: 2,
-        },
-      },
+      offset: 10,
+      disableBeacon: true,
     },
     {
-      target: '#attendance-list',
-      content: 'This another awesome feature!',
+      target: '#attendance-list-alone',
+      content: 'Tap anywhere on this block to mark Jane absent today',
+      placement: 'bottom-end',
+      offset: 10,
+    },
+    {
+      target: '#attendance-list-error',
+      content: 'Now tap again to mark Jane present.',
+      placement: 'bottom-end',
+      offset: 10,
+    },
+    {
+      target: '#attendance-list-alone',
+      content: "Great, you're ready to start!",
       placement: 'bottom-end',
       offset: 10,
     },
@@ -137,67 +222,83 @@ export const WalktroughTutorial = ({
     tooltipProps,
   }: TooltipRenderProps) {
     return (
-      <div {...tooltipProps} className="min-w-64 min-h-56 rounded-full">
-        {console.log({ step, index, backProps, continuous, skipProps })}
+      <div {...tooltipProps} className="ml-2">
+        {console.log({
+          step,
+          index,
+          backProps,
+          continuous,
+          skipProps,
+          isLastStep,
+        })}
         <Card
-        // border={false}
-        // maxWidth={420}
-        // minWidth={290}
-        // overflow="hidden"
-        // radius="md"
-        // variant="white"
+          className="rounded-2xl p-6"
+          // border={false}
+          // maxWidth={420}
+          // minWidth={290}
+          // overflow="hidden"
+          // radius="md"
+          // variant="white"
         >
-          <div className="p-xl">
-            {step.title && (
-              <Typography
-                color={'primary'}
-                type={'h2'}
-                weight={'normal'}
-                text={String(step?.title)}
-              />
+          <div>
+            {step.content && (
+              <div className="flex items-center gap-2 align-middle">
+                <img src={WlaktroughImage} alt="walktrough profile" />
+                <Typography
+                  color={'textDark'}
+                  type={'h2'}
+                  weight={'normal'}
+                  text={String(step?.content)}
+                />
+              </div>
             )}
-            {step.content && <Card>{step.content}</Card>}
           </div>
-          <Card>
-            {!isLastStep && (
+          <div className="mt-4 flex items-center justify-end gap-4">
+            <SliderPagination
+              totalItems={4}
+              activeIndex={index}
+              className={'p-4'}
+            />
+            <div {...primaryProps} className={'w-full'}>
               <Button
                 type="filled"
                 color="primary"
-                className={'max-h-10 w-full'}
+                className={'w-6/12'}
                 icon={'SaveIcon'}
                 onClick={() => {}}
               >
+                {renderIcon('XIcon', `w-5 h-5 text-white mr-2`)}
                 <Typography
                   type="help"
                   className="mr-2"
                   color="white"
-                  text={'Skip'}
+                  text={isLastStep ? 'Close' : 'Next'}
                 />
               </Button>
-            )}
-            <Divider />
-            <>
-              <Button
-                type="filled"
-                color="primary"
-                className={'max-h-10 w-full'}
-                icon={'SaveIcon'}
-                onClick={() => {}}
-              >
-                <Typography
-                  type="help"
-                  className="mr-2"
-                  color="white"
-                  text={continuous ? 'next' : 'close'}
-                />
-              </Button>
-              <Divider />
-            </>
-          </Card>
+            </div>
+          </div>
         </Card>
       </div>
     );
   }
+
+  // const handleJoyrideCallback = () => {
+  //   setWalktroughCount((prevState) => prevState + 1);
+  // };
+
+  const handleJoyrideCallback = (data: CallBackProps) => {
+    const { status, index } = data;
+    const finishedStatuses: string[] = [STATUS.FINISHED, STATUS.SKIPPED];
+    console.log({ finishedStatuses });
+    if (index) {
+      setWalktroughCount(index);
+    }
+
+    if (finishedStatuses.includes(status)) {
+      console.log('testeeeeee');
+      history.push(ROUTES.CLASSROOM);
+    }
+  };
 
   return (
     <BannerWrapper
@@ -207,28 +308,35 @@ export const WalktroughTutorial = ({
       color={'primary'}
       onBack={onClose}
       title={'Classroom'}
-      className={styles.bannerContentWrapper}
+      // className={styles.bannerContentWrapper}
       displayOffline={!isOnline}
       displayHelp={true}
       onHelp={() => {}}
     >
+      <TabList
+        className="bg-uiBg"
+        tabItems={tabItems}
+        setSelectedIndex={0}
+        tabSelected={(tab: TabItem, tabIndex: number) => 0}
+      />
       <div id="test" className="h-0" />
       <div className={'bg-uiBg px-4 pt-2'}>
         <Joyride
-          // callback={handleJoyrideCallback}
+          callback={handleJoyrideCallback}
           continuous
-          run={true}
+          // run={true}
           scrollToFirstStep
           showProgress
           showSkipButton
           // stepIndex={stepIndex}
+          disableOverlayClose
           spotlightPadding={10}
           steps={steps}
           styles={{
             options: {
               arrowColor: '#e3ffeb',
               backgroundColor: '#e3ffeb',
-              overlayColor: 'rgba(79, 26, 0, 0.4)',
+              overlayColor: 'rgba(64, 61, 60, 1)',
               primaryColor: '#000',
               textColor: '#004a14',
               width: 900,
@@ -237,7 +345,7 @@ export const WalktroughTutorial = ({
           }}
           tooltipComponent={Tooltip}
         />
-        {!displayTutorialComplete && (
+        {/* {!displayTutorialComplete && (
           <Alert title={attendanceBadgeTutorialMessage} type={'info'} />
         )}
         {displayTutorialComplete && (
@@ -245,7 +353,7 @@ export const WalktroughTutorial = ({
             title={'Good job, you’re ready to start tracking!'}
             type={'success'}
           />
-        )}
+        )} */}
         <div id="attendance-list">
           <AttendanceListItem
             className={'bg-successBg mb-1'}
@@ -254,21 +362,66 @@ export const WalktroughTutorial = ({
               updateItemAttendance(currentAttendanceItem)
             }
           />
-          <AttendanceListItem
-            className={'bg-successBg mb-1'}
-            item={attendanceItem2}
-            onBadgeClick={(currentAttendanceItem: AttendanceListDataItem) =>
-              updateItemAttendance(currentAttendanceItem)
-            }
-          />
+
+          <div id="attendance-list-alone">
+            {(walktroughCount === 0 ||
+              walktroughCount === 1 ||
+              walktroughCount === 3) && (
+              <AttendanceListItem
+                className={'bg-successBg mb-1'}
+                item={attendanceItem2}
+                onBadgeClick={(currentAttendanceItem: AttendanceListDataItem) =>
+                  updateItemAttendance(currentAttendanceItem)
+                }
+              />
+            )}
+          </div>
+
+          {/* <div id="attendance-list-last">
+            {walktroughCount === 3 && (
+              <AttendanceListItem
+                className={'bg-successBg mb-1'}
+                item={attendanceItem2}
+                onBadgeClick={(currentAttendanceItem: AttendanceListDataItem) =>
+                  updateItemAttendance(currentAttendanceItem)
+                }
+              />
+            )}
+          </div> */}
         </div>
-        <AttendanceListItem
-          className={'bg-errorBg'}
-          item={attendanceItem2}
-          onBadgeClick={(currentAttendanceItem: AttendanceListDataItem) =>
-            updateItemAttendance(currentAttendanceItem)
-          }
-        />
+        {/* {(walktroughCount === 1 || walktroughCount === 3) && (
+          <div className={'attendance-list-alone'}>
+            <AttendanceListItem
+              className={'bg-successBg mb-1'}
+              item={attendanceItem}
+              onBadgeClick={(currentAttendanceItem: AttendanceListDataItem) =>
+                updateItemAttendance(currentAttendanceItem)
+              }
+            />
+          </div>
+        )} */}
+        {/* {walktroughCount !== 3 && (
+          <div className={'attendance-list-alone'}>
+            <AttendanceListItem
+              className={'bg-successBg mb-1'}
+              item={attendanceItem2}
+              onBadgeClick={(currentAttendanceItem: AttendanceListDataItem) =>
+                updateItemAttendance(currentAttendanceItem)
+              }
+            />
+          </div>
+        )} */}
+        <div id="attendance-list-error">
+          {walktroughCount === 2 && (
+            <AttendanceListItem
+              className={'bg-errorBg'}
+              item={attendanceItem2}
+              onBadgeClick={(currentAttendanceItem: AttendanceListDataItem) =>
+                updateItemAttendance(currentAttendanceItem)
+              }
+            />
+          )}
+        </div>
 
         <div className={'pt-2.5'}>
           <Divider />
