@@ -23,6 +23,7 @@ import { format } from 'date-fns';
 import { ChildService } from '@/services/ChildService';
 import { authSelectors } from '@/store/auth';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { ChildMatchingDto } from './child-basic-info.types';
 
 export const ChildBasicInfo: React.FC<
   FormComponentProps<ChildBasicInfoModel>
@@ -43,7 +44,7 @@ export const ChildBasicInfo: React.FC<
 
   const isPrincipal = practitioner?.isPrincipal;
 
-  const [checkChild, setCheckChild] = useState<any>();
+  const [checkChild, setCheckChild] = useState<ChildMatchingDto>();
   const [listItems, setListItems] = useState<UserAlertListDataItem[]>([]);
 
   const {
@@ -62,19 +63,20 @@ export const ChildBasicInfo: React.FC<
     control: childInfoFormControl,
   });
 
-  const setNewStackListItems = (checkChild: any) => {
+  const setNewStackListItems = (checkChild: ChildMatchingDto) => {
     const list: UserAlertListDataItem[] = [
       {
         profileDataUrl: checkChild?.profileImageUrl || '',
         title: `${checkChild?.fullName}` || '',
         subTitle:
           `Added by ${checkChild?.practitionerName} on ${format(
-            new Date(checkChild?.createdByDate),
+            new Date(checkChild?.createdByDate!),
             'dd MMM yyyy'
           )}.` ?? '',
-        profileText: `${checkChild?.fullName
-          .split(' ')[0]
-          .toUpperCase()}${checkChild?.fullName.split(' ')[1].toUpperCase()}`,
+        profileText:
+          `${
+            checkChild?.fullName?.split(' ')[0] || ''.toUpperCase()
+          }${checkChild?.fullName?.split(' ')[1].toUpperCase()}` || '',
         alertSeverity: 'none',
         avatarColor: getAvatarColor() || '',
       },
@@ -106,7 +108,7 @@ export const ChildBasicInfo: React.FC<
           userAuth?.auth_token!
         ).childCreatedByDetail(userAuth?.id!, firstName, surname);
 
-        setCheckChild(res);
+        setCheckChild(res as ChildMatchingDto);
       };
 
       checkChildMatching();
@@ -161,7 +163,7 @@ export const ChildBasicInfo: React.FC<
             title={`There is already a child named ${checkChild?.fullName} at ${
               classroomsForPractitioner?.name
             }, born on ${format(
-              new Date(checkChild?.dateOfBirth),
+              new Date(checkChild?.dateOfBirth!),
               'dd MMM yyyy'
             )}.`}
             type="warning"
