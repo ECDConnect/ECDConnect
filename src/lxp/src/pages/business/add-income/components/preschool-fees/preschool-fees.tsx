@@ -26,6 +26,10 @@ import { statementsSelectors } from '@/store/statements';
 import { IncomeStatementsService } from '@/services/IncomeStatementsService';
 import { authSelectors } from '@/store/auth';
 import { newGuid } from '@/utils/common/uuid.utils';
+import {
+  isNumber,
+  moneyInputFormat,
+} from '@/utils/statements/statements-utils';
 
 export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
   const children = useSelector(childrenSelectors.getChildren);
@@ -74,7 +78,7 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
     control: control,
   });
 
-  const isNum = /^\d+$/.test(amount?.slice(1)!);
+  const isNum = isNumber(amount!);
   const disabled = useMemo(() => {
     return !date || !child || !contributionType || !feeType;
   }, [child, contributionType, date, feeType]);
@@ -147,7 +151,7 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
       Submitted: false,
       DateReceived: date,
       Notes: note,
-      Amount: Number(amount?.slice(1)),
+      Amount: amount ? moneyInputFormat(amount) : 0,
       AmountExpected: 400,
       ChildCoverAmount: 400,
       ContributionTypeId: contributionType,

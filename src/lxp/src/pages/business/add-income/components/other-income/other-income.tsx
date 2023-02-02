@@ -20,6 +20,10 @@ import { authSelectors } from '@/store/auth';
 import { statementsSelectors } from '@/store/statements';
 import { newGuid } from '@/utils/common/uuid.utils';
 import { useMemo } from 'react';
+import {
+  isNumber,
+  moneyInputFormat,
+} from '@/utils/statements/statements-utils';
 
 export const OtherIncome: React.FC<AddIncomeState> = ({ setType }) => {
   const userAuth = useSelector(authSelectors.getAuthUser);
@@ -49,7 +53,7 @@ export const OtherIncome: React.FC<AddIncomeState> = ({ setType }) => {
     control: control,
   });
 
-  const isNum = /^\d+$/.test(incomeAmount?.slice(1)!);
+  const isNum = isNumber(incomeAmount!);
 
   const disabled = useMemo(() => {
     return !date || !incomeAmount || !description;
@@ -67,7 +71,7 @@ export const OtherIncome: React.FC<AddIncomeState> = ({ setType }) => {
       DateReceived: date,
       Notes: note,
       Description: description,
-      Amount: Number(incomeAmount?.slice(1)),
+      Amount: incomeAmount ? moneyInputFormat(incomeAmount) : 0,
       AmountExpected: 400,
       ChildCoverAmount: 10,
       IncomeTypeId: incomeTypeValue?.id,

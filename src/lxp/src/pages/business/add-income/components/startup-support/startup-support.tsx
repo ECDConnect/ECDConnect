@@ -24,6 +24,10 @@ import { authSelectors } from '@/store/auth';
 import { useSelector } from 'react-redux';
 import { statementsSelectors } from '@/store/statements';
 import { newGuid } from '@/utils/common/uuid.utils';
+import {
+  isNumber,
+  moneyInputFormat,
+} from '@/utils/statements/statements-utils';
 
 export const StartupSupport: React.FC<AddIncomeState> = ({ setType }) => {
   const [confirmStartupValue, setConfirmStartupValue] = useState(false);
@@ -52,7 +56,7 @@ export const StartupSupport: React.FC<AddIncomeState> = ({ setType }) => {
     control: control,
   });
 
-  const isNum = /^\d+$/.test(startupValue?.slice(1)!);
+  const isNum = isNumber(startupValue!);
   const disabled = useMemo(() => {
     return !date || !startupValue;
   }, [date, startupValue]);
@@ -67,7 +71,7 @@ export const StartupSupport: React.FC<AddIncomeState> = ({ setType }) => {
       UserId: userAuth?.id,
       Submitted: false,
       DateReceived: date,
-      Amount: Number(startupValue),
+      Amount: startupValue ? moneyInputFormat(startupValue) : 0,
       AmountExpected: 400,
       ChildCoverAmount: 400,
       IncomeTypeId: incomeTypeValue?.id,

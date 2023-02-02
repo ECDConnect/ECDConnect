@@ -24,6 +24,10 @@ import { statementsSelectors } from '@/store/statements';
 import { IncomeStatementsService } from '@/services/IncomeStatementsService';
 import { authSelectors } from '@/store/auth';
 import { newGuid } from '@/utils/common/uuid.utils';
+import {
+  isNumber,
+  moneyInputFormat,
+} from '@/utils/statements/statements-utils';
 
 export const DonationsOrVouchers: React.FC<AddIncomeState> = ({ setType }) => {
   const userAuth = useSelector(authSelectors.getAuthUser);
@@ -51,7 +55,7 @@ export const DonationsOrVouchers: React.FC<AddIncomeState> = ({ setType }) => {
     control: control,
   });
 
-  const isNum = /^\d+$/.test(donationWorth?.slice(1)!);
+  const isNum = isNumber(donationWorth!);
 
   const incomeTypes = useSelector(statementsSelectors.getIncomeTypes);
   const viewTitle = 'Donation';
@@ -97,7 +101,7 @@ export const DonationsOrVouchers: React.FC<AddIncomeState> = ({ setType }) => {
       UserId: userAuth?.id,
       Submitted: false,
       DateReceived: date,
-      Amount: Number(donationWorth?.slice(1)),
+      Amount: donationWorth ? moneyInputFormat(donationWorth) : 0,
       AmountExpected: 400,
       ChildCoverAmount: 400,
       IncomeTypeId: incomeTypeValue?.id,

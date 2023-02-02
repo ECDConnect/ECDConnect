@@ -25,6 +25,10 @@ import { statementsSelectors } from '@/store/statements';
 import ExpensesStatementsService from '@/services/ExpensesStatementsService/ExpensesStatementsService';
 import { newGuid } from '@/utils/common/uuid.utils';
 import { authSelectors } from '@/store/auth';
+import {
+  isNumber,
+  moneyInputFormat,
+} from '@/utils/statements/statements-utils';
 
 export const Utilities: React.FC<AddIncomeState> = ({ setType }) => {
   const userAuth = useSelector(authSelectors.getAuthUser);
@@ -58,7 +62,7 @@ export const Utilities: React.FC<AddIncomeState> = ({ setType }) => {
     useState<string>();
   const [isLoading, setIsLoading] = useState(false);
 
-  const isNum = /^\d+$/.test(amount?.slice(1)!);
+  const isNum = isNumber(amount!);
   const disabled = useMemo(() => {
     return !date || !amount;
   }, [amount, date]);
@@ -83,7 +87,7 @@ export const Utilities: React.FC<AddIncomeState> = ({ setType }) => {
       Submitted: false,
       DatePaid: date,
       Notes: note,
-      Amount: Number(amount?.slice(1)),
+      Amount: amount ? moneyInputFormat(amount) : 0,
       ExpenseTypeId: expensesTypeValue?.id,
       PhotoProof: expenseInvoice,
     });
