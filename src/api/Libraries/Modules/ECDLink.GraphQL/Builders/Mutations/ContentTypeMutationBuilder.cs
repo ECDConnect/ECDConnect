@@ -55,7 +55,8 @@ namespace ECDLink.EGraphQL.Registration.ContentTypes
                   })
                   .Resolve(context =>
                   {
-                      int.TryParse(definition.Identifier, out int contentId);
+                      context.Variables.TryGetVariable("id", out object contentIdObject);
+                      int.TryParse(contentIdObject as string, out int contentId);
                       return resolver.UpdateMutationResolver(context, contentId);
                   });
         }
@@ -74,7 +75,8 @@ namespace ECDLink.EGraphQL.Registration.ContentTypes
                   })
                   .Resolve(context =>
                   {
-                      int.TryParse(definition.Identifier, out int contentId);
+                      context.Variables.TryGetVariable("id", out object contentIdObject);
+                      int.TryParse(contentIdObject as string, out int contentId);
                       return resolver.DeleteMutationResolver(context, contentId);
                   });
         }
@@ -93,8 +95,9 @@ namespace ECDLink.EGraphQL.Registration.ContentTypes
                   })
                   .Resolve(context =>
                   {
-                      int.TryParse(definition.Identifier, out int id);
-                      return resolver.CreateMutationResolver(context, id);
+                      context.Variables.TryGetVariable("id", out object contentIdObject);
+                      int.TryParse(contentIdObject as string, out int contentId);
+                      return resolver.CreateMutationResolver(context, contentId);
                   });
         }
     }
