@@ -350,8 +350,8 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
           color={'primary'}
           className="mt-4 w-full"
           textColor={'white'}
-          text={`Next`}
-          icon={'ArrowCircleRightIcon'}
+          text={isAlreadyClient ? 'Save' : 'Next'}
+          icon={isAlreadyClient ? 'SaveIcon' : 'ArrowCircleRightIcon'}
           iconPosition={'start'}
           onClick={() => {
             onSubmit(getMotherDetailsFormValues());
