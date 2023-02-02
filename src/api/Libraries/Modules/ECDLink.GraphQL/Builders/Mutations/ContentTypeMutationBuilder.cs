@@ -55,9 +55,8 @@ namespace ECDLink.EGraphQL.Registration.ContentTypes
                   })
                   .Resolve(context =>
                   {
-                      context.Variables.TryGetVariable("id", out object contentIdObject);
-                      int.TryParse(contentIdObject as string, out int contentId);
-                      return resolver.UpdateMutationResolver(context, contentId);
+                      context.ScopedContextData = context.ScopedContextData.SetItem(ContextDataConstants.ContentManagement.Identifier, definition.Identifier);
+                      return resolver.UpdateMutationResolver(context);
                   });
         }
 
@@ -75,9 +74,8 @@ namespace ECDLink.EGraphQL.Registration.ContentTypes
                   })
                   .Resolve(context =>
                   {
-                      context.Variables.TryGetVariable("id", out object contentIdObject);
-                      int.TryParse(contentIdObject as string, out int contentId);
-                      return resolver.DeleteMutationResolver(context, contentId);
+                      context.ScopedContextData = context.ScopedContextData.SetItem(ContextDataConstants.ContentManagement.Identifier, definition.Identifier);
+                      return resolver.DeleteMutationResolver(context);
                   });
         }
 
@@ -95,9 +93,10 @@ namespace ECDLink.EGraphQL.Registration.ContentTypes
                   })
                   .Resolve(context =>
                   {
-                      context.Variables.TryGetVariable("id", out object contentIdObject);
-                      int.TryParse(contentIdObject as string, out int contentId);
-                      return resolver.CreateMutationResolver(context, contentId);
+                      //context.Variables.TryGetVariable(ArgumentConstants.Id, out object contentIdObject);
+                      //int.TryParse(contentIdObject as string, out int contentId);
+                      context.ScopedContextData = context.ScopedContextData.SetItem(ContextDataConstants.ContentManagement.Identifier, definition.Identifier);
+                      return resolver.CreateMutationResolver(context);
                   });
         }
     }
