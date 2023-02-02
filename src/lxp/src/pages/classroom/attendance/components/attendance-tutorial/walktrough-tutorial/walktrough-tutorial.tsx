@@ -1,13 +1,11 @@
 import { getAvatarColor } from '@ecdlink/core';
 import {
-  Alert,
   AttendanceListDataItem,
   AttendanceListItem,
   AttendanceStatus,
   BannerWrapper,
   Button,
   Divider,
-  SearchDropDown,
   Typography,
   Card,
   SliderPagination,
@@ -106,6 +104,7 @@ export const WalktroughTutorial = ({
   const tutorialResetClicks = 4;
   const [walktroughCount, setWalktroughCount] = useState(0);
   console.log({ walktroughCount });
+  const [attendanceStatus, setAttendanceStatus] = useState(true);
   const [attendanceBadgeTutorialMessage, setAttendanceBadgeTutorialMessage] =
     useState<string>('Tap the tick mark once to mark Amahle present.');
   const [tutorialProgressClicks, setTutorialProgressClicks] =
@@ -116,22 +115,25 @@ export const WalktroughTutorial = ({
     title: 'Amahle Khumalo',
     profileText: 'AM',
     attenendeeId: '1',
-    status: AttendanceStatus.Unknown,
+    status: AttendanceStatus.Present,
     avatarColor: getAvatarColor(),
   });
+
+  console.log({ attendanceStatus });
 
   const [attendanceItem2, setAttendanceItem2] =
     useState<AttendanceListDataItem>({
       title: 'Jane Mokoena',
       profileText: 'AM',
       attenendeeId: '1',
-      status: AttendanceStatus.Unknown,
+      status: AttendanceStatus.Present,
       avatarColor: getAvatarColor(),
     });
 
   const updateItemAttendance = (
     currentAttendanceItem: AttendanceListDataItem
   ) => {
+    console.log({ currentAttendanceItem });
     switch (currentAttendanceItem.status) {
       case AttendanceStatus.Present:
         setAttendanceBadgeTutorialMessage(
@@ -196,12 +198,14 @@ export const WalktroughTutorial = ({
       content: 'Tap anywhere on this block to mark Jane absent today',
       placement: 'bottom-end',
       offset: 10,
+      spotlightClicks: attendanceStatus ? true : false,
     },
     {
-      target: '#attendance-list-error',
+      target: '#attendance-list-alone',
       content: 'Now tap again to mark Jane present.',
       placement: 'bottom-end',
       offset: 10,
+      spotlightClicks: attendanceStatus ? false : true,
     },
     {
       target: '#attendance-list-alone',
@@ -289,13 +293,12 @@ export const WalktroughTutorial = ({
   const handleJoyrideCallback = (data: CallBackProps) => {
     const { status, index } = data;
     const finishedStatuses: string[] = [STATUS.FINISHED, STATUS.SKIPPED];
-    console.log({ finishedStatuses });
+
     if (index) {
       setWalktroughCount(index);
     }
 
     if (finishedStatuses.includes(status)) {
-      console.log('testeeeeee');
       history.push(ROUTES.CLASSROOM);
     }
   };
@@ -364,17 +367,22 @@ export const WalktroughTutorial = ({
           />
 
           <div id="attendance-list-alone">
-            {(walktroughCount === 0 ||
+            {/* {(walktroughCount === 0 ||
               walktroughCount === 1 ||
-              walktroughCount === 3) && (
-              <AttendanceListItem
-                className={'bg-successBg mb-1'}
-                item={attendanceItem2}
-                onBadgeClick={(currentAttendanceItem: AttendanceListDataItem) =>
-                  updateItemAttendance(currentAttendanceItem)
-                }
-              />
-            )}
+              walktroughCount === 3) && ( */}
+            <AttendanceListItem
+              className={
+                attendanceStatus ? 'bg-successBg mb-1' : 'bg-errorBg mb-1'
+              }
+              item={attendanceItem2}
+              onBadgeClick={(currentAttendanceItem: AttendanceListDataItem) => {
+                console.log({ currentAttendanceItem });
+                updateItemAttendance(currentAttendanceItem);
+                setAttendanceStatus((prevState) => !prevState);
+              }}
+              walktrough={true}
+            />
+            {/* )} */}
           </div>
 
           {/* <div id="attendance-list-last">
@@ -411,7 +419,7 @@ export const WalktroughTutorial = ({
             />
           </div>
         )} */}
-        <div id="attendance-list-error">
+        {/* <div id="attendance-list-error">
           {walktroughCount === 2 && (
             <AttendanceListItem
               className={'bg-errorBg'}
@@ -421,7 +429,7 @@ export const WalktroughTutorial = ({
               }
             />
           )}
-        </div>
+        </div> */}
 
         <div className={'pt-2.5'}>
           <Divider />
