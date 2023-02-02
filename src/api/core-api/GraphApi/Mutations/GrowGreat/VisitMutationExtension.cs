@@ -20,7 +20,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public Visit AddAdditionalVisitForMother(
             [Service] IHttpContextAccessor httpContextAccessor,
-            [Service] IGenericRepositoryFactory repoFactory,
+            IGenericRepositoryFactory repoFactory,
             [Service] VisitManager vistManager,
             VisitModel input)
         {
@@ -38,7 +38,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public Visit AddAdditionalVisitForInfant(
             [Service] IHttpContextAccessor httpContextAccessor,
-            [Service] IGenericRepositoryFactory repoFactory,
+            IGenericRepositoryFactory repoFactory,
             [Service] VisitManager vistManager,
             VisitModel input)
         {

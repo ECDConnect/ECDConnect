@@ -11,9 +11,9 @@
   <ItemGroup>
     <PackageReference Include="Azure.Storage.Blobs" Version="12.10.0" />
     <PackageReference Include="Microsoft.NETCore.Targets" Version="3.0.0" PrivateAssets="all" />
-    <PackageReference Include="HotChocolate.AspNetCore" Version="12.16.0" />
-    <PackageReference Include="HotChocolate.AspNetCore.Authorization" Version="12.16.0" />
-	<PackageReference Include="HotChocolate.Data.EntityFramework" Version="12.16.0" />
+    <PackageReference Include="HotChocolate.AspNetCore" Version="12.12.1" />
+    <PackageReference Include="HotChocolate.AspNetCore.Authorization" Version="12.12.1" />
+	<PackageReference Include="HotChocolate.Data.EntityFramework" Version="12.12.1" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\ECDLink.AzureStorage\ECDLink.AzureStorage.csproj" />

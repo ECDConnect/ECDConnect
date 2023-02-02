@@ -29,9 +29,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
 
-        public Practitioner GetPractitionerByUserId([Service] IHttpContextAccessor contextAccessor,
-        [Service] IGenericRepositoryFactory repoFactory,
-        string userId)
+        public Practitioner GetPractitionerByUserId(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            string userId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practiRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
@@ -47,7 +48,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         public PractitionerUserAndNote GetPractitionerByIdNumber(
             [Service] IHttpContextAccessor contextAccessor,
             [Service] UserManager<ApplicationUser> userManager,
-            [Service] IGenericRepositoryFactory repoFactory,
+            IGenericRepositoryFactory repoFactory,
             string idNumber)
         {
             var uId = contextAccessor.HttpContext.GetUser()?.Id;
@@ -90,7 +91,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         public ApplicationUser GetPractitionerByIdNumberInternal(
             [Service] IHttpContextAccessor contextAccessor,
             [Service] UserManager<ApplicationUser> userManager,
-            [Service] IGenericRepositoryFactory repoFactory,
+            IGenericRepositoryFactory repoFactory,
             string idNumber)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
@@ -130,7 +131,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
         public async Task<FileModel> PractitionerExcelTemplateGenerator(
           [Service] IFileGenerationService fileService,
-          [Service] IGenericRepositoryFactory repoFactory)
+          IGenericRepositoryFactory repoFactory)
         {
             var languageRepo = repoFactory.CreateRepository<Language>();
             var languages = languageRepo.GetAll().ToList();
@@ -177,7 +178,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         }
 
         public List<PractitionerClassroomName> GetClassroomNamesForPractitioner([Service] IHttpContextAccessor contextAccessor,
-            [Service] IGenericRepositoryFactory repoFactory,
+            IGenericRepositoryFactory repoFactory,
             [Service] PersonnelManager practiManager,
             string userId)
         {
@@ -219,7 +220,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         public List<Child> GetAllChildrenByRole([Service] IHttpContextAccessor contextAccessor,
             [Service] UserManager<ApplicationUser> userManager,
             [Service] RoleManager<IdentityRole> roleManager,
-            [Service] IGenericRepositoryFactory repoFactory,
+            IGenericRepositoryFactory repoFactory,
             [Service] PersonnelManager practiManager,
             string userId)
         {
@@ -249,7 +250,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         }
 
         public List<PractitionerColleagues> GetPractitionerColleagues([Service] IHttpContextAccessor contextAccessor,
-            [Service] IGenericRepositoryFactory repoFactory,
+            IGenericRepositoryFactory repoFactory,
             string userId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;

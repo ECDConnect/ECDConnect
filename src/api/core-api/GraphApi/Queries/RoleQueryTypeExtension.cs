@@ -23,7 +23,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return roleManager.Roles.ToList();
         }
 
-        public string GetRoleForUser([Service] IHttpContextAccessor contextAccessor, [Service] UserManager<ApplicationUser> userManager, [Service] IGenericRepositoryFactory repoFactory, [Service] RoleManager<IdentityRole> roleManager, string userId = null)
+        public string GetRoleForUser(
+            [Service] IHttpContextAccessor contextAccessor,
+            [Service] UserManager<ApplicationUser> userManager,
+            IGenericRepositoryFactory repoFactory,
+            [Service] RoleManager<IdentityRole> roleManager,
+            string userId = null)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             if (userId == null)

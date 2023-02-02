@@ -11,7 +11,7 @@ namespace ECDLink.EGraphQL.Resolvers
     public class GenericQueryResolvers<T> where T : EntityBase<Guid>
     {
         public T Get(
-          [Service] IGenericRepositoryFactory repositoryFactory,
+          IGenericRepositoryFactory repositoryFactory,
           [Service] IHttpContextAccessor httpContextAccessor,
           Guid id)
         {
@@ -22,7 +22,7 @@ namespace ECDLink.EGraphQL.Resolvers
         }
 
         public IEnumerable<T> GetAll(
-          [Service] IGenericRepositoryFactory repositoryFactory,
+          IGenericRepositoryFactory repositoryFactory,
           [Service] IHttpContextAccessor httpContextAccessor)
         {
             var repository = repositoryFactory.CreateRepository<T>();

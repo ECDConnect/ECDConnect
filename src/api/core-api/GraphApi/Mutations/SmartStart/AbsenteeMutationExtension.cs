@@ -20,7 +20,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
 
         public Absentees AddAbsenteeForPractitioner([Service] IHttpContextAccessor contextAccessor,
-            [Service] IGenericRepositoryFactory repoFactory,
+            IGenericRepositoryFactory repoFactory,
             [Service] HierarchyEngine engine,
             [Service] IReassignmentService reassignmentService,
             string practitionerId,

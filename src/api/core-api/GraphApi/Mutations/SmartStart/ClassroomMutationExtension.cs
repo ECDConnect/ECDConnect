@@ -25,7 +25,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
         public ClassroomGroup UpdatePractitionerToTeachClassroom(
             [Service] IHttpContextAccessor contextAccessor,
-            [Service] IGenericRepositoryFactory repoFactory,
+            IGenericRepositoryFactory repoFactory,
             [Service] IReassignmentService reassignmentService,
             string classroomId,
             string userId)
@@ -44,7 +44,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         }
         public ClassroomGroup UpdateClassroomGroup(
             [Service] IHttpContextAccessor contextAccessor,
-            [Service] IGenericRepositoryFactory repoFactory,
+            IGenericRepositoryFactory repoFactory,
             [Service] HierarchyEngine engine,
             Guid id,
             ClassroomGroup input)
@@ -128,7 +128,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
         public ClassProgramme UpdateClassProgramme(
             [Service] IHttpContextAccessor contextAccessor,
-            [Service] IGenericRepositoryFactory repoFactory,
+            IGenericRepositoryFactory repoFactory,
             [Service] HierarchyEngine engine,
             Guid id,
             ClassProgramme input)
@@ -181,7 +181,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
         private void UpdateClassProgrammeForPractitioner(
             [Service] IHttpContextAccessor contextAccessor,
-            [Service] IGenericRepositoryFactory repoFactory,
+            IGenericRepositoryFactory repoFactory,
             Guid classroomId,
             string newHierarchy)
         {

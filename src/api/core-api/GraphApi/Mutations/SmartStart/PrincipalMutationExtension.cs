@@ -23,7 +23,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
     {
         public Practitioner AddPractitionerToPrincipal([Service] IHttpContextAccessor contextAccessor,
     [Service] UserManager<ApplicationUser> userManager,
-    [Service] IGenericRepositoryFactory repoFactory,
+    IGenericRepositoryFactory repoFactory,
     string firstName,
     string lastName,
     string idNumber,
@@ -84,7 +84,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
         public Practitioner DeletePractitionerFromPrincipal([Service] IHttpContextAccessor contextAccessor,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
-            [Service] IGenericRepositoryFactory repoFactory,
+            IGenericRepositoryFactory repoFactory,
             string userId, string principalId)
         {
             using var scope = dbFactory.CreateDbContext();
@@ -102,7 +102,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         }
 
         public Practitioner RemapPrincipalToPrincipal([Service] IHttpContextAccessor contextAccessor,
-     [Service] IGenericRepositoryFactory repoFactory,
+     IGenericRepositoryFactory repoFactory,
      string oldPrincipalId, string newPrincipalId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
@@ -130,7 +130,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         public Principal PromotePractitionerToPrincipal([Service] IHttpContextAccessor contextAccessor,
              [Service] UserManager<ApplicationUser> userManager,
              [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
-             [Service] IGenericRepositoryFactory repoFactory,
+             IGenericRepositoryFactory repoFactory,
              string userId)
         {
             using var scope = dbFactory.CreateDbContext();
@@ -157,7 +157,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         public Practitioner DemotePractitionerAsPrincipal([Service] IHttpContextAccessor contextAccessor,
              [Service] UserManager<ApplicationUser> userManager,
              [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
-             [Service] IGenericRepositoryFactory repoFactory,
+             IGenericRepositoryFactory repoFactory,
              string userId)
         {
             using var scope = dbFactory.CreateDbContext();
@@ -194,7 +194,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         }
 
         public PrincipalInvitationStatus UpdatePrincipalInvitation([Service] IHttpContextAccessor contextAccessor,
-    [Service] IGenericRepositoryFactory repoFactory,
+    IGenericRepositoryFactory repoFactory,
     [Service] ISystemSetting<InvitationCutoffDelayOptions> invitationDelay,
     [Service] IReassignmentService reassignmentService,
     string practitionerId, string principalId, bool accepted)

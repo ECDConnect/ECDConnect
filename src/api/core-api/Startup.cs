@@ -1,4 +1,3 @@
-
 using EcdLink.Api.CoreApi.Documents;
 using EcdLink.Api.CoreApi.GraphApi.AccessValidators;
 using EcdLink.Api.CoreApi.GraphApi.Interceptors;
@@ -40,7 +39,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
 using System.Diagnostics;
-using System.Text.Json.Serialization;
 
 namespace EcdLink.Api.CoreApi
 {
@@ -141,12 +139,8 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<IReassignmentService, ReassignmentService>();
 
             ConfigureJobs(services);
-
-            services.AddControllers()
-                // TODO: 
-                // This can be removed if we don't use string number conversion for validation
-                // https://learn.microsoft.com/en-us/dotnet/core/compatibility/serialization/5.0/jsonserializer-allows-reading-numbers-as-strings
-                .AddJsonOptions(options => options.JsonSerializerOptions.NumberHandling = JsonNumberHandling.Strict); ;
+            
+            services.AddControllers();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

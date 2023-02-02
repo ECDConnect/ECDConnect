@@ -26,9 +26,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return TenantExecutionContext.Tenant;
         }
 
-        public List<Absentees> GetAbsentees([Service] IHttpContextAccessor contextAccessor,
-    [Service] IGenericRepositoryFactory repoFactory,
-    string userId, DateTime fromDate, DateTime toDate)
+        public List<Absentees> GetAbsentees(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            string userId,
+            DateTime fromDate,
+            DateTime toDate)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var absenteeRepo = repoFactory.CreateRepository<Absentees>(userContext: uId);

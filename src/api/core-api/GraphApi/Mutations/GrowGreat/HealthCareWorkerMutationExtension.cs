@@ -19,7 +19,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public HealthCareWorker AddHealthCareWorker(
             [Service] IHttpContextAccessor contextAccessor,
-            [Service] IGenericRepositoryFactory repoFactory,
+            IGenericRepositoryFactory repoFactory,
             HealthCareWorkerModel input)
         {
             var applicationUserId = contextAccessor.HttpContext.GetUser().Id;
@@ -44,7 +44,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
         [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
         public HealthCareWorker UpdateHealthCareWorker(
             [Service] IHttpContextAccessor contextAccessor,
-            [Service] IGenericRepositoryFactory repoFactory,
+            IGenericRepositoryFactory repoFactory,
             string userId,
             HealthCareWorkerModel input)
         {

@@ -28,7 +28,7 @@ namespace ECDLink.ContentManagement.GraphQL.Extensions
         public async Task<FileModel> ContentDefinitionsExcelTemplateGenerator(
           [Service] ContentDefinitionRepository repository,
           [Service] IFileGenerationService fileService,
-          [Service] IGenericRepositoryFactory repoFactory,
+          IGenericRepositoryFactory repoFactory,
           int contentTypeId)
         {
             var contentType = repository.GetContentTypeById(contentTypeId);

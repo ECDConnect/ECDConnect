@@ -24,7 +24,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public Child GetChildByUserId([Service] IHttpContextAccessor contextAccessor,
-            [Service] IGenericRepositoryFactory repoFactory,
+            IGenericRepositoryFactory repoFactory,
         string userId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
@@ -34,7 +34,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public List<Child> GetChildrenByClassroomId([Service] IHttpContextAccessor contextAccessor,
-    [Service] IGenericRepositoryFactory repoFactory,
+    IGenericRepositoryFactory repoFactory,
 string classroomId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
@@ -60,7 +60,7 @@ string classroomId)
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public ChildCreatedByDetail GetChildCreatedByDetail([Service] IHttpContextAccessor contextAccessor,
-            [Service] IGenericRepositoryFactory repoFactory,
+            IGenericRepositoryFactory repoFactory,
             [Service] PersonnelManager personnelManager,
         string firstName, string surname, string practitionerId)
         {

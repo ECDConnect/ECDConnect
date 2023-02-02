@@ -25,7 +25,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public List<Absentees> GetAbsenteeByUserId([Service] IHttpContextAccessor contextAccessor,
-        [Service] IGenericRepositoryFactory repoFactory,
+        IGenericRepositoryFactory repoFactory,
         string userId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
@@ -49,7 +49,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         }
 
         public int GetTotalDaysAbsent([Service] IHttpContextAccessor contextAccessor,
-        [Service] IGenericRepositoryFactory repoFactory,
+        IGenericRepositoryFactory repoFactory,
         string userId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
