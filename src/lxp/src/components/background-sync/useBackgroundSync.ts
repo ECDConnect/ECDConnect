@@ -46,9 +46,14 @@ const useBackgroundSync = () => {
     await initStoreSetup();
   }, [dispatch, resetAppStore, initStoreSetup]);
 
-  if (sync.status === ThunkActionStatuses.Fulfilled) {
-    handleSyncSuccess();
-  }
+  useEffect(() => {
+    async function callHandleSuccess() {
+      if (sync.status === ThunkActionStatuses.Fulfilled) {
+        await handleSyncSuccess();
+      }
+    }
+    callHandleSuccess();
+  }, [handleSyncSuccess, sync.status]);
 };
 
 export default useBackgroundSync;

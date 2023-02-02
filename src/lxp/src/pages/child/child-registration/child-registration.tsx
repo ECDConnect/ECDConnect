@@ -417,6 +417,9 @@ export const ChildRegistration: React.FC = () => {
     );
 
     appDispatch(documentActions.createDocument(documentInputModel));
+    await appDispatch(
+      documentThunkActions.createDocument(documentInputModel)
+    ).unwrap();
   };
 
   const exitRegistrationPrompt = () => {
