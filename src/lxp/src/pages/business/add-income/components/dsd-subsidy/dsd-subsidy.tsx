@@ -21,6 +21,10 @@ import { authSelectors } from '@/store/auth';
 import { IncomeStatementsService } from '@/services/IncomeStatementsService';
 import { newGuid } from '@/utils/common/uuid.utils';
 import { useMemo } from 'react';
+import {
+  isNumber,
+  moneyInputFormat,
+} from '@/utils/statements/statements-utils';
 
 export const DsdSubsidy: React.FC<AddIncomeState> = ({ setType }) => {
   const userAuth = useSelector(authSelectors.getAuthUser);
@@ -50,6 +54,8 @@ export const DsdSubsidy: React.FC<AddIncomeState> = ({ setType }) => {
     control: control,
   });
 
+  const isNum = isNumber(subsidyAmount!);
+
   const disabled = useMemo(() => {
     return !date || !childrenNumber || !subsidyAmount;
   }, [childrenNumber, date, subsidyAmount]);
@@ -65,7 +71,7 @@ export const DsdSubsidy: React.FC<AddIncomeState> = ({ setType }) => {
       Submitted: false,
       DateReceived: date,
       Notes: note,
-      Amount: Number(subsidyAmount?.slice(1)),
+      Amount: subsidyAmount ? moneyInputFormat(subsidyAmount) : 0,
       AmountExpected: 400,
       ChildCoverAmount: Number(childrenNumber),
       IncomeTypeId: incomeTypeValue?.id,
@@ -141,7 +147,7 @@ export const DsdSubsidy: React.FC<AddIncomeState> = ({ setType }) => {
           color="primary"
           className={'mx-auto mt-8 w-full rounded-2xl'}
           onClick={handleSaveStartupSupportValues}
-          disabled={disabled}
+          disabled={disabled || !isNum}
         >
           {renderIcon('SaveIcon', styles.buttonIcon)}
           <Typography

@@ -6,7 +6,7 @@ export interface PreschoolFeesModel {
   contributionType: any;
   feeType: string | string[];
   note: string;
-  amount: number;
+  amount: string;
 }
 
 export const preschoolFeesSchema = Yup.object().shape({
@@ -14,6 +14,6 @@ export const preschoolFeesSchema = Yup.object().shape({
   practitioner: Yup.string().required(),
   contributionType: Yup.string(),
   feeType: Yup.string(),
-  amount: Yup.number(),
+  amount: Yup.string(),
   note: Yup.string(),
 });

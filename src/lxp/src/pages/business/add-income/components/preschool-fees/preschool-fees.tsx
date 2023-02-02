@@ -26,6 +26,10 @@ import { statementsSelectors } from '@/store/statements';
 import { IncomeStatementsService } from '@/services/IncomeStatementsService';
 import { authSelectors } from '@/store/auth';
 import { newGuid } from '@/utils/common/uuid.utils';
+import {
+  isNumber,
+  moneyInputFormat,
+} from '@/utils/statements/statements-utils';
 
 export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
   const children = useSelector(childrenSelectors.getChildren);
@@ -74,6 +78,7 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
     control: control,
   });
 
+  const isNum = isNumber(amount!);
   const disabled = useMemo(() => {
     return !date || !child || !contributionType || !feeType;
   }, [child, contributionType, date, feeType]);
@@ -146,14 +151,33 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
       Submitted: false,
       DateReceived: date,
       Notes: note,
-      // Description: 'Testing',
-      Amount: Number(amount),
+      Amount: amount ? moneyInputFormat(amount) : 0,
       AmountExpected: 400,
       ChildCoverAmount: 400,
-      // PayTypeId: '18eb51c4-8486-a7f3-4de0-14477870e205',
       ContributionTypeId: contributionType,
       IncomeTypeId: incomeTypeValue?.id,
     });
+  };
+
+  const sendOneIncomeUpdate = async () => {
+    const incomeId = newGuid();
+
+    await new IncomeStatementsService(
+      userAuth?.auth_token!
+    ).UpdateStatementsIncome(incomeId, {
+      IsActive: true,
+      UserId: userAuth?.id,
+      ChildUserId: child,
+      Submitted: false,
+      DateReceived: date,
+      Notes: note,
+      Amount: Number(amount?.slice(1)),
+      AmountExpected: 400,
+      ChildCoverAmount: 400,
+      ContributionTypeId: contributionType,
+      IncomeTypeId: incomeTypeValue?.id,
+    });
+    setType('');
   };
 
   return (
@@ -225,7 +249,8 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
             register={register}
             placeholder={'e.g. R 200'}
             className="mt-4"
-            type={'number'}
+            type={'text'}
+            textInputType={'moneyInput'}
           />
         )}
         <label className={classNames(styles.label, 'mt-4')}>
@@ -265,8 +290,8 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
           type="filled"
           color="primary"
           className={'mx-auto mt-8 w-full rounded-2xl'}
-          onClick={() => {}}
-          disabled={disabled}
+          onClick={sendOneIncomeUpdate}
+          disabled={disabled || !isNum}
         >
           {renderIcon('SaveIcon', styles.buttonIcon)}
           <Typography
@@ -281,7 +306,7 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
           color="primary"
           className={'mx-auto mt-2 w-full rounded-2xl'}
           onClick={sendIncomeUpdate}
-          // disabled={disabled}
+          disabled={disabled || !isNum}
         >
           {renderIcon('PlusIcon', styles.buttonIconSaveFees)}
           <Typography
