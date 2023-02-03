@@ -33,12 +33,9 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             var practiRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
 
             List<Practitioner> peers = new List<Practitioner>();
-
             Practitioner practitioner = practiRepo.GetByUserId(practitionerId.ToString());
             if (practitioner != null)
             {
-                
-
                 if (practitioner.PrincipalHierarchy.HasValue || practitioner.IsPrincipal == true)
                 {
                     peers = practiRepo.GetAll().Where(x => x.PrincipalHierarchy.HasValue ? x.PrincipalHierarchy.Equals(practitioner.PrincipalHierarchy) : x.IsPrincipal == true ? x.UserId.Equals(practitionerId) : x.UserId.Equals(practitionerId)).ToList();
@@ -66,12 +63,16 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         public List<Child> GetAllChildrenForPractitioner(
         string practitionerId)
         {
-            var childRepo = _repoFactory.CreateRepository<Child>(userContext: _applicationUserId);
+            var childRepo = _repoFactory.CreateGenericRepository<Child>(userContext: _applicationUserId);
 
-            var practiRepo = _repoFactory.CreateRepository<Practitioner>(userContext: _applicationUserId);
+            var practiRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
             Practitioner practitioner = practiRepo.GetByUserId(practitionerId);
-
-            return childRepo.GetAll().Where(x => x.Hierarchy.StartsWith(practitioner.Hierarchy)).ToList();
+            if (practitioner != null && !string.IsNullOrEmpty(practitioner.Hierarchy))
+            {
+                var children = childRepo.GetAll().Where(x => x.Hierarchy.StartsWith(practitioner.Hierarchy)).ToList();
+                return children;
+            }
+            else return new List<Child>();
         }
 
         public List<ClassroomGroup> GetAllClassroomGroupsForPractitioner(string practitionerId)
