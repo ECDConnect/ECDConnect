@@ -28,11 +28,6 @@ namespace ECDLink.EGraphQL
 
             var builder = services
               .AddGraphQLServer()
-              .RegisterDbContext<AuthenticationDbContext>(HotChocolate.Data.DbContextKind.Synchronized)
-              .RegisterDbContext<PostgresTenancyContext>()
-              .RegisterService<IDbContextFactory<AuthenticationDbContext>>()
-              .RegisterService<UserManager<ApplicationUser>>()
-              .RegisterService<IGenericRepositoryFactory>()
               .AddQueryType<Query>()
               .AddTypeModule(sp => new ContentTypeModule(contentReloader))
               .AddTypeModule(sp => new SettingsModule(contentReloader))
@@ -40,7 +35,12 @@ namespace ECDLink.EGraphQL
               .AddType<UploadType>()
               .AddDirectiveType<TokenAccessDirectiveType>()
               .AddDirectiveType<PermissionDirectiveType>()
-              .AddFiltering();
+              .AddFiltering()
+              .RegisterDbContext<AuthenticationDbContext>(HotChocolate.Data.DbContextKind.Resolver)
+              .RegisterDbContext<PostgresTenancyContext>(HotChocolate.Data.DbContextKind.Resolver)
+              .RegisterService<IDbContextFactory<AuthenticationDbContext>>(ServiceKind.Synchronized)
+              .RegisterService<UserManager<ApplicationUser>>(ServiceKind.Synchronized)
+              .RegisterService<IGenericRepositoryFactory>(ServiceKind.Synchronized);
 
             builder = builder
                 .AddAuthorization()

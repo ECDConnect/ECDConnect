@@ -20,7 +20,7 @@ const FOOD__EXPENSE_ID = '5a879191-f0ff-f3dc-dc1a-326d26a21daf';
 const LEARNING_MATERIALS_ID = '21739cd5-de35-3579-c30c-bd2337770c3c';
 const MAINTENANCE_ID = '4e2fd7d4-5b8e-b020-a8e0-eb559832ba02';
 const OTHER__EXPENSE_ID = '9ca053ea-9fa5-c3f9-d72f-2ac73289820b';
-const UTILITIES__EXPENSE_ID = 'cbd9eb92-70a2-6fd2-caca-f6b137842e24';
+export const UTILITIES__EXPENSE_ID = 'cbd9eb92-70a2-6fd2-caca-f6b137842e24';
 const SALARY_EXPENSE_ID = '8c70d480-7579-477e-ec7e-db3515345840';
 
 // Statements types

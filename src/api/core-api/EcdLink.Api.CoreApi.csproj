@@ -17,7 +17,8 @@
   
   <ItemGroup>
     
-    <PackageReference Include="HotChocolate.Data.EntityFramework" Version="12.16.0" />
+    <PackageReference Include="HotChocolate.Data.EntityFramework" Version="12.12.1" />
+    
     <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="7.0.0" />
     
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.0">

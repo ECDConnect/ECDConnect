@@ -47,6 +47,8 @@ export const AnnualMaintenance: React.FC<AddIncomeState> = ({ setType }) => {
   } = useWatch({
     control: control,
   });
+
+  const isNum = /^\d+$/.test(amount?.slice(1)!);
   const [photoActionBarVisible, setPhotoActionBarVisible] =
     useState<boolean>(false);
   const [registrationFormPhotoUrl, setRegistrationFormPhotoUrl] =
@@ -186,7 +188,7 @@ export const AnnualMaintenance: React.FC<AddIncomeState> = ({ setType }) => {
           color="primary"
           className={'mx-auto mt-8 w-full rounded-2xl'}
           onClick={sendIncomeUpdate}
-          disabled={disabled}
+          disabled={disabled || !isNum}
           isLoading={isLoading}
         >
           {renderIcon('SaveIcon', styles.buttonIcon)}

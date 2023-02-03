@@ -96,6 +96,7 @@ export const FormInput = <T extends FieldValues>({
               className={error ? styles.errorStyle : styles.defaultInputStyle}
               style={suffixIcon ? { paddingRight: 38 } : { paddingRight: 16 }}
               {...restProps}
+              pattern={'[0-9]'}
             />
           );
         } else {

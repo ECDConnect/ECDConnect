@@ -24,7 +24,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
         public async Task<List<MappedCoach>> IntegrationByFranchisor(
         [Service] IIntegrationService integrationService,
-        [Service] IGenericRepositoryFactory repoFactory,
+        IGenericRepositoryFactory repoFactory,
         [Service] IHttpContextAccessor httpContextAccessor,
         [Service] UserManager<ApplicationUser> userManager,
         string franchisorId, bool isNew = false

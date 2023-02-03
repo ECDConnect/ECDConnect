@@ -24,7 +24,7 @@ namespace ECDLink.SmartStart.GraphQL.Queries
     {
         [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
         public async Task<string> GenerateChildProgressReport(
-            [Service] IGenericRepositoryFactory repoFactory,
+            IGenericRepositoryFactory repoFactory,
             [Service] ChildProgressReportService report,
             [Service] IHttpContextAccessor httpContextAccessor,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
@@ -58,7 +58,7 @@ namespace ECDLink.SmartStart.GraphQL.Queries
 
         [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
         public async Task<ChildProgressReportDetailedModel> GetChildProgressReport(
-            [Service] IGenericRepositoryFactory repoFactory,
+            IGenericRepositoryFactory repoFactory,
             [Service] IHttpContextAccessor httpContextAccessor,
             Guid reportId)
         {
@@ -72,7 +72,7 @@ namespace ECDLink.SmartStart.GraphQL.Queries
 
         [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
         public async Task<IEnumerable<ChildProgressReportSummaryModel>> GetChildProgressReportSummary(
-            [Service] IGenericRepositoryFactory repoFactory,
+            IGenericRepositoryFactory repoFactory,
             [Service] IHttpContextAccessor httpContextAccessor,
             int count)
         {
