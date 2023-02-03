@@ -116,6 +116,7 @@ export const OtherIncome: React.FC<AddIncomeState> = ({ setType }) => {
           className="mt-2"
           type={'text'}
           textInputType={'moneyInput'}
+          prefixIcon={incomeAmount ? true : false}
         />
         <FormInput<OtherIncomeModel>
           label={'Write a short description of this income type'}

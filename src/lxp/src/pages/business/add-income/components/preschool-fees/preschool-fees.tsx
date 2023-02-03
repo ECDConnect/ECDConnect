@@ -171,7 +171,7 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
       Submitted: false,
       DateReceived: date,
       Notes: note,
-      Amount: Number(amount?.slice(1)),
+      Amount: amount ? moneyInputFormat(amount) : 0,
       AmountExpected: 400,
       ChildCoverAmount: 400,
       ContributionTypeId: contributionType,
@@ -251,6 +251,7 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
             className="mt-4"
             type={'text'}
             textInputType={'moneyInput'}
+            prefixIcon={amount ? true : false}
           />
         )}
         <label className={classNames(styles.label, 'mt-4')}>
@@ -291,7 +292,9 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
           color="primary"
           className={'mx-auto mt-8 w-full rounded-2xl'}
           onClick={sendOneIncomeUpdate}
-          disabled={disabled || !isNum}
+          disabled={
+            disabled || (!isNum && contributionType === moneyContributionTypeId)
+          }
         >
           {renderIcon('SaveIcon', styles.buttonIcon)}
           <Typography
@@ -306,7 +309,9 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
           color="primary"
           className={'mx-auto mt-2 w-full rounded-2xl'}
           onClick={sendIncomeUpdate}
-          disabled={disabled || !isNum}
+          disabled={
+            disabled || (!isNum && contributionType === moneyContributionTypeId)
+          }
         >
           {renderIcon('PlusIcon', styles.buttonIconSaveFees)}
           <Typography

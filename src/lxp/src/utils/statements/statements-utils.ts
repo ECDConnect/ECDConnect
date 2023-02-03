@@ -1,7 +1,8 @@
 export const moneyInputFormat = (val: string) => {
-  return Number(val.slice(1));
+  const formattedValue = Number(val.split(',').join(''));
+  return formattedValue;
 };
 
 export const isNumber = (val: string) => {
-  return /^\d+$/.test(val?.slice(1)!);
+  return /^[0-9,\.]+/.test(val);
 };
