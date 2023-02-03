@@ -48,8 +48,8 @@ namespace ECDLink.EGraphQL.Registration.ContentTypes
               .Directive(metadata)
               .Resolve(context =>
               {
-                  int.TryParse(definition.Identifier, out int id);
-                  return resolver.GetAllResolver(context, id);
+                  context.ScopedContextData = context.ScopedContextData.SetItem(ContextDataConstants.ContentManagement.Identifier, definition.Identifier);
+                  return resolver.GetAllResolver(context);
               });
 
             descriptor.Field(GraphFieldNamingHelper.GetFieldName(GraphFieldTypeEnum.GetById, definition.ContentName))
@@ -60,7 +60,7 @@ namespace ECDLink.EGraphQL.Registration.ContentTypes
               .Directive(metadata)
               .Resolve(context =>
               {
-                  int.TryParse(definition.Identifier, out int id);
+                  context.ScopedContextData = context.ScopedContextData.SetItem(ContextDataConstants.ContentManagement.Identifier, definition.Identifier);
                   return resolver.GetResolver(context);
               });
         }
