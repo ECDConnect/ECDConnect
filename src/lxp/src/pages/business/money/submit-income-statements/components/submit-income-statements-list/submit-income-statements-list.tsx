@@ -294,7 +294,7 @@ export const SubmitIncomeStatementsList: React.FC = () => {
       notRounded: true,
     },
     {
-      title: 'Cleaning mater...',
+      title: 'Annual Mainten...',
       titleStyle: 'text-textDark font-semibold text-base leading-snug',
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
@@ -439,9 +439,10 @@ export const SubmitIncomeStatementsList: React.FC = () => {
           iconColor="alertMain"
           iconBorderColor="alertBg"
           importantText={`Are you sure you want to submit your income statement?`}
-          detailText={
-            'Once you submit your December income statement, you will no longer be able to edit your income and expenses. Your signature will be added and your statement will be shared with SmartStart.'
-          }
+          detailText={`Once you submit your ${format(
+            new Date(),
+            'LLLL'
+          )} income statement, you will no longer be able to edit your income and expenses. Your signature will be added and your statement will be shared with SmartStart.`}
           actionButtons={[
             {
               text: 'Yes, submit',
