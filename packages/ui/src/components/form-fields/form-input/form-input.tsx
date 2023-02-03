@@ -89,7 +89,6 @@ export const FormInput = <T extends FieldValues>({
             <CurrencyInput
               id="validation-example-2-field"
               allowDecimals={false}
-              // prefix={'$'}
               step={10}
               autoComplete="new-off"
               placeholder={placeholder}
