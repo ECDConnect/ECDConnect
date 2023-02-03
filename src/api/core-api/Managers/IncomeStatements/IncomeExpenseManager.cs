@@ -42,7 +42,12 @@ string userId)
 string userId)
         {
             var expenseRepo = _repoFactory.CreateRepository<StatementsIncomeStatement>(userContext: _applicationUserId);
-            return expenseRepo.GetAll().Where(x => x.UserId.Equals(userId)).ToList();
+            var statements = expenseRepo.GetAll().Where(x => string.Equals(x.UserId, userId)).ToList();
+            if (statements.Any())
+            {
+                return statements;
+            }
+            else return new List<StatementsIncomeStatement>();
         }
         public List<StatementsStartupSupport> GetAllStatementsStartupSupport(
 string userId)
@@ -59,9 +64,13 @@ StatementsIncome model)
             incomeRepo.Insert(model);
 
             double runningBalance = 0;
-            //do business logic to determine running balance
+
             var statements = GetAllStatementsIncomeStatement(model.UserId);
-            var row = statementsRepo.GetAll().Where(x => x.UserId== model.UserId).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
+            var row = statementsRepo.GetAll()
+                .Where(x => string.Equals(x.UserId, model.UserId))
+                .Where(y => string.Equals(y.Month, model.DateReceived.Value.Month) && string.Equals(y.Year, model.DateReceived.Value.Year))
+                .OrderByDescending(x => x.InsertedDate)
+                .FirstOrDefault();
             runningBalance = (row != null ? runningBalance = row.Balance : 0);
 
             StatementsIncomeStatement statement = new StatementsIncomeStatement()
@@ -95,7 +104,11 @@ StatementsExpenses model)
             double runningBalance = 0;
             //do business logic to determine running balance
             var statements = GetAllStatementsIncomeStatement(model.UserId);
-            var row = statementsRepo.GetAll().Where(x => x.UserId == model.UserId).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
+            var row = statementsRepo.GetAll()
+                .Where(x => string.Equals(x.UserId, model.UserId))
+                .Where(y => string.Equals(y.Month, model.DatePaid.Value.Month) && string.Equals(y.Year, model.DatePaid.Value.Year))
+                .OrderByDescending(x => x.InsertedDate)
+                .FirstOrDefault();
             runningBalance = (row != null ? runningBalance = row.Balance : 0);
 
             StatementsIncomeStatement statement = new StatementsIncomeStatement()
