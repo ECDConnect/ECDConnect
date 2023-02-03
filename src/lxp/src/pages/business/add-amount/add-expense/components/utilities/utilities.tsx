@@ -29,14 +29,16 @@ import {
   isNumber,
   moneyInputFormat,
 } from '@/utils/statements/statements-utils';
+import { UTILITIES__EXPENSE_ID } from '@/store/statements/statements.selectors';
 
 export const Utilities: React.FC<AddIncomeState> = ({ setType }) => {
   const userAuth = useSelector(authSelectors.getAuthUser);
   const expensesTypes = useSelector(statementsSelectors.getExpensesTypes);
   const viewTitle = 'Utilities (electricity, water & other running costs)';
   const expensesTypeValue = expensesTypes.find(
-    (item) => item.description === viewTitle
+    (item) => item?.id === UTILITIES__EXPENSE_ID
   );
+
   const {
     trigger,
     control,
