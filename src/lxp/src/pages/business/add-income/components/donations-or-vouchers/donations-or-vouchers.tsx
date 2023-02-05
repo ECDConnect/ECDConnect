@@ -175,6 +175,7 @@ export const DonationsOrVouchers: React.FC<AddIncomeState> = ({ setType }) => {
           className="mt-4"
           type={'text'}
           textInputType={'moneyInput'}
+          prefixIcon={!!donationWorth}
         />
         <FormInput<DonationsOrVouchersModel>
           label={'Add a note'}
