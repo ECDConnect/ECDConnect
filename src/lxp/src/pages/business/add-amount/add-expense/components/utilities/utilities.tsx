@@ -136,7 +136,7 @@ export const Utilities: React.FC<AddIncomeState> = ({ setType }) => {
           className="mt-2"
           type={'text'}
           textInputType={'moneyInput'}
-          prefixIcon={amount ? true : false}
+          prefixIcon={!!amount}
         />
         <FormInput<ExpensesModel>
           label={'Add a description or note'}

@@ -132,7 +132,7 @@ export const DsdSubsidy: React.FC<AddIncomeState> = ({ setType }) => {
           className="mt-2"
           type={'text'}
           textInputType={'moneyInput'}
-          prefixIcon={subsidyAmount ? true : false}
+          prefixIcon={!!subsidyAmount}
         />
         <FormInput<DsdSubsidyModel>
           label={'Add a note'}

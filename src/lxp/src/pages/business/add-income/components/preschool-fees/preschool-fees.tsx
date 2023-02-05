@@ -251,7 +251,7 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
             className="mt-4"
             type={'text'}
             textInputType={'moneyInput'}
-            prefixIcon={amount ? true : false}
+            prefixIcon={!!amount}
           />
         )}
         <label className={classNames(styles.label, 'mt-4')}>
