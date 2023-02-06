@@ -1,6 +1,6 @@
+using ECDLink.DataAccessLayer.Configuration.Setup.Seed.SeedData.Workflow;
 using ECDLink.DataAccessLayer.Entities.Workflow;
 using ECDLink.DataAccessLayer.Repositories.Factories;
-using ECDLink.DataAccessLayer.Configuration.Setup.Seed.SeedData.Workflow;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 

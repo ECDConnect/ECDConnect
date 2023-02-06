@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ECDLink.Core.SystemSettings
+﻿namespace ECDLink.Core.SystemSettings
 {
     public static class SettingGroups
     {
@@ -82,7 +78,7 @@ namespace ECDLink.Core.SystemSettings
             public static class Google
             {
                 public const string GoogleGrouping = "General.Analytics.Google";
-                public const string GoogleReport = "General.Analytics.Google.DashboardGoogleReport";                
+                public const string GoogleReport = "General.Analytics.Google.DashboardGoogleReport";
 
                 public const string Tag = "General.Analytics.Google.GoogleAnalyticsTag";
                 public const string TagManager = "General.Analytics.Google.GoogleTagManager";
@@ -113,7 +109,7 @@ namespace ECDLink.Core.SystemSettings
         {
             public const string SecurityGroupBase = "Security";
 
-            public static class Jwt 
+            public static class Jwt
             {
                 public const string JwtGroup = "Security.Jwts";
                 public const string LongToken = "Security.Jwts.LongJwtLifespan";
@@ -125,7 +121,7 @@ namespace ECDLink.Core.SystemSettings
                 public const string TokenGroup = "Security.Tokens";
                 public const string InvitationLinkExpiry = "Security.Tokens.InvitationLinkExpiry";
                 public const string OpenAccessInvitationExpiry = "Security.Tokens.OpenAccessInvitationExpiry";
-            }            
+            }
         }
 
         public static class Reporting

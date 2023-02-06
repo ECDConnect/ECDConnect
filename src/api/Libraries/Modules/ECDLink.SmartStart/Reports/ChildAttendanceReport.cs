@@ -91,16 +91,16 @@ namespace ECDLink.SmartStart.Reports
                         var daysOfClass = attendanceForPeriod.Where(x => string.Equals(x.UserId, userId)
                                               && x.ClassroomProgrammeId == programme.Id
                                               && x.MonthOfYear == dt.Month
-                                              && x.Year == dt.Year); 
+                                              && x.Year == dt.Year);
 
                         var attendedClasses = attendanceForPeriod
                                               .Where(x => string.Equals(x.UserId, userId)
                                               && x.ClassroomProgrammeId == programme.Id
                                               && x.MonthOfYear == dt.Month
                                               && x.Year == dt.Year
-                                              && x.Attended==true);
+                                              && x.Attended == true);
 
-                        attendance.Add(Tuple.Create(daysOfClass.Count(), (attendedClasses!=null?attendedClasses.Count():0)));
+                        attendance.Add(Tuple.Create(daysOfClass.Count(), (attendedClasses != null ? attendedClasses.Count() : 0)));
 
                     }
                     monthlyAttendance.Add(dt, attendance);
@@ -123,7 +123,7 @@ namespace ECDLink.SmartStart.Reports
                 TotalActualAttendance = totalActualAttendance,
                 TotalExpectedAttendance = totalExpectedAttendance,
                 ClassGroupAttendance = learnerReports,
-                AttendancePercentage = (attendancePercentage>0?attendancePercentage:0)
+                AttendancePercentage = (attendancePercentage > 0 ? attendancePercentage : 0)
             };
         }
 
@@ -136,7 +136,7 @@ namespace ECDLink.SmartStart.Reports
 
         private ChildGroupingAttendanceReportModel CreateLearnerReport(Learner learner, IEnumerable<ChildAttendanceMonthlyReportModel> monthlyReports)
         {
-            
+
             var totalExpectedAttendance = monthlyReports.Sum(x => x.ExpectedAttendance);
             var totalActualAttendance = monthlyReports.Sum(x => x.ActualAttendance);
             var attendancePercentage = (int)Math.Round(((double)totalActualAttendance / totalExpectedAttendance) * 100);

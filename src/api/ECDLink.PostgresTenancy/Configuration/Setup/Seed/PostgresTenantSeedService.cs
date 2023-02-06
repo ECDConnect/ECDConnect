@@ -1,15 +1,12 @@
-﻿using ECDLink.PostgresTenancy.Entities;
-using ECDLink.PostgresTenancy.Repository;
+﻿using ECDLink.Core.Extensions;
+using ECDLink.PostgresTenancy.Entities;
 using ECDLink.Tenancy;
 using ECDLink.Tenancy.Model;
-using ECDLink.Core.Extensions;
+using ECDLink.Tenancy.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using ECDLink.Tenancy.Services;
 
 namespace ECDLink.PostgresTenancy.Configuration.Setup.Seed
 {

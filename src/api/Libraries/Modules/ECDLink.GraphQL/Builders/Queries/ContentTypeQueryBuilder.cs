@@ -42,27 +42,27 @@ namespace ECDLink.EGraphQL.Registration.ContentTypes
             };
 
             descriptor.Field(GraphFieldNamingHelper.GetFieldName(GraphFieldTypeEnum.GetAll, definition.ContentName))
-              .ConfigureContextData(data =>
-              {
-                  data.Add(ContextDataConstants.ContentManagement.Identifier, definition.Identifier);
-              })
               .Argument(ArgumentConstants.Locale, a => a.Type<StringType>())
               .Argument(ArgumentConstants.LocaleId, a => a.Type<StringType>())
               .Type(new DynamicTypeBuilder(definition.ContentName).Enumerable().Required().Build())
               .Directive(metadata)
-              .Resolve(context => resolver.GetAllResolver(context));
+              .Resolve(context =>
+              {
+                  context.ScopedContextData = context.ScopedContextData.SetItem(ContextDataConstants.ContentManagement.Identifier, definition.Identifier);
+                  return resolver.GetAllResolver(context);
+              });
 
             descriptor.Field(GraphFieldNamingHelper.GetFieldName(GraphFieldTypeEnum.GetById, definition.ContentName))
-              .ConfigureContextData(data =>
-              {
-                  data.Add(ContextDataConstants.ContentManagement.Identifier, definition.Identifier);
-              })
               .Argument(ArgumentConstants.Id, a => a.Type<IntType>())
               .Argument(ArgumentConstants.Locale, a => a.Type<StringType>())
               .Argument(ArgumentConstants.LocaleId, a => a.Type<StringType>())
               .Type(new DynamicTypeBuilder(definition.ContentName).Enumerable().Required().Build())
               .Directive(metadata)
-              .Resolve(context => resolver.GetResolver(context));
+              .Resolve(context =>
+              {
+                  context.ScopedContextData = context.ScopedContextData.SetItem(ContextDataConstants.ContentManagement.Identifier, definition.Identifier);
+                  return resolver.GetResolver(context);
+              });
         }
     }
 }

@@ -1,20 +1,13 @@
 using EcdLink.Api.CoreApi.Security.Managers;
 using EcdLink.Api.CoreApi.Security.Models;
 using EcdLink.Api.CoreApi.Security.Models.Requests;
-using ECDLink.Abstractrions.Constants;
 using ECDLink.Core.Helpers;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.Security.Helpers;
 using ECDLink.Security.JwtSecurity.Enums;
-using ECDLink.Security.Managers;
-using ECDLink.UrlShortner.Managers;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using NPOI.OpenXml4Net.OPC;
-using System.Net.Http.Headers;
 using System.Threading.Tasks;
 
 namespace ECDLink.Security.Api
@@ -40,7 +33,7 @@ namespace ECDLink.Security.Api
                 return BadRequest(ModelState);
             }
 
-            if (login.Password.StartsWith('<') || (login.PhoneNumber!=null? login.PhoneNumber.StartsWith('<') : login.Username.StartsWith('<'))) //exclude funny script attempts
+            if (login.Password.StartsWith('<') || (login.PhoneNumber != null ? login.PhoneNumber.StartsWith('<') : login.Username.StartsWith('<'))) //exclude funny script attempts
             {
                 return Unauthorized(new { Error = "Some of the information you have entered is incorrect. Please contact the SmartStart call centre to find out more: 0800 014 817" });
             }
@@ -60,7 +53,7 @@ namespace ECDLink.Security.Api
             {
                 return Unauthorized(new { Error = "Some of the information you have entered is incorrect. Please contact the SmartStart call centre to find out more: 0800 014 817" });
             }
-            
+
             var jwt = await _securityManager.GenerateJwtForUserAsync(user, JwtEncoderEnum.Standard);
             var jwtObj = JsonConvert.DeserializeObject<JwtObject>(jwt);
             var package = new OkObjectResult(jwtObj);
@@ -128,7 +121,7 @@ namespace ECDLink.Security.Api
             // scheme will be "Bearer"
             // parmameter will be the token itself.
 
-            var result = await _securityManager.RefreshJwtToken(authorization);           
+            var result = await _securityManager.RefreshJwtToken(authorization);
 
             return new OkObjectResult(result);
         }

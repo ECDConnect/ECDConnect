@@ -1,12 +1,13 @@
 using ECDLink.Core.Extensions;
 using ECDLink.Core.Helpers;
-using ECDLink.PostgresTenancy.Repository;
-using ECDLink.Security.JwtSecurity.Configuration;
+using ECDLink.PostgresTenancy.Entities;
+using ECDLink.PostgresTenancy.Services;
 using ECDLink.Security.JwtSecurity.Enums;
 using ECDLink.Security.JwtSecurity.Factories;
 using ECDLink.Security.Managers;
+using ECDLink.Tenancy.Context;
+using HotChocolate;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using System;
@@ -15,12 +16,6 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using ECDLink.PostgresTenancy.Entities;
-using ECDLink.Tenancy.Context;
-using ECDLink.Tenancy.Services;
-using ECDLink.PostgresTenancy.Services;
-using HotChocolate;
-using Newtonsoft.Json.Linq;
 
 namespace ECDLink.Security.JwtSecurity.Managers
 {
@@ -32,8 +27,8 @@ namespace ECDLink.Security.JwtSecurity.Managers
         private readonly TokenValidationParameters _parameters;
 
         public JwtTokenManager(
-            IJwtFactory jwtFactory, 
-            IClaimsManager claimsManager, 
+            IJwtFactory jwtFactory,
+            IClaimsManager claimsManager,
             [Service] IJWTService jWTService,
             TokenValidationParameters parameters
             )
@@ -52,13 +47,13 @@ namespace ECDLink.Security.JwtSecurity.Managers
             {
                 id = identity.Claims.Single(c => c.Type == "id").Value,
                 auth_token = await jwtEncoder.GenerateEncodedToken(userId, identity.Claims),
-                expires_in = (int) jwtEncoder.Options.ValidFor.TotalSeconds
+                expires_in = (int)jwtEncoder.Options.ValidFor.TotalSeconds
             };
 
             return JsonConvert.SerializeObject(response, new JsonSerializerSettings() { Formatting = Formatting.Indented });
         }
 
-        public async  Task<bool> CanRefreshToken(string token)
+        public async Task<bool> CanRefreshToken(string token)
         {
             var result = GetValidClaimPrincipal(token, out var principal);
 
@@ -147,8 +142,8 @@ namespace ECDLink.Security.JwtSecurity.Managers
 
             //remove previous tokens first
             _jwtService.InvalidateExistingTokens(contextIdentifier);
-            
-            var insertedJWTToken = _jwtService.InsertToken(new JWTUserTokensEntity() { InsertedDate = DateTime.Now,  UserId = contextIdentifier, Token = auth_token, TokenKey = Guid.NewGuid().ToString(), ExpiresIn = expiresIn, TenantId = tenantId, Role = role });
+
+            var insertedJWTToken = _jwtService.InsertToken(new JWTUserTokensEntity() { InsertedDate = DateTime.Now, UserId = contextIdentifier, Token = auth_token, TokenKey = Guid.NewGuid().ToString(), ExpiresIn = expiresIn, TenantId = tenantId, Role = role });
             return new JWTUserTokensEntityReturn() { id = insertedJWTToken.TokenKey, auth_token = insertedJWTToken.TokenKey, expires_in = insertedJWTToken.ExpiresIn };
         }
 
@@ -159,7 +154,7 @@ namespace ECDLink.Security.JwtSecurity.Managers
 
         public async Task<JWTUserTokensEntity> GetJWTTokenByToken(string auth_token)
         {
-            return _jwtService.GetByToken(auth_token);            
+            return _jwtService.GetByToken(auth_token);
         }
         public async Task<JWTUserTokensEntity> GetJWTTokenById(string id)
         {

@@ -20,7 +20,7 @@ namespace ECDLink.SmartStart.Reports
 
         public IEnumerable<MonthlyAttendanceReportModel> GenerateMonthlyAttendanceReport(string userId, Guid classroomId, DateTime startMonth, DateTime endMonth)
         {
- 
+
             var classroom = _dbContext.Classrooms
                                 .Include(x => x.ClassroomGroups)
                                 .ThenInclude(c => c.ClassProgrammes)

@@ -1,9 +1,6 @@
-﻿using ECDLink.Abstractrions.GraphQL.Attributes;
-using ECDLink.DataAccessLayer.Entities.Base;
+﻿using ECDLink.DataAccessLayer.Entities.Base;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text;
 
 namespace ECDLink.DataAccessLayer.Hierarchy.Entities
 {

@@ -14,6 +14,7 @@ namespace ECDLink.ContentManagement.GraphQL.Resolvers
                 case FieldTypeEnum.Text:
                 case FieldTypeEnum.Markdown:
                 case FieldTypeEnum.Image:
+                case FieldTypeEnum.Video:
                 case FieldTypeEnum.ColorPicker:
                     return new FieldResolver();
                 case FieldTypeEnum.DynamicRelation:

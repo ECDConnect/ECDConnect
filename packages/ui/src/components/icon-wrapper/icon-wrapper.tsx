@@ -1,5 +1,6 @@
 import { Colours } from '../../models/Colours';
 import { ComponentBaseProps } from '../../models/ComponentBaseProps';
+import { classNames } from '../../utils';
 import { renderIcon } from '../../utils/icon-utils';
 import * as styles from './icon-wrapper.styles';
 
@@ -13,6 +14,7 @@ export const IconWrapper: React.FC<IconWrapperProps> = ({
   icon,
   iconBorderColor,
   iconColor,
+  className,
 }) => {
   return (
     <div className={styles.wrapperContainer}>

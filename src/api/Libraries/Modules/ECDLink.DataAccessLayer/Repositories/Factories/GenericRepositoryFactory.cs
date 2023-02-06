@@ -50,7 +50,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Factories
         public IGenericRepository<T, Guid> CreateGenericRepository<T>(AuthenticationDbContext CustomScope = null, string userContext = null)
           where T : EntityBase<Guid>
         {
-            IGenericRepository<T, Guid> repo = _provider.GetService<GenericRepository<T>>();            
+            IGenericRepository<T, Guid> repo = _provider.GetService<GenericRepository<T>>();
             return repo;
         }
     }

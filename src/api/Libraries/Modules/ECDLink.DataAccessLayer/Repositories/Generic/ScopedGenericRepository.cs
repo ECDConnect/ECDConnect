@@ -1,17 +1,17 @@
 using ECDLink.DataAccessLayer.Context;
+using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Base;
 using ECDLink.DataAccessLayer.Entities.Interfaces;
 using ECDLink.DataAccessLayer.Events;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
-using System;
-using System.Linq;
-using Microsoft.AspNetCore.Identity;
-using ECDLink.DataAccessLayer.Entities;
-using ECDLink.Tenancy.Context;
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Http;
 using ECDLink.Security;
+using ECDLink.Tenancy.Context;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace ECDLink.DataAccessLayer.Repositories.Generic
 {
@@ -71,7 +71,8 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                         }
                     }
                 }
-                catch (Exception e) {
+                catch (Exception e)
+                {
                     return null;
                 }
             }

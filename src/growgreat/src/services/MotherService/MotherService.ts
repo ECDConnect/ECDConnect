@@ -1,5 +1,5 @@
-import { MotherDto, Config } from '@ecdlink/core';
-import { MotherModelInput } from '@ecdlink/graphql';
+import { MotherDto, Config, VisitDto } from '@ecdlink/core';
+import { EventRecordType, MotherModelInput } from '@ecdlink/graphql';
 import { api } from '../axios.helper';
 class MotherService {
   _accessToken: string;
@@ -8,18 +8,30 @@ class MotherService {
     this._accessToken = accessToken;
   }
 
-  async getMothers(id: string): Promise<MotherDto[]> {
+  async getMothers(
+    id: string,
+    visitType?: 'all' | 'overdue' | 'due'
+  ): Promise<MotherDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-        query GetAllMothersForHealthCareWorker($id: String) {
-          allMothersForHealthCareWorker(id: $id) {
+        query GetAllMothersForHealthCareWorker($id: String, $visitType: String) {
+          allMothersForHealthCareWorker(id: $id, visitType: $visitType) {
+            statusInfo {
+              icon
+              color
+              notes
+              subject
+            }
             user {
               id
               firstName
               surname
               phoneNumber
             }
+            nextVisitDate
+            age
+            insertedDate
             expectedDateOfDelivery
             siteAddress {
               id
@@ -38,7 +50,8 @@ class MotherService {
         }   
         `,
       variables: {
-        id: id,
+        id,
+        visitType,
       },
     });
 
@@ -162,6 +175,109 @@ class MotherService {
     }
 
     return response.data.data.motherCountForHealthCareWorkerForMonth;
+  }
+
+  async addAdditionalVisitForMother(id: string): Promise<any> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        mutation addAdditionalVisitForMother($input: VisitModel) {
+          addAdditionalVisitForMother(input: @input) {
+            id
+          }
+        }
+        `,
+      variables: {
+        userId: id,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Getting Mothers visits failed - Server connection error'
+      );
+    }
+
+    return response.data.data.motherVisits;
+  }
+
+  async getMotherVisits(id: string): Promise<VisitDto[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { motherVisits: VisitDto[] };
+    }>(``, {
+      query: `
+        query GetMotherVisits($userId: String) {
+          motherVisits(id: $userId) {
+              actualVisitDate,
+              plannedVisitDate,
+              attended,
+              risk
+              visitType{
+                id
+                order
+                normalizedName
+                description
+                insertedDate
+                isActive
+                name
+                type
+                updatedBy
+                updatedDate
+              }        
+          }
+        }
+        `,
+      variables: {
+        userId: id,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Getting Mothers visits failed - Server connection error'
+      );
+    }
+
+    return response.data.data.motherVisits;
+  }
+
+  async getAllMotherEventRecordTypes(): Promise<EventRecordType[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { allEventRecordTypesForType: EventRecordType[] };
+    }>(``, {
+      query: `
+        query GetAllEventRecordTypesForType($type: String) {
+          allEventRecordTypesForType(type: $type) {
+            id
+            name
+            normalizedName
+            description
+            parentId
+            type
+            children {
+                id
+                name
+                normalizedName
+                description
+                type
+            }
+          }
+        }
+        `,
+      variables: {
+        type: 'mother',
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Getting event record types failed - Server connection error'
+      );
+    }
+
+    return response.data.data.allEventRecordTypesForType;
   }
 }
 

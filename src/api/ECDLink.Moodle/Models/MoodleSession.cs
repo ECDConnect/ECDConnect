@@ -1,5 +1,4 @@
-﻿using System;
-namespace ECDLink.Moodle.Models
+﻿namespace ECDLink.Moodle.Models
 {
     public class MoodleSession
     {

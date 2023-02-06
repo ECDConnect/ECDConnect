@@ -4,4 +4,5 @@ export interface ComponentBaseProps {
   testId?: string;
   onClick?: () => void;
   inputRef?: any;
+  style?: React.CSSProperties;
 }

@@ -102,14 +102,10 @@ const InitialStoreSetup: React.FC = ({ children }) => {
 
   useEffect(() => {
     if (userData) {
-      if (!isCoach) {
-        (async () =>
-          await appDispatch(
-            coachThunkActions.getCoachByCoachId({})
-          ).unwrap())();
-      }
+      (async () =>
+        await appDispatch(coachThunkActions.getCoachByCoachId({})).unwrap())();
     }
-  }, [appDispatch, isCoach, userData]);
+  }, [appDispatch, userData]);
 
   useEffect(() => {
     if (userData) {

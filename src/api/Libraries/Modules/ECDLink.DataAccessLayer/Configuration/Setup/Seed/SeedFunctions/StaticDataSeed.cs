@@ -1,9 +1,9 @@
+using ECDLink.DataAccessLayer.Configuration.Setup.Seed.SeedData.Static;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.AuditLog;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Notes;
 using ECDLink.DataAccessLayer.Repositories.Factories;
-using ECDLink.DataAccessLayer.Configuration.Setup.Seed.SeedData.Static;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 
@@ -25,9 +25,9 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.SeedFunctions
             SeedProgrammeType<ProgrammeType>(serviceProvider);
             SeedNoteType<NoteType>(serviceProvider);
             SeedReasonForLeaving<ReasonForLeaving>(serviceProvider);
-            SeedAuditLogType<AuditLogType>(serviceProvider);            
+            SeedAuditLogType<AuditLogType>(serviceProvider);
             SeedSystemSettings<SystemSetting>(serviceProvider);
-        }       
+        }
 
         private void SeedNoteType<T>(IServiceProvider serviceProvider)
            where T : NoteType, new()

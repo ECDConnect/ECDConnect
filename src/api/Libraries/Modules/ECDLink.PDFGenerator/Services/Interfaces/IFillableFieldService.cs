@@ -1,6 +1,5 @@
 using ECDLink.PDFGenerator.Models;
 using System.Collections.Generic;
-using System.IO;
 
 namespace ECDLink.PDFGenerator.Services.Interfaces
 {

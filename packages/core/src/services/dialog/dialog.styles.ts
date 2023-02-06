@@ -22,5 +22,5 @@ export const overlay = 'fixed inset-0 opacity-50 bg-gray-500';
 
 export const contentWrapper = (position: DialogPosition) =>
   `align-bottom max-h-screen overflow-y-auto ${
-    position !== DialogPosition.Full ? 'rounded-lg max-w-sm' : 'max-w-4xl'
+    position !== DialogPosition.Full ? 'rounded-2xl max-w-sm' : 'max-w-4xl'
   } text-left shadow-xl transform transition-all align-middle w-full`;

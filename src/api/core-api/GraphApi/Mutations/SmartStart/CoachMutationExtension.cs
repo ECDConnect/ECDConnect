@@ -1,0 +1,193 @@
+using EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart;
+using EcdLink.Api.CoreApi.Managers.Notifications;
+using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
+using ECDLink.Abstractrions.GraphQL.Enums;
+using ECDLink.DataAccessLayer.Context;
+using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Repositories.Factories;
+using ECDLink.EGraphQL.Authorization;
+using ECDLink.Security;
+using ECDLink.Security.Extensions;
+using ECDLink.Security.Managers;
+using HotChocolate;
+using HotChocolate.Types;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
+{
+    [ExtendObjectType(OperationTypeNames.Mutation)]
+    public class CoachMutationExtension
+    {
+        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        public async Task<bool> SendCoachInviteToApplication(
+          [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
+          [Service] InvitationNotificationManager notificationManager,
+          [Service] UserManager<ApplicationUser> userManager,
+          string userId)
+        {
+            SendInvitationMutationExtension invite = new SendInvitationMutationExtension();
+            return await invite.SendInviteToApplication(invitationManager, notificationManager, userManager, userId);
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        public Coach UpdateCoach([Service] IHttpContextAccessor contextAccessor,
+          [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+          IGenericRepositoryFactory repoFactory,
+          [Service] UserManager<ApplicationUser> userManager,
+          string id,
+          Coach input)
+        {
+            using var scope = dbFactory.CreateDbContext();
+            using var dbContextTransaction = scope.Database.BeginTransaction();
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var dbRepo = repoFactory.CreateGenericRepository<Coach>(userContext: uId);
+
+            Coach coach = dbRepo.GetAll().Where(x => x.Id.Equals(input.Id)).FirstOrDefault();
+            {
+                if (coach != null)
+                {
+                    if (input.FranchisorId != null)
+                        coach.FranchisorId = input.FranchisorId;
+                    if (input.StartDate != null)
+                        coach.StartDate = input.StartDate;
+                    if (input.AreaOfOperation != null)
+                        coach.AreaOfOperation = input.AreaOfOperation;
+                    if (input.SiteAddressId != null)
+                    {
+                        var addressRepo = repoFactory.CreateRepository<SiteAddress>(userContext: uId);
+                        SiteAddress address = addressRepo.GetAll().Where(x => x.Id.Equals(input.SiteAddressId)).FirstOrDefault();
+                        if (input.SiteAddress.Ward != null)
+                            address.Ward = input.SiteAddress.Ward;
+                        if (input.SiteAddress.AddressLine1 != null)
+                            address.AddressLine1 = input.SiteAddress.AddressLine1;
+                        if (input.SiteAddress.AddressLine2 != null)
+                            address.AddressLine2 = input.SiteAddress.AddressLine2;
+                        if (input.SiteAddress.AddressLine3 != null)
+                            address.AddressLine3 = input.SiteAddress.AddressLine3;
+                        if (input.SiteAddress.PostalCode != null)
+                            address.PostalCode = input.SiteAddress.PostalCode;
+                        if (input.SiteAddress.ProvinceId != null)
+                            address.ProvinceId = input.SiteAddress.ProvinceId;
+                        var updateAddressResult = addressRepo.Update(address);
+                        //TODO: create address if not exists, but it really should
+                    }
+                    if (input.SiteAddress != null && input.SiteAddressId == null)
+                    {
+                        //create siteaddress
+                        var addressRepo = repoFactory.CreateRepository<SiteAddress>(userContext: uId);
+                        SiteAddress address = new SiteAddress();
+                        if (input.SiteAddress.Ward != null)
+                            address.Ward = input.SiteAddress.Ward;
+                        if (input.SiteAddress.AddressLine1 != null)
+                            address.AddressLine1 = input.SiteAddress.AddressLine1;
+                        if (input.SiteAddress.AddressLine2 != null)
+                            address.AddressLine2 = input.SiteAddress.AddressLine2;
+                        if (input.SiteAddress.AddressLine3 != null)
+                            address.AddressLine3 = input.SiteAddress.AddressLine3;
+                        if (input.SiteAddress.PostalCode != null)
+                            address.PostalCode = input.SiteAddress.PostalCode;
+                        if (input.SiteAddress.ProvinceId != null)
+                            address.ProvinceId = input.SiteAddress.ProvinceId;
+                        var updateAddressResult = addressRepo.Insert(address);
+                        if (updateAddressResult != null)
+                            coach.SiteAddressId = updateAddressResult.Id;
+                    }
+                    if (input.SigningSignature != null)
+                        coach.SigningSignature = input.SigningSignature;
+
+                    var updateResult = dbRepo.Update(coach);
+                }
+                return coach;
+            }
+        }
+
+        public Practitioner AddPractitionerToCoach([Service] IHttpContextAccessor contextAccessor,
+            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+            IGenericRepositoryFactory repoFactory,
+            string practitionerId,
+            string coachId)
+        {
+            using var scope = dbFactory.CreateDbContext();
+            using var dbContextTransaction = scope.Database.BeginTransaction();
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+            Practitioner practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId.Equals(practitionerId));
+            if (practitioner != null)
+            {
+                practitioner.CoachHierarchy = Guid.Parse(coachId);
+                var updateResult = practitionerRepo.Update(practitioner);
+                return practitioner;
+            }
+            else return new Practitioner();
+        }
+
+        public Practitioner DeletePractitionerForCoach([Service] IHttpContextAccessor contextAccessor,
+            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+            IGenericRepositoryFactory repoFactory,
+            string practitionerId, string coachId)
+        {
+
+            //find the practitioner
+            using var scope = dbFactory.CreateDbContext();
+            using var dbContextTransaction = scope.Database.BeginTransaction();
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+            Practitioner practitioner = (Practitioner)practitionerRepo.GetAll().Where(x => x.UserId.Equals(practitionerId));
+            if (practitioner != null)
+            {
+                practitioner.CoachHierarchy = null;
+                var updateResult = practitionerRepo.Update(practitioner);
+            }
+
+            return practitioner;
+        }
+
+        public Coach DeleteCoachForFranchisor([Service] IHttpContextAccessor contextAccessor,
+            [Service] UserManager<ApplicationUser> userManager,
+            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+            IGenericRepositoryFactory repoFactory,
+            string coachId, string franchisorId)
+        {
+
+            //find the practitioner
+            using var scope = dbFactory.CreateDbContext();
+            using var dbContextTransaction = scope.Database.BeginTransaction();
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var dbRepo = repoFactory.CreateRepository<Coach>(userContext: uId);
+            Coach coach = new CoachQueryExtension().GetCoachByCoachUserId(contextAccessor, repoFactory, coachId);
+            coach.FranchisorId = null;
+            var updateResult = dbRepo.Update(coach);
+
+            return coach;
+        }
+
+        public Coach AddCoachToFranchisor([Service] IHttpContextAccessor contextAccessor,
+            [Service] UserManager<ApplicationUser> userManager,
+            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+            IGenericRepositoryFactory repoFactory,
+            string coachId, string franchisorId)
+        {
+            using var scope = dbFactory.CreateDbContext();
+            using var dbContextTransaction = scope.Database.BeginTransaction();
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var dbRepo = repoFactory.CreateRepository<Coach>(userContext: uId);
+            Coach coach = new CoachQueryExtension().GetCoachByCoachUserId(contextAccessor, repoFactory, coachId);
+            if (coach != null)
+            {
+                coach.FranchisorId = new Guid(franchisorId);
+                var updateResult = dbRepo.Update(coach);
+
+                return coach;
+            }
+            return coach;
+        }
+
+
+    }
+}

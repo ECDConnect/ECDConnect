@@ -1,7 +1,6 @@
 ﻿using ECDLink.EGraphQL.Constants;
 using ECDLink.Security.AccessModifiers.OpenAccess;
 using ECDLink.Security.Enums;
-using ECDLink.Security.Managers;
 using HotChocolate.Resolvers;
 using System;
 using System.Threading.Tasks;
@@ -30,7 +29,7 @@ namespace ECDLink.EGraphQL.Authorization
 
             var method = validator.GetType().GetMethod("ValidateToken");
 
-            var state = (AuthState) method.Invoke(validator, new object[] { token });
+            var state = (AuthState)method.Invoke(validator, new object[] { token });
 
             if (state == AuthState.Allowed)
             {

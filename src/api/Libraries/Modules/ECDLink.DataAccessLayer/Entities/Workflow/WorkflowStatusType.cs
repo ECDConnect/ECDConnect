@@ -1,8 +1,6 @@
-using ECDLink.Abstractrions.Enums;
-using ECDLink.Security.Attributes;
 using ECDLink.DataAccessLayer.Entities.Base;
-using ECDLink.DataAccessLayer.Entities.Interfaces;
 using ECDLink.Security;
+using ECDLink.Security.Attributes;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -18,7 +16,7 @@ namespace ECDLink.DataAccessLayer.Entities.Workflow
          where TKey : IEquatable<TKey>
     {
         public string Description { get; set; }
-        
+
     }
 
     public interface WorkflowStatusTypeJoin<TKey>

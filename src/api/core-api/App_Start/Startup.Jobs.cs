@@ -41,16 +41,16 @@ namespace EcdLink.Api.CoreApi
 
             }
             //run these jobs regardless of environment
-            services.AddCronJob<ExpireInvitationsJob>(c =>
-            {
-                c.TimeZoneInfo = TimeZoneInfo.Local;
-                c.CronExpression = CronTags.MidnightDaily;
-            });
-            services.AddCronJob<RevertReassignment>(c =>
-            {
-                c.TimeZoneInfo = TimeZoneInfo.Local;
-                c.CronExpression = CronTags.EveryTwoHours;
-            });
-        } 
+            //services.AddCronJob<ExpireInvitationsJob>(c =>
+            //{
+            //    c.TimeZoneInfo = TimeZoneInfo.Local;
+            //    c.CronExpression = CronTags.MidnightDaily;
+            //});
+            //services.AddCronJob<RevertReassignment>(c =>
+            //{
+            //    c.TimeZoneInfo = TimeZoneInfo.Local;
+            //    c.CronExpression = CronTags.EveryTwoHours;
+            //});
+        }
     }
 }

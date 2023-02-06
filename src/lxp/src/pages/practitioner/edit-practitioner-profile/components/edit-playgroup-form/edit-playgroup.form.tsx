@@ -11,7 +11,7 @@ import {
   ButtonGroupTypes,
   renderIcon,
 } from '@ecdlink/ui';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useForm, useWatch, Controller } from 'react-hook-form';
 import * as styles from '../../edit-practitioner-profile.styles';
 import {
@@ -40,6 +40,8 @@ import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import OnlineOnlyModal from '../../../../../modals/offline-sync/online-only-modal';
 import { practitionerSelectors } from '@/store/practitioner';
 import { classroomsSelectors } from '@/store/classroom';
+
+const playgroupId = 'c8858630-bb66-4d93-b93f-295cf7cd9ed5';
 
 export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
   isNew,
@@ -83,8 +85,17 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
     isValid,
     errors: { name: playgroupName },
   } = playgroupsFormState;
+
+  const isPlaygroup = useMemo(
+    () => programmeType?.id === playgroupId,
+    [programmeType?.id]
+  );
+
   const isFormValid = () => {
-    return isValid && meetingDays && meetingDays?.length > 1;
+    const isValidFields = isPlaygroup
+      ? typeof isFullDay === 'boolean' && isValid
+      : isValid;
+    return isValidFields && meetingDays && meetingDays?.length > 1;
   };
 
   const [practitionersList, setPractitionersList] = useState<
@@ -296,26 +307,26 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
           />
         </div>
       </div>
-      <div className="mt-1">
-        <span className={styles.label}>
-          Do children attend this{' '}
-          {programmeType ? programmeType?.description : 'class'} for half the
-          day or the full day?
-        </span>
-        <div className="mt-2">
-          <ButtonGroup<boolean>
-            onOptionSelected={(value: boolean | boolean[]) =>
-              setPlaygroupFormValue('isFullDay', value as boolean, {
-                shouldValidate: true,
-              })
-            }
-            type={ButtonGroupTypes.Button}
-            options={dayTypes}
-            selectedOptions={isFullDay}
-            color="secondary"
-          />
+      {isPlaygroup && (
+        <div className="mt-1">
+          <span className={styles.label}>
+            Do children attend this playgroup for half the day or the full day?
+          </span>
+          <div className="mt-2">
+            <ButtonGroup<boolean>
+              onOptionSelected={(value: boolean | boolean[]) =>
+                setPlaygroupFormValue('isFullDay', value as boolean, {
+                  shouldValidate: true,
+                })
+              }
+              type={ButtonGroupTypes.Button}
+              options={dayTypes}
+              selectedOptions={isFullDay}
+              color="secondary"
+            />
+          </div>
         </div>
-      </div>
+      )}
       <Divider className="mt-4 mb-2" />
       <>
         <Button
@@ -323,7 +334,11 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
           color="primary"
           className={'mt-10 w-full'}
           onClick={() => {
-            onSubmit(getPlaygroupFormValues());
+            onSubmit(
+              isPlaygroup
+                ? getPlaygroupFormValues()
+                : { ...getPlaygroupFormValues(), isFullDay: undefined }
+            );
           }}
           disabled={!isFormValid()}
         >

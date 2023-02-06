@@ -14,7 +14,6 @@ using ECDLink.Security;
 using HotChocolate;
 using HotChocolate.Types;
 using NPOI.SS.UserModel;
-using NPOI.SS.Util;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -52,7 +51,7 @@ namespace ECDLink.ContentManagement.GraphQL.Extensions
         public bool ContentTypeImport(
           [Service] ContentDefinitionRepository repository,
           [Service] ContentManagementDbContext context,
-          [Service] IGenericRepositoryFactory repoFactory,
+          IGenericRepositoryFactory repoFactory,
           int contentTypeId, string file)
         {
             var contentType = repository.GetContentTypeById(contentTypeId);
@@ -129,7 +128,7 @@ namespace ECDLink.ContentManagement.GraphQL.Extensions
 
                         item.Translations.Add(currentTranslation);
                         if (currentItem == null) contentImportList.Add(item);
-                    }                    
+                    }
                 }
             }
 

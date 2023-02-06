@@ -1,8 +1,8 @@
 using ECDLink.Abstractrions.Enums;
-using ECDLink.Security.Attributes;
 using ECDLink.DataAccessLayer.Entities.Base;
 using ECDLink.DataAccessLayer.Entities.Interfaces;
 using ECDLink.Security;
+using ECDLink.Security.Attributes;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -25,7 +25,7 @@ namespace ECDLink.DataAccessLayer.Entities.Workflow
         public WorkflowStatusEnum EnumId { get; set; }
     }
 
-    public interface WorkflowStatusJoin<TKey> 
+    public interface WorkflowStatusJoin<TKey>
     {
         [ForeignKey(nameof(WorkflowStatusId))]
         public WorkflowStatus WorkflowStatus { get; set; }

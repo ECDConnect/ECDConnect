@@ -1,12 +1,9 @@
-using AngleSharp.Css.Values;
-using DotLiquid.Tags;
 using EcdLink.Api.CoreApi.GraphApi.Models;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Extensions;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
-using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.Reports;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Workflow;
@@ -18,14 +15,10 @@ using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.Azure.Documents;
-using NPOI.OpenXmlFormats.Spreadsheet;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using static ECDLink.Core.SystemSettings.SettingGroups;
 using Document = ECDLink.DataAccessLayer.Entities.Documents.Document;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
@@ -34,11 +27,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
     public class ReportQueryTypeExtension
     {
         [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
-        public PractitionerMetricReport GetPractitionerMetrics([Service] IHttpContextAccessor contextAccessor, [Service] IGenericRepositoryFactory repoFactory)
+        public PractitionerMetricReport GetPractitionerMetrics(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory)
         {
             var practitionerMetricReport = new PractitionerMetricReport();
             practitionerMetricReport.AvgChildren = 0;
-            practitionerMetricReport.CompletedProfiles = 0;            
+            practitionerMetricReport.CompletedProfiles = 0;
             practitionerMetricReport.OutstandingSyncs = 0; // TODO: ADD
             practitionerMetricReport.ProgramTypesData = new List<MetricReportStatItem>();
             practitionerMetricReport.StatusData = new List<MetricReportStatItem>();
@@ -78,19 +73,22 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
 
         [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
-        public int GetPractitionerNewSignupMetric([Service] IHttpContextAccessor contextAccessor, [Service] IGenericRepositoryFactory repoFactory, DateTime fromDate, DateTime toDate)
+        public int GetPractitionerNewSignupMetric(
+            [Service] IHttpContextAccessor contextAccessor, IGenericRepositoryFactory repoFactory, DateTime fromDate,
+            DateTime toDate)
         {
             var userId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: userId);
-            var allPractitioners = practitionerRepo.GetAll();            
-            var newPractitioners = allPractitioners.Where(f => f.InsertedDate >= fromDate && f.InsertedDate < toDate).Count();        
+            var allPractitioners = practitionerRepo.GetAll();
+            var newPractitioners = allPractitioners.Where(f => f.InsertedDate >= fromDate && f.InsertedDate < toDate).Count();
 
             return newPractitioners;
         }
 
         [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
-        public ChildrenMetricReport GetChildrenMetrics([Service] IHttpContextAccessor contextAccessor, 
-            [Service] IGenericRepositoryFactory repoFactory, 
+        public ChildrenMetricReport GetChildrenMetrics(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
             [Service] AttendanceTrackingRepository attendanceRepo)
         {
             var userId = contextAccessor.HttpContext.GetUser().Id;
@@ -100,7 +98,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             childrenMetricReport.TotalChildProgressReports = 0;
             childrenMetricReport.UnverifiedDocuments = 0;
             childrenMetricReport.StatusData = new List<MetricReportStatItem>();
-            childrenMetricReport.ChildAttendacePerMonthData = new List<MetricReportStatItem>();            
+            childrenMetricReport.ChildAttendacePerMonthData = new List<MetricReportStatItem>();
 
             var startOfYear = DateTime.Now.GetStartOfYear();
             var endOfYear = DateTime.Now.GetEndOfYear();
@@ -137,8 +135,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
 
         [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
-        public List<MetricReportStatItem> GetChildrenAttendedVsAbsentMetrics([Service] IHttpContextAccessor contextAccessor, 
-            [Service] AttendanceTrackingRepository attendanceRepo, 
+        public List<MetricReportStatItem> GetChildrenAttendedVsAbsentMetrics([Service] AttendanceTrackingRepository attendanceRepo,
             DateTime fromDate,
             DateTime toDate)
         {
@@ -157,20 +154,21 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
 
         [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
-        public List<ClassroomMetricReport> GetClassAttendanceMetrics([Service] IHttpContextAccessor contextAccessor,
-            [Service] IGenericRepositoryFactory repoFactory,
-            [Service] AttendanceTrackingRepository attendanceRepo, 
-            DateTime startMonth, 
+        public List<ClassroomMetricReport> GetClassAttendanceMetrics(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            [Service] AttendanceTrackingRepository attendanceRepo,
+            DateTime startMonth,
             DateTime endMonth)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
             List<Practitioner> practitioners = practitionerRepo.GetAll().ToList(); //get all practitioners within userhierarchy
-            
+
             List<ClassroomMetricReport> metrics = new List<ClassroomMetricReport>();
             foreach (var practitioner in practitioners)
             {
-                var metric = this.GetClassAttendanceMetricsByUser(contextAccessor, repoFactory, attendanceRepo, practitioner.UserId, startMonth, endMonth);
+                var metric = this.GetClassAttendanceMetricsByUser(repoFactory, attendanceRepo, practitioner.UserId, startMonth, endMonth);
                 if (metric.Any())
                 {
                     if (metric.FirstOrDefault().classroomGroupId.ToString() != "00000000-0000-0000-0000-000000000000")
@@ -184,9 +182,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
 
         [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
-        public List<ClassroomMetricReport> GetClassAttendanceMetricsByUser([Service] IHttpContextAccessor contextAccessor,
-            [Service] IGenericRepositoryFactory repoFactory,
-            [Service] AttendanceTrackingRepository attendanceRepo, string userId, DateTime startMonth, DateTime endMonth)
+        public List<ClassroomMetricReport> GetClassAttendanceMetricsByUser(
+            IGenericRepositoryFactory repoFactory,
+            [Service] AttendanceTrackingRepository attendanceRepo,
+            string userId,
+            DateTime startMonth,
+            DateTime endMonth)
         {
             DateTime reference = DateTime.Now;
 
@@ -215,30 +216,32 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     int weekOfYear = fromDate.GetWeekOfYear();
 
                     int attendancePercentage = 0;
-                    List <Attendance> attendanceData = attendanceRepo.GetAllByDateRangeByClassroom(fromDate, toDate, group.Id, group.UserId.ToString());
+                    List<Attendance> attendanceData = attendanceRepo.GetAllByDateRangeByClassroom(fromDate, toDate, group.Id, group.UserId.ToString());
                     if (attendanceData.Any())
                     {
                         var attendanceAttended = attendanceData.Where(x => x.Attended == true).Count();
                         var attendanceUnAttended = attendanceData.Where(x => x.Attended == false).Count();
                         if (attendanceUnAttended > 0)
-                        attendancePercentage = (int)(childCount > 0 && attendanceAttended > 0 ? Math.Round((double)(attendanceAttended / (double)(attendanceAttended + attendanceUnAttended)) * 100) : 0);
+                            attendancePercentage = (int)(childCount > 0 && attendanceAttended > 0 ? Math.Round((double)(attendanceAttended / (double)(attendanceAttended + attendanceUnAttended)) * 100) : 0);
                         //override month and year to attendance month and year
                         month = attendanceData.FirstOrDefault().MonthOfYear;
                         year = attendanceData.FirstOrDefault().Year;
                         weekOfYear = attendanceData.FirstOrDefault().WeekOfYear;
                     }
-                    metric.Add(new ClassroomMetricReport() { childCount = childCount, attendancePercentage = attendancePercentage, classroomGroupId = group.Id.ToString(), classroomId = group.ClassroomId.ToString(), month = month, year = year, weekOfYear = weekOfYear, practitionerId = userId });                        
+                    metric.Add(new ClassroomMetricReport() { childCount = childCount, attendancePercentage = attendancePercentage, classroomGroupId = group.Id.ToString(), classroomId = group.ClassroomId.ToString(), month = month, year = year, weekOfYear = weekOfYear, practitionerId = userId });
                 }
             }
 
-            return metric; 
+            return metric;
         }
 
 
         [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
-        public List<ClassroomMetricReport> GetYearlyClassAttendanceMetricsByUser([Service] IHttpContextAccessor contextAccessor,
-        [Service] IGenericRepositoryFactory repoFactory,
-        [Service] AttendanceTrackingRepository attendanceRepo, string userId)
+        public List<ClassroomMetricReport> GetYearlyClassAttendanceMetricsByUser(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            [Service] AttendanceTrackingRepository attendanceRepo, 
+            string userId)
         {
 
             var uId = contextAccessor.HttpContext.GetUser().Id;
@@ -275,9 +278,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
 
         [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
-        public List<NotificationDisplay> GetDisplayMetrics([Service] IHttpContextAccessor contextAccessor, 
+        public List<NotificationDisplay> GetDisplayMetrics(
+            [Service] IHttpContextAccessor contextAccessor,
             [Service] AttendanceTrackingRepository attendanceRepo,
-            [Service] IGenericRepositoryFactory repoFactory,
+            IGenericRepositoryFactory repoFactory,
             string type)//, DateTime fromDate,DateTime toDate
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
@@ -313,7 +317,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             */
             type = type.ToLower();
 
-            if (type == "child") {
+            if (type == "child")
+            {
                 //child view from practitioner/principal/coach
                 var children = childRepo.GetAll();
                 foreach (var user in children)
@@ -333,7 +338,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     notificationList.Add(displayChild);
                 }
             }
-            if (type == "practitioner" || type == "principal" || type == "coach") {  //practitioners and principals
+            if (type == "practitioner" || type == "principal" || type == "coach")
+            {  //practitioners and principals
                 var practitioners = practRepo.GetAll().ToList();
                 foreach (var user in practitioners)
                 {
@@ -350,7 +356,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     if (type != "coach")
                     {
                         absentDays = genericQueries.GetAbsentees(contextAccessor, repoFactory, user.UserId, fromDate, toDate).Count();
-                    } else
+                    }
+                    else
                     {
 
                         //TODO - logic to calculate
@@ -382,7 +389,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
                     //TODO
                     //child progress reporting for coach
-                    
+
 
                     //priority 0
                     if (isComplete)
@@ -447,7 +454,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                         weighting30.Notes = "Improve attendance";
                         priority = 5;
                         weighting = 30;
-                    } else if (attendancePercentage >= 60 && attendancePercentage < 79)
+                    }
+                    else if (attendancePercentage >= 60 && attendancePercentage < 79)
                     {
                         weighting20.Icon = MetricsIconEnum.Warning.ToString();
                         weighting20.Color = MetricsColorEnum.Warning.ToString();
@@ -455,7 +463,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                         weighting20.Notes = "Improve Attendance";
                         priority = 7;
                         weighting = 20;
-                    } else if (attendancePercentage > 80)
+                    }
+                    else if (attendancePercentage > 80)
                     {
                         weighting10.Icon = MetricsIconEnum.Success.ToString();
                         weighting10.Color = MetricsColorEnum.Success.ToString();
@@ -601,7 +610,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                             finalIcon = weighting30.Icon;
                             finalColor = weighting30.Color;
                             finalNotes = weighting30.Notes;
-                        }                        
+                        }
                     }
 
                     if (priority == 4)
@@ -745,12 +754,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     notificationList.Add(displayPracti);
                 }
             }
-            
+
             return notificationList;
         }
 
         [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
-        public PractitionerMetricReport GetOwnershipMetrics([Service] IHttpContextAccessor contextAccessor, [Service] IGenericRepositoryFactory repoFactory)
+        public PractitionerMetricReport GetOwnershipMetrics(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory)
         {
             var practitionerMetricReport = new PractitionerMetricReport();
             practitionerMetricReport.AvgChildren = 0;

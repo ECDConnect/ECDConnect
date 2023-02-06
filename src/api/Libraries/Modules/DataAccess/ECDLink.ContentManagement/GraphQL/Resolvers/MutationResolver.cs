@@ -14,7 +14,7 @@ namespace ECDLink.ContentManagement.GraphQL.Resolvers
         {
             var contentTypeId = base.GetContentIdentifier(context);
             var localeId = base.GetLanguageArgument(context);
-
+            
             var values = context.ArgumentValue<Dictionary<string, object>>(ArgumentConstants.Input);
 
             var repository = context.Services.GetService<ContentManagementRepository>();

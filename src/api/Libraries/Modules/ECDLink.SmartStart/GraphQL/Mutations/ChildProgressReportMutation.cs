@@ -2,21 +2,16 @@
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Reporting;
 using ECDLink.Core.Services.Interfaces;
-using ECDLink.DataAccessLayer;
 using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.Workflow;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
-using ECDLink.SmartStart.Reports;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace ECDLink.SmartStart.GraphQL.Mutations
@@ -27,8 +22,8 @@ namespace ECDLink.SmartStart.GraphQL.Mutations
         [Permission(PermissionGroups.REPORTING, GraphActionEnum.Create)]
         public async Task<bool> UploadChildProgressReport(
             [Service] IHttpContextAccessor httpContextAccessor,
-            [Service] IFileService _fileService, 
-            [Service] IGenericRepositoryFactory repoFactory,
+            [Service] IFileService _fileService,
+            IGenericRepositoryFactory repoFactory,
             string report)
         {
             var documentTypeRepo = repoFactory.CreateRepository<DocumentType>();
@@ -38,7 +33,7 @@ namespace ECDLink.SmartStart.GraphQL.Mutations
                                 .Where(x => string.Equals(x.Name, ReportConstants.ChildProgressReport))
                                 .FirstOrDefault();
 
-            if(documentType == default)
+            if (documentType == default)
             {
                 return false;
             }

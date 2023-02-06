@@ -10,7 +10,7 @@ import {
   Alert,
 } from '@ecdlink/ui';
 import { Controller, useForm, useFormState } from 'react-hook-form';
-import { useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   MotherDetailsProps,
   yesNoOptions,
@@ -35,6 +35,7 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
   infantDetails,
   multipleChildrenArray,
   setMultipleChildrenArray,
+  motherInfo,
 }) => {
   const {
     watch,
@@ -53,11 +54,15 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
   const caregivers = useSelector(caregiverSelectors.getCaregivers) || [];
   const mothers = useSelector(motherSelectors?.getMothers);
 
+  const [buttonGroupOptions, setButtonGroupOptions] = useState(yesNoOptions);
+
   const { isLoading } = useThunkFetchCall('infants', InfantActions.ADD_INFANTS);
   const { isLoading: isLoadingInfantCount } = useThunkFetchCall(
     'infants',
     InfantActions.GET_INFANT_COUNT_FOR_MONTH
   );
+
+  const motherType = relationshipTypes.find((item) => item.label === 'Mother');
 
   const mothersUpdatedToCaregivers = mothers?.map((item) => ({
     firstName: item?.user?.firstName,
@@ -72,9 +77,42 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
 
   const motherAndCaregivers = [...caregivers, ...mothersUpdatedToCaregivers];
 
+  const isMother = useMemo(() => !!motherInfo?.user, [motherInfo?.user]);
+
+  const isShowCaregiversDropdown = useMemo(
+    () =>
+      isMother
+        ? isMother && isAlreadyClient
+        : isAlreadyClient && !!motherAndCaregivers?.length,
+    [isAlreadyClient, motherAndCaregivers?.length, isMother]
+  );
+
   useEffect(() => {
     watch();
   }, [watch]);
+
+  useEffect(() => {
+    if (isMother) {
+      setButtonGroupOptions((prevState) =>
+        prevState.map((item) => ({
+          ...item,
+          disabled: true,
+        }))
+      );
+      setIsAlreadyClient(true);
+      setMotherDetailsFormValue('id', motherInfo?.user?.id);
+      setMotherDetailsFormValue('name', motherInfo?.user?.firstName);
+      setMotherDetailsFormValue('surname', motherInfo?.user?.surname);
+      setMotherDetailsFormValue('relationshipId', motherType?.value);
+      setMotherDetailsFormValue('isMother', true);
+    }
+  }, [
+    isMother,
+    motherInfo,
+    motherType,
+    setIsAlreadyClient,
+    setMotherDetailsFormValue,
+  ]);
 
   return (
     <>
@@ -111,9 +149,12 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
                   key={index + 3}
                   placeholder={'Please choose the client:'}
                   fillType="clear"
+                  disabled={isMother}
                   selectedValue={
-                    getMotherDetailsFormValues('relationshipId') ||
-                    multipleChildrenArray[index].relationshipId
+                    isMother
+                      ? motherType?.value
+                      : getMotherDetailsFormValues('relationshipId') ||
+                        multipleChildrenArray[index].relationshipId
                   }
                   list={
                     (relationshipTypes &&
@@ -155,7 +196,8 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
                 <Dropdown
                   placeholder={'Please choose the client:'}
                   fillType="clear"
-                  selectedValue={value}
+                  disabled={isMother}
+                  selectedValue={isMother ? motherType?.value : value}
                   list={
                     (relationshipTypes &&
                       relationshipTypes
@@ -184,7 +226,8 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
         />
         <div className="mt-2">
           <ButtonGroup<boolean>
-            options={yesNoOptions}
+            selectedOptions={isAlreadyClient}
+            options={buttonGroupOptions}
             onOptionSelected={(value: boolean | boolean[]) => {
               setIsAlreadyClient(value);
               setMotherDetailsFormValue('id', '');
@@ -233,7 +276,7 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
             </div>
           </>
         )}
-        {isAlreadyClient && !!motherAndCaregivers?.length && (
+        {isShowCaregiversDropdown && (
           <div className="mt-4 w-full">
             <Typography
               type="h3"
@@ -248,7 +291,10 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
                 <Dropdown
                   placeholder={'Please choose the client:'}
                   fillType="clear"
-                  selectedValue={value}
+                  disabled={isMother}
+                  selectedValue={
+                    !!motherInfo?.user?.id ? motherInfo.user.id : value
+                  }
                   list={
                     (motherAndCaregivers &&
                       motherAndCaregivers
@@ -304,8 +350,8 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
           color={'primary'}
           className="mt-4 w-full"
           textColor={'white'}
-          text={`Next`}
-          icon={'ArrowCircleRightIcon'}
+          text={isAlreadyClient ? 'Save' : 'Next'}
+          icon={isAlreadyClient ? 'SaveIcon' : 'ArrowCircleRightIcon'}
           iconPosition={'start'}
           onClick={() => {
             onSubmit(getMotherDetailsFormValues());
@@ -317,8 +363,9 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
             (!multipleChildrenArray && !isValid) ||
             (isAlreadyClient && !getMotherDetailsFormValues('id')) ||
             (!isAlreadyClient && !getMotherDetailsFormValues('age')) ||
-            multipleChildrenArray?.filter((child) => child?.relationshipId)
-              .length !== multipleChildrenArray?.length
+            (!isMother &&
+              multipleChildrenArray?.filter((child) => child?.relationshipId)
+                .length !== multipleChildrenArray?.length)
           }
         />
       </div>

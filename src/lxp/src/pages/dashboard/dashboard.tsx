@@ -39,6 +39,7 @@ import { staticDataThunkActions } from '@store/static-data';
 import { programmeThemeThunkActions } from '@store/content/programme-theme';
 import { storyBookThunkActions } from '@store/content/story-book';
 import { activityThunkActions } from '@store/content/activity';
+import { statementsThunkActions } from '@/store/statements';
 // import { browserName, browserVersion } from 'react-device-detect';
 const { version } = require('../../../package.json');
 
@@ -54,6 +55,7 @@ export enum NavigationTypes {
   Training = 'Training',
   Logout = 'Logout',
   Practitioners = 'Practitioners',
+  Business = 'Business',
 }
 
 export const Dashboard: React.FC = () => {
@@ -74,6 +76,7 @@ export const Dashboard: React.FC = () => {
     notificationsSelectors.getNewNotificationCount
   );
   const isPrincipal = practitioner?.isPrincipal;
+  const isFundaAppAdmin = practitioner?.isFundaAppAdmin;
 
   const dashboardNotification = useSelector(
     notificationsSelectors.getDashboardNotification
@@ -102,6 +105,15 @@ export const Dashboard: React.FC = () => {
     await appDispatch(staticDataThunkActions.getDocumentTypes({})).unwrap();
     await appDispatch(staticDataThunkActions.getNoteTypes({})).unwrap();
     await appDispatch(staticDataThunkActions.getWorkflowStatuses({})).unwrap();
+    await appDispatch(statementsThunkActions.getAllExpensesTypes({})).unwrap();
+    await appDispatch(statementsThunkActions.getAllIncomeTypes({})).unwrap();
+    await appDispatch(
+      statementsThunkActions.getAllStatementsFeeType({})
+    ).unwrap();
+    await appDispatch(
+      statementsThunkActions.getAllStatementsContributionType({})
+    ).unwrap();
+    await appDispatch(statementsThunkActions.getAllPayType({})).unwrap();
 
     await appDispatch(
       activityThunkActions.getActivities({ locale: 'en-za' })
@@ -288,6 +300,16 @@ export const Dashboard: React.FC = () => {
     },
   ];
 
+  if (isPrincipal || isFundaAppAdmin) {
+    navigation?.splice(3, 0, {
+      name: NavigationTypes.Business,
+      href: ROUTES.BUSINESS,
+      icon: 'BriefcaseIcon',
+      current: false,
+      showDivider: true,
+    });
+  }
+
   const navigationForCoach: (NavigationRouteItem | NavigationDropdown)[] = [
     {
       name: NavigationTypes.Home,
@@ -345,18 +367,12 @@ export const Dashboard: React.FC = () => {
         titleIcon: 'BriefcaseIcon',
         titleIconClassName: styles.businessIcon,
         onActionClick: () => ({}),
-        chipConfig: {
-          colorPalette: {
-            backgroundColour: 'white',
-            borderColour: 'errorMain',
-            textColour: 'errorMain',
-          },
-          text: 'Coming soon',
-        },
         classNames: 'bg-uiBg',
       }
     );
-  } else {
+  }
+
+  if (!isCoach) {
     dashboardItems.push(
       {
         title: 'Classroom',
@@ -365,21 +381,6 @@ export const Dashboard: React.FC = () => {
         classNames: 'bg-uiBg',
         onActionClick: () => {
           goToClassroom();
-        },
-      },
-      {
-        title: 'Business',
-        titleIcon: 'AcademicCapIcon',
-        titleIconClassName: styles.businessIcon,
-        onActionClick: () => ({}),
-        classNames: 'bg-uiBg',
-        chipConfig: {
-          colorPalette: {
-            backgroundColour: 'alertMain',
-            borderColour: 'alertMain',
-            textColour: 'white',
-          },
-          text: 'Coming soon',
         },
       },
       {
@@ -398,6 +399,18 @@ export const Dashboard: React.FC = () => {
         },
       }
     );
+  }
+
+  if (isPrincipal || isFundaAppAdmin) {
+    dashboardItems.splice(1, 0, {
+      title: 'Business',
+      titleIcon: 'BriefcaseIcon',
+      titleIconClassName: styles.businessIcon,
+      onActionClick: () => {
+        goToBusiness();
+      },
+      classNames: 'bg-uiBg',
+    });
   }
 
   useEffect(() => {
@@ -444,6 +457,12 @@ export const Dashboard: React.FC = () => {
       history.push(ROUTES.CLASSROOM, { activeTabIndex: 1 });
     } else {
       showCompleteProfileBlockingDialog();
+    }
+  };
+
+  const goToBusiness = () => {
+    if (isPrincipal || isFundaAppAdmin) {
+      history.push(ROUTES.BUSINESS);
     }
   };
 

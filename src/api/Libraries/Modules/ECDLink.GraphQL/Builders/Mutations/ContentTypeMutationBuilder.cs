@@ -43,10 +43,6 @@ namespace ECDLink.EGraphQL.Registration.ContentTypes
         private static void AddUpdate(IObjectTypeDescriptor descriptor, IDynamicMutationResolver resolver, ContentDefinitionModel definition)
         {
             descriptor.Field(GraphFieldNamingHelper.GetFieldName(GraphFieldTypeEnum.Update, definition.ContentName))
-                  .ConfigureContextData(data =>
-                  {
-                      data.Add(ContextDataConstants.ContentManagement.Identifier, definition.Identifier);
-                  })
                   .Argument(ArgumentConstants.Id, a => a.Type<NonNullType<StringType>>())
                   .Argument(ArgumentConstants.Input, a => a.Type(new DynamicTypeBuilder(definition.ContentName).Input().Required().Build()))
                   .Argument(ArgumentConstants.Locale, a => a.Type<StringType>())
@@ -57,16 +53,16 @@ namespace ECDLink.EGraphQL.Registration.ContentTypes
                       MethodType = GraphActionEnum.Update,
                       ObjectType = PermissionGroups.GENERAL
                   })
-                  .Resolve(context => resolver.UpdateMutationResolver(context));
+                  .Resolve(context =>
+                  {
+                      context.ScopedContextData = context.ScopedContextData.SetItem(ContextDataConstants.ContentManagement.Identifier, definition.Identifier);
+                      return resolver.UpdateMutationResolver(context);
+                  });
         }
 
         private static void AddDeleteMutation(IObjectTypeDescriptor descriptor, IDynamicMutationResolver resolver, ContentDefinitionModel definition)
         {
             descriptor.Field(GraphFieldNamingHelper.GetFieldName(GraphFieldTypeEnum.Delete, definition.ContentName))
-                  .ConfigureContextData(data =>
-                  {
-                      data.Add(ContextDataConstants.ContentManagement.Identifier, definition.Identifier);
-                  })
                   .Argument(ArgumentConstants.Id, a => a.Type<NonNullType<StringType>>())
                   .Argument(ArgumentConstants.Locale, a => a.Type<StringType>())
                   .Argument(ArgumentConstants.LocaleId, a => a.Type<StringType>())
@@ -76,16 +72,16 @@ namespace ECDLink.EGraphQL.Registration.ContentTypes
                       MethodType = GraphActionEnum.Delete,
                       ObjectType = PermissionGroups.GENERAL
                   })
-                  .Resolve(context => resolver.DeleteMutationResolver(context));
+                  .Resolve(context =>
+                  {
+                      context.ScopedContextData = context.ScopedContextData.SetItem(ContextDataConstants.ContentManagement.Identifier, definition.Identifier);
+                      return resolver.DeleteMutationResolver(context);
+                  });
         }
 
         private static void AddCreateMutation(IObjectTypeDescriptor descriptor, IDynamicMutationResolver resolver, ContentDefinitionModel definition)
         {
             descriptor.Field(GraphFieldNamingHelper.GetFieldName(GraphFieldTypeEnum.Create, definition.ContentName))
-                  .ConfigureContextData(data =>
-                  {
-                      data.Add(ContextDataConstants.ContentManagement.Identifier, definition.Identifier);
-                  })
                   .Argument(ArgumentConstants.Input, a => a.Type(new DynamicTypeBuilder(definition.ContentName).Input().Required().Build()))
                   .Argument(ArgumentConstants.Locale, a => a.Type<StringType>())
                   .Argument(ArgumentConstants.LocaleId, a => a.Type<StringType>())
@@ -95,7 +91,13 @@ namespace ECDLink.EGraphQL.Registration.ContentTypes
                       MethodType = GraphActionEnum.Create,
                       ObjectType = PermissionGroups.GENERAL
                   })
-                  .Resolve(context => resolver.CreateMutationResolver(context));
+                  .Resolve(context =>
+                  {
+                      //context.Variables.TryGetVariable(ArgumentConstants.Id, out object contentIdObject);
+                      //int.TryParse(contentIdObject as string, out int contentId);
+                      context.ScopedContextData = context.ScopedContextData.SetItem(ContextDataConstants.ContentManagement.Identifier, definition.Identifier);
+                      return resolver.CreateMutationResolver(context);
+                  });
         }
     }
 }

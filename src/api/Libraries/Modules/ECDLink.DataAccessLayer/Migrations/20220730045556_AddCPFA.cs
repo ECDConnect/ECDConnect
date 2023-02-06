@@ -1,5 +1,5 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
+using System;
 
 namespace ECDLink.DataAccessLayer.Migrations
 {
@@ -94,16 +94,16 @@ namespace ECDLink.DataAccessLayer.Migrations
                 table: "AspNetUsers",
                 type: "text",
                 nullable: true);
-                        migrationBuilder.AddColumn<string>(
-                name: "EmergencyContactSurname",
-                table: "AspNetUsers",
-                type: "text",
-                nullable: true);
-                        migrationBuilder.AddColumn<string>(
-                name: "EmergencyContactPhoneNumber",
-                table: "AspNetUsers",
-                type: "text",
-                nullable: true);
+            migrationBuilder.AddColumn<string>(
+    name: "EmergencyContactSurname",
+    table: "AspNetUsers",
+    type: "text",
+    nullable: true);
+            migrationBuilder.AddColumn<string>(
+    name: "EmergencyContactPhoneNumber",
+    table: "AspNetUsers",
+    type: "text",
+    nullable: true);
 
             migrationBuilder.AddColumn<string>(
                 name: "SigningSignature",
@@ -180,7 +180,7 @@ namespace ECDLink.DataAccessLayer.Migrations
                     IsActive = table.Column<bool>(type: "boolean", nullable: false),
                     InsertedDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     UpdatedDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                    UpdatedBy = table.Column<string>(type: "text", nullable: true),                    
+                    UpdatedBy = table.Column<string>(type: "text", nullable: true),
                     ReassignedClass = table.Column<string>(type: "text", nullable: true),
                     ToPractitionerId = table.Column<string>(type: "text", nullable: true),
                     FromPractitionerId = table.Column<Guid>(type: "text", nullable: true),

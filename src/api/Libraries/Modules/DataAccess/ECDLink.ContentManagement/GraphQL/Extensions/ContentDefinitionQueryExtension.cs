@@ -1,7 +1,6 @@
 using ECDLink.Abstractrions.Files;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Abstractrions.Services;
-using ECDLink.ContentManagement.Entities;
 using ECDLink.ContentManagement.Repositories;
 using ECDLink.Core.Models.ContentManagement;
 using ECDLink.DataAccessLayer.Entities;
@@ -11,11 +10,7 @@ using ECDLink.EGraphQL.Enums;
 using ECDLink.Security;
 using HotChocolate;
 using HotChocolate.Types;
-using NPOI.SS.UserModel;
-using NPOI.SS.Util;
-using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -33,7 +28,7 @@ namespace ECDLink.ContentManagement.GraphQL.Extensions
         public async Task<FileModel> ContentDefinitionsExcelTemplateGenerator(
           [Service] ContentDefinitionRepository repository,
           [Service] IFileGenerationService fileService,
-          [Service] IGenericRepositoryFactory repoFactory,
+          IGenericRepositoryFactory repoFactory,
           int contentTypeId)
         {
             var contentType = repository.GetContentTypeById(contentTypeId);
@@ -55,7 +50,7 @@ namespace ECDLink.ContentManagement.GraphQL.Extensions
                 {
                     fieldList.Add(contentField.FieldName);
                     fieldDefinitionList.Add(contentField.FieldName, contentField.FieldType.Name);
-                }                    
+                }
             }
 
             var reportName = $"{contentType.Name} Template";

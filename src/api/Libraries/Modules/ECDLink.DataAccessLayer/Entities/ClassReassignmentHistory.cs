@@ -1,10 +1,8 @@
-using ECDLink.Security.Attributes;
 using ECDLink.DataAccessLayer.Entities.Base;
-using System;
-using HotChocolate;
-using System.ComponentModel.DataAnnotations.Schema;
 using ECDLink.Security;
-using ECDLink.DataAccessLayer.Entities.Classroom;
+using ECDLink.Security.Attributes;
+using System;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ECDLink.DataAccessLayer.Entities.Users
 {
@@ -29,7 +27,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public DateTime ReassignedToDate { get; set; }
         public string ReassignedBackToUserId { get; set; }
         public DateTime? ReassignedBackToDate { get; set; }
-        
+
         public string HierarchyToUser { get; set; }
         public string HierarchyBackToUser { get; set; }
 

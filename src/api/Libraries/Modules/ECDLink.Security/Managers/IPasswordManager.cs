@@ -1,13 +1,10 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace ECDLink.Security.Managers
 {
     public interface IPasswordManager<T>
-        where T: IdentityUser
+        where T : IdentityUser
     {
         Task<string> RequestPasswordResetTokenAsync(T user);
 

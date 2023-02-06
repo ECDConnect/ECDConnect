@@ -1,36 +1,22 @@
-using ECDLink.Abstractrions.Files;
 using ECDLink.Abstractrions.GraphQL.Enums;
-using ECDLink.Abstractrions.Services;
-using ECDLink.DataAccessLayer;
+using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
-using ECDLink.DataAccessLayer.Repositories;
+using ECDLink.DataAccessLayer.Entities.Notifications;
+using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
+using ECDLink.Moodle.Managers;
+using ECDLink.Moodle.Models;
 using ECDLink.Security;
-using ECDLink.Security.Extensions;
+using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
-using System;
-using ECDLink.DataAccessLayer.Entities.Users;
-using ECDLink.DataAccessLayer.Repositories.Factories;
-using ECDLink.DataAccessLayer.Entities.Notifications;
-using Microsoft.EntityFrameworkCore;
-using ECDLink.DataAccessLayer.Context;
-
-using ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData;
-using ECDLink.Tenancy.Context;
-using HotChocolate.Data.Sorting.Expressions;
-using ECDLink.DataAccessLayer.Entities.Classroom;
-using ECDLink.Security.Helpers;
-using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
-using ECDLink.Security.Managers;
-using ECDLink.Moodle.Managers;
-using ECDLink.Moodle.Models;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
@@ -50,7 +36,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public ApplicationUser GetUserById([Service] IServiceProvider serviceProvider,[Service] UserManager<ApplicationUser> userManager, [Service] RoleManager<IdentityRole> roleManager, [Service] IHttpContextAccessor contextAccessor, [Service] IDbContextFactory<AuthenticationDbContext> dbFactory, [Service] IGenericRepositoryFactory repoFactory, string userId)
+        public ApplicationUser GetUserById(
+            [Service] UserManager<ApplicationUser> userManager, 
+            [Service] RoleManager<IdentityRole> roleManager, 
+            IGenericRepositoryFactory repoFactory, 
+            string userId)
         {
             var user = userManager.FindByIdAsync(userId).Result;
 
@@ -59,22 +49,22 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             if (user != null)
             {
                 //Franchisor
-                if (roles.Any(x => x.Name.Contains("Franchisor")))                
+                if (roles.Any(x => x.Name.Contains("Franchisor")))
                 {
                     var franchisorRepo = repoFactory.CreateGenericRepository<Franchisor>(userContext: user.Id);
-                    user.franchisorObjectData = franchisorRepo.GetByUserId(user.Id);                    
+                    user.franchisorObjectData = franchisorRepo.GetByUserId(user.Id);
                 }
                 //Coach
                 if (roles.Any(x => x.Name.Contains("Coach")))
-                    {
+                {
                     var coachRepo = repoFactory.CreateGenericRepository<Coach>(userContext: user.Id);
-                    user.coachObjectData = coachRepo.GetByUserId(user.Id);                    
+                    user.coachObjectData = coachRepo.GetByUserId(user.Id);
                 }
                 //Principal or Practitioner - Principal is just a Practitioner with IsPrincipal as true
                 if (roles.Any(x => x.Name.Contains("Principal") || x.Name.Contains("Practitioner")))
                 {
                     var practiRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: user.Id);
-                    var userData = practiRepo.GetByUserId(user.Id);                    
+                    var userData = practiRepo.GetByUserId(user.Id);
                     if (userData != null)
                     {
                         if (userData.IsPrincipal.HasValue && userData.IsPrincipal == true)
@@ -93,7 +83,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 if (roles.Any(x => x.Name.Contains("Child")))
                 {
                     var childRepo = repoFactory.CreateGenericRepository<Child>(userContext: user.Id);
-                    user.childObjectData = childRepo.GetByUserId(user.Id);                    
+                    user.childObjectData = childRepo.GetByUserId(user.Id);
                 }
 
                 return user.IsActive ? user : default(ApplicationUser);
@@ -101,7 +91,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return default(ApplicationUser);
         }
 
-        public UserByToken GetUserByToken([Service] IServiceProvider serviceProvider, [Service] UserManager<ApplicationUser> userManager, [Service] RoleManager<IdentityRole> roleManager, [Service] IHttpContextAccessor contextAccessor, [Service] IGenericRepositoryFactory repoFactory, string token)
+        public UserByToken GetUserByToken(
+            [Service] UserManager<ApplicationUser> userManager, 
+            IGenericRepositoryFactory repoFactory, 
+            string token)
         {
             UserByToken tokenuser = new UserByToken();
             if (token != null)
@@ -126,8 +119,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public string getMoodleSessionForUserId(
-            [Service] IHttpContextAccessor contextAccessor,
-            [Service] IGenericRepositoryFactory repoFactory,
             [Service] MoodleManager moodleManager,
             [Service] UserManager<ApplicationUser> userManager,
             string userId)

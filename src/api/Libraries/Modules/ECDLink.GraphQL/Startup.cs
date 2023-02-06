@@ -1,12 +1,17 @@
+using ECDLink.DataAccessLayer.Context;
+using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.EGraphQL.Interceptors;
-using ECDLink.EGraphQL.ObjectTypes;
 using ECDLink.EGraphQL.Registration;
 using ECDLink.EGraphQL.Registration.Modules;
+using ECDLink.PostgresTenancy.Context;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ECDLink.EGraphQL
@@ -28,10 +33,14 @@ namespace ECDLink.EGraphQL
               .AddTypeModule(sp => new SettingsModule(contentReloader))
               .AddMutationType<Mutation>()
               .AddType<UploadType>()
-              .AddType<SettingsType>()
               .AddDirectiveType<TokenAccessDirectiveType>()
               .AddDirectiveType<PermissionDirectiveType>()
-              .AddFiltering();
+              .AddFiltering()
+              .RegisterDbContext<AuthenticationDbContext>(HotChocolate.Data.DbContextKind.Resolver)
+              .RegisterDbContext<PostgresTenancyContext>(HotChocolate.Data.DbContextKind.Resolver)
+              .RegisterService<IDbContextFactory<AuthenticationDbContext>>(ServiceKind.Synchronized)
+              .RegisterService<UserManager<ApplicationUser>>(ServiceKind.Synchronized)
+              .RegisterService<IGenericRepositoryFactory>(ServiceKind.Synchronized);
 
             builder = builder
                 .AddAuthorization()

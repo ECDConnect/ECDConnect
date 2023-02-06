@@ -4,11 +4,7 @@ using ECDLink.Security.JwtSecurity.Configuration;
 using ECDLink.Security.JwtSecurity.Encoders;
 using ECDLink.Security.JwtSecurity.Enums;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ECDLink.Security.JwtSecurity.Factories
 {

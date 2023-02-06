@@ -1,11 +1,9 @@
-using EcdLink.Api.CoreApi.Security.Models;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.Notifications;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.Core.SystemSettings.SystemOptions;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.Security.Helpers;
-using Microsoft.Extensions.Options;
 
 namespace EcdLink.Api.CoreApi.Security.Managers
 {

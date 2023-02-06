@@ -1,23 +1,20 @@
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Core.Extensions;
-using ECDLink.Security.Attributes;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Hierarchy.Entities;
-using ECDLink.DataAccessLayer.Repositories;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.Security;
+using ECDLink.Security.Attributes;
+using ECDLink.Tenancy.Context;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
-using ECDLink.Tenancy.Context;
 
 namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.SeedFunctions
 {

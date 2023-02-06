@@ -1,29 +1,19 @@
 ﻿using ECDLink.Core.Services.Interfaces;
 using ECDLink.Core.SystemSettings.SystemOptions;
-using ECDLink.DataAccessLayer.Entities.Classroom;
-using ECDLink.DataAccessLayer.Entities;
-using ECDLink.DataAccessLayer.Entities.Integration;//.MappedEntities;
-using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Entities.Integration.IntegrationMapping;
+using ECDLink.DataAccessLayer.Entities.Integration.MappedEntities;
 using ECDLink.DataAccessLayer.Repositories.Factories;
-using ECDLink.DataAccessLayer.Repositories.Generic.Base;
-using ECDLink.DataAccessLayer.Services;
+using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ECDLink.DataAccessLayer.Repositories;
-using System.Threading.Tasks;
-using ECDLink.DataAccessLayer.Entities.Integration.IntegrationMapping;
 using System.Net.Http;
-using Newtonsoft.Json;
-using ECDLink.DataAccessLayer.Entities.Integration.MappedEntities;
-using ECDLink.Security.Extensions;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Text;
+using System.Threading.Tasks;
 using JsonSerializer = System.Text.Json.JsonSerializer;
-using DotLiquid.Util;
 
 namespace ECDLink.Core.Services
 {
@@ -72,7 +62,7 @@ namespace ECDLink.Core.Services
             try
             {
                 var uId = _contextAccessor.HttpContext.GetUser().Id;
-                IntegrationMapping franchisor = new IntegrationMapping();                
+                IntegrationMapping franchisor = new IntegrationMapping();
                 var mapperRepo = _repositoryFactory.CreateGenericRepository<IntegrationMapping>(userContext: uId);
 
                 var FranchisorMapped = mapperRepo.GetAll().Where(x => x.LocalId == localFranchisorId).Where(y => y.RemoteEntity == "").FirstOrDefault();
@@ -101,7 +91,8 @@ namespace ECDLink.Core.Services
                         var responseString = await response.Content.ReadAsStringAsync();
                         return JsonConvert.DeserializeObject<List<MappedCoach>>(responseString);
                     }
-                } else return new List<MappedCoach>();
+                }
+                else return new List<MappedCoach>();
             }
             catch (Exception e)
             {

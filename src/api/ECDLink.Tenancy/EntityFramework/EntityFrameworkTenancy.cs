@@ -1,10 +1,4 @@
-﻿using ECDLink.Tenancy.Model;
-using ECDLink.Tenancy.Services;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using ECDLink.Tenancy.Services;
 
 namespace ECDLink.Tenancy.EntityFramework
 {

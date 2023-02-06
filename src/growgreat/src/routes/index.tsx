@@ -15,9 +15,21 @@ import { PractitionerAbout } from '@practitioner-p/practitioner-about/practition
 import PractitionerAccount from '@practitioner-p/practitioner-account/practitioner-account';
 import { PractitionerProfile } from '@practitioner-p/practitioner-profile/practitioner-profile';
 import ROUTES from '@/routes/routes';
-import ClassDashboard from '@/pages/classroom/class-dashboard/class-dashboard';
+import ClassDashboard from '@/pages/client/client-dashboard/class-dashboard';
 import { EditPractitionerProfile } from '@/pages/practitioner/edit-practitioner-profile/edit-practitioner-profile';
 import { Training } from '@/pages/training/training';
+import { StartVisitFromVisitDashboard } from '@/pages/client/visits-tab/start-visit';
+import PregnancyVisits from '@/pages/client/visits-tab/pregnancy-visits';
+import ChildVisits from '@/pages/client/visits-tab/child-visits';
+import BookVisitFromVisitDashboard from '@/pages/client/visits-tab/book-visit';
+import { PregnantProfile } from '@/pages/mom/pregnant-profile';
+import { RecordEvent } from '@/pages/mom/pregnant-profile/visits/record-event';
+import { StartVisit } from '@/pages/mom/pregnant-profile/visits/start-visit';
+import { BookVisit } from '@/pages/mom/pregnant-profile/visits/book-visit';
+import { PastVisits } from '@/pages/mom/pregnant-profile/visits/past-visits';
+import { AntenatalVisit } from '@/pages/mom/pregnant-profile/visits/antenatal-visit';
+import PointsSummary from '@/pages/client/highlights-tab/points-summary';
+import UpcomingVisit from '@/pages/client/highlights-tab/upcoming-visit';
 
 function PublicRoutes() {
   return (
@@ -80,7 +92,68 @@ function AuthRoutes() {
         component={PractitionerProfile}
       />
 
-      <Route path={ROUTES.CLASSROOM} component={ClassDashboard} />
+      <Route exact path={ROUTES.CLIENTS.ROOT} component={ClassDashboard} />
+      <Route
+        exact
+        path={`${ROUTES.CLIENTS.MOM_PROFILE.ROOT}:id`}
+        component={PregnantProfile}
+      />
+      <Route
+        exact
+        path={ROUTES.CLIENTS.MOM_PROFILE.VISITS.RECORD_EVENT}
+        component={RecordEvent}
+      />
+      <Route
+        exact
+        path={ROUTES.CLIENTS.MOM_PROFILE.VISITS.START_VISIT}
+        component={StartVisit}
+      />
+      <Route
+        exact
+        path={ROUTES.CLIENTS.MOM_PROFILE.VISITS.BOOK_VISIT}
+        component={BookVisit}
+      />
+      <Route
+        exact
+        path={ROUTES.CLIENTS.MOM_PROFILE.VISITS.PAST_VISITS}
+        component={PastVisits}
+      />
+      <Route
+        exact
+        path={ROUTES.CLIENTS.MOM_PROFILE.VISITS.ANTENATAL_VISIT}
+        component={AntenatalVisit}
+      />
+      <Route
+        exact
+        path={ROUTES.CLIENTS.VISIT_TAB.START_VISIT}
+        component={StartVisitFromVisitDashboard}
+      />
+      <Route
+        exact
+        path={ROUTES.CLIENTS.VISIT_TAB.BOOK_VISIT}
+        component={BookVisitFromVisitDashboard}
+      />
+      <Route
+        exact
+        path={ROUTES.CLIENTS.VISIT_TAB.PREGNANCY_VISITS}
+        component={PregnancyVisits}
+      />
+      <Route
+        exact
+        path={ROUTES.CLIENTS.VISIT_TAB.CHILD_VISITS}
+        component={ChildVisits}
+      />
+
+      <Route
+        exact
+        path={ROUTES.CLIENTS.HIGHLIGHTS_TAB.POINTS_SUMMARY}
+        component={PointsSummary}
+      />
+      <Route
+        exact
+        path={ROUTES.CLIENTS.HIGHLIGHTS_TAB.UPCOMING_VISIT}
+        component={UpcomingVisit}
+      />
 
       <Route path={ROUTES.MESSAGES} component={Messages} />
 

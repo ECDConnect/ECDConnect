@@ -1,49 +1,44 @@
-
 using EcdLink.Api.CoreApi.Documents;
 using EcdLink.Api.CoreApi.GraphApi.AccessValidators;
 using EcdLink.Api.CoreApi.GraphApi.Interceptors;
+using EcdLink.Api.CoreApi.Managers.EventRecords;
+using EcdLink.Api.CoreApi.Managers.IncomeExpense;
 using EcdLink.Api.CoreApi.Managers.Notifications;
-using EcdLink.Api.CoreApi.Managers.Users;
+using EcdLink.Api.CoreApi.Managers.Users.GrowGreat;
+using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
+using EcdLink.Api.CoreApi.Managers.Visits;
 using EcdLink.Api.CoreApi.Security.Managers;
 using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
 using EcdLink.Api.CoreApi.Services;
 using ECDLink.AzureStorage;
 using ECDLink.ContentManagement;
 using ECDLink.Core;
+using ECDLink.Core.Services;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Diagnostics;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.Development;
 using ECDLink.EGraphQL;
 using ECDLink.EGraphQL.Interceptors;
+using ECDLink.Moodle;
 using ECDLink.Notifications;
 using ECDLink.PDFGenerator;
 using ECDLink.PostgresTenancy;
-using ECDLink.PostgresTenancy.Configuration.Setup.Seed;
-using ECDLink.PostgresTenancy.Context;
+using ECDLink.PostgresTenancy.Repository;
+using ECDLink.PostgresTenancy.Services;
 using ECDLink.Security;
 using ECDLink.Security.AccessModifiers.OpenAccess;
 using ECDLink.Security.Managers;
 using ECDLink.SmartStart;
-using ECDLink.Moodle;
 using ECDLink.Tenancy.Extensions;
 using ECDLink.UrlShortner;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
 using System.Diagnostics;
-using ECDLink.Tenancy.EntityFramework.Extensions;
-using System.Threading.Tasks;
-using EcdLink.Api.CoreApi.Middleware;
-using ECDLink.Core.Services;
-using ECDLink.PostgresTenancy.Repository;
-using ECDLink.Tenancy.Services;
-using ECDLink.PostgresTenancy.Services;
-using ECDLink.PostgresTenancy.Entities;
 
 namespace EcdLink.Api.CoreApi
 {
@@ -130,7 +125,12 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<InvitationNotificationManager>();
             services.AddTransient<HealthCareWorkerManager>();
             services.AddTransient<MotherManager>();
+            services.AddTransient<EventRecordManager>();
             services.AddTransient<InfantManager>();
+            services.AddTransient<VisitManager>();
+            services.AddTransient<PersonnelManager>();
+            services.AddTransient<ChildManager>();
+            services.AddTransient<IncomeExpenseManager>();
             services.AddTransient<IClaimsManager, ClaimsManager>();
             services.AddTransient<IAuthorizationManager, AuthorizationManager>();
             services.AddTransient<IUserInterceptHandler, UserInterceptHandler>();
@@ -139,7 +139,7 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<IReassignmentService, ReassignmentService>();
 
             ConfigureJobs(services);
-
+            
             services.AddControllers();
         }
 

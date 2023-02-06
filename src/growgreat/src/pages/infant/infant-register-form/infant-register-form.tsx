@@ -4,8 +4,9 @@ import {
   Typography,
   Button,
   DialogPosition,
+  ActionModal,
 } from '@ecdlink/ui';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useAppDispatch } from '@store';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -31,6 +32,8 @@ import {
   SiteAddressDto,
   UserDto,
   useDialog,
+  MotherDto,
+  getPreviousAndNextMonths,
 } from '@ecdlink/core/lib';
 import { EditConsentAgreementProps } from '../components/consent-agrement/consent-agreement.types';
 import { infantActions, infantThunkActions } from '@/store/infant';
@@ -48,6 +51,9 @@ import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { usePrevious } from '@ecdlink/core/lib/hooks/usePrevious';
 import { healthCareWorkerSelectors } from '@/store/healthCareWorker';
 import { InfantActions } from '@/store/infant/infant.actions';
+import { InfantRouteState } from '../infant.types';
+import { motherSelectors } from '@/store/mother';
+import { RootState } from '@/store/types';
 
 const BANNER_HEIGHT = 64;
 
@@ -81,7 +87,24 @@ export const InfantRegisterForm: React.FC = () => {
   let numberOfChildren: number | undefined = hasConsent?.numberOfChildren;
   const [multipleChildrenCount, setMultipleChildrenCount] = useState<number>(1);
 
+  const [firstChild] = multipleChildrenArray;
+
   const { height } = useWindowSize();
+
+  const location = useLocation<InfantRouteState>();
+
+  const motherId: MotherDto['id'] | undefined = location.state?.motherId;
+
+  const mother = useSelector((state: RootState) => {
+    if (!!motherId || (isAlreadyClient && firstChild?.caregiver?.id)) {
+      return motherSelectors.getMotherById(
+        state,
+        motherId || String(firstChild.caregiver?.id)
+      );
+    }
+
+    return {};
+  });
 
   const dialog = useDialog();
 
@@ -92,7 +115,7 @@ export const InfantRegisterForm: React.FC = () => {
     healthCareWorkerSelectors.getHealthCareWorker
   );
 
-  const { isLoading, isRejected } = useThunkFetchCall(
+  const { isLoading, isFulfilled } = useThunkFetchCall(
     'infants',
     InfantActions.ADD_INFANTS
   );
@@ -102,6 +125,11 @@ export const InfantRegisterForm: React.FC = () => {
   );
 
   const wasLoading = usePrevious(isLoading);
+
+  const motherInfoFromRecordEvent = useMemo(
+    () => (motherId ? mother : undefined),
+    [mother, motherId]
+  );
 
   const successMessage = useMemo(
     () =>
@@ -159,8 +187,6 @@ export const InfantRegisterForm: React.FC = () => {
       id: siteAddressId,
       addressLine1: address || caregiverAddress || '',
     };
-
-    const [firstChild] = multipleChildrenArray;
 
     const caregiverInput: CaregiverDto = {
       id:
@@ -220,7 +246,7 @@ export const InfantRegisterForm: React.FC = () => {
 
         appDispatch(infantActions.addInfant(infantInputModel));
         await appDispatch(
-          infantThunkActions.addInfant({ infant: infantInputModel })
+          infantThunkActions.addInfant({ infant: infantInputModel, motherId })
         ).unwrap();
 
         const fileName = 'roadtohealthbook.png';
@@ -283,7 +309,7 @@ export const InfantRegisterForm: React.FC = () => {
 
       appDispatch(infantActions.addInfant(infantInputModel));
       await appDispatch(
-        infantThunkActions.addInfant({ infant: infantInputModel })
+        infantThunkActions.addInfant({ infant: infantInputModel, motherId })
       ).unwrap();
 
       const fileName = 'roadtohealthbook.png';
@@ -318,6 +344,7 @@ export const InfantRegisterForm: React.FC = () => {
           <InfantDetails
             multipleChildrenCount={multipleChildrenCount}
             numberOfChildren={numberOfChildren}
+            motherInfo={motherInfoFromRecordEvent}
             onSubmit={(value) => {
               setLabel(`step 3 of 6`);
               setInfantDetails(value);
@@ -345,6 +372,7 @@ export const InfantRegisterForm: React.FC = () => {
             setAddress={setAddress}
             setIsAlreadyClient={setIsAlreadyClient}
             isAlreadyClient={isAlreadyClient}
+            motherInfo={motherInfoFromRecordEvent}
             onSubmit={(value) => {
               setDetails(value as any);
               handleExistingUser({ caregiverDetails: value });
@@ -458,6 +486,81 @@ export const InfantRegisterForm: React.FC = () => {
     [dialog, history, isRejectInfantCount, successMessage, user?.firstName]
   );
 
+  const displayRecordEventDialog = useCallback(
+    (child: InfantDto) => {
+      dialog({
+        blocking: false,
+        position: DialogPosition.Middle,
+        color: 'bg-white',
+        render: (onClose) => {
+          return (
+            <ActionModal
+              className="z-50"
+              icon="ExclamationCircleIcon"
+              iconColor="alertMain"
+              title={`Would you like to record the event: ${mother?.user?.firstName}'s baby was born?`}
+              detailText={`${child?.firstName}'s birth date is close to ${mother?.user?.firstName}'s expected delivery date. If ${mother?.user?.firstName} has given birth, record the event!`}
+              actionButtons={[
+                {
+                  colour: 'primary',
+                  text: 'Yes, record this event',
+                  textColour: 'white',
+                  type: 'filled',
+                  leadingIcon: 'ClipboardCheckIcon',
+                  onClick: () => {
+                    history.push(
+                      `${ROUTES.CLIENTS.MOM_PROFILE.ROOT}${mother?.user?.id}/record-event`,
+                      {
+                        isFromInfantForm: true,
+                      }
+                    );
+                    onClose();
+                  },
+                },
+                {
+                  colour: 'primary',
+                  text: 'No, close',
+                  textColour: 'primary',
+                  type: 'outlined',
+                  leadingIcon: 'XIcon',
+                  onClick: onClose,
+                },
+              ]}
+            />
+          );
+        },
+      });
+    },
+    [dialog, history, mother?.user?.firstName, mother?.user?.id]
+  );
+
+  const createBornEvent = useCallback(() => {
+    if (isAlreadyClient && !!mother?.expectedDateOfDelivery) {
+      const { nextDate, previousDate } = getPreviousAndNextMonths(
+        mother.expectedDateOfDelivery,
+        2
+      );
+      const child = multipleChildrenArray.find((child) => {
+        const childBirthday = child.dateOfBirth && new Date(child.dateOfBirth);
+
+        return (
+          childBirthday &&
+          childBirthday >= previousDate &&
+          childBirthday <= nextDate
+        );
+      });
+
+      if (child) {
+        displayRecordEventDialog(child);
+      }
+    }
+  }, [
+    displayRecordEventDialog,
+    isAlreadyClient,
+    mother,
+    multipleChildrenArray,
+  ]);
+
   useEffect(() => {
     if (activeStep === InfantRegisterSteps.motherDetails && isAlreadyClient) {
       setLabel('step 4 of 4');
@@ -469,7 +572,11 @@ export const InfantRegisterForm: React.FC = () => {
   }, [activeStep, isAlreadyClient]);
 
   const onSuccess = useCallback(() => {
-    if (!isRejected) {
+    if (isFulfilled) {
+      if (mother?.user) {
+        return createBornEvent();
+      }
+
       (async () => {
         const count = await appDispatch(
           infantThunkActions.getInfantCountForMonth({})
@@ -489,7 +596,14 @@ export const InfantRegisterForm: React.FC = () => {
     } else {
       showSuccessMessage();
     }
-  }, [appDispatch, healthCareWorker, isRejected, showSuccessMessage]);
+  }, [
+    appDispatch,
+    createBornEvent,
+    healthCareWorker,
+    isFulfilled,
+    mother?.user,
+    showSuccessMessage,
+  ]);
 
   useEffect(() => {
     if (!isLoading && wasLoading) {

@@ -1,9 +1,8 @@
+using ECDLink.AutomatedServiceWorkers.Anonymise;
+using ECDLink.AutomatedServiceWorkers.ExpireInvitations;
+using ECDLink.AutomatedServiceWorkers.Assignments;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace ECDLink.AutomatedServiceWorkers
 {
@@ -18,7 +17,13 @@ namespace ECDLink.AutomatedServiceWorkers
             Host.CreateDefaultBuilder(args)
                 .ConfigureServices((hostContext, services) =>
                 {
-                    services.AddHostedService<Worker>();
+                    services.AddHostedService<ExpireInvitationsJob>();
+                    services.AddHostedService<ChildAnonymiseJob>();
+                    services.AddHostedService<ReassignFutureDatedJob>();
+                    services.AddHostedService<RevertReassignmentJob>();
+
+
                 });
+
     }
 }

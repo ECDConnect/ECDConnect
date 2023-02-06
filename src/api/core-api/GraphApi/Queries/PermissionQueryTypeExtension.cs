@@ -1,6 +1,5 @@
 using EcdLink.Api.CoreApi.GraphApi.Models;
 using ECDLink.Abstractrions.GraphQL.Enums;
-using ECDLink.DataAccessLayer;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
@@ -18,7 +17,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
     public class PermissionQueryTypeExtension
     {
         [Permission(PermissionGroups.SYSTEM, GraphActionEnum.View)]
-        public async Task<IEnumerable<PermissionGroupModel>> GetPermissionGroups([Service] IGenericRepositoryFactory repositoryFactory)
+        public async Task<IEnumerable<PermissionGroupModel>> GetPermissionGroups(IGenericRepositoryFactory repositoryFactory)
         {
             var permissionsRepository = repositoryFactory.CreateRepository<Permission>();
 

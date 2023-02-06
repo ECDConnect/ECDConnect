@@ -4,20 +4,15 @@ using ECDLink.Core.Services.Interfaces;
 using ECDLink.Core.SystemSettings.SystemOptions;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
-using ECDLink.PostgresTenancy.Context;
-using ECDLink.PostgresTenancy.Repository;
 using ECDLink.PostgresTenancy.Services;
 using ECDLink.Tenancy.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ECDLink.AutomatedJobs.Notifications
+namespace ECDLink.AutomatedServiceWorkers.Notifications
 {
     public class LogOnNotificationSender : CronJobService
     {

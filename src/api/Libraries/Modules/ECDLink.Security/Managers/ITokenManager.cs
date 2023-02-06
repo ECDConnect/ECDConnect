@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace ECDLink.Security.Managers
 {
-    public interface ITokenManager<T, U> 
+    public interface ITokenManager<T, U>
         where T : IdentityUser
         where U : class, ITokenManager<T, U>
     {

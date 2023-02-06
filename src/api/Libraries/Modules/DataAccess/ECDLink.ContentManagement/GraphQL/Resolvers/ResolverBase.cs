@@ -34,7 +34,9 @@ namespace ECDLink.ContentManagement.GraphQL.Resolvers
 
         protected int GetContentIdentifier(IResolverContext context)
         {
-            if (!context.Selection.Field.ContextData.TryGetValue(ContextDataConstants.ContentManagement.Identifier, out var contentIdentifier))
+            
+
+            if (!context.ScopedContextData.TryGetValue(ContextDataConstants.ContentManagement.Identifier, out var contentIdentifier))
             {
                 throw new Exception("No table context data found");
             }

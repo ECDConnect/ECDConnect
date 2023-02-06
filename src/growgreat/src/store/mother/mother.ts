@@ -1,12 +1,16 @@
 import { MotherDto } from '@ecdlink/core';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
-import { getInfantCountForMonth } from '../infant/infant.actions';
+import { addEventRecord } from '../eventRecord/eventRecord.actions';
+import { addInfant, getInfantCountForMonth } from '../infant/infant.actions';
 import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
 import {
   addMother,
+  getAllMotherEventRecordTypes,
   getMotherCountForMonth,
   getMothers,
+  getMothersWeeklyVisits,
+  getMotherVisits,
 } from './mother.actions';
 import { MotherState } from './mother.types';
 
@@ -35,6 +39,7 @@ const motherSlice = createSlice({
   extraReducers: (builder) => {
     setThunkActionStatus(builder, addMother);
     setThunkActionStatus(builder, getMotherCountForMonth);
+    setThunkActionStatus(builder, getMotherVisits);
     builder.addCase(getInfantCountForMonth.fulfilled, (state, action) => {
       state.motherCountForMonth = action.payload;
 
@@ -44,13 +49,40 @@ const motherSlice = createSlice({
       setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(getMothers.fulfilled, (state, action) => {
-      if (!state.mothers) {
-        const mothers = Object.assign([], action.payload) as MotherDto[];
+      const mothers = Object.assign([], action.payload) as MotherDto[];
 
-        for (let i = 0; i < mothers.length; i++) {
-          mothers[i].isActive = true;
-        }
-        state.mothers = mothers;
+      for (let i = 0; i < mothers.length; i++) {
+        mothers[i].isActive = true;
+      }
+
+      state.mothers = mothers;
+    });
+    builder.addCase(getMothersWeeklyVisits.fulfilled, (state, action) => {
+      state.mothersWeeklyVisits = action.payload;
+    });
+    builder.addCase(getMotherVisits.fulfilled, (state, action) => {
+      state.visits = action.payload;
+      setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(getAllMotherEventRecordTypes.fulfilled, (state, action) => {
+      state.eventRecordTypes = action.payload;
+    });
+    builder.addCase(addEventRecord.fulfilled, (state, action) => {
+      const motherId = action.payload?.input?.motherId;
+
+      if (motherId && action.payload.isCloseFolder) {
+        state.mothers = state.mothers?.filter(
+          (item) => item.user?.id !== motherId
+        );
+      }
+    });
+    builder.addCase(addInfant.fulfilled, (state, action) => {
+      const motherId = action.payload.motherId;
+
+      if (motherId) {
+        state.mothers = state.mothers?.filter(
+          (item) => item.user?.id !== motherId
+        );
       }
     });
   },

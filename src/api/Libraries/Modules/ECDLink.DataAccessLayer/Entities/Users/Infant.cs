@@ -1,12 +1,10 @@
-using ECDLink.Security.Attributes;
 using ECDLink.DataAccessLayer.Entities.Base;
+using ECDLink.DataAccessLayer.Entities.Caregiver;
 using ECDLink.Security;
+using ECDLink.Security.Attributes;
+using HotChocolate;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Collections.Generic;
-using ECDLink.DataAccessLayer.Entities.Documents;
-using ECDLink.DataAccessLayer.Entities.Interfaces;
-using ECDLink.DataAccessLayer.Entities.Caregiver;
 
 namespace ECDLink.DataAccessLayer.Entities.Users
 {
@@ -38,9 +36,22 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         [ForeignKey(nameof(MotherCaregiverId))]
         public virtual Mother Mother { get; set; }
         public Guid? MotherCaregiverId { get; set; }
-
         public decimal? WeightAtBirth { get; set; }
 
         public decimal? LengthAtBirth { get; set; }
+
+        [NotMapped]
+        public virtual DisplaySet StatusInfo { get; set; }
+
+        [NotMapped]
+        public DateTime? NextVisitDate { get; set; }
+
+    }
+
+    public interface InfantJoin<TKey>
+    {
+        [ForeignKey(nameof(InfantId))]
+        public Infant Infant { get; set; }
+        public TKey InfantId { get; set; }
     }
 }

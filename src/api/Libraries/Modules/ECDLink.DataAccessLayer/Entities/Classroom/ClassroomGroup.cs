@@ -1,8 +1,7 @@
-using ECDLink.Security.Attributes;
 using ECDLink.DataAccessLayer.Entities.Base;
 using ECDLink.DataAccessLayer.Entities.Interfaces;
-using ECDLink.DataAccessLayer.Hierarchy.Entities;
 using ECDLink.Security;
+using ECDLink.Security.Attributes;
 using HotChocolate;
 using System;
 using System.Collections.Generic;

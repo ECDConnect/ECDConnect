@@ -1,6 +1,7 @@
 import {
   CaregiverDto,
   InfantDto,
+  MotherDto,
   SiteAddressDto,
 } from '@/../../../packages/core/lib';
 import {
@@ -16,6 +17,7 @@ import { RootState, ThunkApiType } from '../types';
 export const InfantActions = {
   ADD_INFANTS: 'addInfant',
   GET_INFANTS: 'getInfants',
+  GET_INFANTS_WEEKLY_VISITS: 'getInfantsWeeklyVisits',
   GET_INFANT_COUNT_FOR_MONTH: 'getInfantCountForMonth',
 };
 
@@ -27,10 +29,41 @@ export const getInfants = createAsyncThunk<
 >(InfantActions.GET_INFANTS, async (_, { getState, rejectWithValue }) => {
   const {
     auth: { userAuth },
-    infants: { infants: infantsCache },
   } = getState();
 
-  if (!infantsCache) {
+  try {
+    let infants: InfantDto[] | undefined;
+    const id = userAuth?.id;
+
+    if (userAuth?.auth_token && id) {
+      infants = await new InfantService(
+        userAuth?.auth_token
+      ).GetAllInfantsForMother(id);
+    } else {
+      return rejectWithValue('no access token, profile check required');
+    }
+
+    if (!infants) {
+      return rejectWithValue('Error getting mothers');
+    }
+
+    return infants;
+  } catch (err) {
+    return rejectWithValue(err);
+  }
+});
+
+export const getInfantsWeeklyVisits = createAsyncThunk<
+  InfantDto[],
+  undefined,
+  ThunkApiType<RootState>
+>(
+  InfantActions.GET_INFANTS_WEEKLY_VISITS,
+  async (_, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
     try {
       let infants: InfantDto[] | undefined;
       const id = userAuth?.id;
@@ -38,35 +71,30 @@ export const getInfants = createAsyncThunk<
       if (userAuth?.auth_token && id) {
         infants = await new InfantService(
           userAuth?.auth_token
-        ).GetAllInfantsForMother(id);
+        ).GetAllInfantsForMother(id, 'due');
       } else {
         return rejectWithValue('no access token, profile check required');
-      }
-
-      if (!infants) {
-        return rejectWithValue('Error getting mothers');
       }
 
       return infants;
     } catch (err) {
       return rejectWithValue(err);
     }
-  } else {
-    return infantsCache;
   }
-});
+);
 
 type CreateInfantRequest = {
   infant: InfantDto;
+  motherId?: MotherDto['id'];
 };
 
 export const addInfant = createAsyncThunk<
-  InfantDto,
+  { motherId?: MotherDto['id'] },
   CreateInfantRequest,
   ThunkApiType<RootState>
 >(
   InfantActions.ADD_INFANTS,
-  async ({ infant }, { getState, rejectWithValue }) => {
+  async ({ infant, motherId }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
     } = getState();
@@ -74,9 +102,11 @@ export const addInfant = createAsyncThunk<
       let mappedInfantInput = mapInfant(infant);
 
       if (userAuth?.auth_token) {
-        return await new InfantService(userAuth?.auth_token).addInfant(
+        await new InfantService(userAuth?.auth_token).addInfant(
           mappedInfantInput
         );
+
+        return { motherId };
       } else {
         return rejectWithValue('no access token, profile check required');
       }
@@ -110,10 +140,6 @@ export const getInfantCountForMonth = createAsyncThunk<
         return rejectWithValue('no access token, profile check required');
       }
 
-      if (!count) {
-        return rejectWithValue('Error getting count');
-      }
-
       return count;
     } catch (err) {
       return rejectWithValue(err);
@@ -145,7 +171,7 @@ const mapCaregiver = (x: Partial<CaregiverDto>): CaregiverModelInput => ({
   healthCareWorkerId: x.healthCareWorkerId,
   age: x.age,
   relationId: x.relationId,
-  siteAddress: mapSiteAddress(x.siteAddress!),
+  siteAddress: x.siteAddress ? mapSiteAddress(x.siteAddress!) : null,
 });
 
 const mapSiteAddress = (x: Partial<SiteAddressDto>): SiteAddressInput => ({

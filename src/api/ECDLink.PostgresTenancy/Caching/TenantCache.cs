@@ -3,11 +3,9 @@ using ECDLink.Core.Caching;
 using ECDLink.PostgresTenancy.Services;
 using ECDLink.Tenancy.Model;
 using ECDLink.Tenancy.Services;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace ECDLink.PostgresTenancy.Caching
 {
@@ -60,7 +58,7 @@ namespace ECDLink.PostgresTenancy.Caching
         }
 
         public TenantModel GetTenantById(string id)
-        { 
+        {
             var tenant = Tenants.Where(x => x.Id == Guid.Parse(id));
             return tenant.FirstOrDefault();
         }

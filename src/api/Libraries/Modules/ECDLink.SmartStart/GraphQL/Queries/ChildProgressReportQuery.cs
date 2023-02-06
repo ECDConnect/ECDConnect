@@ -1,14 +1,11 @@
-using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Reporting;
-using ECDLink.DataAccessLayer;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities.Reports;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
-using ECDLink.SmartStart.Reports;
 using ECDLink.SmartStart.Reports.ChildProgressReport;
 using HotChocolate;
 using HotChocolate.Types;
@@ -17,7 +14,6 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -28,7 +24,7 @@ namespace ECDLink.SmartStart.GraphQL.Queries
     {
         [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
         public async Task<string> GenerateChildProgressReport(
-            [Service] IGenericRepositoryFactory repoFactory,
+            IGenericRepositoryFactory repoFactory,
             [Service] ChildProgressReportService report,
             [Service] IHttpContextAccessor httpContextAccessor,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
@@ -40,8 +36,8 @@ namespace ECDLink.SmartStart.GraphQL.Queries
 
             var progressReportEntity = progressReportRepo
                                             .GetAll()
-                                            .Where(x => 
-                                                    x.ClassroomGroupId == classgroupId 
+                                            .Where(x =>
+                                                    x.ClassroomGroupId == classgroupId
                                                     && x.ChildId == childId
                                                     && x.ReportDate.Month == reportDate.Month && x.ReportDate.Year == reportDate.Year)
                                             .FirstOrDefault();
@@ -62,7 +58,7 @@ namespace ECDLink.SmartStart.GraphQL.Queries
 
         [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
         public async Task<ChildProgressReportDetailedModel> GetChildProgressReport(
-            [Service] IGenericRepositoryFactory repoFactory,
+            IGenericRepositoryFactory repoFactory,
             [Service] IHttpContextAccessor httpContextAccessor,
             Guid reportId)
         {
@@ -76,7 +72,7 @@ namespace ECDLink.SmartStart.GraphQL.Queries
 
         [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
         public async Task<IEnumerable<ChildProgressReportSummaryModel>> GetChildProgressReportSummary(
-            [Service] IGenericRepositoryFactory repoFactory,
+            IGenericRepositoryFactory repoFactory,
             [Service] IHttpContextAccessor httpContextAccessor,
             int count)
         {
