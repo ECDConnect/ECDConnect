@@ -262,7 +262,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
             backgroundColour="successMain"
             text={`${presentChildrenCount} present`}
           />
-          <div id="teste">
+          <div>
             <StatusChip
               textColour="white"
               padding={'px-3 py-1.5'}

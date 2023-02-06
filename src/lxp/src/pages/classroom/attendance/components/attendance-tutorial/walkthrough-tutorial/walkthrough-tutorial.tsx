@@ -83,30 +83,29 @@ export const WalkthroughTutorial = ({
   };
 
   useEffect(() => {
-    validateTutorial();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tutorialProgressClicks]);
+    const validateTutorial = () => {
+      if (tutorialProgressClicks === tutorialCompleteClicks) {
+        setAttendanceItem({
+          title: 'Amahle Khumalo',
+          profileText: 'AM',
+          attenendeeId: '1',
+          status: AttendanceStatus.Present,
+          avatarColor: getAvatarColor(),
+        });
+      } else if (tutorialProgressClicks === tutorialResetClicks) {
+        setAttendanceItem({
+          title: 'Amahle Khumalo',
+          profileText: 'AM',
+          attenendeeId: '1',
+          status: AttendanceStatus.Unknown,
+          avatarColor: getAvatarColor(),
+        });
+        setTutorialProgressClicks(0);
+      }
+    };
 
-  const validateTutorial = () => {
-    if (tutorialProgressClicks === tutorialCompleteClicks) {
-      setAttendanceItem({
-        title: 'Amahle Khumalo',
-        profileText: 'AM',
-        attenendeeId: '1',
-        status: AttendanceStatus.Present,
-        avatarColor: getAvatarColor(),
-      });
-    } else if (tutorialProgressClicks === tutorialResetClicks) {
-      setAttendanceItem({
-        title: 'Amahle Khumalo',
-        profileText: 'AM',
-        attenendeeId: '1',
-        status: AttendanceStatus.Unknown,
-        avatarColor: getAvatarColor(),
-      });
-      setTutorialProgressClicks(0);
-    }
-  };
+    validateTutorial();
+  }, [tutorialProgressClicks]);
 
   const steps: Step[] = [
     {
@@ -197,8 +196,10 @@ export const WalkthroughTutorial = ({
   }
 
   const handleJoyrideCallback = async (data: CallBackProps) => {
-    const { status } = data;
+    const { status, type } = data;
     const finishedStatuses: string[] = [STATUS.FINISHED, STATUS.SKIPPED];
+
+    console.log({ type });
 
     if (finishedStatuses.includes(status)) {
       await new PractitionerService(
@@ -272,12 +273,9 @@ export const WalkthroughTutorial = ({
               }}
               walkthrough={true}
             />
-            {/* )} */}
           </div>
         </div>
-        <div className={'pt-2.5'}>
-          <Divider />
-        </div>
+        <Divider className={'pt-2.5'} />
         <Button
           color={'primary'}
           type={'filled'}

@@ -9,7 +9,7 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import format from 'date-fns/format';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
@@ -185,12 +185,12 @@ export const ClassDashboard: React.FC = () => {
   const displayHelp =
     currentTab?.title === 'Attendance' || currentTab?.title === 'Programme';
 
-  const closeAttendanceTutorial = () => {
+  const closeAttendanceTutorial = useCallback(() => {
     if (!attendanceTutorialComplete && previousTabIndex) {
       setSelectedTabIndex(previousTabIndex);
     }
     setAttendanceTutorialActive(false);
-  };
+  }, [attendanceTutorialComplete, previousTabIndex]);
 
   const updatePractitionerProgress = async () => {
     await new PractitionerService(
@@ -207,90 +207,85 @@ export const ClassDashboard: React.FC = () => {
   };
 
   useEffect(() => {
+    const handleAttendanceTutorial = () => {
+      dialog({
+        position: DialogPosition.Middle,
+        render: (submit, cancel) => (
+          <ActionModal
+            customIcon={
+              <img src={walktroughImage} alt="profile" className="mb-2" />
+            }
+            iconColor="alertMain"
+            iconBorderColor="alertBg"
+            importantText={`Want to learn how to track attendance on Funda App?`}
+            actionButtons={[
+              {
+                text: 'Yes, help me!',
+                textColour: 'white',
+                colour: 'primary',
+                type: 'filled',
+                onClick: () => {
+                  setAttendanceTutorialActive(true);
+                  submit();
+                },
+                leadingIcon: 'ChevronRightIcon',
+              },
+              {
+                text: 'No, skip',
+                textColour: 'white',
+                colour: 'primary',
+                type: 'filled',
+                onClick: handleDeclineAttendanceTutorial,
+                leadingIcon: 'ClockIcon',
+              },
+            ]}
+          />
+        ),
+      });
+    };
+
+    const handleDeclineAttendanceTutorial = () => {
+      dialog({
+        position: DialogPosition.Bottom,
+        render: (submit, cancel) => (
+          <ActionModal
+            // icon={'InformationCircleIcon'}
+            customIcon={
+              <div className="flex">
+                <img src={walktroughImage} alt="profile" className="mb-2" />
+                <Typography
+                  text="Ok, you can always get  help by tapping the question mark at the top of the screen!"
+                  type={'body'}
+                  color={'textDark'}
+                  align="center"
+                  className="mt-2"
+                />
+              </div>
+            }
+            iconColor="alertMain"
+            iconBorderColor="alertBg"
+            // importantText={`Want to learn how to track attendance on Funda App?`}
+            actionButtons={[
+              {
+                text: 'Close',
+                textColour: 'white',
+                colour: 'primary',
+                type: 'filled',
+                onClick: () => {
+                  // setAttendanceTutorialActive(true);
+                  submit();
+                },
+                leadingIcon: 'XIcon',
+              },
+            ]}
+          />
+        ),
+      });
+    };
     if (showAttendanceTutorial) {
       handleAttendanceTutorial();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showAttendanceTutorial]);
-
-  const handleAttendanceTutorial = () => {
-    dialog({
-      position: DialogPosition.Middle,
-      render: (submit, cancel) => (
-        <ActionModal
-          // icon={'InformationCircleIcon'}
-          customIcon={
-            <img src={walktroughImage} alt="profile" className="mb-2" />
-          }
-          iconColor="alertMain"
-          iconBorderColor="alertBg"
-          importantText={`Want to learn how to track attendance on Funda App?`}
-          actionButtons={[
-            {
-              text: 'Yes, help me!',
-              textColour: 'white',
-              colour: 'primary',
-              type: 'filled',
-              onClick: () => {
-                setAttendanceTutorialActive(true);
-                submit();
-              },
-              leadingIcon: 'ChevronRightIcon',
-            },
-            {
-              text: 'No, skip',
-              textColour: 'white',
-              colour: 'primary',
-              type: 'filled',
-              // isLoading,
-              // disabled: isLoading,
-              onClick: handleDeclineAttendanceTutorial,
-              leadingIcon: 'ClockIcon',
-            },
-          ]}
-        />
-      ),
-    });
-  };
-
-  const handleDeclineAttendanceTutorial = () => {
-    dialog({
-      position: DialogPosition.Bottom,
-      render: (submit, cancel) => (
-        <ActionModal
-          // icon={'InformationCircleIcon'}
-          customIcon={
-            <div className="flex">
-              <img src={walktroughImage} alt="profile" className="mb-2" />
-              <Typography
-                text="Ok, you can always get  help by tapping the question mark at the top of the screen!"
-                type={'body'}
-                color={'textDark'}
-                align="center"
-                className="mt-2"
-              />
-            </div>
-          }
-          iconColor="alertMain"
-          iconBorderColor="alertBg"
-          // importantText={`Want to learn how to track attendance on Funda App?`}
-          actionButtons={[
-            {
-              text: 'Close',
-              textColour: 'white',
-              colour: 'primary',
-              type: 'filled',
-              onClick: () => {
-                // setAttendanceTutorialActive(true);
-                submit();
-              },
-              leadingIcon: 'XIcon',
-            },
-          ]}
-        />
-      ),
-    });
-  };
+  }, [dialog, closeAttendanceTutorial, showAttendanceTutorial]);
 
   return (
     <>
