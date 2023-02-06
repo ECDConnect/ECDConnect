@@ -23,6 +23,9 @@ export const getBase64FromBaseString = (dataFile: string): string => {
   return dataFile ? dataFile.split('base64,')[1] : '';
 };
 
+export const getBase64TypeFromBaseString = (file: string) =>
+  file.split(';')[0].split('/')[1];
+
 export const camelize = (text: string) => {
   return text
     .replace(/(?:^\w|[A-Z]|\b\w)/g, (word, index) => {
