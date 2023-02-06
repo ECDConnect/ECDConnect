@@ -5,13 +5,22 @@ import FormColorField from '../../../../components/form-color-field/form-color-f
 import FormField from '../../../../components/form-field/form-field';
 import FormFileInput from '../../../../components/form-file-input/form-file-input';
 import Editor from '../../../../components/form-markdown-editor/form-markdown-editor';
+import { videoExtensions } from '../../../../utils/constants';
 import {
   DynamicFormTemplate,
   FieldType,
   FormTemplateField,
 } from '../../content-management-models';
 
-const acceptedFormats = ['svg', 'png', 'PNG', 'jpg', 'JPG', 'jpeg'];
+const acceptedFormats = [
+  'svg',
+  'png',
+  'PNG',
+  'jpg',
+  'JPG',
+  'jpeg',
+  ...videoExtensions,
+];
 
 export interface DynamicFormProps {
   template: DynamicFormTemplate;
