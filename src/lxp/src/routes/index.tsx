@@ -71,7 +71,7 @@ import Business from '@/pages/business/business';
 import AddAmount from '@/pages/business/add-amount/add-amount';
 import { AddIncome } from '@/pages/business/add-income/add-income';
 import { AddExpense } from '@/pages/business/add-amount/add-expense/add-expense';
-import WalktroughTutorial from '@/pages/classroom/attendance/components/attendance-tutorial/walktrough-tutorial/walktrough-tutorial';
+import { WalkthroughTutorial } from '@/pages/classroom/attendance/components/attendance-tutorial/walkthrough-tutorial/walkthrough-tutorial';
 import { SubmitIncomeStatementsDescription } from '@/pages/business/money/submit-income-statements/components/submit-income-statement-description/submit-income-statement-description';
 import { SubmitIncomeStatementsList } from '@/pages/business/money/submit-income-statements/components/submit-income-statements-list/submit-income-statements-list';
 
@@ -157,8 +157,8 @@ const AuthRoutes: React.FC = () => {
       />
       <Route path={ROUTES.TRAINING} component={Training} exact={true} />
       <Route
-        path={ROUTES.ATTENDANCE_TUTORIAL_WALKTROUGH}
-        component={WalktroughTutorial}
+        path={ROUTES.ATTENDANCE_TUTORIAL_WALKTHROUGH}
+        component={WalkthroughTutorial}
         exact={true}
       />
       <Route

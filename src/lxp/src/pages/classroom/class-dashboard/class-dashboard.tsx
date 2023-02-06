@@ -1,5 +1,6 @@
-import { LocalStorageKeys } from '@ecdlink/core';
+import { LocalStorageKeys, useDialog } from '@ecdlink/core';
 import {
+  ActionModal,
   BannerWrapper,
   Dialog,
   DialogPosition,
@@ -29,8 +30,11 @@ import { practitionerSelectors } from '@/store/practitioner';
 import PractitionersList from './practitioners/practitioners-list/practitioners-list';
 import { PractitionerService } from '@/services/PractitionerService';
 import { authSelectors } from '@/store/auth';
+import walktroughImage from '../../../assets/walktroughImage.png';
+import { childrenSelectors } from '@/store/children';
 
 export const ClassDashboard: React.FC = () => {
+  const dialog = useDialog();
   const userAuth = useSelector(authSelectors.getAuthUser);
   const history = useHistory();
   const { state } = useLocation<ClassDashboardRouteState>();
@@ -48,6 +52,11 @@ export const ClassDashboard: React.FC = () => {
   const { isOnline } = useOnlineStatus();
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
+  const children = useSelector(childrenSelectors.getChildren);
+  const showAttendanceTutorial =
+    selectedTabIndex === 0 &&
+    (practitioner?.progress! < 4 || practitioner?.progress === undefined) &&
+    children?.length! > 0;
 
   const backToDashboard = () => {
     history.push('/');
@@ -197,6 +206,92 @@ export const ClassDashboard: React.FC = () => {
     updatePractitionerProgress();
   };
 
+  useEffect(() => {
+    if (showAttendanceTutorial) {
+      handleAttendanceTutorial();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showAttendanceTutorial]);
+
+  const handleAttendanceTutorial = () => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (submit, cancel) => (
+        <ActionModal
+          // icon={'InformationCircleIcon'}
+          customIcon={
+            <img src={walktroughImage} alt="profile" className="mb-2" />
+          }
+          iconColor="alertMain"
+          iconBorderColor="alertBg"
+          importantText={`Want to learn how to track attendance on Funda App?`}
+          actionButtons={[
+            {
+              text: 'Yes, help me!',
+              textColour: 'white',
+              colour: 'primary',
+              type: 'filled',
+              onClick: () => {
+                setAttendanceTutorialActive(true);
+                submit();
+              },
+              leadingIcon: 'ChevronRightIcon',
+            },
+            {
+              text: 'No, skip',
+              textColour: 'white',
+              colour: 'primary',
+              type: 'filled',
+              // isLoading,
+              // disabled: isLoading,
+              onClick: handleDeclineAttendanceTutorial,
+              leadingIcon: 'ClockIcon',
+            },
+          ]}
+        />
+      ),
+    });
+  };
+
+  const handleDeclineAttendanceTutorial = () => {
+    dialog({
+      position: DialogPosition.Bottom,
+      render: (submit, cancel) => (
+        <ActionModal
+          // icon={'InformationCircleIcon'}
+          customIcon={
+            <div className="flex">
+              <img src={walktroughImage} alt="profile" className="mb-2" />
+              <Typography
+                text="Ok, you can always get  help by tapping the question mark at the top of the screen!"
+                type={'body'}
+                color={'textDark'}
+                align="center"
+                className="mt-2"
+              />
+            </div>
+          }
+          iconColor="alertMain"
+          iconBorderColor="alertBg"
+          // importantText={`Want to learn how to track attendance on Funda App?`}
+          actionButtons={[
+            {
+              text: 'Close',
+              textColour: 'white',
+              colour: 'primary',
+              type: 'filled',
+              onClick: () => {
+                // setAttendanceTutorialActive(true);
+                submit();
+              },
+              leadingIcon: 'XIcon',
+            },
+          ]}
+        />
+      ),
+    });
+  };
+
   return (
     <>
       <BannerWrapper
@@ -210,6 +305,7 @@ export const ClassDashboard: React.FC = () => {
         displayHelp={displayHelp}
         onHelp={() => displayTutorial(currentTab?.title)}
         displayOffline={!isOnline}
+        id={'header'}
       >
         <TabList
           className="bg-uiBg"

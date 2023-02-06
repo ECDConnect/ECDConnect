@@ -12,14 +12,14 @@ import * as styles from './attendance-list-item.styles';
 export interface AttendanceListItemProps extends ComponentBaseProps {
   item: AttendanceListDataItem;
   onBadgeClick?: (item: AttendanceListDataItem) => void;
-  walktrough?: boolean;
+  walkthrough?: boolean;
 }
 
 export const AttendanceListItem = ({
   item,
   onBadgeClick,
   className,
-  walktrough,
+  walkthrough,
 }: React.PropsWithChildren<AttendanceListItemProps>) => {
   const [attendanceItem, setAttendanceItem] =
     useState<AttendanceListDataItem>(item);
@@ -31,8 +31,7 @@ export const AttendanceListItem = ({
   const onBadgeClicked = () => {
     const currentItem = JSON.parse(JSON.stringify(attendanceItem));
 
-    if (walktrough) {
-      console.log({ walktrough, currentItem });
+    if (walkthrough) {
       if (
         currentItem.status &&
         currentItem.status === AttendanceStatus.Present
