@@ -62,6 +62,9 @@ StatementsIncome model)
         {
             var incomeRepo = _repoFactory.CreateGenericRepository<StatementsIncome>(userContext: _applicationUserId);
             var statementsRepo = _repoFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _applicationUserId);
+
+            double incomeAmount = Math.Round(model.Amount, 2);
+            model.Amount = incomeAmount;
             //if expense already exist, update it rather, else add
             StatementsIncome income = incomeRepo.GetAll().Where(x => x.Id.Equals(model.Id)).FirstOrDefault();
             if (income == null)
@@ -81,7 +84,7 @@ StatementsIncome model)
                     Month = DateTime.Now.Month,
                     Year = DateTime.Now.Year,
                     Period = "Monthly",
-                    IncomeTotal = Math.Round(model.Amount, 2),
+                    IncomeTotal = incomeAmount,
                     ExpenseTotal = 0,
                     Notes = model.Notes,
                     Balance = runningBalance
@@ -89,6 +92,7 @@ StatementsIncome model)
                 var ret = statementsRepo.Insert(statement);
 
                 model.IncomeStatementId = ret.Id.ToString(); //save incomestatement row id to expense row
+
                 incomeRepo.Insert(model);
 
                 statement.Balance = runningBalance;
@@ -102,7 +106,7 @@ StatementsIncome model)
                     StatementsIncomeStatement incomeStatement = statementsRepo.GetAll().Where(x => x.Id.Equals(income.IncomeStatementId)).FirstOrDefault();
                     if (incomeStatement != null)
                     {
-                        incomeStatement.IncomeTotal = Math.Round(model.Amount, 2);
+                        incomeStatement.IncomeTotal = incomeAmount;
                         incomeStatement.Notes = model.Notes;
                         incomeStatement.IsActive = model.IsActive;
                         var ret = statementsRepo.Update(incomeStatement);
@@ -119,6 +123,8 @@ StatementsExpenses model)
             var expenseRepo = _repoFactory.CreateGenericRepository<StatementsExpenses>(userContext: _applicationUserId);
             var statementsRepo = _repoFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _applicationUserId);
 
+            double expenseAmount = Math.Round(model.Amount, 2);
+            model.Amount = expenseAmount;
             //if expense already exist, update it rather, else add
             StatementsExpenses expense = expenseRepo.GetAll().Where(x => x.Id.Equals(model.Id)).FirstOrDefault();
             if (expense == null)
@@ -140,7 +146,7 @@ StatementsExpenses model)
                     Year = DateTime.Now.Year,
                     Period = "Monthly",
                     IncomeTotal = 0,
-                    ExpenseTotal = Math.Round(model.Amount,2),
+                    ExpenseTotal = expenseAmount,
                     Notes = model.Notes,
                     Balance = runningBalance
                 };
@@ -161,7 +167,7 @@ StatementsExpenses model)
                     StatementsIncomeStatement incomeStatement = statementsRepo.GetAll().Where(x => x.Id.Equals(expense.IncomeStatementId)).FirstOrDefault();
                     if (incomeStatement != null)
                     {
-                        incomeStatement.IncomeTotal = Math.Round(model.Amount, 2);
+                        incomeStatement.IncomeTotal = expenseAmount;
                         incomeStatement.Notes = model.Notes;
                         incomeStatement.IsActive = model.IsActive;
                         var ret = statementsRepo.Update(incomeStatement);
