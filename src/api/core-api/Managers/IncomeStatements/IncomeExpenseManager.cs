@@ -65,12 +65,10 @@ StatementsIncome model)
 
             double incomeAmount = Math.Round(model.Amount, 2);
             model.Amount = incomeAmount;
-            //if expense already exist, update it rather, else add
+
             StatementsIncome income = incomeRepo.GetAll().Where(x => x.Id.Equals(model.Id)).FirstOrDefault();
             if (income == null)
             {
-                
-
                 var statements = GetAllStatementsIncomeStatement(model.UserId);
                 double runningBalance = GetRunningBalance(model.UserId, model.DateReceived.Value.Month, model.DateReceived.Value.Year);//(row != null ? runningBalance = row.Balance : 0);
 
@@ -125,12 +123,10 @@ StatementsExpenses model)
 
             double expenseAmount = Math.Round(model.Amount, 2);
             model.Amount = expenseAmount;
-            //if expense already exist, update it rather, else add
+
             StatementsExpenses expense = expenseRepo.GetAll().Where(x => x.Id.Equals(model.Id)).FirstOrDefault();
             if (expense == null)
-            {
-
-                //do business logic to determine running balance
+            {             
                 var statements = GetAllStatementsIncomeStatement(model.UserId);
 
                 double runningBalance = GetRunningBalance(model.UserId, model.DatePaid.Value.Month, model.DatePaid.Value.Year);//(row != null ? runningBalance = row.Balance : 0);
@@ -153,7 +149,6 @@ StatementsExpenses model)
                 var ret = statementsRepo.Insert(statement);
 
                 model.IncomeStatementId = ret.Id.ToString(); //save incomestatement row id to expense row
-                //insert expense
                 expenseRepo.Insert(model);
 
                 statement.Balance = runningBalance;
