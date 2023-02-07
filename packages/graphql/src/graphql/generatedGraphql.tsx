@@ -2389,10 +2389,6 @@ export type Mutation = {
   createServiceScheduler?: Maybe<ServiceScheduler>;
   createShortenUrlEntity?: Maybe<ShortenUrlEntity>;
   createSiteAddress?: Maybe<SiteAddress>;
-  createStatementExpense?: Maybe<StatementsIncomeStatement>;
-  createStatementIncome?: Maybe<StatementsIncomeStatement>;
-  createStatementIncomeStatement?: Maybe<StatementsIncomeStatement>;
-  createStatementStartupSupport?: Maybe<StatementsStartupSupport>;
   createStatementsContributionType?: Maybe<StatementsContributionType>;
   createStatementsExpenseType?: Maybe<StatementsExpenseType>;
   createStatementsExpenses?: Maybe<StatementsExpenses>;
@@ -2532,6 +2528,7 @@ export type Mutation = {
   sendCoachInviteToApplication: Scalars['Boolean'];
   sendInviteToApplication: Scalars['Boolean'];
   sendPractitionerInviteToApplication: Scalars['Boolean'];
+  submitStatement?: Maybe<Array<Maybe<StatementsIncomeStatement>>>;
   trackAttendance: Scalars['Boolean'];
   updateAbsentees?: Maybe<Absentees>;
   updateActivity?: Maybe<Activity>;
@@ -2553,11 +2550,13 @@ export type Mutation = {
   updateEducation?: Maybe<Education>;
   updateEventRecord?: Maybe<EventRecord>;
   updateEventRecordType?: Maybe<EventRecordType>;
+  updateExpense?: Maybe<StatementsIncomeStatement>;
   updateFranchisor?: Maybe<Franchisor>;
   updateGender?: Maybe<Gender>;
   updateGrant?: Maybe<Grant>;
   updateHealthCareWorker?: Maybe<HealthCareWorker>;
   updateHierarchyEntity?: Maybe<HierarchyEntity>;
+  updateIncome?: Maybe<StatementsIncomeStatement>;
   updateInfant?: Maybe<Infant>;
   updateIntegrationMapping?: Maybe<IntegrationMapping>;
   updateLanguage?: Maybe<Language>;
@@ -2598,6 +2597,7 @@ export type Mutation = {
   updateServiceScheduler?: Maybe<ServiceScheduler>;
   updateShortenUrlEntity?: Maybe<ShortenUrlEntity>;
   updateSiteAddress?: Maybe<SiteAddress>;
+  updateStartupSupport?: Maybe<StatementsStartupSupport>;
   updateStatementsContributionType?: Maybe<StatementsContributionType>;
   updateStatementsExpenseType?: Maybe<StatementsExpenseType>;
   updateStatementsExpenses?: Maybe<StatementsExpenses>;
@@ -2975,22 +2975,6 @@ export type MutationCreateShortenUrlEntityArgs = {
 
 export type MutationCreateSiteAddressArgs = {
   input?: InputMaybe<SiteAddressInput>;
-};
-
-export type MutationCreateStatementExpenseArgs = {
-  model?: InputMaybe<StatementsExpensesInput>;
-};
-
-export type MutationCreateStatementIncomeArgs = {
-  model?: InputMaybe<StatementsIncomeInput>;
-};
-
-export type MutationCreateStatementIncomeStatementArgs = {
-  model?: InputMaybe<StatementsIncomeStatementInput>;
-};
-
-export type MutationCreateStatementStartupSupportArgs = {
-  model?: InputMaybe<StatementsStartupSupportInput>;
 };
 
 export type MutationCreateStatementsContributionTypeArgs = {
@@ -3605,6 +3589,11 @@ export type MutationSendPractitionerInviteToApplicationArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
+export type MutationSubmitStatementArgs = {
+  id?: InputMaybe<Scalars['String']>;
+  input?: InputMaybe<StatementsSubmitInput>;
+};
+
 export type MutationTrackAttendanceArgs = {
   attendance?: InputMaybe<TrackAttendanceModelInput>;
 };
@@ -3713,6 +3702,11 @@ export type MutationUpdateEventRecordTypeArgs = {
   input?: InputMaybe<EventRecordTypeModelInput>;
 };
 
+export type MutationUpdateExpenseArgs = {
+  id?: InputMaybe<Scalars['String']>;
+  input?: InputMaybe<StatementsExpensesInput>;
+};
+
 export type MutationUpdateFranchisorArgs = {
   id?: InputMaybe<Scalars['String']>;
   input?: InputMaybe<FranchisorInput>;
@@ -3737,6 +3731,11 @@ export type MutationUpdateHealthCareWorkerArgs = {
 export type MutationUpdateHierarchyEntityArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   input?: InputMaybe<HierarchyEntityInput>;
+};
+
+export type MutationUpdateIncomeArgs = {
+  id?: InputMaybe<Scalars['String']>;
+  input?: InputMaybe<StatementsIncomeInput>;
 };
 
 export type MutationUpdateInfantArgs = {
@@ -3956,6 +3955,11 @@ export type MutationUpdateShortenUrlEntityArgs = {
 export type MutationUpdateSiteAddressArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   input?: InputMaybe<SiteAddressInput>;
+};
+
+export type MutationUpdateStartupSupportArgs = {
+  id?: InputMaybe<Scalars['String']>;
+  input?: InputMaybe<StatementsStartupSupportInput>;
 };
 
 export type MutationUpdateStatementsContributionTypeArgs = {
@@ -5104,7 +5108,6 @@ export type Query = {
   allStatementsStartupSupport?: Maybe<Array<Maybe<StatementsStartupSupport>>>;
   allTeamLeads?: Maybe<Array<Maybe<TeamLead>>>;
   attendance?: Maybe<Array<Maybe<Attendance>>>;
-  cMSVisits?: Maybe<ContentType>;
   caregiverGrants?: Maybe<Array<Maybe<UserGrant>>>;
   childAttendanceReport?: Maybe<ChildAttendanceReportModel>;
   childByUserId?: Maybe<Child>;
@@ -7215,6 +7218,13 @@ export type StatementsStartupSupportInput = {
   StartDate?: InputMaybe<Scalars['DateTime']>;
   UpdatedBy?: InputMaybe<Scalars['String']>;
   UserId?: InputMaybe<Scalars['String']>;
+};
+
+export type StatementsSubmitInput = {
+  month?: InputMaybe<Scalars['Int']>;
+  period?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+  year: Scalars['Int'];
 };
 
 export type StoryBook = {
