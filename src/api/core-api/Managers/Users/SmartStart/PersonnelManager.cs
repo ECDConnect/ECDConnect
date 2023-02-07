@@ -36,27 +36,56 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             Practitioner practitioner = practiRepo.GetByUserId(practitionerId.ToString());
             if (practitioner != null)
             {
-                if (practitioner.PrincipalHierarchy.HasValue || practitioner.IsPrincipal == true)
+                if (practitioner.PrincipalHierarchy.HasValue || (practitioner.IsPrincipal == true || practitioner.IsFundaAppAdmin == true))
                 {
                     peers = practiRepo.GetAll().Where(x => x.PrincipalHierarchy.HasValue ? x.PrincipalHierarchy.Equals(practitioner.PrincipalHierarchy) : x.IsPrincipal == true ? x.UserId.Equals(practitionerId) : x.UserId.Equals(practitionerId)).ToList();
                     //also add principal
-                    if (practitioner.IsPrincipal == true)
+                    if (practitioner.IsPrincipal == true || practitioner.IsFundaAppAdmin == true)
                     {
                         Practitioner practiPrincipal = practiRepo.GetByUserId(practitioner.UserId.ToString());
                         if (practiPrincipal != null && !peers.Contains(practiPrincipal))
+                        {
                             peers.Add(practiPrincipal);
+                        }
+                        //now add principal's practitioners
+                        List<Practitioner> practiList = practiRepo.GetAll().Where(x => string.Equals(x.PrincipalHierarchy.ToString(), practitioner.UserId)).ToList();
+                        if (practiList != null)
+                        {
+                            foreach (Practitioner practi in practiList)
+                            {
+                                if (!peers.Contains(practi))
+                                {
+                                    peers.Add(practi);
+                                }
+                            }
+                            }
+                        
                     }
                     if (practitioner.PrincipalHierarchy.HasValue)
                     {
-                        Practitioner practiPrincipal = practiRepo.GetByUserId(practitioner.PrincipalHierarchy.ToString());
-                        if (practiPrincipal != null && !peers.Contains(practiPrincipal)) 
-                            peers.Add(practiPrincipal);
+                        List<Practitioner> practiList = practiRepo.GetAll().Where(x => string.Equals(x.PrincipalHierarchy.ToString(), practitioner.UserId)).ToList();
+                        if (practiList != null)
+                        {
+                            foreach (Practitioner practi in practiList)
+                            {
+                                if (!peers.Contains(practi))
+                                {
+                                    peers.Add(practi);
+                                }
+                            }
+                            //add principal
+                            Practitioner practiPrincipal = practiRepo.GetByUserId(practitioner.PrincipalHierarchy.ToString());
+                                if (practiPrincipal != null && !peers.Contains(practiPrincipal))
+                                {                                   
+                                peers.Add(practiPrincipal);
+                            }
+                        }
                     }
-                } else
-                {
-                    peers.Add(practitioner);
                 }
-            }
+            } else
+            {
+                peers.Add(practitioner);
+            }            
             return peers;
         }
 
