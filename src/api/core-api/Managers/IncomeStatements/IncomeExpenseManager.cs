@@ -1,16 +1,9 @@
-﻿using EcdLink.Api.CoreApi.GraphApi.Models;
-using ECDLink.DataAccessLayer.Entities;
+﻿using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.IncomeStatements;
-using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
-using ECDLink.DataAccessLayer.Repositories.Generic;
-using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
 using HotChocolate;
-using iTextSharp.text;
 using Microsoft.AspNetCore.Http;
-using NPOI.SS.Formula.Functions;
-using Org.BouncyCastle.Asn1.X509.Qualified;
 using System;
 using System.Collections.Generic;
 using System.Linq;
