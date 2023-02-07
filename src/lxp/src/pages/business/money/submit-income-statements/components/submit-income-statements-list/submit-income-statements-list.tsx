@@ -19,8 +19,16 @@ import {
   ExpensesStatementsDto,
   IncomeStatementsDto,
 } from '@/../../../packages/core/lib';
+import { authSelectors } from '@/store/auth';
+import { IncomeStatementsService } from '@/services/IncomeStatementsService';
+import { newGuid } from '@/utils/common/uuid.utils';
+import {
+  incomesValueFunc,
+  numberWithSpaces,
+} from '@/utils/statements/statements-utils';
 
 export const SubmitIncomeStatementsList: React.FC = () => {
+  const userAuth = useSelector(authSelectors.getAuthUser);
   const history = useHistory();
   const date = format(new Date(), 'EEEE, d LLLL');
   const { isOnline } = useOnlineStatus();
@@ -79,14 +87,6 @@ export const SubmitIncomeStatementsList: React.FC = () => {
   const [otherExpenseValues, setOtherExpenseValues] = useState<any>([]);
   const [utilities, setUtilities] = useState<any>([]);
   const [salary, setSalary] = useState<any>([]);
-
-  const incomesValueFunc = (item: any) => {
-    const total: any = item?.reduce(function (prev: any, current: any) {
-      return prev + +current.amount;
-    }, 0);
-
-    return total;
-  };
 
   useEffect(() => {
     const preschoolValue: IncomeStatementsDto[] = [];
@@ -188,6 +188,23 @@ export const SubmitIncomeStatementsList: React.FC = () => {
     utilities.id,
     utilitiesExpense?.id,
   ]);
+
+  const id = newGuid();
+  const input = {
+    period: 'Monthly',
+    userId: userAuth?.id!,
+    month: 2,
+    year: 2023,
+  };
+
+  const updateStatements = async () => {
+    if (userAuth?.auth_token) {
+      await new IncomeStatementsService(userAuth?.auth_token).submitStatement(
+        id,
+        input
+      );
+    }
+  };
 
   const incomeItems = [
     {
@@ -353,7 +370,7 @@ export const SubmitIncomeStatementsList: React.FC = () => {
           listItems={incomeItems}
         />
         <Card
-          className="bg-secondary flex items-center justify-around p-4"
+          className="bg-secondary flex items-center justify-between p-4"
           shadowSize={'md'}
         >
           <Typography
@@ -363,10 +380,10 @@ export const SubmitIncomeStatementsList: React.FC = () => {
             className="w-8/12"
           />
           <Typography
-            text={`R ${String(totalIncome)}`}
+            text={`R ${String(numberWithSpaces(totalIncome.toFixed(2)))}`}
             color={'white'}
             type="h4"
-            className="w-4/12 text-left"
+            className="mr-12 w-4/12 text-right"
           />
         </Card>
         <StackedList
@@ -375,7 +392,7 @@ export const SubmitIncomeStatementsList: React.FC = () => {
           listItems={expensesItems}
         />
         <Card
-          className="bg-secondary flex items-center justify-around p-4"
+          className="bg-secondary flex items-center justify-between p-4"
           shadowSize={'md'}
         >
           <Typography
@@ -385,10 +402,10 @@ export const SubmitIncomeStatementsList: React.FC = () => {
             className="w-9/12"
           />
           <Typography
-            text={`R ${String(totalExpenses)}`}
+            text={`R ${String(numberWithSpaces(totalExpenses.toFixed(2)))}`}
             color={'white'}
             type="h4"
-            className="w-3/12 text-left"
+            className="mr-12 w-4/12 text-right"
           />
         </Card>
         <Card
@@ -445,7 +462,10 @@ export const SubmitIncomeStatementsList: React.FC = () => {
               textColour: 'white',
               colour: 'primary',
               type: 'filled',
-              onClick: () => {},
+              onClick: () => {
+                updateStatements();
+                setConfimSubmitIncomeValues(false);
+              },
               leadingIcon: 'ArrowCircleRightIcon',
             },
             {

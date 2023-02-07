@@ -1,5 +1,6 @@
 import ROUTES from '@/routes/routes';
 import { statementsSelectors } from '@/store/statements';
+import { numberWithSpaces } from '@/utils/statements/statements-utils';
 import { Typography, StatusChip, Button, Card, FADButton } from '@ecdlink/ui';
 import { format } from 'date-fns';
 import React, { useState } from 'react';
@@ -68,11 +69,7 @@ export const SubmitIncomeStatements: React.FC = () => {
             className="w-6/12"
           />
           <Typography
-            text={
-              Number(totalBalance) > 0
-                ? `R ${String(totalBalance)}`
-                : `R ${String(totalBalance)}`
-            }
+            text={`R ${String(numberWithSpaces(totalBalance))}`}
             color={'white'}
             type="h1"
             className="w-8/12 text-right"
