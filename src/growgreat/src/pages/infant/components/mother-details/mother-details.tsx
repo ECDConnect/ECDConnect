@@ -26,6 +26,8 @@ import { motherSelectors } from '@/store/mother';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { InfantActions } from '@/store/infant/infant.actions';
 
+export const MOTHER_TYPE_ID = '568a219f-f1b9-41ac-bf38-143d8d749a39';
+
 export const MotherDetails: React.FC<MotherDetailsProps> = ({
   onSubmit,
   setAddress,
