@@ -19,7 +19,7 @@ export const SubmitIncomeStatements: React.FC = () => {
     return prev + +current.amount;
   }, 0);
 
-  const totalBalance = totalIncome - totalExpenses;
+  const totalBalance = (totalIncome - totalExpenses).toFixed(2);
 
   return (
     <>
@@ -69,7 +69,7 @@ export const SubmitIncomeStatements: React.FC = () => {
           />
           <Typography
             text={
-              totalBalance > 0
+              Number(totalBalance) > 0
                 ? `R ${String(totalBalance)}`
                 : `R ${String(totalBalance)}`
             }

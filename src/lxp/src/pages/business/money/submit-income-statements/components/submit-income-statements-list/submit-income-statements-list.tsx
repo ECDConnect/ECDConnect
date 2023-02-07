@@ -63,7 +63,7 @@ export const SubmitIncomeStatementsList: React.FC = () => {
     return prev + +current.amount;
   }, 0);
 
-  const totalBalance = totalIncome - totalExpenses;
+  const totalBalance = (totalIncome - totalExpenses).toFixed(2);
 
   // Income values
   const [preschoolFees, setPreschoolFees] = useState<any>([]);
@@ -360,13 +360,13 @@ export const SubmitIncomeStatementsList: React.FC = () => {
             text={'Total income'}
             type="body"
             color={'white'}
-            className="w-9/12"
+            className="w-8/12"
           />
           <Typography
             text={`R ${String(totalIncome)}`}
             color={'white'}
             type="h4"
-            className="w-3/12 text-left"
+            className="w-4/12 text-left"
           />
         </Card>
         <StackedList
@@ -403,11 +403,7 @@ export const SubmitIncomeStatementsList: React.FC = () => {
             className="w-6/12"
           />
           <Typography
-            text={
-              totalBalance > 0
-                ? `R ${String(totalBalance)}`
-                : `R ${String(totalBalance)}`
-            }
+            text={`R ${String(totalBalance)}`}
             color={'white'}
             type="h1"
             className="w-8/12 text-right"
