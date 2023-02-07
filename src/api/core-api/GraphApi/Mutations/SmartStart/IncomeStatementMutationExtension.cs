@@ -54,45 +54,46 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         }
 
         [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.Create)]
-        public StatementsIncomeStatement CreateStatementIncome([Service] IncomeExpenseManager incomeManager,
-              StatementsIncome model)
+        public StatementsIncomeStatement UpdateIncome([Service] IncomeExpenseManager incomeManager, string id,
+              StatementsIncome input)
         {
 
-            return incomeManager.CreateStatementIncome(model);
+            return incomeManager.UpdateIncome(input);
         }
 
         [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.Create)]
-        public StatementsIncomeStatement CreateStatementExpense([Service] IncomeExpenseManager incomeManager,
-      StatementsExpenses model)
+        public StatementsIncomeStatement UpdateExpense([Service] IncomeExpenseManager incomeManager, string id,
+      StatementsExpenses input)
         {
 
-            return incomeManager.CreateStatementExpense(model);
+            return incomeManager.UpdateExpense(input);
         }
 
         [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.Create)]
-        public StatementsIncomeStatement CreateStatementIncomeStatement(IGenericRepositoryFactory repoFactory,
-      [Service] IHttpContextAccessor httpContextAccessor,
-      StatementsIncomeStatement model)
+        public StatementsIncomeStatement UpdateIncomeStatement([Service] IncomeExpenseManager incomeManager, string id,
+      StatementsIncomeStatement input)
         {
 
-            string userId = Guid.NewGuid().ToString();
-            var _applicationUserId = httpContextAccessor.HttpContext.GetUser().Id;
-            var incomeRepo = repoFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _applicationUserId);
-            //check user dont exist first
-            return new StatementsIncomeStatement();
+            return incomeManager.UpdateIncomeStatement(input);
         }
 
         [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.Create)]
-        public StatementsStartupSupport CreateStatementStartupSupport(IGenericRepositoryFactory repoFactory,
-[Service] IHttpContextAccessor httpContextAccessor,
-StatementsStartupSupport model)
+        public StatementsStartupSupport UpdateStartupSupport([Service] IncomeExpenseManager incomeManager, string id,
+StatementsStartupSupport input)
         {
 
-            string userId = Guid.NewGuid().ToString();
-            var _applicationUserId = httpContextAccessor.HttpContext.GetUser().Id;
-            var incomeRepo = repoFactory.CreateGenericRepository<StatementsStartupSupport>(userContext: _applicationUserId);
-            //check user dont exist first
-            return new StatementsStartupSupport();
+            return incomeManager.UpdateStartupSupport(input);
+        }
+
+        [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.Create)]
+        public List<StatementsIncomeStatement> SubmitStatement([Service] IncomeExpenseManager incomeManager, string id,
+StatementsSubmit input)
+        {
+            if (input != null)
+            {
+                return incomeManager.SubmitStatement(input);
+            }
+            else return null;
         }
     }
 }
