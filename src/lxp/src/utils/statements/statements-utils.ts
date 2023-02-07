@@ -6,3 +6,15 @@ export const moneyInputFormat = (val: string) => {
 export const isNumber = (val: string) => {
   return /^[0-9.,]+$/.test(val);
 };
+
+export function numberWithSpaces(x: string) {
+  return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+}
+
+export const incomesValueFunc = (item: any) => {
+  const total: any = item?.reduce(function (prev: any, current: any) {
+    return prev + +current.amount;
+  }, 0);
+
+  return numberWithSpaces(total.toFixed(2));
+};
