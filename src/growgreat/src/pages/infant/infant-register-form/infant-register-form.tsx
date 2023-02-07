@@ -16,7 +16,10 @@ import {
   MultipleChildrenProps,
 } from './infant-register-form.types';
 import { ConsentAgreement } from '../components/consent-agrement/consent-agreement';
-import { MotherDetails } from '../components/mother-details/mother-details';
+import {
+  MotherDetails,
+  MOTHER_TYPE_ID,
+} from '../components/mother-details/mother-details';
 import { MotherContactInformation } from '../components/mother-contact-information/mother-contact-information';
 import { InfantAddress } from '../components/infant-address/infant-address';
 import { InfantRoadToHealth } from '../components/infant-road-to-health/infant-road-to-health';
@@ -529,7 +532,10 @@ export const InfantRegisterForm: React.FC = () => {
                   textColour: 'primary',
                   type: 'outlined',
                   leadingIcon: 'XIcon',
-                  onClick: onClose,
+                  onClick: () => {
+                    history.push(ROUTES.CLIENTS.ROOT);
+                    onClose();
+                  },
                 },
               ]}
             />
@@ -540,8 +546,8 @@ export const InfantRegisterForm: React.FC = () => {
     [dialog, history, mother?.user?.firstName, mother?.user?.id]
   );
 
-  const createBornEvent = useCallback(() => {
-    if (isAlreadyClient && !!mother?.expectedDateOfDelivery) {
+  const getChildWithCloseBirthday = useCallback(() => {
+    if (mother?.user && isAlreadyClient && !!mother?.expectedDateOfDelivery) {
       const { nextDate, previousDate } = getPreviousAndNextMonths(
         mother.expectedDateOfDelivery,
         2
@@ -556,16 +562,9 @@ export const InfantRegisterForm: React.FC = () => {
         );
       });
 
-      if (child) {
-        displayRecordEventDialog(child);
-      }
+      return child;
     }
-  }, [
-    displayRecordEventDialog,
-    isAlreadyClient,
-    mother,
-    multipleChildrenArray,
-  ]);
+  }, [isAlreadyClient, mother, multipleChildrenArray]);
 
   useEffect(() => {
     if (activeStep === InfantRegisterSteps.motherDetails && isAlreadyClient) {
@@ -579,8 +578,12 @@ export const InfantRegisterForm: React.FC = () => {
 
   const onSuccess = useCallback(() => {
     if (isFulfilled) {
-      if (mother?.user) {
-        return createBornEvent();
+      if (firstChild.caregiver?.id === MOTHER_TYPE_ID) {
+        const child = getChildWithCloseBirthday();
+
+        if (!!child) {
+          return displayRecordEventDialog(child);
+        }
       }
 
       (async () => {
@@ -604,10 +607,11 @@ export const InfantRegisterForm: React.FC = () => {
     }
   }, [
     appDispatch,
-    createBornEvent,
+    displayRecordEventDialog,
+    firstChild.caregiver?.id,
+    getChildWithCloseBirthday,
     healthCareWorker,
     isFulfilled,
-    mother?.user,
     showSuccessMessage,
   ]);
 
