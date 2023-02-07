@@ -121,7 +121,7 @@ StatementsExpenses model)
             StatementsExpenses expense = expenseRepo.GetAll().Where(x => x.Id.Equals(model.Id)).FirstOrDefault();
             if (expense == null)
             {
-                //insert expense
+                //insert expenseqqqqqqqqqqq
                 expenseRepo.Insert(model);
                 //do business logic to determine running balance
                 var statements = GetAllStatementsIncomeStatement(model.UserId);
@@ -193,18 +193,6 @@ StatementsStartupSupport model)
             return null;
 
         }
-
-        public StatementsIncomeStatement UpdateIncomeStatement(
-StatementsIncomeStatement model)
-        {
-            var statementsRepo = _repoFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _applicationUserId);
-
-            //update associated income or expense and adjust the running balance
-
-            return null;
-
-        }
-
 
         public List<StatementsIncomeStatement> SubmitStatement(
 StatementsSubmit model)
