@@ -4,5 +4,5 @@ export const moneyInputFormat = (val: string) => {
 };
 
 export const isNumber = (val: string) => {
-  return /^[0-9,\.]+/.test(val);
+  return /^[0-9.,]+$/.test(val);
 };
