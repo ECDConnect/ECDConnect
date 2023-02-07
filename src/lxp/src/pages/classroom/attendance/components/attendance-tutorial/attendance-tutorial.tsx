@@ -13,6 +13,7 @@ import * as styles from './attendance-tutorial.styles';
 import { AttendanceTutorialProps } from './attendance-tutorial.types';
 import ROUTES from '@/routes/routes';
 import { useHistory } from 'react-router-dom';
+import { useAppContext } from '@/context';
 
 export const AttendanceTutorial = ({
   onComplete,
@@ -33,6 +34,15 @@ export const AttendanceTutorial = ({
     avatarColor: getAvatarColor(),
   });
   const history = useHistory();
+
+  const { setState, state } = useAppContext();
+
+  console.log({ state });
+
+  const handleClickStart = () => {
+    console.log('testeeeeeeee');
+    setState({ run: true, tourActive: true });
+  };
 
   useEffect(() => {
     validateTutorial();
@@ -73,7 +83,7 @@ export const AttendanceTutorial = ({
       className={styles.bannerContentWrapper}
       displayOffline={!isOnline}
     >
-      <div className={'h-full bg-white p-4'}>
+      <div className={'h-full bg-white p-4'} id="home">
         <Card className="bg-uiBg flex w-full flex-col justify-center rounded-2xl p-4">
           <Typography
             className={'mt-4'}
@@ -95,7 +105,8 @@ export const AttendanceTutorial = ({
             textColor={'white'}
             className={'mt-4 max-h-10'}
             iconPosition={'start'}
-            onClick={() => history.push(ROUTES.ATTENDANCE_TUTORIAL_WALKTHROUGH)}
+            // onClick={() => history.push(ROUTES.ATTENDANCE_TUTORIAL_WALKTHROUGH)}
+            onClick={handleClickStart}
           />
         </Card>
 
