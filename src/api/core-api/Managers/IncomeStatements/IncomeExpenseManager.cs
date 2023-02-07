@@ -3,9 +3,7 @@ using ECDLink.DataAccessLayer.Entities.IncomeStatements;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.Security.Extensions;
 using HotChocolate;
-using iTextSharp.text;
 using Microsoft.AspNetCore.Http;
-using NPOI.SS.Formula.Functions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -85,7 +83,7 @@ StatementsIncome model)
                     IncomeTotal = incomeAmount,
                     ExpenseTotal = 0,
                     Notes = model.Notes,
-                    Balance = runningBalance
+                    Balance = runningBalance+incomeAmount
                 };
                 var ret = statementsRepo.Insert(statement);
 
@@ -144,7 +142,7 @@ StatementsExpenses model)
                     IncomeTotal = 0,
                     ExpenseTotal = expenseAmount,
                     Notes = model.Notes,
-                    Balance = runningBalance
+                    Balance = runningBalance-expenseAmount
                 };
                 var ret = statementsRepo.Insert(statement);
 
