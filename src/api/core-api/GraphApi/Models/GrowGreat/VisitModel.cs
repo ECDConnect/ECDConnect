@@ -1,5 +1,4 @@
-﻿using ECDLink.DataAccessLayer.Entities.Users;
-using ECDLink.DataAccessLayer.Entities.Visits;
+﻿using ECDLink.DataAccessLayer.Entities.Visits;
 using System;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
