@@ -11,6 +11,7 @@ import {
   getRaces,
   getReasonsForLeaving,
   getRelations,
+  getWorkflowStatuses,
 } from './static-data.actions';
 import { StaticDataState } from './static-data.types';
 
@@ -75,6 +76,9 @@ const staticDataSlice = createSlice({
     });
     builder.addCase(getNoteTypes.fulfilled, (state, action) => {
       state.noteTypes = action.payload;
+    });
+    builder.addCase(getWorkflowStatuses.fulfilled, (state, action) => {
+      state.WorkflowStatuses = action.payload;
     });
   },
 });

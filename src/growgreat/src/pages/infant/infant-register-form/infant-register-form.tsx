@@ -249,28 +249,31 @@ export const InfantRegisterForm: React.FC = () => {
           infantThunkActions.addInfant({ infant: infantInputModel, motherId })
         ).unwrap();
 
-        const fileName = 'roadtohealthbook.png';
-        const workflowStatusId = getWorkflowStatusIdByEnum(
-          WorkflowStatusEnum.DocumentPendingVerification
-        );
-        const documentTypeId = getDocumentTypeIdByEnum(
-          FileTypeEnum.RoadToHealthBook
-        );
-        const documentInputModel: Document = {
-          id: newGuid(),
-          userId: childUserId,
-          createdUserId: user?.id ?? '',
-          workflowStatusId: workflowStatusId ?? '',
-          documentTypeId: documentTypeId ?? '',
-          name: fileName,
-          fileName: fileName,
-          file: infantRoadToHealthBook?.roadToHealthBook,
-          fileType: FileTypeEnum.RoadToHealthBook,
-        };
-        appDispatch(documentActions.createDocument(documentInputModel));
-        await appDispatch(
-          documentThunkActions.createDocument(documentInputModel)
-        ).unwrap();
+        if (infantRoadToHealthBook?.roadToHealthBook) {
+          const fileName = 'roadtohealthbook.png';
+          const workflowStatusId = getWorkflowStatusIdByEnum(
+            WorkflowStatusEnum.DocumentPendingVerification
+          );
+          const documentTypeId = getDocumentTypeIdByEnum(
+            FileTypeEnum.RoadToHealthBook
+          );
+          const documentInputModel: Document = {
+            id: newGuid(),
+            userId: childUserId,
+            createdUserId: user?.id ?? '',
+            workflowStatusId: workflowStatusId ?? '',
+            documentTypeId: documentTypeId ?? '',
+            name: fileName,
+            fileName: fileName,
+            file: infantRoadToHealthBook?.roadToHealthBook,
+            fileType: FileTypeEnum.RoadToHealthBook,
+          };
+
+          appDispatch(documentActions.createDocument(documentInputModel));
+          await appDispatch(
+            documentThunkActions.createDocument(documentInputModel)
+          ).unwrap();
+        }
       }
     } else {
       let weightAtBirth = undefined;
@@ -312,28 +315,31 @@ export const InfantRegisterForm: React.FC = () => {
         infantThunkActions.addInfant({ infant: infantInputModel, motherId })
       ).unwrap();
 
-      const fileName = 'roadtohealthbook.png';
-      const workflowStatusId = getWorkflowStatusIdByEnum(
-        WorkflowStatusEnum.DocumentPendingVerification
-      );
-      const documentTypeId = getDocumentTypeIdByEnum(
-        FileTypeEnum.RoadToHealthBook
-      );
-      const documentInputModel: Document = {
-        id: newGuid(),
-        userId: childUserId,
-        createdUserId: user?.id ?? '',
-        workflowStatusId: workflowStatusId ?? '',
-        documentTypeId: documentTypeId ?? '',
-        name: fileName,
-        fileName: fileName,
-        file: infantRoadToHealthBook?.roadToHealthBook,
-        fileType: FileTypeEnum.RoadToHealthBook,
-      };
-      appDispatch(documentActions.createDocument(documentInputModel));
-      await appDispatch(
-        documentThunkActions.createDocument(documentInputModel)
-      ).unwrap();
+      if (infantRoadToHealthBook?.roadToHealthBook) {
+        const fileName = 'roadtohealthbook.png';
+        const workflowStatusId = getWorkflowStatusIdByEnum(
+          WorkflowStatusEnum.DocumentPendingVerification
+        );
+        const documentTypeId = getDocumentTypeIdByEnum(
+          FileTypeEnum.RoadToHealthBook
+        );
+        const documentInputModel: Document = {
+          id: newGuid(),
+          userId: childUserId,
+          createdUserId: user?.id ?? '',
+          workflowStatusId: workflowStatusId ?? '',
+          documentTypeId: documentTypeId ?? '',
+          name: fileName,
+          fileName: fileName,
+          file: infantRoadToHealthBook?.roadToHealthBook,
+          fileType: FileTypeEnum.RoadToHealthBook,
+        };
+
+        appDispatch(documentActions.createDocument(documentInputModel));
+        await appDispatch(
+          documentThunkActions.createDocument(documentInputModel)
+        ).unwrap();
+      }
     }
   };
 
