@@ -19,6 +19,7 @@ interface FormFieldProps<T extends FieldValues> extends ComponentBaseProps {
   textInputType?: TextInputType;
   error?: FieldError;
   disabled?: boolean;
+  prefixIcon?: boolean;
   suffixIcon?: string;
   sufficIconColor?: Colours;
   visible?: boolean;
@@ -48,6 +49,7 @@ export const FormInput = <T extends FieldValues>({
   value,
   hint,
   maxLength,
+  prefixIcon,
   ...restProps
 }: FormFieldProps<T>) => {
   const getInputToRender = () => {
@@ -85,18 +87,20 @@ export const FormInput = <T extends FieldValues>({
         if (nameProp && register) {
           return (
             <CurrencyInput
-              prefix="R"
-              decimalsLimit={2}
+              id="validation-example-2-field"
+              allowDecimals={false}
+              step={10}
               autoComplete="new-off"
               placeholder={placeholder}
               disabled={disabled}
               type={type}
               maxLength={maxLength}
               {...register(nameProp)}
-              className={error ? styles.errorStyle : styles.defaultInputStyle}
-              style={suffixIcon ? { paddingRight: 38 } : { paddingRight: 16 }}
+              className={
+                error ? styles.errorStyle : styles.defaultMoneyInputStyle
+              }
+              style={prefixIcon ? { paddingRight: 38 } : { paddingRight: 16 }}
               {...restProps}
-              pattern={'[0-9]'}
             />
           );
         } else {
@@ -164,7 +168,13 @@ export const FormInput = <T extends FieldValues>({
           {hint && <label className={styles.hintStyle}>{hint}</label>}
           <div className={styles.inputWrapper}>
             {getInputToRender()}
-
+            <div className={styles.iconWrapperLeft} onClick={suffixIconAction}>
+              {!!prefixIcon && (
+                <span className="text-textDark align-center items-center pl-1 font-semibold">
+                  R
+                </span>
+              )}
+            </div>
             <div className={styles.iconWrapper} onClick={suffixIconAction}>
               {!!suffixIcon &&
                 renderIcon(suffixIcon, `h-5 w-5 text-${sufficIconColor}`)}

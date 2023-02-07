@@ -5104,6 +5104,7 @@ export type Query = {
   allStatementsStartupSupport?: Maybe<Array<Maybe<StatementsStartupSupport>>>;
   allTeamLeads?: Maybe<Array<Maybe<TeamLead>>>;
   attendance?: Maybe<Array<Maybe<Attendance>>>;
+  cMSVisits?: Maybe<ContentType>;
   caregiverGrants?: Maybe<Array<Maybe<UserGrant>>>;
   childAttendanceReport?: Maybe<ChildAttendanceReportModel>;
   childByUserId?: Maybe<Child>;
@@ -7659,18 +7660,22 @@ export type VisitNameInput = {
 export type VisitQuestionnaire = {
   __typename?: 'VisitQuestionnaire';
   description?: Maybe<Scalars['String']>;
+  heading?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['Int']>;
   image?: Maybe<Scalars['String']>;
   linkedQuestions?: Maybe<Array<Maybe<VisitQuestionnaireQuestion>>>;
   name?: Maybe<Scalars['String']>;
+  subheading?: Maybe<Scalars['String']>;
   type?: Maybe<Scalars['String']>;
 };
 
 export type VisitQuestionnaireInput = {
   description?: InputMaybe<Scalars['String']>;
+  heading?: InputMaybe<Scalars['String']>;
   image?: InputMaybe<Scalars['String']>;
   linkedQuestions?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
+  subheading?: InputMaybe<Scalars['String']>;
   type?: InputMaybe<Scalars['String']>;
 };
 
@@ -7687,22 +7692,22 @@ export type VisitQuestionnaireQuestion = {
 
 export type VisitQuestionnaireQuestionAnswer = {
   __typename?: 'VisitQuestionnaireQuestionAnswer';
-  Video?: Maybe<Scalars['String']>;
   description?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['Int']>;
   image?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
   sequence?: Maybe<Scalars['String']>;
   type?: Maybe<Scalars['String']>;
+  video?: Maybe<Scalars['String']>;
 };
 
 export type VisitQuestionnaireQuestionAnswerInput = {
-  Video?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   image?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
   sequence?: InputMaybe<Scalars['String']>;
   type?: InputMaybe<Scalars['String']>;
+  video?: InputMaybe<Scalars['String']>;
 };
 
 export type VisitQuestionnaireQuestionInput = {

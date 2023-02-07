@@ -129,6 +129,7 @@ export const StartupSupport: React.FC<AddIncomeState> = ({ setType }) => {
           className="mt-2"
           type={'text'}
           textInputType={'moneyInput'}
+          prefixIcon={!!startupValue}
         />
         <Alert
           type={'info'}

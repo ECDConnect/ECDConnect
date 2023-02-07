@@ -206,20 +206,20 @@ class IncomeStatementsService {
       query: `
       query allStatementsIncomeStatement($userId: String) {
         allStatementsIncomeStatement(userId: $userId) {
-        id 
-        insertedDate 
-        notes 
-        userId 
-        submitted
-        incomeTotal
-        expenseTotal
-        balance
-        submittedDate
-        month
-        year
-        period
+            id
+            insertedDate
+            notes
+            userId
+            submitted
+            incomeTotal
+            expenseTotal
+            balance
+            submittedDate
+            month
+            year
+            period
+        }
     }
-}
           `,
       variables: {
         userId,
