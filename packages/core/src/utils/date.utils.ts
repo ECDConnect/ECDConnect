@@ -42,3 +42,11 @@ export function getPreviousAndNextMonths(
 
   return { previousDate, nextDate };
 }
+
+export const getNextDateByDay = (daysLater: number, currentDate?: Date) => {
+  const today = new Date();
+  const date = new Date(currentDate || today);
+  date.setDate(date.getDate() + daysLater);
+
+  return date;
+};

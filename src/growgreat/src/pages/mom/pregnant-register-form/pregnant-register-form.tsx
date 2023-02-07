@@ -63,7 +63,7 @@ export const PregnantRegisterForm: React.FC = () => {
   const [pregnantMaternalCaseRecord, setPregnantMaternalCaseRecord] =
     useState<PregnantMaternalCaseRecordProps>();
   const [activeStep, setActiveStep] = useState(
-    PregnantRegisterSteps.consentAgreement
+    PregnantRegisterSteps.pregnantMaternalRecord
   );
   const user = useSelector(userSelectors.getUser);
   const { getWorkflowStatusIdByEnum, getDocumentTypeIdByEnum } =

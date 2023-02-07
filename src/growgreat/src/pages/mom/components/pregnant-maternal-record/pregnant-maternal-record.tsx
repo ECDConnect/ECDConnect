@@ -26,7 +26,11 @@ import {
 } from '@/schemas/pregnant/pregnant-maternal-case-record';
 import { InformationCircleIcon } from '@heroicons/react/outline';
 import maternalRecord from '../../../../assets/maternalRecord.png';
-import { getWeeksDiff } from '@ecdlink/core';
+import {
+  getNextDateByDay,
+  getPreviousAndNextMonths,
+  getWeeksDiff,
+} from '@ecdlink/core';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { MotherActions } from '@/store/mother/mother.actions';
 
@@ -64,9 +68,13 @@ export const PregnantMaternalCaseRecord: React.FC<
 
   const currentDate = useMemo(() => new Date(), []);
 
-  const [deliveryDate, setDeliveryDate] = useState(currentDate);
+  const tomorrow = getNextDateByDay(1);
 
-  const isMinDate = deliveryDate.getFullYear() === currentDate.getFullYear();
+  const dateAfter280days = getNextDateByDay(280);
+
+  const [deliveryDate, setDeliveryDate] = useState(tomorrow);
+
+  const { previousDate } = getPreviousAndNextMonths(tomorrow, 1);
 
   const { isLoading } = useThunkFetchCall('mothers', MotherActions.ADD_MOTHER);
 
@@ -91,15 +99,13 @@ export const PregnantMaternalCaseRecord: React.FC<
   };
 
   const diffDates = getWeeksDiff(currentDate, deliveryDate);
+
   const actualGestationWeek = 40 - diffDates;
 
-  const getDate = (point: 'min' | 'max') => {
+  const getMinYear = () => {
     const day = new Date().getDate();
     const month = new Date().getMonth() + 1;
-    const year =
-      point === 'max'
-        ? new Date().getFullYear() + 1
-        : new Date().getFullYear() - 1;
+    const year = new Date().getFullYear() - 1;
 
     return new Date(`${month}/${day}/${year}`);
   };
@@ -110,13 +116,23 @@ export const PregnantMaternalCaseRecord: React.FC<
 
   const onYearChange = useCallback(
     (date: Date) => {
-      if (deliveryDate.getFullYear() !== currentDate.getFullYear()) {
-        return setDeliveryDate(currentDate);
+      if (deliveryDate.getFullYear() !== tomorrow.getFullYear()) {
+        return setDeliveryDate(tomorrow);
       }
 
       return setDeliveryDate(date);
     },
-    [currentDate, deliveryDate]
+    [tomorrow, deliveryDate]
+  );
+
+  const onMonthChange = useCallback(
+    (date: Date) => {
+      if (date.getMonth() === tomorrow.getMonth()) {
+        return setDeliveryDate(tomorrow);
+      }
+      setDeliveryDate(date);
+    },
+    [tomorrow]
   );
 
   return (
@@ -148,7 +164,8 @@ export const PregnantMaternalCaseRecord: React.FC<
             selected={deliveryDate}
             onChange={(date: Date) => setDeliveryDate(date)}
             dateFormat="dd"
-            {...(isMinDate && { minDate: currentDate })}
+            minDate={tomorrow}
+            maxDate={dateAfter280days}
             renderCustomHeader={() => <div>Day</div>}
             onKeyDown={onKeyDown}
           />
@@ -157,10 +174,11 @@ export const PregnantMaternalCaseRecord: React.FC<
             className="text-primary bg-uiBg focus:border-primary focus:ring-primary mt-1 w-full rounded-md border-none text-lg shadow-sm"
             popperClassName="z-50"
             selected={deliveryDate}
-            onChange={(date: Date) => setDeliveryDate(date)}
+            onChange={onMonthChange}
             renderCustomHeader={() => <div>Month</div>}
             dateFormat="MMMM"
-            {...(isMinDate && { minDate: currentDate })}
+            minDate={getNextDateByDay(15, previousDate)}
+            maxDate={dateAfter280days}
             showMonthYearPicker
             showPopperArrow={true}
             onKeyDown={onKeyDown}
@@ -172,8 +190,8 @@ export const PregnantMaternalCaseRecord: React.FC<
             selected={deliveryDate}
             onChange={onYearChange}
             dateFormat="yyyy"
-            minDate={getDate('min')}
-            maxDate={getDate('max')}
+            minDate={getMinYear()}
+            maxDate={dateAfter280days}
             renderCustomHeader={() => <div>Year</div>}
             showYearPicker
             onKeyDown={onKeyDown}
