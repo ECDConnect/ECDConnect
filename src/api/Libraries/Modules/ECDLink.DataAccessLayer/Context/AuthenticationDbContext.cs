@@ -126,6 +126,9 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<EventRecordType> EventRecordTypes { get; set; }
         public DbSet<EventRecord> EventRecords { get; set; }
 
+        // Clubs
+        public DbSet<Club> Clubs { get; set; }
+
         public AuthenticationDbContext(DbContextOptions<AuthenticationDbContext> options)
                : base(options)
         {
