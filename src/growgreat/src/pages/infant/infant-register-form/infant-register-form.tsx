@@ -585,6 +585,14 @@ export const InfantRegisterForm: React.FC = () => {
     }
   }, [activeStep, isAlreadyClient]);
 
+  const getInfantCount = useCallback(async () => {
+    const count = await appDispatch(
+      infantThunkActions.getInfantCountForMonth({})
+    ).unwrap();
+
+    showSuccessMessage(count || undefined);
+  }, [appDispatch, showSuccessMessage]);
+
   const onSuccess = useCallback(() => {
     if (isFulfilled) {
       if (motherId) {
@@ -608,13 +616,7 @@ export const InfantRegisterForm: React.FC = () => {
         }
       }
 
-      (async () => {
-        const count = await appDispatch(
-          infantThunkActions.getInfantCountForMonth({})
-        ).unwrap();
-
-        showSuccessMessage(count);
-      })();
+      getInfantCount();
 
       if (healthCareWorker) {
         (async () =>
@@ -631,8 +633,9 @@ export const InfantRegisterForm: React.FC = () => {
     appDispatch,
     bornEventId,
     displayRecordEventDialog,
-    firstChild,
+    firstChild?.caregiver?.id,
     getChildWithCloseBirthday,
+    getInfantCount,
     healthCareWorker,
     isFulfilled,
     motherId,
@@ -656,22 +659,15 @@ export const InfantRegisterForm: React.FC = () => {
         return history.push(ROUTES.CLIENTS.ROOT);
       }
 
-      (async () => {
-        const count = await appDispatch(
-          infantThunkActions.getInfantCountForMonth({})
-        ).unwrap();
-
-        showSuccessMessage(count);
-      })();
+      getInfantCount();
     }
   }, [
-    appDispatch,
     errorDialog,
+    getInfantCount,
     history,
     isLoadingEventRecord,
     isRejectedEventRecord,
     mother?.user?.firstName,
-    showSuccessMessage,
     wasLoadingEventRecord,
   ]);
 
