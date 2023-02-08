@@ -1,10 +1,8 @@
-﻿using ECDLink.DataAccessLayer.Entities;
-using ECDLink.DataAccessLayer.Entities.IncomeStatements;
+﻿using ECDLink.DataAccessLayer.Entities.IncomeStatements;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
-using Org.BouncyCastle.Math.EC.Rfc7748;
 using System;
 using System.Collections.Generic;
 using System.Linq;
