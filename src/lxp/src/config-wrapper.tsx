@@ -9,7 +9,7 @@ import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import App from './App';
 import Loader from './components/loader/loader';
-import { WalkthroughProvider } from './context';
+import { WalkthroughProvider } from './walkthrougContext';
 import MultiRouteWrapper from './JoyRideWrapper';
 import { persistor, store } from './store';
 

@@ -8,6 +8,8 @@ const appState = {
   stepIndex: 0,
   steps: [],
   tourActive: false,
+  attendanceStatus: true,
+  enableButton: true,
 };
 
 export const AppContext = createContext({
@@ -18,8 +20,6 @@ AppContext.displayName = 'AppContext';
 
 export function WalkthroughProvider(props: any) {
   const [state, setState] = useSetState(appState);
-
-  console.log({ state });
 
   const value = useMemo(
     () => ({

@@ -13,7 +13,7 @@ import * as styles from './attendance-tutorial.styles';
 import { AttendanceTutorialProps } from './attendance-tutorial.types';
 import ROUTES from '@/routes/routes';
 import { useHistory } from 'react-router-dom';
-import { useAppContext } from '@/context';
+import { useAppContext } from '@/walkthrougContext';
 
 export const AttendanceTutorial = ({
   onComplete,
@@ -35,14 +35,11 @@ export const AttendanceTutorial = ({
   });
   const history = useHistory();
 
-  const { setState, state } = useAppContext();
-
-  console.log({ state });
+  const { setState } = useAppContext();
 
   const handleClickStart = () => {
-    console.log('testeeeeeeee');
     setState({ run: true, tourActive: true, stepIndex: 0 });
-    console.log({ state });
+    history.push(ROUTES.ATTENDANCE_TUTORIAL_WALKTHROUGH);
   };
 
   useEffect(() => {
@@ -144,14 +141,12 @@ export const AttendanceTutorial = ({
           onClick={onComplete}
           className={styles.closeButton}
         >
-          <div id="home">
-            <Typography
-              color={'white'}
-              type={'help'}
-              weight={'normal'}
-              text={'Start taking attendance'}
-            />
-          </div>
+          <Typography
+            color={'white'}
+            type={'help'}
+            weight={'normal'}
+            text={'Start taking attendance'}
+          />
         </Button>
       </div>
     </BannerWrapper>

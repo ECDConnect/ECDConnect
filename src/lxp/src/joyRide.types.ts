@@ -5,4 +5,6 @@ export interface AppState {
   stepIndex: number;
   steps: Step[];
   tourActive: boolean;
+  attendanceStatus: boolean;
+  enableButton: boolean;
 }

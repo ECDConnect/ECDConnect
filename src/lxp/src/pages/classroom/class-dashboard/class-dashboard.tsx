@@ -206,6 +206,8 @@ export const ClassDashboard: React.FC = () => {
     updatePractitionerProgress();
   };
 
+  useEffect(() => {}, []);
+
   useEffect(() => {
     const handleAttendanceTutorial = () => {
       dialog({

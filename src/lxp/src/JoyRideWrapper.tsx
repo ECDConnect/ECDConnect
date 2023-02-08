@@ -1,115 +1,137 @@
-import Joyride, { CallBackProps } from 'react-joyride';
+import Joyride, { CallBackProps, TooltipRenderProps } from 'react-joyride';
 import { useHistory } from 'react-router-dom';
-import { useMount } from 'react-use';
-import { useAppContext } from './context';
-import { Typography } from '@ecdlink/ui';
+import { useAppContext } from './walkthrougContext';
+import {
+  Button,
+  Card,
+  renderIcon,
+  SliderPagination,
+  Typography,
+} from '@ecdlink/ui';
+import { useSetState } from 'react-use';
+import WalktroughImage from './assets/walktroughImage.png';
 import ROUTES from './routes/routes';
+import { useEffect } from 'react';
 
 export default function MultiRouteWrapper() {
   const history = useHistory();
   const {
     setState,
-    state: { run, stepIndex, steps },
+    state: { run, stepIndex, steps, attendanceStatus, enableButton },
   } = useAppContext();
 
-  console.log({ steps });
-
-  useMount(() => {
-    console.log('useEffect');
+  useSetState(() => {
     setState({
       steps: [
         {
-          target: '#home',
-          content: (
-            <>
-              <Typography
-                text={'Walkthrough test'}
-                type={'help'}
-                color={'textMid'}
-              />
-              <Typography
-                text={
-                  "When you click 'next', it will stop the tour, navigate to route A, and continue the tour."
-                }
-                type={'help'}
-                color={'textMid'}
-              />
-            </>
-          ),
+          target: '#attendance-list',
+          content: 'All children are automatically marked present',
+          placement: 'bottom-end',
+          offset: 10,
           disableBeacon: true,
         },
         {
           target: '#attendance-list-alone',
-          content: (
-            <>
-              <Typography
-                text={'This is Route A'}
-                type={'help'}
-                color={'textMid'}
-              />
-              <Typography
-                text={
-                  ' The loader that appeared in the page was a simulation of a real page load, and now the tour is active again'
-                }
-                type={'help'}
-                color={'textMid'}
-              />
-            </>
-          ),
+          content: 'Tap anywhere on this block to mark Jane absent today',
+          placement: 'bottom-end',
+          offset: 10,
+          spotlightClicks: !!attendanceStatus,
+          event: 'click',
         },
         {
-          target: '#routeB',
-          content: (
-            <>
-              <Typography
-                text={'This is Route B'}
-                type={'help'}
-                color={'textMid'}
-              />
-              <Typography
-                text={
-                  ' Yet another loader simulation and now we reached the last step in our tour!'
-                }
-                type={'help'}
-                color={'textMid'}
-              />
-            </>
-          ),
+          target: '#attendance-list-alone',
+          content: 'Now tap again to mark Jane present.',
+          placement: 'bottom-end',
+          offset: 10,
+          spotlightClicks: !!attendanceStatus,
+        },
+        {
+          target: '#attendance-list-alone',
+          content: "Great, you're ready to start!",
+          placement: 'bottom-end',
+          offset: 10,
         },
       ],
     });
   });
 
-  const navigate = (route: string) => {
-    console.log({ route });
-    history.push(route);
-  };
+  function Tooltip({
+    backProps,
+    continuous,
+    index,
+    isLastStep,
+    primaryProps,
+    skipProps,
+    step,
+    tooltipProps,
+  }: TooltipRenderProps) {
+    return (
+      <div {...tooltipProps} className="ml-2">
+        <Card className="rounded-2xl p-6">
+          <div>
+            {step.content && (
+              <div className="flex items-center gap-2 align-middle">
+                <img src={WalktroughImage} alt="walkthrough profile" />
+                <Typography
+                  color={'textDark'}
+                  type={'h2'}
+                  weight={'normal'}
+                  text={String(step?.content)}
+                />
+              </div>
+            )}
+          </div>
+          <div className="mt-4 flex items-center justify-end gap-4">
+            <SliderPagination
+              totalItems={4}
+              activeIndex={index}
+              className={'p-4'}
+            />
+            {enableButton && (
+              <div {...primaryProps} className={'w-full'}>
+                <Button
+                  type="filled"
+                  color="primary"
+                  className={'w-6/12'}
+                  icon={'SaveIcon'}
+                  onClick={() => {}}
+                >
+                  {renderIcon('XIcon', `w-5 h-5 text-white mr-2`)}
+                  <Typography
+                    type="help"
+                    className="mr-2"
+                    color="white"
+                    text={isLastStep ? 'Close' : 'Next'}
+                  />
+                </Button>
+              </div>
+            )}
+            {/* )} */}
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   const handleCallback = (data: CallBackProps) => {
     const { action, index, lifecycle, type } = data;
 
-    if (type === 'step:after' && index === 0 /* or step.target === '#home' */) {
-      setState({ run: false });
-      console.log('routesssss');
-      window.location.replace('attendance-tutorial-walkthrough');
-      // navigate('/classroom');
+    if (type === 'step:after' && index === 0) {
+      setState({ run: true, stepIndex: 1, enableButton: false });
     } else if (type === 'step:after' && index === 1) {
-      console.log('routesssss22222');
       if (action === 'next') {
-        setState({ run: false });
-        navigate('/multi-route/b');
+        setState({ run: true, stepIndex: 2, enableButton: false });
       } else {
-        console.log('routesssss33333333');
-        navigate('/multi-route');
         setState({ run: true, stepIndex: 0 });
       }
-    } else if (type === 'step:after' && action === 'prev' && index === 2) {
-      console.log('routesssss444444444');
-      setState({ run: false });
-
-      navigate('/multi-route/a');
+    } else if (type === 'step:before' && index === 2) {
+      setState({ attendanceStatus: false });
+    } else if (type === 'step:after' && index === 2) {
+      setState({ run: true, stepIndex: 3 });
+    } else if (type === 'step:after' && index === 3) {
+      setState({ run: false, stepIndex: 0 });
+      history.push(ROUTES.CLASSROOM, { activeTabIndex: 0 });
     } else if (action === 'reset' || lifecycle === 'complete') {
-      console.log('routesssss5555555');
       setState({ run: false, stepIndex: 0, tourActive: false });
     }
   };
@@ -122,14 +144,11 @@ export default function MultiRouteWrapper() {
         run={run}
         stepIndex={stepIndex}
         steps={steps}
-        styles={{
-          options: {
-            arrowColor: 'black',
-            backgroundColor: 'black',
-            primaryColor: 'primary',
-            textColor: 'white',
-          },
-        }}
+        tooltipComponent={Tooltip}
+        scrollToFirstStep
+        showProgress
+        showSkipButton
+        disableOverlayClose
       />
     </div>
   );
