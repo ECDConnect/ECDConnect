@@ -23,7 +23,7 @@ namespace ECDLink.SmartStart.GraphQL.Mutations
         public async Task<bool> UploadChildProgressReport(
             [Service] IHttpContextAccessor httpContextAccessor,
             [Service] IFileService _fileService,
-            [Service] IGenericRepositoryFactory repoFactory,
+            IGenericRepositoryFactory repoFactory,
             string report)
         {
             var documentTypeRepo = repoFactory.CreateRepository<DocumentType>();

@@ -29,6 +29,7 @@ namespace ECDLink.DataAccessLayer.Entities.IncomeStatements
         public string? IncomeStatementId { get; set; }
         public string UserId { get; set; }
         public DateTime? DateReceived { get; set; }
+        public string? FeeTypeId { get; set; }
 
     }
 

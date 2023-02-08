@@ -24,7 +24,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public Child GetChildByUserId([Service] IHttpContextAccessor contextAccessor,
-            [Service] IGenericRepositoryFactory repoFactory,
+            IGenericRepositoryFactory repoFactory,
         string userId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
@@ -34,7 +34,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public List<Child> GetChildrenByClassroomId([Service] IHttpContextAccessor contextAccessor,
-    [Service] IGenericRepositoryFactory repoFactory,
+    IGenericRepositoryFactory repoFactory,
 string classroomId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
@@ -60,39 +60,42 @@ string classroomId)
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public ChildCreatedByDetail GetChildCreatedByDetail([Service] IHttpContextAccessor contextAccessor,
-            [Service] IGenericRepositoryFactory repoFactory,
+            IGenericRepositoryFactory repoFactory,
             [Service] PersonnelManager personnelManager,
         string firstName, string surname, string practitionerId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var dbRepo = repoFactory.CreateGenericRepository<Child>(userContext: uId);
-            var child = dbRepo.GetAll().Where(x => x.User.FirstName.ToLower() == firstName.ToLower() && x.User.Surname.ToLower() == surname.ToLower()).FirstOrDefault();
-
-            if (child != null && child.User != null)
+            var children = dbRepo.GetAll().Where(x => x.User.FirstName.ToLower() == firstName.ToLower() && x.User.Surname.ToLower() == surname.ToLower()).ToList();
+            var practitioners = personnelManager.GetPractitionerPeers(practitionerId);
+            if (children != null)
             {
-                //TODO: ensure children returned is only based on same sitename as the uId belongs to
-                var practitioners = personnelManager.GetPractitionerPeers(practitionerId);
-                if (practitioners != null)
+                foreach (var child in children)
                 {
-                    foreach (var practitioner in practitioners)
+                    if (practitioners != null)
                     {
-                        bool childExists = false;
-                        var children = personnelManager.GetAllChildrenForPractitioner(practitioner.UserId).ToList();
-                        if (children.Count > 0)
+                        foreach (var practitioner in practitioners)
                         {
-                            childExists = children.Where(x => x.Equals(child)).Any();
-                        }
-                        if (childExists)
-                        {
-                            return new ChildCreatedByDetail()
+                            bool childExists = false;
+                            var pracChildren = personnelManager.GetAllChildrenForPractitioner(practitioner.UserId).ToList();
+                            if (pracChildren.Count > 0)
                             {
-                                ChildUserId = child.UserId,
-                                FullName = child.User.FullName,
-                                CreatedByName = child.InsertedBy,
-                                CreatedById = child.UpdatedBy,
-                                CreatedByDate = child.InsertedDate,
-                                PractitionerName = practitioner.User.FullName
-                            };
+                                childExists = pracChildren.Where(x => x.Equals(child)).Any();
+                            }
+                            if (childExists)
+                            {
+                                return new ChildCreatedByDetail()
+                                {
+                                    ChildUserId = child.UserId,
+                                    FullName = child.User.FullName,
+                                    CreatedByName = child.InsertedBy,
+                                    CreatedById = child.UpdatedBy,
+                                    CreatedByDate = child.InsertedDate,
+                                    PractitionerName = practitioner.User.FullName,
+                                    DateOfBirth = child.User.DateOfBirth,
+                                    ProfileImageUrl = child.User.ProfileImageUrl
+                                };
+                            }
                         }
                     }
                 }

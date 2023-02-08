@@ -20,6 +20,10 @@ import { authSelectors } from '@/store/auth';
 import { statementsSelectors } from '@/store/statements';
 import { newGuid } from '@/utils/common/uuid.utils';
 import { useMemo } from 'react';
+import {
+  isNumber,
+  moneyInputFormat,
+} from '@/utils/statements/statements-utils';
 
 export const OtherIncome: React.FC<AddIncomeState> = ({ setType }) => {
   const userAuth = useSelector(authSelectors.getAuthUser);
@@ -49,6 +53,8 @@ export const OtherIncome: React.FC<AddIncomeState> = ({ setType }) => {
     control: control,
   });
 
+  const isNum = isNumber(incomeAmount!);
+
   const disabled = useMemo(() => {
     return !date || !incomeAmount || !description;
   }, [date, description, incomeAmount]);
@@ -65,7 +71,7 @@ export const OtherIncome: React.FC<AddIncomeState> = ({ setType }) => {
       DateReceived: date,
       Notes: note,
       Description: description,
-      Amount: Number(incomeAmount?.slice(1)),
+      Amount: incomeAmount ? moneyInputFormat(incomeAmount) : 0,
       AmountExpected: 400,
       ChildCoverAmount: 10,
       IncomeTypeId: incomeTypeValue?.id,
@@ -110,6 +116,7 @@ export const OtherIncome: React.FC<AddIncomeState> = ({ setType }) => {
           className="mt-2"
           type={'text'}
           textInputType={'moneyInput'}
+          prefixIcon={!!incomeAmount}
         />
         <FormInput<OtherIncomeModel>
           label={'Write a short description of this income type'}
@@ -134,7 +141,7 @@ export const OtherIncome: React.FC<AddIncomeState> = ({ setType }) => {
           color="primary"
           className={'mx-auto mt-8 w-full rounded-2xl'}
           onClick={handleSaveStartupSupportValues}
-          disabled={disabled}
+          disabled={disabled || !isNum}
         >
           {renderIcon('SaveIcon', styles.buttonIcon)}
           <Typography

@@ -1,8 +1,10 @@
-import { getCompressedImage } from '@ecdlink/core';
+import { getBase64TypeFromBaseString, getCompressedImage } from '@ecdlink/core';
 import { UploadIcon } from '@heroicons/react/solid';
-import { useState } from 'react';
+import { useLayoutEffect, useState } from 'react';
 import { UseFormSetValue } from 'react-hook-form';
 import { classNames } from '../../pages/users/components/users';
+import { LoadingSpinner } from '@ecdlink/ui';
+import { videoExtensions } from '../../utils/constants';
 
 export interface FileModel {
   fileName: string;
@@ -22,7 +24,7 @@ export interface FormFileInputProps {
 }
 
 const containerBaseStyle =
-  'relative flex flex-col justify-center items-center block w-full border-2 border-dashed rounded-lg text-center focus:outline-none focus:ring-2 hover:border-uiLight';
+  ' relative flex flex-col justify-center items-center block w-full border-2 border-dashed rounded-lg text-center focus:outline-none focus:ring-2 hover:border-uiLight';
 
 const containerStyle = 'border-uiLight';
 const fileContainerStyle = 'border-successMain';
@@ -47,10 +49,16 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
   const [fileName, setFileName] = useState<string | undefined>();
   const [file, setFile] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setLoading] = useState(false);
+  const [isVideo, setIsVideo] = useState(false);
 
   const handleChange = (event: any) => {
     if (event && event.target && event.target.files) {
       const firstFile = event.target.files[0];
+      if (!firstFile) return;
+
+      setLoading(true);
+
       handleFile(firstFile);
       setFileName(firstFile?.name);
     } else {
@@ -64,6 +72,10 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
 
     if (event && event.dataTransfer && event.dataTransfer.files) {
       const firstFile = event.dataTransfer.files[0];
+      if (!firstFile) return;
+
+      setLoading(true);
+
       handleFile(firstFile);
       setFileName(firstFile?.name);
     } else {
@@ -72,10 +84,19 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
   };
 
   const handleFile = async (file: any) => {
-    const compressedFile =
-      isImage && !byPassCompression ? await getCompressedImage(file) : file;
+    setFile('');
 
     const fileExtension = file?.name ? file?.name?.split('.').pop() : undefined;
+
+    const isVideoExtension = videoExtensions.includes(fileExtension);
+
+    setIsVideo(isVideoExtension);
+
+    const compressedFile =
+      isImage && !isVideoExtension && !byPassCompression
+        ? await getCompressedImage(file)
+        : file;
+
     if (fileExtension) {
       if (acceptedFormats.length > 0) {
         if (acceptedFormats.filter((x) => x === fileExtension).length > 0) {
@@ -97,9 +118,11 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
                   }
             );
             setFile(reader.result?.toString() ?? '');
+            setLoading(false);
           };
         } else {
           setError('Invalid File type');
+          setLoading(false);
         }
       } else {
         setError('');
@@ -120,10 +143,12 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
                 }
           );
           setFile(reader.result?.toString() ?? '');
+          setLoading(false);
         };
       }
     } else {
       setError('Invalid File type');
+      setLoading(false);
     }
   };
 
@@ -152,11 +177,18 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
     document?.getElementById(nameProp)?.click();
   };
 
+  useLayoutEffect(() => {
+    if (contentUrl) {
+      const type = getBase64TypeFromBaseString(contentUrl);
+      setIsVideo(videoExtensions.includes(type));
+    }
+  }, [contentUrl]);
+
   return (
     <>
       <label
         htmlFor={nameProp}
-        className="block text-sm font-medium text-gray-700 pb-1"
+        className="block pb-1 text-sm font-medium text-gray-700"
       >
         {label}
         {acceptedFormats && (
@@ -180,37 +212,70 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
         }}
       >
         {contentUrl && !fileName ? (
-          <div className="relative bg-uiBg">
-            <div className="absolute inset-0 z-10 bg-white text-center flex flex-col items-center justify-center opacity-0 hover:opacity-40 bg-opacity-40 duration-300">
+          <div className="bg-uiBg relative">
+            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white bg-opacity-40 text-center opacity-0 duration-300 hover:opacity-40">
               <UploadIcon className={classNames(iconBaseStyle, 'text-black')} />
             </div>
             <div className="relative">
-              <div className="h-32 flex flex-wrap content-center">
-                <img
-                  src={contentUrl}
-                  className="mx-auto max-h-24 min-h-full rounded-md"
-                  alt=""
-                />
-              </div>
+              {isVideo ? (
+                <div className="relative flex h-44 w-full items-center	justify-center overflow-hidden rounded-lg">
+                  <video
+                    src={contentUrl}
+                    controls={false}
+                    className="absolute"
+                  />
+                  <div className="h-justify-end flex h-44 w-full items-end bg-gray-100" />
+                </div>
+              ) : (
+                <div className="flex h-32 flex-wrap content-center">
+                  <img
+                    src={contentUrl}
+                    className="mx-auto max-h-24 min-h-full rounded-md"
+                    alt=""
+                  />
+                </div>
+              )}
             </div>
           </div>
         ) : (
           <div
-            className="w-full bg-center bg-contain bg-no-repeat p-5 flex flex-col flex-1 justify-center items-center"
+            className="flex h-40 w-full flex-1 flex-col items-center justify-center bg-contain bg-center bg-no-repeat p-5"
             style={
               file
                 ? {
+                    height: 200,
                     backgroundImage: `url(${file})`,
                   }
                 : {}
             }
           >
             {/* file */}
-            <UploadIcon className={classNames(getIconStyle(), iconBaseStyle)} />
+            {file && isVideo && (
+              <div className="relative flex h-44 w-full items-center	justify-center overflow-hidden rounded-lg">
+                <video src={file} controls={false} className="absolute" />
+                <div className="h-justify-end flex h-44 w-full items-end bg-gray-100" />
+              </div>
+            )}
+            {isLoading && !file ? (
+              <LoadingSpinner
+                size="big"
+                spinnerColor="white"
+                backgroundColor="uiMid"
+              />
+            ) : (
+              <UploadIcon
+                className={classNames(
+                  getIconStyle(),
+                  iconBaseStyle,
+                  file ? 'absolute' : ''
+                )}
+              />
+            )}
             {/* <span className={labelStyle}>{getLabel()}</span> */}
           </div>
         )}
       </label>
+      {fileName && <p className="pb-4">{fileName}</p>}
 
       <input
         accept={acceptedFormats.toString()}

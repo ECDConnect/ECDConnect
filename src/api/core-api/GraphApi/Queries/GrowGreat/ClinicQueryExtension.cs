@@ -21,7 +21,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public List<Clinic> GetAllClinics([Service] IHttpContextAccessor contextAccessor,
          [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
-         [Service] IGenericRepositoryFactory repoFactory)
+         IGenericRepositoryFactory repoFactory)
         {
             using var scope = dbFactory.CreateDbContext();
             using var dbContextTransaction = scope.Database.BeginTransaction();

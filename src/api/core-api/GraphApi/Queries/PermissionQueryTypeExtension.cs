@@ -17,7 +17,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
     public class PermissionQueryTypeExtension
     {
         [Permission(PermissionGroups.SYSTEM, GraphActionEnum.View)]
-        public async Task<IEnumerable<PermissionGroupModel>> GetPermissionGroups([Service] IGenericRepositoryFactory repositoryFactory)
+        public async Task<IEnumerable<PermissionGroupModel>> GetPermissionGroups(IGenericRepositoryFactory repositoryFactory)
         {
             var permissionsRepository = repositoryFactory.CreateRepository<Permission>();
 

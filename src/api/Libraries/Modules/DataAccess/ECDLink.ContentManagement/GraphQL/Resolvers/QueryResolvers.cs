@@ -9,13 +9,15 @@ namespace ECDLink.ContentManagement.GraphQL.Resolvers
 {
     public class QueryResolvers : ResolverBase, IDynamicQueryResolver
     {
-        public ValueTask<object?> GetAllResolver(IResolverContext context, int identifier)
+        public ValueTask<object?> GetAllResolver(IResolverContext context)
         {
             var repository = context.Services.GetService<ContentManagementRepository>();
 
+            var contentTypeId = base.GetContentIdentifier(context);
+
             var localeId = base.GetLanguageArgument(context);
 
-            var dynamicContentList = repository.GetAll(identifier, localeId);
+            var dynamicContentList = repository.GetAll(contentTypeId, localeId);
 
             return new ValueTask<object?>(dynamicContentList);
         }

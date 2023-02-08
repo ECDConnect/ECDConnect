@@ -22,7 +22,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public List<HealthCareWorker> GetAllHealthCareWorkers(
             [Service] IHttpContextAccessor contextAccessor,
-            [Service] IGenericRepositoryFactory repoFactory)
+            IGenericRepositoryFactory repoFactory)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var healthCareWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: uId);
@@ -34,7 +34,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public HealthCareWorker GetHealthCareWorkerByUserId(
             [Service] IHttpContextAccessor contextAccessor,
-            [Service] IGenericRepositoryFactory repoFactory,
+            IGenericRepositoryFactory repoFactory,
             string userId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;

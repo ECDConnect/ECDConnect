@@ -21,7 +21,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
         public Franchisor UpdateFranchisor([Service] IHttpContextAccessor contextAccessor,
          [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
-         [Service] IGenericRepositoryFactory repoFactory,
+         IGenericRepositoryFactory repoFactory,
          [Service] UserManager<ApplicationUser> userManager,
          string id,
          Franchisor input)

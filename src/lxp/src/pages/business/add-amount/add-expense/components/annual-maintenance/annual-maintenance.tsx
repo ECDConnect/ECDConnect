@@ -25,6 +25,10 @@ import { authSelectors } from '@/store/auth';
 import { statementsSelectors } from '@/store/statements';
 import { newGuid } from '@/utils/common/uuid.utils';
 import ExpensesStatementsService from '@/services/ExpensesStatementsService/ExpensesStatementsService';
+import {
+  isNumber,
+  moneyInputFormat,
+} from '@/utils/statements/statements-utils';
 
 export const AnnualMaintenance: React.FC<AddIncomeState> = ({ setType }) => {
   const userAuth = useSelector(authSelectors.getAuthUser);
@@ -47,6 +51,8 @@ export const AnnualMaintenance: React.FC<AddIncomeState> = ({ setType }) => {
   } = useWatch({
     control: control,
   });
+
+  const isNum = isNumber(amount!);
   const [photoActionBarVisible, setPhotoActionBarVisible] =
     useState<boolean>(false);
   const [registrationFormPhotoUrl, setRegistrationFormPhotoUrl] =
@@ -82,7 +88,7 @@ export const AnnualMaintenance: React.FC<AddIncomeState> = ({ setType }) => {
       Submitted: false,
       DatePaid: date,
       Notes: note,
-      Amount: Number(amount?.slice(1)),
+      Amount: amount ? moneyInputFormat(amount) : 0,
       ExpenseTypeId: expensesTypeValue?.id,
       PhotoProof: expenseInvoice,
     });
@@ -135,6 +141,7 @@ export const AnnualMaintenance: React.FC<AddIncomeState> = ({ setType }) => {
           className="mt-2"
           type={'text'}
           textInputType={'moneyInput'}
+          prefixIcon={!!amount}
         />
         <FormInput<ExpensesModel>
           label={'Add a description or note'}
@@ -186,7 +193,7 @@ export const AnnualMaintenance: React.FC<AddIncomeState> = ({ setType }) => {
           color="primary"
           className={'mx-auto mt-8 w-full rounded-2xl'}
           onClick={sendIncomeUpdate}
-          disabled={disabled}
+          disabled={disabled || !isNum}
           isLoading={isLoading}
         >
           {renderIcon('SaveIcon', styles.buttonIcon)}

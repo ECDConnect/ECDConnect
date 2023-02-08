@@ -35,6 +35,7 @@ import { EventRecordActions } from '@/store/eventRecord/eventRecord.actions';
 import { useDialog, usePrevious } from '@ecdlink/core';
 import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
 import { getPregnancyWeeks } from '@/utils/mom/pregnant.utils';
+import { RecordEventState } from './index.types';
 
 const weekNumberToShowCelebratoryMessage = 33;
 
@@ -44,7 +45,7 @@ const eventNames = {
 };
 
 export const RecordEvent: React.FC = () => {
-  const { register, control, formState, watch } = useForm({
+  const { register, control, formState, setValue, watch } = useForm({
     resolver: yupResolver(pregnantRecordEventModelSchema),
     defaultValues: initialPregnantRecordEventValues,
     mode: 'onChange',
@@ -57,7 +58,7 @@ export const RecordEvent: React.FC = () => {
 
   const history = useHistory();
 
-  const location = useLocation();
+  const location = useLocation<RecordEventState>();
 
   const dialog = useDialog();
 
@@ -83,6 +84,16 @@ export const RecordEvent: React.FC = () => {
     : 0;
 
   const eventTypes = useSelector(getAllMotherEventRecordTypes);
+
+  const bornEvent = useMemo(
+    () => eventTypes.find((item) => item.name === eventNames.born),
+    [eventTypes]
+  );
+
+  const isFromInfantForm = useMemo(
+    () => location?.state?.isFromInfantForm,
+    [location]
+  );
 
   const eventOptions = useMemo(
     () =>
@@ -165,7 +176,7 @@ export const RecordEvent: React.FC = () => {
                 type: 'outlined',
                 leadingIcon: 'XIcon',
                 onClick: () => {
-                  goBack();
+                  history.push(ROUTES.CLIENTS.ROOT);
                   onClose();
                 },
               },
@@ -174,7 +185,7 @@ export const RecordEvent: React.FC = () => {
         );
       },
     });
-  }, [dialog, goBack, history, motherId]);
+  }, [dialog, history, motherId]);
 
   const displayCloseFolderDialog = useCallback(() => {
     return dialog({
@@ -232,27 +243,30 @@ export const RecordEvent: React.FC = () => {
 
   useEffect(() => {
     if (wasLoading && isFulfilled) {
-      if (selectedOption?.name === eventNames.born) {
+      if (selectedOption?.name === eventNames.born && !isFromInfantForm) {
         return displayNewFolderDialog();
       }
 
       successDialog();
 
-      if (selectedOption?.name === eventNames.close) {
-        return history.push(ROUTES.CLIENTS.ROOT);
-      }
-
-      return goBack();
+      return history.push(ROUTES.CLIENTS.ROOT);
     }
   }, [
     displayNewFolderDialog,
     goBack,
     history,
+    isFromInfantForm,
     isFulfilled,
     selectedOption?.name,
     successDialog,
     wasLoading,
   ]);
+
+  useEffect(() => {
+    if (isFromInfantForm && bornEvent) {
+      setValue('eventRecordTypeId', bornEvent.id);
+    }
+  }, [bornEvent, isFromInfantForm, setValue]);
 
   useLayoutEffect(() => {
     appDispatch(motherThunkActions.getAllMotherEventRecordTypes()).unwrap();
@@ -285,6 +299,7 @@ export const RecordEvent: React.FC = () => {
             fillType="clear"
             placeholder="Tap to choose event"
             selectedValue={value}
+            disabled={isFromInfantForm}
             list={eventOptions}
             onChange={onChange}
           />
@@ -343,8 +358,10 @@ export const RecordEvent: React.FC = () => {
           }
           textColor="white"
           disabled={
-            !isValid ||
-            (!!childrenOptions.length && !childrenEventRecordTypeId) ||
+            (isFromInfantForm
+              ? !eventRecordTypeId
+              : !isValid ||
+                (!!childrenOptions.length && !childrenEventRecordTypeId)) ||
             isLoading
           }
           isLoading={isLoading}

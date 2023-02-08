@@ -29,8 +29,8 @@ export const useRequestResponseDialog = () => {
               {
                 colour: 'primary',
                 text: 'Close',
-                textColour: 'primary',
-                type: 'outlined',
+                textColour: 'white',
+                type: 'filled',
                 leadingIcon: 'XIcon',
                 onClick: onClose,
               },
@@ -52,16 +52,16 @@ export const useRequestResponseDialog = () => {
             className="z-50"
             title="Your submission has been sent"
             customIcon={
-              <div className="bg-tertiary mb-4 flex h-auto w-auto justify-center overflow-hidden rounded-full">
-                <img src={happyMomImage} alt="card" />
+              <div className="bg-tertiary mb-4 flex h-24 w-24 justify-center overflow-hidden rounded-full pt-4">
+                <img src={happyMomImage} className="h-20 w-20" alt="card" />
               </div>
             }
             actionButtons={[
               {
                 colour: 'primary',
                 text: 'Close',
-                textColour: 'primary',
-                type: 'outlined',
+                textColour: 'white',
+                type: 'filled',
                 leadingIcon: 'XIcon',
                 onClick: onClose,
               },

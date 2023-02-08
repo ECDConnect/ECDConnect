@@ -24,6 +24,10 @@ import { authSelectors } from '@/store/auth';
 import { useSelector } from 'react-redux';
 import { statementsSelectors } from '@/store/statements';
 import { newGuid } from '@/utils/common/uuid.utils';
+import {
+  isNumber,
+  moneyInputFormat,
+} from '@/utils/statements/statements-utils';
 
 export const StartupSupport: React.FC<AddIncomeState> = ({ setType }) => {
   const [confirmStartupValue, setConfirmStartupValue] = useState(false);
@@ -52,6 +56,7 @@ export const StartupSupport: React.FC<AddIncomeState> = ({ setType }) => {
     control: control,
   });
 
+  const isNum = isNumber(startupValue!);
   const disabled = useMemo(() => {
     return !date || !startupValue;
   }, [date, startupValue]);
@@ -66,7 +71,7 @@ export const StartupSupport: React.FC<AddIncomeState> = ({ setType }) => {
       UserId: userAuth?.id,
       Submitted: false,
       DateReceived: date,
-      Amount: Number(startupValue),
+      Amount: startupValue ? moneyInputFormat(startupValue) : 0,
       AmountExpected: 400,
       ChildCoverAmount: 400,
       IncomeTypeId: incomeTypeValue?.id,
@@ -124,6 +129,7 @@ export const StartupSupport: React.FC<AddIncomeState> = ({ setType }) => {
           className="mt-2"
           type={'text'}
           textInputType={'moneyInput'}
+          prefixIcon={!!startupValue}
         />
         <Alert
           type={'info'}
@@ -135,7 +141,7 @@ export const StartupSupport: React.FC<AddIncomeState> = ({ setType }) => {
           color="primary"
           className={'mx-auto mt-8 w-full rounded-2xl'}
           onClick={() => setConfirmStartupValue(true)}
-          disabled={disabled}
+          disabled={disabled || !isNum}
         >
           {renderIcon('SaveIcon', styles.buttonIcon)}
           <Typography

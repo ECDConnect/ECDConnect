@@ -21,6 +21,9 @@ namespace ECDLink.AutomatedServiceWorkers
                     services.AddHostedService<ChildAnonymiseJob>();
                     services.AddHostedService<ReassignFutureDatedJob>();
                     services.AddHostedService<RevertReassignmentJob>();
+
+
                 });
+
     }
 }

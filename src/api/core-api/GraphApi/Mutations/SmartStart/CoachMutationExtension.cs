@@ -38,7 +38,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public Coach UpdateCoach([Service] IHttpContextAccessor contextAccessor,
           [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
-          [Service] IGenericRepositoryFactory repoFactory,
+          IGenericRepositoryFactory repoFactory,
           [Service] UserManager<ApplicationUser> userManager,
           string id,
           Coach input)
@@ -109,7 +109,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
         public Practitioner AddPractitionerToCoach([Service] IHttpContextAccessor contextAccessor,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
-            [Service] IGenericRepositoryFactory repoFactory,
+            IGenericRepositoryFactory repoFactory,
             string practitionerId,
             string coachId)
         {
@@ -129,7 +129,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
         public Practitioner DeletePractitionerForCoach([Service] IHttpContextAccessor contextAccessor,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
-            [Service] IGenericRepositoryFactory repoFactory,
+            IGenericRepositoryFactory repoFactory,
             string practitionerId, string coachId)
         {
 
@@ -151,7 +151,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         public Coach DeleteCoachForFranchisor([Service] IHttpContextAccessor contextAccessor,
             [Service] UserManager<ApplicationUser> userManager,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
-            [Service] IGenericRepositoryFactory repoFactory,
+            IGenericRepositoryFactory repoFactory,
             string coachId, string franchisorId)
         {
 
@@ -170,7 +170,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         public Coach AddCoachToFranchisor([Service] IHttpContextAccessor contextAccessor,
             [Service] UserManager<ApplicationUser> userManager,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
-            [Service] IGenericRepositoryFactory repoFactory,
+            IGenericRepositoryFactory repoFactory,
             string coachId, string franchisorId)
         {
             using var scope = dbFactory.CreateDbContext();

@@ -23,10 +23,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public Franchisor GetFranchisorByUserId([Service] IHttpContextAccessor contextAccessor,
-            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
-            [Service] IGenericRepositoryFactory repoFactory,
-        string userId)
+        public Franchisor GetFranchisorByUserId(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            string userId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var dbRepo = repoFactory.CreateRepository<Franchisor>(userContext: uId);
@@ -34,10 +34,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public List<Coach> GetAllCoachesForFranchisor([Service] IHttpContextAccessor contextAccessor,
-     [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
-     [Service] IGenericRepositoryFactory repoFactory,
-     string userId)
+        public List<Coach> GetAllCoachesForFranchisor(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            string userId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var coachRepo = repoFactory.CreateRepository<Coach>(userContext: uId);
@@ -47,9 +47,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public List<Child> GetAllChildrenForFranchisor([Service] IHttpContextAccessor contextAccessor,
-[Service] IGenericRepositoryFactory repoFactory,
-string userId)
+        public List<Child> GetAllChildrenForFranchisor(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            string userId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var coachRepo = repoFactory.CreateRepository<Coach>(userContext: uId);
@@ -67,8 +68,7 @@ string userId)
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public SiteAddress GetFranchisorSiteAddressById([Service] IHttpContextAccessor contextAccessor,
-            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
-            [Service] IGenericRepositoryFactory repoFactory,
+            IGenericRepositoryFactory repoFactory,
             string franchisorId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;

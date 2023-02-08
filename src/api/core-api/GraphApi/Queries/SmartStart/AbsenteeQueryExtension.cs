@@ -25,11 +25,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public List<Absentees> GetAbsenteeByUserId([Service] IHttpContextAccessor contextAccessor,
-        [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
-        [Service] IGenericRepositoryFactory repoFactory,
+        IGenericRepositoryFactory repoFactory,
         string userId)
         {
-            using var scope = dbFactory.CreateDbContext();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var dbRepo = repoFactory.CreateRepository<Absentees>(userContext: uId);
             List<Absentees> absents = dbRepo.GetAll().Where(x => x.UserId.Contains(userId)).ToList();
@@ -51,11 +49,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         }
 
         public int GetTotalDaysAbsent([Service] IHttpContextAccessor contextAccessor,
-        [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
-        [Service] IGenericRepositoryFactory repoFactory,
+        IGenericRepositoryFactory repoFactory,
         string userId)
         {
-            using var scope = dbFactory.CreateDbContext();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var dbRepo = repoFactory.CreateRepository<Absentees>(userContext: uId);
             List<Absentees> absents = dbRepo.GetAll().Where(x => x.UserId.Contains(userId)).ToList();

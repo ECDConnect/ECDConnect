@@ -25,3 +25,28 @@ export function getWeekDate(
   date.setHours(-24 * (day - currentDay));
   return date;
 }
+
+export function getPreviousAndNextMonths(
+  currentDate: Date | string,
+  period: number
+) {
+  const monthsAgo = new Date(currentDate);
+  const monthsLater = new Date(currentDate);
+
+  const previousDate = new Date(
+    monthsAgo.setMonth(monthsAgo.getMonth() - period)
+  );
+  const nextDate = new Date(
+    monthsLater.setMonth(monthsLater.getMonth() + period)
+  );
+
+  return { previousDate, nextDate };
+}
+
+export const getNextDateByDay = (daysLater: number, currentDate?: Date) => {
+  const today = new Date();
+  const date = new Date(currentDate || today);
+  date.setDate(date.getDate() + daysLater);
+
+  return date;
+};

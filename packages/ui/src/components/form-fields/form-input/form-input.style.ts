@@ -3,6 +3,8 @@ export const errorStyle =
   'block w-full py-3 pr-10 border-errorMain text-errorMain placeholder-errorMain focus:outline-none focus:ring-errorMain focus:border-errorMain sm:text-sm rounded-md';
 export const defaultInputStyle =
   'font-h1 bg-uiBg focus:bg-white focus:ring-uiMidDark border border-transparent focus:border focus:border-uiMidDark block w-full sm:text-sm rounded-md text-textDark py-3 pl-4 placeholder-textLight font-h1';
+export const defaultMoneyInputStyle =
+  'font-h1 bg-uiBg focus:bg-white focus:ring-uiMidDark border border-transparent focus:border focus:border-uiMidDark block w-full sm:text-sm rounded-md text-textDark items-center py-3 pl-5 placeholder-textLight font-h1';
 export const label =
   'block text-base leading-snug font-body font-semibold text-textMid';
 export const subLabel =
@@ -15,6 +17,8 @@ export const inputInvalid =
 export const inputWrapper = 'mt-1 relative rounded-md';
 export const iconWrapper =
   'absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer';
+export const iconWrapperLeft =
+  'absolute inset-y-0 left-1 pr-3 flex items-center cursor-pointer';
 export const icon = 'h-5 w-5';
 export const iconError = 'h-5 w-5 text-errorMain';
 export const descriptionParagraph = 'text-sm text-uiLight';

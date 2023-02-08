@@ -1,6 +1,9 @@
 import { api } from '../axios.helper';
 import { Config, IncomeStatementsDto } from '@ecdlink/core';
-import { StatementsIncomeInput } from '@/../../../packages/graphql/lib';
+import {
+  StatementsIncomeInput,
+  StatementsSubmitInput,
+} from '@/../../../packages/graphql/lib';
 
 class IncomeStatementsService {
   _accessToken: string;
@@ -206,20 +209,20 @@ class IncomeStatementsService {
       query: `
       query allStatementsIncomeStatement($userId: String) {
         allStatementsIncomeStatement(userId: $userId) {
-        id 
-        insertedDate 
-        notes 
-        userId 
-        submitted
-        incomeTotal
-        expenseTotal
-        balance
-        submittedDate
-        month
-        year
-        period
+            id
+            insertedDate
+            notes
+            userId
+            submitted
+            incomeTotal
+            expenseTotal
+            balance
+            submittedDate
+            month
+            year
+            period
+        }
     }
-}
           `,
       variables: {
         userId,
@@ -233,6 +236,34 @@ class IncomeStatementsService {
     }
 
     return response.data.data.allStatementsIncome;
+  }
+
+  async submitStatement(
+    id: string,
+    input: StatementsSubmitInput
+  ): Promise<any> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      mutation submitStatement($id: String!,$input: StatementsSubmitInput) {
+          submitStatement(id: $id, input: $input) {
+                id    __typename  
+              }
+            }
+      `,
+      variables: {
+        id,
+        input,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Update income statement Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.submitStatement;
   }
 }
 

@@ -45,7 +45,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public Practitioner UpdatePractitioner([Service] IHttpContextAccessor contextAccessor,
-          [Service] IGenericRepositoryFactory repoFactory,
+          IGenericRepositoryFactory repoFactory,
           Guid? id,
           Practitioner input)
         {
@@ -130,7 +130,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         // 8 = MaxChildren
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public bool PractitionerImport(
-          [Service] IGenericRepositoryFactory repoFactory,
+          IGenericRepositoryFactory repoFactory,
           [Service] IHttpContextAccessor httpContextAccessor,
           [Service] ILocaleService<Language> localeService,
           [Service] UserManager<ApplicationUser> userManager,
@@ -253,7 +253,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         public bool ImportAll(
                     [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
                     [Service] InvitationNotificationManager notificationManager,
-                      [Service] IGenericRepositoryFactory repoFactory,
+                      IGenericRepositoryFactory repoFactory,
                       [Service] IHttpContextAccessor httpContextAccessor,
                       [Service] ILocaleService<Language> localeService,
                       [Service] UserManager<ApplicationUser> userManager,
@@ -323,7 +323,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         public bool ImportAllChildren(
                     [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
                     [Service] InvitationNotificationManager notificationManager,
-                      [Service] IGenericRepositoryFactory repoFactory,
+                      IGenericRepositoryFactory repoFactory,
                       [Service] IHttpContextAccessor httpContextAccessor,
                       [Service] ILocaleService<Language> localeService,
                       [Service] UserManager<ApplicationUser> userManager,
@@ -411,7 +411,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public bool ImportAllIngestDB(
-                      [Service] IGenericRepositoryFactory repoFactory,
+                      IGenericRepositoryFactory repoFactory,
                       [Service] IHttpContextAccessor httpContextAccessor,
                       [Service] ILocaleService<Language> localeService,
                       [Service] UserManager<ApplicationUser> userManager)
@@ -631,7 +631,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public bool ImportAllChildrenIngestDB(
-              [Service] IGenericRepositoryFactory repoFactory,
+              IGenericRepositoryFactory repoFactory,
               [Service] IHttpContextAccessor httpContextAccessor,
               [Service] ILocaleService<Language> localeService,
               [Service] UserManager<ApplicationUser> userManager)
@@ -1044,7 +1044,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             return true;
         }
 
-        public Coach CreateCoachUser([Service] IGenericRepositoryFactory repoFactory,
+        public Coach CreateCoachUser(IGenericRepositoryFactory repoFactory,
               [Service] IHttpContextAccessor httpContextAccessor,
               [Service] UserManager<ApplicationUser> userManager,
               MappedCoach coach,
@@ -1110,7 +1110,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         }
 
         public bool UpdatePractitionerShareInfo([Service] IHttpContextAccessor contextAccessor,
-            [Service] IGenericRepositoryFactory repoFactory,
+            IGenericRepositoryFactory repoFactory,
             string practitionerId)
         {
             bool bReturn = false;
@@ -1131,7 +1131,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         }
 
         public bool UpdatePractitionerRegistered([Service] IHttpContextAccessor contextAccessor,
-            [Service] IGenericRepositoryFactory repoFactory,
+            IGenericRepositoryFactory repoFactory,
             string practitionerId, bool status = false)
 
         {
@@ -1151,7 +1151,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         }
 
         public bool UpdatePractitionerIsFundaAppAdmin([Service] IHttpContextAccessor contextAccessor,
-            [Service] IGenericRepositoryFactory repoFactory,
+            IGenericRepositoryFactory repoFactory,
             string practitionerId)
         {
             bool bReturn = false;
@@ -1171,7 +1171,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         }
 
         public decimal UpdatePractitionerProgress([Service] IHttpContextAccessor contextAccessor,
-            [Service] IGenericRepositoryFactory repoFactory,
+            IGenericRepositoryFactory repoFactory,
             string practitionerId, decimal progress)
 
         {
@@ -1191,7 +1191,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         }
 
         public bool UpdatePractitionerEmergencyContact([Service] IHttpContextAccessor contextAccessor,
-    [Service] IGenericRepositoryFactory repoFactory,
+    IGenericRepositoryFactory repoFactory,
     [Service] UserManager<ApplicationUser> userManager,
     string userId, string firstname, string surname, string contactno)
 

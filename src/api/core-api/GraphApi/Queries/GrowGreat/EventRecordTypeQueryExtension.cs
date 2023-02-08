@@ -19,7 +19,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public List<EventRecordType> GetAllEventRecordTypes(
             [Service] IHttpContextAccessor contextAccessor,
-            [Service] IGenericRepositoryFactory repoFactory)
+            IGenericRepositoryFactory repoFactory)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var eventRecordTypeRepo = repoFactory.CreateGenericRepository<EventRecordType>(userContext: uId);
@@ -38,7 +38,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public List<EventRecordType> GetAllEventRecordTypesForType(
             [Service] IHttpContextAccessor contextAccessor,
-            [Service] IGenericRepositoryFactory repoFactory,
+            IGenericRepositoryFactory repoFactory,
             string type)// type will be mother or child
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
