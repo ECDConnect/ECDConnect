@@ -41,7 +41,8 @@ export const AttendanceTutorial = ({
 
   const handleClickStart = () => {
     console.log('testeeeeeeee');
-    setState({ run: true, tourActive: true });
+    setState({ run: true, tourActive: true, stepIndex: 0 });
+    console.log({ state });
   };
 
   useEffect(() => {
@@ -83,7 +84,7 @@ export const AttendanceTutorial = ({
       className={styles.bannerContentWrapper}
       displayOffline={!isOnline}
     >
-      <div className={'h-full bg-white p-4'} id="home">
+      <div className={'h-full bg-white p-4'}>
         <Card className="bg-uiBg flex w-full flex-col justify-center rounded-2xl p-4">
           <Typography
             className={'mt-4'}
@@ -143,12 +144,14 @@ export const AttendanceTutorial = ({
           onClick={onComplete}
           className={styles.closeButton}
         >
-          <Typography
-            color={'white'}
-            type={'help'}
-            weight={'normal'}
-            text={'Start taking attendance'}
-          />
+          <div id="home">
+            <Typography
+              color={'white'}
+              type={'help'}
+              weight={'normal'}
+              text={'Start taking attendance'}
+            />
+          </div>
         </Button>
       </div>
     </BannerWrapper>

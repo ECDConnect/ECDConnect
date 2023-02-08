@@ -9,6 +9,7 @@ import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import App from './App';
 import Loader from './components/loader/loader';
+import { WalkthroughProvider } from './context';
 import MultiRouteWrapper from './JoyRideWrapper';
 import { persistor, store } from './store';
 
@@ -33,8 +34,9 @@ const ConfigWrapper: React.FC = () => {
         <PersistGate loading={null} persistor={persistor}>
           <ThemeProvider themeEndPoint={Config.themeUrl} overRideCache={false}>
             <DialogServiceProvider>
-              <MultiRouteWrapper />
-              <App />
+              <WalkthroughProvider>
+                <App />
+              </WalkthroughProvider>
             </DialogServiceProvider>
           </ThemeProvider>
         </PersistGate>

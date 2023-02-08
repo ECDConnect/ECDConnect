@@ -15,11 +15,8 @@ import {
 } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import * as styles from './walkthrough-tutorial.styles';
-import {
-  AttendanceTutorialProps,
-  tabItems,
-} from './walkthrough-tutorial.types';
+import * as styles from './walktrough-tutorial.styles';
+import { AttendanceTutorialProps, tabItems } from './walktrough-tutorial.types';
 import Joyride, {
   CallBackProps,
   STATUS,
@@ -33,6 +30,9 @@ import { practitionerSelectors } from '@/store/practitioner';
 import { useSelector } from 'react-redux';
 import { authSelectors } from '@/store/auth';
 import { PractitionerService } from '@services/PractitionerService';
+import { useAppContext } from '@/context';
+import { useMount } from 'react-use';
+import MultiRouteWrapper from '@/JoyRideWrapper';
 
 export const WalkthroughTutorial = ({
   onComplete,
@@ -47,6 +47,7 @@ export const WalkthroughTutorial = ({
   const [attendanceStatus, setAttendanceStatus] = useState(true);
   const [tutorialProgressClicks, setTutorialProgressClicks] =
     useState<number>(0);
+  const [showLoader, setLoader] = useState(true);
   const [attendanceItem, setAttendanceItem] = useState<AttendanceListDataItem>({
     title: 'Amahle Khumalo',
     profileText: 'AM',
@@ -107,13 +108,27 @@ export const WalkthroughTutorial = ({
     validateTutorial();
   }, [tutorialProgressClicks]);
 
+  const {
+    setState,
+    state: { tourActive },
+  } = useAppContext();
+
+  useMount(() => {
+    if (!tourActive) {
+      setTimeout(() => {
+        setLoader(false);
+        setState({ run: true, stepIndex: 1 });
+      }, 1200);
+    }
+  });
+
   const steps: Step[] = [
     {
       target: '#attendance-list',
       content: 'All children are automatically marked present',
       placement: 'bottom-end',
       offset: 10,
-      disableBeacon: true,
+      // disableBeacon: true,
     },
     {
       target: '#attendance-list-alone',
@@ -221,6 +236,7 @@ export const WalkthroughTutorial = ({
       displayHelp={true}
       onHelp={() => {}}
     >
+      <MultiRouteWrapper />
       <TabList
         className="bg-uiBg"
         tabItems={tabItems}
@@ -229,7 +245,7 @@ export const WalkthroughTutorial = ({
       />
       <div id="test" className="h-0" />
       <div className={'bg-uiBg px-4 pt-2'}>
-        <Joyride
+        {/* <Joyride
           callback={handleJoyrideCallback}
           continuous
           scrollToFirstStep
@@ -250,7 +266,7 @@ export const WalkthroughTutorial = ({
             },
           }}
           tooltipComponent={Tooltip}
-        />
+        /> */}
         <div id="attendance-list">
           <AttendanceListItem
             className={'bg-successBg mb-1'}

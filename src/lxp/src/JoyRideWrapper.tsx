@@ -2,7 +2,6 @@ import Joyride, { CallBackProps } from 'react-joyride';
 import { useHistory } from 'react-router-dom';
 import { useMount } from 'react-use';
 import { useAppContext } from './context';
-import { useCallback, useEffect } from 'react';
 import { Typography } from '@ecdlink/ui';
 import ROUTES from './routes/routes';
 
@@ -13,7 +12,10 @@ export default function MultiRouteWrapper() {
     state: { run, stepIndex, steps },
   } = useAppContext();
 
+  console.log({ steps });
+
   useMount(() => {
+    console.log('useEffect');
     setState({
       steps: [
         {
@@ -21,7 +23,7 @@ export default function MultiRouteWrapper() {
           content: (
             <>
               <Typography
-                text={'This is the home page'}
+                text={'Walkthrough test'}
                 type={'help'}
                 color={'textMid'}
               />
@@ -37,7 +39,7 @@ export default function MultiRouteWrapper() {
           disableBeacon: true,
         },
         {
-          target: '#routeA',
+          target: '#attendance-list-alone',
           content: (
             <>
               <Typography
@@ -78,33 +80,36 @@ export default function MultiRouteWrapper() {
     });
   });
 
-  const navigate = useCallback(
-    (location) => () => {
-      history.push(location);
-    },
-    [history]
-  );
+  const navigate = (route: string) => {
+    console.log({ route });
+    history.push(route);
+  };
 
   const handleCallback = (data: CallBackProps) => {
     const { action, index, lifecycle, type } = data;
 
     if (type === 'step:after' && index === 0 /* or step.target === '#home' */) {
       setState({ run: false });
-
-      history.push(ROUTES.ATTENDANCE_TUTORIAL_WALKTHROUGH);
+      console.log('routesssss');
+      window.location.replace('attendance-tutorial-walkthrough');
+      // navigate('/classroom');
     } else if (type === 'step:after' && index === 1) {
+      console.log('routesssss22222');
       if (action === 'next') {
         setState({ run: false });
         navigate('/multi-route/b');
       } else {
+        console.log('routesssss33333333');
         navigate('/multi-route');
         setState({ run: true, stepIndex: 0 });
       }
     } else if (type === 'step:after' && action === 'prev' && index === 2) {
+      console.log('routesssss444444444');
       setState({ run: false });
 
       navigate('/multi-route/a');
     } else if (action === 'reset' || lifecycle === 'complete') {
+      console.log('routesssss5555555');
       setState({ run: false, stepIndex: 0, tourActive: false });
     }
   };

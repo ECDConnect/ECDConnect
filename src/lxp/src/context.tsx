@@ -1,4 +1,5 @@
-import { createContext, useContext, useMemo, useState } from 'react';
+import { createContext, useContext, useMemo } from 'react';
+import { useSetState } from 'react-use';
 
 import { AppState } from './joyRide.types';
 
@@ -15,8 +16,8 @@ export const AppContext = createContext({
 });
 AppContext.displayName = 'AppContext';
 
-export function AppProvider(props: any) {
-  const [state, setState] = useState(appState);
+export function WalkthroughProvider(props: any) {
+  const [state, setState] = useSetState(appState);
 
   console.log({ state });
 
