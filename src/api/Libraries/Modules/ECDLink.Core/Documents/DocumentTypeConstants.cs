@@ -2,6 +2,10 @@
 {
     public static class DocumentTypeConstants
     {
-        public const string ContentImage = "ContentImage";
+        // see ECDLink.Abstractrions.Enums.FileTypeEnum
+        public const string MaternalCaseRecord = "MaternalCaseRecord"; //MATERNAL_CASE_RECORD
+        public const string RoadToHealthBook = "RoadToHealthBook"; //road-to-health-book
+        public const string ContentImage = "ContentImage";//content-image
+
     }
 }
