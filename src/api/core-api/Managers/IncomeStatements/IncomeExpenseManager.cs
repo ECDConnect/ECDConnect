@@ -1,5 +1,4 @@
-﻿using ECDLink.DataAccessLayer.Entities;
-using ECDLink.DataAccessLayer.Entities.IncomeStatements;
+﻿using ECDLink.DataAccessLayer.Entities.IncomeStatements;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.Security.Extensions;
 using HotChocolate;
@@ -48,6 +47,48 @@ string userId)
             }
             else return new List<StatementsIncomeStatement>();
         }
+
+        public List<StatementsBalanceSheet> GetAllStatementsBalanceSheet(
+string userId)
+        {
+            List<StatementsBalanceSheet> balanceSheets = new List<StatementsBalanceSheet>();
+            var statementsRepo = _repoFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _applicationUserId);
+            var statements = statementsRepo.GetAll().Where(x => string.Equals(x.UserId, userId)).Where(y => y.Submitted==true).ToList();
+            if (statements.Any())
+            {
+                //year loop
+                var years = statements.Select(x => x.Year).Distinct().ToList();
+                if (years.Any())
+                {
+                    years.OrderDescending();
+                    foreach (var year in years)
+                    {
+                        //months loop
+                        var months = statements.Where(x => x.Year == year).Select(y => y.Month).Distinct().ToList();
+                        if (months.Any())
+                        {
+                            months.OrderDescending();
+                            foreach (var month in months)
+                            {
+                                var allIncome = statements.Where(x => x.Year.Equals(year) && x.Month.Equals(month)).Select(y => y.IncomeTotal).ToList();
+                                var allExpenses = statements.Where(x => x.Year.Equals(year) && x.Month.Equals(month)).Select(y => y.ExpenseTotal).ToList();
+
+                                double allIncomeTotal = allIncome.Sum();
+                                double allExpenseTotal =allExpenses.Sum();
+
+                                double balance = allIncomeTotal - allExpenseTotal;
+
+                                balanceSheets.Add(new StatementsBalanceSheet() { Balance = Math.Round(balance,2), IncomeTotal = Math.Round(allIncomeTotal,2), ExpenseTotal = Math.Round(allExpenseTotal,2), Month = month, Year = year, UserId = userId });
+                            }
+                        }
+                    }
+                    return balanceSheets;
+                }
+                else return new List<StatementsBalanceSheet>();
+            }
+            else return new List<StatementsBalanceSheet>();
+        }
+
         public List<StatementsStartupSupport> GetAllStatementsStartupSupport(
 string userId)
         {

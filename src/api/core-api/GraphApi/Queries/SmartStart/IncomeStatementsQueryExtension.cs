@@ -38,5 +38,10 @@ string userId)
         {
             return incomeManager.GetAllStatementsStartupSupport(userId);
         }
+        public List<StatementsBalanceSheet> GetAllStatementsBalanceSheet([Service] IncomeExpenseManager incomeManager,
+string userId)
+        {
+            return incomeManager.GetAllStatementsBalanceSheet(userId);
+        }
     }
 }
