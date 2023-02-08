@@ -20,6 +20,7 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { useSelector } from 'react-redux';
 import { staticDataSelectors } from '@store/static-data';
+import { getPreviousAndNextMonths } from '@ecdlink/core';
 
 export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
   onSubmit,
@@ -28,12 +29,9 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
   motherInfo,
 }) => {
   const {
-    // watch,
     getValues: getInfantDetailsFormValues,
-    // formState: InfantDetailsFormState,
     setValue: setInfantDetailsFormValue,
     register: infantFormRegister,
-    // reset: resetInfantDetailsFormValue,
     control: infantDetailsFormControl,
   } = useForm<InfantDetailsModel>({
     resolver: yupResolver(infantDetailsModelSchema),
@@ -42,45 +40,35 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
   });
   const genders = useSelector(staticDataSelectors.getGenders);
 
-  const { expectedDateOfDelivery, twoMonthsAgo, twoMonthsLater, minYear } =
+  const currentDate = useMemo(() => new Date(), []);
+
+  const { expectedDateOfDelivery, twoMonthsAgo, twoMonthsLater } =
     useMemo(() => {
       const expectedDateOfDelivery = motherInfo?.expectedDateOfDelivery
         ? new Date(motherInfo?.expectedDateOfDelivery)
         : null;
 
       if (expectedDateOfDelivery) {
-        const twoMonthsAgo = new Date(
-          new Date(expectedDateOfDelivery).setMonth(
-            expectedDateOfDelivery.getMonth() - 2
-          )
+        const { nextDate, previousDate } = getPreviousAndNextMonths(
+          expectedDateOfDelivery,
+          2
         );
-        const twoMonthsLater = new Date(
-          new Date(expectedDateOfDelivery).setMonth(
-            expectedDateOfDelivery.getMonth() + 2
-          )
-        );
+        const { previousDate: previousDateByCurrentDate } =
+          getPreviousAndNextMonths(currentDate, 2);
 
-        const minYear = new Date(
-          twoMonthsAgo?.getFullYear() - 1,
-          twoMonthsAgo?.getMonth(),
-          twoMonthsAgo?.getDate()
-        );
+        const twoMonthsAgo =
+          previousDate < currentDate ? previousDate : previousDateByCurrentDate;
+        const twoMonthsLater = nextDate < currentDate ? nextDate : currentDate;
 
         return {
           expectedDateOfDelivery,
           twoMonthsAgo,
           twoMonthsLater,
-          minYear,
         };
       }
 
       return { expectedDateOfDelivery };
-    }, [motherInfo?.expectedDateOfDelivery]);
-
-  const currentDate = useMemo(
-    () => expectedDateOfDelivery || new Date(),
-    [expectedDateOfDelivery]
-  );
+    }, [currentDate, motherInfo?.expectedDateOfDelivery]);
 
   const genderOptionsUpdated = genders
     ?.filter((gender) => gender?.description !== 'Other')
@@ -123,14 +111,22 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
   const onChangeYear = (date: Date) => {
     if (expectedDateOfDelivery) {
       if (date.getFullYear() < expectedDateOfDelivery.getFullYear()) {
+        setMyDay(twoMonthsAgo);
         setMyMonth(twoMonthsAgo);
         return setMyYear(twoMonthsAgo);
       }
 
       if (date.getFullYear() >= expectedDateOfDelivery.getFullYear()) {
+        setMyDay(twoMonthsLater);
         setMyMonth(twoMonthsLater);
         return setMyYear(twoMonthsLater);
       }
+    }
+
+    if (date.getFullYear() > myYear.getFullYear()) {
+      setMyDay(currentDate);
+      setMyMonth(currentDate);
+      return setMyYear(currentDate);
     }
 
     return setMyYear(date);
@@ -184,6 +180,10 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
             {...(myMonth.getMonth() === currentDate.getMonth() && {
               maxDate: currentDate,
             })}
+            {...(!!expectedDateOfDelivery && {
+              minDate: twoMonthsAgo,
+              maxDate: twoMonthsLater,
+            })}
           />
           <DatePicker
             placeholderText={'Please select a date'}
@@ -212,7 +212,7 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
             showYearPicker
             {...(!!expectedDateOfDelivery
               ? {
-                  minDate: minYear,
+                  minDate: twoMonthsAgo,
                   maxDate: twoMonthsLater,
                 }
               : {
