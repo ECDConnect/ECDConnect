@@ -578,7 +578,7 @@ export const InfantRegisterForm: React.FC = () => {
 
   const onSuccess = useCallback(() => {
     if (isFulfilled) {
-      if (firstChild.caregiver?.id === MOTHER_TYPE_ID) {
+      if (firstChild?.caregiver?.id === MOTHER_TYPE_ID) {
         const child = getChildWithCloseBirthday();
 
         if (!!child) {
@@ -608,7 +608,7 @@ export const InfantRegisterForm: React.FC = () => {
   }, [
     appDispatch,
     displayRecordEventDialog,
-    firstChild.caregiver?.id,
+    firstChild,
     getChildWithCloseBirthday,
     healthCareWorker,
     isFulfilled,

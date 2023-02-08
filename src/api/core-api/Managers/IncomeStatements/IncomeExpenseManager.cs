@@ -60,12 +60,13 @@ StatementsIncome model)
         {
             var incomeRepo = _repoFactory.CreateGenericRepository<StatementsIncome>(userContext: _applicationUserId);
             var statementsRepo = _repoFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _applicationUserId);
-            //if expense already exist, update it rather, else add
+
+            double incomeAmount = Math.Round(model.Amount, 2);
+            model.Amount = incomeAmount;
+
             StatementsIncome income = incomeRepo.GetAll().Where(x => x.Id.Equals(model.Id)).FirstOrDefault();
             if (income == null)
             {
-                incomeRepo.Insert(model);
-
                 var statements = GetAllStatementsIncomeStatement(model.UserId);
                 double runningBalance = GetRunningBalance(model.UserId, model.DateReceived.Value.Month, model.DateReceived.Value.Year);//(row != null ? runningBalance = row.Balance : 0);
 
@@ -79,27 +80,35 @@ StatementsIncome model)
                     Month = DateTime.Now.Month,
                     Year = DateTime.Now.Year,
                     Period = "Monthly",
-                    IncomeTotal = model.Amount,
+                    IncomeTotal = incomeAmount,
                     ExpenseTotal = 0,
                     Notes = model.Notes,
-                    //Balance = (runningBalance + model.Amount)
+                    Balance = runningBalance+incomeAmount
                 };
-
                 var ret = statementsRepo.Insert(statement);
+
+                model.IncomeStatementId = ret.Id.ToString(); //save incomestatement row id to expense row
+
+                incomeRepo.Insert(model);
+
                 statement.Balance = runningBalance;
+
                 return statement;
             } else
             {
-                incomeRepo.Update(model);
-                StatementsIncomeStatement incomeStatement = statementsRepo.GetAll().Where(x => x.Id.Equals(income.IncomeStatementId)).FirstOrDefault();
-                if (incomeStatement != null)
+                if (!income.Submitted)//once submitted, no further updates can be made
                 {
-                    incomeStatement.IncomeTotal = model.Amount;
-                    incomeStatement.Notes = model.Notes;
-                    incomeStatement.IsActive = model.IsActive;
-                    var ret = statementsRepo.Update(incomeStatement);
+                    incomeRepo.Update(model);
+                    StatementsIncomeStatement incomeStatement = statementsRepo.GetAll().Where(x => x.Id.Equals(income.IncomeStatementId)).FirstOrDefault();
+                    if (incomeStatement != null)
+                    {
+                        incomeStatement.IncomeTotal = incomeAmount;
+                        incomeStatement.Notes = model.Notes;
+                        incomeStatement.IsActive = model.IsActive;
+                        var ret = statementsRepo.Update(incomeStatement);
+                    }
+                    return incomeStatement;
                 }
-                return incomeStatement;
             }
             return new StatementsIncomeStatement();
         }
@@ -110,13 +119,12 @@ StatementsExpenses model)
             var expenseRepo = _repoFactory.CreateGenericRepository<StatementsExpenses>(userContext: _applicationUserId);
             var statementsRepo = _repoFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _applicationUserId);
 
-            //if expense already exist, update it rather, else add
+            double expenseAmount = Math.Round(model.Amount, 2);
+            model.Amount = expenseAmount;
+
             StatementsExpenses expense = expenseRepo.GetAll().Where(x => x.Id.Equals(model.Id)).FirstOrDefault();
             if (expense == null)
-            {
-                //insert expenseqqqqqqqqqqq
-                expenseRepo.Insert(model);
-                //do business logic to determine running balance
+            {             
                 var statements = GetAllStatementsIncomeStatement(model.UserId);
 
                 double runningBalance = GetRunningBalance(model.UserId, model.DatePaid.Value.Month, model.DatePaid.Value.Year);//(row != null ? runningBalance = row.Balance : 0);
@@ -132,26 +140,33 @@ StatementsExpenses model)
                     Year = DateTime.Now.Year,
                     Period = "Monthly",
                     IncomeTotal = 0,
-                    ExpenseTotal = model.Amount,
+                    ExpenseTotal = expenseAmount,
                     Notes = model.Notes,
-                    //Balance = (runningBalance - model.Amount)
+                    Balance = runningBalance-expenseAmount
                 };
-
                 var ret = statementsRepo.Insert(statement);
+
+                model.IncomeStatementId = ret.Id.ToString(); //save incomestatement row id to expense row
+                expenseRepo.Insert(model);
+
                 statement.Balance = runningBalance;
+
                 return statement;
             } else
             {
-                expenseRepo.Update(model);
-                StatementsIncomeStatement incomeStatement = statementsRepo.GetAll().Where(x => x.Id.Equals(expense.IncomeStatementId)).FirstOrDefault();
-                if (incomeStatement != null)
+                if (!expense.Submitted)//once submitted, no further updates can be made
                 {
-                    incomeStatement.IncomeTotal = model.Amount;
-                    incomeStatement.Notes = model.Notes;
-                    incomeStatement.IsActive = model.IsActive;
-                    var ret = statementsRepo.Update(incomeStatement);
+                    expenseRepo.Update(model);
+                    StatementsIncomeStatement incomeStatement = statementsRepo.GetAll().Where(x => x.Id.Equals(expense.IncomeStatementId)).FirstOrDefault();
+                    if (incomeStatement != null)
+                    {
+                        incomeStatement.IncomeTotal = expenseAmount;
+                        incomeStatement.Notes = model.Notes;
+                        incomeStatement.IsActive = model.IsActive;
+                        var ret = statementsRepo.Update(incomeStatement);
+                    }
+                    return incomeStatement;
                 }
-                return incomeStatement;
             }
             return new StatementsIncomeStatement();
         }
@@ -161,7 +176,7 @@ StatementsExpenses model)
             var statementsRepo = _repoFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _applicationUserId);
 
             var rows = statementsRepo.GetAll() //get all rows for year to date
-                    .Where(x => string.Equals(x.UserId, userId) && string.Equals(x.Year, year))
+                    .Where(x => string.Equals(x.UserId, userId) && string.Equals(x.Year, year) && x.IsActive == true)
                     .ToList();
 
             if (month>0) //filter into months if we need to focus on a specific month
@@ -173,16 +188,23 @@ StatementsExpenses model)
             double allExoenses = rows.Sum(x => x.ExpenseTotal);
             double runningBalance = allIncome - allExoenses;
 
-            return runningBalance;
+            return Math.Round(runningBalance,2);
         }
 
         public StatementsStartupSupport UpdateStartupSupport(
 StatementsStartupSupport model)
         {
-            var statementsRepo = _repoFactory.CreateGenericRepository<StatementsStartupSupport>(userContext: _applicationUserId);
+            var startupRepo = _repoFactory.CreateGenericRepository<StatementsStartupSupport>(userContext: _applicationUserId);
+            StatementsStartupSupport supportEntry = startupRepo.GetAll().Where(x => x.Id.Equals(model.Id)).FirstOrDefault();
+            if (supportEntry != null)
+            {
 
-            //update associatedstartup support filing
-
+                startupRepo.Update(model);
+            }
+            else
+            {
+                startupRepo.Insert(model);             
+            }
             return null;
 
         }
@@ -192,25 +214,78 @@ StatementsSubmit model)
         {
             var statementsRepo = _repoFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _applicationUserId);
 
-            var row = statementsRepo.GetAll().Where(x => string.Equals(x.UserId, model.UserId)).ToList();
+            var rows = statementsRepo.GetAll().Where(x => string.Equals(x.UserId, model.UserId) && x.IsActive == true)
+                .Where(y => y.Year == model.Year)
+                .ToList();
 
-            if (row != null)
+            if (rows != null)
             {
 
                 if (model.Period == "Annual")
                 {
-                    //annually needs to look at the entire years statements and sumbit all these for only that year.
+                    //annually needs to look at the entire years statements and sumbit all these for only that year.4
+                    foreach (var row in rows)
+                    {
+                        //lock all entries
+                        row.Submitted = true;
+                        row.SubmittedDate = DateTime.Now;
+                        statementsRepo.Update(row);
+
+                        SubmitIncomeExpenses(row.UserId, row.Id.ToString(), (row.ExpenseTotal > 0));
+                    }
 
                 }
                 else
                 {
                     //assumed monthly, look at month and year passed in and submit the data for only that whole month and that year period
+                    if (model.Month > 0) //filter into months if we need to focus on a specific month
+                    {
+                        rows = rows.Where(y => string.Equals(y.Month, model.Month)).ToList();
+                        if (rows.Count > 0)
+                        {
+                            foreach (var row in rows)
+                            {
+                                //lock all entries
+                                row.Submitted = true;
+                                row.SubmittedDate = DateTime.Now;
+                                statementsRepo.Update(row);
 
+                                SubmitIncomeExpenses(row.UserId, row.Id.ToString(), (row.ExpenseTotal > 0));
+                            }
+                        }
+                    } //update nothing if months arent present - cant assume to submit any months
                 }
-                
-
             }
             return null;
+        }
+
+        public bool SubmitIncomeExpenses(string userId, string id, bool isExpense = false)
+        {
+            bool retOK = false;
+            var incomeRepo = _repoFactory.CreateGenericRepository<StatementsIncome>(userContext: _applicationUserId);
+            var expenseRepo = _repoFactory.CreateGenericRepository<StatementsExpenses>(userContext: _applicationUserId);
+
+            if (!isExpense)
+            {
+                var row = incomeRepo.GetAll().Where(x => string.Equals(x.UserId, userId) && string.Equals(x.IncomeStatementId, id)).FirstOrDefault();
+                if (row != null)
+                {
+                    row.Submitted = true;
+                    incomeRepo.Update(row);
+                    retOK = true;
+                }               
+            } else
+            {
+                var row = expenseRepo.GetAll().Where(x => string.Equals(x.UserId, userId) && string.Equals(x.IncomeStatementId, id)).FirstOrDefault();
+                if (row != null)
+                {
+                    row.Submitted = true;
+                    expenseRepo.Update(row);
+                    retOK = true;
+                }
+            }
+
+            return retOK;
         }
     }
 }

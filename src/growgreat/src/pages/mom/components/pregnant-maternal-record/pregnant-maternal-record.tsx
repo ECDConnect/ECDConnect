@@ -26,11 +26,7 @@ import {
 } from '@/schemas/pregnant/pregnant-maternal-case-record';
 import { InformationCircleIcon } from '@heroicons/react/outline';
 import maternalRecord from '../../../../assets/maternalRecord.png';
-import {
-  getNextDateByDay,
-  getPreviousAndNextMonths,
-  getWeeksDiff,
-} from '@ecdlink/core';
+import { getNextDateByDay, getWeeksDiff } from '@ecdlink/core';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { MotherActions } from '@/store/mother/mother.actions';
 
@@ -74,8 +70,6 @@ export const PregnantMaternalCaseRecord: React.FC<
 
   const [deliveryDate, setDeliveryDate] = useState(tomorrow);
 
-  const { previousDate } = getPreviousAndNextMonths(tomorrow, 1);
-
   const { isLoading } = useThunkFetchCall('mothers', MotherActions.ADD_MOTHER);
 
   const setPhotoUrl = (imageUrl: string) => {
@@ -101,14 +95,6 @@ export const PregnantMaternalCaseRecord: React.FC<
   const diffDates = getWeeksDiff(currentDate, deliveryDate);
 
   const actualGestationWeek = 40 - diffDates;
-
-  const getMinYear = () => {
-    const day = new Date().getDate();
-    const month = new Date().getMonth() + 1;
-    const year = new Date().getFullYear() - 1;
-
-    return new Date(`${month}/${day}/${year}`);
-  };
 
   const onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     event.preventDefault();
@@ -177,7 +163,7 @@ export const PregnantMaternalCaseRecord: React.FC<
             onChange={onMonthChange}
             renderCustomHeader={() => <div>Month</div>}
             dateFormat="MMMM"
-            minDate={getNextDateByDay(15, previousDate)}
+            minDate={tomorrow}
             maxDate={dateAfter280days}
             showMonthYearPicker
             showPopperArrow={true}
@@ -190,7 +176,7 @@ export const PregnantMaternalCaseRecord: React.FC<
             selected={deliveryDate}
             onChange={onYearChange}
             dateFormat="yyyy"
-            minDate={getMinYear()}
+            minDate={tomorrow}
             maxDate={dateAfter280days}
             renderCustomHeader={() => <div>Year</div>}
             showYearPicker
