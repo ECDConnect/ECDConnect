@@ -91,6 +91,7 @@ export const InfantRegisterForm: React.FC = () => {
   >([]);
   let numberOfChildren: number | undefined = hasConsent?.numberOfChildren;
   const [multipleChildrenCount, setMultipleChildrenCount] = useState<number>(1);
+  const [relationshipId, setRelationshipId] = useState<string | undefined>();
 
   const [firstChild] = multipleChildrenArray;
 
@@ -221,6 +222,13 @@ export const InfantRegisterForm: React.FC = () => {
         '',
       healthCareWorkerId: user?.id,
     };
+
+    setRelationshipId(
+      caregiverDetails?.relationshipId ||
+        firstChild?.relationshipId ||
+        details?.relationshipId
+    );
+
     if (!details?.isMother) {
       appDispatch(caregiverActions.createCaregiver(caregiverInput));
     }
@@ -608,7 +616,7 @@ export const InfantRegisterForm: React.FC = () => {
         );
       }
 
-      if (firstChild?.caregiver?.id === MOTHER_TYPE_ID) {
+      if (relationshipId === MOTHER_TYPE_ID) {
         const child = getChildWithCloseBirthday();
 
         if (!!child) {
@@ -633,7 +641,7 @@ export const InfantRegisterForm: React.FC = () => {
     appDispatch,
     bornEventId,
     displayRecordEventDialog,
-    firstChild?.caregiver?.id,
+    relationshipId,
     getChildWithCloseBirthday,
     getInfantCount,
     healthCareWorker,
