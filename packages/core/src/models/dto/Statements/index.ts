@@ -5,3 +5,4 @@ export * from './statements-income-types.dto';
 export * from './statements-fee-types.dto';
 export * from './statements-contribution-types.dto';
 export * from './statements-pay-types.dto';
+export * from './balance-sheet.dto';

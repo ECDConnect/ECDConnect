@@ -82,7 +82,7 @@ export const LearningMaterials: React.FC<AddIncomeState> = ({ setType }) => {
 
     await new ExpensesStatementsService(
       userAuth?.auth_token!
-    ).UpdateStatementsIncome(incomeId, {
+    ).UpdateStatementsExpense(incomeId, {
       IsActive: true,
       UserId: userAuth?.id,
       Submitted: false,

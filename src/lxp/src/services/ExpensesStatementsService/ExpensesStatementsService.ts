@@ -60,18 +60,19 @@ class ExpensesStatementsService {
     return response.data.data.GetAllStatementsExpenseType;
   }
 
-  async UpdateStatementsIncome(
+  async UpdateStatementsExpense(
     id: string,
     input: StatementsExpensesInput
   ): Promise<any> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-      mutation updateStatementsExpenses($input: StatementsExpensesInput, $id: UUID) {
-        updateStatementsExpenses(input: $input, id: $id) {
-                id    __typename  
+      mutation updateExpense($id: String!,$input: StatementsExpensesInput) {
+          updateExpense(id: $id,input: $input) {
+                id   
+                 __typename 
+               }
               }
-            }
       `,
       variables: {
         id,
