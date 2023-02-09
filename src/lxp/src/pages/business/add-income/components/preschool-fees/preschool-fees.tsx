@@ -52,6 +52,7 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
     control,
     setValue: setPreschoolFeesValue,
     register,
+    reset,
   } = useForm<PreschoolFeesModel>({
     resolver: yupResolver(preschoolFeesSchema),
     mode: 'onChange',
@@ -157,6 +158,7 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
       ContributionTypeId: contributionType,
       IncomeTypeId: incomeTypeValue?.id,
     });
+    reset();
   };
 
   const sendOneIncomeUpdate = async () => {
