@@ -87,7 +87,7 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
             register={consentFormRegister}
             nameProp={'numberOfChildren'}
             placeholder={'e.g. 2'}
-            type={'text'}
+            type={'number'}
             className="mt-4"
           ></FormInput>
         </div>
