@@ -5171,6 +5171,7 @@ export type Query = {
   allPractitionersForPrincipal?: Maybe<Array<Maybe<Practitioner>>>;
   allPrincipal?: Maybe<Array<Maybe<Practitioner>>>;
   allPrincipals?: Maybe<Array<Maybe<Principal>>>;
+  allStatementsBalanceSheet?: Maybe<Array<Maybe<StatementsBalanceSheet>>>;
   allStatementsExpenses?: Maybe<Array<Maybe<StatementsExpenses>>>;
   allStatementsIncome?: Maybe<Array<Maybe<StatementsIncome>>>;
   allStatementsIncomeStatement?: Maybe<Array<Maybe<StatementsIncomeStatement>>>;
@@ -6135,6 +6136,10 @@ export type QueryAllPractitionersForPrincipalArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
+export type QueryAllStatementsBalanceSheetArgs = {
+  userId?: InputMaybe<Scalars['String']>;
+};
+
 export type QueryAllStatementsExpensesArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
@@ -6927,6 +6932,16 @@ export type SiteAddressInput = {
   ProvinceId?: InputMaybe<Scalars['UUID']>;
   UpdatedBy?: InputMaybe<Scalars['String']>;
   Ward?: InputMaybe<Scalars['String']>;
+};
+
+export type StatementsBalanceSheet = {
+  __typename?: 'StatementsBalanceSheet';
+  balance: Scalars['Float'];
+  expenseTotal: Scalars['Float'];
+  incomeTotal: Scalars['Float'];
+  month?: Maybe<Scalars['Int']>;
+  userId?: Maybe<Scalars['String']>;
+  year: Scalars['Int'];
 };
 
 export type StatementsContributionType = {
