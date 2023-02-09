@@ -8,6 +8,7 @@ import {
   getAllPayType,
   getAllStatementsContributionType,
   getAllStatementsFeeType,
+  getAllStatementsBalanceSheet,
 } from './statements.actions';
 import { StatementsState } from './statements.types';
 
@@ -19,6 +20,7 @@ const initialState: StatementsState = {
   feeTypes: undefined,
   contributionTypes: undefined,
   payTypes: undefined,
+  balanceSheet: undefined,
 };
 
 const statementsSlice = createSlice({
@@ -32,6 +34,7 @@ const statementsSlice = createSlice({
       state.incomeTypes = initialState.incomeTypes;
       state.feeTypes = initialState.feeTypes;
       state.contributionTypes = initialState.contributionTypes;
+      state.balanceSheet = initialState.balanceSheet;
     },
     updateStatements: (state, action: PayloadAction<any>) => {
       if (state.income) {
@@ -63,6 +66,9 @@ const statementsSlice = createSlice({
     );
     builder.addCase(getAllPayType.fulfilled, (state, action) => {
       state.payTypes = action.payload;
+    });
+    builder.addCase(getAllStatementsBalanceSheet.fulfilled, (state, action) => {
+      state.balanceSheet = action.payload;
     });
   },
 });

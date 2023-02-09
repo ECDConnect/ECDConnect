@@ -1,4 +1,5 @@
 import {
+  BalanceSheetDto,
   ExpensesStatementsDto,
   ExpensesStatementsTypes,
   IncomeStatementsDto,
@@ -44,6 +45,10 @@ export const getIncome = (
 export const getExpenses = (
   state: RootState
 ): IncomeStatementsDto[] | undefined => state?.statements?.expenses || [];
+
+export const getBalanceSheet = (
+  state: RootState
+): BalanceSheetDto[] | undefined => state?.statements?.balanceSheet || [];
 
 // Income types selectors
 export const getPreschoolFeeIncome = (state: RootState): IncomeStatementsDto =>

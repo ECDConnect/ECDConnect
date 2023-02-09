@@ -1,5 +1,5 @@
 import { api } from '../axios.helper';
-import { Config, IncomeStatementsDto } from '@ecdlink/core';
+import { BalanceSheetDto, Config, IncomeStatementsDto } from '@ecdlink/core';
 import {
   StatementsIncomeInput,
   StatementsSubmitInput,
@@ -142,11 +142,12 @@ class IncomeStatementsService {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-      mutation updateStatementsIncome($input: StatementsIncomeInput, $id: UUID) {
-          updateStatementsIncome(input: $input, id: $id) {
-                id    __typename  
+      mutation updateIncome($id: String!, $input: StatementsIncomeInput ) {
+          updateIncome( id: $id, input: $input) {
+                id   
+                 __typename 
+               }
               }
-            }
       `,
       variables: {
         id,
@@ -264,6 +265,37 @@ class IncomeStatementsService {
     }
 
     return response.data.data.submitStatement;
+  }
+
+  async getAllStatementsBalanceSheet(
+    userId: string
+  ): Promise<BalanceSheetDto[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      query allStatementsBalanceSheet($userId: String) {
+        allStatementsBalanceSheet(userId: $userId) {
+            userId
+            incomeTotal
+            expenseTotal
+            balance
+            month
+            year
+        }
+    }
+          `,
+      variables: {
+        userId,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Get all statements balance sheet Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.allStatementsBalanceSheet;
   }
 }
 

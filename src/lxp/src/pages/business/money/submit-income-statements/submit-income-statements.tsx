@@ -2,15 +2,69 @@ import ROUTES from '@/routes/routes';
 import { statementsSelectors } from '@/store/statements';
 import { numberWithSpaces } from '@/utils/statements/statements-utils';
 import { Typography, StatusChip, Button, Card, FADButton } from '@ecdlink/ui';
-import { format } from 'date-fns';
+import { differenceInDays, format } from 'date-fns';
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
+import { getMonthName } from '@utils/classroom/attendance/track-attendance-utils';
+import { endOfMonth } from 'date-fns/esm';
 
 export const SubmitIncomeStatements: React.FC = () => {
   const history = useHistory();
   const income = useSelector(statementsSelectors.getIncome);
   const expenses = useSelector(statementsSelectors.getExpenses);
+  const balanceSheet = useSelector(statementsSelectors.getBalanceSheet);
+
+  const monthName =
+    balanceSheet?.length! > 0
+      ? getMonthName(Number(balanceSheet?.[0]?.month) - 1).substring(0, 3)
+      : '';
+
+  const monthNames = balanceSheet?.map((item) => {
+    return getMonthName(item?.month! - 1).substring(0, 3);
+  });
+
+  const previousMonthRecord =
+    monthNames?.length! > 1 && balanceSheet?.length! > 1
+      ? `${monthNames?.[1]} ${balanceSheet?.[1]?.year}`
+      : `-`;
+
+  const currentMonthRecord =
+    monthNames && balanceSheet?.length! > 0
+      ? `${monthNames?.[0]} ${balanceSheet?.[0]?.year}`
+      : `-`;
+
+  const currentMonthTotalIncome =
+    balanceSheet?.length! > 0
+      ? `+ R ${balanceSheet?.[0]?.incomeTotal?.toFixed(2)}`
+      : '-';
+  const currentMonthTotalExpenses =
+    balanceSheet?.length! > 0
+      ? `- R ${balanceSheet?.[0]?.expenseTotal?.toFixed(2)}`
+      : '-';
+
+  const previousMonthTotalIncome =
+    balanceSheet?.length! > 1
+      ? `+ R ${balanceSheet?.[1].incomeTotal?.toFixed(2)}`
+      : '-';
+  const previousMonthTotalExpenses =
+    balanceSheet?.length! > 1
+      ? `- R ${balanceSheet?.[1].expenseTotal?.toFixed(2)}`
+      : '-';
+
+  const currentMonthTotalBalance =
+    balanceSheet?.length! > 0 ? balanceSheet?.[0].balance?.toFixed(2) : 0;
+
+  const previousMonthTotalBalance =
+    balanceSheet?.length! > 1 ? balanceSheet?.[1].balance?.toFixed(2) : 0;
+
+  const formatCurrentValue = (value: number) => {
+    if (value === 0) return `R ${numberWithSpaces(String(value.toFixed(2)))}`;
+
+    if (value > 0) return `+ R ${numberWithSpaces(String(value.toFixed(2)))}`;
+
+    if (value < 0) return `- R ${numberWithSpaces(String(value.toFixed(2)))}`;
+  };
 
   const totalIncome = income?.reduce(function (prev: any, current: any) {
     return prev + +current.amount;
@@ -22,14 +76,18 @@ export const SubmitIncomeStatements: React.FC = () => {
 
   const totalBalance = (totalIncome - totalExpenses).toFixed(2);
 
+  const lastDayOfMonth = endOfMonth(new Date());
+
+  const submitDateDaysCount = differenceInDays(lastDayOfMonth, new Date());
+
   return (
     <>
       <div className="flex flex-col justify-center p-4">
-        <div className="flex">
+        <div className="flex items-center">
           <StatusChip
             backgroundColour="successMain"
             borderColour="successMain"
-            text={`9 days`}
+            text={`${submitDateDaysCount} days`}
             textColour={'white'}
             className={'mr-2'}
           />
@@ -80,10 +138,18 @@ export const SubmitIncomeStatements: React.FC = () => {
             <tr className="bg-uiBg text-textDark font-body border-secondary h-12 w-1/3 border-b px-6 py-3">
               <th className="w-1/3"></th>
               <th className="text-textDark font-body">
-                <Typography text={`NOV 2021`} type="body" color={'textDark'} />
+                <Typography
+                  text={previousMonthRecord}
+                  type="body"
+                  color={'textDark'}
+                />
               </th>
               <th className="w-1/3">
-                <Typography text={`DEZ 2021`} type="body" color={'textDark'} />
+                <Typography
+                  text={currentMonthRecord}
+                  type="body"
+                  color={'textDark'}
+                />
               </th>
             </tr>
             <tr className="h-14">
@@ -97,7 +163,7 @@ export const SubmitIncomeStatements: React.FC = () => {
               </td>
               <td className="w-1/3">
                 <Typography
-                  text={`+ R 2 000.00`}
+                  text={previousMonthTotalIncome}
                   type="body"
                   color={'textDark'}
                   align={'center'}
@@ -105,7 +171,7 @@ export const SubmitIncomeStatements: React.FC = () => {
               </td>
               <td className="w-1/3">
                 <Typography
-                  text={`+ R 1 800.00`}
+                  text={currentMonthTotalIncome}
                   type="body"
                   color={'textDark'}
                   align={'center'}
@@ -123,7 +189,7 @@ export const SubmitIncomeStatements: React.FC = () => {
               </td>
               <td className="w-1/3">
                 <Typography
-                  text={`- R 2 700.00 `}
+                  text={previousMonthTotalExpenses}
                   type="body"
                   color={'textDark'}
                   align={'center'}
@@ -131,7 +197,7 @@ export const SubmitIncomeStatements: React.FC = () => {
               </td>
               <td className="w-1/3">
                 <Typography
-                  text={`- R 1 700.00 `}
+                  text={currentMonthTotalExpenses}
                   type="body"
                   color={'textDark'}
                   align={'center'}
@@ -151,7 +217,7 @@ export const SubmitIncomeStatements: React.FC = () => {
               </td>
               <td className="w-1/3">
                 <Typography
-                  text={`+ R 300.10 `}
+                  text={formatCurrentValue(Number(previousMonthTotalBalance))}
                   type="body"
                   color={'successMain'}
                   align={'center'}
@@ -159,9 +225,11 @@ export const SubmitIncomeStatements: React.FC = () => {
               </td>
               <td className="w-1/3">
                 <Typography
-                  text={`+ R 100.10 `}
+                  text={formatCurrentValue(Number(currentMonthTotalBalance))}
                   type="body"
-                  color={'successMain'}
+                  color={
+                    currentMonthTotalBalance! >= 0 ? 'successMain' : 'errorMain'
+                  }
                   align={'center'}
                 />
               </td>

@@ -26,14 +26,12 @@ export const Money = () => {
       await appDispatch(
         statementsThunkActions.getAllIncome({ userId: userAuth?.id })
       );
-      await new IncomeStatementsService(
-        userAuth?.auth_token
-      ).allStatementsIncomeStatement(userAuth?.id);
+      await appDispatch(
+        statementsThunkActions.getAllStatementsBalanceSheet({
+          userId: userAuth?.id,
+        })
+      );
     }
-
-    await new ExpensesStatementsService(
-      userAuth?.auth_token!
-    ).allStatementsExpenses(userAuth?.id!);
   };
 
   useEffect(() => {

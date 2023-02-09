@@ -6,4 +6,5 @@ export interface StatementsState {
   feeTypes: any[] | undefined;
   contributionTypes: any[] | undefined;
   payTypes: any[] | undefined;
+  balanceSheet: any[] | undefined;
 }

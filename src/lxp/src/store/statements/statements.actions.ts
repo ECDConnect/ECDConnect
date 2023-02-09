@@ -3,6 +3,7 @@ import { RootState, ThunkApiType } from '../types';
 import ExpensesStatementsService from '@/services/ExpensesStatementsService/ExpensesStatementsService';
 import { IncomeStatementsService } from '@/services/IncomeStatementsService';
 import {
+  BalanceSheetDto,
   ExpensesStatementsDto,
   ExpensesStatementsTypes,
   IncomeStatementsDto,
@@ -105,6 +106,40 @@ export const getAllIncome = createAsyncThunk<
       }
 
       return income;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getAllStatementsBalanceSheet = createAsyncThunk<
+  any[],
+  {},
+  ThunkApiType<RootState>
+>(
+  'getAllStatementsBalanceSheet',
+  // eslint-disable-next-line no-empty-pattern
+  async ({}, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      let statementsBalanceSheet: BalanceSheetDto[] | undefined;
+
+      if (userAuth?.auth_token) {
+        statementsBalanceSheet = await new IncomeStatementsService(
+          userAuth?.auth_token
+        ).getAllStatementsBalanceSheet(userAuth?.id);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      if (!statementsBalanceSheet) {
+        return rejectWithValue('Error getting income');
+      }
+
+      return statementsBalanceSheet;
     } catch (err) {
       return rejectWithValue(err);
     }
