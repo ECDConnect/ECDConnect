@@ -25,7 +25,6 @@ export const WalkthroughTutorial = ({
   const { isOnline } = useOnlineStatus();
   const tutorialCompleteClicks = 3;
   const tutorialResetClicks = 4;
-  // const [attendanceStatus, setAttendanceStatus] = useState(true);
   const [tutorialProgressClicks, setTutorialProgressClicks] =
     useState<number>(0);
   const [attendanceItem, setAttendanceItem] = useState<AttendanceListDataItem>({

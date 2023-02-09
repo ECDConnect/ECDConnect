@@ -103,7 +103,6 @@ export const AttendanceTutorial = ({
             textColor={'white'}
             className={'mt-4 max-h-10'}
             iconPosition={'start'}
-            // onClick={() => history.push(ROUTES.ATTENDANCE_TUTORIAL_WALKTHROUGH)}
             onClick={handleClickStart}
           />
         </Card>

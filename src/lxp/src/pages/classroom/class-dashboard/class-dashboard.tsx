@@ -206,8 +206,6 @@ export const ClassDashboard: React.FC = () => {
     updatePractitionerProgress();
   };
 
-  useEffect(() => {}, []);
-
   useEffect(() => {
     const handleAttendanceTutorial = () => {
       dialog({
@@ -251,7 +249,6 @@ export const ClassDashboard: React.FC = () => {
         position: DialogPosition.Bottom,
         render: (submit, cancel) => (
           <ActionModal
-            // icon={'InformationCircleIcon'}
             customIcon={
               <div className="flex">
                 <img src={walktroughImage} alt="profile" className="mb-2" />
@@ -266,7 +263,6 @@ export const ClassDashboard: React.FC = () => {
             }
             iconColor="alertMain"
             iconBorderColor="alertBg"
-            // importantText={`Want to learn how to track attendance on Funda App?`}
             actionButtons={[
               {
                 text: 'Close',
@@ -274,7 +270,6 @@ export const ClassDashboard: React.FC = () => {
                 colour: 'primary',
                 type: 'filled',
                 onClick: () => {
-                  // setAttendanceTutorialActive(true);
                   submit();
                 },
                 leadingIcon: 'XIcon',
