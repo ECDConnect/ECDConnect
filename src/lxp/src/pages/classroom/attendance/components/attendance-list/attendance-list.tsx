@@ -262,14 +262,16 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
             backgroundColour="successMain"
             text={`${presentChildrenCount} present`}
           />
-          <StatusChip
-            textColour="white"
-            padding={'px-3 py-1.5'}
-            borderColour="errorMain"
-            textType="small"
-            backgroundColour="errorMain"
-            text={`${absentChildrenCount} absent`}
-          />
+          <div>
+            <StatusChip
+              textColour="white"
+              padding={'px-3 py-1.5'}
+              borderColour="errorMain"
+              textType="small"
+              backgroundColour="errorMain"
+              text={`${absentChildrenCount} absent`}
+            />
+          </div>
         </div>
       </div>
       <div className={styles.attendanceListsWrapper}>
@@ -277,19 +279,22 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
           const isPrimaryList =
             selectedGroup.id === primaryClassProgramme?.classroomGroupId;
           return (
-            <ClassProgrammeAttendanceList
-              key={`class_attencance_list_${idx}`}
-              isPrimaryClass={isPrimaryList}
-              classroomGroup={selectedGroup}
-              attendanceDate={attendanceDate}
-              onAttendanceUpdated={(state) => {
-                validateAttendanceList(
-                  selectedGroup.id ?? '',
-                  state.listItems,
-                  isPrimaryList
-                );
-              }}
-            />
+            <div id="attendanceList">
+              <ClassProgrammeAttendanceList
+                key={`class_attencance_list_${idx}`}
+                isPrimaryClass={isPrimaryList}
+                classroomGroup={selectedGroup}
+                attendanceDate={attendanceDate}
+                onAttendanceUpdated={(state) => {
+                  validateAttendanceList(
+                    selectedGroup.id ?? '',
+                    state.listItems,
+                    isPrimaryList
+                  );
+                }}
+                id="attendance-list"
+              />
+            </div>
           );
         })}
 

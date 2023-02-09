@@ -12,12 +12,14 @@ import * as styles from './attendance-list-item.styles';
 export interface AttendanceListItemProps extends ComponentBaseProps {
   item: AttendanceListDataItem;
   onBadgeClick?: (item: AttendanceListDataItem) => void;
+  walkthrough?: boolean;
 }
 
 export const AttendanceListItem = ({
   item,
   onBadgeClick,
   className,
+  walkthrough,
 }: React.PropsWithChildren<AttendanceListItemProps>) => {
   const [attendanceItem, setAttendanceItem] =
     useState<AttendanceListDataItem>(item);
@@ -28,6 +30,22 @@ export const AttendanceListItem = ({
 
   const onBadgeClicked = () => {
     const currentItem = JSON.parse(JSON.stringify(attendanceItem));
+
+    if (walkthrough) {
+      if (
+        currentItem.status &&
+        currentItem.status === AttendanceStatus.Present
+      ) {
+        currentItem.status = AttendanceStatus.Absent;
+      } else {
+        currentItem.status = AttendanceStatus.Present;
+      }
+      setAttendanceItem(currentItem);
+      if (onBadgeClick) {
+        onBadgeClick(currentItem);
+      }
+      return;
+    }
 
     if (currentItem.status && currentItem.status !== AttendanceStatus.Absent) {
       currentItem.status = currentItem.status + 1;

@@ -24,6 +24,7 @@ import { isWorkingDay } from '@/utils/common/date.utils';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 import { practitionerSelectors } from '@/store/practitioner';
 import { userSelectors } from '@store/user';
+import MultiRouteWrapper from '@/pages/classroom/attendance/components/attendance-wrapper/AttendanceWrapper';
 
 export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   const userData = useSelector(userSelectors.getUser);
@@ -214,6 +215,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
 
   return (
     <div>
+      <MultiRouteWrapper />
       {attendanceComponentType
         ? getComponentToRender(attendanceComponentType)
         : null}

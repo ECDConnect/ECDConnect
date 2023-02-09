@@ -9,6 +9,8 @@ import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import App from './App';
 import Loader from './components/loader/loader';
+import { WalkthroughProvider } from './walkthrougContext';
+import MultiRouteWrapper from './pages/classroom/attendance/components/attendance-wrapper/AttendanceWrapper';
 import { persistor, store } from './store';
 
 const ConfigWrapper: React.FC = () => {
@@ -32,7 +34,9 @@ const ConfigWrapper: React.FC = () => {
         <PersistGate loading={null} persistor={persistor}>
           <ThemeProvider themeEndPoint={Config.themeUrl} overRideCache={false}>
             <DialogServiceProvider>
-              <App />
+              <WalkthroughProvider>
+                <App />
+              </WalkthroughProvider>
             </DialogServiceProvider>
           </ThemeProvider>
         </PersistGate>

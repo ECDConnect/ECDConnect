@@ -120,7 +120,7 @@ export const ClassProgrammeAttendanceList: React.FC<
   return (
     <div className={styles.wrapper}>
       <div className={styles.contentWrapper}>
-        <div className={'bg-uiBg flex flex-col items-start w-full px-4 py-1'}>
+        <div className={'bg-uiBg flex flex-col items-start px-4 py-1'}>
           <Typography
             type={'body'}
             weight={'bold'}
@@ -137,14 +137,16 @@ export const ClassProgrammeAttendanceList: React.FC<
             color={'textLight'}
           />
         </div>
-        <AttendanceStackedList
-          className={'bg-white'}
-          scroll={false}
-          listItems={attendanceList || []}
-          onChange={(updateList: AttendanceListDataItem[]) =>
-            onAttendanceListUpdated(updateList)
-          }
-        />
+        <div className="flex justify-center">
+          <AttendanceStackedList
+            className={'bg-successBg w-11/12'}
+            scroll={false}
+            listItems={attendanceList || []}
+            onChange={(updateList: AttendanceListDataItem[]) =>
+              onAttendanceListUpdated(updateList)
+            }
+          />
+        </div>
       </div>
     </div>
   );
