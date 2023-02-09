@@ -1,6 +1,6 @@
 import Joyride, { CallBackProps, TooltipRenderProps } from 'react-joyride';
 import { useHistory } from 'react-router-dom';
-import { useAppContext } from './walkthrougContext';
+import { useAppContext } from '../../../../../walkthrougContext';
 import {
   Button,
   Card,
@@ -9,9 +9,8 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { useSetState } from 'react-use';
-import WalktroughImage from './assets/walktroughImage.png';
-import ROUTES from './routes/routes';
-import { useEffect } from 'react';
+import WalktroughImage from '../../../../../assets/walktroughImage.png';
+import ROUTES from '../../../../../routes/routes';
 
 export default function MultiRouteWrapper() {
   const history = useHistory();

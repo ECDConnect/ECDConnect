@@ -1,7 +1,8 @@
 import { createContext, useContext, useMemo } from 'react';
 import { useSetState } from 'react-use';
+import { AppState } from './pages/classroom/attendance/components/attendance-wrapper/attendanceWrapper.types';
 
-import { AppState } from './joyRide.types';
+// import { AppState } from './pages/classroom/atten';
 
 const appState = {
   run: false,

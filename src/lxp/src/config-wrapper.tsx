@@ -10,7 +10,7 @@ import { PersistGate } from 'redux-persist/integration/react';
 import App from './App';
 import Loader from './components/loader/loader';
 import { WalkthroughProvider } from './walkthrougContext';
-import MultiRouteWrapper from './JoyRideWrapper';
+import MultiRouteWrapper from './pages/classroom/attendance/components/attendance-wrapper/AttendanceWrapper';
 import { persistor, store } from './store';
 
 const ConfigWrapper: React.FC = () => {

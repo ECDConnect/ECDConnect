@@ -15,7 +15,7 @@ import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import * as styles from './walktrough-tutorial.styles';
 import { AttendanceTutorialProps, tabItems } from './walktrough-tutorial.types';
 import { useAppContext } from '@/walkthrougContext';
-import MultiRouteWrapper from '@/JoyRideWrapper';
+import MultiRouteWrapper from '@/pages/classroom/attendance/components/attendance-wrapper/AttendanceWrapper';
 import { useSetState } from 'react-use';
 
 export const WalkthroughTutorial = ({
