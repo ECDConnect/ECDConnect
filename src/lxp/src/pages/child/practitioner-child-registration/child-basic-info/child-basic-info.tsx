@@ -79,6 +79,7 @@ export const ChildBasicInfo: React.FC<
           }${checkChild?.fullName?.split(' ')[1].toUpperCase()}` || '',
         alertSeverity: 'none',
         avatarColor: getAvatarColor() || '',
+        childMatching: true,
       },
     ];
 
@@ -174,7 +175,7 @@ export const ChildBasicInfo: React.FC<
           />
           {listItems && (
             <StackedList
-              className={'mt-4'}
+              className={'my-4'}
               listItems={listItems}
               type={'UserAlertList'}
             />
