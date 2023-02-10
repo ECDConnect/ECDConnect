@@ -51,7 +51,7 @@ namespace ECDLink.Notifications.BulkSms
             _fieldTransform = new Dictionary<string, string>();
         }
 
-        public async Task SendMessage()
+        public async Task SendMessageAsync()
         {
             if (string.IsNullOrEmpty(_message.To))
             {

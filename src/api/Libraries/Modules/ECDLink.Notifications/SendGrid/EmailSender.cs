@@ -63,7 +63,7 @@ namespace ECDLink.Notifications.SendGrid
             throw new NotImplementedException();
         }
 
-        public Task SendMessage()
+        public Task SendMessageAsync()
         {
             throw new NotImplementedException();
         }

@@ -93,7 +93,7 @@ namespace EcdLink.Api.CoreApi.Security.Managers
                 return false;
             }
 
-            _notificationManager.SendForgotPasswordMessage(user, resetToken);
+            await _notificationManager.SendForgotPasswordMessageAsync(user, resetToken);
 
             return true;
         }

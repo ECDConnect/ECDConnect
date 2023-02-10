@@ -4,6 +4,7 @@ using ECDLink.Core.Services.Interfaces;
 using ECDLink.Core.SystemSettings.SystemOptions;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.Security.Helpers;
+using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.Security.Managers
 {
@@ -18,17 +19,16 @@ namespace EcdLink.Api.CoreApi.Security.Managers
             _options = optionAccessor;
         }
 
-        public void SendAuthenticationCode(ApplicationUser user, string otp)
+        public async Task SendAuthenticationCodeAsync(ApplicationUser user, string otp)
         {
             var provider = _notificationProviderFactory.Create(user);
 
-            provider.SetMessageTemplate(TemplateTypeEnum.AuthCode)
+            await provider.SetMessageTemplate(TemplateTypeEnum.AuthCode)
                 .AddFieldReplacement("code", otp)
-                .SendMessage()
-                .Wait();
+                .SendMessageAsync();
         }
 
-        public void SendForgotPasswordMessage(ApplicationUser user, string token)
+        public async Task SendForgotPasswordMessageAsync(ApplicationUser user, string token)
         {
             var encodedToken = TokenHelper.EncodeToken(token);
 
@@ -36,11 +36,10 @@ namespace EcdLink.Api.CoreApi.Security.Managers
 
             var notificationProvider = _notificationProviderFactory.Create(user);
 
-            notificationProvider
+            await notificationProvider
               .SetMessageTemplate(TemplateTypeEnum.ForgotPassword)
               .AddFieldReplacement("callback", forgotPasswordCallback)
-              .SendMessage()
-              .Wait();
+              .SendMessageAsync();
         }
     }
 }

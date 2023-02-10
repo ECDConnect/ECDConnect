@@ -30,7 +30,7 @@ namespace ECDLink.Development.Notifications
             _dropModel = new Dictionary<string, string>();
         }
 
-        public Task SendMessage()
+        public Task SendMessageAsync()
         {
             if (string.IsNullOrEmpty(_dropModel["To"]))
             {
@@ -93,7 +93,7 @@ namespace ECDLink.Development.Notifications
                 string userState = "test message1";
 
                 client.SendAsync(message, userState);
-
+                
                 return Task.CompletedTask;
             }
         }

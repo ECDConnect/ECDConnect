@@ -4,6 +4,7 @@ using ECDLink.Core.Services.Interfaces;
 using ECDLink.Core.SystemSettings.SystemOptions;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.Security.Helpers;
+using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.Managers.Notifications
 {
@@ -18,7 +19,7 @@ namespace EcdLink.Api.CoreApi.Managers.Notifications
             _options = optionAccessor;
         }
 
-        public void SendInvitation(ApplicationUser user, string token)
+        public async Task SendInvitationAsync(ApplicationUser user, string token)
         {
             var encodedToken = TokenHelper.EncodeToken(token);
 
@@ -26,11 +27,10 @@ namespace EcdLink.Api.CoreApi.Managers.Notifications
 
             var notificationProvider = _notificationProviderFactory.Create(user);
 
-            notificationProvider
+            await notificationProvider
               .SetMessageTemplate(TemplateTypeEnum.Invitation)
               .AddFieldReplacement("callback", invitationUrl)
-              .SendMessage()
-              .Wait();
+              .SendMessageAsync();
         }
 
     }

@@ -56,11 +56,10 @@ namespace ECDLink.AutomatedServiceWorkers.Notifications
 
                     var notificationProvider = notificationProviderFactory.Create(notification.User);
 
-                    notificationProvider
+                    await notificationProvider
                         .SetMessageTemplate(notification.TemplateType)
                         .AddFieldReplacement("callback", loginUrl)
-                        .SendMessage()
-                        .Wait();
+                        .SendMessageAsync();
 
                     dbContext.JobNotifications.Remove(notification);
                     dbContext.SaveChanges();

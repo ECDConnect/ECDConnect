@@ -80,11 +80,10 @@ namespace ECDLink.AutomatedServiceWorkers.Notifications
                         {
                             var notificationProvider = notificationProviderFactory.Create(practitioner.User);
 
-                            notificationProvider
+                            await notificationProvider
                                 .SetMessageTemplate(TemplateTypeEnum.AttendanceWeekly)
                                 .AddFieldReplacement("callback", loginUrl)
-                                .SendMessage()
-                                .Wait();
+                                .SendMessageAsync();
                         }
                     }
                 }

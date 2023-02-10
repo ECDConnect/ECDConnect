@@ -16,6 +16,6 @@ namespace ECDLink.Abstractrions.Notifications
 
         public INotificationProvider<ProviderContext> OverrideSender(string sender);
 
-        public Task SendMessage();
+        public Task SendMessageAsync();
     }
 }
