@@ -30,6 +30,7 @@ import {
   isNumber,
   moneyInputFormat,
 } from '@/utils/statements/statements-utils';
+import { NOTIFICATION, useNotifications } from '@ecdlink/core';
 
 export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
   const children = useSelector(childrenSelectors.getChildren);
@@ -47,6 +48,8 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
     (item) => item.description === viewTitle
   );
   const moneyContributionTypeId = '8ff95f6e-5116-4412-adf6-81025172970e';
+
+  const { setNotification } = useNotifications();
 
   const {
     control,
@@ -143,22 +146,27 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
   const sendIncomeUpdate = async () => {
     const incomeId = newGuid();
 
-    await new IncomeStatementsService(
-      userAuth?.auth_token!
-    ).UpdateStatementsIncome(incomeId, {
-      IsActive: true,
-      UserId: userAuth?.id,
-      ChildUserId: child,
-      Submitted: false,
-      DateReceived: date,
-      Notes: note,
-      Amount: amount ? moneyInputFormat(amount) : 0,
-      AmountExpected: 400,
-      ChildCoverAmount: 400,
-      ContributionTypeId: contributionType,
-      IncomeTypeId: incomeTypeValue?.id,
-    });
-    reset();
+    await new IncomeStatementsService(userAuth?.auth_token!)
+      .UpdateStatementsIncome(incomeId, {
+        IsActive: true,
+        UserId: userAuth?.id,
+        ChildUserId: child,
+        Submitted: false,
+        DateReceived: date,
+        Notes: note,
+        Amount: amount ? moneyInputFormat(amount) : 0,
+        AmountExpected: 400,
+        ChildCoverAmount: 400,
+        ContributionTypeId: contributionType,
+        IncomeTypeId: incomeTypeValue?.id,
+      })
+      .then(() => {
+        setNotification({
+          title: `Successfully Added Fees`,
+          variant: NOTIFICATION.SUCCESS,
+        });
+        reset();
+      });
   };
 
   const sendOneIncomeUpdate = async () => {
