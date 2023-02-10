@@ -188,22 +188,22 @@ export type AntenatalQuestionnaireQuestion = {
 
 export type AntenatalQuestionnaireQuestionAnswer = {
   __typename?: 'AntenatalQuestionnaireQuestionAnswer';
-  Video?: Maybe<Scalars['String']>;
   description?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['Int']>;
   image?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
   sequence?: Maybe<Scalars['String']>;
   type?: Maybe<Scalars['String']>;
+  video?: Maybe<Scalars['String']>;
 };
 
 export type AntenatalQuestionnaireQuestionAnswerInput = {
-  Video?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   image?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
   sequence?: InputMaybe<Scalars['String']>;
   type?: InputMaybe<Scalars['String']>;
+  video?: InputMaybe<Scalars['String']>;
 };
 
 export type AntenatalQuestionnaireQuestionInput = {
@@ -217,6 +217,7 @@ export type AntenatalQuestionnaireQuestionInput = {
 
 export type AntenatalVisit = {
   __typename?: 'AntenatalVisit';
+  color?: Maybe<Scalars['String']>;
   description?: Maybe<Scalars['String']>;
   icon?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['Int']>;
@@ -226,6 +227,7 @@ export type AntenatalVisit = {
 };
 
 export type AntenatalVisitInput = {
+  color?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   icon?: InputMaybe<Scalars['String']>;
   linkedQuestionnaires?: InputMaybe<Scalars['String']>;
@@ -8056,6 +8058,7 @@ export type VisitModelInput = {
 
 export type VisitName = {
   __typename?: 'VisitName';
+  color?: Maybe<Scalars['String']>;
   description?: Maybe<Scalars['String']>;
   icon?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['Int']>;
@@ -8065,6 +8068,7 @@ export type VisitName = {
 };
 
 export type VisitNameInput = {
+  color?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   icon?: InputMaybe<Scalars['String']>;
   linkedQuestionnaires?: InputMaybe<Scalars['String']>;
