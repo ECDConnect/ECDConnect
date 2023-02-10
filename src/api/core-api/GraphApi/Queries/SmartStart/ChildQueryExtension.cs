@@ -84,6 +84,9 @@ string classroomId)
                             }
                             if (childExists)
                             {
+                                var classroomGroupRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);
+                                var programmeName = classroomGroupRepo.GetAll().Where(x => x.UserId.ToString() == practitioner.UserId).Select(y => y.Name).FirstOrDefault();
+
                                 return new ChildCreatedByDetail()
                                 {
                                     ChildUserId = child.UserId,
@@ -93,7 +96,9 @@ string classroomId)
                                     CreatedByDate = child.InsertedDate,
                                     PractitionerName = practitioner.User.FullName,
                                     DateOfBirth = child.User.DateOfBirth,
-                                    ProfileImageUrl = child.User.ProfileImageUrl
+                                    ProfileImageUrl = child.User.ProfileImageUrl,
+                                    ProgrammeName = (!string.IsNullOrWhiteSpace(programmeName) ? programmeName : "N/A"),
+                                    PractitionerUserId = practitioner.UserId
                                 };
                             }
                         }

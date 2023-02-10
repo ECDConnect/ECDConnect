@@ -58,8 +58,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                                     peers.Add(practi);
                                 }
                             }
-                            }
-                        
+                        }
                     }
                     if (practitioner.PrincipalHierarchy.HasValue)
                     {
