@@ -634,7 +634,9 @@ export type ChildCreatedByDetail = {
   dateOfBirth: Scalars['DateTime'];
   fullName?: Maybe<Scalars['String']>;
   practitionerName?: Maybe<Scalars['String']>;
+  practitionerUserId?: Maybe<Scalars['String']>;
   profileImageUrl?: Maybe<Scalars['String']>;
+  programmeName?: Maybe<Scalars['String']>;
 };
 
 export type ChildFilterInput = {
