@@ -143,8 +143,6 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
     setPreschoolFeesValue('feeType', feeTypeValue);
   };
 
-  console.log({ feeType });
-
   const sendIncomeUpdate = async () => {
     const incomeId = newGuid();
 
