@@ -26,7 +26,6 @@ namespace ECDLink.DataAccessLayer.Entities.IncomeStatements
         public DateTime? SubmittedDate { get; set; }
         public string UserId { get; set; }
 
-
     }
 
     public interface StatementsIncomeStatementJoin<TKey>
