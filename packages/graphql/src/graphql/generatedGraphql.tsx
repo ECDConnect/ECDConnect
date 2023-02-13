@@ -452,6 +452,55 @@ export type BooleanOperationFilterInput = {
   neq?: InputMaybe<Scalars['Boolean']>;
 };
 
+export type CmsAnswerOption = {
+  __typename?: 'CMSAnswerOption';
+  description?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  image?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
+  sequence?: Maybe<Scalars['String']>;
+  type?: Maybe<Scalars['String']>;
+  video?: Maybe<Scalars['String']>;
+};
+
+export type CmsQuestion = {
+  __typename?: 'CMSQuestion';
+  description?: Maybe<Scalars['String']>;
+  heading?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  image?: Maybe<Scalars['String']>;
+  linkedAnswerOptions?: Maybe<Array<Maybe<CmsAnswerOption>>>;
+  name?: Maybe<Scalars['String']>;
+  questionAnswer?: Maybe<Scalars['String']>;
+  sequence?: Maybe<Scalars['String']>;
+  subHeading?: Maybe<Scalars['String']>;
+  type?: Maybe<Scalars['String']>;
+};
+
+export type CmsQuestionnaire = {
+  __typename?: 'CMSQuestionnaire';
+  description?: Maybe<Scalars['String']>;
+  heading?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  image?: Maybe<Scalars['String']>;
+  linkedQuestions?: Maybe<Array<Maybe<CmsQuestion>>>;
+  name?: Maybe<Scalars['String']>;
+  subHeading?: Maybe<Scalars['String']>;
+  type?: Maybe<Scalars['String']>;
+};
+
+export type CmsVisit = {
+  __typename?: 'CMSVisit';
+  color?: Maybe<Scalars['String']>;
+  description?: Maybe<Scalars['String']>;
+  icon?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  isCompleted: Scalars['Boolean'];
+  linkedQuestionnaires?: Maybe<Array<Maybe<CmsQuestionnaire>>>;
+  name?: Maybe<Scalars['String']>;
+  sequence?: Maybe<Scalars['String']>;
+};
+
 export type Caregiver = {
   __typename?: 'Caregiver';
   additionalFirstName?: Maybe<Scalars['String']>;
@@ -5367,6 +5416,7 @@ export type Query = {
   allStatementsIncomeStatement?: Maybe<Array<Maybe<StatementsIncomeStatement>>>;
   allStatementsStartupSupport?: Maybe<Array<Maybe<StatementsStartupSupport>>>;
   allTeamLeads?: Maybe<Array<Maybe<TeamLead>>>;
+  antenatalVisitDataForMother?: Maybe<Array<Maybe<CmsVisit>>>;
   attendance?: Maybe<Array<Maybe<Attendance>>>;
   caregiverGrants?: Maybe<Array<Maybe<UserGrant>>>;
   childAttendanceReport?: Maybe<ChildAttendanceReportModel>;
@@ -5434,6 +5484,7 @@ export type Query = {
   userById?: Maybe<ApplicationUser>;
   userByToken?: Maybe<UserByToken>;
   users?: Maybe<Array<Maybe<ApplicationUser>>>;
+  visitDataForVisit?: Maybe<Array<Maybe<VisitData>>>;
   yearlyClassAttendanceMetricsByUser?: Maybe<
     Array<Maybe<ClassroomMetricReport>>
   >;
@@ -6390,6 +6441,11 @@ export type QueryAllStatementsStartupSupportArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
+export type QueryAntenatalVisitDataForMotherArgs = {
+  localeId?: InputMaybe<Scalars['String']>;
+  visitId?: InputMaybe<Scalars['String']>;
+};
+
 export type QueryAttendanceArgs = {
   monthOfYear?: InputMaybe<Scalars['Int']>;
   weekOfYear?: InputMaybe<Scalars['Int']>;
@@ -6615,6 +6671,10 @@ export type QueryUserByIdArgs = {
 
 export type QueryUserByTokenArgs = {
   token?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryVisitDataForVisitArgs = {
+  visitId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryYearlyClassAttendanceMetricsByUserArgs = {
@@ -7941,13 +8001,10 @@ export type Visit = {
 
 export type VisitData = {
   __typename?: 'VisitData';
-  cmsContentId?: Maybe<Scalars['Int']>;
-  cmsContentTypeFieldId?: Maybe<Scalars['Int']>;
-  cmsContentValue?: Maybe<Scalars['String']>;
-  cmsVisitAnswerTypeId?: Maybe<Scalars['Int']>;
-  cmsVisitNameTypeId?: Maybe<Scalars['Int']>;
-  cmsVisitQuestionTypeId?: Maybe<Scalars['Int']>;
-  cmsVisitQuestionnaireTypeId?: Maybe<Scalars['Int']>;
+  cmsAnswerContentId: Scalars['Int'];
+  cmsQuestionContentId: Scalars['Int'];
+  cmsQuestionnaireContentId: Scalars['Int'];
+  cmsVisitNameContentId: Scalars['Int'];
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
@@ -7960,13 +8017,10 @@ export type VisitData = {
 
 export type VisitDataFilterInput = {
   and?: InputMaybe<Array<VisitDataFilterInput>>;
-  cmsContentId?: InputMaybe<ComparableNullableOfInt32OperationFilterInput>;
-  cmsContentTypeFieldId?: InputMaybe<ComparableNullableOfInt32OperationFilterInput>;
-  cmsContentValue?: InputMaybe<StringOperationFilterInput>;
-  cmsVisitAnswerTypeId?: InputMaybe<ComparableNullableOfInt32OperationFilterInput>;
-  cmsVisitNameTypeId?: InputMaybe<ComparableNullableOfInt32OperationFilterInput>;
-  cmsVisitQuestionTypeId?: InputMaybe<ComparableNullableOfInt32OperationFilterInput>;
-  cmsVisitQuestionnaireTypeId?: InputMaybe<ComparableNullableOfInt32OperationFilterInput>;
+  cmsAnswerContentId?: InputMaybe<ComparableInt32OperationFilterInput>;
+  cmsQuestionContentId?: InputMaybe<ComparableInt32OperationFilterInput>;
+  cmsQuestionnaireContentId?: InputMaybe<ComparableInt32OperationFilterInput>;
+  cmsVisitNameContentId?: InputMaybe<ComparableInt32OperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
@@ -7979,13 +8033,10 @@ export type VisitDataFilterInput = {
 };
 
 export type VisitDataInput = {
-  CmsContentId?: InputMaybe<Scalars['Int']>;
-  CmsContentTypeFieldId?: InputMaybe<Scalars['Int']>;
-  CmsContentValue?: InputMaybe<Scalars['String']>;
-  CmsVisitAnswerTypeId?: InputMaybe<Scalars['Int']>;
-  CmsVisitNameTypeId?: InputMaybe<Scalars['Int']>;
-  CmsVisitQuestionTypeId?: InputMaybe<Scalars['Int']>;
-  CmsVisitQuestionnaireTypeId?: InputMaybe<Scalars['Int']>;
+  CmsAnswerContentId: Scalars['Int'];
+  CmsQuestionContentId: Scalars['Int'];
+  CmsQuestionnaireContentId: Scalars['Int'];
+  CmsVisitNameContentId: Scalars['Int'];
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
   QuestionAnswer?: InputMaybe<Scalars['String']>;
@@ -7995,13 +8046,10 @@ export type VisitDataInput = {
 };
 
 export type VisitDataModelInput = {
-  cmsContentId?: InputMaybe<Scalars['Int']>;
-  cmsContentTypeFieldId?: InputMaybe<Scalars['Int']>;
-  cmsContentValue?: InputMaybe<Scalars['String']>;
-  cmsVisitAnswerTypeId?: InputMaybe<Scalars['Int']>;
-  cmsVisitNameTypeId?: InputMaybe<Scalars['Int']>;
-  cmsVisitQuestionTypeId?: InputMaybe<Scalars['Int']>;
-  cmsVisitQuestionnaireTypeId?: InputMaybe<Scalars['Int']>;
+  cmsAnswerContentId: Scalars['Int'];
+  cmsQuestionContentId: Scalars['Int'];
+  cmsQuestionnaireContentId: Scalars['Int'];
+  cmsVisitNameContentId: Scalars['Int'];
   questionAnswer?: InputMaybe<Scalars['String']>;
   visit?: InputMaybe<VisitInput>;
   visitId?: InputMaybe<Scalars['UUID']>;
