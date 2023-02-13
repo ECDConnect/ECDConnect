@@ -86,7 +86,7 @@ export const UserAlertListItem: React.FC<UserAlertListItemProps> = ({
                 <Typography
                   className={
                     item?.childMatching
-                      ? 'w-8/12 break-words pl-1'
+                      ? 'w-11/12 break-words pl-1'
                       : 'truncate pl-1'
                   }
                   type="help"
