@@ -84,9 +84,7 @@ string classroomId)
                             }
                             if (childExists)
                             {
-                                var classroomGroupRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);
-                                var programmeName = classroomGroupRepo.GetAll().Where(x => x.UserId.ToString() == practitioner.UserId).Select(y => y.Name).FirstOrDefault();
-
+                                var programmeName = personnelManager.GetSiteNameForPractitioner(practitioner.UserId);
                                 return new ChildCreatedByDetail()
                                 {
                                     ChildUserId = child.UserId,
