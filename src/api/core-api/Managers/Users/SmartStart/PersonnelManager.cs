@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using ECDLink.DataAccessLayer.Entities;
@@ -157,6 +158,24 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             List<Practitioner> practitioners = principalRepo.GetAll().Where(x => x.PrincipalHierarchy.Equals(userId)).ToList();
 
             return practitioners;
+        }
+
+        public string GetSiteNameForPractitioner(string userId)
+        {
+            string siteName = "N/A";
+            var classroomGroupRepo = _repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: _applicationUserId);
+            var classroomRepo = _repoFactory.CreateGenericRepository<Classroom>(userContext: _applicationUserId);
+
+            var classroomgroup = classroomGroupRepo.GetAll().Where(x => x.UserId.ToString() == userId).FirstOrDefault();
+            if (classroomgroup!= null) //principals and practitioners are assigned to classroom groups
+            {
+                siteName = classroomRepo.GetAll().Where(x => x.Id.Equals(classroomgroup.ClassroomId)).Select(x => x.Name).FirstOrDefault();               
+            } else //only principals/FAA are assigfne dto classrooms only
+            {
+                siteName = classroomRepo.GetAll().Where(x => x.UserId.ToString() == userId).Select(y => y.Name).FirstOrDefault();
+            }
+
+            return siteName;
         }
 
         #endregion
