@@ -16,6 +16,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
         public string QuestionAnswer { get; set; }
     }
 
+    public class VisitDataStatusModel
+    {
+        public Guid? VisitDataId { get; set; }
+        public VisitData VisitData { get; set; }
+        public string Comment { get; set; }
+        public string Color { get; set; }
+        public string Type { get; set; }
+    }
+
     public class CMSVisit
     {
         public string Id { get; set; }
@@ -23,7 +32,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
         public string Description { get; set; }
         public string Icon { get; set; }
         public string Sequence { get; set; }
-        public string Color { get; set; }
+        public string PrimaryColor { get; set; }
+        public string SecondaryColor { get; set; }
         public Boolean IsCompleted { get; set; }
         public virtual ICollection<CMSQuestionnaire> LinkedQuestionnaires { get; set; }
     }
@@ -33,9 +43,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
         public string Id { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
+        public string DescriptionIcon { get; set; }
         public string Image { get; set; }
         public string Heading { get; set; }
         public string SubHeading { get; set; }
+        public string HeadingIcon { get; set; }
+        public string HeadingColor { get; set; }
         public string Type { get; set; }
         public virtual ICollection<CMSQuestion> LinkedQuestions { get; set; }
     }
