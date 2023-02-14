@@ -165,6 +165,7 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
           title: `Successfully Added Fees`,
           variant: NOTIFICATION.SUCCESS,
         });
+        setSelectedFeeTypeValue([]);
         reset();
       });
   };
