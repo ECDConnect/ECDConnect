@@ -131,13 +131,7 @@ export const StartupSupport: React.FC<AddIncomeState> = ({ setType }) => {
           textInputType={'moneyInput'}
           prefixIcon={!!startupValue}
         />
-        {selectedDate && (
-          <Alert
-            type={'info'}
-            title={'This start-up support will end in February 2021.'}
-            className="mt-4"
-          />
-        )}
+     
         <Button
           type="filled"
           color="primary"
