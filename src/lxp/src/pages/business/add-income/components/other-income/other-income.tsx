@@ -24,6 +24,7 @@ import {
   isNumber,
   moneyInputFormat,
 } from '@/utils/statements/statements-utils';
+import { getDate, lastDayOfMonth, startOfMonth } from 'date-fns';
 
 export const OtherIncome: React.FC<AddIncomeState> = ({ setType }) => {
   const userAuth = useSelector(authSelectors.getAuthUser);
@@ -58,6 +59,16 @@ export const OtherIncome: React.FC<AddIncomeState> = ({ setType }) => {
   const disabled = useMemo(() => {
     return !date || !incomeAmount || !description;
   }, [date, description, incomeAmount]);
+
+  const today = new Date();
+  const todayDateNumber = getDate(today);
+  const firstDateOfMonth = startOfMonth(today);
+  const firstDateOfPreviousMonth = new Date(
+    today.getFullYear(),
+    today.getMonth() - 1,
+    1
+  );
+  const lastDateOfMonth = lastDayOfMonth(today);
 
   const sendIncomeUpdate = async () => {
     const incomeId = newGuid();
@@ -106,6 +117,10 @@ export const OtherIncome: React.FC<AddIncomeState> = ({ setType }) => {
             setPreschoolFeesValue('date', date ? date.toISOString() : '');
           }}
           dateFormat="EEE, dd MMM yyyy"
+          minDate={
+            todayDateNumber <= 8 ? firstDateOfPreviousMonth! : firstDateOfMonth!
+          }
+          maxDate={lastDateOfMonth}
         />
         <FormInput<OtherIncomeModel>
           label={'How much do you get from this income type?'}

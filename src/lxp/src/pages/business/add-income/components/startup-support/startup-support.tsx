@@ -28,6 +28,7 @@ import {
   isNumber,
   moneyInputFormat,
 } from '@/utils/statements/statements-utils';
+import { getDate, lastDayOfMonth, startOfMonth } from 'date-fns';
 
 export const StartupSupport: React.FC<AddIncomeState> = ({ setType }) => {
   const [confirmStartupValue, setConfirmStartupValue] = useState(false);
@@ -60,6 +61,16 @@ export const StartupSupport: React.FC<AddIncomeState> = ({ setType }) => {
   const disabled = useMemo(() => {
     return !date || !startupValue;
   }, [date, startupValue]);
+
+  const today = new Date();
+  const todayDateNumber = getDate(today);
+  const firstDateOfMonth = startOfMonth(today);
+  const firstDateOfPreviousMonth = new Date(
+    today.getFullYear(),
+    today.getMonth() - 1,
+    1
+  );
+  const lastDateOfMonth = lastDayOfMonth(today);
 
   const sendIncomeUpdate = async () => {
     const incomeId = newGuid();
@@ -119,6 +130,10 @@ export const StartupSupport: React.FC<AddIncomeState> = ({ setType }) => {
             setPreschoolFeesValue('date', date ? date.toISOString() : '');
           }}
           dateFormat="EEE, dd MMM yyyy"
+          minDate={
+            todayDateNumber <= 8 ? firstDateOfPreviousMonth! : firstDateOfMonth!
+          }
+          maxDate={lastDateOfMonth}
         />
         <FormInput<StartupSupportModel>
           label={'How much do you get from start-up support?'}
