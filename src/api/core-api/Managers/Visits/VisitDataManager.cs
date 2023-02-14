@@ -1,4 +1,5 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+using ECDLink.Abstractrions.Enums;
 using ECDLink.ContentManagement.Repositories;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
@@ -27,13 +28,29 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             _contentManagementRepository = contentManagementRepository;
         }
 
-        public VisitData AddVisitData(VisitDataModel input)
+        public VisitData AddVisitData(VisitDataModel input, string localeId)
         {
             var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
-            var repository = _repoFactory.CreateGenericRepository<VisitData>(userContext: applicationUserId);
+            var visitDataRepo = _repoFactory.CreateGenericRepository<VisitData>(userContext: applicationUserId);
+            var visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: applicationUserId);
+            var visitTypeRepo = _repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
+
             var visitData = GetVisitDataFromInputModel(input, applicationUserId);
 
-            return repository.Insert(visitData);
+            if (visitData != null)
+            {
+
+                Visit visitRecord = (
+                    from visit in visitRepo.GetAll().Where(x => x.Id == visitData.Id)
+                    join visitType in visitTypeRepo.GetAll().Where(y => y.Type == Constants.GrowGreatSettings.client_mother) on visit.VisitTypeId equals visitType.Id
+                    select visit
+                ).FirstOrDefault();
+
+
+                ManageVisitReferrals(visitData, applicationUserId, localeId, visitRecord.VisitType.Name);
+            }
+
+            return visitDataRepo.Insert(visitData);
         }
 
         private VisitData GetVisitDataFromInputModel(VisitDataModel input, string applicationUserId)
@@ -58,6 +75,167 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                  QuestionAnswer = input.QuestionAnswer
              };
          }
+
+        private Boolean ManageVisitReferrals(VisitData input, string applicationUserId, string localeId, string visitName)
+        {
+            var _localeId = new Guid(localeId);
+            // Available types
+
+            // ClientDashboardAlert -> G4
+            // ClientSummaryDownload -> G9
+            // Referral
+            // Progress
+
+            CMSQuestion question = (CMSQuestion)_contentManagementRepository.GetById(input.CmsQuestionContentId, _localeId);
+            
+            var comment = "";
+            var color = "";
+            var type = "";
+            var visitDataStatus = GetVisitDataStatusFromInputModel(input, applicationUserId);
+
+            // Health care
+            if (question.Name == "Has {client} gone to the clinic for her first antenatal visit?")
+            {
+                if (input.QuestionAnswer == "No")
+                {
+                    // this should add a referral to the list(""Pregnancy not booked"") AND
+                    comment = "Pregnancy not booked";
+                    color = MetricsIconEnum.Warning.ToString();
+                    type = Constants.GrowGreatSettings.visit_data_client_referral;
+                    
+                    visitDataStatus.Comment = comment;
+                    visitDataStatus.Color = color;
+                    visitDataStatus.Type = type;
+
+                    AddVisitDataStatus(visitDataStatus);
+
+                    // add flag to G4 secondary alert: red alert, ""Refer to clinic""
+                    comment = "Refer to clinic";
+                    color = MetricsIconEnum.Error.ToString();
+                    type = Constants.GrowGreatSettings.visit_data_client_dashboard;
+
+                    visitDataStatus.Comment = comment;
+                    visitDataStatus.Color = color;
+                    visitDataStatus.Type = type;
+
+                    AddVisitDataStatus(visitDataStatus);
+                } 
+                else if (input.QuestionAnswer == "Yes")
+                {
+                    // a ""green"" item is added to the client progress list ""Pregnancy booked""
+                    comment = "Pregnancy booked";
+                    color = MetricsIconEnum.Success.ToString();
+                    type = Constants.GrowGreatSettings.visit_data_client_progress;
+
+                    visitDataStatus.Comment = comment;
+                    visitDataStatus.Color = color;
+                    visitDataStatus.Type = type;
+                    AddVisitDataStatus(visitDataStatus);
+
+                    // a green item is added to G9 client download summary ""You are up to date with your clinic visits!""
+                    comment = "You are up to date with your clinic visits!";
+                    color = MetricsIconEnum.Success.ToString();
+                    type = Constants.GrowGreatSettings.visit_data_client_summary;
+
+                    visitDataStatus.Comment = comment;
+                    visitDataStatus.Color = color;
+                    visitDataStatus.Type = type;
+                    AddVisitDataStatus(visitDataStatus);
+                }
+            } 
+            else if (question.Name == "MUAC measurement")
+            {
+                var questionAnswer = Int32.Parse(input.QuestionAnswer);
+
+                if (questionAnswer < 22)
+                {
+                    // add to referrals items list(""May be underweight - MUAC less than 22cm"") red
+                    comment = "May be underweight - MUAC less than 22cm";
+                    color = MetricsIconEnum.Error.ToString();
+                    type = Constants.GrowGreatSettings.visit_data_client_referral;
+
+                    visitDataStatus.Comment = comment;
+                    visitDataStatus.Color = color;
+                    visitDataStatus.Type = type;
+                    AddVisitDataStatus(visitDataStatus);
+
+                    // add G4 secondary text item: ""Refer to clinic urgently""(this is the highest - priority item & will be shown)
+                    comment = "Refer to clinic urgently";
+                    color = MetricsIconEnum.Error.ToString();
+                    type = Constants.GrowGreatSettings.visit_data_client_dashboard;
+
+                    visitDataStatus.Comment = comment;
+                    visitDataStatus.Color = color;
+                    visitDataStatus.Type = type;
+                    AddVisitDataStatus(visitDataStatus);
+
+                    // add green item to G9 client summary: ""You might be underweight: eat 3 meals every day""
+                    comment = "You might be underweight: eat 3 meals every day";
+                    color = MetricsIconEnum.Success.ToString();
+                    type = Constants.GrowGreatSettings.visit_data_client_summary;
+
+                    visitDataStatus.Comment = comment;
+                    visitDataStatus.Color = color;
+                    visitDataStatus.Type = type;
+                    AddVisitDataStatus(visitDataStatus);
+
+                    // TODO: add additional visit item with ""Underweight"" secondary text -please see G3.7 Other / Additional visits
+
+                }
+                else if (questionAnswer >= 22)
+                {
+                    // add to green items in progress screen(use case 2) (""MUAC over 22cm"")
+                    comment = "MUAC over 22cm";
+                    color = MetricsIconEnum.Success.ToString();
+                    type = Constants.GrowGreatSettings.visit_data_client_referral;
+
+                    visitDataStatus.Comment = comment;
+                    visitDataStatus.Color = color;
+                    visitDataStatus.Type = type;
+                    AddVisitDataStatus(visitDataStatus);
+
+                    // add green item to G9 client summary: ""According to your mid-upper arm circumference, you are a healthy weight""
+                    comment = "According to your mid-upper arm circumference, you are a healthy weight";
+                    color = MetricsIconEnum.Success.ToString();
+                    type = Constants.GrowGreatSettings.visit_data_client_summary;
+
+                    visitDataStatus.Comment = comment;
+                    visitDataStatus.Color = color;
+                    visitDataStatus.Type = type;
+                    AddVisitDataStatus(visitDataStatus);
+                }
+
+                // TODO: IF the user enters a MUAC less than 22cm, ask this question again at the first visit 3 months after the MUAC measurement was entered."
+
+            }
+            return true;
+        }
+
+        private VisitDataStatus GetVisitDataStatusFromInputModel(VisitData input, string applicationUserId)
+        {
+            if (input == null)
+            {
+                return null;
+            }
+
+            return new VisitDataStatus()
+            {
+                Id = Guid.NewGuid(),
+                IsActive = true,
+                InsertedDate = DateTime.Now,
+                UpdatedDate = DateTime.Now,
+                UpdatedBy = applicationUserId,
+                VisitDataId = input.Id
+            };
+
+        }
+
+        private VisitDataStatus AddVisitDataStatus(VisitDataStatus input)
+        {
+            var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
+            var repository = _repoFactory.CreateGenericRepository<VisitDataStatus>(userContext: applicationUserId);
+            return repository.Insert(input);
+        }
 
         public List<CMSVisit> GetAllAntenatalVisits(Guid visitId, string contentTypeId, string localeId, string names)
         {
@@ -98,9 +276,13 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     {
                         item.Sequence = value;
                     }
-                    else if (property == Constants.GrowGreatSettings.visit_color)
+                    else if (property == Constants.GrowGreatSettings.visit_primary_color)
                     {
-                        item.Color = value;
+                        item.PrimaryColor = value;
+                    }
+                    else if (property == Constants.GrowGreatSettings.visit_secondary_color)
+                    {
+                        item.SecondaryColor = value;
                     }
                     else if (property == Constants.GrowGreatSettings.visit_linkedQuestionnaires)
                     {
@@ -148,6 +330,10 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     {
                         item.Description = value;
                     }
+                    else if (property == Constants.GrowGreatSettings.visit_description_icon)
+                    {
+                        item.DescriptionIcon = value;
+                    }
                     else if (property == Constants.GrowGreatSettings.visit_image)
                     {
                         item.Image = value;
@@ -163,6 +349,14 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     else if (property == Constants.GrowGreatSettings.visit_subheading)
                     {
                         item.SubHeading = value;
+                    }
+                    else if (property == Constants.GrowGreatSettings.visit_heading_icon)
+                    {
+                        item.HeadingIcon = value;
+                    }
+                    else if (property == Constants.GrowGreatSettings.visit_heading_color)
+                    {
+                        item.HeadingColor = value;
                     }
                     else if (property == Constants.GrowGreatSettings.visit_linkedQuestions)
                     {
@@ -214,14 +408,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     else if (property == Constants.GrowGreatSettings.visit_type)
                     {
                         item.Type = value;
-                    }
-                    else if (property == Constants.GrowGreatSettings.visit_heading)
-                    {
-                        item.Heading = value;
-                    }
-                    else if (property == Constants.GrowGreatSettings.visit_subheading)
-                    {
-                        item.SubHeading = value;
                     }
                     else if (property == Constants.GrowGreatSettings.visit_sequence)
                     {

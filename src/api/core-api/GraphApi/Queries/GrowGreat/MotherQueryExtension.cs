@@ -3,7 +3,6 @@ using EcdLink.Api.CoreApi.Managers.Users.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.GraphQL.Enums;
-using ECDLink.ContentManagement.Repositories;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Visits;
@@ -14,8 +13,6 @@ using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
-using NPOI.POIFS.Properties;
-using NPOI.SS.Formula.Functions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -180,6 +177,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             return visitDataManager.GetAllAntenatalVisits(_visitId, Constants.GrowGreatSettings.visit_antenatal_id, localeId, names);
         }
 
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public int GetAntenatalProgressDataForMother(
+            [Service] IHttpContextAccessor contextAccessor,
+            [Service] VisitDataManager visitDataManager,
+            IGenericRepositoryFactory repoFactory,
+            string motherId)
+        {
+            // TODO - PENDING
+
+            return 0;
+
+        }
 
     }
 }
