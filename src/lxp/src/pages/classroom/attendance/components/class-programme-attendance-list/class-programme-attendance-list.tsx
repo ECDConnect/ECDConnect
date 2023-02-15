@@ -139,7 +139,7 @@ export const ClassProgrammeAttendanceList: React.FC<
         </div>
         <div className="flex justify-center">
           <AttendanceStackedList
-            className={'bg-successBg w-11/12'}
+            className={'w-11/12'}
             scroll={false}
             listItems={attendanceList || []}
             onChange={(updateList: AttendanceListDataItem[]) =>

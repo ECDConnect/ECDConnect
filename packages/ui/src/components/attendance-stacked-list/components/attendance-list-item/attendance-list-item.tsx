@@ -63,16 +63,16 @@ export const AttendanceListItem = ({
     if (status) {
       switch (status) {
         case AttendanceStatus.Absent:
-          return 'XCircleIcon';
+          return 'CheckCircleIcon';
         case AttendanceStatus.Present:
-          return 'BadgeCheckIcon';
+          return 'CheckCircleIcon';
         case AttendanceStatus.Unknown:
-          return 'BadgeCheckIcon';
+          return 'CheckCircleIcon';
         default:
-          return 'BadgeCheckIcon';
+          return 'CheckCircleIcon';
       }
     } else {
-      return 'BadgeCheckIcon';
+      return 'CheckCircleIcon';
     }
   };
 
