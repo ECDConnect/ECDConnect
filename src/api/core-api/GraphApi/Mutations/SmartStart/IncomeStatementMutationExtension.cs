@@ -28,7 +28,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         }
 
         [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.Create)]
-        public StatementsIncomeStatement UpdateIncome([Service] IncomeExpenseManager incomeManager, string id,
+        public StatementsIncome UpdateIncome([Service] IncomeExpenseManager incomeManager, string id,
               StatementsIncome input)
         {
 
@@ -36,7 +36,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         }
 
         [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.Create)]
-        public StatementsIncomeStatement UpdateExpense([Service] IncomeExpenseManager incomeManager, string id,
+        public StatementsExpenses UpdateExpense([Service] IncomeExpenseManager incomeManager, string id,
       StatementsExpenses input)
         {
 
