@@ -247,6 +247,7 @@ export type AntenatalQuestionnaireQuestionInput = {
 
 export type AntenatalVisit = {
   __typename?: 'AntenatalVisit';
+  cardNames?: Maybe<Scalars['String']>;
   description?: Maybe<Scalars['String']>;
   icon?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['Int']>;
@@ -258,6 +259,7 @@ export type AntenatalVisit = {
 };
 
 export type AntenatalVisitInput = {
+  cardNames?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   icon?: InputMaybe<Scalars['String']>;
   linkedQuestionnaires?: InputMaybe<Scalars['String']>;
@@ -2769,13 +2771,13 @@ export type Mutation = {
   updateEducation?: Maybe<Education>;
   updateEventRecord?: Maybe<EventRecord>;
   updateEventRecordType?: Maybe<EventRecordType>;
-  updateExpense?: Maybe<StatementsIncomeStatement>;
+  updateExpense?: Maybe<StatementsExpenses>;
   updateFranchisor?: Maybe<Franchisor>;
   updateGender?: Maybe<Gender>;
   updateGrant?: Maybe<Grant>;
   updateHealthCareWorker?: Maybe<HealthCareWorker>;
   updateHierarchyEntity?: Maybe<HierarchyEntity>;
-  updateIncome?: Maybe<StatementsIncomeStatement>;
+  updateIncome?: Maybe<StatementsIncome>;
   updateInfant?: Maybe<Infant>;
   updateIntegrationMapping?: Maybe<IntegrationMapping>;
   updateLanguage?: Maybe<Language>;
@@ -6489,22 +6491,31 @@ export type QueryAllPractitionersForPrincipalArgs = {
 
 export type QueryAllStatementsBalanceSheetArgs = {
   userId?: InputMaybe<Scalars['String']>;
+  year: Scalars['Int'];
 };
 
 export type QueryAllStatementsExpensesArgs = {
+  month: Scalars['Int'];
   userId?: InputMaybe<Scalars['String']>;
+  year: Scalars['Int'];
 };
 
 export type QueryAllStatementsIncomeArgs = {
+  month: Scalars['Int'];
   userId?: InputMaybe<Scalars['String']>;
+  year: Scalars['Int'];
 };
 
 export type QueryAllStatementsIncomeStatementArgs = {
+  month: Scalars['Int'];
   userId?: InputMaybe<Scalars['String']>;
+  year: Scalars['Int'];
 };
 
 export type QueryAllStatementsStartupSupportArgs = {
+  month: Scalars['Int'];
   userId?: InputMaybe<Scalars['String']>;
+  year: Scalars['Int'];
 };
 
 export type QueryAntenatalProgressDataForMotherArgs = {
@@ -7525,6 +7536,7 @@ export type StatementsIncomeInput = {
 
 export type StatementsIncomeStatement = {
   __typename?: 'StatementsIncomeStatement';
+  autoSubmitted: Scalars['Boolean'];
   balance: Scalars['Float'];
   expenseTotal: Scalars['Float'];
   id: Scalars['UUID'];
@@ -7544,6 +7556,7 @@ export type StatementsIncomeStatement = {
 
 export type StatementsIncomeStatementFilterInput = {
   and?: InputMaybe<Array<StatementsIncomeStatementFilterInput>>;
+  autoSubmitted?: InputMaybe<BooleanOperationFilterInput>;
   balance?: InputMaybe<ComparableDoubleOperationFilterInput>;
   expenseTotal?: InputMaybe<ComparableDoubleOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
@@ -7563,6 +7576,7 @@ export type StatementsIncomeStatementFilterInput = {
 };
 
 export type StatementsIncomeStatementInput = {
+  AutoSubmitted: Scalars['Boolean'];
   Balance: Scalars['Float'];
   ExpenseTotal: Scalars['Float'];
   Id?: InputMaybe<Scalars['UUID']>;
@@ -8216,6 +8230,7 @@ export type VisitModelInput = {
 
 export type VisitName = {
   __typename?: 'VisitName';
+  cardNames?: Maybe<Scalars['String']>;
   description?: Maybe<Scalars['String']>;
   icon?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['Int']>;
@@ -8227,6 +8242,7 @@ export type VisitName = {
 };
 
 export type VisitNameInput = {
+  cardNames?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   icon?: InputMaybe<Scalars['String']>;
   linkedQuestionnaires?: InputMaybe<Scalars['String']>;
