@@ -31,6 +31,7 @@ import {
   moneyInputFormat,
 } from '@/utils/statements/statements-utils';
 import { NOTIFICATION, useNotifications } from '@ecdlink/core';
+import { format, getDate, lastDayOfMonth, startOfMonth } from 'date-fns';
 
 export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
   const children = useSelector(childrenSelectors.getChildren);
@@ -48,6 +49,16 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
     (item) => item.description === viewTitle
   );
   const moneyContributionTypeId = '8ff95f6e-5116-4412-adf6-81025172970e';
+
+  const today = new Date();
+  const todayDateNumber = getDate(today);
+  const firstDateOfMonth = startOfMonth(today);
+  const firstDateOfPreviousMonth = new Date(
+    today.getFullYear(),
+    today.getMonth() - 1,
+    1
+  );
+  const lastDateOfMonth = lastDayOfMonth(today);
 
   const { setNotification } = useNotifications();
 
@@ -226,6 +237,10 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
             setPreschoolFeesValue('date', date ? date.toISOString() : '');
           }}
           dateFormat="EEE, dd MMM yyyy"
+          minDate={
+            todayDateNumber <= 8 ? firstDateOfPreviousMonth! : firstDateOfMonth!
+          }
+          maxDate={lastDateOfMonth}
         />
         <Dropdown
           placeholder={'Select child'}

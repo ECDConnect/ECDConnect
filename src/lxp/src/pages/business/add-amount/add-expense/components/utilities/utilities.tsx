@@ -30,6 +30,7 @@ import {
   moneyInputFormat,
 } from '@/utils/statements/statements-utils';
 import { UTILITIES__EXPENSE_ID } from '@/store/statements/statements.selectors';
+import { getDate, lastDayOfMonth, startOfMonth } from 'date-fns';
 
 export const Utilities: React.FC<AddIncomeState> = ({ setType }) => {
   const userAuth = useSelector(authSelectors.getAuthUser);
@@ -69,6 +70,16 @@ export const Utilities: React.FC<AddIncomeState> = ({ setType }) => {
     return !date || !amount;
   }, [amount, date]);
   const acceptedFormats = ['jpg', 'jpeg'];
+
+  const today = new Date();
+  const todayDateNumber = getDate(today);
+  const firstDateOfMonth = startOfMonth(today);
+  const firstDateOfPreviousMonth = new Date(
+    today.getFullYear(),
+    today.getMonth() - 1,
+    1
+  );
+  const lastDateOfMonth = lastDayOfMonth(today);
 
   const setPhotoUrl = (imageUrl: string) => {
     setRentValue('expenseInvoice', imageUrl);
@@ -128,6 +139,10 @@ export const Utilities: React.FC<AddIncomeState> = ({ setType }) => {
             setRentValue('date', date ? date.toISOString() : '');
           }}
           dateFormat="EEE, dd MMM yyyy"
+          minDate={
+            todayDateNumber <= 8 ? firstDateOfPreviousMonth! : firstDateOfMonth!
+          }
+          maxDate={lastDateOfMonth}
         />
         <FormInput<ExpensesModel>
           label={'How much did you pay?'}
