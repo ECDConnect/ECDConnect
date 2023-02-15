@@ -57,7 +57,7 @@ export const ClassDashboard: React.FC = () => {
   const showAttendanceTutorial = useMemo(
     () =>
       selectedTabIndex === 0 &&
-      (practitioner?.progress! < 4 || practitioner?.progress === undefined) &&
+      (practitioner?.progress! < 3 || practitioner?.progress === undefined) &&
       children?.length! > 0 &&
       showAttendance,
     [children?.length, practitioner?.progress, selectedTabIndex, showAttendance]
