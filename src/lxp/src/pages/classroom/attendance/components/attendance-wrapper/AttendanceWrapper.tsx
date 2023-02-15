@@ -11,9 +11,15 @@ import {
 import { useSetState } from 'react-use';
 import WalktroughImage from '../../../../../assets/walktroughImage.png';
 import ROUTES from '../../../../../routes/routes';
+import { PractitionerService } from '@/services/PractitionerService';
+import { useSelector } from 'react-redux';
+import { authSelectors } from '@/store/auth';
+import { practitionerSelectors } from '@/store/practitioner';
 
 export default function MultiRouteWrapper() {
   const history = useHistory();
+  const userAuth = useSelector(authSelectors.getAuthUser);
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const {
     setState,
     state: { run, stepIndex, steps, attendanceStatus, enableButton },
@@ -112,7 +118,13 @@ export default function MultiRouteWrapper() {
     );
   }
 
-  const handleCallback = (data: CallBackProps) => {
+  const updatePractitionerProgress = async () => {
+    await new PractitionerService(
+      userAuth?.auth_token!
+    ).UpdatePractitionerProgress(practitioner?.userId!, 3.0);
+  };
+
+  const handleCallback = async (data: CallBackProps) => {
     const { action, index, lifecycle, type } = data;
 
     if (type === 'step:after' && index === 0) {
@@ -129,6 +141,9 @@ export default function MultiRouteWrapper() {
       setState({ run: true, stepIndex: 3 });
     } else if (type === 'step:after' && index === 3) {
       setState({ run: false, stepIndex: 0 });
+      if (practitioner?.progress! < 3) {
+        await updatePractitionerProgress();
+      }
       history.push(ROUTES.CLASSROOM, { activeTabIndex: 0 });
     } else if (action === 'reset' || lifecycle === 'complete') {
       setState({ run: false, stepIndex: 0, tourActive: false });
