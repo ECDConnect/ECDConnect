@@ -16,15 +16,13 @@ namespace ECDLink.DataAccessLayer.Entities.Visits
         public TKey VisitId { get; set; }
         [ForeignKey(nameof(VisitId))]
         public virtual Visit Visit { get; set; }
-
-        public int? CmsVisitNameTypeId { get; set; }
-        public int? CmsVisitQuestionnaireTypeId { get; set; }
-        public int? CmsVisitQuestionTypeId { get; set; }
-        public int? CmsVisitAnswerTypeId { get; set; }
-        public int? CmsContentId { get; set; }
-        public int? CmsContentTypeFieldId { get; set; }
-        public string CmsContentValue { get; set; }
+        public int CmsVisitNameContentId { get; set; }
+        public int CmsQuestionnaireContentId { get; set; }
+        public int CmsQuestionContentId { get; set; }
+        public int CmsAnswerContentId { get; set; }
         public string QuestionAnswer { get; set; }
+        public string ProgressText { get; set; }
+        public string Color { get; set; }
     }
 
     public interface VisitDataJoin<TKey>

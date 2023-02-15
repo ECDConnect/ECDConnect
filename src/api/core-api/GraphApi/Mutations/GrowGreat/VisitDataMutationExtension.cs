@@ -15,9 +15,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
     {
         
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
-        public VisitData AddVisitData([Service] VisitDataManager visitDataManager, VisitDataModel input)
+        public VisitData AddVisitData([Service] VisitDataManager visitDataManager, VisitDataModel input, string localeId)
         {
-            return visitDataManager.AddVisitData(input);
+            // TODO: loop through visit's data and add every question and the answer
+
+            return visitDataManager.AddVisitData(input, localeId);
         }
     }
 }

@@ -159,12 +159,14 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
         ChildCoverAmount: 400,
         ContributionTypeId: contributionType,
         IncomeTypeId: incomeTypeValue?.id,
+        FeeTypeId: String(feeType) || '',
       })
       .then(() => {
         setNotification({
           title: `Successfully Added Fees`,
           variant: NOTIFICATION.SUCCESS,
         });
+        setSelectedFeeTypeValue([]);
         reset();
       });
   };
@@ -186,6 +188,7 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
       ChildCoverAmount: 400,
       ContributionTypeId: contributionType,
       IncomeTypeId: incomeTypeValue?.id,
+      FeeTypeId: String(feeType) || '',
     });
     setType('');
   };
@@ -274,7 +277,7 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
         </label>
         <div className={'mt-2'}>
           <ButtonGroup<string>
-            multiple={false}
+            multiple
             type={ButtonGroupTypes.Chip}
             options={
               feeTypesList?.map((type) => ({
