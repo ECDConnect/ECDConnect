@@ -56,6 +56,7 @@ namespace EcdLink.Api.CoreApi
             public const string visit_linkedAnswerOptions = "linkedAnswerOptions";
 
             public const string visit_antenatal_id = "19";
+            public const string visit_child_id = "14";
 
             public const string visit_data_client_dashboard = "ClientDashboard";
             public const string visit_data_client_summary = "ClientSummary";

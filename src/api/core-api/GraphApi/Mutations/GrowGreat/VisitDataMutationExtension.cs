@@ -2,11 +2,11 @@
 using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
-using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using HotChocolate;
 using HotChocolate.Types;
+using System;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
 {
@@ -15,11 +15,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
     {
         
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
-        public VisitData AddVisitData([Service] VisitDataManager visitDataManager, VisitDataModel input, string localeId)
+        public Boolean AddAntenatalVisitData([Service] VisitDataManager visitDataManager, VisitDataModel input, string localeId, string motherId)
         {
             // TODO: loop through visit's data and add every question and the answer
 
-            return visitDataManager.AddVisitData(input, localeId);
+            visitDataManager.AddAntenatalVisitData(input, localeId, motherId);
+
+            return true;
         }
     }
 }

@@ -6,7 +6,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
 {
     public class VisitDataModel
     {
-        public Guid? VisitId { get; set; }
+        public string VisitId { get; set; }
         public Visit Visit { get; set; }
 
         public int CmsVisitNameContentId { get; set; }
@@ -18,7 +18,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
 
     public class VisitDataStatusModel
     {
-        public Guid? VisitDataId { get; set; }
+        public string VisitDataId { get; set; }
         public VisitData VisitData { get; set; }
         public string Comment { get; set; }
         public string Color { get; set; }
