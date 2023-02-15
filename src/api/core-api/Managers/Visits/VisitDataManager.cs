@@ -1,6 +1,7 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.ContentManagement.Repositories;
+using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.Security.Extensions;
@@ -9,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static iTextSharp.text.pdf.AcroFields;
 
 namespace EcdLink.Api.CoreApi.Managers.Visits
 {
@@ -28,29 +30,37 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             _contentManagementRepository = contentManagementRepository;
         }
 
-        public VisitData AddVisitData(VisitDataModel input, string localeId)
+        public VisitData AddAntenatalVisitData(VisitDataModel input, string localeId, string motherId)
         {
             var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
             var visitDataRepo = _repoFactory.CreateGenericRepository<VisitData>(userContext: applicationUserId);
             var visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: applicationUserId);
             var visitTypeRepo = _repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
 
-            var visitData = GetVisitDataFromInputModel(input, applicationUserId);
-
-            if (visitData != null)
+            var visitInputData = GetVisitDataFromInputModel(input, applicationUserId);
+            if (visitInputData != null)
             {
 
                 Visit visitRecord = (
-                    from visit in visitRepo.GetAll().Where(x => x.Id == visitData.Id)
+                    from visit in visitRepo.GetAll().Where(x => x.Id == visitInputData.Id)
                     join visitType in visitTypeRepo.GetAll().Where(y => y.Type == Constants.GrowGreatSettings.client_mother) on visit.VisitTypeId equals visitType.Id
                     select visit
                 ).FirstOrDefault();
 
 
-                ManageVisitReferrals(visitData, applicationUserId, localeId, visitRecord.VisitType.Name);
+                var visitDataRecords = (
+                    from visit in visitRepo.GetAll().Where(x => x.MotherId.ToString() == motherId)
+                    join visitData in visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
+                    join visitType in visitTypeRepo.GetAll().Where(y => y.Type == Constants.GrowGreatSettings.client_mother) on visit.VisitTypeId equals visitType.Id
+                    select visitData.Id
+                ).ToList();
+
+
+
+                ManageVisitDataStatus(visitInputData, applicationUserId, localeId, visitRecord.VisitType.Name, motherId);
             }
 
-            return visitDataRepo.Insert(visitData);
+            return visitDataRepo.Insert(visitInputData);
         }
 
         private VisitData GetVisitDataFromInputModel(VisitDataModel input, string applicationUserId)
@@ -67,7 +77,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                  InsertedDate = DateTime.Now,
                  UpdatedDate = DateTime.Now,
                  UpdatedBy = applicationUserId,
-                 VisitId = input.Visit.Id,
+                 VisitId = new Guid(input.VisitId),
                  CmsVisitNameContentId = input.CmsVisitNameContentId,
                  CmsQuestionnaireContentId = input.CmsQuestionnaireContentId,
                  CmsQuestionContentId = input.CmsQuestionContentId,
@@ -76,9 +86,14 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
              };
          }
 
-        private Boolean ManageVisitReferrals(VisitData input, string applicationUserId, string localeId, string visitName)
+        private Boolean ManageVisitDataStatus(VisitData input, string applicationUserId, string localeId, string visitName, string motherId)
         {
             var _localeId = new Guid(localeId);
+            var visitDataRepo = _repoFactory.CreateGenericRepository<VisitData>(userContext: applicationUserId);
+            var visitDataStatusRepo = _repoFactory.CreateGenericRepository<VisitDataStatus>(userContext: applicationUserId);
+
+            var allVisits = visitDataStatusRepo.GetAll().Where(x => x.VisitData.Id == input.VisitId).ToList();
+
             // Available types
 
             // ClientDashboardAlert -> G4
@@ -98,15 +113,26 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             {
                 if (input.QuestionAnswer == "No")
                 {
-                    // this should add a referral to the list(""Pregnancy not booked"") AND
+                    // this should add a referral to the list(""Pregnancy not booked"")
                     comment = "Pregnancy not booked";
                     color = MetricsIconEnum.Warning.ToString();
                     type = Constants.GrowGreatSettings.visit_data_client_referral;
-                    
+
+                    visitDataStatus.Id = Guid.NewGuid();
                     visitDataStatus.Comment = comment;
                     visitDataStatus.Color = color;
                     visitDataStatus.Type = type;
+                    AddVisitDataStatus(visitDataStatus);
 
+                    // add an ""amber"" item to the progress list: ""Pregnancy not booked"".
+                    comment = "Pregnancy not booked";
+                    color = MetricsIconEnum.Warning.ToString();
+                    type = Constants.GrowGreatSettings.visit_data_client_progress;
+
+                    visitDataStatus.Id = Guid.NewGuid();
+                    visitDataStatus.Comment = comment;
+                    visitDataStatus.Color = color;
+                    visitDataStatus.Type = type;
                     AddVisitDataStatus(visitDataStatus);
 
                     // add flag to G4 secondary alert: red alert, ""Refer to clinic""
@@ -114,11 +140,24 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     color = MetricsIconEnum.Error.ToString();
                     type = Constants.GrowGreatSettings.visit_data_client_dashboard;
 
+                    visitDataStatus.Id = Guid.NewGuid();
                     visitDataStatus.Comment = comment;
                     visitDataStatus.Color = color;
                     visitDataStatus.Type = type;
-
                     AddVisitDataStatus(visitDataStatus);
+
+                    // add amber item to G9 client download summary: ""You missed a clinic visit - make sure you go as soon as possible!""
+                    comment = "You missed a clinic visit - make sure you go as soon as possible!";
+                    color = MetricsIconEnum.Warning.ToString();
+                    type = Constants.GrowGreatSettings.visit_data_client_summary;
+
+                    visitDataStatus.Id = Guid.NewGuid();
+                    visitDataStatus.Comment = comment;
+                    visitDataStatus.Color = color;
+                    visitDataStatus.Type = type;
+                    AddVisitDataStatus(visitDataStatus);
+
+
                 } 
                 else if (input.QuestionAnswer == "Yes")
                 {
@@ -127,6 +166,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     color = MetricsIconEnum.Success.ToString();
                     type = Constants.GrowGreatSettings.visit_data_client_progress;
 
+                    visitDataStatus.Id = Guid.NewGuid();
                     visitDataStatus.Comment = comment;
                     visitDataStatus.Color = color;
                     visitDataStatus.Type = type;
@@ -137,6 +177,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     color = MetricsIconEnum.Success.ToString();
                     type = Constants.GrowGreatSettings.visit_data_client_summary;
 
+                    visitDataStatus.Id = Guid.NewGuid();
                     visitDataStatus.Comment = comment;
                     visitDataStatus.Color = color;
                     visitDataStatus.Type = type;
@@ -154,6 +195,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     color = MetricsIconEnum.Error.ToString();
                     type = Constants.GrowGreatSettings.visit_data_client_referral;
 
+                    visitDataStatus.Id = Guid.NewGuid();
                     visitDataStatus.Comment = comment;
                     visitDataStatus.Color = color;
                     visitDataStatus.Type = type;
@@ -164,6 +206,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     color = MetricsIconEnum.Error.ToString();
                     type = Constants.GrowGreatSettings.visit_data_client_dashboard;
 
+                    visitDataStatus.Id = Guid.NewGuid();
                     visitDataStatus.Comment = comment;
                     visitDataStatus.Color = color;
                     visitDataStatus.Type = type;
@@ -174,6 +217,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     color = MetricsIconEnum.Success.ToString();
                     type = Constants.GrowGreatSettings.visit_data_client_summary;
 
+                    visitDataStatus.Id = Guid.NewGuid();
                     visitDataStatus.Comment = comment;
                     visitDataStatus.Color = color;
                     visitDataStatus.Type = type;
@@ -189,6 +233,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     color = MetricsIconEnum.Success.ToString();
                     type = Constants.GrowGreatSettings.visit_data_client_referral;
 
+                    visitDataStatus.Id = Guid.NewGuid();
                     visitDataStatus.Comment = comment;
                     visitDataStatus.Color = color;
                     visitDataStatus.Type = type;
@@ -199,6 +244,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     color = MetricsIconEnum.Success.ToString();
                     type = Constants.GrowGreatSettings.visit_data_client_summary;
 
+                    visitDataStatus.Id = Guid.NewGuid();
                     visitDataStatus.Comment = comment;
                     visitDataStatus.Color = color;
                     visitDataStatus.Type = type;
@@ -207,6 +253,92 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
                 // TODO: IF the user enters a MUAC less than 22cm, ask this question again at the first visit 3 months after the MUAC measurement was entered."
 
+            } else if (question.Name == "Is {client} up to date with their antenatal clinic visits?")
+            {
+
+
+                /*
+                 * "This question must be shown at the first ever visit with the client OR when the user selected ""No"" to the question at the most recent previous visit.
+                    If the user selects ""No"", 
+                    --- add a referral to the list IF there is not already an unchecked referral for this item AND 
+                    --- add an ""amber"" item to the progress: ""Clinic visits not up to date""
+                    --- add G4 secondary text red alert ""Refer to clinic""
+                    --- add amber item to G9 client download summary: ""You missed a clinic visit - make sure you go as soon as possible!""
+
+                    If the user selects ""Yes""
+                    --- no referral is added
+                    --- a ""green"" item is added to the progress: ""Clinic visits up to date""
+                    --- add green item to G9 client download summary ""You are up to date with your clinic visits!"""
+                 * 
+                 * 
+                 */
+
+
+
+
+                if (input.QuestionAnswer == "No")
+                {
+                    // TODO: add a referral to the list IF there is not already an unchecked referral for this item
+                    // add an ""amber"" item to the progress: ""Clinic visits not up to date""
+                    comment = "Clinic visits not up to date";
+                    color = MetricsIconEnum.Warning.ToString();
+                    type = Constants.GrowGreatSettings.visit_data_client_referral;
+
+                    visitDataStatus.Id = Guid.NewGuid();
+                    visitDataStatus.Comment = comment;
+                    visitDataStatus.Color = color;
+                    visitDataStatus.Type = type;
+                    AddVisitDataStatus(visitDataStatus);
+
+                    // add G4 secondary text red alert ""Refer to clinic""
+                    comment = "Refer to clinic";
+                    color = MetricsIconEnum.Error.ToString();
+                    type = Constants.GrowGreatSettings.visit_data_client_dashboard;
+
+                    visitDataStatus.Id = Guid.NewGuid();
+                    visitDataStatus.Comment = comment;
+                    visitDataStatus.Color = color;
+                    visitDataStatus.Type = type;
+                    AddVisitDataStatus(visitDataStatus);
+
+                    // add amber item to G9 client download summary: ""You missed a clinic visit - make sure you go as soon as possible!""
+                    comment = "You missed a clinic visit - make sure you go as soon as possible!";
+                    color = MetricsIconEnum.Warning.ToString();
+                    type = Constants.GrowGreatSettings.visit_data_client_summary;
+
+                    visitDataStatus.Id = Guid.NewGuid();
+                    visitDataStatus.Comment = comment;
+                    visitDataStatus.Color = color;
+                    visitDataStatus.Type = type;
+                    AddVisitDataStatus(visitDataStatus);
+
+
+                }
+                else if (input.QuestionAnswer == "Yes")
+                {
+                    // ""green"" item is added to the progress: "Clinic visits up to date"
+                    comment = "Clinic visits up to date";
+                    color = MetricsIconEnum.Success.ToString();
+                    type = Constants.GrowGreatSettings.visit_data_client_progress;
+
+                    visitDataStatus.Id = Guid.NewGuid();
+                    visitDataStatus.Comment = comment;
+                    visitDataStatus.Color = color;
+                    visitDataStatus.Type = type;
+                    AddVisitDataStatus(visitDataStatus);
+
+                    // add green item to G9 client download summary "You are up to date with your clinic visits!"
+                    comment = "You are up to date with your clinic visits!";
+                    color = MetricsIconEnum.Success.ToString();
+                    type = Constants.GrowGreatSettings.visit_data_client_summary;
+
+                    visitDataStatus.Id = Guid.NewGuid();
+                    visitDataStatus.Comment = comment;
+                    visitDataStatus.Color = color;
+                    visitDataStatus.Type = type;
+                    AddVisitDataStatus(visitDataStatus);
+
+                }
             }
             return true;
         }
@@ -305,7 +437,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             return visits;
         }
 
-        public List<CMSQuestionnaire> GetCMSLinkedQuestionnaires(Guid visitId, int[] contentIds, Guid localeId)
+        private List<CMSQuestionnaire> GetCMSLinkedQuestionnaires(Guid visitId, int[] contentIds, Guid localeId)
         {
             List<CMSQuestionnaire> items = new List<CMSQuestionnaire>();
             var item = new CMSQuestionnaire();
@@ -373,7 +505,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             return items;
         }
 
-        public List<CMSQuestion> GetCMSLinkedQuestions(Guid visitId, int[] contentIds, Guid localeId)
+        private List<CMSQuestion> GetCMSLinkedQuestions(Guid visitId, int[] contentIds, Guid localeId)
         {
             List<CMSQuestion> items = new List<CMSQuestion>();
             var item = new CMSQuestion();
@@ -435,7 +567,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             return items;
         }
 
-        public List<CMSAnswerOption> GetCMSLinkedAnswers(int[] contentIds, Guid localeId)
+        private List<CMSAnswerOption> GetCMSLinkedAnswers(int[] contentIds, Guid localeId)
         {
             List<CMSAnswerOption> items = new List<CMSAnswerOption>();
             var item = new CMSAnswerOption();

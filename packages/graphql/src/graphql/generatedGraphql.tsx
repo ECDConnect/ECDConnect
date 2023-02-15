@@ -160,8 +160,14 @@ export type AntenatalQuestionnaire = {
   headingIcon?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['Int']>;
   image?: Maybe<Scalars['String']>;
+  infoCard?: Maybe<Scalars['String']>;
+  infoCardColor?: Maybe<Scalars['String']>;
   linkedQuestions?: Maybe<Array<Maybe<AntenatalQuestionnaireQuestion>>>;
+  moreInfoBtnIcon?: Maybe<Scalars['String']>;
+  moreInfoBtnText?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
+  showLanguage?: Maybe<Scalars['String']>;
+  showTipCard?: Maybe<Scalars['String']>;
   subheading?: Maybe<Scalars['String']>;
   type?: Maybe<Scalars['String']>;
 };
@@ -173,8 +179,14 @@ export type AntenatalQuestionnaireInput = {
   headingColor?: InputMaybe<Scalars['String']>;
   headingIcon?: InputMaybe<Scalars['String']>;
   image?: InputMaybe<Scalars['String']>;
+  infoCard?: InputMaybe<Scalars['String']>;
+  infoCardColor?: InputMaybe<Scalars['String']>;
   linkedQuestions?: InputMaybe<Scalars['String']>;
+  moreInfoBtnIcon?: InputMaybe<Scalars['String']>;
+  moreInfoBtnText?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
+  showLanguage?: InputMaybe<Scalars['String']>;
+  showTipCard?: InputMaybe<Scalars['String']>;
   subheading?: InputMaybe<Scalars['String']>;
   type?: InputMaybe<Scalars['String']>;
 };
@@ -182,12 +194,17 @@ export type AntenatalQuestionnaireInput = {
 export type AntenatalQuestionnaireQuestion = {
   __typename?: 'AntenatalQuestionnaireQuestion';
   description?: Maybe<Scalars['String']>;
+  icon?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['Int']>;
   image?: Maybe<Scalars['String']>;
   linkedAnswerOptions?: Maybe<
     Array<Maybe<AntenatalQuestionnaireQuestionAnswer>>
   >;
   name?: Maybe<Scalars['String']>;
+  negOutcome?: Maybe<Scalars['String']>;
+  negOutcomeIcon?: Maybe<Scalars['String']>;
+  posOutcome?: Maybe<Scalars['String']>;
+  posOutcomeIcon?: Maybe<Scalars['String']>;
   sequence?: Maybe<Scalars['String']>;
   type?: Maybe<Scalars['String']>;
 };
@@ -199,6 +216,7 @@ export type AntenatalQuestionnaireQuestionAnswer = {
   image?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
   sequence?: Maybe<Scalars['String']>;
+  showLanguage?: Maybe<Scalars['String']>;
   type?: Maybe<Scalars['String']>;
   video?: Maybe<Scalars['String']>;
 };
@@ -208,15 +226,21 @@ export type AntenatalQuestionnaireQuestionAnswerInput = {
   image?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
   sequence?: InputMaybe<Scalars['String']>;
+  showLanguage?: InputMaybe<Scalars['String']>;
   type?: InputMaybe<Scalars['String']>;
   video?: InputMaybe<Scalars['String']>;
 };
 
 export type AntenatalQuestionnaireQuestionInput = {
   description?: InputMaybe<Scalars['String']>;
+  icon?: InputMaybe<Scalars['String']>;
   image?: InputMaybe<Scalars['String']>;
   linkedAnswerOptions?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
+  negOutcome?: InputMaybe<Scalars['String']>;
+  negOutcomeIcon?: InputMaybe<Scalars['String']>;
+  posOutcome?: InputMaybe<Scalars['String']>;
+  posOutcomeIcon?: InputMaybe<Scalars['String']>;
   sequence?: InputMaybe<Scalars['String']>;
   type?: InputMaybe<Scalars['String']>;
 };
@@ -2490,6 +2514,7 @@ export type Mutation = {
   addAbsenteeForPractitioner?: Maybe<Absentees>;
   addAdditionalVisitForInfant?: Maybe<Visit>;
   addAdditionalVisitForMother?: Maybe<Visit>;
+  addAntenatalVisitData: Scalars['Boolean'];
   addClinic?: Maybe<Clinic>;
   addCoachToFranchisor?: Maybe<Coach>;
   addEventRecord?: Maybe<EventRecord>;
@@ -2506,7 +2531,6 @@ export type Mutation = {
   addTeamLead?: Maybe<TeamLead>;
   addUser?: Maybe<ApplicationUser>;
   addUsersToRole: Scalars['Boolean'];
-  addVisitData?: Maybe<VisitData>;
   contentTypeImport: Scalars['Boolean'];
   createAbsentees?: Maybe<Absentees>;
   createActivity?: Maybe<Scalars['String']>;
@@ -2843,6 +2867,12 @@ export type MutationAddAdditionalVisitForMotherArgs = {
   input?: InputMaybe<VisitModelInput>;
 };
 
+export type MutationAddAntenatalVisitDataArgs = {
+  input?: InputMaybe<VisitDataModelInput>;
+  localeId?: InputMaybe<Scalars['String']>;
+  motherId?: InputMaybe<Scalars['String']>;
+};
+
 export type MutationAddClinicArgs = {
   input?: InputMaybe<ClinicModelInput>;
 };
@@ -2920,11 +2950,6 @@ export type MutationAddUserArgs = {
 export type MutationAddUsersToRoleArgs = {
   roleNames?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   userId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationAddVisitDataArgs = {
-  input?: InputMaybe<VisitDataModelInput>;
-  localeId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationContentTypeImportArgs = {
@@ -8050,11 +8075,9 @@ export type VisitData = {
   cmsQuestionContentId: Scalars['Int'];
   cmsQuestionnaireContentId: Scalars['Int'];
   cmsVisitNameContentId: Scalars['Int'];
-  color?: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
-  progressText?: Maybe<Scalars['String']>;
   questionAnswer?: Maybe<Scalars['String']>;
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
@@ -8068,12 +8091,10 @@ export type VisitDataFilterInput = {
   cmsQuestionContentId?: InputMaybe<ComparableInt32OperationFilterInput>;
   cmsQuestionnaireContentId?: InputMaybe<ComparableInt32OperationFilterInput>;
   cmsVisitNameContentId?: InputMaybe<ComparableInt32OperationFilterInput>;
-  color?: InputMaybe<StringOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
   or?: InputMaybe<Array<VisitDataFilterInput>>;
-  progressText?: InputMaybe<StringOperationFilterInput>;
   questionAnswer?: InputMaybe<StringOperationFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
@@ -8086,10 +8107,8 @@ export type VisitDataInput = {
   CmsQuestionContentId: Scalars['Int'];
   CmsQuestionnaireContentId: Scalars['Int'];
   CmsVisitNameContentId: Scalars['Int'];
-  Color?: InputMaybe<Scalars['String']>;
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
-  ProgressText?: InputMaybe<Scalars['String']>;
   QuestionAnswer?: InputMaybe<Scalars['String']>;
   UpdatedBy?: InputMaybe<Scalars['String']>;
   Visit?: InputMaybe<VisitInput>;
@@ -8103,7 +8122,7 @@ export type VisitDataModelInput = {
   cmsVisitNameContentId: Scalars['Int'];
   questionAnswer?: InputMaybe<Scalars['String']>;
   visit?: InputMaybe<VisitInput>;
-  visitId?: InputMaybe<Scalars['UUID']>;
+  visitId?: InputMaybe<Scalars['String']>;
 };
 
 export type VisitDataStatus = {
@@ -8226,8 +8245,14 @@ export type VisitQuestionnaire = {
   headingIcon?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['Int']>;
   image?: Maybe<Scalars['String']>;
+  infoCard?: Maybe<Scalars['String']>;
+  infoCardColor?: Maybe<Scalars['String']>;
   linkedQuestions?: Maybe<Array<Maybe<VisitQuestionnaireQuestion>>>;
+  moreInfoBtnIcon?: Maybe<Scalars['String']>;
+  moreInfoBtnText?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
+  showLanguage?: Maybe<Scalars['String']>;
+  showTipCard?: Maybe<Scalars['String']>;
   subheading?: Maybe<Scalars['String']>;
   type?: Maybe<Scalars['String']>;
 };
@@ -8239,8 +8264,14 @@ export type VisitQuestionnaireInput = {
   headingColor?: InputMaybe<Scalars['String']>;
   headingIcon?: InputMaybe<Scalars['String']>;
   image?: InputMaybe<Scalars['String']>;
+  infoCard?: InputMaybe<Scalars['String']>;
+  infoCardColor?: InputMaybe<Scalars['String']>;
   linkedQuestions?: InputMaybe<Scalars['String']>;
+  moreInfoBtnIcon?: InputMaybe<Scalars['String']>;
+  moreInfoBtnText?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
+  showLanguage?: InputMaybe<Scalars['String']>;
+  showTipCard?: InputMaybe<Scalars['String']>;
   subheading?: InputMaybe<Scalars['String']>;
   type?: InputMaybe<Scalars['String']>;
 };
@@ -8248,10 +8279,15 @@ export type VisitQuestionnaireInput = {
 export type VisitQuestionnaireQuestion = {
   __typename?: 'VisitQuestionnaireQuestion';
   description?: Maybe<Scalars['String']>;
+  icon?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['Int']>;
   image?: Maybe<Scalars['String']>;
   linkedAnswerOptions?: Maybe<Array<Maybe<VisitQuestionnaireQuestionAnswer>>>;
   name?: Maybe<Scalars['String']>;
+  negOutcome?: Maybe<Scalars['String']>;
+  negOutcomeIcon?: Maybe<Scalars['String']>;
+  posOutcome?: Maybe<Scalars['String']>;
+  posOutcomeIcon?: Maybe<Scalars['String']>;
   sequence?: Maybe<Scalars['String']>;
   type?: Maybe<Scalars['String']>;
 };
@@ -8263,6 +8299,7 @@ export type VisitQuestionnaireQuestionAnswer = {
   image?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
   sequence?: Maybe<Scalars['String']>;
+  showLanguage?: Maybe<Scalars['String']>;
   type?: Maybe<Scalars['String']>;
   video?: Maybe<Scalars['String']>;
 };
@@ -8272,15 +8309,21 @@ export type VisitQuestionnaireQuestionAnswerInput = {
   image?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
   sequence?: InputMaybe<Scalars['String']>;
+  showLanguage?: InputMaybe<Scalars['String']>;
   type?: InputMaybe<Scalars['String']>;
   video?: InputMaybe<Scalars['String']>;
 };
 
 export type VisitQuestionnaireQuestionInput = {
   description?: InputMaybe<Scalars['String']>;
+  icon?: InputMaybe<Scalars['String']>;
   image?: InputMaybe<Scalars['String']>;
   linkedAnswerOptions?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
+  negOutcome?: InputMaybe<Scalars['String']>;
+  negOutcomeIcon?: InputMaybe<Scalars['String']>;
+  posOutcome?: InputMaybe<Scalars['String']>;
+  posOutcomeIcon?: InputMaybe<Scalars['String']>;
   sequence?: InputMaybe<Scalars['String']>;
   type?: InputMaybe<Scalars['String']>;
 };

@@ -21,8 +21,6 @@ namespace ECDLink.DataAccessLayer.Entities.Visits
         public int CmsQuestionContentId { get; set; }
         public int CmsAnswerContentId { get; set; }
         public string QuestionAnswer { get; set; }
-        public string ProgressText { get; set; }
-        public string Color { get; set; }
     }
 
     public interface VisitDataJoin<TKey>
