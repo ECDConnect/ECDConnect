@@ -19,29 +19,29 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
         [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.View)]
         public List<StatementsExpenses> GetAllStatementsExpenses([Service] IncomeExpenseManager incomeManager,
-string userId)
+string userId, int year, int month)
         {
-            return incomeManager.GetAllStatementsExpenses(userId);
+            return incomeManager.GetAllStatementsExpenses(userId, year, month);
         }
         public List<StatementsIncome> GetAllStatementsIncome([Service] IncomeExpenseManager incomeManager,
-string userId)
+string userId, int year, int month)
         {
-            return incomeManager.GetAllStatementsIncome(userId);
+            return incomeManager.GetAllStatementsIncome(userId, year, month);
         }
         public List<StatementsIncomeStatement> GetAllStatementsIncomeStatement([Service] IncomeExpenseManager incomeManager,
-string userId)
+string userId, int year, int month)
         {
-            return incomeManager.GetAllStatementsIncomeStatement(userId);
+            return incomeManager.GetAllStatementsIncomeStatement(userId, year, month);
         }
         public List<StatementsStartupSupport> GetAllStatementsStartupSupport([Service] IncomeExpenseManager incomeManager,
-string userId)
+string userId, int year, int month)
         {
-            return incomeManager.GetAllStatementsStartupSupport(userId);
+            return incomeManager.GetAllStatementsStartupSupport(userId, year, month);
         }
         public List<StatementsBalanceSheet> GetAllStatementsBalanceSheet([Service] IncomeExpenseManager incomeManager,
-string userId)
+string userId, int year)
         {
-            return incomeManager.GetAllStatementsBalanceSheet(userId);
+            return incomeManager.GetAllStatementsBalanceSheet(userId, year);
         }
     }
 }
