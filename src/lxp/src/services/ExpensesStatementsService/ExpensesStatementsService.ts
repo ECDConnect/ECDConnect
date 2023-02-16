@@ -1,5 +1,5 @@
 import { api } from '../axios.helper';
-import { Config } from '@ecdlink/core';
+import { Config, ExpensesStatementsDto } from '@ecdlink/core';
 import { StatementsExpensesInput } from '@/../../../packages/graphql/lib';
 
 class ExpensesStatementsService {
@@ -89,12 +89,16 @@ class ExpensesStatementsService {
     return response.data.data.updateStatementsExpenses;
   }
 
-  async allStatementsExpenses(userId: string): Promise<any[]> {
+  async allStatementsExpenses(
+    userId: string,
+    month: Number,
+    year: Number
+  ): Promise<ExpensesStatementsDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-      query allStatementsExpenses($userId: String) {
-        allStatementsExpenses(userId: $userId) {
+      query allStatementsExpenses($userId: String, $month: Int!, $year: Int!) {
+        allStatementsExpenses(userId: $userId, month: $month, year: $year) {
             id description 
             insertedDate 
             notes 
@@ -111,6 +115,8 @@ class ExpensesStatementsService {
           `,
       variables: {
         userId,
+        month,
+        year,
       },
     });
 

@@ -3,7 +3,7 @@ import { statementsSelectors } from '@/store/statements';
 import { numberWithSpaces } from '@/utils/statements/statements-utils';
 import { Typography, StatusChip, Button, Card, FADButton } from '@ecdlink/ui';
 import { differenceInDays, format, getMonth, setDate } from 'date-fns';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { getMonthName } from '@utils/classroom/attendance/track-attendance-utils';
@@ -61,12 +61,13 @@ export const SubmitIncomeStatements: React.FC = () => {
     if (value < 0) return `- R ${numberWithSpaces(String(value.toFixed(2)))}`;
   };
 
-  const totalSubmittedBalance = balanceSheet?.[0]?.balance;
+  const today = new Date();
+  const submitDateDaysCount = differenceInDays(setDate(new Date(), 25), today);
 
-  const submitDateDaysCount = differenceInDays(
-    setDate(new Date(), 25),
-    new Date()
-  );
+  const firstDateToSubmit = useMemo(() => setDate(new Date(), 25), []);
+  const lastDayToSubmit = useMemo(() => setDate(new Date(), 7), []);
+
+  const enableSubmit = today <= lastDayToSubmit || today >= firstDateToSubmit;
 
   useEffect(() => {
     if (balanceSheet?.filter((e) => e.month === monthDateNumber).length! > 0) {
@@ -104,7 +105,7 @@ export const SubmitIncomeStatements: React.FC = () => {
             history.push(ROUTES.BUSINESS_SUBMIT_INCOME_STATEMENTS_LIST)
           }
           className="mt-6 rounded-2xl"
-          disabled={disableSubmit}
+          disabled={disableSubmit || !enableSubmit}
         >
           <Typography
             type="help"
@@ -124,9 +125,7 @@ export const SubmitIncomeStatements: React.FC = () => {
             className="w-6/12"
           />
           <Typography
-            text={`R ${String(
-              numberWithSpaces(String(totalSubmittedBalance))
-            )}`}
+            text={`${formatCurrentValue(Number(currentMonthTotalBalance))}`}
             color={'white'}
             type="h1"
             className="w-8/12 text-right"

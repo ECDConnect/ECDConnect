@@ -31,7 +31,7 @@ import {
   moneyInputFormat,
 } from '@/utils/statements/statements-utils';
 import { NOTIFICATION, useNotifications } from '@ecdlink/core';
-import { format, getDate, lastDayOfMonth, startOfMonth } from 'date-fns';
+import { getDate, lastDayOfMonth, startOfMonth } from 'date-fns';
 
 export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
   const children = useSelector(childrenSelectors.getChildren);

@@ -5,12 +5,8 @@ import {
   Card,
   StackedList,
   BannerWrapper,
-  DialogPosition,
-  Dialog,
-  ActionModal,
 } from '@ecdlink/ui';
-import format from 'date-fns/format';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useSelector } from 'react-redux';
@@ -21,34 +17,41 @@ import {
 } from '@/../../../packages/core/lib';
 import { authSelectors } from '@/store/auth';
 import { IncomeStatementsService } from '@/services/IncomeStatementsService';
-import { newGuid } from '@/utils/common/uuid.utils';
 import {
   incomesValueFunc,
   numberWithSpaces,
 } from '@/utils/statements/statements-utils';
-import { MonthStatmentsDetailsState } from './month-satetements-details.types';
+import { MonthStatementsDetailsState } from './month-statements-details.types';
 import { getMonthName } from '@/utils/classroom/attendance/track-attendance-utils';
-import { getBalanceSheet } from '@/store/statements/statements.selectors';
+import ExpensesStatementsService from '@/services/ExpensesStatementsService/ExpensesStatementsService';
 
 export const MonthStatementsDetails: React.FC = () => {
   const userAuth = useSelector(authSelectors.getAuthUser);
-  const balanceSheet = useSelector(statementsSelectors.getBalanceSheet);
   const history = useHistory();
-  const location = useLocation<MonthStatmentsDetailsState>();
-  const statementMonth = location?.state?.month;
-  const statementYear = location?.state?.year;
+  const location = useLocation<MonthStatementsDetailsState>();
+  const statementMonth = Number(location?.state?.month) || 0;
+  const statementYear = Number(location?.state?.year) || 0;
   const statementTitle = `${getMonthName(
     Number(statementMonth) - 1
   )} ${statementYear}`;
   const { isOnline } = useOnlineStatus();
-  const [confimSubmitIncomeValues, setConfimSubmitIncomeValues] =
-    useState(false);
 
   const goBack = () => {
     history.push(ROUTES.BUSINESS);
   };
-  const income = useSelector(statementsSelectors.getIncome);
-  const expenses = useSelector(statementsSelectors.getExpenses);
+  // const income = useSelector(statementsSelectors.getIncome);
+  // const expenses = useSelector(statementsSelectors.getExpenses);
+  const [income, setIncome] = useState<IncomeStatementsDto[]>([]);
+  const [expenses, setExpenses] = useState<ExpensesStatementsDto[]>([]);
+  const submittedIncome = useMemo(
+    () => income?.filter((item) => item?.submitted === true),
+    [income]
+  );
+  const submittedExpenses = useMemo(
+    () => expenses?.filter((item) => item?.submitted === true),
+    [expenses]
+  );
+
   const preschoolIncome = useSelector(
     statementsSelectors.getPreschoolFeeIncome
   );
@@ -80,7 +83,7 @@ export const MonthStatementsDetails: React.FC = () => {
     return prev + +current.amount;
   }, 0);
 
-  const totalBalance = (totalIncome - totalExpenses).toFixed(2);
+  const totalBalance = (totalIncome - totalExpenses)?.toFixed(2);
 
   // Income values
   const [preschoolFees, setPreschoolFees] = useState<any>([]);
@@ -97,14 +100,14 @@ export const MonthStatementsDetails: React.FC = () => {
   const [utilities, setUtilities] = useState<any>([]);
   const [salary, setSalary] = useState<any>([]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const preschoolValue: IncomeStatementsDto[] = [];
     const startupValue: IncomeStatementsDto[] = [];
     const doantionValue: IncomeStatementsDto[] = [];
     const dbeSubsidyValue: IncomeStatementsDto[] = [];
     const otherValue: IncomeStatementsDto[] = [];
 
-    income?.map((item: any) => {
+    submittedIncome?.map((item: any) => {
       if (item?.incomeTypeId === preschoolIncome?.id) {
         preschoolValue.push(item);
         setPreschoolFees(preschoolValue);
@@ -130,10 +133,10 @@ export const MonthStatementsDetails: React.FC = () => {
   }, [
     dbeSubsidyIncome?.id,
     donationIncome?.id,
-    income,
     otherIncome?.id,
     preschoolIncome?.id,
     startupIncome?.id,
+    submittedIncome,
   ]);
 
   useEffect(() => {
@@ -145,7 +148,7 @@ export const MonthStatementsDetails: React.FC = () => {
     const utilitiesValue: ExpensesStatementsDto[] = [];
     const salaryValue: ExpensesStatementsDto[] = [];
 
-    expenses?.map((item: any) => {
+    submittedExpenses?.map((item: any) => {
       if (item?.expenseTypeId === rentExpense?.id) {
         rentValue.push(item);
         setRent(rentValue);
@@ -179,10 +182,8 @@ export const MonthStatementsDetails: React.FC = () => {
   }, [
     dbeSubsidyIncome.id,
     donationIncome.id,
-    expenses,
     food.id,
     foodExpense?.id,
-    income,
     learningMaterials.id,
     learningMaterialsExpense?.id,
     maintenance.id,
@@ -194,26 +195,27 @@ export const MonthStatementsDetails: React.FC = () => {
     salary.id,
     salaryExpense?.id,
     startupIncome.id,
+    submittedExpenses,
     utilities.id,
     utilitiesExpense?.id,
   ]);
 
-  const id = newGuid();
-  const input = {
-    period: 'Monthly',
-    userId: userAuth?.id!,
-    month: 2,
-    year: 2023,
-  };
+  useEffect(() => {
+    const monthlyDetailsdata = async () => {
+      const incomeData = await new IncomeStatementsService(
+        userAuth?.auth_token!
+      ).allStatementsIncome(userAuth?.id!, statementMonth, statementYear);
 
-  const updateStatements = async () => {
-    if (userAuth?.auth_token) {
-      await new IncomeStatementsService(userAuth?.auth_token).submitStatement(
-        id,
-        input
-      );
-    }
-  };
+      const expensesData = await new ExpensesStatementsService(
+        userAuth?.auth_token!
+      ).allStatementsExpenses(userAuth?.id!, statementMonth, statementYear);
+
+      setIncome(incomeData);
+      setExpenses(expensesData);
+    };
+
+    monthlyDetailsdata();
+  }, [statementMonth, statementYear, userAuth?.auth_token, userAuth?.id]);
 
   const incomeItems = [
     {
@@ -359,9 +361,7 @@ export const MonthStatementsDetails: React.FC = () => {
       showBackground={false}
       size="medium"
       renderBorder={true}
-      title={`View ${getMonthName(
-        Number(balanceSheet?.[0]?.month) - 1
-      )} statement`}
+      title={`View ${getMonthName(Number(statementMonth))} statement`}
       color={'primary'}
       onBack={goBack}
       displayOffline={!isOnline}
@@ -430,9 +430,11 @@ export const MonthStatementsDetails: React.FC = () => {
             className="w-6/12"
           />
           <Typography
-            text={`R ${String(
-              numberWithSpaces(String(balanceSheet?.[0]?.balance!))
-            )}`}
+            text={
+              Number(totalBalance) > 0
+                ? `+ R ${String(numberWithSpaces(String(totalBalance)))}`
+                : `- R ${String(numberWithSpaces(String(totalBalance)))}`
+            }
             color={'white'}
             type="h1"
             className="w-8/12 text-right"
@@ -442,57 +444,13 @@ export const MonthStatementsDetails: React.FC = () => {
           shape="normal"
           color="primary"
           type="filled"
-          icon="ArrowCircleRightIcon"
-          onClick={() => setConfimSubmitIncomeValues(true)}
+          icon="DocumentDownloadIcon"
+          onClick={() => {}}
           className="mt-6 rounded-2xl"
         >
-          <Typography
-            type="help"
-            color="white"
-            text="Submit income statement"
-          />
+          <Typography type="help" color="white" text="Download" />
         </Button>
       </div>
-      <Dialog
-        className={'mb-16 px-4'}
-        stretch
-        visible={confimSubmitIncomeValues}
-        position={DialogPosition.Middle}
-      >
-        <ActionModal
-          icon={'InformationCircleIcon'}
-          iconColor="alertMain"
-          iconBorderColor="alertBg"
-          importantText={`Are you sure you want to submit your income statement?`}
-          detailText={`Once you submit your ${format(
-            new Date(),
-            'LLLL'
-          )} income statement, you will no longer be able to edit your income and expenses. Your signature will be added and your statement will be shared with SmartStart.`}
-          actionButtons={[
-            {
-              text: 'Yes, submit',
-              textColour: 'white',
-              colour: 'primary',
-              type: 'filled',
-              onClick: () => {
-                updateStatements();
-                setConfimSubmitIncomeValues(false);
-              },
-              leadingIcon: 'ArrowCircleRightIcon',
-            },
-            {
-              text: 'No, exit',
-              textColour: 'primary',
-              colour: 'primary',
-              type: 'outlined',
-              onClick: () => {
-                setConfimSubmitIncomeValues(false);
-              },
-              leadingIcon: 'ArrowLeftIcon',
-            },
-          ]}
-        />
-      </Dialog>
     </BannerWrapper>
   );
 };
