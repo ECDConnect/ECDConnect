@@ -151,124 +151,6 @@ export type AddChildTokenModelInput = {
   workflowStatusId?: InputMaybe<Scalars['UUID']>;
 };
 
-export type AntenatalQuestionnaire = {
-  __typename?: 'AntenatalQuestionnaire';
-  description?: Maybe<Scalars['String']>;
-  descriptionIcon?: Maybe<Scalars['String']>;
-  heading?: Maybe<Scalars['String']>;
-  headingColor?: Maybe<Scalars['String']>;
-  headingIcon?: Maybe<Scalars['String']>;
-  id?: Maybe<Scalars['Int']>;
-  image?: Maybe<Scalars['String']>;
-  infoCard?: Maybe<Scalars['String']>;
-  infoCardColor?: Maybe<Scalars['String']>;
-  linkedQuestions?: Maybe<Array<Maybe<AntenatalQuestionnaireQuestion>>>;
-  moreInfoBtnIcon?: Maybe<Scalars['String']>;
-  moreInfoBtnText?: Maybe<Scalars['String']>;
-  name?: Maybe<Scalars['String']>;
-  showLanguage?: Maybe<Scalars['String']>;
-  showTipCard?: Maybe<Scalars['String']>;
-  subheading?: Maybe<Scalars['String']>;
-  type?: Maybe<Scalars['String']>;
-};
-
-export type AntenatalQuestionnaireInput = {
-  description?: InputMaybe<Scalars['String']>;
-  descriptionIcon?: InputMaybe<Scalars['String']>;
-  heading?: InputMaybe<Scalars['String']>;
-  headingColor?: InputMaybe<Scalars['String']>;
-  headingIcon?: InputMaybe<Scalars['String']>;
-  image?: InputMaybe<Scalars['String']>;
-  infoCard?: InputMaybe<Scalars['String']>;
-  infoCardColor?: InputMaybe<Scalars['String']>;
-  linkedQuestions?: InputMaybe<Scalars['String']>;
-  moreInfoBtnIcon?: InputMaybe<Scalars['String']>;
-  moreInfoBtnText?: InputMaybe<Scalars['String']>;
-  name?: InputMaybe<Scalars['String']>;
-  showLanguage?: InputMaybe<Scalars['String']>;
-  showTipCard?: InputMaybe<Scalars['String']>;
-  subheading?: InputMaybe<Scalars['String']>;
-  type?: InputMaybe<Scalars['String']>;
-};
-
-export type AntenatalQuestionnaireQuestion = {
-  __typename?: 'AntenatalQuestionnaireQuestion';
-  description?: Maybe<Scalars['String']>;
-  icon?: Maybe<Scalars['String']>;
-  id?: Maybe<Scalars['Int']>;
-  image?: Maybe<Scalars['String']>;
-  linkedAnswerOptions?: Maybe<
-    Array<Maybe<AntenatalQuestionnaireQuestionAnswer>>
-  >;
-  name?: Maybe<Scalars['String']>;
-  negOutcome?: Maybe<Scalars['String']>;
-  negOutcomeIcon?: Maybe<Scalars['String']>;
-  posOutcome?: Maybe<Scalars['String']>;
-  posOutcomeIcon?: Maybe<Scalars['String']>;
-  sequence?: Maybe<Scalars['String']>;
-  type?: Maybe<Scalars['String']>;
-};
-
-export type AntenatalQuestionnaireQuestionAnswer = {
-  __typename?: 'AntenatalQuestionnaireQuestionAnswer';
-  description?: Maybe<Scalars['String']>;
-  id?: Maybe<Scalars['Int']>;
-  image?: Maybe<Scalars['String']>;
-  name?: Maybe<Scalars['String']>;
-  sequence?: Maybe<Scalars['String']>;
-  showLanguage?: Maybe<Scalars['String']>;
-  type?: Maybe<Scalars['String']>;
-  video?: Maybe<Scalars['String']>;
-};
-
-export type AntenatalQuestionnaireQuestionAnswerInput = {
-  description?: InputMaybe<Scalars['String']>;
-  image?: InputMaybe<Scalars['String']>;
-  name?: InputMaybe<Scalars['String']>;
-  sequence?: InputMaybe<Scalars['String']>;
-  showLanguage?: InputMaybe<Scalars['String']>;
-  type?: InputMaybe<Scalars['String']>;
-  video?: InputMaybe<Scalars['String']>;
-};
-
-export type AntenatalQuestionnaireQuestionInput = {
-  description?: InputMaybe<Scalars['String']>;
-  icon?: InputMaybe<Scalars['String']>;
-  image?: InputMaybe<Scalars['String']>;
-  linkedAnswerOptions?: InputMaybe<Scalars['String']>;
-  name?: InputMaybe<Scalars['String']>;
-  negOutcome?: InputMaybe<Scalars['String']>;
-  negOutcomeIcon?: InputMaybe<Scalars['String']>;
-  posOutcome?: InputMaybe<Scalars['String']>;
-  posOutcomeIcon?: InputMaybe<Scalars['String']>;
-  sequence?: InputMaybe<Scalars['String']>;
-  type?: InputMaybe<Scalars['String']>;
-};
-
-export type AntenatalVisit = {
-  __typename?: 'AntenatalVisit';
-  cardNames?: Maybe<Scalars['String']>;
-  description?: Maybe<Scalars['String']>;
-  icon?: Maybe<Scalars['String']>;
-  id?: Maybe<Scalars['Int']>;
-  linkedQuestionnaires?: Maybe<Array<Maybe<AntenatalQuestionnaire>>>;
-  name?: Maybe<Scalars['String']>;
-  primaryColor?: Maybe<Scalars['String']>;
-  secondaryColor?: Maybe<Scalars['String']>;
-  sequence?: Maybe<Scalars['String']>;
-};
-
-export type AntenatalVisitInput = {
-  cardNames?: InputMaybe<Scalars['String']>;
-  description?: InputMaybe<Scalars['String']>;
-  icon?: InputMaybe<Scalars['String']>;
-  linkedQuestionnaires?: InputMaybe<Scalars['String']>;
-  name?: InputMaybe<Scalars['String']>;
-  primaryColor?: InputMaybe<Scalars['String']>;
-  secondaryColor?: InputMaybe<Scalars['String']>;
-  sequence?: InputMaybe<Scalars['String']>;
-};
-
 export type ApplicationUser = {
   __typename?: 'ApplicationUser';
   childObjectData?: Maybe<Child>;
@@ -484,59 +366,6 @@ export type AuditLogTypeInput = {
 export type BooleanOperationFilterInput = {
   eq?: InputMaybe<Scalars['Boolean']>;
   neq?: InputMaybe<Scalars['Boolean']>;
-};
-
-export type CmsAnswerOption = {
-  __typename?: 'CMSAnswerOption';
-  description?: Maybe<Scalars['String']>;
-  id?: Maybe<Scalars['String']>;
-  image?: Maybe<Scalars['String']>;
-  name?: Maybe<Scalars['String']>;
-  sequence?: Maybe<Scalars['String']>;
-  type?: Maybe<Scalars['String']>;
-  video?: Maybe<Scalars['String']>;
-};
-
-export type CmsQuestion = {
-  __typename?: 'CMSQuestion';
-  description?: Maybe<Scalars['String']>;
-  heading?: Maybe<Scalars['String']>;
-  id?: Maybe<Scalars['String']>;
-  image?: Maybe<Scalars['String']>;
-  linkedAnswerOptions?: Maybe<Array<Maybe<CmsAnswerOption>>>;
-  name?: Maybe<Scalars['String']>;
-  questionAnswer?: Maybe<Scalars['String']>;
-  sequence?: Maybe<Scalars['String']>;
-  subHeading?: Maybe<Scalars['String']>;
-  type?: Maybe<Scalars['String']>;
-};
-
-export type CmsQuestionnaire = {
-  __typename?: 'CMSQuestionnaire';
-  description?: Maybe<Scalars['String']>;
-  descriptionIcon?: Maybe<Scalars['String']>;
-  heading?: Maybe<Scalars['String']>;
-  headingColor?: Maybe<Scalars['String']>;
-  headingIcon?: Maybe<Scalars['String']>;
-  id?: Maybe<Scalars['String']>;
-  image?: Maybe<Scalars['String']>;
-  linkedQuestions?: Maybe<Array<Maybe<CmsQuestion>>>;
-  name?: Maybe<Scalars['String']>;
-  subHeading?: Maybe<Scalars['String']>;
-  type?: Maybe<Scalars['String']>;
-};
-
-export type CmsVisit = {
-  __typename?: 'CMSVisit';
-  description?: Maybe<Scalars['String']>;
-  icon?: Maybe<Scalars['String']>;
-  id?: Maybe<Scalars['String']>;
-  isCompleted: Scalars['Boolean'];
-  linkedQuestionnaires?: Maybe<Array<Maybe<CmsQuestionnaire>>>;
-  name?: Maybe<Scalars['String']>;
-  primaryColor?: Maybe<Scalars['String']>;
-  secondaryColor?: Maybe<Scalars['String']>;
-  sequence?: Maybe<Scalars['String']>;
 };
 
 export type Caregiver = {
@@ -2536,10 +2365,6 @@ export type Mutation = {
   contentTypeImport: Scalars['Boolean'];
   createAbsentees?: Maybe<Absentees>;
   createActivity?: Maybe<Scalars['String']>;
-  createAntenatalQuestionnaire?: Maybe<Scalars['String']>;
-  createAntenatalQuestionnaireQuestion?: Maybe<Scalars['String']>;
-  createAntenatalQuestionnaireQuestionAnswer?: Maybe<Scalars['String']>;
-  createAntenatalVisit?: Maybe<Scalars['String']>;
   createAuditLogType?: Maybe<AuditLogType>;
   createCaregiver?: Maybe<Caregiver>;
   createChild?: Maybe<Child>;
@@ -2617,20 +2442,12 @@ export type Mutation = {
   createVisit?: Maybe<Visit>;
   createVisitData?: Maybe<VisitData>;
   createVisitDataStatus?: Maybe<VisitDataStatus>;
-  createVisitName?: Maybe<Scalars['String']>;
-  createVisitQuestionnaire?: Maybe<Scalars['String']>;
-  createVisitQuestionnaireQuestion?: Maybe<Scalars['String']>;
-  createVisitQuestionnaireQuestionAnswer?: Maybe<Scalars['String']>;
   createVisitType?: Maybe<VisitType>;
   createWorkflowStatus?: Maybe<WorkflowStatus>;
   createWorkflowStatusType?: Maybe<WorkflowStatusType>;
   dataIngestionImport: Scalars['Boolean'];
   deleteAbsentees?: Maybe<Scalars['Boolean']>;
   deleteActivity?: Maybe<Scalars['Boolean']>;
-  deleteAntenatalQuestionnaire?: Maybe<Scalars['Boolean']>;
-  deleteAntenatalQuestionnaireQuestion?: Maybe<Scalars['Boolean']>;
-  deleteAntenatalQuestionnaireQuestionAnswer?: Maybe<Scalars['Boolean']>;
-  deleteAntenatalVisit?: Maybe<Scalars['Boolean']>;
   deleteAuditLogType?: Maybe<Scalars['Boolean']>;
   deleteCaregiver?: Maybe<Scalars['Boolean']>;
   deleteChild?: Maybe<Scalars['Boolean']>;
@@ -2712,10 +2529,6 @@ export type Mutation = {
   deleteVisit?: Maybe<Scalars['Boolean']>;
   deleteVisitData?: Maybe<Scalars['Boolean']>;
   deleteVisitDataStatus?: Maybe<Scalars['Boolean']>;
-  deleteVisitName?: Maybe<Scalars['Boolean']>;
-  deleteVisitQuestionnaire?: Maybe<Scalars['Boolean']>;
-  deleteVisitQuestionnaireQuestion?: Maybe<Scalars['Boolean']>;
-  deleteVisitQuestionnaireQuestionAnswer?: Maybe<Scalars['Boolean']>;
   deleteVisitType?: Maybe<Scalars['Boolean']>;
   deleteWorkflowStatus?: Maybe<Scalars['Boolean']>;
   deleteWorkflowStatusType?: Maybe<Scalars['Boolean']>;
@@ -2748,10 +2561,6 @@ export type Mutation = {
   trackAttendance: Scalars['Boolean'];
   updateAbsentees?: Maybe<Absentees>;
   updateActivity?: Maybe<Activity>;
-  updateAntenatalQuestionnaire?: Maybe<AntenatalQuestionnaire>;
-  updateAntenatalQuestionnaireQuestion?: Maybe<AntenatalQuestionnaireQuestion>;
-  updateAntenatalQuestionnaireQuestionAnswer?: Maybe<AntenatalQuestionnaireQuestionAnswer>;
-  updateAntenatalVisit?: Maybe<AntenatalVisit>;
   updateAuditLogType?: Maybe<AuditLogType>;
   updateCareGiverGrants: Scalars['Boolean'];
   updateCaregiver?: Maybe<Caregiver>;
@@ -2842,10 +2651,6 @@ export type Mutation = {
   updateVisit?: Maybe<Visit>;
   updateVisitData?: Maybe<VisitData>;
   updateVisitDataStatus?: Maybe<VisitDataStatus>;
-  updateVisitName?: Maybe<VisitName>;
-  updateVisitQuestionnaire?: Maybe<VisitQuestionnaire>;
-  updateVisitQuestionnaireQuestion?: Maybe<VisitQuestionnaireQuestion>;
-  updateVisitQuestionnaireQuestionAnswer?: Maybe<VisitQuestionnaireQuestionAnswer>;
   updateVisitType?: Maybe<VisitType>;
   updateWorkflowStatus?: Maybe<WorkflowStatus>;
   updateWorkflowStatusType?: Maybe<WorkflowStatusType>;
@@ -2871,7 +2676,6 @@ export type MutationAddAdditionalVisitForMotherArgs = {
 
 export type MutationAddAntenatalVisitDataArgs = {
   input?: InputMaybe<VisitDataModelInput>;
-  localeId?: InputMaybe<Scalars['String']>;
   motherId?: InputMaybe<Scalars['String']>;
 };
 
@@ -2965,30 +2769,6 @@ export type MutationCreateAbsenteesArgs = {
 
 export type MutationCreateActivityArgs = {
   input: ActivityInput;
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationCreateAntenatalQuestionnaireArgs = {
-  input: AntenatalQuestionnaireInput;
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationCreateAntenatalQuestionnaireQuestionArgs = {
-  input: AntenatalQuestionnaireQuestionInput;
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationCreateAntenatalQuestionnaireQuestionAnswerArgs = {
-  input: AntenatalQuestionnaireQuestionAnswerInput;
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationCreateAntenatalVisitArgs = {
-  input: AntenatalVisitInput;
   locale?: InputMaybe<Scalars['String']>;
   localeId?: InputMaybe<Scalars['String']>;
 };
@@ -3328,30 +3108,6 @@ export type MutationCreateVisitDataStatusArgs = {
   input?: InputMaybe<VisitDataStatusInput>;
 };
 
-export type MutationCreateVisitNameArgs = {
-  input: VisitNameInput;
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationCreateVisitQuestionnaireArgs = {
-  input: VisitQuestionnaireInput;
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationCreateVisitQuestionnaireQuestionArgs = {
-  input: VisitQuestionnaireQuestionInput;
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationCreateVisitQuestionnaireQuestionAnswerArgs = {
-  input: VisitQuestionnaireQuestionAnswerInput;
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
 export type MutationCreateVisitTypeArgs = {
   input?: InputMaybe<VisitTypeInput>;
 };
@@ -3373,30 +3129,6 @@ export type MutationDeleteAbsenteesArgs = {
 };
 
 export type MutationDeleteActivityArgs = {
-  id: Scalars['String'];
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationDeleteAntenatalQuestionnaireArgs = {
-  id: Scalars['String'];
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationDeleteAntenatalQuestionnaireQuestionArgs = {
-  id: Scalars['String'];
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationDeleteAntenatalQuestionnaireQuestionAnswerArgs = {
-  id: Scalars['String'];
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationDeleteAntenatalVisitArgs = {
   id: Scalars['String'];
   locale?: InputMaybe<Scalars['String']>;
   localeId?: InputMaybe<Scalars['String']>;
@@ -3755,30 +3487,6 @@ export type MutationDeleteVisitDataStatusArgs = {
   id?: InputMaybe<Scalars['UUID']>;
 };
 
-export type MutationDeleteVisitNameArgs = {
-  id: Scalars['String'];
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationDeleteVisitQuestionnaireArgs = {
-  id: Scalars['String'];
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationDeleteVisitQuestionnaireQuestionArgs = {
-  id: Scalars['String'];
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationDeleteVisitQuestionnaireQuestionAnswerArgs = {
-  id: Scalars['String'];
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
 export type MutationDeleteVisitTypeArgs = {
   id?: InputMaybe<Scalars['UUID']>;
 };
@@ -3907,34 +3615,6 @@ export type MutationUpdateAbsenteesArgs = {
 export type MutationUpdateActivityArgs = {
   id: Scalars['String'];
   input: ActivityInput;
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationUpdateAntenatalQuestionnaireArgs = {
-  id: Scalars['String'];
-  input: AntenatalQuestionnaireInput;
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationUpdateAntenatalQuestionnaireQuestionArgs = {
-  id: Scalars['String'];
-  input: AntenatalQuestionnaireQuestionInput;
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationUpdateAntenatalQuestionnaireQuestionAnswerArgs = {
-  id: Scalars['String'];
-  input: AntenatalQuestionnaireQuestionAnswerInput;
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationUpdateAntenatalVisitArgs = {
-  id: Scalars['String'];
-  input: AntenatalVisitInput;
   locale?: InputMaybe<Scalars['String']>;
   localeId?: InputMaybe<Scalars['String']>;
 };
@@ -4418,34 +4098,6 @@ export type MutationUpdateVisitDataArgs = {
 export type MutationUpdateVisitDataStatusArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   input?: InputMaybe<VisitDataStatusInput>;
-};
-
-export type MutationUpdateVisitNameArgs = {
-  id: Scalars['String'];
-  input: VisitNameInput;
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationUpdateVisitQuestionnaireArgs = {
-  id: Scalars['String'];
-  input: VisitQuestionnaireInput;
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationUpdateVisitQuestionnaireQuestionArgs = {
-  id: Scalars['String'];
-  input: VisitQuestionnaireQuestionInput;
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationUpdateVisitQuestionnaireQuestionAnswerArgs = {
-  id: Scalars['String'];
-  input: VisitQuestionnaireQuestionAnswerInput;
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationUpdateVisitTypeArgs = {
@@ -5239,14 +4891,6 @@ export type Query = {
   GetActivityById: Array<Maybe<Activity>>;
   GetAllAbsentees?: Maybe<Array<Maybe<Absentees>>>;
   GetAllActivity: Array<Maybe<Activity>>;
-  GetAllAntenatalQuestionnaire: Array<Maybe<AntenatalQuestionnaire>>;
-  GetAllAntenatalQuestionnaireQuestion: Array<
-    Maybe<AntenatalQuestionnaireQuestion>
-  >;
-  GetAllAntenatalQuestionnaireQuestionAnswer: Array<
-    Maybe<AntenatalQuestionnaireQuestionAnswer>
-  >;
-  GetAllAntenatalVisit: Array<Maybe<AntenatalVisit>>;
   GetAllAuditLogType?: Maybe<Array<Maybe<AuditLogType>>>;
   GetAllCaregiver?: Maybe<Array<Maybe<Caregiver>>>;
   GetAllChild?: Maybe<Array<Maybe<Child>>>;
@@ -5334,23 +4978,9 @@ export type Query = {
   GetAllVisit?: Maybe<Array<Maybe<Visit>>>;
   GetAllVisitData?: Maybe<Array<Maybe<VisitData>>>;
   GetAllVisitDataStatus?: Maybe<Array<Maybe<VisitDataStatus>>>;
-  GetAllVisitName: Array<Maybe<VisitName>>;
-  GetAllVisitQuestionnaire: Array<Maybe<VisitQuestionnaire>>;
-  GetAllVisitQuestionnaireQuestion: Array<Maybe<VisitQuestionnaireQuestion>>;
-  GetAllVisitQuestionnaireQuestionAnswer: Array<
-    Maybe<VisitQuestionnaireQuestionAnswer>
-  >;
   GetAllVisitType?: Maybe<Array<Maybe<VisitType>>>;
   GetAllWorkflowStatus?: Maybe<Array<Maybe<WorkflowStatus>>>;
   GetAllWorkflowStatusType?: Maybe<Array<Maybe<WorkflowStatusType>>>;
-  GetAntenatalQuestionnaireById: Array<Maybe<AntenatalQuestionnaire>>;
-  GetAntenatalQuestionnaireQuestionAnswerById: Array<
-    Maybe<AntenatalQuestionnaireQuestionAnswer>
-  >;
-  GetAntenatalQuestionnaireQuestionById: Array<
-    Maybe<AntenatalQuestionnaireQuestion>
-  >;
-  GetAntenatalVisitById: Array<Maybe<AntenatalVisit>>;
   GetAuditLogTypeById?: Maybe<AuditLogType>;
   GetCaregiverById?: Maybe<Caregiver>;
   GetChildById?: Maybe<Child>;
@@ -5426,12 +5056,6 @@ export type Query = {
   GetVisitById?: Maybe<Visit>;
   GetVisitDataById?: Maybe<VisitData>;
   GetVisitDataStatusById?: Maybe<VisitDataStatus>;
-  GetVisitNameById: Array<Maybe<VisitName>>;
-  GetVisitQuestionnaireById: Array<Maybe<VisitQuestionnaire>>;
-  GetVisitQuestionnaireQuestionAnswerById: Array<
-    Maybe<VisitQuestionnaireQuestionAnswer>
-  >;
-  GetVisitQuestionnaireQuestionById: Array<Maybe<VisitQuestionnaireQuestion>>;
   GetVisitTypeById?: Maybe<VisitType>;
   GetWorkflowStatusById?: Maybe<WorkflowStatus>;
   GetWorkflowStatusTypeById?: Maybe<WorkflowStatusType>;
@@ -5475,7 +5099,6 @@ export type Query = {
   allStatementsStartupSupport?: Maybe<Array<Maybe<StatementsStartupSupport>>>;
   allTeamLeads?: Maybe<Array<Maybe<TeamLead>>>;
   antenatalProgressDataForMother: Scalars['Int'];
-  antenatalVisitDataForMother?: Maybe<Array<Maybe<CmsVisit>>>;
   attendance?: Maybe<Array<Maybe<Attendance>>>;
   caregiverGrants?: Maybe<Array<Maybe<UserGrant>>>;
   childAttendanceReport?: Maybe<ChildAttendanceReportModel>;
@@ -5565,26 +5188,6 @@ export type QueryGetAllAbsenteesArgs = {
 };
 
 export type QueryGetAllActivityArgs = {
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type QueryGetAllAntenatalQuestionnaireArgs = {
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type QueryGetAllAntenatalQuestionnaireQuestionArgs = {
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type QueryGetAllAntenatalQuestionnaireQuestionAnswerArgs = {
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type QueryGetAllAntenatalVisitArgs = {
   locale?: InputMaybe<Scalars['String']>;
   localeId?: InputMaybe<Scalars['String']>;
 };
@@ -5902,26 +5505,6 @@ export type QueryGetAllVisitDataStatusArgs = {
   where?: InputMaybe<VisitDataStatusFilterInput>;
 };
 
-export type QueryGetAllVisitNameArgs = {
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type QueryGetAllVisitQuestionnaireArgs = {
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type QueryGetAllVisitQuestionnaireQuestionArgs = {
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type QueryGetAllVisitQuestionnaireQuestionAnswerArgs = {
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
 export type QueryGetAllVisitTypeArgs = {
   where?: InputMaybe<VisitTypeFilterInput>;
 };
@@ -5932,30 +5515,6 @@ export type QueryGetAllWorkflowStatusArgs = {
 
 export type QueryGetAllWorkflowStatusTypeArgs = {
   where?: InputMaybe<WorkflowStatusTypeFilterInput>;
-};
-
-export type QueryGetAntenatalQuestionnaireByIdArgs = {
-  id?: InputMaybe<Scalars['Int']>;
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type QueryGetAntenatalQuestionnaireQuestionAnswerByIdArgs = {
-  id?: InputMaybe<Scalars['Int']>;
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type QueryGetAntenatalQuestionnaireQuestionByIdArgs = {
-  id?: InputMaybe<Scalars['Int']>;
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type QueryGetAntenatalVisitByIdArgs = {
-  id?: InputMaybe<Scalars['Int']>;
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryGetAuditLogTypeByIdArgs = {
@@ -6346,30 +5905,6 @@ export type QueryGetVisitDataStatusByIdArgs = {
   where?: InputMaybe<VisitDataStatusFilterInput>;
 };
 
-export type QueryGetVisitNameByIdArgs = {
-  id?: InputMaybe<Scalars['Int']>;
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type QueryGetVisitQuestionnaireByIdArgs = {
-  id?: InputMaybe<Scalars['Int']>;
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type QueryGetVisitQuestionnaireQuestionAnswerByIdArgs = {
-  id?: InputMaybe<Scalars['Int']>;
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type QueryGetVisitQuestionnaireQuestionByIdArgs = {
-  id?: InputMaybe<Scalars['Int']>;
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
 export type QueryGetVisitTypeByIdArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   where?: InputMaybe<VisitTypeFilterInput>;
@@ -6520,11 +6055,6 @@ export type QueryAllStatementsStartupSupportArgs = {
 
 export type QueryAntenatalProgressDataForMotherArgs = {
   motherId?: InputMaybe<Scalars['String']>;
-};
-
-export type QueryAntenatalVisitDataForMotherArgs = {
-  localeId?: InputMaybe<Scalars['String']>;
-  visitId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryAttendanceArgs = {
@@ -8226,122 +7756,6 @@ export type VisitModelInput = {
   risk?: InputMaybe<Scalars['String']>;
   visitType?: InputMaybe<VisitTypeInput>;
   visitTypeId?: InputMaybe<Scalars['UUID']>;
-};
-
-export type VisitName = {
-  __typename?: 'VisitName';
-  cardNames?: Maybe<Scalars['String']>;
-  description?: Maybe<Scalars['String']>;
-  icon?: Maybe<Scalars['String']>;
-  id?: Maybe<Scalars['Int']>;
-  linkedQuestionnaires?: Maybe<Array<Maybe<VisitQuestionnaire>>>;
-  name?: Maybe<Scalars['String']>;
-  primaryColor?: Maybe<Scalars['String']>;
-  secondaryColor?: Maybe<Scalars['String']>;
-  sequence?: Maybe<Scalars['String']>;
-};
-
-export type VisitNameInput = {
-  cardNames?: InputMaybe<Scalars['String']>;
-  description?: InputMaybe<Scalars['String']>;
-  icon?: InputMaybe<Scalars['String']>;
-  linkedQuestionnaires?: InputMaybe<Scalars['String']>;
-  name?: InputMaybe<Scalars['String']>;
-  primaryColor?: InputMaybe<Scalars['String']>;
-  secondaryColor?: InputMaybe<Scalars['String']>;
-  sequence?: InputMaybe<Scalars['String']>;
-};
-
-export type VisitQuestionnaire = {
-  __typename?: 'VisitQuestionnaire';
-  description?: Maybe<Scalars['String']>;
-  descriptionIcon?: Maybe<Scalars['String']>;
-  heading?: Maybe<Scalars['String']>;
-  headingColor?: Maybe<Scalars['String']>;
-  headingIcon?: Maybe<Scalars['String']>;
-  id?: Maybe<Scalars['Int']>;
-  image?: Maybe<Scalars['String']>;
-  infoCard?: Maybe<Scalars['String']>;
-  infoCardColor?: Maybe<Scalars['String']>;
-  linkedQuestions?: Maybe<Array<Maybe<VisitQuestionnaireQuestion>>>;
-  moreInfoBtnIcon?: Maybe<Scalars['String']>;
-  moreInfoBtnText?: Maybe<Scalars['String']>;
-  name?: Maybe<Scalars['String']>;
-  showLanguage?: Maybe<Scalars['String']>;
-  showTipCard?: Maybe<Scalars['String']>;
-  subheading?: Maybe<Scalars['String']>;
-  type?: Maybe<Scalars['String']>;
-};
-
-export type VisitQuestionnaireInput = {
-  description?: InputMaybe<Scalars['String']>;
-  descriptionIcon?: InputMaybe<Scalars['String']>;
-  heading?: InputMaybe<Scalars['String']>;
-  headingColor?: InputMaybe<Scalars['String']>;
-  headingIcon?: InputMaybe<Scalars['String']>;
-  image?: InputMaybe<Scalars['String']>;
-  infoCard?: InputMaybe<Scalars['String']>;
-  infoCardColor?: InputMaybe<Scalars['String']>;
-  linkedQuestions?: InputMaybe<Scalars['String']>;
-  moreInfoBtnIcon?: InputMaybe<Scalars['String']>;
-  moreInfoBtnText?: InputMaybe<Scalars['String']>;
-  name?: InputMaybe<Scalars['String']>;
-  showLanguage?: InputMaybe<Scalars['String']>;
-  showTipCard?: InputMaybe<Scalars['String']>;
-  subheading?: InputMaybe<Scalars['String']>;
-  type?: InputMaybe<Scalars['String']>;
-};
-
-export type VisitQuestionnaireQuestion = {
-  __typename?: 'VisitQuestionnaireQuestion';
-  description?: Maybe<Scalars['String']>;
-  icon?: Maybe<Scalars['String']>;
-  id?: Maybe<Scalars['Int']>;
-  image?: Maybe<Scalars['String']>;
-  linkedAnswerOptions?: Maybe<Array<Maybe<VisitQuestionnaireQuestionAnswer>>>;
-  name?: Maybe<Scalars['String']>;
-  negOutcome?: Maybe<Scalars['String']>;
-  negOutcomeIcon?: Maybe<Scalars['String']>;
-  posOutcome?: Maybe<Scalars['String']>;
-  posOutcomeIcon?: Maybe<Scalars['String']>;
-  sequence?: Maybe<Scalars['String']>;
-  type?: Maybe<Scalars['String']>;
-};
-
-export type VisitQuestionnaireQuestionAnswer = {
-  __typename?: 'VisitQuestionnaireQuestionAnswer';
-  description?: Maybe<Scalars['String']>;
-  id?: Maybe<Scalars['Int']>;
-  image?: Maybe<Scalars['String']>;
-  name?: Maybe<Scalars['String']>;
-  sequence?: Maybe<Scalars['String']>;
-  showLanguage?: Maybe<Scalars['String']>;
-  type?: Maybe<Scalars['String']>;
-  video?: Maybe<Scalars['String']>;
-};
-
-export type VisitQuestionnaireQuestionAnswerInput = {
-  description?: InputMaybe<Scalars['String']>;
-  image?: InputMaybe<Scalars['String']>;
-  name?: InputMaybe<Scalars['String']>;
-  sequence?: InputMaybe<Scalars['String']>;
-  showLanguage?: InputMaybe<Scalars['String']>;
-  type?: InputMaybe<Scalars['String']>;
-  video?: InputMaybe<Scalars['String']>;
-};
-
-export type VisitQuestionnaireQuestionInput = {
-  description?: InputMaybe<Scalars['String']>;
-  icon?: InputMaybe<Scalars['String']>;
-  image?: InputMaybe<Scalars['String']>;
-  linkedAnswerOptions?: InputMaybe<Scalars['String']>;
-  name?: InputMaybe<Scalars['String']>;
-  negOutcome?: InputMaybe<Scalars['String']>;
-  negOutcomeIcon?: InputMaybe<Scalars['String']>;
-  posOutcome?: InputMaybe<Scalars['String']>;
-  posOutcomeIcon?: InputMaybe<Scalars['String']>;
-  sequence?: InputMaybe<Scalars['String']>;
-  type?: InputMaybe<Scalars['String']>;
 };
 
 export type VisitType = {

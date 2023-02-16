@@ -133,51 +133,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public List<CMSVisit> GetAntenatalVisitDataForMother(
-            [Service] IHttpContextAccessor contextAccessor,
-            [Service] VisitDataManager visitDataManager,
-            IGenericRepositoryFactory repoFactory,
-            string visitId,
-            string localeId)
-        {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            var visitRepo = repoFactory.CreateGenericRepository<Visit>(userContext: uId);
-            var visitTypeRepo = repoFactory.CreateGenericRepository<VisitType>(userContext: uId);
-            var visitDataRepo = repoFactory.CreateGenericRepository<VisitData>(userContext: uId);
-            var _visitId = new Guid(visitId);
-
-            // get visit details for visitId
-            Visit motherVisit = (
-                from visit in visitRepo.GetAll().Where(x => x.Id == _visitId)
-                join visitType in visitTypeRepo.GetAll().Where(y => y.Type == Constants.GrowGreatSettings.client_mother) on visit.VisitTypeId equals visitType.Id
-                select visit
-            ).FirstOrDefault();
-
-            //
-            // RULES:
-            //
-
-            // First visit - Show the 3 sections to complete: Healthcare, Nutrition, Pregnancy care
-            // If this is Visit 2, 3, 4 or "Other visit" after the first, show 4 sections: Healthcare, Nutrition, Pregnancy care, Danger signs
-
-            var names = "";
-            if (motherVisit.VisitType.Name == Constants.GrowGreatSettings.visit1)
-            {
-                names = Constants.GrowGreatSettings.antenatal_healthcare + " " + 
-                        Constants.GrowGreatSettings.antenatal_nutrition + " " + 
-                        Constants.GrowGreatSettings.antenatal_pregnancy_care;
-            } else
-            {
-                names = Constants.GrowGreatSettings.antenatal_healthcare + " " + 
-                        Constants.GrowGreatSettings.antenatal_nutrition + " " + 
-                        Constants.GrowGreatSettings.antenatal_pregnancy_care + " " + 
-                        Constants.GrowGreatSettings.antenatal_danger_sings;
-            }
-
-            return visitDataManager.GetAllAntenatalVisits(_visitId, Constants.GrowGreatSettings.visit_antenatal_id, localeId, names);
-        }
-
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public int GetAntenatalProgressDataForMother(
             [Service] IHttpContextAccessor contextAccessor,
             [Service] VisitDataManager visitDataManager,
