@@ -75,7 +75,7 @@ import { WalkthroughTutorial } from '@/pages/classroom/attendance/components/att
 import { SubmitIncomeStatementsDescription } from '@/pages/business/money/submit-income-statements/components/submit-income-statement-description/submit-income-statement-description';
 import { SubmitIncomeStatementsList } from '@/pages/business/money/submit-income-statements/components/submit-income-statements-list/submit-income-statements-list';
 import { PreviousStatementsList } from '@/pages/business/money/submit-income-statements/components/previous-statements-list/previous-statements-list';
-import { MonthStatementsDetails } from '@/pages/business/money/submit-income-statements/components/submit-income-statements-list/components/month-statements-detail';
+import { MonthStatementsDetails } from '@/pages/business/money/submit-income-statements/components/submit-income-statements-list/components/month-statements-details';
 
 const PublicRoutes: React.FC = () => {
   return (
