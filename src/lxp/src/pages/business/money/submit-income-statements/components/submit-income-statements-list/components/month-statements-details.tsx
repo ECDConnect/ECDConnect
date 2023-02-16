@@ -5,6 +5,8 @@ import {
   Card,
   StackedList,
   BannerWrapper,
+  Dialog,
+  DialogPosition,
 } from '@ecdlink/ui';
 import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
@@ -24,6 +26,7 @@ import {
 import { MonthStatementsDetailsState } from './month-statements-details.types';
 import { getMonthName } from '@/utils/classroom/attendance/track-attendance-utils';
 import ExpensesStatementsService from '@/services/ExpensesStatementsService/ExpensesStatementsService';
+import { PreschoolsFeesChildList } from './preschool-fees-details/preschool-fees-child-list';
 
 export const MonthStatementsDetails: React.FC = () => {
   const userAuth = useSelector(authSelectors.getAuthUser);
@@ -37,8 +40,10 @@ export const MonthStatementsDetails: React.FC = () => {
   const { isOnline } = useOnlineStatus();
 
   const goBack = () => {
-    history.push(ROUTES.BUSINESS);
+    history.push(ROUTES.BUSINESS_PREVIOUS_STATEMENTS_LIST);
   };
+
+  const [showPreschoolDetails, setShowPreschoolDetails] = useState(false);
   // const income = useSelector(statementsSelectors.getIncome);
   // const expenses = useSelector(statementsSelectors.getExpenses);
   const [income, setIncome] = useState<IncomeStatementsDto[]>([]);
@@ -75,13 +80,21 @@ export const MonthStatementsDetails: React.FC = () => {
 
   const otherIncome = useSelector(statementsSelectors.getOtheryIncome);
 
-  const totalIncome = income?.reduce(function (prev: any, current: any) {
+  const totalIncome = submittedIncome?.reduce(function (
+    prev: any,
+    current: any
+  ) {
     return prev + +current.amount;
-  }, 0);
+  },
+  0);
 
-  const totalExpenses = expenses?.reduce(function (prev: any, current: any) {
+  const totalExpenses = submittedExpenses?.reduce(function (
+    prev: any,
+    current: any
+  ) {
     return prev + +current.amount;
-  }, 0);
+  },
+  0);
 
   const totalBalance = (totalIncome - totalExpenses)?.toFixed(2);
 
@@ -224,7 +237,7 @@ export const MonthStatementsDetails: React.FC = () => {
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       text: '1',
-      onActionClick: () => {},
+      onActionClick: () => setShowPreschoolDetails(true),
       classNames: 'bg-uiBg',
       subItem: `R ${incomesValueFunc(preschoolFees)}`,
       notRounded: true,
@@ -357,100 +370,108 @@ export const MonthStatementsDetails: React.FC = () => {
   ];
 
   return (
-    <BannerWrapper
-      showBackground={false}
-      size="medium"
-      renderBorder={true}
-      title={`View ${getMonthName(Number(statementMonth))} statement`}
-      color={'primary'}
-      onBack={goBack}
-      displayOffline={!isOnline}
-    >
-      <div className="flex flex-col justify-center p-4">
-        <Typography
-          className="truncate"
-          type="h2"
-          weight="bold"
-          color="textDark"
-          text={statementTitle}
+    <>
+      <BannerWrapper
+        showBackground={false}
+        size="medium"
+        renderBorder={true}
+        title={`View ${getMonthName(Number(statementMonth) - 1)} statement`}
+        color={'primary'}
+        onBack={goBack}
+        displayOffline={!isOnline}
+      >
+        <div className="flex flex-col justify-center p-4">
+          <Typography
+            className="truncate"
+            type="h2"
+            weight="bold"
+            color="textDark"
+            text={statementTitle}
+          />
+          <StackedList
+            className="mt-4 flex w-full flex-col"
+            type="MenuList"
+            listItems={incomeItems}
+          />
+          <Card
+            className="bg-successMain flex items-center justify-between p-4"
+            shadowSize={'md'}
+          >
+            <Typography
+              text={'Total income'}
+              type="body"
+              color={'white'}
+              className="w-8/12"
+            />
+            <Typography
+              text={`R ${String(numberWithSpaces(totalIncome?.toFixed(2)))}`}
+              color={'white'}
+              type="h4"
+              className="mr-12 w-4/12 text-right"
+            />
+          </Card>
+          <StackedList
+            className="mt-4 flex w-full flex-col"
+            type="MenuList"
+            listItems={expensesItems}
+          />
+          <Card
+            className="bg-tertiary flex items-center justify-between p-4"
+            shadowSize={'md'}
+          >
+            <Typography
+              text={'Total expenses'}
+              type="body"
+              color={'white'}
+              className="w-9/12"
+            />
+            <Typography
+              text={`R ${String(numberWithSpaces(totalExpenses?.toFixed(2)))}`}
+              color={'white'}
+              type="h4"
+              className="mr-12 w-4/12 text-right"
+            />
+          </Card>
+          <Card
+            className="bg-primaryAccent1 mt-4 flex items-center justify-around p-4"
+            borderRaduis={'xl'}
+            shadowSize={'md'}
+          >
+            <Typography
+              text={'Balance'}
+              type="h4"
+              color={'white'}
+              className="w-6/12"
+            />
+            <Typography
+              text={`R ${String(numberWithSpaces(String(totalBalance)))}`}
+              color={'white'}
+              type="h1"
+              className="w-8/12 text-right"
+            />
+          </Card>
+          <Button
+            shape="normal"
+            color="primary"
+            type="filled"
+            icon="DocumentDownloadIcon"
+            onClick={() => {}}
+            className="mt-6 rounded-2xl"
+          >
+            <Typography type="help" color="white" text="Download" />
+          </Button>
+        </div>
+      </BannerWrapper>
+      <Dialog
+        stretch={true}
+        visible={showPreschoolDetails}
+        position={DialogPosition.Full}
+      >
+        <PreschoolsFeesChildList
+          setShowPreschoolDetails={setShowPreschoolDetails}
+          preschoolFees={preschoolFees}
         />
-        <StackedList
-          className="mt-4 flex w-full flex-col"
-          type="MenuList"
-          listItems={incomeItems}
-        />
-        <Card
-          className="bg-successMain flex items-center justify-between p-4"
-          shadowSize={'md'}
-        >
-          <Typography
-            text={'Total income'}
-            type="body"
-            color={'white'}
-            className="w-8/12"
-          />
-          <Typography
-            text={`R ${String(numberWithSpaces(totalIncome.toFixed(2)))}`}
-            color={'white'}
-            type="h4"
-            className="mr-12 w-4/12 text-right"
-          />
-        </Card>
-        <StackedList
-          className="mt-4 flex w-full flex-col"
-          type="MenuList"
-          listItems={expensesItems}
-        />
-        <Card
-          className="bg-tertiary flex items-center justify-between p-4"
-          shadowSize={'md'}
-        >
-          <Typography
-            text={'Total expenses'}
-            type="body"
-            color={'white'}
-            className="w-9/12"
-          />
-          <Typography
-            text={`R ${String(numberWithSpaces(totalExpenses.toFixed(2)))}`}
-            color={'white'}
-            type="h4"
-            className="mr-12 w-4/12 text-right"
-          />
-        </Card>
-        <Card
-          className="bg-primaryAccent1 mt-4 flex items-center justify-around p-4"
-          borderRaduis={'xl'}
-          shadowSize={'md'}
-        >
-          <Typography
-            text={'Balance'}
-            type="h4"
-            color={'white'}
-            className="w-6/12"
-          />
-          <Typography
-            text={
-              Number(totalBalance) > 0
-                ? `+ R ${String(numberWithSpaces(String(totalBalance)))}`
-                : `- R ${String(numberWithSpaces(String(totalBalance)))}`
-            }
-            color={'white'}
-            type="h1"
-            className="w-8/12 text-right"
-          />
-        </Card>
-        <Button
-          shape="normal"
-          color="primary"
-          type="filled"
-          icon="DocumentDownloadIcon"
-          onClick={() => {}}
-          className="mt-6 rounded-2xl"
-        >
-          <Typography type="help" color="white" text="Download" />
-        </Button>
-      </div>
-    </BannerWrapper>
+      </Dialog>
+    </>
   );
 };
