@@ -28,6 +28,7 @@ import {
   isNumber,
   moneyInputFormat,
 } from '@/utils/statements/statements-utils';
+import { getDate, lastDayOfMonth, startOfMonth } from 'date-fns';
 
 export const OtherExpense: React.FC<AddIncomeState> = ({ setType }) => {
   const userAuth = useSelector(authSelectors.getAuthUser);
@@ -66,6 +67,16 @@ export const OtherExpense: React.FC<AddIncomeState> = ({ setType }) => {
   const expensesTypeValue = expensesTypes.find(
     (item) => item.description === viewTitle
   );
+
+  const today = new Date();
+  const todayDateNumber = getDate(today);
+  const firstDateOfMonth = startOfMonth(today);
+  const firstDateOfPreviousMonth = new Date(
+    today.getFullYear(),
+    today.getMonth() - 1,
+    1
+  );
+  const lastDateOfMonth = lastDayOfMonth(today);
 
   const setPhotoUrl = (imageUrl: string) => {
     setRentValue('expenseInvoice', imageUrl);
@@ -118,6 +129,10 @@ export const OtherExpense: React.FC<AddIncomeState> = ({ setType }) => {
             setRentValue('date', date ? date.toISOString() : '');
           }}
           dateFormat="EEE, dd MMM yyyy"
+          minDate={
+            todayDateNumber <= 8 ? firstDateOfPreviousMonth! : firstDateOfMonth!
+          }
+          maxDate={lastDateOfMonth}
         />
         <FormInput<ExpensesModel>
           label={'Write a short description of the expense'}

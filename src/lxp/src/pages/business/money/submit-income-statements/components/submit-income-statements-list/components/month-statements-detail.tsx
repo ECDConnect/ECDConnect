@@ -11,7 +11,7 @@ import {
 } from '@ecdlink/ui';
 import format from 'date-fns/format';
 import React, { useEffect, useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useSelector } from 'react-redux';
 import { statementsSelectors } from '@/store/statements';
@@ -26,11 +26,20 @@ import {
   incomesValueFunc,
   numberWithSpaces,
 } from '@/utils/statements/statements-utils';
+import { MonthStatmentsDetailsState } from './month-satetements-details.types';
+import { getMonthName } from '@/utils/classroom/attendance/track-attendance-utils';
+import { getBalanceSheet } from '@/store/statements/statements.selectors';
 
-export const SubmitIncomeStatementsList: React.FC = () => {
+export const MonthStatementsDetails: React.FC = () => {
   const userAuth = useSelector(authSelectors.getAuthUser);
+  const balanceSheet = useSelector(statementsSelectors.getBalanceSheet);
   const history = useHistory();
-  const date = format(new Date(), 'EEEE, d LLLL');
+  const location = useLocation<MonthStatmentsDetailsState>();
+  const statementMonth = location?.state?.month;
+  const statementYear = location?.state?.year;
+  const statementTitle = `${getMonthName(
+    Number(statementMonth) - 1
+  )} ${statementYear}`;
   const { isOnline } = useOnlineStatus();
   const [confimSubmitIncomeValues, setConfimSubmitIncomeValues] =
     useState(false);
@@ -40,7 +49,6 @@ export const SubmitIncomeStatementsList: React.FC = () => {
   };
   const income = useSelector(statementsSelectors.getIncome);
   const expenses = useSelector(statementsSelectors.getExpenses);
-
   const preschoolIncome = useSelector(
     statementsSelectors.getPreschoolFeeIncome
   );
@@ -351,8 +359,9 @@ export const SubmitIncomeStatementsList: React.FC = () => {
       showBackground={false}
       size="medium"
       renderBorder={true}
-      title={'Submit income statement'}
-      subTitle={date}
+      title={`View ${getMonthName(
+        Number(balanceSheet?.[0]?.month) - 1
+      )} statement`}
       color={'primary'}
       onBack={goBack}
       displayOffline={!isOnline}
@@ -363,7 +372,7 @@ export const SubmitIncomeStatementsList: React.FC = () => {
           type="h2"
           weight="bold"
           color="textDark"
-          text={format(new Date(), 'LLLL yyyy')}
+          text={statementTitle}
         />
         <StackedList
           className="mt-4 flex w-full flex-col"
@@ -371,7 +380,7 @@ export const SubmitIncomeStatementsList: React.FC = () => {
           listItems={incomeItems}
         />
         <Card
-          className="bg-secondary flex items-center justify-between p-4"
+          className="bg-successMain flex items-center justify-between p-4"
           shadowSize={'md'}
         >
           <Typography
@@ -393,7 +402,7 @@ export const SubmitIncomeStatementsList: React.FC = () => {
           listItems={expensesItems}
         />
         <Card
-          className="bg-secondary flex items-center justify-between p-4"
+          className="bg-tertiary flex items-center justify-between p-4"
           shadowSize={'md'}
         >
           <Typography
@@ -421,7 +430,9 @@ export const SubmitIncomeStatementsList: React.FC = () => {
             className="w-6/12"
           />
           <Typography
-            text={`R ${String(totalBalance)}`}
+            text={`R ${String(
+              numberWithSpaces(String(balanceSheet?.[0]?.balance!))
+            )}`}
             color={'white'}
             type="h1"
             className="w-8/12 text-right"

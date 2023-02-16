@@ -2,27 +2,22 @@ import ROUTES from '@/routes/routes';
 import { statementsSelectors } from '@/store/statements';
 import { numberWithSpaces } from '@/utils/statements/statements-utils';
 import { Typography, StatusChip, Button, Card, FADButton } from '@ecdlink/ui';
-import { differenceInDays, format } from 'date-fns';
-import React, { useState } from 'react';
+import { differenceInDays, format, getMonth, setDate } from 'date-fns';
+import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { getMonthName } from '@utils/classroom/attendance/track-attendance-utils';
-import { endOfMonth } from 'date-fns/esm';
 
 export const SubmitIncomeStatements: React.FC = () => {
   const history = useHistory();
-  const income = useSelector(statementsSelectors.getIncome);
-  const expenses = useSelector(statementsSelectors.getExpenses);
   const balanceSheet = useSelector(statementsSelectors.getBalanceSheet);
-
-  const monthName =
-    balanceSheet?.length! > 0
-      ? getMonthName(Number(balanceSheet?.[0]?.month) - 1).substring(0, 3)
-      : '';
+  const [disableSubmit, setDisableSubmit] = useState(false);
 
   const monthNames = balanceSheet?.map((item) => {
     return getMonthName(item?.month! - 1).substring(0, 3);
   });
+
+  const monthDateNumber = getMonth(new Date()) + 1;
 
   const previousMonthRecord =
     monthNames?.length! > 1 && balanceSheet?.length! > 1
@@ -66,26 +61,27 @@ export const SubmitIncomeStatements: React.FC = () => {
     if (value < 0) return `- R ${numberWithSpaces(String(value.toFixed(2)))}`;
   };
 
-  const totalIncome = income?.reduce(function (prev: any, current: any) {
-    return prev + +current.amount;
-  }, 0);
+  const totalSubmittedBalance = balanceSheet?.[0]?.balance;
 
-  const totalExpenses = expenses?.reduce(function (prev: any, current: any) {
-    return prev + +current.amount;
-  }, 0);
+  const submitDateDaysCount = differenceInDays(
+    setDate(new Date(), 25),
+    new Date()
+  );
 
-  const totalBalance = (totalIncome - totalExpenses).toFixed(2);
-
-  const lastDayOfMonth = endOfMonth(new Date());
-
-  const submitDateDaysCount = differenceInDays(lastDayOfMonth, new Date());
+  useEffect(() => {
+    if (balanceSheet?.filter((e) => e.month === monthDateNumber).length! > 0) {
+      setDisableSubmit(true);
+    }
+  }, [balanceSheet, monthDateNumber]);
 
   return (
     <>
       <div className="flex flex-col justify-center p-4">
         <div className="flex items-center">
           <StatusChip
-            backgroundColour="successMain"
+            backgroundColour={
+              submitDateDaysCount > 8 ? 'successMain' : 'alertMain'
+            }
             borderColour="successMain"
             text={`${submitDateDaysCount} days`}
             textColour={'white'}
@@ -108,6 +104,7 @@ export const SubmitIncomeStatements: React.FC = () => {
             history.push(ROUTES.BUSINESS_SUBMIT_INCOME_STATEMENTS_LIST)
           }
           className="mt-6 rounded-2xl"
+          disabled={disableSubmit}
         >
           <Typography
             type="help"
@@ -127,7 +124,9 @@ export const SubmitIncomeStatements: React.FC = () => {
             className="w-6/12"
           />
           <Typography
-            text={`R ${String(numberWithSpaces(totalBalance))}`}
+            text={`R ${String(
+              numberWithSpaces(String(totalSubmittedBalance))
+            )}`}
             color={'white'}
             type="h1"
             className="w-8/12 text-right"
@@ -241,7 +240,7 @@ export const SubmitIncomeStatements: React.FC = () => {
           color="primary"
           type="filled"
           icon="DocumentSearchIcon"
-          onClick={() => {}}
+          onClick={() => history.push(ROUTES.BUSINESS_PREVIOUS_STATEMENTS_LIST)}
           className="mt-6 rounded-2xl"
         >
           <Typography type="help" color="white" text="See all statements" />
