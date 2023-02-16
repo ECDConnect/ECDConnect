@@ -29,35 +29,6 @@ namespace EcdLink.Api.CoreApi
             public const string visit3 = "visit_3";
             public const string visit4 = "visit_4";
 
-            // The following constants are all cms record constants
-            public const string antenatal_healthcare = "Healthcare";
-            public const string antenatal_nutrition = "Nutrition";
-            public const string antenatal_pregnancy_care = "Pregnancy care";
-            public const string antenatal_danger_sings = "Danger signs";
-
-            public const string visit_id = "id";
-            public const string visit_name = "name";
-            public const string visit_description = "description";
-            public const string visit_description_icon = "descriptionIcon";
-            public const string visit_icon = "icon";
-            public const string visit_image = "image";
-            public const string visit_sequence = "sequence";
-            public const string visit_primary_color = "primaryColor";
-            public const string visit_secondary_color = "secondaryColor";
-            public const string visit_type = "type";
-            public const string visit_heading = "heading";
-            public const string visit_subheading = "subheading";
-            public const string visit_heading_icon = "headingIcon";
-            public const string visit_heading_color = "headingColor";
-            public const string visit_video = "video";
-
-            public const string visit_linkedQuestionnaires = "linkedQuestionnaires";
-            public const string visit_linkedQuestions = "linkedQuestions";
-            public const string visit_linkedAnswerOptions = "linkedAnswerOptions";
-
-            public const string visit_antenatal_id = "19";
-            public const string visit_child_id = "14";
-
             public const string visit_data_client_dashboard = "ClientDashboard";
             public const string visit_data_client_summary = "ClientSummary";
             public const string visit_data_client_referral = "Referral";

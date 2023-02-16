@@ -15,11 +15,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
     {
         
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
-        public Boolean AddAntenatalVisitData([Service] VisitDataManager visitDataManager, VisitDataModel input, string localeId, string motherId)
+        public Boolean AddAntenatalVisitData([Service] VisitDataManager visitDataManager, VisitDataModel input, string motherId)
         {
             // TODO: loop through visit's data and add every question and the answer
 
-            visitDataManager.AddAntenatalVisitData(input, localeId, motherId);
+            visitDataManager.AddAntenatalVisitData(input, motherId);
 
             return true;
         }
