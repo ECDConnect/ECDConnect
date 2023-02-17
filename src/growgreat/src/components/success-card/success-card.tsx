@@ -6,7 +6,9 @@ export const SuccessCard: React.FC<SuccessCardProps> = ({
   icon,
   customIcon,
   text,
+  textColour,
   subText,
+  subTextColours,
   color,
   onClose,
   className,
@@ -16,13 +18,15 @@ export const SuccessCard: React.FC<SuccessCardProps> = ({
   return (
     <div className={className}>
       <div
-        className={classNames(styles.wrapper)}
+        className={classNames(
+          styles.wrapper,
+          color ? `bg-${color}` : 'bg-successMain'
+        )}
         style={
           color
-            ? { backgroundColor: color }
+            ? { backgroundColor: 'successBg' }
             : {
                 backgroundImage: `url(${theme?.images.graphicOverlayUrl})`,
-                backgroundColor: 'successMain',
                 backgroundRepeat: 'no-repeat',
                 backgroundSize: 'cover',
               }
@@ -41,7 +45,7 @@ export const SuccessCard: React.FC<SuccessCardProps> = ({
                 fontSize={'16'}
                 weight="bold"
                 text={text}
-                color={'white'}
+                color={textColour || 'white'}
               />
               {!!subText && (
                 <div className={'mt-2 flex flex-row'}>
@@ -50,7 +54,7 @@ export const SuccessCard: React.FC<SuccessCardProps> = ({
                     fontSize={'16'}
                     weight={'skinny'}
                     text={subText}
-                    color={'white'}
+                    color={subTextColours || 'white'}
                   />
                 </div>
               )}

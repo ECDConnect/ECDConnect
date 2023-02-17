@@ -2,6 +2,7 @@ export const contentWrapper =
   'rounded-10 bg-uiBg flex flex-row items-center px-4 py-4 sm:px-6 justify-between';
 export const contentWrapperChildList =
   'rounded-10 bg-uiBg flex flex-row items-center px-4 py-4 sm:px-6 justify-between gap-4';
+('rounded-10 flex flex-row items-center px-4 py-4 sm:px-6 justify-between');
 export const menuItemIconContainer =
   'flex-shrink-0 h-12  w-12 rounded-full flex justify-center items-center ';
 export const menuItemIconContainerDefault = 'bg-primary text-white';

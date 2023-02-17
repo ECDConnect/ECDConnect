@@ -39,3 +39,9 @@ export const ellipsisDescription = (text: string, limit: number): string => {
   const returnText = text.length > limit ? text.slice(0, limit) + '...' : text;
   return returnText;
 };
+
+export const replaceBraces = (sentenceWithBraces: string, value: string) => {
+  return sentenceWithBraces.replace(/\{(\w+)\}/g, () => {
+    return value;
+  });
+};

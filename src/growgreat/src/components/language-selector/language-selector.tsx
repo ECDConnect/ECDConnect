@@ -37,8 +37,11 @@ export const LanguageSelector = ({
     <div className={styles.localeDropDownWrapper}>
       <label className={styles.languageLabel}>{'Change Language:'}</label>
       <Dropdown
+        fillColor="secondary"
+        textColor="white"
         fullWidth={true}
-        fillType="clear"
+        fillType="filled"
+        labelColor="white"
         selectedValue={locale}
         list={
           (languages &&
