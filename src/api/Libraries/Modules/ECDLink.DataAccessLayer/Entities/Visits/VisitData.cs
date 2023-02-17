@@ -12,14 +12,12 @@ namespace ECDLink.DataAccessLayer.Entities.Visits
     public class VisitData<TKey> : EntityBase<TKey>, VisitJoin<TKey>
          where TKey : IEquatable<TKey>
     {
-
         public TKey VisitId { get; set; }
         [ForeignKey(nameof(VisitId))]
         public virtual Visit Visit { get; set; }
-        public int CmsVisitNameContentId { get; set; }
-        public int CmsQuestionnaireContentId { get; set; }
-        public int CmsQuestionContentId { get; set; }
-        public int CmsAnswerContentId { get; set; }
+        public string VisitName { get; set; }
+        public string VisitSection { get; set; }
+        public string Question { get; set; }
         public string QuestionAnswer { get; set; }
     }
 

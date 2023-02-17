@@ -24,6 +24,7 @@ namespace ECDLink.DataAccessLayer.Entities.Visits
         public Guid? InfantId { get; set; }
         public virtual Infant Infant { get; set; }
         public string Risk { get; set; }
+        public string Comment { get; set; }
     }
 
     public interface VisitJoin<TKey>
