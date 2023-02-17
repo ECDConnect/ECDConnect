@@ -79,13 +79,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             return principal;
         }
 
-        public List<Practitioner> GetAllPractitionersForPrincipal([Service] PersonnelManager personnelManager,
+        public List<Practitioner> GetAllPractitionersForPrincipal([Service] PersonnelService personnelManager,
         string userId)
         {
             return personnelManager.GetAllPractitionersForPrincipal(userId);
         }
 
-        public List<Child> GetAllChildrenForPrincipal([Service] PersonnelManager personnelManager,
+        public List<Child> GetAllChildrenForPrincipal([Service] PersonnelService personnelManager,
         string userId)
         {
             if (userId != null)

@@ -61,7 +61,7 @@ string classroomId)
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public ChildCreatedByDetail GetChildCreatedByDetail([Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
-            [Service] PersonnelManager personnelManager,
+            [Service] PersonnelService personnelManager,
         string firstName, string surname, string practitionerId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
