@@ -6,7 +6,9 @@ import { AlertProps } from './alert.types';
 export const Alert: React.FC<AlertProps> = ({
   type,
   title,
+  titleColor,
   message,
+  customIcon,
   list,
   className,
   variant = 'flat',
@@ -24,7 +26,7 @@ export const Alert: React.FC<AlertProps> = ({
       )}
     >
       <div className={styles.innerWrapper}>
-        <div className={styles.iconWrapper}>{icon}</div>
+        {customIcon || <div className={styles.iconWrapper}>{icon}</div>}
         <div className={styles.contentWrapper}>
           <div className={styles.messageWrapper}>
             {title && (
@@ -33,7 +35,7 @@ export const Alert: React.FC<AlertProps> = ({
                 text={title}
                 weight="normal"
                 className={styles.title}
-                color={styles.alertTextColor(type)}
+                color={titleColor || styles.alertTextColor(type)}
               />
             )}
             {message && (
