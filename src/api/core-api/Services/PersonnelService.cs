@@ -12,13 +12,13 @@ using Microsoft.AspNetCore.Http;
 
 namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 {
-    public class PersonnelManager
+    public class PersonnelService
     {
         private IHttpContextAccessor _contextAccessor;
         private IGenericRepositoryFactory _repoFactory;
         private string _applicationUserId;
 
-        public PersonnelManager(
+        public PersonnelService(
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory)
         {

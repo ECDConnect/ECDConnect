@@ -109,21 +109,21 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         }
 
         public List<Child> GetAllChildrenForPractitioner(
-           [Service] PersonnelManager practiManager,
+           [Service] PersonnelService practiManager,
             string userId)
         {
             return practiManager.GetAllChildrenForPractitioner(userId);
         }
 
         public List<Classroom> GetAllClassroomsForPractitioner([Service] IHttpContextAccessor contextAccessor,
-           [Service] PersonnelManager practiManager,
+           [Service] PersonnelService practiManager,
             string userId)
         {
             return practiManager.GetAllClassroomsForPractitioner(userId);
         }
 
         public List<ClassroomGroup> GetAllClassroomGroupsForPractitioner([Service] IHttpContextAccessor contextAccessor,
-            [Service] PersonnelManager practiManager,
+            [Service] PersonnelService practiManager,
             string userId)
         {
             return practiManager.GetAllClassroomGroupsForPractitioner(userId);
@@ -165,13 +165,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             return await fileService.FieldsToExcelTemplate(fieldList, fieldDefinitionList, languageList, reportName);
         }
 
-        public PrincipalClassroom GetClassroomDetailsForPractitioner([Service] PersonnelManager practiManager,
+        public PrincipalClassroom GetClassroomDetailsForPractitioner([Service] PersonnelService practiManager,
             string userId)
         {
             return practiManager.GetClassroomDetailsForPractitioner(userId);
         }
 
-        public List<ClassroomGroup> GetClassroomGroupClassroomsForPractitioner([Service] PersonnelManager practiManager,
+        public List<ClassroomGroup> GetClassroomGroupClassroomsForPractitioner([Service] PersonnelService practiManager,
             string userId)
         {
             return practiManager.GetAllClassroomGroupsForPractitioner(userId);
@@ -179,7 +179,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
         public List<PractitionerClassroomName> GetClassroomNamesForPractitioner([Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
-            [Service] PersonnelManager practiManager,
+            [Service] PersonnelService practiManager,
             string userId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
@@ -221,7 +221,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             [Service] UserManager<ApplicationUser> userManager,
             [Service] RoleManager<IdentityRole> roleManager,
             IGenericRepositoryFactory repoFactory,
-            [Service] PersonnelManager practiManager,
+            [Service] PersonnelService practiManager,
             string userId)
         {
             string role = new RoleQueryTypeExtension().GetRoleForUser(contextAccessor, userManager, repoFactory, roleManager, userId);
