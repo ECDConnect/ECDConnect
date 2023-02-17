@@ -15,7 +15,7 @@ export interface CheckboxProps<T extends FieldValues>
   disabled?: boolean;
   visible?: boolean;
   register?: UseFormRegister<T>;
-  value?: number;
+  value?: number | string;
 }
 
 export const Checkbox = <T extends FieldValues>({

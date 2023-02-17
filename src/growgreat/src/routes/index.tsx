@@ -30,6 +30,8 @@ import { PastVisits } from '@/pages/mom/pregnant-profile/visits/past-visits';
 import { AntenatalVisit } from '@/pages/mom/pregnant-profile/visits/antenatal-visit';
 import PointsSummary from '@/pages/client/highlights-tab/points-summary';
 import UpcomingVisit from '@/pages/client/highlights-tab/upcoming-visit';
+import { InfantProfile } from '@/pages/infant/infant-profile';
+import { ActivityList } from '@/pages/infant/infant-profile/progress-tab/activity-list';
 
 function PublicRoutes() {
   return (
@@ -122,6 +124,16 @@ function AuthRoutes() {
         exact
         path={ROUTES.CLIENTS.MOM_PROFILE.VISITS.ANTENATAL_VISIT}
         component={AntenatalVisit}
+      />
+      <Route
+        exact
+        path={`${ROUTES.CLIENTS.INFANT_PROFILE.ROOT}:id`}
+        component={InfantProfile}
+      />
+      <Route
+        exact
+        path={ROUTES.CLIENTS.INFANT_PROFILE.PROGRESS.ACTIVITIES_FORM}
+        component={ActivityList}
       />
       <Route
         exact
