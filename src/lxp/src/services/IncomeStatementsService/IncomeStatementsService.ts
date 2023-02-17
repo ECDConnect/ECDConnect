@@ -252,11 +252,10 @@ class IncomeStatementsService {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-      mutation submitStatement($id: String!,$input: StatementsSubmitInput) {
-          submitStatement(id: $id, input: $input) {
-                id    __typename  
-              }
-            }
+      mutation submitStatement($id: String!,$input: StatementsSubmitInput) {         submitStatement(id: $id, input: $input) {
+
+                    } 
+                            }
       `,
       variables: {
         id,
@@ -288,8 +287,10 @@ class IncomeStatementsService {
             balance
             month
             year
+            isAutoSubmitted
+            submittedDate
         }
-    }
+      }
           `,
       variables: {
         userId,

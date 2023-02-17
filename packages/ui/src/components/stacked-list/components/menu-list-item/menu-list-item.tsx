@@ -15,7 +15,13 @@ export const MenuListItem: React.FC<MenuListItemProps> = ({ item }) => {
       className={styles.menulistItemContainer}
       onClick={() => item.onActionClick && item.onActionClick()}
     >
-      <div className={styles.contentWrapper}>
+      <div
+        className={
+          item?.childList
+            ? styles.contentWrapperChildList
+            : styles.contentWrapper
+        }
+      >
         <div className={stackedListStyles.textRowsWrapper}>
           {(item.menuIcon || item.menuIconUrl) &&
             (item.showIcon ? (
