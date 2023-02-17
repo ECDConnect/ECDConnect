@@ -1,16 +1,15 @@
 import { Typography, FADButton } from '@ecdlink/ui';
 import { ReactComponent as MoneyIcon } from '@/assets/moneyIcon.svg';
 import * as styles from './money.styles';
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import ROUTES from '@/routes/routes';
 import { useHistory } from 'react-router-dom';
 import { SubmitIncomeStatements } from './submit-income-statements/submit-income-statements';
-import ExpensesStatementsService from '@/services/ExpensesStatementsService/ExpensesStatementsService';
 import { useSelector } from 'react-redux';
 import { authSelectors } from '@store/auth';
 import { useAppDispatch } from '@/store';
 import { statementsSelectors, statementsThunkActions } from '@store/statements';
-import { IncomeStatementsService } from '@/services/IncomeStatementsService';
+import { getMonth, getYear } from 'date-fns';
 
 export const Money = () => {
   const history = useHistory();
@@ -19,22 +18,27 @@ export const Money = () => {
   const appDispatch = useAppDispatch();
   const income = useSelector(statementsSelectors.getIncome);
   const expense = useSelector(statementsSelectors.getExpenses);
+  const year = getYear(new Date());
+  const month = getMonth(new Date()) + 1;
 
   const updateStatements = async () => {
     if (userAuth?.auth_token) {
-      await appDispatch(statementsThunkActions.getAllExpenses(userAuth?.id));
       await appDispatch(
-        statementsThunkActions.getAllIncome({ userId: userAuth?.id })
+        statementsThunkActions.getAllExpenses({ month: month, year: year })
+      );
+      await appDispatch(
+        statementsThunkActions.getAllIncome({ month: month, year: year })
       );
       await appDispatch(
         statementsThunkActions.getAllStatementsBalanceSheet({
-          userId: userAuth?.id,
+          // userId: userAuth?.id!,
+          year: year,
         })
       );
     }
   };
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     updateStatements();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

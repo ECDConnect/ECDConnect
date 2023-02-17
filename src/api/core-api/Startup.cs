@@ -2,7 +2,6 @@ using EcdLink.Api.CoreApi.Documents;
 using EcdLink.Api.CoreApi.GraphApi.AccessValidators;
 using EcdLink.Api.CoreApi.GraphApi.Interceptors;
 using EcdLink.Api.CoreApi.Managers.EventRecords;
-using EcdLink.Api.CoreApi.Managers.IncomeExpense;
 using EcdLink.Api.CoreApi.Managers.Notifications;
 using EcdLink.Api.CoreApi.Managers.Users.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
@@ -132,7 +131,7 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<VisitDataStatusManager>();
             services.AddTransient<PersonnelManager>();
             services.AddTransient<ChildManager>();
-            services.AddTransient<IncomeExpenseManager>();
+            services.AddTransient<IncomeExpenseService>();
             services.AddTransient<IClaimsManager, ClaimsManager>();
             services.AddTransient<IAuthorizationManager, AuthorizationManager>();
             services.AddTransient<IUserInterceptHandler, UserInterceptHandler>();
