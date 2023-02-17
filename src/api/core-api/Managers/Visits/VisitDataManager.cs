@@ -30,7 +30,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             _contentManagementRepository = contentManagementRepository;
         }
 
-        public VisitData AddAntenatalVisitData(VisitDataModel input, string localeId, string motherId)
+        public VisitData AddAntenatalVisitData(VisitDataModel input, string motherId)
         {
             var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
             var visitDataRepo = _repoFactory.CreateGenericRepository<VisitData>(userContext: applicationUserId);
@@ -57,7 +57,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
 
 
-                ManageVisitDataStatus(visitInputData, applicationUserId, localeId, visitRecord.VisitType.Name, motherId);
+                ManageVisitDataStatus(visitInputData, applicationUserId, visitRecord.VisitType.Name, motherId);
             }
 
             return visitDataRepo.Insert(visitInputData);
@@ -86,9 +86,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
              };
          }
 
-        private Boolean ManageVisitDataStatus(VisitData input, string applicationUserId, string localeId, string visitName, string motherId)
+        private Boolean ManageVisitDataStatus(VisitData input, string applicationUserId, string visitName, string motherId)
         {
-            var _localeId = new Guid(localeId);
             var visitDataRepo = _repoFactory.CreateGenericRepository<VisitData>(userContext: applicationUserId);
             var visitDataStatusRepo = _repoFactory.CreateGenericRepository<VisitDataStatus>(userContext: applicationUserId);
 
@@ -100,9 +99,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             // ClientSummaryDownload -> G9
             // Referral
             // Progress
+            CMSQuestion question = new CMSQuestion();
 
-            CMSQuestion question = (CMSQuestion)_contentManagementRepository.GetById(input.CmsQuestionContentId, _localeId);
-            
             var comment = "";
             var color = "";
             var type = "";
@@ -369,7 +367,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             return repository.Insert(input);
         }
 
-        public List<CMSVisit> GetAllAntenatalVisits(Guid visitId, string contentTypeId, string localeId, string names)
+        /*public List<CMSVisit> GetAllAntenatalVisits(Guid visitId, string contentTypeId, string localeId, string names)
         {
             var _contentTypeId = Int32.Parse(contentTypeId);
             var _localeId = new Guid(localeId);
@@ -612,7 +610,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 items.Add(item);
             }
             return items;
-        }
+        }*/
     }
 }
 

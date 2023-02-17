@@ -13,12 +13,12 @@ import {
 
 export const getAllExpenses = createAsyncThunk<
   any[],
-  {},
+  { month: Number; year: Number },
   ThunkApiType<RootState>
 >(
   'getAllExpenses',
   // eslint-disable-next-line no-empty-pattern
-  async ({}, { getState, rejectWithValue }) => {
+  async ({ month, year }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
     } = getState();
@@ -29,7 +29,7 @@ export const getAllExpenses = createAsyncThunk<
       if (userAuth?.auth_token) {
         expenses = await new ExpensesStatementsService(
           userAuth?.auth_token
-        ).allStatementsExpenses(userAuth?.id);
+        ).allStatementsExpenses(userAuth?.id, month, year);
       } else {
         return rejectWithValue('no access token, profile check required');
       }
@@ -80,12 +80,12 @@ export const getAllExpensesTypes = createAsyncThunk<
 
 export const getAllIncome = createAsyncThunk<
   any[],
-  {},
+  { month: Number; year: Number },
   ThunkApiType<RootState>
 >(
   'getAllIncome',
   // eslint-disable-next-line no-empty-pattern
-  async ({}, { getState, rejectWithValue }) => {
+  async ({ month, year }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
     } = getState();
@@ -96,7 +96,7 @@ export const getAllIncome = createAsyncThunk<
       if (userAuth?.auth_token) {
         income = await new IncomeStatementsService(
           userAuth?.auth_token
-        ).allStatementsIncome(userAuth?.id);
+        ).allStatementsIncome(userAuth?.id, month, year);
       } else {
         return rejectWithValue('no access token, profile check required');
       }
@@ -114,12 +114,12 @@ export const getAllIncome = createAsyncThunk<
 
 export const getAllStatementsBalanceSheet = createAsyncThunk<
   any[],
-  {},
+  { year: Number },
   ThunkApiType<RootState>
 >(
   'getAllStatementsBalanceSheet',
   // eslint-disable-next-line no-empty-pattern
-  async ({}, { getState, rejectWithValue }) => {
+  async ({ year }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
     } = getState();
@@ -130,7 +130,7 @@ export const getAllStatementsBalanceSheet = createAsyncThunk<
       if (userAuth?.auth_token) {
         statementsBalanceSheet = await new IncomeStatementsService(
           userAuth?.auth_token
-        ).getAllStatementsBalanceSheet(userAuth?.id);
+        ).getAllStatementsBalanceSheet(userAuth?.id, year);
       } else {
         return rejectWithValue('no access token, profile check required');
       }

@@ -146,7 +146,7 @@ export const StartupSupport: React.FC<AddIncomeState> = ({ setType }) => {
           textInputType={'moneyInput'}
           prefixIcon={!!startupValue}
         />
-     
+
         <Button
           type="filled"
           color="primary"
