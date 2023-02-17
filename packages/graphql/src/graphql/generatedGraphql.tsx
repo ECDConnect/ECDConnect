@@ -2571,7 +2571,7 @@ export type Mutation = {
   sendCoachInviteToApplication: Scalars['Boolean'];
   sendInviteToApplication: Scalars['Boolean'];
   sendPractitionerInviteToApplication: Scalars['Boolean'];
-  submitStatement?: Maybe<Array<Maybe<StatementsIncomeStatement>>>;
+  submitStatement: Scalars['Boolean'];
   trackAttendance: Scalars['Boolean'];
   updateAbsentees?: Maybe<Absentees>;
   updateActivity?: Maybe<Activity>;
@@ -6878,7 +6878,9 @@ export type StatementsBalanceSheet = {
   balance: Scalars['Float'];
   expenseTotal: Scalars['Float'];
   incomeTotal: Scalars['Float'];
+  isAutoSubmitted: Scalars['Boolean'];
   month?: Maybe<Scalars['Int']>;
+  submittedDate: Scalars['DateTime'];
   userId?: Maybe<Scalars['String']>;
   year: Scalars['Int'];
 };
@@ -6948,7 +6950,7 @@ export type StatementsExpenseTypeInput = {
 export type StatementsExpenses = {
   __typename?: 'StatementsExpenses';
   amount: Scalars['Float'];
-  datePaid?: Maybe<Scalars['DateTime']>;
+  datePaid: Scalars['DateTime'];
   description?: Maybe<Scalars['String']>;
   expenseTypeId?: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
@@ -6966,7 +6968,7 @@ export type StatementsExpenses = {
 export type StatementsExpensesFilterInput = {
   amount?: InputMaybe<ComparableDoubleOperationFilterInput>;
   and?: InputMaybe<Array<StatementsExpensesFilterInput>>;
-  datePaid?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
+  datePaid?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   description?: InputMaybe<StringOperationFilterInput>;
   expenseTypeId?: InputMaybe<StringOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
@@ -6984,7 +6986,7 @@ export type StatementsExpensesFilterInput = {
 
 export type StatementsExpensesInput = {
   Amount: Scalars['Float'];
-  DatePaid?: InputMaybe<Scalars['DateTime']>;
+  DatePaid: Scalars['DateTime'];
   Description?: InputMaybe<Scalars['String']>;
   ExpenseTypeId?: InputMaybe<Scalars['String']>;
   Id?: InputMaybe<Scalars['UUID']>;
@@ -7035,7 +7037,7 @@ export type StatementsIncome = {
   childCoverAmount: Scalars['Float'];
   childUserId?: Maybe<Scalars['String']>;
   contributionTypeId?: Maybe<Scalars['String']>;
-  dateReceived?: Maybe<Scalars['DateTime']>;
+  dateReceived: Scalars['DateTime'];
   description?: Maybe<Scalars['String']>;
   feeTypeId?: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
@@ -7059,7 +7061,7 @@ export type StatementsIncomeFilterInput = {
   childCoverAmount?: InputMaybe<ComparableDoubleOperationFilterInput>;
   childUserId?: InputMaybe<StringOperationFilterInput>;
   contributionTypeId?: InputMaybe<StringOperationFilterInput>;
-  dateReceived?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
+  dateReceived?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   description?: InputMaybe<StringOperationFilterInput>;
   feeTypeId?: InputMaybe<StringOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
@@ -7083,7 +7085,7 @@ export type StatementsIncomeInput = {
   ChildCoverAmount: Scalars['Float'];
   ChildUserId?: InputMaybe<Scalars['String']>;
   ContributionTypeId?: InputMaybe<Scalars['String']>;
-  DateReceived?: InputMaybe<Scalars['DateTime']>;
+  DateReceived: Scalars['DateTime'];
   Description?: InputMaybe<Scalars['String']>;
   FeeTypeId?: InputMaybe<Scalars['String']>;
   Id?: InputMaybe<Scalars['UUID']>;
@@ -7100,6 +7102,7 @@ export type StatementsIncomeInput = {
 
 export type StatementsIncomeStatement = {
   __typename?: 'StatementsIncomeStatement';
+  annualSubmittedDate?: Maybe<Scalars['DateTime']>;
   autoSubmitted: Scalars['Boolean'];
   balance: Scalars['Float'];
   expenseTotal: Scalars['Float'];
@@ -7111,7 +7114,7 @@ export type StatementsIncomeStatement = {
   notes?: Maybe<Scalars['String']>;
   period?: Maybe<Scalars['String']>;
   submitted: Scalars['Boolean'];
-  submittedDate?: Maybe<Scalars['DateTime']>;
+  submittedDate: Scalars['DateTime'];
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
   userId?: Maybe<Scalars['String']>;
@@ -7120,6 +7123,7 @@ export type StatementsIncomeStatement = {
 
 export type StatementsIncomeStatementFilterInput = {
   and?: InputMaybe<Array<StatementsIncomeStatementFilterInput>>;
+  annualSubmittedDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   autoSubmitted?: InputMaybe<BooleanOperationFilterInput>;
   balance?: InputMaybe<ComparableDoubleOperationFilterInput>;
   expenseTotal?: InputMaybe<ComparableDoubleOperationFilterInput>;
@@ -7132,7 +7136,7 @@ export type StatementsIncomeStatementFilterInput = {
   or?: InputMaybe<Array<StatementsIncomeStatementFilterInput>>;
   period?: InputMaybe<StringOperationFilterInput>;
   submitted?: InputMaybe<BooleanOperationFilterInput>;
-  submittedDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
+  submittedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   userId?: InputMaybe<StringOperationFilterInput>;
@@ -7140,6 +7144,7 @@ export type StatementsIncomeStatementFilterInput = {
 };
 
 export type StatementsIncomeStatementInput = {
+  AnnualSubmittedDate?: InputMaybe<Scalars['DateTime']>;
   AutoSubmitted: Scalars['Boolean'];
   Balance: Scalars['Float'];
   ExpenseTotal: Scalars['Float'];
@@ -7150,7 +7155,7 @@ export type StatementsIncomeStatementInput = {
   Notes?: InputMaybe<Scalars['String']>;
   Period?: InputMaybe<Scalars['String']>;
   Submitted: Scalars['Boolean'];
-  SubmittedDate?: InputMaybe<Scalars['DateTime']>;
+  SubmittedDate: Scalars['DateTime'];
   UpdatedBy?: InputMaybe<Scalars['String']>;
   UserId?: InputMaybe<Scalars['String']>;
   Year: Scalars['Int'];
@@ -7268,7 +7273,7 @@ export type StatementsStartupSupportInput = {
 };
 
 export type StatementsSubmitInput = {
-  month?: InputMaybe<Scalars['Int']>;
+  month: Scalars['Int'];
   period?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
   year: Scalars['Int'];
