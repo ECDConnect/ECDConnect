@@ -5,7 +5,9 @@ export interface SuccessCardProps extends ComponentBaseProps {
   icon?: string;
   customIcon?: ReactElement;
   text: string;
+  textColour?: Colours;
   subText?: string;
+  subTextColours?: Colours;
   color?: Colours;
   onClose?: () => void;
 }
