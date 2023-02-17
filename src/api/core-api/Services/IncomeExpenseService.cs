@@ -41,11 +41,11 @@ namespace ECDLink.Core.Services
 
         public List<StatementsExpenses> GetAllStatementsExpenses(string userId, int year, int month)
         {
-            return  GetAllExpenseLines(userId, year, month);
+            return  GetAllExpenseLines(userId, year, month, true);
         }
         public List<StatementsIncome> GetAllStatementsIncome(string userId, int year, int month)
         {
-            return GetAllIncomeLines(userId, year, month);
+            return GetAllIncomeLines(userId, year, month, true);
         }
         public List<StatementsIncomeStatement> GetAllStatementsIncomeStatement(string userId, int year, int month)
         {
