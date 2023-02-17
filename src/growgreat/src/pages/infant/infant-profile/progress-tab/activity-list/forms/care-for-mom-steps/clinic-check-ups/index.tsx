@@ -1,4 +1,4 @@
-import { Alert, ButtonGroup, ButtonGroupTypes } from '@ecdlink/ui';
+import { Alert, ButtonGroup, ButtonGroupTypes, renderIcon } from '@ecdlink/ui';
 import { SuccessCard } from '@/components/success-card/success-card';
 import { ReactComponent as CelebrateIcon } from '@/assets/celebrateIcon.svg';
 import {
@@ -10,8 +10,7 @@ import Pregnant from '@/assets/pregnant.svg';
 import { DynamicFormProps } from '../../dynamic-form';
 import { useCallback, useMemo, useState } from 'react';
 import { HealthPromotion } from './health-promotion';
-
-const mock = 'Themba & Lethabo';
+import { replaceBraces } from '@ecdlink/core';
 
 export const ClinicCheckupStep = ({
   infant,
@@ -48,7 +47,12 @@ export const ClinicCheckupStep = ({
   );
 
   if (isTipPage) {
-    return <HealthPromotion onClose={() => setIsTip && setIsTip(false)} />;
+    return (
+      <HealthPromotion
+        clientName={infant?.caregiver?.firstName || ''}
+        onClose={() => setIsTip && setIsTip(false)}
+      />
+    );
   }
 
   return (
@@ -65,7 +69,9 @@ export const ClinicCheckupStep = ({
           onClick={() => setIsTip && setIsTip(true)}
         />
 
-        <Label text={question} />
+        <Label
+          text={replaceBraces(question, infant?.caregiver?.firstName || '')}
+        />
         <ButtonGroup<boolean>
           color="secondary"
           type={ButtonGroupTypes.Button}
@@ -83,7 +89,18 @@ export const ClinicCheckupStep = ({
           />
         )}
         {answer === false && (
-          <Alert type="error" message={`Refer ${mock} to the clinic`} />
+          <Alert
+            type="error"
+            title={`Refer ${infant?.user?.firstName} & ${infant?.caregiver?.firstName} to the clinic`}
+            customIcon={
+              <div className="rounded-full">
+                {renderIcon(
+                  'ExclamationCircleIcon',
+                  'text-errorMain w-10 h-10'
+                )}
+              </div>
+            }
+          />
         )}
       </div>
     </>

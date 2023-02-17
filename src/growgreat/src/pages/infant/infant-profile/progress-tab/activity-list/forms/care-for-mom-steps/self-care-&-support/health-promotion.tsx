@@ -15,7 +15,7 @@ export const HealthPromotion = ({
         backgroundColor="infoMain"
         icon="ChatIcon"
         title={`Discuss with ${clientName}`}
-        subTitle="Clinic check-ups"
+        subTitle="Self care & support"
       />
       <div className="bg-uiBg border-primary border-t px-4">
         <LanguageSelector selectLanguage={() => {}} />

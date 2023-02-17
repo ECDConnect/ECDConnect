@@ -2,20 +2,14 @@ import { Button } from '@ecdlink/ui';
 import { Header } from '@/pages/infant/infant-profile/components';
 import LanguageSelector from '@/components/language-selector/language-selector';
 
-export const HealthPromotion = ({
-  clientName,
-  onClose,
-}: {
-  clientName: string;
-  onClose: () => void;
-}) => {
+export const MoreInformation = ({ onClose }: { onClose: () => void }) => {
   return (
     <>
       <Header
         backgroundColor="infoMain"
-        icon="ChatIcon"
-        title={`Discuss with ${clientName}`}
-        subTitle="Clinic check-ups"
+        icon="InformationCircleIcon"
+        title="More information"
+        subTitle="Maternal distress"
       />
       <div className="bg-uiBg border-primary border-t px-4">
         <LanguageSelector selectLanguage={() => {}} />

@@ -1,0 +1,55 @@
+import { Alert } from '@ecdlink/ui';
+import { ReactComponent as Polly } from '@/assets/momImageSvg.svg';
+import { Header, TipCard } from '@/pages/infant/infant-profile/components';
+import Pregnant from '@/assets/pregnant.svg';
+import { DynamicFormProps } from '../../dynamic-form';
+import { useEffect } from 'react';
+import { HealthPromotion } from './health-promotion';
+
+export const SelfCareStep = ({
+  infant,
+  isTipPage,
+  setIsTip,
+  setEnableButton,
+}: DynamicFormProps) => {
+  useEffect(() => {
+    setEnableButton && setEnableButton(true);
+  }, [setEnableButton]);
+
+  if (isTipPage) {
+    return (
+      <HealthPromotion
+        clientName={infant?.caregiver?.firstName || ''}
+        onClose={() => setIsTip && setIsTip(false)}
+      />
+    );
+  }
+
+  return (
+    <>
+      <Header
+        backgroundColor="tertiary"
+        customIcon={Pregnant}
+        title="Self care"
+      />
+      <div className="flex flex-col gap-4 p-4">
+        <TipCard
+          buttonText="Health promotion"
+          buttonIcon="ChatIcon"
+          onClick={() => setIsTip && setIsTip(true)}
+        />
+
+        <Alert
+          type="warning"
+          title={`Discuss how ${infant?.caregiver?.firstName} can care for herself as a new mom.`}
+          titleColor="textDark"
+          customIcon={
+            <div className="bg-primary rounded-full">
+              <Polly className="h-14 w-14" />
+            </div>
+          }
+        />
+      </div>
+    </>
+  );
+};

@@ -146,8 +146,9 @@ export const ActivityList: React.FC = () => {
         type={'MenuList'}
       />
       <div className="mt-8 flex gap-1">
-        {Object.values(activitiesTypes).map(() => (
+        {Object.values(activitiesTypes).map((item) => (
           <span
+            key={item}
             className="bg-secondaryAccent2  rounded-10 h-2"
             style={{
               minWidth: 37,

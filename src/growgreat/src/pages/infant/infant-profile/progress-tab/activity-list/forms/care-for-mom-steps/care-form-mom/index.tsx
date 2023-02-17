@@ -32,8 +32,8 @@ export const CareForMomStep = ({
         backgroundColor="tertiary"
         customIcon={Pregnant}
         title="Care for mom"
-        subTitle={`${infant?.user?.firstName || ''} ${
-          infant?.user?.surname || ''
+        subTitle={`${infant?.caregiver?.firstName || ''} ${
+          infant?.caregiver?.surname || ''
         }`}
       />
       <img src={CareForMomImage} className="w-full" alt="care for mom" />
@@ -46,14 +46,16 @@ export const CareForMomStep = ({
 
         <SuccessCard
           customIcon={<CelebrateIcon className="h-14	w-14" />}
-          text={`Congratulations to ${infant?.user?.firstName || ''}!`}
+          text={`Congratulations to ${infant?.caregiver?.firstName || ''}!`}
           textColour="successDark"
           subTextColours="textDark"
           color="successBg"
         />
         <Divider dividerType="dashed" />
         <Label
-          text={`Ask ${infant?.user?.firstName || ''} how they are feeling.`}
+          text={`Ask ${
+            infant?.caregiver?.firstName || ''
+          } how they are feeling.`}
         />
         <Divider dividerType="dashed" />
       </div>

@@ -8,6 +8,7 @@ export const Alert: React.FC<AlertProps> = ({
   title,
   titleColor,
   message,
+  messageColor,
   customIcon,
   list,
   className,
@@ -44,7 +45,7 @@ export const Alert: React.FC<AlertProps> = ({
                 hasMarkup
                 text={message}
                 className={styles.message(!!title)}
-                color={styles.alertTextColor(type)}
+                color={messageColor || styles.alertTextColor(type)}
               />
             )}
             {list && (

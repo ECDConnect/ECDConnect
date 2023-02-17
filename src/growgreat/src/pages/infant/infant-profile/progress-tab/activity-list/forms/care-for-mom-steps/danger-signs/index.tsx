@@ -4,31 +4,33 @@ import {
   Checkbox,
   CheckboxChange,
   DialogPosition,
+  renderIcon,
   Typography,
 } from '@ecdlink/ui';
 import { Header } from '@/pages/infant/infant-profile/components';
 import Pregnant from '@/assets/pregnant.svg';
 import { ReactComponent as Translation } from '@/assets/translation.svg';
 import { DynamicFormProps } from '../../dynamic-form';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ReactComponent as PollyTime } from '@/assets/pollyTime.svg';
-import { useDialog } from '@ecdlink/core';
+import { replaceBraces, useDialog } from '@ecdlink/core';
 import { Translations } from './translations';
 
-const mock = 'Lethabo';
-const mockedFollowUp = {
-  message:
-    'Lethabo had the following danger signs at your previous visit on 2 July:',
-  list: ['Not feeling physically well', 'Not managing the baby'],
-};
-
 export const DangerSignsStep = ({
+  infant,
   isTipPage,
   setQuestions,
   setEnableButton,
   setIsTip,
 }: DynamicFormProps) => {
+  const [currentOption, setCurrentOption] = useState<string>();
   const [answers, setAnswer] = useState<(string | number | undefined)[]>();
+
+  // TODO: add integration
+  const mockedFollowUp = {
+    message: `${infant?.caregiver?.firstName} had the following danger signs at your previous visit on 2 July:`,
+    list: ['Not feeling physically well', 'Not managing the baby'],
+  };
 
   const dialog = useDialog();
 
@@ -38,7 +40,7 @@ export const DangerSignsStep = ({
   const options = [
     {
       name: 'Not feeling physically well',
-      alert: `Eish! Refer ${mock} to the clinic and discuss the importance of seeking help.`,
+      alert: `Eish! Refer ${infant?.caregiver?.firstName} to the clinic and discuss the importance of seeking help.`,
     },
     { name: 'Abdominal pain' },
     { name: 'Heavy bleeding' },
@@ -53,7 +55,7 @@ export const DangerSignsStep = ({
     { name: 'None of the above' },
   ];
 
-  const question = `Tick the danger signs Lethabo is experiencing:`;
+  const question = `Tick the danger signs {client} is experiencing:`;
 
   const onCheckboxChange = useCallback(
     (event: CheckboxChange) => {
@@ -71,7 +73,7 @@ export const DangerSignsStep = ({
                   iconColor="alertMain"
                   iconClassName="h-10 w-10"
                   title="You can only select “None of the above” if there are no danger signs"
-                  detailText={`If ${mock} is not experiencing any danger signs, first deselect all danger signs before selecting “None of the above”.`}
+                  detailText={`If ${infant?.caregiver?.firstName} is not experiencing any danger signs, first deselect all danger signs before selecting “None of the above”.`}
                   actionButtons={[
                     {
                       colour: 'primary',
@@ -92,8 +94,6 @@ export const DangerSignsStep = ({
           ? [...answers, event.value]
           : [event.value];
 
-        setEnableButton && setEnableButton(!!currentAnswers?.length);
-
         setAnswer(currentAnswers);
 
         return (
@@ -108,8 +108,6 @@ export const DangerSignsStep = ({
       }
       const currentAnswers = answers?.filter((item) => item !== event.value);
 
-      setEnableButton && setEnableButton(!!currentAnswers?.length);
-
       setAnswer(currentAnswers);
       return (
         setQuestions &&
@@ -121,11 +119,20 @@ export const DangerSignsStep = ({
         ])
       );
     },
-    [answers, dialog, question, setEnableButton, setQuestions]
+    [answers, dialog, infant?.caregiver?.firstName, question, setQuestions]
   );
 
-  if (isTipPage) {
-    return <Translations onClose={() => setIsTip && setIsTip(false)} />;
+  useEffect(() => {
+    setEnableButton && setEnableButton(true);
+  }, [setEnableButton]);
+
+  if (isTipPage && currentOption) {
+    return (
+      <Translations
+        toTranslate={currentOption}
+        onClose={() => setIsTip && setIsTip(false)}
+      />
+    );
   }
 
   return (
@@ -156,7 +163,11 @@ export const DangerSignsStep = ({
               title="The most common complications after delivery are infection and vaginal bleeding."
               className="mb-4"
             />
-            <Typography type="h4" text={question} color="black" />
+            <Typography
+              type="h4"
+              text={replaceBraces(question, infant?.caregiver?.firstName || '')}
+              color="black"
+            />
             <Typography
               type="body"
               text="Tap the chat icons to see translations"
@@ -192,14 +203,29 @@ export const DangerSignsStep = ({
                 </div>
                 <button
                   className="ml-auto"
-                  onClick={() => setIsTip && setIsTip(true)}
+                  onClick={() => {
+                    setCurrentOption(option?.name);
+                    setIsTip && setIsTip(true);
+                  }}
                 >
                   <Translation className="h-6 w-6" />
                 </button>
               </div>
             ))}
             {answers?.find((item) => item === options[0].name) && (
-              <Alert className="mt-4" type="error" title={options[0].alert} />
+              <Alert
+                className="mt-4"
+                type="error"
+                title={options[0].alert}
+                customIcon={
+                  <div className="rounded-full">
+                    {renderIcon(
+                      'ExclamationCircleIcon',
+                      'text-errorMain w-10 h-10'
+                    )}
+                  </div>
+                }
+              />
             )}
           </>
         )}

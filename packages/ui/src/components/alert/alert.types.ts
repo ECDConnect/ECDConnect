@@ -9,8 +9,9 @@ export type AlertType = 'info' | 'success' | 'warning' | 'error';
 export interface AlertProps extends ComponentBaseProps {
   type: AlertType;
   title?: string;
-  message?: string;
   titleColor?: Colours;
+  message?: string;
+  messageColor?: Colours;
   customIcon?: ReactElement;
   list?: Array<string>;
   button?: React.ReactElement;

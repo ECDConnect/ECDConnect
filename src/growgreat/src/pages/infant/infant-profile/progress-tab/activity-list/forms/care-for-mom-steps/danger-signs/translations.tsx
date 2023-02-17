@@ -1,9 +1,13 @@
 import { Button, Typography } from '@ecdlink/ui';
 import { Header } from '@/pages/infant/infant-profile/components';
 
-const mock = 'Not feeling physically well';
-
-export const Translations = ({ onClose }: { onClose: () => void }) => {
+export const Translations = ({
+  onClose,
+  toTranslate,
+}: {
+  onClose: () => void;
+  toTranslate: string;
+}) => {
   const body = [
     {
       language: 'isiZulu',
@@ -55,7 +59,7 @@ export const Translations = ({ onClose }: { onClose: () => void }) => {
         subTitle="Danger signs"
       />
       <div className="flex h-full flex-col p-4">
-        <Typography type="h4" text={mock} className="mb-6" />
+        <Typography type="h4" text={toTranslate} className="mb-6" />
         <table className="mb-6 border border-gray-100">
           <thead>
             <tr className="bg-uiBg border-primary border-b text-left">
@@ -65,7 +69,10 @@ export const Translations = ({ onClose }: { onClose: () => void }) => {
           </thead>
           <tbody>
             {body.map((item, index) => (
-              <tr className={index % 2 === 0 ? '' : 'bg-uiBg'}>
+              <tr
+                key={`${toTranslate}->${item.language}->${item.translation}`}
+                className={index % 2 === 0 ? '' : 'bg-uiBg'}
+              >
                 <td className={'py-4 px-6'}>{item.language}</td>
                 <td>{item.translation}</td>
               </tr>
