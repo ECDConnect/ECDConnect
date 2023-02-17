@@ -59,8 +59,6 @@ namespace ECDLink.Tenancy.Middleware
                 // Check url making request
                 var refererUrl = context?.Request?.GetTypedHeaders()?.Referer?.AbsoluteUri ?? context.Request.Host.Host ?? String.Empty;
 
-                System.Diagnostics.Trace.TraceInformation("RefererUrl: {0}", refererUrl);
-
                 if (!string.IsNullOrWhiteSpace(refererUrl))
                 {
                     var urlTenant = tenancyService.GetTenantByUrl(refererUrl);
@@ -68,12 +66,6 @@ namespace ECDLink.Tenancy.Middleware
                     {
                         tenant = urlTenant;
                         path = "URL:" + refererUrl;
-
-                        System.Diagnostics.Trace.TraceInformation("Tenant found: {0}", tenant.Id);
-                    }
-                    else
-                    {
-                        System.Diagnostics.Trace.TraceInformation("Tenant not found.");
                     }
                 }
                 else
@@ -84,12 +76,6 @@ namespace ECDLink.Tenancy.Middleware
                     {
                         tenant = host;
                         path = "Host:" + context.Request.Host.Value;
-
-                        System.Diagnostics.Trace.TraceInformation("Tenant found ({1}): {0}", tenant.Id, host);
-                    }
-                    else
-                    {
-                        System.Diagnostics.Trace.TraceInformation("Tenant not found.");
                     }
                 }
             }
