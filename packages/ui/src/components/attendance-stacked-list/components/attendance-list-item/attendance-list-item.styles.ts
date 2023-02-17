@@ -1,6 +1,6 @@
 import { AttendanceStatus } from '../../models/AttendanceItemStatus';
 export const contentWrapper =
-  'flex items-center justify-between px-4 py-4 sm:px-6';
+  'flex items-center justify-between px-4 py-4 sm:px-6 ';
 export const menuItemIconContainer =
   'flex-shrink-0 h-12  w-12 rounded-full flex justify-center items-center ';
 export const menuItemIconContainerDefault = 'bg-primary text-white';
@@ -11,7 +11,7 @@ export const attendanceIconBase = 'h-6 w-6 text-textLight';
 export const attendanceIconPresent = 'h-6 w-6 text-successMain';
 export const attendanceIconAbsent = 'h-6 w-6 text-errorMain';
 export const menulistItemContainer =
-  'block border border-r-0 border-l-0 border-solid border-color-textLight block cursor-pointer';
+  'block bg-successBg cursor-pointer rounded-10';
 
 export const getColourByStatus = (status?: AttendanceStatus) => {
   if (status) {
