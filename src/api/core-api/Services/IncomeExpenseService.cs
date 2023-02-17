@@ -146,7 +146,7 @@ namespace ECDLink.Core.Services
 
             if (month > 0) //filter into months if we need to focus on a specific month
             {
-                incomeRows = incomeRows.Where(y => string.Equals(y.DateReceived, month)).ToList();
+                incomeRows = incomeRows.Where(y => int.Equals(y.DateReceived.Month, month)).ToList();
             }
             if (!includeSubmitted)
             {
@@ -178,7 +178,7 @@ namespace ECDLink.Core.Services
 
             if (month > 0) //filter into months if we need to focus on a specific month
             {
-                expenseRows = expenseRows.Where(y => string.Equals(y.DatePaid, month)).ToList();
+                expenseRows = expenseRows.Where(y => int.Equals(y.DatePaid.Month, month)).ToList();
             }
             if (!includeSubmitted)
             {
@@ -344,7 +344,7 @@ namespace ECDLink.Core.Services
                         //lock all entries
                         row.Submitted = true;
                         row.IncomeStatementId = submittedStatement.Id.ToString();
-                        row.AutoSubmitted = autoSubmitted;
+                        //row.AutoSubmitted = autoSubmitted;
 
                         incomeRepo.Update(row);
                     }
@@ -362,7 +362,7 @@ namespace ECDLink.Core.Services
                         //lock all entries
                         row.Submitted = true;
                         row.IncomeStatementId = submittedStatement.Id.ToString();
-                        row.AutoSubmitted = autoSubmitted;
+                        //row.AutoSubmitted = autoSubmitted;
 
                         expenseRepo.Update(row);
                     }

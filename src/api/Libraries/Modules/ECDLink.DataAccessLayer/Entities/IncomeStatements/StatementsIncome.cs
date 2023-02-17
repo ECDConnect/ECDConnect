@@ -31,8 +31,8 @@ namespace ECDLink.DataAccessLayer.Entities.IncomeStatements
         public string UserId { get; set; }
         public DateTime DateReceived { get; set; }
         public string? FeeTypeId { get; set; }
-        [GraphQLIgnore]
-        public bool AutoSubmitted { get; set; }
+        //[GraphQLIgnore]
+        //public bool AutoSubmitted { get; set; }
 
     }
 

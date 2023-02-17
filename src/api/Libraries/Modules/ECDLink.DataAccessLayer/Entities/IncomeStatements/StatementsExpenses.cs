@@ -26,8 +26,8 @@ namespace ECDLink.DataAccessLayer.Entities.IncomeStatements
         public string IncomeStatementId { get; set; }
         public string UserId { get; set; }
 
-        [GraphQLIgnore]
-        public bool AutoSubmitted { get; set; }
+        //[GraphQLIgnore]
+        //public bool AutoSubmitted { get; set; }
     }
 
     public interface StatementsExpensesJoin<TKey>
