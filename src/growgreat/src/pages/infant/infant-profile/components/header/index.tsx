@@ -5,6 +5,7 @@ interface HeaderProps {
   icon?: string;
   title: string;
   subTitle?: string;
+  tag?: string;
   backgroundColor: Colours;
 }
 export const Header = ({
@@ -12,6 +13,7 @@ export const Header = ({
   icon,
   title,
   subTitle,
+  tag,
   backgroundColor,
 }: HeaderProps) => {
   return (
@@ -45,6 +47,13 @@ export const Header = ({
           text={subTitle}
           color="textMid"
         />
+        <div className="flex">
+          {tag && (
+            <p className="bg-successMain text-14 w-fit rounded-2xl py-1 px-2 font-semibold text-white">
+              {tag}
+            </p>
+          )}
+        </div>
       </div>
     </div>
   );
