@@ -35,7 +35,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
         public string VisitSection { get; set; } // this coming from the FE (e.x. Danger signs)
         public string MotherId { get; set; }
         public string InfantId { get; set; }
-        public virtual ICollection<CMSQuestion> questions { get; set; }
+        public virtual ICollection<CMSQuestion> Questions { get; set; }
     }
 
     public class Progress_VisitDataStatus

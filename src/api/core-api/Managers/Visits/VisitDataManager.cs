@@ -36,7 +36,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         {
             var visitDataRepo = _repoFactory.CreateGenericRepository<VisitData>(userContext: _applicationUserId);
             // first add all your questions and answers
-            foreach (CMSQuestion obj in input.questions)
+            foreach (CMSQuestion obj in input.Questions)
             {
                 VisitData visitData = (VisitData)GetVisitDataFromInputModel(obj, input.VisitId, input.VisitName, input.VisitSection);
                 visitDataRepo.Insert(visitData);
@@ -54,7 +54,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             var visitDataRepo = _repoFactory.CreateGenericRepository<VisitData>(userContext: _applicationUserId);
 
             // first add all your questions and answers
-            foreach (CMSQuestion obj in input.questions)
+            foreach (CMSQuestion obj in input.Questions)
             {
                 VisitData visitData = (VisitData)GetVisitDataFromInputModel(obj, input.VisitId, input.VisitName, input.VisitSection);
                 visitDataRepo.Insert(visitData);

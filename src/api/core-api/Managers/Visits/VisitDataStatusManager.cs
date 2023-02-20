@@ -4,6 +4,7 @@ using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.Security.Extensions;
+using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using System;
@@ -98,120 +99,120 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             // loop through data and add status data
             foreach (VisitData visitData in allVisitData)
             {
-                if (visitData.Question == "Has {client} gone to the clinic for her first antenatal visit?")
+                if (visitData.Question == Constants.GrowGreatSettings.q_first_antenatal_visit)
                 {
-                    if (visitData.QuestionAnswer == "No")
+                    if (visitData.QuestionAnswer == Constants.GrowGreatSettings.answer_no)
                     {
                         // this should add a referral to the list(""Pregnancy not booked"")
-                        comment = "Pregnancy not booked";
+                        comment = Constants.GrowGreatSettings.pregnancy_not_booked;
                         color = MetricsColorEnum.None.ToString();
                         type = Constants.GrowGreatSettings.visit_data_client_referral;
-                        AddVisitDataStatus(visitData, comment, color, type, "Clinic referrals");
+                        AddVisitDataStatus(visitData, comment, color, type, Constants.GrowGreatSettings.clinic_referrals);
 
                         // add an ""amber"" item to the progress list: ""Pregnancy not booked"".
-                        comment = "Pregnancy not booked";
+                        comment = Constants.GrowGreatSettings.pregnancy_not_booked;
                         color = MetricsColorEnum.Warning.ToString();
                         type = Constants.GrowGreatSettings.visit_data_client_progress;
                         AddVisitDataStatus(visitData, comment, color, type, "");
 
                         // add flag to G4 secondary alert: red alert, ""Refer to clinic""
-                        comment = "Refer to clinic";
+                        comment = Constants.GrowGreatSettings.refer_to_clinic;
                         color = MetricsColorEnum.Error.ToString();
                         type = Constants.GrowGreatSettings.visit_data_client_dashboard;
                         AddVisitDataStatus(visitData, comment, color, type, "");
 
                         // add amber item to G9 client download summary: ""You missed a clinic visit - make sure you go as soon as possible!""
-                        comment = "You missed a clinic visit - make sure you go as soon as possible!";
+                        comment = Constants.GrowGreatSettings.missed_clinic_visit;
                         color = MetricsColorEnum.Warning.ToString();
                         type = Constants.GrowGreatSettings.visit_data_client_summary;
                         AddVisitDataStatus(visitData, comment, color, type, "");
 
                     }
-                    else if (visitData.QuestionAnswer == "Yes")
+                    else if (visitData.QuestionAnswer == Constants.GrowGreatSettings.answer_yes)
                     {
                         // a ""green"" item is added to the client progress list ""Pregnancy booked""
-                        comment = "Pregnancy booked";
+                        comment = Constants.GrowGreatSettings.pregnancy_booked;
                         color = MetricsColorEnum.Success.ToString();
                         type = Constants.GrowGreatSettings.visit_data_client_progress;
                         AddVisitDataStatus(visitData, comment, color, type, "");
 
                         // a green item is added to G9 client download summary ""You are up to date with your clinic visits!""
-                        comment = "You are up to date with your clinic visits!";
+                        comment = Constants.GrowGreatSettings.clinic_visits_up_to_date_2;
                         color = MetricsColorEnum.Success.ToString();
                         type = Constants.GrowGreatSettings.visit_data_client_summary;
                         AddVisitDataStatus(visitData, comment, color, type, "");
                     }
                 }
-                else if (visitData.Question == "Is {client} up to date with their antenatal clinic visits?")
+                else if (visitData.Question == Constants.GrowGreatSettings.q_antenatal_visits)
                 {
-                    if (visitData.QuestionAnswer == "No")
+                    if (visitData.QuestionAnswer == Constants.GrowGreatSettings.answer_no)
                     {
                         // add an ""amber"" item to the progress: ""Clinic visits not up to date""
-                        comment = "Clinic visits not up to date";
+                        comment = Constants.GrowGreatSettings.clinic_visits_not_up_to_date;
                         color = MetricsColorEnum.None.ToString();
                         type = Constants.GrowGreatSettings.visit_data_client_referral;
-                        AddVisitDataStatus(visitData, comment, color, type, "Clinic referrals");
+                        AddVisitDataStatus(visitData, comment, color, type, Constants.GrowGreatSettings.clinic_referrals);
 
                         // add an ""amber"" item to the progress list: Clinic visits not up to date.
-                        comment = "Clinic visits not up to date";
+                        comment = Constants.GrowGreatSettings.clinic_visits_not_up_to_date;
                         color = MetricsColorEnum.Warning.ToString();
                         type = Constants.GrowGreatSettings.visit_data_client_progress;
                         AddVisitDataStatus(visitData, comment, color, type, "");
 
                         // add G4 secondary text red alert ""Refer to clinic""
-                        comment = "Refer to clinic";
+                        comment = Constants.GrowGreatSettings.refer_to_clinic;
                         color = MetricsColorEnum.Error.ToString();
                         type = Constants.GrowGreatSettings.visit_data_client_dashboard;
                         AddVisitDataStatus(visitData, comment, color, type, "");
 
                         // add amber item to G9 client download summary: ""You missed a clinic visit - make sure you go as soon as possible!""
-                        comment = "You missed a clinic visit - make sure you go as soon as possible!";
+                        comment = Constants.GrowGreatSettings.missed_clinic_visit;
                         color = MetricsColorEnum.Warning.ToString();
                         type = Constants.GrowGreatSettings.visit_data_client_summary;
                         AddVisitDataStatus(visitData, comment, color, type, "");
                     }
-                    else if (visitData.QuestionAnswer == "Yes")
+                    else if (visitData.QuestionAnswer == Constants.GrowGreatSettings.answer_yes)
                     {
                         // ""green"" item is added to the progress: "Clinic visits up to date"
-                        comment = "Clinic visits up to date";
+                        comment = Constants.GrowGreatSettings.clinic_visits_up_to_date;
                         color = MetricsColorEnum.Success.ToString();
                         type = Constants.GrowGreatSettings.visit_data_client_progress;
                         AddVisitDataStatus(visitData, comment, color, type, "");
 
                         // add green item to G9 client download summary "You are up to date with your clinic visits!"
-                        comment = "You are up to date with your clinic visits!";
+                        comment = Constants.GrowGreatSettings.all_clinic_visit;
                         color = MetricsColorEnum.Success.ToString();
                         type = Constants.GrowGreatSettings.visit_data_client_summary;
                         AddVisitDataStatus(visitData, comment, color, type, "");
 
                     }
                 }
-                else if (visitData.Question == "MUAC measurement")
+                else if (visitData.Question == Constants.GrowGreatSettings.q_measurement)
                 {
                     var questionAnswer = Int32.Parse(visitData.QuestionAnswer);
 
                     if (questionAnswer < 22)
                     {
                         // add to referrals items list(""May be underweight - MUAC less than 22cm"") red
-                        comment = "May be underweight - MUAC less than 22cm";
+                        comment = Constants.GrowGreatSettings.underweight;
                         color = MetricsColorEnum.None.ToString();
                         type = Constants.GrowGreatSettings.visit_data_client_referral;
-                        AddVisitDataStatus(visitData, comment, color, type, "Clinic referrals");
+                        AddVisitDataStatus(visitData, comment, color, type, Constants.GrowGreatSettings.clinic_referrals);
 
                         // add to red items in progress screen(use case 2) (""May be underweight - MUAC less than 22cm"")
-                        comment = "May be underweight - MUAC less than 22cm";
+                        comment = Constants.GrowGreatSettings.underweight;
                         color = MetricsColorEnum.Error.ToString();
                         type = Constants.GrowGreatSettings.visit_data_client_progress;
                         AddVisitDataStatus(visitData, comment, color, type, "");
 
                         // add G4 secondary text item: ""Refer to clinic urgently""(this is the highest - priority item & will be shown)
-                        comment = "Refer to clinic urgently";
+                        comment = Constants.GrowGreatSettings.refer_to_clinic_urgently;
                         color = MetricsColorEnum.Error.ToString();
                         type = Constants.GrowGreatSettings.visit_data_client_dashboard;
                         AddVisitDataStatus(visitData, comment, color, type, "");
 
                         // add green item to G9 client summary: ""You might be underweight: eat 3 meals every day""
-                        comment = "You might be underweight: eat 3 meals every day";
+                        comment = Constants.GrowGreatSettings.underweight2;
                         color = MetricsColorEnum.Success.ToString();
                         type = Constants.GrowGreatSettings.visit_data_client_summary;
                         AddVisitDataStatus(visitData, comment, color, type, "");
@@ -222,56 +223,56 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         newVisit.VisitType = additionalVisitType;
                         newVisit.MotherId = new Guid(motherId);
                         newVisit.InfantId = null;
-                        newVisit.Risk = "normal";
-                        newVisit.Comment = "Underweight";
+                        newVisit.Risk = Constants.GrowGreatSettings.normal_risk;
+                        newVisit.Comment = Constants.GrowGreatSettings.underweight3;
 
                         _visitManager.AddVisit(newVisit);
                     }
                     else if (questionAnswer >= 22)
                     {
-                        // add to green items in progress screen(use case 2) (""MUAC over 22cm"")
-                        comment = "MUAC over 22cm";
+                        // add to green items in progress screen(use case 2) (""MUAC over 22cm"")TenancyMiddleware.cs
+                        comment = Constants.GrowGreatSettings.muac_over_22;
                         color = MetricsColorEnum.Success.ToString();
                         type = Constants.GrowGreatSettings.visit_data_client_progress;
                         AddVisitDataStatus(visitData, comment, color, type, "");
 
                         // add green item to G9 client summary: ""According to your mid-upper arm circumference, you are a healthy weight""
-                        comment = "According to your mid-upper arm circumference, you are a healthy weight";
+                        comment = Constants.GrowGreatSettings.healthy_weight;
                         color = MetricsColorEnum.Success.ToString();
                         type = Constants.GrowGreatSettings.visit_data_client_summary;
                         AddVisitDataStatus(visitData, comment, color, type, "");
                     }
                 }
-                else if (visitData.Question == "Felt unable to stop worrying or thinking too much?" ||
-                         visitData.Question == "Felt down, depressed or hopeless?" ||
-                         visitData.Question == "Had thoughts and plans to harm yourself or commit suicide?")
+                else if (visitData.Question == Constants.GrowGreatSettings.q_stop_worry ||
+                         visitData.Question == Constants.GrowGreatSettings.q_felt_down ||
+                         visitData.Question == Constants.GrowGreatSettings.q_suicide)
                 {
                     maternalDistressScreening.Add(visitData);
                 }
-                else if (visitData.Question == "(T) Tolerance: how many drinks does it take to make you high?" ||
-                    visitData.Question == "(A) Have people annoyed you by critizing your drinking ?" ||
-                    visitData.Question == "(C) Have you ever felt you need to cut down on your drinking?" ||
-                    visitData.Question == "(E) Eye - opener: have you ever had a drink the first thing in the morning to steady your nerves or get rid of a hangover?")
+                else if (visitData.Question == Constants.GrowGreatSettings.q_T ||
+                    visitData.Question == Constants.GrowGreatSettings.q_A ||
+                    visitData.Question == Constants.GrowGreatSettings.q_C ||
+                    visitData.Question == Constants.GrowGreatSettings.q_E)
                 {
                     alcoholUse.Add(visitData);
                 }
-                else if (visitData.Question == "Does {client} have an ID document?" || visitData.Question == "Is { client} a South African citizen or permanent resident?")
+                else if (visitData.Question == Constants.GrowGreatSettings.q_ID_doc || visitData.Question == Constants.GrowGreatSettings.q_citizen)
                 {
                     idDocs.Add(visitData);
                 }
-                else if (visitData.Question == "Tick the danger signs {client} is experiencing")
+                else if (visitData.Question == Constants.GrowGreatSettings.q_danger_signs)
                 {
 
-                    if (visitData.QuestionAnswer == "None of the above")
+                    if (visitData.QuestionAnswer == Constants.GrowGreatSettings.none_above)
                     {
                         // Add progress item: ""No danger signs for Lethabo""
-                        comment = "No danger signs for " + firstName;
+                        comment = Constants.GrowGreatSettings.no_danger_signs + firstName;
                         color = MetricsColorEnum.Success.ToString();
                         type = Constants.GrowGreatSettings.visit_data_client_progress;
                         AddVisitDataStatus(visitData, comment, color, type, "");
 
                         // Add item to G9 Client summary download: ""You are feeling physically well"""
-                        comment = "You are feeling physically well";
+                        comment = Constants.GrowGreatSettings.physical_feeling_well;
                         color = MetricsColorEnum.Success.ToString();
                         type = Constants.GrowGreatSettings.visit_data_client_summary;
                         AddVisitDataStatus(visitData, comment, color, type, "");
@@ -283,13 +284,13 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         if (arrAnswers.Length >= 3)
                         {
                             // Add referral item - where X, Y, Z are each of the 3 danger signs selected by the user
-                            comment = firstName + " was experiencing " + visitData.QuestionAnswer;
+                            comment = firstName + Constants.GrowGreatSettings.was_experiencing + visitData.QuestionAnswer;
                             color = MetricsColorEnum.None.ToString();
                             type = Constants.GrowGreatSettings.visit_data_client_referral;
-                            AddVisitDataStatus(visitData, comment, color, type, "Clinic referrals");
+                            AddVisitDataStatus(visitData, comment, color, type, Constants.GrowGreatSettings.clinic_referrals);
 
                             // Add red progress item - where X, Y, Z are each of the 3 danger signs selected by the user
-                            comment = firstName + " was experiencing " + visitData.QuestionAnswer;
+                            comment = firstName + Constants.GrowGreatSettings.was_experiencing + visitData.QuestionAnswer;
                             color = MetricsColorEnum.Warning.ToString();
                             type = Constants.GrowGreatSettings.visit_data_client_progress;
                             AddVisitDataStatus(visitData, comment, color, type, "");
@@ -300,18 +301,18 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                             newVisit.VisitType = additionalVisitType;
                             newVisit.MotherId = new Guid(motherId);
                             newVisit.InfantId = null;
-                            newVisit.Risk = "normal";
-                            newVisit.Comment = "Danger signs";
+                            newVisit.Risk = Constants.GrowGreatSettings.normal_risk;
+                            newVisit.Comment = Constants.GrowGreatSettings.danger_signs;
                             _visitManager.AddVisit(newVisit);
 
                             // Add G4 secondary alert text: ""Refer to clinic urgently""
-                            comment = "Refer to clinic urgently";
+                            comment = Constants.GrowGreatSettings.refer_to_clinic_urgently;
                             color = MetricsColorEnum.Warning.ToString();
                             type = Constants.GrowGreatSettings.visit_data_client_dashboard;
                             AddVisitDataStatus(visitData, comment, color, type, "");
 
                             // Add item to G9 Client summary download ""You need urgent care for some serious health issues""
-                            comment = "You need urgent care for some serious health issues";
+                            comment = Constants.GrowGreatSettings.urgent_care;
                             color = MetricsColorEnum.Warning.ToString();
                             type = Constants.GrowGreatSettings.visit_data_client_summary;
                             AddVisitDataStatus(visitData, comment, color, type, "");
@@ -334,7 +335,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             var comment = "";
             var color = "";
             var type = "";
-            var section = "Clinic referrals";
+            var section = Constants.GrowGreatSettings.clinic_referrals;
 
             var q1 = new VisitData();
             var q2 = new VisitData();
@@ -342,28 +343,28 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             foreach (VisitData obj in maternalDistressScreening)
             {
-                if (obj.Question == "Felt unable to stop worrying or thinking too much?")
+                if (obj.Question == Constants.GrowGreatSettings.q_stop_worry)
                 {
                     q1 = obj;
-                } else if (obj.Question == "Felt down, depressed or hopeless?")
+                } else if (obj.Question == Constants.GrowGreatSettings.q_felt_down)
                 {
                     q2 = obj;
-                } else if (obj.Question == "Had thoughts and plans to harm yourself or commit suicide?")
+                } else if (obj.Question == Constants.GrowGreatSettings.q_suicide)
                 {
                     q3 = obj;
                 }
             }
 
-            // a "Yes" response to the 3rd question trumps all.
-            if (q3.QuestionAnswer == "Yes")
+            // a Constants.GrowGreatSettings.answer_yes response to the 3rd question trumps all.
+            if (q3.QuestionAnswer == Constants.GrowGreatSettings.answer_yes)
             {
-                comment = firstName + " was experiencing maternal distress";
+                comment = firstName + Constants.GrowGreatSettings.maternal_distress;
                 color = MetricsColorEnum.None.ToString();
                 type = Constants.GrowGreatSettings.visit_data_client_referral;
                 AddVisitDataStatus(q3, comment, color, type, section);
 
                 // add to amber items in progress screen(use case 2)(""Lethabo was experiencing maternal distress"")
-                comment = firstName + " was experiencing maternal distress";
+                comment = firstName + Constants.GrowGreatSettings.maternal_distress;
                 color = MetricsColorEnum.Warning.ToString();
                 type = Constants.GrowGreatSettings.visit_data_client_progress;
                 AddVisitDataStatus(q3, comment, color, type, "");
@@ -373,31 +374,31 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 newVisit.VisitType = visitType;
                 newVisit.MotherId = new Guid(motherId);
                 newVisit.InfantId = null;
-                newVisit.Risk = "normal";
-                newVisit.Comment = "Maternal distress";
+                newVisit.Risk = Constants.GrowGreatSettings.normal_risk;
+                newVisit.Comment = Constants.GrowGreatSettings.maternal_distress2;
                 _visitManager.AddVisit(newVisit);
 
                 // add G4 secondary text item: Amber - ""Refer to clinic""
-                comment = "Refer to clinic";
+                comment = Constants.GrowGreatSettings.refer_to_clinic;
                 color = MetricsColorEnum.Warning.ToString();
                 type = Constants.GrowGreatSettings.visit_data_client_dashboard;
                 AddVisitDataStatus(q3, comment, color, type, "");
 
                 // add amber item to G9 client summary: ""You are struggling and need some support""
-                comment = "You are struggling and need some support";
+                comment = Constants.GrowGreatSettings.need_support;
                 color = MetricsColorEnum.Warning.ToString();
                 type = Constants.GrowGreatSettings.visit_data_client_summary;
                 AddVisitDataStatus(q3, comment, color, type, section);
             } else
             {
-                if (q3.QuestionAnswer == "No" && (q1.QuestionAnswer == "Yes" || q2.QuestionAnswer == "Yes"))
+                if (q3.QuestionAnswer == Constants.GrowGreatSettings.answer_no && (q1.QuestionAnswer == Constants.GrowGreatSettings.answer_yes || q2.QuestionAnswer == Constants.GrowGreatSettings.answer_yes))
                 {
-                    comment = firstName + " was experiencing maternal distress";
+                    comment = firstName + Constants.GrowGreatSettings.maternal_distress;
                     color = MetricsColorEnum.None.ToString();
                     type = Constants.GrowGreatSettings.visit_data_client_referral;
                     AddVisitDataStatus(q3, comment, color, type, section);
 
-                    comment = firstName + " was experiencing maternal distress";
+                    comment = firstName + Constants.GrowGreatSettings.maternal_distress;
                     color = MetricsColorEnum.Warning.ToString();
                     type = Constants.GrowGreatSettings.visit_data_client_progress;
                     AddVisitDataStatus(q3, comment, color, type, "");
@@ -407,27 +408,27 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     newVisit.VisitType = visitType;
                     newVisit.MotherId = new Guid(motherId);
                     newVisit.InfantId = null;
-                    newVisit.Risk = "normal";
-                    newVisit.Comment = "Maternal distress";
+                    newVisit.Risk = Constants.GrowGreatSettings.normal_risk;
+                    newVisit.Comment = Constants.GrowGreatSettings.maternal_distress2;
                     _visitManager.AddVisit(newVisit);
 
                     // add amber item to G9 client summary: ""You are struggling and need some support""
-                    comment = "You are struggling and need some support";
+                    comment = Constants.GrowGreatSettings.need_support;
                     color = MetricsColorEnum.Warning.ToString();
                     type = Constants.GrowGreatSettings.visit_data_client_summary;
                     AddVisitDataStatus(q3, comment, color, type, "");
                 }
 
-                if (q3.QuestionAnswer == "No" && (q1.QuestionAnswer == "No" || q2.QuestionAnswer == "No"))
+                if (q3.QuestionAnswer == Constants.GrowGreatSettings.answer_no && (q1.QuestionAnswer == Constants.GrowGreatSettings.answer_no || q2.QuestionAnswer == Constants.GrowGreatSettings.answer_no))
                 {
                     // add to green items in progress screen (use case 2) (""Lethabo was coping well"")
-                    comment = firstName + " was coping well";
+                    comment = firstName + Constants.GrowGreatSettings.was_coping;
                     color = MetricsColorEnum.Warning.ToString();
                     type = Constants.GrowGreatSettings.visit_data_client_progress;
                     AddVisitDataStatus(q3, comment, color, type, "");
 
                     //add green item to G9 client summary: You are coping well!
-                    comment = "You are coping well!";
+                    comment = Constants.GrowGreatSettings.coping_well;
                     color = MetricsColorEnum.Warning.ToString();
                     type = Constants.GrowGreatSettings.visit_data_client_summary;
                     AddVisitDataStatus(q3, comment, color, type, "");
@@ -442,7 +443,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             var color = "";
             var type = "";
             var score = 0;
-            var section = "Clinic referrals";
+            var section = Constants.GrowGreatSettings.clinic_referrals;
 
             var q1 = new VisitData();
             var q2 = new VisitData();
@@ -452,64 +453,65 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             foreach (VisitData obj in alcoholUse)
             {
 
-                if (obj.Question == "(T) Tolerance: how many drinks does it take to make you high?")
+                if (obj.Question == Constants.GrowGreatSettings.q_T)
                 {
                     q1 = obj;
                 }
-                else if (obj.Question == "(A) Have people annoyed you by critizing your drinking?")
+                else if (obj.Question == Constants.GrowGreatSettings.q_A)
                 {
                     q2 = obj;
                 }
-                else if (obj.Question == "(C) Have you ever felt you need to cut down on your drinking?")
+                else if (obj.Question == Constants.GrowGreatSettings.q_C)
                 {
                     q3 = obj;
                 }
-                else if (obj.Question == "(E) Eye-opener: have you ever had a drink the first thing in the morning to steady your nerves or get rid of a hangover?")
+                else if (obj.Question == Constants.GrowGreatSettings.q_E)
                 {
                     q4 = obj;
                 }
             }
 
-            if (q1.QuestionAnswer == "More than 2")
+            if (q1.QuestionAnswer == Constants.GrowGreatSettings.more_than_2)
             {
-                score = score + 2;
+                score++;
+                score++;
             }
-            if (q2.QuestionAnswer == "Yes")
+            if (q2.QuestionAnswer == Constants.GrowGreatSettings.answer_yes)
             {
-                score = score + 1;
+                score++;
             }
-            if (q3.QuestionAnswer == "Yes")
+            if (q3.QuestionAnswer == Constants.GrowGreatSettings.answer_yes)
             {
-                score = score + 1;
+                score++;
             }
-            if (q4.QuestionAnswer == "Yes")
+            if (q4.QuestionAnswer == Constants.GrowGreatSettings.answer_yes)
             {
-                score = score + 1;
+                score++;
             }
 
             // If T-ACE score is 2 or more:
             if (score >= 2)
             {
                 // IF this is not already unchecked in the referrals list for this client; add to referrals items list (""Lethabo is at risk of a drinking problem (T-ACE score = X)"", where X = the T-ACE score calculated)
-                comment = firstName + " is at risk of a drinking problem (T-ACE score = " + score + ")";
+                comment = firstName + Constants.GrowGreatSettings.t_ace_score + score + ")";
                 color = MetricsColorEnum.None.ToString();
                 type = Constants.GrowGreatSettings.visit_data_client_referral;
                 AddVisitDataStatus(q1, comment, color, type, section);
 
                 // add to red items in progress screen (use case 2) (""Lethabo is at risk of a drinking problem (T-ACE score = X)"", where X = the T-ACE score calculated)
-                comment = firstName + " is at risk of a drinking problem (T-ACE score = " + score + ")";
+                comment = firstName + Constants.GrowGreatSettings.t_ace_score + score + ")";
                 color = MetricsColorEnum.Error.ToString();
                 type = Constants.GrowGreatSettings.visit_data_client_progress;
                 AddVisitDataStatus(q1, comment, color, type, "");
 
                 // add G4 secondary text item: Red - ""Refer to clinic urgently""
-                comment = "Refer to clinic urgently";
+                comment = Constants.GrowGreatSettings.refer_to_clinic_urgently;
                 color = MetricsColorEnum.Error.ToString();
                 type = Constants.GrowGreatSettings.visit_data_client_dashboard;
                 AddVisitDataStatus(q1, comment, color, type, "");
 
                 // add amber item to G9 client summary: ""You may need support to reduce your drinking""
-                comment = "You may need support to reduce your drinking";
+                comment = Constants.GrowGreatSettings.support_drinking;
                 color = MetricsColorEnum.Warning.ToString();
                 type = Constants.GrowGreatSettings.visit_data_client_summary;
                 AddVisitDataStatus(q1, comment, color, type, "");
@@ -517,7 +519,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             else if (score < 2)
             {
                 // add to green items in progress screen (use case 2) (""Lethabo was coping well"")
-                comment = firstName + " is not at risk for alcohol abuse";
+                comment = firstName + Constants.GrowGreatSettings.no_alcohol_abuse;
                 color = MetricsColorEnum.Success.ToString();
                 type = Constants.GrowGreatSettings.visit_data_client_progress;
                 AddVisitDataStatus(q1, comment, color, type, "");
@@ -530,54 +532,53 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             var comment = "";
             var color = "";
             var type = "";
-            var section = "Department of Home Affairs referrals";
 
             var q1 = new VisitData();
             var q2 = new VisitData();
 
             foreach (VisitData obj in idDocs)
             {
-                if (obj.Question == "Does {client} have an ID document?")
+                if (obj.Question == Constants.GrowGreatSettings.q_ID_doc)
                 {
                     q1 = obj;
                 }
-                else if (obj.Question == "Is {client} a South African citizen or permanent resident?")
+                else if (obj.Question == Constants.GrowGreatSettings.q_citizen)
                 {
                     q2 = obj;
                 }
             }
 
-            if (q1.QuestionAnswer == "No" && q2.QuestionAnswer == "Yes")
+            if (q1.QuestionAnswer == Constants.GrowGreatSettings.answer_no && q2.QuestionAnswer == Constants.GrowGreatSettings.answer_yes)
             {
                 // IF this is not already unchecked in the referrals list for this client; add to referrals items list under Department of Home Affairs referrals(""Lethabo doesn't have an ID book)
-                comment = firstName + " doesn't have an ID book";
+                comment = firstName + Constants.GrowGreatSettings.no_id_book;
                 color = MetricsColorEnum.None.ToString();
                 type = Constants.GrowGreatSettings.visit_data_client_referral;
-                AddVisitDataStatus(q1, comment, color, type, section);
+                AddVisitDataStatus(q1, comment, color, type, Constants.GrowGreatSettings.home_affairs_referrals);
 
                 // add to amber items in progress screen(""Lethabo doesn't have an ID book"")
-                comment = firstName + " doesn't have an ID book";
+                comment = firstName + Constants.GrowGreatSettings.no_id_book;
                 color = MetricsColorEnum.Warning.ToString();
                 type = Constants.GrowGreatSettings.visit_data_client_progress;
                 AddVisitDataStatus(q1, comment, color, type, "");
 
                 // add amber item to G9 client summary: ""Go to Home Affairs to apply for your ID book.This will allow you to apply for the child social grant as soon as the baby is born.""
-                comment = "Go to Home Affairs to apply for your ID book.This will allow you to apply for the child social grant as soon as the baby is born.";
+                comment = Constants.GrowGreatSettings.go_to_home_affairs;
                 color = MetricsColorEnum.Warning.ToString();
                 type = Constants.GrowGreatSettings.visit_data_client_summary;
                 AddVisitDataStatus(q1, comment, color, type, "");
             }
 
-            if (q1.QuestionAnswer == "Yes")
+            if (q1.QuestionAnswer == Constants.GrowGreatSettings.answer_yes)
             {
                 // add to green items in progress screen(use case 2)(""Lethabo has an ID book"")
-                comment = firstName + " has an ID book";
+                comment = firstName + Constants.GrowGreatSettings.id_book;
                 color = MetricsColorEnum.Success.ToString();
                 type = Constants.GrowGreatSettings.visit_data_client_progress;
                 AddVisitDataStatus(q1, comment, color, type, "");
 
                 // add green item to G9 client summary: ""You have your ID document & can apply for a child social grant once the baby is born!""
-                comment = "You have your ID document & can apply for a child social grant once the baby is born!";
+                comment = Constants.GrowGreatSettings.apply_social_grant;
                 color = MetricsColorEnum.Success.ToString();
                 type = Constants.GrowGreatSettings.visit_data_client_summary;
                 AddVisitDataStatus(q1, comment, color, type, "");
