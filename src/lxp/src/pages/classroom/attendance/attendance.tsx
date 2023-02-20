@@ -1,5 +1,10 @@
 import { AttendanceDto, LearnerDto } from '@ecdlink/core';
-import { ComponentBaseProps } from '@ecdlink/ui';
+import {
+  ComponentBaseProps,
+  Button,
+  Typography,
+  renderIcon,
+} from '@ecdlink/ui';
 import { addDays, getDayOfYear, isSameDay, startOfWeek } from 'date-fns';
 import getDay from 'date-fns/getDay';
 import { useEffect, useState } from 'react';
@@ -28,6 +33,8 @@ import MultiRouteWrapper from '@/pages/classroom/attendance/components/attendanc
 
 export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   const userData = useSelector(userSelectors.getUser);
+  const [seeRegister, setSeeRegister] = useState<boolean>(false);
+
   const [attendanceComponentType, setAttendanceComponentType] =
     useState<AttendanceComponentType>();
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
@@ -216,9 +223,32 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   return (
     <div>
       <MultiRouteWrapper />
-      {attendanceComponentType
-        ? getComponentToRender(attendanceComponentType)
-        : null}
+      {attendanceComponentType && !seeRegister ? (
+        getComponentToRender(attendanceComponentType)
+      ) : (
+        // <AttendanceReport classroom={classroom} />
+        <AttendanceSummary />
+      )}
+      <div className={'flex h-full w-full flex-1 flex-col px-4'}>
+        {attendanceComponentType === 'attendance' && !seeRegister && (
+          <Button
+            type="outlined"
+            color="primary"
+            className={'mt-0'}
+            onClick={() => {
+              setSeeRegister(true);
+            }}
+          >
+            {renderIcon('EyeIcon', 'h-5 w-5 text-primary')}
+            <Typography
+              type="h6"
+              color="primary"
+              text={'See attendance registers'}
+              className="ml-2"
+            ></Typography>
+          </Button>
+        )}
+      </div>
     </div>
   );
 };

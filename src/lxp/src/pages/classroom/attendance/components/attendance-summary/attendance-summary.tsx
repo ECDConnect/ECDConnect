@@ -46,7 +46,7 @@ export const AttendanceSummary: React.FC = () => {
   const [displaySmartStartMessage, setDisplaySmartStartMessage] =
     useState<boolean>(false);
   const [successMessageVisible, setSuccessMessageVisible] =
-    useState<boolean>(true);
+    useState<boolean>(false);
   const [isSmartStartUser, setIsSmartStartUser] = useState<boolean>(true);
   const [attendanceActionList, setAttendanceActionList] = useState<
     ActionListDataItem[]

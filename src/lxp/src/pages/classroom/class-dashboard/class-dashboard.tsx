@@ -284,7 +284,9 @@ export const ClassDashboard: React.FC = () => {
   };
 
   useEffect(() => {
-    if (showAttendanceTutorial && !attendanceTutorialComplete) {
+    if (showAttendanceTutorial && attendanceTutorialComplete) {
+    // if (showAttendanceTutorial && attendanceTutorialComplete) {
+
       handleAttendanceTutorial();
     }
   }, [showAttendanceTutorial]);
