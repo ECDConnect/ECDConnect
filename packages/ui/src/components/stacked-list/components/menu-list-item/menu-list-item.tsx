@@ -1,4 +1,5 @@
 import { ChevronRightIcon } from '@heroicons/react/solid';
+import { useMemo } from 'react';
 import { Avatar } from '../../..';
 import { classNames, ComponentBaseProps, RoundIcon } from '../../../..';
 import { MenuListDataItem } from '../../models/MenuListDataItem';
@@ -10,12 +11,23 @@ export interface MenuListItemProps extends ComponentBaseProps {
 }
 
 export const MenuListItem: React.FC<MenuListItemProps> = ({ item }) => {
+  const getBackground = useMemo(() => {
+    if (item.hexBackgroundColor) return;
+
+    return item.backgroundColor ? `bg-${item.backgroundColor}` : 'bg-uiBg';
+  }, []);
+
   return (
     <div
-      className={styles.menulistItemContainer}
+      className={classNames(styles.menulistItemContainer, item.className)}
       onClick={() => item.onActionClick && item.onActionClick()}
     >
-      <div className={styles.contentWrapper}>
+      <div
+        className={classNames(styles.contentWrapper, getBackground)}
+        style={
+          item.hexBackgroundColor ? { background: item.hexBackgroundColor } : {}
+        }
+      >
         <div className={stackedListStyles.textRowsWrapper}>
           {(item.menuIcon || item.menuIconUrl) &&
             (item.showIcon ? (

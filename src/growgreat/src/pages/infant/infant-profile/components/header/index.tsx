@@ -1,0 +1,51 @@
+import { Colours, RoundIcon, Typography } from '@ecdlink/ui';
+
+interface HeaderProps {
+  customIcon?: string;
+  icon?: string;
+  title: string;
+  subTitle?: string;
+  backgroundColor: Colours;
+}
+export const Header = ({
+  customIcon,
+  icon,
+  title,
+  subTitle,
+  backgroundColor,
+}: HeaderProps) => {
+  return (
+    <div className="bg-uiBg flex gap-2 p-4">
+      <RoundIcon
+        {...(customIcon
+          ? {
+              imageUrl: customIcon,
+            }
+          : {})}
+        {...(icon
+          ? {
+              icon,
+            }
+          : {})}
+        iconColor="white"
+        backgroundColor={backgroundColor}
+      />
+      <div className="flex flex-col justify-center">
+        <Typography
+          type="h2"
+          align="left"
+          weight="bold"
+          text={title}
+          color="textDark"
+        />
+        <Typography
+          type="body"
+          align="left"
+          weight="skinny"
+          text={subTitle}
+          color="textMid"
+        />
+      </div>
+    </div>
+  );
+};

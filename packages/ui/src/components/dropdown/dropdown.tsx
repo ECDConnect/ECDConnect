@@ -23,6 +23,7 @@ export interface DropdownProps<T> extends ComponentBaseProps {
   onChange: (item: T) => void;
   inputRef?: any;
   showSearch?: boolean;
+  labelColor?: Colours;
 }
 
 export function Dropdown<T>({
@@ -40,6 +41,7 @@ export function Dropdown<T>({
   className,
   inputRef,
   showSearch,
+  labelColor,
 }: DropdownProps<T>) {
   const [selectedItem, setSelectedItem] = useState<DropDownOption<T>>();
   const [touched, setTouched] = useState(false);
@@ -117,13 +119,16 @@ export function Dropdown<T>({
       >
         <Typography
           type={'body'}
-          color={touched ? 'textDark' : 'textLight'}
+          color={labelColor ? labelColor : touched ? 'textDark' : 'textLight'}
           text={selectedItem?.label ? selectedItem.label : placeholder}
           className={styles.title}
         />
         {renderIcon(
           !open ? 'ChevronDownIcon' : 'ChevronUpIcon',
-          styles.getDropDownIcon(fillType, touched ? 'textDark' : 'textLight')
+          styles.getDropDownIcon(
+            fillType,
+            labelColor ? labelColor : touched ? 'textDark' : 'textLight'
+          )
         )}
       </Menu.Button>
     ),

@@ -1,5 +1,5 @@
 export const wrapper =
-  'pt-2 pl-4 pr-2 flex flex-col w-full justify-evenly relative items-center pb-1 bg-successMain rounded-xl bg-transparent';
+  'pt-2 pl-4 pr-2 flex flex-col w-full justify-evenly relative items-center pb-1 rounded-xl';
 export const textWrapper = 'px-4 flex flex-1 flex-col';
 export const button = 'mb-4 mt-4';
 
