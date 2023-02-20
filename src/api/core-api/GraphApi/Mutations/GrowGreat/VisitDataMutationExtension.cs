@@ -7,6 +7,7 @@ using ECDLink.Security;
 using HotChocolate;
 using HotChocolate.Types;
 using System;
+using System.Collections.Generic;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
 {
@@ -15,12 +16,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
     {
         
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
-        public Boolean AddAntenatalVisitData([Service] VisitDataManager visitDataManager, VisitDataModel input, string motherId)
+        public Boolean AddVisitData([Service] VisitDataManager visitDataManager, CMSVisitDataInputModel input)
         {
-            // TODO: loop through visit's data and add every question and the answer
+            if (input.MotherId != "")
+            {
+                visitDataManager.AddAntenatalVisitData(input);
 
-            visitDataManager.AddAntenatalVisitData(input, motherId);
-
+            } else
+            {
+                visitDataManager.AddChildVisitData(input);
+            }
             return true;
         }
     }
