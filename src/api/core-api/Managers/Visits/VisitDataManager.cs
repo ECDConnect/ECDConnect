@@ -14,19 +14,16 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
     {
         private IHttpContextAccessor _contextAccessor;
         private IGenericRepositoryFactory _repoFactory;
-        private VisitManager _visitManager;
         private VisitDataStatusManager _visitDataStatusManager;
         private string _applicationUserId;
 
         public VisitDataManager(
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
-            VisitManager visitManager,
             VisitDataStatusManager visitDataStatusManager)
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
-            _visitManager = visitManager;
 
             _applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
             _visitDataStatusManager = visitDataStatusManager;
