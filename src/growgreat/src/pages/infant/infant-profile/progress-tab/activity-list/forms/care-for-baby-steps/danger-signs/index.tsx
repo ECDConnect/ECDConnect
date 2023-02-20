@@ -4,14 +4,15 @@ import {
   Checkbox,
   CheckboxChange,
   DialogPosition,
+  Divider,
   renderIcon,
   Typography,
 } from '@ecdlink/ui';
-import { Header } from '@/pages/infant/infant-profile/components';
-import Pregnant from '@/assets/pregnant.svg';
+import { Header, Label } from '@/pages/infant/infant-profile/components';
+import Infant from '@/assets/infant.svg';
 import { ReactComponent as Translation } from '@/assets/translation.svg';
 import { DynamicFormProps } from '../../dynamic-form';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { ReactComponent as PollyTime } from '@/assets/pollyTime.svg';
 import { replaceBraces, useDialog } from '@ecdlink/core';
 import { Translations } from './translations';
@@ -26,10 +27,12 @@ export const DangerSignsStep = ({
   const [currentOption, setCurrentOption] = useState<string>();
   const [answers, setAnswer] = useState<(string | number | undefined)[]>();
 
+  const name = useMemo(() => infant?.user?.firstName || '', [infant]);
+
   // TODO: add integration
   const mockedFollowUp = {
-    message: `${infant?.caregiver?.firstName} had the following danger signs at your previous visit on 2 July:`,
-    list: ['Not feeling physically well', 'Not managing the baby'],
+    message: `${name} had the following danger signs at your previous visit on 2 July:`,
+    list: ['Blue skin colour', 'Poor feeding or repeated vomiting'],
   };
 
   const dialog = useDialog();
@@ -38,20 +41,17 @@ export const DangerSignsStep = ({
   const isFollowUp = false;
 
   const options = [
+    { name: 'Blue skin colour' },
+    { name: 'Baby is not alert' },
+    { name: 'Fast breathing or difficulty breathing' },
+    { name: 'Poor feeding or repeated vomiting' },
+    { name: 'Low (below 35 degrees C) or high temperature' },
     {
-      name: 'Not feeling physically well',
-      alert: `Eish! Refer ${infant?.caregiver?.firstName} to the clinic and discuss the importance of seeking help.`,
+      name: 'Yellow skin or eyes',
+      alert: `Eish! Refer ${infant?.caregiver?.firstName} & ${name} to the clinic urgently and discuss the importance of seeking help.`,
     },
-    { name: 'Abdominal pain' },
-    { name: 'Heavy bleeding' },
-    {
-      name: 'Feeling too hot or too cold',
-      description: 'A temperature above 37.5 degrees suggests an infection.',
-    },
-    { name: 'Offensive or bad-smelling vaginal fluid' },
-    { name: 'Unable to manage the baby' },
-    { name: 'High stress' },
-    { name: 'Problems with breastfeeding' },
+    { name: 'Severe eye infection' },
+    { name: 'Severe cord infection' },
     { name: 'None of the above' },
   ];
 
@@ -77,7 +77,7 @@ export const DangerSignsStep = ({
                   iconColor="alertMain"
                   iconClassName="h-10 w-10"
                   title="You can only select “None of the above” if there are no danger signs"
-                  detailText={`If ${infant?.caregiver?.firstName} is not experiencing any danger signs, first deselect all danger signs before selecting “None of the above”.`}
+                  detailText={`If ${name} is not experiencing any danger signs, first deselect all danger signs before selecting “None of the above”.`}
                   actionButtons={[
                     {
                       colour: 'primary',
@@ -100,6 +100,7 @@ export const DangerSignsStep = ({
 
         setAnswer(currentAnswers);
         setEnableButton && setEnableButton(true);
+
         return (
           setQuestions &&
           setQuestions([
@@ -113,6 +114,7 @@ export const DangerSignsStep = ({
       const currentAnswers = answers?.filter((item) => item !== event.value);
 
       setEnableButton && setEnableButton(!!currentAnswers?.length);
+
       setAnswer(currentAnswers);
       return (
         setQuestions &&
@@ -124,14 +126,7 @@ export const DangerSignsStep = ({
         ])
       );
     },
-    [
-      answers,
-      dialog,
-      infant?.caregiver?.firstName,
-      question,
-      setEnableButton,
-      setQuestions,
-    ]
+    [answers, dialog, name, question, setEnableButton, setQuestions]
   );
 
   if (isTipPage && currentOption) {
@@ -147,7 +142,7 @@ export const DangerSignsStep = ({
     <>
       <Header
         backgroundColor="tertiary"
-        customIcon={Pregnant}
+        customIcon={Infant}
         title="Danger signs"
         {...(isFollowUp
           ? {
@@ -166,21 +161,12 @@ export const DangerSignsStep = ({
           />
         ) : (
           <>
-            <Alert
-              type="info"
-              title="The most common complications after delivery are infection and vaginal bleeding."
-              className="mb-4"
-            />
+            <Label text="If you or your family notice any of these danger signs after my visit, take the baby to the clinic or hospital immediately." />
+            <Divider dividerType="dashed" className="my-4" />
             <Typography
               type="h4"
               text={replaceBraces(question, infant?.caregiver?.firstName || '')}
               color="black"
-            />
-            <Typography
-              type="body"
-              text="Tap the chat icons to see translations"
-              color="textMid"
-              className="mb-4"
             />
             {options.map((option, index) => (
               <div
@@ -192,24 +178,13 @@ export const DangerSignsStep = ({
                   value={option.name}
                   onCheckboxChange={onCheckboxChange}
                 />
-                <div>
-                  <Typography
-                    type="body"
-                    align="left"
-                    weight="skinny"
-                    text={option?.name || ''}
-                    color="textMid"
-                  />
-                  {option?.description && (
-                    <Typography
-                      type="body"
-                      align="left"
-                      weight="skinny"
-                      color="textLight"
-                      text={option?.description}
-                    />
-                  )}
-                </div>
+                <Typography
+                  type="body"
+                  align="left"
+                  weight="skinny"
+                  text={option?.name || ''}
+                  color="textMid"
+                />
                 {options.length - 1 > index && (
                   <button
                     className="ml-auto"
@@ -223,11 +198,11 @@ export const DangerSignsStep = ({
                 )}
               </div>
             ))}
-            {answers?.find((item) => item === options[0].name) && (
+            {answers?.find((item) => item === options[5].name) && (
               <Alert
                 className="mt-4"
                 type="error"
-                title={options[0].alert}
+                title={options[5].alert}
                 customIcon={
                   <div className="rounded-full">
                     {renderIcon(

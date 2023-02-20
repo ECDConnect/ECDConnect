@@ -7,8 +7,15 @@ import {
   MaternalDistressStep,
   MaternalDistressScreeningStep,
 } from './care-for-mom-steps';
+import {
+  CareForBabyStep,
+  RoadToHeathBookStep,
+  DangerSignsStep as BabyDangerSignsStep,
+  NewbornCareStep,
+  MotherCareStep,
+} from './care-for-baby-steps';
 
-export const careFormMomSteps = [
+export const careForMomSteps = [
   CareForMomStep,
   ClinicCheckupStep,
   DangerSignsStep,
@@ -16,4 +23,12 @@ export const careFormMomSteps = [
   SelfCareAndSupportStep,
   MaternalDistressStep,
   MaternalDistressScreeningStep,
+];
+
+export const careForBabySteps = [
+  CareForBabyStep,
+  RoadToHeathBookStep,
+  BabyDangerSignsStep,
+  NewbornCareStep,
+  MotherCareStep,
 ];
