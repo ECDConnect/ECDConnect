@@ -83,7 +83,7 @@ export const SubmitIncomeStatements: React.FC = () => {
             backgroundColour={
               submitDateDaysCount > 8 ? 'successMain' : 'alertMain'
             }
-            borderColour="successMain"
+            borderColour={submitDateDaysCount > 8 ? 'successMain' : 'alertMain'}
             text={`${submitDateDaysCount} days`}
             textColour={'white'}
             className={'mr-2'}

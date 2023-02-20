@@ -23,7 +23,6 @@ export const incomesValueFunc = (item: any) => {
 
 export const getChildName = (childId: string, children: ChildDto[]) => {
   const childName: ChildDto =
-    children?.find((item) => item?.userId === childId) || {};
-
+    children?.find((item) => item?.id === childId) || {};
   return childName?.user?.fullName;
 };
