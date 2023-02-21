@@ -9,7 +9,7 @@ import { useLocation } from 'react-router';
 import { currentActivityKey } from '..';
 import { activitiesTypes } from '../activities-list';
 import { DynamicForm } from './dynamic-form';
-import { careFormMomSteps } from './steps';
+import { careForBabySteps, careForMomSteps } from './steps';
 
 interface FormProps {
   onBack: () => void;
@@ -96,7 +96,9 @@ export const Form = ({ onBack }: FormProps) => {
   const currentSteps = useMemo(() => {
     switch (activityName) {
       case activitiesTypes.careForMom:
-        return careFormMomSteps;
+        return careForMomSteps;
+      case activitiesTypes.careForBaby:
+        return careForBabySteps;
       default:
         return [() => <div className="p-4">Coming soon</div>];
     }

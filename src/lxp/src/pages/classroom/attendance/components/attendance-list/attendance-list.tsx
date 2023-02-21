@@ -207,7 +207,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
   return (
     <div className={styles.wrapper}>
       <div className={styles.contentWrapper}>
-        {shouldFilter && (
+        {shouldFilter && classroomGroupsForPrincipal.length > 1 && (
           <SearchDropDown<any>
             displayMenuOverlay
             menuItemClassName={styles.dropdownStyles}
@@ -237,7 +237,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
             placeholder={'Class'}
             pluralSelectionText={'Classes'}
             multiple
-            color={'uiMidDark'}
+            color={'secondary'}
             selectedOptions={selectedClassroomGroups.map((x) => {
               return {
                 id: x.id ?? '',
@@ -252,23 +252,26 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
             }}
           />
         )}
-        <div className={styles.statusChipsWrapper(shouldFilter)}>
+      </div>
+
+      <div>
+        <div className={styles.statusChipsWrapper(true)}>
           <StatusChip
-            className={'mr-2'}
+            className={'mr-2 '}
             padding={'px-3 py-1.5'}
-            textColour="white"
-            borderColour="successMain"
-            textType="small"
-            backgroundColour="successMain"
+            textColour="successMain"
+            borderColour="white"
+            textType="h2"
+            backgroundColour="white"
             text={`${presentChildrenCount} present`}
           />
           <div>
             <StatusChip
-              textColour="white"
+              textColour="errorMain"
               padding={'px-3 py-1.5'}
-              borderColour="errorMain"
-              textType="small"
-              backgroundColour="errorMain"
+              borderColour="white"
+              textType="h2"
+              backgroundColour="white"
               text={`${absentChildrenCount} absent`}
             />
           </div>
@@ -306,7 +309,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
             size="small"
             color="primary"
             type="filled"
-            disabled={!isButtonActive}
+            // disabled={isButtonActive}
           >
             {renderIcon('PaperAirplaneIcon', 'h-5 w-5 text-white')}
             <Typography
