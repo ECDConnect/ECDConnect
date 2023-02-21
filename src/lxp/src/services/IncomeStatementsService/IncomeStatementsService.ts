@@ -274,27 +274,29 @@ class IncomeStatementsService {
 
   async getAllStatementsBalanceSheet(
     userId: string,
-    year: Number
+    year: Number,
+    month: Number
   ): Promise<BalanceSheetDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-      query allStatementsBalanceSheet($userId: String, $year: Int!) {
-        allStatementsBalanceSheet(userId: $userId, year: $year) {
-            userId
-            incomeTotal
-            expenseTotal
-            balance
-            month
-            year
-            isAutoSubmitted
-            submittedDate
+      query allStatementsBalanceSheet($userId: String, $year: Int!, $month: Int!) {
+        allStatementsBalanceSheet(userId: $userId, year: $year, month: $month) {
+           userId  
+           incomeTotal 
+           expenseTotal
+           balance 
+           month 
+           year 
+           isAutoSubmitted 
+           submittedDate       
         }
       }
           `,
       variables: {
         userId,
         year,
+        month,
       },
     });
 
