@@ -4,7 +4,6 @@ export interface AttendanceItemStatus<T> {
 }
 
 export enum AttendanceStatus {
-  Unknown = 1,
-  Present = 2,
-  Absent = 3,
+  Present = 1,
+  Absent = 2,
 }

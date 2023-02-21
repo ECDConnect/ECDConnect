@@ -20,8 +20,6 @@ export const getColourByStatus = (status?: AttendanceStatus) => {
         return attendanceIconAbsent;
       case AttendanceStatus.Present:
         return attendanceIconPresent;
-      case AttendanceStatus.Unknown:
-        return attendanceIconBase;
       default:
         return attendanceIconBase;
     }

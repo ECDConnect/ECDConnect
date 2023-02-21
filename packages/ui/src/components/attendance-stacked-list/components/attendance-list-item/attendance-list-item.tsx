@@ -23,8 +23,9 @@ export const AttendanceListItem = ({
 }: React.PropsWithChildren<AttendanceListItemProps>) => {
   const [attendanceItem, setAttendanceItem] =
     useState<AttendanceListDataItem>(item);
+
   useEffect(() => {
-    item.status = item.status ?? AttendanceStatus.Unknown;
+    item.status = item.status ?? AttendanceStatus.Present;
     setAttendanceItem(item);
   }, [item]);
 
@@ -37,8 +38,6 @@ export const AttendanceListItem = ({
         currentItem.status === AttendanceStatus.Present
       ) {
         currentItem.status = AttendanceStatus.Absent;
-      } else {
-        currentItem.status = AttendanceStatus.Present;
       }
       setAttendanceItem(currentItem);
       if (onBadgeClick) {
@@ -50,7 +49,7 @@ export const AttendanceListItem = ({
     if (currentItem.status && currentItem.status !== AttendanceStatus.Absent) {
       currentItem.status = currentItem.status + 1;
     } else {
-      currentItem.status = AttendanceStatus.Unknown;
+      currentItem.status = AttendanceStatus.Present;
     }
 
     setAttendanceItem(currentItem);
@@ -63,10 +62,8 @@ export const AttendanceListItem = ({
     if (status) {
       switch (status) {
         case AttendanceStatus.Absent:
-          return 'CheckCircleIcon';
+          return 'XCircleIcon';
         case AttendanceStatus.Present:
-          return 'CheckCircleIcon';
-        case AttendanceStatus.Unknown:
           return 'CheckCircleIcon';
         default:
           return 'CheckCircleIcon';
