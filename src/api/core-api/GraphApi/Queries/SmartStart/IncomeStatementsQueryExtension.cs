@@ -39,9 +39,9 @@ string userId, int year, int month)
             return incomeManager.GetAllStatementsStartupSupport(userId, year, month);
         }
         public List<StatementsBalanceSheet> GetAllStatementsBalanceSheet([Service] IncomeExpenseService incomeManager,
-string userId, int year)
+string userId, int year, int month)
         {
-            return incomeManager.GetAllStatementsBalanceSheet(userId, year);
+            return incomeManager.GetAllStatementsBalanceSheet(userId, year, month);
         }
     }
 }
