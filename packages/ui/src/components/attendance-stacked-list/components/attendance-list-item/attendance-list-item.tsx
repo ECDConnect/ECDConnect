@@ -75,7 +75,10 @@ export const AttendanceListItem = ({
 
   return (
     <div
-      className={classNames(styles.menulistItemContainer, className)}
+      className={classNames(
+        className,
+        styles.menulistItemContainer(attendanceItem.status)
+      )}
       onClick={() => {
         onBadgeClicked();
         attendanceItem.onActionClick && attendanceItem.onActionClick();

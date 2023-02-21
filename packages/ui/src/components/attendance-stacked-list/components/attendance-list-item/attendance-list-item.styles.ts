@@ -7,11 +7,28 @@ export const menuItemIconContainerDefault = 'bg-primary text-white';
 export const menuItemIcon = 'flex-shrink-0 h-6 w-6 ';
 export const menuTitle = 'text-sm font-medium text-primary truncate';
 export const menuSubTitle = 'flex pl-0.5 items-center text-sm text-textLight';
-export const attendanceIconBase = 'h-6 w-6 text-textLight';
+// export const attendanceIconBase = 'h-6 w-6 text-textLight';
 export const attendanceIconPresent = 'h-6 w-6 text-successMain';
 export const attendanceIconAbsent = 'h-6 w-6 text-errorMain';
-export const menulistItemContainer =
+export const presentListItemContainer =
   'block bg-successBg cursor-pointer rounded-10';
+export const absentListItemContainer =
+  'block bg-errorBg cursor-pointer rounded-10';
+
+export const menulistItemContainer = (status?: AttendanceStatus) => {
+  if (status) {
+    switch (status) {
+      case AttendanceStatus.Absent:
+        return absentListItemContainer;
+      case AttendanceStatus.Present:
+        return presentListItemContainer;
+      default:
+        return presentListItemContainer;
+    }
+  } else {
+    return presentListItemContainer;
+  }
+};
 
 export const getColourByStatus = (status?: AttendanceStatus) => {
   if (status) {
@@ -21,10 +38,10 @@ export const getColourByStatus = (status?: AttendanceStatus) => {
       case AttendanceStatus.Present:
         return attendanceIconPresent;
       default:
-        return attendanceIconBase;
+        return attendanceIconPresent;
     }
   } else {
-    return attendanceIconBase;
+    return attendanceIconPresent;
   }
 };
 
