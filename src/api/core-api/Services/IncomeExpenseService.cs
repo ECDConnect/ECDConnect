@@ -61,50 +61,70 @@ namespace ECDLink.Core.Services
         }
 
         //TODO:realign with new functions
-        public List<StatementsBalanceSheet> GetAllStatementsBalanceSheet(string userId, int year)
+        public List<StatementsBalanceSheet> GetAllStatementsBalanceSheet(string userId, int year, int month)
         {
             List<StatementsBalanceSheet> balanceSheets = new List<StatementsBalanceSheet>();
             var statementsRepo = _repoFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _applicationUserId);
-            var statements = statementsRepo.GetAll().Where(x => string.Equals(x.UserId, userId) && x.Submitted == true).ToList();
-            if (statements.Any())
+            DateTime nextMonth= DateTime.Now.AddMonths(1);
+            if (month > 0 && ((year == DateTime.Now.Year && month >= DateTime.Now.Month) || (year == nextMonth.Year && month == nextMonth.Month))) //
             {
-                if (year > 0)
+                //FE requests future dated values included in next UNsubmitted set of statement lines
+                double allIncomeTotal = GetAllIncomeTotal(userId, year, month, false);
+                double allExpenseTotal = GetAllExpensesTotal(userId, year, month, false);
+
+                double runningBalance = allIncomeTotal - allExpenseTotal;
+
+                runningBalance = Math.Round(runningBalance, 2);
+
+                balanceSheets.Add(new StatementsBalanceSheet() { Balance = Math.Round(runningBalance, 2), IncomeTotal = Math.Round(allIncomeTotal, 2), ExpenseTotal = Math.Round(allExpenseTotal, 2), Month = month, Year = year, UserId = userId, IsAutoSubmitted = false, SubmittedDate = null });
+            }
+            else 
+            {
+                //Only retrieve submitted statements oif not a future dated month is requested
+                var statements = statementsRepo.GetAll().Where(x => string.Equals(x.UserId, userId) && x.Submitted.Equals(true)).ToList();
+                if (statements.Any())
                 {
-                    statements = statements.Where(x => x.Year.Equals(year)).ToList();
-                }
-                //year loop
-                var allYears = statements.Select(x => x.Year).Distinct().ToList();
-                if (allYears.Any())
-                {
-                    allYears.OrderDescending();
-                    foreach (var currentYear in allYears)
+                    if (year > 0) //filter to specific year
                     {
-                        //months loop
-                        var months = statements.Where(x => x.Year == year).Select(y => y.Month).Distinct().ToList();
-                        if (months.Any())
+                        statements = statements.Where(x => x.Year.Equals(year)).ToList();
+                    }
+                    //year loop
+                    var allYears = statements.Select(x => x.Year).Distinct().ToList();
+                    if (allYears.Any())
+                    {
+                        allYears.OrderDescending();
+                        foreach (var currentYear in allYears)
                         {
-                            months.OrderDescending();
-                            foreach (var month in months)
+                            //months loop
+                            var allMonths = statements.Where(x => x.Year == year).Select(y => y.Month).Distinct().ToList();
+                            if (month > 0) //filter to specific month
                             {
-                                var statementCheck = statements.Where(x => x.Year.Equals(year) && x.Month.Equals(month)).FirstOrDefault();
-                                bool isAutoSubmitted = (statementCheck!= null ? statementCheck.AutoSubmitted : false);
-                                var allIncome = statements.Where(x => x.Year.Equals(year) && x.Month.Equals(month)).Select(y => y.IncomeTotal).ToList();
-                                var allExpenses = statements.Where(x => x.Year.Equals(year) && x.Month.Equals(month)).Select(y => y.ExpenseTotal).ToList();
+                                statements = statements.Where(x => x.Month.Equals(month)).ToList();
+                            }
+                            if (allMonths.Any())
+                            {
+                                allMonths.OrderDescending();
+                                foreach (var currentMonth in allMonths)
+                                {
+                                    var statementCheck = statements.Where(x => x.Year.Equals(year) && x.Month.Equals(currentMonth)).FirstOrDefault();
+                                    bool isAutoSubmitted = (statementCheck != null ? statementCheck.AutoSubmitted : false);
+                                    var allIncome = statements.Where(x => x.Year.Equals(year) && x.Month.Equals(currentMonth)).Select(y => y.IncomeTotal).ToList();
+                                    var allExpenses = statements.Where(x => x.Year.Equals(year) && x.Month.Equals(currentMonth)).Select(y => y.ExpenseTotal).ToList();
 
-                                double allIncomeTotal = allIncome.Sum();
-                                double allExpenseTotal = allExpenses.Sum();
+                                    double allIncomeTotal = allIncome.Sum();
+                                    double allExpenseTotal = allExpenses.Sum();
 
-                                double balance = allIncomeTotal - allExpenseTotal;
+                                    double balance = allIncomeTotal - allExpenseTotal;
 
-                                balanceSheets.Add(new StatementsBalanceSheet() { Balance = Math.Round(balance, 2), IncomeTotal = Math.Round(allIncomeTotal, 2), ExpenseTotal = Math.Round(allExpenseTotal, 2), Month = month, Year = year, UserId = userId, IsAutoSubmitted = isAutoSubmitted, SubmittedDate = statementCheck.SubmittedDate });
+                                    balanceSheets.Add(new StatementsBalanceSheet() { Balance = Math.Round(balance, 2), IncomeTotal = Math.Round(allIncomeTotal, 2), ExpenseTotal = Math.Round(allExpenseTotal, 2), Month = currentMonth, Year = currentYear, UserId = userId, IsAutoSubmitted = isAutoSubmitted, SubmittedDate = statementCheck.SubmittedDate });
+                                }
                             }
                         }
                     }
-                    return balanceSheets;
+                    else return new List<StatementsBalanceSheet>();
                 }
-                else return new List<StatementsBalanceSheet>();
             }
-            else return new List<StatementsBalanceSheet>();
+            return balanceSheets;            
         }
 
         public List<StatementsStartupSupport> GetAllStatementsStartupSupport(string userId, int year, int month)
@@ -348,6 +368,7 @@ namespace ECDLink.Core.Services
 
                         incomeRepo.Update(row);
                     }
+                    retVal = true;
                 }
                 //expenses
                 if (latestExpenseRows.Count > 0)
@@ -366,6 +387,7 @@ namespace ECDLink.Core.Services
 
                         expenseRepo.Update(row);
                     }
+                    retVal= true;
                 }
                 //statement update
                 submittedStatement.ExpenseTotal = allExpenses;
