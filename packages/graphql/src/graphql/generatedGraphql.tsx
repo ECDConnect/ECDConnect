@@ -1880,8 +1880,6 @@ export type HealthPromotion = {
   Description?: Maybe<Scalars['String']>;
   DescriptionListIcon?: Maybe<Scalars['String']>;
   Section?: Maybe<Scalars['String']>;
-  Title?: Maybe<Scalars['String']>;
-  Type?: Maybe<Scalars['String']>;
   Visit?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['Int']>;
 };
@@ -1890,8 +1888,6 @@ export type HealthPromotionInput = {
   Description?: InputMaybe<Scalars['String']>;
   DescriptionListIcon?: InputMaybe<Scalars['String']>;
   Section?: InputMaybe<Scalars['String']>;
-  Title?: InputMaybe<Scalars['String']>;
-  Type?: InputMaybe<Scalars['String']>;
   Visit?: InputMaybe<Scalars['String']>;
 };
 
@@ -2019,21 +2015,37 @@ export type InfantModelInput = {
 
 export type Infographics = {
   __typename?: 'Infographics';
-  Content?: Maybe<Scalars['String']>;
-  Image?: Maybe<Scalars['String']>;
+  HeaderA?: Maybe<Scalars['String']>;
+  HeaderB?: Maybe<Scalars['String']>;
+  ImageA?: Maybe<Scalars['String']>;
+  ImageB?: Maybe<Scalars['String']>;
   Section?: Maybe<Scalars['String']>;
-  Title?: Maybe<Scalars['String']>;
-  Type?: Maybe<Scalars['String']>;
+  ShowDividerA?: Maybe<Scalars['String']>;
+  ShowDividerB?: Maybe<Scalars['String']>;
+  TipBoxColorA?: Maybe<Scalars['String']>;
+  TipBoxDescriptionA?: Maybe<Scalars['String']>;
+  TipBoxDescriptionColorA?: Maybe<Scalars['String']>;
+  TipBoxIconA?: Maybe<Scalars['String']>;
+  TipBoxTitleA?: Maybe<Scalars['String']>;
+  TipBoxTitleColorA?: Maybe<Scalars['String']>;
   Visit?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['Int']>;
 };
 
 export type InfographicsInput = {
-  Content?: InputMaybe<Scalars['String']>;
-  Image?: InputMaybe<Scalars['String']>;
+  HeaderA?: InputMaybe<Scalars['String']>;
+  HeaderB?: InputMaybe<Scalars['String']>;
+  ImageA?: InputMaybe<Scalars['String']>;
+  ImageB?: InputMaybe<Scalars['String']>;
   Section?: InputMaybe<Scalars['String']>;
-  Title?: InputMaybe<Scalars['String']>;
-  Type?: InputMaybe<Scalars['String']>;
+  ShowDividerA?: InputMaybe<Scalars['String']>;
+  ShowDividerB?: InputMaybe<Scalars['String']>;
+  TipBoxColorA?: InputMaybe<Scalars['String']>;
+  TipBoxDescriptionA?: InputMaybe<Scalars['String']>;
+  TipBoxDescriptionColorA?: InputMaybe<Scalars['String']>;
+  TipBoxIconA?: InputMaybe<Scalars['String']>;
+  TipBoxTitleA?: InputMaybe<Scalars['String']>;
+  TipBoxTitleColorA?: InputMaybe<Scalars['String']>;
   Visit?: InputMaybe<Scalars['String']>;
 };
 
@@ -2333,8 +2345,6 @@ export type MoreInformation = {
   Section?: Maybe<Scalars['String']>;
   ShowDividerA?: Maybe<Scalars['String']>;
   ShowDividerB?: Maybe<Scalars['String']>;
-  Title?: Maybe<Scalars['String']>;
-  Type?: Maybe<Scalars['String']>;
   Visit?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['Int']>;
 };
@@ -2358,8 +2368,6 @@ export type MoreInformationInput = {
   Section?: InputMaybe<Scalars['String']>;
   ShowDividerA?: InputMaybe<Scalars['String']>;
   ShowDividerB?: InputMaybe<Scalars['String']>;
-  Title?: InputMaybe<Scalars['String']>;
-  Type?: InputMaybe<Scalars['String']>;
   Visit?: InputMaybe<Scalars['String']>;
 };
 
@@ -8093,8 +8101,6 @@ export type VisitVideos = {
   TipBoxTitleB?: Maybe<Scalars['String']>;
   TipBoxTitleColorA?: Maybe<Scalars['String']>;
   TipBoxTitleColorB?: Maybe<Scalars['String']>;
-  Title?: Maybe<Scalars['String']>;
-  Type?: Maybe<Scalars['String']>;
   Video?: Maybe<Scalars['String']>;
   Visit?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['Int']>;
@@ -8121,8 +8127,6 @@ export type VisitVideosInput = {
   TipBoxTitleB?: InputMaybe<Scalars['String']>;
   TipBoxTitleColorA?: InputMaybe<Scalars['String']>;
   TipBoxTitleColorB?: InputMaybe<Scalars['String']>;
-  Title?: InputMaybe<Scalars['String']>;
-  Type?: InputMaybe<Scalars['String']>;
   Video?: InputMaybe<Scalars['String']>;
   Visit?: InputMaybe<Scalars['String']>;
 };
