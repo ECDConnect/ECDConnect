@@ -7,6 +7,8 @@ namespace ECDLink.Core.SystemSettings.SystemOptions
     {
         public string ForgotPassword { get; set; }
 
+        public string VerifyEmail { get; set; }
+
         public string Login { get; set; }
     }
 }
