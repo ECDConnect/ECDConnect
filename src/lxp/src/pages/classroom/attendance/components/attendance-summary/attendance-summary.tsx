@@ -391,13 +391,6 @@ export const AttendanceSummary: React.FC = () => {
                   color={'alertMain'}
                 />
               </div>
-              <Typography
-                className={'pt-2'}
-                type={'body'}
-                weight={'bold'}
-                text={'Let’s get them done:'}
-                color={'textMid'}
-              />
             </div>
           )}
 

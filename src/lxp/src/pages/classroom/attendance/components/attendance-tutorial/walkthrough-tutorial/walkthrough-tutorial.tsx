@@ -54,9 +54,6 @@ export const WalkthroughTutorial = ({
       case AttendanceStatus.Absent:
         setTutorialProgressClicks(tutorialProgressClicks + 1);
         break;
-      case AttendanceStatus.Unknown:
-        setTutorialProgressClicks(tutorialProgressClicks + 1);
-        break;
       default:
     }
   };
@@ -76,7 +73,7 @@ export const WalkthroughTutorial = ({
           title: 'Amahle Khumalo',
           profileText: 'AM',
           attenendeeId: '1',
-          status: AttendanceStatus.Unknown,
+          status: AttendanceStatus.Present,
           avatarColor: getAvatarColor(),
         });
         setTutorialProgressClicks(0);

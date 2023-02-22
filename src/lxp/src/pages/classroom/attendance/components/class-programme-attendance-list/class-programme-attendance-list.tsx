@@ -2,7 +2,6 @@ import { getAvatarColor, LearnerDto } from '@ecdlink/core';
 import {
   AttendanceListDataItem,
   AttendanceStackedList,
-  Typography,
 } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
