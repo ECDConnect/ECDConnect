@@ -1,4 +1,5 @@
 using EcdLink.Api.CoreApi.GraphApi.Models;
+using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Helpers;
 using ECDLink.Core.Services.Interfaces;
@@ -120,7 +121,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         FirstName = practitioner.FirstName,
                         Surname = practitioner.Surname,
                         FullName = $"{practitioner.FirstName} {practitioner.Surname}",
-                        ContactPreference = "sms",
+                        ContactPreference = MessageTypeConstants.SMS,
                         IsActive = true,
                         TenantId = tenantId
                     };
