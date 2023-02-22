@@ -1,4 +1,5 @@
-﻿using ECDLink.Abstractrions.Enums;
+﻿using ECDLink.Abstractrions.Constants;
+using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.Notifications;
 using ECDLink.AutomatedJobs.Cron;
 using ECDLink.Core.Extensions;
@@ -79,10 +80,17 @@ namespace ECDLink.AutomatedJobs.Notifications
                         if (report.PercentageAttendance < 100)
                         {
                             var notificationProvider = notificationProviderFactory.Create(practitioner.User);
+                            
+                            var applicationName = TenantExecutionContext.Tenant.ApplicationName;
+                            var organisationName = TenantExecutionContext.Tenant.ApplicationName;
+                            string firstName = practitioner.User.FirstName;
 
                             await notificationProvider
                                 .SetMessageTemplate(TemplateTypeEnum.AttendanceWeekly)
-                                .AddFieldReplacement("callback", loginUrl)
+                                .AddOrUpdateFieldReplacement(MessageTemplateConstants.LoginLink, loginUrl)
+                                .AddOrUpdateFieldReplacement(MessageTemplateConstants.FirstName, firstName)
+                                .AddOrUpdateFieldReplacement(MessageTemplateConstants.ApplicationName, applicationName)
+                                .AddOrUpdateFieldReplacement(MessageTemplateConstants.OrganisationName, organisationName)
                                 .SendMessageAsync();
                         }
                     }
