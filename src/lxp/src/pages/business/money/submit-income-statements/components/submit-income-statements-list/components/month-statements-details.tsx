@@ -57,6 +57,9 @@ export const MonthStatementsDetails: React.FC = () => {
     [expenses]
   );
 
+  const balanceSheet = useSelector(statementsSelectors.getBalanceSheet);
+  const isSameMonth = balanceSheet?.[0]?.month === statementMonth;
+
   const preschoolIncome = useSelector(
     statementsSelectors.getPreschoolFeeIncome
   );
@@ -80,21 +83,21 @@ export const MonthStatementsDetails: React.FC = () => {
 
   const otherIncome = useSelector(statementsSelectors.getOtheryIncome);
 
-  const totalIncome = submittedIncome?.reduce(function (
-    prev: any,
-    current: any
-  ) {
-    return prev + +current.amount;
-  },
-  0);
+  const totalIncome = isSameMonth
+    ? income?.reduce(function (prev: any, current: any) {
+        return prev + +current.amount;
+      }, 0)
+    : submittedIncome?.reduce(function (prev: any, current: any) {
+        return prev + +current.amount;
+      }, 0);
 
-  const totalExpenses = submittedExpenses?.reduce(function (
-    prev: any,
-    current: any
-  ) {
-    return prev + +current.amount;
-  },
-  0);
+  const totalExpenses = isSameMonth
+    ? expenses?.reduce(function (prev: any, current: any) {
+        return prev + +current.amount;
+      }, 0)
+    : submittedExpenses?.reduce(function (prev: any, current: any) {
+        return prev + +current.amount;
+      }, 0);
 
   const totalBalance = (totalIncome - totalExpenses)?.toFixed(2);
 
@@ -120,7 +123,9 @@ export const MonthStatementsDetails: React.FC = () => {
     const dbeSubsidyValue: IncomeStatementsDto[] = [];
     const otherValue: IncomeStatementsDto[] = [];
 
-    submittedIncome?.map((item: any) => {
+    const filteredIncome = isSameMonth ? income : submittedIncome;
+
+    filteredIncome?.map((item: any) => {
       if (item?.incomeTypeId === preschoolIncome?.id) {
         preschoolValue.push(item);
         setPreschoolFees(preschoolValue);
@@ -146,6 +151,8 @@ export const MonthStatementsDetails: React.FC = () => {
   }, [
     dbeSubsidyIncome?.id,
     donationIncome?.id,
+    income,
+    isSameMonth,
     otherIncome?.id,
     preschoolIncome?.id,
     startupIncome?.id,
@@ -161,7 +168,9 @@ export const MonthStatementsDetails: React.FC = () => {
     const utilitiesValue: ExpensesStatementsDto[] = [];
     const salaryValue: ExpensesStatementsDto[] = [];
 
-    submittedExpenses?.map((item: any) => {
+    const expensesFiltered = isSameMonth ? expenses : submittedExpenses;
+
+    expensesFiltered?.map((item: any) => {
       if (item?.expenseTypeId === rentExpense?.id) {
         rentValue.push(item);
         setRent(rentValue);
@@ -295,8 +304,7 @@ export const MonthStatementsDetails: React.FC = () => {
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       text: '1',
-      onActionClick: () =>
-        history.push(ROUTES.BUSINESS_SUBMIT_INCOME_STATEMENTS_DESCRIPTION),
+      onActionClick: () => {},
       classNames: 'bg-uiBg',
       subItem: `R ${incomesValueFunc(rent)}`,
       notRounded: true,
