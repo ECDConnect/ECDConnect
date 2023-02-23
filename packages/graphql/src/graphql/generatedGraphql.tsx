@@ -1941,6 +1941,18 @@ export type IdentityRole = {
   permissions?: Maybe<Array<Maybe<Permission>>>;
 };
 
+export type IncomeStatements = {
+  __typename?: 'IncomeStatements';
+  description?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['Int']>;
+  name?: Maybe<Scalars['String']>;
+};
+
+export type IncomeStatementsInput = {
+  description?: InputMaybe<Scalars['String']>;
+  name?: InputMaybe<Scalars['String']>;
+};
+
 export type Infant = {
   __typename?: 'Infant';
   caregiver?: Maybe<Caregiver>;
@@ -2511,6 +2523,7 @@ export type Mutation = {
   createHealthCareWorker?: Maybe<HealthCareWorker>;
   createHealthPromotion?: Maybe<Scalars['String']>;
   createHierarchyEntity?: Maybe<HierarchyEntity>;
+  createIncomeStatements?: Maybe<Scalars['String']>;
   createInfant?: Maybe<Infant>;
   createInfographics?: Maybe<Scalars['String']>;
   createIntegrationMapping?: Maybe<IntegrationMapping>;
@@ -2598,6 +2611,7 @@ export type Mutation = {
   deleteHealthCareWorker?: Maybe<Scalars['Boolean']>;
   deleteHealthPromotion?: Maybe<Scalars['Boolean']>;
   deleteHierarchyEntity?: Maybe<Scalars['Boolean']>;
+  deleteIncomeStatements?: Maybe<Scalars['Boolean']>;
   deleteInfant?: Maybe<Scalars['Boolean']>;
   deleteInfographics?: Maybe<Scalars['Boolean']>;
   deleteIntegrationMapping?: Maybe<Scalars['Boolean']>;
@@ -2716,6 +2730,7 @@ export type Mutation = {
   updateHealthPromotion?: Maybe<HealthPromotion>;
   updateHierarchyEntity?: Maybe<HierarchyEntity>;
   updateIncome?: Maybe<StatementsIncome>;
+  updateIncomeStatements?: Maybe<IncomeStatements>;
   updateInfant?: Maybe<Infant>;
   updateInfographics?: Maybe<Infographics>;
   updateIntegrationMapping?: Maybe<IntegrationMapping>;
@@ -2781,7 +2796,7 @@ export type Mutation = {
   updateUserHierarchyEntity?: Maybe<UserHierarchyEntity>;
   updateVisit?: Maybe<Visit>;
   updateVisitData?: Maybe<VisitData>;
-  updateVisitDataStatus?: Maybe<VisitDataStatus>;
+  updateVisitDataStatus: Scalars['Boolean'];
   updateVisitType?: Maybe<VisitType>;
   updateVisitVideos?: Maybe<VisitVideos>;
   updateWorkflowStatus?: Maybe<WorkflowStatus>;
@@ -3011,6 +3026,12 @@ export type MutationCreateHealthPromotionArgs = {
 
 export type MutationCreateHierarchyEntityArgs = {
   input?: InputMaybe<HierarchyEntityInput>;
+};
+
+export type MutationCreateIncomeStatementsArgs = {
+  input: IncomeStatementsInput;
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationCreateInfantArgs = {
@@ -3396,6 +3417,12 @@ export type MutationDeleteHealthPromotionArgs = {
 
 export type MutationDeleteHierarchyEntityArgs = {
   id?: InputMaybe<Scalars['UUID']>;
+};
+
+export type MutationDeleteIncomeStatementsArgs = {
+  id: Scalars['String'];
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationDeleteInfantArgs = {
@@ -3938,6 +3965,13 @@ export type MutationUpdateIncomeArgs = {
   input?: InputMaybe<StatementsIncomeInput>;
 };
 
+export type MutationUpdateIncomeStatementsArgs = {
+  id: Scalars['String'];
+  input: IncomeStatementsInput;
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
+};
+
 export type MutationUpdateInfantArgs = {
   id?: InputMaybe<Scalars['String']>;
   input?: InputMaybe<InfantModelInput>;
@@ -4297,7 +4331,7 @@ export type MutationUpdateVisitDataArgs = {
 
 export type MutationUpdateVisitDataStatusArgs = {
   id?: InputMaybe<Scalars['UUID']>;
-  input?: InputMaybe<VisitDataStatusInput>;
+  input?: InputMaybe<VisitDataStatusReferralInput>;
 };
 
 export type MutationUpdateVisitTypeArgs = {
@@ -5066,7 +5100,7 @@ export type ProgressTrackingSubCategoryInput = {
 
 export type Progress_VisitDataStatus = {
   __typename?: 'Progress_VisitDataStatus';
-  score: Scalars['Float'];
+  score?: Maybe<Scalars['String']>;
   visitDataStatus?: Maybe<Array<Maybe<VisitDataStatus>>>;
 };
 
@@ -5130,6 +5164,7 @@ export type Query = {
   GetAllHealthCareWorker?: Maybe<Array<Maybe<HealthCareWorker>>>;
   GetAllHealthPromotion: Array<Maybe<HealthPromotion>>;
   GetAllHierarchyEntity?: Maybe<Array<Maybe<HierarchyEntity>>>;
+  GetAllIncomeStatements: Array<Maybe<IncomeStatements>>;
   GetAllInfant?: Maybe<Array<Maybe<Infant>>>;
   GetAllInfographics: Array<Maybe<Infographics>>;
   GetAllIntegrationMapping?: Maybe<Array<Maybe<IntegrationMapping>>>;
@@ -5222,6 +5257,7 @@ export type Query = {
   GetHealthCareWorkerById?: Maybe<HealthCareWorker>;
   GetHealthPromotionById: Array<Maybe<HealthPromotion>>;
   GetHierarchyEntityById?: Maybe<HierarchyEntity>;
+  GetIncomeStatementsById: Array<Maybe<IncomeStatements>>;
   GetInfantById?: Maybe<Infant>;
   GetInfographicsById: Array<Maybe<Infographics>>;
   GetIntegrationMappingById?: Maybe<IntegrationMapping>;
@@ -5342,7 +5378,7 @@ export type Query = {
   coachByPractitionerId?: Maybe<Coach>;
   coachByUserId?: Maybe<Coach>;
   coachNameByUserId?: Maybe<Scalars['String']>;
-  completedVisitsForMother?: Maybe<Array<Maybe<VisitData>>>;
+  completedVisitsForMother?: Maybe<Array<Maybe<Scalars['String']>>>;
   contentDefinitions?: Maybe<Array<Maybe<ContentDefinitionModel>>>;
   contentDefinitionsExcelTemplateGenerator?: Maybe<FileModel>;
   contentTypes?: Maybe<Array<Maybe<ContentType>>>;
@@ -5354,14 +5390,17 @@ export type Query = {
   hasContentTypeBeenTranslated: Scalars['Boolean'];
   healthCareWorkerByUserId?: Maybe<HealthCareWorker>;
   healthCareWorkerVisitStatus?: Maybe<HcwVisitStatus>;
+  healthPromotion: Array<Maybe<HealthPromotion>>;
   holidaysByMonth?: Maybe<Array<Maybe<Holiday>>>;
   holidaysByYear?: Maybe<Array<Maybe<Holiday>>>;
   infantCountForHealthCareWorkerForMonth: Scalars['Int'];
   infantVisits?: Maybe<Array<Maybe<Visit>>>;
+  infographics: Array<Maybe<Infographics>>;
   lastPractitionerInviteDate?: Maybe<Scalars['String']>;
   mapPractitionerToPrincipal?: Maybe<Principal>;
   monthlyAttendanceRecordCSV?: Maybe<FileModel>;
   monthlyAttendanceReport?: Maybe<Array<Maybe<MonthlyAttendanceReportModel>>>;
+  moreInformation: Array<Maybe<MoreInformation>>;
   motherById?: Maybe<Mother>;
   motherCountForHealthCareWorkerForMonth: Scalars['Int'];
   motherVisits?: Maybe<Array<Maybe<Visit>>>;
@@ -5378,6 +5417,7 @@ export type Query = {
   practitionerInviteCount: Scalars['Int'];
   practitionerMetrics?: Maybe<PractitionerMetricReport>;
   practitionerNewSignupMetric: Scalars['Int'];
+  previousVisitInformationForMother?: Maybe<Progress_VisitDataStatus>;
   principalByUserId?: Maybe<Practitioner>;
   roleForUser?: Maybe<Scalars['String']>;
   roles?: Maybe<Array<Maybe<IdentityRole>>>;
@@ -5387,10 +5427,12 @@ export type Query = {
   userById?: Maybe<ApplicationUser>;
   userByToken?: Maybe<UserByToken>;
   users?: Maybe<Array<Maybe<ApplicationUser>>>;
+  visitAnswersForMother?: Maybe<Array<Maybe<VisitData>>>;
+  visitClientSummaryForMother?: Maybe<Array<Maybe<VisitDataSummary>>>;
+  visitClientSummaryProgressForMother?: Maybe<Progress_VisitDataStatus>;
   visitDataForVisit?: Maybe<Array<Maybe<VisitData>>>;
-  visitProgressForMother?: Maybe<Progress_VisitDataStatus>;
   visitReferralsForMother?: Maybe<Array<Maybe<VisitDataStatus>>>;
-  visitSummaryForMother?: Maybe<Array<Maybe<VisitDataSummary>>>;
+  visitVideos: Array<Maybe<VisitVideos>>;
   yearlyClassAttendanceMetricsByUser?: Maybe<
     Array<Maybe<ClassroomMetricReport>>
   >;
@@ -5512,6 +5554,11 @@ export type QueryGetAllHealthPromotionArgs = {
 
 export type QueryGetAllHierarchyEntityArgs = {
   where?: InputMaybe<HierarchyEntityFilterInput>;
+};
+
+export type QueryGetAllIncomeStatementsArgs = {
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryGetAllInfantArgs = {
@@ -5881,6 +5928,12 @@ export type QueryGetHealthPromotionByIdArgs = {
 export type QueryGetHierarchyEntityByIdArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   where?: InputMaybe<HierarchyEntityFilterInput>;
+};
+
+export type QueryGetIncomeStatementsByIdArgs = {
+  id?: InputMaybe<Scalars['Int']>;
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryGetInfantByIdArgs = {
@@ -6449,6 +6502,11 @@ export type QueryHealthCareWorkerVisitStatusArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
+export type QueryHealthPromotionArgs = {
+  locale?: InputMaybe<Scalars['String']>;
+  section?: InputMaybe<Scalars['String']>;
+};
+
 export type QueryHolidaysByMonthArgs = {
   endMonth: Scalars['DateTime'];
   startMonth: Scalars['DateTime'];
@@ -6464,6 +6522,11 @@ export type QueryInfantCountForHealthCareWorkerForMonthArgs = {
 
 export type QueryInfantVisitsArgs = {
   id?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryInfographicsArgs = {
+  locale?: InputMaybe<Scalars['String']>;
+  section?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryLastPractitionerInviteDateArgs = {
@@ -6485,6 +6548,11 @@ export type QueryMonthlyAttendanceReportArgs = {
   endMonth: Scalars['DateTime'];
   startMonth: Scalars['DateTime'];
   userId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryMoreInformationArgs = {
+  locale?: InputMaybe<Scalars['String']>;
+  section?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryMotherByIdArgs = {
@@ -6533,6 +6601,10 @@ export type QueryPractitionerNewSignupMetricArgs = {
   toDate: Scalars['DateTime'];
 };
 
+export type QueryPreviousVisitInformationForMotherArgs = {
+  visitId?: InputMaybe<Scalars['String']>;
+};
+
 export type QueryPrincipalByUserIdArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
@@ -6553,20 +6625,31 @@ export type QueryUserByTokenArgs = {
   token?: InputMaybe<Scalars['String']>;
 };
 
-export type QueryVisitDataForVisitArgs = {
+export type QueryVisitAnswersForMotherArgs = {
   visitId?: InputMaybe<Scalars['String']>;
+  visitName?: InputMaybe<Scalars['String']>;
+  visitSection?: InputMaybe<Scalars['String']>;
 };
 
-export type QueryVisitProgressForMotherArgs = {
+export type QueryVisitClientSummaryForMotherArgs = {
   id?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryVisitClientSummaryProgressForMotherArgs = {
+  id?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryVisitDataForVisitArgs = {
+  visitId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryVisitReferralsForMotherArgs = {
   id?: InputMaybe<Scalars['String']>;
 };
 
-export type QueryVisitSummaryForMotherArgs = {
-  visitId?: InputMaybe<Scalars['String']>;
+export type QueryVisitVideosArgs = {
+  locale?: InputMaybe<Scalars['String']>;
+  section?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryYearlyClassAttendanceMetricsByUserArgs = {
@@ -7122,11 +7205,12 @@ export type SiteAddressInput = {
 
 export type StatementsBalanceSheet = {
   __typename?: 'StatementsBalanceSheet';
+  autoSubmitted: Scalars['Boolean'];
   balance: Scalars['Float'];
   expenseTotal: Scalars['Float'];
   incomeTotal: Scalars['Float'];
-  isAutoSubmitted: Scalars['Boolean'];
   month?: Maybe<Scalars['Int']>;
+  submitted: Scalars['Boolean'];
   submittedDate?: Maybe<Scalars['DateTime']>;
   userId?: Maybe<Scalars['String']>;
   year: Scalars['Int'];
@@ -7987,6 +8071,20 @@ export type VisitDataStatusInput = {
   UpdatedBy?: InputMaybe<Scalars['String']>;
   VisitData?: InputMaybe<VisitDataInput>;
   VisitDataId: Scalars['UUID'];
+};
+
+export type VisitDataStatusModelInput = {
+  color?: InputMaybe<Scalars['String']>;
+  comment?: InputMaybe<Scalars['String']>;
+  id?: InputMaybe<Scalars['String']>;
+  isCompleted?: InputMaybe<Scalars['String']>;
+  type?: InputMaybe<Scalars['String']>;
+  visitData?: InputMaybe<VisitDataInput>;
+  visitDataId?: InputMaybe<Scalars['String']>;
+};
+
+export type VisitDataStatusReferralInput = {
+  referrals?: InputMaybe<Array<InputMaybe<VisitDataStatusModelInput>>>;
 };
 
 export type VisitDataSummary = {

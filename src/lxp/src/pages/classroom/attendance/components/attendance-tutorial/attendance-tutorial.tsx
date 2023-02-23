@@ -30,7 +30,7 @@ export const AttendanceTutorial = ({
     title: 'Amahle Khumalo',
     profileText: 'AM',
     attenendeeId: '1',
-    status: AttendanceStatus.Unknown,
+    status: AttendanceStatus.Present,
     avatarColor: getAvatarColor(),
   });
   const history = useHistory();
@@ -62,7 +62,7 @@ export const AttendanceTutorial = ({
         title: 'Amahle Khumalo',
         profileText: 'AM',
         attenendeeId: '1',
-        status: AttendanceStatus.Unknown,
+        status: AttendanceStatus.Present,
         avatarColor: getAvatarColor(),
       });
       setTutorialProgressClicks(0);

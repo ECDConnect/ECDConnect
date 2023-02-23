@@ -155,6 +155,8 @@ export const MonthStatementsDetails: React.FC = () => {
     dbeSubsidyIncome?.id,
     donationIncome?.id,
     filteredIncome,
+    income,
+    isSameMonth,
     otherIncome?.id,
     preschoolIncome?.id,
     startupIncome?.id,
@@ -170,7 +172,9 @@ export const MonthStatementsDetails: React.FC = () => {
     const utilitiesValue: ExpensesStatementsDto[] = [];
     const salaryValue: ExpensesStatementsDto[] = [];
 
-    filteredExpenses?.map((item: any) => {
+    const expensesFiltered = isSameMonth ? expenses : submittedExpenses;
+
+    expensesFiltered?.map((item: any) => {
       if (item?.expenseTypeId === rentExpense?.id) {
         rentValue.push(item);
         setRent(rentValue);
@@ -204,9 +208,11 @@ export const MonthStatementsDetails: React.FC = () => {
   }, [
     dbeSubsidyIncome.id,
     donationIncome.id,
+    expenses,
     filteredExpenses,
     food.id,
     foodExpense?.id,
+    isSameMonth,
     learningMaterials.id,
     learningMaterialsExpense?.id,
     maintenance.id,
@@ -305,8 +311,7 @@ export const MonthStatementsDetails: React.FC = () => {
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       text: '1',
-      onActionClick: () =>
-        history.push(ROUTES.BUSINESS_SUBMIT_INCOME_STATEMENTS_DESCRIPTION),
+      onActionClick: () => {},
       classNames: 'bg-uiBg',
       subItem: `R ${incomesValueFunc(rent)}`,
       notRounded: true,

@@ -78,13 +78,13 @@ namespace EcdLink.Api.CoreApi
             public const string need_support = "You are struggling and need some support";
             public const string was_coping = " was coping well";
             public const string coping_well = "You are coping well!";
-            public const string was_experiencing = " was experiencing ";
+            public const string was_experiencing = " was experiencing: ";
             public const string t_ace_score = " is at risk of a drinking problem (T-ACE score = ";
             public const string support_drinking = "You may need support to reduce your drinking";
             public const string no_alcohol_abuse = " is not at risk for alcohol abuse";
             public const string no_id_book = " doesn't have an ID book";
             public const string id_book = " has an ID book";
-            public const string go_to_home_affairs = "Go to Home Affairs to apply for your ID book.This will allow you to apply for the child social grant as soon as the baby is born.";
+            public const string go_to_home_affairs = "Go to Home Affairs to apply for your ID book.  This will allow you to apply for the child social grant as soon as the baby is born.";
             public const string apply_social_grant = "You have your ID document & can apply for a child social grant once the baby is born!";
 
             public const string answer_yes = "Yes";

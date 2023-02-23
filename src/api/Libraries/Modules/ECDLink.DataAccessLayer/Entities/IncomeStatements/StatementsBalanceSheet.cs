@@ -11,7 +11,8 @@ namespace ECDLink.DataAccessLayer.Entities.IncomeStatements
         public double IncomeTotal { get; set; }
         public double ExpenseTotal { get; set; }
         public double Balance { get; set; }
-        public bool IsAutoSubmitted { get; set; }
+        public bool AutoSubmitted { get; set; }
+        public bool Submitted { get; set; }
         public DateTime? SubmittedDate { get; set; }
 
     } 
