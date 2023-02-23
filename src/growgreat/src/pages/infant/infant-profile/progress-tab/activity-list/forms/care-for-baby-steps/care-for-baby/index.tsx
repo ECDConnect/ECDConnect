@@ -36,7 +36,7 @@ export const CareForBabyStep = ({
           titleColor="textDark"
           messageColor="textMid"
           customIcon={
-            <div className="bg-primary h-14 w-14 rounded-full">
+            <div className="bg-tertiary h-14 w-14 rounded-full">
               <Polly className="h-14 w-14" />
             </div>
           }

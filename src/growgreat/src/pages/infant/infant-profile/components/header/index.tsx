@@ -6,7 +6,9 @@ interface HeaderProps {
   title: string;
   subTitle?: string;
   tag?: string;
-  backgroundColor: Colours;
+  backgroundColor?: Colours;
+  iconHexBackgroundColor?: string;
+  hexBackgroundColor?: string;
 }
 export const Header = ({
   customIcon,
@@ -14,10 +16,12 @@ export const Header = ({
   title,
   subTitle,
   tag,
-  backgroundColor,
+  backgroundColor: iconBackgroundColor,
+  iconHexBackgroundColor,
+  hexBackgroundColor = '#FEF1E8',
 }: HeaderProps) => {
   return (
-    <div className="bg-uiBg flex gap-2 p-4">
+    <div className="flex gap-2 p-4" style={{ background: hexBackgroundColor }}>
       <RoundIcon
         {...(customIcon
           ? {
@@ -30,7 +34,8 @@ export const Header = ({
             }
           : {})}
         iconColor="white"
-        backgroundColor={backgroundColor}
+        backgroundColor={iconBackgroundColor}
+        hexBackgroundColor={iconHexBackgroundColor}
       />
       <div className="flex flex-col justify-center">
         <Typography

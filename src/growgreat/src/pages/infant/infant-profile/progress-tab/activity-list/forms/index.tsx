@@ -8,8 +8,13 @@ import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router';
 import { currentActivityKey } from '..';
 import { activitiesTypes } from '../activities-list';
-import { DynamicForm } from './dynamic-form';
-import { careForBabySteps, careForMomSteps } from './steps';
+import { DynamicForm, Question } from './dynamic-form';
+import { careForBabySteps, careForMomSteps, getPillar1Steps } from './steps';
+import { nutritionQuestion } from './pillar-1-steps/nutrition';
+import {
+  breastfeedingIssuesCheckboxQuestion,
+  breastfeedingIssuesCheckboxOptions,
+} from './pillar-1-steps/nutrition/breast-milk-only-flow/breastfeeding-issues';
 
 interface FormProps {
   onBack: () => void;
@@ -20,6 +25,19 @@ const sessionStorageKey = 'currentStepNumber';
 export const Form = ({ onBack }: FormProps) => {
   const [isTip, setIsTip] = useState(false);
   const [step, setStep] = useState(0);
+  const [questions, setQuestions] = useState<Question[]>();
+
+  const nutritionAnswer = questions?.find(
+    (item) => item.question === nutritionQuestion
+  )?.answer;
+  const breastfeedingIssuesAnswers = questions?.find(
+    (item) => item.question === breastfeedingIssuesCheckboxQuestion
+  )?.answer as string[];
+
+  const isToSkipBreastfeedingIssuesRelevantItemsStep =
+    breastfeedingIssuesAnswers?.includes(
+      breastfeedingIssuesCheckboxOptions.noneOption
+    );
 
   const activityName = window.sessionStorage.getItem(currentActivityKey) || '';
 
@@ -99,10 +117,19 @@ export const Form = ({ onBack }: FormProps) => {
         return careForMomSteps;
       case activitiesTypes.careForBaby:
         return careForBabySteps;
+      case activitiesTypes.pillar1:
+        return getPillar1Steps(
+          nutritionAnswer,
+          isToSkipBreastfeedingIssuesRelevantItemsStep
+        );
       default:
         return [() => <div className="p-4">Coming soon</div>];
     }
-  }, [activityName]);
+  }, [
+    activityName,
+    isToSkipBreastfeedingIssuesRelevantItemsStep,
+    nutritionAnswer,
+  ]);
 
   return (
     <BannerWrapper
@@ -122,6 +149,7 @@ export const Form = ({ onBack }: FormProps) => {
         isTipPage={isTip}
         currentStep={step}
         setIsTip={setIsTip}
+        setQuestions={setQuestions}
         onPreviousStep={handleOnBack}
         onNextStep={handleOnNext}
       />

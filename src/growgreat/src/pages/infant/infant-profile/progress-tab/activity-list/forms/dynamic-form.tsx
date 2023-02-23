@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { Button } from '@ecdlink/ui';
 import { InfantDto } from '@ecdlink/core';
 
-interface Question {
+export interface Question {
   question: string;
   answer:
     | string
@@ -19,8 +19,9 @@ export interface DynamicFormProps {
   currentStep?: number;
   isTipPage?: boolean;
   steps?: any[]; // TODO: add type
+  questions?: Question[];
   setIsTip?: (value: boolean) => void;
-  setQuestions?: (value: Question[]) => void;
+  setQuestions?: (value?: Question[]) => void;
   setEnableButton?: (value: boolean) => void;
   onNextStep?: () => void;
   onPreviousStep?: () => void;
@@ -32,11 +33,11 @@ export const DynamicForm = ({
   currentStep,
   steps,
   isTipPage,
+  setQuestions: setQuestionsForm,
   onNextStep,
   setIsTip,
 }: DynamicFormProps) => {
   const [isEnableButton, setIsEnableButton] = useState(false);
-
   const [questions, setQuestions] = useState<Question[]>();
 
   const handleSetQuestions = useCallback(
@@ -48,13 +49,15 @@ export const DynamicForm = ({
         return !questionExists;
       });
 
-      setQuestions(() =>
-        filteredQuestions?.length
-          ? [...filteredQuestions, ...value]
-          : [...value]
-      );
+      const updatedQuestions = filteredQuestions?.length
+        ? [...filteredQuestions, ...value]
+        : [...value];
+
+      setQuestions(updatedQuestions);
+      // @ts-ignore
+      setQuestionsForm(updatedQuestions);
     },
-    [questions]
+    [questions, setQuestionsForm]
   );
 
   const handleOnNext = useCallback(() => {
@@ -85,11 +88,22 @@ export const DynamicForm = ({
         infant={infant}
         isTipPage={isTipPage}
         setIsTip={setIsTip}
+        questions={questions}
         setQuestions={handleSetQuestions}
         setEnableButton={setIsEnableButton}
+        onNextStep={onNextStep}
       />
     );
-  }, [currentStep, handleSetQuestions, infant, isTipPage, setIsTip, steps]);
+  }, [
+    currentStep,
+    handleSetQuestions,
+    infant,
+    isTipPage,
+    onNextStep,
+    questions,
+    setIsTip,
+    steps,
+  ]);
 
   const renderButton = useMemo(() => {
     if (Number(currentStep) === 0) {
