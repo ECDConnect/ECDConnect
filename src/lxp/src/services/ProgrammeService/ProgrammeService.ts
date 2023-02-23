@@ -9,16 +9,12 @@ class ProgrammeService {
     this._accessToken = accessToken;
   }
 
-  async getProgrammes(userId: string): Promise<ProgrammeDto[]> {
+  async getProgrammes(classroomId: string): Promise<ProgrammeDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-      query GetAllProgramme($createdUserId: String) {
-        GetAllProgramme (where: {
-          and: [{ 
-            createdUserId: {eq: $createdUserId}
-          }]
-        }) {
+      query GetAllProgramme($classroomId: UUID) {
+        GetAllProgramme(where: { and: [{ classroomId: { eq: $classroomId } }] }) {
           id
           classroomId
           startDate
@@ -35,10 +31,10 @@ class ProgrammeService {
             storyBookId
           }
         }
-      } 
+      }
       `,
       variables: {
-        createdUserId: userId,
+        classroomId: classroomId,
       },
     });
 
