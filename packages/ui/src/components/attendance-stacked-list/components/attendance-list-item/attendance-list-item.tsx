@@ -38,6 +38,8 @@ export const AttendanceListItem = ({
         currentItem.status === AttendanceStatus.Present
       ) {
         currentItem.status = AttendanceStatus.Absent;
+      } else if (currentItem.status === AttendanceStatus.Absent) {
+        currentItem.status = AttendanceStatus.Present;
       }
       setAttendanceItem(currentItem);
       if (onBadgeClick) {
