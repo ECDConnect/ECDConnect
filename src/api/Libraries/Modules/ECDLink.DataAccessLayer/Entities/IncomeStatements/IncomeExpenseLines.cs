@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using ECDLink.DataAccessLayer.Entities.IncomeStatements;
+﻿using System.Collections.Generic;
 
 namespace ECDLink.DataAccessLayer.Entities.IncomeStatements
 {

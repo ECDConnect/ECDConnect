@@ -1,11 +1,5 @@
 ﻿using ECDLink.Core.Services.Interfaces;
-using ECDLink.Core.SystemSettings.SystemOptions;
-using ECDLink.DataAccessLayer.Entities;
-using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.IncomeStatements;
-using ECDLink.DataAccessLayer.Entities.Users;
-using ECDLink.DataAccessLayer.Hierarchy;
-using ECDLink.DataAccessLayer.Repositories;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
@@ -13,11 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ECDLink.Security.Extensions;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using System.CodeDom.Compiler;
-using System.ComponentModel;
-using AngleSharp.Css.Dom;
 
 namespace ECDLink.Core.Services
 {
@@ -25,8 +14,6 @@ namespace ECDLink.Core.Services
     {
         private IHttpContextAccessor _contextAccessor;
         private readonly IGenericRepositoryFactory _repoFactory;
-        private readonly ISystemSetting<AbsenteeCutoffDelayOptions> _absenteeDelay;
-        private readonly AttendanceTrackingRepository _attendanceRepo;
         private string _applicationUserId;
 
         public IncomeExpenseService(
