@@ -81,7 +81,7 @@ namespace ECDLink.Core.Services
                 //Only retrieve submitted statements oif not a future dated month is requested
 
 
-                var statements = statementsRepo.GetAll().Where(x => string.Equals(x.UserId, userId)).ToList();
+                var statements = statementsRepo.GetAll().Where(x => string.Equals(x.UserId, userId) && x.Submitted.Equals(true)).ToList();
                 if (statements.Any())
                 {
                     if (year > 0) //filter to specific year
@@ -110,6 +110,7 @@ namespace ECDLink.Core.Services
                                 { 
                                     var statementCheck = statements.Where(x => x.Year.Equals(currentYear) && x.Month.Equals(loopMonth)).FirstOrDefault();
                                     bool isAutoSubmitted = (statementCheck != null ? statementCheck.AutoSubmitted : false);
+                                    DateTime? submittedDate = (statementCheck != null ? statementCheck.SubmittedDate : null);
                                     var allIncome = statements.Where(x => x.Year.Equals(currentYear) && x.Month.Equals(loopMonth)).Select(y => y.IncomeTotal).ToList();
                                     var allExpenses = statements.Where(x => x.Year.Equals(currentYear) && x.Month.Equals(loopMonth)).Select(y => y.ExpenseTotal).ToList();
 
@@ -118,7 +119,7 @@ namespace ECDLink.Core.Services
 
                                     double balance = allIncomeTotal - allExpenseTotal;
 
-                                    balanceSheets.Add(new StatementsBalanceSheet() { Balance = Math.Round(balance, 2), IncomeTotal = Math.Round(allIncomeTotal, 2), ExpenseTotal = Math.Round(allExpenseTotal, 2), Month = loopMonth, Year = currentYear, UserId = userId, Submitted = true, AutoSubmitted = isAutoSubmitted, SubmittedDate = statementCheck.SubmittedDate });
+                                    balanceSheets.Add(new StatementsBalanceSheet() { Balance = Math.Round(balance, 2), IncomeTotal = Math.Round(allIncomeTotal, 2), ExpenseTotal = Math.Round(allExpenseTotal, 2), Month = loopMonth, Year = currentYear, UserId = userId, Submitted = true, AutoSubmitted = isAutoSubmitted, SubmittedDate = submittedDate });
                                 }
                             }
 
