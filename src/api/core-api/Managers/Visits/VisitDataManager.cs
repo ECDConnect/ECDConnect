@@ -5,7 +5,6 @@ using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace EcdLink.Api.CoreApi.Managers.Visits
@@ -32,12 +31,21 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         public Boolean AddChildVisitData(CMSVisitDataInputModel input)
         {
             var visitDataRepo = _repoFactory.CreateGenericRepository<VisitData>(userContext: _applicationUserId);
+            var visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: _applicationUserId);
+
             // first add all your questions and answers
             foreach (CMSQuestion obj in input.Questions)
             {
                 VisitData visitData = (VisitData)GetVisitDataFromInputModel(obj, input.VisitId, input.VisitName, input.VisitSection);
                 visitDataRepo.Insert(visitData);
             }
+
+            // update the visit record to show attended/completed
+            var entityToUpdate = visitRepo.GetAll().Where(x => x.Id.ToString() == input.VisitId).FirstOrDefault();
+            entityToUpdate.UpdatedDate = DateTime.Now;
+            entityToUpdate.UpdatedBy = _applicationUserId;
+            entityToUpdate.Attended = true;
+            visitRepo.Update(entityToUpdate);
 
             // then handle status data
             _visitDataStatusManager.ManageVisitDataStatus(input.InfantId, Constants.GrowGreatSettings.client_child, input.VisitId);
@@ -49,6 +57,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         public Boolean AddAntenatalVisitData(CMSVisitDataInputModel input)
         {
             var visitDataRepo = _repoFactory.CreateGenericRepository<VisitData>(userContext: _applicationUserId);
+            var visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: _applicationUserId);
 
             // first add all your questions and answers
             foreach (CMSQuestion obj in input.Questions)
@@ -56,6 +65,13 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 VisitData visitData = (VisitData)GetVisitDataFromInputModel(obj, input.VisitId, input.VisitName, input.VisitSection);
                 visitDataRepo.Insert(visitData);
             }
+
+            // update the visit record to show attended/completed
+            var entityToUpdate = visitRepo.GetAll().Where(x => x.Id.ToString() == input.VisitId).FirstOrDefault();
+            entityToUpdate.UpdatedDate = DateTime.Now;
+            entityToUpdate.UpdatedBy = _applicationUserId;
+            entityToUpdate.Attended = true;
+            visitRepo.Update(entityToUpdate);
 
             // then handle status data
             _visitDataStatusManager.ManageVisitDataStatus(input.MotherId, Constants.GrowGreatSettings.client_mother, input.VisitId);

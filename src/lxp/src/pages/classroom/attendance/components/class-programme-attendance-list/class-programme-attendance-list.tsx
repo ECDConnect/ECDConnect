@@ -1,8 +1,5 @@
 import { getAvatarColor, LearnerDto } from '@ecdlink/core';
-import {
-  AttendanceListDataItem,
-  AttendanceStackedList,
-} from '@ecdlink/ui';
+import { AttendanceListDataItem, AttendanceStackedList } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { attendanceSelectors } from '@store/attendance';

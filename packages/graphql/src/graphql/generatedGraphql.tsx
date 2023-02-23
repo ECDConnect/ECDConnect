@@ -1945,10 +1945,12 @@ export type IncomeStatements = {
   __typename?: 'IncomeStatements';
   description?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['Int']>;
+  name?: Maybe<Scalars['String']>;
 };
 
 export type IncomeStatementsInput = {
   description?: InputMaybe<Scalars['String']>;
+  name?: InputMaybe<Scalars['String']>;
 };
 
 export type Infant = {
@@ -2794,7 +2796,7 @@ export type Mutation = {
   updateUserHierarchyEntity?: Maybe<UserHierarchyEntity>;
   updateVisit?: Maybe<Visit>;
   updateVisitData?: Maybe<VisitData>;
-  updateVisitDataStatus?: Maybe<VisitDataStatus>;
+  updateVisitDataStatus: Scalars['Boolean'];
   updateVisitType?: Maybe<VisitType>;
   updateVisitVideos?: Maybe<VisitVideos>;
   updateWorkflowStatus?: Maybe<WorkflowStatus>;
@@ -4329,7 +4331,7 @@ export type MutationUpdateVisitDataArgs = {
 
 export type MutationUpdateVisitDataStatusArgs = {
   id?: InputMaybe<Scalars['UUID']>;
-  input?: InputMaybe<VisitDataStatusInput>;
+  input?: InputMaybe<VisitDataStatusReferralInput>;
 };
 
 export type MutationUpdateVisitTypeArgs = {
@@ -5098,7 +5100,7 @@ export type ProgressTrackingSubCategoryInput = {
 
 export type Progress_VisitDataStatus = {
   __typename?: 'Progress_VisitDataStatus';
-  score: Scalars['Float'];
+  score?: Maybe<Scalars['String']>;
   visitDataStatus?: Maybe<Array<Maybe<VisitDataStatus>>>;
 };
 
@@ -5376,7 +5378,7 @@ export type Query = {
   coachByPractitionerId?: Maybe<Coach>;
   coachByUserId?: Maybe<Coach>;
   coachNameByUserId?: Maybe<Scalars['String']>;
-  completedVisitsForMother?: Maybe<Array<Maybe<VisitData>>>;
+  completedVisitsForMother?: Maybe<Array<Maybe<Scalars['String']>>>;
   contentDefinitions?: Maybe<Array<Maybe<ContentDefinitionModel>>>;
   contentDefinitionsExcelTemplateGenerator?: Maybe<FileModel>;
   contentTypes?: Maybe<Array<Maybe<ContentType>>>;
@@ -5415,6 +5417,7 @@ export type Query = {
   practitionerInviteCount: Scalars['Int'];
   practitionerMetrics?: Maybe<PractitionerMetricReport>;
   practitionerNewSignupMetric: Scalars['Int'];
+  previousVisitInformationForMother?: Maybe<Progress_VisitDataStatus>;
   principalByUserId?: Maybe<Practitioner>;
   roleForUser?: Maybe<Scalars['String']>;
   roles?: Maybe<Array<Maybe<IdentityRole>>>;
@@ -5424,10 +5427,11 @@ export type Query = {
   userById?: Maybe<ApplicationUser>;
   userByToken?: Maybe<UserByToken>;
   users?: Maybe<Array<Maybe<ApplicationUser>>>;
+  visitAnswersForMother?: Maybe<Array<Maybe<VisitData>>>;
+  visitClientSummaryForMother?: Maybe<Array<Maybe<VisitDataSummary>>>;
+  visitClientSummaryProgressForMother?: Maybe<Progress_VisitDataStatus>;
   visitDataForVisit?: Maybe<Array<Maybe<VisitData>>>;
-  visitProgressForMother?: Maybe<Progress_VisitDataStatus>;
   visitReferralsForMother?: Maybe<Array<Maybe<VisitDataStatus>>>;
-  visitSummaryForMother?: Maybe<Array<Maybe<VisitDataSummary>>>;
   visitVideos: Array<Maybe<VisitVideos>>;
   yearlyClassAttendanceMetricsByUser?: Maybe<
     Array<Maybe<ClassroomMetricReport>>
@@ -6597,6 +6601,10 @@ export type QueryPractitionerNewSignupMetricArgs = {
   toDate: Scalars['DateTime'];
 };
 
+export type QueryPreviousVisitInformationForMotherArgs = {
+  visitId?: InputMaybe<Scalars['String']>;
+};
+
 export type QueryPrincipalByUserIdArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
@@ -6617,20 +6625,26 @@ export type QueryUserByTokenArgs = {
   token?: InputMaybe<Scalars['String']>;
 };
 
+export type QueryVisitAnswersForMotherArgs = {
+  visitId?: InputMaybe<Scalars['String']>;
+  visitName?: InputMaybe<Scalars['String']>;
+  visitSection?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryVisitClientSummaryForMotherArgs = {
+  id?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryVisitClientSummaryProgressForMotherArgs = {
+  id?: InputMaybe<Scalars['String']>;
+};
+
 export type QueryVisitDataForVisitArgs = {
   visitId?: InputMaybe<Scalars['String']>;
 };
 
-export type QueryVisitProgressForMotherArgs = {
-  id?: InputMaybe<Scalars['String']>;
-};
-
 export type QueryVisitReferralsForMotherArgs = {
   id?: InputMaybe<Scalars['String']>;
-};
-
-export type QueryVisitSummaryForMotherArgs = {
-  visitId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryVisitVideosArgs = {
@@ -8057,6 +8071,20 @@ export type VisitDataStatusInput = {
   UpdatedBy?: InputMaybe<Scalars['String']>;
   VisitData?: InputMaybe<VisitDataInput>;
   VisitDataId: Scalars['UUID'];
+};
+
+export type VisitDataStatusModelInput = {
+  color?: InputMaybe<Scalars['String']>;
+  comment?: InputMaybe<Scalars['String']>;
+  id?: InputMaybe<Scalars['String']>;
+  isCompleted?: InputMaybe<Scalars['String']>;
+  type?: InputMaybe<Scalars['String']>;
+  visitData?: InputMaybe<VisitDataInput>;
+  visitDataId?: InputMaybe<Scalars['String']>;
+};
+
+export type VisitDataStatusReferralInput = {
+  referrals?: InputMaybe<Array<InputMaybe<VisitDataStatusModelInput>>>;
 };
 
 export type VisitDataSummary = {
