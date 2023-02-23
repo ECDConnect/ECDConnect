@@ -46,12 +46,18 @@ export const MonthStatementsDetails: React.FC = () => {
   const [showPreschoolDetails, setShowPreschoolDetails] = useState(false);
   // const income = useSelector(statementsSelectors.getIncome);
   // const expenses = useSelector(statementsSelectors.getExpenses);
+  const balanceSheet = useSelector(statementsSelectors.getBalanceSheet);
   const [income, setIncome] = useState<IncomeStatementsDto[]>([]);
   const [expenses, setExpenses] = useState<ExpensesStatementsDto[]>([]);
   const submittedIncome = useMemo(
     () => income?.filter((item) => item?.submitted === true),
     [income]
   );
+  const today = new Date();
+
+  const isSameMonth =
+    today.getMonth() + 1 === balanceSheet?.[balanceSheet?.length - 1]?.month!;
+
   const submittedExpenses = useMemo(
     () => expenses?.filter((item) => item?.submitted === true),
     [expenses]
@@ -79,22 +85,24 @@ export const MonthStatementsDetails: React.FC = () => {
   const salaryExpense = useSelector(statementsSelectors.getSalaryExpense);
 
   const otherIncome = useSelector(statementsSelectors.getOtheryIncome);
+  const filteredIncome = isSameMonth ? income : submittedIncome;
+  const filteredExpenses = isSameMonth ? expenses : submittedExpenses;
 
-  const totalIncome = submittedIncome?.reduce(function (
-    prev: any,
-    current: any
-  ) {
-    return prev + +current.amount;
-  },
-  0);
+  const totalIncome = isSameMonth
+    ? income?.reduce(function (prev: any, current: any) {
+        return prev + +current.amount;
+      }, 0)
+    : submittedIncome?.reduce(function (prev: any, current: any) {
+        return prev + +current.amount;
+      }, 0);
 
-  const totalExpenses = submittedExpenses?.reduce(function (
-    prev: any,
-    current: any
-  ) {
-    return prev + +current.amount;
-  },
-  0);
+  const totalExpenses = isSameMonth
+    ? expenses?.reduce(function (prev: any, current: any) {
+        return prev + +current.amount;
+      }, 0)
+    : submittedExpenses?.reduce(function (prev: any, current: any) {
+        return prev + +current.amount;
+      }, 0);
 
   const totalBalance = (totalIncome - totalExpenses)?.toFixed(2);
 
@@ -120,7 +128,7 @@ export const MonthStatementsDetails: React.FC = () => {
     const dbeSubsidyValue: IncomeStatementsDto[] = [];
     const otherValue: IncomeStatementsDto[] = [];
 
-    submittedIncome?.map((item: any) => {
+    filteredIncome?.map((item: any) => {
       if (item?.incomeTypeId === preschoolIncome?.id) {
         preschoolValue.push(item);
         setPreschoolFees(preschoolValue);
@@ -146,6 +154,7 @@ export const MonthStatementsDetails: React.FC = () => {
   }, [
     dbeSubsidyIncome?.id,
     donationIncome?.id,
+    filteredIncome,
     otherIncome?.id,
     preschoolIncome?.id,
     startupIncome?.id,
@@ -161,7 +170,7 @@ export const MonthStatementsDetails: React.FC = () => {
     const utilitiesValue: ExpensesStatementsDto[] = [];
     const salaryValue: ExpensesStatementsDto[] = [];
 
-    submittedExpenses?.map((item: any) => {
+    filteredExpenses?.map((item: any) => {
       if (item?.expenseTypeId === rentExpense?.id) {
         rentValue.push(item);
         setRent(rentValue);
@@ -195,6 +204,7 @@ export const MonthStatementsDetails: React.FC = () => {
   }, [
     dbeSubsidyIncome.id,
     donationIncome.id,
+    filteredExpenses,
     food.id,
     foodExpense?.id,
     learningMaterials.id,
