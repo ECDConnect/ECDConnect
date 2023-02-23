@@ -22,7 +22,7 @@ namespace ECDLink.DataAccessLayer.Entities.IncomeStatements
     {
         public IncomeExpenseLines AllSubmitted { get; set; }
         public IncomeExpenseLines AllUnSubmitted { get; set; }
-        public IncomeExpenseLines AlLines { get; set; }
+        public IncomeExpenseLines AllLines { get; set; }
 
     }
 }

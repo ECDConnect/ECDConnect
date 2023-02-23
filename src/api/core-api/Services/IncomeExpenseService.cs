@@ -166,7 +166,7 @@ namespace ECDLink.Core.Services
                 if (incomeExpenses.AllUnSubmitted != null)
                 {
 
-                    balanceSheets.Add(new StatementsBalanceSheet() { Balance = Math.Round((incomeExpenses.AllUnSubmitted.IncomeTotal - incomeExpenses.AllUnSubmitted.ExpenseTotal), 2), IncomeTotal = Math.Round(incomeExpenses.AllUnSubmitted.IncomeTotal, 2), ExpenseTotal = Math.Round(incomeExpenses.AllUnSubmitted.ExpenseTotal, 2), Month = month, Year = year, UserId = userId, AutoSubmitted = false, SubmittedDate = null, Submitted = false });
+                    balanceSheets.Add(new StatementsBalanceSheet() { Balance = Math.Round((incomeExpenses.AllUnSubmitted.IncomeTotal - incomeExpenses.AllUnSubmitted.ExpenseTotal), 2), IncomeTotal = Math.Round(incomeExpenses.AllUnSubmitted.IncomeTotal, 2), ExpenseTotal = Math.Round(incomeExpenses.AllUnSubmitted.ExpenseTotal, 2), Month = DateTime.Now.Month, Year = DateTime.Now.Year, UserId = userId, AutoSubmitted = false, SubmittedDate = null, Submitted = false });
 
                 }
             }
@@ -310,28 +310,30 @@ namespace ECDLink.Core.Services
             var latestIncomeRowsAll = GetAllIncomeLines(userId, year, month, LinesStatus.ANY);
             var latestExpenseRowsAll = GetAllExpenseLines(userId, year, month, LinesStatus.ANY);
 
-            incomeExpenses.AlLines.Submitted = false;
-            incomeExpenses.AlLines.Month = month;
-            incomeExpenses.AlLines.Year = year;
+            incomeExpenses.AllLines = new IncomeExpenseLines();
+            incomeExpenses.AllLines.Submitted = false;
+            incomeExpenses.AllLines.Month = month;
+            incomeExpenses.AllLines.Year = year;
             string statementIdAll = null;
             if (latestIncomeRowsAll.Any()) {
-                incomeExpenses.AlLines.Income = latestIncomeRowsAll;
-                incomeExpenses.AlLines.IncomeTotal = latestIncomeRowsAll.Select(x => x.Amount).Sum();
+                incomeExpenses.AllLines.Income = latestIncomeRowsAll;
+                incomeExpenses.AllLines.IncomeTotal = latestIncomeRowsAll.Select(x => x.Amount).Sum();
 
                 statementIdAll = latestIncomeRowsAll[0].IncomeStatementId;
             }
             if (latestExpenseRowsAll.Any())
             {
-                incomeExpenses.AlLines.Expenses = latestExpenseRowsAll;
-                incomeExpenses.AlLines.ExpenseTotal = latestExpenseRowsAll.Select(x => x.Amount).Sum();
+                incomeExpenses.AllLines.Expenses = latestExpenseRowsAll;
+                incomeExpenses.AllLines.ExpenseTotal = latestExpenseRowsAll.Select(x => x.Amount).Sum();
 
                 statementIdAll = latestExpenseRowsAll[0].IncomeStatementId;
             }
             if (statementIdAll != null) {
                 var statement = GetStatementsIncomeStatementById(statementIdAll);
-                incomeExpenses.AlLines.AutoSubmitted = statement.AutoSubmitted;
+                incomeExpenses.AllLines.AutoSubmitted = statement.AutoSubmitted;
             }
             //submitted
+            incomeExpenses.AllSubmitted = new IncomeExpenseLines();
             var latestIncomeRowsSubmitted = GetAllIncomeLines(userId, year, month, LinesStatus.SUBMITTED);
             var latestExpenseRowsSubmitted = GetAllExpenseLines(userId, year, month, LinesStatus.SUBMITTED);
             string statementIdSubmitted = null;
@@ -358,6 +360,7 @@ namespace ECDLink.Core.Services
             }
 
             //unsubmitted of this month and previous month
+            incomeExpenses.AllUnSubmitted = new IncomeExpenseLines();
             var latestIncomeRowsUnSubmitted = GetAllIncomeLines(userId, year, month, LinesStatus.UNSUBMITTED);
             var latestExpenseRowsUnSubmitted = GetAllExpenseLines(userId, year, month, LinesStatus.UNSUBMITTED);
             var latestIncomeRowsLastMonthUnSubmitted = GetAllLateIncomeLines(userId, previousTimePeriod.Year, previousTimePeriod.Month);
