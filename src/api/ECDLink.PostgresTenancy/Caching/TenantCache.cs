@@ -13,6 +13,7 @@ namespace ECDLink.PostgresTenancy.Caching
     {
         private readonly ICacheService<IGlobalCache> _cacheService;
         private readonly TenantService _tenantService;
+        private readonly object assignCacheLock = new object();
 
         private List<TenantModel> Tenants
         {
@@ -31,7 +32,10 @@ namespace ECDLink.PostgresTenancy.Caching
         {
             _cacheService = cacheService;
             _tenantService = tenantService;
-            AssignCache();
+            lock(assignCacheLock)
+            {
+                AssignCache();
+            }
         }
 
         private void AssignCache()
