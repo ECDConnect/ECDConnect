@@ -46,11 +46,13 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             var alcoholUse = new List<CMSQuestion>();
             var idDocs = new List<CMSQuestion>();
             var firstName = "";
+            var motherId = "";
 
             if (type == Constants.GrowGreatSettings.client_mother)
             {
                 Mother mother = motherRepo.GetAll().Where(x => x.User.Id == id).FirstOrDefault();
                 firstName = mother.User.FirstName;
+                motherId = mother.Id.ToString();
 
                 _clientVisitDataIds = (
                     from visit in visitRepo.GetAll().Where(x => x.MotherId.ToString() == id)
@@ -58,7 +60,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     select visitData.Id.ToString()
                 ).ToList();
 
-                ManageVisitDataStatusForMother(allVisitData, firstName, id);
+                ManageVisitDataStatusForMother(allVisitData, firstName, motherId);
             } else
             {
                 Infant infant = infantRepo.GetAll().Where(x => x.User.Id == id).FirstOrDefault();
@@ -280,7 +282,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     {
                         var arrAnswers = visitData.QuestionAnswer.Split(",");
 
-                        if (arrAnswers.Length >= 3)
+                        if (arrAnswers.Length > 0)
                         {
                             // Add referral item - where X, Y, Z are each of the 3 danger signs selected by the user
                             comment = firstName + Constants.GrowGreatSettings.was_experiencing + visitData.QuestionAnswer;
@@ -290,7 +292,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
                             // Add red progress item - where X, Y, Z are each of the 3 danger signs selected by the user
                             comment = firstName + Constants.GrowGreatSettings.was_experiencing + visitData.QuestionAnswer;
-                            color = MetricsColorEnum.Warning.ToString();
+                            color = MetricsColorEnum.Error.ToString();
                             type = Constants.GrowGreatSettings.visit_data_client_progress;
                             AddVisitDataStatus(visitData, comment, color, type, visitData.VisitSection, false);
 

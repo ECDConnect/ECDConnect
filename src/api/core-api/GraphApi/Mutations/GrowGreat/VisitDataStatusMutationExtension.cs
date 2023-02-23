@@ -23,20 +23,20 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
         public Boolean UpdateVisitDataStatus(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
-            List<VisitDataStatusModel> input)
+            VisitDataStatusReferral input)
         {
             var applicationUserId = contextAccessor.HttpContext.GetUser().Id;
             var visitDataStatusRepo = repoFactory.CreateGenericRepository<VisitDataStatus>(userContext: applicationUserId);
 
-            foreach (VisitDataStatusModel inputItem in input)
+            foreach (VisitDataStatusModel inputItem in input.Referrals)
             {
                 var entityToUpdate = visitDataStatusRepo.GetAll().Where(x => x.Id.ToString() == inputItem.Id).FirstOrDefault();
                 entityToUpdate.UpdatedDate = DateTime.Now;
                 entityToUpdate.UpdatedBy = applicationUserId;
-                entityToUpdate.IsCompleted = (Boolean)inputItem.IsCompleted;
+                entityToUpdate.IsCompleted = inputItem.IsCompleted == "true" ? true : false;
                 visitDataStatusRepo.Update(entityToUpdate);
             }
-           
+
             return true;
         }
     }

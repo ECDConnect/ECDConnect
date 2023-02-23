@@ -22,8 +22,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
         public string Comment { get; set; }
         public string Color { get; set; }
         public string Type { get; set; }
-        public Boolean IsCompleted { get; set; }
+        public string IsCompleted { get; set; }
     }
+
+    public class VisitDataStatusReferral
+    {
+        public virtual ICollection<VisitDataStatusModel> Referrals { get; set; }
+    }
+
 
     public class CMSQuestion
     {
