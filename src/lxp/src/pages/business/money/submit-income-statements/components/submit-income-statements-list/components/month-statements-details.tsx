@@ -46,19 +46,22 @@ export const MonthStatementsDetails: React.FC = () => {
   const [showPreschoolDetails, setShowPreschoolDetails] = useState(false);
   // const income = useSelector(statementsSelectors.getIncome);
   // const expenses = useSelector(statementsSelectors.getExpenses);
+  const balanceSheet = useSelector(statementsSelectors.getBalanceSheet);
   const [income, setIncome] = useState<IncomeStatementsDto[]>([]);
   const [expenses, setExpenses] = useState<ExpensesStatementsDto[]>([]);
   const submittedIncome = useMemo(
     () => income?.filter((item) => item?.submitted === true),
     [income]
   );
+  const today = new Date();
+
+  const isSameMonth =
+    today.getMonth() + 1 === balanceSheet?.[balanceSheet?.length - 1]?.month!;
+
   const submittedExpenses = useMemo(
     () => expenses?.filter((item) => item?.submitted === true),
     [expenses]
   );
-
-  const balanceSheet = useSelector(statementsSelectors.getBalanceSheet);
-  const isSameMonth = balanceSheet?.[0]?.month === statementMonth;
 
   const preschoolIncome = useSelector(
     statementsSelectors.getPreschoolFeeIncome
@@ -82,6 +85,8 @@ export const MonthStatementsDetails: React.FC = () => {
   const salaryExpense = useSelector(statementsSelectors.getSalaryExpense);
 
   const otherIncome = useSelector(statementsSelectors.getOtheryIncome);
+  const filteredIncome = isSameMonth ? income : submittedIncome;
+  const filteredExpenses = isSameMonth ? expenses : submittedExpenses;
 
   const totalIncome = isSameMonth
     ? income?.reduce(function (prev: any, current: any) {
@@ -123,8 +128,6 @@ export const MonthStatementsDetails: React.FC = () => {
     const dbeSubsidyValue: IncomeStatementsDto[] = [];
     const otherValue: IncomeStatementsDto[] = [];
 
-    const filteredIncome = isSameMonth ? income : submittedIncome;
-
     filteredIncome?.map((item: any) => {
       if (item?.incomeTypeId === preschoolIncome?.id) {
         preschoolValue.push(item);
@@ -151,6 +154,7 @@ export const MonthStatementsDetails: React.FC = () => {
   }, [
     dbeSubsidyIncome?.id,
     donationIncome?.id,
+    filteredIncome,
     income,
     isSameMonth,
     otherIncome?.id,
@@ -204,8 +208,11 @@ export const MonthStatementsDetails: React.FC = () => {
   }, [
     dbeSubsidyIncome.id,
     donationIncome.id,
+    expenses,
+    filteredExpenses,
     food.id,
     foodExpense?.id,
+    isSameMonth,
     learningMaterials.id,
     learningMaterialsExpense?.id,
     maintenance.id,
