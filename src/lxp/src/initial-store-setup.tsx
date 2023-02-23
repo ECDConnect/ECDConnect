@@ -92,7 +92,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
       if (!isCoach) {
         (async () =>
           await appDispatch(
-            coachThunkActions.coachNameByUserId({
+            coachThunkActions.getCoachByCoachId({
               coachId: practitioner?.coachHierarchy!,
             })
           ).unwrap())();
@@ -103,7 +103,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   useEffect(() => {
     if (userData) {
       (async () =>
-        await appDispatch(coachThunkActions.getCoachByCoachId({})).unwrap())();
+        await appDispatch(coachThunkActions.getCoachByUserId({})).unwrap())();
     }
   }, [appDispatch, userData]);
 
