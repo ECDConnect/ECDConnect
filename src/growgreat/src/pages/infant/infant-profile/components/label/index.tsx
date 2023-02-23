@@ -1,12 +1,13 @@
-import { RoundIcon, Typography } from '@ecdlink/ui';
+import { classNames, RoundIcon, Typography } from '@ecdlink/ui';
 
 interface LabelProps {
   text: string;
+  className?: string;
 }
 
-export const Label = ({ text }: LabelProps) => {
+export const Label = ({ text, className }: LabelProps) => {
   return (
-    <div className="w flex items-center gap-4">
+    <div className={classNames('w flex items-center gap-4', className)}>
       <RoundIcon
         size={{ h: '9', w: '9' }}
         icon="ChatAlt2Icon"
