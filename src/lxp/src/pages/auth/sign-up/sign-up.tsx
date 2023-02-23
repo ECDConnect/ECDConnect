@@ -73,7 +73,7 @@ export const SignUp: React.FC = () => {
   const { theme } = useTheme();
   const queryParams = useQueryParams(location.search);
   const authToken = queryParams.getValue('token');
-  const { isOnline, Offline } = useOnlineStatus();
+  const { isOnline } = useOnlineStatus();
   const [userDetails, setUserDetails] = useState<any>();
 
   if (userDetails) {
@@ -450,13 +450,13 @@ export const SignUp: React.FC = () => {
           ]}
         />
       </Dialog>
-      <Offline>
+      {!isOnline && (
         <Alert
           className={'mt-5 mb-3'}
           title="Your internet connection is unstable."
           type={'warning'}
         />
-      </Offline>
+      )}
     </div>
   );
 };

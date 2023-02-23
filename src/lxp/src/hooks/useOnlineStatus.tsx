@@ -1,10 +1,8 @@
 import React, { useState, useContext } from 'react';
-import { Detector, Offline, Online } from 'react-detect-offline';
+import { Detector, PollingConfig } from 'react-detect-offline';
 
 const OnlineStatusContext = React.createContext({
   isOnline: false,
-  Offline,
-  Online,
 });
 
 export const OnlineStatusProvider: React.FC = ({ children }) => {
@@ -12,13 +10,18 @@ export const OnlineStatusProvider: React.FC = ({ children }) => {
 
   const value = {
     isOnline: onlineStatus,
-    Offline,
-    Online,
   };
 
   return (
     <OnlineStatusContext.Provider value={value}>
       <Detector
+        polling={
+          {
+            interval: 3000,
+            timeout: 2000,
+            url: 'https://localhost:5001/api/authentication/online-check',
+          } as PollingConfig
+        }
         render={({ online }) => {
           setOnlineStatus(online);
           return <></>;
