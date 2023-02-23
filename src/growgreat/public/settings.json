@@ -1,5 +1,5 @@
 {
   "graphQlApi": "https://ecd-connect-develop-api.azurewebsites.net/graphql/",
   "authApi": "https://ecd-connect-develop-api.azurewebsites.net",
-  "themeUrl": "https://ecdlinkstoragedev.blob.core.windows.net/theme/growgreat.json"
+  "themeUrl": "https://ecdconnectstoragedev.blob.core.windows.net/theme/growgreat.json"
 }

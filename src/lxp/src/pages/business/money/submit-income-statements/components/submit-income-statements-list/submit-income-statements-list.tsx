@@ -272,8 +272,7 @@ export const SubmitIncomeStatementsList: React.FC = () => {
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       text: '1',
-      onActionClick: () =>
-        history.push(ROUTES.BUSINESS_SUBMIT_INCOME_STATEMENTS_DESCRIPTION),
+      onActionClick: () => {},
       classNames: 'bg-uiBg',
       subItem: `R ${incomesValueFunc(rent)}`,
       notRounded: true,

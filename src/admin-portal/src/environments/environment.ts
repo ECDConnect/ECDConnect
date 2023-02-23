@@ -5,6 +5,6 @@ export const environment = {
   production: false,
   // graphQlApi: 'https://localhost:5001/graphql/',
   // authApi: 'https://localhost:5001/',
-  // themeUrl: 'https://ecdlinkstoragedev.blob.core.windows.net/theme/smartstart.json',
+  // themeUrl: 'https://ecdconnectstoragedev.blob.core.windows.net/theme/smartstart.json',
   defaultOrganization: 'smartStart',
 };
