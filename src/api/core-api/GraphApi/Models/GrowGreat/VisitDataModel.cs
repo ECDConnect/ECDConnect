@@ -1,4 +1,5 @@
 ﻿using ECDLink.DataAccessLayer.Entities.Visits;
+using System;
 using System.Collections.Generic;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
@@ -15,11 +16,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
 
     public class VisitDataStatusModel
     {
+        public string Id { get; set; }
         public string VisitDataId { get; set; }
         public VisitData VisitData { get; set; }
         public string Comment { get; set; }
         public string Color { get; set; }
         public string Type { get; set; }
+        public Boolean IsCompleted { get; set; }
     }
 
     public class CMSQuestion
@@ -40,7 +43,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
 
     public class Progress_VisitDataStatus
     {
-        public float Score { get; set; }
+        public string Score { get; set; }
         public virtual ICollection<VisitDataStatus> visitDataStatus { get; set; }
     }
 
