@@ -128,7 +128,7 @@ export const RoadToHeathBookStep = ({
             ></ImageInput>
             <div className="flex items-center gap-1">
               <FormInput<InfantRoadToHealthModel>
-                label={'Weight at birth'}
+                label={'Weight'}
                 register={register}
                 nameProp={'weightAtBirth'}
                 placeholder={'Tap to add'}
@@ -144,7 +144,7 @@ export const RoadToHeathBookStep = ({
             </div>
             <div className="flex items-center gap-1">
               <FormInput<InfantRoadToHealthModel>
-                label={'Length at birth'}
+                label={'Length'}
                 register={register}
                 nameProp={'lengthAtBirth'}
                 placeholder={'Tap to add'}

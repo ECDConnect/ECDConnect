@@ -280,18 +280,19 @@ class IncomeStatementsService {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-      query allStatementsBalanceSheet($userId: String, $year: Int!, $month: Int!) {
-        allStatementsBalanceSheet(userId: $userId, year: $year, month: $month) {
-           userId  
-           incomeTotal 
+      query allStatementsBalanceSheet($userId: String, $year: Int!, $month: Int!) { 
+         allStatementsBalanceSheet(userId: $userId, year: $year, month: $month) { 
+           userId 
+           incomeTotal
            expenseTotal
-           balance 
-           month 
-           year 
-           isAutoSubmitted 
-           submittedDate       
-        }
-      }
+           balance
+           month
+           year
+           autoSubmitted
+           submittedDate
+           submitted        
+          }
+}
           `,
       variables: {
         userId,
