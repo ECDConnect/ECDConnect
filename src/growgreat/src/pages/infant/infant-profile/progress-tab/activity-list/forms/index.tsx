@@ -13,6 +13,7 @@ import {
   careForBabySteps,
   careForMomSteps,
   getPillar1Steps,
+  getPillar4Steps,
   pillar2Steps,
   pillar3Steps,
 } from './steps';
@@ -46,6 +47,9 @@ export const Form = ({ onBack }: FormProps) => {
     );
 
   const activityName = window.sessionStorage.getItem(currentActivityKey) || '';
+
+  // TODO: add integration (G5.6.2)
+  const isPillar4FollowUp = true;
 
   const { isOnline } = useOnlineStatus();
 
@@ -132,11 +136,14 @@ export const Form = ({ onBack }: FormProps) => {
         return pillar2Steps;
       case activitiesTypes.pillar3:
         return pillar3Steps;
+      case activitiesTypes.pillar4:
+        return getPillar4Steps(isPillar4FollowUp);
       default:
         return [() => <div className="p-4">Coming soon</div>];
     }
   }, [
     activityName,
+    isPillar4FollowUp,
     isToSkipBreastfeedingIssuesRelevantItemsStep,
     nutritionAnswer,
   ]);
