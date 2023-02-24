@@ -4,7 +4,6 @@ const monWedMessage = 'Great job, you submitted today’s register!';
 const tueThuMessage = "Well done for submitting today's register!";
 const friMessage = "Great job, you submitted today's register! ";
 
-
 export const getPointsMessage = (isSmartStartUser: boolean) => {
   const dateToday = new Date();
   switch (dateToday.getDay()) {
@@ -17,9 +16,7 @@ export const getPointsMessage = (isSmartStartUser: boolean) => {
     case Weekdays.thu:
       return tueThuMessage;
     case Weekdays.fri:
-      return (
-        friMessage 
-      );
+      return friMessage;
     default:
       return monWedMessage;
   }

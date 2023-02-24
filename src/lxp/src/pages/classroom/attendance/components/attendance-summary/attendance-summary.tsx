@@ -115,7 +115,7 @@ export const AttendanceSummary: React.FC = () => {
       isCurrentSmartStartUser = true;
     }
 
-    setSuccessMessageVisible(!successMessageVisible)
+    setSuccessMessageVisible(!successMessageVisible);
 
     setIsSmartStartUser(isCurrentSmartStartUser);
 

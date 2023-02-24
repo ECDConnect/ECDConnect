@@ -74,7 +74,6 @@ export const ClassProgrammeAttendanceList: React.FC<
     getAttendanceClassrooms(filteredLearners);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [classroomGroup]);
-  
 
   const getAttendanceClassrooms = (learners?: LearnerDto[]) => {
     if (!learners || learners.length === 0) return;
@@ -105,7 +104,6 @@ export const ClassProgrammeAttendanceList: React.FC<
     setAttendanceList(attendanceStackList);
     onAttendanceListUpdated(attendanceStackList);
   };
-
 
   const onAttendanceListUpdated = (
     updatedAttendanceList: AttendanceListDataItem[]

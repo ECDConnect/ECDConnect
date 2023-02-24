@@ -78,6 +78,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
   const classProgrammesUpdated = isPrincipal
     ? classProgrammesForPrincipal
     : classProgrammes;
+
   const primaryClassProgramme = classProgrammesUpdated.find(
     (prog) => prog.meetingDay === getDay(attendanceDate)
   );
@@ -91,11 +92,22 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
         : classroomGroups.filter(
             (x) => x.id === primaryClassProgramme?.classroomGroupId
           );
-
       setSelectedClassroomGroups(selectedGroups);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const updateAttendanceState = (attendanceGroups: AttendanceState[]) => {
+    const attendanceStatusCheck = getAttendanceStatusCheck(
+      attendanceGroups,
+      isButtonActive
+    );
+
+    setPresentChildrenCount(attendanceStatusCheck.presentCount);
+    setAbsentChildrenCount(attendanceStatusCheck.absentCount);
+    setAttendanceGroups(attendanceGroups);
+    setIsButtonActive(attendanceStatusCheck.isValid);
+  };
 
   const onFilterItemsChanges = (value: SearchDropDownOption<any>[]) => {
     setSelectedClassroomGroups(value.map((x) => x.value));
@@ -126,19 +138,8 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
       });
     }
 
+    setAttendanceGroups(newAttendanceGroups);
     updateAttendanceState(newAttendanceGroups);
-  };
-
-  const updateAttendanceState = (attendanceGroups: AttendanceState[]) => {
-    const attendanceStatusCheck = getAttendanceStatusCheck(
-      attendanceGroups,
-      isButtonActive
-    );
-
-    setPresentChildrenCount(attendanceStatusCheck.presentCount);
-    setAbsentChildrenCount(attendanceStatusCheck.absentCount);
-    setAttendanceGroups(attendanceGroups);
-    setIsButtonActive(attendanceStatusCheck.isValid);
   };
 
   const handleFormSubmit = async () => {
@@ -202,56 +203,61 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
 
     setAttendanceGroups([]);
     setSelectedClassroomGroups([]);
+    updateAttendanceState([]);
   };
+
+
 
   return (
     <div className={styles.wrapper}>
       <div className={styles.contentWrapper}>
-        {shouldFilter && classroomGroupsForPrincipal.length > 1 && (
-          <SearchDropDown<any>
-            displayMenuOverlay
-            menuItemClassName={styles.dropdownStyles}
-            className={'mr-1'}
-            options={
-              (classroomGroups && isPrincipal
-                ? classroomGroupsForPrincipal.map((x) => {
-                    return {
-                      id: x.id ?? '',
-                      value: x,
-                      label: x.name,
-                      disabled:
-                        x.id === primaryClassProgramme?.classroomGroupId,
-                    };
-                  })
-                : classroomGroups.map((x) => {
-                    return {
-                      id: x.id ?? '',
-                      value: x,
-                      label: x.name,
-                      disabled:
-                        x.id === primaryClassProgramme?.classroomGroupId,
-                    };
-                  })) || []
-            }
-            onChange={(value) => onFilterItemsChanges(value)}
-            placeholder={'Class'}
-            pluralSelectionText={'Classes'}
-            multiple
-            color={'secondary'}
-            selectedOptions={selectedClassroomGroups.map((x) => {
-              return {
-                id: x.id ?? '',
-                value: x,
-                label: x.name,
-                disabled: x.id === primaryClassProgramme?.classroomGroupId,
-              };
-            })}
-            info={{
-              name: `Filter by:${filterInfo?.filterName}`,
-              hint: filterInfo?.filterHint || '',
-            }}
-          />
-        )}
+        {shouldFilter &&
+          classroomGroupsForPrincipal.length > 1 &&
+          submitText === '' && (
+            <SearchDropDown<any>
+              displayMenuOverlay
+              menuItemClassName={styles.dropdownStyles}
+              className={'mr-1'}
+              options={
+                (classroomGroups && isPrincipal
+                  ? classroomGroupsForPrincipal.map((x) => {
+                      return {
+                        id: x.id ?? '',
+                        value: x,
+                        label: x.name,
+                        disabled:
+                          x.id === primaryClassProgramme?.classroomGroupId,
+                      };
+                    })
+                  : classroomGroups.map((x) => {
+                      return {
+                        id: x.id ?? '',
+                        value: x,
+                        label: x.name,
+                        disabled:
+                          x.id === primaryClassProgramme?.classroomGroupId,
+                      };
+                    })) || []
+              }
+              onChange={(value) => onFilterItemsChanges(value)}
+              placeholder={'Class'}
+              pluralSelectionText={'Classes'}
+              multiple
+              color={'secondary'}
+              selectedOptions={selectedClassroomGroups.map((x) => {
+                return {
+                  id: x.id ?? '',
+                  value: x,
+                  label: x.name,
+                  disabled: x.id === primaryClassProgramme?.classroomGroupId,
+                };
+              })}
+              info={{
+                name: `Filter by:${filterInfo?.filterName}`,
+                hint: filterInfo?.filterHint || '',
+              }}
+            />
+          )}
       </div>
 
       <div>

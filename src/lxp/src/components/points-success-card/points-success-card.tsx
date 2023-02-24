@@ -1,4 +1,3 @@
-import { useTheme } from '@ecdlink/core';
 import { classNames, renderIcon, Typography } from '@ecdlink/ui';
 import * as styles from './points-success-card.styles';
 import { PointsSuccessCardProps } from './points-success-card.types';
