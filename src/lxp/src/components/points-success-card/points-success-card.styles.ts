@@ -5,6 +5,6 @@ export const button = 'mb-4 mt-4';
 
 export const closeWrapper = 'flex items-top mb-2 pr-1';
 
-export const iconRound = 'rounded-full p-3 bg-successDark';
+export const iconRound = 'rounded-full p-3 bg-successDark h-10 w-10';
 export const contentWrapper =
   'w-full flex flex-row justify-start items-center py-2';

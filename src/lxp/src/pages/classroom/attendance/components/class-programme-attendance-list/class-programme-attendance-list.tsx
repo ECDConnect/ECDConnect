@@ -1,8 +1,5 @@
 import { getAvatarColor, LearnerDto } from '@ecdlink/core';
-import {
-  AttendanceListDataItem,
-  AttendanceStackedList,
-} from '@ecdlink/ui';
+import { AttendanceListDataItem, AttendanceStackedList } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { attendanceSelectors } from '@store/attendance';
@@ -77,6 +74,7 @@ export const ClassProgrammeAttendanceList: React.FC<
     getAttendanceClassrooms(filteredLearners);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [classroomGroup]);
+  
 
   const getAttendanceClassrooms = (learners?: LearnerDto[]) => {
     if (!learners || learners.length === 0) return;
@@ -108,6 +106,7 @@ export const ClassProgrammeAttendanceList: React.FC<
     onAttendanceListUpdated(attendanceStackList);
   };
 
+
   const onAttendanceListUpdated = (
     updatedAttendanceList: AttendanceListDataItem[]
   ) => {
@@ -124,9 +123,9 @@ export const ClassProgrammeAttendanceList: React.FC<
             className={'w-11/12'}
             scroll={false}
             listItems={attendanceList || []}
-            onChange={(updateList: AttendanceListDataItem[]) =>
-              onAttendanceListUpdated(updateList)
-            }
+            onChange={(updateList: AttendanceListDataItem[]) => {
+              onAttendanceListUpdated(updateList);
+            }}
           />
         </div>
       </div>
