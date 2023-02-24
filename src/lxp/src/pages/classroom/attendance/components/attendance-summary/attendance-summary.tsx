@@ -114,7 +114,6 @@ export const AttendanceSummary: React.FC = () => {
     if (isCurrentSmartStartUser === undefined) {
       isCurrentSmartStartUser = true;
     }
-
     setIsSmartStartUser(isCurrentSmartStartUser);
 
     if (todayDate.getDay() === 1 && !hasClosedPointsMessage) {
@@ -358,7 +357,7 @@ export const AttendanceSummary: React.FC = () => {
             points={100}
             onClose={() => setSuccessMessageVisible(false)}
             message={getPointsMessage(isSmartStartUser)}
-            icon={'SparklesIcon'}
+            icon={''}
           />
         ) : (
           <div>

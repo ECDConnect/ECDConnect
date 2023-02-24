@@ -121,9 +121,9 @@ export const ClassProgrammeAttendanceList: React.FC<
             className={'w-11/12'}
             scroll={false}
             listItems={attendanceList || []}
-            onChange={(updateList: AttendanceListDataItem[]) =>
-              onAttendanceListUpdated(updateList)
-            }
+            onChange={(updateList: AttendanceListDataItem[]) => {
+              onAttendanceListUpdated(updateList);
+            }}
           />
         </div>
       </div>
