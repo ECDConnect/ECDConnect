@@ -14,7 +14,6 @@ export const PointsSuccessCard: React.FC<PointsSuccessCardProps> = ({
   visible,
   onClose,
 }: PointsSuccessCardProps) => {
-  const { theme } = useTheme();
   const getPointsText = () => {
     return points ? points.toString() + ' points' : '';
   };
@@ -27,7 +26,6 @@ export const PointsSuccessCard: React.FC<PointsSuccessCardProps> = ({
           <div
             className={classNames(styles.wrapper)}
             style={{
-              backgroundImage: `url(${theme?.images.graphicOverlayUrl})`,
               backgroundColor: 'successMain',
               backgroundRepeat: 'no-repeat',
               backgroundSize: 'cover',
@@ -36,8 +34,15 @@ export const PointsSuccessCard: React.FC<PointsSuccessCardProps> = ({
             <div className={styles.contentWrapper}>
               <div className={'flex flex-1 flex-row'}>
                 <div>
-                  <div className={styles.iconRound}>
-                    {renderIcon(icon, 'h-6 w-6 text-white')}
+                  <div
+                    className={styles.iconRound}
+                    style={{
+                      backgroundImage: `url(../assets/b.png)`,
+                      backgroundRepeat: 'no-repeat',
+                      backgroundSize: 'cover',
+                    }}
+                  >
+                    {/* {renderIcon(icon, 'h-6 w-6 text-white')} */}
                   </div>
                 </div>
                 <div
