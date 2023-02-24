@@ -30,9 +30,7 @@ export const PreviousStatementsList: React.FC = () => {
 
   const prevStatementsItems = balanceSheet?.map((item) => {
     return {
-      title: `${getMonthName(Number(balanceSheet?.[0]?.month) - 1)} ${
-        item?.year
-      }`,
+      title: `${getMonthName(Number(item?.month) - 1)} ${item?.year}`,
       titleStyle: 'text-textDark font-semibold text-base leading-snug',
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',

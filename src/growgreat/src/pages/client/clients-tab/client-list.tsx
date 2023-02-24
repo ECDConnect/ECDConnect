@@ -10,7 +10,7 @@ import {
   SearchDropDownOption,
 } from '@ecdlink/ui';
 import { format, intervalToDuration } from 'date-fns';
-import { useDialog, getAvatarColor, MotherDto } from '@ecdlink/core';
+import { useDialog, getAvatarColor, MotherDto, InfantDto } from '@ecdlink/core';
 import { IconInformationIndicator } from '@/components/icon-information-indicator/icon-information-indicator';
 import * as styles from './client-list.styles';
 import { useSelector } from 'react-redux';
@@ -45,6 +45,7 @@ import {
   sortOptions,
 } from './filters';
 import { ClientDashboardRouteState } from '../client-dashboard/class-dashboard.types';
+import { INFANT_PROFILE_TABS } from '@/pages/infant/infant-profile';
 
 export const ClientList: React.FC<ComponentBaseProps> = () => {
   const dialog = useDialog();
@@ -95,6 +96,28 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
     [infants, mothers]
   );
 
+  const navigate = useCallback(
+    (
+      activeTabIndex: number,
+      client: MotherDto | InfantDto,
+      clientType: 'mother' | 'infant',
+      onClose: () => void
+    ) => {
+      history.push(
+        `${
+          clientType === 'mother'
+            ? ROUTES.CLIENTS.MOM_PROFILE.ROOT
+            : ROUTES.CLIENTS.INFANT_PROFILE.ROOT
+        }${client.user?.id}`,
+        {
+          activeTabIndex,
+        }
+      );
+      onClose();
+    },
+    [history]
+  );
+
   useEffect(() => {
     const infantsList: UserAlertListDataItem<ExtraInfantData>[] = infants.map(
       (infant) => {
@@ -121,23 +144,14 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
             under6Months: !!years || (!!months && months > 6),
             age: `${years}.${months}`,
           },
-          onActionClick: () => {},
+          onActionClick: () =>
+            navigate(INFANT_PROFILE_TABS.PROGRESS, infant, 'infant', () => {}),
         };
       }
     );
 
     setInfantsListItems(infantsList);
-  }, [infants]);
-
-  const navigate = useCallback(
-    (activeTabIndex: number, client: MotherDto, onClose: () => void) => {
-      history.push(`${ROUTES.CLIENTS.MOM_PROFILE.ROOT}${client.user?.id}`, {
-        activeTabIndex,
-      });
-      onClose();
-    },
-    [history]
-  );
+  }, [infants, navigate]);
 
   const showClientProfileDialog = useCallback(
     (client: MotherDto) => {
@@ -154,7 +168,12 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
                   text: 'Visit client',
                   colour: 'primary',
                   onClick: () =>
-                    navigate(PREGNANT_PROFILE_TABS.VISITS, client, onClose),
+                    navigate(
+                      PREGNANT_PROFILE_TABS.VISITS,
+                      client,
+                      'mother',
+                      onClose
+                    ),
                   type: 'filled',
                   textColour: 'white',
                   leadingIcon: 'HomeIcon',
@@ -163,7 +182,12 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
                   text: 'See client’s progress',
                   colour: 'primary',
                   onClick: () =>
-                    navigate(PREGNANT_PROFILE_TABS.PROGRESS, client, onClose),
+                    navigate(
+                      PREGNANT_PROFILE_TABS.PROGRESS,
+                      client,
+                      'mother',
+                      onClose
+                    ),
                   type: 'outlined',
                   textColour: 'primary',
                   leadingIcon: 'PresentationChartLineIcon',
@@ -172,7 +196,12 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
                   text: 'See referrals',
                   colour: 'primary',
                   onClick: () =>
-                    navigate(PREGNANT_PROFILE_TABS.REFERRALS, client, onClose),
+                    navigate(
+                      PREGNANT_PROFILE_TABS.REFERRALS,
+                      client,
+                      'mother',
+                      onClose
+                    ),
                   type: 'outlined',
                   textColour: 'primary',
                   leadingIcon: 'ClipboardListIcon',
@@ -181,7 +210,12 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
                   text: 'Contact client',
                   colour: 'primary',
                   onClick: () =>
-                    navigate(PREGNANT_PROFILE_TABS.CONTACT, client, onClose),
+                    navigate(
+                      PREGNANT_PROFILE_TABS.CONTACT,
+                      client,
+                      'mother',
+                      onClose
+                    ),
                   type: 'outlined',
                   textColour: 'primary',
                   leadingIcon: 'PhoneIcon',
@@ -190,7 +224,12 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
                   text: 'Something else',
                   colour: 'primary',
                   onClick: () =>
-                    navigate(PREGNANT_PROFILE_TABS.VISITS, client, onClose),
+                    navigate(
+                      PREGNANT_PROFILE_TABS.VISITS,
+                      client,
+                      'mother',
+                      onClose
+                    ),
                   type: 'outlined',
                   textColour: 'primary',
                 },

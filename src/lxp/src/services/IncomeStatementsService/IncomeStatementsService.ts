@@ -164,12 +164,16 @@ class IncomeStatementsService {
     return response.data.data.updateStatementsIncome;
   }
 
-  async allStatementsIncome(userId: string): Promise<IncomeStatementsDto[]> {
+  async allStatementsIncome(
+    userId: string,
+    month: Number,
+    year: Number
+  ): Promise<IncomeStatementsDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-      query allStatementsIncome($userId: String) {
-        allStatementsIncome(userId: $userId) {
+      query allStatementsIncome($userId: String, $month: Int!, $year: Int!) {
+        allStatementsIncome(userId: $userId, month: $month, year: $year) {
             id description 
             insertedDate 
             notes 
@@ -190,6 +194,8 @@ class IncomeStatementsService {
           `,
       variables: {
         userId,
+        month,
+        year,
       },
     });
 
@@ -246,11 +252,10 @@ class IncomeStatementsService {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-      mutation submitStatement($id: String!,$input: StatementsSubmitInput) {
-          submitStatement(id: $id, input: $input) {
-                id    __typename  
-              }
-            }
+      mutation submitStatement($id: String!,$input: StatementsSubmitInput) {         submitStatement(id: $id, input: $input) {
+
+                    } 
+                            }
       `,
       variables: {
         id,
@@ -268,24 +273,31 @@ class IncomeStatementsService {
   }
 
   async getAllStatementsBalanceSheet(
-    userId: string
+    userId: string,
+    year: Number,
+    month: Number
   ): Promise<BalanceSheetDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-      query allStatementsBalanceSheet($userId: String) {
-        allStatementsBalanceSheet(userId: $userId) {
-            userId
-            incomeTotal
-            expenseTotal
-            balance
-            month
-            year
-        }
-    }
+      query allStatementsBalanceSheet($userId: String, $year: Int!, $month: Int!) { 
+         allStatementsBalanceSheet(userId: $userId, year: $year, month: $month) { 
+           userId 
+           incomeTotal
+           expenseTotal
+           balance
+           month
+           year
+           autoSubmitted
+           submittedDate
+           submitted        
+          }
+}
           `,
       variables: {
         userId,
+        year,
+        month,
       },
     });
 

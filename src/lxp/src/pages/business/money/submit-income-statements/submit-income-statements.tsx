@@ -3,7 +3,7 @@ import { statementsSelectors } from '@/store/statements';
 import { numberWithSpaces } from '@/utils/statements/statements-utils';
 import { Typography, StatusChip, Button, Card, FADButton } from '@ecdlink/ui';
 import { differenceInDays, format, getMonth, setDate } from 'date-fns';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { getMonthName } from '@utils/classroom/attendance/track-attendance-utils';
@@ -21,37 +21,53 @@ export const SubmitIncomeStatements: React.FC = () => {
 
   const previousMonthRecord =
     monthNames?.length! > 1 && balanceSheet?.length! > 1
-      ? `${monthNames?.[1]} ${balanceSheet?.[1]?.year}`
+      ? `${monthNames?.[balanceSheet?.length! - 2]} ${
+          balanceSheet?.[balanceSheet?.length! - 2]?.year
+        }`
       : `-`;
 
   const currentMonthRecord =
     monthNames && balanceSheet?.length! > 0
-      ? `${monthNames?.[0]} ${balanceSheet?.[0]?.year}`
+      ? `${monthNames?.[balanceSheet?.length! - 1]} ${
+          balanceSheet?.[balanceSheet?.length! - 1]?.year
+        }`
       : `-`;
 
   const currentMonthTotalIncome =
     balanceSheet?.length! > 0
-      ? `+ R ${balanceSheet?.[0]?.incomeTotal?.toFixed(2)}`
+      ? `+ R ${balanceSheet?.[balanceSheet?.length! - 1]?.incomeTotal?.toFixed(
+          2
+        )}`
       : '-';
   const currentMonthTotalExpenses =
     balanceSheet?.length! > 0
-      ? `- R ${balanceSheet?.[0]?.expenseTotal?.toFixed(2)}`
+      ? `- R ${balanceSheet?.[balanceSheet?.length! - 1]?.expenseTotal?.toFixed(
+          2
+        )}`
       : '-';
 
   const previousMonthTotalIncome =
     balanceSheet?.length! > 1
-      ? `+ R ${balanceSheet?.[1].incomeTotal?.toFixed(2)}`
+      ? `+ R ${balanceSheet?.[balanceSheet?.length! - 2].incomeTotal?.toFixed(
+          2
+        )}`
       : '-';
   const previousMonthTotalExpenses =
     balanceSheet?.length! > 1
-      ? `- R ${balanceSheet?.[1].expenseTotal?.toFixed(2)}`
+      ? `- R ${balanceSheet?.[balanceSheet?.length! - 2].expenseTotal?.toFixed(
+          2
+        )}`
       : '-';
 
   const currentMonthTotalBalance =
-    balanceSheet?.length! > 0 ? balanceSheet?.[0].balance?.toFixed(2) : 0;
+    balanceSheet?.length! > 0
+      ? balanceSheet?.[balanceSheet?.length! - 1].balance?.toFixed(2)
+      : 0;
 
   const previousMonthTotalBalance =
-    balanceSheet?.length! > 1 ? balanceSheet?.[1].balance?.toFixed(2) : 0;
+    balanceSheet?.length! > 1
+      ? balanceSheet?.[balanceSheet?.length! - 2].balance?.toFixed(2)
+      : 0;
 
   const formatCurrentValue = (value: number) => {
     if (value === 0) return `R ${numberWithSpaces(String(value.toFixed(2)))}`;
@@ -61,12 +77,25 @@ export const SubmitIncomeStatements: React.FC = () => {
     if (value < 0) return `- R ${numberWithSpaces(String(value.toFixed(2)))}`;
   };
 
-  const totalSubmittedBalance = balanceSheet?.[0]?.balance;
+  const today = new Date();
 
-  const submitDateDaysCount = differenceInDays(
-    setDate(new Date(), 25),
-    new Date()
+  const firstDateToSubmit = useMemo(() => setDate(new Date(), 25), []);
+  const lastDayToSubmit = useMemo(() => setDate(new Date(), 7), []);
+
+  const lastDayToSubmitNextMonth = new Date(
+    today.getFullYear(),
+    today.getMonth() + 1,
+    7
   );
+
+  const isSameMonth =
+    today.getMonth() + 1 === balanceSheet?.[balanceSheet?.length - 1]?.month!;
+
+  const submitDateDaysCount = isSameMonth
+    ? differenceInDays(lastDayToSubmitNextMonth, today)
+    : differenceInDays(lastDayToSubmit, today);
+
+  const enableSubmit = today <= lastDayToSubmit || today >= firstDateToSubmit;
 
   useEffect(() => {
     if (balanceSheet?.filter((e) => e.month === monthDateNumber).length! > 0) {
@@ -82,7 +111,7 @@ export const SubmitIncomeStatements: React.FC = () => {
             backgroundColour={
               submitDateDaysCount > 8 ? 'successMain' : 'alertMain'
             }
-            borderColour="successMain"
+            borderColour={submitDateDaysCount > 8 ? 'successMain' : 'alertMain'}
             text={`${submitDateDaysCount} days`}
             textColour={'white'}
             className={'mr-2'}
@@ -104,7 +133,7 @@ export const SubmitIncomeStatements: React.FC = () => {
             history.push(ROUTES.BUSINESS_SUBMIT_INCOME_STATEMENTS_LIST)
           }
           className="mt-6 rounded-2xl"
-          disabled={disableSubmit}
+          disabled={disableSubmit || !enableSubmit}
         >
           <Typography
             type="help"
@@ -124,9 +153,7 @@ export const SubmitIncomeStatements: React.FC = () => {
             className="w-6/12"
           />
           <Typography
-            text={`R ${String(
-              numberWithSpaces(String(totalSubmittedBalance))
-            )}`}
+            text={`${formatCurrentValue(Number(currentMonthTotalBalance))}`}
             color={'white'}
             type="h1"
             className="w-8/12 text-right"

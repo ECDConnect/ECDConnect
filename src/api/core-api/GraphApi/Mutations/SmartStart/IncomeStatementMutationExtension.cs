@@ -1,4 +1,3 @@
-using EcdLink.Api.CoreApi.Managers.IncomeExpense;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.IncomeStatements;
@@ -10,6 +9,7 @@ using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using System.Collections.Generic;
+using ECDLink.Core.Services;
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 {
     [ExtendObjectType(OperationTypeNames.Mutation)]
@@ -28,7 +28,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         }
 
         [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.Create)]
-        public StatementsIncome UpdateIncome([Service] IncomeExpenseManager incomeManager, string id,
+        public StatementsIncome UpdateIncome([Service] IncomeExpenseService incomeManager, string id,
               StatementsIncome input)
         {
 
@@ -36,7 +36,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         }
 
         [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.Create)]
-        public StatementsExpenses UpdateExpense([Service] IncomeExpenseManager incomeManager, string id,
+        public StatementsExpenses UpdateExpense([Service] IncomeExpenseService incomeManager, string id,
       StatementsExpenses input)
         {
 
@@ -44,7 +44,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         }
 
         [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.Create)]
-        public StatementsStartupSupport UpdateStartupSupport([Service] IncomeExpenseManager incomeManager, string id,
+        public StatementsStartupSupport UpdateStartupSupport([Service] IncomeExpenseService incomeManager, string id,
 StatementsStartupSupport input)
         {
 
@@ -52,14 +52,14 @@ StatementsStartupSupport input)
         }
 
         [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.Create)]
-        public List<StatementsIncomeStatement> SubmitStatement([Service] IncomeExpenseManager incomeManager, string id,
+        public bool SubmitStatement([Service] IncomeExpenseService incomeManager, string id,
 StatementsSubmit input)
         {
             if (input != null)
             {
                 return incomeManager.SubmitStatement(input);
             }
-            else return null;
+            else return false;
         }
     }
 }

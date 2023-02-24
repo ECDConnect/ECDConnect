@@ -9,7 +9,7 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import format from 'date-fns/format';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
@@ -46,6 +46,7 @@ export const ClassDashboard: React.FC = () => {
   const [selectedTabIndex, setSelectedTabIndex] = useState<number>(
     state?.activeTabIndex !== undefined ? state?.activeTabIndex : 1
   );
+  const [showAttendance, setShowAttendance] = useState(true);
   const appDispatch = useAppDispatch();
   const [previousTabIndex, setPreviousTabIndex] = useState<number>();
   const [currentTab, setCurrentTab] = useState<TabItem>();
@@ -53,10 +54,14 @@ export const ClassDashboard: React.FC = () => {
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const children = useSelector(childrenSelectors.getChildren);
-  const showAttendanceTutorial =
-    selectedTabIndex === 0 &&
-    (practitioner?.progress! < 4 || practitioner?.progress === undefined) &&
-    children?.length! > 0;
+  const showAttendanceTutorial = useMemo(
+    () =>
+      selectedTabIndex === 0 &&
+      (practitioner?.progress! < 3 || practitioner?.progress === undefined) &&
+      children?.length! > 0 &&
+      showAttendance,
+    [children?.length, practitioner?.progress, selectedTabIndex, showAttendance]
+  );
 
   const backToDashboard = () => {
     history.push('/');
@@ -157,14 +162,6 @@ export const ClassDashboard: React.FC = () => {
   ];
 
   const setTabSelected = (tab: TabItem, tabIndex: number) => {
-    if (
-      tab.title === 'Attendance' &&
-      !attendanceTutorialComplete &&
-      practitioner?.progress! < 3
-    ) {
-      displayTutorial('Attendance');
-    }
-
     setPreviousTabIndex(selectedTabIndex);
     setSelectedTabIndex(tabIndex);
   };
@@ -206,83 +203,93 @@ export const ClassDashboard: React.FC = () => {
     updatePractitionerProgress();
   };
 
-  useEffect(() => {
-    const handleAttendanceTutorial = () => {
-      dialog({
-        position: DialogPosition.Middle,
-        render: (submit, cancel) => (
-          <ActionModal
-            customIcon={
+  const handleDeclineAttendanceTutorial = () => {
+    dialog({
+      position: DialogPosition.Bottom,
+      render: (submit, cancel) => (
+        <ActionModal
+          customIcon={
+            <div className="flex">
               <img src={walktroughImage} alt="profile" className="mb-2" />
-            }
-            iconColor="alertMain"
-            iconBorderColor="alertBg"
-            importantText={`Want to learn how to track attendance on Funda App?`}
-            actionButtons={[
-              {
-                text: 'Yes, help me!',
-                textColour: 'white',
-                colour: 'primary',
-                type: 'filled',
-                onClick: () => {
-                  setAttendanceTutorialActive(true);
-                  submit();
-                },
-                leadingIcon: 'ChevronRightIcon',
+              <Typography
+                text="Ok, you can always get  help by tapping the question mark at the top of the screen!"
+                type={'body'}
+                color={'textDark'}
+                align="center"
+                className="mt-2"
+              />
+            </div>
+          }
+          iconColor="alertMain"
+          iconBorderColor="alertBg"
+          actionButtons={[
+            {
+              text: 'Close',
+              textColour: 'white',
+              colour: 'primary',
+              type: 'filled',
+              onClick: () => {
+                submit();
+                setStorageItem(
+                  true,
+                  LocalStorageKeys.attendanceTutorialComplete
+                );
               },
-              {
-                text: 'No, skip',
-                textColour: 'white',
-                colour: 'primary',
-                type: 'filled',
-                onClick: handleDeclineAttendanceTutorial,
-                leadingIcon: 'ClockIcon',
-              },
-            ]}
-          />
-        ),
-      });
-    };
+              leadingIcon: 'XIcon',
+            },
+          ]}
+        />
+      ),
+    });
+  };
 
-    const handleDeclineAttendanceTutorial = () => {
-      dialog({
-        position: DialogPosition.Bottom,
-        render: (submit, cancel) => (
-          <ActionModal
-            customIcon={
-              <div className="flex">
-                <img src={walktroughImage} alt="profile" className="mb-2" />
-                <Typography
-                  text="Ok, you can always get  help by tapping the question mark at the top of the screen!"
-                  type={'body'}
-                  color={'textDark'}
-                  align="center"
-                  className="mt-2"
-                />
-              </div>
-            }
-            iconColor="alertMain"
-            iconBorderColor="alertBg"
-            actionButtons={[
-              {
-                text: 'Close',
-                textColour: 'white',
-                colour: 'primary',
-                type: 'filled',
-                onClick: () => {
-                  submit();
-                },
-                leadingIcon: 'XIcon',
+  const handleAttendanceTutorial = () => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (submit, cancel) => (
+        <ActionModal
+          customIcon={
+            <img src={walktroughImage} alt="profile" className="mb-2" />
+          }
+          iconColor="alertMain"
+          iconBorderColor="alertBg"
+          importantText={`Want to learn how to track attendance on Funda App?`}
+          actionButtons={[
+            {
+              text: 'Yes, help me!',
+              textColour: 'white',
+              colour: 'primary',
+              type: 'filled',
+              onClick: () => {
+                setAttendanceTutorialActive(true);
+                submit();
               },
-            ]}
-          />
-        ),
-      });
-    };
-    if (showAttendanceTutorial) {
+              leadingIcon: 'ChevronRightIcon',
+            },
+            {
+              text: 'No, skip',
+              textColour: 'white',
+              colour: 'primary',
+              type: 'filled',
+              onClick: () => {
+                setShowAttendance(false);
+                handleDeclineAttendanceTutorial();
+              },
+              leadingIcon: 'ClockIcon',
+            },
+          ]}
+        />
+      ),
+    });
+  };
+
+  useEffect(() => {
+    if (showAttendanceTutorial && attendanceTutorialComplete) {
+      // if (showAttendanceTutorial && attendanceTutorialComplete) {
+
       handleAttendanceTutorial();
     }
-  }, [dialog, closeAttendanceTutorial, showAttendanceTutorial]);
+  }, [showAttendanceTutorial]);
 
   return (
     <>
