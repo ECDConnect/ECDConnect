@@ -114,7 +114,6 @@ export const AttendanceSummary: React.FC = () => {
     if (isCurrentSmartStartUser === undefined) {
       isCurrentSmartStartUser = true;
     }
-    
     setIsSmartStartUser(isCurrentSmartStartUser);
 
     if (todayDate.getDay() === 1 && !hasClosedPointsMessage) {
