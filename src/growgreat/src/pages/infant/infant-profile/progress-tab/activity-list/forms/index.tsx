@@ -14,6 +14,7 @@ import {
   careForMomSteps,
   getPillar1Steps,
   pillar2Steps,
+  pillar3Steps,
 } from './steps';
 import { nutritionQuestion } from './pillar-1-steps/nutrition';
 import {
@@ -129,6 +130,8 @@ export const Form = ({ onBack }: FormProps) => {
         );
       case activitiesTypes.pillar2:
         return pillar2Steps;
+      case activitiesTypes.pillar3:
+        return pillar3Steps;
       default:
         return [() => <div className="p-4">Coming soon</div>];
     }
