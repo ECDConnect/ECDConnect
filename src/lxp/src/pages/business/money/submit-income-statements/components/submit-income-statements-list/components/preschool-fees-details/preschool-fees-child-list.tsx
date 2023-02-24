@@ -34,6 +34,7 @@ export const PreschoolsFeesChildList: React.FC<PreschoolFeesChildListProps> = ({
       classNames: 'bg-uiBg',
       subItem: `R ${numberWithSpaces(String(item?.amount!.toFixed(2)))}`,
       notRounded: true,
+      childList: true,
     };
   });
 

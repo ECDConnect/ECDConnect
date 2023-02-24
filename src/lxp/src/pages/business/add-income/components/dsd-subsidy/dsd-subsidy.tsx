@@ -83,7 +83,7 @@ export const DsdSubsidy: React.FC<AddIncomeState> = ({ setType }) => {
       DateReceived: date,
       Notes: note,
       Amount: subsidyAmount ? moneyInputFormat(subsidyAmount) : 0,
-      AmountExpected: 400,
+      AmountExpected: subsidyAmount ? moneyInputFormat(subsidyAmount) : 0,
       ChildCoverAmount: Number(childrenNumber),
       IncomeTypeId: incomeTypeValue?.id,
     });

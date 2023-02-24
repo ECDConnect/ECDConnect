@@ -24,9 +24,9 @@ export const getCoachByUserId = createAsyncThunk<
         let coach: CoachDto | undefined;
 
         if (userAuth?.auth_token) {
-          coach = await new CoachService(
-            userAuth?.auth_token
-          ).getCoachByCoachId(userAuth.id);
+          coach = await new CoachService(userAuth?.auth_token).getCoachByUserId(
+            userAuth.id
+          );
         } else {
           return rejectWithValue('no access token, profile check required');
         }

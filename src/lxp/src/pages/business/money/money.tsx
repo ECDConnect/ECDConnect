@@ -33,6 +33,7 @@ export const Money = () => {
         statementsThunkActions.getAllStatementsBalanceSheet({
           // userId: userAuth?.id!,
           year: year,
+          month: 0,
         })
       );
     }

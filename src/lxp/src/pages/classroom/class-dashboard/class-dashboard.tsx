@@ -230,6 +230,10 @@ export const ClassDashboard: React.FC = () => {
               type: 'filled',
               onClick: () => {
                 submit();
+                setStorageItem(
+                  true,
+                  LocalStorageKeys.attendanceTutorialComplete
+                );
               },
               leadingIcon: 'XIcon',
             },
@@ -280,7 +284,9 @@ export const ClassDashboard: React.FC = () => {
   };
 
   useEffect(() => {
-    if (showAttendanceTutorial) {
+    if (showAttendanceTutorial && attendanceTutorialComplete) {
+    // if (showAttendanceTutorial && attendanceTutorialComplete) {
+
       handleAttendanceTutorial();
     }
   }, [showAttendanceTutorial]);

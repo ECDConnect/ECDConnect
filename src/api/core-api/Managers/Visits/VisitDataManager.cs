@@ -1,16 +1,11 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
-using ECDLink.Abstractrions.Enums;
-using ECDLink.ContentManagement.Repositories;
-using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using static iTextSharp.text.pdf.AcroFields;
 
 namespace EcdLink.Api.CoreApi.Managers.Visits
 {
@@ -18,599 +13,93 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
     {
         private IHttpContextAccessor _contextAccessor;
         private IGenericRepositoryFactory _repoFactory;
-        private ContentManagementRepository _contentManagementRepository;
+        private VisitDataStatusManager _visitDataStatusManager;
+        private string _applicationUserId;
 
         public VisitDataManager(
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
-            ContentManagementRepository contentManagementRepository)
+            VisitDataStatusManager visitDataStatusManager)
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
-            _contentManagementRepository = contentManagementRepository;
+
+            _applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
+            _visitDataStatusManager = visitDataStatusManager;
         }
 
-        public VisitData AddAntenatalVisitData(VisitDataModel input, string motherId)
+        public Boolean AddChildVisitData(CMSVisitDataInputModel input)
         {
-            var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
-            var visitDataRepo = _repoFactory.CreateGenericRepository<VisitData>(userContext: applicationUserId);
-            var visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: applicationUserId);
-            var visitTypeRepo = _repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
+            var visitDataRepo = _repoFactory.CreateGenericRepository<VisitData>(userContext: _applicationUserId);
+            var visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: _applicationUserId);
 
-            var visitInputData = GetVisitDataFromInputModel(input, applicationUserId);
-            if (visitInputData != null)
+            // first add all your questions and answers
+            foreach (CMSQuestion obj in input.Questions)
             {
-
-                Visit visitRecord = (
-                    from visit in visitRepo.GetAll().Where(x => x.Id == visitInputData.Id)
-                    join visitType in visitTypeRepo.GetAll().Where(y => y.Type == Constants.GrowGreatSettings.client_mother) on visit.VisitTypeId equals visitType.Id
-                    select visit
-                ).FirstOrDefault();
-
-
-                var visitDataRecords = (
-                    from visit in visitRepo.GetAll().Where(x => x.MotherId.ToString() == motherId)
-                    join visitData in visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
-                    join visitType in visitTypeRepo.GetAll().Where(y => y.Type == Constants.GrowGreatSettings.client_mother) on visit.VisitTypeId equals visitType.Id
-                    select visitData.Id
-                ).ToList();
-
-
-
-                ManageVisitDataStatus(visitInputData, applicationUserId, visitRecord.VisitType.Name, motherId);
+                VisitData visitData = (VisitData)GetVisitDataFromInputModel(obj, input.VisitId, input.VisitName, input.VisitSection);
+                visitDataRepo.Insert(visitData);
             }
 
-            return visitDataRepo.Insert(visitInputData);
-        }
+            // update the visit record to show attended/completed
+            var entityToUpdate = visitRepo.GetAll().Where(x => x.Id.ToString() == input.VisitId).FirstOrDefault();
+            entityToUpdate.UpdatedDate = DateTime.Now;
+            entityToUpdate.UpdatedBy = _applicationUserId;
+            entityToUpdate.Attended = true;
+            visitRepo.Update(entityToUpdate);
 
-        private VisitData GetVisitDataFromInputModel(VisitDataModel input, string applicationUserId)
-         {
-             if (input == null)
-             {
-                 return null;
-             }
+            // then handle status data
+            _visitDataStatusManager.ManageVisitDataStatus(input.InfantId, Constants.GrowGreatSettings.client_child, input.VisitId);
 
-             return new VisitData()
-             {
-                 Id = Guid.NewGuid(),
-                 IsActive = true,
-                 InsertedDate = DateTime.Now,
-                 UpdatedDate = DateTime.Now,
-                 UpdatedBy = applicationUserId,
-                 VisitId = new Guid(input.VisitId),
-                 CmsVisitNameContentId = input.CmsVisitNameContentId,
-                 CmsQuestionnaireContentId = input.CmsQuestionnaireContentId,
-                 CmsQuestionContentId = input.CmsQuestionContentId,
-                 CmsAnswerContentId = input.CmsAnswerContentId,
-                 QuestionAnswer = input.QuestionAnswer
-             };
-         }
-
-        private Boolean ManageVisitDataStatus(VisitData input, string applicationUserId, string visitName, string motherId)
-        {
-            var visitDataRepo = _repoFactory.CreateGenericRepository<VisitData>(userContext: applicationUserId);
-            var visitDataStatusRepo = _repoFactory.CreateGenericRepository<VisitDataStatus>(userContext: applicationUserId);
-
-            var allVisits = visitDataStatusRepo.GetAll().Where(x => x.VisitData.Id == input.VisitId).ToList();
-
-            // Available types
-
-            // ClientDashboardAlert -> G4
-            // ClientSummaryDownload -> G9
-            // Referral
-            // Progress
-            CMSQuestion question = new CMSQuestion();
-
-            var comment = "";
-            var color = "";
-            var type = "";
-            var visitDataStatus = GetVisitDataStatusFromInputModel(input, applicationUserId);
-
-            // Health care
-            if (question.Name == "Has {client} gone to the clinic for her first antenatal visit?")
-            {
-                if (input.QuestionAnswer == "No")
-                {
-                    // this should add a referral to the list(""Pregnancy not booked"")
-                    comment = "Pregnancy not booked";
-                    color = MetricsIconEnum.Warning.ToString();
-                    type = Constants.GrowGreatSettings.visit_data_client_referral;
-
-                    visitDataStatus.Id = Guid.NewGuid();
-                    visitDataStatus.Comment = comment;
-                    visitDataStatus.Color = color;
-                    visitDataStatus.Type = type;
-                    AddVisitDataStatus(visitDataStatus);
-
-                    // add an ""amber"" item to the progress list: ""Pregnancy not booked"".
-                    comment = "Pregnancy not booked";
-                    color = MetricsIconEnum.Warning.ToString();
-                    type = Constants.GrowGreatSettings.visit_data_client_progress;
-
-                    visitDataStatus.Id = Guid.NewGuid();
-                    visitDataStatus.Comment = comment;
-                    visitDataStatus.Color = color;
-                    visitDataStatus.Type = type;
-                    AddVisitDataStatus(visitDataStatus);
-
-                    // add flag to G4 secondary alert: red alert, ""Refer to clinic""
-                    comment = "Refer to clinic";
-                    color = MetricsIconEnum.Error.ToString();
-                    type = Constants.GrowGreatSettings.visit_data_client_dashboard;
-
-                    visitDataStatus.Id = Guid.NewGuid();
-                    visitDataStatus.Comment = comment;
-                    visitDataStatus.Color = color;
-                    visitDataStatus.Type = type;
-                    AddVisitDataStatus(visitDataStatus);
-
-                    // add amber item to G9 client download summary: ""You missed a clinic visit - make sure you go as soon as possible!""
-                    comment = "You missed a clinic visit - make sure you go as soon as possible!";
-                    color = MetricsIconEnum.Warning.ToString();
-                    type = Constants.GrowGreatSettings.visit_data_client_summary;
-
-                    visitDataStatus.Id = Guid.NewGuid();
-                    visitDataStatus.Comment = comment;
-                    visitDataStatus.Color = color;
-                    visitDataStatus.Type = type;
-                    AddVisitDataStatus(visitDataStatus);
-
-
-                } 
-                else if (input.QuestionAnswer == "Yes")
-                {
-                    // a ""green"" item is added to the client progress list ""Pregnancy booked""
-                    comment = "Pregnancy booked";
-                    color = MetricsIconEnum.Success.ToString();
-                    type = Constants.GrowGreatSettings.visit_data_client_progress;
-
-                    visitDataStatus.Id = Guid.NewGuid();
-                    visitDataStatus.Comment = comment;
-                    visitDataStatus.Color = color;
-                    visitDataStatus.Type = type;
-                    AddVisitDataStatus(visitDataStatus);
-
-                    // a green item is added to G9 client download summary ""You are up to date with your clinic visits!""
-                    comment = "You are up to date with your clinic visits!";
-                    color = MetricsIconEnum.Success.ToString();
-                    type = Constants.GrowGreatSettings.visit_data_client_summary;
-
-                    visitDataStatus.Id = Guid.NewGuid();
-                    visitDataStatus.Comment = comment;
-                    visitDataStatus.Color = color;
-                    visitDataStatus.Type = type;
-                    AddVisitDataStatus(visitDataStatus);
-                }
-            } 
-            else if (question.Name == "MUAC measurement")
-            {
-                var questionAnswer = Int32.Parse(input.QuestionAnswer);
-
-                if (questionAnswer < 22)
-                {
-                    // add to referrals items list(""May be underweight - MUAC less than 22cm"") red
-                    comment = "May be underweight - MUAC less than 22cm";
-                    color = MetricsIconEnum.Error.ToString();
-                    type = Constants.GrowGreatSettings.visit_data_client_referral;
-
-                    visitDataStatus.Id = Guid.NewGuid();
-                    visitDataStatus.Comment = comment;
-                    visitDataStatus.Color = color;
-                    visitDataStatus.Type = type;
-                    AddVisitDataStatus(visitDataStatus);
-
-                    // add G4 secondary text item: ""Refer to clinic urgently""(this is the highest - priority item & will be shown)
-                    comment = "Refer to clinic urgently";
-                    color = MetricsIconEnum.Error.ToString();
-                    type = Constants.GrowGreatSettings.visit_data_client_dashboard;
-
-                    visitDataStatus.Id = Guid.NewGuid();
-                    visitDataStatus.Comment = comment;
-                    visitDataStatus.Color = color;
-                    visitDataStatus.Type = type;
-                    AddVisitDataStatus(visitDataStatus);
-
-                    // add green item to G9 client summary: ""You might be underweight: eat 3 meals every day""
-                    comment = "You might be underweight: eat 3 meals every day";
-                    color = MetricsIconEnum.Success.ToString();
-                    type = Constants.GrowGreatSettings.visit_data_client_summary;
-
-                    visitDataStatus.Id = Guid.NewGuid();
-                    visitDataStatus.Comment = comment;
-                    visitDataStatus.Color = color;
-                    visitDataStatus.Type = type;
-                    AddVisitDataStatus(visitDataStatus);
-
-                    // TODO: add additional visit item with ""Underweight"" secondary text -please see G3.7 Other / Additional visits
-
-                }
-                else if (questionAnswer >= 22)
-                {
-                    // add to green items in progress screen(use case 2) (""MUAC over 22cm"")
-                    comment = "MUAC over 22cm";
-                    color = MetricsIconEnum.Success.ToString();
-                    type = Constants.GrowGreatSettings.visit_data_client_referral;
-
-                    visitDataStatus.Id = Guid.NewGuid();
-                    visitDataStatus.Comment = comment;
-                    visitDataStatus.Color = color;
-                    visitDataStatus.Type = type;
-                    AddVisitDataStatus(visitDataStatus);
-
-                    // add green item to G9 client summary: ""According to your mid-upper arm circumference, you are a healthy weight""
-                    comment = "According to your mid-upper arm circumference, you are a healthy weight";
-                    color = MetricsIconEnum.Success.ToString();
-                    type = Constants.GrowGreatSettings.visit_data_client_summary;
-
-                    visitDataStatus.Id = Guid.NewGuid();
-                    visitDataStatus.Comment = comment;
-                    visitDataStatus.Color = color;
-                    visitDataStatus.Type = type;
-                    AddVisitDataStatus(visitDataStatus);
-                }
-
-                // TODO: IF the user enters a MUAC less than 22cm, ask this question again at the first visit 3 months after the MUAC measurement was entered."
-
-            } else if (question.Name == "Is {client} up to date with their antenatal clinic visits?")
-            {
-
-
-                /*
-                 * "This question must be shown at the first ever visit with the client OR when the user selected ""No"" to the question at the most recent previous visit.
-                    If the user selects ""No"", 
-                    --- add a referral to the list IF there is not already an unchecked referral for this item AND 
-                    --- add an ""amber"" item to the progress: ""Clinic visits not up to date""
-                    --- add G4 secondary text red alert ""Refer to clinic""
-                    --- add amber item to G9 client download summary: ""You missed a clinic visit - make sure you go as soon as possible!""
-
-                    If the user selects ""Yes""
-                    --- no referral is added
-                    --- a ""green"" item is added to the progress: ""Clinic visits up to date""
-                    --- add green item to G9 client download summary ""You are up to date with your clinic visits!"""
-                 * 
-                 * 
-                 */
-
-
-
-
-                if (input.QuestionAnswer == "No")
-                {
-                    // TODO: add a referral to the list IF there is not already an unchecked referral for this item
-                    // add an ""amber"" item to the progress: ""Clinic visits not up to date""
-                    comment = "Clinic visits not up to date";
-                    color = MetricsIconEnum.Warning.ToString();
-                    type = Constants.GrowGreatSettings.visit_data_client_referral;
-
-                    visitDataStatus.Id = Guid.NewGuid();
-                    visitDataStatus.Comment = comment;
-                    visitDataStatus.Color = color;
-                    visitDataStatus.Type = type;
-                    AddVisitDataStatus(visitDataStatus);
-
-                    // add G4 secondary text red alert ""Refer to clinic""
-                    comment = "Refer to clinic";
-                    color = MetricsIconEnum.Error.ToString();
-                    type = Constants.GrowGreatSettings.visit_data_client_dashboard;
-
-                    visitDataStatus.Id = Guid.NewGuid();
-                    visitDataStatus.Comment = comment;
-                    visitDataStatus.Color = color;
-                    visitDataStatus.Type = type;
-                    AddVisitDataStatus(visitDataStatus);
-
-                    // add amber item to G9 client download summary: ""You missed a clinic visit - make sure you go as soon as possible!""
-                    comment = "You missed a clinic visit - make sure you go as soon as possible!";
-                    color = MetricsIconEnum.Warning.ToString();
-                    type = Constants.GrowGreatSettings.visit_data_client_summary;
-
-                    visitDataStatus.Id = Guid.NewGuid();
-                    visitDataStatus.Comment = comment;
-                    visitDataStatus.Color = color;
-                    visitDataStatus.Type = type;
-                    AddVisitDataStatus(visitDataStatus);
-
-
-                }
-                else if (input.QuestionAnswer == "Yes")
-                {
-                    // ""green"" item is added to the progress: "Clinic visits up to date"
-                    comment = "Clinic visits up to date";
-                    color = MetricsIconEnum.Success.ToString();
-                    type = Constants.GrowGreatSettings.visit_data_client_progress;
-
-                    visitDataStatus.Id = Guid.NewGuid();
-                    visitDataStatus.Comment = comment;
-                    visitDataStatus.Color = color;
-                    visitDataStatus.Type = type;
-                    AddVisitDataStatus(visitDataStatus);
-
-                    // add green item to G9 client download summary "You are up to date with your clinic visits!"
-                    comment = "You are up to date with your clinic visits!";
-                    color = MetricsIconEnum.Success.ToString();
-                    type = Constants.GrowGreatSettings.visit_data_client_summary;
-
-                    visitDataStatus.Id = Guid.NewGuid();
-                    visitDataStatus.Comment = comment;
-                    visitDataStatus.Color = color;
-                    visitDataStatus.Type = type;
-                    AddVisitDataStatus(visitDataStatus);
-
-                }
-            }
             return true;
         }
 
-        private VisitDataStatus GetVisitDataStatusFromInputModel(VisitData input, string applicationUserId)
+
+        public Boolean AddAntenatalVisitData(CMSVisitDataInputModel input)
+        {
+            var visitDataRepo = _repoFactory.CreateGenericRepository<VisitData>(userContext: _applicationUserId);
+            var visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: _applicationUserId);
+
+            // first add all your questions and answers
+            foreach (CMSQuestion obj in input.Questions)
+            {
+                VisitData visitData = (VisitData)GetVisitDataFromInputModel(obj, input.VisitId, input.VisitName, input.VisitSection);
+                visitDataRepo.Insert(visitData);
+            }
+
+            // update the visit record to show attended/completed
+            var entityToUpdate = visitRepo.GetAll().Where(x => x.Id.ToString() == input.VisitId).FirstOrDefault();
+            entityToUpdate.UpdatedDate = DateTime.Now;
+            entityToUpdate.UpdatedBy = _applicationUserId;
+            entityToUpdate.Attended = true;
+            visitRepo.Update(entityToUpdate);
+
+            // then handle status data
+            _visitDataStatusManager.ManageVisitDataStatus(input.MotherId, Constants.GrowGreatSettings.client_mother, input.VisitId);
+
+            return true;
+        }
+
+        private VisitData GetVisitDataFromInputModel(CMSQuestion input, String visitId, String visitName, String visitSection)
         {
             if (input == null)
             {
                 return null;
             }
 
-            return new VisitDataStatus()
+            return new VisitData()
             {
                 Id = Guid.NewGuid(),
                 IsActive = true,
                 InsertedDate = DateTime.Now,
                 UpdatedDate = DateTime.Now,
-                UpdatedBy = applicationUserId,
-                VisitDataId = input.Id
+                UpdatedBy = _applicationUserId,
+                VisitId = new Guid(visitId),
+                VisitName = visitName,
+                VisitSection = visitSection,
+                Question = input.Question,
+                QuestionAnswer = input.Answer
             };
-
         }
-
-        private VisitDataStatus AddVisitDataStatus(VisitDataStatus input)
-        {
-            var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
-            var repository = _repoFactory.CreateGenericRepository<VisitDataStatus>(userContext: applicationUserId);
-            return repository.Insert(input);
-        }
-
-        /*public List<CMSVisit> GetAllAntenatalVisits(Guid visitId, string contentTypeId, string localeId, string names)
-        {
-            var _contentTypeId = Int32.Parse(contentTypeId);
-            var _localeId = new Guid(localeId);
-
-            var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
-            var repository = _repoFactory.CreateGenericRepository<VisitData>(userContext: applicationUserId);
-
-            List<CMSVisit> visits = new List<CMSVisit>();
-            var linkedRecords = _contentManagementRepository.GetAll(_contentTypeId, _localeId);
-
-            foreach (var obj in linkedRecords)
-            {
-                IDictionary<string, object> propData = (IDictionary<string, object>)obj;
-                var item = new CMSVisit();
-
-                foreach (var property in propData.Keys)
-                {
-                    string value = propData[property] == null ? "" : propData[property].ToString();
-                    if (property == Constants.GrowGreatSettings.visit_id)
-                    {
-                        item.Id = value;
-
-                    } else if (property == Constants.GrowGreatSettings.visit_name)
-                    {
-                        item.Name = value;
-                    }
-                    else if (property == Constants.GrowGreatSettings.visit_description)
-                    {
-                        item.Description = value;
-                    }
-                    else if (property == Constants.GrowGreatSettings.visit_icon)
-                    {
-                        item.Icon = value;
-                    }
-                    else if (property == Constants.GrowGreatSettings.visit_sequence)
-                    {
-                        item.Sequence = value;
-                    }
-                    else if (property == Constants.GrowGreatSettings.visit_primary_color)
-                    {
-                        item.PrimaryColor = value;
-                    }
-                    else if (property == Constants.GrowGreatSettings.visit_secondary_color)
-                    {
-                        item.SecondaryColor = value;
-                    }
-                    else if (property == Constants.GrowGreatSettings.visit_linkedQuestionnaires)
-                    {
-                        int[] arrIds = value.Split(',').Select(n => Convert.ToInt32(n)).ToArray();
-                        item.LinkedQuestionnaires = GetCMSLinkedQuestionnaires(visitId, arrIds, _localeId);
-                    }
-                }
-
-                // only add and fetch status if part of names
-                if (names.IndexOf(item.Name) != -1)
-                {
-                    VisitData visitData = repository.GetAll().Where(x => x.VisitId == visitId && x.CmsVisitNameContentId.ToString() == item.Id).FirstOrDefault();
-                    if (visitData != null)
-                    {
-                        item.IsCompleted = true;
-                    }
-                    visits.Add(item);
-                }
-            }
-            return visits;
-        }
-
-        private List<CMSQuestionnaire> GetCMSLinkedQuestionnaires(Guid visitId, int[] contentIds, Guid localeId)
-        {
-            List<CMSQuestionnaire> items = new List<CMSQuestionnaire>();
-            var item = new CMSQuestionnaire();
-
-            var linkedRecords = _contentManagementRepository.GetByIds(localeId, contentIds);
-            foreach (var obj in linkedRecords)
-            {
-                IDictionary<string, object> propData = (IDictionary<string, object>)obj;
-                item = new CMSQuestionnaire();
-                foreach (var property in propData.Keys)
-                {
-                    string value = propData[property] == null ? "" : propData[property].ToString();
-                    if (property == Constants.GrowGreatSettings.visit_id)
-                    {
-                        item.Id = value;
-                    }
-                    else if (property == Constants.GrowGreatSettings.visit_name)
-                    {
-                        item.Name = value;
-                    }
-                    else if (property == Constants.GrowGreatSettings.visit_description)
-                    {
-                        item.Description = value;
-                    }
-                    else if (property == Constants.GrowGreatSettings.visit_description_icon)
-                    {
-                        item.DescriptionIcon = value;
-                    }
-                    else if (property == Constants.GrowGreatSettings.visit_image)
-                    {
-                        item.Image = value;
-                    }
-                    else if (property == Constants.GrowGreatSettings.visit_type)
-                    {
-                        item.Type = value;
-                    }
-                    else if (property == Constants.GrowGreatSettings.visit_heading)
-                    {
-                        item.Heading = value;
-                    }
-                    else if (property == Constants.GrowGreatSettings.visit_subheading)
-                    {
-                        item.SubHeading = value;
-                    }
-                    else if (property == Constants.GrowGreatSettings.visit_heading_icon)
-                    {
-                        item.HeadingIcon = value;
-                    }
-                    else if (property == Constants.GrowGreatSettings.visit_heading_color)
-                    {
-                        item.HeadingColor = value;
-                    }
-                    else if (property == Constants.GrowGreatSettings.visit_linkedQuestions)
-                    {
-                        if (value != "")
-                        {
-                            int[] arrIds = value.Split(',').Select(n => Convert.ToInt32(n)).ToArray();
-                            item.LinkedQuestions = GetCMSLinkedQuestions(visitId, arrIds, localeId);
-                        }
-                    }
-                }
-                items.Add(item);
-            }
-
-            return items;
-        }
-
-        private List<CMSQuestion> GetCMSLinkedQuestions(Guid visitId, int[] contentIds, Guid localeId)
-        {
-            List<CMSQuestion> items = new List<CMSQuestion>();
-            var item = new CMSQuestion();
-
-            var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
-            var repository = _repoFactory.CreateGenericRepository<VisitData>(userContext: applicationUserId);
-
-            var linkedRecords = _contentManagementRepository.GetByIds(localeId, contentIds);
-            foreach (var obj in linkedRecords)
-            {
-                IDictionary<string, object> propData = (IDictionary<string, object>)obj;
-                item = new CMSQuestion();
-                foreach (var property in propData.Keys)
-                {
-                    string value = propData[property] == null ? "" : propData[property].ToString();
-                    if (property == Constants.GrowGreatSettings.visit_id)
-                    {
-                        item.Id = value;
-                    }
-                    else if (property == Constants.GrowGreatSettings.visit_name)
-                    {
-                        item.Name = value;
-                    }
-                    else if (property == Constants.GrowGreatSettings.visit_description)
-                    {
-                        item.Description = value;
-                    }
-                    else if (property == Constants.GrowGreatSettings.visit_image)
-                    {
-                        item.Image = value;
-                    }
-                    else if (property == Constants.GrowGreatSettings.visit_type)
-                    {
-                        item.Type = value;
-                    }
-                    else if (property == Constants.GrowGreatSettings.visit_sequence)
-                    {
-                        item.Sequence = value;
-                    }
-                    else if (property == Constants.GrowGreatSettings.visit_linkedAnswerOptions)
-                    {
-                        if (value != "")
-                        {
-                            int[] arrIds = value.Split(',').Select(n => Convert.ToInt32(n)).ToArray();
-                            item.LinkedAnswerOptions = GetCMSLinkedAnswers(arrIds, localeId);
-                        }
-                    }
-                }
-
-                VisitData visitData = repository.GetAll().Where(x => x.VisitId == visitId && x.CmsQuestionContentId.ToString() == item.Id).FirstOrDefault();
-                if (visitData != null)
-                {
-                    item.QuestionAnswer = visitData.QuestionAnswer;
-                }
-
-                items.Add(item);
-            }
-
-            return items;
-        }
-
-        private List<CMSAnswerOption> GetCMSLinkedAnswers(int[] contentIds, Guid localeId)
-        {
-            List<CMSAnswerOption> items = new List<CMSAnswerOption>();
-            var item = new CMSAnswerOption();
-
-            var linkedRecords = _contentManagementRepository.GetByIds(localeId, contentIds);
-            foreach (var obj in linkedRecords)
-            {
-                IDictionary<string, object> propData = (IDictionary<string, object>)obj;
-                item = new CMSAnswerOption();
-                foreach (var property in propData.Keys)
-                {
-                    string value = propData[property] == null ? "" : propData[property].ToString();
-                    if (property == Constants.GrowGreatSettings.visit_id)
-                    {
-                        item.Id = value;
-                    }
-                    else if (property == Constants.GrowGreatSettings.visit_name)
-                    {
-                        item.Name = value;
-                    }
-                    else if (property == Constants.GrowGreatSettings.visit_description)
-                    {
-                        item.Description = value;
-                    }
-                    else if (property == Constants.GrowGreatSettings.visit_image)
-                    {
-                        item.Image = value;
-                    }
-                    else if (property == Constants.GrowGreatSettings.visit_type)
-                    {
-                        item.Type = value;
-                    }
-                    else if (property == Constants.GrowGreatSettings.visit_sequence)
-                    {
-                        item.Sequence = value;
-                    }
-                    else if (property == Constants.GrowGreatSettings.visit_video)
-                    {
-                        item.Video = value;
-                    }
-                }
-                items.Add(item);
-            }
-            return items;
-        }*/
     }
 }
 
