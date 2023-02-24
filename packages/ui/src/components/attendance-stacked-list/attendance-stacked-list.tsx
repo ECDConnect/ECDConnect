@@ -68,7 +68,7 @@ export const AttendanceStackedList = ({
             onBadgeClick={(currentAttendanceItem: AttendanceListDataItem) =>
               updateItemAttendance(currentAttendanceItem)
             }
-            className="flex flex-col gap-1"
+            className="flex flex-col mt-1.5"
           />
         </div>
       ))}

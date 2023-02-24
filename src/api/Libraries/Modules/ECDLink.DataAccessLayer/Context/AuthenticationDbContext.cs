@@ -122,6 +122,7 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<VisitType> VisitTypes { get; set; }
         public DbSet<Visit> Visits { get; set; }
         public DbSet<VisitData> VisitData { get; set; }
+        public DbSet<VisitDataStatus> VisitDataStatus { get; set; }
 
         // Event Records
         public DbSet<EventRecordType> EventRecordTypes { get; set; }

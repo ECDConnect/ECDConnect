@@ -1,5 +1,6 @@
 using ECDLink.DataAccessLayer.Entities.Base;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ECDLink.DataAccessLayer.Entities.Visits
@@ -18,7 +19,8 @@ namespace ECDLink.DataAccessLayer.Entities.Visits
         public string Comment { get; set; }
         public string Color { get; set; }
         public string Type { get; set; }
-
+        public string Section { get; set; }
+        public Boolean IsCompleted { get; set; }
     }
 
     public interface VisitDataStatusJoin<TKey>
@@ -27,4 +29,6 @@ namespace ECDLink.DataAccessLayer.Entities.Visits
         public VisitDataStatus VisitDataStatus { get; set; }
         public TKey VisitDataStatusId { get; set; }
     }
+
+    
 }

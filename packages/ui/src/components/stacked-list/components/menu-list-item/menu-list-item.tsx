@@ -23,7 +23,11 @@ export const MenuListItem: React.FC<MenuListItemProps> = ({ item }) => {
       onClick={() => item.onActionClick && item.onActionClick()}
     >
       <div
-        className={classNames(styles.contentWrapper, getBackground)}
+        className={
+          item?.childList
+            ? styles.contentWrapperChildList
+            : classNames(styles.contentWrapper, getBackground)
+        }
         style={
           item.hexBackgroundColor ? { background: item.hexBackgroundColor } : {}
         }

@@ -46,7 +46,7 @@ export const AttendanceSummary: React.FC = () => {
   const [displaySmartStartMessage, setDisplaySmartStartMessage] =
     useState<boolean>(false);
   const [successMessageVisible, setSuccessMessageVisible] =
-    useState<boolean>(true);
+    useState<boolean>(false);
   const [isSmartStartUser, setIsSmartStartUser] = useState<boolean>(true);
   const [attendanceActionList, setAttendanceActionList] = useState<
     ActionListDataItem[]
@@ -114,6 +114,8 @@ export const AttendanceSummary: React.FC = () => {
     if (isCurrentSmartStartUser === undefined) {
       isCurrentSmartStartUser = true;
     }
+
+    setSuccessMessageVisible(!successMessageVisible);
 
     setIsSmartStartUser(isCurrentSmartStartUser);
 
@@ -358,7 +360,7 @@ export const AttendanceSummary: React.FC = () => {
             points={100}
             onClose={() => setSuccessMessageVisible(false)}
             message={getPointsMessage(isSmartStartUser)}
-            icon={'SparklesIcon'}
+            icon={''}
           />
         ) : (
           <div>
@@ -391,13 +393,6 @@ export const AttendanceSummary: React.FC = () => {
                   color={'alertMain'}
                 />
               </div>
-              <Typography
-                className={'pt-2'}
-                type={'body'}
-                weight={'bold'}
-                text={'Let’s get them done:'}
-                color={'textMid'}
-              />
             </div>
           )}
 

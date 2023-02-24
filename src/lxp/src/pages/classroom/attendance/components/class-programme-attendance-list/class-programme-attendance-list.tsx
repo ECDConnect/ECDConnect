@@ -1,9 +1,5 @@
 import { getAvatarColor, LearnerDto } from '@ecdlink/core';
-import {
-  AttendanceListDataItem,
-  AttendanceStackedList,
-  Typography,
-} from '@ecdlink/ui';
+import { AttendanceListDataItem, AttendanceStackedList } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { attendanceSelectors } from '@store/attendance';
@@ -120,31 +116,14 @@ export const ClassProgrammeAttendanceList: React.FC<
   return (
     <div className={styles.wrapper}>
       <div className={styles.contentWrapper}>
-        <div className={'bg-uiBg flex flex-col items-start px-4 py-1'}>
-          <Typography
-            type={'body'}
-            weight={'bold'}
-            text={classroomGroup?.name}
-            color={'black'}
-          />
-          <Typography
-            type={'help'}
-            text={
-              isPrimaryClass
-                ? 'Mark attendance for all children'
-                : 'Only mark attendance for children who are here today'
-            }
-            color={'textLight'}
-          />
-        </div>
         <div className="flex justify-center">
           <AttendanceStackedList
-            className={'bg-successBg w-11/12'}
+            className={'w-11/12'}
             scroll={false}
             listItems={attendanceList || []}
-            onChange={(updateList: AttendanceListDataItem[]) =>
-              onAttendanceListUpdated(updateList)
-            }
+            onChange={(updateList: AttendanceListDataItem[]) => {
+              onAttendanceListUpdated(updateList);
+            }}
           />
         </div>
       </div>

@@ -11,6 +11,7 @@ export interface MenuListDataItem extends ListItem {
   iconColor?: Colours;
   menuIconUrl?: string;
   subItem?: string;
+  childList?: boolean;
   backgroundColor?: Colours;
   hexBackgroundColor?: string;
 }

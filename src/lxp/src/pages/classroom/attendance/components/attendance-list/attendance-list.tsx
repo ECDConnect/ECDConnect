@@ -78,6 +78,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
   const classProgrammesUpdated = isPrincipal
     ? classProgrammesForPrincipal
     : classProgrammes;
+
   const primaryClassProgramme = classProgrammesUpdated.find(
     (prog) => prog.meetingDay === getDay(attendanceDate)
   );
@@ -91,11 +92,22 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
         : classroomGroups.filter(
             (x) => x.id === primaryClassProgramme?.classroomGroupId
           );
-
       setSelectedClassroomGroups(selectedGroups);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const updateAttendanceState = (attendanceGroups: AttendanceState[]) => {
+    const attendanceStatusCheck = getAttendanceStatusCheck(
+      attendanceGroups,
+      isButtonActive
+    );
+
+    setPresentChildrenCount(attendanceStatusCheck.presentCount);
+    setAbsentChildrenCount(attendanceStatusCheck.absentCount);
+    setAttendanceGroups(attendanceGroups);
+    setIsButtonActive(attendanceStatusCheck.isValid);
+  };
 
   const onFilterItemsChanges = (value: SearchDropDownOption<any>[]) => {
     setSelectedClassroomGroups(value.map((x) => x.value));
@@ -126,19 +138,8 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
       });
     }
 
+    setAttendanceGroups(newAttendanceGroups);
     updateAttendanceState(newAttendanceGroups);
-  };
-
-  const updateAttendanceState = (attendanceGroups: AttendanceState[]) => {
-    const attendanceStatusCheck = getAttendanceStatusCheck(
-      attendanceGroups,
-      isButtonActive
-    );
-
-    setPresentChildrenCount(attendanceStatusCheck.presentCount);
-    setAbsentChildrenCount(attendanceStatusCheck.absentCount);
-    setAttendanceGroups(attendanceGroups);
-    setIsButtonActive(attendanceStatusCheck.isValid);
   };
 
   const handleFormSubmit = async () => {
@@ -202,73 +203,81 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
 
     setAttendanceGroups([]);
     setSelectedClassroomGroups([]);
+    updateAttendanceState([]);
   };
+
+
 
   return (
     <div className={styles.wrapper}>
       <div className={styles.contentWrapper}>
-        {shouldFilter && (
-          <SearchDropDown<any>
-            displayMenuOverlay
-            menuItemClassName={styles.dropdownStyles}
-            className={'mr-1'}
-            options={
-              (classroomGroups && isPrincipal
-                ? classroomGroupsForPrincipal.map((x) => {
-                    return {
-                      id: x.id ?? '',
-                      value: x,
-                      label: x.name,
-                      disabled:
-                        x.id === primaryClassProgramme?.classroomGroupId,
-                    };
-                  })
-                : classroomGroups.map((x) => {
-                    return {
-                      id: x.id ?? '',
-                      value: x,
-                      label: x.name,
-                      disabled:
-                        x.id === primaryClassProgramme?.classroomGroupId,
-                    };
-                  })) || []
-            }
-            onChange={(value) => onFilterItemsChanges(value)}
-            placeholder={'Class'}
-            pluralSelectionText={'Classes'}
-            multiple
-            color={'uiMidDark'}
-            selectedOptions={selectedClassroomGroups.map((x) => {
-              return {
-                id: x.id ?? '',
-                value: x,
-                label: x.name,
-                disabled: x.id === primaryClassProgramme?.classroomGroupId,
-              };
-            })}
-            info={{
-              name: `Filter by:${filterInfo?.filterName}`,
-              hint: filterInfo?.filterHint || '',
-            }}
-          />
-        )}
-        <div className={styles.statusChipsWrapper(shouldFilter)}>
+        {shouldFilter &&
+          classroomGroupsForPrincipal.length > 1 &&
+          submitText === '' && (
+            <SearchDropDown<any>
+              displayMenuOverlay
+              menuItemClassName={styles.dropdownStyles}
+              className={'mr-1'}
+              options={
+                (classroomGroups && isPrincipal
+                  ? classroomGroupsForPrincipal.map((x) => {
+                      return {
+                        id: x.id ?? '',
+                        value: x,
+                        label: x.name,
+                        disabled:
+                          x.id === primaryClassProgramme?.classroomGroupId,
+                      };
+                    })
+                  : classroomGroups.map((x) => {
+                      return {
+                        id: x.id ?? '',
+                        value: x,
+                        label: x.name,
+                        disabled:
+                          x.id === primaryClassProgramme?.classroomGroupId,
+                      };
+                    })) || []
+              }
+              onChange={(value) => onFilterItemsChanges(value)}
+              placeholder={'Class'}
+              pluralSelectionText={'Classes'}
+              multiple
+              color={'secondary'}
+              selectedOptions={selectedClassroomGroups.map((x) => {
+                return {
+                  id: x.id ?? '',
+                  value: x,
+                  label: x.name,
+                  disabled: x.id === primaryClassProgramme?.classroomGroupId,
+                };
+              })}
+              info={{
+                name: `Filter by:${filterInfo?.filterName}`,
+                hint: filterInfo?.filterHint || '',
+              }}
+            />
+          )}
+      </div>
+
+      <div>
+        <div className={styles.statusChipsWrapper(true)}>
           <StatusChip
-            className={'mr-2'}
+            className={'mr-2 '}
             padding={'px-3 py-1.5'}
-            textColour="white"
-            borderColour="successMain"
-            textType="small"
-            backgroundColour="successMain"
+            textColour="successMain"
+            borderColour="white"
+            textType="h2"
+            backgroundColour="white"
             text={`${presentChildrenCount} present`}
           />
           <div>
             <StatusChip
-              textColour="white"
+              textColour="errorMain"
               padding={'px-3 py-1.5'}
-              borderColour="errorMain"
-              textType="small"
-              backgroundColour="errorMain"
+              borderColour="white"
+              textType="h2"
+              backgroundColour="white"
               text={`${absentChildrenCount} absent`}
             />
           </div>
@@ -306,7 +315,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
             size="small"
             color="primary"
             type="filled"
-            disabled={!isButtonActive}
+            // disabled={isButtonActive}
           >
             {renderIcon('PaperAirplaneIcon', 'h-5 w-5 text-white')}
             <Typography
