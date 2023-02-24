@@ -83,8 +83,8 @@ export const OtherIncome: React.FC<AddIncomeState> = ({ setType }) => {
       Notes: note,
       Description: description,
       Amount: incomeAmount ? moneyInputFormat(incomeAmount) : 0,
-      AmountExpected: 400,
-      ChildCoverAmount: 10,
+      AmountExpected: incomeAmount ? moneyInputFormat(incomeAmount) : 0,
+      ChildCoverAmount: 0,
       IncomeTypeId: incomeTypeValue?.id,
     });
   };
