@@ -206,8 +206,6 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
     updateAttendanceState([]);
   };
 
-
-
   return (
     <div className={styles.wrapper}>
       <div className={styles.contentWrapper}>
