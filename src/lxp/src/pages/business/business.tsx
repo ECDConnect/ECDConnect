@@ -95,7 +95,6 @@ export const Business: React.FC = () => {
 
   const displayTutorial = (type?: string) => {
     setShowInfo(true);
-    console.log('testeeeeeee');
   };
 
   const displayHelp =
