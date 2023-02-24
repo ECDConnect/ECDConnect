@@ -36,6 +36,11 @@ import {
   DietFormStep,
   ResourcesStep,
 } from './pillar-1-steps';
+import {
+  DevelopmentalScreeningStep,
+  DevelopmentalScreeningWeeksStep,
+} from './pillar-2-steps';
+
 import { nutritionAnswers } from './pillar-1-steps/nutrition';
 import { Question } from './dynamic-form';
 
@@ -56,12 +61,6 @@ export const careForBabySteps = [
   NewbornCareStep,
   MotherCareStep,
 ];
-
-export const pillar1LastStep = {
-  breastMilkOnly: 7,
-  formulaMilkOnly: 11,
-  mixedFeeding: 17,
-};
 
 export const getPillar1Steps = (
   nutritionAnswer: Question['answer'],
@@ -122,3 +121,8 @@ export const getPillar1Steps = (
       ];
   }
 };
+
+export const pillar2Steps = [
+  DevelopmentalScreeningStep,
+  DevelopmentalScreeningWeeksStep,
+];

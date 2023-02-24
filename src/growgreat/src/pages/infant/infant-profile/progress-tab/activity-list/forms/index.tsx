@@ -9,7 +9,12 @@ import { useLocation } from 'react-router';
 import { currentActivityKey } from '..';
 import { activitiesTypes } from '../activities-list';
 import { DynamicForm, Question } from './dynamic-form';
-import { careForBabySteps, careForMomSteps, getPillar1Steps } from './steps';
+import {
+  careForBabySteps,
+  careForMomSteps,
+  getPillar1Steps,
+  pillar2Steps,
+} from './steps';
 import { nutritionQuestion } from './pillar-1-steps/nutrition';
 import {
   breastfeedingIssuesCheckboxQuestion,
@@ -122,6 +127,8 @@ export const Form = ({ onBack }: FormProps) => {
           nutritionAnswer,
           isToSkipBreastfeedingIssuesRelevantItemsStep
         );
+      case activitiesTypes.pillar2:
+        return pillar2Steps;
       default:
         return [() => <div className="p-4">Coming soon</div>];
     }
