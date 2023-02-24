@@ -44,6 +44,11 @@ import {
   ImmunisationsStep,
   ImmunisationsSupplementsDewormingStep,
 } from './pillar-3-steps';
+import {
+  FollowUpStep,
+  SicknessStep,
+  DangerSignsStep as Pillar4DangerSignsStep,
+} from './pillar-4-steps';
 
 import { nutritionAnswers } from './pillar-1-steps/nutrition';
 import { Question } from './dynamic-form';
@@ -134,4 +139,10 @@ export const pillar2Steps = [
 export const pillar3Steps = [
   ImmunisationsStep,
   ImmunisationsSupplementsDewormingStep,
+];
+
+export const getPillar4Steps = (isFollowUp: boolean) => [
+  ...(isFollowUp ? [FollowUpStep] : []),
+  SicknessStep,
+  Pillar4DangerSignsStep,
 ];

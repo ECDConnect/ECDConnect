@@ -6,6 +6,7 @@ export interface CheckboxGroupProps extends CheckboxProps {
   icon?: ReactElement;
   title: string;
   description?: string;
+  extraChildren?: JSX.Element;
   onChange?: (e: CheckboxChange) => void;
 }
 
@@ -18,6 +19,7 @@ export const CheckboxGroup = ({
   description,
   onChange,
   value,
+  extraChildren,
   ...rest
 }: CheckboxGroupProps) => (
   <div
@@ -33,22 +35,21 @@ export const CheckboxGroup = ({
       {...rest}
     />
     <label htmlFor={id} className="flex w-full items-center gap-2 font-bold">
-      <div>
-        <div className="flex items-center gap-2">
-          {icon && (
-            <span
-              className={`flex h-9 w-9 items-center justify-center rounded-full ${
-                checked ? 'bg-secondary' : 'bg-tertiary'
-              }`}
-            >
-              {icon}
-            </span>
-          )}
-          <p className="text-textDark text-base font-bold">{title}</p>
-        </div>
-        <p className="text-textMid text-sm font-normal">{description}</p>
+      <div className="flex items-center gap-2">
+        {icon && (
+          <span
+            className={`flex h-9 w-9 items-center justify-center rounded-full ${
+              checked ? 'bg-secondary' : 'bg-tertiary'
+            }`}
+          >
+            {icon}
+          </span>
+        )}
+        <p className="text-textDark text-base font-bold">{title}</p>
       </div>
+      <p className="text-textMid text-sm font-normal">{description}</p>
     </label>
+    {extraChildren}
     {disabled && (
       <span className="absolute left-0 h-full w-full bg-gray-100 opacity-70" />
     )}
