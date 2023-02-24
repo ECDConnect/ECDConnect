@@ -1,13 +1,49 @@
+import { IncomeStatementsService } from '@/services/IncomeStatementsService';
+import { authSelectors } from '@/store/auth';
 import { BannerWrapper, Button, Card, Typography } from '@ecdlink/ui';
+import { useLayoutEffect, useMemo, useState } from 'react';
+import { useSelector } from 'react-redux';
 import LanguageSelector from '../../../components/language-selector/language-selector';
 
 interface StatementsShowInfoProps {
   setShowInfo: any;
 }
 
+interface Dataprops {
+  description: string;
+  id: number;
+}
+
 export const StatementsInfoPage: React.FC<StatementsShowInfoProps> = ({
   setShowInfo,
 }) => {
+  const userAuth = useSelector(authSelectors.getAuthUser);
+  const [data, setData] = useState<Dataprops[]>();
+  const [selectedLanguage, setSelectedLanguage] = useState('en-za');
+
+  useLayoutEffect(() => {
+    const loadInfoData = async () => {
+      const htmlData = await new IncomeStatementsService(
+        userAuth?.auth_token!
+      ).GetAllIncomeStatementsInfo(selectedLanguage);
+
+      setData(htmlData as any);
+    };
+
+    loadInfoData();
+  }, [selectedLanguage, userAuth?.auth_token]);
+
+  const renderData = useMemo(() => {
+    return (
+      <Typography
+        type="markdown"
+        fontSize={'16'}
+        text={data?.[0]?.description}
+        color={'textDark'}
+      />
+    );
+  }, [data]);
+
   return (
     <BannerWrapper
       size="small"
@@ -18,7 +54,7 @@ export const StatementsInfoPage: React.FC<StatementsShowInfoProps> = ({
       <div className="bg-uiBg w-full">
         <LanguageSelector
           currentLocale={'en-za'}
-          selectLanguage={() => {}}
+          selectLanguage={(data) => setSelectedLanguage(data.locale)}
           className="bg-uiBg p-4"
         />
       </div>
@@ -49,6 +85,8 @@ export const StatementsInfoPage: React.FC<StatementsShowInfoProps> = ({
             onClick={() => {}}
           />
         </Card>
+
+        <div>{renderData}</div>
       </div>
     </BannerWrapper>
   );
