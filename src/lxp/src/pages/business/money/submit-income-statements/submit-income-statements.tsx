@@ -98,10 +98,13 @@ export const SubmitIncomeStatements: React.FC = () => {
   const enableSubmit = today <= lastDayToSubmit || today >= firstDateToSubmit;
 
   useEffect(() => {
-    if (balanceSheet?.filter((e) => e.month === monthDateNumber).length! > 0) {
+    if (
+      balanceSheet?.filter((e) => e?.submitted === true).length! > 0 &&
+      isSameMonth
+    ) {
       setDisableSubmit(true);
     }
-  }, [balanceSheet, monthDateNumber]);
+  }, [balanceSheet, isSameMonth, monthDateNumber]);
 
   return (
     <>
