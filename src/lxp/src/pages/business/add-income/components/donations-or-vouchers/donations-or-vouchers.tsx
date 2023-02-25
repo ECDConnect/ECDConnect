@@ -113,8 +113,8 @@ export const DonationsOrVouchers: React.FC<AddIncomeState> = ({ setType }) => {
       Submitted: false,
       DateReceived: date,
       Amount: donationWorth ? moneyInputFormat(donationWorth) : 0,
-      AmountExpected: 400,
-      ChildCoverAmount: 400,
+      AmountExpected: donationWorth ? moneyInputFormat(donationWorth) : 0,
+      ChildCoverAmount: 0,
       IncomeTypeId: incomeTypeValue?.id,
     });
   };
