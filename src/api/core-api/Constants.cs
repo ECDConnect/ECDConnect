@@ -22,7 +22,6 @@ namespace EcdLink.Api.CoreApi
             public const string visitType_due = "due";
 
             public const string client_mother = "mother";
-            public const string client_infant = "infant";
             public const string client_child = "child";
 
             public const string client_pregnant_mom = "Pregnant mom";
@@ -131,13 +130,8 @@ namespace EcdLink.Api.CoreApi
             public const string cfb_ds_7 = "Severe eye infection";
             public const string cfb_ds_8 = "Severe cord infection";
 
-            enum double_3sd { 13.3, 17.1, 20.7, 24.2, 29.5 };
-            static const double[] arr = new double[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-
-
 
             // Answers
-
             public const string answer_yes = "Yes";
             public const string answer_no = "No";
             public const string none_above = "None of the above";

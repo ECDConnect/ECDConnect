@@ -50,13 +50,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
     public class Progress_VisitDataStatus
     {
         public string Score { get; set; }
-        public virtual ICollection<VisitDataStatus> visitDataStatus { get; set; }
+        public virtual ICollection<VisitDataStatus> VisitDataStatus { get; set; }
     }
 
     public class VisitDataSummary
     {
         public string VisitSection { get; set; }
-        public virtual ICollection<VisitDataStatus> visitDataStatus { get; set; }
+        public virtual ICollection<VisitDataStatus> VisitDataStatus { get; set; }
     }
 
 }

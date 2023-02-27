@@ -226,7 +226,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             return visitCount;
         }
 
-        public static DateTime StartOfWeek(DateTime dt, DayOfWeek startOfWeek)
+        private static DateTime StartOfWeek(DateTime dt, DayOfWeek startOfWeek)
         {
             int diff = (7 + (dt.DayOfWeek - startOfWeek)) % 7;
             return dt.AddDays(-1 * diff).Date;
@@ -264,7 +264,30 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
             return null;
         }
-    
+
+        public List<Visit> GetVisitsForClient(string id, string type) {
+            var uId = _contextAccessor.HttpContext.GetUser().Id;
+            var visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: uId);
+            var visitTypeRepo = _repoFactory.CreateGenericRepository<VisitType>(userContext: uId);
+
+            List<Visit> allVisits = new List<Visit>();
+            if (type == Constants.GGSettings.client_mother) {
+                allVisits = (
+                    from visit in visitRepo.GetAll().Where(x => x.Mother.UserId == id).OrderBy(x => x.PlannedVisitDate)
+                    join visitType in visitTypeRepo.GetAll().Where(y => y.Type == Constants.GGSettings.client_mother) on visit.VisitTypeId equals visitType.Id
+                    select visit
+                ).ToList();
+            } else {
+               allVisits = (
+                   from visit in visitRepo.GetAll().Where(x => x.Infant.UserId == id).OrderBy(x => x.PlannedVisitDate)
+                   join visitType in visitTypeRepo.GetAll().Where(y => y.Type == Constants.GGSettings.client_child) on visit.VisitTypeId equals visitType.Id
+                   select visit
+               ).ToList();
+            }
+
+            return allVisits;
+        }
+        
     }
 }
 

@@ -1,5 +1,6 @@
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Users.GrowGreat;
+using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
@@ -112,102 +113,49 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public List<Visit> GetMotherVisits(
-            [Service] IHttpContextAccessor contextAccessor,
-            IGenericRepositoryFactory repoFactory,
-            string id)
+        public List<Visit> GetMotherVisits([Service] VisitManager visitManager, string id)
         {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            var visitRepo = repoFactory.CreateGenericRepository<Visit>(userContext: uId);
-            var visitTypeRepo = repoFactory.CreateGenericRepository<VisitType>(userContext: uId);
-
-            List<Visit> motherVisits = new List<Visit>();
-            motherVisits = (
-                from visit in visitRepo.GetAll().Where(x => x.Mother.UserId == id).OrderBy(x => x.PlannedVisitDate)
-                join visitType in visitTypeRepo.GetAll().Where(y => y.Type == Constants.GGSettings.client_mother) on visit.VisitTypeId equals visitType.Id
-                select visit
-            ).ToList();
-
-            return motherVisits;
+            return visitManager.GetVisitsForClient(id, Constants.GGSettings.client_mother);
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public List<VisitDataStatus> GetVisitReferralsForMother(
-            [Service] IHttpContextAccessor contextAccessor,
-            IGenericRepositoryFactory repoFactory,
-            string id)
+        public List<VisitDataStatus> GetReferralsForMother([Service] VisitDataStatusManager visitDataStatusManager, string id)
         {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            var visitRepo = repoFactory.CreateGenericRepository<Visit>(userContext: uId);
-            var visitDataRepo = repoFactory.CreateGenericRepository<VisitData>(userContext: uId);
-            var visitDataStatusRepo = repoFactory.CreateGenericRepository<VisitDataStatus>(userContext: uId);
-
-            List<VisitDataStatus> visitDataStatus = new List<VisitDataStatus>();
-            visitDataStatus = (
-                from visit in visitRepo.GetAll().Where(x => x.Mother.UserId == id).OrderBy(x => x.PlannedVisitDate)
-                join visitData in visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
-                join visitStatusData in visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == false && x.Type == Constants.GGSettings.visit_data_client_referral) on visitData.Id equals visitStatusData.VisitDataId
-                select visitStatusData
-            ).ToList();
-
-            return visitDataStatus;
+            return visitDataStatusManager.GetReferralDataForClient(id, Constants.GGSettings.client_mother);
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public List<VisitData> GetVisitAnswersForMother(
-            [Service] IHttpContextAccessor contextAccessor,
-            IGenericRepositoryFactory repoFactory,
-            string visitId,
-            string visitName,
-            string visitSection
-            )
-        {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            var visitRepo = repoFactory.CreateGenericRepository<Visit>(userContext: uId);
-            var visitDataRepo = repoFactory.CreateGenericRepository<VisitData>(userContext: uId);
-
-            List<VisitData> vData = new List<VisitData>();
-            vData = (
-                from visit in visitRepo.GetAll().Where(x => x.Id.ToString() == visitId).OrderBy(x => x.PlannedVisitDate)
-                join visitData in visitDataRepo.GetAll().Where(y => y.VisitName == visitName && y.VisitSection == visitSection) on visit.Id equals visitData.VisitId
-                select visitData
-            ).ToList();
-
-            return vData;
+        public List<VisitData> GetVisitAnswersForMother(VisitDataManager visitDataManager, string visitId, string visitName, string visitSection) {
+            return visitDataManager.GetVisitAnswersForClient( visitId, visitName, visitSection );
         }
 
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public List<string> GetCompletedVisitsForMother([Service] VisitDataManager visitDataManager, string id) {
+            return visitDataManager.GetCompletedVisitsForClient(id, Constants.GGSettings.client_mother);
+        }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public Progress_VisitDataStatus GetVisitClientSummaryProgressForMother(
-            [Service] IHttpContextAccessor contextAccessor,
-            IGenericRepositoryFactory repoFactory,
-            string id)
-        {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            var visitRepo = repoFactory.CreateGenericRepository<Visit>(userContext: uId);
-            var visitDataRepo = repoFactory.CreateGenericRepository<VisitData>(userContext: uId);
-            var visitDataStatusRepo = repoFactory.CreateGenericRepository<VisitDataStatus>(userContext: uId);
+        public Progress_VisitDataStatus GetPreviousVisitInformationForMother([Service] VisitDataStatusManager visitDataStatusManager, string visitId) {
+            return visitDataStatusManager.GetPreviousVisitInformationForClient(visitId);
+        }
 
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public Progress_VisitDataStatus GetVisitClientSummaryDataForMother(VisitDataStatusManager visitDataStatusManager, string id)
+        {
             var totalGreen = 0;
             var totalRed = 0;
             var totalAmber = 0;
             Progress_VisitDataStatus result = new Progress_VisitDataStatus();
 
             // Allows user to review all progress information generated during the visit & allows user to share the summary with the client (generates G9);
-            List<VisitDataStatus> visitDataStatus = new List<VisitDataStatus>();
-            visitDataStatus = (
-                from visit in visitRepo.GetAll().Where(x => x.Mother.UserId == id).OrderBy(x => x.PlannedVisitDate)
-                join visitData in visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
-                join visitStatusData in visitDataStatusRepo.GetAll().Where(x => x.Type == Constants.GGSettings.visit_data_client_summary) on visitData.Id equals visitStatusData.VisitDataId
-                select visitStatusData
-            ).ToList();
+            List<VisitDataStatus> visitDataStatus = visitDataStatusManager.GetSummaryDataForClient(id, Constants.GGSettings.client_mother);
 
             totalGreen = visitDataStatus.Where(x => x.Color == MetricsColorEnum.Success.ToString()).Count();
             totalRed = visitDataStatus.Where(x => x.Color == MetricsColorEnum.Error.ToString()).Count();
             totalAmber = visitDataStatus.Where(x => x.Color == MetricsColorEnum.Warning.ToString()).Count();
 
             result.Score = totalGreen.ToString() + " / " + (totalGreen + totalRed + totalAmber).ToString();
-            result.visitDataStatus = visitDataStatus;
+            result.VisitDataStatus = visitDataStatus;
 
             return result;
         }
@@ -245,67 +193,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                     select visitStatusData
                 ).ToList();
 
-                summaryData.visitDataStatus = visitDataStatus;
+                summaryData.VisitDataStatus = visitDataStatus;
                 sumData.Add(summaryData);
             }
 
             return sumData;
         }
-
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public List<string> GetCompletedVisitsForMother(
-            [Service] IHttpContextAccessor contextAccessor,
-            IGenericRepositoryFactory repoFactory,
-            string id)
-        {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            var visitRepo = repoFactory.CreateGenericRepository<Visit>(userContext: uId);
-            var visitDataRepo = repoFactory.CreateGenericRepository<VisitData>(userContext: uId);
-
-            List<string> vData = new List<string>();
-            vData = (
-                from visit in visitRepo.GetAll().Where(x => x.Mother.UserId == id && x.Attended == true).OrderBy(x => x.PlannedVisitDate)
-                join visitData in visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
-                select visitData
-            ).Select(y => y.VisitName).Distinct().ToList();
-
-            return vData;
-        }
-
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public Progress_VisitDataStatus GetPreviousVisitInformationForMother(
-            [Service] IHttpContextAccessor contextAccessor,
-            IGenericRepositoryFactory repoFactory,
-            string visitId)
-        {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            var visitRepo = repoFactory.CreateGenericRepository<Visit>(userContext: uId);
-            var visitDataRepo = repoFactory.CreateGenericRepository<VisitData>(userContext: uId);
-            var visitDataStatusRepo = repoFactory.CreateGenericRepository<VisitDataStatus>(userContext: uId);
-
-            var totalGreen = 0;
-            var totalRed = 0;
-            var totalAmber = 0;
-            Progress_VisitDataStatus result = new Progress_VisitDataStatus();
-
-            List<VisitDataStatus> visitDataStatus = new List<VisitDataStatus>();
-            visitDataStatus = (
-                from visitData in visitDataRepo.GetAll().Where(x => x.VisitId.ToString() == visitId)
-                join visitStatusData in visitDataStatusRepo.GetAll() on visitData.Id equals visitStatusData.VisitDataId
-                select visitStatusData
-            ).ToList();
-
-            totalGreen = visitDataStatus.Where(x => x.Color == MetricsColorEnum.Success.ToString()).Count();
-            totalRed = visitDataStatus.Where(x => x.Color == MetricsColorEnum.Error.ToString()).Count();
-            totalAmber = visitDataStatus.Where(x => x.Color == MetricsColorEnum.Warning.ToString()).Count();
-
-            result.Score = totalGreen.ToString() + " / " + (totalGreen + totalRed + totalAmber).ToString();
-            result.visitDataStatus = visitDataStatus;
-
-            return result;
-        }
-
-
 
     }
 }
