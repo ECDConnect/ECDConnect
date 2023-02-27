@@ -54,33 +54,6 @@ namespace ECDLink.Core.Services
             var statementsRepo = _repoFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _applicationUserId);
             DateTime nextMonth = DateTime.Now.AddMonths(1);
 
-            //if (DateTime.Now.Month.Equals(month) && DateTime.Now.Year.Equals(year) && !IsSubmitted(userId, year, month))
-            //{
-            //    //if (month > 0 && ((year == DateTime.Now.Year && month >= DateTime.Now.Month) || (year == nextMonth.Year && month == nextMonth.Month))) //
-            //    //{
-            //    //    //FE requests future dated values included in next UNsubmitted set of statement lines
-            //    //    double allIncomeTotal = GetAllIncomeTotal(userId, year, month, LinesStatus.SUBMITTED);
-            //    //    double allExpenseTotal = GetAllExpensesTotal(userId, year, month, LinesStatus.SUBMITTED);
-
-            //    //    double runningBalance = allIncomeTotal - allExpenseTotal;
-
-            //    //    runningBalance = Math.Round(runningBalance, 2);
-
-            //    //    balanceSheets.Add(new StatementsBalanceSheet() { Balance = Math.Round(runningBalance, 2), IncomeTotal = Math.Round(allIncomeTotal, 2), ExpenseTotal = Math.Round(allExpenseTotal, 2), Month = month, Year = year, UserId = userId, IsAutoSubmitted = false, SubmittedDate = null });
-            //    //}
-            //    IncomeExpenseLinesMonthly incomeExpenses = GetMonthlyIncomeExpenses(userId, year, month);
-            //    if (incomeExpenses.AllUnSubmitted != null)
-            //    {
-
-            //        balanceSheets.Add(new StatementsBalanceSheet() { Balance = Math.Round((incomeExpenses.AllUnSubmitted.IncomeTotal - incomeExpenses.AllUnSubmitted.ExpenseTotal), 2), IncomeTotal = Math.Round(incomeExpenses.AllUnSubmitted.IncomeTotal, 2), ExpenseTotal = Math.Round(incomeExpenses.AllUnSubmitted.ExpenseTotal, 2), Month = month, Year = year, UserId = userId, AutoSubmitted = false, SubmittedDate = null, Submitted = false });
-
-            //    }
-            //}
-            //else
-            //{
-            //Only retrieve submitted statements oif not a future dated month is requested
-
-
             var statements = statementsRepo.GetAll().Where(x => string.Equals(x.UserId, userId) && x.Submitted.Equals(true)).ToList();
             if (statements.Any())
             {
@@ -88,23 +61,22 @@ namespace ECDLink.Core.Services
                 {
                     statements = statements.Where(x => x.Year.Equals(year)).ToList();
                 }
-                //year loop
+                //supplied year loop
                 var allYears = statements.Select(x => x.Year).Distinct().ToList();
                 if (allYears.Any())
                 {
                     allYears.OrderDescending();
                     foreach (var currentYear in allYears)
                     {
-                        //months loop
+                        //loop months of YTD of supplied year
                         var allMonths = statements.Where(x => x.Year == currentYear).Select(y => y.Month).Distinct().ToList();
-                        if (month > 0) //filter to specific month
+                        if (month > 0) //filter to specific month if supplied in addition to year
                         {
                             statements = statements.Where(x => x.Month.Equals(month)).ToList();
                         }
                         if (allMonths.Any())
                         {
-                            //TODO //if currentmonth is not yet submitted, add this too but pull previous entries not yet submitted and include in this iteration
-
+                            //if currentmonth is not yet submitted, add this too but pull previous entries not yet submitted and include in this iteration
                             allMonths.OrderDescending();
                             foreach (var loopMonth in allMonths)
                             {
@@ -129,24 +101,10 @@ namespace ECDLink.Core.Services
             }
             if (DateTime.Now.Month.Equals(month) && DateTime.Now.Year.Equals(year) && !IsSubmitted(userId, year, month))
             {
-                //if (month > 0 && ((year == DateTime.Now.Year && month >= DateTime.Now.Month) || (year == nextMonth.Year && month == nextMonth.Month))) //
-                //{
-                //    //FE requests future dated values included in next UNsubmitted set of statement lines
-                //    double allIncomeTotal = GetAllIncomeTotal(userId, year, month, LinesStatus.SUBMITTED);
-                //    double allExpenseTotal = GetAllExpensesTotal(userId, year, month, LinesStatus.SUBMITTED);
-
-                //    double runningBalance = allIncomeTotal - allExpenseTotal;
-
-                //    runningBalance = Math.Round(runningBalance, 2);
-
-                //    balanceSheets.Add(new StatementsBalanceSheet() { Balance = Math.Round(runningBalance, 2), IncomeTotal = Math.Round(allIncomeTotal, 2), ExpenseTotal = Math.Round(allExpenseTotal, 2), Month = month, Year = year, UserId = userId, IsAutoSubmitted = false, SubmittedDate = null });
-                //}
                 IncomeExpenseLinesMonthly incomeExpenses = GetMonthlyIncomeExpenses(userId, year, month);
                 if (incomeExpenses.AllUnSubmitted != null)
                 {
-
                     balanceSheets.Add(new StatementsBalanceSheet() { Balance = Math.Round((incomeExpenses.AllUnSubmitted.IncomeTotal - incomeExpenses.AllUnSubmitted.ExpenseTotal), 2), IncomeTotal = Math.Round(incomeExpenses.AllUnSubmitted.IncomeTotal, 2), ExpenseTotal = Math.Round(incomeExpenses.AllUnSubmitted.ExpenseTotal, 2), Month = month, Year = year, UserId = userId, AutoSubmitted = false, SubmittedDate = null, Submitted = false });
-
                 }
             }
             else
@@ -154,13 +112,9 @@ namespace ECDLink.Core.Services
                 IncomeExpenseLinesMonthly incomeExpenses = GetMonthlyIncomeExpenses(userId, DateTime.Now.Year, DateTime.Now.Month);
                 if (incomeExpenses.AllUnSubmitted != null)
                 {
-
                     balanceSheets.Add(new StatementsBalanceSheet() { Balance = Math.Round((incomeExpenses.AllUnSubmitted.IncomeTotal - incomeExpenses.AllUnSubmitted.ExpenseTotal), 2), IncomeTotal = Math.Round(incomeExpenses.AllUnSubmitted.IncomeTotal, 2), ExpenseTotal = Math.Round(incomeExpenses.AllUnSubmitted.ExpenseTotal, 2), Month = DateTime.Now.Month, Year = DateTime.Now.Year, UserId = userId, AutoSubmitted = false, SubmittedDate = null, Submitted = false });
-
                 }
-            }
-            //}
-            //check if current month has any unsubmitted values, then add it to new month if already submitted            
+            }           
             return balanceSheets;
         }
 
@@ -235,7 +189,7 @@ namespace ECDLink.Core.Services
 
         private StatementsIncomeStatement GetStatementsIncomeStatementById(string lineId)
         {
-            //function to retrieve lines not submitted from a month where others have been submitted
+            //retrieve lines not submitted from a month where others have been submitted
             var statementRepo = _repoFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _applicationUserId);
             return statementRepo.GetAll() //get all rows for year to date
                     .Where(x => string.Equals(x.Id, lineId) && x.IsActive == true)
@@ -296,7 +250,7 @@ namespace ECDLink.Core.Services
             IncomeExpenseLinesMonthly incomeExpenses = new IncomeExpenseLinesMonthly();
             DateTime previousTimePeriod = DateTime.Now.AddMonths(-1); //previous months date to check for any unsubmitted records of current - 1 month
 
-            //all
+            //all lines
             var latestIncomeRowsAll = GetAllIncomeLines(userId, year, month, LinesStatus.ANY);
             var latestExpenseRowsAll = GetAllExpenseLines(userId, year, month, LinesStatus.ANY);
 
@@ -324,7 +278,7 @@ namespace ECDLink.Core.Services
                 var statement = GetStatementsIncomeStatementById(statementIdAll);
                 incomeExpenses.AllLines.AutoSubmitted = statement.AutoSubmitted;
             }
-            //submitted
+            //submitted lines only
             incomeExpenses.AllSubmitted = new IncomeExpenseLines();
             var latestIncomeRowsSubmitted = GetAllIncomeLines(userId, year, month, LinesStatus.SUBMITTED);
             var latestExpenseRowsSubmitted = GetAllExpenseLines(userId, year, month, LinesStatus.SUBMITTED);
@@ -351,7 +305,7 @@ namespace ECDLink.Core.Services
                 incomeExpenses.AllSubmitted.AutoSubmitted = statement.AutoSubmitted;
             }
 
-            //unsubmitted of this month and previous month
+            //unsubmitted lines of this month and previous month
             incomeExpenses.AllUnSubmitted = new IncomeExpenseLines();
             var latestIncomeRowsUnSubmitted = GetAllIncomeLines(userId, year, month, LinesStatus.UNSUBMITTED);
             var latestExpenseRowsUnSubmitted = GetAllExpenseLines(userId, year, month, LinesStatus.UNSUBMITTED);
@@ -470,7 +424,6 @@ namespace ECDLink.Core.Services
             StatementsStartupSupport supportEntry = startupRepo.GetAll().Where(x => x.Id.Equals(model.Id)).FirstOrDefault();
             if (supportEntry != null)
             {
-
                 startupRepo.Update(model);
             }
             else
@@ -487,12 +440,6 @@ namespace ECDLink.Core.Services
             var statementRepo = _repoFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _applicationUserId);
 
             DateTime previousTimePeriod = DateTime.Now.AddMonths(-1); //previous months date to check for any unsubmitted records of current - 1 month
-
-            //var latestIncomeRows = GetAllIncomeLines(model.UserId, model.Year, model.Month, LinesStatus.SUBMITTED);
-            //var unsubmittedIncomeRows = GetAllIncomeLines(model.UserId, previousTimePeriod.Year, previousTimePeriod.Month, LinesStatus.UNSUBMITTED);
-            //var latestExpenseRows = GetAllExpenseLines(model.UserId, model.Year, model.Month, LinesStatus.SUBMITTED);
-            //var unsubmittedExpenseRows = GetAllExpenseLines(model.UserId, previousTimePeriod.Year, previousTimePeriod.Month, LinesStatus.UNSUBMITTED);
-
             IncomeExpenseLinesMonthly incomeExpenses = GetMonthlyIncomeExpenses(model.UserId, model.Year, model.Month);
 
             if (model.Period == "Annual")
@@ -535,10 +482,7 @@ namespace ECDLink.Core.Services
                 if (incomeExpenses.AllUnSubmitted.Income.Count > 0)
                 {
                     var incomeRepo = _repoFactory.CreateGenericRepository<StatementsIncome>(userContext: _applicationUserId);
-                    //if (unsubmittedIncomeRows.Any()) // if any statement lines were added after previous months submission, these get added to the newest submission
-                    //{
-                    //    latestIncomeRows.AddRange(unsubmittedIncomeRows);
-                    //}
+                     // if any statement lines were added after previous months submission, these get added to the newest submission
                     foreach (var row in incomeExpenses.AllUnSubmitted.Income)
                     {
                         allIncome += row.Amount;
@@ -555,10 +499,7 @@ namespace ECDLink.Core.Services
                 if (incomeExpenses.AllUnSubmitted.Expenses.Count > 0)
                 {
                     var expenseRepo = _repoFactory.CreateGenericRepository<StatementsExpenses>(userContext: _applicationUserId);
-                    //if (unsubmittedExpenseRows.Any()) // if any statement lines were added after previous months submission, these get added to the newest submission
-                    //{
-                    //    latestExpenseRows.AddRange(unsubmittedExpenseRows);
-                    //}
+                    // if any statement lines were added after previous months submission, these get added to the newest submission
                     foreach (var row in incomeExpenses.AllUnSubmitted.Expenses)
                     {
                         allExpenses += row.Amount;
