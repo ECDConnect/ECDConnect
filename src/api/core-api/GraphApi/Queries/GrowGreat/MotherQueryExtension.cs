@@ -39,14 +39,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             IGenericRepositoryFactory repoFactory,
             [Service] MotherManager motherManager,
             string id,
-            string visitType = Constants.GrowGreatSettings.visitType_all) // visitType can be all / overdue / due
+            string visitType = Constants.GGSettings.visitType_all) // visitType can be all / overdue / due
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var motherRepo = repoFactory.CreateGenericRepository<Mother>(userContext: uId);
             List<Mother> allMothers = motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId.Equals(id) && x.IsActive.Equals(true)).ToList();
             List<Mother> mothers = new List<Mother>();
 
-            if (visitType == Constants.GrowGreatSettings.visitType_due)
+            if (visitType == Constants.GGSettings.visitType_due)
             {
                 foreach (var mother in allMothers)
                 {
@@ -57,7 +57,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                         mothers.Add(mother);
                     }
                 }
-            } else if (visitType == Constants.GrowGreatSettings.visitType_overdue)
+            } else if (visitType == Constants.GGSettings.visitType_overdue)
             {
                 foreach (var mother in allMothers)
                 {
@@ -124,7 +124,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             List<Visit> motherVisits = new List<Visit>();
             motherVisits = (
                 from visit in visitRepo.GetAll().Where(x => x.Mother.UserId == id).OrderBy(x => x.PlannedVisitDate)
-                join visitType in visitTypeRepo.GetAll().Where(y => y.Type == Constants.GrowGreatSettings.client_mother) on visit.VisitTypeId equals visitType.Id
+                join visitType in visitTypeRepo.GetAll().Where(y => y.Type == Constants.GGSettings.client_mother) on visit.VisitTypeId equals visitType.Id
                 select visit
             ).ToList();
 
@@ -146,7 +146,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             visitDataStatus = (
                 from visit in visitRepo.GetAll().Where(x => x.Mother.UserId == id).OrderBy(x => x.PlannedVisitDate)
                 join visitData in visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
-                join visitStatusData in visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == false && x.Type == Constants.GrowGreatSettings.visit_data_client_referral) on visitData.Id equals visitStatusData.VisitDataId
+                join visitStatusData in visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == false && x.Type == Constants.GGSettings.visit_data_client_referral) on visitData.Id equals visitStatusData.VisitDataId
                 select visitStatusData
             ).ToList();
 
@@ -198,7 +198,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             visitDataStatus = (
                 from visit in visitRepo.GetAll().Where(x => x.Mother.UserId == id).OrderBy(x => x.PlannedVisitDate)
                 join visitData in visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
-                join visitStatusData in visitDataStatusRepo.GetAll().Where(x => x.Type == Constants.GrowGreatSettings.visit_data_client_summary) on visitData.Id equals visitStatusData.VisitDataId
+                join visitStatusData in visitDataStatusRepo.GetAll().Where(x => x.Type == Constants.GGSettings.visit_data_client_summary) on visitData.Id equals visitStatusData.VisitDataId
                 select visitStatusData
             ).ToList();
 
@@ -228,7 +228,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             visitSections = (
                     from visit in visitRepo.GetAll().Where(x => x.Mother.UserId == id).OrderBy(x => x.PlannedVisitDate)
                     join visitData in visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
-                    join visitStatusData in visitDataStatusRepo.GetAll().Where(x => x.Type == Constants.GrowGreatSettings.visit_data_client_summary) on visitData.Id equals visitStatusData.VisitDataId
+                    join visitStatusData in visitDataStatusRepo.GetAll().Where(x => x.Type == Constants.GGSettings.visit_data_client_summary) on visitData.Id equals visitStatusData.VisitDataId
                     select visitStatusData
             ).Select(y => y.Section).Distinct().ToList();
 
@@ -241,7 +241,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 visitDataStatus = (
                     from visit in visitRepo.GetAll().Where(x => x.Mother.UserId == id).OrderBy(x => x.PlannedVisitDate)
                     join visitData in visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
-                    join visitStatusData in visitDataStatusRepo.GetAll().Where(x => x.Type == Constants.GrowGreatSettings.visit_data_client_summary) on visitData.Id equals visitStatusData.VisitDataId
+                    join visitStatusData in visitDataStatusRepo.GetAll().Where(x => x.Type == Constants.GGSettings.visit_data_client_summary) on visitData.Id equals visitStatusData.VisitDataId
                     select visitStatusData
                 ).ToList();
 

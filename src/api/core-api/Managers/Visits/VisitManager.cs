@@ -66,18 +66,18 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             Visit missedVisit = null;
             DateTime today = DateTime.Today;
 
-            if (type == Constants.GrowGreatSettings.client_mother)
+            if (type == Constants.GGSettings.client_mother)
             {
                 missedVisit = (
                     from visit in visitRepo.GetAll().Where(x => x.MotherId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date <= today.Date).OrderBy(x => x.PlannedVisitDate)
-                    join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GrowGreatSettings.client_mother)) on visit.VisitTypeId equals visitType.Id
+                    join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GGSettings.client_mother)) on visit.VisitTypeId equals visitType.Id
                     select visit
                 ).FirstOrDefault();
             } else
             {
                 missedVisit = (
                     from visit in visitRepo.GetAll().Where(x => x.InfantId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date <= today.Date).OrderBy(x => x.PlannedVisitDate)
-                    join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GrowGreatSettings.client_child)) on visit.VisitTypeId equals visitType.Id
+                    join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GGSettings.client_child)) on visit.VisitTypeId equals visitType.Id
                     select visit
                 ).FirstOrDefault();
             }
@@ -104,11 +104,11 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 DateTime monday = StartOfWeek(today, DayOfWeek.Monday);
                 DateTime next7Days = monday.AddDays(6);
 
-                if (type == Constants.GrowGreatSettings.client_mother)
+                if (type == Constants.GGSettings.client_mother)
                 {
                     nextVisit = (
                         from visit in visitRepo.GetAll().Where(x => x.MotherId.Equals(Id) && !x.Attended && x.PlannedVisitDate >= monday && x.PlannedVisitDate <= next7Days).OrderBy(x => x.PlannedVisitDate)
-                        join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GrowGreatSettings.client_mother)) on visit.VisitTypeId equals visitType.Id
+                        join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GGSettings.client_mother)) on visit.VisitTypeId equals visitType.Id
                         select visit
                     ).LastOrDefault();
                 }
@@ -116,7 +116,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 {
                     nextVisit = (
                         from visit in visitRepo.GetAll().Where(x => x.InfantId.Equals(Id) && !x.Attended && x.PlannedVisitDate >= monday && x.PlannedVisitDate <= next7Days).OrderBy(x => x.PlannedVisitDate)
-                        join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GrowGreatSettings.client_child)) on visit.VisitTypeId equals visitType.Id
+                        join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GGSettings.client_child)) on visit.VisitTypeId equals visitType.Id
                         select visit
                     ).LastOrDefault();
                 }
@@ -126,11 +126,11 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             {
                 DateTime next7Days = today.AddDays(7);
 
-                if (type == Constants.GrowGreatSettings.client_mother)
+                if (type == Constants.GGSettings.client_mother)
                 {
                     nextVisit = (
                         from visit in visitRepo.GetAll().Where(x => x.MotherId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date < next7Days.Date).OrderBy(x => x.PlannedVisitDate)
-                        join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GrowGreatSettings.client_mother)) on visit.VisitTypeId equals visitType.Id
+                        join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GGSettings.client_mother)) on visit.VisitTypeId equals visitType.Id
                         select visit
                     ).LastOrDefault();
                 }
@@ -138,7 +138,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 {
                     nextVisit = (
                         from visit in visitRepo.GetAll().Where(x => x.InfantId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date < next7Days.Date).OrderBy(x => x.PlannedVisitDate)
-                        join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GrowGreatSettings.client_child)) on visit.VisitTypeId equals visitType.Id
+                        join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GGSettings.client_child)) on visit.VisitTypeId equals visitType.Id
                         select visit
                     ).LastOrDefault();
                 }
@@ -163,11 +163,11 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             DateTime today = DateTime.Today;
             DateTime next7Days = today.AddDays(7);
 
-            if (type == Constants.GrowGreatSettings.client_mother)
+            if (type == Constants.GGSettings.client_mother)
             {
                 nextVisit = (
                     from visit in visitRepo.GetAll().Where(x => x.MotherId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date >= next7Days.Date).OrderBy(x => x.PlannedVisitDate)
-                    join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GrowGreatSettings.client_mother)) on visit.VisitTypeId equals visitType.Id
+                    join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GGSettings.client_mother)) on visit.VisitTypeId equals visitType.Id
                     select visit
                 ).FirstOrDefault();
             }
@@ -175,7 +175,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             {
                 nextVisit = (
                     from visit in visitRepo.GetAll().Where(x => x.InfantId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date >= next7Days.Date).OrderBy(x => x.PlannedVisitDate)
-                    join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GrowGreatSettings.client_child)) on visit.VisitTypeId equals visitType.Id
+                    join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GGSettings.client_child)) on visit.VisitTypeId equals visitType.Id
                     select visit
                 ).FirstOrDefault();
             }
@@ -197,7 +197,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             DateTime monday = StartOfWeek(today, DayOfWeek.Monday);
             DateTime friday = StartOfWeek(today, DayOfWeek.Friday);
 
-            if (type == Constants.GrowGreatSettings.client_mother)
+            if (type == Constants.GGSettings.client_mother)
             {
                 visitCount = visitRepo.GetAll().Where(x => x.Mother.HealthCareWorker.UserId.Equals(HCWId) && !x.Attended && x.PlannedVisitDate.Date >= monday.Date && x.PlannedVisitDate.Date <= today.Date).Count();
             }
@@ -214,7 +214,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             DateTime monday = StartOfWeek(today, DayOfWeek.Monday);
             DateTime sunday = monday.AddDays(6);
 
-            if (type == Constants.GrowGreatSettings.client_mother)
+            if (type == Constants.GGSettings.client_mother)
             {
                 visitCount = visitRepo.GetAll().Where(x => x.Mother.HealthCareWorker.UserId.Equals(HCWId) && !x.Attended && x.PlannedVisitDate.Date >= monday.Date && x.PlannedVisitDate.Date <= sunday.Date).Count();
             }
@@ -241,11 +241,11 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             Visit nextVisit = null;
             DateTime today = DateTime.Today;
 
-            if (type == Constants.GrowGreatSettings.client_mother)
+            if (type == Constants.GGSettings.client_mother)
             {
                 nextVisit = (
                     from visit in visitRepo.GetAll().Where(x => x.MotherId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date >= today.Date).OrderBy(x => x.PlannedVisitDate)
-                    join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GrowGreatSettings.client_mother)) on visit.VisitTypeId equals visitType.Id
+                    join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GGSettings.client_mother)) on visit.VisitTypeId equals visitType.Id
                     select visit
                 ).FirstOrDefault();
             }
@@ -253,7 +253,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             {
                 nextVisit = (
                     from visit in visitRepo.GetAll().Where(x => x.InfantId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date >= today.Date).OrderBy(x => x.PlannedVisitDate)
-                    join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GrowGreatSettings.client_child)) on visit.VisitTypeId equals visitType.Id
+                    join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GGSettings.client_child)) on visit.VisitTypeId equals visitType.Id
                     select visit
                 ).FirstOrDefault();
             }

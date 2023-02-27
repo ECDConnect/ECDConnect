@@ -48,7 +48,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             visitRepo.Update(entityToUpdate);
 
             // then handle status data
-            _visitDataStatusManager.ManageVisitDataStatus(input.InfantId, Constants.GrowGreatSettings.client_child, input.VisitId);
+            _visitDataStatusManager.ManageVisitDataStatus(input.InfantId, Constants.GGSettings.client_child, input.VisitId);
 
             return true;
         }
@@ -74,7 +74,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             visitRepo.Update(entityToUpdate);
 
             // then handle status data
-            _visitDataStatusManager.ManageVisitDataStatus(input.MotherId, Constants.GrowGreatSettings.client_mother, input.VisitId);
+            _visitDataStatusManager.ManageVisitDataStatus(input.MotherId, Constants.GGSettings.client_mother, input.VisitId);
 
             return true;
         }
