@@ -16,6 +16,21 @@ export const activitiesTypes = {
   pillar5: 'Pillar 5: Extra care',
 };
 
+export const activitiesColours = {
+  pillar2: {
+    primaryColor: '#FFCE41',
+    secondaryColor: '#FFF3CF',
+  },
+  pillar3: {
+    primaryColor: '#D8C498',
+    secondaryColor: '#F3EFE8',
+  },
+  pillar4: {
+    primaryColor: '#EE83B3',
+    secondaryColor: '#FADAE8',
+  },
+};
+
 export const activitiesList = [
   {
     id: activitiesTypes.careForMom,

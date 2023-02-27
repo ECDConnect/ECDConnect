@@ -1,6 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { LocalStorageKeys } from '@ecdlink/core';
-import { BannerWrapper, TabItem, TabList, Typography } from '@ecdlink/ui';
+import {
+  BannerWrapper,
+  TabItem,
+  TabList,
+  Typography,
+  DialogPosition,
+  Dialog,
+} from '@ecdlink/ui';
 import format from 'date-fns/format';
 import { useEffect, useState } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
@@ -11,6 +18,7 @@ import { getStorageItem } from '@utils/common/local-storage.utils';
 import { ClassDashboardRouteState } from './business.types';
 import ROUTES from '@routes/routes';
 import { Money } from './money/money';
+import { StatementsInfoPage } from './components/statements-info-page';
 
 export const Business: React.FC = () => {
   const history = useHistory();
@@ -28,6 +36,7 @@ export const Business: React.FC = () => {
   const [previousTabIndex, setPreviousTabIndex] = useState<number>();
   const [currentTab, setCurrentTab] = useState<TabItem>();
   const { isOnline } = useOnlineStatus();
+  const [showInfo, setShowInfo] = useState(false);
 
   const backToDashboard = () => {
     history.push('/');
@@ -85,16 +94,7 @@ export const Business: React.FC = () => {
   };
 
   const displayTutorial = (type?: string) => {
-    switch (type) {
-      case 'Attendance':
-        setAttendanceTutorialActive(true);
-        break;
-      case 'Programme':
-        history.push(ROUTES.PROGRAMMES.TUTORIAL.GETTING_STARTED);
-        break;
-      default:
-        break;
-    }
+    setShowInfo(true);
   };
 
   const displayHelp =
@@ -111,7 +111,7 @@ export const Business: React.FC = () => {
         color={'primary'}
         onBack={() => backToDashboard()}
         displayHelp={displayHelp}
-        onHelp={() => displayTutorial(currentTab?.title)}
+        onHelp={() => displayTutorial()}
         displayOffline={!isOnline}
       >
         <TabList
@@ -123,6 +123,13 @@ export const Business: React.FC = () => {
           }
         />
       </BannerWrapper>
+      <Dialog
+        fullScreen={false}
+        visible={showInfo}
+        position={DialogPosition.Full}
+      >
+        <StatementsInfoPage setShowInfo={setShowInfo} />
+      </Dialog>
     </>
   );
 };

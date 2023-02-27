@@ -309,6 +309,31 @@ class IncomeStatementsService {
 
     return response.data.data.allStatementsBalanceSheet;
   }
+
+  async GetAllIncomeStatementsInfo(locale: string): Promise<BalanceSheetDto[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      query GetAllIncomeStatements($locale: String) { 
+            GetAllIncomeStatements(locale: $locale) {
+          id
+          description 
+          }
+        }
+          `,
+      variables: {
+        locale,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Get all statements info Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.GetAllIncomeStatements;
+  }
 }
 
 export default IncomeStatementsService;

@@ -6,4 +6,7 @@ export interface BalanceSheetDto {
   month?: number;
   userId?: number;
   year: number;
+  submitted?: boolean;
+  autoSubmitted?: boolean;
+  submittedDate?: string;
 }
