@@ -31,7 +31,7 @@ export const getProgrammeWeeks = (
 
   const weeks = programme.dailyProgrammes.reduce((prev, curr) => {
     let currentItemDate = new Date(curr.dayDate);
-    const weekOfYear = getWeek(currentItemDate);
+    const weekOfYear = getWeek(currentItemDate, { weekStartsOn: 1 });
 
     const existingIndex = prev.findIndex(
       (week) => week.weekNumber === weekOfYear
