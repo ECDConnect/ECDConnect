@@ -32,6 +32,7 @@ import {
 } from '@/utils/statements/statements-utils';
 import { NOTIFICATION, useNotifications } from '@ecdlink/core';
 import { getDate, lastDayOfMonth, startOfMonth } from 'date-fns';
+import StatementsWrapper from '@/pages/business/money/submit-income-statements/components/statements-wrapper/StatementsWrapper';
 
 export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
   const children = useSelector(childrenSelectors.getChildren);
@@ -213,6 +214,7 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
       onBack={() => setType('')}
       className="p-4"
     >
+      <StatementsWrapper />
       <div className="mb-3 w-full justify-center">
         <Typography type="h2" color="textMid" text={'Preschool fee'} />
         <Alert
@@ -225,35 +227,39 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
           ]}
           className="mt-4 mb-2"
         />
-        <label className="text-md text-textDark mt-2 mb-1 block font-semibold">
-          When did the caregiver pay this fee?
-        </label>
-        <DatePicker
-          placeholderText={`Please select a date`}
-          wrapperClassName="text-center"
-          className="bg-uiBg text-textMid mx-auto w-full rounded-md border-none"
-          selected={selectedDate ? new Date(selectedDate) : undefined}
-          onChange={(date: Date) => {
-            setPreschoolFeesValue('date', date ? date.toISOString() : '');
-          }}
-          dateFormat="EEE, dd MMM yyyy"
-          minDate={
-            todayDateNumber <= 8 ? firstDateOfPreviousMonth! : firstDateOfMonth!
-          }
-          maxDate={lastDateOfMonth}
-        />
-        <Dropdown
-          placeholder={'Select child'}
-          list={childrenList || []}
-          fillType="clear"
-          label={'Child paid for'}
-          fullWidth
-          className={'mt-3 w-full'}
-          selectedValue={child}
-          onChange={(item: any) => {
-            setPreschoolFeesValue('child', item);
-          }}
-        />
+        <div id="preeschoolFee1">
+          <label className="text-md text-textDark mt-2 mb-1 block font-semibold">
+            When did the caregiver pay this fee?
+          </label>
+          <DatePicker
+            placeholderText={`Please select a date`}
+            wrapperClassName="text-center"
+            className="bg-uiBg text-textMid mx-auto w-full rounded-md border-none"
+            selected={selectedDate ? new Date(selectedDate) : undefined}
+            onChange={(date: Date) => {
+              setPreschoolFeesValue('date', date ? date.toISOString() : '');
+            }}
+            dateFormat="EEE, dd MMM yyyy"
+            minDate={
+              todayDateNumber <= 8
+                ? firstDateOfPreviousMonth!
+                : firstDateOfMonth!
+            }
+            maxDate={lastDateOfMonth}
+          />
+          <Dropdown
+            placeholder={'Select child'}
+            list={childrenList || []}
+            fillType="clear"
+            label={'Child paid for'}
+            fullWidth
+            className={'mt-3 w-full'}
+            selectedValue={child}
+            onChange={(item: any) => {
+              setPreschoolFeesValue('child', item);
+            }}
+          />
+        </div>
         <Dropdown
           placeholder={'Select type of contribution'}
           list={incomeTypesList || []}

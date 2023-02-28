@@ -7,6 +7,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { getMonthName } from '@utils/classroom/attendance/track-attendance-utils';
+import StatementsWrapper from './components/statements-wrapper/StatementsWrapper';
+import { useAppContext } from '@/walkthrougContext';
 
 export const SubmitIncomeStatements: React.FC = () => {
   const history = useHistory();
@@ -106,8 +108,18 @@ export const SubmitIncomeStatements: React.FC = () => {
     }
   }, [balanceSheet, isSameMonth, monthDateNumber]);
 
+  const {
+    setState,
+    state: { tourActive, stepIndex },
+  } = useAppContext();
+
+  const nextStep = () => {
+    setState({ stepIndex: 1 });
+  };
+
   return (
     <>
+      <StatementsWrapper />
       <div className="flex flex-col justify-center p-4">
         <div className="flex items-center">
           <StatusChip
@@ -275,7 +287,7 @@ export const SubmitIncomeStatements: React.FC = () => {
         >
           <Typography type="help" color="white" text="See all statements" />
         </Button>
-        <div className="flex justify-end">
+        <div className="flex justify-end" id="startStatements">
           <FADButton
             title={'Add income or expense'}
             icon={'PlusIcon'}
@@ -285,7 +297,10 @@ export const SubmitIncomeStatements: React.FC = () => {
             color={'primary'}
             shape={'round'}
             className="mt-8 py-2.5"
-            click={() => history.push(ROUTES.BUSINESS_ADD_AMOUNT)}
+            click={() => {
+              history.push(ROUTES.BUSINESS_ADD_AMOUNT);
+              nextStep();
+            }}
           />
         </div>
       </div>

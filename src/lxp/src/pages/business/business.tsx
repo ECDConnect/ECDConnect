@@ -16,7 +16,6 @@ import { useAppDispatch } from '@store';
 import { analyticsActions } from '@store/analytics';
 import { getStorageItem } from '@utils/common/local-storage.utils';
 import { ClassDashboardRouteState } from './business.types';
-import ROUTES from '@routes/routes';
 import { Money } from './money/money';
 import { StatementsInfoPage } from './components/statements-info-page';
 

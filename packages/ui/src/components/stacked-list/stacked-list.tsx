@@ -29,6 +29,7 @@ export interface StackedListProps<T> extends ComponentBaseProps {
   listItems: StackedListItemType[];
   isFullHeight?: boolean;
   onScroll?: (scrollTop: number) => void;
+  id?: string;
 }
 
 export const StackedList = <T extends {}>({
@@ -36,12 +37,14 @@ export const StackedList = <T extends {}>({
   listItems,
   className,
   isFullHeight = true,
+  id,
   onScroll,
 }: StackedListProps<T>) => {
   const getItemComponent = (
     type: string,
     item: StackedListItemType,
-    index: number
+    index: number,
+    id: string
   ) => {
     switch (type) {
       case 'ActionList':
@@ -49,6 +52,7 @@ export const StackedList = <T extends {}>({
           <ActionListItem
             key={item.title + '-stackedList-listItem-' + index}
             item={item as ActionListDataItem}
+            id={'actionList' + index}
           ></ActionListItem>
         );
       case 'MenuList':
@@ -100,7 +104,7 @@ export const StackedList = <T extends {}>({
       )}
       onScroll={(e: any) => handleScroll(e)}
     >
-      {listItems.map((item, idx) => getItemComponent(type, item, idx))}
+      {listItems.map((item, idx) => getItemComponent(type, item, idx, id!))}
     </div>
   );
 };
