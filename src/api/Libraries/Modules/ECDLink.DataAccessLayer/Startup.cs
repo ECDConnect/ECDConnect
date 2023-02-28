@@ -18,7 +18,7 @@ namespace ECDLink.EGraphQL
 {
     public static class DataAccessStartup
     {
-        public static void ConfigureDataAccessServices(IServiceCollection services, IConfiguration config, bool isDevelop = false)
+        public static void ConfigureDataAccessServices(IServiceCollection services)
         {
             services.AddScoped(typeof(IGenericRepositoryFactory), typeof(GenericRepositoryFactory));
             services.AddScoped(typeof(RolePermissionRepository));

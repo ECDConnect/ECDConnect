@@ -25,7 +25,47 @@ export const getProgrammes = createAsyncThunk<
         if (userAuth?.auth_token) {
           programmes = await new ProgrammeService(
             userAuth?.auth_token
-          ).getProgrammes(userAuth.id);
+          ).getUserProgrammes(userAuth.id);
+        } else {
+          return rejectWithValue('no access token, profile check required');
+        }
+
+        if (!programmes) {
+          return rejectWithValue('Error getting programmes');
+        }
+
+        return programmes;
+      } catch (err) {
+        return rejectWithValue(err);
+      }
+    } else {
+      return programmeCache;
+    }
+  }
+);
+
+export const getUserProgrammes = createAsyncThunk<
+  ProgrammeDto[],
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  {},
+  ThunkApiType<RootState>
+>(
+  'getProgrammes',
+  // eslint-disable-next-line no-empty-pattern
+  async ({}, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      programmeData: { programmes: programmeCache },
+    } = getState();
+
+    if (!programmeCache || programmeCache.length === 0) {
+      try {
+        let programmes: ProgrammeDto[] | undefined;
+
+        if (userAuth?.auth_token) {
+          programmes = await new ProgrammeService(
+            userAuth?.auth_token
+          ).getUserProgrammes('');
         } else {
           return rejectWithValue('no access token, profile check required');
         }
@@ -81,7 +121,7 @@ export const upsertProgrammes = createAsyncThunk<
             let daily = programme.dailyProgrammes[ix];
             const dailyInput: DailyProgrammeInput = {
               Id: daily.id,
-              ProgrammeId: daily.programmeId,
+              ProgrammeId: programme.id,
               Day: +daily.day,
               DayDate: daily.dayDate,
               MessageBoardText: daily.messageBoardText,

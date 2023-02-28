@@ -110,10 +110,10 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             return classRepo.GetListByUserId(practitionerId.ToString());
         }
 
-        public List<Classroom> GetAllClassroomsForPractitioner(string practitionerId)
+        public List<Classroom> GetAllClassroomsForPractitioner(string userIdOfPractitioner)
         {
             var classRepo = _repoFactory.CreateGenericRepository<Classroom>(userContext: _applicationUserId);
-            return classRepo.GetListByUserId(practitionerId);
+            return classRepo.GetListByUserId(userIdOfPractitioner);
         }
 
         public PrincipalClassroom GetClassroomDetailsForPractitioner(

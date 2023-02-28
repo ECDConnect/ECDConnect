@@ -95,6 +95,42 @@ class ProgrammeService {
 
     return true;
   }
+
+  async getUserProgrammes(userId: string): Promise<ProgrammeDto[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      query GetUserProgrammes($userId: String) {
+        userProgrammes(overrideUserId: $userId) {
+          id
+          classroomId
+          startDate
+          endDate
+          name
+          preferredLanguage
+          dailyProgrammes {
+            id
+            day
+            dayDate
+            smallGroupActivityId
+            largeGroupActivityId
+            storyActivityId
+            storyBookId
+          }
+        }
+      }
+      `,
+      variables: {
+        userId: userId,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error('Get Programmes Failed - Server connection error');
+    }
+
+    return response.data.data.userProgrammes;
+  }
 }
 
 export default ProgrammeService;
