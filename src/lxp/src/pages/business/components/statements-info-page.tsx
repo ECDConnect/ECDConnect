@@ -1,14 +1,15 @@
 import { IncomeStatementsService } from '@/services/IncomeStatementsService';
 import { authSelectors } from '@/store/auth';
+import { useDialog } from '@ecdlink/core';
 import {
   ActionModal,
+  Alert,
   BannerWrapper,
   Button,
   Card,
   DialogPosition,
   Typography,
 } from '@ecdlink/ui';
-import { useDialog } from '@ecdlink/core';
 import { useLayoutEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import LanguageSelector from '../../../components/language-selector/language-selector';
@@ -100,12 +101,25 @@ export const StatementsInfoPage: React.FC<StatementsShowInfoProps> = ({
 
   const renderData = useMemo(() => {
     return (
-      <Typography
-        type="markdown"
-        fontSize={'16'}
-        text={data?.[0]?.description}
-        color={'textDark'}
-      />
+      <>
+        <Typography
+          type="markdown"
+          fontSize={'16'}
+          text={data?.[0]?.description}
+          color={'textDark'}
+        />
+        <Alert
+          className="my-2"
+          type="info"
+          title={`You will get 100 Top Me Up points for every income statement you submit!`}
+        />
+        <Typography
+          type="markdown"
+          fontSize={'16'}
+          text={data?.[1]?.description}
+          color={'textDark'}
+        />
+      </>
     );
   }, [data]);
 
