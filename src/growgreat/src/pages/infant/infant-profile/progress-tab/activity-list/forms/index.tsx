@@ -9,7 +9,14 @@ import { useLocation } from 'react-router';
 import { currentActivityKey } from '..';
 import { activitiesTypes } from '../activities-list';
 import { DynamicForm, Question } from './dynamic-form';
-import { careForBabySteps, careForMomSteps, getPillar1Steps } from './steps';
+import {
+  careForBabySteps,
+  careForMomSteps,
+  getPillar1Steps,
+  getPillar4Steps,
+  pillar2Steps,
+  pillar3Steps,
+} from './steps';
 import { nutritionQuestion } from './pillar-1-steps/nutrition';
 import {
   breastfeedingIssuesCheckboxQuestion,
@@ -40,6 +47,9 @@ export const Form = ({ onBack }: FormProps) => {
     );
 
   const activityName = window.sessionStorage.getItem(currentActivityKey) || '';
+
+  // TODO: add integration (G5.6.2)
+  const isPillar4FollowUp = true;
 
   const { isOnline } = useOnlineStatus();
 
@@ -122,11 +132,18 @@ export const Form = ({ onBack }: FormProps) => {
           nutritionAnswer,
           isToSkipBreastfeedingIssuesRelevantItemsStep
         );
+      case activitiesTypes.pillar2:
+        return pillar2Steps;
+      case activitiesTypes.pillar3:
+        return pillar3Steps;
+      case activitiesTypes.pillar4:
+        return getPillar4Steps(isPillar4FollowUp);
       default:
         return [() => <div className="p-4">Coming soon</div>];
     }
   }, [
     activityName,
+    isPillar4FollowUp,
     isToSkipBreastfeedingIssuesRelevantItemsStep,
     nutritionAnswer,
   ]);

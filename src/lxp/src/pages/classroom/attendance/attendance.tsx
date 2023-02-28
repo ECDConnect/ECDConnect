@@ -183,7 +183,6 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
     const removeTodaysAttendance = missedClassAttendance.filter(
       (x) => x.meetingDay !== getDay(attendanceResult.attendanceDate)
     );
-
     const removeHolidays = removeTodaysAttendance.filter((x) => {
       return isWorkingDay(
         addDays(startOfWeek(currentDate), x.meetingDay),
@@ -226,7 +225,6 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       {attendanceComponentType && !seeRegister ? (
         getComponentToRender(attendanceComponentType)
       ) : (
-        // <AttendanceReport classroom={classroom} />
         <AttendanceSummary />
       )}
       <div className={'flex h-full w-full flex-1 flex-col px-4'}>
