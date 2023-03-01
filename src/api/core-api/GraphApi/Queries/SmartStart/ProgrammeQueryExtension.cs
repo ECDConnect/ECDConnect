@@ -46,7 +46,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             var targetUserId = requestingUser.Id;
             Practitioner targetPractitioner = null;
 
-            if (overrideUserId != requestingUser.Id)
+            if (!string.IsNullOrWhiteSpace(overrideUserId) && overrideUserId != requestingUser.Id)
                 targetPractitioner = practitionerRepo.GetByUserId(overrideUserId);
             else
                 targetPractitioner = practitioner;
