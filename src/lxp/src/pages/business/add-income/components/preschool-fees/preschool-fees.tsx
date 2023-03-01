@@ -33,8 +33,12 @@ import {
 import { NOTIFICATION, useNotifications } from '@ecdlink/core';
 import { getDate, lastDayOfMonth, startOfMonth } from 'date-fns';
 import StatementsWrapper from '@/pages/business/money/submit-income-statements/components/statements-wrapper/StatementsWrapper';
+import { useAppContext } from '@/walkthrougContext';
+import ROUTES from '@/routes/routes';
+import { useHistory } from 'react-router';
 
 export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
+  const history = useHistory();
   const children = useSelector(childrenSelectors.getChildren);
   const [selectedFeeTypeValue, setSelectedFeeTypeValue] = useState<string[]>(
     []
@@ -93,11 +97,6 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
   } = useWatch({
     control: control,
   });
-
-  const isNum = isNumber(amount!);
-  const disabled = useMemo(() => {
-    return !date || !child || !contributionType || !feeType;
-  }, [child, contributionType, date, feeType]);
 
   useEffect(() => {
     const _list = contributionTypes
@@ -184,6 +183,12 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
   };
 
   const sendOneIncomeUpdate = async () => {
+    if (stepIndex === 6) {
+      setState({ stepIndex: 7 });
+      history?.push(ROUTES?.BUSINESS);
+      return;
+    }
+
     const incomeId = newGuid();
 
     await new IncomeStatementsService(
@@ -202,8 +207,29 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
       IncomeTypeId: incomeTypeValue?.id,
       FeeTypeId: String(feeType) || '',
     });
+
     setType('');
   };
+
+  const {
+    setState,
+    state: { stepIndex },
+  } = useAppContext();
+
+  useEffect(() => {
+    if (stepIndex === 6) {
+      const el = document.getElementById('savePreschoolFee');
+
+      el?.scrollIntoView();
+    }
+  }, [stepIndex]);
+
+  const isNum = isNumber(amount!);
+  const disabled = useMemo(() => {
+    return (
+      (!date || !child || !contributionType || !feeType) && stepIndex !== 6
+    );
+  }, [child, contributionType, date, feeType, stepIndex]);
 
   return (
     <BannerWrapper
@@ -321,23 +347,29 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
           register={register}
           placeholder={'e.g. Paid for two months'}
         />
-        <Button
-          type="filled"
-          color="primary"
-          className={'mx-auto mt-8 w-full rounded-2xl'}
-          onClick={sendOneIncomeUpdate}
-          disabled={
-            disabled || (!isNum && contributionType === moneyContributionTypeId)
-          }
-        >
-          {renderIcon('SaveIcon', styles.buttonIcon)}
-          <Typography
-            type="help"
-            className="mr-2"
-            color="white"
-            text={'Save'}
-          ></Typography>
-        </Button>
+        <div id="savePreschoolFee">
+          <Button
+            id="preeschoolFee1"
+            type="filled"
+            color="primary"
+            className={'mx-auto mt-8 w-full rounded-2xl'}
+            onClick={sendOneIncomeUpdate}
+            disabled={
+              disabled ||
+              (!isNum &&
+                contributionType === moneyContributionTypeId &&
+                stepIndex !== 6)
+            }
+          >
+            {renderIcon('SaveIcon', styles.buttonIcon)}
+            <Typography
+              type="help"
+              className="mr-2"
+              color="white"
+              text={'Save'}
+            ></Typography>
+          </Button>
+        </div>
         <Button
           type="outlined"
           color="primary"

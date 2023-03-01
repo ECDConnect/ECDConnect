@@ -1,5 +1,4 @@
 import Joyride, { CallBackProps, TooltipRenderProps } from 'react-joyride';
-import { useHistory } from 'react-router-dom';
 import {
   Button,
   Card,
@@ -10,18 +9,14 @@ import {
 import { useSetState } from 'react-use';
 import WalktroughImage from '../../../../../../assets/walktroughImage.png';
 import { useAppContext } from '@/walkthrougContext';
-import ROUTES from '@/routes/routes';
 
 export default function StatementsWrapper() {
-  const history = useHistory();
   const {
     setState,
     state: { run, stepIndex, steps },
   } = useAppContext();
   const disableNextButton =
-    stepIndex === 0 || stepIndex === 2 || stepIndex === 4;
-
-  console.log({ disableNextButton });
+    stepIndex === 0 || stepIndex === 2 || stepIndex === 4 || stepIndex === 6;
 
   useSetState(() => {
     setState({
@@ -67,11 +62,50 @@ export default function StatementsWrapper() {
         },
         {
           target: '#preeschoolFee1',
-          content: "Let's go through one example! Tap income",
+          content: 'You will need to fill in all the info on this screen',
           placement: 'bottom-end',
-          offset: 80,
+          offset: 50,
           spotlightClicks: true,
           disableBeacon: true,
+        },
+        {
+          target: '#savePreschoolFee',
+          content: "I've filled in an example for you! Now tap Save",
+          placement: 'top',
+          offset: 10,
+          spotlightClicks: true,
+          disableBeacon: true,
+        },
+        {
+          target: '#statementsDashboard',
+          content:
+            'Great! Your income has now been added to the summary income statement on the money tab',
+          placement: 'bottom-end',
+          offset: 60,
+          disableBeacon: true,
+        },
+        {
+          target: '#howMayDaysToSubmit',
+          content:
+            "I'll tell you how many days you have left to submit the next statement",
+          placement: 'bottom-end',
+          offset: 10,
+          disableBeacon: true,
+        },
+        {
+          target: '#submitIncomeButton',
+          content:
+            "When you're ready, you can tap here to submit the final statement to SmartStart",
+          placement: 'bottom-end',
+          offset: 10,
+          spotlightClicks: true,
+          disableBeacon: true,
+        },
+        {
+          target: '#lastStep',
+          content: "Great job, you're ready to start!",
+          placement: 'bottom-end',
+          offset: 10,
         },
       ],
     });
@@ -128,7 +162,6 @@ export default function StatementsWrapper() {
                 </Button>
               </div>
             )}
-            {/* )} */}
           </div>
         </Card>
       </div>
@@ -139,17 +172,21 @@ export default function StatementsWrapper() {
     const { action, index, lifecycle, type } = data;
 
     if (type === 'step:after' && index === 0) {
-      console.log('step reset 1');
       setState({ run: true, stepIndex: 1, enableButton: false });
     } else if (type === 'step:after' && index === 1) {
-      console.log('step reset 2');
       setState({ run: true, stepIndex: 2, enableButton: false });
     } else if (type === 'step:after' && index === 2) {
-      console.log('step reset 4');
       setState({ run: true, stepIndex: 3 });
     } else if (type === 'step:after' && index === 3) {
-      console.log('step reset 5');
       setState({ run: true, stepIndex: 4 });
+    } else if (type === 'step:after' && index === 5) {
+      setState({ run: true, stepIndex: 6 });
+    } else if (type === 'step:after' && index === 7) {
+      setState({ run: true, stepIndex: 8 });
+    } else if (type === 'step:after' && index === 8) {
+      setState({ run: true, stepIndex: 9 });
+    } else if (type === 'step:after' && index === 9) {
+      setState({ run: true, stepIndex: 10 });
     } else if (action === 'reset' || lifecycle === 'complete') {
       setState({ run: false, stepIndex: 0, tourActive: false });
     }
