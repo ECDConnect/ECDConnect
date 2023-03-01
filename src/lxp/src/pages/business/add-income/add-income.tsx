@@ -126,15 +126,9 @@ export const AddIncome: React.FC = () => {
 
     setListItems(list);
   };
-  const {
-    setState,
-    state: { tourActive, stepIndex },
-  } = useAppContext();
-
-  console.log({ tourActive, stepIndex });
+  const { setState } = useAppContext();
 
   const nextStep = () => {
-    console.log('afjjfopjefposejpfpsf');
     setState({ stepIndex: 5 });
   };
 

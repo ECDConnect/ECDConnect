@@ -15,15 +15,9 @@ import { useAppContext } from '@/walkthrougContext';
 export const AddAmount: React.FC<ComponentBaseProps> = () => {
   const history = useHistory();
 
-  const {
-    setState,
-    state: { tourActive, stepIndex },
-  } = useAppContext();
-
-  console.log({ tourActive, stepIndex });
+  const { setState } = useAppContext();
 
   const nextStep = () => {
-    console.log('afjjfopjefposejpfpsf');
     setState({ stepIndex: 3 });
   };
 
