@@ -40,6 +40,7 @@ import { programmeThemeThunkActions } from '@store/content/programme-theme';
 import { storyBookThunkActions } from '@store/content/story-book';
 import { activityThunkActions } from '@store/content/activity';
 import { statementsThunkActions } from '@/store/statements';
+import { programmeThunkActions } from '@/store/programme';
 // import { browserName, browserVersion } from 'react-device-detect';
 const { version } = require('../../../package.json');
 
@@ -89,6 +90,9 @@ export const Dashboard: React.FC = () => {
     await appDispatch(settingThunkActions.getSettings({})).unwrap();
     await appDispatch(staticDataThunkActions.getRelations({})).unwrap();
     await appDispatch(staticDataThunkActions.getProgrammeTypes({})).unwrap();
+    await appDispatch(
+      programmeThunkActions.getProgrammes({ classroomId: classroom?.id })
+    ).unwrap();
     await appDispatch(
       staticDataThunkActions.getProgrammeAttendanceReasons({})
     ).unwrap();

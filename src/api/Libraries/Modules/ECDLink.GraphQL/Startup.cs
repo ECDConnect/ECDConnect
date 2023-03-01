@@ -38,6 +38,7 @@ namespace ECDLink.EGraphQL
               .AddFiltering()
               .RegisterDbContext<AuthenticationDbContext>(HotChocolate.Data.DbContextKind.Resolver)
               .RegisterDbContext<PostgresTenancyContext>(HotChocolate.Data.DbContextKind.Resolver)
+              .RegisterService<HierarchyEngine>(ServiceKind.Synchronized)
               .RegisterService<IDbContextFactory<AuthenticationDbContext>>(ServiceKind.Synchronized)
               .RegisterService<UserManager<ApplicationUser>>(ServiceKind.Synchronized)
               .RegisterService<IGenericRepositoryFactory>(ServiceKind.Synchronized);
