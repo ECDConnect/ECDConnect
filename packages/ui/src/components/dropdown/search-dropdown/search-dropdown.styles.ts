@@ -13,7 +13,7 @@ export const enterTo = 'transform opacity-100 scale-100';
 export const leave = 'transition ease-in duration-75';
 export const leaveFrom = 'transform opacity-100 scale-100';
 export const leaveTo = 'transform opacity-0 scale-95';
-export const label = 'font-medium block text-base font-body text-textMid';
+export const label = 'font-medium block text-base font-body text-textDark';
 export const overlay = (overlayTopOffset?: string) =>
   `absolute top-${
     overlayTopOffset || '177'

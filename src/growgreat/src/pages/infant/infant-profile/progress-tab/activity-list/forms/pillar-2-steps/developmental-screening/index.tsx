@@ -32,7 +32,6 @@ export const DevelopmentalScreeningStep = ({
   return (
     <>
       <Header
-        backgroundColor="tertiary"
         customIcon={P2}
         title="Developmental screening"
         iconHexBackgroundColor={activitiesColours.pillar2.primaryColor}
