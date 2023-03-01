@@ -83,7 +83,7 @@ export const getProgressTrackingCategoryBySubCategoryId = (
       progressTrackingState.progressTrackingCategories?.forEach((x) => {
         const ids = x.subCategories?.map((x) => x.id);
 
-        if (ids.includes(subCategoryId)) category = x;
+        if (ids && ids.includes(subCategoryId)) category = x;
       });
 
       return category;
@@ -200,7 +200,7 @@ export const getActivityCategories = (activity: ActivityDto) =>
       if (!activity || !activity.subCategories) return [];
 
       return categories.filter((cat) =>
-        cat.subCategories.some((subCat) =>
+        cat?.subCategories?.some((subCat) =>
           activity.subCategories.some((actSubCat) => actSubCat.id === subCat.id)
         )
       );

@@ -49,6 +49,7 @@ import hash from 'object-hash';
 import { userSelectors } from '@store/user';
 import { useSelector } from 'react-redux';
 import { childrenForPractitionerThunkActions } from './store/childrenForPractitioner';
+import { programmeThunkActions } from './store/programme';
 
 type IntialStoreSetupContextValues = {
   initloading: boolean;
@@ -92,7 +93,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
       if (!isCoach) {
         (async () =>
           await appDispatch(
-            coachThunkActions.coachNameByUserId({
+            coachThunkActions.getCoachByCoachId({
               coachId: practitioner?.coachHierarchy!,
             })
           ).unwrap())();
@@ -103,7 +104,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   useEffect(() => {
     if (userData) {
       (async () =>
-        await appDispatch(coachThunkActions.getCoachByCoachId({})).unwrap())();
+        await appDispatch(coachThunkActions.getCoachByUserId({})).unwrap())();
     }
   }, [appDispatch, userData]);
 
@@ -201,6 +202,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     await appDispatch(
       classroomsThunkActions.getClassroomProgrammes({})
     ).unwrap();
+    await appDispatch(programmeThunkActions.getUserProgrammes({})).unwrap();
     await appDispatch(
       classroomsThunkActions.getClassroomGroupLearners({})
     ).unwrap();

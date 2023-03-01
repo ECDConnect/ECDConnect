@@ -46,12 +46,12 @@ export const getCoachByUserId = createAsyncThunk<
 
 export const getCoachByCoachId = createAsyncThunk<
   CoachDto,
-  {},
+  { coachId: string },
   ThunkApiType<RootState>
 >(
   'getCoachByCoachId',
   // eslint-disable-next-line no-empty-pattern
-  async ({}, { getState, rejectWithValue }) => {
+  async ({ coachId }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
       coach: { coach: coachCache },
@@ -64,7 +64,7 @@ export const getCoachByCoachId = createAsyncThunk<
         if (userAuth?.auth_token) {
           coach = await new CoachService(
             userAuth?.auth_token
-          ).getCoachByCoachId(userAuth.id);
+          ).getCoachByCoachId(coachId);
         } else {
           return rejectWithValue('no access token, profile check required');
         }
