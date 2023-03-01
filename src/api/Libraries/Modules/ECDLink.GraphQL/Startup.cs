@@ -1,5 +1,6 @@
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.EGraphQL.Interceptors;
@@ -38,6 +39,7 @@ namespace ECDLink.EGraphQL
               .AddFiltering()
               .RegisterDbContext<AuthenticationDbContext>(HotChocolate.Data.DbContextKind.Resolver)
               .RegisterDbContext<PostgresTenancyContext>(HotChocolate.Data.DbContextKind.Resolver)
+              .RegisterService<HierarchyEngine>(ServiceKind.Synchronized)
               .RegisterService<IDbContextFactory<AuthenticationDbContext>>(ServiceKind.Synchronized)
               .RegisterService<UserManager<ApplicationUser>>(ServiceKind.Synchronized)
               .RegisterService<IGenericRepositoryFactory>(ServiceKind.Synchronized);

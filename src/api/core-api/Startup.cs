@@ -85,7 +85,7 @@ namespace EcdLink.Api.CoreApi
 
             AzureStorageStartup.ConfigureAzureStorageServices(services, Configuration);
 
-            DataAccessStartup.ConfigureDataAccessServices(services, Configuration);
+            DataAccessStartup.ConfigureDataAccessServices(services);
 
             UrlShortnerStartup.ConfigureUrlShortnerServices(services, Configuration);
 
