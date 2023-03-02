@@ -7,6 +7,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { getMonthName } from '@utils/classroom/attendance/track-attendance-utils';
+import StatementsWrapper from './components/statements-wrapper/StatementsWrapper';
+import { useAppContext } from '@/walkthrougContext';
 
 export const SubmitIncomeStatements: React.FC = () => {
   const history = useHistory();
@@ -91,9 +93,10 @@ export const SubmitIncomeStatements: React.FC = () => {
   const isSameMonth =
     today.getMonth() + 1 === balanceSheet?.[balanceSheet?.length - 1]?.month!;
 
-  const submitDateDaysCount = isSameMonth
-    ? differenceInDays(lastDayToSubmitNextMonth, today)
-    : differenceInDays(lastDayToSubmit, today);
+  const submitDateDaysCount =
+    isSameMonth && disableSubmit
+      ? differenceInDays(lastDayToSubmitNextMonth, today)
+      : differenceInDays(lastDayToSubmit, today);
 
   const enableSubmit = today <= lastDayToSubmit || today >= firstDateToSubmit;
 
@@ -106,10 +109,363 @@ export const SubmitIncomeStatements: React.FC = () => {
     }
   }, [balanceSheet, isSameMonth, monthDateNumber]);
 
+  const {
+    setState,
+    state: { stepIndex },
+  } = useAppContext();
+
+  const nextStep = () => {
+    setState({ stepIndex: 1 });
+  };
+
+  const walkthroughSteps = useMemo(() => {
+    return (
+      stepIndex === 7 || stepIndex === 8 || stepIndex === 9 || stepIndex === 10
+    );
+  }, [stepIndex]);
+
+  useEffect(() => {
+    if (stepIndex === 7) {
+      const el = document.getElementById('seeAllStatements');
+
+      el?.scrollIntoView();
+      return;
+    }
+
+    if (stepIndex === 8) {
+      const el = document.getElementById('howMayDaysToSubmit');
+
+      el?.scrollIntoView();
+      return;
+    }
+  });
+
+  const renderAccondinglyWalkthroughOrNot = useMemo(() => {
+    if (walkthroughSteps) {
+      return (
+        <>
+          <div id="submitIncomeButton" className="w-full">
+            <Button
+              shape="normal"
+              color="primary"
+              type="filled"
+              icon="ArrowCircleRightIcon"
+              onClick={() => {}}
+              className="mt-6 w-full rounded-2xl"
+            >
+              <Typography
+                type="help"
+                color="white"
+                text="Submit income statement"
+              />
+            </Button>
+          </div>
+          <div
+            id="statementsDashboard"
+            className="flex flex-col justify-center p-4"
+          >
+            <Card
+              className="bg-primaryAccent1 mt-4 flex items-center justify-around p-4"
+              borderRaduis={'xl'}
+              shadowSize={'md'}
+            >
+              <Typography
+                text={`${format(new Date(), 'LLLL')} balance`}
+                type="h4"
+                color={'white'}
+                className="w-6/12"
+              />
+              <Typography
+                text={`${formatCurrentValue(100.25)}`}
+                color={'white'}
+                type="h1"
+                className="w-8/12 text-right"
+              />
+            </Card>
+            <table className="mt-4">
+              <tbody>
+                <tr className="bg-uiBg text-textDark font-body border-secondary h-12 w-1/3 border-b px-6 py-3">
+                  <th className="w-1/3"></th>
+                  <th className="text-textDark font-body">
+                    <Typography
+                      text={previousMonthRecord}
+                      type="body"
+                      color={'textDark'}
+                    />
+                  </th>
+                  <th className="w-1/3">
+                    <Typography
+                      text={currentMonthRecord}
+                      type="body"
+                      color={'textDark'}
+                    />
+                  </th>
+                </tr>
+                <tr className="h-14">
+                  <td className="w-1/3">
+                    <Typography
+                      text={`Income`}
+                      type="body"
+                      color={'textDark'}
+                      align={'center'}
+                    />
+                  </td>
+                  <td className="w-1/3">
+                    <Typography
+                      text={previousMonthTotalIncome}
+                      type="body"
+                      color={'textDark'}
+                      align={'center'}
+                    />
+                  </td>
+                  <td className="w-1/3">
+                    <Typography
+                      text={`+ R 100.25`}
+                      type="body"
+                      color={'textDark'}
+                      align={'center'}
+                    />
+                  </td>
+                </tr>
+                <tr className="bg-uiBg h-14">
+                  <td className="w-1/3">
+                    <Typography
+                      text={`Expenses`}
+                      type="body"
+                      color={'textDark'}
+                      align={'center'}
+                    />
+                  </td>
+                  <td className="w-1/3">
+                    <Typography
+                      text={previousMonthTotalExpenses}
+                      type="body"
+                      color={'textDark'}
+                      align={'center'}
+                    />
+                  </td>
+                  <td className="w-1/3">
+                    <Typography
+                      text={currentMonthTotalExpenses}
+                      type="body"
+                      color={'textDark'}
+                      align={'center'}
+                    />
+                  </td>
+                </tr>
+                <tr className=" h-14">
+                  <td className="w-1/3">
+                    <Typography
+                      text={`Balance`}
+                      weight="bold"
+                      type="body"
+                      color={'textDark'}
+                      align={'center'}
+                      className="font-bold"
+                    />
+                  </td>
+                  <td className="w-1/3">
+                    <Typography
+                      text={formatCurrentValue(
+                        Number(previousMonthTotalBalance)
+                      )}
+                      type="body"
+                      color={'successMain'}
+                      align={'center'}
+                    />
+                  </td>
+                  <td className="w-1/3">
+                    <Typography
+                      text={formatCurrentValue(
+                        Number(currentMonthTotalBalance)
+                      )}
+                      type="body"
+                      color={
+                        currentMonthTotalBalance! >= 0
+                          ? 'successMain'
+                          : 'errorMain'
+                      }
+                      align={'center'}
+                    />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div id="lastStep"></div>
+          </div>
+        </>
+      );
+    } else {
+      return (
+        <>
+          <Button
+            shape="normal"
+            color="primary"
+            type="filled"
+            icon="ArrowCircleRightIcon"
+            onClick={() =>
+              history.push(ROUTES.BUSINESS_SUBMIT_INCOME_STATEMENTS_LIST)
+            }
+            className="mt-6 rounded-2xl"
+            disabled={disableSubmit || !enableSubmit}
+          >
+            <Typography
+              type="help"
+              color="white"
+              text="Submit income statement"
+            />
+          </Button>
+          <Card
+            className="bg-primaryAccent1 mt-4 flex items-center justify-around p-4"
+            borderRaduis={'xl'}
+            shadowSize={'md'}
+          >
+            <Typography
+              text={`${format(new Date(), 'LLLL')} balance`}
+              type="h4"
+              color={'white'}
+              className="w-6/12"
+            />
+            <Typography
+              text={`${formatCurrentValue(Number(currentMonthTotalBalance))}`}
+              color={'white'}
+              type="h1"
+              className="w-8/12 text-right"
+            />
+          </Card>
+          <table className="mt-4">
+            <tbody>
+              <tr className="bg-uiBg text-textDark font-body border-secondary h-12 w-1/3 border-b px-6 py-3">
+                <th className="w-1/3"></th>
+                <th className="text-textDark font-body">
+                  <Typography
+                    text={previousMonthRecord}
+                    type="body"
+                    color={'textDark'}
+                  />
+                </th>
+                <th className="w-1/3">
+                  <Typography
+                    text={currentMonthRecord}
+                    type="body"
+                    color={'textDark'}
+                  />
+                </th>
+              </tr>
+              <tr className="h-14">
+                <td className="w-1/3">
+                  <Typography
+                    text={`Income`}
+                    type="body"
+                    color={'textDark'}
+                    align={'center'}
+                  />
+                </td>
+                <td className="w-1/3">
+                  <Typography
+                    text={previousMonthTotalIncome}
+                    type="body"
+                    color={'textDark'}
+                    align={'center'}
+                  />
+                </td>
+                <td className="w-1/3">
+                  <Typography
+                    text={currentMonthTotalIncome}
+                    type="body"
+                    color={'textDark'}
+                    align={'center'}
+                  />
+                </td>
+              </tr>
+              <tr className="bg-uiBg h-14">
+                <td className="w-1/3">
+                  <Typography
+                    text={`Expenses`}
+                    type="body"
+                    color={'textDark'}
+                    align={'center'}
+                  />
+                </td>
+                <td className="w-1/3">
+                  <Typography
+                    text={previousMonthTotalExpenses}
+                    type="body"
+                    color={'textDark'}
+                    align={'center'}
+                  />
+                </td>
+                <td className="w-1/3">
+                  <Typography
+                    text={currentMonthTotalExpenses}
+                    type="body"
+                    color={'textDark'}
+                    align={'center'}
+                  />
+                </td>
+              </tr>
+              <tr className=" h-14">
+                <td className="w-1/3">
+                  <Typography
+                    text={`Balance`}
+                    weight="bold"
+                    type="body"
+                    color={'textDark'}
+                    align={'center'}
+                    className="font-bold"
+                  />
+                </td>
+                <td className="w-1/3">
+                  <Typography
+                    text={formatCurrentValue(Number(previousMonthTotalBalance))}
+                    type="body"
+                    color={'successMain'}
+                    align={'center'}
+                  />
+                </td>
+                <td className="w-1/3">
+                  <Typography
+                    text={formatCurrentValue(Number(currentMonthTotalBalance))}
+                    type="body"
+                    color={
+                      currentMonthTotalBalance! >= 0
+                        ? 'successMain'
+                        : 'errorMain'
+                    }
+                    align={'center'}
+                  />
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </>
+      );
+    }
+  }, [
+    currentMonthRecord,
+    currentMonthTotalBalance,
+    currentMonthTotalExpenses,
+    currentMonthTotalIncome,
+    disableSubmit,
+    enableSubmit,
+    history,
+    previousMonthRecord,
+    previousMonthTotalBalance,
+    previousMonthTotalExpenses,
+    previousMonthTotalIncome,
+    walkthroughSteps,
+  ]);
+
   return (
     <>
+      <StatementsWrapper />
       <div className="flex flex-col justify-center p-4">
-        <div className="flex items-center">
+        <div
+          className={
+            walkthroughSteps ? 'mt-2 flex items-center' : 'flex items-center'
+          }
+          id="howMayDaysToSubmit"
+        >
           <StatusChip
             backgroundColour={
               submitDateDaysCount > 8 ? 'successMain' : 'alertMain'
@@ -127,144 +483,7 @@ export const SubmitIncomeStatements: React.FC = () => {
             text={'To submit next income statement'}
           />
         </div>
-        <Button
-          shape="normal"
-          color="primary"
-          type="filled"
-          icon="ArrowCircleRightIcon"
-          onClick={() =>
-            history.push(ROUTES.BUSINESS_SUBMIT_INCOME_STATEMENTS_LIST)
-          }
-          className="mt-6 rounded-2xl"
-          disabled={disableSubmit || !enableSubmit}
-        >
-          <Typography
-            type="help"
-            color="white"
-            text="Submit income statement"
-          />
-        </Button>
-        <Card
-          className="bg-primaryAccent1 mt-4 flex items-center justify-around p-4"
-          borderRaduis={'xl'}
-          shadowSize={'md'}
-        >
-          <Typography
-            text={`${format(new Date(), 'LLLL')} balance`}
-            type="h4"
-            color={'white'}
-            className="w-6/12"
-          />
-          <Typography
-            text={`${formatCurrentValue(Number(currentMonthTotalBalance))}`}
-            color={'white'}
-            type="h1"
-            className="w-8/12 text-right"
-          />
-        </Card>
-        <table className="mt-4">
-          <tbody>
-            <tr className="bg-uiBg text-textDark font-body border-secondary h-12 w-1/3 border-b px-6 py-3">
-              <th className="w-1/3"></th>
-              <th className="text-textDark font-body">
-                <Typography
-                  text={previousMonthRecord}
-                  type="body"
-                  color={'textDark'}
-                />
-              </th>
-              <th className="w-1/3">
-                <Typography
-                  text={currentMonthRecord}
-                  type="body"
-                  color={'textDark'}
-                />
-              </th>
-            </tr>
-            <tr className="h-14">
-              <td className="w-1/3">
-                <Typography
-                  text={`Income`}
-                  type="body"
-                  color={'textDark'}
-                  align={'center'}
-                />
-              </td>
-              <td className="w-1/3">
-                <Typography
-                  text={previousMonthTotalIncome}
-                  type="body"
-                  color={'textDark'}
-                  align={'center'}
-                />
-              </td>
-              <td className="w-1/3">
-                <Typography
-                  text={currentMonthTotalIncome}
-                  type="body"
-                  color={'textDark'}
-                  align={'center'}
-                />
-              </td>
-            </tr>
-            <tr className="bg-uiBg h-14">
-              <td className="w-1/3">
-                <Typography
-                  text={`Expenses`}
-                  type="body"
-                  color={'textDark'}
-                  align={'center'}
-                />
-              </td>
-              <td className="w-1/3">
-                <Typography
-                  text={previousMonthTotalExpenses}
-                  type="body"
-                  color={'textDark'}
-                  align={'center'}
-                />
-              </td>
-              <td className="w-1/3">
-                <Typography
-                  text={currentMonthTotalExpenses}
-                  type="body"
-                  color={'textDark'}
-                  align={'center'}
-                />
-              </td>
-            </tr>
-            <tr className=" h-14">
-              <td className="w-1/3">
-                <Typography
-                  text={`Balance`}
-                  weight="bold"
-                  type="body"
-                  color={'textDark'}
-                  align={'center'}
-                  className="font-bold"
-                />
-              </td>
-              <td className="w-1/3">
-                <Typography
-                  text={formatCurrentValue(Number(previousMonthTotalBalance))}
-                  type="body"
-                  color={'successMain'}
-                  align={'center'}
-                />
-              </td>
-              <td className="w-1/3">
-                <Typography
-                  text={formatCurrentValue(Number(currentMonthTotalBalance))}
-                  type="body"
-                  color={
-                    currentMonthTotalBalance! >= 0 ? 'successMain' : 'errorMain'
-                  }
-                  align={'center'}
-                />
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        {renderAccondinglyWalkthroughOrNot}
         <Button
           shape="normal"
           color="primary"
@@ -272,10 +491,11 @@ export const SubmitIncomeStatements: React.FC = () => {
           icon="DocumentSearchIcon"
           onClick={() => history.push(ROUTES.BUSINESS_PREVIOUS_STATEMENTS_LIST)}
           className="mt-6 rounded-2xl"
+          id="seeAllStatements"
         >
           <Typography type="help" color="white" text="See all statements" />
         </Button>
-        <div className="flex justify-end">
+        <div className="flex justify-end" id="startStatements">
           <FADButton
             title={'Add income or expense'}
             icon={'PlusIcon'}
@@ -285,7 +505,10 @@ export const SubmitIncomeStatements: React.FC = () => {
             color={'primary'}
             shape={'round'}
             className="mt-8 py-2.5"
-            click={() => history.push(ROUTES.BUSINESS_ADD_AMOUNT)}
+            click={() => {
+              history.push(ROUTES.BUSINESS_ADD_AMOUNT);
+              nextStep();
+            }}
           />
         </div>
       </div>

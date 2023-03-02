@@ -13,6 +13,7 @@ import { getMonth, getYear } from 'date-fns';
 
 export const Money = () => {
   const history = useHistory();
+  const balanceSheet = useSelector(statementsSelectors.getBalanceSheet);
   const [hasIncomeStatements, setHasIncomeStatements] = useState(false);
   const userAuth = useSelector(authSelectors.getAuthUser);
   const appDispatch = useAppDispatch();
@@ -45,10 +46,16 @@ export const Money = () => {
   }, []);
 
   useEffect(() => {
-    if ((income && income?.length > 0) || (expense && expense?.length! > 0)) {
+    if (
+      (income && income?.length > 0) ||
+      (expense && expense?.length! > 0) ||
+      (balanceSheet &&
+        balanceSheet?.length! > 0 &&
+        balanceSheet?.[0]?.balance !== 0)
+    ) {
       setHasIncomeStatements(true);
     }
-  }, [income, expense]);
+  }, [income, expense, balanceSheet]);
 
   return (
     <>
