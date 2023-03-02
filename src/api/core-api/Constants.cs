@@ -1,7 +1,3 @@
-using AngleSharp.Css.Dom;
-using System.Text.RegularExpressions;
-using static NPOI.HSSF.Util.HSSFColor;
-
 namespace EcdLink.Api.CoreApi {
     public static class Constants
     {
@@ -101,12 +97,24 @@ namespace EcdLink.Api.CoreApi {
             public const string great_job_formula_feeding = "You're doing a great job formula feeding!";
             public const string try_to_make_sure = "Try to make sure you give ";
             public const string only_milk = " only breast milk or only formula milk";
-            public const string poor_dietary_diversity = "Poor dietary diversity: ";
-            public const string out_of_8_groups = " out of 8 food groups";
-            public const string give_client_food = "You are giving {client} foods from {x} out of 8 groups.Try to give {client} a variety of foods!";
-            public const string good_dietary_diversity = "Good dietary diversity: {x} out of 8 food groups!";
+            public const string poor_dietary_diversity = "Poor dietary diversity: {x} out of {y} food groups";
+            public const string give_client_food = "You are giving {client} foods from {x} out of {y} groups.Try to give {client} a variety of foods!";
+            public const string good_dietary_diversity = "Good dietary diversity: {x} out of {y} food groups!";
             public const string give_client_food_most = "You are giving {client} foods from most of the groups!";
-
+            public const string dev_is_struggling = "{client} is struggling with ";
+            public const string dev_might_struggling = "{client} might be having issues with: ";
+            public const string immunisations_not_up_to_date = "Immunisations not up to date";
+            public const string vitamin_not_up_to_date = "Vitamin A not up to date";
+            public const string deworming_not_up_to_date = "Deworming not up to date";
+            public const string not_up_to_date = " not up to date";
+            public const string missed_immunisations = "{client} missed an ";
+            public const string all_up_to_date = "All immunisations, Vitamin A and deworming are up to date";
+            public const string all_up_to_date_client = "All of {client}'s immunisations are up to date";
+            public const string physical_well = " is doing well physically";
+            public const string no_birth_certificate = " does not have a birth certificate";
+            public const string has_birth_certificate = "Has applied for a birth certificate";
+            public const string has_csg = "Has applied for a child support grant";
+            public const string has_csg2 = "You applied for the child support grant - this will support {client}'s healthy growth!";
 
             // Infant Questions
             public const string q_postnatal_check_up = "Has {client} been to the clinic for a postnatal check-up?";
@@ -118,10 +126,20 @@ namespace EcdLink.Api.CoreApi {
             public const string q_breastfeeding_club = "Would you like to join a breastfeeding club?";
             public const string q_mixed_foods = "Which of these foods have you given {client}?  You can choose more than one.";
             public const string q_tick_foods = "Tick all of the foods {client} talks about:";
+            public const string q_check_can_do = "Check what {client} can do:";
+            public const string q_hearing = "Hearing";
+            public const string q_seeing = "Seeing";
+            public const string q_brain = "Brain";
+            public const string q_moving = "Moving";
+            public const string q_immunisation = "Did the baby have the 6 month immunisation?";
+            public const string q_vitamin_a = "Is Vitamin A up to date?";
+            public const string q_deworming = "Is deworming up to date?";
+            public const string q_birth_certificate = "Does {client} have a birth certificate?";
+            public const string q_csg = "Is {client} reiving the CSG?";
 
             public const string cfm_name = "Care for moms";
             public const string cfb_name = "Care for baby";
-
+            public const string p4_name = "Pillar 4: Healthcare";
 
             // Infant referral, progress, G4 (ClientDashboardAlert), G9 (ClientSummaryDownload)
             public const string infant_missed_clinic_visit = "Missed clinic visit";
@@ -148,6 +166,15 @@ namespace EcdLink.Api.CoreApi {
             public const string cfb_ds_7 = "Severe eye infection";
             public const string cfb_ds_8 = "Severe cord infection";
 
+            public const string p4_ds_1 = "Not moving or does not wake up";
+            public const string p4_ds_2 = "Shaking (convulsions)";
+            public const string p4_ds_3 = "Diarrhoea, sunken eyes, and a sunken fontanelle";
+            public const string p4_ds_4 = "Coughing and breathing fast (more than 50 breaths per minute)";
+            public const string p4_ds_5 = "Sings of malnutrition (swollen ankles and feet)";
+            public const string p4_ds_6 = "Vomiting everything";
+            public const string p4_ds_7 = "Fever and not feeding";
+            public const string p4_ds_8 = "Unable to breastfeed";
+
 
             // Answers
             public const string answer_yes = "Yes";
@@ -161,9 +188,9 @@ namespace EcdLink.Api.CoreApi {
             public const string breast_milk_only = "Breast milk only";
             public const string formula_milk_only = "Formula milk only";
             public const string mixed_feeding = "Mixed feeding";
+           
 
             // Growth names
-
             public const string neg3SD = "-3 SD";
             public const string neg2SD = "-2 SD";
             public const string neg1SD = "-1 SD";

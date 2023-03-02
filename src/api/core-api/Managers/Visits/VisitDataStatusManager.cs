@@ -1,5 +1,4 @@
-﻿using DotLiquid.Tags;
-using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.VisitGrowthDatas;
@@ -31,6 +30,16 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
         private IGenericRepository<VisitType, Guid> _visitTypeRepo;
         private IGenericRepository<VisitGrowthData, Guid> _visitGrowthData;
 
+        private string _green;
+        private string _amber;
+        private string _red;
+        private string _none;
+
+        private string _progress;
+        private string _referral;
+        private string _G4;
+        private string _G9;
+
         public VisitDataStatusManager(
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
@@ -48,6 +57,16 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
             _visitDataStatusRepo = _repoFactory.CreateGenericRepository<VisitDataStatus>(userContext: _applicationUserId);
             _visitTypeRepo = _repoFactory.CreateGenericRepository<VisitType>(userContext: _applicationUserId);
             _visitGrowthData = _repoFactory.CreateGenericRepository<VisitGrowthData>(userContext: _applicationUserId);
+
+            _green = MetricsColorEnum.Success.ToString();
+            _amber = MetricsColorEnum.Warning.ToString();
+            _red = MetricsColorEnum.Error.ToString();
+            _none = MetricsColorEnum.None.ToString();
+
+            _progress = Constants.GGSettings.visit_data_client_progress;
+            _referral = Constants.GGSettings.visit_data_client_referral;
+            _G4 = Constants.GGSettings.visit_data_client_dashboard;
+            _G9 = Constants.GGSettings.visit_data_client_summary;
         }
 
         public Boolean ManageVisitDataStatus(string id, string clientType, string visitId) {
@@ -101,11 +120,11 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
         private Boolean ManageVisitDataStatusForInfant(List<VisitData> allVisitData, string firstName, string infantId, string gender, DateTime dob) {
 
             var comment = "";
-            var color = "";
-            var type = "";
             var maternalDistressScreening = new List<VisitData>();
+            var developmentScreening = new List<VisitData>();
             var growthData = new List<VisitData>();
             var feedingData = new List<VisitData>();
+            var immunisationsData = new List<VisitData>();
             var previousVisitWeight = "";
             DateTime today = DateTime.Today;
             var totalMonthsOld = ((today.Year - dob.Year) * 12) + today.Month - dob.Month;
@@ -118,36 +137,26 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
 
                         // referral: add ""Missed clinic visit"" to referrals list
                         comment = Constants.GGSettings.infant_missed_clinic_visit;
-                        color = MetricsColorEnum.None.ToString();
-                        type = Constants.GGSettings.visit_data_client_referral;
-                        AddVisitDataStatus(vData, comment, color, type, Constants.GGSettings.clinic_referrals, false);
+                        AddVisitDataStatus(vData, comment, _none, _referral, Constants.GGSettings.clinic_referrals, false);
 
                         // progress: amber - ""Missed clinic visit""
                         comment = Constants.GGSettings.infant_missed_clinic_visit;
-                        color = MetricsColorEnum.Warning.ToString();
-                        type = Constants.GGSettings.visit_data_client_progress;
-                        AddVisitDataStatus(vData, comment, color, type, vData.VisitSection, false);
+                        AddVisitDataStatus(vData, comment, _amber, _progress, vData.VisitSection, false);
 
                         // G9 client summary: amber - ""You missed a clinic visit - make sure you go as soon as possible!""
                         comment = Constants.GGSettings.infant_missed_clinic_visit_g9;
-                        color = MetricsColorEnum.Warning.ToString();
-                        type = Constants.GGSettings.visit_data_client_summary;
-                        AddVisitDataStatus(vData, comment, color, type, vData.VisitSection, false);
+                        AddVisitDataStatus(vData, comment, _amber, _G9, vData.VisitSection, false);
 
                     }
                     else if (vData.QuestionAnswer == Constants.GGSettings.answer_yes) {
 
                         // progress: green - ""Up to date with clinic visits""
                         comment = Constants.GGSettings.infant_clinic_visit;
-                        color = MetricsColorEnum.Success.ToString();
-                        type = Constants.GGSettings.visit_data_client_progress;
-                        AddVisitDataStatus(vData, comment, color, type, vData.VisitSection, false);
+                        AddVisitDataStatus(vData, comment, _green, _progress, vData.VisitSection, false);
 
                         // G9 client summary: green - ""You are up to date with clinic visits"""
                         comment = Constants.GGSettings.infant_clinic_visit_g9;
-                        color = MetricsColorEnum.Success.ToString();
-                        type = Constants.GGSettings.visit_data_client_summary;
-                        AddVisitDataStatus(vData, comment, color, type, vData.VisitSection, false);
+                        AddVisitDataStatus(vData, comment, _green, _G9, vData.VisitSection, false);
 
                     }
                 }
@@ -156,36 +165,26 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
 
                         // referral: add ""Missed clinic visit"" to referrals list
                         comment = Constants.GGSettings.infant_missed_clinic_visit;
-                        color = MetricsColorEnum.None.ToString();
-                        type = Constants.GGSettings.visit_data_client_referral;
-                        AddVisitDataStatus(vData, comment, color, type, Constants.GGSettings.clinic_referrals, false);
+                        AddVisitDataStatus(vData, comment, _none, _referral, Constants.GGSettings.clinic_referrals, false);
 
                         // progress: amber - ""Missed clinic visit""
                         comment = Constants.GGSettings.infant_missed_clinic_visit;
-                        color = MetricsColorEnum.Warning.ToString();
-                        type = Constants.GGSettings.visit_data_client_progress;
-                        AddVisitDataStatus(vData, comment, color, type, vData.VisitSection, false);
+                        AddVisitDataStatus(vData, comment, _amber, _progress, vData.VisitSection, false);
 
                         // G9 client summary: amber - ""You missed a clinic visit - make sure you go as soon as possible!""
                         comment = Constants.GGSettings.infant_missed_clinic_visit_g9;
-                        color = MetricsColorEnum.Warning.ToString();
-                        type = Constants.GGSettings.visit_data_client_summary;
-                        AddVisitDataStatus(vData, comment, color, type, vData.VisitSection, false);
+                        AddVisitDataStatus(vData, comment, _amber, _G9, vData.VisitSection, false);
 
                     }
                     else if (vData.QuestionAnswer == Constants.GGSettings.answer_yes) {
 
                         // progress: green - ""Up to date with clinic visits""
                         comment = Constants.GGSettings.infant_clinic_visit;
-                        color = MetricsColorEnum.Success.ToString();
-                        type = Constants.GGSettings.visit_data_client_progress;
-                        AddVisitDataStatus(vData, comment, color, type, vData.VisitSection, false);
+                        AddVisitDataStatus(vData, comment, _green, _progress, vData.VisitSection, false);
 
                         // G9 client summary: green - ""You are up to date with clinic visits"""
                         comment = Constants.GGSettings.infant_clinic_visit_g9;
-                        color = MetricsColorEnum.Success.ToString();
-                        type = Constants.GGSettings.visit_data_client_summary;
-                        AddVisitDataStatus(vData, comment, color, type, vData.VisitSection, false);
+                        AddVisitDataStatus(vData, comment, _green, _G9, vData.VisitSection, false);
 
                     }
                 }
@@ -195,15 +194,11 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
 
                         // Add progress item: ""No danger signs for Lethabo""
                         comment = Constants.GGSettings.no_danger_signs + firstName;
-                        color = MetricsColorEnum.Success.ToString();
-                        type = Constants.GGSettings.visit_data_client_progress;
-                        AddVisitDataStatus(vData, comment, color, type, vData.VisitSection, true);
+                        AddVisitDataStatus(vData, comment, _green, _progress, vData.VisitSection, true);
 
                         // Add item to G9 Client summary download: ""You are feeling physically well"""
                         comment = Constants.GGSettings.physical_feeling_well;
-                        color = MetricsColorEnum.Success.ToString();
-                        type = Constants.GGSettings.visit_data_client_summary;
-                        AddVisitDataStatus(vData, comment, color, type, vData.VisitSection, true);
+                        AddVisitDataStatus(vData, comment, _green, _G9, vData.VisitSection, true);
 
                     }
                     else {
@@ -217,21 +212,15 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                                                     x == Constants.GGSettings.cfm_ds_8)) {
 
                                 comment = firstName + Constants.GGSettings.was_experiencing + vData.QuestionAnswer;
-                                color = MetricsColorEnum.None.ToString();
-                                type = Constants.GGSettings.visit_data_client_referral;
-                                AddVisitDataStatus(vData, comment, color, type, Constants.GGSettings.clinic_referrals, false);
+                                AddVisitDataStatus(vData, comment, _none, _referral, Constants.GGSettings.clinic_referrals, false);
 
                                 // Amber -- IF danger signs 6, 7, or 8 selected AND no other danger signs selected, add: 
                                 comment = firstName + Constants.GGSettings.was_experiencing + vData.QuestionAnswer;
-                                color = MetricsColorEnum.Warning.ToString();
-                                type = Constants.GGSettings.visit_data_client_progress;
-                                AddVisitDataStatus(vData, comment, color, type, vData.VisitSection, false);
+                                AddVisitDataStatus(vData, comment, _amber, _progress, vData.VisitSection, false);
 
                                 // Add item to G9 Client summary download - IF danger signs 6, 7, or 8 selected AND no other danger signs selected, add: ""You have some health issues""
                                 comment = Constants.GGSettings.health_issues;
-                                color = MetricsColorEnum.Warning.ToString();
-                                type = Constants.GGSettings.visit_data_client_summary;
-                                AddVisitDataStatus(vData, comment, color, type, vData.VisitSection, false);
+                                AddVisitDataStatus(vData, comment, _amber, _G9, vData.VisitSection, false);
 
                             }
                             else if (arrAnswers.Any(x => x == Constants.GGSettings.cfm_ds_1 ||
@@ -241,27 +230,19 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                                                                x == Constants.GGSettings.cfm_ds_5)) {
 
                                 comment = firstName + Constants.GGSettings.was_experiencing + vData.QuestionAnswer;
-                                color = MetricsColorEnum.None.ToString();
-                                type = Constants.GGSettings.visit_data_client_referral;
-                                AddVisitDataStatus(vData, comment, color, type, Constants.GGSettings.clinic_referrals, false);
+                                AddVisitDataStatus(vData, comment, _none, _referral, Constants.GGSettings.clinic_referrals, false);
 
                                 //  Red -- IF danger signs 1, 2, 3, 4, or 5 selected, add:
                                 comment = firstName + Constants.GGSettings.was_experiencing + vData.QuestionAnswer;
-                                color = MetricsColorEnum.Error.ToString();
-                                type = Constants.GGSettings.visit_data_client_progress;
-                                AddVisitDataStatus(vData, comment, color, type, vData.VisitSection, false);
+                                AddVisitDataStatus(vData, comment, _red, _progress, vData.VisitSection, false);
 
                                 // Add G4 secondary alert text: ""Refer to clinic urgently"" if danger signs 1, 2, 3, 4, or 5 selected
                                 comment = Constants.GGSettings.refer_to_clinic_urgently;
-                                color = MetricsColorEnum.Warning.ToString();
-                                type = Constants.GGSettings.visit_data_client_dashboard;
-                                AddVisitDataStatus(vData, comment, color, type, vData.VisitSection, false);
+                                AddVisitDataStatus(vData, comment, _amber, _G4, vData.VisitSection, false);
 
                                 // Add item to G9 Client summary download - IF danger signs 1, 2, 3, 4, or 5 selected, add: ""You need urgent care for some serious health issues""
                                 comment = Constants.GGSettings.urgent_care;
-                                color = MetricsColorEnum.Warning.ToString();
-                                type = Constants.GGSettings.visit_data_client_summary;
-                                AddVisitDataStatus(vData, comment, color, type, vData.VisitSection, false);
+                                AddVisitDataStatus(vData, comment, _amber, _G9, vData.VisitSection, false);
                             }
 
                             // Add additional visit item with secondary text: ""Danger signs""
@@ -274,50 +255,41 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                     if (vData.QuestionAnswer == Constants.GGSettings.none_above) {
                         // Add progress item: ""No danger signs for Lethabo""
                         comment = Constants.GGSettings.no_danger_signs + firstName;
-                        color = MetricsColorEnum.Success.ToString();
-                        type = Constants.GGSettings.visit_data_client_progress;
-                        AddVisitDataStatus(vData, comment, color, type, vData.VisitSection, true);
+                        AddVisitDataStatus(vData, comment, _green, _progress, vData.VisitSection, true);
 
                         // Add item to G9 Client summary download: ""You are feeling physically well"""
                         comment = Constants.GGSettings.physical_feeling_well;
-                        color = MetricsColorEnum.Success.ToString();
-                        type = Constants.GGSettings.visit_data_client_summary;
-                        AddVisitDataStatus(vData, comment, color, type, vData.VisitSection, true);
-                    } else {
+                        AddVisitDataStatus(vData, comment, _green, _G9, vData.VisitSection, true);
+                    }
+                    else {
                         var arrAnswers = vData.QuestionAnswer.Split(",");
 
                         // If the user chooses any of the danger signs (ie user does not select ""None of the above"")
                         comment = firstName + Constants.GGSettings.was_experiencing + vData.QuestionAnswer;
-                        color = MetricsColorEnum.None.ToString();
-                        type = Constants.GGSettings.visit_data_client_referral;
-                        AddVisitDataStatus(vData, comment, color, type, Constants.GGSettings.clinic_referrals, false);
+                        AddVisitDataStatus(vData, comment, _none, _referral, Constants.GGSettings.clinic_referrals, false);
 
                         // Add red progress item - where X, Y, Z are each of the danger signs selected by the user.
                         comment = firstName + Constants.GGSettings.was_experiencing + vData.QuestionAnswer;
-                        color = MetricsColorEnum.Error.ToString();
-                        type = Constants.GGSettings.visit_data_client_progress;
-                        AddVisitDataStatus(vData, comment, color, type, vData.VisitSection, false);
+                        AddVisitDataStatus(vData, comment, _red, _progress, vData.VisitSection, false);
 
                         // Add additional visit item with secondary text: ""Danger signs""
                         AddAdditionalVisit(infantId, Constants.GGSettings.client_child, Constants.GGSettings.danger_signs);
 
                         // Add G4 secondary alert text: ""Refer to clinic urgently""
                         comment = Constants.GGSettings.refer_to_clinic_urgently;
-                        color = MetricsColorEnum.Warning.ToString();
-                        type = Constants.GGSettings.visit_data_client_dashboard;
-                        AddVisitDataStatus(vData, comment, color, type, vData.VisitSection, false);
+                        AddVisitDataStatus(vData, comment, _amber, _G4, vData.VisitSection, false);
 
                         // Add item to G9 Client summary download ""You need urgent care for some serious health issues""
                         comment = Constants.GGSettings.urgent_care;
-                        color = MetricsColorEnum.Warning.ToString();
-                        type = Constants.GGSettings.visit_data_client_summary;
-                        AddVisitDataStatus(vData, comment, color, type, vData.VisitSection, false);
+                        AddVisitDataStatus(vData, comment, _amber, _G9, vData.VisitSection, false);
                     }
-                } else if (vData.Question == Constants.GGSettings.q_stop_worry ||
+                }
+                else if (vData.Question == Constants.GGSettings.q_stop_worry ||
                          vData.Question == Constants.GGSettings.q_felt_down ||
                          vData.Question == Constants.GGSettings.q_suicide) {
                     maternalDistressScreening.Add(vData);
-                } else if (vData.Question == Constants.GGSettings.q_weight) {
+                }
+                else if (vData.Question == Constants.GGSettings.q_weight) {
 
                     previousVisitWeight = (
                          from visit in _visitRepo.GetAll().Where(x => x.InfantId.ToString() == infantId && x.Attended == true).OrderBy(x => x.InsertedDate)
@@ -326,84 +298,154 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                      ).LastOrDefault();
 
                     growthData.Add(vData);
-                } else if (vData.Question == Constants.GGSettings.q_length) {
+                }
+                else if (vData.Question == Constants.GGSettings.q_length) {
                     growthData.Add(vData);
-                } else if (vData.Question == Constants.GGSettings.q_muac) {
+                }
+                else if (vData.Question == Constants.GGSettings.q_muac) {
                     growthData.Add(vData);
-                } else if (vData.Question == Constants.GGSettings.q_eat_drink) {
-                    feedingData.Add(vData);                    
-                } else if (vData.Question == Constants.GGSettings.q_breastfeeding_club) {
-                   
+                }
+                else if (vData.Question == Constants.GGSettings.q_eat_drink) {
+                    feedingData.Add(vData);
+                }
+                else if (vData.Question == Constants.GGSettings.q_breastfeeding_club) {
+
                     if (vData.QuestionAnswer == Constants.GGSettings.answer_yes) {
                         // Progress: under the green - ""Breast milk only"" item, add amber text ""Needs support with breastfeeding"" (see in context of progress screen in G3.8)"
                         comment = Constants.GGSettings.breast_milk_only;
-                        color = MetricsColorEnum.Success.ToString();
-                        type = Constants.GGSettings.visit_data_client_progress;
-                        AddVisitDataStatus(vData, comment, color, type, vData.VisitSection, false);
+                        AddVisitDataStatus(vData, comment, _green, _progress, vData.VisitSection, false);
                     }
 
-                } else if (vData.Question == Constants.GGSettings.q_tick_foods) {
+                }
+                else if (vData.Question == Constants.GGSettings.q_tick_foods) {
+
+                    var total_food_groups = 8;
+                    if (totalMonthsOld >= 6 && totalMonthsOld < 9) {
+                        total_food_groups = 8;
+                    }
+                    else if (totalMonthsOld >= 9) {
+                        total_food_groups = 7;
+                    }
 
                     var answers = vData.QuestionAnswer.Split(",");
                     if (answers.Length < 4) {
                         // Progress: red - ""Poor dietary diversity: X out of 8 food groups"", where X = the number of items selected(1, 2, or 3)
-                        comment = Constants.GGSettings.poor_dietary_diversity + answers.Length + Constants.GGSettings.out_of_8_groups;
-                        color = MetricsColorEnum.Error.ToString();
-                        type = Constants.GGSettings.visit_data_client_progress;
-                        AddVisitDataStatus(vData, comment, color, type, vData.VisitSection, false);
+                        comment = Constants.GGSettings.poor_dietary_diversity.Replace("{x}", answers.Length.ToString()).Replace("{y}", total_food_groups.ToString());
+                        AddVisitDataStatus(vData, comment, _red, _progress, vData.VisitSection, false);
 
                         // G9 Client summary download: red - ""You are giving Themba foods from X out of 8 groups. Try to give Themba a variety of foods!"",  where X = the number of items selected (1, 2, or 3)
-                        var _comment = Constants.GGSettings.give_client_food.Replace("{client}", firstName);
-                        comment = _comment.Replace("{x}", answers.Length.ToString());
-                        color = MetricsColorEnum.Error.ToString();
-                        type = Constants.GGSettings.visit_data_client_summary;
-                        AddVisitDataStatus(vData, comment, color, type, vData.VisitSection, false);
+                        comment = Constants.GGSettings.give_client_food.Replace("{client}", firstName).Replace("{x}", answers.Length.ToString()).Replace("{y}", total_food_groups.ToString());
+                        AddVisitDataStatus(vData, comment, _red, _G9, vData.VisitSection, false);
 
                     }
                     else if (answers.Length == 4) {
 
                         // Progress: ""Poor dietary diversity: 4 out of 8 food groups""
-                        comment = Constants.GGSettings.poor_dietary_diversity + answers.Length + Constants.GGSettings.out_of_8_groups;
-                        color = MetricsColorEnum.Warning.ToString();
-                        type = Constants.GGSettings.visit_data_client_progress;
-                        AddVisitDataStatus(vData, comment, color, type, vData.VisitSection, false);
+                        comment = Constants.GGSettings.poor_dietary_diversity.Replace("{x}", answers.Length.ToString()).Replace("{y}", total_food_groups.ToString());
+                        AddVisitDataStatus(vData, comment, _amber, _progress, vData.VisitSection, false);
 
                         // G9 Client summary: ""You are giving Themba foods from 4 out of 8 groups. Try to give Themba a variety of foods!""
-                        var _comment = Constants.GGSettings.give_client_food_most.Replace("{client}", firstName);
-                        comment = _comment.Replace("{x}", answers.Length.ToString());
-                        color = MetricsColorEnum.Warning.ToString();
-                        type = Constants.GGSettings.visit_data_client_summary;
-                        AddVisitDataStatus(vData, comment, color, type, vData.VisitSection, false);
+                        comment = Constants.GGSettings.give_client_food.Replace("{client}", firstName).Replace("{x}", answers.Length.ToString()).Replace("{y}", total_food_groups.ToString());
+                        AddVisitDataStatus(vData, comment, _amber, _G9, vData.VisitSection, false);
                     }
-                    else if (answers.Length >= 5 && answers.Length <= 7) {
+                    else if (answers.Length >= 5 && answers.Length <= 8) {
                         // Progress: ""Good dietary diversity: X out of 8 food groups!"", where X = the number of items selected (5, 6, 7, 8)
-                        comment = Constants.GGSettings.good_dietary_diversity.Replace("{x}", answers.Length.ToString());
-                        color = MetricsColorEnum.Success.ToString();
-                        type = Constants.GGSettings.visit_data_client_progress;
-                        AddVisitDataStatus(vData, comment, color, type, vData.VisitSection, false);
+                        comment = Constants.GGSettings.good_dietary_diversity.Replace("{x}", answers.Length.ToString()).Replace("{y}", total_food_groups.ToString());
+                        AddVisitDataStatus(vData, comment, _green, _progress, vData.VisitSection, false);
 
                         // G9 Client summary: ""You are giving Themba foods from most of the groups!""
                         comment = Constants.GGSettings.give_client_food_most.Replace("{client}", firstName);
-                        color = MetricsColorEnum.Success.ToString();
-                        type = Constants.GGSettings.visit_data_client_summary;
-                        AddVisitDataStatus(vData, comment, color, type, vData.VisitSection, false);
-                    } else if (answers.Length == 8) {
-                        // Progress: ""Good dietary diversity: X out of 8 food groups!"", where X = the number of items selected (5, 6, 7, 8)
-                        comment = Constants.GGSettings.good_dietary_diversity.Replace("{x}", answers.Length.ToString());
-                        color = MetricsColorEnum.Success.ToString();
-                        type = Constants.GGSettings.visit_data_client_progress;
-                        AddVisitDataStatus(vData, comment, color, type, vData.VisitSection, false);
+                        AddVisitDataStatus(vData, comment, _green, _G9, vData.VisitSection, false);
+                    }
+                }
+                else if (vData.Question == Constants.GGSettings.q_hearing ||
+                            vData.Question == Constants.GGSettings.q_seeing ||
+                            vData.Question == Constants.GGSettings.q_brain ||
+                            vData.Question == Constants.GGSettings.q_moving) {
+                    if (vData.QuestionAnswer == Constants.GGSettings.answer_no) {
+                        developmentScreening.Add(vData);
+                    }
+                }
+                else if (vData.Question == Constants.GGSettings.q_immunisation ||
+                            vData.Question == Constants.GGSettings.q_vitamin_a ||
+                            vData.Question == Constants.GGSettings.q_deworming) {
+                 immunisationsData.Add(vData);
+                } 
+                else if (vData.VisitName == Constants.GGSettings.p4_name && vData.Question == Constants.GGSettings.q_danger_signs) {
+                    var names = "<ul>";
 
-                        // G9 Client summary: ""You are giving Themba foods from all groups!""
-                        comment = Constants.GGSettings.give_client_food_most.Replace("{client}", firstName);
-                        color = MetricsColorEnum.Success.ToString();
-                        type = Constants.GGSettings.visit_data_client_summary;
-                        AddVisitDataStatus(vData, comment, color, type, vData.VisitSection, false);
+                    foreach (var item in vData.QuestionAnswer) {
+                        names = names + "<li>" + item + "</li>";
+                    }
+                    names = names + "</ul>";
+
+                    if (vData.QuestionAnswer.Length > 1) {
+                        // If any danger signs selected, add referral item: ""Themba was experiencing: * X *Y"" 
+                        comment = firstName + Constants.GGSettings.was_experiencing + names;
+                        AddVisitDataStatus(vData, comment, _none, _referral, Constants.GGSettings.clinic_referrals, false);
+
+                        // if one or more danger signs selected - red, ""Themba was experiencing: * X *Y""
+                        comment = firstName + Constants.GGSettings.was_experiencing + names;
+                        AddVisitDataStatus(vData, comment, _red, _progress, vData.VisitSection, false);
+
+                        // Add additional visit item with secondary text: ""Danger signs""
+                        AddAdditionalVisit(infantId, Constants.GGSettings.client_child, Constants.GGSettings.danger_signs);
+
+                        // Add G4 secondary alert text: ""Refer to clinic urgently""
+                        comment = Constants.GGSettings.refer_to_clinic_urgently;
+                        AddVisitDataStatus(vData, comment, _amber, _G4, vData.VisitSection, false);
+
+                        // Add item to G9 Client summary download "Themba needs urgent care for some serious health issues""
+                        comment = Constants.GGSettings.urgent_care;
+                        AddVisitDataStatus(vData, comment, _red, _G9, vData.VisitSection, false);
+
+                    } else if (vData.QuestionAnswer.Length == 1) {
+                        string answer = vData.QuestionAnswer[0].ToString();
+                        if (answer == Constants.GGSettings.none_above) {
+                            // if ""None of the above"" selected - green, ""No danger signs for Themba""
+                            comment = Constants.GGSettings.none_above;
+                            AddVisitDataStatus(vData, comment, _green, _progress, vData.VisitSection, false);
+
+                            // Add item to G9 Client summary download""Themba is doing well physically!""
+                            comment = firstName + Constants.GGSettings.physical_well;
+                            AddVisitDataStatus(vData, comment, _green, _G9, vData.VisitSection, false);
+                        }
+                    }
+                } else if (vData.Question == Constants.GGSettings.q_birth_certificate) {
+
+                    if (vData.QuestionAnswer == Constants.GGSettings.answer_no) {
+                        // Add referral under ""Home Affairs referrals"" = ""Themba does not have a birth certificate""
+                        comment = firstName + Constants.GGSettings.no_birth_certificate;
+                        AddVisitDataStatus(vData, comment, _none, _referral, Constants.GGSettings.home_affairs_referrals, false);
+
+                        // Add G4 secondary alert text: ""Refer to clinic urgently""
+                        comment = Constants.GGSettings.home_affairs_referrals;
+                        AddVisitDataStatus(vData, comment, _amber, _G4, vData.VisitSection, false);
+                    }
+
+                    if (vData.QuestionAnswer == Constants.GGSettings.answer_yes) {
+
+                        // if ""None of the above"" selected - green, ""No danger signs for Themba""
+                        comment = Constants.GGSettings.no_danger_signs + firstName;
+                        AddVisitDataStatus(vData, comment, _green, _progress, vData.VisitSection, false);
+                    }
+
+                } else if (vData.Question == Constants.GGSettings.q_csg) {
+
+                    if (vData.QuestionAnswer == Constants.GGSettings.answer_yes) {
+
+                        // green, ""Has applied for a child support grant""
+                        comment = Constants.GGSettings.has_csg;
+                        AddVisitDataStatus(vData, comment, _green, _progress, vData.VisitSection, false);
+
+                        // G9 Client summary green, ""You applied for the child support grant - this will support Themba's healthy growth!"""
+                        comment = firstName + Constants.GGSettings.has_csg2.Replace("{client}", firstName);
+                        AddVisitDataStatus(vData, comment, _green, _G9, vData.VisitSection, false);
+
                     }
                 }
             }
 
-            // Manage Maternal Distress Screening
             if (maternalDistressScreening.Count > 0) {
                 ManageMaternalDistressScreening(maternalDistressScreening, firstName, infantId, Constants.GGSettings.client_child);
             }
@@ -416,15 +458,22 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                 ManageFeedingData(feedingData, firstName, infantId);
             }
 
+            if (developmentScreening.Count > 0) {
+                ManageDevelopmentScreeningData(developmentScreening, firstName, infantId);
+            }
+
+            if (immunisationsData.Count > 0) {
+                ManageImmunisationData(immunisationsData, firstName, infantId);
+            }
+
             return true;
         }
+
         private Boolean ManageVisitDataStatusForMother(List<VisitData> allVisitData, string firstName, string motherId) {
             var maternalDistressScreening = new List<VisitData>();
             var alcoholUse = new List<VisitData>();
             var idDocs = new List<VisitData>();
             var comment = "";
-            var color = "";
-            var type = "";
 
             // loop through data and add status data
             foreach (VisitData visitData in allVisitData) {
@@ -432,81 +481,57 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                     if (visitData.QuestionAnswer == Constants.GGSettings.answer_no) {
                         // this should add a referral to the list(""Pregnancy not booked"")
                         comment = Constants.GGSettings.pregnancy_not_booked;
-                        color = MetricsColorEnum.None.ToString();
-                        type = Constants.GGSettings.visit_data_client_referral;
-                        AddVisitDataStatus(visitData, comment, color, type, Constants.GGSettings.clinic_referrals, false);
+                        AddVisitDataStatus(visitData, comment, _none, _referral, Constants.GGSettings.clinic_referrals, false);
 
                         // add an ""amber"" item to the progress list: ""Pregnancy not booked"".
                         comment = Constants.GGSettings.pregnancy_not_booked;
-                        color = MetricsColorEnum.Warning.ToString();
-                        type = Constants.GGSettings.visit_data_client_progress;
-                        AddVisitDataStatus(visitData, comment, color, type, visitData.VisitSection, false);
+                        AddVisitDataStatus(visitData, comment, _amber, _progress, visitData.VisitSection, false);
 
                         // add flag to G4 secondary alert: red alert, ""Refer to clinic""
                         comment = Constants.GGSettings.refer_to_clinic;
-                        color = MetricsColorEnum.Error.ToString();
-                        type = Constants.GGSettings.visit_data_client_dashboard;
-                        AddVisitDataStatus(visitData, comment, color, type, visitData.VisitSection, false);
+                        AddVisitDataStatus(visitData, comment, _red, _G4, visitData.VisitSection, false);
 
                         // add amber item to G9 client download summary: ""You missed a clinic visit - make sure you go as soon as possible!""
                         comment = Constants.GGSettings.missed_clinic_visit;
-                        color = MetricsColorEnum.Warning.ToString();
-                        type = Constants.GGSettings.visit_data_client_summary;
-                        AddVisitDataStatus(visitData, comment, color, type, visitData.VisitSection, false);
+                        AddVisitDataStatus(visitData, comment, _amber, _G9, visitData.VisitSection, false);
 
                     }
                     else if (visitData.QuestionAnswer == Constants.GGSettings.answer_yes) {
                         // a ""green"" item is added to the client progress list ""Pregnancy booked""
                         comment = Constants.GGSettings.pregnancy_booked;
-                        color = MetricsColorEnum.Success.ToString();
-                        type = Constants.GGSettings.visit_data_client_progress;
-                        AddVisitDataStatus(visitData, comment, color, type, visitData.VisitSection, true);
+                        AddVisitDataStatus(visitData, comment, _green, _progress, visitData.VisitSection, true);
 
                         // a green item is added to G9 client download summary ""You are up to date with your clinic visits!""
                         comment = Constants.GGSettings.clinic_visits_up_to_date_2;
-                        color = MetricsColorEnum.Success.ToString();
-                        type = Constants.GGSettings.visit_data_client_summary;
-                        AddVisitDataStatus(visitData, comment, color, type, visitData.VisitSection, true);
+                        AddVisitDataStatus(visitData, comment, _green, _G9, visitData.VisitSection, true);
                     }
                 }
                 else if (visitData.Question == Constants.GGSettings.q_antenatal_visits) {
                     if (visitData.QuestionAnswer == Constants.GGSettings.answer_no) {
                         // add an ""amber"" item to the progress: ""Clinic visits not up to date""
                         comment = Constants.GGSettings.clinic_visits_not_up_to_date;
-                        color = MetricsColorEnum.None.ToString();
-                        type = Constants.GGSettings.visit_data_client_referral;
-                        AddVisitDataStatus(visitData, comment, color, type, Constants.GGSettings.clinic_referrals, false);
+                        AddVisitDataStatus(visitData, comment, _none, _referral, Constants.GGSettings.clinic_referrals, false);
 
                         // add an ""amber"" item to the progress list: Clinic visits not up to date.
                         comment = Constants.GGSettings.clinic_visits_not_up_to_date;
-                        color = MetricsColorEnum.Warning.ToString();
-                        type = Constants.GGSettings.visit_data_client_progress;
-                        AddVisitDataStatus(visitData, comment, color, type, visitData.VisitSection, false);
+                        AddVisitDataStatus(visitData, comment, _amber, _progress, visitData.VisitSection, false);
 
                         // add G4 secondary text red alert ""Refer to clinic""
                         comment = Constants.GGSettings.refer_to_clinic;
-                        color = MetricsColorEnum.Error.ToString();
-                        type = Constants.GGSettings.visit_data_client_dashboard;
-                        AddVisitDataStatus(visitData, comment, color, type, visitData.VisitSection, false);
+                        AddVisitDataStatus(visitData, comment, _red, _G4, visitData.VisitSection, false);
 
                         // add amber item to G9 client download summary: ""You missed a clinic visit - make sure you go as soon as possible!""
                         comment = Constants.GGSettings.missed_clinic_visit;
-                        color = MetricsColorEnum.Warning.ToString();
-                        type = Constants.GGSettings.visit_data_client_summary;
-                        AddVisitDataStatus(visitData, comment, color, type, visitData.VisitSection, false);
+                        AddVisitDataStatus(visitData, comment, _amber, _G9, visitData.VisitSection, false);
                     }
                     else if (visitData.QuestionAnswer == Constants.GGSettings.answer_yes) {
                         // ""green"" item is added to the progress: "Clinic visits up to date"
                         comment = Constants.GGSettings.clinic_visits_up_to_date;
-                        color = MetricsColorEnum.Success.ToString();
-                        type = Constants.GGSettings.visit_data_client_progress;
-                        AddVisitDataStatus(visitData, comment, color, type, visitData.VisitSection, true);
+                        AddVisitDataStatus(visitData, comment, _green, _progress, visitData.VisitSection, true);
 
                         // add green item to G9 client download summary "You are up to date with your clinic visits!"
                         comment = Constants.GGSettings.all_clinic_visit;
-                        color = MetricsColorEnum.Success.ToString();
-                        type = Constants.GGSettings.visit_data_client_summary;
-                        AddVisitDataStatus(visitData, comment, color, type, visitData.VisitSection, true);
+                        AddVisitDataStatus(visitData, comment, _green, _G9, visitData.VisitSection, true);
 
                     }
                 }
@@ -516,27 +541,19 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                     if (questionAnswer < 22) {
                         // add to referrals items list(""May be underweight - MUAC less than 22cm"") red
                         comment = Constants.GGSettings.underweight;
-                        color = MetricsColorEnum.None.ToString();
-                        type = Constants.GGSettings.visit_data_client_referral;
-                        AddVisitDataStatus(visitData, comment, color, type, Constants.GGSettings.clinic_referrals, false);
+                        AddVisitDataStatus(visitData, comment, _none, _referral, Constants.GGSettings.clinic_referrals, false);
 
                         // add to red items in progress screen(use case 2) (""May be underweight - MUAC less than 22cm"")
                         comment = Constants.GGSettings.underweight;
-                        color = MetricsColorEnum.Error.ToString();
-                        type = Constants.GGSettings.visit_data_client_progress;
-                        AddVisitDataStatus(visitData, comment, color, type, visitData.VisitSection, false);
+                        AddVisitDataStatus(visitData, comment, _red, _progress, visitData.VisitSection, false);
 
                         // add G4 secondary text item: ""Refer to clinic urgently""(this is the highest - priority item & will be shown)
                         comment = Constants.GGSettings.refer_to_clinic_urgently;
-                        color = MetricsColorEnum.Error.ToString();
-                        type = Constants.GGSettings.visit_data_client_dashboard;
-                        AddVisitDataStatus(visitData, comment, color, type, visitData.VisitSection, false);
+                        AddVisitDataStatus(visitData, comment, _red, _G4, visitData.VisitSection, false);
 
                         // add green item to G9 client summary: ""You might be underweight: eat 3 meals every day""
                         comment = Constants.GGSettings.underweight2;
-                        color = MetricsColorEnum.Success.ToString();
-                        type = Constants.GGSettings.visit_data_client_summary;
-                        AddVisitDataStatus(visitData, comment, color, type, visitData.VisitSection, false);
+                        AddVisitDataStatus(visitData, comment, _green, _G9, visitData.VisitSection, false);
 
                         // add additional visit item with ""Underweight"" secondary text -please see G3.7 Other / Additional visits
                         AddAdditionalVisit(motherId, Constants.GGSettings.client_mother, Constants.GGSettings.underweight3);
@@ -544,15 +561,11 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                     else if (questionAnswer >= 22) {
                         // add to green items in progress screen(use case 2) (""MUAC over 22cm"")TenancyMiddleware.cs
                         comment = Constants.GGSettings.muac_over_22;
-                        color = MetricsColorEnum.Success.ToString();
-                        type = Constants.GGSettings.visit_data_client_progress;
-                        AddVisitDataStatus(visitData, comment, color, type, visitData.VisitSection, true);
+                        AddVisitDataStatus(visitData, comment, _green, _progress, visitData.VisitSection, true);
 
                         // add green item to G9 client summary: ""According to your mid-upper arm circumference, you are a healthy weight""
                         comment = Constants.GGSettings.healthy_weight;
-                        color = MetricsColorEnum.Success.ToString();
-                        type = Constants.GGSettings.visit_data_client_summary;
-                        AddVisitDataStatus(visitData, comment, color, type, visitData.VisitSection, true);
+                        AddVisitDataStatus(visitData, comment, _green, _G9, visitData.VisitSection, true);
                     }
                 }
                 else if (visitData.Question == Constants.GGSettings.q_stop_worry ||
@@ -574,44 +587,32 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                     if (visitData.QuestionAnswer == Constants.GGSettings.none_above) {
                         // Add progress item: ""No danger signs for Lethabo""
                         comment = Constants.GGSettings.no_danger_signs + firstName;
-                        color = MetricsColorEnum.Success.ToString();
-                        type = Constants.GGSettings.visit_data_client_progress;
-                        AddVisitDataStatus(visitData, comment, color, type, visitData.VisitSection, true);
+                        AddVisitDataStatus(visitData, comment, _green, _progress, visitData.VisitSection, true);
 
                         // Add item to G9 Client summary download: ""You are feeling physically well"""
                         comment = Constants.GGSettings.physical_feeling_well;
-                        color = MetricsColorEnum.Success.ToString();
-                        type = Constants.GGSettings.visit_data_client_summary;
-                        AddVisitDataStatus(visitData, comment, color, type, visitData.VisitSection, true);
+                        AddVisitDataStatus(visitData, comment, _green, _G9, visitData.VisitSection, true);
                     }
                     else {
                         var arrAnswers = visitData.QuestionAnswer.Split(",");
                         // If the user chooses any of the danger signs (ie user does not select ""None of the above"")
                         comment = firstName + Constants.GGSettings.was_experiencing + visitData.QuestionAnswer;
-                        color = MetricsColorEnum.None.ToString();
-                        type = Constants.GGSettings.visit_data_client_referral;
-                        AddVisitDataStatus(visitData, comment, color, type, Constants.GGSettings.clinic_referrals, false);
+                        AddVisitDataStatus(visitData, comment, _none, _referral, Constants.GGSettings.clinic_referrals, false);
 
                         // Add red progress item - where X, Y, Z are each of the danger signs selected by the user.
                         comment = firstName + Constants.GGSettings.was_experiencing + visitData.QuestionAnswer;
-                        color = MetricsColorEnum.Error.ToString();
-                        type = Constants.GGSettings.visit_data_client_progress;
-                        AddVisitDataStatus(visitData, comment, color, type, visitData.VisitSection, false);
+                        AddVisitDataStatus(visitData, comment, _red, _progress, visitData.VisitSection, false);
 
                         // Add additional visit item with secondary text: ""Danger signs""
                         AddAdditionalVisit(motherId, Constants.GGSettings.client_mother, Constants.GGSettings.danger_signs);
 
                         // Add G4 secondary alert text: ""Refer to clinic urgently""
                         comment = Constants.GGSettings.refer_to_clinic_urgently;
-                        color = MetricsColorEnum.Warning.ToString();
-                        type = Constants.GGSettings.visit_data_client_dashboard;
-                        AddVisitDataStatus(visitData, comment, color, type, visitData.VisitSection, false);
+                        AddVisitDataStatus(visitData, comment, _amber, _G4, visitData.VisitSection, false);
 
                         // Add item to G9 Client summary download ""You need urgent care for some serious health issues""
                         comment = Constants.GGSettings.urgent_care;
-                        color = MetricsColorEnum.Warning.ToString();
-                        type = Constants.GGSettings.visit_data_client_summary;
-                        AddVisitDataStatus(visitData, comment, color, type, visitData.VisitSection, false);
+                        AddVisitDataStatus(visitData, comment, _amber, _G9, visitData.VisitSection, false);
                     }
                 }
             }
@@ -633,8 +634,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
         }
         private Boolean ManageMaternalDistressScreening(List<VisitData> maternalDistressScreening, string firstName, string clientId, string clientType) {
             var comment = "";
-            var color = "";
-            var type = "";
             var section = Constants.GGSettings.clinic_referrals;
 
             var q1 = maternalDistressScreening.Where(x => x.Question == Constants.GGSettings.q_stop_worry).FirstOrDefault();
@@ -644,70 +643,50 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
             // a Constants.GGSettings.answer_yes response to the 3rd question trumps all.
             if (q3.QuestionAnswer == Constants.GGSettings.answer_yes) {
                 comment = firstName + Constants.GGSettings.maternal_distress;
-                color = MetricsColorEnum.None.ToString();
-                type = Constants.GGSettings.visit_data_client_referral;
-                AddVisitDataStatus(q3, comment, color, type, section, false);
+                AddVisitDataStatus(q3, comment, _none, _referral, section, false);
 
                 // add to amber items in progress screen(use case 2)(""Lethabo was experiencing maternal distress"")
                 comment = firstName + Constants.GGSettings.maternal_distress;
-                color = MetricsColorEnum.Warning.ToString();
-                type = Constants.GGSettings.visit_data_client_progress;
-                AddVisitDataStatus(q3, comment, color, type, q3.VisitSection, false);
+                AddVisitDataStatus(q3, comment, _amber, _progress, q3.VisitSection, false);
 
                 AddAdditionalVisit(clientId, clientType, Constants.GGSettings.maternal_distress2);
 
                 // add G4 secondary text item: Amber - ""Refer to clinic""
                 comment = Constants.GGSettings.refer_to_clinic;
-                color = MetricsColorEnum.Warning.ToString();
-                type = Constants.GGSettings.visit_data_client_dashboard;
-                AddVisitDataStatus(q3, comment, color, type, q3.VisitSection, false);
+                AddVisitDataStatus(q3, comment, _amber, _G4, q3.VisitSection, false);
 
                 // add amber item to G9 client summary: ""You are struggling and need some support""
                 comment = Constants.GGSettings.need_support;
-                color = MetricsColorEnum.Warning.ToString();
-                type = Constants.GGSettings.visit_data_client_summary;
-                AddVisitDataStatus(q3, comment, color, type, q3.VisitSection, false);
+                AddVisitDataStatus(q3, comment, _amber, _G9, q3.VisitSection, false);
             } else {
                 if (q3.QuestionAnswer == Constants.GGSettings.answer_no && (q1.QuestionAnswer == Constants.GGSettings.answer_yes || q2.QuestionAnswer == Constants.GGSettings.answer_yes)) {
                     comment = firstName + Constants.GGSettings.maternal_distress;
-                    color = MetricsColorEnum.None.ToString();
-                    type = Constants.GGSettings.visit_data_client_referral;
-                    AddVisitDataStatus(q3, comment, color, type, section, false);
+                    AddVisitDataStatus(q3, comment, _none, _referral, section, false);
 
                     comment = firstName + Constants.GGSettings.maternal_distress;
-                    color = MetricsColorEnum.Warning.ToString();
-                    type = Constants.GGSettings.visit_data_client_progress;
-                    AddVisitDataStatus(q3, comment, color, type, q3.VisitSection, false);
+                    AddVisitDataStatus(q3, comment, _amber, _progress, q3.VisitSection, false);
 
                     AddAdditionalVisit(clientId, clientType, Constants.GGSettings.maternal_distress2);
 
                     // add amber item to G9 client summary: ""You are struggling and need some support""
                     comment = Constants.GGSettings.need_support;
-                    color = MetricsColorEnum.Warning.ToString();
-                    type = Constants.GGSettings.visit_data_client_summary;
-                    AddVisitDataStatus(q3, comment, color, type, q3.VisitSection, false);
+                    AddVisitDataStatus(q3, comment, _amber, _G9, q3.VisitSection, false);
                 }
 
                 if (q3.QuestionAnswer == Constants.GGSettings.answer_no && (q1.QuestionAnswer == Constants.GGSettings.answer_no || q2.QuestionAnswer == Constants.GGSettings.answer_no)) {
                     // add to green items in progress screen (use case 2) (""Lethabo was coping well"")
                     comment = firstName + Constants.GGSettings.was_coping;
-                    color = MetricsColorEnum.Warning.ToString();
-                    type = Constants.GGSettings.visit_data_client_progress;
-                    AddVisitDataStatus(q3, comment, color, type, q3.VisitSection, true);
+                    AddVisitDataStatus(q3, comment, _amber, _progress, q3.VisitSection, true);
 
                     //add green item to G9 client summary: You are coping well!
                     comment = Constants.GGSettings.coping_well;
-                    color = MetricsColorEnum.Warning.ToString();
-                    type = Constants.GGSettings.visit_data_client_summary;
-                    AddVisitDataStatus(q3, comment, color, type, q3.VisitSection, true);
+                    AddVisitDataStatus(q3, comment, _amber, _G9, q3.VisitSection, true);
                 }
             }
             return true;
         }
         private Boolean ManageAlcoholUse(List<VisitData> alcoholUse, string firstName, string motherId) {
             var comment = "";
-            var color = "";
-            var type = "";
             var score = 0;
             var section = Constants.GGSettings.clinic_referrals;
 
@@ -734,42 +713,30 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
             if (score >= 2) {
                 // IF this is not already unchecked in the referrals list for this client; add to referrals items list (""Lethabo is at risk of a drinking problem (T-ACE score = X)"", where X = the T-ACE score calculated)
                 comment = firstName + Constants.GGSettings.t_ace_score + score + ")";
-                color = MetricsColorEnum.None.ToString();
-                type = Constants.GGSettings.visit_data_client_referral;
-                AddVisitDataStatus(q1, comment, color, type, section, false);
+                AddVisitDataStatus(q1, comment, _none, _referral, section, false);
 
                 // add to red items in progress screen (use case 2) (""Lethabo is at risk of a drinking problem (T-ACE score = X)"", where X = the T-ACE score calculated)
                 comment = firstName + Constants.GGSettings.t_ace_score + score + ")";
-                color = MetricsColorEnum.Error.ToString();
-                type = Constants.GGSettings.visit_data_client_progress;
-                AddVisitDataStatus(q1, comment, color, type, q1.VisitSection, false);
+                AddVisitDataStatus(q1, comment, _red, _progress, q1.VisitSection, false);
 
                 // add G4 secondary text item: Red - ""Refer to clinic urgently""
                 comment = Constants.GGSettings.refer_to_clinic_urgently;
-                color = MetricsColorEnum.Error.ToString();
-                type = Constants.GGSettings.visit_data_client_dashboard;
-                AddVisitDataStatus(q1, comment, color, type, q1.VisitSection, false);
+                AddVisitDataStatus(q1, comment, _red, _G4, q1.VisitSection, false);
 
                 // add amber item to G9 client summary: ""You may need support to reduce your drinking""
                 comment = Constants.GGSettings.support_drinking;
-                color = MetricsColorEnum.Warning.ToString();
-                type = Constants.GGSettings.visit_data_client_summary;
-                AddVisitDataStatus(q1, comment, color, type, q1.VisitSection, false);
+                AddVisitDataStatus(q1, comment, _amber, _G9, q1.VisitSection, false);
             }
             else if (score > 0 && score < 2) {
                 // add to green items in progress screen (use case 2) (""Lethabo was coping well"")
                 comment = firstName + Constants.GGSettings.no_alcohol_abuse;
-                color = MetricsColorEnum.Success.ToString();
-                type = Constants.GGSettings.visit_data_client_progress;
-                AddVisitDataStatus(q1, comment, color, type, q1.VisitSection, true);
+                AddVisitDataStatus(q1, comment, _green, _progress, q1.VisitSection, true);
 
             }
             return true;
         }
         private Boolean ManageIdDocs(List<VisitData> idDocs, string firstName) {
             var comment = "";
-            var color = "";
-            var type = "";
 
             var q1 = idDocs.Where(x => x.Question == Constants.GGSettings.q_ID_doc).FirstOrDefault();
             var q2 = idDocs.Where(x => x.Question == Constants.GGSettings.q_citizen).FirstOrDefault();
@@ -777,41 +744,30 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
             if (q1.QuestionAnswer == Constants.GGSettings.answer_no && q2.QuestionAnswer == Constants.GGSettings.answer_yes) {
                 // IF this is not already unchecked in the referrals list for this client; add to referrals items list under Department of Home Affairs referrals(""Lethabo doesn't have an ID book)
                 comment = firstName + Constants.GGSettings.no_id_book;
-                color = MetricsColorEnum.None.ToString();
-                type = Constants.GGSettings.visit_data_client_referral;
-                AddVisitDataStatus(q1, comment, color, type, Constants.GGSettings.home_affairs_referrals, false);
+                AddVisitDataStatus(q1, comment, _none, _referral, Constants.GGSettings.home_affairs_referrals, false);
 
                 // add to amber items in progress screen(""Lethabo doesn't have an ID book"")
                 comment = firstName + Constants.GGSettings.no_id_book;
-                color = MetricsColorEnum.Warning.ToString();
-                type = Constants.GGSettings.visit_data_client_progress;
-                AddVisitDataStatus(q1, comment, color, type, q1.VisitSection, false);
+                AddVisitDataStatus(q1, comment, _amber, _progress, q1.VisitSection, false);
 
                 // add amber item to G9 client summary: ""Go to Home Affairs to apply for your ID book.This will allow you to apply for the child social grant as soon as the baby is born.""
                 comment = Constants.GGSettings.go_to_home_affairs;
-                color = MetricsColorEnum.Warning.ToString();
-                type = Constants.GGSettings.visit_data_client_summary;
-                AddVisitDataStatus(q1, comment, color, type, q1.VisitSection, false);
+                AddVisitDataStatus(q1, comment, _amber, _G9, q1.VisitSection, false);
             }
 
             if (q1.QuestionAnswer == Constants.GGSettings.answer_yes) {
                 // add to green items in progress screen(use case 2)(""Lethabo has an ID book"")
                 comment = firstName + Constants.GGSettings.id_book;
-                color = MetricsColorEnum.Success.ToString();
-                type = Constants.GGSettings.visit_data_client_progress;
-                AddVisitDataStatus(q1, comment, color, type, q1.VisitSection, true);
+                AddVisitDataStatus(q1, comment, _green, _progress, q1.VisitSection, true);
 
                 // add green item to G9 client summary: ""You have your ID document & can apply for a child social grant once the baby is born!""
                 comment = Constants.GGSettings.apply_social_grant;
-                color = MetricsColorEnum.Success.ToString();
-                type = Constants.GGSettings.visit_data_client_summary;
-                AddVisitDataStatus(q1, comment, color, type, q1.VisitSection, true);
+                AddVisitDataStatus(q1, comment, _green, _G9, q1.VisitSection, true);
             }
             return true;
         }
         private Boolean ManageGrowthData(List<VisitData> growthData, string firstName, string infantId, string gender, int totalMonthsOld, double totalDaysOld, string previousVisitWeight) {
             var comment = "";
-            var type = "";
 
             var wIndicator = "Normal";
             var lIndicator = "Normal";
@@ -834,103 +790,91 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
 
                 if (totalDaysOld < 7 && Double.Parse(previousVisitWeight) == 0 && Double.Parse(q1.QuestionAnswer) < 2.5) {
                     wIndicator = "Low birth weight";
-                    wColor = MetricsColorEnum.Warning.ToString();
+                    wColor = _amber;
                 } else if (totalDaysOld < 7 && Double.Parse(previousVisitWeight) == 0 && Double.Parse(q1.QuestionAnswer) >= 2.5) {
                     wIndicator = "Normal";
-                    wColor = MetricsColorEnum.Success.ToString();
+                    wColor = _green;
                 } else {
                     if (wIndicator == "Severely stunted") {
-                        wColor = MetricsColorEnum.Error.ToString();
+                        wColor = _red;
 
                         // Red progress
                         comment = Constants.GGSettings.severely_underweight + " " + q1.QuestionAnswer;
-                        type = Constants.GGSettings.visit_data_client_progress;
-                        AddVisitDataStatus(q1, comment, wColor, type, q1.VisitSection, false);
+                        AddVisitDataStatus(q1, comment, wColor, _progress, q1.VisitSection, false);
 
                         // additional visit
                         AddAdditionalVisit(infantId, Constants.GGSettings.client_child, Constants.GGSettings.severely_underweight);
 
                         // Red G4
                         comment = Constants.GGSettings.refer_to_clinic_urgently;
-                        type = Constants.GGSettings.visit_data_client_dashboard;
-                        AddVisitDataStatus(q1, comment, wColor, type, Constants.GGSettings.refer_to_clinic_urgently, false);
+                        AddVisitDataStatus(q1, comment, wColor, _G4, Constants.GGSettings.refer_to_clinic_urgently, false);
                     }
                     else if (wIndicator == "Underweight") {
-                        wColor = MetricsColorEnum.Warning.ToString();
+                        wColor = _amber;
 
                         // Amber progress
                         comment = wIndicator + " " + q1.QuestionAnswer;
-                        type = Constants.GGSettings.visit_data_client_progress;
-                        AddVisitDataStatus(q1, comment, wColor, type, q1.VisitSection, false);
+                        AddVisitDataStatus(q1, comment, wColor, _progress, q1.VisitSection, false);
 
                         // additional visit
                         AddAdditionalVisit(infantId, Constants.GGSettings.client_child, wIndicator);
 
                         // Amber G4
                         comment = Constants.GGSettings.refer_to_clinic;
-                        type = Constants.GGSettings.visit_data_client_dashboard;
-                        AddVisitDataStatus(q1, comment, wColor, type, Constants.GGSettings.refer_to_clinic, false);
+                        AddVisitDataStatus(q1, comment, wColor, _G4, Constants.GGSettings.refer_to_clinic, false);
                     }
                     else if (wIndicator == "Growth faltering" && !weightIncreased) {
-                        wColor = MetricsColorEnum.Warning.ToString();
+                        wColor = _amber;
 
                         // Amber progress
                         comment = Constants.GGSettings.growth_faltering + " " + q1.QuestionAnswer;
-                        type = Constants.GGSettings.visit_data_client_progress;
-                        AddVisitDataStatus(q1, comment, wColor, type, q1.VisitSection, false);
+                        AddVisitDataStatus(q1, comment, wColor, _progress, q1.VisitSection, false);
 
                         // additional visit
                         AddAdditionalVisit(infantId, Constants.GGSettings.client_child, Constants.GGSettings.severely_stunted);
 
                         // Amber G4
                         comment = Constants.GGSettings.refer_to_clinic;
-                        type = Constants.GGSettings.visit_data_client_dashboard;
-                        AddVisitDataStatus(q1, comment, wColor, type, Constants.GGSettings.refer_to_clinic, false);
+                        AddVisitDataStatus(q1, comment, wColor, _G4, Constants.GGSettings.refer_to_clinic, false);
                     }
                     else if (wIndicator == "Obese") {
-                        wColor = MetricsColorEnum.Warning.ToString();
+                        wColor = _amber;
 
                         // Amber progress
                         comment = wIndicator + " " + q1.QuestionAnswer;
-                        type = Constants.GGSettings.visit_data_client_progress;
-                        AddVisitDataStatus(q1, comment, wColor, type, q1.VisitSection, false);
+                        AddVisitDataStatus(q1, comment, wColor, _progress, q1.VisitSection, false);
 
                         // additional visit
                         AddAdditionalVisit(infantId, Constants.GGSettings.client_child, wIndicator);
 
                         // Amber G4
                         comment = Constants.GGSettings.refer_to_clinic;
-                        type = Constants.GGSettings.visit_data_client_dashboard;
-                        AddVisitDataStatus(q1, comment, wColor, type, Constants.GGSettings.refer_to_clinic, false);
+                        AddVisitDataStatus(q1, comment, wColor, _G4, Constants.GGSettings.refer_to_clinic, false);
                     }
                     else if (wIndicator == "Overweight") {
-                        wColor = MetricsColorEnum.Warning.ToString();
+                        wColor = _amber;
 
                         // Amber progress
                         comment = wIndicator + " " + q1.QuestionAnswer;
-                        type = Constants.GGSettings.visit_data_client_progress;
-                        AddVisitDataStatus(q1, comment, wColor, type, q1.VisitSection, false);
+                        AddVisitDataStatus(q1, comment, wColor, _progress, q1.VisitSection, false);
 
                         // additional visit
                         AddAdditionalVisit(infantId, Constants.GGSettings.client_child, wIndicator);
 
                         // Amber G4
                         comment = Constants.GGSettings.refer_to_clinic;
-                        type = Constants.GGSettings.visit_data_client_dashboard;
-                        AddVisitDataStatus(q1, comment, wColor, type, Constants.GGSettings.refer_to_clinic, false);
+                        AddVisitDataStatus(q1, comment, wColor, _G4, Constants.GGSettings.refer_to_clinic, false);
                     }
                     else if (wIndicator == "Normal" && weightIncreased) {
-                        wColor = MetricsColorEnum.Success.ToString();
+                        wColor = _green;
 
                         // Green progress
                         comment = wIndicator + " " + q1.QuestionAnswer;
-                        type = Constants.GGSettings.visit_data_client_progress;
-                        AddVisitDataStatus(q1, comment, wColor, type, q1.VisitSection, false);
+                        AddVisitDataStatus(q1, comment, wColor, _progress, q1.VisitSection, false);
 
                         // Green G4 
                         comment = Constants.GGSettings.growing_well;
-                        type = Constants.GGSettings.visit_data_client_dashboard;
-                        AddVisitDataStatus(q1, comment, wColor, type, q1.VisitSection, false);
+                        AddVisitDataStatus(q1, comment, wColor, _G4, q1.VisitSection, false);
                     }
                 }
             }
@@ -940,45 +884,40 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                 lIndicator = GetHeightWeightIndicator(totalMonthsOld, totalDaysOld, double.Parse(q2.QuestionAnswer), double.Parse(q1.QuestionAnswer), ageSection, "");
 
                 if (lIndicator == "Severely stunted") {
-                    lColor = MetricsColorEnum.Error.ToString();
+                    lColor = _red;
                     
                     // Red progress
                     comment = lIndicator + " " + q2.QuestionAnswer;
-                    type = Constants.GGSettings.visit_data_client_progress;
-                    AddVisitDataStatus(q2, comment, lColor, type, q2.VisitSection, false);
+                    AddVisitDataStatus(q2, comment, lColor, _progress, q2.VisitSection, false);
 
                     // additional visit
                     AddAdditionalVisit(infantId, Constants.GGSettings.client_child, lIndicator);
 
                     // Red G4
                     comment = Constants.GGSettings.refer_to_clinic_urgently;
-                    type = Constants.GGSettings.visit_data_client_dashboard;
-                    AddVisitDataStatus(q2, comment, lColor, type, Constants.GGSettings.refer_to_clinic_urgently, false);
+                    AddVisitDataStatus(q2, comment, lColor, _G4, Constants.GGSettings.refer_to_clinic_urgently, false);
 
                 }
                 else if (lIndicator == "Stunted") {
-                    lColor = MetricsColorEnum.Warning.ToString();
+                    lColor = _amber;
 
                     // Amber progress
                     comment = lIndicator;
-                    type = Constants.GGSettings.visit_data_client_progress;
-                    AddVisitDataStatus(q2, comment, lColor, type, q2.VisitSection, false);
+                    AddVisitDataStatus(q2, comment, lColor, _progress, q2.VisitSection, false);
 
                     // additional visit
                     AddAdditionalVisit(infantId, Constants.GGSettings.client_child, lIndicator);
 
                     // Amber G4
                     comment = Constants.GGSettings.refer_to_clinic;
-                    type = Constants.GGSettings.visit_data_client_dashboard;
-                    AddVisitDataStatus(q2, comment, lColor, type, Constants.GGSettings.refer_to_clinic, false);
+                    AddVisitDataStatus(q2, comment, lColor, _G4, Constants.GGSettings.refer_to_clinic, false);
 
                 } else if (lIndicator == "Normal") {
-                    lColor = MetricsColorEnum.Success.ToString();
+                    lColor = _green;
 
                     // Green progress
                     comment = lIndicator;
-                    type = Constants.GGSettings.visit_data_client_progress;
-                    AddVisitDataStatus(q2, comment, lColor, type, q2.VisitSection, false);
+                    AddVisitDataStatus(q2, comment, lColor, _progress, q2.VisitSection, false);
                 }
             }
 
@@ -987,52 +926,46 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                 mIndicator = "Normal";
                 if (questionAnswer < 11.5) {
                     mIndicator = "Severe acute malnutrition";
-                    mColor = MetricsColorEnum.Error.ToString();
+                    mColor = _red;
 
                     // Red progress
                     comment = mIndicator + " " + q3.QuestionAnswer;
-                    type = Constants.GGSettings.visit_data_client_progress;
-                    AddVisitDataStatus(q3, comment, mColor, type, q3.VisitSection, false);
+                    AddVisitDataStatus(q3, comment, mColor, _progress, q3.VisitSection, false);
 
                     // additional visit
                     AddAdditionalVisit(infantId, Constants.GGSettings.client_child, Constants.GGSettings.moderate_acute_malnutrition);
 
                     // Red G4
                     comment = Constants.GGSettings.refer_to_clinic_urgently;
-                    type = Constants.GGSettings.visit_data_client_dashboard;
-                    AddVisitDataStatus(q3, comment, mColor, type, Constants.GGSettings.refer_to_clinic_urgently, false);
+                    AddVisitDataStatus(q3, comment, mColor, _G4, Constants.GGSettings.refer_to_clinic_urgently, false);
 
 
                 } else if (questionAnswer >= 11.5 && questionAnswer < 12.5) {
                     mIndicator = "Moderate acute malnutrition";
-                    mColor = MetricsColorEnum.Warning.ToString();
+                    mColor = _amber;
 
                     // Red progress
                     comment = Constants.GGSettings.severely_stunted + " " + q3.QuestionAnswer;
-                    type = Constants.GGSettings.visit_data_client_progress;
-                    AddVisitDataStatus(q3, comment, mColor, type, q3.VisitSection, false);
+                    AddVisitDataStatus(q3, comment, mColor, _progress, q3.VisitSection, false);
 
                     // additional visit
                     AddAdditionalVisit(infantId, Constants.GGSettings.client_child, Constants.GGSettings.moderate_acute_malnutrition);
 
                     // Red G4
                     comment = Constants.GGSettings.refer_to_clinic_urgently;
-                    type = Constants.GGSettings.visit_data_client_dashboard;
-                    AddVisitDataStatus(q3, comment, mColor, type, Constants.GGSettings.refer_to_clinic_urgently, false);
+                    AddVisitDataStatus(q3, comment, mColor, _G4, Constants.GGSettings.refer_to_clinic_urgently, false);
 
                 } else if (questionAnswer >= 12.5) {
                     mIndicator = "Normal";
-                    mColor = MetricsColorEnum.Success.ToString();
+                    mColor = _green;
 
                     // Green progress
                     comment = mIndicator + " " + q3.QuestionAnswer;
-                    type = Constants.GGSettings.visit_data_client_progress;
-                    AddVisitDataStatus(q3, comment, mColor, type, q3.VisitSection, false);
+                    AddVisitDataStatus(q3, comment, mColor, _progress, q3.VisitSection, false);
 
                     // Green G4 
                     comment = Constants.GGSettings.growing_well;
-                    type = Constants.GGSettings.visit_data_client_dashboard;
-                    AddVisitDataStatus(q3, comment, mColor, type, q3.VisitSection, false);
+                    AddVisitDataStatus(q3, comment, mColor, _G4, q3.VisitSection, false);
                 }
             }
 
@@ -1040,27 +973,23 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
             if (wIndicator != "Normal" || lIndicator != "Normal" || mIndicator != "Normal") {
                 // Referrals
                 comment = firstName + Constants.GGSettings.growth_referral + "<ul><li>" + wIndicator + "</li><li>" + lIndicator + "</li><li>" + mIndicator + "</li></ul>";
-                type = Constants.GGSettings.visit_data_client_referral;
-                AddVisitDataStatus(q1, comment, MetricsColorEnum.None.ToString(), type, q1.VisitSection, false);
+                AddVisitDataStatus(q1, comment, _none, _referral, q1.VisitSection, false);
             }
 
-            if (wColor == MetricsColorEnum.Success.ToString() && lColor == MetricsColorEnum.Success.ToString() && mColor == MetricsColorEnum.Success.ToString()) {
+            if (wColor == _green && lColor == _green && mColor == _green) {
                 // add green item to G9 client summary: ""Themba is growing well""
                 comment = firstName + Constants.GGSettings.growing_well;
-                type = Constants.GGSettings.visit_data_client_summary;
-                AddVisitDataStatus(q3, comment, MetricsColorEnum.Success.ToString(), type, Constants.GGSettings.growth_section, false);
+                AddVisitDataStatus(q3, comment, _green, _G9, Constants.GGSettings.growth_section, false);
             } else {
 
-                if (wColor == MetricsColorEnum.Error.ToString() || lColor == MetricsColorEnum.Error.ToString() || mColor == MetricsColorEnum.Error.ToString()) {
+                if (wColor == _red || lColor == _red || mColor == _red) {
                     // add red item to G9 client summary: ""Themba is not growing well""
                     comment = Constants.GGSettings.not_growing;
-                    type = Constants.GGSettings.visit_data_client_summary;
-                    AddVisitDataStatus(q3, comment, MetricsColorEnum.Error.ToString(), type, Constants.GGSettings.growth_section, false);
-                } else if (wColor == MetricsColorEnum.Warning.ToString() || lColor == MetricsColorEnum.Warning.ToString() || mColor == MetricsColorEnum.Warning.ToString()) {
+                    AddVisitDataStatus(q3, comment, _red, _G9, Constants.GGSettings.growth_section, false);
+                } else if (wColor == _amber || lColor == _amber || mColor == _amber) {
                     // add amber item to G9 client summary: ""Themba is not growing well""
                     comment = Constants.GGSettings.not_growing;
-                    type = Constants.GGSettings.visit_data_client_summary;
-                    AddVisitDataStatus(q3, comment, MetricsColorEnum.Warning.ToString(), type, Constants.GGSettings.growth_section, false);
+                    AddVisitDataStatus(q3, comment, _amber, _G9, Constants.GGSettings.growth_section, false);
                 }
             }
 
@@ -1069,37 +998,27 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
         private Boolean ManageFeedingData(List<VisitData> feedingData, string firstName, string infantId) {
             var q1 = feedingData.Where(x => x.Question == Constants.GGSettings.q_eat_drink).FirstOrDefault();
             var comment = "";
-            var type = "";
-            var color = "";
 
             if (q1.QuestionAnswer == Constants.GGSettings.breast_milk_only) {
 
                 // Progress: green - ""Breast milk only""
                 comment = Constants.GGSettings.breast_milk_only;
-                color = MetricsColorEnum.Success.ToString();
-                type = Constants.GGSettings.visit_data_client_progress;
-                AddVisitDataStatus(q1, comment, color, type, q1.VisitSection, false);
+                AddVisitDataStatus(q1, comment, _green, _progress, q1.VisitSection, false);
 
                 // G9 Client summary: green - ""You're doing a great job breastfeeding!""
                 comment = Constants.GGSettings.great_job_breastfeeding;
-                color = MetricsColorEnum.Success.ToString();
-                type = Constants.GGSettings.visit_data_client_summary;
-                AddVisitDataStatus(q1, comment, color, type, q1.VisitSection, false);
+                AddVisitDataStatus(q1, comment, _green, _G9, q1.VisitSection, false);
 
             }
             else if (q1.QuestionAnswer == Constants.GGSettings.formula_milk_only) {
 
                 // Progress: green - ""Formula milk only""
                 comment = Constants.GGSettings.formula_milk_only;
-                color = MetricsColorEnum.Success.ToString();
-                type = Constants.GGSettings.visit_data_client_progress;
-                AddVisitDataStatus(q1, comment, color, type, q1.VisitSection, false);
+                AddVisitDataStatus(q1, comment, _green, _progress, q1.VisitSection, false);
 
                 // G9 Client summary: green - ""You're doing a great job formula feeding!""
                 comment = Constants.GGSettings.great_job_formula_feeding;
-                color = MetricsColorEnum.Success.ToString();
-                type = Constants.GGSettings.visit_data_client_summary;
-                AddVisitDataStatus(q1, comment, color, type, q1.VisitSection, false);
+                AddVisitDataStatus(q1, comment, _green, _G9, q1.VisitSection, false);
 
             }
             else if (q1.QuestionAnswer == Constants.GGSettings.mixed_feeding) {
@@ -1123,18 +1042,103 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
 
                 // Progress: amber - ""Mixed feeding: ..."" + bulleted list of items selected on screen G5.3.14 Mixed feeding 1 below(use case 39)
                 comment = Constants.GGSettings.formula_milk_only + " " + listFoods;
-                color = MetricsColorEnum.Warning.ToString();
-                type = Constants.GGSettings.visit_data_client_progress;
-                AddVisitDataStatus(q1, comment, color, type, q1.VisitSection, false);
+                AddVisitDataStatus(q1, comment, _amber, _progress, q1.VisitSection, false);
 
                 // G9 Client summary: amber - ""Try to make sure you give Themba only breast milk or only formula milk""
                 comment = Constants.GGSettings.try_to_make_sure + firstName + Constants.GGSettings.only_milk;
-                color = MetricsColorEnum.Warning.ToString();
-                type = Constants.GGSettings.visit_data_client_summary;
-                AddVisitDataStatus(q1, comment, color, type, q1.VisitSection, false);
+                AddVisitDataStatus(q1, comment, _amber, _G9, q1.VisitSection, false);
 
             }
 
+            return true;
+        }
+        private Boolean ManageDevelopmentScreeningData(List<VisitData> developmentScreening, string firstName, string infantId) {
+            var names = "";
+            var comment = "";
+
+            var q1 = developmentScreening.FirstOrDefault();
+
+            foreach (var item in developmentScreening)
+            {
+                names = names + item.Question + ", ";
+            }
+
+            // IF the user selected ""No"" to any of the questions, show referral item: ""Themba is struggling with X, Y, Z""
+            comment = firstName + Constants.GGSettings.dev_is_struggling.Replace("{client}", firstName) + names;
+            AddVisitDataStatus(q1, comment, _none, _referral, q1.VisitSection, false);
+
+            // amber ""Themba is struggling with: * X; * Y""
+            comment = firstName + Constants.GGSettings.dev_is_struggling.Replace("{client}", firstName) + names;
+            AddVisitDataStatus(q1, comment, _amber, _progress, q1.VisitSection, false);
+
+            // G9 Client summary: amber - ""Themba might be having issues with: X, Y skills""
+            comment = Constants.GGSettings.dev_might_struggling.Replace("{client}", firstName) + names;
+            AddVisitDataStatus(q1, comment, _green, _G9, q1.VisitSection, false);
+
+            return true;
+        }
+        private Boolean ManageImmunisationData(List<VisitData> immunisationsData, string firstName, string infantId) {
+            var comment = "";
+            var names = "";
+            
+            List<VisitData> no_answers = immunisationsData.Where(x => x.QuestionAnswer == Constants.GGSettings.answer_no).ToList();
+            List<VisitData> yes_answers = immunisationsData.Where(x => x.QuestionAnswer == Constants.GGSettings.answer_yes).ToList();
+
+            var iCount = 0;
+            foreach (var item in no_answers) {
+
+                if (iCount < no_answers.Count) {
+                    names = names + item.Question + ", ";
+                }
+                else {
+                    names = names + item.Question;
+                }
+                iCount++;
+            }
+            // NO Answers
+            var q1 = no_answers.FirstOrDefault();
+            if (no_answers.Count == 1) {
+                if (q1.Question == Constants.GGSettings.q_immunisation) {
+                    // - if ""No"" to immunisation question only, add referral: ""Immunisations not up to date""
+                    comment = Constants.GGSettings.immunisations_not_up_to_date;
+                    AddVisitDataStatus(q1, comment, _none, _referral, q1.VisitSection, false);
+                }
+                else if (q1.Question == Constants.GGSettings.q_vitamin_a) {
+                    // if ""No"" to Vitamin A question only, add referral: ""Vitamin A not up to date""
+                    comment = Constants.GGSettings.vitamin_not_up_to_date;
+                    AddVisitDataStatus(q1, comment, _none, _referral, q1.VisitSection, false);
+                }
+                else if (q1.Question == Constants.GGSettings.q_deworming) {
+                    // if ""No"" to deworming question only, add referral: ""Deworming not up to date""
+                    comment = Constants.GGSettings.deworming_not_up_to_date;
+                    AddVisitDataStatus(q1, comment, _none, _referral, q1.VisitSection, false);
+                }
+            } else {
+
+                // ""Immunisations, deworming and Vitamin A not up to date"" 
+                comment = names + Constants.GGSettings.not_up_to_date;
+                AddVisitDataStatus(q1, comment, _none, _referral, q1.VisitSection, false);
+
+                //amber - if user responded ""No"" to all 3 questions: ""Immunisations, deworming and Vitamin A not up to date""; if user responded ""No"" to 1 or more, please see row 160 here for variations
+                comment = names + Constants.GGSettings.not_up_to_date;
+                AddVisitDataStatus(q1, comment, _amber, _progress, q1.VisitSection, false);
+
+                // G9 Client summary: ""Themba missed an immunisation, deworming and Vitamin A supplement
+                comment = Constants.GGSettings.missed_immunisations.Replace("{client}", firstName) + names;
+                AddVisitDataStatus(q1, comment, _amber, _G9, q1.VisitSection, false);
+            }
+
+            // YES answers
+            var q2 = yes_answers.FirstOrDefault();
+            if (yes_answers.Count == 3) {
+                //green - if user responded ""Yes"" to all 3 questions: ""All immunisations, Vitamin A and deworming are up to date""
+                comment = names + Constants.GGSettings.all_up_to_date;
+                AddVisitDataStatus(q2, comment, _green, _progress, q2.VisitSection, false);
+
+                // G9 Client summary: green - if ""Yes"" to all questions on screen, show ""All of Themba's immunisations are up to date""
+                comment = Constants.GGSettings.all_up_to_date_client.Replace("{client}", firstName) + names;
+                AddVisitDataStatus(q2, comment, _green, _G9, q2.VisitSection, false);
+            }
             return true;
         }
         private Boolean AddAdditionalVisit(string clientId, string userType, string comment) {
@@ -1147,7 +1151,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
             newVisit.Risk = Constants.GGSettings.normal_risk;
             newVisit.Comment = comment;
             _visitManager.AddVisit(newVisit);
-
             return true;
         }
         private Boolean AddVisitDataStatus(VisitData input, string comment, string color, string type, string section, Boolean isCompleted)
@@ -1167,15 +1170,13 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
             // Ensure we don't add duplicate records for a client
             if (!ValidateVisitDataStatusRecord(input))
             {
-                var repository = _repoFactory.CreateGenericRepository<VisitDataStatus>(userContext: _applicationUserId);
-                repository.Insert(input);
+                _visitDataStatusRepo.Insert(input);
             }
             return true;
         }
         private Boolean ValidateVisitDataStatusRecord(VisitDataStatus input)
         {
-            var repository = _repoFactory.CreateGenericRepository<VisitDataStatus>(userContext: _applicationUserId);
-            var visitStatusRecord = repository.GetAll().Where(x => x.IsCompleted == false && x.Comment == input.Comment && _clientVisitDataIds.Contains(x.VisitDataId.ToString())).FirstOrDefault();
+            var visitStatusRecord = _visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == false && x.Comment == input.Comment && _clientVisitDataIds.Contains(x.VisitDataId.ToString())).FirstOrDefault();
 
             if (visitStatusRecord != null)
             {
@@ -1205,7 +1206,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
             };
         }
         private string GetHeightWeightIndicator(int totalMonthsOld, double totalDaysOld, double weight, double height, string ageSection, string heightSection) {
-
             var indicator = "Normal";
 
             List<VisitGrowthData> recordsForAge = recordsForAge = _visitGrowthData.GetAll().Where(x => x.Section == ageSection && x.Month == totalMonthsOld).OrderBy(z => z.Weight).ToList();
@@ -1243,24 +1243,20 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
             return indicator;
         }
         public List<VisitDataStatus> GetReferralDataForClient(string id, string clientType) {
-            var visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: _applicationUserId);
-            var visitDataRepo = _repoFactory.CreateGenericRepository<VisitData>(userContext: _applicationUserId);
-            var visitDataStatusRepo = _repoFactory.CreateGenericRepository<VisitDataStatus>(userContext: _applicationUserId);
-
             List<VisitDataStatus> allReferrals = new List<VisitDataStatus>();
 
             if (clientType == Constants.GGSettings.client_mother) {
                 allReferrals = (
-                    from visit in visitRepo.GetAll().Where(x => x.Mother.UserId == id).OrderBy(x => x.PlannedVisitDate)
-                    join visitData in visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
-                    join visitStatusData in visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == false && x.Type == Constants.GGSettings.visit_data_client_referral) on visitData.Id equals visitStatusData.VisitDataId
+                    from visit in _visitRepo.GetAll().Where(x => x.Mother.UserId == id).OrderBy(x => x.PlannedVisitDate)
+                    join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
+                    join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == false && x.Type == _referral) on visitData.Id equals visitStatusData.VisitDataId
                     select visitStatusData
                 ).ToList();
             } else {
                 allReferrals = (
-                    from visit in visitRepo.GetAll().Where(x => x.Infant.UserId == id).OrderBy(x => x.PlannedVisitDate)
-                    join visitData in visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
-                    join visitStatusData in visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == false && x.Type == Constants.GGSettings.visit_data_client_referral) on visitData.Id equals visitStatusData.VisitDataId
+                    from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId == id).OrderBy(x => x.PlannedVisitDate)
+                    join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
+                    join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == false && x.Type == _referral) on visitData.Id equals visitStatusData.VisitDataId
                     select visitStatusData
                 ).ToList();
             }
@@ -1268,25 +1264,21 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
             return allReferrals;
         }
         public List<VisitDataStatus> GetSummaryDataForClient(string id, string clientType) {
-            var visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: _applicationUserId);
-            var visitDataRepo = _repoFactory.CreateGenericRepository<VisitData>(userContext: _applicationUserId);
-            var visitDataStatusRepo = _repoFactory.CreateGenericRepository<VisitDataStatus>(userContext: _applicationUserId);
-
             List<VisitDataStatus> allData = new List<VisitDataStatus>();
 
             if (clientType == Constants.GGSettings.client_mother) {
                 allData = (
-                    from visit in visitRepo.GetAll().Where(x => x.Mother.UserId == id).OrderBy(x => x.PlannedVisitDate)
-                    join visitData in visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
-                    join visitStatusData in visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == false && x.Type == Constants.GGSettings.visit_data_client_summary) on visitData.Id equals visitStatusData.VisitDataId
+                    from visit in _visitRepo.GetAll().Where(x => x.Mother.UserId == id).OrderBy(x => x.PlannedVisitDate)
+                    join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
+                    join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == false && x.Type == _G9) on visitData.Id equals visitStatusData.VisitDataId
                     select visitStatusData
                 ).ToList();
             }
             else {
                 allData = (
-                    from visit in visitRepo.GetAll().Where(x => x.Infant.UserId == id).OrderBy(x => x.PlannedVisitDate)
-                    join visitData in visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
-                    join visitStatusData in visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == false && x.Type == Constants.GGSettings.visit_data_client_summary) on visitData.Id equals visitStatusData.VisitDataId
+                    from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId == id).OrderBy(x => x.PlannedVisitDate)
+                    join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
+                    join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == false && x.Type == _G9) on visitData.Id equals visitStatusData.VisitDataId
                     select visitStatusData
                 ).ToList();
             }
@@ -1294,25 +1286,21 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
             return allData;
         }
         public List<VisitDataStatus> GetDashboardDataForClient(string id, string clientType) {
-            var visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: _applicationUserId);
-            var visitDataRepo = _repoFactory.CreateGenericRepository<VisitData>(userContext: _applicationUserId);
-            var visitDataStatusRepo = _repoFactory.CreateGenericRepository<VisitDataStatus>(userContext: _applicationUserId);
-
             List<VisitDataStatus> allData = new List<VisitDataStatus>();
 
             if (clientType == Constants.GGSettings.client_mother) {
                 allData = (
-                    from visit in visitRepo.GetAll().Where(x => x.Mother.UserId == id).OrderBy(x => x.PlannedVisitDate)
-                    join visitData in visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
-                    join visitStatusData in visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == false && x.Type == Constants.GGSettings.visit_data_client_dashboard) on visitData.Id equals visitStatusData.VisitDataId
+                    from visit in _visitRepo.GetAll().Where(x => x.Mother.UserId == id).OrderBy(x => x.PlannedVisitDate)
+                    join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
+                    join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == false && x.Type == _G4) on visitData.Id equals visitStatusData.VisitDataId
                     select visitStatusData
                 ).ToList();
             }
             else {
                 allData = (
-                    from visit in visitRepo.GetAll().Where(x => x.Infant.UserId == id).OrderBy(x => x.PlannedVisitDate)
-                    join visitData in visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
-                    join visitStatusData in visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == false && x.Type == Constants.GGSettings.visit_data_client_dashboard) on visitData.Id equals visitStatusData.VisitDataId
+                    from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId == id).OrderBy(x => x.PlannedVisitDate)
+                    join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
+                    join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == false && x.Type == _G4) on visitData.Id equals visitStatusData.VisitDataId
                     select visitStatusData
                 ).ToList();
             }
@@ -1320,25 +1308,21 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
             return allData;
         }
         public List<VisitDataStatus> GetProgressDataForClient(string id, string clientType) {
-            var visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: _applicationUserId);
-            var visitDataRepo = _repoFactory.CreateGenericRepository<VisitData>(userContext: _applicationUserId);
-            var visitDataStatusRepo = _repoFactory.CreateGenericRepository<VisitDataStatus>(userContext: _applicationUserId);
-
             List<VisitDataStatus> allData = new List<VisitDataStatus>();
 
             if (clientType == Constants.GGSettings.client_mother) {
                 allData = (
-                    from visit in visitRepo.GetAll().Where(x => x.Mother.UserId == id).OrderBy(x => x.PlannedVisitDate)
-                    join visitData in visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
-                    join visitStatusData in visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == false && x.Type == Constants.GGSettings.visit_data_client_progress) on visitData.Id equals visitStatusData.VisitDataId
+                    from visit in _visitRepo.GetAll().Where(x => x.Mother.UserId == id).OrderBy(x => x.PlannedVisitDate)
+                    join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
+                    join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == false && x.Type == _progress) on visitData.Id equals visitStatusData.VisitDataId
                     select visitStatusData
                 ).ToList();
             }
             else {
                 allData = (
-                    from visit in visitRepo.GetAll().Where(x => x.Infant.UserId == id).OrderBy(x => x.PlannedVisitDate)
-                    join visitData in visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
-                    join visitStatusData in visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == false && x.Type == Constants.GGSettings.visit_data_client_progress) on visitData.Id equals visitStatusData.VisitDataId
+                    from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId == id).OrderBy(x => x.PlannedVisitDate)
+                    join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
+                    join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == false && x.Type == _progress) on visitData.Id equals visitStatusData.VisitDataId
                     select visitStatusData
                 ).ToList();
             }
@@ -1346,10 +1330,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
             return allData;
         }
         public Progress_VisitDataStatus GetPreviousVisitInformationForClient(string visitId) {
-            var visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: _applicationUserId);
-            var visitDataRepo = _repoFactory.CreateGenericRepository<VisitData>(userContext: _applicationUserId);
-            var visitDataStatusRepo = _repoFactory.CreateGenericRepository<VisitDataStatus>(userContext: _applicationUserId);
-
             var totalGreen = 0;
             var totalRed = 0;
             var totalAmber = 0;
@@ -1357,14 +1337,14 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
 
             List<VisitDataStatus> visitDataStatus = new List<VisitDataStatus>();
             visitDataStatus = (
-                from visitData in visitDataRepo.GetAll().Where(x => x.VisitId.ToString() == visitId)
-                join visitStatusData in visitDataStatusRepo.GetAll() on visitData.Id equals visitStatusData.VisitDataId
+                from visitData in _visitDataRepo.GetAll().Where(x => x.VisitId.ToString() == visitId)
+                join visitStatusData in _visitDataStatusRepo.GetAll() on visitData.Id equals visitStatusData.VisitDataId
                 select visitStatusData
             ).ToList();
 
-            totalGreen = visitDataStatus.Where(x => x.Color == MetricsColorEnum.Success.ToString()).Count();
-            totalRed = visitDataStatus.Where(x => x.Color == MetricsColorEnum.Error.ToString()).Count();
-            totalAmber = visitDataStatus.Where(x => x.Color == MetricsColorEnum.Warning.ToString()).Count();
+            totalGreen = visitDataStatus.Where(x => x.Color == _green).Count();
+            totalRed = visitDataStatus.Where(x => x.Color == _red).Count();
+            totalAmber = visitDataStatus.Where(x => x.Color == _amber).Count();
 
             result.Score = totalGreen.ToString() + " / " + (totalGreen + totalRed + totalAmber).ToString();
             result.VisitDataStatus = visitDataStatus;
