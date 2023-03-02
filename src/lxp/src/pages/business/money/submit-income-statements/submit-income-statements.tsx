@@ -93,9 +93,10 @@ export const SubmitIncomeStatements: React.FC = () => {
   const isSameMonth =
     today.getMonth() + 1 === balanceSheet?.[balanceSheet?.length - 1]?.month!;
 
-  const submitDateDaysCount = isSameMonth
-    ? differenceInDays(lastDayToSubmitNextMonth, today)
-    : differenceInDays(lastDayToSubmit, today);
+  const submitDateDaysCount =
+    isSameMonth && disableSubmit
+      ? differenceInDays(lastDayToSubmitNextMonth, today)
+      : differenceInDays(lastDayToSubmit, today);
 
   const enableSubmit = today <= lastDayToSubmit || today >= firstDateToSubmit;
 
