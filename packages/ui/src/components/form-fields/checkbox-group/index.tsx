@@ -1,10 +1,12 @@
 import { ReactElement } from 'react';
+import { Colours } from '../../../models';
 import Checkbox, { CheckboxProps } from '../checkbox-input/checkbox-input';
 import { CheckboxChange } from '../checkbox-input/models/Checkbox';
 
 export interface CheckboxGroupProps extends CheckboxProps {
   icon?: ReactElement;
   title: string;
+  titleColours?: Colours;
   description?: string;
   extraChildren?: JSX.Element;
   onChange?: (e: CheckboxChange) => void;
@@ -16,6 +18,7 @@ export const CheckboxGroup = ({
   checked,
   icon,
   title,
+  titleColours = 'textDark',
   description,
   onChange,
   value,
@@ -45,7 +48,7 @@ export const CheckboxGroup = ({
             {icon}
           </span>
         )}
-        <p className="text-textDark text-base font-bold">{title}</p>
+        <p className={`text-${titleColours} text-base font-bold`}>{title}</p>
       </div>
       <p className="text-textMid text-sm font-normal">{description}</p>
     </label>

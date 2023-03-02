@@ -3,7 +3,6 @@ import { defineCustomElements } from '@ionic/pwa-elements/loader';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import ConfigWrapper from './config-wrapper';
-import { OnlineStatusProvider } from './hooks/useOnlineStatus';
 import reportWebVitals from './reportWebVitals';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import './styles.css';
@@ -17,11 +16,9 @@ if (
 }
 
 ReactDOM.render(
-  <OnlineStatusProvider>
-    <ConfigProvider>
-      <ConfigWrapper />
-    </ConfigProvider>
-  </OnlineStatusProvider>,
+  <ConfigProvider>
+    <ConfigWrapper />
+  </ConfigProvider>,
   document.getElementById('root')
 );
 
