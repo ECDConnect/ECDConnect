@@ -12,8 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
-{
+namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat {
     public class MotherManager
     {
         private IHttpContextAccessor _contextAccessor;

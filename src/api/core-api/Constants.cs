@@ -1,11 +1,8 @@
-using ECDLink.DataAccessLayer.Entities.Users;
-using NPOI.SS.Formula.Functions;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+using AngleSharp.Css.Dom;
+using System.Text.RegularExpressions;
+using static NPOI.HSSF.Util.HSSFColor;
 
-namespace EcdLink.Api.CoreApi
-{
+namespace EcdLink.Api.CoreApi {
     public static class Constants
     {
         public static class ApplicationSettings
@@ -92,15 +89,36 @@ namespace EcdLink.Api.CoreApi
             public const string id_book = " has an ID book";
             public const string go_to_home_affairs = "Go to Home Affairs to apply for your ID book.  This will allow you to apply for the child social grant as soon as the baby is born.";
             public const string apply_social_grant = "You have your ID document & can apply for a child social grant once the baby is born!";
-
+            public const string growth_referral = " is not growing well: ";
+            public const string not_growing = " is not growing well";
+            public const string growing_well = " is growing well";
             public const string health_issues = "You have some health issues";
+            public const string severely_underweight= "Severely underweight";
+            public const string severely_stunted = "Severely stunted";
+            public const string growth_faltering = "Growth faltering: weight has not increased ";
+            public const string moderate_acute_malnutrition = "Moderate acute malnutrition";
+            public const string great_job_breastfeeding = "You're doing a great job breastfeeding!";
+            public const string great_job_formula_feeding = "You're doing a great job formula feeding!";
+            public const string try_to_make_sure = "Try to make sure you give ";
+            public const string only_milk = " only breast milk or only formula milk";
+            public const string poor_dietary_diversity = "Poor dietary diversity: ";
+            public const string out_of_8_groups = " out of 8 food groups";
+            public const string give_client_food = "You are giving {client} foods from {x} out of 8 groups.Try to give {client} a variety of foods!";
+            public const string good_dietary_diversity = "Good dietary diversity: {x} out of 8 food groups!";
+            public const string give_client_food_most = "You are giving {client} foods from most of the groups!";
+
 
             // Infant Questions
-
             public const string q_postnatal_check_up = "Has {client} been to the clinic for a postnatal check-up?";
             public const string q_postnatal_6_weeks = "Did your client attend her 6-week postnatal clinic visit?";
             public const string q_weight = "Weight";
             public const string q_length = "Length";
+            public const string q_muac = "What is {client}'s MUAC today?";
+            public const string q_eat_drink = "What did {client} eat or drink in the last 24 hours?";
+            public const string q_breastfeeding_club = "Would you like to join a breastfeeding club?";
+            public const string q_mixed_foods = "Which of these foods have you given {client}?  You can choose more than one.";
+            public const string q_tick_foods = "Tick all of the foods {client} talks about:";
+
             public const string cfm_name = "Care for moms";
             public const string cfb_name = "Care for baby";
 
@@ -139,6 +157,24 @@ namespace EcdLink.Api.CoreApi
             public const string more_than_2 = "More than 2";
             public const string male = "Boy";
             public const string female = "Girl";
+            public const string growth_section = "Growth";
+            public const string breast_milk_only = "Breast milk only";
+            public const string formula_milk_only = "Formula milk only";
+            public const string mixed_feeding = "Mixed feeding";
+
+            // Growth names
+
+            public const string neg3SD = "-3 SD";
+            public const string neg2SD = "-2 SD";
+            public const string neg1SD = "-1 SD";
+            public const string median = "median";
+            public const string pos1SD = "1 SD";
+            public const string pos2SD = "2 SD";
+            public const string pos3SD = "3 SD";
+            public const string weightForAgeBoys = "weightForAgeBoys";
+            public const string weightForAgeGirls = "weightForAgeGirls";
+            public const string weightForHeightBoys = "weightForHeightBoys";
+            public const string weightForHeightGirls = "weightForHeightGirls";
 
         }
     }

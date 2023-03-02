@@ -3,14 +3,12 @@ using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.Security.Extensions;
 using HotChocolate;
-using iTextSharp.text;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace EcdLink.Api.CoreApi.Managers.Visits
-{
+namespace EcdLink.Api.CoreApi.Managers.Visits {
     public class VisitManager
     {
         private IHttpContextAccessor _contextAccessor;

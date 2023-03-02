@@ -17,8 +17,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
-{
+namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat {
     [ExtendObjectType(OperationTypeNames.Query)]
     public class MotherQueryExtension
     {
@@ -118,14 +117,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             return visitManager.GetVisitsForClient(id, Constants.GGSettings.client_mother);
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+       [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public List<VisitDataStatus> GetReferralsForMother([Service] VisitDataStatusManager visitDataStatusManager, string id)
         {
             return visitDataStatusManager.GetReferralDataForClient(id, Constants.GGSettings.client_mother);
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public List<VisitData> GetVisitAnswersForMother(VisitDataManager visitDataManager, string visitId, string visitName, string visitSection) {
+        public List<VisitData> GetVisitAnswersForMother([Service] VisitDataManager visitDataManager, string visitId, string visitName, string visitSection) {
             return visitDataManager.GetVisitAnswersForClient( visitId, visitName, visitSection );
         }
 
@@ -138,9 +137,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         public Progress_VisitDataStatus GetPreviousVisitInformationForMother([Service] VisitDataStatusManager visitDataStatusManager, string visitId) {
             return visitDataStatusManager.GetPreviousVisitInformationForClient(visitId);
         }
-
+        
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public Progress_VisitDataStatus GetVisitClientSummaryDataForMother(VisitDataStatusManager visitDataStatusManager, string id)
+        public Progress_VisitDataStatus GetVisitClientSummaryDataForMother([Service] VisitDataStatusManager visitDataStatusManager, string id)
         {
             var totalGreen = 0;
             var totalRed = 0;
@@ -156,7 +155,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
 
             result.Score = totalGreen.ToString() + " / " + (totalGreen + totalRed + totalAmber).ToString();
             result.VisitDataStatus = visitDataStatus;
-
             return result;
         }
 

@@ -18,8 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
-{
+namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat {
     [ExtendObjectType(OperationTypeNames.Query)]
     public class InfantQueryExtension
     {
@@ -128,24 +127,24 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public List<VisitData> GetVisitAnswersForInfant(VisitDataManager visitDataManager, string visitId, string visitName, string visitSection) {
-            return visitDataManager.GetVisitAnswersForClient(visitId, visitName, visitSection);
-        }
+         public List<VisitData> GetVisitAnswersForInfant([Service] VisitDataManager visitDataManager, string visitId, string visitName, string visitSection) {
+             return visitDataManager.GetVisitAnswersForClient(visitId, visitName, visitSection);
+         }
+        
+         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+         public List<string> GetCompletedVisitsForInfant([Service] VisitDataManager visitDataManager, string id) {
+             return visitDataManager.GetCompletedVisitsForClient(id, Constants.GGSettings.client_child);
+         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public List<string> GetCompletedVisitsForInfant([Service] VisitDataManager visitDataManager, string id) {
-            return visitDataManager.GetCompletedVisitsForClient(id, Constants.GGSettings.client_child);
-        }
+         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+         public Progress_VisitDataStatus GetPreviousVisitInformationForInfant([Service] VisitDataStatusManager visitDataStatusManager, string visitId) {
+             return visitDataStatusManager.GetPreviousVisitInformationForClient(visitId);
+         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public Progress_VisitDataStatus GetPreviousVisitInformationForInfant([Service] VisitDataStatusManager visitDataStatusManager, string visitId) {
-            return visitDataStatusManager.GetPreviousVisitInformationForClient(visitId);
-        }
-
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public List<VisitData> GetAllWeightsLengthsForInfant([Service] VisitDataManager visitDataManager, string id) {
-            return visitDataManager.GetAllWeightsAndLengths(id);
-        }
+         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+         public List<VisitData> GetGrowthDataForInfant([Service] VisitDataManager visitDataManager, string id) {
+             return visitDataManager.GetGrowthDataForInfant(id);
+         }
 
     }
 }
