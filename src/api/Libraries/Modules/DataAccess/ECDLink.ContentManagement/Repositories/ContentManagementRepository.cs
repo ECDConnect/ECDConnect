@@ -50,6 +50,40 @@ namespace ECDLink.ContentManagement.Repositories
             return dynamicContentList;
         }
 
+        public IEnumerable<object> GetAllLocale(int contentTypeId)
+        {
+            // Can probably inject Id and fields
+            var contentType = _context.ContentTypes
+               //.Join(_context.co)
+              .Include(i => i.Content)
+              .ThenInclude(ti => ti.ContentValues)
+              .ThenInclude(ti => ti.ContentTypeField)
+              .ThenInclude(i => i)
+              .Where(x => x.Id == contentTypeId)
+              .FirstOrDefault();
+
+            if (contentType == null)
+            {
+                return new List<object>();
+            }
+
+            var dynamicContentList = new List<object>();
+
+            foreach (var item in contentType.Content.OrderBy(x => x.Id).Where(x => x.IsActive))
+            {
+                var objDict = item.ContentValues
+                  //.Where(x => x.LocaleId == localeId)
+                  .Where(x => x.ContentTypeField.IsActive)
+                  .ToDictionary(k => k.ContentTypeField.FieldName, v => v.Value);
+
+                objDict.Add(ObjectFieldConstants.Identifier, item.Id.ToString());
+
+                dynamicContentList.Add(objDict.ToObject());
+            }
+
+            return dynamicContentList;
+        }
+
         public object GetById(int contentId, Guid localeId)
         {
             var content = _context.Contents

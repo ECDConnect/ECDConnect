@@ -6,6 +6,7 @@ namespace ECDLink.EGraphQL.Enums
         GetByUserId,
         GetListByUserId,
         GetAll,
+        GetAllLocale,
         Create,
         Update,
         Delete
