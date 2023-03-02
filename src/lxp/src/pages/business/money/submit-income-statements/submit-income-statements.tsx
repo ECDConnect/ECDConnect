@@ -1,7 +1,15 @@
 import ROUTES from '@/routes/routes';
 import { statementsSelectors } from '@/store/statements';
 import { numberWithSpaces } from '@/utils/statements/statements-utils';
-import { Typography, StatusChip, Button, Card, FADButton } from '@ecdlink/ui';
+import {
+  Typography,
+  StatusChip,
+  Button,
+  Card,
+  FADButton,
+  Alert,
+  renderIcon,
+} from '@ecdlink/ui';
 import { differenceInDays, format, getMonth, setDate } from 'date-fns';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -9,6 +17,7 @@ import { useHistory } from 'react-router-dom';
 import { getMonthName } from '@utils/classroom/attendance/track-attendance-utils';
 import StatementsWrapper from './components/statements-wrapper/StatementsWrapper';
 import { useAppContext } from '@/walkthrougContext';
+import PositiveBonusEmoticon from '../../../../assets/positive-bonus-emoticon.png';
 
 export const SubmitIncomeStatements: React.FC = () => {
   const history = useHistory();
@@ -20,6 +29,65 @@ export const SubmitIncomeStatements: React.FC = () => {
   });
 
   const monthDateNumber = getMonth(new Date()) + 1;
+
+  const balanceNotifications = useMemo(() => {
+    if (
+      balanceSheet?.[balanceSheet?.length! - 2]?.balance! < 0 &&
+      balanceSheet?.[balanceSheet?.length! - 3]?.balance! < 0
+    ) {
+      return (
+        <Alert
+          type="warning"
+          className="mt-4"
+          message="Over the past two months, you have made less money than you have earned. This means your business is running at a loss."
+          button={
+            <Button
+              text={`Learn more`}
+              type={'filled'}
+              color={'primary'}
+              textColor={'white'}
+              onClick={() => {}}
+            />
+          }
+          customIcon={
+            <div className="rounded-full">
+              {renderIcon('ExclamationCircleIcon', 'text-alertMain w-5 h-5')}
+            </div>
+          }
+        />
+      );
+    }
+    if (
+      balanceSheet?.[balanceSheet?.length! - 2]?.balance! > 0 &&
+      balanceSheet?.[balanceSheet?.length! - 3]?.balance! > 0
+    ) {
+      return (
+        <Alert
+          type="success"
+          className="mt-4"
+          message="Great job! You have made a profit for 2 months in a row!"
+          list={[
+            `You had R ${(
+              balanceSheet?.[balanceSheet?.length! - 3]?.balance! +
+              balanceSheet?.[balanceSheet?.length! - 2]?.balance!
+            ).toFixed(2)} left over for ${
+              monthNames?.[balanceSheet?.length! - 2]
+            } & ${monthNames?.[balanceSheet?.length! - 3]} combined.`,
+          ]}
+          customIcon={
+            <div className="rounded-full">
+              <img
+                src={PositiveBonusEmoticon}
+                alt="positive emoticon"
+                className="h-6 w-6"
+              />
+            </div>
+          }
+        />
+      );
+    }
+    return null;
+  }, [balanceSheet, monthNames]);
 
   const previousMonthRecord =
     monthNames?.length! > 1 && balanceSheet?.length! > 1
@@ -484,6 +552,7 @@ export const SubmitIncomeStatements: React.FC = () => {
           />
         </div>
         {renderAccondinglyWalkthroughOrNot}
+        {balanceNotifications}
         <Button
           shape="normal"
           color="primary"
