@@ -14,6 +14,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
         T GetById(TKey id);
         T GetByUserId(string id);
         List<T> GetListByUserId(string id);
+        IQueryable<T> GetAllLocale();
         T Insert(T entity);
         T Update(T entity);
         void Delete(TKey id);
