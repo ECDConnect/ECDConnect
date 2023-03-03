@@ -1,9 +1,7 @@
 ﻿using ECDLink.DataAccessLayer.Entities.Visits;
-using System;
 using System.Collections.Generic;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
-{
+namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat {
     public class VisitDataModel
     {
         public string VisitId { get; set; }
@@ -40,10 +38,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
     public class CMSVisitDataInputModel
     {
         public string VisitId { get; set; }  // this is coming from the visit table
-        public string VisitName { get; set; } // this is coming from the FE (e.x. Care for mom, Care for baby etc)
-        public string VisitSection { get; set; } // this coming from the FE (e.x. Danger signs)
         public string MotherId { get; set; }
         public string InfantId { get; set; }
+        public virtual CMSVisitData VisitData { get; set; }
+    }
+
+    public class CMSVisitData {
+        public string VisitName { get; set; } // this is coming from the FE (e.x. Care for mom, Care for baby etc)
+        public string VisitSection { get; set; } // this coming from the FE (e.x. Danger signs)
         public virtual ICollection<CMSQuestion> Questions { get; set; }
     }
 

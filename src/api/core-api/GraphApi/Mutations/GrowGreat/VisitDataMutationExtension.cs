@@ -18,7 +18,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public Boolean AddVisitData([Service] VisitDataManager visitDataManager, CMSVisitDataInputModel input)
         {
-            if (input.MotherId != "")
+            if (input.MotherId != null)
             {
                 visitDataManager.AddAntenatalVisitData(input);
 

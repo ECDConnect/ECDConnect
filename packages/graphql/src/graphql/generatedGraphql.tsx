@@ -373,13 +373,17 @@ export type CmsQuestionInput = {
   question?: InputMaybe<Scalars['String']>;
 };
 
+export type CmsVisitDataInput = {
+  questions?: InputMaybe<Array<InputMaybe<CmsQuestionInput>>>;
+  visitName?: InputMaybe<Scalars['String']>;
+  visitSection?: InputMaybe<Scalars['String']>;
+};
+
 export type CmsVisitDataInputModelInput = {
   infantId?: InputMaybe<Scalars['String']>;
   motherId?: InputMaybe<Scalars['String']>;
-  questions?: InputMaybe<Array<InputMaybe<CmsQuestionInput>>>;
+  visitData?: InputMaybe<CmsVisitDataInput>;
   visitId?: InputMaybe<Scalars['String']>;
-  visitName?: InputMaybe<Scalars['String']>;
-  visitSection?: InputMaybe<Scalars['String']>;
 };
 
 export type Caregiver = {
@@ -5447,6 +5451,7 @@ export type Query = {
   totalDaysAbsent: Scalars['Int'];
   userById?: Maybe<ApplicationUser>;
   userByToken?: Maybe<UserByToken>;
+  userProgrammes?: Maybe<Array<Maybe<Programme>>>;
   users?: Maybe<Array<Maybe<ApplicationUser>>>;
   visitAnswersForInfant?: Maybe<Array<Maybe<VisitData>>>;
   visitAnswersForMother?: Maybe<Array<Maybe<VisitData>>>;
@@ -6673,6 +6678,10 @@ export type QueryUserByIdArgs = {
 
 export type QueryUserByTokenArgs = {
   token?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryUserProgrammesArgs = {
+  overrideUserId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryVisitAnswersForInfantArgs = {

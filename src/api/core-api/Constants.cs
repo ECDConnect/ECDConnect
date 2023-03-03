@@ -37,7 +37,7 @@ namespace EcdLink.Api.CoreApi {
             public const string q_first_antenatal_visit = "Has {client} gone to the clinic for her first antenatal visit?";
             public const string q_antenatal_visits = "Is {client} up to date with their antenatal clinic visits?";
             public const string q_measurement = "MUAC measurement";
-            public const string q_danger_signs = "Tick the danger signs {client} is experiencing";
+            public const string q_danger_signs = "Tick the danger signs {client} is experiencing:";
 
             public const string q_stop_worry = "Felt unable to stop worrying or thinking too much?";
             public const string q_felt_down = "Felt down, depressed or hopeless?";
@@ -137,7 +137,7 @@ namespace EcdLink.Api.CoreApi {
             public const string q_birth_certificate = "Does {client} have a birth certificate?";
             public const string q_csg = "Is {client} reiving the CSG?";
 
-            public const string cfm_name = "Care for moms";
+            public const string cfm_name = "Care for mom";
             public const string cfb_name = "Care for baby";
             public const string p4_name = "Pillar 4: Healthcare";
 
@@ -177,8 +177,8 @@ namespace EcdLink.Api.CoreApi {
 
 
             // Answers
-            public const string answer_yes = "Yes";
-            public const string answer_no = "No";
+            public const string answer_yes = "true";
+            public const string answer_no = "false";
             public const string none_above = "None of the above";
             public const string normal_risk = "normal";
             public const string more_than_2 = "More than 2";

@@ -202,7 +202,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
 
                     }
                     else {
-                        var arrAnswers = vData.QuestionAnswer.Split(",");
+                        var arrAnswers = vData.QuestionAnswer.Replace("[","").Replace("]","").Split(",");
+                        var bulletList = FormatBulletList(arrAnswers);
 
                         if (arrAnswers.Length <= 3) {
 
@@ -211,11 +212,11 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                                                     x == Constants.GGSettings.cfm_ds_7 ||
                                                     x == Constants.GGSettings.cfm_ds_8)) {
 
-                                comment = firstName + Constants.GGSettings.was_experiencing + vData.QuestionAnswer;
+                                comment = firstName + Constants.GGSettings.was_experiencing + bulletList;
                                 AddVisitDataStatus(vData, comment, _none, _referral, Constants.GGSettings.clinic_referrals, false);
 
                                 // Amber -- IF danger signs 6, 7, or 8 selected AND no other danger signs selected, add: 
-                                comment = firstName + Constants.GGSettings.was_experiencing + vData.QuestionAnswer;
+                                comment = firstName + Constants.GGSettings.was_experiencing + bulletList;
                                 AddVisitDataStatus(vData, comment, _amber, _progress, vData.VisitSection, false);
 
                                 // Add item to G9 Client summary download - IF danger signs 6, 7, or 8 selected AND no other danger signs selected, add: ""You have some health issues""
@@ -229,11 +230,11 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                                                                x == Constants.GGSettings.cfm_ds_4 ||
                                                                x == Constants.GGSettings.cfm_ds_5)) {
 
-                                comment = firstName + Constants.GGSettings.was_experiencing + vData.QuestionAnswer;
+                                comment = firstName + Constants.GGSettings.was_experiencing + bulletList;
                                 AddVisitDataStatus(vData, comment, _none, _referral, Constants.GGSettings.clinic_referrals, false);
 
                                 //  Red -- IF danger signs 1, 2, 3, 4, or 5 selected, add:
-                                comment = firstName + Constants.GGSettings.was_experiencing + vData.QuestionAnswer;
+                                comment = firstName + Constants.GGSettings.was_experiencing + bulletList;
                                 AddVisitDataStatus(vData, comment, _red, _progress, vData.VisitSection, false);
 
                                 // Add G4 secondary alert text: ""Refer to clinic urgently"" if danger signs 1, 2, 3, 4, or 5 selected
@@ -262,14 +263,15 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                         AddVisitDataStatus(vData, comment, _green, _G9, vData.VisitSection, true);
                     }
                     else {
-                        var arrAnswers = vData.QuestionAnswer.Split(",");
+                        var arrAnswers = vData.QuestionAnswer.Replace("[", "").Replace("]", "").Split(",");
+                        var bulletList = FormatBulletList(arrAnswers);
 
                         // If the user chooses any of the danger signs (ie user does not select ""None of the above"")
-                        comment = firstName + Constants.GGSettings.was_experiencing + vData.QuestionAnswer;
+                        comment = firstName + Constants.GGSettings.was_experiencing + bulletList;
                         AddVisitDataStatus(vData, comment, _none, _referral, Constants.GGSettings.clinic_referrals, false);
 
                         // Add red progress item - where X, Y, Z are each of the danger signs selected by the user.
-                        comment = firstName + Constants.GGSettings.was_experiencing + vData.QuestionAnswer;
+                        comment = firstName + Constants.GGSettings.was_experiencing + bulletList;
                         AddVisitDataStatus(vData, comment, _red, _progress, vData.VisitSection, false);
 
                         // Add additional visit item with secondary text: ""Danger signs""
@@ -327,7 +329,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                         total_food_groups = 7;
                     }
 
-                    var answers = vData.QuestionAnswer.Split(",");
+                    var answers = vData.QuestionAnswer.Replace("[", "").Replace("]", "").Split(",");
+                    var bulletList = FormatBulletList(answers);
                     if (answers.Length < 4) {
                         // Progress: red - ""Poor dietary diversity: X out of 8 food groups"", where X = the number of items selected(1, 2, or 3)
                         comment = Constants.GGSettings.poor_dietary_diversity.Replace("{x}", answers.Length.ToString()).Replace("{y}", total_food_groups.ToString());
@@ -594,13 +597,14 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                         AddVisitDataStatus(visitData, comment, _green, _G9, visitData.VisitSection, true);
                     }
                     else {
-                        var arrAnswers = visitData.QuestionAnswer.Split(",");
+                        var arrAnswers = visitData.QuestionAnswer.Replace("[", "").Replace("]", "").Split(",");
+                        var bulletList = FormatBulletList(arrAnswers);
                         // If the user chooses any of the danger signs (ie user does not select ""None of the above"")
-                        comment = firstName + Constants.GGSettings.was_experiencing + visitData.QuestionAnswer;
+                        comment = firstName + Constants.GGSettings.was_experiencing + bulletList;
                         AddVisitDataStatus(visitData, comment, _none, _referral, Constants.GGSettings.clinic_referrals, false);
 
                         // Add red progress item - where X, Y, Z are each of the danger signs selected by the user.
-                        comment = firstName + Constants.GGSettings.was_experiencing + visitData.QuestionAnswer;
+                        comment = firstName + Constants.GGSettings.was_experiencing + bulletList;
                         AddVisitDataStatus(visitData, comment, _red, _progress, visitData.VisitSection, false);
 
                         // Add additional visit item with secondary text: ""Danger signs""
@@ -1032,12 +1036,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                 ).FirstOrDefault();
                 
                 if (mixedFoods != "") {
-                    var arrFood = mixedFoods.Split(",");
-                    listFoods = "<ul>";
-                    foreach ( var food in arrFood ) {
-                        listFoods = listFoods + "<li>" + food + "</li>";
-                    }
-                    listFoods = listFoods + "</ul>";
+                    var arrFood = mixedFoods.Replace("[", "").Replace("]", "").Split(",");
+                    listFoods = FormatBulletList(arrFood);
                 }
 
                 // Progress: amber - ""Mixed feeding: ..."" + bulleted list of items selected on screen G5.3.14 Mixed feeding 1 below(use case 39)
@@ -1205,6 +1205,17 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                 Section = ""
             };
         }
+        
+        private string FormatBulletList(Array arrData) {
+            var result = "<ul>";
+            foreach (var item in arrData) {
+                result = result + "<li>" + item + "</li>";
+            }
+            result = result + "<ul>";
+
+            return result;
+        }
+        
         private string GetHeightWeightIndicator(int totalMonthsOld, double totalDaysOld, double weight, double height, string ageSection, string heightSection) {
             var indicator = "Normal";
 

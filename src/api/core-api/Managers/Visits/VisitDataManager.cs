@@ -37,9 +37,9 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
         public Boolean AddChildVisitData(CMSVisitDataInputModel input)
         {
             // first add all your questions and answers
-            foreach (CMSQuestion obj in input.Questions)
+            foreach (CMSQuestion obj in input.VisitData.Questions)
             {
-                VisitData visitData = (VisitData)GetVisitDataFromInputModel(obj, input.VisitId, input.VisitName, input.VisitSection);
+                VisitData visitData = (VisitData)GetVisitDataFromInputModel(obj, input.VisitId, input.VisitData.VisitName, input.VisitData.VisitSection);
                 _visitDataRepo.Insert(visitData);
             }
 
@@ -58,9 +58,9 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
         public Boolean AddAntenatalVisitData(CMSVisitDataInputModel input)
         {
             // first add all your questions and answers
-            foreach (CMSQuestion obj in input.Questions)
+            foreach (CMSQuestion obj in input.VisitData.Questions)
             {
-                VisitData visitData = (VisitData)GetVisitDataFromInputModel(obj, input.VisitId, input.VisitName, input.VisitSection);
+                VisitData visitData = (VisitData)GetVisitDataFromInputModel(obj, input.VisitId, input.VisitData.VisitName, input.VisitData.VisitSection);
                 _visitDataRepo.Insert(visitData);
             }
 
