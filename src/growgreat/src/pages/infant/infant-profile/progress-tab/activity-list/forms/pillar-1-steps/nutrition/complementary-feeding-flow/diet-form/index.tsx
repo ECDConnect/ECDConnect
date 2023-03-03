@@ -25,7 +25,7 @@ export const dietFormQuestion =
 export const DietFormStep = ({
   infant,
   setEnableButton,
-  setQuestions,
+  setSectionQuestions: setQuestions,
 }: DynamicFormProps) => {
   const [optionList, setOptionList] = useState<
     {
@@ -49,6 +49,8 @@ export const DietFormStep = ({
     [infant]
   );
 
+  const visitSection = `What did {client} eat?`;
+
   const onCheckboxChange = useCallback(
     (event: CheckboxChange) => {
       if (event.checked) {
@@ -60,16 +62,27 @@ export const DietFormStep = ({
 
         setAnswers(updatedQuestion);
         setEnableButton && setEnableButton(true);
-        return setQuestions && setQuestions([updatedQuestion]);
+        return (
+          setQuestions &&
+          setQuestions([
+            {
+              visitSection,
+              questions: [updatedQuestion],
+            },
+          ])
+        );
       }
       const currentAnswers = answers?.filter((item) => item !== event.value);
       const updatedQuestion = { ...question, answer: currentAnswers };
 
       setEnableButton && setEnableButton(!!currentAnswers?.length);
       setAnswers(updatedQuestion);
-      return setQuestions && setQuestions([updatedQuestion]);
+      return (
+        setQuestions &&
+        setQuestions([{ visitSection, questions: [updatedQuestion] }])
+      );
     },
-    [answers, question, setEnableButton, setQuestions]
+    [answers, question, setEnableButton, setQuestions, visitSection]
   );
 
   const handleOnChangeSelectedOptions = useCallback(() => {
@@ -112,7 +125,7 @@ export const DietFormStep = ({
         customIcon={P1}
         iconHexBackgroundColor="#8CDBDF"
         hexBackgroundColor="#a2dadd4d"
-        title={`What did ${name} eat?`}
+        title={replaceBraces(visitSection, name)}
       />
       <div className="flex flex-col gap-2 p-4">
         <Label text={replaceBraces(question.question, caregiverName)} />

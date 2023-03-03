@@ -36,7 +36,7 @@ export const DangerSignsStep = ({
   isTipPage,
   setIsTip,
   setEnableButton,
-  setQuestions,
+  setSectionQuestions: setQuestions,
 }: DynamicFormProps) => {
   const [optionList, setOptionList] = useState<
     {
@@ -54,6 +54,8 @@ export const DangerSignsStep = ({
 
   const name = useMemo(() => infant?.user?.firstName || '', [infant]);
 
+  const visitSection = 'Danger signs';
+
   const onCheckboxChange = useCallback(
     (event: CheckboxChange) => {
       if (event.checked) {
@@ -64,15 +66,25 @@ export const DangerSignsStep = ({
         const updatedQuestion = { ...question, answer: currentAnswers };
 
         setAnswers(updatedQuestion);
-        setEnableButton && setEnableButton(true);
-        return setQuestions && setQuestions([updatedQuestion]);
+        setEnableButton?.(true);
+        return setQuestions?.([
+          {
+            visitSection,
+            questions: [updatedQuestion],
+          },
+        ]);
       }
       const currentAnswers = answers?.filter((item) => item !== event.value);
       const updatedQuestion = { ...question, answer: currentAnswers };
 
-      setEnableButton && setEnableButton(!!currentAnswers?.length);
+      setEnableButton?.(!!currentAnswers?.length);
       setAnswers(updatedQuestion);
-      return setQuestions && setQuestions([updatedQuestion]);
+      return setQuestions?.([
+        {
+          visitSection,
+          questions: [updatedQuestion],
+        },
+      ]);
     },
     [answers, question, setEnableButton, setQuestions]
   );
@@ -124,7 +136,7 @@ export const DangerSignsStep = ({
     <>
       <Header
         customIcon={P4}
-        title="Danger signs"
+        title={visitSection}
         subTitle="Check for these signs"
         iconHexBackgroundColor={activitiesColours.pillar4.primaryColor}
         hexBackgroundColor={activitiesColours.pillar4.secondaryColor}

@@ -14,7 +14,7 @@ import { activitiesColours } from '../../../activities-list';
 
 export const SicknessStep = ({
   infant,
-  setQuestions,
+  setSectionQuestions: setQuestions,
   setEnableButton,
 }: DynamicFormProps) => {
   const [answer, setAnswer] = useState<boolean | boolean[]>();
@@ -24,6 +24,8 @@ export const SicknessStep = ({
     () => infant?.caregiver?.firstName || '',
     [infant?.caregiver?.firstName]
   );
+
+  const visitSection = 'Sickness';
 
   const options = [
     { text: 'Yes', value: true },
@@ -35,14 +37,18 @@ export const SicknessStep = ({
   const onOptionSelected = useCallback(
     (value) => {
       setAnswer(value);
-      setQuestions &&
-        setQuestions([
-          {
-            question,
-            answer: value,
-          },
-        ]);
-      setEnableButton && setEnableButton(true);
+      setQuestions?.([
+        {
+          visitSection,
+          questions: [
+            {
+              question,
+              answer: value,
+            },
+          ],
+        },
+      ]);
+      setEnableButton?.(true);
     },
     [question, setEnableButton, setQuestions]
   );
@@ -51,7 +57,7 @@ export const SicknessStep = ({
     <>
       <Header
         customIcon={P4}
-        title="Sickness"
+        title={visitSection}
         subTitle={`What to do if ${name} is sick`}
         iconHexBackgroundColor={activitiesColours.pillar4.primaryColor}
         hexBackgroundColor={activitiesColours.pillar4.secondaryColor}

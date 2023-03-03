@@ -20,7 +20,7 @@ import { Translations } from './translations';
 export const DangerSignsStep = ({
   infant,
   isTipPage,
-  setQuestions,
+  setSectionQuestions: setQuestions,
   setEnableButton,
   setIsTip,
 }: DynamicFormProps) => {
@@ -29,6 +29,7 @@ export const DangerSignsStep = ({
 
   const name = useMemo(() => infant?.user?.firstName || '', [infant]);
 
+  const visitSection = 'Danger signs';
   // TODO: add integration
   const mockedFollowUp = {
     message: `${name} had the following danger signs at your previous visit on 2 July:`,
@@ -99,32 +100,36 @@ export const DangerSignsStep = ({
           : [event.value];
 
         setAnswer(currentAnswers);
-        setEnableButton && setEnableButton(true);
+        setEnableButton?.(true);
 
-        return (
-          setQuestions &&
-          setQuestions([
+        return setQuestions?.([
+          {
+            visitSection,
+            questions: [
+              {
+                question,
+                answer: currentAnswers,
+              },
+            ],
+          },
+        ]);
+      }
+      const currentAnswers = answers?.filter((item) => item !== event.value);
+
+      setEnableButton?.(!!currentAnswers?.length);
+
+      setAnswer(currentAnswers);
+      return setQuestions?.([
+        {
+          visitSection,
+          questions: [
             {
               question,
               answer: currentAnswers,
             },
-          ])
-        );
-      }
-      const currentAnswers = answers?.filter((item) => item !== event.value);
-
-      setEnableButton && setEnableButton(!!currentAnswers?.length);
-
-      setAnswer(currentAnswers);
-      return (
-        setQuestions &&
-        setQuestions([
-          {
-            question,
-            answer: currentAnswers,
-          },
-        ])
-      );
+          ],
+        },
+      ]);
     },
     [answers, dialog, name, question, setEnableButton, setQuestions]
   );
@@ -143,7 +148,7 @@ export const DangerSignsStep = ({
       <Header
         backgroundColor="tertiary"
         customIcon={Infant}
-        title="Danger signs"
+        title={visitSection}
         {...(isFollowUp
           ? {
               subTitle: 'Follow up',

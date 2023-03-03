@@ -16,7 +16,7 @@ import { ReactComponent as CelebrateIcon } from '@/assets/celebrateIcon.svg';
 
 export const ImmunisationsSupplementsDewormingStep = ({
   infant,
-  setQuestions,
+  setSectionQuestions: setQuestions,
   setEnableButton,
 }: DynamicFormProps) => {
   const [questions, setAnswers] = useState([
@@ -45,6 +45,8 @@ export const ImmunisationsSupplementsDewormingStep = ({
     [infant]
   );
 
+  const visitSection = 'Immunisations, supplements & deworming';
+
   const onOptionSelected = useCallback(
     (value, index) => {
       const currentQuestion = questions[index];
@@ -60,12 +62,17 @@ export const ImmunisationsSupplementsDewormingStep = ({
       });
 
       setAnswers(updatedQuestions);
-      setQuestions && setQuestions(updatedQuestions);
+      setQuestions?.([
+        {
+          visitSection,
+          questions: updatedQuestions,
+        },
+      ]);
 
       const isCompleted = updatedQuestions.every((item) => !!item.answer);
 
-      if (isCompleted && setEnableButton) {
-        setEnableButton(true);
+      if (isCompleted) {
+        setEnableButton?.(true);
       }
     },
     [questions, setEnableButton, setQuestions]
@@ -75,7 +82,7 @@ export const ImmunisationsSupplementsDewormingStep = ({
     <>
       <Header
         customIcon={P3}
-        title="Immunisations, supplements & deworming"
+        title={visitSection}
         iconHexBackgroundColor={activitiesColours.pillar3.primaryColor}
         hexBackgroundColor={activitiesColours.pillar3.secondaryColor}
       />
