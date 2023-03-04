@@ -29,11 +29,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat {
     }
 
 
-    public class CMSQuestion
-    {
-        public string Question { get; set; }
-        public string Answer { get; set; } 
-    }
+   
 
     public class CMSVisitDataInputModel
     {
@@ -44,9 +40,19 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat {
     }
 
     public class CMSVisitData {
-        public string VisitName { get; set; } // this is coming from the FE (e.x. Care for mom, Care for baby etc)
-        public string VisitSection { get; set; } // this coming from the FE (e.x. Danger signs)
+        public string VisitName { get; set; } // this is coming from the FE (e.x. Care for mom, Care for baby, etc)
+        public virtual ICollection<CMSVisitSection> Sections { get; set; } 
+    }
+
+    public class CMSVisitSection {
+
+        public string VisitSection { get; set; } // this coming from the FE (e.x. Danger signs, Clinic check-ups, etc)
         public virtual ICollection<CMSQuestion> Questions { get; set; }
+    }
+
+    public class CMSQuestion {
+        public string Question { get; set; }
+        public string Answer { get; set; }
     }
 
     public class Progress_VisitDataStatus

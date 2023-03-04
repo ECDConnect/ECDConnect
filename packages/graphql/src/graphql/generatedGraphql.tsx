@@ -374,9 +374,8 @@ export type CmsQuestionInput = {
 };
 
 export type CmsVisitDataInput = {
-  questions?: InputMaybe<Array<InputMaybe<CmsQuestionInput>>>;
+  sections?: InputMaybe<Array<InputMaybe<CmsVisitSectionInput>>>;
   visitName?: InputMaybe<Scalars['String']>;
-  visitSection?: InputMaybe<Scalars['String']>;
 };
 
 export type CmsVisitDataInputModelInput = {
@@ -384,6 +383,11 @@ export type CmsVisitDataInputModelInput = {
   motherId?: InputMaybe<Scalars['String']>;
   visitData?: InputMaybe<CmsVisitDataInput>;
   visitId?: InputMaybe<Scalars['String']>;
+};
+
+export type CmsVisitSectionInput = {
+  questions?: InputMaybe<Array<InputMaybe<CmsQuestionInput>>>;
+  visitSection?: InputMaybe<Scalars['String']>;
 };
 
 export type Caregiver = {
