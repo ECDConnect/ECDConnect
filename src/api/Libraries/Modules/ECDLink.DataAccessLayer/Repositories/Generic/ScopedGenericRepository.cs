@@ -9,6 +9,7 @@ using ECDLink.Security;
 using ECDLink.Tenancy.Context;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -211,6 +212,11 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                 return (List<T>)record;
             }
             return null;
+        }
+
+        public override IQueryable<T> GetAllLocale()
+        {
+            return base.GetAllLocale();
         }
 
         public override T Insert(T entity)
