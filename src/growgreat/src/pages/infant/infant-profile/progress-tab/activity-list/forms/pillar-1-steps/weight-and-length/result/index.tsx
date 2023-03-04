@@ -6,6 +6,13 @@ import { DynamicFormProps } from '../../../dynamic-form';
 import { ReactComponent as Polly } from '@/assets/momImageSvg.svg';
 import { SuccessCard } from '@/components/success-card/success-card';
 import { ReactComponent as CelebrateIcon } from '@/assets/celebrateIcon.svg';
+import { Chart } from './chart';
+import {
+  weightForAgeBoys,
+  weightForAgeGirls,
+  heightForAgeBoys,
+  heightForAgeGirls,
+} from './data';
 
 const Card = ({
   value,
@@ -42,6 +49,8 @@ export const WeightAndLengthResultStep = ({
     () => infant?.caregiver?.firstName || '',
     [infant?.caregiver?.firstName]
   );
+
+  console.log(infant);
 
   const renderCard = useMemo(() => {
     // TODO: add integration
@@ -84,10 +93,22 @@ export const WeightAndLengthResultStep = ({
           <Card title="Weight" value="60" subTitle="CM" />
         </div>
         <Typography type="h3" color="textDark" text="Weight for age (kg)" />
-        <>Chart coming soon</>
+        <Chart
+          data={
+            infant?.gender?.description === 'Girl'
+              ? weightForAgeGirls
+              : weightForAgeBoys
+          }
+        />
         <Divider dividerType="dashed" />
         <Typography type="h3" color="textDark" text="Length for age (cm)" />
-        <>Chart coming soon</>
+        <Chart
+          data={
+            infant?.gender?.description === 'Girl'
+              ? heightForAgeGirls
+              : heightForAgeBoys
+          }
+        />
       </div>
     </>
   );
