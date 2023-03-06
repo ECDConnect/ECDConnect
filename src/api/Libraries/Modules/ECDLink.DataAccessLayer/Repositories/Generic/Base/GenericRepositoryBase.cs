@@ -91,6 +91,8 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
                 entity.Id = Guid.NewGuid();
             }
             entity.TenantId = tenantId;
+            // TODO: Global change to Utc.
+            entity.InsertedDate = DateTime.Now;
 
             entities.Add(entity);
             context.SaveChanges();
@@ -102,16 +104,27 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
         public virtual T Update(T entity)
         {
             if (entity == null)
-            {
                 throw new ArgumentNullException("entity");
-            }
+
             Guid tenantId = TenantExecutionContext.Tenant.Id;
-            if (Exists(entity.Id))
+            
+            var existingEntity = GetById(entity.Id);
+            if (existingEntity is not null && existingEntity.Id != Guid.Empty)
             {
+                // TODO: Global change to Utc.
                 entity.UpdatedDate = DateTime.Now;
                 entity.UpdatedBy = _userId;
-                entity.TenantId = tenantId;
+                // Notify update would get input values without this:
+                entity.TenantId = existingEntity.TenantId;
+                entity.InsertedDate= existingEntity.InsertedDate;
+
                 entities.Update(entity);
+                // Do not update Inserted Date:
+                entities.Entry(entity).Property(e => e.InsertedDate).IsModified = false;
+                // Do not allow replacing or changing TenantId.
+                entities.Entry(entity).Property(e => e.TenantId).IsModified = false;
+                
+                // Publish notification with correct data.
                 _domainEventService.NotifyUpdate<T>(_userId, entity);
             }
             else
@@ -129,6 +142,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
             Guid tenantId = TenantExecutionContext.Tenant.Id;
             T entity = entities.Where(e => e.TenantId == tenantId).SingleOrDefault(s => s.Id == id);
             entity.IsActive = false;
+            // TODO: Global change to Utc.
             entity.UpdatedDate = DateTime.Now;
             entity.UpdatedBy = _userId;
             entities.Update(entity);

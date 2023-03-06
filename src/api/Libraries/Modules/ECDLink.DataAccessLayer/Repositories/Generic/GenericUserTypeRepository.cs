@@ -245,6 +245,8 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             }
 
             entity.TenantId = tenantId;
+            // TODO: Global change to Utc.
+            entity.InsertedDate = DateTime.Now;
             entities.Add(entity);
 
             context.SaveChanges();
@@ -270,9 +272,17 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             }
             else
             {
-                entity.TenantId = tenantId;
+                // Notify update would get input values without this:
+                entity.TenantId = dbEntity.TenantId;
+                entity.InsertedDate = dbEntity.InsertedDate;
+
                 ((IUserType)entity).Hierarchy = ((IUserType)dbEntity).Hierarchy;
                 context.Entry(dbEntity).CurrentValues.SetValues(entity);
+                // Do not modify inserted date.
+                entities.Entry(dbEntity).Property(e => e.InsertedDate).IsModified = false;
+                // Do not modify TenantId.
+                entities.Entry(dbEntity).Property(e => e.TenantId).IsModified = false;
+
                 _domainEventService.NotifyUpdate<T>(_userId, entity);
             }
 

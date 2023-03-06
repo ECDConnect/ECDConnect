@@ -39,7 +39,6 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
           : base(context, domainEventService)
         {
             _hierarchyEngine = hierarchyEngine;
-            //_httpContext = contextAccessor.HttpContext;
             _userManager = userManager;
         }
 
@@ -224,6 +223,9 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             Guid tenantId = TenantExecutionContext.Tenant.Id;
             ((IUserScoped)entity).Hierarchy = Hierarchy;
             entity.TenantId = tenantId;
+            // TODO: Global change to Utc.
+            entity.InsertedDate = DateTime.Now;
+
             return base.Insert(entity);
         }
 
@@ -239,14 +241,22 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
 
             if (dbEntity == default(T))
             {
-                entity.TenantId = tenantId;
                 Insert(entity);
             }
             else
             {
-                entity.TenantId = tenantId;
+                // Notify update would get input values without this:
+                entity.TenantId = dbEntity.TenantId;
+                entity.InsertedDate = dbEntity.InsertedDate;
+
                 ((IUserScoped)entity).Hierarchy = ((IUserScoped)dbEntity).Hierarchy;
                 context.Entry(dbEntity).CurrentValues.SetValues(entity);
+
+                // Do not update Inserted Date:
+                context.Entry(dbEntity).Property(e => e.InsertedDate).IsModified = false;
+                // Do not allow replacing or changing TenantId.
+                context.Entry(dbEntity).Property(e => e.TenantId).IsModified = false;
+
                 _domainEventService.NotifyUpdate<T>(_userId, entity);
             }
             entity.UpdatedDate = DateTime.Now;
