@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
 {
@@ -45,6 +46,12 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
         {
             Guid tenantId = TenantExecutionContext.Tenant.Id;
             return entities.Where(e => e.TenantId.Equals(tenantId)).SingleOrDefault(s => s.Id == id);
+        }
+
+        public async virtual Task<T> GetByIdAsync(Guid id)
+        {
+            Guid tenantId = TenantExecutionContext.Tenant.Id;
+            return await entities.Where(e => e.TenantId.Equals(tenantId)).SingleOrDefaultAsync(s => s.Id == id);
         }
 
         public virtual T GetByUserId(string id)

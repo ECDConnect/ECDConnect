@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace ECDLink.DataAccessLayer.Repositories.Generic
 {
@@ -108,6 +109,40 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
 
             var user = _userManager.FindByIdAsync(castRecord.UserId).Result;
             var roles = _userManager.GetRolesAsync(user).Result;
+
+            var isAdmin = roles.Contains(Roles.ADMINISTRATOR);
+
+            if (!isAdmin)
+            {
+                if (!string.IsNullOrWhiteSpace(castRecord.Hierarchy))
+                {
+                    List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId);
+                    if (hh != null)
+                    {
+                        if (!hh.Contains(castRecord.Hierarchy))
+                        {
+                            return default;
+                        }
+                    }
+                }
+            }
+
+            return record;
+        }
+
+        public async override Task<T> GetByIdAsync(Guid id)
+        {
+            var record = base.GetById(id);
+
+            var castRecord = record as IUserType;
+
+            if (castRecord == default)
+            {
+                return default;
+            }
+
+            var user = await _userManager.FindByIdAsync(castRecord.UserId);
+            var roles = await _userManager.GetRolesAsync(user);
 
             var isAdmin = roles.Contains(Roles.ADMINISTRATOR);
 

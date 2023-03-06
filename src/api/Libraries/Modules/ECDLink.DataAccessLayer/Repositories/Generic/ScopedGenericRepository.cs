@@ -13,6 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace ECDLink.DataAccessLayer.Repositories.Generic
 {
@@ -98,6 +99,44 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             //if user is in a higher admin role (Principal, Practitioner, Coach, Franchisor, then skip the check as they need to be able to see anyone anywhere due to the shift in roles of Milestone 1.
             var user = _userManager.FindByIdAsync(_userId).Result;
             var roles = _userManager.GetRolesAsync(user).Result;
+            var isAdmin = roles.Contains(Roles.ADMINISTRATOR);
+            if (!isAdmin)
+            {
+                if (!string.IsNullOrWhiteSpace(castRecord.Hierarchy))
+                {
+                    List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId).ToList();
+                    if (hh != null)
+                    {
+                        if (!hh.Contains(castRecord.Hierarchy))
+                        {
+                            return default;
+                        }
+                    }
+                }
+            }
+
+            return record;
+        }
+
+        public async override Task<T> GetByIdAsync(Guid id)
+        {
+            if (string.IsNullOrEmpty(_userId))
+            {
+                throw new UnauthorizedAccessException("User does not have access to this data");
+            }
+
+            var record = await base.GetByIdAsync(id);
+
+            var castRecord = record as IUserScoped;
+
+            if (castRecord == default)
+            {
+                return default;
+            }
+
+            //if user is in a higher admin role (Principal, Practitioner, Coach, Franchisor, then skip the check as they need to be able to see anyone anywhere due to the shift in roles of Milestone 1.
+            var user = await _userManager.FindByIdAsync(_userId);
+            var roles = await _userManager.GetRolesAsync(user);
             var isAdmin = roles.Contains(Roles.ADMINISTRATOR);
             if (!isAdmin)
             {
