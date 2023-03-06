@@ -1,4 +1,6 @@
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Users.GrowGreat;
+using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
@@ -16,8 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
-{
+namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat {
     [ExtendObjectType(OperationTypeNames.Query)]
     public class InfantQueryExtension
     {
@@ -40,7 +41,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             IGenericRepositoryFactory repoFactory,
             [Service] InfantManager infantManager,
             string id,
-            string visitType = Constants.GrowGreatSettings.visitType_all) // visitType can be all / due)
+            string visitType = Constants.GGSettings.visitType_all) // visitType can be all / due)
         {
             List<Infant> infants = new List<Infant>();
             var uId = contextAccessor.HttpContext.GetUser().Id;
@@ -49,7 +50,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             List<Infant> children = childRepo.GetAll().Where(x => x.Caregiver.HealthCareWorker.UserId.Equals(id) && x.IsActive.Equals(true)).ToList();
             List<Infant> childrenMother = childRepo.GetAll().Where(x => x.Mother.HealthCareWorker.UserId.Equals(id) && x.IsActive.Equals(true)).ToList();
 
-            if (visitType == Constants.GrowGreatSettings.visitType_due)
+            if (visitType == Constants.GGSettings.visitType_due)
             {
                 foreach (var child in children)
                 {
@@ -116,24 +117,34 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public List<Visit> GetInfantVisits(
-            [Service] IHttpContextAccessor contextAccessor,
-            IGenericRepositoryFactory repoFactory,
-            string id)
-        {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            var visitRepo = repoFactory.CreateGenericRepository<Visit>(userContext: uId);
-            var visitTypeRepo = repoFactory.CreateGenericRepository<VisitType>(userContext: uId);
-
-            List<Visit> infantsVisits = new List<Visit>();
-            infantsVisits = (
-                from visit in visitRepo.GetAll().Where(x => x.Infant.UserId.Equals(id)).OrderBy(x => x.PlannedVisitDate)
-                join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals("child")) on visit.VisitTypeId equals visitType.Id
-                select visit
-            ).ToList();
-
-            return infantsVisits;
+        public List<Visit> GetInfantVisits([Service] VisitManager visitManager, string id) {
+            return visitManager.GetVisitsForClient(id, Constants.GGSettings.client_child);
         }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public List<VisitDataStatus> GetReferralsForInfant([Service] VisitDataStatusManager visitDataStatusManager, string id) {
+            return visitDataStatusManager.GetReferralDataForClient(id, Constants.GGSettings.client_child);
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+         public List<VisitData> GetVisitAnswersForInfant([Service] VisitDataManager visitDataManager, string visitId, string visitName, string visitSection) {
+             return visitDataManager.GetVisitAnswersForClient(visitId, visitName, visitSection);
+         }
+        
+         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+         public List<string> GetCompletedVisitsForInfant([Service] VisitDataManager visitDataManager, string id) {
+             return visitDataManager.GetCompletedVisitsForClient(id, Constants.GGSettings.client_child);
+         }
+
+         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+         public Progress_VisitDataStatus GetPreviousVisitInformationForInfant([Service] VisitDataStatusManager visitDataStatusManager, string visitId) {
+             return visitDataStatusManager.GetPreviousVisitInformationForClient(visitId);
+         }
+
+         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+         public List<VisitData> GetGrowthDataForInfant([Service] VisitDataManager visitDataManager, string id) {
+             return visitDataManager.GetGrowthDataForInfant(id);
+         }
 
     }
 }
