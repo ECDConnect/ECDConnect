@@ -18,6 +18,7 @@ export interface ActionModalProps extends ComponentBaseProps {
   title?: string;
   importantText?: string;
   detailText?: string;
+  customDetailText?: JSX.Element;
   paragraphs?: string[];
   linkText?: string;
   linkTextWeight?: TypographyWeight;
@@ -42,6 +43,7 @@ export const ActionModal: React.FC<ActionModalProps> = ({
   linkClick,
   textAlignment = 'center',
   children,
+  customDetailText,
 }) => {
   return (
     <div
@@ -90,6 +92,7 @@ export const ActionModal: React.FC<ActionModalProps> = ({
           />
         </div>
       )}
+      {customDetailText}
       {detailText?.length > 0 && (
         <div
           className={styles.textWrapper(textAlignment)}

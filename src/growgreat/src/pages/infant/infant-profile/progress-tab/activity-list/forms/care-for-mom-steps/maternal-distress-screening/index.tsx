@@ -13,7 +13,7 @@ import { Fragment, useCallback, useState } from 'react';
 
 export const MaternalDistressScreeningStep = ({
   infant,
-  setQuestions,
+  setSectionQuestions: setQuestions,
   setEnableButton,
 }: DynamicFormProps) => {
   const [questions, setAnswers] = useState([
@@ -30,6 +30,8 @@ export const MaternalDistressScreeningStep = ({
       answer: '',
     },
   ]);
+
+  const visitSection = 'Maternal distress screening';
 
   const options = [
     { text: 'Yes', value: true },
@@ -51,12 +53,17 @@ export const MaternalDistressScreeningStep = ({
       });
 
       setAnswers(updatedQuestions);
-      setQuestions && setQuestions(updatedQuestions);
+      setQuestions?.([
+        {
+          visitSection,
+          questions: updatedQuestions,
+        },
+      ]);
 
       const isCompleted = updatedQuestions.every((item) => item.answer !== '');
 
-      if (isCompleted && setEnableButton) {
-        setEnableButton(true);
+      if (isCompleted) {
+        setEnableButton?.(true);
       }
     },
     [questions, setEnableButton, setQuestions]
@@ -67,7 +74,7 @@ export const MaternalDistressScreeningStep = ({
       <Header
         backgroundColor="tertiary"
         customIcon={Pregnant}
-        title="Maternal distress screening"
+        title={visitSection}
       />
       <div className="flex flex-col p-4">
         <Label text="In the last 2 weeks, have you:" />

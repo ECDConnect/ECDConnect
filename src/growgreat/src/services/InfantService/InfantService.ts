@@ -19,6 +19,9 @@ class InfantService {
           allInfantsForHealthCareWorker(id: $id, visitType: $visitType) {
             id
             nextVisitDate
+            gender {
+              description
+            }
             caregiver {
               firstName
               surname

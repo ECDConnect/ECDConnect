@@ -1,7 +1,4 @@
-using NPOI.SS.Formula.Functions;
-
-namespace EcdLink.Api.CoreApi
-{
+namespace EcdLink.Api.CoreApi {
     public static class Constants
     {
         public static class ApplicationSettings
@@ -11,14 +8,13 @@ namespace EcdLink.Api.CoreApi
             public const string GraphEndPoint = "GraphQl:EndPoint";
         }
 
-        public static class GrowGreatSettings
+        public static class GGSettings
         {
             public const string visitType_all = "all";
             public const string visitType_overdue = "overdue";
             public const string visitType_due = "due";
 
             public const string client_mother = "mother";
-            public const string client_infant = "infant";
             public const string client_child = "child";
 
             public const string client_pregnant_mom = "Pregnant mom";
@@ -36,10 +32,12 @@ namespace EcdLink.Api.CoreApi
             public const string visit_data_client_referral = "Referral";
             public const string visit_data_client_progress = "Progress";
 
+            // Mother Questions
+
             public const string q_first_antenatal_visit = "Has {client} gone to the clinic for her first antenatal visit?";
             public const string q_antenatal_visits = "Is {client} up to date with their antenatal clinic visits?";
             public const string q_measurement = "MUAC measurement";
-            public const string q_danger_signs = "Tick the danger signs {client} is experiencing";
+            public const string q_danger_signs = "Tick the danger signs {client} is experiencing:";
 
             public const string q_stop_worry = "Felt unable to stop worrying or thinking too much?";
             public const string q_felt_down = "Felt down, depressed or hopeless?";
@@ -53,6 +51,7 @@ namespace EcdLink.Api.CoreApi
             public const string q_ID_doc = "Does {client} have an ID document?";
             public const string q_citizen = "Is {client} a South African citizen or permanent resident?";
 
+            // Mother referral, progress, G4 (ClientDashboardAlert), G9 (ClientSummaryDownload)
             public const string pregnancy_not_booked = "Pregnancy not booked";
             public const string pregnancy_booked = "Pregnancy booked";
             public const string refer_to_clinic = "Refer to clinic";
@@ -86,12 +85,123 @@ namespace EcdLink.Api.CoreApi
             public const string id_book = " has an ID book";
             public const string go_to_home_affairs = "Go to Home Affairs to apply for your ID book.  This will allow you to apply for the child social grant as soon as the baby is born.";
             public const string apply_social_grant = "You have your ID document & can apply for a child social grant once the baby is born!";
+            public const string growth_referral = " is not growing well: ";
+            public const string not_growing = " is not growing well";
+            public const string growing_well = " is growing well";
+            public const string health_issues = "You have some health issues";
+            public const string severely_underweight= "Severely underweight";
+            public const string severely_stunted = "Severely stunted";
+            public const string growth_faltering = "Growth faltering: weight has not increased ";
+            public const string moderate_acute_malnutrition = "Moderate acute malnutrition";
+            public const string great_job_breastfeeding = "You're doing a great job breastfeeding!";
+            public const string great_job_formula_feeding = "You're doing a great job formula feeding!";
+            public const string try_to_make_sure = "Try to make sure you give ";
+            public const string only_milk = " only breast milk or only formula milk";
+            public const string poor_dietary_diversity = "Poor dietary diversity: {x} out of {y} food groups";
+            public const string give_client_food = "You are giving {client} foods from {x} out of {y} groups.Try to give {client} a variety of foods!";
+            public const string good_dietary_diversity = "Good dietary diversity: {x} out of {y} food groups!";
+            public const string give_client_food_most = "You are giving {client} foods from most of the groups!";
+            public const string dev_is_struggling = "{client} is struggling with ";
+            public const string dev_might_struggling = "{client} might be having issues with: ";
+            public const string immunisations_not_up_to_date = "Immunisations not up to date";
+            public const string vitamin_not_up_to_date = "Vitamin A not up to date";
+            public const string deworming_not_up_to_date = "Deworming not up to date";
+            public const string not_up_to_date = " not up to date";
+            public const string missed_immunisations = "{client} missed an ";
+            public const string all_up_to_date = "All immunisations, Vitamin A and deworming are up to date";
+            public const string all_up_to_date_client = "All of {client}'s immunisations are up to date";
+            public const string physical_well = " is doing well physically";
+            public const string no_birth_certificate = " does not have a birth certificate";
+            public const string has_birth_certificate = "Has applied for a birth certificate";
+            public const string has_csg = "Has applied for a child support grant";
+            public const string has_csg2 = "You applied for the child support grant - this will support {client}'s healthy growth!";
 
-            public const string answer_yes = "Yes";
-            public const string answer_no = "No";
+            // Infant Questions
+            public const string q_postnatal_check_up = "Has {client} been to the clinic for a postnatal check-up?";
+            public const string q_postnatal_6_weeks = "Did your client attend her 6-week postnatal clinic visit?";
+            public const string q_weight = "Weight";
+            public const string q_length = "Length";
+            public const string q_muac = "What is {client}'s MUAC today?";
+            public const string q_eat_drink = "What did {client} eat or drink in the last 24 hours?";
+            public const string q_breastfeeding_club = "Would you like to join a breastfeeding club?";
+            public const string q_mixed_foods = "Which of these foods have you given {client}?  You can choose more than one.";
+            public const string q_tick_foods = "Tick all of the foods {client} talks about:";
+            public const string q_check_can_do = "Check what {client} can do:";
+            public const string q_hearing = "Hearing";
+            public const string q_seeing = "Seeing";
+            public const string q_brain = "Brain";
+            public const string q_moving = "Moving";
+            public const string q_immunisation = "Did the baby have the 6 month immunisation?";
+            public const string q_vitamin_a = "Is Vitamin A up to date?";
+            public const string q_deworming = "Is deworming up to date?";
+            public const string q_birth_certificate = "Does {client} have a birth certificate?";
+            public const string q_csg = "Is {client} reiving the CSG?";
+
+            public const string cfm_name = "Care for mom";
+            public const string cfb_name = "Care for baby";
+            public const string p4_name = "Pillar 4: Healthcare";
+
+            // Infant referral, progress, G4 (ClientDashboardAlert), G9 (ClientSummaryDownload)
+            public const string infant_missed_clinic_visit = "Missed clinic visit";
+            public const string infant_missed_clinic_visit_g9 = "You missed a clinic visit - make sure you go as soon as possible!";
+
+            public const string infant_clinic_visit = "Up to date with clinic visits";
+            public const string infant_clinic_visit_g9 = "You are up to date with clinic visits";
+
+            public const string cfm_ds_1 = "Not feeling physically well";
+            public const string cfm_ds_2 = "Abdominal pain";
+            public const string cfm_ds_3 = "Heavy bleeding";
+            public const string cfm_ds_4 = "Feeling too hot or too cold";
+            public const string cfm_ds_5 = "Offensive or bad-smelling vaginal fluid";
+            public const string cfm_ds_6 = "Unable to manage the baby";
+            public const string cfm_ds_7 = "High stress";
+            public const string cfm_ds_8 = "Problems with breastfeeding";
+
+            public const string cfb_ds_1 = "Blue skin colour";
+            public const string cfb_ds_2 = "Baby is not alert";
+            public const string cfb_ds_3 = "Fast breathing or difficulty breathing";
+            public const string cfb_ds_4 = "Poor feeding or repeated vomiting";
+            public const string cfb_ds_5 = "Low (below 35 degrees C) or high temperature";
+            public const string cfb_ds_6 = "Yellow skin or eyes";
+            public const string cfb_ds_7 = "Severe eye infection";
+            public const string cfb_ds_8 = "Severe cord infection";
+
+            public const string p4_ds_1 = "Not moving or does not wake up";
+            public const string p4_ds_2 = "Shaking (convulsions)";
+            public const string p4_ds_3 = "Diarrhoea, sunken eyes, and a sunken fontanelle";
+            public const string p4_ds_4 = "Coughing and breathing fast (more than 50 breaths per minute)";
+            public const string p4_ds_5 = "Sings of malnutrition (swollen ankles and feet)";
+            public const string p4_ds_6 = "Vomiting everything";
+            public const string p4_ds_7 = "Fever and not feeding";
+            public const string p4_ds_8 = "Unable to breastfeed";
+
+
+            // Answers
+            public const string answer_yes = "true";
+            public const string answer_no = "false";
             public const string none_above = "None of the above";
             public const string normal_risk = "normal";
             public const string more_than_2 = "More than 2";
+            public const string male = "Boy";
+            public const string female = "Girl";
+            public const string growth_section = "Growth";
+            public const string breast_milk_only = "Breast milk only";
+            public const string formula_milk_only = "Formula milk only";
+            public const string mixed_feeding = "Mixed feeding";
+           
+
+            // Growth names
+            public const string neg3SD = "-3 SD";
+            public const string neg2SD = "-2 SD";
+            public const string neg1SD = "-1 SD";
+            public const string median = "median";
+            public const string pos1SD = "1 SD";
+            public const string pos2SD = "2 SD";
+            public const string pos3SD = "3 SD";
+            public const string weightForAgeBoys = "weightForAgeBoys";
+            public const string weightForAgeGirls = "weightForAgeGirls";
+            public const string weightForHeightBoys = "weightForHeightBoys";
+            public const string weightForHeightGirls = "weightForHeightGirls";
 
         }
     }

@@ -15,7 +15,7 @@ import { replaceBraces } from '@ecdlink/core';
 export const FoodsFormStep = ({
   infant,
   setEnableButton,
-  setQuestions,
+  setSectionQuestions: setQuestions,
   onNextStep,
 }: DynamicFormProps) => {
   const [question, setAnswers] = useState({
@@ -32,6 +32,8 @@ export const FoodsFormStep = ({
     () => infant?.caregiver?.firstName || '',
     [infant?.caregiver?.firstName]
   );
+
+  const visitSection = 'Mixed feeding';
 
   const answers = question.answer as string[];
 
@@ -51,15 +53,25 @@ export const FoodsFormStep = ({
         const updatedQuestion = { ...question, answer: currentAnswers };
 
         setAnswers(updatedQuestion);
-        setEnableButton && setEnableButton(true);
-        return setQuestions && setQuestions([updatedQuestion]);
+        setEnableButton?.(true);
+        return setQuestions?.([
+          {
+            visitSection,
+            questions: [updatedQuestion],
+          },
+        ]);
       }
       const currentAnswers = answers?.filter((item) => item !== event.value);
       const updatedQuestion = { ...question, answer: currentAnswers };
 
-      setEnableButton && setEnableButton(!!currentAnswers?.length);
+      setEnableButton?.(!!currentAnswers?.length);
       setAnswers(updatedQuestion);
-      return setQuestions && setQuestions([updatedQuestion]);
+      return setQuestions?.([
+        {
+          visitSection,
+          questions: [updatedQuestion],
+        },
+      ]);
     },
     [answers, question, setEnableButton, setQuestions]
   );
@@ -70,7 +82,7 @@ export const FoodsFormStep = ({
         customIcon={P1}
         iconHexBackgroundColor="#8CDBDF"
         hexBackgroundColor="#a2dadd4d"
-        title="Mixed feeding"
+        title={visitSection}
       />
       <div className="flex flex-col p-4">
         <Alert

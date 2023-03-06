@@ -8,7 +8,7 @@ import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router';
 import { currentActivityKey } from '..';
 import { activitiesTypes } from '../activities-list';
-import { DynamicForm, Question } from './dynamic-form';
+import { DynamicForm, SectionQuestions } from './dynamic-form';
 import {
   careForBabySteps,
   careForMomSteps,
@@ -16,6 +16,7 @@ import {
   getPillar4Steps,
   pillar2Steps,
   pillar3Steps,
+  pillar5Steps,
 } from './steps';
 import { nutritionQuestion } from './pillar-1-steps/nutrition';
 import {
@@ -32,14 +33,17 @@ const sessionStorageKey = 'currentStepNumber';
 export const Form = ({ onBack }: FormProps) => {
   const [isTip, setIsTip] = useState(false);
   const [step, setStep] = useState(0);
-  const [questions, setQuestions] = useState<Question[]>();
+  const [sectionQuestions, setSectionQuestions] =
+    useState<SectionQuestions[]>();
 
-  const nutritionAnswer = questions?.find(
-    (item) => item.question === nutritionQuestion
-  )?.answer;
-  const breastfeedingIssuesAnswers = questions?.find(
-    (item) => item.question === breastfeedingIssuesCheckboxQuestion
-  )?.answer as string[];
+  const nutritionAnswer = sectionQuestions
+    ?.flatMap((section) => section.questions)
+    .find((item) => item.question === nutritionQuestion)?.answer;
+
+  const breastfeedingIssuesAnswers = sectionQuestions
+    ?.flatMap((section) => section.questions)
+    .find((item) => item.question === breastfeedingIssuesCheckboxQuestion)
+    ?.answer as string[];
 
   const isToSkipBreastfeedingIssuesRelevantItemsStep =
     breastfeedingIssuesAnswers?.includes(
@@ -138,6 +142,8 @@ export const Form = ({ onBack }: FormProps) => {
         return pillar3Steps;
       case activitiesTypes.pillar4:
         return getPillar4Steps(isPillar4FollowUp);
+      case activitiesTypes.pillar5:
+        return pillar5Steps;
       default:
         return [() => <div className="p-4">Coming soon</div>];
     }
@@ -166,7 +172,7 @@ export const Form = ({ onBack }: FormProps) => {
         isTipPage={isTip}
         currentStep={step}
         setIsTip={setIsTip}
-        setQuestions={setQuestions}
+        setSectionQuestions={setSectionQuestions}
         onPreviousStep={handleOnBack}
         onNextStep={handleOnNext}
       />

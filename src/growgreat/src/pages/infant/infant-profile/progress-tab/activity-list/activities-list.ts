@@ -29,6 +29,10 @@ export const activitiesColours = {
     primaryColor: '#EE83B3',
     secondaryColor: '#FADAE8',
   },
+  pillar5: {
+    primaryColor: '#FF9D7B',
+    secondaryColor: '#FDE6DD',
+  },
 };
 
 export const activitiesList = [

@@ -21,6 +21,8 @@ import StartupSupport from './components/startup-support/startup-support';
 import DonationsOrVouchers from './components/donations-or-vouchers/donations-or-vouchers';
 import DsdSubsidy from './components/dsd-subsidy/dsd-subsidy';
 import OtherIncome from './components/other-income/other-income';
+import StatementsWrapper from '../money/submit-income-statements/components/statements-wrapper/StatementsWrapper';
+import { useAppContext } from '@/walkthrougContext';
 
 export const AddIncome: React.FC = () => {
   const history = useHistory();
@@ -75,7 +77,10 @@ export const AddIncome: React.FC = () => {
         actionName: 'Add',
         actionIcon: 'PlusIcon',
         buttonType: 'filled',
-        onActionClick: () => setType('PreschoolFees'),
+        onActionClick: () => {
+          setType('PreschoolFees');
+          nextStep();
+        },
       },
       {
         title: 'Start-up support',
@@ -121,6 +126,11 @@ export const AddIncome: React.FC = () => {
 
     setListItems(list);
   };
+  const { setState } = useAppContext();
+
+  const nextStep = () => {
+    setState({ stepIndex: 5 });
+  };
 
   return (
     <div className={styles.container}>
@@ -138,6 +148,7 @@ export const AddIncome: React.FC = () => {
           displayOffline={!isOnline}
           className="p-4"
         >
+          <StatementsWrapper />
           <>
             <div>
               <Typography
@@ -152,7 +163,7 @@ export const AddIncome: React.FC = () => {
               />
             </div>
             <Divider dividerType="dashed" className="mt-4" />
-            <div>
+            <div id="incomeList">
               <StackedList
                 className={'h-auto'}
                 listItems={listItems}

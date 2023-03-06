@@ -8,4 +8,5 @@ export interface ActionListDataItem extends ListItem {
   actionIcon?: string;
   buttonType?: ButtonType;
   containerStyle?: string;
+  id?: string;
 }
