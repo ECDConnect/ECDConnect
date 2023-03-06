@@ -30,7 +30,7 @@ enum Question {
 
 export const ChildDocumentationStep = ({
   infant,
-  setQuestions,
+  setSectionQuestions: setQuestions,
   setEnableButton,
 }: DynamicFormProps) => {
   const [questions, setAnswers] = useState([
@@ -84,6 +84,8 @@ export const ChildDocumentationStep = ({
     [infant?.caregiver?.firstName]
   );
 
+  const visitSection = 'Child documentation';
+
   const options = [
     { text: 'Yes', value: true },
     { text: 'No', value: false },
@@ -133,7 +135,12 @@ export const ChildDocumentationStep = ({
       );
 
       setAnswers(updatedQuestions);
-      setQuestions?.(filteredQuestions);
+      setQuestions?.([
+        {
+          visitSection,
+          questions: filteredQuestions,
+        },
+      ]);
     },
     [questions, setQuestions]
   );
@@ -202,7 +209,7 @@ export const ChildDocumentationStep = ({
     <>
       <Header
         customIcon={P5}
-        title="Child documentation"
+        title={visitSection}
         iconHexBackgroundColor={activitiesColours.pillar5.primaryColor}
         hexBackgroundColor={activitiesColours.pillar5.secondaryColor}
       />

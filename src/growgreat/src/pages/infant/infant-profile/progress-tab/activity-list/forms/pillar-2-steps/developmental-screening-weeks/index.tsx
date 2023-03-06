@@ -28,7 +28,7 @@ const mocked_week = 14;
 export const DevelopmentalScreeningWeeksStep = ({
   infant,
   isTipPage,
-  setQuestions,
+  setSectionQuestions: setQuestions,
   setEnableButton,
   setIsTip,
 }: DynamicFormProps) => {
@@ -58,6 +58,8 @@ export const DevelopmentalScreeningWeeksStep = ({
       answer: '',
     },
   ]);
+
+  const visitSection = 'Developmental screening';
 
   const options = [
     { text: 'Yes', value: true },
@@ -109,7 +111,12 @@ export const DevelopmentalScreeningWeeksStep = ({
       });
 
       setAnswers(updatedQuestions);
-      setQuestions && setQuestions(formattedQuestions);
+      setQuestions?.([
+        {
+          visitSection,
+          questions: formattedQuestions,
+        },
+      ]);
 
       const isCompleted = updatedQuestions.every((item) => item.answer !== '');
 
@@ -139,7 +146,7 @@ export const DevelopmentalScreeningWeeksStep = ({
     <>
       <Header
         customIcon={P2}
-        title="Developmental screening"
+        title={visitSection}
         iconHexBackgroundColor={activitiesColours.pillar2.primaryColor}
         hexBackgroundColor={activitiesColours.pillar2.secondaryColor}
         subTitle={

@@ -44,7 +44,7 @@ const Description = ({ value, title, list, clientName }: DescriptionProps) => (
 
 export const ResourcesStep = ({
   infant,
-  questions,
+  sectionQuestions: questions,
   isTipPage,
   setIsTip,
   setEnableButton,
@@ -55,8 +55,11 @@ export const ResourcesStep = ({
     [infant]
   );
 
-  const answers = questions?.find((item) => item.question === dietFormQuestion)
+  const answers = questions
+    ?.flatMap((section) => section.questions)
+    .find((question) => question.question === dietFormQuestion)
     ?.answer as string[];
+
   const count = answers?.includes(noneOption) ? 0 : answers?.length;
 
   const renderAlert = useMemo(() => {

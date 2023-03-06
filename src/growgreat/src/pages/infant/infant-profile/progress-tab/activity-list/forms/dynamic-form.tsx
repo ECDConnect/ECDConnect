@@ -13,15 +13,20 @@ export interface Question {
     | undefined;
 }
 
+export interface SectionQuestions {
+  visitSection: string;
+  questions: Question[];
+}
+
 export interface DynamicFormProps {
   name?: any;
   infant?: InfantDto;
   currentStep?: number;
   isTipPage?: boolean;
   steps?: any[]; // TODO: add type
-  questions?: Question[];
+  sectionQuestions?: SectionQuestions[];
   setIsTip?: (value: boolean) => void;
-  setQuestions?: (value?: Question[]) => void;
+  setSectionQuestions?: (value?: SectionQuestions[]) => void;
   setEnableButton?: (value: boolean) => void;
   onNextStep?: () => void;
   onPreviousStep?: () => void;
@@ -33,31 +38,53 @@ export const DynamicForm = ({
   currentStep,
   steps,
   isTipPage,
-  setQuestions: setQuestionsForm,
+  setSectionQuestions: setSectionQuestionsForm,
   onNextStep,
   setIsTip,
 }: DynamicFormProps) => {
   const [isEnableButton, setIsEnableButton] = useState(false);
-  const [questions, setQuestions] = useState<Question[]>();
+  const [sectionQuestions, setSectionQuestions] =
+    useState<SectionQuestions[]>();
 
   const handleSetQuestions = useCallback(
-    (value: Question[]) => {
-      const filteredQuestions = questions?.filter((oldObj) => {
-        const questionExists = value.some(
-          (newObj) => newObj.question === oldObj.question
-        );
-        return !questionExists;
+    (value: SectionQuestions[]) => {
+      setSectionQuestions((prevSections) => {
+        const updatedQuestions = value.flatMap((newObj) => {
+          const { visitSection: newVisitSection, questions: newQuestions } =
+            newObj;
+          const oldSection = prevSections?.find(
+            (oldObj) => oldObj.visitSection === newVisitSection
+          );
+          const questionsFromOldSection = oldSection?.questions || [];
+
+          const filteredQuestions = newQuestions.filter(
+            (newQuestion) =>
+              !questionsFromOldSection.some(
+                (oldQuestion) => oldQuestion.question === newQuestion.question
+              )
+          );
+
+          const otherSections = prevSections?.filter(
+            (item) => item.visitSection !== newVisitSection
+          );
+
+          const mergedQuestions = filteredQuestions.length
+            ? [...questionsFromOldSection, ...newQuestions]
+            : [...newQuestions];
+          return [
+            ...(otherSections?.length ? otherSections : []),
+            {
+              visitSection: newVisitSection,
+              questions: mergedQuestions,
+            },
+          ];
+        }, []);
+
+        setSectionQuestionsForm?.(updatedQuestions);
+        return updatedQuestions;
       });
-
-      const updatedQuestions = filteredQuestions?.length
-        ? [...filteredQuestions, ...value]
-        : [...value];
-
-      setQuestions(updatedQuestions);
-      // @ts-ignore
-      setQuestionsForm(updatedQuestions);
     },
-    [questions, setQuestionsForm]
+    [setSectionQuestionsForm]
   );
 
   const handleOnNext = useCallback(() => {
@@ -71,12 +98,12 @@ export const DynamicForm = ({
       infantId: infant?.user?.id,
       visitData: {
         visitName: name,
-        questions,
+        sectionQuestions,
       },
     };
 
     console.log('Submitting...', { input });
-  }, [infant?.user?.id, name, questions]);
+  }, [infant?.user?.id, name, sectionQuestions]);
 
   const renderContent = useMemo(() => {
     if (!steps) return;
@@ -88,8 +115,8 @@ export const DynamicForm = ({
         infant={infant}
         isTipPage={isTipPage}
         setIsTip={setIsTip}
-        questions={questions}
-        setQuestions={handleSetQuestions}
+        sectionQuestions={sectionQuestions}
+        setSectionQuestions={handleSetQuestions}
         setEnableButton={setIsEnableButton}
         onNextStep={onNextStep}
       />
@@ -100,7 +127,7 @@ export const DynamicForm = ({
     infant,
     isTipPage,
     onNextStep,
-    questions,
+    sectionQuestions,
     setIsTip,
     steps,
   ]);
