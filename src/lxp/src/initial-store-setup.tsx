@@ -220,11 +220,12 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     await appDispatch(
       contentReportThunkActions.getChildProgressReportSummary(10)
     ).unwrap();
+
     await appDispatch(
       attendanceThunkActions.getAttendance({
         year: getYear(new Date()),
         monthOfYear: getMonth(new Date()) + 1,
-        weekOfYear: getWeek(new Date()) - 1,
+        weekOfYear: getWeek(new Date()) ,
       })
     ).unwrap();
 
