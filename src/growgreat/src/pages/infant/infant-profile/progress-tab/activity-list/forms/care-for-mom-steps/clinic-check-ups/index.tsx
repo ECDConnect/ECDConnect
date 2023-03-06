@@ -16,10 +16,12 @@ export const ClinicCheckupStep = ({
   infant,
   isTipPage,
   setIsTip,
-  setQuestions,
+  setSectionQuestions: setQuestions,
   setEnableButton,
 }: DynamicFormProps) => {
   const [answer, setAnswer] = useState<boolean | boolean[]>();
+
+  const sectionName = 'Clinic check-ups';
 
   const options = [
     { text: 'Yes', value: true },
@@ -37,8 +39,13 @@ export const ClinicCheckupStep = ({
       setQuestions &&
         setQuestions([
           {
-            question,
-            answer: value,
+            visitSection: sectionName,
+            questions: [
+              {
+                question,
+                answer: value,
+              },
+            ],
           },
         ]);
       setEnableButton && setEnableButton(true);
@@ -60,7 +67,7 @@ export const ClinicCheckupStep = ({
       <Header
         backgroundColor="tertiary"
         customIcon={Pregnant}
-        title="Clinic check-ups"
+        title={sectionName}
       />
       <div className="flex flex-col gap-4 p-4">
         <TipCard

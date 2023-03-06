@@ -19,12 +19,14 @@ import { Translations } from './translations';
 export const DangerSignsStep = ({
   infant,
   isTipPage,
-  setQuestions,
+  setSectionQuestions: setQuestions,
   setEnableButton,
   setIsTip,
 }: DynamicFormProps) => {
   const [currentOption, setCurrentOption] = useState<string>();
   const [answers, setAnswer] = useState<(string | number | undefined)[]>();
+
+  const visitSection = 'Danger signs';
 
   // TODO: add integration
   const mockedFollowUp = {
@@ -100,29 +102,33 @@ export const DangerSignsStep = ({
 
         setAnswer(currentAnswers);
         setEnableButton && setEnableButton(true);
-        return (
-          setQuestions &&
-          setQuestions([
-            {
-              question,
-              answer: currentAnswers,
-            },
-          ])
-        );
+        return setQuestions?.([
+          {
+            visitSection,
+            questions: [
+              {
+                question,
+                answer: currentAnswers,
+              },
+            ],
+          },
+        ]);
       }
       const currentAnswers = answers?.filter((item) => item !== event.value);
 
       setEnableButton && setEnableButton(!!currentAnswers?.length);
       setAnswer(currentAnswers);
-      return (
-        setQuestions &&
-        setQuestions([
-          {
-            question,
-            answer: currentAnswers,
-          },
-        ])
-      );
+      return setQuestions?.([
+        {
+          visitSection,
+          questions: [
+            {
+              question,
+              answer: currentAnswers,
+            },
+          ],
+        },
+      ]);
     },
     [
       answers,
@@ -148,7 +154,7 @@ export const DangerSignsStep = ({
       <Header
         backgroundColor="tertiary"
         customIcon={Pregnant}
-        title="Danger signs"
+        title={visitSection}
         {...(isFollowUp
           ? {
               subTitle: 'Follow up',

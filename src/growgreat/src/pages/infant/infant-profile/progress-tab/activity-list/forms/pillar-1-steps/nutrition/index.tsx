@@ -25,17 +25,24 @@ export const nutritionAnswers = {
 export const NutritionStep = ({
   infant,
   setEnableButton,
-  setQuestions,
+  setSectionQuestions: setQuestions,
 }: DynamicFormProps) => {
   const [selectedOption, setSelectedOption] = useState('');
+
+  const visitSection = 'Nutrition';
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedOption(e.target.value);
     setQuestions &&
       setQuestions([
         {
-          question: nutritionQuestion,
-          answer: e.target.value,
+          visitSection,
+          questions: [
+            {
+              question: nutritionQuestion,
+              answer: e.target.value,
+            },
+          ],
         },
       ]);
     setEnableButton && setEnableButton(true);
@@ -102,7 +109,7 @@ export const NutritionStep = ({
         customIcon={P1}
         iconHexBackgroundColor="#8CDBDF"
         hexBackgroundColor="#a2dadd4d"
-        title="Nutrition"
+        title={visitSection}
       />
       <div className="relative flex flex-col gap-3 p-4">
         <Label text={replaceBraces(nutritionQuestion, name)} />

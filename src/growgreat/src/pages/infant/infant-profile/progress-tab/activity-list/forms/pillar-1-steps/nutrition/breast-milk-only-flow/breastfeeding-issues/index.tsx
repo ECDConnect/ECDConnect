@@ -30,7 +30,7 @@ export const breastfeedingIssuesCheckboxOptions = {
 
 export const BreastfeedingIssuesStep = ({
   infant,
-  setQuestions,
+  setSectionQuestions: setQuestions,
   setEnableButton,
 }: DynamicFormProps) => {
   const [questions, setAnswers] = useState([
@@ -51,6 +51,8 @@ export const BreastfeedingIssuesStep = ({
     () => infant?.caregiver?.firstName || '',
     [infant?.caregiver?.firstName]
   );
+
+  const visitSection = 'Breastfeeding issues';
 
   // TODO: add integration (G5.3.4)
   const showReminder = false;
@@ -85,7 +87,12 @@ export const BreastfeedingIssuesStep = ({
       });
 
       setAnswers(updatedQuestions);
-      setQuestions && setQuestions(updatedQuestions);
+      setQuestions?.([
+        {
+          visitSection,
+          questions: updatedQuestions,
+        },
+      ]);
     },
     [questions, setQuestions]
   );
@@ -164,7 +171,7 @@ export const BreastfeedingIssuesStep = ({
         customIcon={P1}
         iconHexBackgroundColor="#8CDBDF"
         hexBackgroundColor="#a2dadd4d"
-        title="Breastfeeding issues"
+        title={visitSection}
       />
       <div className="flex flex-col p-4">
         <Typography

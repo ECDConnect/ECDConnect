@@ -12,7 +12,7 @@ export const HIVCareAndMedicationStep = ({
   infant,
   isTipPage,
   setIsTip,
-  setQuestions,
+  setSectionQuestions: setQuestions,
   setEnableButton,
 }: DynamicFormProps) => {
   const [answer, setAnswer] = useState<boolean | boolean[] | string>();
@@ -21,6 +21,8 @@ export const HIVCareAndMedicationStep = ({
     () => infant?.caregiver?.firstName || '',
     [infant?.caregiver?.firstName]
   );
+
+  const visitSection = 'Child documentation';
 
   const options = [
     { text: 'Yes', value: true },
@@ -36,11 +38,16 @@ export const HIVCareAndMedicationStep = ({
       setQuestions &&
         setQuestions([
           {
-            question,
-            answer: value,
+            visitSection,
+            questions: [
+              {
+                question,
+                answer: value,
+              },
+            ],
           },
         ]);
-      setEnableButton && setEnableButton(true);
+      setEnableButton?.(true);
     },
     [question, setEnableButton, setQuestions]
   );
@@ -58,7 +65,7 @@ export const HIVCareAndMedicationStep = ({
     <>
       <Header
         customIcon={P5}
-        title="Child documentation"
+        title={visitSection}
         iconHexBackgroundColor={activitiesColours.pillar5.primaryColor}
         hexBackgroundColor={activitiesColours.pillar5.secondaryColor}
       />
