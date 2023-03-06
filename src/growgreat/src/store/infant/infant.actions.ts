@@ -3,6 +3,7 @@ import {
   InfantDto,
   MotherDto,
   SiteAddressDto,
+  VisitDto,
 } from '@/../../../packages/core/lib';
 import {
   CaregiverModelInput,
@@ -17,6 +18,7 @@ import { RootState, ThunkApiType } from '../types';
 export const InfantActions = {
   ADD_INFANTS: 'addInfant',
   GET_INFANTS: 'getInfants',
+  GET_INFANT_VISITS: 'getInfantVisits',
   GET_INFANTS_WEEKLY_VISITS: 'getInfantsWeeklyVisits',
   GET_INFANT_COUNT_FOR_MONTH: 'getInfantCountForMonth',
 };
@@ -141,6 +143,35 @@ export const getInfantCountForMonth = createAsyncThunk<
       }
 
       return count;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getInfantVisits = createAsyncThunk<
+  VisitDto[],
+  { infantId: string },
+  ThunkApiType<RootState>
+>(
+  InfantActions.GET_INFANT_VISITS,
+  async ({ infantId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      let visits: VisitDto[];
+
+      if (userAuth?.auth_token) {
+        visits = await new InfantService(userAuth?.auth_token).GetInfantVisits(
+          infantId
+        );
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      return visits;
     } catch (err) {
       return rejectWithValue(err);
     }
