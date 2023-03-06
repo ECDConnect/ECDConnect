@@ -91,7 +91,7 @@ export const VisitList: React.FC = () => {
             text="Pregnancy visits"
           />
         </div>
-        {!visitStatus.motherOverDueVisits && !visitStatus.motherDueVisits ? (
+        {!visitStatus?.motherOverDueVisits && !visitStatus?.motherDueVisits ? (
           <SuccessCard text="All your pregnancy visits are up to date, no visits due this week!" />
         ) : (
           <>
@@ -140,7 +140,7 @@ export const VisitList: React.FC = () => {
             text="Child visits"
           />
         </div>
-        {!visitStatus.childDueVisits ? (
+        {!visitStatus?.childDueVisits ? (
           <SuccessCard text="All your child visits are up to date, no visits due this week!" />
         ) : (
           <Typography
@@ -165,12 +165,7 @@ export const VisitList: React.FC = () => {
         />
       </>
     ),
-    [
-      navigate,
-      visitStatus.childDueVisits,
-      visitStatus.motherDueVisits,
-      visitStatus.motherOverDueVisits,
-    ]
+    [navigate, visitStatus]
   );
 
   return (
@@ -192,9 +187,9 @@ export const VisitList: React.FC = () => {
         text={`${startDate} to ${endDate}`}
       />
       <Divider className="p-4" dividerType="dashed" />
-      {!visitStatus.childDueVisits &&
-      !visitStatus.motherDueVisits &&
-      !visitStatus.motherOverDueVisits ? (
+      {!visitStatus?.childDueVisits &&
+      !visitStatus?.motherDueVisits &&
+      !visitStatus?.motherOverDueVisits ? (
         <SuccessCard
           text="All your visits are up to date, no visits due this week!"
           subText="Stay up to date by booking your next visit"

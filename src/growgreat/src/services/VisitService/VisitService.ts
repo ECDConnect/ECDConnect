@@ -1,6 +1,6 @@
 import { api } from '../axios.helper';
 import { Config, VisitStatusDto } from '@ecdlink/core';
-import {} from '@ecdlink/graphql';
+import { CmsVisitDataInputModelInput } from '@ecdlink/graphql';
 
 class Visit {
   _accessToken: string;
@@ -38,6 +38,28 @@ class Visit {
     }
 
     return response.data.data.healthCareWorkerVisitStatus;
+  }
+
+  // TODO: add interface
+  async addVisitFormData(input: CmsVisitDataInputModelInput): Promise<any> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+          mutation AddVisitData($input: CMSVisitDataInputModelInput) {
+            addVisitData(input: $input) {
+            }
+        }
+        `,
+      variables: {
+        input: input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error('Adding visit data failed - Server connection error');
+    }
+
+    return response.data.data.createInfant;
   }
 }
 

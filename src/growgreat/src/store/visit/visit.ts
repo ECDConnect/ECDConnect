@@ -1,19 +1,38 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { CmsVisitDataInputModelInput } from '@ecdlink/graphql';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
+import { ThunkStateStatus } from '../types';
 import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
-import { getHealthCareWorkerVisitStatus } from './visit.actions';
+import {
+  addVisitFormData,
+  getHealthCareWorkerVisitStatus,
+} from './visit.actions';
 import { VisitState } from './visit.types';
 
-const initialState: VisitState = {
+const initialState: VisitState & ThunkStateStatus = {
   visitStatus: {},
+  visitFormData: {},
 };
 
 const visitSlice = createSlice({
   name: 'visit',
   initialState,
-  reducers: {},
+  reducers: {
+    addVisitFormData: (
+      state,
+      action: PayloadAction<CmsVisitDataInputModelInput>
+    ) => {
+      if (state.visitFormData) {
+        state.visitFormData = action.payload;
+      }
+    },
+  },
   extraReducers: (builder) => {
     setThunkActionStatus(builder, getHealthCareWorkerVisitStatus);
+    setThunkActionStatus(builder, addVisitFormData);
+    builder.addCase(addVisitFormData.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
+    });
     builder.addCase(
       getHealthCareWorkerVisitStatus.fulfilled,
       (state, action) => {

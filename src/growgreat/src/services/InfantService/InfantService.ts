@@ -1,4 +1,4 @@
-import { InfantDto, Config } from '@ecdlink/core';
+import { InfantDto, Config, VisitDto } from '@ecdlink/core';
 import { InfantModelInput } from '@ecdlink/graphql';
 import { api } from '../axios.helper';
 class InfantService {
@@ -100,6 +100,48 @@ class InfantService {
     }
 
     return response.data.data.infantCountForHealthCareWorkerForMonth;
+  }
+
+  async GetInfantVisits(id: string): Promise<VisitDto[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { infantVisits: VisitDto[] };
+    }>(``, {
+      query: `
+        query GetInfantVisits($userId: String) {
+          infantVisits(id: $userId) {
+            id
+            actualVisitDate,
+            plannedVisitDate,
+            attended,
+            risk
+            visitType{
+              id
+              order
+              normalizedName
+              description
+              insertedDate
+              isActive
+              name
+              type
+              updatedBy
+              updatedDate
+            }        
+          }
+        }
+        `,
+      variables: {
+        userId: id,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Getting Mothers visits failed - Server connection error'
+      );
+    }
+
+    return response.data.data.infantVisits;
   }
 }
 

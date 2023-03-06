@@ -1,7 +1,8 @@
-import { InfantDto } from '@ecdlink/core';
+import { InfantDto, VisitDto } from '@ecdlink/core';
 
 export interface InfantState {
   infants?: InfantDto[];
   infantsWeeklyVisits?: InfantDto[];
   infantCountForMonth?: number;
+  visits?: VisitDto[];
 }

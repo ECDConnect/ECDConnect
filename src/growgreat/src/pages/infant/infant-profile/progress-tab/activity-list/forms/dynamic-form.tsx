@@ -1,6 +1,18 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button } from '@ecdlink/ui';
-import { InfantDto } from '@ecdlink/core';
+import { InfantDto, usePrevious } from '@ecdlink/core';
+import { useAppDispatch } from '@/store';
+import {
+  CmsVisitDataInputModelInput,
+  CmsVisitSectionInput,
+  InputMaybe,
+} from '@ecdlink/graphql';
+import { getInfantVisitsSelector } from '@/store/infant/infant.selectors';
+import { useSelector } from 'react-redux';
+import { visitActions, visitThunkActions } from '@/store/visit';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { VisitActions } from '@/store/visit/visit.actions';
+import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
 
 export interface Question {
   question: string;
@@ -30,6 +42,7 @@ export interface DynamicFormProps {
   setEnableButton?: (value: boolean) => void;
   onNextStep?: () => void;
   onPreviousStep?: () => void;
+  onClose?: () => void;
 }
 
 export const DynamicForm = ({
@@ -41,10 +54,23 @@ export const DynamicForm = ({
   setSectionQuestions: setSectionQuestionsForm,
   onNextStep,
   setIsTip,
+  onClose,
 }: DynamicFormProps) => {
   const [isEnableButton, setIsEnableButton] = useState(false);
   const [sectionQuestions, setSectionQuestions] =
     useState<SectionQuestions[]>();
+
+  const visits = useSelector(getInfantVisitsSelector);
+
+  const { isLoading } = useThunkFetchCall(
+    'visits',
+    VisitActions.ADD_VISIT_FORM_DATA
+  );
+  const wasLoading = usePrevious(isLoading);
+
+  const { successDialog } = useRequestResponseDialog();
+
+  const appDispatch = useAppDispatch();
 
   const handleSetQuestions = useCallback(
     (value: SectionQuestions[]) => {
@@ -71,11 +97,17 @@ export const DynamicForm = ({
           const mergedQuestions = filteredQuestions.length
             ? [...questionsFromOldSection, ...newQuestions]
             : [...newQuestions];
+
+          const formattedQuestions = mergedQuestions.map((item) => ({
+            ...item,
+            answer: String(item.answer),
+          }));
+
           return [
             ...(otherSections?.length ? otherSections : []),
             {
               visitSection: newVisitSection,
-              questions: mergedQuestions,
+              questions: formattedQuestions,
             },
           ];
         }, []);
@@ -93,17 +125,20 @@ export const DynamicForm = ({
   }, [onNextStep]);
 
   const onSubmit = useCallback(() => {
-    const input = {
-      visitId: '',
+    const input: CmsVisitDataInputModelInput = {
+      visitId: visits[0]?.id,
       infantId: infant?.user?.id,
       visitData: {
         visitName: name,
-        sectionQuestions,
+        sections: sectionQuestions as InputMaybe<
+          Array<InputMaybe<CmsVisitSectionInput>>
+        >,
       },
     };
 
-    console.log('Submitting...', { input });
-  }, [infant?.user?.id, name, sectionQuestions]);
+    appDispatch(visitActions.addVisitFormData(input));
+    appDispatch(visitThunkActions.addVisitFormData(input));
+  }, [appDispatch, infant?.user?.id, name, sectionQuestions, visits]);
 
   const renderContent = useMemo(() => {
     if (!steps) return;
@@ -156,6 +191,13 @@ export const DynamicForm = ({
     };
   }, [currentStep, handleOnNext, onSubmit, steps?.length]);
 
+  useEffect(() => {
+    if (wasLoading && !isLoading) {
+      successDialog();
+      onClose?.();
+    }
+  }, [isLoading, onClose, successDialog, wasLoading]);
+
   return (
     <div className="flex h-full flex-col">
       {renderContent}
@@ -169,7 +211,8 @@ export const DynamicForm = ({
             className="mb-4 w-full"
             text={renderButton.text}
             onClick={renderButton.action}
-            disabled={!isEnableButton}
+            disabled={!isEnableButton || isLoading}
+            isLoading={isLoading}
           />
         </div>
       )}
