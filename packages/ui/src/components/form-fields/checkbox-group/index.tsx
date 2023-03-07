@@ -37,16 +37,19 @@ export const CheckboxGroup = ({
       onCheckboxChange={onChange}
       {...rest}
     />
-    <label htmlFor={id} className="flex w-full items-center gap-2 font-bold">
+    <label
+      htmlFor={id}
+      className="flex w-full flex-col items-start gap-2 font-bold"
+    >
       <div className="flex items-center gap-2">
         {icon && (
-          <span
+          <div
             className={`flex h-9 w-9 items-center justify-center rounded-full ${
               checked ? 'bg-secondary' : 'bg-tertiary'
             }`}
           >
             {icon}
-          </span>
+          </div>
         )}
         <p className={`text-${titleColours} text-base font-bold`}>{title}</p>
       </div>

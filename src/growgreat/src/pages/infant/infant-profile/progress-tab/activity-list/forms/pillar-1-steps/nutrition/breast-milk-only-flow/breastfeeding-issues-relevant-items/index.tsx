@@ -22,12 +22,12 @@ export const BreastfeedingIssuesRelevantItemsStep = ({
   const [selectedItems, setSelectedItems] = useState<Item[]>();
 
   const answers = questions
-    ?.flatMap((section) =>
-      section.questions.filter(
+    ?.map((section) =>
+      section.questions.find(
         (question) => question.question === breastfeedingIssuesCheckboxQuestion
       )
     )
-    .map((question) => question.answer) as string[];
+    .map((question) => question?.answer)[0] as string[];
 
   const items = useMemo(
     (): Item[] => [

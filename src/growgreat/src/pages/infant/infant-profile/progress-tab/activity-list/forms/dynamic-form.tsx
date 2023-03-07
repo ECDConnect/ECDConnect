@@ -98,16 +98,11 @@ export const DynamicForm = ({
             ? [...questionsFromOldSection, ...newQuestions]
             : [...newQuestions];
 
-          const formattedQuestions = mergedQuestions.map((item) => ({
-            ...item,
-            answer: String(item.answer),
-          }));
-
           return [
             ...(otherSections?.length ? otherSections : []),
             {
               visitSection: newVisitSection,
-              questions: formattedQuestions,
+              questions: mergedQuestions,
             },
           ];
         }, []);
@@ -125,14 +120,20 @@ export const DynamicForm = ({
   }, [onNextStep]);
 
   const onSubmit = useCallback(() => {
+    const sections = sectionQuestions?.map((item) => ({
+      ...item,
+      questions: item.questions.map((question) => ({
+        ...question,
+        answer: String(question.answer),
+      })),
+    })) as InputMaybe<Array<InputMaybe<CmsVisitSectionInput>>>;
+
     const input: CmsVisitDataInputModelInput = {
       visitId: visits[0]?.id,
       infantId: infant?.user?.id,
       visitData: {
         visitName: name,
-        sections: sectionQuestions as InputMaybe<
-          Array<InputMaybe<CmsVisitSectionInput>>
-        >,
+        sections,
       },
     };
 
