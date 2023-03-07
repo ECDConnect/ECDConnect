@@ -17,6 +17,10 @@ export const activitiesTypes = {
 };
 
 export const activitiesColours = {
+  pillar1: {
+    primaryColor: '#8CDBDF',
+    secondaryColor: '#a2dadd4d',
+  },
   pillar2: {
     primaryColor: '#FFCE41',
     secondaryColor: '#FFF3CF',

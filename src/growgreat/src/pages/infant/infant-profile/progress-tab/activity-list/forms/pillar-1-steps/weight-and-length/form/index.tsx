@@ -9,24 +9,33 @@ import {
 } from '@ecdlink/ui';
 import { useEffect, useMemo } from 'react';
 import { useDialog } from '@ecdlink/core';
-import { DynamicFormProps } from '../../../dynamic-form';
+import { DynamicFormProps, Question } from '../../../dynamic-form';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
   InfantRoadToHealthModel,
   infantRoadToHealthModelSchema,
 } from '@/schemas/infant/infant-road-to-health';
+import { activitiesColours } from '../../../../activities-list';
+
+export const weightAndLengthFormQuestions = {
+  weight: 'Weight',
+  length: 'Length',
+};
+export const weightAndLengthFormSection = 'Growth monitoring (Weight & length)';
 
 export const WeightAndLengthFormStep = ({
   infant,
   setEnableButton,
+  setSectionQuestions,
 }: DynamicFormProps) => {
-  const { formState, register } = useForm<InfantRoadToHealthModel>({
+  const { formState, register, watch } = useForm<InfantRoadToHealthModel>({
     resolver: yupResolver(infantRoadToHealthModelSchema),
     mode: 'onBlur',
     reValidateMode: 'onChange',
   });
 
+  const { lengthAtBirth, weightAtBirth } = watch();
   const { isValid } = formState;
 
   const name = useMemo(() => infant?.user?.firstName || '', [infant]);
@@ -65,18 +74,39 @@ export const WeightAndLengthFormStep = ({
 
   useEffect(() => {
     if (isValid) {
+      setSectionQuestions?.([
+        {
+          visitSection: weightAndLengthFormSection,
+          questions: [
+            {
+              question: weightAndLengthFormQuestions.weight,
+              answer: weightAtBirth as Question['answer'],
+            },
+            {
+              question: weightAndLengthFormQuestions.length,
+              answer: lengthAtBirth as Question['answer'],
+            },
+          ],
+        },
+      ]);
       return setEnableButton && setEnableButton(true);
     }
 
     return setEnableButton && setEnableButton(false);
-  }, [setEnableButton, isValid]);
+  }, [
+    setEnableButton,
+    isValid,
+    setSectionQuestions,
+    weightAtBirth,
+    lengthAtBirth,
+  ]);
 
   return (
     <>
       <Header
         customIcon={P1}
-        iconHexBackgroundColor="#8CDBDF"
-        hexBackgroundColor="#a2dadd4d"
+        iconHexBackgroundColor={activitiesColours.pillar1.primaryColor}
+        hexBackgroundColor={activitiesColours.pillar1.secondaryColor}
         title="Growth monitoring"
         subTitle="Weight & length"
       />
