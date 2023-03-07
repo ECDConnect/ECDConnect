@@ -13,6 +13,10 @@ import {
   heightForAgeBoys,
   heightForAgeGirls,
 } from './data';
+import {
+  weightAndLengthFormQuestions,
+  weightAndLengthFormSection,
+} from '../form';
 
 const Card = ({
   value,
@@ -42,6 +46,7 @@ const Card = ({
 
 export const WeightAndLengthResultStep = ({
   infant,
+  sectionQuestions,
   setEnableButton,
 }: DynamicFormProps) => {
   const name = useMemo(() => infant?.user?.firstName || '', [infant]);
@@ -50,7 +55,15 @@ export const WeightAndLengthResultStep = ({
     [infant?.caregiver?.firstName]
   );
 
-  console.log(infant);
+  const answers = sectionQuestions?.find(
+    (section) => section.visitSection === weightAndLengthFormSection
+  )?.questions;
+  const weight = answers?.find(
+    (item) => item.question === weightAndLengthFormQuestions.weight
+  )?.answer;
+  const length = answers?.find(
+    (item) => item.question === weightAndLengthFormQuestions.length
+  )?.answer;
 
   const renderCard = useMemo(() => {
     // TODO: add integration
@@ -89,8 +102,8 @@ export const WeightAndLengthResultStep = ({
         />
         {renderCard}
         <div className="flex gap-2">
-          <Card title="Weight" value="7" subTitle="KG" />
-          <Card title="Weight" value="60" subTitle="CM" />
+          <Card title="Weight" value={String(weight)} subTitle="KG" />
+          <Card title="Length" value={String(length)} subTitle="CM" />
         </div>
         <Typography type="h3" color="textDark" text="Weight for age (kg)" />
         <Chart
