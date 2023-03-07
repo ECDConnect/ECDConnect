@@ -98,7 +98,7 @@ namespace EcdLink.Api.CoreApi {
             public const string try_to_make_sure = "Try to make sure you give ";
             public const string only_milk = " only breast milk or only formula milk";
             public const string poor_dietary_diversity = "Poor dietary diversity: {x} out of {y} food groups";
-            public const string give_client_food = "You are giving {client} foods from {x} out of {y} groups.Try to give {client} a variety of foods!";
+            public const string give_client_food = "You are giving {client} foods from {x} out of {y} groups. Try to give {client} a variety of foods!";
             public const string good_dietary_diversity = "Good dietary diversity: {x} out of {y} food groups!";
             public const string give_client_food_most = "You are giving {client} foods from most of the groups!";
             public const string dev_is_struggling = "{client} is struggling with ";
@@ -123,9 +123,9 @@ namespace EcdLink.Api.CoreApi {
             public const string q_length = "Length";
             public const string q_muac = "What is {client}'s MUAC today?";
             public const string q_eat_drink = "What did {client} eat or drink in the last 24 hours?";
+            public const string q_eat_drink_nutrition = "What did you give {client} to eat or drink in the last 24 hours?";
             public const string q_breastfeeding_club = "Would you like to join a breastfeeding club?";
             public const string q_mixed_foods = "Which of these foods have you given {client}?  You can choose more than one.";
-            public const string q_tick_foods = "Tick all of the foods {client} talks about:";
             public const string q_check_can_do = "Check what {client} can do:";
             public const string q_hearing = "Hearing";
             public const string q_seeing = "Seeing";
@@ -174,6 +174,15 @@ namespace EcdLink.Api.CoreApi {
             public const string p4_ds_6 = "Vomiting everything";
             public const string p4_ds_7 = "Fever and not feeding";
             public const string p4_ds_8 = "Unable to breastfeed";
+
+            public const string p1_1 = "Breast milk";
+            public const string p1_2 = "Starch";
+            public const string p1_3 = "Nuts, beans, peas, lentils";
+            public const string p1_4 = "Dairy";
+            public const string p1_5 = "Meat";
+            public const string p1_6 = "Eggs";
+            public const string p1_7 = "Vitamin A rich fruit & vegetables";
+            public const string p1_8 = "Other fruits & vegetables";
 
 
             // Answers
