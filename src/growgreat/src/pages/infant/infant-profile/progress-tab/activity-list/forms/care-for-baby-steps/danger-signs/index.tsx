@@ -28,6 +28,10 @@ export const DangerSignsStep = ({
   const [answers, setAnswer] = useState<(string | number | undefined)[]>();
 
   const name = useMemo(() => infant?.user?.firstName || '', [infant]);
+  const caregiverName = useMemo(
+    () => infant?.caregiver?.firstName || '',
+    [infant?.caregiver?.firstName]
+  );
 
   const visitSection = 'Danger signs';
   // TODO: add integration
@@ -41,19 +45,18 @@ export const DangerSignsStep = ({
   // TODO: add integration
   const isFollowUp = false;
 
+  const noneOption = 'None of the above';
+
   const options = [
     { name: 'Blue skin colour' },
     { name: 'Baby is not alert' },
     { name: 'Fast breathing or difficulty breathing' },
     { name: 'Poor feeding or repeated vomiting' },
     { name: 'Low (below 35 degrees C) or high temperature' },
-    {
-      name: 'Yellow skin or eyes',
-      alert: `Eish! Refer ${infant?.caregiver?.firstName} & ${name} to the clinic urgently and discuss the importance of seeking help.`,
-    },
+    { name: 'Yellow skin or eyes' },
     { name: 'Severe eye infection' },
     { name: 'Severe cord infection' },
-    { name: 'None of the above' },
+    { name: noneOption },
   ];
 
   const question = `Tick the danger signs {client} is experiencing:`;
@@ -61,10 +64,9 @@ export const DangerSignsStep = ({
   const onCheckboxChange = useCallback(
     (event: CheckboxChange) => {
       if (event.checked) {
-        const none = 'None of the above';
         if (
-          (event.value === none && answers?.length) ||
-          answers?.includes(none)
+          (event.value === noneOption && answers?.length) ||
+          answers?.includes(noneOption)
         ) {
           return dialog({
             blocking: false,
@@ -170,7 +172,7 @@ export const DangerSignsStep = ({
             <Divider dividerType="dashed" className="my-4" />
             <Typography
               type="h4"
-              text={replaceBraces(question, infant?.caregiver?.firstName || '')}
+              text={replaceBraces(question, caregiverName)}
               color="black"
             />
             {options.map((option, index) => (
@@ -203,11 +205,11 @@ export const DangerSignsStep = ({
                 )}
               </div>
             ))}
-            {answers?.find((item) => item === options[5].name) && (
+            {answers?.some((item) => item !== noneOption) && (
               <Alert
                 className="mt-4"
                 type="error"
-                title={options[5].alert}
+                title={`Eish! Refer ${caregiverName} & ${name} to the clinic urgently and discuss the importance of seeking help.`}
                 customIcon={
                   <div className="rounded-full">
                     {renderIcon(
