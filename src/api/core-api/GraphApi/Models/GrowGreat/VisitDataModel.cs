@@ -10,8 +10,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat {
         public string Question { get; set; }
         public string QuestionAnswer { get; set; }
     }
-
-
     public class VisitDataStatusModel
     {
         public string Id { get; set; }
@@ -27,9 +25,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat {
     {
         public virtual ICollection<VisitDataStatusModel> Referrals { get; set; }
     }
-
-
-   
 
     public class CMSVisitDataInputModel
     {
