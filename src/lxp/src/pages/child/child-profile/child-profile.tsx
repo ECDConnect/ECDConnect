@@ -601,8 +601,10 @@ export const ChildProfile: React.FC = () => {
         {showCertificateError() && (
           <Alert
             className="m-4"
-            title={'Problem with birth certificate or clinic card'}
-            list={[`Upload a new birth certificate or clinic card now`]}
+            title={'No birth certificate or clinic card'}
+            list={[
+              `Please upload a birth certificate or clinic card for ${childUser?.firstName}`,
+            ]}
             type="error"
             button={
               <Button
