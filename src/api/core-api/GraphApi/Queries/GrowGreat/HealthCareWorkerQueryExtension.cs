@@ -12,8 +12,7 @@ using Microsoft.AspNetCore.Http;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
-{
+namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat {
     [ExtendObjectType(OperationTypeNames.Query)]
     public class HealthCareWorkerQueryExtension
     {
@@ -46,9 +45,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         public HCWVisitStatus GetHealthCareWorkerVisitStatus([Service] VisitManager visitManager, string userId)
         {
             HCWVisitStatus visitStatus = new HCWVisitStatus();
-            visitStatus.MotherOverDueVisits = visitManager.GetMissedVisitsForHCWCount(userId, "mother");
-            visitStatus.MotherDueVisits = visitManager.GetVisitsDueForHCWCount(userId, "mother");
-            visitStatus.ChildDueVisits = visitManager.GetVisitsDueForHCWCount(userId, "child");
+            visitStatus.MotherOverDueVisits = visitManager.GetMissedVisitsForHCWCount(userId, Constants.GGSettings.client_mother);
+            visitStatus.MotherDueVisits = visitManager.GetVisitsDueForHCWCount(userId, Constants.GGSettings.client_mother);
+            visitStatus.ChildDueVisits = visitManager.GetVisitsDueForHCWCount(userId, Constants.GGSettings.client_child);
 
             return visitStatus;
         }
