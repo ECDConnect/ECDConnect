@@ -22,13 +22,13 @@ namespace ECDLink.Core.Services
         public IncomeExpenseService(
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory, 
-            ISystemSetting<IncomeStatementSubmitStartOptions> submitStartDate, ISystemSetting<IncomeStatementSubmitEndOptions> submitendDate)
+            ISystemSetting<IncomeStatementSubmitStartOptions> submitStartDate, ISystemSetting<IncomeStatementSubmitEndOptions> submitEndDate)
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
             _applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
             _submitStartDate = submitStartDate;
-            _submitEndDate = submitendDate;
+            _submitEndDate = submitEndDate;
         }
 
         #region Statement Queries

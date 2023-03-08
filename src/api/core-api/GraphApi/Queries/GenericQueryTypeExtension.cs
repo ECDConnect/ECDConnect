@@ -31,7 +31,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
         public List<Language> GetAllContentLanguages(string contentType)
         {
-            Guid tenantId = TenantExecutionContext.Tenant.Id;
             var dynamicContentList = new List<Language>();
 
             var cTypes = _context.ContentTypes
