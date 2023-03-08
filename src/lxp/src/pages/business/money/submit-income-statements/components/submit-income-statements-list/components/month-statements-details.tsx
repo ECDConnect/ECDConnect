@@ -31,21 +31,21 @@ import { PreschoolsFeesChildList } from './preschool-fees-details/preschool-fees
 export const MonthStatementsDetails: React.FC = () => {
   const userAuth = useSelector(authSelectors.getAuthUser);
   const history = useHistory();
+  const { isOnline } = useOnlineStatus();
   const location = useLocation<MonthStatementsDetailsState>();
   const statementMonth = Number(location?.state?.month) || 0;
   const statementYear = Number(location?.state?.year) || 0;
   const statementTitle = `${getMonthName(
     Number(statementMonth) - 1
   )} ${statementYear}`;
-  const { isOnline } = useOnlineStatus();
 
   const goBack = () => {
     history.push(ROUTES.BUSINESS_PREVIOUS_STATEMENTS_LIST);
   };
 
   const [showPreschoolDetails, setShowPreschoolDetails] = useState(false);
-  // const income = useSelector(statementsSelectors.getIncome);
-  // const expenses = useSelector(statementsSelectors.getExpenses);
+  const offlineIncome = useSelector(statementsSelectors.getIncome);
+  const offlineExpenses = useSelector(statementsSelectors.getExpenses);
   const balanceSheet = useSelector(statementsSelectors.getBalanceSheet);
   const [income, setIncome] = useState<IncomeStatementsDto[]>([]);
   const [expenses, setExpenses] = useState<ExpensesStatementsDto[]>([]);
@@ -88,6 +88,9 @@ export const MonthStatementsDetails: React.FC = () => {
   const filteredIncome = isSameMonth ? income : submittedIncome;
   const filteredExpenses = isSameMonth ? expenses : submittedExpenses;
 
+  const offlineFilteredIncome = isOnline ? filteredIncome : offlineIncome;
+  const offlineFilteredExpense = isOnline ? filteredExpenses : offlineExpenses;
+
   const totalIncome = isSameMonth
     ? income?.reduce(function (prev: any, current: any) {
         return prev + +current.amount;
@@ -128,7 +131,7 @@ export const MonthStatementsDetails: React.FC = () => {
     const dbeSubsidyValue: IncomeStatementsDto[] = [];
     const otherValue: IncomeStatementsDto[] = [];
 
-    filteredIncome?.map((item: any) => {
+    offlineFilteredIncome?.map((item: any) => {
       if (item?.incomeTypeId === preschoolIncome?.id) {
         preschoolValue.push(item);
         setPreschoolFees(preschoolValue);
@@ -157,6 +160,7 @@ export const MonthStatementsDetails: React.FC = () => {
     filteredIncome,
     income,
     isSameMonth,
+    offlineFilteredIncome,
     otherIncome?.id,
     preschoolIncome?.id,
     startupIncome?.id,
@@ -172,9 +176,7 @@ export const MonthStatementsDetails: React.FC = () => {
     const utilitiesValue: ExpensesStatementsDto[] = [];
     const salaryValue: ExpensesStatementsDto[] = [];
 
-    const expensesFiltered = isSameMonth ? expenses : submittedExpenses;
-
-    expensesFiltered?.map((item: any) => {
+    offlineFilteredExpense?.map((item: any) => {
       if (item?.expenseTypeId === rentExpense?.id) {
         rentValue.push(item);
         setRent(rentValue);
@@ -217,6 +219,7 @@ export const MonthStatementsDetails: React.FC = () => {
     learningMaterialsExpense?.id,
     maintenance.id,
     maintenanceExpense?.id,
+    offlineFilteredExpense,
     otherExpense?.id,
     otherIncome.id,
     preschoolIncome.id,
