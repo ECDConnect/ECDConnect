@@ -18,8 +18,6 @@ namespace ECDLink.EGraphQL.Services
                     return $"Get{contentType.NoSpace()}ListByUserId";
                 case GraphFieldTypeEnum.GetAll:
                     return $"GetAll{contentType.NoSpace()}";
-                case GraphFieldTypeEnum.GetAllLocale:
-                    return $"GetAll{contentType.NoSpace()}Locale";
                 case GraphFieldTypeEnum.Create:
                     return $"create{contentType.NoSpace()}";
                 case GraphFieldTypeEnum.Update:

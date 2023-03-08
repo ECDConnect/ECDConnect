@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ECDLink.Security.Extensions;
+using ECDLink.Core.SystemSettings.SystemOptions;
 
 namespace ECDLink.Core.Services
 {
@@ -15,14 +16,17 @@ namespace ECDLink.Core.Services
         private IHttpContextAccessor _contextAccessor;
         private readonly IGenericRepositoryFactory _repoFactory;
         private string _applicationUserId;
+        private readonly ISystemSetting<IncomeStatementCutoffOptions> _cutoffDate;
 
         public IncomeExpenseService(
             IHttpContextAccessor contextAccessor,
-            IGenericRepositoryFactory repoFactory)
+            IGenericRepositoryFactory repoFactory, 
+            ISystemSetting<IncomeStatementCutoffOptions> cutoffDate)
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
             _applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
+            _cutoffDate = cutoffDate;
         }
 
         #region Statement Queries
@@ -53,6 +57,7 @@ namespace ECDLink.Core.Services
             List<StatementsBalanceSheet> balanceSheets = new List<StatementsBalanceSheet>();
             var statementsRepo = _repoFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _applicationUserId);
             DateTime nextMonth = DateTime.Now.AddMonths(1);
+            var cutOffDate = _cutoffDate;
 
             var statements = statementsRepo.GetAll().Where(x => string.Equals(x.UserId, userId) && x.Submitted.Equals(true)).ToList();
             if (statements.Any())
@@ -245,7 +250,7 @@ namespace ECDLink.Core.Services
             return expenseRows;
         }
 
-        private IncomeExpenseLinesMonthly GetMonthlyIncomeExpenses(string userId, int year, int month)
+        private IncomeExpenseLinesMonthly GetMonthlyIncomeExpenses( string userId, int year, int month)
         {
             IncomeExpenseLinesMonthly incomeExpenses = new IncomeExpenseLinesMonthly();
             DateTime previousTimePeriod = DateTime.Now.AddMonths(-1); //previous months date to check for any unsubmitted records of current - 1 month

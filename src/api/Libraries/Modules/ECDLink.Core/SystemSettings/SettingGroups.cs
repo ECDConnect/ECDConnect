@@ -168,5 +168,10 @@
         {
             public const string SyncDelay = "General.SyncDelay";
         }
+
+        public static class IncomeStatement
+        {
+            public const string IncomeStatementCutoff = "General.IncomeStatementCutoff";
+        }
     }
 }

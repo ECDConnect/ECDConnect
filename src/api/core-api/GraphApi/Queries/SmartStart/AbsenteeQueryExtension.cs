@@ -11,6 +11,7 @@ using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -57,6 +58,20 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             List<Absentees> absents = dbRepo.GetAll().Where(x => x.UserId.Contains(userId)).ToList();
 
             return absents.Count();
+        }
+
+        public List<Absentees> GetAbsentees(
+[Service] IHttpContextAccessor contextAccessor,
+IGenericRepositoryFactory repoFactory,
+string userId,
+DateTime fromDate,
+DateTime toDate)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var absenteeRepo = repoFactory.CreateRepository<Absentees>(userContext: uId);
+
+            var absentees = absenteeRepo.GetAll().Where(x => x.UserId == userId).ToList();
+            return absentees.Where(x => x.AbsentDate >= fromDate && x.AbsentDate <= toDate).ToList();
         }
 
     }
