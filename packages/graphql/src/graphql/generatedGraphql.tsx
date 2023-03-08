@@ -1241,6 +1241,21 @@ export type ComparableNullableOfInt32OperationFilterInput = {
   nlte?: InputMaybe<Scalars['Int']>;
 };
 
+export type ComparableNullableOfSingleOperationFilterInput = {
+  eq?: InputMaybe<Scalars['Float']>;
+  gt?: InputMaybe<Scalars['Float']>;
+  gte?: InputMaybe<Scalars['Float']>;
+  in?: InputMaybe<Array<InputMaybe<Scalars['Float']>>>;
+  lt?: InputMaybe<Scalars['Float']>;
+  lte?: InputMaybe<Scalars['Float']>;
+  neq?: InputMaybe<Scalars['Float']>;
+  ngt?: InputMaybe<Scalars['Float']>;
+  ngte?: InputMaybe<Scalars['Float']>;
+  nin?: InputMaybe<Array<InputMaybe<Scalars['Float']>>>;
+  nlt?: InputMaybe<Scalars['Float']>;
+  nlte?: InputMaybe<Scalars['Float']>;
+};
+
 export type Consent = {
   __typename?: 'Consent';
   description?: Maybe<Scalars['String']>;
@@ -8200,42 +8215,42 @@ export type VisitFilterInput = {
 
 export type VisitGrowthData = {
   __typename?: 'VisitGrowthData';
-  height: Scalars['Float'];
+  height?: Maybe<Scalars['Float']>;
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
-  month: Scalars['Int'];
+  month?: Maybe<Scalars['Int']>;
   name?: Maybe<Scalars['String']>;
   section?: Maybe<Scalars['String']>;
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
-  weight: Scalars['Float'];
+  weight?: Maybe<Scalars['Float']>;
 };
 
 export type VisitGrowthDataFilterInput = {
   and?: InputMaybe<Array<VisitGrowthDataFilterInput>>;
-  height?: InputMaybe<ComparableDoubleOperationFilterInput>;
+  height?: InputMaybe<ComparableNullableOfSingleOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
-  month?: InputMaybe<ComparableInt32OperationFilterInput>;
+  month?: InputMaybe<ComparableNullableOfInt32OperationFilterInput>;
   name?: InputMaybe<StringOperationFilterInput>;
   or?: InputMaybe<Array<VisitGrowthDataFilterInput>>;
   section?: InputMaybe<StringOperationFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
-  weight?: InputMaybe<ComparableDoubleOperationFilterInput>;
+  weight?: InputMaybe<ComparableNullableOfSingleOperationFilterInput>;
 };
 
 export type VisitGrowthDataInput = {
-  Height: Scalars['Float'];
+  Height?: InputMaybe<Scalars['Float']>;
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
-  Month: Scalars['Int'];
+  Month?: InputMaybe<Scalars['Int']>;
   Name?: InputMaybe<Scalars['String']>;
   Section?: InputMaybe<Scalars['String']>;
   UpdatedBy?: InputMaybe<Scalars['String']>;
-  Weight: Scalars['Float'];
+  Weight?: InputMaybe<Scalars['Float']>;
 };
 
 export type VisitInput = {
