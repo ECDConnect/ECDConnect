@@ -88,7 +88,7 @@ string classroomId)
                                 return new ChildCreatedByDetail()
                                 {
                                     ChildUserId = child.UserId,
-                                    FullName = child.User.FullName,
+                                    FullName = child.User.FirstName + " " + child.User.Surname,
                                     CreatedByName = child.InsertedBy,
                                     CreatedById = child.UpdatedBy,
                                     CreatedByDate = child.InsertedDate,
