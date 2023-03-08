@@ -602,11 +602,7 @@ export const ChildProfile: React.FC = () => {
           <Alert
             className="m-4"
             title={'Problem with birth certificate or clinic card'}
-            list={[
-              `SmartStart found a problem with ${
-                childUser?.firstName || 'this child'
-              }'s document. Please upload a new birth certificate or clinic card now.`,
-            ]}
+            list={[`Upload a new birth certificate or clinic card now`]}
             type="error"
             button={
               <Button
