@@ -1,6 +1,7 @@
 export { WeightAndLengthFormStep } from './weight-and-length/form';
 export { WeightAndLengthResultStep } from './weight-and-length/result';
-export { MidUpperArmCircumferenceStep } from './mid-upper-arm-circumference';
+export { MidUpperArmCircumferenceResultStep } from './mid-upper-arm-circumference/result';
+export { MidUpperArmCircumferenceFormStep } from './mid-upper-arm-circumference/form';
 export { InterventionsStep } from './interventions';
 export { NutritionStep } from './nutrition';
 export { BreastMilkOnlyStep } from './nutrition/breast-milk-only-flow/breast-milk-only';

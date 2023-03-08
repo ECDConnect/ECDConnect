@@ -50,6 +50,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
             entityToUpdate.UpdatedDate = DateTime.Now;
             entityToUpdate.UpdatedBy = _applicationUserId;
             entityToUpdate.Attended = true;
+            entityToUpdate.ActualVisitDate = DateTime.Now;
             _visitRepo.Update(entityToUpdate);
 
             // then handle status data

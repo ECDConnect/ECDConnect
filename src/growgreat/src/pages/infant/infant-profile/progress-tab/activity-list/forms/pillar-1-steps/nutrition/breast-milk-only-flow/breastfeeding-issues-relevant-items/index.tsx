@@ -21,13 +21,11 @@ export const BreastfeedingIssuesRelevantItemsStep = ({
 }: DynamicFormProps) => {
   const [selectedItems, setSelectedItems] = useState<Item[]>();
 
-  const answers = questions
-    ?.flatMap((section) =>
-      section.questions.filter(
-        (question) => question.question === breastfeedingIssuesCheckboxQuestion
-      )
+  const answers = questions?.flatMap((question) =>
+    question.questions.filter(
+      (item) => item.question === breastfeedingIssuesCheckboxQuestion
     )
-    .map((question) => question.answer) as string[];
+  )?.[0].answer as string[];
 
   const items = useMemo(
     (): Item[] => [

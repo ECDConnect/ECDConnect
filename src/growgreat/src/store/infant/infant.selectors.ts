@@ -1,4 +1,4 @@
-import { InfantDto } from '@ecdlink/core';
+import { InfantDto, VisitDto } from '@ecdlink/core';
 import { RootState } from '../types';
 
 export const getInfants = (state: RootState): InfantDto[] =>
@@ -15,6 +15,9 @@ export const getInfantsWeeklyVisitsSelector = (state: RootState): InfantDto[] =>
 
 export const getInfantCountForMonth = (state: RootState): number =>
   state.infants.infantCountForMonth || 0;
+
+export const getInfantVisitsSelector = (state: RootState): VisitDto[] =>
+  state.infants.visits || [];
 // export const getCaregiverById = (id?: string) =>
 //   createSelector(
 //     (state: RootState) => state.caregivers.caregivers,

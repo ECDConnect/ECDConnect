@@ -175,6 +175,7 @@ export const Form = ({ onBack }: FormProps) => {
         setSectionQuestions={setSectionQuestions}
         onPreviousStep={handleOnBack}
         onNextStep={handleOnNext}
+        onClose={onBack}
       />
     </BannerWrapper>
   );

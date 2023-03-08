@@ -17,6 +17,8 @@ import { getInfantById } from '@/store/infant/infant.selectors';
 import { activitiesList, activitiesTypes } from './activities-list';
 import { Form } from './forms';
 import { useWindowSize } from '@reach/window-size';
+import { infantThunkActions } from '@/store/infant';
+import { useAppDispatch } from '@/store';
 
 export const INFANT_PROFILE_TABS = {
   VISITS: 0,
@@ -41,6 +43,8 @@ export const ActivityList: React.FC = () => {
   const location = useLocation();
 
   const [, , , infantId] = location.pathname.split('/');
+
+  const appDispatch = useAppDispatch();
 
   const infant = useSelector((state: RootState) =>
     getInfantById(state, infantId)
@@ -98,6 +102,10 @@ export const ActivityList: React.FC = () => {
       setShowForm(true);
     }
   }, [selectedOption]);
+
+  useLayoutEffect(() => {
+    appDispatch(infantThunkActions.getInfantVisits({ infantId })).unwrap();
+  }, [appDispatch, infantId]);
 
   if (showForm && selectedOption) {
     return <Form onBack={onFormBack} />;
