@@ -36,19 +36,19 @@ export const DevelopmentalScreeningWeeksStep = ({
     {
       icon: <EarIcon />,
       title: 'Hearing',
-      question: 'Felt unable to stop worrying or thinking too much?',
+      question: 'Gets a fright when they hear a loud sound',
       answer: '',
     },
     {
       icon: <EyeIcon />,
       title: 'Seeing',
-      question: 'Felt down, depressed or hopeless?',
+      question: 'Follows faces or close objects with their eyes',
       answer: '',
     },
     {
       icon: <BrainIcon className="h-6 w-6" />,
       title: 'Brain',
-      question: 'Had thoughts and plans to harm yourself or commit suicide?',
+      question: 'Smiles at people',
       answer: '',
     },
     {
@@ -181,7 +181,7 @@ export const DevelopmentalScreeningWeeksStep = ({
         ) : (
           <>
             <TipCard
-              buttonText="See more info"
+              buttonText="See activities to share"
               buttonIcon="InformationCircleIcon"
               onClick={() => setIsTip && setIsTip(true)}
             />
@@ -209,7 +209,9 @@ export const DevelopmentalScreeningWeeksStep = ({
               </div>
             ))}
             <Divider dividerType="dashed" />
-            <Label text="Do you have any specific concerns about how Themba hears, sees, communicates, learns, behaves, interacts with others, or how they use their hands, arms, legs and body?" />
+            <Label
+              text={`Do you have any specific concerns about how ${name} hears, sees, communicates, learns, behaves, interacts with others, or how they use their hands, arms, legs and body?`}
+            />
             <Divider dividerType="dashed" />
             <FormInput
               label="Add a note"
