@@ -169,9 +169,10 @@
             public const string SyncDelay = "General.SyncDelay";
         }
 
-        public static class IncomeStatement
+        public static class IncomeStatements
         {
-            public const string IncomeStatementCutoff = "General.IncomeStatementCutoff";
+            public const string IncomeStatementSubmitStart = "General.IncomeStatementSubmitStart";
+            public const string IncomeStatementSubmitEnd = "General.IncomeStatementSubmitEnd";
         }
     }
 }
