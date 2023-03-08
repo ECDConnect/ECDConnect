@@ -177,10 +177,27 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
         attended: x.status === AttendanceStatus.Present,
       })) || [];
 
+    const dateString = attendanceDate.toISOString();
+
+    // Create a new Date object from the date string
+    const dateObj = new Date(dateString);
+
+    // Get the date value (1-31) from the Date object
+    const dateValue = dateObj.getDate();
+
+    // Add 1 day to the date value
+    const newDateValue = dateValue + 1;
+
+    // Set the new date value to the Date object
+    dateObj.setDate(newDateValue);
+
+    // Get the updated date string in ISO format
+    const updatedAttendanceDateString = dateObj.toISOString();
+
     const trackAttendanceInput = mapTrackAttendance(
       user?.id || '',
       allAttendedChildren,
-      attendanceDate.toISOString(),
+      updatedAttendanceDateString,
       currentProgramme.id ?? ''
     );
 

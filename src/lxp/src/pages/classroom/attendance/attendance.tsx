@@ -225,7 +225,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       {attendanceComponentType && !seeRegister ? (
         getComponentToRender(attendanceComponentType)
       ) : (
-        <AttendanceSummary />
+        <AttendanceSummary hidePopup={seeRegister} />
       )}
       <div className={'flex h-full w-full flex-1 flex-col px-4'}>
         {attendanceComponentType === 'attendance' && !seeRegister && (
