@@ -5,6 +5,7 @@ import { ChangeEvent, useMemo, useState } from 'react';
 import { DynamicFormProps } from '../../../dynamic-form';
 import { ReactComponent as Polly } from '@/assets/momImageSvg.svg';
 import { activitiesColours } from '../../../../activities-list';
+import { replaceBraces } from '@ecdlink/core';
 
 export const MidUpperArmCircumferenceFormStep = ({
   infant,
@@ -15,7 +16,7 @@ export const MidUpperArmCircumferenceFormStep = ({
 
   const name = useMemo(() => infant?.user?.firstName || '', [infant]);
 
-  const question = `What is ${name}’s MUAC today?`;
+  const question = `What is {client}’s MUAC today?`;
   const visitSection = 'Growth monitoring (Mid-upper arm circumference)';
 
   const handleChange = (
@@ -57,7 +58,11 @@ export const MidUpperArmCircumferenceFormStep = ({
             </div>
           }
         />
-        <Typography type="h4" color="textDark" text={question} />
+        <Typography
+          type="h4"
+          color="textDark"
+          text={replaceBraces(question, name)}
+        />
         <div className="mb-4 flex flex-row items-center gap-1">
           <FormInput
             placeholder={'Tap to add'}
