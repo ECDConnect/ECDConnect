@@ -2,7 +2,7 @@
 
 namespace ECDLink.Core.SystemSettings.SystemOptions
 {
-    [SettingGroup(SettingGroups.Invitation.InvitationCutoffDelay)]
+    [SettingGroup(SettingGroups.Integration.IntegrationDelay)]
     public class IntegrationDelayOptions
     {
         public string IntegrationDelay { get; set; }

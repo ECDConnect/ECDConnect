@@ -224,11 +224,6 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             return null;
         }
 
-        public override IQueryable<T> GetAllLocale()
-        {
-            return base.GetAllLocale();
-        }
-
 
         public override T Insert(T entity)
         {
