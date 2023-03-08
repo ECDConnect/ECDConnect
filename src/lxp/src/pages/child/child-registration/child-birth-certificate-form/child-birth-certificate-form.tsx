@@ -3,14 +3,13 @@ import {
   ActionModal,
   Alert,
   Button,
-  ButtonGroup,
-  ButtonGroupOption,
-  ButtonGroupTypes,
   Checkbox,
   classNames,
   Dialog,
   DialogPosition,
   Divider,
+  Dropdown,
+  DropDownOption,
   ImageInput,
   renderIcon,
   Typography,
@@ -42,8 +41,6 @@ export const ChildBirthCertificateForm: React.FC<
   childInformation,
   isSingleForm = false,
 }) => {
-  const [hasUploadedDocument, setHasUploadedDocument] =
-    useState<boolean>(false);
   const [hasChildDocumentation, setHasChildDocumentation] =
     useState<boolean>(true);
   const [selectedBirthDocumentType, setSelectedBirthDocumentType] =
@@ -59,7 +56,6 @@ export const ChildBirthCertificateForm: React.FC<
     useState<boolean>(false);
 
   const {
-    formState: childBirthCertificateFormState,
     getValues: getChildBirthCertificateFormValues,
     setValue: setChildBirthCertificateFormValue,
     reset: resetChildBirthCertificateFormValue,
@@ -70,11 +66,18 @@ export const ChildBirthCertificateForm: React.FC<
     resolver: yupResolver(childBirthCertificateFormSchema),
     mode: 'all',
   });
-  const { isValid } = childBirthCertificateFormState;
 
-  const { birthCertificateImage, birthCertificateType } = useWatch({
+  const {
+    birthCertificateImage,
+    birthCertificateType,
+    acceptChildDocumentationDeclaration,
+  } = useWatch({
     control: childBirthCertificateFromControl,
   });
+  const hasBirthCertificateorClinicCard =
+    birthCertificateType === 'birthCertificate' ||
+    birthCertificateType === 'clinicCard';
+  const hasNoDocuments = birthCertificateType === 'noDocument';
 
   useEffect(() => {
     if (childBirthCertificateForm) {
@@ -102,14 +105,15 @@ export const ChildBirthCertificateForm: React.FC<
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const birthDocumentationTypeOptions: ButtonGroupOption<BirthDocumentationType>[] =
+  const birthDocumentationDropdownOptions: DropDownOption<BirthDocumentationType>[] =
     [
-      { text: 'Birth certificate', value: 'birthCertificate' },
-      { text: 'Clinic card', value: 'clinicCard' },
+      { label: 'Birth certificate', value: 'birthCertificate' },
+      { label: 'Clinic card', value: 'clinicCard' },
+      { label: 'Do not have document for child', value: 'noDocument' },
     ];
 
   const handleFormSubmit = () => {
-    if (isValid && onSubmit) {
+    if (onSubmit) {
       onSubmit(getChildBirthCertificateFormValues());
     }
   };
@@ -145,14 +149,6 @@ export const ChildBirthCertificateForm: React.FC<
     setDisplayPhotoDeleteWarning(false);
   };
 
-  const handleMissingDocument = () => {
-    if (childBirthDocumentPhotoUrl) {
-      return setDisplayPhotoDeleteWarning(true);
-    }
-
-    return toggleHasChildDocumentation();
-  };
-
   const deleteBirthDocumentPhoto = () => {
     setChildBirthCertificateFormValue('birthCertificateImage', '');
     setChildBirthDocumentPhotoUrl('');
@@ -165,40 +161,35 @@ export const ChildBirthCertificateForm: React.FC<
       <div className={styles.wrapper}>
         <Typography type={'h1'} text={childName} color={'primary'} />
         <Typography type={'h2'} text={'Documentation'} color={'textMid'} />
-        {hasChildDocumentation && (
-          <div>
-            <div className={'pt-3'}>
-              <Typography
-                className={'pb-2'}
-                weight="bold"
-                type={'body'}
-                color={'textMid'}
-                text={'Choose a document you want to upload:'}
-              ></Typography>
-              <div>
-                <div>
-                  <ButtonGroup
-                    options={birthDocumentationTypeOptions}
-                    onOptionSelected={(
-                      value: BirthDocumentationType | BirthDocumentationType[]
-                    ) => {
-                      setChildBirthCertificateFormValue(
-                        'birthCertificateType',
-                        value as BirthDocumentationType
-                      );
-                      setSelectedBirthDocumentType(
-                        value as BirthDocumentationType
-                      );
-                    }}
-                    selectedOptions={selectedBirthDocumentType}
-                    color="secondary"
-                    type={ButtonGroupTypes.Button}
-                    className={'w-full'}
-                    multiple={false}
-                  />
-                </div>
-              </div>
+        <div>
+          <div className={'pt-3'}>
+            <Typography
+              className={'pb-2'}
+              weight="bold"
+              type={'body'}
+              color={'textMid'}
+              text={'Choose a document you want to upload:'}
+            ></Typography>
+            <div>
+              <Dropdown
+                showSearch
+                placeholder="Tap to choose a document"
+                list={birthDocumentationDropdownOptions}
+                selectedValue={selectedBirthDocumentType}
+                onChange={(
+                  value: BirthDocumentationType | BirthDocumentationType[]
+                ) => {
+                  setChildBirthCertificateFormValue(
+                    'birthCertificateType',
+                    value as BirthDocumentationType
+                  );
+                  setSelectedBirthDocumentType(value as BirthDocumentationType);
+                  toggleHasChildDocumentation();
+                }}
+              />
             </div>
+          </div>
+          {hasBirthCertificateorClinicCard && (
             <ImageInput<ChildBirthCertificateFormModel>
               acceptedFormats={acceptedFormats}
               label={`Take a photo of ${childName}’s ${
@@ -217,25 +208,12 @@ export const ChildBirthCertificateForm: React.FC<
                   'birthCertificateImage',
                   imageString
                 );
-                setHasUploadedDocument(true);
                 triggerChildBirthCertificateForm();
               }}
             ></ImageInput>
-            {!hasUploadedDocument && (
-              <div className={'w-max'}>
-                <Typography
-                  onClick={handleMissingDocument}
-                  className={'cursor-pointer pb-4'}
-                  text={`I do not have ${childName}’s documents.`}
-                  underline={true}
-                  type="help"
-                  color={'primary'}
-                />
-              </div>
-            )}
-          </div>
-        )}
-        {!hasChildDocumentation && (
+          )}
+        </div>
+        {hasNoDocuments && (
           <div className={'pt-3'}>
             <Typography
               className={'pb-2'}
@@ -267,18 +245,6 @@ export const ChildBirthCertificateForm: React.FC<
               title={`If you can get ${childName}’s documents in future, you are required to upload them as soon as possible.`}
               type={'info'}
             />
-            <div className={'w-max'}>
-              <Typography
-                onClick={() => {
-                  toggleHasChildDocumentation();
-                }}
-                className={'cursor-pointer py-4'}
-                text={`I have ${childName}’s documents.`}
-                underline={true}
-                type="help"
-                color={'primary'}
-              />
-            </div>
           </div>
         )}
         <Divider></Divider>
@@ -289,7 +255,9 @@ export const ChildBirthCertificateForm: React.FC<
             size="small"
             color="primary"
             type="filled"
-            disabled={!isValid}
+            disabled={
+              !birthCertificateImage && !acceptChildDocumentationDeclaration
+            }
           >
             {renderIcon(
               isSingleForm ? 'SaveIcon' : 'ArrowCircleRightIcon',
