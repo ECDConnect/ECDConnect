@@ -34,6 +34,7 @@ import MultiRouteWrapper from '@/pages/classroom/attendance/components/attendanc
 export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   const userData = useSelector(userSelectors.getUser);
   const [seeRegister, setSeeRegister] = useState<boolean>(false);
+  const [removeHolidays, setRemoveHolidays] =  useState<number>(0);
 
   const [attendanceComponentType, setAttendanceComponentType] =
     useState<AttendanceComponentType>();
@@ -154,6 +155,8 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       );
     });
 
+    setRemoveHolidays(removeHolidays.length);
+
     if (removeHolidays.length === 0) {
       setAttendanceComponentType('report');
     } else {
@@ -189,6 +192,8 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
         holidays
       );
     });
+
+    setRemoveHolidays(removeHolidays.length);
 
     if (removeHolidays.length === 0) {
       setAttendanceComponentType('report');
@@ -228,7 +233,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
         <AttendanceSummary hidePopup={seeRegister} />
       )}
       <div className={'flex h-full w-full flex-1 flex-col px-4'}>
-        {attendanceComponentType === 'attendance' && !seeRegister && (
+        {attendanceComponentType === 'attendance' && !seeRegister && removeHolidays !== 0 && removeHolidays === null && (
           <Button
             type="outlined"
             color="primary"

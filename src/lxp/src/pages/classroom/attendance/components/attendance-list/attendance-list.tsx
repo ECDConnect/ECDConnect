@@ -10,7 +10,7 @@ import {
   StatusChip,
   Typography,
 } from '@ecdlink/ui';
-import { getDay } from 'date-fns';
+import { getDay, startOfWeek } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useAppDispatch } from '@store';
@@ -194,10 +194,15 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
     // Get the updated date string in ISO format
     const updatedAttendanceDateString = dateObj.toISOString();
 
+    let newAttDate =
+      (submitText === '')
+        ? attendanceDate.toISOString()
+        : updatedAttendanceDateString;
+
     const trackAttendanceInput = mapTrackAttendance(
       user?.id || '',
       allAttendedChildren,
-      updatedAttendanceDateString,
+      newAttDate,
       currentProgramme.id ?? ''
     );
 
