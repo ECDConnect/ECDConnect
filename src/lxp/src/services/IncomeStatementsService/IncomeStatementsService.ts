@@ -334,6 +334,30 @@ class IncomeStatementsService {
 
     return response.data.data.GetAllIncomeStatements;
   }
+
+  async allContentLanguages(contentType: string): Promise<BalanceSheetDto[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      query allContentLanguages($contentType: String!) {
+          allContentLanguages(contentType: $contentType) { 
+             id description locale  
+             }
+            }
+          `,
+      variables: {
+        contentType,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Get all content languages failed - Server connection error'
+      );
+    }
+
+    return response.data.data.allContentLanguages;
+  }
 }
 
 export default IncomeStatementsService;

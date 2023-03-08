@@ -25,6 +25,7 @@ interface StatementsShowInfoProps {
 interface Dataprops {
   description: string;
   id: number;
+  locale?: string;
 }
 
 export const StatementsInfoPage: React.FC<StatementsShowInfoProps> = ({
@@ -34,7 +35,10 @@ export const StatementsInfoPage: React.FC<StatementsShowInfoProps> = ({
   const history = useHistory();
   const userAuth = useSelector(authSelectors.getAuthUser);
   const [data, setData] = useState<Dataprops[]>();
+  const [availableLanguages, setAvailableLanguages] = useState<Dataprops[]>();
   const [selectedLanguage, setSelectedLanguage] = useState('en-za');
+
+  console.log({ availableLanguages });
 
   useLayoutEffect(() => {
     const loadInfoData = async () => {
@@ -47,6 +51,18 @@ export const StatementsInfoPage: React.FC<StatementsShowInfoProps> = ({
 
     loadInfoData();
   }, [selectedLanguage, userAuth?.auth_token]);
+
+  useLayoutEffect(() => {
+    const loadAvailableLanguages = async () => {
+      const availableLang = await new IncomeStatementsService(
+        userAuth?.auth_token!
+      ).allContentLanguages('IncomeStatements');
+
+      setAvailableLanguages(availableLang as any);
+    };
+
+    loadAvailableLanguages();
+  }, [userAuth?.auth_token]);
 
   const { setState } = useAppContext();
 
