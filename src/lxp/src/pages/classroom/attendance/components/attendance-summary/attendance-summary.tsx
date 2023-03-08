@@ -288,8 +288,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
         if (index >= 0) {
           setCurrentEditClassroomGroupId(classroomGroupCacheId);
           setAttendanceEditDay(allMissedAttendanceDays[index]);
-          console.log('>>', allMissedAttendanceDays[index]);
-          console.log('>>', allMissedAttendanceDays);
+         
 
           setEditAttendanceRegisterVisible(true);
         }
@@ -335,7 +334,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
             ? 'Submit & go to next day'
             : 'Submit'
         );
-        // setAttendanceEditDay(allMissedAttendanceDays[0]);
+        setAttendanceEditDay(allMissedAttendanceDays[0]);
       } else {
         setEditAttendanceRegisterVisible(false);
       }
