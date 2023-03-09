@@ -199,8 +199,6 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
         ? attendanceDate.toISOString()
         : updatedAttendanceDateString;
 
-        console.log(newAttDate);
-
     const trackAttendanceInput = mapTrackAttendance(
       user?.id || '',
       allAttendedChildren,
