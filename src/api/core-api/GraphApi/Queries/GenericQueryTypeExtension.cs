@@ -32,13 +32,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         public List<Language> GetAllContentLanguages(string contentType)
         {
             var dynamicContentList = new List<Language>();
-
-            /*var cTypes = _context.ContentTypes
-              .Include(i => i.Content)
-              .ThenInclude(ti => ti.ContentValues)
-              .ThenInclude(ti => ti.ContentTypeField)
-              .Where(x => x.Name == contentType)
-              .FirstOrDefault();*/
             var ctypes = _context.ContentTypes.Where(x => x.Name.Equals(contentType)).ToList();
             foreach (var ctype in ctypes) {
                 var contents = _context.Contents.Where(x => x.ContentTypeId.Equals(ctype.Id)).ToList();
@@ -57,7 +50,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     }
                 }
             } 
-
             return dynamicContentList;
         }
 
