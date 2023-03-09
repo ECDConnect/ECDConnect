@@ -1211,6 +1211,21 @@ export type ComparableNullableOfDecimalOperationFilterInput = {
   nlte?: InputMaybe<Scalars['Decimal']>;
 };
 
+export type ComparableNullableOfDoubleOperationFilterInput = {
+  eq?: InputMaybe<Scalars['Float']>;
+  gt?: InputMaybe<Scalars['Float']>;
+  gte?: InputMaybe<Scalars['Float']>;
+  in?: InputMaybe<Array<InputMaybe<Scalars['Float']>>>;
+  lt?: InputMaybe<Scalars['Float']>;
+  lte?: InputMaybe<Scalars['Float']>;
+  neq?: InputMaybe<Scalars['Float']>;
+  ngt?: InputMaybe<Scalars['Float']>;
+  ngte?: InputMaybe<Scalars['Float']>;
+  nin?: InputMaybe<Array<InputMaybe<Scalars['Float']>>>;
+  nlt?: InputMaybe<Scalars['Float']>;
+  nlte?: InputMaybe<Scalars['Float']>;
+};
+
 export type ComparableNullableOfGuidOperationFilterInput = {
   eq?: InputMaybe<Scalars['UUID']>;
   gt?: InputMaybe<Scalars['UUID']>;
@@ -1239,21 +1254,6 @@ export type ComparableNullableOfInt32OperationFilterInput = {
   nin?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
   nlt?: InputMaybe<Scalars['Int']>;
   nlte?: InputMaybe<Scalars['Int']>;
-};
-
-export type ComparableNullableOfSingleOperationFilterInput = {
-  eq?: InputMaybe<Scalars['Float']>;
-  gt?: InputMaybe<Scalars['Float']>;
-  gte?: InputMaybe<Scalars['Float']>;
-  in?: InputMaybe<Array<InputMaybe<Scalars['Float']>>>;
-  lt?: InputMaybe<Scalars['Float']>;
-  lte?: InputMaybe<Scalars['Float']>;
-  neq?: InputMaybe<Scalars['Float']>;
-  ngt?: InputMaybe<Scalars['Float']>;
-  ngte?: InputMaybe<Scalars['Float']>;
-  nin?: InputMaybe<Array<InputMaybe<Scalars['Float']>>>;
-  nlt?: InputMaybe<Scalars['Float']>;
-  nlte?: InputMaybe<Scalars['Float']>;
 };
 
 export type Consent = {
@@ -8229,7 +8229,7 @@ export type VisitGrowthData = {
 
 export type VisitGrowthDataFilterInput = {
   and?: InputMaybe<Array<VisitGrowthDataFilterInput>>;
-  height?: InputMaybe<ComparableNullableOfSingleOperationFilterInput>;
+  height?: InputMaybe<ComparableNullableOfDoubleOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
@@ -8239,7 +8239,7 @@ export type VisitGrowthDataFilterInput = {
   section?: InputMaybe<StringOperationFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
-  weight?: InputMaybe<ComparableNullableOfSingleOperationFilterInput>;
+  weight?: InputMaybe<ComparableNullableOfDoubleOperationFilterInput>;
 };
 
 export type VisitGrowthDataInput = {
