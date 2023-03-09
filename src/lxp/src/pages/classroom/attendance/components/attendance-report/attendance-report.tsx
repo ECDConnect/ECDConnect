@@ -1,5 +1,5 @@
 import { LocalStorageKeys, MonthlyAttendanceRecord } from '@ecdlink/core';
-import { MessageModal } from '@ecdlink/ui';
+import { Button, MessageModal, renderIcon, Typography } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { OfflineCard } from '../../../../../components/offline-card/offline-card';
@@ -99,6 +99,26 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
         />
         <AttendanceMonthlyReport attendanceSummary={attendanceData} />
         {!isOnline && <OfflineCard />}
+      </div>
+      <div className={'flex h-full w-full flex-1 flex-col px-2 static bottom-0'}>
+        {attendanceData.length > 8 && (
+          <Button
+            type="outlined"
+            color="primary"
+            className={'mt-0'}
+            onClick={() => {
+              // setSeeRegister(true);
+            }}
+          >
+            {renderIcon('EyeIcon', 'h-5 w-5 text-primary')}
+            <Typography
+              type="h6"
+              color="primary"
+              text={'See more registers'}
+              className="ml-2"
+            ></Typography>
+          </Button>
+        )}
       </div>
       <MessageModal
         title={'What can you do with SmartStart points?'}
