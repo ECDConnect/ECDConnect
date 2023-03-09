@@ -41,8 +41,9 @@ import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 import { userSelectors } from '@store/user';
 import { practitionerSelectors } from '@/store/practitioner';
 import { usePrevious } from '@ecdlink/core/lib/hooks/usePrevious';
+import { AttendanceSummaryState } from './attendance-summary.types';
 
-export const AttendanceSummary: React.FC = () => {
+export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
   const [displaySmartStartMessage, setDisplaySmartStartMessage] =
     useState<boolean>(false);
   const [successMessageVisible, setSuccessMessageVisible] =
@@ -99,14 +100,14 @@ export const AttendanceSummary: React.FC = () => {
     usePrevious(missedAttendanceGroups) || [];
   const previousAttendanceData = usePrevious(attendanceData);
 
-  useEffect(() => {
-    let hasClosedPointsMessage = getStorageItem<boolean>(
-      LocalStorageKeys.hasClosedAttendanceSmartStartPointsMessage
-    );
-    let isCurrentSmartStartUser = getStorageItem<boolean>(
-      LocalStorageKeys.isSmartStartUser
-    );
+  let hasClosedPointsMessage = getStorageItem<boolean>(
+    LocalStorageKeys.hasClosedAttendanceSmartStartPointsMessage
+  );
+  let isCurrentSmartStartUser = getStorageItem<boolean>(
+    LocalStorageKeys.isSmartStartUser
+  );
 
+  useEffect(() => {
     if (hasClosedPointsMessage === undefined) {
       hasClosedPointsMessage = false;
     }
@@ -115,7 +116,7 @@ export const AttendanceSummary: React.FC = () => {
       isCurrentSmartStartUser = true;
     }
 
-    setSuccessMessageVisible(!successMessageVisible);
+    // setSuccessMessageVisible(!successMessageVisible);
 
     setIsSmartStartUser(isCurrentSmartStartUser);
 
@@ -287,6 +288,7 @@ export const AttendanceSummary: React.FC = () => {
         if (index >= 0) {
           setCurrentEditClassroomGroupId(classroomGroupCacheId);
           setAttendanceEditDay(allMissedAttendanceDays[index]);
+
           setEditAttendanceRegisterVisible(true);
         }
       }
@@ -331,7 +333,7 @@ export const AttendanceSummary: React.FC = () => {
             ? 'Submit & go to next day'
             : 'Submit'
         );
-        setAttendanceEditDay(allMissedAttendanceDays[0]);
+        setAttendanceEditDay(allMissedAttendanceDays[-1]);
       } else {
         setEditAttendanceRegisterVisible(false);
       }
@@ -355,7 +357,11 @@ export const AttendanceSummary: React.FC = () => {
       <div className={'flex h-full flex-1 flex-col gap-4 px-4 pt-4'}>
         {isValidAttendanceDay ? (
           <PointsSuccessCard
-            visible={successMessageVisible}
+            visible={
+              hasClosedPointsMessage ??
+              !props.hidePopup ??
+              successMessageVisible
+            }
             isSmartStartUser={isSmartStartUser}
             points={100}
             onClose={() => setSuccessMessageVisible(false)}
