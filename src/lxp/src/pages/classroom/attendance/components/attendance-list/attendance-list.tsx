@@ -242,7 +242,10 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
           icon={'InformationCircleIcon'}
           iconColor="alertMain"
           iconBorderColor="alertBg"
-          importantText={`Are you sure you want to submit your ${format(attendanceDate, 'EEEE, d LLLL')} attendance register?`}
+          importantText={`Are you sure you want to submit your ${format(
+            attendanceDate,
+            'EEEE, d LLLL'
+          )} attendance register?`}
           customDetailText={
             <Typography
               type="h4"

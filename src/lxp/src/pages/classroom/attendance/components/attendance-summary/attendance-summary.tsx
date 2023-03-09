@@ -108,8 +108,6 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
   );
 
   useEffect(() => {
-   
-
     if (hasClosedPointsMessage === undefined) {
       hasClosedPointsMessage = false;
     }
@@ -290,7 +288,6 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
         if (index >= 0) {
           setCurrentEditClassroomGroupId(classroomGroupCacheId);
           setAttendanceEditDay(allMissedAttendanceDays[index]);
-         
 
           setEditAttendanceRegisterVisible(true);
         }
@@ -360,7 +357,11 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
       <div className={'flex h-full flex-1 flex-col gap-4 px-4 pt-4'}>
         {isValidAttendanceDay ? (
           <PointsSuccessCard
-            visible={hasClosedPointsMessage ?? !props.hidePopup ?? successMessageVisible}
+            visible={
+              hasClosedPointsMessage ??
+              !props.hidePopup ??
+              successMessageVisible
+            }
             isSmartStartUser={isSmartStartUser}
             points={100}
             onClose={() => setSuccessMessageVisible(false)}

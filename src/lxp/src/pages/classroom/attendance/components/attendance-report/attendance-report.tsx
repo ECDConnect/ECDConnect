@@ -1,5 +1,5 @@
 import { LocalStorageKeys, MonthlyAttendanceRecord } from '@ecdlink/core';
-import { Button,  MessageModal, renderIcon, Typography } from '@ecdlink/ui';
+import { Button, MessageModal, renderIcon, Typography } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { OfflineCard } from '../../../../../components/offline-card/offline-card';
@@ -107,8 +107,7 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
       <div className={'flex flex-col'}>
         <PointsSuccessCard
           // visible={!successStatus ?? successMessageVisible}
-          visible={ successMessageVisible}
-          
+          visible={successMessageVisible}
           onClose={() => closeNotification()}
           className={'mb-4'}
           message={'Your attendance registers are up to date this week!'}
