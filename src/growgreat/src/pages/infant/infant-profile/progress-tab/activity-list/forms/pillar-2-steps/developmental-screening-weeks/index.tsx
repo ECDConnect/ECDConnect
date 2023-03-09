@@ -22,6 +22,7 @@ import { ReactComponent as EyeIcon } from '@/assets/pillar/pillar2/eye.svg';
 import { ReactComponent as ArmIcon } from '@/assets/pillar/pillar2/arm.svg';
 import { ReactComponent as PollyTime } from '@/assets/pollyTime.svg';
 import { MoreInformation } from './more-information';
+import { replaceBraces } from '@ecdlink/core';
 
 const mocked_week = 14;
 
@@ -57,7 +58,14 @@ export const DevelopmentalScreeningWeeksStep = ({
       question: 'Holds their head upright when held against shoulder',
       answer: '',
     },
+    {
+      question:
+        'Do you have any specific concerns about how {client} hears, sees, communicates, learns, behaves, interacts with others, or how they use their hands, arms, legs and body?',
+      answer: '',
+    },
   ]);
+
+  const noteQuestionIndex = 4;
 
   const visitSection = 'Developmental screening';
 
@@ -191,31 +199,43 @@ export const DevelopmentalScreeningWeeksStep = ({
               color="textDark"
             />
             <Divider dividerType="dashed" />
-            {questions.map((item, index) => (
-              <div key={item.question}>
-                <div className="mb-2 flex items-center gap-2">
-                  <div className="bg-tertiary flex h-9 w-9 items-center justify-center rounded-full">
-                    {item.icon}
+            {questions.map((item, index) => {
+              if (index === noteQuestionIndex) return null;
+
+              return (
+                <div key={item.question}>
+                  <div className="mb-2 flex items-center gap-2">
+                    <div className="bg-tertiary flex h-9 w-9 items-center justify-center rounded-full">
+                      {item.icon}
+                    </div>
+                    <Typography type="h4" text={item.title} color="textDark" />
                   </div>
-                  <Typography type="h4" text={item.title} color="textDark" />
+                  <Typography
+                    type="body"
+                    text={item.question}
+                    color="textDark"
+                  />
+                  <ButtonGroup<boolean>
+                    color="secondary"
+                    type={ButtonGroupTypes.Button}
+                    options={options}
+                    onOptionSelected={(value) => onOptionSelected(value, index)}
+                  />
                 </div>
-                <Typography type="body" text={item.question} color="textDark" />
-                <ButtonGroup<boolean>
-                  color="secondary"
-                  type={ButtonGroupTypes.Button}
-                  options={options}
-                  onOptionSelected={(value) => onOptionSelected(value, index)}
-                />
-              </div>
-            ))}
+              );
+            })}
             <Divider dividerType="dashed" />
             <Label
-              text={`Do you have any specific concerns about how ${name} hears, sees, communicates, learns, behaves, interacts with others, or how they use their hands, arms, legs and body?`}
+              text={replaceBraces(questions[noteQuestionIndex].question, name)}
             />
             <Divider dividerType="dashed" />
             <FormInput
               label="Add a note"
               subLabel="Optional"
+              value={questions[noteQuestionIndex].answer}
+              onChange={(e) =>
+                onOptionSelected(e.target.value, noteQuestionIndex)
+              }
               textInputType="textarea"
               placeholder={'E.g. Caregiver is concerned about baby’s hearing.'}
             />
