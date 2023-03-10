@@ -8224,6 +8224,7 @@ export type VisitDataInput = {
 export type VisitDataStatus = {
   __typename?: 'VisitDataStatus';
   backReferralCompleted: Scalars['Boolean'];
+  backReferralDateCompleted: Scalars['DateTime'];
   color?: Maybe<Scalars['String']>;
   comment?: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
@@ -8242,6 +8243,7 @@ export type VisitDataStatus = {
 export type VisitDataStatusFilterInput = {
   and?: InputMaybe<Array<VisitDataStatusFilterInput>>;
   backReferralCompleted?: InputMaybe<BooleanOperationFilterInput>;
+  backReferralDateCompleted?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   color?: InputMaybe<StringOperationFilterInput>;
   comment?: InputMaybe<StringOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
@@ -8260,6 +8262,7 @@ export type VisitDataStatusFilterInput = {
 
 export type VisitDataStatusInput = {
   BackReferralCompleted: Scalars['Boolean'];
+  BackReferralDateCompleted: Scalars['DateTime'];
   Color?: InputMaybe<Scalars['String']>;
   Comment?: InputMaybe<Scalars['String']>;
   Id?: InputMaybe<Scalars['UUID']>;
@@ -8274,10 +8277,13 @@ export type VisitDataStatusInput = {
 };
 
 export type VisitDataStatusModelInput = {
+  backReferralCompleted?: InputMaybe<Scalars['String']>;
+  backReferralDateCompleted: Scalars['DateTime'];
   color?: InputMaybe<Scalars['String']>;
   comment?: InputMaybe<Scalars['String']>;
   id?: InputMaybe<Scalars['String']>;
   isCompleted?: InputMaybe<Scalars['String']>;
+  referralDateCompleted: Scalars['DateTime'];
   type?: InputMaybe<Scalars['String']>;
   visitData?: InputMaybe<VisitDataInput>;
   visitDataId?: InputMaybe<Scalars['String']>;

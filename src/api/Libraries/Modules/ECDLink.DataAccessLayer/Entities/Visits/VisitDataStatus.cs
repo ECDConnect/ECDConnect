@@ -23,6 +23,8 @@ namespace ECDLink.DataAccessLayer.Entities.Visits
         public bool IsCompleted { get; set; }
         public DateTime ReferralDateCompleted { get; set; }
         public bool BackReferralCompleted { get; set; }
+        public DateTime BackReferralDateCompleted { get; set; }
+        
     }
 
     public interface VisitDataStatusJoin<TKey>
