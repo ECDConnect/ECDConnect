@@ -1366,6 +1366,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
 
             return allReferrals;
         }
+        
         public List<VisitDataStatus> GetReferralDataForVisitId(string visitId) {
             List<VisitDataStatus> allReferrals = new List<VisitDataStatus>();
 

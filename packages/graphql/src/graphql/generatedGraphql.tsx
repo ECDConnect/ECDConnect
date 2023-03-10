@@ -2516,6 +2516,7 @@ export type Mutation = {
   addTeamLead?: Maybe<TeamLead>;
   addUser?: Maybe<ApplicationUser>;
   addUsersToRole: Scalars['Boolean'];
+  addVisitBackReferralData?: Maybe<VisitBackReferral>;
   addVisitData: Scalars['Boolean'];
   contentTypeImport: Scalars['Boolean'];
   createAbsentees?: Maybe<Absentees>;
@@ -2927,6 +2928,10 @@ export type MutationAddUserArgs = {
 export type MutationAddUsersToRoleArgs = {
   roleNames?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationAddVisitBackReferralDataArgs = {
+  input?: InputMaybe<VisitBackReferralModelInput>;
 };
 
 export type MutationAddVisitDataArgs = {
@@ -5416,6 +5421,8 @@ export type Query = {
   allStatementsStartupSupport?: Maybe<Array<Maybe<StatementsStartupSupport>>>;
   allTeamLeads?: Maybe<Array<Maybe<TeamLead>>>;
   attendance?: Maybe<Array<Maybe<Attendance>>>;
+  backReferralsForInfant?: Maybe<Array<Maybe<VisitBackReferral>>>;
+  backReferralsForMother?: Maybe<Array<Maybe<VisitBackReferral>>>;
   caregiverGrants?: Maybe<Array<Maybe<UserGrant>>>;
   childAttendanceReport?: Maybe<ChildAttendanceReportModel>;
   childByUserId?: Maybe<Child>;
@@ -6468,6 +6475,18 @@ export type QueryAttendanceArgs = {
   weekOfYear?: InputMaybe<Scalars['Int']>;
   where?: InputMaybe<AttendanceFilterInput>;
   year: Scalars['Int'];
+};
+
+export type QueryBackReferralsForInfantArgs = {
+  backReferralCompleted: Scalars['Boolean'];
+  id?: InputMaybe<Scalars['String']>;
+  referralCompleted: Scalars['Boolean'];
+};
+
+export type QueryBackReferralsForMotherArgs = {
+  backReferralCompleted: Scalars['Boolean'];
+  id?: InputMaybe<Scalars['String']>;
+  referralCompleted: Scalars['Boolean'];
 };
 
 export type QueryCaregiverGrantsArgs = {
@@ -8148,6 +8167,15 @@ export type VisitBackReferralInput = {
   UpdatedBy?: InputMaybe<Scalars['String']>;
   VisitDataStatus?: InputMaybe<VisitDataStatusInput>;
   VisitDataStatusId: Scalars['UUID'];
+};
+
+export type VisitBackReferralModelInput = {
+  answer?: InputMaybe<Scalars['String']>;
+  comment?: InputMaybe<Scalars['String']>;
+  id?: InputMaybe<Scalars['String']>;
+  question?: InputMaybe<Scalars['String']>;
+  visitDataStatus?: InputMaybe<VisitDataStatusInput>;
+  visitDataStatusId?: InputMaybe<Scalars['String']>;
 };
 
 export type VisitData = {
