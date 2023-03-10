@@ -1340,29 +1340,41 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                     indicator = "Normal";
                 }
             }
-
-            
-
             return indicator;
         }
         public List<VisitDataStatus> GetReferralDataForClient(string id, string clientType) {
+            // This data is for the past 6 months
             List<VisitDataStatus> allReferrals = new List<VisitDataStatus>();
+            DateTime today = DateTime.Today;
+            var sixMonthsBack = today.AddMonths(-6);
 
             if (clientType == Constants.GGSettings.client_mother) {
                 allReferrals = (
-                    from visit in _visitRepo.GetAll().Where(x => x.Mother.UserId == id).OrderBy(x => x.PlannedVisitDate)
+                    from visit in _visitRepo.GetAll().Where(x => x.Mother.UserId == id && x.PlannedVisitDate >= sixMonthsBack).OrderBy(x => x.PlannedVisitDate)
                     join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
                     join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == false && x.Type == _referral) on visitData.Id equals visitStatusData.VisitDataId
                     select visitStatusData
                 ).ToList();
             } else {
                 allReferrals = (
-                    from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId == id).OrderBy(x => x.PlannedVisitDate)
+                    from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId == id && x.PlannedVisitDate >= sixMonthsBack).OrderBy(x => x.PlannedVisitDate)
                     join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
                     join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == false && x.Type == _referral) on visitData.Id equals visitStatusData.VisitDataId
                     select visitStatusData
                 ).ToList();
             }
+
+            return allReferrals;
+        }
+        public List<VisitDataStatus> GetReferralDataForVisitId(string visitId) {
+            List<VisitDataStatus> allReferrals = new List<VisitDataStatus>();
+
+            allReferrals = (
+                from visit in _visitRepo.GetAll().Where(x => x.Id.ToString() == visitId)
+                join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
+                join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == false && x.Type == _referral) on visitData.Id equals visitStatusData.VisitDataId
+                select visitStatusData
+            ).ToList();
 
             return allReferrals;
         }
