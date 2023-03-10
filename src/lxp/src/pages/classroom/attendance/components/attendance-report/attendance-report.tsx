@@ -22,9 +22,9 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   const appDispatch = useAppDispatch();
   const isOnline = true;
 
-  // const successStatus = getStorageItem<boolean>(
-  //   // LocalStorageKeys.hasClosedSuccessAttendanceSubmitted
-  // );
+  const successStatus = getStorageItem<boolean>(
+    LocalStorageKeys.hasClosedSuccessAttendanceSubmitted
+  );
   const hasClosedAttendanceSmartStartPointsMessage = getStorageItem<boolean>(
     LocalStorageKeys.hasClosedAttendanceSmartStartPointsMessage
   );
@@ -45,7 +45,7 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
 
   const closeNotification = () => {
     setSuccessMessageVisible(false);
-    // setStorageItem(true, LocalStorageKeys.hasClosedSuccessAttendanceSubmitted);
+    setStorageItem(true, LocalStorageKeys.hasClosedSuccessAttendanceSubmitted);
   };
 
   const [attendanceData, setAttendanceData] = useState<AttendanceSummary[]>([]);
@@ -106,9 +106,7 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
     <div className="flex h-full w-full flex-col overflow-y-auto px-4 pt-4 pb-32">
       <div className={'flex flex-col'}>
         <PointsSuccessCard
-          // visible={!successStatus ?? successMessageVisible}
-          visible={ successMessageVisible}
-          
+          visible={!successStatus ?? successMessageVisible}
           onClose={() => closeNotification()}
           className={'mb-4'}
           message={'Your attendance registers are up to date this week!'}

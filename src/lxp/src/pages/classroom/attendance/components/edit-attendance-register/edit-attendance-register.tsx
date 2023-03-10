@@ -11,6 +11,7 @@ export const EditAttendanceRegister = ({
   onComplete,
   submitText = 'Submit',
   onBack,
+  editAttendanceRegisterVisible
 }: EditAttendanceRegisterProps) => {
   const { isOnline } = useOnlineStatus();
 
@@ -37,6 +38,7 @@ export const EditAttendanceRegister = ({
         onSubmitSuccess={(attendanceSuccessList: AttendanceResult) =>
           attendanceSubmitted(attendanceSuccessList)
         }
+        editAttendanceRegisterVisible={editAttendanceRegisterVisible}
       />
     </BannerWrapper>
   );
