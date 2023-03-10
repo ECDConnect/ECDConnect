@@ -178,7 +178,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             return siteName;
         }
 
-        #endregion
+
+        #endregion        
 
 
         private string GetUserIdOrGenerateNew(string userId)

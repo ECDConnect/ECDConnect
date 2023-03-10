@@ -98,7 +98,7 @@ namespace EcdLink.Api.CoreApi {
             public const string try_to_make_sure = "Try to make sure you give ";
             public const string only_milk = " only breast milk or only formula milk";
             public const string poor_dietary_diversity = "Poor dietary diversity: {x} out of {y} food groups";
-            public const string give_client_food = "You are giving {client} foods from {x} out of {y} groups.Try to give {client} a variety of foods!";
+            public const string give_client_food = "You are giving {client} foods from {x} out of {y} groups. Try to give {client} a variety of foods!";
             public const string good_dietary_diversity = "Good dietary diversity: {x} out of {y} food groups!";
             public const string give_client_food_most = "You are giving {client} foods from most of the groups!";
             public const string dev_is_struggling = "{client} is struggling with ";
@@ -106,8 +106,8 @@ namespace EcdLink.Api.CoreApi {
             public const string immunisations_not_up_to_date = "Immunisations not up to date";
             public const string vitamin_not_up_to_date = "Vitamin A not up to date";
             public const string deworming_not_up_to_date = "Deworming not up to date";
-            public const string not_up_to_date = " not up to date";
-            public const string missed_immunisations = "{client} missed an ";
+            public const string not_up_to_date = "Immunisations, deworming and Vitamin A not up to date";
+            public const string missed_immunisations = "{client} missed an immunisation, deworming and Vitamin A supplement";
             public const string all_up_to_date = "All immunisations, Vitamin A and deworming are up to date";
             public const string all_up_to_date_client = "All of {client}'s immunisations are up to date";
             public const string physical_well = " is doing well physically";
@@ -121,21 +121,22 @@ namespace EcdLink.Api.CoreApi {
             public const string q_postnatal_6_weeks = "Did your client attend her 6-week postnatal clinic visit?";
             public const string q_weight = "Weight";
             public const string q_length = "Length";
-            public const string q_muac = "What is {client}'s MUAC today?";
+            public const string q_muac = "What is {client}’s MUAC today?";
             public const string q_eat_drink = "What did {client} eat or drink in the last 24 hours?";
+            public const string q_eat_drink_nutrition = "What did you give {client} to eat or drink in the last 24 hours?";
             public const string q_breastfeeding_club = "Would you like to join a breastfeeding club?";
             public const string q_mixed_foods = "Which of these foods have you given {client}?  You can choose more than one.";
-            public const string q_tick_foods = "Tick all of the foods {client} talks about:";
             public const string q_check_can_do = "Check what {client} can do:";
-            public const string q_hearing = "Hearing";
-            public const string q_seeing = "Seeing";
-            public const string q_brain = "Brain";
-            public const string q_moving = "Moving";
+            public const string q_hearing = "Gets a fright when they hear a loud sound";
+            public const string q_seeing = "Follows faces or close objects with their eyes";
+            public const string q_brain = "Smiles at people";
+            public const string q_moving = "Holds their head upright when held against shoulder";
             public const string q_immunisation = "Did the baby have the 6 month immunisation?";
             public const string q_vitamin_a = "Is Vitamin A up to date?";
             public const string q_deworming = "Is deworming up to date?";
             public const string q_birth_certificate = "Does {client} have a birth certificate?";
-            public const string q_csg = "Is {client} reiving the CSG?";
+            public const string q_csg_receiving = "Is {client} receiving the CSG?";
+            public const string q_csg_applied = "Has {client} applied for a CSG?";
 
             public const string cfm_name = "Care for mom";
             public const string cfb_name = "Care for baby";
@@ -168,12 +169,21 @@ namespace EcdLink.Api.CoreApi {
 
             public const string p4_ds_1 = "Not moving or does not wake up";
             public const string p4_ds_2 = "Shaking (convulsions)";
-            public const string p4_ds_3 = "Diarrhoea, sunken eyes, and a sunken fontanelle";
+            public const string p4_ds_3 = "Diarrhoea, sunken eyes and a sunken fontanelle";
             public const string p4_ds_4 = "Coughing and breathing fast (more than 50 breaths per minute)";
-            public const string p4_ds_5 = "Sings of malnutrition (swollen ankles and feet)";
+            public const string p4_ds_5 = "Signs of malnutrition (swollen ankles and feet)";
             public const string p4_ds_6 = "Vomiting everything";
             public const string p4_ds_7 = "Fever and not feeding";
             public const string p4_ds_8 = "Unable to breastfeed";
+
+            public const string p1_1 = "Breast milk";
+            public const string p1_2 = "Starch";
+            public const string p1_3 = "Nuts, beans, peas, lentils";
+            public const string p1_4 = "Dairy";
+            public const string p1_5 = "Meat";
+            public const string p1_6 = "Eggs";
+            public const string p1_7 = "Vitamin A rich fruit & vegetables";
+            public const string p1_8 = "Other fruits & vegetables";
 
 
             // Answers

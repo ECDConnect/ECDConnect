@@ -7,10 +7,8 @@ using ECDLink.Security;
 using HotChocolate;
 using HotChocolate.Types;
 using System;
-using System.Collections.Generic;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
-{
+namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat {
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class VisitDataMutationExtension
     {
@@ -18,12 +16,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public Boolean AddVisitData([Service] VisitDataManager visitDataManager, CMSVisitDataInputModel input)
         {
+
             if (input.MotherId != null)
             {
                 visitDataManager.AddAntenatalVisitData(input);
 
-            } else
+            } else if (input.InfantId != null)
             {
+                input.VisitId = "454686a9-2142-4061-aa47-4e89d46110b9";
                 visitDataManager.AddChildVisitData(input);
             }
             return true;

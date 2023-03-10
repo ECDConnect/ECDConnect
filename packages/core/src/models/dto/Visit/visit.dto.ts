@@ -1,4 +1,5 @@
 export interface VisitDto {
+  id: string;
   actualVisitDate: string;
   attended: boolean;
   plannedVisitDate: string;

@@ -1,8 +1,10 @@
-import { ClassroomGroupDto } from '@ecdlink/core';
+import { ClassroomGroupDto, useDialog } from '@ecdlink/core';
 import {
+  ActionModal,
   AttendanceListDataItem,
   AttendanceStatus,
   Button,
+  DialogPosition,
   FilterInfo,
   renderIcon,
   SearchDropDown,
@@ -10,7 +12,7 @@ import {
   StatusChip,
   Typography,
 } from '@ecdlink/ui';
-import { getDay } from 'date-fns';
+import { format, getDay } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useAppDispatch } from '@store';
@@ -58,6 +60,8 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
   const [selectedClassroomGroups, setSelectedClassroomGroups] = useState<
     ClassroomGroupDto[]
   >([]);
+
+  const dialog = useDialog();
 
   const user = useSelector(userSelectors.getUser);
   const allClassroomGroups = useSelector(
@@ -143,6 +147,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
   };
 
   const handleFormSubmit = async () => {
+    submitPrompt();
     const currentClassProgramme = classroomGroupHasAttendanceOnDate(
       classProgrammesUpdated,
       attendanceDate
@@ -177,10 +182,32 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
         attended: x.status === AttendanceStatus.Present,
       })) || [];
 
+    const dateString = attendanceDate.toISOString();
+
+    // Create a new Date object from the date string
+    const dateObj = new Date(dateString);
+
+    // Get the date value (1-31) from the Date object
+    const dateValue = dateObj.getDate();
+
+    // Add 1 day to the date value
+    const newDateValue = dateValue + 1;
+
+    // Set the new date value to the Date object
+    dateObj.setDate(newDateValue);
+
+    // Get the updated date string in ISO format
+    const updatedAttendanceDateString = dateObj.toISOString();
+
+    let newAttDate =
+      submitText !== 'Submit'
+        ? attendanceDate.toISOString()
+        : updatedAttendanceDateString;
+
     const trackAttendanceInput = mapTrackAttendance(
       user?.id || '',
       allAttendedChildren,
-      attendanceDate.toISOString(),
+      newAttDate,
       currentProgramme.id ?? ''
     );
 
@@ -204,6 +231,54 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
     setAttendanceGroups([]);
     setSelectedClassroomGroups([]);
     updateAttendanceState([]);
+  };
+
+  const submitPrompt = () => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (onSubmit, onCancel) => (
+        <ActionModal
+          textAlignment="center"
+          icon={'InformationCircleIcon'}
+          iconColor="alertMain"
+          iconBorderColor="alertBg"
+          importantText={`Are you sure you want to submit your ${format(
+            attendanceDate,
+            'EEEE, d LLLL'
+          )} attendance register?`}
+          customDetailText={
+            <Typography
+              type="h4"
+              className="mb-7 mt-4"
+              text={`By submitting this register, you confirm that all the attendance information is accurate. `}
+              color="black"
+              align="center"
+            />
+          }
+          detailText={'Your signature will be added to the monthly register.'}
+          actionButtons={[
+            {
+              text: 'Yes, submit register',
+              textColour: 'white',
+              colour: 'primary',
+              type: 'filled',
+              onClick: () => {
+                onSubmit();
+              },
+              leadingIcon: 'SaveIcon',
+            },
+            {
+              text: 'No, continue editing',
+              textColour: 'primary',
+              colour: 'primary',
+              type: 'outlined',
+              onClick: () => onCancel(),
+              leadingIcon: 'PencilIcon',
+            },
+          ]}
+        />
+      ),
+    });
   };
 
   return (

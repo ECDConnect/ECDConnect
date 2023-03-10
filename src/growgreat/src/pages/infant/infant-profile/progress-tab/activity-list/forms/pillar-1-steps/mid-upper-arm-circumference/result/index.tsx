@@ -10,7 +10,7 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { useEffect, useMemo } from 'react';
-import { DynamicFormProps } from '../../dynamic-form';
+import { DynamicFormProps } from '../../../dynamic-form';
 import { ReactComponent as Polly } from '@/assets/momImageSvg.svg';
 import { SuccessCard } from '@/components/success-card/success-card';
 import { ReactComponent as CelebrateIcon } from '@/assets/celebrateIcon.svg';
@@ -59,7 +59,7 @@ const mocked_data: {
   },
 ];
 
-export const MidUpperArmCircumferenceStep = ({
+export const MidUpperArmCircumferenceResultStep = ({
   infant,
   setEnableButton,
 }: DynamicFormProps) => {
@@ -123,7 +123,7 @@ export const MidUpperArmCircumferenceStep = ({
         iconHexBackgroundColor="#8CDBDF"
         hexBackgroundColor="#a2dadd4d"
         title="Growth monitoring"
-        subTitle="Mid-upper arm circumerence"
+        subTitle="Mid-upper arm circumference"
       />
       <div className="relative flex flex-col gap-3 p-4">
         {showResult ? (

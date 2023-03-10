@@ -1,7 +1,6 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.DataAccessLayer.Entities.Users;
-using ECDLink.DataAccessLayer.Entities.VisitGrowthDatas;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
@@ -10,6 +9,7 @@ using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 namespace EcdLink.Api.CoreApi.Managers.Visits {
@@ -86,7 +86,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                 Mother mother = _motherRepo.GetAll().Where(x => x.User.Id == id).FirstOrDefault();
 
                 _clientVisitDataIds = (
-                    from visit in _visitRepo.GetAll().Where(x => x.MotherId.ToString() == id)
+                    from visit in _visitRepo.GetAll().Where(x => x.MotherId == mother.Id)
                     join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
                     select visitData.Id.ToString()
                 ).ToList();
@@ -101,23 +101,28 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                 Infant infant = _infantRepo.GetAll().Where(x => x.User.Id == id).FirstOrDefault();
 
                 _clientVisitDataIds = (
-                    from visit in _visitRepo.GetAll().Where(x => x.InfantId.ToString() == id)
+                    from visit in _visitRepo.GetAll().Where(x => x.InfantId == infant.Id)
                     join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
                     select visitData.Id.ToString()
                 ).ToList();
+
+                var motherName = "";
+                if (infant.Mother != null) {
+                    motherName = infant.Mother.User.FirstName;
+                }
 
                 // add additional visit for when we need to add additional visits for the client
                 _additionalVisitType = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.GGSettings.client_child) &&
                                                                    x.Name == Constants.GGSettings.additional_visits).
                                                                    OrderBy(x => x.NormalizedName).FirstOrDefault();
 
-                ManageVisitDataStatusForInfant(allVisitData, infant.User.FirstName, infant.Id.ToString(), infant.Gender.Description, infant.User.DateOfBirth);
+                ManageVisitDataStatusForInfant(allVisitData, infant.User.FirstName, infant.Id.ToString(), infant.Gender.Description, infant.User.DateOfBirth, motherName);
             }
 
             return true;
         }
 
-        private Boolean ManageVisitDataStatusForInfant(List<VisitData> allVisitData, string firstName, string infantId, string gender, DateTime dob) {
+        private Boolean ManageVisitDataStatusForInfant(List<VisitData> allVisitData, string firstName, string infantId, string gender, DateTime dob, string motherName) {
 
             var comment = "";
             var maternalDistressScreening = new List<VisitData>();
@@ -193,7 +198,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                     if (vData.QuestionAnswer == Constants.GGSettings.none_above) {
 
                         // Add progress item: ""No danger signs for Lethabo""
-                        comment = Constants.GGSettings.no_danger_signs + firstName;
+                        comment = Constants.GGSettings.no_danger_signs + motherName;
                         AddVisitDataStatus(vData, comment, _green, _progress, vData.VisitSection, true);
 
                         // Add item to G9 Client summary download: ""You are feeling physically well"""
@@ -202,39 +207,31 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
 
                     }
                     else {
-                        var arrAnswers = vData.QuestionAnswer.Replace("[","").Replace("]","").Split(",");
+                        var arrAnswers = vData.QuestionAnswer.Replace("[", "").Replace("]", "").Split(",");
                         var bulletList = FormatBulletList(arrAnswers);
 
-                        if (arrAnswers.Length <= 3) {
+                        if (arrAnswers.Length > 0) {
+
+                            // Add referral item
+                            comment = motherName + Constants.GGSettings.was_experiencing + bulletList;
+                            AddVisitDataStatus(vData, comment, _none, _referral, Constants.GGSettings.clinic_referrals, false);
+
+                            var hasGroupA = arrAnswers.Any(x => x == Constants.GGSettings.cfm_ds_6 || x == Constants.GGSettings.cfm_ds_7 || x == Constants.GGSettings.cfm_ds_8);
+                            var hasGroupB = arrAnswers.Any(x => x == Constants.GGSettings.cfm_ds_1 || x == Constants.GGSettings.cfm_ds_2 || x == Constants.GGSettings.cfm_ds_3 ||
+                                                                x == Constants.GGSettings.cfm_ds_4 || x == Constants.GGSettings.cfm_ds_5);
 
                             // IF danger signs 6, 7, or 8 selected AND no other danger signs selected, add: 
-                            if (arrAnswers.Any(x => x == Constants.GGSettings.cfm_ds_6 ||
-                                                    x == Constants.GGSettings.cfm_ds_7 ||
-                                                    x == Constants.GGSettings.cfm_ds_8)) {
-
-                                comment = firstName + Constants.GGSettings.was_experiencing + bulletList;
-                                AddVisitDataStatus(vData, comment, _none, _referral, Constants.GGSettings.clinic_referrals, false);
-
-                                // Amber -- IF danger signs 6, 7, or 8 selected AND no other danger signs selected, add: 
-                                comment = firstName + Constants.GGSettings.was_experiencing + bulletList;
+                            if (!hasGroupB && hasGroupA) {
+                                comment = motherName + Constants.GGSettings.was_experiencing + bulletList;
                                 AddVisitDataStatus(vData, comment, _amber, _progress, vData.VisitSection, false);
 
                                 // Add item to G9 Client summary download - IF danger signs 6, 7, or 8 selected AND no other danger signs selected, add: ""You have some health issues""
                                 comment = Constants.GGSettings.health_issues;
                                 AddVisitDataStatus(vData, comment, _amber, _G9, vData.VisitSection, false);
-
                             }
-                            else if (arrAnswers.Any(x => x == Constants.GGSettings.cfm_ds_1 ||
-                                                               x == Constants.GGSettings.cfm_ds_2 ||
-                                                               x == Constants.GGSettings.cfm_ds_3 ||
-                                                               x == Constants.GGSettings.cfm_ds_4 ||
-                                                               x == Constants.GGSettings.cfm_ds_5)) {
-
-                                comment = firstName + Constants.GGSettings.was_experiencing + bulletList;
-                                AddVisitDataStatus(vData, comment, _none, _referral, Constants.GGSettings.clinic_referrals, false);
-
+                            else {
                                 //  Red -- IF danger signs 1, 2, 3, 4, or 5 selected, add:
-                                comment = firstName + Constants.GGSettings.was_experiencing + bulletList;
+                                comment = motherName + Constants.GGSettings.was_experiencing + bulletList;
                                 AddVisitDataStatus(vData, comment, _red, _progress, vData.VisitSection, false);
 
                                 // Add G4 secondary alert text: ""Refer to clinic urgently"" if danger signs 1, 2, 3, 4, or 5 selected
@@ -298,7 +295,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                          join visitData in _visitDataRepo.GetAll().Where(y => y.Question == Constants.GGSettings.q_weight) on visit.Id equals visitData.VisitId
                          select visitData.QuestionAnswer
                      ).LastOrDefault();
-
                     growthData.Add(vData);
                 }
                 else if (vData.Question == Constants.GGSettings.q_length) {
@@ -319,7 +315,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                     }
 
                 }
-                else if (vData.Question == Constants.GGSettings.q_tick_foods) {
+                else if (vData.Question == Constants.GGSettings.q_eat_drink_nutrition) {
 
                     var total_food_groups = 8;
                     if (totalMonthsOld >= 6 && totalMonthsOld < 9) {
@@ -329,31 +325,56 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                         total_food_groups = 7;
                     }
 
-                    var answers = vData.QuestionAnswer.Replace("[", "").Replace("]", "").Split(",");
-                    var bulletList = FormatBulletList(answers);
-                    if (answers.Length < 4) {
+                    var answers = 0;
+                    if (vData.QuestionAnswer.IndexOf(Constants.GGSettings.p1_1) != -1) {
+                        answers++;
+                    }
+                    if (vData.QuestionAnswer.IndexOf(Constants.GGSettings.p1_2) != -1) {
+                        answers++;
+                    }
+                    if (vData.QuestionAnswer.IndexOf(Constants.GGSettings.p1_3) != -1) {
+                        answers++;
+                    }
+                    if (vData.QuestionAnswer.IndexOf(Constants.GGSettings.p1_4) != -1) {
+                        answers++;
+                    }
+                    if (vData.QuestionAnswer.IndexOf(Constants.GGSettings.p1_5) != -1) {
+                        answers++;
+                    }
+                    if (vData.QuestionAnswer.IndexOf(Constants.GGSettings.p1_6) != -1) {
+                        answers++;
+                    }
+                    if (vData.QuestionAnswer.IndexOf(Constants.GGSettings.p1_7) != -1) {
+                        answers++;
+                    }
+                    if (vData.QuestionAnswer.IndexOf(Constants.GGSettings.p1_8) != -1) {
+                        answers++;
+                    }
+
+                    if (answers >= 1 && answers < 4) {
                         // Progress: red - ""Poor dietary diversity: X out of 8 food groups"", where X = the number of items selected(1, 2, or 3)
-                        comment = Constants.GGSettings.poor_dietary_diversity.Replace("{x}", answers.Length.ToString()).Replace("{y}", total_food_groups.ToString());
+                        comment = Constants.GGSettings.poor_dietary_diversity.Replace("{x}", answers.ToString()).Replace("{y}", total_food_groups.ToString());
                         AddVisitDataStatus(vData, comment, _red, _progress, vData.VisitSection, false);
 
                         // G9 Client summary download: red - ""You are giving Themba foods from X out of 8 groups. Try to give Themba a variety of foods!"",  where X = the number of items selected (1, 2, or 3)
-                        comment = Constants.GGSettings.give_client_food.Replace("{client}", firstName).Replace("{x}", answers.Length.ToString()).Replace("{y}", total_food_groups.ToString());
+                        comment = Constants.GGSettings.give_client_food.Replace("{client}", firstName).Replace("{x}", answers.ToString()).Replace("{y}", total_food_groups.ToString());
                         AddVisitDataStatus(vData, comment, _red, _G9, vData.VisitSection, false);
 
                     }
-                    else if (answers.Length == 4) {
+                    else if (answers == 4) {
 
                         // Progress: ""Poor dietary diversity: 4 out of 8 food groups""
-                        comment = Constants.GGSettings.poor_dietary_diversity.Replace("{x}", answers.Length.ToString()).Replace("{y}", total_food_groups.ToString());
+                        comment = Constants.GGSettings.poor_dietary_diversity.Replace("{x}", answers.ToString()).Replace("{y}", total_food_groups.ToString());
                         AddVisitDataStatus(vData, comment, _amber, _progress, vData.VisitSection, false);
 
                         // G9 Client summary: ""You are giving Themba foods from 4 out of 8 groups. Try to give Themba a variety of foods!""
-                        comment = Constants.GGSettings.give_client_food.Replace("{client}", firstName).Replace("{x}", answers.Length.ToString()).Replace("{y}", total_food_groups.ToString());
+                        comment = Constants.GGSettings.give_client_food.Replace("{client}", firstName).Replace("{x}", answers.ToString()).Replace("{y}", total_food_groups.ToString());
                         AddVisitDataStatus(vData, comment, _amber, _G9, vData.VisitSection, false);
+
                     }
-                    else if (answers.Length >= 5 && answers.Length <= 8) {
+                    else if (answers >= 5 && answers <= 8) {
                         // Progress: ""Good dietary diversity: X out of 8 food groups!"", where X = the number of items selected (5, 6, 7, 8)
-                        comment = Constants.GGSettings.good_dietary_diversity.Replace("{x}", answers.Length.ToString()).Replace("{y}", total_food_groups.ToString());
+                        comment = Constants.GGSettings.good_dietary_diversity.Replace("{x}", answers.ToString()).Replace("{y}", total_food_groups.ToString());
                         AddVisitDataStatus(vData, comment, _green, _progress, vData.VisitSection, false);
 
                         // G9 Client summary: ""You are giving Themba foods from most of the groups!""
@@ -372,17 +393,48 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                 else if (vData.Question == Constants.GGSettings.q_immunisation ||
                             vData.Question == Constants.GGSettings.q_vitamin_a ||
                             vData.Question == Constants.GGSettings.q_deworming) {
-                 immunisationsData.Add(vData);
-                } 
-                else if (vData.VisitName == Constants.GGSettings.p4_name && vData.Question == Constants.GGSettings.q_danger_signs) {
-                    var names = "<ul>";
+                    immunisationsData.Add(vData);
 
-                    foreach (var item in vData.QuestionAnswer) {
-                        names = names + "<li>" + item + "</li>";
+                }
+                else if (vData.VisitName == Constants.GGSettings.p4_name && vData.Question == Constants.GGSettings.q_danger_signs) {
+
+                    var answers = 0;
+                    var names = "<ul>";
+                    if (vData.QuestionAnswer.IndexOf(Constants.GGSettings.p4_ds_1) != -1) {
+                        answers++;
+                        names = names + "<li>" + Constants.GGSettings.p4_ds_1 + "</li>";
+                    }
+                    if (vData.QuestionAnswer.IndexOf(Constants.GGSettings.p4_ds_2) != -1) {
+                        answers++;
+                        names = names + "<li>" + Constants.GGSettings.p4_ds_2 + "</li>";
+                    }
+                    if (vData.QuestionAnswer.IndexOf(Constants.GGSettings.p4_ds_3) != -1) {
+                        answers++;
+                        names = names + "<li>" + Constants.GGSettings.p4_ds_3 + "</li>";
+                    }
+                    if (vData.QuestionAnswer.IndexOf(Constants.GGSettings.p4_ds_4) != -1) {
+                        answers++;
+                        names = names + "<li>" + Constants.GGSettings.p4_ds_4 + "</li>";
+                    }
+                    if (vData.QuestionAnswer.IndexOf(Constants.GGSettings.p4_ds_5) != -1) {
+                        answers++;
+                        names = names + "<li>" + Constants.GGSettings.p4_ds_5 + "</li>";
+                    }
+                    if (vData.QuestionAnswer.IndexOf(Constants.GGSettings.p4_ds_6) != -1) {
+                        answers++;
+                        names = names + "<li>" + Constants.GGSettings.p4_ds_6 + "</li>";
+                    }
+                    if (vData.QuestionAnswer.IndexOf(Constants.GGSettings.p4_ds_7) != -1) {
+                        answers++;
+                        names = names + "<li>" + Constants.GGSettings.p4_ds_7 + "</li>";
+                    }
+                    if (vData.QuestionAnswer.IndexOf(Constants.GGSettings.p4_ds_8) != -1) {
+                        answers++;
+                        names = names + "<li>" + Constants.GGSettings.p4_ds_8 + "</li>";
                     }
                     names = names + "</ul>";
 
-                    if (vData.QuestionAnswer.Length > 1) {
+                    if (answers > 1) {
                         // If any danger signs selected, add referral item: ""Themba was experiencing: * X *Y"" 
                         comment = firstName + Constants.GGSettings.was_experiencing + names;
                         AddVisitDataStatus(vData, comment, _none, _referral, Constants.GGSettings.clinic_referrals, false);
@@ -402,9 +454,9 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                         comment = Constants.GGSettings.urgent_care;
                         AddVisitDataStatus(vData, comment, _red, _G9, vData.VisitSection, false);
 
-                    } else if (vData.QuestionAnswer.Length == 1) {
-                        string answer = vData.QuestionAnswer[0].ToString();
-                        if (answer == Constants.GGSettings.none_above) {
+                    }
+                    else if (answers == 0) {
+                        if (vData.QuestionAnswer == Constants.GGSettings.none_above) {
                             // if ""None of the above"" selected - green, ""No danger signs for Themba""
                             comment = Constants.GGSettings.none_above;
                             AddVisitDataStatus(vData, comment, _green, _progress, vData.VisitSection, false);
@@ -414,7 +466,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                             AddVisitDataStatus(vData, comment, _green, _G9, vData.VisitSection, false);
                         }
                     }
-                } else if (vData.Question == Constants.GGSettings.q_birth_certificate) {
+                }
+                else if (vData.Question == Constants.GGSettings.q_birth_certificate) {
 
                     if (vData.QuestionAnswer == Constants.GGSettings.answer_no) {
                         // Add referral under ""Home Affairs referrals"" = ""Themba does not have a birth certificate""
@@ -425,15 +478,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                         comment = Constants.GGSettings.home_affairs_referrals;
                         AddVisitDataStatus(vData, comment, _amber, _G4, vData.VisitSection, false);
                     }
-
-                    if (vData.QuestionAnswer == Constants.GGSettings.answer_yes) {
-
-                        // if ""None of the above"" selected - green, ""No danger signs for Themba""
-                        comment = Constants.GGSettings.no_danger_signs + firstName;
-                        AddVisitDataStatus(vData, comment, _green, _progress, vData.VisitSection, false);
-                    }
-
-                } else if (vData.Question == Constants.GGSettings.q_csg) {
+                }
+                else if (vData.Question == Constants.GGSettings.q_csg_receiving) {
 
                     if (vData.QuestionAnswer == Constants.GGSettings.answer_yes) {
 
@@ -444,13 +490,12 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                         // G9 Client summary green, ""You applied for the child support grant - this will support Themba's healthy growth!"""
                         comment = firstName + Constants.GGSettings.has_csg2.Replace("{client}", firstName);
                         AddVisitDataStatus(vData, comment, _green, _G9, vData.VisitSection, false);
-
                     }
                 }
             }
 
             if (maternalDistressScreening.Count > 0) {
-                ManageMaternalDistressScreening(maternalDistressScreening, firstName, infantId, Constants.GGSettings.client_child);
+                ManageMaternalDistressScreening(maternalDistressScreening, motherName, infantId, Constants.GGSettings.client_child);
             }
 
             if (growthData.Count > 0) {
@@ -677,7 +722,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                     AddVisitDataStatus(q3, comment, _amber, _G9, q3.VisitSection, false);
                 }
 
-                if (q3.QuestionAnswer == Constants.GGSettings.answer_no && (q1.QuestionAnswer == Constants.GGSettings.answer_no || q2.QuestionAnswer == Constants.GGSettings.answer_no)) {
+                if (q3.QuestionAnswer == Constants.GGSettings.answer_no && q1.QuestionAnswer == Constants.GGSettings.answer_no && q2.QuestionAnswer == Constants.GGSettings.answer_no) {
                     // add to green items in progress screen (use case 2) (""Lethabo was coping well"")
                     comment = firstName + Constants.GGSettings.was_coping;
                     AddVisitDataStatus(q3, comment, _amber, _progress, q3.VisitSection, true);
@@ -785,21 +830,25 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
             var q2 = growthData.Where(x => x.Question == Constants.GGSettings.q_length).FirstOrDefault();
             var q3 = growthData.Where(x => x.Question == Constants.GGSettings.q_muac).FirstOrDefault();
 
-            if (q1.Question == Constants.GGSettings.q_weight) {
+            if (q1 != null && q1.Question == Constants.GGSettings.q_weight) {
+
+                var _weight = double.Parse(q1.QuestionAnswer, CultureInfo.InvariantCulture);
+                var _height = double.Parse(q2.QuestionAnswer, CultureInfo.InvariantCulture);
+                var _prevWeight = double.Parse(previousVisitWeight, CultureInfo.InvariantCulture);
 
                 string ageSection = (gender == Constants.GGSettings.male ? Constants.GGSettings.weightForAgeBoys : Constants.GGSettings.weightForAgeGirls);
                 string heightSection = (gender == Constants.GGSettings.male ? Constants.GGSettings.weightForHeightBoys : Constants.GGSettings.weightForHeightGirls);
-                wIndicator = GetHeightWeightIndicator(totalMonthsOld, totalDaysOld, double.Parse(q1.QuestionAnswer), double.Parse(q2.QuestionAnswer), ageSection, heightSection);
-                Boolean weightIncreased = Double.Parse(q1.QuestionAnswer) > Double.Parse(previousVisitWeight);
+                wIndicator = GetHeightWeightIndicator(true, totalMonthsOld, totalDaysOld, _weight, _height, ageSection, heightSection);
+                Boolean weightIncreased = _weight > _prevWeight;
 
-                if (totalDaysOld < 7 && Double.Parse(previousVisitWeight) == 0 && Double.Parse(q1.QuestionAnswer) < 2.5) {
+                if (totalDaysOld < 7 && _prevWeight == 0 && _weight < 2.5) {
                     wIndicator = "Low birth weight";
                     wColor = _amber;
-                } else if (totalDaysOld < 7 && Double.Parse(previousVisitWeight) == 0 && Double.Parse(q1.QuestionAnswer) >= 2.5) {
+                } else if (totalDaysOld < 7 && _prevWeight == 0 && _weight >= 2.5) {
                     wIndicator = "Normal";
                     wColor = _green;
                 } else {
-                    if (wIndicator == "Severely stunted") {
+                    if (wIndicator == "Severely underweight") {
                         wColor = _red;
 
                         // Red progress
@@ -812,8 +861,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                         // Red G4
                         comment = Constants.GGSettings.refer_to_clinic_urgently;
                         AddVisitDataStatus(q1, comment, wColor, _G4, Constants.GGSettings.refer_to_clinic_urgently, false);
-                    }
-                    else if (wIndicator == "Underweight") {
+                    } else if (wIndicator == "Underweight") {
                         wColor = _amber;
 
                         // Amber progress
@@ -826,8 +874,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                         // Amber G4
                         comment = Constants.GGSettings.refer_to_clinic;
                         AddVisitDataStatus(q1, comment, wColor, _G4, Constants.GGSettings.refer_to_clinic, false);
-                    }
-                    else if (wIndicator == "Growth faltering" && !weightIncreased) {
+                    } else if (wIndicator == "Growth faltering" && !weightIncreased) {
                         wColor = _amber;
 
                         // Amber progress
@@ -840,8 +887,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                         // Amber G4
                         comment = Constants.GGSettings.refer_to_clinic;
                         AddVisitDataStatus(q1, comment, wColor, _G4, Constants.GGSettings.refer_to_clinic, false);
-                    }
-                    else if (wIndicator == "Obese") {
+                    } else if (wIndicator == "Obese") {
                         wColor = _amber;
 
                         // Amber progress
@@ -854,8 +900,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                         // Amber G4
                         comment = Constants.GGSettings.refer_to_clinic;
                         AddVisitDataStatus(q1, comment, wColor, _G4, Constants.GGSettings.refer_to_clinic, false);
-                    }
-                    else if (wIndicator == "Overweight") {
+                    } else if (wIndicator == "Overweight") {
                         wColor = _amber;
 
                         // Amber progress
@@ -868,8 +913,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                         // Amber G4
                         comment = Constants.GGSettings.refer_to_clinic;
                         AddVisitDataStatus(q1, comment, wColor, _G4, Constants.GGSettings.refer_to_clinic, false);
-                    }
-                    else if (wIndicator == "Normal" && weightIncreased) {
+                    } else if (wIndicator == "Normal" && weightIncreased) {
                         wColor = _green;
 
                         // Green progress
@@ -877,15 +921,15 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                         AddVisitDataStatus(q1, comment, wColor, _progress, q1.VisitSection, false);
 
                         // Green G4 
-                        comment = Constants.GGSettings.growing_well;
+                        comment = firstName + Constants.GGSettings.growing_well;
                         AddVisitDataStatus(q1, comment, wColor, _G4, q1.VisitSection, false);
                     }
                 }
             }
 
-            if (q2.Question == Constants.GGSettings.q_length) {
+            if (q2 != null && q2.Question == Constants.GGSettings.q_length) {
                 string ageSection = (gender == Constants.GGSettings.male ? Constants.GGSettings.weightForAgeBoys : Constants.GGSettings.weightForAgeGirls);
-                lIndicator = GetHeightWeightIndicator(totalMonthsOld, totalDaysOld, double.Parse(q2.QuestionAnswer), double.Parse(q1.QuestionAnswer), ageSection, "");
+                lIndicator = GetHeightWeightIndicator(false, totalMonthsOld, totalDaysOld, double.Parse(q2.QuestionAnswer), double.Parse(q1.QuestionAnswer), ageSection, "");
 
                 if (lIndicator == "Severely stunted") {
                     lColor = _red;
@@ -901,8 +945,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                     comment = Constants.GGSettings.refer_to_clinic_urgently;
                     AddVisitDataStatus(q2, comment, lColor, _G4, Constants.GGSettings.refer_to_clinic_urgently, false);
 
-                }
-                else if (lIndicator == "Stunted") {
+                } else if (lIndicator == "Stunted") {
                     lColor = _amber;
 
                     // Amber progress
@@ -925,7 +968,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                 }
             }
 
-            if (q3.Question == Constants.GGSettings.q_measurement) {
+            if (q3 != null && q3.Question == Constants.GGSettings.q_muac) {
                 var questionAnswer = Int32.Parse(q3.QuestionAnswer);
                 mIndicator = "Normal";
                 if (questionAnswer < 11.5) {
@@ -948,14 +991,14 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                     mIndicator = "Moderate acute malnutrition";
                     mColor = _amber;
 
-                    // Red progress
+                    // Amber progress
                     comment = Constants.GGSettings.severely_stunted + " " + q3.QuestionAnswer;
                     AddVisitDataStatus(q3, comment, mColor, _progress, q3.VisitSection, false);
 
                     // additional visit
                     AddAdditionalVisit(infantId, Constants.GGSettings.client_child, Constants.GGSettings.moderate_acute_malnutrition);
 
-                    // Red G4
+                    // Amber G4
                     comment = Constants.GGSettings.refer_to_clinic_urgently;
                     AddVisitDataStatus(q3, comment, mColor, _G4, Constants.GGSettings.refer_to_clinic_urgently, false);
 
@@ -968,13 +1011,13 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                     AddVisitDataStatus(q3, comment, mColor, _progress, q3.VisitSection, false);
 
                     // Green G4 
-                    comment = Constants.GGSettings.growing_well;
+                    comment = firstName + Constants.GGSettings.growing_well;
                     AddVisitDataStatus(q3, comment, mColor, _G4, q3.VisitSection, false);
                 }
             }
 
             // REFERRALS && G9 FOR ALL
-            if (wIndicator != "Normal" || lIndicator != "Normal" || mIndicator != "Normal") {
+            if (wIndicator != "Normal" && lIndicator != "Normal" && mIndicator != "Normal") {
                 // Referrals
                 comment = firstName + Constants.GGSettings.growth_referral + "<ul><li>" + wIndicator + "</li><li>" + lIndicator + "</li><li>" + mIndicator + "</li></ul>";
                 AddVisitDataStatus(q1, comment, _none, _referral, q1.VisitSection, false);
@@ -988,11 +1031,11 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
 
                 if (wColor == _red || lColor == _red || mColor == _red) {
                     // add red item to G9 client summary: ""Themba is not growing well""
-                    comment = Constants.GGSettings.not_growing;
+                    comment = firstName + Constants.GGSettings.not_growing;
                     AddVisitDataStatus(q3, comment, _red, _G9, Constants.GGSettings.growth_section, false);
                 } else if (wColor == _amber || lColor == _amber || mColor == _amber) {
                     // add amber item to G9 client summary: ""Themba is not growing well""
-                    comment = Constants.GGSettings.not_growing;
+                    comment = firstName + Constants.GGSettings.not_growing;
                     AddVisitDataStatus(q3, comment, _amber, _G9, Constants.GGSettings.growth_section, false);
                 }
             }
@@ -1030,15 +1073,14 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                 var mixedFoods = "";
                 var listFoods = "";
                 mixedFoods = (
-                    from visit in _visitRepo.GetAll().Where(x => x.InfantId.ToString() == infantId)
-                    join visitData in _visitDataRepo.GetAll().Where(y => y.Question == Constants.GGSettings.q_mixed_foods) on visit.Id equals visitData.VisitId
+                    from visit in _visitRepo.GetAll().Where(x => x.InfantId.ToString() == infantId).OrderBy(y => y.PlannedVisitDate)
+                    join visitData in _visitDataRepo.GetAll().Where(y => y.Question == Constants.GGSettings.q_eat_drink_nutrition) on visit.Id equals visitData.VisitId
                     select visitData.QuestionAnswer
                 ).FirstOrDefault();
                 
-                if (mixedFoods != "") {
-                    var arrFood = mixedFoods.Replace("[", "").Replace("]", "").Split(",");
-                    listFoods = FormatBulletList(arrFood);
-                }
+                if (mixedFoods != null) {
+                    listFoods = FormatNutritionList(mixedFoods);
+                } 
 
                 // Progress: amber - ""Mixed feeding: ..."" + bulleted list of items selected on screen G5.3.14 Mixed feeding 1 below(use case 39)
                 comment = Constants.GGSettings.formula_milk_only + " " + listFoods;
@@ -1053,22 +1095,35 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
             return true;
         }
         private Boolean ManageDevelopmentScreeningData(List<VisitData> developmentScreening, string firstName, string infantId) {
-            var names = "";
+            var names = "<ul>";
             var comment = "";
-
-            var q1 = developmentScreening.FirstOrDefault();
 
             foreach (var item in developmentScreening)
             {
-                names = names + item.Question + ", ";
+                if (item.Question == Constants.GGSettings.q_hearing) {
+                    names = names + "<li>Hearing</li>";
+                }
+                if (item.Question == Constants.GGSettings.q_seeing) {
+                    names = names + "<li>Seeing</li>";
+                }
+                if (item.Question == Constants.GGSettings.q_brain) {
+                    names = names + "<li>Brain</li>";
+                }
+                if (item.Question == Constants.GGSettings.q_moving) {
+                    names = names + "<li>Moving</li>";
+                }
+
             }
+            names = names + "</ul>";
+
+            var q1 = developmentScreening.FirstOrDefault();
 
             // IF the user selected ""No"" to any of the questions, show referral item: ""Themba is struggling with X, Y, Z""
-            comment = firstName + Constants.GGSettings.dev_is_struggling.Replace("{client}", firstName) + names;
+            comment = Constants.GGSettings.dev_is_struggling.Replace("{client}", firstName) + names;
             AddVisitDataStatus(q1, comment, _none, _referral, q1.VisitSection, false);
 
             // amber ""Themba is struggling with: * X; * Y""
-            comment = firstName + Constants.GGSettings.dev_is_struggling.Replace("{client}", firstName) + names;
+            comment = Constants.GGSettings.dev_is_struggling.Replace("{client}", firstName) + names;
             AddVisitDataStatus(q1, comment, _amber, _progress, q1.VisitSection, false);
 
             // G9 Client summary: amber - ""Themba might be having issues with: X, Y skills""
@@ -1079,22 +1134,10 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
         }
         private Boolean ManageImmunisationData(List<VisitData> immunisationsData, string firstName, string infantId) {
             var comment = "";
-            var names = "";
-            
+
             List<VisitData> no_answers = immunisationsData.Where(x => x.QuestionAnswer == Constants.GGSettings.answer_no).ToList();
             List<VisitData> yes_answers = immunisationsData.Where(x => x.QuestionAnswer == Constants.GGSettings.answer_yes).ToList();
 
-            var iCount = 0;
-            foreach (var item in no_answers) {
-
-                if (iCount < no_answers.Count) {
-                    names = names + item.Question + ", ";
-                }
-                else {
-                    names = names + item.Question;
-                }
-                iCount++;
-            }
             // NO Answers
             var q1 = no_answers.FirstOrDefault();
             if (no_answers.Count == 1) {
@@ -1113,18 +1156,18 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                     comment = Constants.GGSettings.deworming_not_up_to_date;
                     AddVisitDataStatus(q1, comment, _none, _referral, q1.VisitSection, false);
                 }
-            } else {
+            } else if (no_answers.Count > 1) {
 
                 // ""Immunisations, deworming and Vitamin A not up to date"" 
-                comment = names + Constants.GGSettings.not_up_to_date;
+                comment = Constants.GGSettings.not_up_to_date;
                 AddVisitDataStatus(q1, comment, _none, _referral, q1.VisitSection, false);
 
                 //amber - if user responded ""No"" to all 3 questions: ""Immunisations, deworming and Vitamin A not up to date""; if user responded ""No"" to 1 or more, please see row 160 here for variations
-                comment = names + Constants.GGSettings.not_up_to_date;
+                comment = Constants.GGSettings.not_up_to_date;
                 AddVisitDataStatus(q1, comment, _amber, _progress, q1.VisitSection, false);
 
                 // G9 Client summary: ""Themba missed an immunisation, deworming and Vitamin A supplement
-                comment = Constants.GGSettings.missed_immunisations.Replace("{client}", firstName) + names;
+                comment = Constants.GGSettings.missed_immunisations.Replace("{client}", firstName);
                 AddVisitDataStatus(q1, comment, _amber, _G9, q1.VisitSection, false);
             }
 
@@ -1132,11 +1175,11 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
             var q2 = yes_answers.FirstOrDefault();
             if (yes_answers.Count == 3) {
                 //green - if user responded ""Yes"" to all 3 questions: ""All immunisations, Vitamin A and deworming are up to date""
-                comment = names + Constants.GGSettings.all_up_to_date;
+                comment = Constants.GGSettings.all_up_to_date;
                 AddVisitDataStatus(q2, comment, _green, _progress, q2.VisitSection, false);
 
                 // G9 Client summary: green - if ""Yes"" to all questions on screen, show ""All of Themba's immunisations are up to date""
-                comment = Constants.GGSettings.all_up_to_date_client.Replace("{client}", firstName) + names;
+                comment = Constants.GGSettings.all_up_to_date_client.Replace("{client}", firstName);
                 AddVisitDataStatus(q2, comment, _green, _G9, q2.VisitSection, false);
             }
             return true;
@@ -1155,14 +1198,16 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
         }
         private Boolean AddVisitDataStatus(VisitData input, string comment, string color, string type, string section, Boolean isCompleted)
         {
-            var visitDataStatus = GetVisitDataStatusFromInputModel(input);
-            visitDataStatus.Id = Guid.NewGuid();
-            visitDataStatus.Comment = comment;
-            visitDataStatus.Color = color;
-            visitDataStatus.Type = type;
-            visitDataStatus.Section = section;
-            visitDataStatus.IsCompleted = isCompleted;
-            InsertVisitDataStatus(visitDataStatus);
+            if (input != null) {
+                var visitDataStatus = GetVisitDataStatusFromInputModel(input);
+                visitDataStatus.Id = Guid.NewGuid();
+                visitDataStatus.Comment = comment;
+                visitDataStatus.Color = color;
+                visitDataStatus.Type = type;
+                visitDataStatus.Section = section;
+                visitDataStatus.IsCompleted = isCompleted;
+                InsertVisitDataStatus(visitDataStatus);
+            }
             return true;
         }
         private Boolean InsertVisitDataStatus(VisitDataStatus input)
@@ -1205,7 +1250,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                 Section = ""
             };
         }
-        
         private string FormatBulletList(Array arrData) {
             var result = "<ul>";
             foreach (var item in arrData) {
@@ -1215,62 +1259,122 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
 
             return result;
         }
-        
-        private string GetHeightWeightIndicator(int totalMonthsOld, double totalDaysOld, double weight, double height, string ageSection, string heightSection) {
+        private string FormatNutritionList(String options) {
+            var result = "<ul>";
+
+            if (options.IndexOf(Constants.GGSettings.p1_1) != -1) {
+                result = result + "<li>" + Constants.GGSettings.p1_1 + "</li>";
+            }
+            if (options.IndexOf(Constants.GGSettings.p1_2) != -1) {
+                result = result + "<li>" + Constants.GGSettings.p1_2 + "</li>";
+            }
+            if (options.IndexOf(Constants.GGSettings.p1_3) != -1) {
+                result = result + "<li>" + Constants.GGSettings.p1_3 + "</li>";
+            }
+            if (options.IndexOf(Constants.GGSettings.p1_4) != -1) {
+                result = result + "<li>" + Constants.GGSettings.p1_4 + "</li>";
+            }
+            if (options.IndexOf(Constants.GGSettings.p1_5) != -1) {
+                result = result + "<li>" + Constants.GGSettings.p1_5 + "</li>";
+            }
+            if (options.IndexOf(Constants.GGSettings.p1_6) != -1) {
+                result = result + "<li>" + Constants.GGSettings.p1_6 + "</li>";
+            }
+            if (options.IndexOf(Constants.GGSettings.p1_7) != -1) {
+                result = result + "<li>" + Constants.GGSettings.p1_7 + "</li>";
+            }
+            if (options.IndexOf(Constants.GGSettings.p1_8) != -1) {
+                result = result + "<li>" + Constants.GGSettings.p1_8 + "</li>";
+            }
+
+            result = result + "<ul>";
+
+            return result;
+        }
+        private string GetHeightWeightIndicator(Boolean isWeightCalc, int totalMonthsOld, double totalDaysOld, double weight, double height, string ageSection, string heightSection) {
             var indicator = "Normal";
 
-            List<VisitGrowthData> recordsForAge = recordsForAge = _visitGrowthData.GetAll().Where(x => x.Section == ageSection && x.Month == totalMonthsOld).OrderBy(z => z.Weight).ToList();
+            List<VisitGrowthData> recordsForAge = _visitGrowthData.GetAll().Where(x => x.Section == ageSection && x.Month == totalMonthsOld).OrderBy(z => z.Weight).ToList();
             VisitGrowthData neg3SD = recordsForAge.Where(x => x.Name == Constants.GGSettings.neg3SD).FirstOrDefault();
             VisitGrowthData neg2SD = recordsForAge.Where(x => x.Name == Constants.GGSettings.neg2SD).FirstOrDefault();
-            
-            if (totalDaysOld < 7) {
-                if (weight <= neg2SD.Weight) {
-                    indicator = "Low birth length";
-                } else if (weight > neg2SD.Weight) {
-                    indicator = "Normal";
-                } 
+
+            if (isWeightCalc) {
+
+                if (totalDaysOld < 7) {
+                    if (neg2SD != null && weight <= neg2SD.Weight) {
+                        indicator = "Low birth length";
+                    } else if (neg2SD != null && weight > neg2SD.Weight) {
+                        indicator = "Normal";
+                    }
+                } else {
+                    if (neg3SD != null && weight <= neg3SD.Weight) {
+                        indicator = "Severely underweight";
+                    } else if ((neg2SD != null && neg3SD != null) && weight > neg3SD.Weight && weight <= neg2SD.Weight) {
+                        indicator = "Underweight";
+                    } else if (neg2SD != null && weight > neg2SD.Weight) {
+                        indicator = "Growth faltering";
+                    }
+                }
+
+                if (heightSection != "") {
+                    List<VisitGrowthData> recordsForHeight = _visitGrowthData.GetAll().Where(x => x.Section == heightSection && x.Height == height).OrderBy(z => z.Weight).ToList();
+                    VisitGrowthData pos2SD = recordsForHeight.Where(x => x.Name == Constants.GGSettings.pos2SD).FirstOrDefault();
+                    VisitGrowthData pos3SD = recordsForHeight.Where(x => x.Name == Constants.GGSettings.pos3SD).FirstOrDefault();
+
+
+                    if (pos3SD != null && (weight >= pos3SD.Weight)) {
+                        indicator = "Obese";
+                    }
+                    else if ((pos2SD != null && pos3SD != null) && (weight >= pos2SD.Weight && weight < pos3SD.Weight)) {
+                        indicator = "Overweight";
+                    }
+                }
+
             } else {
-                if (weight <= neg3SD.Weight) {
-                    indicator = "Severely underweight";
-                } else if (weight > neg3SD.Weight && weight <= neg2SD.Weight) {
-                    indicator = "Underweight";
-                } else if (weight > neg2SD.Weight) {
-                    indicator = "Growth faltering";
+
+                if (neg3SD != null && weight <= neg3SD.Weight) {
+                    indicator = "Severely stunted";
+                } else if ((neg2SD != null && neg3SD != null) && weight > neg3SD.Weight && weight <= neg2SD.Weight) {
+                    indicator = "Stunted";
+                } else if (neg2SD != null && weight > neg2SD.Weight) {
+                    indicator = "Normal";
                 }
             }
-
-            if (heightSection != "") {
-                List<VisitGrowthData> recordsForHeight = recordsForAge = _visitGrowthData.GetAll().Where(x => x.Section == heightSection && x.Height == height).OrderBy(z => z.Weight).ToList();
-                VisitGrowthData pos2SD = recordsForHeight.Where(x => x.Name == Constants.GGSettings.pos2SD).FirstOrDefault();
-                VisitGrowthData pos3SD = recordsForHeight.Where(x => x.Name == Constants.GGSettings.pos3SD).FirstOrDefault();
-            
-                if (weight >= pos3SD.Weight) {
-                    indicator = "Obese";
-                } else if (weight >= pos2SD.Weight && weight < pos3SD.Weight) {
-                    indicator = "Overweight";
-                }
-            }
-
             return indicator;
         }
         public List<VisitDataStatus> GetReferralDataForClient(string id, string clientType) {
+            // This data is for the past 6 months
             List<VisitDataStatus> allReferrals = new List<VisitDataStatus>();
+            DateTime today = DateTime.Today;
+            var sixMonthsBack = today.AddMonths(-6);
 
             if (clientType == Constants.GGSettings.client_mother) {
                 allReferrals = (
-                    from visit in _visitRepo.GetAll().Where(x => x.Mother.UserId == id).OrderBy(x => x.PlannedVisitDate)
+                    from visit in _visitRepo.GetAll().Where(x => x.Mother.UserId == id && x.PlannedVisitDate >= sixMonthsBack).OrderBy(x => x.PlannedVisitDate)
                     join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
                     join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == false && x.Type == _referral) on visitData.Id equals visitStatusData.VisitDataId
                     select visitStatusData
                 ).ToList();
             } else {
                 allReferrals = (
-                    from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId == id).OrderBy(x => x.PlannedVisitDate)
+                    from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId == id && x.PlannedVisitDate >= sixMonthsBack).OrderBy(x => x.PlannedVisitDate)
                     join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
                     join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == false && x.Type == _referral) on visitData.Id equals visitStatusData.VisitDataId
                     select visitStatusData
                 ).ToList();
             }
+
+            return allReferrals;
+        }
+        public List<VisitDataStatus> GetReferralDataForVisitId(string visitId) {
+            List<VisitDataStatus> allReferrals = new List<VisitDataStatus>();
+
+            allReferrals = (
+                from visit in _visitRepo.GetAll().Where(x => x.Id.ToString() == visitId)
+                join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
+                join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == false && x.Type == _referral) on visitData.Id equals visitStatusData.VisitDataId
+                select visitStatusData
+            ).ToList();
 
             return allReferrals;
         }

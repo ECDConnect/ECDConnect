@@ -1211,6 +1211,21 @@ export type ComparableNullableOfDecimalOperationFilterInput = {
   nlte?: InputMaybe<Scalars['Decimal']>;
 };
 
+export type ComparableNullableOfDoubleOperationFilterInput = {
+  eq?: InputMaybe<Scalars['Float']>;
+  gt?: InputMaybe<Scalars['Float']>;
+  gte?: InputMaybe<Scalars['Float']>;
+  in?: InputMaybe<Array<InputMaybe<Scalars['Float']>>>;
+  lt?: InputMaybe<Scalars['Float']>;
+  lte?: InputMaybe<Scalars['Float']>;
+  neq?: InputMaybe<Scalars['Float']>;
+  ngt?: InputMaybe<Scalars['Float']>;
+  ngte?: InputMaybe<Scalars['Float']>;
+  nin?: InputMaybe<Array<InputMaybe<Scalars['Float']>>>;
+  nlt?: InputMaybe<Scalars['Float']>;
+  nlte?: InputMaybe<Scalars['Float']>;
+};
+
 export type ComparableNullableOfGuidOperationFilterInput = {
   eq?: InputMaybe<Scalars['UUID']>;
   gt?: InputMaybe<Scalars['UUID']>;
@@ -1300,6 +1315,8 @@ export type ContentType = {
 
 export type ContentTypeField = {
   __typename?: 'ContentTypeField';
+  contentType?: Maybe<ContentType>;
+  contentTypeId: Scalars['Int'];
   dataLinkName?: Maybe<Scalars['String']>;
   fieldName?: Maybe<Scalars['String']>;
   fieldOrder: Scalars['Int'];
@@ -5367,6 +5384,7 @@ export type Query = {
   allClassroomsForPrincipal?: Maybe<Array<Maybe<Classroom>>>;
   allClinics?: Maybe<Array<Maybe<Clinic>>>;
   allCoachesForFranchisor?: Maybe<Array<Maybe<Coach>>>;
+  allContentLanguages?: Maybe<Array<Maybe<Language>>>;
   allDocument?: Maybe<Array<Maybe<Document>>>;
   allEventRecordTypes?: Maybe<Array<Maybe<EventRecordType>>>;
   allEventRecordTypesForType?: Maybe<Array<Maybe<EventRecordType>>>;
@@ -5409,8 +5427,7 @@ export type Query = {
   coachByPractitionerId?: Maybe<Coach>;
   coachByUserId?: Maybe<Coach>;
   coachNameByUserId?: Maybe<Scalars['String']>;
-  completedVisitsForInfant?: Maybe<Array<Maybe<Scalars['String']>>>;
-  completedVisitsForMother?: Maybe<Array<Maybe<Scalars['String']>>>;
+  completedVisitsForVisitId?: Maybe<Array<Maybe<Scalars['String']>>>;
   contentDefinitions?: Maybe<Array<Maybe<ContentDefinitionModel>>>;
   contentDefinitionsExcelTemplateGenerator?: Maybe<FileModel>;
   contentTypes?: Maybe<Array<Maybe<ContentType>>>;
@@ -5455,6 +5472,7 @@ export type Query = {
   principalByUserId?: Maybe<Practitioner>;
   referralsForInfant?: Maybe<Array<Maybe<VisitDataStatus>>>;
   referralsForMother?: Maybe<Array<Maybe<VisitDataStatus>>>;
+  referralsForVisitId?: Maybe<Array<Maybe<VisitDataStatus>>>;
   roleForUser?: Maybe<Scalars['String']>;
   roles?: Maybe<Array<Maybe<IdentityRole>>>;
   settings?: Maybe<SettingsType>;
@@ -6361,6 +6379,10 @@ export type QueryAllCoachesForFranchisorArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
+export type QueryAllContentLanguagesArgs = {
+  contentType?: InputMaybe<Scalars['String']>;
+};
+
 export type QueryAllDocumentArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
@@ -6505,12 +6527,8 @@ export type QueryCoachNameByUserIdArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
-export type QueryCompletedVisitsForInfantArgs = {
-  id?: InputMaybe<Scalars['String']>;
-};
-
-export type QueryCompletedVisitsForMotherArgs = {
-  id?: InputMaybe<Scalars['String']>;
+export type QueryCompletedVisitsForVisitIdArgs = {
+  visitId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryContentDefinitionsExcelTemplateGeneratorArgs = {
@@ -6673,6 +6691,10 @@ export type QueryReferralsForInfantArgs = {
 
 export type QueryReferralsForMotherArgs = {
   id?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryReferralsForVisitIdArgs = {
+  visitId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryRoleForUserArgs = {
@@ -7095,6 +7117,16 @@ export type Setting_Google = {
   GoogleTagManager: Scalars['String'];
 };
 
+export type Setting_IncomeStatementSubmitEnd = {
+  __typename?: 'Setting_IncomeStatementSubmitEnd';
+  IncomeStatementSubmitEnd: Scalars['String'];
+};
+
+export type Setting_IncomeStatementSubmitStart = {
+  __typename?: 'Setting_IncomeStatementSubmitStart';
+  IncomeStatementSubmitStart: Scalars['String'];
+};
+
 export type Setting_IntegrationDelay = {
   __typename?: 'Setting_IntegrationDelay';
   IntegrationDelay: Scalars['String'];
@@ -7171,6 +7203,8 @@ export type SettingsType = {
   BulkSms: Setting_BulkSms;
   Children: Setting_Children;
   Google: Setting_Google;
+  IncomeStatementSubmitEnd: Setting_IncomeStatementSubmitEnd;
+  IncomeStatementSubmitStart: Setting_IncomeStatementSubmitStart;
   IntegrationDelay: Setting_IntegrationDelay;
   InvitationCutoffDelay: Setting_InvitationCutoffDelay;
   Invitations: Setting_Invitations;
@@ -8184,42 +8218,42 @@ export type VisitFilterInput = {
 
 export type VisitGrowthData = {
   __typename?: 'VisitGrowthData';
-  height: Scalars['Float'];
+  height?: Maybe<Scalars['Float']>;
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
-  month: Scalars['Int'];
+  month?: Maybe<Scalars['Int']>;
   name?: Maybe<Scalars['String']>;
   section?: Maybe<Scalars['String']>;
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
-  weight: Scalars['Float'];
+  weight?: Maybe<Scalars['Float']>;
 };
 
 export type VisitGrowthDataFilterInput = {
   and?: InputMaybe<Array<VisitGrowthDataFilterInput>>;
-  height?: InputMaybe<ComparableDoubleOperationFilterInput>;
+  height?: InputMaybe<ComparableNullableOfDoubleOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
-  month?: InputMaybe<ComparableInt32OperationFilterInput>;
+  month?: InputMaybe<ComparableNullableOfInt32OperationFilterInput>;
   name?: InputMaybe<StringOperationFilterInput>;
   or?: InputMaybe<Array<VisitGrowthDataFilterInput>>;
   section?: InputMaybe<StringOperationFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
-  weight?: InputMaybe<ComparableDoubleOperationFilterInput>;
+  weight?: InputMaybe<ComparableNullableOfDoubleOperationFilterInput>;
 };
 
 export type VisitGrowthDataInput = {
-  Height: Scalars['Float'];
+  Height?: InputMaybe<Scalars['Float']>;
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
-  Month: Scalars['Int'];
+  Month?: InputMaybe<Scalars['Int']>;
   Name?: InputMaybe<Scalars['String']>;
   Section?: InputMaybe<Scalars['String']>;
   UpdatedBy?: InputMaybe<Scalars['String']>;
-  Weight: Scalars['Float'];
+  Weight?: InputMaybe<Scalars['Float']>;
 };
 
 export type VisitInput = {

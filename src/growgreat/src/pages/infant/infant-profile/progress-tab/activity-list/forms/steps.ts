@@ -17,7 +17,8 @@ import {
 import {
   WeightAndLengthFormStep,
   WeightAndLengthResultStep,
-  MidUpperArmCircumferenceStep,
+  MidUpperArmCircumferenceFormStep,
+  MidUpperArmCircumferenceResultStep,
   InterventionsStep,
   NutritionStep,
   BreastMilkOnlyStep,
@@ -82,7 +83,8 @@ export const getPillar1Steps = (
   const defaultScreens = [
     WeightAndLengthFormStep,
     WeightAndLengthResultStep,
-    MidUpperArmCircumferenceStep,
+    MidUpperArmCircumferenceFormStep,
+    MidUpperArmCircumferenceResultStep,
     InterventionsStep,
     NutritionStep,
   ];

@@ -31,14 +31,9 @@ const ConfigWrapper: React.FC = () => {
   if (loader) {
     return <Loader />;
   } else {
+    const pollUrl = new URL(APIs.onlineCheck, Config.authApi).href;
     return (
-      <OnlineStatusProvider
-        pollUrl={`${
-          Config.authApi.endsWith('/') ? Config.authApi : Config.authApi + '/'
-        }${APIs.onlineCheck}`}
-        interval={3000}
-        timeout={2000}
-      >
+      <OnlineStatusProvider pollUrl={pollUrl} interval={3000} timeout={2000}>
         <Provider store={store}>
           <PersistGate loading={null} persistor={persistor}>
             <ThemeProvider
