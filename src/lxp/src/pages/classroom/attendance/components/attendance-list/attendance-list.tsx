@@ -42,6 +42,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
   submitText = '',
   attendanceDate = new Date(),
   onSubmitSuccess,
+  editAttendanceRegisterVisible,
 }) => {
   const appDispatch = useAppDispatch();
   const [presentChildrenCount, setPresentChildrenCount] = useState<number>(0);
@@ -199,10 +200,12 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
     // Get the updated date string in ISO format
     const updatedAttendanceDateString = dateObj.toISOString();
 
-    let newAttDate =
-      submitText !== 'Submit'
-        ? attendanceDate.toISOString()
-        : updatedAttendanceDateString;
+    let newAttDate = !editAttendanceRegisterVisible
+      ? attendanceDate.toISOString()
+      : updatedAttendanceDateString;
+
+   
+
 
     const trackAttendanceInput = mapTrackAttendance(
       user?.id || '',
@@ -263,7 +266,8 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
               colour: 'primary',
               type: 'filled',
               onClick: () => {
-                onSubmit();
+                // onSubmit();
+                handleFormSubmit().then(() => onCancel());
               },
               leadingIcon: 'SaveIcon',
             },
@@ -383,7 +387,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
         <div className={'px-4'}>
           <Button
             id="gtm-add-attendance"
-            onClick={handleFormSubmit}
+            onClick={submitPrompt}
             className="mt-4 w-full"
             size="small"
             color="primary"
