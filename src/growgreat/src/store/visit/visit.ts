@@ -6,6 +6,7 @@ import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
 import {
   addVisitFormData,
   getHealthCareWorkerVisitStatus,
+  getHealthPromotion,
 } from './visit.actions';
 import { VisitState } from './visit.types';
 
@@ -30,6 +31,7 @@ const visitSlice = createSlice({
   extraReducers: (builder) => {
     setThunkActionStatus(builder, getHealthCareWorkerVisitStatus);
     setThunkActionStatus(builder, addVisitFormData);
+    setThunkActionStatus(builder, getHealthPromotion);
     builder.addCase(addVisitFormData.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
     });
@@ -41,6 +43,11 @@ const visitSlice = createSlice({
         setFulfilledThunkActionStatus(state, action);
       }
     );
+    builder.addCase(getHealthPromotion.fulfilled, (state, action) => {
+      state.healthPromotion = action.payload;
+
+      setFulfilledThunkActionStatus(state, action);
+    });
   },
 });
 

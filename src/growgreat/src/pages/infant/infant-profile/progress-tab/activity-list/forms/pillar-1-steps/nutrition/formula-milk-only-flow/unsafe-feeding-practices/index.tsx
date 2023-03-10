@@ -4,10 +4,10 @@ import { Header, TipCard } from '@/pages/infant/infant-profile/components';
 import P1 from '@/assets/pillar/p1.svg';
 import { DynamicFormProps } from '../../../../dynamic-form';
 import { useEffect, useMemo } from 'react';
-import { HealthPromotion } from './health-promotion';
 import LanguageSelector from '@/components/language-selector/language-selector';
 // @ts-ignore
 import mockedVideo from '../../../../assets/mocked.mp4';
+import { HealthPromotion } from '../../../../components/health-promotion';
 
 export const UnsafeFeedingPracticesStep = ({
   infant,
@@ -28,8 +28,10 @@ export const UnsafeFeedingPracticesStep = ({
   if (isTipPage) {
     return (
       <HealthPromotion
-        clientName={caregiverName}
-        onClose={() => setIsTip && setIsTip(false)}
+        title={`Discuss with ${caregiverName}`}
+        subTitle="Formula milk only"
+        section="Formula milk only 3"
+        onClose={() => setIsTip?.(false)}
       />
     );
   }

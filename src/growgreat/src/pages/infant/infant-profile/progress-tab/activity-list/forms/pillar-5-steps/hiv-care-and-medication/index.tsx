@@ -3,10 +3,10 @@ import { Header, TipCard } from '@/pages/infant/infant-profile/components';
 import P5 from '@/assets/pillar/p5.svg';
 import { DynamicFormProps } from '../../dynamic-form';
 import { useCallback, useMemo, useState } from 'react';
-import { HealthPromotion } from './health-promotion';
 import { activitiesColours } from '../../../activities-list';
 import { ReactComponent as Polly } from '@/assets/momImageSvg.svg';
 import { replaceBraces } from '@ecdlink/core';
+import { HealthPromotion } from '../../components/health-promotion';
 
 export const HIVCareAndMedicationStep = ({
   infant,
@@ -55,7 +55,9 @@ export const HIVCareAndMedicationStep = ({
   if (isTipPage) {
     return (
       <HealthPromotion
-        clientName={caregiverName}
+        title={`Discuss with ${caregiverName}`}
+        subTitle="HIV care & medication"
+        section="HIV care & medication"
         onClose={() => setIsTip && setIsTip(false)}
       />
     );

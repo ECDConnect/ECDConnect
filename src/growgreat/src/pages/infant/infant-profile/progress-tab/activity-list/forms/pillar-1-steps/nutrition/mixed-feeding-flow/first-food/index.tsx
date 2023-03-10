@@ -1,13 +1,14 @@
-import { Alert } from '@ecdlink/ui';
+import { Alert, Divider } from '@ecdlink/ui';
 import { ReactComponent as PollyNeutral } from '@/assets/pollyNeutral.svg';
 import { Header, TipCard } from '@/pages/infant/infant-profile/components';
 import P1 from '@/assets/pillar/p1.svg';
+import { ReactComponent as Polly } from '@/assets/momImageSvg.svg';
 import { DynamicFormProps } from '../../../../dynamic-form';
 import { useEffect, useMemo } from 'react';
-import { HealthPromotion } from './health-promotion';
 import LanguageSelector from '@/components/language-selector/language-selector';
 // @ts-ignore
 import mockedVideo from '../../../../assets/mocked.mp4';
+import { HealthPromotion } from '../../../../components/health-promotion';
 
 export const FirstFoodsStep = ({
   infant,
@@ -28,7 +29,9 @@ export const FirstFoodsStep = ({
   if (isTipPage) {
     return (
       <HealthPromotion
-        clientName={caregiverName}
+        title={`Discuss with ${caregiverName}`}
+        subTitle="Mixed feeding"
+        section="Mixed feeding"
         onClose={() => setIsTip && setIsTip(false)}
       />
     );
@@ -48,6 +51,19 @@ export const FirstFoodsStep = ({
           buttonIcon="ChatIcon"
           onClick={() => setIsTip && setIsTip(true)}
         />
+        <Alert
+          type="warning"
+          title="Discuss the dangers of mixed feeding"
+          titleColor="textDark"
+          message="Include other family members in the discussion – they are an important source of support."
+          messageColor="textMid"
+          customIcon={
+            <div className="bg-tertiary h-16 w-16 rounded-full">
+              <Polly className="h-16 w-16" />
+            </div>
+          }
+        />
+        <Divider dividerType="dashed" />
         <Alert
           type="warning"
           title={`Watch the video on First Foods with ${caregiverName} and answer any questions.`}
