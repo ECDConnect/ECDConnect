@@ -25,7 +25,7 @@ export const getProgrammes = createAsyncThunk<
         if (userAuth?.auth_token) {
           programmes = await new ProgrammeService(
             userAuth?.auth_token
-          ).getUserProgrammes(userAuth.id);
+          ).getUserProgrammes();
         } else {
           return rejectWithValue('no access token, profile check required');
         }
@@ -65,7 +65,7 @@ export const getUserProgrammes = createAsyncThunk<
         if (userAuth?.auth_token) {
           programmes = await new ProgrammeService(
             userAuth?.auth_token
-          ).getUserProgrammes('');
+          ).getUserProgrammes();
         } else {
           return rejectWithValue('no access token, profile check required');
         }
@@ -96,7 +96,7 @@ export const upsertProgrammes = createAsyncThunk<
     const {
       auth: { userAuth },
       programmeData: { programmes },
-      classroomData: { classroom },
+      classroomData: { classroom, classroomGroups },
     } = getState();
 
     try {
@@ -108,6 +108,8 @@ export const upsertProgrammes = createAsyncThunk<
           const input: ProgrammeInput = {
             Id: programme.id,
             ClassroomId: programme.classroomId || classroom?.id,
+            ClassroomGroupId:
+              programme?.classroomGroupId ?? classroomGroups?.at(0)?.id,
             Name: programme.name,
             StartDate: programme.startDate,
             EndDate: programme.endDate,

@@ -24,6 +24,7 @@ type DailyProgrammesCreateResult = {
 
 export const useProgrammePlanning = () => {
   const classroom = useSelector(classroomsSelectors.getClassroom);
+  const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const programmes = useSelector(programmeSelectors.getProgrammes);
   const holiday = useHolidays();
   const dispatch = useAppDispatch();
@@ -41,6 +42,7 @@ export const useProgrammePlanning = () => {
       startDate: startDate.toISOString(),
       endDate: '',
       dailyProgrammes: [],
+      classroomGroupId: classroomGroups.at(0)?.id,
     };
 
     const dailyProgrammesResult = createProgrammeDailyProgrammes(

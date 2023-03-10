@@ -33,7 +33,9 @@ const ConfigWrapper: React.FC = () => {
   } else {
     return (
       <OnlineStatusProvider
-        pollUrl={`${Config.authApi}/${APIs.onlineCheck}`}
+        pollUrl={`${
+          Config.authApi.endsWith('/') ? Config.authApi : Config.authApi + '/'
+        }${APIs.onlineCheck}`}
         interval={3000}
         timeout={2000}
       >

@@ -96,12 +96,12 @@ class ProgrammeService {
     return true;
   }
 
-  async getUserProgrammes(userId: string): Promise<ProgrammeDto[]> {
+  async getUserProgrammes(): Promise<ProgrammeDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-      query GetUserProgrammes($userId: String) {
-        userProgrammes(overrideUserId: $userId) {
+      query GetUserProgrammes {
+        userProgrammes {
           id
           classroomId
           startDate
@@ -120,9 +120,6 @@ class ProgrammeService {
         }
       }
       `,
-      variables: {
-        userId: userId,
-      },
     });
 
     if (response.status !== 200) {
