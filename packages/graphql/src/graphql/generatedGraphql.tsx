@@ -5483,6 +5483,7 @@ export type Query = {
   principalByUserId?: Maybe<Practitioner>;
   referralsForInfant?: Maybe<Array<Maybe<VisitDataStatus>>>;
   referralsForMother?: Maybe<Array<Maybe<VisitDataStatus>>>;
+  referralsForVisitId?: Maybe<Array<Maybe<VisitDataStatus>>>;
   roleForUser?: Maybe<Scalars['String']>;
   roles?: Maybe<Array<Maybe<IdentityRole>>>;
   settings?: Maybe<SettingsType>;
@@ -6710,6 +6711,10 @@ export type QueryReferralsForInfantArgs = {
 
 export type QueryReferralsForMotherArgs = {
   id?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryReferralsForVisitIdArgs = {
+  visitId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryRoleForUserArgs = {
