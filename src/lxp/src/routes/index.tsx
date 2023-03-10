@@ -69,7 +69,7 @@ import { PractitionerSignature } from '@/pages/practitioner/practitioner-about/c
 import { CoachContactPractitioner } from '@/pages/coach/practitioner-profile-info/coach-contact-practitioner/coach-contact-practitioner';
 import Business from '@/pages/business/business';
 import AddAmount from '@/pages/business/add-amount/add-amount';
-import { AddIncome } from '@/pages/business/add-income/add-income';
+import { AddIncome } from '@/pages/business/add-amount/add-income/add-income';
 import { AddExpense } from '@/pages/business/add-amount/add-expense/add-expense';
 import { WalkthroughTutorial } from '@/pages/classroom/attendance/components/attendance-tutorial/walkthrough-tutorial/walkthrough-tutorial';
 import { SubmitIncomeStatementsList } from '@/pages/business/money/submit-income-statements/components/submit-income-statements-list/submit-income-statements-list';

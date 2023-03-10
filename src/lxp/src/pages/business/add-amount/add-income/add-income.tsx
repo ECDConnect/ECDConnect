@@ -21,7 +21,7 @@ import StartupSupport from './components/startup-support/startup-support';
 import DonationsOrVouchers from './components/donations-or-vouchers/donations-or-vouchers';
 import DsdSubsidy from './components/dsd-subsidy/dsd-subsidy';
 import OtherIncome from './components/other-income/other-income';
-import StatementsWrapper from '../money/submit-income-statements/components/statements-wrapper/StatementsWrapper';
+import StatementsWrapper from '../../money/submit-income-statements/components/statements-wrapper/StatementsWrapper';
 import { useAppContext } from '@/walkthrougContext';
 
 export const AddIncome: React.FC = () => {

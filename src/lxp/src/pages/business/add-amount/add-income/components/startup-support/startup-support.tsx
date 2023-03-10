@@ -22,18 +22,21 @@ import { AddIncomeState } from './startup-support.types';
 import { IncomeStatementsService } from '@/services/IncomeStatementsService';
 import { authSelectors } from '@/store/auth';
 import { useSelector } from 'react-redux';
-import { statementsSelectors } from '@/store/statements';
+import { statementsActions, statementsSelectors } from '@/store/statements';
 import { newGuid } from '@/utils/common/uuid.utils';
 import {
   isNumber,
   moneyInputFormat,
 } from '@/utils/statements/statements-utils';
 import { getDate, lastDayOfMonth, startOfMonth } from 'date-fns';
+import { useAppDispatch } from '@/store';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 export const StartupSupport: React.FC<AddIncomeState> = ({ setType }) => {
   const [confirmStartupValue, setConfirmStartupValue] = useState(false);
   const userAuth = useSelector(authSelectors.getAuthUser);
-  // const feeTypes = useSelector(statementsSelectors.getFeeTypes);
+  const appDispatch = useAppDispatch();
+  const { isOnline } = useOnlineStatus();
   const incomeTypes = useSelector(statementsSelectors.getIncomeTypes);
   const viewTitle = 'Startup Support';
   const incomeTypeValue = incomeTypes.find(
@@ -75,9 +78,7 @@ export const StartupSupport: React.FC<AddIncomeState> = ({ setType }) => {
   const sendIncomeUpdate = async () => {
     const incomeId = newGuid();
 
-    await new IncomeStatementsService(
-      userAuth?.auth_token!
-    ).UpdateStatementsIncome(incomeId, {
+    const incomeInput = {
       IsActive: true,
       UserId: userAuth?.id,
       Submitted: false,
@@ -86,7 +87,17 @@ export const StartupSupport: React.FC<AddIncomeState> = ({ setType }) => {
       AmountExpected: startupValue ? moneyInputFormat(startupValue) : 0,
       ChildCoverAmount: 0,
       IncomeTypeId: incomeTypeValue?.id,
-    });
+    };
+
+    const offlineStatement = { ...incomeInput, isOffline: true, id: incomeId };
+
+    appDispatch(
+      statementsActions.addIncome(isOnline ? incomeInput : offlineStatement)
+    );
+
+    await new IncomeStatementsService(
+      userAuth?.auth_token!
+    ).UpdateStatementsIncome(incomeId, incomeInput);
   };
 
   const handleSaveStartupSupportValues = () => {
