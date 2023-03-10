@@ -193,5 +193,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat {
             return sumData;
         }
 
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public List<VisitBackReferral> GetBackReferralsForMother([Service] VisitBackReferralManager visitBackReferralManager, string id, bool referralCompleted, bool backReferralCompleted) {
+            return visitBackReferralManager.GetBackReferralDataForClient(id, Constants.GGSettings.client_mother, referralCompleted, backReferralCompleted);
+        }
+
     }
 }
