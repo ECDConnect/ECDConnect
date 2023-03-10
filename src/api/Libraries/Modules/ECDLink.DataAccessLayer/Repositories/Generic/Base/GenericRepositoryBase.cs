@@ -114,16 +114,15 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
                 throw new ArgumentNullException("entity");
 
             Guid tenantId = TenantExecutionContext.Tenant.Id;
-            
-            var existingEntity = GetById(entity.Id);
-            if (existingEntity is not null && existingEntity.Id != Guid.Empty)
+
+            if (Exists(entity.Id))
             {
                 // TODO: Global change to Utc.
                 entity.UpdatedDate = DateTime.Now;
                 entity.UpdatedBy = _userId;
                 // Notify update would get input values without this:
-                entity.TenantId = existingEntity.TenantId;
-                entity.InsertedDate= existingEntity.InsertedDate;
+                entity.TenantId = entities.Entry(entity).Property(e => e.TenantId).OriginalValue;
+                entity.InsertedDate = entities.Entry(entity).Property(e => e.InsertedDate).OriginalValue;
 
                 entities.Update(entity);
                 // Do not update Inserted Date:
