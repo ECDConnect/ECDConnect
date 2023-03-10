@@ -1,5 +1,5 @@
 import { LocalStorageKeys, MonthlyAttendanceRecord } from '@ecdlink/core';
-import { Button,  MessageModal, renderIcon, Typography } from '@ecdlink/ui';
+import { Button, MessageModal, renderIcon, Typography } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { OfflineCard } from '../../../../../components/offline-card/offline-card';

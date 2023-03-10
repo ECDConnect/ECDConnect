@@ -130,11 +130,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat {
          public List<VisitData> GetVisitAnswersForInfant([Service] VisitDataManager visitDataManager, string visitId, string visitName, string visitSection) {
              return visitDataManager.GetVisitAnswersForClient(visitId, visitName, visitSection);
          }
-        
-         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-         public List<string> GetCompletedVisitsForInfant([Service] VisitDataManager visitDataManager, string id) {
-             return visitDataManager.GetCompletedVisitsForClient(id, Constants.GGSettings.client_child);
-         }
 
          [Permission(PermissionGroups.USER, GraphActionEnum.View)]
          public Progress_VisitDataStatus GetPreviousVisitInformationForInfant([Service] VisitDataStatusManager visitDataStatusManager, string visitId) {
