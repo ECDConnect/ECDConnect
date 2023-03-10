@@ -5420,8 +5420,7 @@ export type Query = {
   coachByPractitionerId?: Maybe<Coach>;
   coachByUserId?: Maybe<Coach>;
   coachNameByUserId?: Maybe<Scalars['String']>;
-  completedVisitsForInfant?: Maybe<Array<Maybe<Scalars['String']>>>;
-  completedVisitsForMother?: Maybe<Array<Maybe<Scalars['String']>>>;
+  completedVisitsForVisitId?: Maybe<Array<Maybe<Scalars['String']>>>;
   contentDefinitions?: Maybe<Array<Maybe<ContentDefinitionModel>>>;
   contentDefinitionsExcelTemplateGenerator?: Maybe<FileModel>;
   contentTypes?: Maybe<Array<Maybe<ContentType>>>;
@@ -5466,6 +5465,7 @@ export type Query = {
   principalByUserId?: Maybe<Practitioner>;
   referralsForInfant?: Maybe<Array<Maybe<VisitDataStatus>>>;
   referralsForMother?: Maybe<Array<Maybe<VisitDataStatus>>>;
+  referralsForVisitId?: Maybe<Array<Maybe<VisitDataStatus>>>;
   roleForUser?: Maybe<Scalars['String']>;
   roles?: Maybe<Array<Maybe<IdentityRole>>>;
   settings?: Maybe<SettingsType>;
@@ -6520,12 +6520,8 @@ export type QueryCoachNameByUserIdArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
-export type QueryCompletedVisitsForInfantArgs = {
-  id?: InputMaybe<Scalars['String']>;
-};
-
-export type QueryCompletedVisitsForMotherArgs = {
-  id?: InputMaybe<Scalars['String']>;
+export type QueryCompletedVisitsForVisitIdArgs = {
+  visitId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryContentDefinitionsExcelTemplateGeneratorArgs = {
@@ -6688,6 +6684,10 @@ export type QueryReferralsForInfantArgs = {
 
 export type QueryReferralsForMotherArgs = {
   id?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryReferralsForVisitIdArgs = {
+  visitId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryRoleForUserArgs = {
