@@ -23,6 +23,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat {
 
             } else if (input.InfantId != null)
             {
+                input.VisitId = "454686a9-2142-4061-aa47-4e89d46110b9";
                 visitDataManager.AddChildVisitData(input);
             }
             return true;
