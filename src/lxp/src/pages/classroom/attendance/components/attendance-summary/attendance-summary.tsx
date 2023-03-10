@@ -100,6 +100,9 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
     usePrevious(missedAttendanceGroups) || [];
   const previousAttendanceData = usePrevious(attendanceData);
 
+  let hasClosedAttendanceSmartStartPointsMessage = getStorageItem<boolean>(
+    LocalStorageKeys.hasClosedAttendanceSmartStartPointsMessage
+  );
  
 
   useEffect(() => {
@@ -109,6 +112,8 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
     let isCurrentSmartStartUser = getStorageItem<boolean>(
       LocalStorageKeys.isSmartStartUser
     );
+
+  
 
     if (hasClosedPointsMessage === undefined) {
       hasClosedPointsMessage = false;
@@ -121,12 +126,13 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
       )
     }
 
-    // setSuccessMessageVisible(!successMessageVisible);
 
     setIsSmartStartUser(false);
 
-    if (todayDate.getDay() === 1 && !hasClosedPointsMessage) {
+    if (todayDate.getDay() === 1 && !hasClosedPointsMessage && !successMessageVisible) {
       setDisplaySmartStartMessage(true);
+      setSuccessMessageVisible(true);
+
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -339,7 +345,10 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
             ? 'Submit & go to next day'
             : 'Submit'
         );
-        setAttendanceEditDay(allMissedAttendanceDays[-1]);
+        allMissedAttendanceDays.shift()
+
+       
+        setAttendanceEditDay(allMissedAttendanceDays[0]);
       } else {
         setEditAttendanceRegisterVisible(false);
       }
@@ -367,7 +376,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
       <div className={'flex h-full flex-1 flex-col gap-4 px-4 pt-4'}>
         {isValidAttendanceDay ? (
           <PointsSuccessCard
-            visible={ !props.hidePopup ?? successMessageVisible}
+            visible={ !props.hidePopup ?? !successMessageVisible}
             isSmartStartUser={false}
             points={100}
             onClose={closeNotification}

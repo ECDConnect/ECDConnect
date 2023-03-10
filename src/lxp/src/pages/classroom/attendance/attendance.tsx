@@ -235,8 +235,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       <div className={'flex h-full w-full flex-1 flex-col px-4'}>
         {attendanceComponentType === 'attendance' &&
           !seeRegister &&
-          removeHolidays !== 0 &&
-          removeHolidays === null && (
+        (
             <Button
               type="outlined"
               color="primary"
