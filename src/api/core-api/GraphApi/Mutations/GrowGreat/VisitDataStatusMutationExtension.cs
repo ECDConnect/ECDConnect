@@ -10,11 +10,9 @@ using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
-{
+namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat {
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class VisitDataStatusMutationExtension
     {
@@ -33,7 +31,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
                 var entityToUpdate = visitDataStatusRepo.GetAll().Where(x => x.Id.ToString() == inputItem.Id).FirstOrDefault();
                 entityToUpdate.UpdatedDate = DateTime.Now;
                 entityToUpdate.UpdatedBy = applicationUserId;
-                entityToUpdate.IsCompleted = inputItem.IsCompleted == "true" ? true : false;
+                entityToUpdate.IsCompleted = (inputItem.IsCompleted == "true" ? true : false);
+                entityToUpdate.ReferralDateCompleted = DateTime.Now;
                 visitDataStatusRepo.Update(entityToUpdate);
             }
 
