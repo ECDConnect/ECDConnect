@@ -94,8 +94,8 @@ export const ClassProgrammeAttendanceList: React.FC<
           avatarColor: getAvatarColor(),
           status: existingAttendanceRecord
             ? existingAttendanceRecord.attended
-              ? 2
-              : 3
+              ? 1
+              : 2
             : 1,
         };
       }

@@ -127,13 +127,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat {
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public List<VisitBackReferral> GetBackReferralsForInfant([Service] VisitBackReferralManager visitBackReferralManager, string id, bool referralCompleted, bool backReferralCompleted) {
+            return visitBackReferralManager.GetBackReferralDataForClient(id, Constants.GGSettings.client_child, referralCompleted, backReferralCompleted);
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
          public List<VisitData> GetVisitAnswersForInfant([Service] VisitDataManager visitDataManager, string visitId, string visitName, string visitSection) {
              return visitDataManager.GetVisitAnswersForClient(visitId, visitName, visitSection);
-         }
-        
-         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-         public List<string> GetCompletedVisitsForInfant([Service] VisitDataManager visitDataManager, string id) {
-             return visitDataManager.GetCompletedVisitsForClient(id, Constants.GGSettings.client_child);
          }
 
          [Permission(PermissionGroups.USER, GraphActionEnum.View)]
