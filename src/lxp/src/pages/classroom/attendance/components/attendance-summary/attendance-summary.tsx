@@ -100,8 +100,6 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
     usePrevious(missedAttendanceGroups) || [];
   const previousAttendanceData = usePrevious(attendanceData);
 
- 
-
   useEffect(() => {
     let hasClosedPointsMessage = getStorageItem<boolean>(
       LocalStorageKeys.hasClosedAttendanceSmartStartPointsMessage
@@ -115,10 +113,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
     }
 
     if (isCurrentSmartStartUser === undefined) {
-      setStorageItem(
-        true,
-        LocalStorageKeys.isSmartStartUser
-      )
+      setStorageItem(true, LocalStorageKeys.isSmartStartUser);
     }
 
     // setSuccessMessageVisible(!successMessageVisible);
@@ -293,7 +288,6 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
         if (index >= 0) {
           setCurrentEditClassroomGroupId(classroomGroupCacheId);
           setAttendanceEditDay(allMissedAttendanceDays[index]);
-         
 
           setEditAttendanceRegisterVisible(true);
         }
@@ -367,7 +361,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
       <div className={'flex h-full flex-1 flex-col gap-4 px-4 pt-4'}>
         {isValidAttendanceDay ? (
           <PointsSuccessCard
-            visible={ !props.hidePopup ?? successMessageVisible}
+            visible={!props.hidePopup ?? successMessageVisible}
             isSmartStartUser={false}
             points={100}
             onClose={closeNotification}
