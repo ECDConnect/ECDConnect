@@ -55,25 +55,30 @@ export const getAllExpensesTypes = createAsyncThunk<
   async ({}, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
+      statements: { expensesTypes: expensesTypesCached },
     } = getState();
 
-    try {
-      let expensesTypes: ExpensesStatementsTypes[] | undefined;
+    if (!expensesTypesCached) {
+      try {
+        let expensesTypes: ExpensesStatementsTypes[] | undefined;
 
-      if (userAuth?.auth_token) {
-        expensesTypes = await new ExpensesStatementsService(
-          userAuth?.auth_token
-        ).GetAllStatementsExpensesType();
-      } else {
-        return rejectWithValue('no access token, profile check required');
-      }
+        if (userAuth?.auth_token) {
+          expensesTypes = await new ExpensesStatementsService(
+            userAuth?.auth_token
+          ).GetAllStatementsExpensesType();
+        } else {
+          return rejectWithValue('no access token, profile check required');
+        }
 
-      if (!expensesTypes) {
-        return rejectWithValue('Error expenses types');
+        if (!expensesTypes) {
+          return rejectWithValue('Error expenses types');
+        }
+        return expensesTypes;
+      } catch (err) {
+        return rejectWithValue(err);
       }
-      return expensesTypes;
-    } catch (err) {
-      return rejectWithValue(err);
+    } else {
+      return expensesTypesCached;
     }
   }
 );
@@ -147,7 +152,7 @@ export const getAllStatementsBalanceSheet = createAsyncThunk<
 );
 
 export const getAllIncomeTypes = createAsyncThunk<
-  any[],
+  IncomeStatementsTypes[],
   {},
   ThunkApiType<RootState>
 >(
@@ -156,26 +161,31 @@ export const getAllIncomeTypes = createAsyncThunk<
   async ({}, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
+      statements: { incomeTypes: incomeTypesCache },
     } = getState();
 
-    try {
-      let incomeTypes: IncomeStatementsTypes[] | undefined;
+    if (!incomeTypesCache) {
+      try {
+        let incomeTypes: IncomeStatementsTypes[] | undefined;
 
-      if (userAuth?.auth_token) {
-        incomeTypes = await new IncomeStatementsService(
-          userAuth?.auth_token
-        ).GetAllStatementsIncomeType();
-      } else {
-        return rejectWithValue('no access token, profile check required');
+        if (userAuth?.auth_token) {
+          incomeTypes = await new IncomeStatementsService(
+            userAuth?.auth_token
+          ).GetAllStatementsIncomeType();
+        } else {
+          return rejectWithValue('no access token, profile check required');
+        }
+
+        if (!incomeTypes) {
+          return rejectWithValue('Error getting income types');
+        }
+
+        return incomeTypes;
+      } catch (err) {
+        return rejectWithValue(err);
       }
-
-      if (!incomeTypes) {
-        return rejectWithValue('Error getting income types');
-      }
-
-      return incomeTypes;
-    } catch (err) {
-      return rejectWithValue(err);
+    } else {
+      return incomeTypesCache;
     }
   }
 );
@@ -190,26 +200,31 @@ export const getAllStatementsFeeType = createAsyncThunk<
   async ({}, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
+      statements: { feeTypes: feeTypesCached },
     } = getState();
 
-    try {
-      let feeTypes: any[] | undefined;
+    if (!feeTypesCached) {
+      try {
+        let feeTypes: any[] | undefined;
 
-      if (userAuth?.auth_token) {
-        feeTypes = await new IncomeStatementsService(
-          userAuth?.auth_token
-        ).GetAllStatementsFeeType();
-      } else {
-        return rejectWithValue('no access token, profile check required');
+        if (userAuth?.auth_token) {
+          feeTypes = await new IncomeStatementsService(
+            userAuth?.auth_token
+          ).GetAllStatementsFeeType();
+        } else {
+          return rejectWithValue('no access token, profile check required');
+        }
+
+        if (!feeTypes) {
+          return rejectWithValue('Erro getting fee types');
+        }
+
+        return feeTypes;
+      } catch (err) {
+        return rejectWithValue(err);
       }
-
-      if (!feeTypes) {
-        return rejectWithValue('Erro getting fee types');
-      }
-
-      return feeTypes;
-    } catch (err) {
-      return rejectWithValue(err);
+    } else {
+      return feeTypesCached;
     }
   }
 );
@@ -224,26 +239,31 @@ export const getAllStatementsContributionType = createAsyncThunk<
   async ({}, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
+      statements: { contributionTypes: contributionTypesCached },
     } = getState();
 
-    try {
-      let contributionTypes: StatementsContributionTypes[] | undefined;
+    if (!contributionTypesCached) {
+      try {
+        let contributionTypes: StatementsContributionTypes[] | undefined;
 
-      if (userAuth?.auth_token) {
-        contributionTypes = await new IncomeStatementsService(
-          userAuth?.auth_token
-        ).GetAllStatementsContributionType();
-      } else {
-        return rejectWithValue('no access token, profile check required');
+        if (userAuth?.auth_token) {
+          contributionTypes = await new IncomeStatementsService(
+            userAuth?.auth_token
+          ).GetAllStatementsContributionType();
+        } else {
+          return rejectWithValue('no access token, profile check required');
+        }
+
+        if (!contributionTypes) {
+          return rejectWithValue('Erro getting contribution types');
+        }
+
+        return contributionTypes;
+      } catch (err) {
+        return rejectWithValue(err);
       }
-
-      if (!contributionTypes) {
-        return rejectWithValue('Erro getting contribution types');
-      }
-
-      return contributionTypes;
-    } catch (err) {
-      return rejectWithValue(err);
+    } else {
+      return contributionTypesCached;
     }
   }
 );
@@ -258,26 +278,31 @@ export const getAllPayType = createAsyncThunk<
   async ({}, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
+      statements: { payTypes: payTypesCached },
     } = getState();
 
-    try {
-      let payTypes: any[] | undefined;
+    if (!payTypesCached) {
+      try {
+        let payTypes: any[] | undefined;
 
-      if (userAuth?.auth_token) {
-        payTypes = await new IncomeStatementsService(
-          userAuth?.auth_token
-        ).GetAllStatementsPayType();
-      } else {
-        return rejectWithValue('no access token, profile check required');
+        if (userAuth?.auth_token) {
+          payTypes = await new IncomeStatementsService(
+            userAuth?.auth_token
+          ).GetAllStatementsPayType();
+        } else {
+          return rejectWithValue('no access token, profile check required');
+        }
+
+        if (!payTypes) {
+          return rejectWithValue('Erro getting pay types');
+        }
+
+        return payTypes;
+      } catch (err) {
+        return rejectWithValue(err);
       }
-
-      if (!payTypes) {
-        return rejectWithValue('Erro getting pay types');
-      }
-
-      return payTypes;
-    } catch (err) {
-      return rejectWithValue(err);
+    } else {
+      return payTypesCached;
     }
   }
 );

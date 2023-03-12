@@ -3,22 +3,21 @@ import {
   Typography,
   renderIcon,
   Button,
-  Alert,
   FormInput,
 } from '@ecdlink/ui';
 import DatePicker from 'react-datepicker';
-import * as styles from './dsd-subsidy.styles';
+import * as styles from './other-income.styles';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm, useWatch } from 'react-hook-form';
 import {
-  DsdSubsidyModel,
-  dsdSubsidySchema,
-} from '@/schemas/income-statements/dsd-subsidy';
-import { AddIncomeState } from './dsd-subsidy.types';
-import { statementsSelectors } from '@/store/statements';
+  OtherIncomeModel,
+  otherIncomeSchema,
+} from '@/schemas/income-statements/other-income';
+import { AddIncomeState } from './other-income.types';
+import { IncomeStatementsService } from '@/services/IncomeStatementsService';
 import { useSelector } from 'react-redux';
 import { authSelectors } from '@/store/auth';
-import { IncomeStatementsService } from '@/services/IncomeStatementsService';
+import { statementsActions, statementsSelectors } from '@/store/statements';
 import { newGuid } from '@/utils/common/uuid.utils';
 import { useMemo } from 'react';
 import {
@@ -26,12 +25,16 @@ import {
   moneyInputFormat,
 } from '@/utils/statements/statements-utils';
 import { getDate, lastDayOfMonth, startOfMonth } from 'date-fns';
+import { useAppDispatch } from '@/store';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
-export const DsdSubsidy: React.FC<AddIncomeState> = ({ setType }) => {
+export const OtherIncome: React.FC<AddIncomeState> = ({ setType }) => {
   const userAuth = useSelector(authSelectors.getAuthUser);
+  const appDispatch = useAppDispatch();
+  const { isOnline } = useOnlineStatus();
 
   const incomeTypes = useSelector(statementsSelectors.getIncomeTypes);
-  const viewTitle = 'DBE Subsidy';
+  const viewTitle = 'Other';
   const incomeTypeValue = incomeTypes.find(
     (item) => item.description === viewTitle
   );
@@ -40,26 +43,26 @@ export const DsdSubsidy: React.FC<AddIncomeState> = ({ setType }) => {
     control,
     setValue: setPreschoolFeesValue,
     register,
-  } = useForm<DsdSubsidyModel>({
-    resolver: yupResolver(dsdSubsidySchema),
+  } = useForm<OtherIncomeModel>({
+    resolver: yupResolver(otherIncomeSchema),
     mode: 'onChange',
   });
 
   const {
     date: selectedDate,
     date,
-    childrenNumber,
-    subsidyAmount,
+    incomeAmount,
+    description,
     note,
   } = useWatch({
     control: control,
   });
 
-  const isNum = isNumber(subsidyAmount!);
+  const isNum = isNumber(incomeAmount!);
 
   const disabled = useMemo(() => {
-    return !date || !childrenNumber || !subsidyAmount;
-  }, [childrenNumber, date, subsidyAmount]);
+    return !date || !incomeAmount || !description;
+  }, [date, description, incomeAmount]);
 
   const today = new Date();
   const todayDateNumber = getDate(today);
@@ -74,19 +77,28 @@ export const DsdSubsidy: React.FC<AddIncomeState> = ({ setType }) => {
   const sendIncomeUpdate = async () => {
     const incomeId = newGuid();
 
-    await new IncomeStatementsService(
-      userAuth?.auth_token!
-    ).UpdateStatementsIncome(incomeId, {
+    const incomeInput = {
       IsActive: true,
       UserId: userAuth?.id,
       Submitted: false,
       DateReceived: date,
       Notes: note,
-      Amount: subsidyAmount ? moneyInputFormat(subsidyAmount) : 0,
-      AmountExpected: subsidyAmount ? moneyInputFormat(subsidyAmount) : 0,
-      ChildCoverAmount: Number(childrenNumber),
+      Description: description,
+      Amount: incomeAmount ? moneyInputFormat(incomeAmount) : 0,
+      AmountExpected: incomeAmount ? moneyInputFormat(incomeAmount) : 0,
+      ChildCoverAmount: 0,
       IncomeTypeId: incomeTypeValue?.id,
-    });
+    };
+
+    const offlineStatement = { ...incomeInput, isOffline: true, id: incomeId };
+
+    appDispatch(
+      statementsActions.addIncome(isOnline ? incomeInput : offlineStatement)
+    );
+
+    await new IncomeStatementsService(
+      userAuth?.auth_token!
+    ).UpdateStatementsIncome(incomeId, incomeInput);
   };
 
   const handleSaveStartupSupportValues = () => {
@@ -96,7 +108,7 @@ export const DsdSubsidy: React.FC<AddIncomeState> = ({ setType }) => {
 
   return (
     <BannerWrapper
-      title={`Add a new income type`}
+      title={`Other income`}
       color={'primary'}
       size="medium"
       renderBorder={true}
@@ -105,15 +117,8 @@ export const DsdSubsidy: React.FC<AddIncomeState> = ({ setType }) => {
     >
       <div className="mb-3 w-full justify-center">
         <Typography type="h2" color="textMid" text={viewTitle} />
-        <Alert
-          type={'info'}
-          title={
-            'If you are registered with the Department of Basic Education (DBE), you may receive a subsidy for some, or all, of the children who attend your programme.'
-          }
-          className="mt-4 mb-2"
-        />
         <label className="text-md text-textDark mt-2 mb-1 block font-semibold">
-          When did you get the subsidy?
+          When did you get this income?
         </label>
         <DatePicker
           placeholderText={`Please select a date`}
@@ -129,33 +134,33 @@ export const DsdSubsidy: React.FC<AddIncomeState> = ({ setType }) => {
           }
           maxDate={lastDateOfMonth}
         />
-        <FormInput<DsdSubsidyModel>
-          label={'How many children do you receive this amount for?'}
+        <FormInput<OtherIncomeModel>
+          label={'How much do you get from this income type?'}
           visible={true}
-          nameProp={'childrenNumber'}
+          nameProp={'incomeAmount'}
           register={register}
-          placeholder={'e.g. 20'}
-          className="mt-2"
-          type={'number'}
-        />
-        <FormInput<DsdSubsidyModel>
-          label={'How much did you receive from the DBE subsidy?'}
-          visible={true}
-          nameProp={'subsidyAmount'}
-          register={register}
-          placeholder={'e.g. R 1 000.00'}
+          placeholder={'e.g. R 50.00'}
           className="mt-2"
           type={'text'}
           textInputType={'moneyInput'}
-          prefixIcon={!!subsidyAmount}
+          prefixIcon={!!incomeAmount}
         />
-        <FormInput<DsdSubsidyModel>
+        <FormInput<OtherIncomeModel>
+          label={'Write a short description of this income type'}
+          subLabel="Writing a clear description will help you to reuse this income type again in future."
+          visible={true}
+          nameProp={'description'}
+          register={register}
+          placeholder={'e.g. ABC grocery grant'}
+          className="mt-2"
+        />
+        <FormInput<OtherIncomeModel>
           label={'Add a note'}
           subLabel={'Optional'}
           visible={true}
           nameProp={'note'}
           register={register}
-          placeholder={'e.g. Paid 2 days late'}
+          placeholder={'e.g. Small grant from local shop'}
           className="mt-2"
         />
         <Button
@@ -178,4 +183,4 @@ export const DsdSubsidy: React.FC<AddIncomeState> = ({ setType }) => {
   );
 };
 
-export default DsdSubsidy;
+export default OtherIncome;

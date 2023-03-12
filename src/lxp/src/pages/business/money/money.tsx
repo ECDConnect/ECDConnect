@@ -10,9 +10,17 @@ import { authSelectors } from '@store/auth';
 import { useAppDispatch } from '@/store';
 import { statementsSelectors, statementsThunkActions } from '@store/statements';
 import { getMonth, getYear } from 'date-fns';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { IncomeStatementsService } from '@/services/IncomeStatementsService';
+import {
+  StatementsExpensesInput,
+  StatementsIncomeInput,
+} from '@/../../../packages/graphql/lib';
+import ExpensesStatementsService from '@/services/ExpensesStatementsService/ExpensesStatementsService';
 
 export const Money = () => {
   const history = useHistory();
+  const { isOnline } = useOnlineStatus();
   const balanceSheet = useSelector(statementsSelectors.getBalanceSheet);
   const [hasIncomeStatements, setHasIncomeStatements] = useState(false);
   const userAuth = useSelector(authSelectors.getAuthUser);
@@ -39,6 +47,44 @@ export const Money = () => {
       );
     }
   };
+
+  useEffect(() => {
+    if (isOnline) {
+      income
+        ?.filter((item) => item?.isOffline === true)
+        .map(async (item) => {
+          let { id, isOffline, ...input } = item;
+          await new IncomeStatementsService(
+            userAuth?.auth_token!
+          ).UpdateStatementsIncome(item?.id!, input! as StatementsIncomeInput);
+        });
+
+      if (income?.filter((e) => e?.isOffline === true).length! > 0) {
+        updateStatements();
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOnline, userAuth?.auth_token]);
+
+  useEffect(() => {
+    if (isOnline) {
+      expense
+        ?.filter((item) => item?.isOffline === true)
+        .map(async (item) => {
+          let { id, isOffline, ...input } = item;
+          await new ExpensesStatementsService(
+            userAuth?.auth_token!
+          ).UpdateStatementsExpense(
+            item?.id!,
+            input! as StatementsExpensesInput
+          );
+        });
+      if (expense?.filter((e) => e?.isOffline === true).length! > 0) {
+        updateStatements();
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOnline, userAuth?.auth_token]);
 
   useLayoutEffect(() => {
     updateStatements();

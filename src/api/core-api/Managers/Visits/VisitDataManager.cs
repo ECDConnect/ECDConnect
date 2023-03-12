@@ -112,22 +112,14 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
             return vData;
         }
 
-        public List<string> GetCompletedVisitsForClient(string id, string type) {
+        public List<string> GetCompletedVisitsForVisitId(string visitId) {
 
             List<string> vData = new List<string>();
-            if (type == Constants.GGSettings.client_mother) {
                 vData = (
-                from visit in _visitRepo.GetAll().Where(x => x.Mother.UserId == id && x.Attended == true).OrderBy(x => x.PlannedVisitDate)
+                from visit in _visitRepo.GetAll().Where(x => x.Id.ToString() == visitId && x.Attended == true).OrderBy(x => x.PlannedVisitDate)
                 join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
                 select visitData
             ).Select(y => y.VisitName).Distinct().ToList();
-            } else {
-                vData = (
-                from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId == id && x.Attended == true).OrderBy(x => x.PlannedVisitDate)
-                join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
-                select visitData
-            ).Select(y => y.VisitName).Distinct().ToList();
-            }
 
             return vData;
         }

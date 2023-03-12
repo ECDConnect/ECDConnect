@@ -1,6 +1,5 @@
-using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.GraphQL.Enums;
-using ECDLink.ContentManagement.Repositories;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
@@ -14,8 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
-{
+namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat {
     [ExtendObjectType(OperationTypeNames.Query)]
     public class VisitDataQueryExtension
     {
@@ -31,6 +29,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             List<VisitData> visitData = visitDataRepo.GetAll().Where(x => x.VisitId == new Guid(visitId)).ToList();
 
             return visitData;
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public List<string> GetCompletedVisitsForVisitId([Service] VisitDataManager visitDataManager, string visitId) {
+            return visitDataManager.GetCompletedVisitsForVisitId(visitId);
         }
 
     }

@@ -20,7 +20,7 @@ import {
   donationsOrVouchersSchema,
 } from '@/schemas/income-statements/donations-or-vouchers';
 import { useSelector } from 'react-redux';
-import { statementsSelectors } from '@/store/statements';
+import { statementsActions, statementsSelectors } from '@/store/statements';
 import { IncomeStatementsService } from '@/services/IncomeStatementsService';
 import { authSelectors } from '@/store/auth';
 import { newGuid } from '@/utils/common/uuid.utils';
@@ -29,9 +29,13 @@ import {
   moneyInputFormat,
 } from '@/utils/statements/statements-utils';
 import { getDate, lastDayOfMonth, startOfMonth } from 'date-fns';
+import { useAppDispatch } from '@/store';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 export const DonationsOrVouchers: React.FC<AddIncomeState> = ({ setType }) => {
   const userAuth = useSelector(authSelectors.getAuthUser);
+  const appDispatch = useAppDispatch();
+  const { isOnline } = useOnlineStatus();
   const [selectedDonations, setDonations] = useState<string[]>([]);
 
   const {
@@ -105,9 +109,7 @@ export const DonationsOrVouchers: React.FC<AddIncomeState> = ({ setType }) => {
   const sendIncomeUpdate = async () => {
     const incomeId = newGuid();
 
-    await new IncomeStatementsService(
-      userAuth?.auth_token!
-    ).UpdateStatementsIncome(incomeId, {
+    const incomeInput = {
       IsActive: true,
       UserId: userAuth?.id,
       Submitted: false,
@@ -116,7 +118,17 @@ export const DonationsOrVouchers: React.FC<AddIncomeState> = ({ setType }) => {
       AmountExpected: donationWorth ? moneyInputFormat(donationWorth) : 0,
       ChildCoverAmount: 0,
       IncomeTypeId: incomeTypeValue?.id,
-    });
+    };
+
+    const offlineStatement = { ...incomeInput, isOffline: true, id: incomeId };
+
+    appDispatch(
+      statementsActions.addIncome(isOnline ? incomeInput : offlineStatement)
+    );
+
+    await new IncomeStatementsService(
+      userAuth?.auth_token!
+    ).UpdateStatementsIncome(incomeId, incomeInput);
   };
 
   const handleSaveStartupSupportValues = () => {

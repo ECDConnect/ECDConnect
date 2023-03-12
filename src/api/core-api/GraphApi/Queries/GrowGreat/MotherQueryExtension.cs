@@ -129,11 +129,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat {
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public List<string> GetCompletedVisitsForMother([Service] VisitDataManager visitDataManager, string id) {
-            return visitDataManager.GetCompletedVisitsForClient(id, Constants.GGSettings.client_mother);
-        }
-
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public Progress_VisitDataStatus GetPreviousVisitInformationForMother([Service] VisitDataStatusManager visitDataStatusManager, string visitId) {
             return visitDataStatusManager.GetPreviousVisitInformationForClient(visitId);
         }
@@ -196,6 +191,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat {
             }
 
             return sumData;
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public List<VisitBackReferral> GetBackReferralsForMother([Service] VisitBackReferralManager visitBackReferralManager, string id, bool referralCompleted, bool backReferralCompleted) {
+            return visitBackReferralManager.GetBackReferralDataForClient(id, Constants.GGSettings.client_mother, referralCompleted, backReferralCompleted);
         }
 
     }
