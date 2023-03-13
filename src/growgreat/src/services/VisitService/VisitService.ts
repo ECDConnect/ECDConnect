@@ -1,6 +1,7 @@
 import { api } from '../axios.helper';
 import { Config, VisitStatusDto } from '@ecdlink/core';
 import { CmsVisitDataInputModelInput } from '@ecdlink/graphql';
+import { HealthPromotion } from '@ecdlink/graphql';
 
 class Visit {
   _accessToken: string;
@@ -60,6 +61,84 @@ class Visit {
     }
 
     return response.data.data.createInfant;
+  }
+
+  async getMoreInformation(section: string, locale: string): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      query GetMoreInformation($section: String, $locale: String) {
+            moreInformation(section: $section, locale: $locale){
+              descriptionA
+              descriptionAColor
+              descriptionB
+              descriptionBColor
+              descriptionBIcon
+              descriptionC
+              descriptionCColor
+              descriptionD
+              descriptionDColor
+              descriptionDIcon
+              headerA
+              headerB
+              headerC
+              id
+              infoBoxDescription
+              infoBoxIcon
+              infoBoxTitle
+              section
+              showDividerA
+              showDividerB
+              type
+              visit
+            }
+        }
+      `,
+      variables: {
+        section,
+        locale,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error('Get More Information Failed - Server connection error');
+    }
+
+    return response.data.data.hasContentTypeBeenTranslated;
+  }
+
+  async getHealthPromotion(
+    section: string,
+    locale: string
+  ): Promise<HealthPromotion[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { healthPromotion: HealthPromotion[] };
+      errors?: {};
+    }>(``, {
+      query: `
+        query GetHealthPromotion($section: String, $locale: String) {
+          healthPromotion(section: $section, locale: $locale){
+            description
+            descriptionListIcon
+            id
+            section
+            type
+            visit
+          }
+        }
+      `,
+      variables: {
+        section,
+        locale,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error('Get Health Promotion Failed - Server connection error');
+    }
+
+    return response.data.data.healthPromotion;
   }
 }
 

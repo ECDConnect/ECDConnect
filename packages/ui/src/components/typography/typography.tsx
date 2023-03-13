@@ -61,7 +61,7 @@ export const Typography: React.FC<TypographyProps> = ({
           <article
             ref={inputRef}
             onClick={onClick}
-            className="prose"
+            className={classNames('prose', className)}
             dangerouslySetInnerHTML={{ __html: text || '' }}
           />
         );
