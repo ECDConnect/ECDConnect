@@ -11,7 +11,7 @@ export const EditAttendanceRegister = ({
   onComplete,
   submitText = 'Submit',
   onBack,
-  editAttendanceRegisterVisible
+  editAttendanceRegisterVisible,
 }: EditAttendanceRegisterProps) => {
   const { isOnline } = useOnlineStatus();
 

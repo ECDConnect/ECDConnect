@@ -82,7 +82,7 @@ export const PreviousStatementsList: React.FC = () => {
             text={`R ${String(numberWithSpaces(yearBalance.toFixed(2)))}`}
             color={'white'}
             type="h4"
-            className="mr-12 w-4/12 text-right"
+            className="mr-4 w-5/12 text-right"
           />
         </Card>
       );

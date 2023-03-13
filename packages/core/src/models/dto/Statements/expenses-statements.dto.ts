@@ -10,4 +10,5 @@ export interface ExpensesStatementsDto {
   photoProof?: boolean;
   submitted?: boolean;
   userId?: string;
+  isOffline?: boolean;
 }

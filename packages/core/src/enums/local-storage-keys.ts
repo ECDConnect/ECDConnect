@@ -9,5 +9,5 @@ export enum LocalStorageKeys {
   HasTrackedChildProgressBefore = 'HasTrackedChildProgressBefore',
   isSmartStartUser = 'IsSmartStartUser',
   coachProfilePicture = 'CoachProfilePicture',
-  hasClosedSuccessAttendanceSubmitted = "hasClosedSuccessAttendanceSubmitted"
+  hasClosedSuccessAttendanceSubmitted = 'hasClosedSuccessAttendanceSubmitted',
 }
