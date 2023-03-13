@@ -21,7 +21,7 @@ import { ReactComponent as EarIcon } from '@/assets/pillar/pillar2/ear.svg';
 import { ReactComponent as EyeIcon } from '@/assets/pillar/pillar2/eye.svg';
 import { ReactComponent as ArmIcon } from '@/assets/pillar/pillar2/arm.svg';
 import { ReactComponent as PollyTime } from '@/assets/pollyTime.svg';
-import { MoreInformation } from './more-information';
+import { MoreInformation } from '../../components/more-information';
 
 const mocked_week = 14;
 
@@ -139,7 +139,14 @@ export const DevelopmentalScreeningWeeksStep = ({
   }, [mockedNote.name, mockedNote.note]);
 
   if (isTipPage) {
-    return <MoreInformation onClose={() => setIsTip && setIsTip(false)} />;
+    return (
+      <MoreInformation
+        client={name}
+        section="Developmental screening 2"
+        subTitle="Developmental screening"
+        onClose={() => setIsTip?.(false)}
+      />
+    );
   }
 
   return (

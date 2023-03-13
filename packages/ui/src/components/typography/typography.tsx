@@ -39,6 +39,7 @@ export const Typography: React.FC<TypographyProps> = ({
   className,
   onClick,
   inputRef,
+  ...restProps
 }) => {
   const getTag = (type: TypographyType, text?: string) => {
     let splitText;
@@ -63,6 +64,7 @@ export const Typography: React.FC<TypographyProps> = ({
             onClick={onClick}
             className={classNames('prose', className)}
             dangerouslySetInnerHTML={{ __html: text || '' }}
+            {...restProps}
           />
         );
       case 'h1':

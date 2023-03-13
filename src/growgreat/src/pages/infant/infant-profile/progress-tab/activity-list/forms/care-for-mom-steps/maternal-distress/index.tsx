@@ -5,10 +5,10 @@ import { Header, TipCard } from '@/pages/infant/infant-profile/components';
 import Pregnant from '@/assets/pregnant.svg';
 import { DynamicFormProps } from '../../dynamic-form';
 import { useEffect } from 'react';
-import { MoreInformation } from './more-information';
 import LanguageSelector from '@/components/language-selector/language-selector';
 // @ts-ignore
 import mockedVideo from './mocked.mp4';
+import { MoreInformation } from '../../components/more-information';
 
 export const MaternalDistressStep = ({
   infant,
@@ -33,7 +33,13 @@ export const MaternalDistressStep = ({
   const isFollowUp = false; // TODO: add integration
 
   if (isTipPage) {
-    return <MoreInformation onClose={() => setIsTip && setIsTip(false)} />;
+    return (
+      <MoreInformation
+        subTitle="Maternal distress"
+        section="Maternal distress"
+        onClose={() => setIsTip?.(false)}
+      />
+    );
   }
 
   return (

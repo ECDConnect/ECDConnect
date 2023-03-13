@@ -1,6 +1,11 @@
 import {} from '@/services/EventRecordService';
 import { Visit } from '@/services/VisitService';
-import { CmsVisitDataInputModelInput, HealthPromotion } from '@ecdlink/graphql';
+import {
+  CmsVisitDataInputModelInput,
+  HealthPromotion,
+  MoreInformation,
+  VisitVideos,
+} from '@ecdlink/graphql';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { RootState, ThunkApiType } from '../types';
 
@@ -8,6 +13,8 @@ export const VisitActions = {
   GET_VISIT_STATUS: 'getHealthCareWorkerVisitStatus',
   ADD_VISIT_FORM_DATA: 'addVisitFormData',
   GET_HEALTH_PROMOTION: 'getHealthPromotion',
+  GET_VISIT_VIDEOS: 'getVisitVideos',
+  GET_MORE_INFORMATION: 'getMoreInformation',
 };
 
 export const getHealthCareWorkerVisitStatus = createAsyncThunk<
@@ -61,19 +68,18 @@ export const addVisitFormData = createAsyncThunk<
 );
 
 export const getMoreInformation = createAsyncThunk<
-  // TODO: add interface
-  any,
+  MoreInformation[],
   { section: string; locale: string },
   ThunkApiType<RootState>
 >(
-  'getMoreInformation',
+  VisitActions.GET_MORE_INFORMATION,
   async ({ locale, section }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
     } = getState();
 
     try {
-      let content: any = '';
+      let content: MoreInformation[] = [];
 
       if (userAuth?.auth_token) {
         content = await new Visit(
@@ -118,6 +124,40 @@ export const getHealthPromotion = createAsyncThunk<
 
       if (!content) {
         return rejectWithValue('Error getting health promotion');
+      }
+
+      return content;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getVisitVideos = createAsyncThunk<
+  VisitVideos[],
+  { section: string; locale: string },
+  ThunkApiType<RootState>
+>(
+  VisitActions.GET_VISIT_VIDEOS,
+  async ({ locale, section }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      let content: VisitVideos[] = [];
+
+      if (userAuth?.auth_token) {
+        content = await new Visit(userAuth?.auth_token ?? '').getVisitVideos(
+          section,
+          locale
+        );
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      if (!content) {
+        return rejectWithValue('Error getting visit videos');
       }
 
       return content;
