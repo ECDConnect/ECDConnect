@@ -20,6 +20,7 @@ const ROUTES = {
       DEVELOPING_CHILDREN: '/developing-children',
     }),
   }),
+  ATTENDANCE_TUTORIAL_WALKTHROUGH: '/attendance-tutorial-walkthrough',
   DASHBOARD: '/dashboard',
   BUSINESS: '/business',
   BUSINESS_ADD_AMOUNT: '/business-add-amount',
@@ -27,8 +28,8 @@ const ROUTES = {
   BUSINESS_ADD_EXPENSE: '/business-add-expense',
   BUSINESS_SUBMIT_INCOME_STATEMENTS_LIST:
     '/business-submit-income-statements-list',
-  BUSINESS_SUBMIT_INCOME_STATEMENTS_DESCRIPTION:
-    '/business-submit-income-statements-description',
+  BUSINESS_PREVIOUS_STATEMENTS_LIST: '/business-previous-statements-list',
+  BUSINESS_MONTH_STATEMENTS_DETAILS: '/month-statements-details',
   CLASSROOM: '/classroom',
   TRAINING: '/training',
   CHILD: addPrefix('/child', {

@@ -244,7 +244,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
         public DisplaySet GetStatusInfo(Infant child, Boolean withinWeek)
         {
             DisplaySet statusInfo = new DisplaySet();
-            statusInfo.Notes = Constants.GrowGreatSettings.client_child;
+            statusInfo.Notes = Constants.GGSettings.client_child;
 
             //
             // Green or neutral Alerts
@@ -260,7 +260,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             statusInfo.Subject = "Growing well";
 
             // No color alert notification
-            var nextVisitAfter7Days = _visitManager.GetNextVisitMoreThan7DaysAway(child.Id, Constants.GrowGreatSettings.client_child);
+            var nextVisitAfter7Days = _visitManager.GetNextVisitMoreThan7DaysAway(child.Id, Constants.GGSettings.client_child);
             if (nextVisitAfter7Days != "")
             {
                 statusInfo.Icon = MetricsIconEnum.None.ToString();
@@ -291,7 +291,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 statusInfo.Subject = "Growth faltering";
             }*/
 
-            var nextVisitWithin7Days = _visitManager.GetNextVisitLessThan7DaysAway(child.Id, Constants.GrowGreatSettings.client_child, withinWeek);
+            var nextVisitWithin7Days = _visitManager.GetNextVisitLessThan7DaysAway(child.Id, Constants.GGSettings.client_child, withinWeek);
             if (nextVisitWithin7Days != "")
             {
                 statusInfo.Icon = MetricsIconEnum.Warning.ToString();
@@ -315,7 +315,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             var _type = "child";
 
             // Get all visit types linked to child excluding additional_visits
-            List<VisitType> visitTypes = visitTypeRepo.GetAll().Where(x => x.Type.Equals(_type) && x.Name != Constants.GrowGreatSettings.additional_visits).OrderBy(x => x.Order).ToList();
+            List<VisitType> visitTypes = visitTypeRepo.GetAll().Where(x => x.Type.Equals(_type) && x.Name != Constants.GGSettings.additional_visits).OrderBy(x => x.Order).ToList();
 
             // Get dates for each visit
             List<VisitModel> visits = GetVisitDates(BirthDate, visitTypes);
@@ -437,7 +437,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 
         public DateTime? GetClientsNextVisitDate(Guid infantId)
         {
-            return _visitManager.GetClientsNextVisitDate(infantId, Constants.GrowGreatSettings.client_child);
+            return _visitManager.GetClientsNextVisitDate(infantId, Constants.GGSettings.client_child);
         }
 
     }

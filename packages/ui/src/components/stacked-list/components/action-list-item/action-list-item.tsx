@@ -7,9 +7,10 @@ import Typography from '../../../typography/typography';
 
 export interface ActionListItemProps {
   item: ActionListDataItem;
+  id?: string;
 }
 
-export const ActionListItem: React.FC<ActionListItemProps> = ({ item }) => {
+export const ActionListItem: React.FC<ActionListItemProps> = ({ item, id }) => {
   const getIcon = (iconType: string) => {
     return renderIcon(iconType, styles.actionIcon);
   };
@@ -22,6 +23,7 @@ export const ActionListItem: React.FC<ActionListItemProps> = ({ item }) => {
         item.containerStyle,
         styles.actionListItemContainer
       )}
+      id={id}
     >
       <div className={styles.contentWrapper}>
         <div className={stackedListStyles.textRowsWrapper}>

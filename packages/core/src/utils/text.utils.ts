@@ -24,7 +24,7 @@ export const getBase64FromBaseString = (dataFile: string): string => {
 };
 
 export const getBase64TypeFromBaseString = (file: string) =>
-  file.split(';')[0].split('/')[1];
+  file ? file?.split(';')[0]?.split('/')[1] : '';
 
 export const camelize = (text: string) => {
   return text
@@ -38,4 +38,10 @@ export const ellipsisDescription = (text: string, limit: number): string => {
   text = text ?? '';
   const returnText = text.length > limit ? text.slice(0, limit) + '...' : text;
   return returnText;
+};
+
+export const replaceBraces = (sentenceWithBraces: string, value: string) => {
+  return sentenceWithBraces.replace(/\{(\w+)\}/g, () => {
+    return value;
+  });
 };

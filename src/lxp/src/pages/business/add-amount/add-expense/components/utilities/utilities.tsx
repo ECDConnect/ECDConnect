@@ -21,7 +21,7 @@ import {
   expensesSchema,
 } from '@/schemas/expense-statements/expenses';
 import { useSelector } from 'react-redux';
-import { statementsSelectors } from '@/store/statements';
+import { statementsActions, statementsSelectors } from '@/store/statements';
 import ExpensesStatementsService from '@/services/ExpensesStatementsService/ExpensesStatementsService';
 import { newGuid } from '@/utils/common/uuid.utils';
 import { authSelectors } from '@/store/auth';
@@ -30,9 +30,14 @@ import {
   moneyInputFormat,
 } from '@/utils/statements/statements-utils';
 import { UTILITIES__EXPENSE_ID } from '@/store/statements/statements.selectors';
+import { getDate, lastDayOfMonth, startOfMonth } from 'date-fns';
+import { useAppDispatch } from '@/store';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 export const Utilities: React.FC<AddIncomeState> = ({ setType }) => {
   const userAuth = useSelector(authSelectors.getAuthUser);
+  const appDispatch = useAppDispatch();
+  const { isOnline } = useOnlineStatus();
   const expensesTypes = useSelector(statementsSelectors.getExpensesTypes);
   const viewTitle = 'Utilities (electricity, water & other running costs)';
   const expensesTypeValue = expensesTypes.find(
@@ -70,6 +75,16 @@ export const Utilities: React.FC<AddIncomeState> = ({ setType }) => {
   }, [amount, date]);
   const acceptedFormats = ['jpg', 'jpeg'];
 
+  const today = new Date();
+  const todayDateNumber = getDate(today);
+  const firstDateOfMonth = startOfMonth(today);
+  const firstDateOfPreviousMonth = new Date(
+    today.getFullYear(),
+    today.getMonth() - 1,
+    1
+  );
+  const lastDateOfMonth = lastDayOfMonth(today);
+
   const setPhotoUrl = (imageUrl: string) => {
     setRentValue('expenseInvoice', imageUrl);
     setRegistrationFormPhotoUrl(imageUrl);
@@ -81,9 +96,7 @@ export const Utilities: React.FC<AddIncomeState> = ({ setType }) => {
     const incomeId = newGuid();
     setIsLoading(true);
 
-    await new ExpensesStatementsService(
-      userAuth?.auth_token!
-    ).UpdateStatementsIncome(incomeId, {
+    const expensesInput = {
       IsActive: true,
       UserId: userAuth?.id,
       Submitted: false,
@@ -92,7 +105,23 @@ export const Utilities: React.FC<AddIncomeState> = ({ setType }) => {
       Amount: amount ? moneyInputFormat(amount) : 0,
       ExpenseTypeId: expensesTypeValue?.id,
       PhotoProof: expenseInvoice,
-    });
+    };
+
+    const offlineStatement = {
+      ...expensesInput,
+      isOffline: true,
+      id: incomeId,
+    };
+
+    appDispatch(
+      statementsActions.addExpenses(isOnline ? expensesInput : offlineStatement)
+    );
+
+    if (isOnline) {
+      await new ExpensesStatementsService(
+        userAuth?.auth_token!
+      ).UpdateStatementsExpense(incomeId, expensesInput);
+    }
 
     setIsLoading(false);
     setType('');
@@ -128,6 +157,10 @@ export const Utilities: React.FC<AddIncomeState> = ({ setType }) => {
             setRentValue('date', date ? date.toISOString() : '');
           }}
           dateFormat="EEE, dd MMM yyyy"
+          minDate={
+            todayDateNumber <= 8 ? firstDateOfPreviousMonth! : firstDateOfMonth!
+          }
+          maxDate={lastDateOfMonth}
         />
         <FormInput<ExpensesModel>
           label={'How much did you pay?'}

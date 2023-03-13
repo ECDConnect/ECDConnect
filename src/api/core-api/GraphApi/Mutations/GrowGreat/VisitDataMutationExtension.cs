@@ -2,22 +2,31 @@
 using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
-using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using HotChocolate;
 using HotChocolate.Types;
+using System;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
-{
+namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat {
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class VisitDataMutationExtension
     {
         
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
-        public VisitData AddVisitData([Service] VisitDataManager visitDataManager, VisitDataModel input)
+        public Boolean AddVisitData([Service] VisitDataManager visitDataManager, CMSVisitDataInputModel input)
         {
-            return visitDataManager.AddVisitData(input);
+
+            if (input.MotherId != null)
+            {
+                visitDataManager.AddAntenatalVisitData(input);
+
+            } else if (input.InfantId != null)
+            {
+                input.VisitId = "454686a9-2142-4061-aa47-4e89d46110b9";
+                visitDataManager.AddChildVisitData(input);
+            }
+            return true;
         }
     }
 }

@@ -1,6 +1,9 @@
 import * as Yup from 'yup';
 
-export type BirthDocumentationType = 'birthCertificate' | 'clinicCard';
+export type BirthDocumentationType =
+  | 'birthCertificate'
+  | 'clinicCard'
+  | 'noDocument';
 
 export interface ChildBirthCertificateFormModel {
   childname: string;

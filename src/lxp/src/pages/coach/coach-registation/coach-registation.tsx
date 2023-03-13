@@ -61,7 +61,7 @@ export const CoachRegistration: React.FC = () => {
   const [requestError, setRequestError] = useState<string>();
   const [articleTitle, setArticleTitle] = useState<string>();
   const [presentArticle, setPresentArticle] = useState<boolean>(false);
-  const { isOnline, Offline } = useOnlineStatus();
+  const { isOnline } = useOnlineStatus();
   const [presentCellNumberMismatch, setPresentCellNumberMismatch] =
     useState<boolean>(false);
   const [contentConsentTypeEnum, setContentConsentTypeEnum] =
@@ -419,13 +419,13 @@ export const CoachRegistration: React.FC = () => {
           ]}
         />
       </Dialog>
-      <Offline>
+      {!isOnline && (
         <Alert
           className={'mt-5 mb-3'}
           title="Your internet connection is unstable."
           type={'warning'}
         />
-      </Offline>
+      )}
     </div>
   );
 };

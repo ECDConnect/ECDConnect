@@ -191,6 +191,7 @@ export const InfantRegister: React.FC = () => {
                 onClick={() =>
                   history.push(ROUTES.INFANT_REGISTER_FORM, {
                     motherId: location.state?.motherId,
+                    bornEventId: location.state?.bornEventId,
                   })
                 }
               />

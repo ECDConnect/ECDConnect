@@ -1,3 +1,7 @@
+import {
+  ExpensesStatementsDto,
+  IncomeStatementsDto,
+} from '@/../../../packages/core/lib';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import {
@@ -8,6 +12,7 @@ import {
   getAllPayType,
   getAllStatementsContributionType,
   getAllStatementsFeeType,
+  getAllStatementsBalanceSheet,
 } from './statements.actions';
 import { StatementsState } from './statements.types';
 
@@ -19,6 +24,7 @@ const initialState: StatementsState = {
   feeTypes: undefined,
   contributionTypes: undefined,
   payTypes: undefined,
+  balanceSheet: undefined,
 };
 
 const statementsSlice = createSlice({
@@ -32,11 +38,20 @@ const statementsSlice = createSlice({
       state.incomeTypes = initialState.incomeTypes;
       state.feeTypes = initialState.feeTypes;
       state.contributionTypes = initialState.contributionTypes;
+      state.balanceSheet = initialState.balanceSheet;
     },
     updateStatements: (state, action: PayloadAction<any>) => {
       if (state.income) {
         state.income = action.payload;
       }
+    },
+    addIncome: (state, action: PayloadAction<IncomeStatementsDto>) => {
+      if (!state.income) state.income = [];
+      state.income?.push(action.payload);
+    },
+    addExpenses: (state, action: PayloadAction<any>) => {
+      if (!state.expenses) state.expenses = [];
+      state.expenses?.push(action.payload);
     },
   },
   extraReducers: (builder) => {
@@ -63,6 +78,9 @@ const statementsSlice = createSlice({
     );
     builder.addCase(getAllPayType.fulfilled, (state, action) => {
       state.payTypes = action.payload;
+    });
+    builder.addCase(getAllStatementsBalanceSheet.fulfilled, (state, action) => {
+      state.balanceSheet = action.payload;
     });
   },
 });

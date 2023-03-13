@@ -35,7 +35,6 @@ import {
   SiteAddressDto,
   UserDto,
   useDialog,
-  MotherDto,
   getPreviousAndNextMonths,
 } from '@ecdlink/core/lib';
 import { EditConsentAgreementProps } from '../components/consent-agrement/consent-agreement.types';
@@ -57,6 +56,9 @@ import { InfantActions } from '@/store/infant/infant.actions';
 import { InfantRouteState } from '../infant.types';
 import { motherSelectors } from '@/store/mother';
 import { RootState } from '@/store/types';
+import { eventRecordThunkActions } from '@/store/eventRecord';
+import { EventRecordActions } from '@/store/eventRecord/eventRecord.actions';
+import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
 
 const BANNER_HEIGHT = 64;
 
@@ -89,6 +91,7 @@ export const InfantRegisterForm: React.FC = () => {
   >([]);
   let numberOfChildren: number | undefined = hasConsent?.numberOfChildren;
   const [multipleChildrenCount, setMultipleChildrenCount] = useState<number>(1);
+  const [relationshipId, setRelationshipId] = useState<string | undefined>();
 
   const [firstChild] = multipleChildrenArray;
 
@@ -96,7 +99,8 @@ export const InfantRegisterForm: React.FC = () => {
 
   const location = useLocation<InfantRouteState>();
 
-  const motherId: MotherDto['id'] | undefined = location.state?.motherId;
+  const motherId = location.state?.motherId;
+  const bornEventId = location.state?.bornEventId;
 
   const mother = useSelector((state: RootState) => {
     if (!!motherId || (isAlreadyClient && firstChild?.caregiver?.id)) {
@@ -127,7 +131,13 @@ export const InfantRegisterForm: React.FC = () => {
     InfantActions.GET_INFANT_COUNT_FOR_MONTH
   );
 
+  const { isLoading: isLoadingEventRecord, isRejected: isRejectedEventRecord } =
+    useThunkFetchCall('eventRecord', EventRecordActions.ADD_EVENT_RECORD);
+
   const wasLoading = usePrevious(isLoading);
+  const wasLoadingEventRecord = usePrevious(isLoadingEventRecord);
+
+  const { errorDialog } = useRequestResponseDialog();
 
   const motherInfoFromRecordEvent = useMemo(
     () => (motherId ? mother : undefined),
@@ -212,6 +222,13 @@ export const InfantRegisterForm: React.FC = () => {
         '',
       healthCareWorkerId: user?.id,
     };
+
+    setRelationshipId(
+      caregiverDetails?.relationshipId ||
+        firstChild?.relationshipId ||
+        details?.relationshipId
+    );
+
     if (!details?.isMother) {
       appDispatch(caregiverActions.createCaregiver(caregiverInput));
     }
@@ -576,9 +593,30 @@ export const InfantRegisterForm: React.FC = () => {
     }
   }, [activeStep, isAlreadyClient]);
 
+  const getInfantCount = useCallback(async () => {
+    const count = await appDispatch(
+      infantThunkActions.getInfantCountForMonth({})
+    ).unwrap();
+
+    showSuccessMessage(count || undefined);
+  }, [appDispatch, showSuccessMessage]);
+
   const onSuccess = useCallback(() => {
     if (isFulfilled) {
-      if (firstChild?.caregiver?.id === MOTHER_TYPE_ID) {
+      if (motherId) {
+        const input = {
+          eventRecordTypeId: bornEventId,
+          motherId,
+        };
+
+        return appDispatch(
+          eventRecordThunkActions.addEventRecord({
+            input,
+          })
+        );
+      }
+
+      if (relationshipId === MOTHER_TYPE_ID) {
         const child = getChildWithCloseBirthday();
 
         if (!!child) {
@@ -586,13 +624,7 @@ export const InfantRegisterForm: React.FC = () => {
         }
       }
 
-      (async () => {
-        const count = await appDispatch(
-          infantThunkActions.getInfantCountForMonth({})
-        ).unwrap();
-
-        showSuccessMessage(count);
-      })();
+      getInfantCount();
 
       if (healthCareWorker) {
         (async () =>
@@ -607,11 +639,14 @@ export const InfantRegisterForm: React.FC = () => {
     }
   }, [
     appDispatch,
+    bornEventId,
     displayRecordEventDialog,
-    firstChild,
+    relationshipId,
     getChildWithCloseBirthday,
+    getInfantCount,
     healthCareWorker,
     isFulfilled,
+    motherId,
     showSuccessMessage,
   ]);
 
@@ -620,6 +655,29 @@ export const InfantRegisterForm: React.FC = () => {
       onSuccess();
     }
   }, [isLoading, onSuccess, wasLoading]);
+
+  useEffect(() => {
+    if (wasLoadingEventRecord && !isLoadingEventRecord) {
+      if (isRejectedEventRecord) {
+        errorDialog(
+          `The child has been registered, but it was not possible to record the event 'Baby was born'. Please navigate to the ${
+            mother?.user?.firstName || 'mom'
+          }'s profile and try again.`
+        );
+        return history.push(ROUTES.CLIENTS.ROOT);
+      }
+
+      getInfantCount();
+    }
+  }, [
+    errorDialog,
+    getInfantCount,
+    history,
+    isLoadingEventRecord,
+    isRejectedEventRecord,
+    mother?.user?.firstName,
+    wasLoadingEventRecord,
+  ]);
 
   return (
     <div className="text-textMid">

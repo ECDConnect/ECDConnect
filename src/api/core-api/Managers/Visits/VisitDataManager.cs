@@ -1,59 +1,142 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
+using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
+using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
-namespace EcdLink.Api.CoreApi.Managers.Visits
-{
+namespace EcdLink.Api.CoreApi.Managers.Visits {
     public class VisitDataManager
     {
         private IHttpContextAccessor _contextAccessor;
         private IGenericRepositoryFactory _repoFactory;
+        private VisitDataStatusManager _visitDataStatusManager;
+        private IGenericRepository<Visit, Guid> _visitRepo;
+        private IGenericRepository<VisitData, Guid> _visitDataRepo;
+
+        private string _applicationUserId;
 
         public VisitDataManager(
             IHttpContextAccessor contextAccessor,
-            IGenericRepositoryFactory repoFactory)
+            IGenericRepositoryFactory repoFactory,
+            VisitDataStatusManager visitDataStatusManager)
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
+            _visitDataStatusManager = visitDataStatusManager;
+
+            _applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
+            _visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: _applicationUserId);
+            _visitDataRepo = _repoFactory.CreateGenericRepository<VisitData>(userContext: _applicationUserId);
         }
 
-        public VisitData AddVisitData(VisitDataModel input)
+        public Boolean AddChildVisitData(CMSVisitDataInputModel input)
         {
-            var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
-            var repository = _repoFactory.CreateGenericRepository<VisitData>(userContext: applicationUserId);
-            var visitData = GetVisitDataFromInputModel(input, applicationUserId);
+            // first add all your questions and answers
+            foreach (CMSVisitSection section in input.VisitData.Sections)
+            {
+                foreach (CMSQuestion question in section.Questions) {
+                    VisitData visitData = (VisitData)GetVisitDataFromInputModel(question, input.VisitId, input.VisitData.VisitName, section.VisitSection);
+                    _visitDataRepo.Insert(visitData);
+                }
+            }
 
-            return repository.Insert(visitData);
+            // update the visit record to show attended/completed
+            var entityToUpdate = _visitRepo.GetAll().Where(x => x.Id.ToString() == input.VisitId).FirstOrDefault();
+            entityToUpdate.UpdatedDate = DateTime.Now;
+            entityToUpdate.UpdatedBy = _applicationUserId;
+            entityToUpdate.Attended = true;
+            entityToUpdate.ActualVisitDate = DateTime.Now;
+            _visitRepo.Update(entityToUpdate);
+
+            // then handle status data
+            _visitDataStatusManager.ManageVisitDataStatus(input.InfantId, Constants.GGSettings.client_child, input.VisitId);
+
+            return true;
+        }
+        public Boolean AddAntenatalVisitData(CMSVisitDataInputModel input)
+        {
+            // first add all your questions and answers
+            foreach (CMSVisitSection section in input.VisitData.Sections) {
+                foreach (CMSQuestion question in section.Questions) {
+                    VisitData visitData = (VisitData)GetVisitDataFromInputModel(question, input.VisitId, input.VisitData.VisitName, section.VisitSection);
+                    _visitDataRepo.Insert(visitData);
+                }
+            }
+
+            // update the visit record to show attended/completed
+            var entityToUpdate = _visitRepo.GetAll().Where(x => x.Id.ToString() == input.VisitId).FirstOrDefault();
+            entityToUpdate.UpdatedDate = DateTime.Now;
+            entityToUpdate.UpdatedBy = _applicationUserId;
+            entityToUpdate.Attended = true;
+            _visitRepo.Update(entityToUpdate);
+
+            // then handle status data
+            _visitDataStatusManager.ManageVisitDataStatus(input.MotherId, Constants.GGSettings.client_mother, input.VisitId);
+            return true;
+        }
+        private VisitData GetVisitDataFromInputModel(CMSQuestion input, String visitId, String visitName, String visitSection)
+        {
+            if (input == null)
+            {
+                return null;
+            }
+
+            return new VisitData()
+            {
+                Id = Guid.NewGuid(),
+                IsActive = true,
+                InsertedDate = DateTime.Now,
+                UpdatedDate = DateTime.Now,
+                UpdatedBy = _applicationUserId,
+                VisitId = new Guid(visitId),
+                VisitName = visitName,
+                VisitSection = visitSection,
+                Question = input.Question,
+                QuestionAnswer = input.Answer
+            };
+        }
+        public List<VisitData> GetVisitAnswersForClient(string visitId, string visitName, string visitSection) {
+
+            List<VisitData> vData = new List<VisitData>();
+            vData = (
+                from visit in _visitRepo.GetAll().Where(x => x.Id.ToString() == visitId).OrderBy(x => x.PlannedVisitDate)
+                join visitData in _visitDataRepo.GetAll().Where(y => y.VisitName == visitName && y.VisitSection == visitSection) on visit.Id equals visitData.VisitId
+                select visitData
+            ).ToList();
+
+            return vData;
         }
 
-        private VisitData GetVisitDataFromInputModel(VisitDataModel input, string applicationUserId)
-         {
-             if (input == null)
-             {
-                 return null;
-             }
+        public List<string> GetCompletedVisitsForVisitId(string visitId) {
 
-             return new VisitData()
-             {
-                 Id = Guid.NewGuid(),
-                 IsActive = true,
-                 InsertedDate = DateTime.Now,
-                 UpdatedDate = DateTime.Now,
-                 UpdatedBy = applicationUserId,
-                 VisitId = input.Visit.Id,
-                 CmsVisitNameTypeId = input.CmsVisitNameTypeId,
-                 CmsVisitQuestionnaireTypeId = input.CmsVisitQuestionnaireTypeId,
-                 CmsVisitQuestionTypeId = input.CmsVisitQuestionTypeId,
-                 CmsVisitAnswerTypeId = input.CmsVisitAnswerTypeId,
-                 CmsContentId = input.CmsContentId,
-                 CmsContentTypeFieldId = input.CmsContentTypeFieldId,
-                 CmsContentValue = input.CmsContentValue,
-                 QuestionAnswer = input.QuestionAnswer
-             };
-         }
+            List<string> vData = new List<string>();
+                vData = (
+                from visit in _visitRepo.GetAll().Where(x => x.Id.ToString() == visitId && x.Attended == true).OrderBy(x => x.PlannedVisitDate)
+                join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
+                select visitData
+            ).Select(y => y.VisitName).Distinct().ToList();
+
+            return vData;
+        }
+
+        public List<VisitData> GetGrowthDataForInfant(string id) {
+
+              List<VisitData> vData = new List<VisitData>();
+              vData = (
+                  from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId.ToString() == id).OrderBy(x => x.PlannedVisitDate)
+                  join visitData in _visitDataRepo.GetAll().Where(y => y.Question == Constants.GGSettings.q_weight || 
+                                                                       y.Question == Constants.GGSettings.q_length || 
+                                                                       y.Question == Constants.GGSettings.q_muac) on visit.Id equals visitData.VisitId
+                  select visitData
+              ).ToList();
+
+              return vData;
+          }
     }
 }
 

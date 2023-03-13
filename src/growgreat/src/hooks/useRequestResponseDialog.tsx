@@ -6,7 +6,7 @@ import happyMomImage from '@/assets/happyMom.svg';
 export const useRequestResponseDialog = () => {
   const dialog = useDialog();
 
-  const errorDialog = () => {
+  const errorDialog = (detailText?: string) => {
     dialog({
       blocking: false,
       position: DialogPosition.Middle,
@@ -16,7 +16,7 @@ export const useRequestResponseDialog = () => {
           <ActionModal
             className="z-50"
             title="Something went wrong"
-            detailText="Please try again"
+            detailText={detailText || 'Please try again'}
             customIcon={
               <div
                 className="bg-tertiary mb-4 flex h-auto justify-center overflow-hidden rounded-full"

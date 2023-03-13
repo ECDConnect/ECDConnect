@@ -1,5 +1,5 @@
 import { api } from '../axios.helper';
-import { Config, IncomeStatementsDto } from '@ecdlink/core';
+import { BalanceSheetDto, Config, IncomeStatementsDto } from '@ecdlink/core';
 import {
   StatementsIncomeInput,
   StatementsSubmitInput,
@@ -142,11 +142,12 @@ class IncomeStatementsService {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-      mutation updateStatementsIncome($input: StatementsIncomeInput, $id: UUID) {
-          updateStatementsIncome(input: $input, id: $id) {
-                id    __typename  
+      mutation updateIncome($id: String!, $input: StatementsIncomeInput ) {
+          updateIncome( id: $id, input: $input) {
+                id   
+                 __typename 
+               }
               }
-            }
       `,
       variables: {
         id,
@@ -163,12 +164,16 @@ class IncomeStatementsService {
     return response.data.data.updateStatementsIncome;
   }
 
-  async allStatementsIncome(userId: string): Promise<IncomeStatementsDto[]> {
+  async allStatementsIncome(
+    userId: string,
+    month: Number,
+    year: Number
+  ): Promise<IncomeStatementsDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-      query allStatementsIncome($userId: String) {
-        allStatementsIncome(userId: $userId) {
+      query allStatementsIncome($userId: String, $month: Int!, $year: Int!) {
+        allStatementsIncome(userId: $userId, month: $month, year: $year) {
             id description 
             insertedDate 
             notes 
@@ -189,6 +194,8 @@ class IncomeStatementsService {
           `,
       variables: {
         userId,
+        month,
+        year,
       },
     });
 
@@ -245,11 +252,10 @@ class IncomeStatementsService {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-      mutation submitStatement($id: String!,$input: StatementsSubmitInput) {
-          submitStatement(id: $id, input: $input) {
-                id    __typename  
-              }
-            }
+      mutation submitStatement($id: String!,$input: StatementsSubmitInput) {         submitStatement(id: $id, input: $input) {
+
+                    } 
+                            }
       `,
       variables: {
         id,
@@ -264,6 +270,69 @@ class IncomeStatementsService {
     }
 
     return response.data.data.submitStatement;
+  }
+
+  async getAllStatementsBalanceSheet(
+    userId: string,
+    year: Number,
+    month: Number
+  ): Promise<BalanceSheetDto[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      query allStatementsBalanceSheet($userId: String, $year: Int!, $month: Int!) { 
+         allStatementsBalanceSheet(userId: $userId, year: $year, month: $month) { 
+           userId 
+           incomeTotal
+           expenseTotal
+           balance
+           month
+           year
+           autoSubmitted
+           submittedDate
+           submitted        
+          }
+}
+          `,
+      variables: {
+        userId,
+        year,
+        month,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Get all statements balance sheet Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.allStatementsBalanceSheet;
+  }
+
+  async GetAllIncomeStatementsInfo(locale: string): Promise<BalanceSheetDto[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      query GetAllIncomeStatements($locale: String) { 
+            GetAllIncomeStatements(locale: $locale) {
+          id
+          description 
+          }
+        }
+          `,
+      variables: {
+        locale,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Get all statements info Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.GetAllIncomeStatements;
   }
 }
 

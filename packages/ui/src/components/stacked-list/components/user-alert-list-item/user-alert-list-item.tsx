@@ -84,7 +84,11 @@ export const UserAlertListItem: React.FC<UserAlertListItemProps> = ({
                   ></div>
                 )}
                 <Typography
-                  className="truncate pl-1"
+                  className={
+                    item?.childMatching
+                      ? 'w-11/12 break-words pl-1'
+                      : 'truncate pl-1'
+                  }
                   type="help"
                   weight="skinny"
                   color={styles.getColourByAlertSeverity(item.alertSeverity)}

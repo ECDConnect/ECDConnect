@@ -2,6 +2,7 @@ import { Colours } from '../../..';
 import { ListItem } from './ListItem';
 
 export interface MenuListDataItem extends ListItem {
+  className?: string;
   menuIcon?: string;
   menuIconClassName?: string;
   showIcon?: boolean;
@@ -10,4 +11,7 @@ export interface MenuListDataItem extends ListItem {
   iconColor?: Colours;
   menuIconUrl?: string;
   subItem?: string;
+  childList?: boolean;
+  backgroundColor?: Colours;
+  hexBackgroundColor?: string;
 }

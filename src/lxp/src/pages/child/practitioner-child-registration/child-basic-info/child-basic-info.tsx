@@ -38,10 +38,6 @@ export const ChildBasicInfo: React.FC<
     return item?.userId === practitioner?.userId || item?.isActive !== true;
   });
 
-  const classroomsForPractitioner = useSelector(
-    classroomsSelectors.getClassroom
-  );
-
   const isPrincipal = practitioner?.isPrincipal;
 
   const [checkChild, setCheckChild] = useState<ChildMatchingDto>();
@@ -79,6 +75,7 @@ export const ChildBasicInfo: React.FC<
           }${checkChild?.fullName?.split(' ')[1].toUpperCase()}` || '',
         alertSeverity: 'none',
         avatarColor: getAvatarColor() || '',
+        childMatching: true,
       },
     ];
 
@@ -161,7 +158,7 @@ export const ChildBasicInfo: React.FC<
         <div>
           <Alert
             title={`There is already a child named ${checkChild?.fullName} at ${
-              classroomsForPractitioner?.name
+              checkChild?.programmeName
             }, born on ${format(
               new Date(checkChild?.dateOfBirth!),
               'dd MMM yyyy'
@@ -174,7 +171,7 @@ export const ChildBasicInfo: React.FC<
           />
           {listItems && (
             <StackedList
-              className={'mt-4'}
+              className={'my-4'}
               listItems={listItems}
               type={'UserAlertList'}
             />
@@ -182,7 +179,7 @@ export const ChildBasicInfo: React.FC<
         </div>
       )}
 
-      <Divider dividerType="solid" className="my-3" />
+      <Divider dividerType="solid" className="my-4" />
       <Button
         text="Next"
         icon="ArrowCircleRightIcon"

@@ -1,19 +1,19 @@
 import { getAvatarColor } from '@ecdlink/core';
 import {
-  Alert,
   AttendanceListDataItem,
-  AttendanceListItem,
   AttendanceStatus,
   BannerWrapper,
   Button,
-  Divider,
-  SearchDropDown,
   Typography,
+  Card,
 } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import * as styles from './attendance-tutorial.styles';
 import { AttendanceTutorialProps } from './attendance-tutorial.types';
+import ROUTES from '@/routes/routes';
+import { useHistory } from 'react-router-dom';
+import { useAppContext } from '@/walkthrougContext';
 
 export const AttendanceTutorial = ({
   onComplete,
@@ -22,8 +22,6 @@ export const AttendanceTutorial = ({
   const { isOnline } = useOnlineStatus();
   const tutorialCompleteClicks = 3;
   const tutorialResetClicks = 4;
-  const [attendanceBadgeTutorialMessage, setAttendanceBadgeTutorialMessage] =
-    useState<string>('Tap the tick mark once to mark Amahle present.');
   const [tutorialProgressClicks, setTutorialProgressClicks] =
     useState<number>(0);
   const [displayTutorialComplete, setDisplayTutorialComplete] =
@@ -32,34 +30,16 @@ export const AttendanceTutorial = ({
     title: 'Amahle Khumalo',
     profileText: 'AM',
     attenendeeId: '1',
-    status: AttendanceStatus.Unknown,
+    status: AttendanceStatus.Present,
     avatarColor: getAvatarColor(),
   });
+  const history = useHistory();
 
-  const updateItemAttendance = (
-    currentAttendanceItem: AttendanceListDataItem
-  ) => {
-    switch (currentAttendanceItem.status) {
-      case AttendanceStatus.Present:
-        setAttendanceBadgeTutorialMessage(
-          'Great! Now tap the tick again to mark Amahle absent.'
-        );
-        setTutorialProgressClicks(tutorialProgressClicks + 1);
-        break;
-      case AttendanceStatus.Absent:
-        setAttendanceBadgeTutorialMessage(
-          'Tap one more time if you need to mark them present.'
-        );
-        setTutorialProgressClicks(tutorialProgressClicks + 1);
-        break;
-      case AttendanceStatus.Unknown:
-        setTutorialProgressClicks(tutorialProgressClicks + 1);
-        break;
-      default:
-        setAttendanceBadgeTutorialMessage(
-          'Tap the tick mark once to mark Amahle present.'
-        );
-    }
+  const { setState } = useAppContext();
+
+  const handleClickStart = () => {
+    setState({ run: true, tourActive: true, stepIndex: 0 });
+    history.push(ROUTES.ATTENDANCE_TUTORIAL_WALKTHROUGH);
   };
 
   useEffect(() => {
@@ -82,7 +62,7 @@ export const AttendanceTutorial = ({
         title: 'Amahle Khumalo',
         profileText: 'AM',
         attenendeeId: '1',
-        status: AttendanceStatus.Unknown,
+        status: AttendanceStatus.Present,
         avatarColor: getAvatarColor(),
       });
       setTutorialProgressClicks(0);
@@ -101,15 +81,41 @@ export const AttendanceTutorial = ({
       className={styles.bannerContentWrapper}
       displayOffline={!isOnline}
     >
-      <div className={'h-full p-4 bg-uiBg'}>
+      <div className={'h-full bg-white p-4'}>
+        <Card className="bg-uiBg flex w-full flex-col justify-center rounded-2xl p-4">
+          <Typography
+            className={'mt-4'}
+            color={'textDark'}
+            type={'h2'}
+            text={'How can I take attendance on Funda App?'}
+          />
+          <Typography
+            className={'mt-4'}
+            color={'textMid'}
+            type={'body'}
+            text={'How can I take attendance on Funda App?'}
+          />
+          <Button
+            text={`Start walkthrough`}
+            icon={'ArrowCircleRightIcon'}
+            type={'filled'}
+            color={'primary'}
+            textColor={'white'}
+            className={'mt-4 max-h-10'}
+            iconPosition={'start'}
+            onClick={handleClickStart}
+          />
+        </Card>
+
         <Typography
           color={'textDark'}
           type={'body'}
           weight={'bold'}
           text={'Why take attendance daily?'}
+          className="mt-2"
         />
         <Typography
-          className={'mt-1'}
+          className={'mt-4'}
           color={'textMid'}
           type={'body'}
           weight={'normal'}
@@ -117,10 +123,6 @@ export const AttendanceTutorial = ({
             'To receive your monthly stipend, you need to take and submit attendance every day.'
           }
         />
-        <p className={styles.paragraphStyle}>
-          If you submit attendance every day in the month, you will get{' '}
-          <span className={styles.boldText}>100 Top Me Up</span> points!
-        </p>
         <Typography
           className={'mt-6'}
           color={'textMid'}
@@ -130,72 +132,8 @@ export const AttendanceTutorial = ({
             'This record will also help when you talk to  caregivers about any attendance concerns you have.'
           }
         />
-        <Typography
-          className={'mt-4'}
-          color={'textDark'}
-          type={'body'}
-          weight={'bold'}
-          text={'How can I take attendance on Funda App?'}
-        />
       </div>
-      <AttendanceListItem
-        className={'bg-white'}
-        item={attendanceItem}
-        onBadgeClick={(currentAttendanceItem: AttendanceListDataItem) =>
-          updateItemAttendance(currentAttendanceItem)
-        }
-      />
-      <div className={'px-4 pt-2 bg-uiBg'}>
-        {!displayTutorialComplete && (
-          <Alert title={attendanceBadgeTutorialMessage} type={'info'} />
-        )}
-        {displayTutorialComplete && (
-          <Alert
-            title={'Good job, you’re ready to start tracking!'}
-            type={'success'}
-          />
-        )}
-        <Typography
-          className={'mt-4'}
-          color={'textDark'}
-          type={'body'}
-          weight={'bold'}
-          text={
-            'How can I see and mark attendance for children from other playgroups?'
-          }
-        />
-        <Typography
-          color={'textMid'}
-          type={'body'}
-          weight={'normal'}
-          text={
-            'If a child comes on the wrong day, tap the filter button at the top of the screen to see more playgroups.'
-          }
-        />
-        <div className={'mt-3'}>
-          <SearchDropDown<any>
-            displayMenuOverlay={false}
-            menuItemClassName={styles.dropdownStyles}
-            className={'mr-1'}
-            options={[{ label: 'Playgroup', value: 'Playgroup', id: '1' }]}
-            placeholder={'Playgroups'}
-            pluralSelectionText={'Playgroups'}
-            color={'uiMidDark'}
-            selectedOptions={[
-              { label: 'Playgroup', value: 'Playgroup', id: '1' },
-            ]}
-          />
-        </div>
-        <Typography
-          className={'mt-3'}
-          color={'textMid'}
-          type={'body'}
-          weight={'normal'}
-          text={'Mark the child as present or absent, as shown above.'}
-        />
-        <div className={'pt-2.5'}>
-          <Divider />
-        </div>
+      <div className={'bg-uiBg px-4 pt-2'}>
         <Button
           color={'primary'}
           type={'filled'}

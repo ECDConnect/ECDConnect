@@ -69,10 +69,12 @@ import { PractitionerSignature } from '@/pages/practitioner/practitioner-about/c
 import { CoachContactPractitioner } from '@/pages/coach/practitioner-profile-info/coach-contact-practitioner/coach-contact-practitioner';
 import Business from '@/pages/business/business';
 import AddAmount from '@/pages/business/add-amount/add-amount';
-import { AddIncome } from '@/pages/business/add-income/add-income';
+import { AddIncome } from '@/pages/business/add-amount/add-income/add-income';
 import { AddExpense } from '@/pages/business/add-amount/add-expense/add-expense';
-import { SubmitIncomeStatementsDescription } from '@/pages/business/money/submit-income-statements/components/submit-income-statement-description/submit-income-statement-description';
+import { WalkthroughTutorial } from '@/pages/classroom/attendance/components/attendance-tutorial/walkthrough-tutorial/walkthrough-tutorial';
 import { SubmitIncomeStatementsList } from '@/pages/business/money/submit-income-statements/components/submit-income-statements-list/submit-income-statements-list';
+import { PreviousStatementsList } from '@/pages/business/money/submit-income-statements/components/previous-statements-list/previous-statements-list';
+import { MonthStatementsDetails } from '@/pages/business/money/submit-income-statements/components/submit-income-statements-list/components/month-statements-details';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -150,11 +152,21 @@ const AuthRoutes: React.FC = () => {
         exact={true}
       />
       <Route
-        path={ROUTES.BUSINESS_SUBMIT_INCOME_STATEMENTS_DESCRIPTION}
-        component={SubmitIncomeStatementsDescription}
+        path={ROUTES.BUSINESS_PREVIOUS_STATEMENTS_LIST}
+        component={PreviousStatementsList}
+        exact={true}
+      />
+      <Route
+        path={ROUTES.BUSINESS_MONTH_STATEMENTS_DETAILS}
+        component={MonthStatementsDetails}
         exact={true}
       />
       <Route path={ROUTES.TRAINING} component={Training} exact={true} />
+      <Route
+        path={ROUTES.ATTENDANCE_TUTORIAL_WALKTHROUGH}
+        component={WalkthroughTutorial}
+        exact={true}
+      />
       <Route
         exact
         path={ROUTES.PRACTITIONER.ABOUT.ROOT}

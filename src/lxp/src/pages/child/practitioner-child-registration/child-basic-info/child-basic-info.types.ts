@@ -7,4 +7,5 @@ export interface ChildMatchingDto {
   fullName?: string;
   practitionerName?: string;
   profileImageUrl?: string;
+  programmeName?: string;
 }

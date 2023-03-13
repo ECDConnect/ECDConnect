@@ -9,6 +9,7 @@ using ECDLink.Security;
 using ECDLink.Tenancy.Context;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -212,6 +213,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             }
             return null;
         }
+
 
         public override T Insert(T entity)
         {
