@@ -41,6 +41,9 @@ import { storyBookThunkActions } from '@store/content/story-book';
 import { activityThunkActions } from '@store/content/activity';
 import { statementsThunkActions } from '@/store/statements';
 import { programmeThunkActions } from '@/store/programme';
+import offlineStatments from '../../assets/statements-offline.png';
+import { setStorageItem } from '@/utils/common/local-storage.utils';
+import { convertImageToBase64 } from '@/utils/common/convert-image-to-64.utils';
 // import { browserName, browserVersion } from 'react-device-detect';
 const { version } = require('../../../package.json');
 
@@ -84,6 +87,10 @@ export const Dashboard: React.FC = () => {
   );
 
   const { userProfilePicture } = useDocuments();
+
+  useEffect(() => {
+    convertImageToBase64(offlineStatments, setStorageItem);
+  }, []);
 
   const initStaticStoreSetup = async () => {
     const today = new Date();
