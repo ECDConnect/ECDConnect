@@ -14,7 +14,6 @@ using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Reports;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
-using ECDLink.DataAccessLayer.Entities.VisitGrowthDatas;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Entities.Workflow;
 using ECDLink.DataAccessLayer.Hierarchy.Entities;
@@ -125,6 +124,7 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<VisitData> VisitData { get; set; }
         public DbSet<VisitDataStatus> VisitDataStatus { get; set; }
         public DbSet<VisitGrowthData> VisitGrowthData { get; set; }
+        public DbSet<VisitBackReferral> VisitBackReferral { get; set; }
 
         // Event Records
         public DbSet<EventRecordType> EventRecordTypes { get; set; }

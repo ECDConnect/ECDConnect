@@ -23,6 +23,7 @@ export const PreviousStatementsList: React.FC = () => {
   };
 
   const balanceSheet = useSelector(statementsSelectors.getBalanceSheet);
+  const currentMontBalanceSheet = balanceSheet?.[balanceSheet?.length - 1];
 
   const yearBalance = balanceSheet?.reduce(function (prev: any, current: any) {
     return prev + +current?.balance;
@@ -45,6 +46,25 @@ export const PreviousStatementsList: React.FC = () => {
     };
   });
 
+  const offlinePrevStatementsItems = [
+    {
+      title: `${getMonthName(Number(currentMontBalanceSheet?.month) - 1)} ${
+        currentMontBalanceSheet?.year
+      }`,
+      titleStyle: 'text-textDark font-semibold text-base leading-snug',
+      subTitleStyle:
+        'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
+      text: '1',
+      onActionClick: () =>
+        history.push(ROUTES.BUSINESS_MONTH_STATEMENTS_DETAILS, {
+          month: currentMontBalanceSheet?.month,
+          year: currentMontBalanceSheet?.year,
+        }),
+      classNames: 'bg-uiBg',
+      notRounded: true,
+    },
+  ];
+
   const displayTotalBalance = useMemo(() => {
     if (yearBalance > 0) {
       return (
@@ -62,7 +82,7 @@ export const PreviousStatementsList: React.FC = () => {
             text={`R ${String(numberWithSpaces(yearBalance.toFixed(2)))}`}
             color={'white'}
             type="h4"
-            className="mr-12 w-4/12 text-right"
+            className="mr-4 w-5/12 text-right"
           />
         </Card>
       );
@@ -110,10 +130,12 @@ export const PreviousStatementsList: React.FC = () => {
           <StackedList
             className="mt-4 flex w-full flex-col"
             type="MenuList"
-            listItems={prevStatementsItems}
+            listItems={
+              isOnline ? prevStatementsItems : offlinePrevStatementsItems
+            }
           />
         )}
-        {displayTotalBalance}
+        {isOnline && displayTotalBalance}
         <Button
           shape="normal"
           color="primary"

@@ -129,6 +129,7 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<VisitManager>();
             services.AddTransient<VisitDataManager>();
             services.AddTransient<VisitDataStatusManager>();
+            services.AddTransient<VisitBackReferralManager>();
             services.AddTransient<PersonnelService>();
             services.AddTransient<ChildManager>();
             services.AddTransient<IncomeExpenseService>();

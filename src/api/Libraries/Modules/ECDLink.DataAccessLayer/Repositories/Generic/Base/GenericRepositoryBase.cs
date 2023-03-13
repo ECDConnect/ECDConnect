@@ -71,16 +71,6 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
             else return default;
         }
 
-        public virtual IQueryable<T> GetAllLocale()
-        {
-            Type type = typeof(T);
-            Guid tenantId = TenantExecutionContext.Tenant.Id;
-            //return entities.Where(e => e.TenantId == null || e.TenantId.Equals(tenantId)).Join(entities.).AsQueryable();
-            //var qq = entities.FromSqlRaw("SELECT Id,Locale FROM \"" + type.Name + "\" CV LEFT JOIN Language L ON CV. WHERE \"UserId\" = '" + id + "' AND \"TenantId\" = '" + tenantId + "'").ToList();////.OrderByDescending(y => y.InsertedDate);
-            var qq = entities.FromSqlRaw("SELECT distinct(L.Id),L.Locale FROM ContentValue CV LEFT JOIN Language L ON CV.LocaleId = L.Id LEFT JOIN ContentTypeField CTF on CTF.Id = CV.ContentTypeFieldId  WHERE CTF.DataLinkName = \"\" + type.Name + \"\"  AND \"TenantId\" = '" + tenantId + "'").AsQueryable();
-            return qq;
-        }
-
         public virtual T Insert(T entity)
         {
             if (entity == null) throw new ArgumentNullException("entity");

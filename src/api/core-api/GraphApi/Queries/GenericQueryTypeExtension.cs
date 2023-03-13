@@ -1,16 +1,12 @@
 using ECDLink.Abstractrions.GraphQL.Enums;
+using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
-using ECDLink.DataAccessLayer.Entities.Users;
-using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
-using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
 using ECDLink.Tenancy.Model;
 using HotChocolate;
 using HotChocolate.Types;
-using Microsoft.AspNetCore.Http;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -19,6 +15,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
     [ExtendObjectType(OperationTypeNames.Query)]
     public class GenericQueryTypeExtension
     {
+        public GenericQueryTypeExtension()
+        {
+        }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public TenantModel TenantContext()
@@ -26,18 +25,29 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return TenantExecutionContext.Tenant;
         }
 
-        public List<Absentees> GetAbsentees(
-            [Service] IHttpContextAccessor contextAccessor,
-            IGenericRepositoryFactory repoFactory,
-            string userId,
-            DateTime fromDate,
-            DateTime toDate)
+        public List<Language> GetAllContentLanguages([Service] ContentManagementDbContext _context, string contentType)
         {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            var absenteeRepo = repoFactory.CreateRepository<Absentees>(userContext: uId);
+                var dynamicContentList = new List<Language>();
+                var ctypes = _context.ContentTypes.Where(x => x.Name.Equals(contentType)).ToList();
+                foreach (var ctype in ctypes)
+                {
+                    var contents = _context.Contents.Where(x => x.ContentTypeId.Equals(ctype.Id)).ToList();
+                    foreach (var content in contents)
+                    {
+                        var cvalues = _context.ContentTypesFieldValues.Where(x => x.ContentId.Equals(content.Id)).ToList();
+                        foreach (var cvalue in cvalues)
+                        {
+                            var languages = _context.Languages.Where(x => x.Id.Equals(cvalue.LocaleId)).ToList();
+                            foreach (var language in languages)
+                            {
+                                if (!dynamicContentList.Contains(language))
+                                    dynamicContentList.Add(language);
+                            }
 
-            var absentees = absenteeRepo.GetAll().Where(x => x.UserId == userId).ToList();
-            return absentees.Where(x => x.AbsentDate >= fromDate && x.AbsentDate <= toDate).ToList();
+                        }
+                    }
+                }
+                return dynamicContentList;
         }
 
     }

@@ -13,9 +13,14 @@ namespace ECDLink.ContentManagement.Entities
         public string FieldName { get; set; }
 
         public int FieldTypeId { get; set; }
+        
 
         [ForeignKey(nameof(FieldTypeId))]
         public FieldType FieldType { get; set; }
+
+        public int ContentTypeId { get; set; }
+        [ForeignKey(nameof(ContentTypeId))]
+        public ContentType ContentType { get; set; }
 
         public bool IsActive { get; set; }
 

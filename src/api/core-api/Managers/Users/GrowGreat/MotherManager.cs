@@ -72,6 +72,20 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat {
             return repository.Update(entityToUpdate);
         }
 
+        public Mother UpdateContactDetails(string id, MotherModel input) {
+            var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
+            var repository = _repoFactory.CreateGenericRepository<Mother>(userContext: applicationUserId);
+            var entityToUpdate = repository.GetAll().Where(x => x.Id.Equals(Guid.Parse(id))).FirstOrDefault();
+            var motherUser = GetUserFromInputModel(input);
+
+            entityToUpdate.UpdatedDate = DateTime.Now;
+            entityToUpdate.UpdatedBy = applicationUserId;
+            entityToUpdate.WhatsAppNumber = input.WhatsAppNumber;
+            entityToUpdate.SiteAddress = input.SiteAddress;
+            entityToUpdate.User = motherUser;
+            return repository.Update(entityToUpdate);
+        }
+
         public Mother GetMotherFromInputModel(MotherModel input)
         {
             if (input == null)
