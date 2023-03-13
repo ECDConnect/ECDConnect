@@ -391,10 +391,15 @@ namespace ECDLink.Core.Services
             StatementsIncome income = incomeRepo.GetAll().Where(x => x.Id.Equals(model.Id)).FirstOrDefault();
             if (income == null)
             {
-                model.Submitted = false;
-                model.IncomeStatementId = null;
-                incomeRepo.Insert(model);
-                return model;
+                //validity duplication check
+                StatementsIncome incomeCheck = incomeRepo.GetAll().Where(x => x.Amount.Equals(model.Amount) && x.DateReceived.Equals(model.DateReceived) && x.IncomeTypeId.Equals(model.IncomeTypeId) && x.PayTypeId.Equals(model.PayTypeId) && x.UserId.Equals(model.UserId) && x.ChildUserId.Equals(model.ChildUserId)).FirstOrDefault();
+                if (incomeCheck == null){
+
+                    model.Submitted = false;
+                    model.IncomeStatementId = null;
+                    incomeRepo.Insert(model);
+                    return model;
+                }
             }
             else
             {
@@ -404,7 +409,7 @@ namespace ECDLink.Core.Services
                     return model;
                 }
             }
-            return new StatementsIncome();
+            return null;
         }
 
         public StatementsExpenses UpdateExpense(StatementsExpenses model)
@@ -417,10 +422,15 @@ namespace ECDLink.Core.Services
             StatementsExpenses expense = expenseRepo.GetAll().Where(x => x.Id.Equals(model.Id)).FirstOrDefault();
             if (expense == null)
             {
-                model.Submitted = false;
-                model.IncomeStatementId = null;
-                expenseRepo.Insert(model);
-                return model;
+                //validity duplication check
+                StatementsExpenses expenseCheck = expenseRepo.GetAll().Where(x => x.Amount.Equals(model.Amount) && x.DatePaid.Equals(model.DatePaid) && x.ExpenseTypeId.Equals(model.ExpenseTypeId)).FirstOrDefault();
+                if (expenseCheck == null)
+                {
+                    model.Submitted = false;
+                    model.IncomeStatementId = null;
+                    expenseRepo.Insert(model);
+                    return model;
+                }
             }
             else
             {
@@ -430,7 +440,7 @@ namespace ECDLink.Core.Services
                     return model;
                 }
             }
-            return new StatementsExpenses();
+            return null;
         }
 
         public StatementsStartupSupport UpdateStartupSupport(StatementsStartupSupport model)

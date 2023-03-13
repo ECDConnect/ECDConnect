@@ -8,7 +8,7 @@ using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
-using System.Collections.Generic;
+using Newtonsoft.Json;
 using ECDLink.Core.Services;
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 {
@@ -28,38 +28,48 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         }
 
         [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.Create)]
-        public StatementsIncome UpdateIncome([Service] IncomeExpenseService incomeManager, string id,
+        public ResultReturnObject UpdateIncome([Service] IncomeExpenseService incomeManager, string id,
               StatementsIncome input)
         {
 
-            return incomeManager.UpdateIncome(input);
+            var retObj = incomeManager.UpdateIncome(input);
+            return (retObj != null ? new ResultReturnObject() { Result = true, ResultMessage = "Income Submitted", ResultObject = JsonConvert.SerializeObject(retObj) } : new ResultReturnObject() { Result = false, ResultMessage = "Income line could not be processed for criteria" });
         }
 
         [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.Create)]
-        public StatementsExpenses UpdateExpense([Service] IncomeExpenseService incomeManager, string id,
+        public ResultReturnObject UpdateExpense([Service] IncomeExpenseService incomeManager, string id,
       StatementsExpenses input)
         {
-
-            return incomeManager.UpdateExpense(input);
+            if (input != null)
+            {
+                var retObj = incomeManager.UpdateExpense(input);
+                return (retObj != null ? new ResultReturnObject() { ResultMessage = "Expense Submitted",  ResultObject = JsonConvert.SerializeObject(retObj) } : new ResultReturnObject() { Result = false, ResultMessage = "Expense line could not be processed for criteria" });
+            }
+            else return new ResultReturnObject() { ResultMessage = "Input object was null" };
         }
 
         [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.Create)]
-        public StatementsStartupSupport UpdateStartupSupport([Service] IncomeExpenseService incomeManager, string id,
+        public ResultReturnObject UpdateStartupSupport([Service] IncomeExpenseService incomeManager, string id,
 StatementsStartupSupport input)
         {
-
-            return incomeManager.UpdateStartupSupport(input);
+            if (input != null)
+            {
+                var retObj = incomeManager.UpdateStartupSupport(input);
+                return (retObj != null ? new ResultReturnObject() { ResultMessage = "Startup Support Submitted", ResultObject = JsonConvert.SerializeObject(retObj) } : new ResultReturnObject() { Result = false, ResultMessage = "Startup Support could not be processed for criteria" });
+            }
+            else return new ResultReturnObject() { ResultMessage = "Input object was null" };
         }
 
         [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.Create)]
-        public bool SubmitStatement([Service] IncomeExpenseService incomeManager, string id,
+        public ResultReturnObject SubmitStatement([Service] IncomeExpenseService incomeManager, string id,
 StatementsSubmit input)
         {
             if (input != null)
             {
-                return incomeManager.SubmitStatement(input);
+                var retObj = incomeManager.SubmitStatement(input);
+                return (retObj == true ? new ResultReturnObject() { Result = true, ResultMessage = "Statement Submitted", ResultObject = JsonConvert.SerializeObject(retObj) } : new ResultReturnObject() { Result = false, ResultMessage = "Statement could not be processed for criteria" });
             }
-            else return false;
+            else return new ResultReturnObject() { ResultMessage = "Input object was null" };
         }
     }
 }
