@@ -234,7 +234,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
         <AttendanceSummary hidePopup={seeRegister} />
       )}
       <div className={'flex h-full w-full flex-1 flex-col px-4'}>
-        {attendanceComponentType === 'attendance' && !seeRegister && todayDate.getDay() !== 1 && (
+        {attendanceComponentType === 'attendance' && !seeRegister && (
           <Button
             type="outlined"
             color="primary"
