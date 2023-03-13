@@ -2767,6 +2767,7 @@ export type Mutation = {
   updateMessageTemplate?: Maybe<MessageTemplate>;
   updateMoreInformation?: Maybe<MoreInformation>;
   updateMother?: Maybe<Mother>;
+  updateMotherContactDetails?: Maybe<Mother>;
   updateNavigation?: Maybe<Navigation>;
   updateNote?: Maybe<Note>;
   updateNoteType?: Maybe<NoteType>;
@@ -4062,6 +4063,11 @@ export type MutationUpdateMoreInformationArgs = {
 };
 
 export type MutationUpdateMotherArgs = {
+  id?: InputMaybe<Scalars['String']>;
+  input?: InputMaybe<MotherModelInput>;
+};
+
+export type MutationUpdateMotherContactDetailsArgs = {
   id?: InputMaybe<Scalars['String']>;
   input?: InputMaybe<MotherModelInput>;
 };
