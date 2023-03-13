@@ -100,7 +100,9 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
     usePrevious(missedAttendanceGroups) || [];
   const previousAttendanceData = usePrevious(attendanceData);
 
- 
+  let hasClosedAttendanceSmartStartPointsMessage = getStorageItem<boolean>(
+    LocalStorageKeys.hasClosedAttendanceSmartStartPointsMessage
+  );
 
   useEffect(() => {
     let hasClosedPointsMessage = getStorageItem<boolean>(
@@ -110,8 +112,6 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
       LocalStorageKeys.isSmartStartUser
     );
 
-  
-
     if (hasClosedPointsMessage === undefined) {
       hasClosedPointsMessage = false;
     }
@@ -120,13 +120,15 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
       setStorageItem(true, LocalStorageKeys.isSmartStartUser);
     }
 
-
     setIsSmartStartUser(false);
 
-    if (todayDate.getDay() === 1 && !hasClosedPointsMessage && !successMessageVisible) {
+    if (
+      todayDate.getDay() === 1 &&
+      !hasClosedPointsMessage &&
+      !successMessageVisible
+    ) {
       setDisplaySmartStartMessage(true);
       setSuccessMessageVisible(true);
-
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -338,9 +340,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
             ? 'Submit & go to next day'
             : 'Submit'
         );
-        allMissedAttendanceDays.shift()
-
-       
+        allMissedAttendanceDays.shift();
         setAttendanceEditDay(allMissedAttendanceDays[0]);
       } else {
         setEditAttendanceRegisterVisible(false);
@@ -369,7 +369,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
       <div className={'flex h-full flex-1 flex-col gap-4 px-4 pt-4'}>
         {isValidAttendanceDay ? (
           <PointsSuccessCard
-            visible={ !props.hidePopup ?? successMessageVisible}
+            visible={!props.hidePopup ?? !successMessageVisible}
             isSmartStartUser={false}
             points={100}
             onClose={closeNotification}
