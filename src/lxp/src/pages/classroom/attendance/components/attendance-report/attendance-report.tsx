@@ -122,7 +122,7 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
       <div
         className={'static bottom-0 flex h-full w-full flex-1 flex-col px-2'}
       >
-        {attendanceData.length > 8 && (
+        {attendanceData.length > 6 && (
           <Button
             type="outlined"
             color="primary"

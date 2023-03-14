@@ -1,17 +1,16 @@
 import {
   Typography,
-  renderIcon,
   ComponentBaseProps,
   classNames,
+  Dialog,
+  DialogPosition,
 } from '@ecdlink/ui';
 import { getMonthName } from '@utils/classroom/attendance/track-attendance-utils';
 import * as styles from './attendance-monthly-report.styles';
-import {
-  goodScoreThreshold,
-  averageScoreThreshold,
-} from '@models/classroom/attendance/ClassAttendance';
+import { MonthlyAttendanceReport } from './attendance-report';
 import { AttendanceSummary } from '@models/classroom/attendance/AttendanceSummary';
 import { getYear } from 'date-fns';
+import { useState } from 'react';
 
 interface AttendanceMonthlyReportProps extends ComponentBaseProps {
   attendanceSummary: AttendanceSummary[];
@@ -20,28 +19,22 @@ interface AttendanceMonthlyReportProps extends ComponentBaseProps {
 export const AttendanceMonthlyReport: React.FC<
   AttendanceMonthlyReportProps
 > = ({ attendanceSummary }) => {
-  const getText = (score: number) => {
-    if (score === 100) {
-      return 'You took attendance every day, great job!';
-    }
+  const [displayReport, setDisplayReport] = useState<boolean>(false);
+  const [viewReportDate, setViewReportDate] = useState<string>();
 
-    if (score >= goodScoreThreshold) {
-      return 'Well done, you took attendance almost every day!';
-    }
-
-    if (score >= averageScoreThreshold) {
-      return 'You missed some days!';
-    }
-
-    return 'You didn’t take attendance every day!';
+  const closeReport = () => {
+    setDisplayReport(!displayReport);
   };
-
   return (
     <div className={styles.wrapper}>
       {attendanceSummary &&
         attendanceSummary.map((attendanceItem, idx) => {
           return (
             <div
+              onClick={() => {
+                setDisplayReport(true);
+                setViewReportDate(getMonthName(attendanceItem?.monthOfYear - 1));
+              }}
               key={`attendance-summary-item-${idx}`}
               className={classNames(
                 styles.attendanceItemWrapper(
@@ -57,9 +50,7 @@ export const AttendanceMonthlyReport: React.FC<
                     type={'h3'}
                     weight={'bold'}
                     color={'black'}
-                    text={`${getMonthName(
-                      attendanceItem.monthOfYear - 1
-                    )} ${getYear(new Date())}`}
+                    text={`${getMonthName(attendanceItem.monthOfYear - 1)} ${getYear(new Date())}`}
                     lineHeight={'none'}
                   ></Typography>
 
@@ -99,6 +90,24 @@ export const AttendanceMonthlyReport: React.FC<
             </div>
           );
         })}
+
+      {displayReport && (
+        <Dialog
+          fullScreen
+          visible={displayReport}
+          position={DialogPosition.Top}
+        >
+          <div className={'h-full'}>
+            <MonthlyAttendanceReport
+              reportMonth={viewReportDate ?? ''}
+              submitText={'submitText'}
+              onComplete={() => console.log('>>')}
+              onBack={() => closeReport()}
+              editAttendanceRegisterVisible={displayReport}
+            />
+          </div>
+        </Dialog>
+      )}
     </div>
   );
 };

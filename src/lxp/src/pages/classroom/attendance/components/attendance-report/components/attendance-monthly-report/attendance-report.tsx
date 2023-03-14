@@ -1,16 +1,24 @@
 import { AttendanceResult } from '@/models/classroom/attendance/AttendanceResult';
-import { BannerWrapper } from '@ecdlink/ui';
+import { BannerWrapper, ComponentBaseProps } from '@ecdlink/ui';
 import { format } from 'date-fns';
 import AttendanceList from '../../../attendance-list/attendance-list';
-import { EditAttendanceRegisterProps } from '../../../edit-attendance-register/edit-attendance-register.types';
+
+export interface MonthlyAttendanceReportProps extends ComponentBaseProps {
+  reportMonth: string;
+  submitText?: string;
+  onComplete: (attendanceSuccessList: AttendanceResult) => void;
+  onBack: () => void;
+  editAttendanceRegisterVisible?: boolean;
+}
+
 
 export const MonthlyAttendanceReport = ({
-  attendanceDate,
+  reportMonth,
   onComplete,
-  submitText = 'Submit',
   onBack,
-  editAttendanceRegisterVisible,
-}: EditAttendanceRegisterProps) => {
+}: MonthlyAttendanceReportProps) => {
+
+
   const attendanceSubmitted = (attendanceSuccessList: AttendanceResult) => {
     if (onComplete) {
       onComplete(attendanceSuccessList);
@@ -23,18 +31,13 @@ export const MonthlyAttendanceReport = ({
       showBackground={false}
       color={'primary'}
       onBack={onBack}
-      title={'Edit Register'}
-      subTitle={format(attendanceDate, 'EEEE, d LLLL')}
+      title={`View ${reportMonth} Report `}
+      subTitle={''}
       //   className={styles.bannerContentWrapper}
     >
-      <AttendanceList
-        attendanceDate={attendanceDate}
-        submitText={submitText}
-        onSubmitSuccess={(attendanceSuccessList: AttendanceResult) =>
-          attendanceSubmitted(attendanceSuccessList)
-        }
-        editAttendanceRegisterVisible={editAttendanceRegisterVisible}
-      />
+     
+
+
     </BannerWrapper>
   );
 };

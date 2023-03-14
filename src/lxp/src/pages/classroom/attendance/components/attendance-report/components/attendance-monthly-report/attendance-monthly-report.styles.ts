@@ -14,7 +14,7 @@ export const attendanceItemWrapper = (
   renderDivider: boolean
 ) => {
   const baseStyle =
-    `flex flex-col py-4 w-full rounded-lg p-5 pr-8 mt-1 ${
+    `flex flex-col py-4 w-full rounded-lg p-5 pr-8 mt-2 ${
       renderDivider ? 'border-t border-color-textLight' : ''
     } ` ;
 
