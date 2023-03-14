@@ -7,9 +7,10 @@ import P1 from '@/assets/pillar/p1.svg';
 import { DynamicFormProps } from '../../../../dynamic-form';
 import { Fragment, useEffect, useMemo } from 'react';
 import LanguageSelector from '@/components/language-selector/language-selector';
-import { HealthPromotion } from './health-promotion';
 // @ts-ignore
 import mockedVideo from '../../../../assets/mocked.mp4';
+import { HealthPromotion } from '../../../../components/health-promotion';
+import { activitiesColours } from '../../../../../activities-list';
 
 export const BreastMilkOnlyStep = ({
   infant,
@@ -26,6 +27,7 @@ export const BreastMilkOnlyStep = ({
     () => infant?.caregiver?.firstName || '',
     [infant?.caregiver?.firstName]
   );
+  const sectionName = 'Breast milk only';
 
   // TODO: add integration
   const isVideo = true;
@@ -114,8 +116,10 @@ export const BreastMilkOnlyStep = ({
   if (isTipPage) {
     return (
       <HealthPromotion
-        clientName={caregiverName}
-        onClose={() => setIsTip && setIsTip(false)}
+        title={`Discuss with ${caregiverName}`}
+        subTitle={sectionName}
+        section={sectionName}
+        onClose={() => setIsTip?.(false)}
       />
     );
   }
@@ -124,9 +128,9 @@ export const BreastMilkOnlyStep = ({
     <>
       <Header
         customIcon={P1}
-        iconHexBackgroundColor="#8CDBDF"
-        hexBackgroundColor="#a2dadd4d"
-        title="Breast milk only"
+        iconHexBackgroundColor={activitiesColours.pillar1.primaryColor}
+        hexBackgroundColor={activitiesColours.pillar1.secondaryColor}
+        title={sectionName}
       />
       <div className="flex flex-col gap-4 p-4">{renderContent}</div>
     </>

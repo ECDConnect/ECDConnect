@@ -9,7 +9,7 @@ import {
 import Pregnant from '@/assets/pregnant.svg';
 import { DynamicFormProps } from '../../dynamic-form';
 import { useCallback, useMemo, useState } from 'react';
-import { HealthPromotion } from './health-promotion';
+import { HealthPromotion } from '../../components/health-promotion';
 import { replaceBraces } from '@ecdlink/core';
 
 export const ClinicCheckupStep = ({
@@ -22,6 +22,11 @@ export const ClinicCheckupStep = ({
   const [answer, setAnswer] = useState<boolean | boolean[]>();
 
   const sectionName = 'Clinic check-ups';
+
+  const caregiverName = useMemo(
+    () => infant?.caregiver?.firstName || '',
+    [infant?.caregiver?.firstName]
+  );
 
   const options = [
     { text: 'Yes', value: true },
@@ -56,7 +61,9 @@ export const ClinicCheckupStep = ({
   if (isTipPage) {
     return (
       <HealthPromotion
-        clientName={infant?.caregiver?.firstName || ''}
+        title={`Discuss with ${caregiverName}`}
+        subTitle="Clinic check-ups"
+        section={sectionName}
         onClose={() => setIsTip && setIsTip(false)}
       />
     );

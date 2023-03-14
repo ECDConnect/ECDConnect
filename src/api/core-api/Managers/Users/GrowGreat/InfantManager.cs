@@ -37,9 +37,9 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 
         // GG BUSINESS RULES FOR CREATING A CHILD AND SELECTING AN EXISTING CAREGIVER
 
-        // This existing caregiver is of type mother.
+        // Scenario 1: This existing caregiver is of type mother.
         // Then we populate MotherCaregiverId on the Infant table to indicate that the mom is linked to this child
-        // If existing caregiver is not of type mother
+        // Scenario 2: If existing caregiver is not of type mother
         // Then we populate CaregiverId on the Infant table
 
         public Infant AddInfant(InfantModel input)
