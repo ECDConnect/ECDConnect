@@ -62,24 +62,24 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+    const today = new Date();
 
   useEffect(() => {
     if (!classroom) return;
-    const today = new Date();
     const lastDayCurrentMonth = new Date(
       today.getFullYear(),
       today.getMonth() + 1,
       0
     );
 
-    const startDate = startOfYear(new Date());
+    const firstDayOfYear = startOfYear(new Date(today.setUTCHours(0, 0, 0, 0))); // Get the first day of the current year
 
     if (attendanceTracked) {
       new AttendanceService(authUser?.auth_token ?? '')
         .getMonthlyAttendanceReport(
           authUser?.id ?? '',
           classroom?.classroomId || classroom?.id!,
-          startDate,
+          firstDayOfYear,
           new Date(lastDayCurrentMonth)
         )
         .then((data) => {
