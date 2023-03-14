@@ -15,7 +15,7 @@ import {
 import { AttendanceReportProps } from './attendance-report.types';
 import { AttendanceMonthlyReport } from './components/attendance-monthly-report/attendance-monthly-report';
 import { attendanceThunkActions } from '@/store/attendance';
-import { startOfYear } from 'date-fns';
+import { addDays, startOfYear } from 'date-fns';
 
 export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   classroom,
@@ -72,7 +72,9 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
       0
     );
 
-    const firstDayOfYear = startOfYear(new Date(today.setUTCHours(0, 0, 0, 0))); // Get the first day of the current year
+    const firstDay = startOfYear(new Date(today.setUTCHours(0, 0, 0, 0))); // Get the first day of the current year
+    console.log(new Date(firstDay))
+    const firstDayOfYear = addDays(firstDay, 1);
 
     if (attendanceTracked) {
       new AttendanceService(authUser?.auth_token ?? '')
