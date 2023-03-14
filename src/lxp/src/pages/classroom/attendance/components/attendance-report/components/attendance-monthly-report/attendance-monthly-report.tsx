@@ -1,4 +1,4 @@
-import { Typography, renderIcon, ComponentBaseProps } from '@ecdlink/ui';
+import { Typography, renderIcon, ComponentBaseProps, classNames } from '@ecdlink/ui';
 import { getMonthName } from '@utils/classroom/attendance/track-attendance-utils';
 import * as styles from './attendance-monthly-report.styles';
 import {
@@ -37,9 +37,12 @@ export const AttendanceMonthlyReport: React.FC<
           return (
             <div
               key={`attendance-summary-item-${idx}`}
-              className={styles.attendanceItemWrapper(
-                attendanceItem.attendanceScore,
-                idx > 0
+              className={classNames(
+                styles.attendanceItemWrapper(
+                  attendanceItem.attendanceScore,
+                  idx > 0
+                ),
+                styles.getBgColor(attendanceItem.attendanceScore)
               )}
             >
               <div className={styles.resultsSection} id="results-section">
