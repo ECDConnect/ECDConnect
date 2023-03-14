@@ -79,7 +79,7 @@ export const AttendanceMonthlyReport: React.FC<
                     type={'h1'}
                     className={'text-4xl'}
                   />
-                  <div className={'pl-4'}>
+                  <div className={'pl-6 pt-2'}>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 20 20"
