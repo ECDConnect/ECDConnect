@@ -100,10 +100,8 @@ export const AttendanceMonthlyReport: React.FC<
           <div className={'h-full'}>
             <MonthlyAttendanceReport
               reportMonth={viewReportDate ?? ''}
-              submitText={'submitText'}
-              onComplete={() => console.log('>>')}
+              onDownloadReport={() => console.log('>>')}
               onBack={() => closeReport()}
-              editAttendanceRegisterVisible={displayReport}
             />
           </div>
         </Dialog>
