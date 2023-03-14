@@ -1,6 +1,6 @@
 import { IncomeStatementsService } from '@/services/IncomeStatementsService';
 import { authSelectors } from '@/store/auth';
-import { useDialog } from '@ecdlink/core';
+import { LanguageDto, useDialog } from '@ecdlink/core';
 import {
   ActionModal,
   Alert,
@@ -8,15 +8,17 @@ import {
   Button,
   Card,
   DialogPosition,
+  Dropdown,
   Typography,
 } from '@ecdlink/ui';
-import { useLayoutEffect, useMemo, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import LanguageSelector from '../../../components/language-selector/language-selector';
+import LanguageSelector from '@/components/language-selector/language-selector';
 import walktroughImage from '../../../assets/walktroughImage.png';
 import ROUTES from '@/routes/routes';
 import { useAppContext } from '@/walkthrougContext';
 import { useHistory } from 'react-router';
+import { staticDataSelectors } from '@/store/static-data';
 
 interface StatementsShowInfoProps {
   setShowInfo: any;
@@ -37,8 +39,19 @@ export const StatementsInfoPage: React.FC<StatementsShowInfoProps> = ({
   const [data, setData] = useState<Dataprops[]>();
   const [availableLanguages, setAvailableLanguages] = useState<Dataprops[]>();
   const [selectedLanguage, setSelectedLanguage] = useState('en-za');
+  const [languagesList, setLanguagesList] = useState<
+    { label: string; value: any }[]
+  >([]);
+  const [selectedLanguageLabel, setSelectedLanguageLabel] = useState('');
 
-  console.log({ availableLanguages });
+  useEffect(() => {
+    if (selectedLanguage) {
+      const lang = availableLanguages?.find(
+        (item) => item?.locale === selectedLanguage
+      );
+      setSelectedLanguageLabel(lang?.description!);
+    }
+  }, [availableLanguages, selectedLanguage]);
 
   useLayoutEffect(() => {
     const loadInfoData = async () => {
@@ -51,6 +64,25 @@ export const StatementsInfoPage: React.FC<StatementsShowInfoProps> = ({
 
     loadInfoData();
   }, [selectedLanguage, userAuth?.auth_token]);
+
+  useEffect(() => {
+    if (availableLanguages?.length! > 0) {
+      const _list = availableLanguages
+        ?.map((p) => {
+          if (p?.id) {
+            return {
+              label: `${p?.description}`,
+              value: p?.locale,
+            };
+          }
+          return undefined;
+        })
+        ?.filter(Boolean) as { label: string; value: any }[];
+
+      setLanguagesList(_list);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [availableLanguages]);
 
   useLayoutEffect(() => {
     const loadAvailableLanguages = async () => {
@@ -77,9 +109,6 @@ export const StatementsInfoPage: React.FC<StatementsShowInfoProps> = ({
       position: DialogPosition.Middle,
       render: (onSubmit: any, onCancel: any) => (
         <ActionModal
-          // icon={'InformationCircleIcon'}
-          // iconColor="alertMain"
-          // iconBorderColor="alertBg"
           customIcon={
             <div className="flex">
               <img src={walktroughImage} alt="profile" className="mb-2" />
@@ -146,11 +175,16 @@ export const StatementsInfoPage: React.FC<StatementsShowInfoProps> = ({
       title="Income statements"
       renderOverflow
     >
-      <div className="bg-uiBg w-full">
-        <LanguageSelector
-          currentLocale={'en-za'}
-          selectLanguage={(data) => setSelectedLanguage(data.locale)}
-          className="bg-uiBg p-4"
+      <div className="bg-uiBg flex w-full items-center justify-start p-4">
+        <Typography color={'textMid'} type={'h4'} text={'Change Language:'} />
+        <Dropdown
+          placeholder={selectedLanguageLabel}
+          list={languagesList}
+          fillType="clear"
+          fullWidth
+          onChange={(item: any) => {
+            setSelectedLanguage(item);
+          }}
         />
       </div>
       <div className="p-4">
