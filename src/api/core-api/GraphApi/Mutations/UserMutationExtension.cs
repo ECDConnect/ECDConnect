@@ -1,4 +1,5 @@
 using EcdLink.Api.CoreApi.GraphApi.Models;
+using EcdLink.Api.CoreApi.Security.Managers;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.EGraphQL.Authorization;
@@ -7,8 +8,10 @@ using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
@@ -65,12 +68,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
-        public ApplicationUser UpdateUser(
+        public async Task<ApplicationUser> UpdateUser(
           [Service] UserManager<ApplicationUser> userManager,
+          [Service] SecurityNotificationManager securityNotificationManager,
+          [Service] ILogger<UserMutationExtension> logger,
           string id,
           UserModel input)
         {
-            var user = userManager.FindByIdAsync(id).Result;
+            var user = await userManager.FindByIdAsync(id);
             Guid tenantId = TenantExecutionContext.Tenant.Id;
             input.Id = id;
 
@@ -93,9 +98,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 user.UserName = input.IdNumber;
             }
 
-            if (!string.IsNullOrWhiteSpace(input.Email))
+            if (!string.IsNullOrWhiteSpace(input.Email) && user.Email != input.Email)
             {
-                user.Email = input.Email;
+                user.PendingEmail = input.Email;
+                try
+                {
+                    var token = await userManager.GenerateChangeEmailTokenAsync(user, user.PendingEmail);
+                    // TODO: Add emails to message queue.
+                    await securityNotificationManager.RequestVerifyEmailAsync(user, token);
+                } catch (Exception exception)
+                {
+                    logger?.LogError("Could not change user email address.", new { userId = user.Id, exception });
+                }
             }
 
             if (!string.IsNullOrWhiteSpace(input.ProfileImageUrl))

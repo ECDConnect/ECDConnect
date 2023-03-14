@@ -6,15 +6,16 @@ using Microsoft.Extensions.Options;
 using SendGrid;
 using SendGrid.Helpers.Mail;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ECDLink.Notifications.SendGrid
 {
-    public class EmailSender : INotificationProvider<ApplicationUser>
+    public class EmailSendgridSender : INotificationProvider<ApplicationUser>
     {
         public SendGridOptions Options { get; } //set only via Secret Manager
 
-        public EmailSender(IOptions<SendGridOptions> optionsAccessor)
+        public EmailSendgridSender(IOptions<SendGridOptions> optionsAccessor)
         {
             Options = optionsAccessor.Value;
         }
@@ -53,7 +54,7 @@ namespace ECDLink.Notifications.SendGrid
             throw new NotImplementedException();
         }
 
-        public INotificationProvider<ApplicationUser> AddFieldReplacement(string key, string value)
+        public INotificationProvider<ApplicationUser> AddOrUpdateFieldReplacement(string key, string value)
         {
             throw new NotImplementedException();
         }
@@ -63,7 +64,7 @@ namespace ECDLink.Notifications.SendGrid
             throw new NotImplementedException();
         }
 
-        public Task SendMessageAsync()
+        public Task SendMessageAsync(CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
@@ -71,6 +72,11 @@ namespace ECDLink.Notifications.SendGrid
         public INotificationProvider<ApplicationUser> SetMessageMetaData<T>(T type) where T : IMessageMetaData
         {
             throw new NotImplementedException();
+        }
+
+        public INotificationProvider<ApplicationUser> SetSubject(string sender)
+        {
+            return this;
         }
     }
 }

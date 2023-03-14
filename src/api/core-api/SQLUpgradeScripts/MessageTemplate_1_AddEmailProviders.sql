@@ -66,7 +66,7 @@ BEGIN
 	call delete_then_insert(templateType, subject, message);
 END$$ language plpgsql;
 
----- Password Changed by another admin
+---- Email Changed by admin
 do $$
 DECLARE
 subject "MessageTemplate"."Subject"%type := '[[ApplicationName]]: Verify new email address';   
@@ -77,18 +77,7 @@ BEGIN
 	call delete_then_insert(templateType, subject, message);
 END$$ language plpgsql;
 
------- Admin Password Changed by another admin
---do $$
---DECLARE
---subject "MessageTemplate"."Subject"%type := '[[ApplicationName]]: An Administrator''s password has changed.';   
---message "MessageTemplate"."Message"%type := E'Hi [[FirstName]],\r\n[[AffectedUser]]\'s password on [[ApplicationName]] has changed. It was changed by [[ChangingAdminUserName]].\r\nPlease reach out to them if you have any qustions.\r\nThank you!\r\n[[OrganisationName]]';
---templateType "MessageTemplate"."TemplateType"%type := 'superadmin-notify-password-changed';
---
---BEGIN
---	call delete_then_insert(templateType, subject, message);
---END$$ language plpgsql;
-
----- Admin Password Changed by another admin
+---- Admin email Changed by another admin
 do $$
 DECLARE
 subject "MessageTemplate"."Subject"%type := '[[ApplicationName]]: An Administrator''s email has changed.';   

@@ -4,6 +4,6 @@ namespace ECDLink.Abstractrions.Notifications.Message
 {
     public interface IMessageFactory
     {
-        public IMessageTemplate GetMessage(MessageTypeEnum messageType, TemplateTypeEnum templateType);
+        public IMessageTemplate GetMessageTemplate(MessageProtocolEnum messageType, TemplateTypeEnum templateType);
     }
 }

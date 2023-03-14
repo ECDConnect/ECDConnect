@@ -22,7 +22,7 @@ namespace ECDLink.Abstractrions.Constants
 
         public const string VerifyEmailAddress = "verify-email-address";
 
-        public const string AdminPasswordChangedByOtherAdmin = "admin-password-changed-by-other-admin";
+        public const string SuperadminNotifyEmailChanged = "superadmin-notify-email-changed";
         
     }
 }

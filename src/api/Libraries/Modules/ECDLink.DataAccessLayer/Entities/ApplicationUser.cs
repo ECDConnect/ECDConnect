@@ -33,6 +33,7 @@ namespace ECDLink.DataAccessLayer.Entities
         public override string UserName { get => base.UserName; set => base.UserName = value; }
         public override string NormalizedUserName { get => base.NormalizedUserName; set => base.NormalizedUserName = value; }
         public override string Email { get => base.Email; set => base.Email = value; }
+        public string PendingEmail { get; set; }
         public override string NormalizedEmail { get => base.NormalizedEmail; set => base.NormalizedEmail = value; }
         public override bool EmailConfirmed { get => base.EmailConfirmed; set => base.EmailConfirmed = value; }
         public override string PhoneNumber { get => base.PhoneNumber; set => base.PhoneNumber = value; }

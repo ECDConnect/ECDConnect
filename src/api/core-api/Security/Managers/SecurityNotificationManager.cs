@@ -53,7 +53,7 @@ namespace EcdLink.Api.CoreApi.Security.Managers
               .SendMessageAsync();
         }
 
-        public async Task SendEmailChangedMessageAsync(ApplicationUser user, string token)
+        public async Task RequestVerifyEmailAsync(ApplicationUser user, string token)
         {
             var encodedToken = TokenHelper.EncodeToken(token);
 
@@ -69,6 +69,39 @@ namespace EcdLink.Api.CoreApi.Security.Managers
               .AddOrUpdateFieldReplacement(MessageTemplateConstants.VerifyEmailAddressLink, verifyEmailCallback)
               .AddOrUpdateFieldReplacement(MessageTemplateConstants.ApplicationName, applicationName)
               .AddOrUpdateFieldReplacement(MessageTemplateConstants.FirstName, firstName)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.OrganisationName, organisationName)
+              .SendMessageAsync();
+        }
+
+        public async Task SendPasswordChangedMessageAsync(ApplicationUser user)
+        {
+            var applicationName = TenantExecutionContext.Tenant.ApplicationName;
+            var organisationName = TenantExecutionContext.Tenant.ApplicationName;
+            string firstName = user.FirstName;
+
+            var notificationProvider = _notificationProviderFactory.Create(user);
+
+            await notificationProvider
+              .SetMessageTemplate(TemplateTypeEnum.PasswordChangedBySelf)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.ApplicationName, applicationName)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.FirstName, firstName)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.OrganisationName, organisationName)
+              .SendMessageAsync();
+        }
+
+        public async Task SendPasswordChangedByAdminMessageAsync(ApplicationUser user, string nameOfAdminUserWhoMadeChange)
+        {
+            var applicationName = TenantExecutionContext.Tenant.ApplicationName;
+            var organisationName = TenantExecutionContext.Tenant.ApplicationName;
+            string firstName = user.FirstName;
+
+            var notificationProvider = _notificationProviderFactory.Create(user);
+
+            await notificationProvider
+              .SetMessageTemplate(TemplateTypeEnum.PasswordChangedByAdmin)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.FirstName, firstName)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.ApplicationName, applicationName)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.AdminUserFullName, nameOfAdminUserWhoMadeChange ?? "an Administrator")
               .AddOrUpdateFieldReplacement(MessageTemplateConstants.OrganisationName, organisationName)
               .SendMessageAsync();
         }

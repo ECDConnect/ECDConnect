@@ -48,7 +48,7 @@ namespace ECDLink.Core.SystemSettings.SystemOptions
         /// <summary>
         /// Port for SmtpServerSecondaryAddress connection
         /// </summary>
-        public int SmtpServerSecondaryPort { get; set; } = 25;
+        public int SmtpServerSecondaryPort { get; set; } = 587;
         
         /// <summary>
         /// Use a TLS connection to send message when using secondary server?
@@ -59,5 +59,10 @@ namespace ECDLink.Core.SystemSettings.SystemOptions
         /// Number of times to retry sending if error occurs.
         /// </summary>
         public int RetryCount { get; set; } = 0;
+
+        /// <summary>
+        /// Disable SMTP email sending
+        /// </summary>
+        public bool Disabled { get; set; } = false;
     }
 }

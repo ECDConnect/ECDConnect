@@ -8,6 +8,7 @@ using ECDLink.Security.JwtSecurity.Enums;
 using ECDLink.Security.JwtSecurity.Factories;
 using ECDLink.Security.JwtSecurity.Managers;
 using ECDLink.Security.Managers;
+using ECDLink.Security.Providers;
 using ECDLink.UrlShortner.Managers;
 using Microsoft.AspNetCore.Identity;
 using Newtonsoft.Json;
@@ -148,6 +149,29 @@ namespace EcdLink.Api.CoreApi.Security.Managers
         {
             return await _jwtTokenManager.StoreJWTToken(auth_token, expiresIn, contextIdentifier, role);
 
+        }
+
+        public async Task<bool> ChangeEmailAddressAsync(ApplicationUser user, string token)
+        {
+            // no user, no email or email is same
+            if (user is null || string.IsNullOrWhiteSpace(user.PendingEmail) || user.Email == user.PendingEmail)
+                return false;
+
+            // email address in already in use and confirmed (else emails could be denied by registering and abandoning)
+            var emailAlreadyInUse = await _userManager.FindByEmailAsync(user.PendingEmail) is not null;
+            if (emailAlreadyInUse)
+                return false;
+
+            var emailChangeRequest = await _userManager.ChangeEmailAsync(user, user.PendingEmail, token);
+            
+            return emailChangeRequest.Succeeded;
+        }
+
+        public async Task<bool> ConfirmEmailAsync(ApplicationUser user, string token)
+        {
+            var verified = await _userManager.ConfirmEmailAsync(user, token) == IdentityResult.Success;
+
+            return verified;
         }
     }
 }

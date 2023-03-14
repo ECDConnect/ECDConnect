@@ -9,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Mail;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ECDLink.Development.Notifications
@@ -30,7 +31,7 @@ namespace ECDLink.Development.Notifications
             _dropModel = new Dictionary<string, string>();
         }
 
-        public Task SendMessageAsync()
+        public Task SendMessageAsync(CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(_dropModel["To"]))
             {
@@ -47,8 +48,10 @@ namespace ECDLink.Development.Notifications
                                         .SetMessageTemplate(_messageTemplate)
                                         .SetMessageBody(_dropModel["Body"])
                                         .ParseMessageFilters(_fieldTransform)
-                                        .Process();
+                                        .ProcessBody();
 
+            if (cancellationToken.IsCancellationRequested)
+                return Task.CompletedTask;
 
             SmtpClient client = new SmtpClient();
             client.DeliveryMethod = SmtpDeliveryMethod.SpecifiedPickupDirectory;
@@ -83,8 +86,8 @@ namespace ECDLink.Development.Notifications
             {
                 message.Body = _dropModel["Body"];
                 message.BodyEncoding = System.Text.Encoding.UTF8;
-
-                message.Subject = "Doesn't Matter, Drop Folder";
+                
+                message.Subject = _dropModel?["Subject"] ?? "";
                 message.SubjectEncoding = System.Text.Encoding.UTF8;
 
                 // The userState can be any object that allows your callback
@@ -116,7 +119,7 @@ namespace ECDLink.Development.Notifications
             return this;
         }
 
-        public INotificationProvider<ApplicationUser> AddFieldReplacement(string key, string value)
+        public INotificationProvider<ApplicationUser> AddOrUpdateFieldReplacement(string key, string value)
         {
             _fieldTransform.Add(key, value);
             return this;
@@ -124,7 +127,7 @@ namespace ECDLink.Development.Notifications
 
         private IMessageTemplate GetTemplate(TemplateTypeEnum template)
         {
-            return _messageFactory.GetMessage(MessageTypeEnum.Sms, template);
+            return _messageFactory.GetMessageTemplate(MessageProtocolEnum.Sms, template);
         }
 
         public INotificationProvider<ApplicationUser> OverrideSender(string sender)
@@ -135,6 +138,13 @@ namespace ECDLink.Development.Notifications
         public INotificationProvider<ApplicationUser> SetMessageMetaData<T>(T type) where T : IMessageMetaData
         {
             throw new System.NotImplementedException();
+        }
+
+        public INotificationProvider<ApplicationUser> SetSubject(string subject)
+        {
+            _dropModel["Subject"] = subject;
+
+            return this;
         }
     }
 }
