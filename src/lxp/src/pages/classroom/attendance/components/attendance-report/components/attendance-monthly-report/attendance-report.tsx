@@ -113,7 +113,6 @@ export const MonthlyAttendanceReport = ({
           setChildAttendanceReportData(data);
         });
     }
-    init().catch(console.error);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
