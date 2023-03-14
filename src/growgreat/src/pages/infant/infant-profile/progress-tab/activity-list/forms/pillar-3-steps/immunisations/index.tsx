@@ -4,20 +4,37 @@ import { ReactComponent as Polly } from '@/assets/momImageSvg.svg';
 import { Header } from '@/pages/infant/infant-profile/components';
 import P3 from '@/assets/pillar/p3.svg';
 import { DynamicFormProps } from '../../dynamic-form';
-import { useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo } from 'react';
 import LanguageSelector from '@/components/language-selector/language-selector';
 import { activitiesColours } from '../../../activities-list';
 // @ts-ignore
 import mockedVideo from '../../assets/mocked.mp4';
+import { useAppDispatch } from '@/store';
+import { visitThunkActions } from '@/store/visit';
 
 export const ImmunisationsStep = ({
   infant,
   setEnableButton,
 }: DynamicFormProps) => {
+  const appDispatch = useAppDispatch();
+
   const caregiverName = useMemo(
     () => infant?.caregiver?.firstName || '',
     [infant?.caregiver?.firstName]
   );
+
+  const getVideo = useCallback(async () => {
+    await appDispatch(
+      visitThunkActions.getVisitVideos({
+        section: 'Immunisations',
+        locale: 'en-za',
+      })
+    );
+  }, [appDispatch]);
+
+  useLayoutEffect(() => {
+    getVideo();
+  }, [getVideo]);
 
   useEffect(() => {
     setEnableButton && setEnableButton(true);
