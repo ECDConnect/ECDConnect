@@ -142,12 +142,11 @@ class IncomeStatementsService {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-      mutation updateIncome($id: String!, $input: StatementsIncomeInput ) {
-          updateIncome( id: $id, input: $input) {
-                id   
-                 __typename 
-               }
-              }
+      mutation updateIncome($id: String!, $input: StatementsIncomeInput ) { 
+         updateIncome( id: $id, input: $input) {
+           result  resultObject resultMessage 
+          }
+        }
       `,
       variables: {
         id,
