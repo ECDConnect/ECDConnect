@@ -15,6 +15,7 @@ import {
 import { AttendanceReportProps } from './attendance-report.types';
 import { AttendanceMonthlyReport } from './components/attendance-monthly-report/attendance-monthly-report';
 import { attendanceThunkActions } from '@/store/attendance';
+import { startOfYear } from 'date-fns';
 
 export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   classroom,
@@ -70,7 +71,8 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
       today.getMonth() + 1,
       0
     );
-    const startDate = new Date(classroom.insertedDate ?? '');
+
+    const startDate = startOfYear(new Date());
 
     if (attendanceTracked) {
       new AttendanceService(authUser?.auth_token ?? '')
