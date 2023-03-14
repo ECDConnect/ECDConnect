@@ -85,7 +85,7 @@ export const AttendanceMonthlyReport: React.FC<
                       viewBox="0 0 20 20"
                       fill="currentColor"
                       aria-hidden="true"
-                      className="text-primary h-8"
+                      className="text-primary h-6"
                     >
                       <path
                         fill-rule="evenodd"
