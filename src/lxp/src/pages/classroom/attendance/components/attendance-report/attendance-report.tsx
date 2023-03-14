@@ -15,6 +15,7 @@ import {
 import { AttendanceReportProps } from './attendance-report.types';
 import { AttendanceMonthlyReport } from './components/attendance-monthly-report/attendance-monthly-report';
 import { attendanceThunkActions } from '@/store/attendance';
+import { addDays, startOfYear } from 'date-fns';
 
 export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   classroom,
@@ -61,23 +62,26 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+    const today = new Date();
 
   useEffect(() => {
     if (!classroom) return;
-    const today = new Date();
     const lastDayCurrentMonth = new Date(
       today.getFullYear(),
       today.getMonth() + 1,
       0
     );
-    const startDate = new Date(classroom.insertedDate ?? '');
+
+    const firstDay = startOfYear(new Date(today.setUTCHours(0, 0, 0, 0))); // Get the first day of the current year
+    console.log(new Date(firstDay))
+    const firstDayOfYear = addDays(firstDay, 1);
 
     if (attendanceTracked) {
       new AttendanceService(authUser?.auth_token ?? '')
         .getMonthlyAttendanceReport(
           authUser?.id ?? '',
           classroom?.classroomId || classroom?.id!,
-          startDate,
+          firstDayOfYear,
           new Date(lastDayCurrentMonth)
         )
         .then((data) => {
@@ -118,7 +122,7 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
       <div
         className={'static bottom-0 flex h-full w-full flex-1 flex-col px-2'}
       >
-        {attendanceData.length > 8 && (
+        {attendanceData.length > 6 && (
           <Button
             type="outlined"
             color="primary"

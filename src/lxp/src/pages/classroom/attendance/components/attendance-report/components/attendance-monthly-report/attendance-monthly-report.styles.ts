@@ -2,6 +2,7 @@ import { Colours, classNames } from '@ecdlink/ui';
 import {
   averageScoreThreshold,
   goodScoreThreshold,
+  badScoreThreshold
 } from '@models/classroom/attendance/ClassAttendance';
 
 export const wrapper = 'bg-white rounded-lg shadow-sm justify-center';
@@ -12,9 +13,10 @@ export const attendanceItemWrapper = (
   attendanceScore: number,
   renderDivider: boolean
 ) => {
-  const baseStyle = `flex flex-col py-4 w-full ${
-    renderDivider ? 'border-t border-color-textLight' : ''
-  }`;
+  const baseStyle =
+    `flex flex-col py-4 w-full rounded-lg p-5 pr-8 mt-2 ${
+      renderDivider ? 'border-t border-color-textLight' : ''
+    } ` ;
 
   return classNames(baseStyle, getColor(attendanceScore));
 };
@@ -33,4 +35,14 @@ export const getColor = (score: number): Colours => {
   }
 
   return 'errorMain';
+};
+
+export const getBgColor = (score: number) => {
+  if (score >= goodScoreThreshold) {
+    return 'bg-successBg';
+  } else if (score >= averageScoreThreshold) {
+    return 'bg-alertBg';
+  } else if (score <= badScoreThreshold) {
+    return 'bg-errorBg';
+  }
 };

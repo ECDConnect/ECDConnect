@@ -34,7 +34,9 @@ import MultiRouteWrapper from '@/pages/classroom/attendance/components/attendanc
 export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   const userData = useSelector(userSelectors.getUser);
   const [seeRegister, setSeeRegister] = useState<boolean>(false);
-  const [removeHolidays, setRemoveHolidays] = useState<number>(0);
+
+  const todayDate = new Date();
+
 
   const [attendanceComponentType, setAttendanceComponentType] =
     useState<AttendanceComponentType>();
@@ -155,7 +157,6 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       );
     });
 
-    setRemoveHolidays(removeHolidays.length);
 
     if (removeHolidays.length === 0) {
       setAttendanceComponentType('report');
@@ -193,7 +194,6 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       );
     });
 
-    setRemoveHolidays(removeHolidays.length);
 
     if (removeHolidays.length === 0) {
       setAttendanceComponentType('report');
@@ -223,6 +223,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       />
     );
   }
+  
 
   return (
     <div>
@@ -233,27 +234,24 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
         <AttendanceSummary hidePopup={seeRegister} />
       )}
       <div className={'flex h-full w-full flex-1 flex-col px-4'}>
-        {attendanceComponentType === 'attendance' &&
-          !seeRegister &&
-          removeHolidays !== 0 &&
-          removeHolidays === null && (
-            <Button
-              type="outlined"
+        {attendanceComponentType === 'attendance' && !seeRegister && (
+          <Button
+            type="outlined"
+            color="primary"
+            className={'mt-0'}
+            onClick={() => {
+              setSeeRegister(true);
+            }}
+          >
+            {renderIcon('EyeIcon', 'h-5 w-5 text-primary')}
+            <Typography
+              type="h6"
               color="primary"
-              className={'mt-0'}
-              onClick={() => {
-                setSeeRegister(true);
-              }}
-            >
-              {renderIcon('EyeIcon', 'h-5 w-5 text-primary')}
-              <Typography
-                type="h6"
-                color="primary"
-                text={'See attendance registers'}
-                className="ml-2"
-              ></Typography>
-            </Button>
-          )}
+              text={'See attendance registers'}
+              className="ml-2"
+            ></Typography>
+          </Button>
+        )}
       </div>
     </div>
   );

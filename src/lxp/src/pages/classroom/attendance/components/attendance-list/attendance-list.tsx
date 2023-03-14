@@ -116,6 +116,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
 
   const onFilterItemsChanges = (value: SearchDropDownOption<any>[]) => {
     setSelectedClassroomGroups(value.map((x) => x.value));
+   
   };
 
   const validateAttendanceList = (
@@ -228,9 +229,11 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
       classroomGroupId: currentAttendanceGroup.cacheId,
     });
 
-    setAttendanceGroups([]);
-    setSelectedClassroomGroups([]);
-    updateAttendanceState([]);
+    if (!editAttendanceRegisterVisible) {
+      setAttendanceGroups([]);
+      setSelectedClassroomGroups([]);
+      updateAttendanceState([]);
+    }
   };
 
   const submitPrompt = () => {
