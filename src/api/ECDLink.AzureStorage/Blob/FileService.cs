@@ -167,7 +167,7 @@ namespace ECDLink.AzureStorage.Blob
         {
             if (!IsUnknownOrValidFileType(fileStream))
             {
-                throw new Exception("Unspoorted file type");
+                throw new Exception("Unsupported file type");
             }
         }
 
@@ -191,6 +191,11 @@ namespace ECDLink.AzureStorage.Blob
             }
 
             if (format is OfficeOpenXml)
+            {
+                return true;
+            }
+
+            if (format is MP4 || format is MP4V1)
             {
                 return true;
             }
