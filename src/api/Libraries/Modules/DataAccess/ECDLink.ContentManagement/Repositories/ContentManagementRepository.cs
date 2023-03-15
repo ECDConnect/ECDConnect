@@ -4,18 +4,14 @@ using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.EGraphQL.Constants;
-using HotChocolate;
 using Microsoft.EntityFrameworkCore;
-using NPOI.HPSF;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using static DotLiquid.Variable;
 
-namespace ECDLink.ContentManagement.Repositories
-{
+namespace ECDLink.ContentManagement.Repositories {
     public class ContentManagementRepository
     {
         private ContentManagementDbContext _context;
