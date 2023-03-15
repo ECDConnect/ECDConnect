@@ -8,7 +8,7 @@ import {
   Dialog,
   DialogPosition,
 } from '@ecdlink/ui';
-import React, { useEffect, useLayoutEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useSelector } from 'react-redux';
@@ -45,7 +45,19 @@ export const MonthStatementsDetails: React.FC = () => {
 
   const [showPreschoolDetails, setShowPreschoolDetails] = useState(false);
   const offlineIncome = useSelector(statementsSelectors.getIncome);
+  const lowerCase = (str: any) => str[0].toLowerCase() + str.slice(1);
+  const offlineIncomeLowerCase = useMemo(() => {
+    return offlineIncome?.map((obj) =>
+      Object.fromEntries(Object.entries(obj).map(([k, v]) => [lowerCase(k), v]))
+    );
+  }, [offlineIncome]);
+
   const offlineExpenses = useSelector(statementsSelectors.getExpenses);
+  const offlineExpensesLowerCase = useMemo(() => {
+    return offlineExpenses?.map((obj) =>
+      Object.fromEntries(Object.entries(obj).map(([k, v]) => [lowerCase(k), v]))
+    );
+  }, [offlineExpenses]);
   const balanceSheet = useSelector(statementsSelectors.getBalanceSheet);
   const [income, setIncome] = useState<IncomeStatementsDto[]>([]);
   const [expenses, setExpenses] = useState<ExpensesStatementsDto[]>([]);
@@ -88,8 +100,13 @@ export const MonthStatementsDetails: React.FC = () => {
   const filteredIncome = isSameMonth ? income : submittedIncome;
   const filteredExpenses = isSameMonth ? expenses : submittedExpenses;
 
-  const offlineFilteredIncome = isOnline ? filteredIncome : offlineIncome;
-  const offlineFilteredExpense = isOnline ? filteredExpenses : offlineExpenses;
+  const offlineFilteredIncome = useMemo(() => {
+    return isOnline ? filteredIncome : offlineIncomeLowerCase;
+  }, [filteredIncome, isOnline, offlineIncomeLowerCase]);
+
+  const offlineFilteredExpense = useMemo(() => {
+    return isOnline ? filteredExpenses : offlineExpensesLowerCase;
+  }, [filteredExpenses, isOnline, offlineExpensesLowerCase]);
 
   const totalIncome = isSameMonth
     ? income?.reduce(function (prev: any, current: any) {
@@ -99,6 +116,14 @@ export const MonthStatementsDetails: React.FC = () => {
         return prev + +current.amount;
       }, 0);
 
+  const offlineTotalIncome = offlineIncomeLowerCase?.reduce(function (
+    prev: any,
+    current: any
+  ) {
+    return prev + +current.amount;
+  },
+  0);
+
   const totalExpenses = isSameMonth
     ? expenses?.reduce(function (prev: any, current: any) {
         return prev + +current.amount;
@@ -107,7 +132,18 @@ export const MonthStatementsDetails: React.FC = () => {
         return prev + +current.amount;
       }, 0);
 
+  const offlineTotalExpenses = offlineExpensesLowerCase?.reduce(function (
+    prev: any,
+    current: any
+  ) {
+    return prev + +current.amount;
+  },
+  0);
+
   const totalBalance = (totalIncome - totalExpenses)?.toFixed(2);
+  const offLineTotalBalance = (
+    offlineTotalIncome - offlineTotalExpenses
+  )?.toFixed(2);
 
   // Income values
   const [preschoolFees, setPreschoolFees] = useState<any>([]);
@@ -124,7 +160,7 @@ export const MonthStatementsDetails: React.FC = () => {
   const [utilities, setUtilities] = useState<any>([]);
   const [salary, setSalary] = useState<any>([]);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     const preschoolValue: IncomeStatementsDto[] = [];
     const startupValue: IncomeStatementsDto[] = [];
     const doantionValue: IncomeStatementsDto[] = [];
@@ -164,7 +200,6 @@ export const MonthStatementsDetails: React.FC = () => {
     otherIncome?.id,
     preschoolIncome?.id,
     startupIncome?.id,
-    submittedIncome,
   ]);
 
   useEffect(() => {
@@ -225,11 +260,9 @@ export const MonthStatementsDetails: React.FC = () => {
     preschoolIncome.id,
     rentExpense?.id,
     salary.id,
-    salaryExpense?.id,
-    startupIncome.id,
-    submittedExpenses,
-    utilities.id,
+    isOnline,
     utilitiesExpense?.id,
+    salaryExpense?.id,
   ]);
 
   useEffect(() => {
@@ -422,7 +455,13 @@ export const MonthStatementsDetails: React.FC = () => {
               className="w-8/12"
             />
             <Typography
-              text={`R ${String(numberWithSpaces(totalIncome?.toFixed(2)))}`}
+              text={
+                isOnline
+                  ? `R ${String(numberWithSpaces(totalIncome?.toFixed(2)))}`
+                  : `R ${String(
+                      numberWithSpaces(offlineTotalIncome?.toFixed(2))
+                    )}`
+              }
               color={'white'}
               type="h4"
               className="mr-12 w-4/12 text-right"
@@ -444,7 +483,13 @@ export const MonthStatementsDetails: React.FC = () => {
               className="w-9/12"
             />
             <Typography
-              text={`R ${String(numberWithSpaces(totalExpenses?.toFixed(2)))}`}
+              text={
+                isOnline
+                  ? `R ${String(numberWithSpaces(totalExpenses?.toFixed(2)))}`
+                  : `R ${String(
+                      numberWithSpaces(offlineTotalExpenses?.toFixed(2))
+                    )}`
+              }
               color={'white'}
               type="h4"
               className="mr-12 w-4/12 text-right"
@@ -462,7 +507,11 @@ export const MonthStatementsDetails: React.FC = () => {
               className="w-6/12"
             />
             <Typography
-              text={`R ${String(numberWithSpaces(String(totalBalance)))}`}
+              text={
+                isOnline
+                  ? `R ${String(numberWithSpaces(String(totalBalance)))}`
+                  : `R ${String(numberWithSpaces(String(offLineTotalBalance)))}`
+              }
               color={'white'}
               type="h1"
               className="w-8/12 text-right"

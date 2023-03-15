@@ -4,7 +4,7 @@ import { Header, TipCard } from '@/pages/infant/infant-profile/components';
 import P1 from '@/assets/pillar/p1.svg';
 import { DynamicFormProps } from '../../../../dynamic-form';
 import { Fragment, useEffect, useMemo } from 'react';
-import { HealthPromotion } from './health-promotion';
+import { HealthPromotion } from '../../../../components/health-promotion';
 
 export const FormulaMilkNotesStep = ({
   infant,
@@ -16,6 +16,7 @@ export const FormulaMilkNotesStep = ({
     () => infant?.caregiver?.firstName || '',
     [infant?.caregiver?.firstName]
   );
+  const sectionName = 'Formula milk only';
 
   // TODO: add integration (G5.3.11)
   const mockedNote = {
@@ -33,7 +34,10 @@ export const FormulaMilkNotesStep = ({
   if (isTipPage) {
     return (
       <HealthPromotion
-        clientName={caregiverName}
+        title={`Discuss with ${caregiverName}`}
+        subTitle={sectionName}
+        section={sectionName}
+        client={caregiverName}
         onClose={() => setIsTip && setIsTip(false)}
       />
     );

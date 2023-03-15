@@ -1,6 +1,11 @@
 import { api } from '../axios.helper';
 import { Config, VisitStatusDto } from '@ecdlink/core';
-import { CmsVisitDataInputModelInput } from '@ecdlink/graphql';
+import {
+  CmsVisitDataInputModelInput,
+  MoreInformation,
+  VisitVideos,
+} from '@ecdlink/graphql';
+import { HealthPromotion } from '@ecdlink/graphql';
 
 class Visit {
   _accessToken: string;
@@ -60,6 +65,142 @@ class Visit {
     }
 
     return response.data.data.createInfant;
+  }
+
+  async getMoreInformation(
+    section: string,
+    locale: string
+  ): Promise<MoreInformation[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { moreInformation: MoreInformation[] };
+      errors?: {};
+    }>(``, {
+      query: `
+      query GetMoreInformation($section: String, $locale: String) {
+        moreInformation(section: $section, locale: $locale){
+          descriptionA
+          descriptionAColor
+          descriptionB
+          descriptionBColor
+          descriptionBIcon
+          descriptionC
+          descriptionCColor
+          descriptionD
+          descriptionDColor
+          descriptionDIcon
+          headerA
+          headerB
+          headerC
+          id
+          infoBoxDescription
+          infoBoxIcon
+          infoBoxTitle
+          section
+          showDividerA
+          showDividerB
+          type
+          visit
+        }
+      }    
+      `,
+      variables: {
+        section,
+        locale,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error('Get More Information Failed - Server connection error');
+    }
+
+    return response.data.data.moreInformation;
+  }
+
+  async getHealthPromotion(
+    section: string,
+    locale: string
+  ): Promise<HealthPromotion[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { healthPromotion: HealthPromotion[] };
+      errors?: {};
+    }>(``, {
+      query: `
+        query GetHealthPromotion($section: String, $locale: String) {
+          healthPromotion(section: $section, locale: $locale){
+            description
+            descriptionListIcon
+            id
+            section
+            type
+            visit
+          }
+        }
+      `,
+      variables: {
+        section,
+        locale,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error('Get Health Promotion Failed - Server connection error');
+    }
+
+    return response.data.data.healthPromotion;
+  }
+
+  async getVisitVideos(
+    section: string,
+    locale: string
+  ): Promise<VisitVideos[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { healthPromotion: VisitVideos[] };
+      errors?: {};
+    }>(``, {
+      query: `
+        query GetVisitVideos($section: String, $locale: String) {
+          visitVideos(section: $section, locale: $locale){
+            id
+            infoBoxDescriptionA
+            infoBoxDescriptionB
+            infoBoxIconA
+            infoBoxIconB
+            infoBoxTitleA
+            infoBoxTitleB
+            section
+            showDividerA
+            tipBoxButtonColorA
+            tipBoxButtonTextA
+            tipBoxColorA
+            tipBoxColorB
+            tipBoxDescriptionB
+            tipBoxDescriptionColorB
+            tipBoxIconA
+            tipBoxIconB
+            tipBoxTitleA
+            tipBoxTitleB
+            tipBoxTitleColorA
+            tipBoxTitleColorB
+            type
+            video
+            visit
+          }
+        }
+      `,
+      variables: {
+        section,
+        locale,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error('Get Visit Videos Failed - Server connection error');
+    }
+
+    return response.data.data.healthPromotion;
   }
 }
 

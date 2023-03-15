@@ -21,7 +21,7 @@ import {
   expensesSchema,
 } from '@/schemas/expense-statements/expenses';
 import { useSelector } from 'react-redux';
-import { statementsSelectors } from '@/store/statements';
+import { statementsActions, statementsSelectors } from '@/store/statements';
 import { newGuid } from '@/utils/common/uuid.utils';
 import ExpensesStatementsService from '@/services/ExpensesStatementsService/ExpensesStatementsService';
 import { authSelectors } from '@/store/auth';
@@ -30,9 +30,13 @@ import {
   moneyInputFormat,
 } from '@/utils/statements/statements-utils';
 import { getDate, lastDayOfMonth, startOfMonth } from 'date-fns';
+import { useAppDispatch } from '@/store';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 export const LearningMaterials: React.FC<AddIncomeState> = ({ setType }) => {
   const userAuth = useSelector(authSelectors.getAuthUser);
+  const appDispatch = useAppDispatch();
+  const { isOnline } = useOnlineStatus();
   const {
     trigger,
     control,
@@ -91,9 +95,7 @@ export const LearningMaterials: React.FC<AddIncomeState> = ({ setType }) => {
     const incomeId = newGuid();
     setIsLoading(true);
 
-    await new ExpensesStatementsService(
-      userAuth?.auth_token!
-    ).UpdateStatementsExpense(incomeId, {
+    const expensesInput = {
       IsActive: true,
       UserId: userAuth?.id,
       Submitted: false,
@@ -102,7 +104,23 @@ export const LearningMaterials: React.FC<AddIncomeState> = ({ setType }) => {
       Amount: amount ? moneyInputFormat(amount) : 0,
       ExpenseTypeId: expensesTypeValue?.id,
       PhotoProof: expenseInvoice,
-    });
+    };
+
+    const offlineStatement = {
+      ...expensesInput,
+      isOffline: true,
+      id: incomeId,
+    };
+
+    appDispatch(
+      statementsActions.addExpenses(isOnline ? expensesInput : offlineStatement)
+    );
+
+    if (isOnline) {
+      await new ExpensesStatementsService(
+        userAuth?.auth_token!
+      ).UpdateStatementsExpense(incomeId, expensesInput);
+    }
 
     setIsLoading(false);
     setType('');

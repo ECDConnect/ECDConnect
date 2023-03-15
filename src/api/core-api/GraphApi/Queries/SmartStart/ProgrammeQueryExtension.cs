@@ -1,11 +1,7 @@
-using DotLiquid;
-using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using ECDLink.Abstractrions.GraphQL.Enums;
-using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Users;
-using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
@@ -20,8 +16,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
-{
+namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart {
     [ExtendObjectType(OperationTypeNames.Query)]
     public class ProgrammeQueryExtension
     {

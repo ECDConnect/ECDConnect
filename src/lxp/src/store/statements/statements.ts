@@ -1,3 +1,7 @@
+import {
+  ExpensesStatementsDto,
+  IncomeStatementsDto,
+} from '@/../../../packages/core/lib';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import {
@@ -40,6 +44,14 @@ const statementsSlice = createSlice({
       if (state.income) {
         state.income = action.payload;
       }
+    },
+    addIncome: (state, action: PayloadAction<IncomeStatementsDto>) => {
+      if (!state.income) state.income = [];
+      state.income?.push(action.payload);
+    },
+    addExpenses: (state, action: PayloadAction<any>) => {
+      if (!state.expenses) state.expenses = [];
+      state.expenses?.push(action.payload);
     },
   },
   extraReducers: (builder) => {

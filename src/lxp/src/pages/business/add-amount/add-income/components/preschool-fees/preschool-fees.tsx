@@ -22,7 +22,7 @@ import {
   PreschoolFeesModel,
   preschoolFeesSchema,
 } from '@/schemas/income-statements/preschool-fees';
-import { statementsSelectors } from '@/store/statements';
+import { statementsActions, statementsSelectors } from '@/store/statements';
 import { IncomeStatementsService } from '@/services/IncomeStatementsService';
 import { authSelectors } from '@/store/auth';
 import { newGuid } from '@/utils/common/uuid.utils';
@@ -36,9 +36,13 @@ import StatementsWrapper from '@/pages/business/money/submit-income-statements/c
 import { useAppContext } from '@/walkthrougContext';
 import ROUTES from '@/routes/routes';
 import { useHistory } from 'react-router';
+import { useAppDispatch } from '@/store';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
   const history = useHistory();
+  const appDispatch = useAppDispatch();
+  const { isOnline } = useOnlineStatus();
   const children = useSelector(childrenSelectors.getChildren);
   const [selectedFeeTypeValue, setSelectedFeeTypeValue] = useState<string[]>(
     []
@@ -157,21 +161,29 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
   const sendIncomeUpdate = async () => {
     const incomeId = newGuid();
 
+    const incomeInput = {
+      IsActive: true,
+      UserId: userAuth?.id,
+      ChildUserId: child,
+      Submitted: false,
+      DateReceived: date,
+      Notes: note,
+      Amount: amount ? moneyInputFormat(amount) : 0,
+      AmountExpected: amount ? moneyInputFormat(amount) : 0,
+      ChildCoverAmount: 0,
+      ContributionTypeId: contributionType,
+      IncomeTypeId: incomeTypeValue?.id,
+      FeeTypeId: String(feeType) || '',
+    };
+
+    const offlineStatement = { ...incomeInput, isOffline: true, id: incomeId };
+
+    appDispatch(
+      statementsActions.addIncome(isOnline ? incomeInput : offlineStatement)
+    );
+
     await new IncomeStatementsService(userAuth?.auth_token!)
-      .UpdateStatementsIncome(incomeId, {
-        IsActive: true,
-        UserId: userAuth?.id,
-        ChildUserId: child,
-        Submitted: false,
-        DateReceived: date,
-        Notes: note,
-        Amount: amount ? moneyInputFormat(amount) : 0,
-        AmountExpected: amount ? moneyInputFormat(amount) : 0,
-        ChildCoverAmount: 0,
-        ContributionTypeId: contributionType,
-        IncomeTypeId: incomeTypeValue?.id,
-        FeeTypeId: String(feeType) || '',
-      })
+      .UpdateStatementsIncome(incomeId, incomeInput)
       .then(() => {
         setNotification({
           title: `Successfully Added Fees`,
@@ -182,7 +194,7 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
       });
   };
 
-  const sendOneIncomeUpdate = async () => {
+  const sendOneIncomeUpdatePayload = async () => {
     if (stepIndex === 6) {
       setState({ stepIndex: 7 });
       history?.push(ROUTES?.BUSINESS);
@@ -191,9 +203,7 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
 
     const incomeId = newGuid();
 
-    await new IncomeStatementsService(
-      userAuth?.auth_token!
-    ).UpdateStatementsIncome(incomeId, {
+    const incomeInput = {
       IsActive: true,
       UserId: userAuth?.id,
       ChildUserId: child,
@@ -201,13 +211,26 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
       DateReceived: date,
       Notes: note,
       Amount: amount ? moneyInputFormat(amount) : 0,
-      AmountExpected: 400,
-      ChildCoverAmount: 400,
+      AmountExpected: amount ? moneyInputFormat(amount) : 0,
+      ChildCoverAmount: 0,
       ContributionTypeId: contributionType,
       IncomeTypeId: incomeTypeValue?.id,
       FeeTypeId: String(feeType) || '',
-    });
+    };
 
+    const offlineStatement = { ...incomeInput, isOffline: true, id: incomeId };
+
+    appDispatch(
+      statementsActions.addIncome(isOnline ? incomeInput : offlineStatement)
+    );
+
+    await new IncomeStatementsService(
+      userAuth?.auth_token!
+    ).UpdateStatementsIncome(incomeId, incomeInput);
+  };
+
+  const sendOneIncomeUpdate = () => {
+    sendOneIncomeUpdatePayload();
     setType('');
   };
 

@@ -4,7 +4,7 @@ import { Header, TipCard } from '@/pages/infant/infant-profile/components';
 import Infant from '@/assets/infant.svg';
 import { DynamicFormProps } from '../../dynamic-form';
 import { useEffect, useMemo } from 'react';
-import { HealthPromotion } from './health-promotion';
+import { HealthPromotion } from '../../components/health-promotion';
 
 export const NewbornCareStep = ({
   infant,
@@ -14,6 +14,7 @@ export const NewbornCareStep = ({
 }: DynamicFormProps) => {
   const name = useMemo(() => infant?.user?.firstName || '', [infant]);
 
+  const sectionName = 'Newborn care';
   // TODO: add integration
   const isFirstVisit = true;
 
@@ -24,7 +25,9 @@ export const NewbornCareStep = ({
   if (isTipPage) {
     return (
       <HealthPromotion
-        clientName={name || ''}
+        title={`Discuss with ${name}`}
+        subTitle={sectionName}
+        section={sectionName}
         onClose={() => setIsTip && setIsTip(false)}
       />
     );
@@ -35,7 +38,7 @@ export const NewbornCareStep = ({
       <Header
         backgroundColor="tertiary"
         customIcon={Infant}
-        title="Newborn care"
+        title={sectionName}
       />
       <div className="flex flex-col gap-4 p-4">
         <TipCard

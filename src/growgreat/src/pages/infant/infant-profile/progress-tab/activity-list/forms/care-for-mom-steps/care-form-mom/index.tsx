@@ -10,7 +10,7 @@ import {
 import Pregnant from '@/assets/pregnant.svg';
 import { DynamicFormProps } from '../../dynamic-form';
 import { useEffect } from 'react';
-import { MoreInformation } from './more-information';
+import { MoreInformation } from '../../components/more-information';
 
 export const CareForMomStep = ({
   infant,
@@ -23,7 +23,13 @@ export const CareForMomStep = ({
   }, [setEnableButton]);
 
   if (isTipPage) {
-    return <MoreInformation onClose={() => setIsTip && setIsTip(false)} />;
+    return (
+      <MoreInformation
+        section="Care for mom"
+        subTitle="Care for mom"
+        onClose={() => setIsTip?.(false)}
+      />
+    );
   }
 
   return (

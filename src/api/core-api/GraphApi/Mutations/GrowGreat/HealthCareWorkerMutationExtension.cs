@@ -11,8 +11,7 @@ using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using System;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
-{
+namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat {
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class HealthCareWorkerMutationExtension
     {
@@ -36,7 +35,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
                 TeamLeadId = input.TeamLeadId,
             };
 
-            var healthCareWorkerRepo = repoFactory.CreateRepository<HealthCareWorker>(userContext: applicationUserId);
+            var healthCareWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: applicationUserId);
             return healthCareWorkerRepo.Insert(healthCareWorker);
 
         }
@@ -49,7 +48,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             HealthCareWorkerModel input)
         {
             var applicationUserId = contextAccessor.HttpContext.GetUser().Id;
-            var healthCareWorkerRepo = repoFactory.CreateRepository<HealthCareWorker>(userContext: applicationUserId);
+            var healthCareWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: applicationUserId);
             var healthCareWorkerToUpdate = healthCareWorkerRepo.GetByUserId(userId);
 
             if (input.IsRegistered)
