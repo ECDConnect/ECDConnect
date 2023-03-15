@@ -110,7 +110,7 @@ class Visit {
       },
     });
 
-    if (response.status !== 200) {
+    if (response.status !== 200 || response.data.errors) {
       throw new Error('Get More Information Failed - Server connection error');
     }
 
@@ -157,33 +157,14 @@ class Visit {
   ): Promise<VisitVideos[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
-      data: { healthPromotion: VisitVideos[] };
+      data: { visitVideos: VisitVideos[] };
       errors?: {};
     }>(``, {
       query: `
         query GetVisitVideos($section: String, $locale: String) {
           visitVideos(section: $section, locale: $locale){
             id
-            infoBoxDescriptionA
-            infoBoxDescriptionB
-            infoBoxIconA
-            infoBoxIconB
-            infoBoxTitleA
-            infoBoxTitleB
             section
-            showDividerA
-            tipBoxButtonColorA
-            tipBoxButtonTextA
-            tipBoxColorA
-            tipBoxColorB
-            tipBoxDescriptionB
-            tipBoxDescriptionColorB
-            tipBoxIconA
-            tipBoxIconB
-            tipBoxTitleA
-            tipBoxTitleB
-            tipBoxTitleColorA
-            tipBoxTitleColorB
             type
             video
             visit
@@ -196,11 +177,11 @@ class Visit {
       },
     });
 
-    if (response.status !== 200) {
+    if (response.status !== 200 || response.data.errors) {
       throw new Error('Get Visit Videos Failed - Server connection error');
     }
 
-    return response.data.data.healthPromotion;
+    return response.data.data.visitVideos;
   }
 }
 

@@ -19,6 +19,7 @@ import { Form } from './forms';
 import { useWindowSize } from '@reach/window-size';
 import { infantThunkActions } from '@/store/infant';
 import { useAppDispatch } from '@/store';
+export const MOCKED_VISIT_ID = '454686a9-2142-4061-aa47-4e89d46110b9';
 
 export const INFANT_PROFILE_TABS = {
   VISITS: 0,

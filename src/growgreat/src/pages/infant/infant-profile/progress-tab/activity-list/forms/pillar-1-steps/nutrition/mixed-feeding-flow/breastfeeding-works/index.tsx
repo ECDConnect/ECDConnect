@@ -5,10 +5,8 @@ import P1 from '@/assets/pillar/p1.svg';
 import { DynamicFormProps } from '../../../../dynamic-form';
 import { useEffect, useMemo } from 'react';
 import { ReactComponent as Polly } from '@/assets/momImageSvg.svg';
-import LanguageSelector from '@/components/language-selector/language-selector';
-// @ts-ignore
-import mockedVideo from '../../../../assets/mocked.mp4';
 import { HealthPromotion } from '../../../../components/health-promotion';
+import { Video } from '../../../../components/video';
 
 export const MixedBreastfeedingWorksStep = ({
   infant,
@@ -21,6 +19,7 @@ export const MixedBreastfeedingWorksStep = ({
     () => infant?.caregiver?.firstName || '',
     [infant?.caregiver?.firstName]
   );
+  const videoSection = 'How Breastfeeding Works';
 
   useEffect(() => {
     setEnableButton && setEnableButton(true);
@@ -74,8 +73,7 @@ export const MixedBreastfeedingWorksStep = ({
             </div>
           }
         />
-        <LanguageSelector selectLanguage={() => {}} />
-        <video src={mockedVideo} controls className="rounded-3xl" />
+        <Video section={videoSection} />
         <Alert
           type="info"
           title={`Encourage ${caregiverName} to choose 1 option - either exclusive breastfeeding or exclusive formula feeding. Support her in this decision.`}

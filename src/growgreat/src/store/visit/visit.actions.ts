@@ -9,6 +9,10 @@ import {
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { RootState, ThunkApiType } from '../types';
 
+export interface VisitVideosWithLocale extends VisitVideos {
+  locale: string;
+}
+
 export const VisitActions = {
   GET_VISIT_STATUS: 'getHealthCareWorkerVisitStatus',
   ADD_VISIT_FORM_DATA: 'addVisitFormData',
@@ -134,7 +138,7 @@ export const getHealthPromotion = createAsyncThunk<
 );
 
 export const getVisitVideos = createAsyncThunk<
-  VisitVideos[],
+  VisitVideosWithLocale[],
   { section: string; locale: string },
   ThunkApiType<RootState>
 >(
@@ -145,13 +149,14 @@ export const getVisitVideos = createAsyncThunk<
     } = getState();
 
     try {
-      let content: VisitVideos[] = [];
+      let content: VisitVideosWithLocale[] = [];
 
       if (userAuth?.auth_token) {
-        content = await new Visit(userAuth?.auth_token ?? '').getVisitVideos(
-          section,
-          locale
-        );
+        const response = await new Visit(
+          userAuth?.auth_token ?? ''
+        ).getVisitVideos(section, locale);
+
+        content = response.map((item) => ({ ...item, locale }));
       } else {
         return rejectWithValue('no access token, profile check required');
       }

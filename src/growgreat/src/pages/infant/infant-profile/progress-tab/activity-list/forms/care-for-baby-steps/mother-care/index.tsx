@@ -5,16 +5,14 @@ import { Header, Label } from '@/pages/infant/infant-profile/components';
 import Infant from '@/assets/infant.svg';
 import { DynamicFormProps } from '../../dynamic-form';
 import { useEffect, useMemo } from 'react';
-import LanguageSelector from '@/components/language-selector/language-selector';
-// @ts-ignore
-import mockedVideo from './mocked.mp4';
+import { Video } from '../../components/video';
 
 export const MotherCareStep = ({
   infant,
   setEnableButton,
 }: DynamicFormProps) => {
   const name = useMemo(() => infant?.user?.firstName || '', [infant]);
-
+  const videoSection = 'Kangaroo Mother Care';
   // TODO: add integration
   const isFirstVisit = true;
 
@@ -55,12 +53,7 @@ export const MotherCareStep = ({
             </div>
           }
         />
-        {isFirstVisit && (
-          <>
-            <LanguageSelector selectLanguage={() => {}} />
-            <video src={mockedVideo} controls className="rounded-3xl" />
-          </>
-        )}
+        {isFirstVisit && <Video section={videoSection} />}
         {!!orangeAlert && (
           <Alert
             type="warning"

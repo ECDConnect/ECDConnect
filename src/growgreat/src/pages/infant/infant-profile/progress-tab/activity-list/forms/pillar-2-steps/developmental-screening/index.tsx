@@ -4,11 +4,9 @@ import { Header, TipCard } from '@/pages/infant/infant-profile/components';
 import P2 from '@/assets/pillar/p2.svg';
 import { DynamicFormProps } from '../../dynamic-form';
 import { useEffect, useMemo } from 'react';
-import LanguageSelector from '@/components/language-selector/language-selector';
-// @ts-ignore
-import mockedVideo from '../../assets/mocked.mp4';
 import { activitiesColours } from '../../../activities-list';
 import { MoreInformation } from '../../components/more-information';
+import { Video } from '../../components/video';
 
 export const DevelopmentalScreeningStep = ({
   infant,
@@ -20,6 +18,7 @@ export const DevelopmentalScreeningStep = ({
     () => infant?.caregiver?.firstName || '',
     [infant?.caregiver?.firstName]
   );
+  const videoSection = 'Bonding';
 
   useEffect(() => {
     setEnableButton && setEnableButton(true);
@@ -59,8 +58,7 @@ export const DevelopmentalScreeningStep = ({
             </div>
           }
         />
-        <LanguageSelector selectLanguage={() => {}} />
-        <video src={mockedVideo} controls className="rounded-3xl" />
+        <Video section={videoSection} />
       </div>
     </>
   );

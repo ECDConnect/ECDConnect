@@ -5,12 +5,10 @@ import { ReactComponent as Polly } from '@/assets/momImageSvg.svg';
 import { Header, TipCard } from '@/pages/infant/infant-profile/components';
 import P1 from '@/assets/pillar/p1.svg';
 import { DynamicFormProps } from '../../../../dynamic-form';
-import { Fragment, useEffect, useMemo } from 'react';
-import LanguageSelector from '@/components/language-selector/language-selector';
-// @ts-ignore
-import mockedVideo from '../../../../assets/mocked.mp4';
+import { useEffect, useMemo } from 'react';
 import { HealthPromotion } from '../../../../components/health-promotion';
 import { activitiesColours } from '../../../../../activities-list';
+import { Video } from '../../../../components/video';
 
 export const BreastMilkOnlyStep = ({
   infant,
@@ -28,6 +26,7 @@ export const BreastMilkOnlyStep = ({
     [infant?.caregiver?.firstName]
   );
   const sectionName = 'Breast milk only';
+  const videoSection = 'Benefits of Breastfeeding';
 
   // TODO: add integration
   const isVideo = true;
@@ -86,8 +85,7 @@ export const BreastMilkOnlyStep = ({
               </div>
             }
           />
-          <LanguageSelector selectLanguage={() => {}} />
-          <video src={mockedVideo} controls className="rounded-3xl" />
+          <Video section={videoSection} />
         </>
       );
     }
