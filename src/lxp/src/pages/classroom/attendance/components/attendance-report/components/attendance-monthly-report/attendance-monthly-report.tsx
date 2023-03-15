@@ -33,7 +33,9 @@ export const AttendanceMonthlyReport: React.FC<
             <div
               onClick={() => {
                 setDisplayReport(true);
-                setViewReportDate(getMonthName(attendanceItem?.monthOfYear - 1));
+                setViewReportDate(
+                  getMonthName(attendanceItem?.monthOfYear - 1)
+                );
               }}
               key={`attendance-summary-item-${idx}`}
               className={classNames(
@@ -50,7 +52,9 @@ export const AttendanceMonthlyReport: React.FC<
                     type={'h3'}
                     weight={'bold'}
                     color={'black'}
-                    text={`${getMonthName(attendanceItem.monthOfYear - 1)} ${getYear(new Date())}`}
+                    text={`${getMonthName(
+                      attendanceItem.monthOfYear - 1
+                    )} ${getYear(new Date())}`}
                     lineHeight={'none'}
                   ></Typography>
 

@@ -311,6 +311,7 @@ class PractitionerService {
             principalName
             classroomName
             classroomGroupName
+            classroomGroupId
             classroomId
             insertedDate
           }

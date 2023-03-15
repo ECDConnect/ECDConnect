@@ -2,6 +2,7 @@ using ECDLink.DataAccessLayer.Entities.Base;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
 {
@@ -12,6 +13,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
         void SetUserContext(string userId);
         IQueryable<T> GetAll();
         T GetById(TKey id);
+        Task<T> GetByIdAsync(TKey id);
         T GetByUserId(string id);
         List<T> GetListByUserId(string id);
         T Insert(T entity);
