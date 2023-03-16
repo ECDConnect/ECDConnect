@@ -12,3 +12,12 @@ export const getHealthPromotionSelector = (
 export const getMoreInformationSelector = (
   state: RootState
 ): MoreInformation[] | undefined => state.visits.moreInformation;
+
+export const getVisitVideoBySectionAndLocale = (
+  state: RootState,
+  section: string,
+  locale: string
+) =>
+  state.visits.visitVideos?.find(
+    (item) => item.section === section && item.locale === locale
+  );

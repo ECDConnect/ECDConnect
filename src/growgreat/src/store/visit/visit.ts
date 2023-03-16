@@ -8,12 +8,13 @@ import {
   getHealthCareWorkerVisitStatus,
   getHealthPromotion,
   getMoreInformation,
+  getVisitVideos,
 } from './visit.actions';
 import { VisitState } from './visit.types';
 
 const initialState: VisitState & ThunkStateStatus = {
   visitStatus: {},
-  visitFormData: {},
+  visitFormData: [],
 };
 
 const visitSlice = createSlice({
@@ -25,7 +26,15 @@ const visitSlice = createSlice({
       action: PayloadAction<CmsVisitDataInputModelInput>
     ) => {
       if (state.visitFormData) {
-        state.visitFormData = action.payload;
+        state.visitFormData = !!state.visitFormData.length
+          ? state.visitFormData.map((item) => {
+              if (item.visitId === action.payload.visitId) {
+                return action.payload;
+              }
+
+              return item;
+            })
+          : [action.payload];
       }
     },
   },
@@ -34,6 +43,7 @@ const visitSlice = createSlice({
     setThunkActionStatus(builder, addVisitFormData);
     setThunkActionStatus(builder, getHealthPromotion);
     setThunkActionStatus(builder, getMoreInformation);
+    setThunkActionStatus(builder, getVisitVideos);
     builder.addCase(addVisitFormData.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
     });
@@ -55,6 +65,13 @@ const visitSlice = createSlice({
     builder.addCase(getMoreInformation.fulfilled, (state, action) => {
       state.moreInformation = state.moreInformation?.length
         ? [...state.moreInformation, ...action.payload]
+        : action.payload;
+
+      setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(getVisitVideos.fulfilled, (state, action) => {
+      state.visitVideos = !!state.visitVideos?.length
+        ? [...new Set([...state.visitVideos, ...action.payload])]
         : action.payload;
 
       setFulfilledThunkActionStatus(state, action);

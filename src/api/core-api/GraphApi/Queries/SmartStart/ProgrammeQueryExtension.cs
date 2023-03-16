@@ -2,6 +2,7 @@ using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
@@ -66,7 +67,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart {
                 .ToList();
 
             return programmes;
-
         }
 
 

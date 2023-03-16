@@ -1,4 +1,5 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+using EcdLink.Api.CoreApi.Managers.Integration;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.DataAccessLayer.Entities;
@@ -6,6 +7,7 @@ using ECDLink.DataAccessLayer.Entities.Caregiver;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
+using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
@@ -16,12 +18,19 @@ using System.Linq;
 
 namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 {
-    public class InfantManager
+    public class InfantManager: BaseManager
     {
         private IHttpContextAccessor _contextAccessor;
         private IGenericRepositoryFactory _repoFactory;
         private HealthCareWorkerManager _healthCareWorkerManager;
         private VisitManager _visitManager;
+
+        private string _applicationUserId;
+        private IGenericRepository<Infant, Guid> _infantRepo;
+        private IGenericRepository<SiteAddress, Guid> _addressRepo;
+        private IGenericRepository<Province, Guid> _provinceRepo;
+        private IGenericRepository<VisitType, Guid> _visitTypeRepo;
+
 
         public InfantManager(
             IHttpContextAccessor contextAccessor,
@@ -33,6 +42,12 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             _repoFactory = repoFactory;
             _healthCareWorkerManager = healthCareWorkerManager;
             _visitManager = visitManager;
+
+            _applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
+            _infantRepo = _repoFactory.CreateGenericRepository<Infant>(userContext: _applicationUserId);
+            _addressRepo = _repoFactory.CreateGenericRepository<SiteAddress>(userContext: _applicationUserId);
+            _provinceRepo = _repoFactory.CreateGenericRepository<Province>(userContext: _applicationUserId);
+            _visitTypeRepo = _repoFactory.CreateGenericRepository<VisitType>(userContext: _applicationUserId);
         }
 
         // GG BUSINESS RULES FOR CREATING A CHILD AND SELECTING AN EXISTING CAREGIVER
@@ -44,15 +59,14 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 
         public Infant AddInfant(InfantModel input)
         {
-            var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
             var infantUser = GetUserFromInputModel(input);
             var infant = new Infant();
 
             // The caregiverId arriving here, could be a caregiver or mother from select box when adding an infant
-            var caregiverRepo = _repoFactory.CreateGenericRepository<Caregiver>(userContext: applicationUserId);
+            var caregiverRepo = _repoFactory.CreateGenericRepository<Caregiver>(userContext: _applicationUserId);
             Caregiver caregiver = caregiverRepo.GetAll().Where(x => x.Id.Equals(input.CaregiverId)).FirstOrDefault();
 
-            var motherRepo = _repoFactory.CreateGenericRepository<Mother>(userContext: applicationUserId);
+            var motherRepo = _repoFactory.CreateGenericRepository<Mother>(userContext: _applicationUserId);
             Mother mother = motherRepo.GetAll().Where(x => x.UserId.Equals(input.CaregiverId.ToString())).FirstOrDefault();
 
             // if both are null we create a new caregiver from request data
@@ -66,7 +80,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                     IsActive = true,
                     InsertedDate = DateTime.Now,
                     UpdatedDate = DateTime.Now,
-                    UpdatedBy = applicationUserId,
+                    UpdatedBy = _applicationUserId,
                     UserId = input.UserId,
                     User = infantUser,
                     CaregiverId = caregiver.Id,
@@ -86,7 +100,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                         IsActive = true,
                         InsertedDate = DateTime.Now,
                         UpdatedDate = DateTime.Now,
-                        UpdatedBy = applicationUserId,
+                        UpdatedBy = _applicationUserId,
                         UserId = input.UserId,
                         User = infantUser,
                         MotherCaregiverId = mother.Id,
@@ -104,7 +118,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                         IsActive = true,
                         InsertedDate = DateTime.Now,
                         UpdatedDate = DateTime.Now,
-                        UpdatedBy = applicationUserId,
+                        UpdatedBy = _applicationUserId,
                         UserId = input.UserId,
                         User = infantUser,
                         CaregiverId = caregiver.Id,
@@ -116,8 +130,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 }
             }
 
-            var infantRepo = _repoFactory.CreateGenericRepository<Infant>(userContext: applicationUserId);
-            var createdInfant = infantRepo.Insert(infant);
+            var createdInfant = _infantRepo.Insert(infant);
 
             if (createdInfant != null)
             {
@@ -129,13 +142,11 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 
         public Infant UpdateInfant(string id, InfantModel input)
         {
-            var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
-            var infantRepo = _repoFactory.CreateGenericRepository<Infant>(userContext: applicationUserId);
-            var infantToUpdate = infantRepo.GetAll().Where(x => x.Id.Equals(Guid.Parse(id))).FirstOrDefault();
+            var infantToUpdate = _infantRepo.GetAll().Where(x => x.Id.Equals(Guid.Parse(id))).FirstOrDefault();
             var infantUser = GetUserFromInputModel(input);
 
             infantToUpdate.UpdatedDate = DateTime.Now;
-            infantToUpdate.UpdatedBy = applicationUserId;
+            infantToUpdate.UpdatedBy = _applicationUserId;
             infantToUpdate.UserId = input.UserId;
             infantToUpdate.User = infantUser;
             infantToUpdate.CaregiverId = input.CaregiverId;
@@ -144,7 +155,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             infantToUpdate.WeightAtBirth = input.WeightAtBirth;
             infantToUpdate.LengthAtBirth = input.LengthAtBirth;
 
-            return infantRepo.Update(infantToUpdate);
+            return _infantRepo.Update(infantToUpdate);
         }
 
         private ApplicationUser GetUserFromInputModel(InfantModel input)
@@ -178,16 +189,14 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 return null;
             }
 
-            var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
-            var addressRepo = _repoFactory.CreateGenericRepository<SiteAddress>(userContext: applicationUserId);
             Guid tenantId = TenantExecutionContext.Tenant.Id;
 
-            var healthCareWorkerId = _healthCareWorkerManager.GetHealthCareWorkerIdByUserId(applicationUserId);
+            var healthCareWorkerId = _healthCareWorkerManager.GetHealthCareWorkerIdByUserId(_applicationUserId);
             if (healthCareWorkerId != null)
             {
                 caregiverInput.HealthCareWorkerId = healthCareWorkerId;
             }
-            SiteAddress siteAddress = addressRepo.GetAll().Where(x => x.Id.Equals(caregiverInput.SiteAddress.Id)).FirstOrDefault();
+            SiteAddress siteAddress = _addressRepo.GetAll().Where(x => x.Id.Equals(caregiverInput.SiteAddress.Id)).FirstOrDefault();
             if (siteAddress == null)
             {
                 caregiverInput.SiteAddress.Id = Guid.NewGuid();
@@ -200,8 +209,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             // Populate province id with N/A option when site address is null
             if (caregiverInput.SiteAddressId == null)
             {
-                var repository = _repoFactory.CreateGenericRepository<Province>(userContext: applicationUserId);
-                var naProvince = repository.GetAll().Where(x => x.Description.Equals("N/A")).FirstOrDefault();
+                var naProvince = _provinceRepo.GetAll().Where(x => x.Description.Equals("N/A")).FirstOrDefault();
                 caregiverInput.SiteAddress.ProvinceId = naProvince.Id;
             }
 
@@ -211,7 +219,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 IsActive = true,
                 InsertedDate = DateTime.Now,
                 UpdatedDate = DateTime.Now,
-                UpdatedBy = applicationUserId,
+                UpdatedBy = _applicationUserId,
                 JoinReferencePanel = false,
                 Contribution = false,
                 FirstName = caregiverInput.FirstName,
@@ -235,10 +243,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 
         public int GetChildCountForMother(Guid motherId)
         {
-            var uId = _contextAccessor.HttpContext.GetUser().Id;
-            var childRepo = _repoFactory.CreateGenericRepository<Infant>(userContext: uId);
-
-            return childRepo.GetAll().Where(x => x.MotherCaregiverId.Equals(motherId)).Count();
+            return _infantRepo.GetAll().Where(x => x.MotherCaregiverId.Equals(motherId)).Count();
         }
 
         public DisplaySet GetStatusInfo(Infant child, Boolean withinWeek)
@@ -310,12 +315,10 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 
         private void AddVisits(Guid infantId, DateTime BirthDate)
         {
-            var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
-            var visitTypeRepo = _repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
             var _type = "child";
 
             // Get all visit types linked to child excluding additional_visits
-            List<VisitType> visitTypes = visitTypeRepo.GetAll().Where(x => x.Type.Equals(_type) && x.Name != Constants.GGSettings.additional_visits).OrderBy(x => x.Order).ToList();
+            List<VisitType> visitTypes = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(_type) && x.Name != Constants.GGSettings.additional_visits).OrderBy(x => x.Order).ToList();
 
             // Get dates for each visit
             List<VisitModel> visits = GetVisitDates(BirthDate, visitTypes);
@@ -425,9 +428,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 
         public Guid? GetInfantIdByUserId(string userId)
         {
-            var uId = _contextAccessor.HttpContext.GetUser().Id;
-            var repo = _repoFactory.CreateGenericRepository<Infant>(userContext: uId);
-            var infant = repo.GetAll().Where(x => x.UserId == userId).FirstOrDefault();
+            var infant = _infantRepo.GetAll().Where(x => x.UserId == userId).FirstOrDefault();
             if (infant != null)
             {
                 return infant.Id;
@@ -440,5 +441,13 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             return _visitManager.GetClientsNextVisitDate(infantId, Constants.GGSettings.client_child);
         }
 
+        public int GetTotalNewInfantsForWeek(String id)
+        {
+            DateTime today = DateTime.Today;
+            DateTime monday = StartOfWeek(today, DayOfWeek.Monday);
+            DateTime next7Days = monday.AddDays(6);
+
+            return _infantRepo.GetAll().Where(x => x.Caregiver.HealthCareWorker.UserId.Equals(id) && x.IsActive.Equals(true) && x.InsertedDate >= monday && x.InsertedDate <= next7Days).Select(x => x.Id).Distinct().Count();
+        }
     }
 }
