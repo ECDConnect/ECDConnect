@@ -460,7 +460,9 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
               }
               onBack={() => closeEditAttendanceRegister()}
               editAttendanceRegisterVisible={editAttendanceRegisterVisible}
-              classroomName={classroomName}
+              classroomName={
+                missedAttendanceDays.length === 0 ? classroomName : ''
+              }
             />
           </div>
         </Dialog>
