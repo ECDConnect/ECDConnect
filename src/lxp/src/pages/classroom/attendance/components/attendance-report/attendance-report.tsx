@@ -73,7 +73,7 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
     );
 
     const firstDay = startOfYear(new Date(today.setUTCHours(0, 0, 0, 0))); // Get the first day of the current year
-    console.log(new Date(firstDay));
+ 
     const firstDayOfYear = addDays(firstDay, 1);
 
     if (attendanceTracked) {
