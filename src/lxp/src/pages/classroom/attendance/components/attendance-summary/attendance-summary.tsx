@@ -103,13 +103,13 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
   let hasClosedAttendanceSmartStartPointsMessage = getStorageItem<boolean>(
     LocalStorageKeys.hasClosedAttendanceSmartStartPointsMessage
   );
+  let isCurrentSmartStartUser = getStorageItem<boolean>(
+    LocalStorageKeys.isSmartStartUser
+  );
 
   useEffect(() => {
     let hasClosedPointsMessage = getStorageItem<boolean>(
       LocalStorageKeys.hasClosedAttendanceSmartStartPointsMessage
-    );
-    let isCurrentSmartStartUser = getStorageItem<boolean>(
-      LocalStorageKeys.isSmartStartUser
     );
 
     if (hasClosedPointsMessage === undefined) {
@@ -122,11 +122,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
 
     setIsSmartStartUser(false);
 
-    if (
-      todayDate.getDay() === 1 &&
-      !hasClosedPointsMessage &&
-      !successMessageVisible
-    ) {
+    if (!hasClosedPointsMessage) {
       setDisplaySmartStartMessage(true);
       setSuccessMessageVisible(true);
     }
@@ -340,7 +336,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
             ? 'Submit & go to next day'
             : 'Submit'
         );
-        
+
         setAttendanceEditDay(allMissedAttendanceDays[-1]);
       } else {
         setEditAttendanceRegisterVisible(false);
@@ -364,15 +360,16 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
     setSuccessMessageVisible(false);
     setStorageItem(true, LocalStorageKeys.hasClosedSuccessAttendanceSubmitted);
   };
+
   return (
     <>
       <div className={'flex h-full flex-1 flex-col gap-4 px-4 pt-4'}>
         {isValidAttendanceDay ? (
           <PointsSuccessCard
-            visible={!props.hidePopup ?? successMessageVisible}
-            isSmartStartUser={false}
+            visible={successMessageVisible}
+            isSmartStartUser={isSmartStartUser}
             points={100}
-            onClose={()=>console.Console}
+            onClose={() => closeNotification()}
             message={getPointsMessage(isSmartStartUser)}
             icon={''}
           />
