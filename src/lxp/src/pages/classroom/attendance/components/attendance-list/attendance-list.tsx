@@ -226,16 +226,9 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
       attendanceDate,
       classroomGroupId: currentAttendanceGroup.cacheId,
     });
-
-    if (!editAttendanceRegisterVisible) {
-      // setAttendanceGroups([]);
-      // setSelectedClassroomGroups([]);
-      // updateAttendanceState([]);
-    } else {
-      setAttendanceGroups([]);
-      setSelectedClassroomGroups([]);
-      updateAttendanceState([]);
-    }
+    setAttendanceGroups([]);
+    setSelectedClassroomGroups([]);
+    updateAttendanceState([]);
   };
 
   const submitPrompt = () => {
