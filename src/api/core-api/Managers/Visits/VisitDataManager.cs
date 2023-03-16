@@ -1,4 +1,5 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+using EcdLink.Api.CoreApi.Managers.Integration;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
@@ -9,8 +10,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace EcdLink.Api.CoreApi.Managers.Visits {
-    public class VisitDataManager
+namespace EcdLink.Api.CoreApi.Managers.Visits
+{
+    public class VisitDataManager : BaseManager
     {
         private IHttpContextAccessor _contextAccessor;
         private IGenericRepositoryFactory _repoFactory;
@@ -111,7 +113,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
 
             return vData;
         }
-
         public List<string> GetCompletedVisitsForVisitId(string visitId) {
 
             List<string> vData = new List<string>();
@@ -123,7 +124,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
 
             return vData;
         }
-
         public List<VisitData> GetGrowthDataForInfant(string id) {
 
               List<VisitData> vData = new List<VisitData>();
@@ -137,6 +137,23 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
 
               return vData;
           }
+
+        public int GetTotalGrowthInfantsForWeek(string id)
+        {
+            //- the number of children for which either a weight. length. and/or MUAC measure was taken
+            DateTime today = DateTime.Today;
+            DateTime monday = StartOfWeek(today, DayOfWeek.Monday);
+            DateTime next7Days = monday.AddDays(6);
+
+            return (
+                from visit in _visitRepo.GetAll().Where(x => x.Infant.Caregiver.HealthCareWorker.Id.ToString() == id && x.ActualVisitDate >= monday && x.ActualVisitDate <= next7Days)
+                join visitData in _visitDataRepo.GetAll().Where(y => y.Question == Constants.GGSettings.q_weight || y.Question == Constants.GGSettings.q_length || y.Question == Constants.GGSettings.q_muac) on visit.Id equals visitData.VisitId
+                select visit.InfantId
+            ).Distinct().Count();
+
+        }
+
+
     }
 }
 
