@@ -10,4 +10,5 @@ export enum LocalStorageKeys {
   isSmartStartUser = 'IsSmartStartUser',
   coachProfilePicture = 'CoachProfilePicture',
   hasClosedSuccessAttendanceSubmitted = 'hasClosedSuccessAttendanceSubmitted',
+  offlineStatments = 'offlineStatments',
 }

@@ -67,12 +67,11 @@ class ExpensesStatementsService {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-      mutation updateExpense($id: String!,$input: StatementsExpensesInput) {
-          updateExpense(id: $id,input: $input) {
-                id   
-                 __typename 
+              mutation updateExpense($id: String!, $input: StatementsExpensesInput ) { 
+                updateExpense( id: $id, input: $input) {
+                  result  resultObject resultMessage 
+                 }
                }
-              }
       `,
       variables: {
         id,

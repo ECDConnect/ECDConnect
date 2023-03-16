@@ -19,12 +19,16 @@ import StatementsWrapper from './components/statements-wrapper/StatementsWrapper
 import { useAppContext } from '@/walkthrougContext';
 import PositiveBonusEmoticon from '../../../../assets/positive-bonus-emoticon.png';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { LocalStorageKeys } from '@ecdlink/core';
 
 export const SubmitIncomeStatements: React.FC = () => {
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
   const balanceSheet = useSelector(statementsSelectors.getBalanceSheet);
   const [disableSubmit, setDisableSubmit] = useState(false);
+  const offlineImg = window.localStorage.getItem(
+    LocalStorageKeys.offlineStatments
+  );
 
   const monthNames = balanceSheet?.map((item) => {
     return getMonthName(item?.month! - 1).substring(0, 3);
@@ -163,8 +167,14 @@ export const SubmitIncomeStatements: React.FC = () => {
   const isSameMonth =
     today.getMonth() + 1 === balanceSheet?.[balanceSheet?.length - 1]?.month!;
 
+  console.log({ lastDayToSubmitNextMonth });
+  console.log(isSameMonth && disableSubmit);
+  console.log({ disableSubmit });
+  console.log(today.getMonth() + 1);
+  console.log(balanceSheet?.[balanceSheet?.length - 1]?.month!);
+
   const submitDateDaysCount =
-    isSameMonth && disableSubmit
+    balanceSheet?.length === 1 || (isSameMonth && disableSubmit)
       ? differenceInDays(lastDayToSubmitNextMonth, today)
       : differenceInDays(lastDayToSubmit, today);
 
@@ -541,29 +551,34 @@ export const SubmitIncomeStatements: React.FC = () => {
     <>
       <StatementsWrapper />
       <div className="flex flex-col justify-center p-4">
-        <div
-          className={
-            walkthroughSteps ? 'mt-2 flex items-center' : 'flex items-center'
-          }
-          id="howMayDaysToSubmit"
-        >
-          <StatusChip
-            backgroundColour={
-              submitDateDaysCount > 8 ? 'successMain' : 'alertMain'
+        {isOnline && (
+          <div
+            className={
+              walkthroughSteps ? 'mt-2 flex items-center' : 'flex items-center'
             }
-            borderColour={submitDateDaysCount > 8 ? 'successMain' : 'alertMain'}
-            text={`${submitDateDaysCount} days`}
-            textColour={'white'}
-            className={'mr-2'}
-          />
-          <Typography
-            className="truncate"
-            type="h4"
-            weight="bold"
-            color="textDark"
-            text={'To submit next income statement'}
-          />
-        </div>
+            id="howMayDaysToSubmit"
+          >
+            <StatusChip
+              backgroundColour={
+                submitDateDaysCount > 8 ? 'successMain' : 'alertMain'
+              }
+              borderColour={
+                submitDateDaysCount > 8 ? 'successMain' : 'alertMain'
+              }
+              text={`${submitDateDaysCount} days`}
+              textColour={'white'}
+              className={'mr-2'}
+            />
+            <Typography
+              className="truncate"
+              type="h4"
+              weight="bold"
+              color="textDark"
+              text={'To submit next income statement'}
+            />
+          </div>
+        )}
+        {!isOnline && <img src={offlineImg!} alt="offline img" />}
         {renderAccondinglyWalkthroughOrNot}
         {balanceNotifications}
         <Button

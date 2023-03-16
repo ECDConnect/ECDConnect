@@ -13,10 +13,14 @@ import { useSelector } from 'react-redux';
 import { statementsSelectors } from '@/store/statements';
 import { numberWithSpaces } from '@/utils/statements/statements-utils';
 import { getMonthName } from '@/utils/classroom/attendance/track-attendance-utils';
+import { LocalStorageKeys } from '@ecdlink/core';
 
 export const PreviousStatementsList: React.FC = () => {
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
+  const offlineImg = window.localStorage.getItem(
+    LocalStorageKeys.offlineStatments
+  );
 
   const goBack = () => {
     history.push(ROUTES.BUSINESS);
@@ -136,16 +140,20 @@ export const PreviousStatementsList: React.FC = () => {
           />
         )}
         {isOnline && displayTotalBalance}
-        <Button
-          shape="normal"
-          color="primary"
-          type="filled"
-          icon="DocumentSearchIcon"
-          onClick={() => {}}
-          className="mt-6 rounded-2xl"
-        >
-          <Typography type="help" color="white" text="See more statements" />
-        </Button>
+        {isOnline ? (
+          <Button
+            shape="normal"
+            color="primary"
+            type="filled"
+            icon="DocumentSearchIcon"
+            onClick={() => {}}
+            className="mt-6 rounded-2xl"
+          >
+            <Typography type="help" color="white" text="See more statements" />
+          </Button>
+        ) : (
+          <img src={offlineImg!} alt="" />
+        )}
       </div>
     </BannerWrapper>
   );

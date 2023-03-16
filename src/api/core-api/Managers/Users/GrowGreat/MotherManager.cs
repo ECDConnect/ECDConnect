@@ -1,10 +1,12 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+using EcdLink.Api.CoreApi.Managers.Integration;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
+using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
@@ -12,14 +14,18 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat {
-    public class MotherManager
+namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
+{
+    public class MotherManager : BaseManager
     {
         private IHttpContextAccessor _contextAccessor;
         private IGenericRepositoryFactory _repoFactory;
         private HealthCareWorkerManager _healthCareWorkerManager;
         private InfantManager _infantManager;
         private VisitManager _visitManager;
+
+        private string _applicationUserId;
+        private IGenericRepository<Mother, Guid> _motherRepo;
 
         public MotherManager(
             IHttpContextAccessor contextAccessor,
@@ -33,11 +39,14 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat {
             _healthCareWorkerManager = healthCareWorkerManager;
             _infantManager = infantManager;
             _visitManager = visitManager;
+
+            _applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
+            _motherRepo = _repoFactory.CreateGenericRepository<Mother>(userContext: _applicationUserId);
         }
 
         // GG BUSINESS RULES FOR CREATING A MOTHER AND SELECTING AN EXISTING CAREGIVER
 
-        // We save the caregiver's id to column LinkedCaregiverId on the Mother table to indicate that this mother is linked to an exisiting caregiver.
+        // We save the caregiver's id to column LinkedCaregiverId on the Mother table to indicate that this mother is linked to an existing caregiver.
         // When a caregiver is 'marked/linked' to a mother, we mark the caregiver with a boolean 'isMother' for the FE to exclude from step 2 of 5.
 
         public Mother AddMother(MotherModel input)
@@ -69,6 +78,20 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat {
             entityToUpdate.HealthCareWorkerId = input.HealthCareWorkerId;
             entityToUpdate.SiteAddress = input.SiteAddress;
 
+            return repository.Update(entityToUpdate);
+        }
+
+        public Mother UpdateContactDetails(string id, MotherModel input) {
+            var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
+            var repository = _repoFactory.CreateGenericRepository<Mother>(userContext: applicationUserId);
+            var entityToUpdate = repository.GetAll().Where(x => x.Id.Equals(Guid.Parse(id))).FirstOrDefault();
+            var motherUser = GetUserFromInputModel(input);
+
+            entityToUpdate.UpdatedDate = DateTime.Now;
+            entityToUpdate.UpdatedBy = applicationUserId;
+            entityToUpdate.WhatsAppNumber = input.WhatsAppNumber;
+            entityToUpdate.SiteAddress = input.SiteAddress;
+            entityToUpdate.User = motherUser;
             return repository.Update(entityToUpdate);
         }
 
@@ -367,6 +390,15 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat {
         public DateTime? GetClientsNextVisitDate(Guid motherId)
         {
             return _visitManager.GetClientsNextVisitDate(motherId, Constants.GGSettings.client_mother);
+        }
+
+        public int GetTotalNewMothersForWeek(string id)
+        {
+            DateTime today = DateTime.Today;
+            DateTime monday = StartOfWeek(today, DayOfWeek.Monday);
+            DateTime next7Days = monday.AddDays(6);
+
+            return _motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId.Equals(id) && x.IsActive.Equals(true) && x.InsertedDate >= monday && x.InsertedDate <= next7Days).Select(x => x.Id).Distinct().Count();
         }
     }
 }

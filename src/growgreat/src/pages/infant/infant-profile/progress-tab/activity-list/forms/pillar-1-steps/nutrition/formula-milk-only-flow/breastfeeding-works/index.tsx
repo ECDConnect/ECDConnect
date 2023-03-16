@@ -4,10 +4,11 @@ import { Header, TipCard } from '@/pages/infant/infant-profile/components';
 import P1 from '@/assets/pillar/p1.svg';
 import { DynamicFormProps } from '../../../../dynamic-form';
 import { useEffect, useMemo } from 'react';
-import { HealthPromotion } from './health-promotion';
 import LanguageSelector from '@/components/language-selector/language-selector';
 // @ts-ignore
 import mockedVideo from '../../../../assets/mocked.mp4';
+import { activitiesColours } from '../../../../../activities-list';
+import { HealthPromotion } from '../../../../components/health-promotion';
 
 export const BreastfeedingWorksStep = ({
   infant,
@@ -27,8 +28,10 @@ export const BreastfeedingWorksStep = ({
   if (isTipPage) {
     return (
       <HealthPromotion
-        clientName={caregiverName}
-        onClose={() => setIsTip && setIsTip(false)}
+        title={`Discuss with ${caregiverName}`}
+        subTitle="Formula milk only"
+        section="Formula milk only 3"
+        onClose={() => setIsTip?.(false)}
       />
     );
   }
@@ -37,8 +40,8 @@ export const BreastfeedingWorksStep = ({
     <>
       <Header
         customIcon={P1}
-        iconHexBackgroundColor="#8CDBDF"
-        hexBackgroundColor="#a2dadd4d"
+        iconHexBackgroundColor={activitiesColours.pillar1.primaryColor}
+        hexBackgroundColor={activitiesColours.pillar1.secondaryColor}
         title="Formula milk only"
       />
       <div className="flex flex-col gap-4 p-4">

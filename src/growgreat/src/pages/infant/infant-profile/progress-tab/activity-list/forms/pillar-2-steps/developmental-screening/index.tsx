@@ -4,11 +4,11 @@ import { Header, TipCard } from '@/pages/infant/infant-profile/components';
 import P2 from '@/assets/pillar/p2.svg';
 import { DynamicFormProps } from '../../dynamic-form';
 import { useEffect, useMemo } from 'react';
-import { MoreInformation } from './more-information';
 import LanguageSelector from '@/components/language-selector/language-selector';
 // @ts-ignore
 import mockedVideo from '../../assets/mocked.mp4';
 import { activitiesColours } from '../../../activities-list';
+import { MoreInformation } from '../../components/more-information';
 
 export const DevelopmentalScreeningStep = ({
   infant,
@@ -26,7 +26,13 @@ export const DevelopmentalScreeningStep = ({
   }, [setEnableButton]);
 
   if (isTipPage) {
-    return <MoreInformation onClose={() => setIsTip && setIsTip(false)} />;
+    return (
+      <MoreInformation
+        section="Developmental Screening"
+        subTitle="Developmental Screening"
+        onClose={() => setIsTip?.(false)}
+      />
+    );
   }
 
   return (

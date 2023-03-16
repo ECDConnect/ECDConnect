@@ -295,6 +295,11 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                          join visitData in _visitDataRepo.GetAll().Where(y => y.Question == Constants.GGSettings.q_weight) on visit.Id equals visitData.VisitId
                          select visitData.QuestionAnswer
                      ).LastOrDefault();
+                    if (previousVisitWeight == null)
+                    {
+                        previousVisitWeight = "0";
+                    }
+
                     growthData.Add(vData);
                 }
                 else if (vData.Question == Constants.GGSettings.q_length) {

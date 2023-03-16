@@ -20,7 +20,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     {
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public ApplicationUser AddUser(
-          [Service] UserManager<ApplicationUser> userManager,
+          UserManager<ApplicationUser> userManager,
           UserModel input)
         {
             Guid tenantId = TenantExecutionContext.Tenant.Id;
@@ -69,7 +69,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
         public async Task<ApplicationUser> UpdateUser(
-          [Service] UserManager<ApplicationUser> userManager,
+          UserManager<ApplicationUser> userManager,
           [Service] SecurityNotificationManager securityNotificationManager,
           [Service] ILogger<UserMutationExtension> logger,
           string id,
@@ -129,7 +129,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Delete)]
         public bool DeleteUser(
-          [Service] UserManager<ApplicationUser> userManager,
+          UserManager<ApplicationUser> userManager,
           string id)
         {
             var user = userManager.FindByIdAsync(id).Result;
@@ -148,7 +148,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
         public bool ResetUserPassword(
-          [Service] UserManager<ApplicationUser> userManager,
+          UserManager<ApplicationUser> userManager,
           string id,
           string newPassword)
         {

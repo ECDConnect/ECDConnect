@@ -5,9 +5,8 @@ using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Tenancy.Context;
 using ECDLink.Tenancy.Model;
+using HotChocolate;
 using HotChocolate.Types;
-using Microsoft.EntityFrameworkCore;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -16,11 +15,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
     [ExtendObjectType(OperationTypeNames.Query)]
     public class GenericQueryTypeExtension
     {
-        private ContentManagementDbContext _context;
-
-        public GenericQueryTypeExtension(ContentManagementDbContext context)
+        public GenericQueryTypeExtension()
         {
-            _context = context;
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
@@ -29,28 +25,29 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return TenantExecutionContext.Tenant;
         }
 
-        public List<Language> GetAllContentLanguages(string contentType)
+        public List<Language> GetAllContentLanguages([Service] ContentManagementDbContext _context, string contentType)
         {
-            var dynamicContentList = new List<Language>();
-            var ctypes = _context.ContentTypes.Where(x => x.Name.Equals(contentType)).ToList();
-            foreach (var ctype in ctypes) {
-                var contents = _context.Contents.Where(x => x.ContentTypeId.Equals(ctype.Id)).ToList();
-                foreach(var content in contents)
+                var dynamicContentList = new List<Language>();
+                var ctypes = _context.ContentTypes.Where(x => x.Name.Equals(contentType)).ToList();
+                foreach (var ctype in ctypes)
                 {
-                    var cvalues = _context.ContentTypesFieldValues.Where(x => x.ContentId.Equals(content.Id)).ToList();
-                    foreach( var cvalue in cvalues)
+                    var contents = _context.Contents.Where(x => x.ContentTypeId.Equals(ctype.Id)).ToList();
+                    foreach (var content in contents)
                     {
-                        var languages = _context.Languages.Where(x => x.Id.Equals(cvalue.LocaleId)).ToList();
-                        foreach( var language in languages)
+                        var cvalues = _context.ContentTypesFieldValues.Where(x => x.ContentId.Equals(content.Id)).ToList();
+                        foreach (var cvalue in cvalues)
                         {
-                            if (!dynamicContentList.Contains(language))
-                            dynamicContentList.Add(language);
-                        }
+                            var languages = _context.Languages.Where(x => x.Id.Equals(cvalue.LocaleId)).ToList();
+                            foreach (var language in languages)
+                            {
+                                if (!dynamicContentList.Contains(language))
+                                    dynamicContentList.Add(language);
+                            }
 
+                        }
                     }
                 }
-            } 
-            return dynamicContentList;
+                return dynamicContentList;
         }
 
     }

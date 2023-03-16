@@ -3,8 +3,8 @@ import { ReactComponent as Polly } from '@/assets/momImageSvg.svg';
 import { Header, TipCard } from '@/pages/infant/infant-profile/components';
 import Pregnant from '@/assets/pregnant.svg';
 import { DynamicFormProps } from '../../dynamic-form';
-import { useEffect } from 'react';
-import { HealthPromotion } from './health-promotion';
+import { useEffect, useMemo } from 'react';
+import { HealthPromotion } from '../../components/health-promotion';
 
 export const SelfCareStep = ({
   infant,
@@ -12,6 +12,13 @@ export const SelfCareStep = ({
   setIsTip,
   setEnableButton,
 }: DynamicFormProps) => {
+  const sectionName = 'Self care';
+
+  const caregiverName = useMemo(
+    () => infant?.caregiver?.firstName || '',
+    [infant?.caregiver?.firstName]
+  );
+
   useEffect(() => {
     setEnableButton && setEnableButton(true);
   }, [setEnableButton]);
@@ -19,7 +26,9 @@ export const SelfCareStep = ({
   if (isTipPage) {
     return (
       <HealthPromotion
-        clientName={infant?.caregiver?.firstName || ''}
+        title={`Discuss with ${caregiverName}`}
+        section={sectionName}
+        subTitle={sectionName}
         onClose={() => setIsTip && setIsTip(false)}
       />
     );
