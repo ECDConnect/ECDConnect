@@ -13,6 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace ECDLink.DataAccessLayer.Repositories.Generic
 {
@@ -39,7 +40,6 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
           : base(context, domainEventService)
         {
             _hierarchyEngine = hierarchyEngine;
-            //_httpContext = contextAccessor.HttpContext;
             _userManager = userManager;
         }
 
@@ -99,6 +99,44 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             //if user is in a higher admin role (Principal, Practitioner, Coach, Franchisor, then skip the check as they need to be able to see anyone anywhere due to the shift in roles of Milestone 1.
             var user = _userManager.FindByIdAsync(_userId).Result;
             var roles = _userManager.GetRolesAsync(user).Result;
+            var isAdmin = roles.Contains(Roles.ADMINISTRATOR);
+            if (!isAdmin)
+            {
+                if (!string.IsNullOrWhiteSpace(castRecord.Hierarchy))
+                {
+                    List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId).ToList();
+                    if (hh != null)
+                    {
+                        if (!hh.Contains(castRecord.Hierarchy))
+                        {
+                            return default;
+                        }
+                    }
+                }
+            }
+
+            return record;
+        }
+
+        public async override Task<T> GetByIdAsync(Guid id)
+        {
+            if (string.IsNullOrEmpty(_userId))
+            {
+                throw new UnauthorizedAccessException("User does not have access to this data");
+            }
+
+            var record = await base.GetByIdAsync(id);
+
+            var castRecord = record as IUserScoped;
+
+            if (castRecord == default)
+            {
+                return default;
+            }
+
+            //if user is in a higher admin role (Principal, Practitioner, Coach, Franchisor, then skip the check as they need to be able to see anyone anywhere due to the shift in roles of Milestone 1.
+            var user = await _userManager.FindByIdAsync(_userId);
+            var roles = await _userManager.GetRolesAsync(user);
             var isAdmin = roles.Contains(Roles.ADMINISTRATOR);
             if (!isAdmin)
             {
@@ -220,6 +258,9 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             Guid tenantId = TenantExecutionContext.Tenant.Id;
             ((IUserScoped)entity).Hierarchy = Hierarchy;
             entity.TenantId = tenantId;
+            // TODO: Global change to Utc.
+            entity.InsertedDate = DateTime.Now;
+
             return base.Insert(entity);
         }
 
@@ -235,14 +276,22 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
 
             if (dbEntity == default(T))
             {
-                entity.TenantId = tenantId;
                 Insert(entity);
             }
             else
             {
-                entity.TenantId = tenantId;
+                // Notify update would get input values without this:
+                entity.TenantId = dbEntity.TenantId;
+                entity.InsertedDate = dbEntity.InsertedDate;
+
                 ((IUserScoped)entity).Hierarchy = ((IUserScoped)dbEntity).Hierarchy;
                 context.Entry(dbEntity).CurrentValues.SetValues(entity);
+
+                // Do not update Inserted Date:
+                context.Entry(dbEntity).Property(e => e.InsertedDate).IsModified = false;
+                // Do not allow replacing or changing TenantId.
+                context.Entry(dbEntity).Property(e => e.TenantId).IsModified = false;
+
                 _domainEventService.NotifyUpdate<T>(_userId, entity);
             }
             entity.UpdatedDate = DateTime.Now;

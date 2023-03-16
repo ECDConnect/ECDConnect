@@ -1970,10 +1970,12 @@ export type IncomeStatements = {
   __typename?: 'IncomeStatements';
   description?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['Int']>;
+  name?: Maybe<Scalars['String']>;
 };
 
 export type IncomeStatementsInput = {
   description?: InputMaybe<Scalars['String']>;
+  name?: InputMaybe<Scalars['String']>;
 };
 
 export type Infant = {
@@ -4931,6 +4933,8 @@ export type PrincipalInvitationStatus = {
 export type Programme = {
   __typename?: 'Programme';
   classroom?: Maybe<Classroom>;
+  classroomGroup?: Maybe<ClassroomGroup>;
+  classroomGroupId?: Maybe<Scalars['UUID']>;
   classroomId: Scalars['UUID'];
   dailyProgrammes?: Maybe<Array<Maybe<DailyProgramme>>>;
   endDate: Scalars['DateTime'];
@@ -4975,6 +4979,8 @@ export type ProgrammeAttendanceReasonInput = {
 export type ProgrammeFilterInput = {
   and?: InputMaybe<Array<ProgrammeFilterInput>>;
   classroom?: InputMaybe<ClassroomFilterInput>;
+  classroomGroup?: InputMaybe<ClassroomGroupFilterInput>;
+  classroomGroupId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   classroomId?: InputMaybe<ComparableGuidOperationFilterInput>;
   dailyProgrammes?: InputMaybe<ListFilterInputTypeOfDailyProgrammeFilterInput>;
   endDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
@@ -4990,6 +4996,7 @@ export type ProgrammeFilterInput = {
 };
 
 export type ProgrammeInput = {
+  ClassroomGroupId?: InputMaybe<Scalars['UUID']>;
   ClassroomId: Scalars['UUID'];
   EndDate: Scalars['DateTime'];
   Id?: InputMaybe<Scalars['UUID']>;
@@ -6768,10 +6775,6 @@ export type QueryUserByIdArgs = {
 
 export type QueryUserByTokenArgs = {
   token?: InputMaybe<Scalars['String']>;
-};
-
-export type QueryUserProgrammesArgs = {
-  overrideUserId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryVisitAnswersForInfantArgs = {
