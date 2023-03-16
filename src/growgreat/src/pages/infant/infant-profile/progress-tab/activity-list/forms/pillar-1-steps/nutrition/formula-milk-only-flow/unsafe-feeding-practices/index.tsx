@@ -4,10 +4,8 @@ import { Header, TipCard } from '@/pages/infant/infant-profile/components';
 import P1 from '@/assets/pillar/p1.svg';
 import { DynamicFormProps } from '../../../../dynamic-form';
 import { useEffect, useMemo } from 'react';
-import LanguageSelector from '@/components/language-selector/language-selector';
-// @ts-ignore
-import mockedVideo from '../../../../assets/mocked.mp4';
 import { HealthPromotion } from '../../../../components/health-promotion';
+import { Video } from '../../../../components/video';
 
 export const UnsafeFeedingPracticesStep = ({
   infant,
@@ -20,6 +18,7 @@ export const UnsafeFeedingPracticesStep = ({
     () => infant?.caregiver?.firstName || '',
     [infant?.caregiver?.firstName]
   );
+  const videoSection = 'Unsafe Feeding Practices';
 
   useEffect(() => {
     setEnableButton && setEnableButton(true);
@@ -60,9 +59,7 @@ export const UnsafeFeedingPracticesStep = ({
             </div>
           }
         />
-        <LanguageSelector selectLanguage={() => {}} />
-        <video src={mockedVideo} controls className="rounded-3xl" />
-
+        <Video section={videoSection} />
         <>TODO: Add G5.3.13</>
       </div>
     </>
