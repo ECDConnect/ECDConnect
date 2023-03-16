@@ -46,6 +46,8 @@ import { AttendanceSummaryState } from './attendance-summary.types';
 export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
   const [displaySmartStartMessage, setDisplaySmartStartMessage] =
     useState<boolean>(false);
+  const [classroomName, setClassroomName] = useState<string>('');
+
   const [successMessageVisible, setSuccessMessageVisible] =
     useState<boolean>(false);
   const [isSmartStartUser, setIsSmartStartUser] = useState<boolean>(true);
@@ -228,7 +230,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
         .map((x, idx) => ({
           ...x.item,
           onActionClick: () => {
-            openEditRegister(x.group.id ?? '', x.date, true);
+            openEditRegister(x.group.id ?? '', x.date, true, x.item.title);
           },
         }));
       setAttendanceActionList(actionListToDisplay);
@@ -262,7 +264,8 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
             openEditRegister(
               group.classroomGroup.id ?? '',
               group.missedDay,
-              idx === sortedMissedAttendanceGroups.length - 1
+              idx === sortedMissedAttendanceGroups.length - 1,
+              group.classroomGroup.name
             );
           },
         });
@@ -275,9 +278,11 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
   const openEditRegister = (
     classroomGroupCacheId: string,
     attendanceDay: Date,
-    isLast: boolean
+    isLast: boolean,
+    classGroupName: string
   ) => {
     if (isValidAttendanceDay) {
+      setClassroomName(classGroupName);
       const allMissedAttendanceDays =
         getAllMissedAttendanceGroupsByClassroomGroupId(missedAttendanceGroups);
 
@@ -435,6 +440,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
               }
               onBack={() => closeEditAttendanceRegister()}
               editAttendanceRegisterVisible={editAttendanceRegisterVisible}
+              classroomName={classroomName}
             />
           </div>
         </Dialog>
