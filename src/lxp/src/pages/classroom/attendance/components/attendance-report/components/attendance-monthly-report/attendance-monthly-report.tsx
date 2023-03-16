@@ -42,8 +42,7 @@ export const AttendanceMonthlyReport: React.FC<
               key={`attendance-summary-item-${idx}`}
               className={classNames(
                 styles.attendanceItemWrapper(
-                  attendanceItem.attendanceScore,
-                  idx > 0
+                  attendanceItem.attendanceScore
                 ),
                 styles.getBgColor(attendanceItem.attendanceScore)
               )}
