@@ -116,7 +116,6 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
 
   const onFilterItemsChanges = (value: SearchDropDownOption<any>[]) => {
     setSelectedClassroomGroups(value.map((x) => x.value));
-   
   };
 
   const validateAttendanceList = (

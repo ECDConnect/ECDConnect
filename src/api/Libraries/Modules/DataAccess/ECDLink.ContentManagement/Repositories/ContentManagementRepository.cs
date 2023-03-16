@@ -170,7 +170,7 @@ namespace ECDLink.ContentManagement.Repositories {
                         using MemoryStream fileStream = new MemoryStream(bytes);
 
                         
-                        var fileName = field.Id.ToString() + "-" + field.FieldName + getFileType(fileStr.Substring(0, fileStr.LastIndexOf(',')));
+                        var fileName = DateTime.Now.Ticks + "_" + field.FieldName + getFileType(fileStr.Substring(0, fileStr.LastIndexOf(',')));
                         var fileUrl = Task.Run(() => _fileService.UploadFileStream(fileStream, fileName, FileTypeEnum.ContentImage)).Result;
                         fileStream.Dispose();
 
@@ -277,7 +277,7 @@ namespace ECDLink.ContentManagement.Repositories {
                         var bytes = Convert.FromBase64String(b64Str);
                         using MemoryStream fileStream = new MemoryStream(bytes);
 
-                        var fileName = field.Id.ToString() + "-" + field.FieldName + getFileType(fileStr.Substring(0, fileStr.LastIndexOf(',')));
+                        var fileName = DateTime.Now.Ticks + "_" + field.FieldName + getFileType(fileStr.Substring(0, fileStr.LastIndexOf(',')));
                         var fileUrl = Task.Run(() => _fileService.UploadFileStream(fileStream, fileName, FileTypeEnum.ContentImage)).Result;
                         fileStream.Dispose();
 

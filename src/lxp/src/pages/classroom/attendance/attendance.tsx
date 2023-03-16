@@ -37,7 +37,6 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
 
   const todayDate = new Date();
 
-
   const [attendanceComponentType, setAttendanceComponentType] =
     useState<AttendanceComponentType>();
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
@@ -157,7 +156,6 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       );
     });
 
-
     if (removeHolidays.length === 0) {
       setAttendanceComponentType('report');
     } else {
@@ -194,7 +192,6 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       );
     });
 
-
     if (removeHolidays.length === 0) {
       setAttendanceComponentType('report');
     } else {
@@ -223,7 +220,6 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       />
     );
   }
-  
 
   return (
     <div>

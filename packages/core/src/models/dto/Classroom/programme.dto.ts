@@ -7,6 +7,7 @@ export interface ProgrammeDto extends EntityBase {
   endDate: string;
   preferredLanguage: string;
   dailyProgrammes: DailyProgrammeDto[];
+  classroomGroupId?: string;
 }
 
 export interface DailyProgrammeDto extends EntityBase {
