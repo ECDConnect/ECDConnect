@@ -49,4 +49,11 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public int MotherDueVisits { get; set; }
         public int ChildDueVisits { get; set; }
     }
+
+    public class HCWHighlights
+    {
+        public int totalFamilyVisits { get; set; }
+        public int totalGrowthMonitored { get; set; }
+        public int totalNewClients { get; set; }
+    }
 }

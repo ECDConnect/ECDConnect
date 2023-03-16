@@ -4,11 +4,9 @@ import { Header, TipCard } from '@/pages/infant/infant-profile/components';
 import P1 from '@/assets/pillar/p1.svg';
 import { DynamicFormProps } from '../../../../dynamic-form';
 import { useEffect, useMemo } from 'react';
-import LanguageSelector from '@/components/language-selector/language-selector';
-// @ts-ignore
-import mockedVideo from '../../../../assets/mocked.mp4';
 import { activitiesColours } from '../../../../../activities-list';
 import { HealthPromotion } from '../../../../components/health-promotion';
+import { Video } from '../../../../components/video';
 
 export const BreastfeedingWorksStep = ({
   infant,
@@ -20,6 +18,8 @@ export const BreastfeedingWorksStep = ({
     () => infant?.caregiver?.firstName || '',
     [infant?.caregiver?.firstName]
   );
+  const sectionName = 'Formula milk only 3';
+  const videoSection = 'How Breastfeeding Works';
 
   useEffect(() => {
     setEnableButton && setEnableButton(true);
@@ -30,7 +30,7 @@ export const BreastfeedingWorksStep = ({
       <HealthPromotion
         title={`Discuss with ${caregiverName}`}
         subTitle="Formula milk only"
-        section="Formula milk only 3"
+        section={sectionName}
         onClose={() => setIsTip?.(false)}
       />
     );
@@ -60,8 +60,7 @@ export const BreastfeedingWorksStep = ({
             </div>
           }
         />
-        <LanguageSelector selectLanguage={() => {}} />
-        <video src={mockedVideo} controls className="rounded-3xl" />
+        <Video section={videoSection} />
       </div>
     </>
   );

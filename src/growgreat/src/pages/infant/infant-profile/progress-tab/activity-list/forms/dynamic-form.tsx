@@ -7,12 +7,11 @@ import {
   CmsVisitSectionInput,
   InputMaybe,
 } from '@ecdlink/graphql';
-import { getInfantVisitsSelector } from '@/store/infant/infant.selectors';
-import { useSelector } from 'react-redux';
 import { visitActions, visitThunkActions } from '@/store/visit';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { VisitActions } from '@/store/visit/visit.actions';
 import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
+import { MOCKED_VISIT_ID } from '..';
 
 export interface Question {
   question: string;
@@ -31,7 +30,7 @@ export interface SectionQuestions {
 }
 
 export interface DynamicFormProps {
-  name?: any;
+  name?: string;
   infant?: InfantDto;
   currentStep?: number;
   isTipPage?: boolean;
@@ -59,8 +58,6 @@ export const DynamicForm = ({
   const [isEnableButton, setIsEnableButton] = useState(false);
   const [sectionQuestions, setSectionQuestions] =
     useState<SectionQuestions[]>();
-
-  const visits = useSelector(getInfantVisitsSelector);
 
   const { isLoading } = useThunkFetchCall(
     'visits',
@@ -116,7 +113,7 @@ export const DynamicForm = ({
 
   const handleOnNext = useCallback(() => {
     setIsEnableButton(false);
-    onNextStep && onNextStep();
+    onNextStep?.();
   }, [onNextStep]);
 
   const onSubmit = useCallback(() => {
@@ -129,7 +126,7 @@ export const DynamicForm = ({
     })) as InputMaybe<Array<InputMaybe<CmsVisitSectionInput>>>;
 
     const input: CmsVisitDataInputModelInput = {
-      visitId: visits[0]?.id,
+      visitId: MOCKED_VISIT_ID, // TODO: add integration
       infantId: infant?.user?.id,
       visitData: {
         visitName: name,
@@ -139,7 +136,7 @@ export const DynamicForm = ({
 
     appDispatch(visitActions.addVisitFormData(input));
     appDispatch(visitThunkActions.addVisitFormData(input));
-  }, [appDispatch, infant?.user?.id, name, sectionQuestions, visits]);
+  }, [appDispatch, infant?.user?.id, name, sectionQuestions]);
 
   const renderContent = useMemo(() => {
     if (!steps) return;

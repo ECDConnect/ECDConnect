@@ -1,6 +1,8 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+using EcdLink.Api.CoreApi.Managers.Integration;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
+using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
@@ -8,11 +10,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace EcdLink.Api.CoreApi.Managers.Visits {
-    public class VisitManager
+namespace EcdLink.Api.CoreApi.Managers.Visits
+{
+    public class VisitManager: BaseManager
     {
         private IHttpContextAccessor _contextAccessor;
         private IGenericRepositoryFactory _repoFactory;
+        private IGenericRepository<Visit, Guid> _visitRepo;
+        private IGenericRepository<VisitType, Guid> _visitTypeRepo;
+
+        private string _applicationUserId;
 
         public VisitManager(
             IHttpContextAccessor contextAccessor,
@@ -20,18 +27,19 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
+
+            _applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
+            _visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: _applicationUserId);
+            _visitTypeRepo = _repoFactory.CreateGenericRepository<VisitType>(userContext: _applicationUserId);
         }
 
         public Visit AddVisit(VisitModel input)
         {
-            var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
-            var repository = _repoFactory.CreateGenericRepository<Visit>(userContext: applicationUserId);
-            var visit = GetVisitFromInputModel(input, applicationUserId);
-
-            return repository.Insert(visit);
+            var visit = GetVisitFromInputModel(input);
+            return _visitRepo.Insert(visit);
         }
 
-        private Visit GetVisitFromInputModel(VisitModel input, string applicationUserId)
+        private Visit GetVisitFromInputModel(VisitModel input)
         {
             if (input == null)
             {
@@ -51,15 +59,12 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                 InfantId = input.InfantId,
                 Risk = input.Risk,
                 Comment = input.Comment,
-                UpdatedBy = applicationUserId
+                UpdatedBy = _applicationUserId
             };
         }
 
         public string GetFirstMissedVisit(Guid Id, string type)
         {
-            var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
-            var visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: applicationUserId);
-            var visitTypeRepo = _repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
             var message = "";
             Visit missedVisit = null;
             DateTime today = DateTime.Today;
@@ -67,15 +72,15 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
             if (type == Constants.GGSettings.client_mother)
             {
                 missedVisit = (
-                    from visit in visitRepo.GetAll().Where(x => x.MotherId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date <= today.Date).OrderBy(x => x.PlannedVisitDate)
-                    join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GGSettings.client_mother)) on visit.VisitTypeId equals visitType.Id
+                    from visit in _visitRepo.GetAll().Where(x => x.MotherId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date <= today.Date).OrderBy(x => x.PlannedVisitDate)
+                    join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GGSettings.client_mother)) on visit.VisitTypeId equals visitType.Id
                     select visit
                 ).FirstOrDefault();
             } else
             {
                 missedVisit = (
-                    from visit in visitRepo.GetAll().Where(x => x.InfantId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date <= today.Date).OrderBy(x => x.PlannedVisitDate)
-                    join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GGSettings.client_child)) on visit.VisitTypeId equals visitType.Id
+                    from visit in _visitRepo.GetAll().Where(x => x.InfantId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date <= today.Date).OrderBy(x => x.PlannedVisitDate)
+                    join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GGSettings.client_child)) on visit.VisitTypeId equals visitType.Id
                     select visit
                 ).FirstOrDefault();
             }
@@ -89,9 +94,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
 
         public string GetNextVisitLessThan7DaysAway(Guid Id, string type, Boolean withinWeek)
         {
-            var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
-            var visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: applicationUserId);
-            var visitTypeRepo = _repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
             var message = "";
 
             Visit nextVisit = null;
@@ -105,16 +107,16 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                 if (type == Constants.GGSettings.client_mother)
                 {
                     nextVisit = (
-                        from visit in visitRepo.GetAll().Where(x => x.MotherId.Equals(Id) && !x.Attended && x.PlannedVisitDate >= monday && x.PlannedVisitDate <= next7Days).OrderBy(x => x.PlannedVisitDate)
-                        join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GGSettings.client_mother)) on visit.VisitTypeId equals visitType.Id
+                        from visit in _visitRepo.GetAll().Where(x => x.MotherId.Equals(Id) && !x.Attended && x.PlannedVisitDate >= monday && x.PlannedVisitDate <= next7Days).OrderBy(x => x.PlannedVisitDate)
+                        join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GGSettings.client_mother)) on visit.VisitTypeId equals visitType.Id
                         select visit
                     ).LastOrDefault();
                 }
                 else
                 {
                     nextVisit = (
-                        from visit in visitRepo.GetAll().Where(x => x.InfantId.Equals(Id) && !x.Attended && x.PlannedVisitDate >= monday && x.PlannedVisitDate <= next7Days).OrderBy(x => x.PlannedVisitDate)
-                        join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GGSettings.client_child)) on visit.VisitTypeId equals visitType.Id
+                        from visit in _visitRepo.GetAll().Where(x => x.InfantId.Equals(Id) && !x.Attended && x.PlannedVisitDate >= monday && x.PlannedVisitDate <= next7Days).OrderBy(x => x.PlannedVisitDate)
+                        join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GGSettings.client_child)) on visit.VisitTypeId equals visitType.Id
                         select visit
                     ).LastOrDefault();
                 }
@@ -127,16 +129,16 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                 if (type == Constants.GGSettings.client_mother)
                 {
                     nextVisit = (
-                        from visit in visitRepo.GetAll().Where(x => x.MotherId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date < next7Days.Date).OrderBy(x => x.PlannedVisitDate)
-                        join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GGSettings.client_mother)) on visit.VisitTypeId equals visitType.Id
+                        from visit in _visitRepo.GetAll().Where(x => x.MotherId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date < next7Days.Date).OrderBy(x => x.PlannedVisitDate)
+                        join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GGSettings.client_mother)) on visit.VisitTypeId equals visitType.Id
                         select visit
                     ).LastOrDefault();
                 }
                 else
                 {
                     nextVisit = (
-                        from visit in visitRepo.GetAll().Where(x => x.InfantId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date < next7Days.Date).OrderBy(x => x.PlannedVisitDate)
-                        join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GGSettings.client_child)) on visit.VisitTypeId equals visitType.Id
+                        from visit in _visitRepo.GetAll().Where(x => x.InfantId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date < next7Days.Date).OrderBy(x => x.PlannedVisitDate)
+                        join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GGSettings.client_child)) on visit.VisitTypeId equals visitType.Id
                         select visit
                     ).LastOrDefault();
                 }
@@ -152,9 +154,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
 
         public string GetNextVisitMoreThan7DaysAway(Guid Id, string type)
         {
-            var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
-            var visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: applicationUserId);
-            var visitTypeRepo = _repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
             var message = "";
 
             Visit nextVisit = null;
@@ -164,16 +163,16 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
             if (type == Constants.GGSettings.client_mother)
             {
                 nextVisit = (
-                    from visit in visitRepo.GetAll().Where(x => x.MotherId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date >= next7Days.Date).OrderBy(x => x.PlannedVisitDate)
-                    join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GGSettings.client_mother)) on visit.VisitTypeId equals visitType.Id
+                    from visit in _visitRepo.GetAll().Where(x => x.MotherId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date >= next7Days.Date).OrderBy(x => x.PlannedVisitDate)
+                    join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GGSettings.client_mother)) on visit.VisitTypeId equals visitType.Id
                     select visit
                 ).FirstOrDefault();
             }
             else
             {
                 nextVisit = (
-                    from visit in visitRepo.GetAll().Where(x => x.InfantId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date >= next7Days.Date).OrderBy(x => x.PlannedVisitDate)
-                    join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GGSettings.client_child)) on visit.VisitTypeId equals visitType.Id
+                    from visit in _visitRepo.GetAll().Where(x => x.InfantId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date >= next7Days.Date).OrderBy(x => x.PlannedVisitDate)
+                    join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GGSettings.client_child)) on visit.VisitTypeId equals visitType.Id
                     select visit
                 ).FirstOrDefault();
             }
@@ -188,8 +187,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
 
         public int GetMissedVisitsForHCWCount(string HCWId, string type)
         {
-            var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
-            var visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: applicationUserId);
             var visitCount = 0;
             DateTime today = DateTime.Today;
             DateTime monday = StartOfWeek(today, DayOfWeek.Monday);
@@ -197,7 +194,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
 
             if (type == Constants.GGSettings.client_mother)
             {
-                visitCount = visitRepo.GetAll().Where(x => x.Mother.HealthCareWorker.UserId.Equals(HCWId) && !x.Attended && x.PlannedVisitDate.Date >= monday.Date && x.PlannedVisitDate.Date <= today.Date).Count();
+                visitCount = _visitRepo.GetAll().Where(x => x.Mother.HealthCareWorker.UserId.Equals(HCWId) && !x.Attended && x.PlannedVisitDate.Date >= monday.Date && x.PlannedVisitDate.Date <= today.Date).Count();
             }
 
             return visitCount;
@@ -205,8 +202,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
 
         public int GetVisitsDueForHCWCount(string HCWId, string type)
         {
-            var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
-            var visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: applicationUserId);
             var visitCount = 0;
             DateTime today = DateTime.Today;
             DateTime monday = StartOfWeek(today, DayOfWeek.Monday);
@@ -214,44 +209,34 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
 
             if (type == Constants.GGSettings.client_mother)
             {
-                visitCount = visitRepo.GetAll().Where(x => x.Mother.HealthCareWorker.UserId.Equals(HCWId) && !x.Attended && x.PlannedVisitDate.Date >= monday.Date && x.PlannedVisitDate.Date <= sunday.Date).Count();
+                visitCount = _visitRepo.GetAll().Where(x => x.Mother.HealthCareWorker.UserId.Equals(HCWId) && !x.Attended && x.PlannedVisitDate.Date >= monday.Date && x.PlannedVisitDate.Date <= sunday.Date).Count();
             }
             else
             {
-                visitCount = visitRepo.GetAll().Where(x => x.Infant.Caregiver.HealthCareWorker.UserId.Equals(HCWId) && !x.Attended && x.PlannedVisitDate.Date >= monday.Date && x.PlannedVisitDate.Date <= sunday.Date).Count();
+                visitCount = _visitRepo.GetAll().Where(x => x.Infant.Caregiver.HealthCareWorker.UserId.Equals(HCWId) && !x.Attended && x.PlannedVisitDate.Date >= monday.Date && x.PlannedVisitDate.Date <= sunday.Date).Count();
             }
 
             return visitCount;
         }
 
-        private static DateTime StartOfWeek(DateTime dt, DayOfWeek startOfWeek)
-        {
-            int diff = (7 + (dt.DayOfWeek - startOfWeek)) % 7;
-            return dt.AddDays(-1 * diff).Date;
-        }
-
         public DateTime? GetClientsNextVisitDate(Guid Id, string type)
         {
-            var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
-            var visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: applicationUserId);
-            var visitTypeRepo = _repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
-
             Visit nextVisit = null;
             DateTime today = DateTime.Today;
 
             if (type == Constants.GGSettings.client_mother)
             {
                 nextVisit = (
-                    from visit in visitRepo.GetAll().Where(x => x.MotherId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date >= today.Date).OrderBy(x => x.PlannedVisitDate)
-                    join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GGSettings.client_mother)) on visit.VisitTypeId equals visitType.Id
+                    from visit in _visitRepo.GetAll().Where(x => x.MotherId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date >= today.Date).OrderBy(x => x.PlannedVisitDate)
+                    join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GGSettings.client_mother)) on visit.VisitTypeId equals visitType.Id
                     select visit
                 ).FirstOrDefault();
             }
             else
             {
                 nextVisit = (
-                    from visit in visitRepo.GetAll().Where(x => x.InfantId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date >= today.Date).OrderBy(x => x.PlannedVisitDate)
-                    join visitType in visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GGSettings.client_child)) on visit.VisitTypeId equals visitType.Id
+                    from visit in _visitRepo.GetAll().Where(x => x.InfantId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date >= today.Date).OrderBy(x => x.PlannedVisitDate)
+                    join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GGSettings.client_child)) on visit.VisitTypeId equals visitType.Id
                     select visit
                 ).FirstOrDefault();
             }
@@ -264,28 +249,53 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
         }
 
         public List<Visit> GetVisitsForClient(string id, string type) {
-            var uId = _contextAccessor.HttpContext.GetUser().Id;
-            var visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: uId);
-            var visitTypeRepo = _repoFactory.CreateGenericRepository<VisitType>(userContext: uId);
 
             List<Visit> allVisits = new List<Visit>();
             if (type == Constants.GGSettings.client_mother) {
                 allVisits = (
-                    from visit in visitRepo.GetAll().Where(x => x.Mother.UserId == id).OrderBy(x => x.PlannedVisitDate)
-                    join visitType in visitTypeRepo.GetAll().Where(y => y.Type == Constants.GGSettings.client_mother) on visit.VisitTypeId equals visitType.Id
+                    from visit in _visitRepo.GetAll().Where(x => x.Mother.UserId == id).OrderBy(x => x.PlannedVisitDate)
+                    join visitType in _visitTypeRepo.GetAll().Where(y => y.Type == Constants.GGSettings.client_mother) on visit.VisitTypeId equals visitType.Id
                     select visit
                 ).ToList();
             } else {
                allVisits = (
-                   from visit in visitRepo.GetAll().Where(x => x.Infant.UserId == id).OrderBy(x => x.PlannedVisitDate)
-                   join visitType in visitTypeRepo.GetAll().Where(y => y.Type == Constants.GGSettings.client_child) on visit.VisitTypeId equals visitType.Id
+                   from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId == id).OrderBy(x => x.PlannedVisitDate)
+                   join visitType in _visitTypeRepo.GetAll().Where(y => y.Type == Constants.GGSettings.client_child) on visit.VisitTypeId equals visitType.Id
                    select visit
                ).ToList();
             }
 
             return allVisits;
         }
-        
+
+        public int GetTotalVisitsForWeek(String id, string type)
+        {
+            DateTime today = DateTime.Today;
+            DateTime monday = StartOfWeek(today, DayOfWeek.Monday);
+            DateTime next7Days = monday.AddDays(6);
+            var totalVisits = 0;
+
+            if (type == Constants.GGSettings.client_mother)
+            {
+                totalVisits = (
+                    from visit in _visitRepo.GetAll().Where(x => x.MotherId.Equals(id) && !x.Attended && x.PlannedVisitDate >= monday && x.PlannedVisitDate <= next7Days).OrderBy(x => x.PlannedVisitDate)
+                    join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GGSettings.client_mother)) on visit.VisitTypeId equals visitType.Id
+                    select visit
+                ).Count();
+            }
+            else
+            {
+                totalVisits = (
+                    from visit in _visitRepo.GetAll().Where(x => x.InfantId.Equals(id) && !x.Attended && x.PlannedVisitDate >= monday && x.PlannedVisitDate <= next7Days).OrderBy(x => x.PlannedVisitDate)
+                    join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GGSettings.client_child)) on visit.VisitTypeId equals visitType.Id
+                    select visit
+                ).Count();
+            }
+
+            return totalVisits;
+
+        }
+
     }
 }
 
