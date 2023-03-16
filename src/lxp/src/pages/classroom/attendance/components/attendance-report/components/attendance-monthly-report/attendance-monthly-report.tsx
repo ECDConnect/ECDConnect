@@ -14,7 +14,7 @@ import { useState } from 'react';
 
 interface AttendanceMonthlyReportProps extends ComponentBaseProps {
   attendanceSummary: AttendanceSummary[];
-  classroomId: string
+  classroomId: string;
 }
 
 export const AttendanceMonthlyReport: React.FC<

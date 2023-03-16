@@ -116,7 +116,10 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
           message={'Your attendance registers are up to date this week!'}
           icon={'SparklesIcon'}
         />
-        <AttendanceMonthlyReport attendanceSummary={attendanceData} classroomId={classroom?.classroomId || classroom?.id!} />
+        <AttendanceMonthlyReport
+          attendanceSummary={attendanceData}
+          classroomId={classroom?.classroomId || classroom?.id!}
+        />
         {!isOnline && <OfflineCard />}
       </div>
       <div
