@@ -337,19 +337,25 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
 
       const allMissedAttendanceDays =
         getAllMissedAttendanceGroupsByClassroomGroupId(updatedMissedAttendance);
-      setMissedAttendanceDays(allMissedAttendanceDays);
 
-      if (missedAttendanceDays && missedAttendanceDays.length > 0) {
+      if (allMissedAttendanceDays && allMissedAttendanceDays.length > 0) {
         setSubmitText(
           missedAttendanceDays.length > 1 ? 'Submit & go to next day' : 'Submit'
         );
 
-        const x = new Date(attendanceResult.attendanceDate);
+        const dateSubmitted = new Date(attendanceResult.attendanceDate);
 
-        const filteredDates = missedAttendanceDays.filter(
-          (date) => new Date(date).getTime() !== x.getTime()
-        );
-        setMissedAttendanceDays(filteredDates);
+        if (missedAttendanceDays.length !== 0) {
+          const filteredDates = missedAttendanceDays.filter(
+            (date) => new Date(date).getTime() !== dateSubmitted.getTime()
+          );
+          setMissedAttendanceDays(filteredDates);
+        } else {
+          const filteredDates = allMissedAttendanceDays.filter(
+            (date) => new Date(date).getTime() !== dateSubmitted.getTime()
+          );
+          setMissedAttendanceDays(filteredDates);
+        }
       } else {
         setEditAttendanceRegisterVisible(false);
       }
@@ -357,9 +363,9 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
   };
 
   useEffect(() => {
-    if (missedAttendanceDays.length > 0) {
-        console.log(missedAttendanceDays);
-      setAttendanceEditDay(missedAttendanceDays[0]);
+    setAttendanceEditDay(missedAttendanceDays[0]);
+    if (missedAttendanceDays.length === 0) {
+      setAttendanceEditDay(missedAttendanceDays[-1]);
     }
   }, [missedAttendanceDays]);
 
