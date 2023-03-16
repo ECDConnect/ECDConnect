@@ -50,6 +50,9 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
 
   const [successMessageVisible, setSuccessMessageVisible] =
     useState<boolean>(false);
+
+  const [missedAttendanceDays, setMissedAttendanceDays] = useState<Date[]>([]);
+
   const [isSmartStartUser, setIsSmartStartUser] = useState<boolean>(true);
   const [attendanceActionList, setAttendanceActionList] = useState<
     ActionListDataItem[]
@@ -265,7 +268,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
               group.classroomGroup.id ?? '',
               group.missedDay,
               idx === sortedMissedAttendanceGroups.length - 1,
-              group.classroomGroup.name
+              group?.classroomGroup?.name
             );
           },
         });
@@ -334,20 +337,31 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
 
       const allMissedAttendanceDays =
         getAllMissedAttendanceGroupsByClassroomGroupId(updatedMissedAttendance);
+      setMissedAttendanceDays(allMissedAttendanceDays);
 
-      if (allMissedAttendanceDays && allMissedAttendanceDays.length > 0) {
+      if (missedAttendanceDays && missedAttendanceDays.length > 0) {
         setSubmitText(
-          allMissedAttendanceDays.length > 1
-            ? 'Submit & go to next day'
-            : 'Submit'
+          missedAttendanceDays.length > 1 ? 'Submit & go to next day' : 'Submit'
         );
 
-        setAttendanceEditDay(allMissedAttendanceDays[-1]);
+        const x = new Date(attendanceResult.attendanceDate);
+
+        const filteredDates = missedAttendanceDays.filter(
+          (date) => new Date(date).getTime() !== x.getTime()
+        );
+        setMissedAttendanceDays(filteredDates);
       } else {
         setEditAttendanceRegisterVisible(false);
       }
     }
   };
+
+  useEffect(() => {
+    if (missedAttendanceDays.length > 0) {
+        console.log(missedAttendanceDays);
+      setAttendanceEditDay(missedAttendanceDays[0]);
+    }
+  }, [missedAttendanceDays]);
 
   const closeMessage = () => {
     setDisplaySmartStartMessage(false);
