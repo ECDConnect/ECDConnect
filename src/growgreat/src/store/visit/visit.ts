@@ -5,16 +5,38 @@ import { ThunkStateStatus } from '../types';
 import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
 import {
   addVisitFormData,
+  getCompletedVisitsForVisitId,
   getHealthCareWorkerVisitStatus,
   getHealthPromotion,
   getMoreInformation,
+  getPreviousVisitInformationForInfant,
   getVisitVideos,
 } from './visit.actions';
-import { VisitState } from './visit.types';
+import { CompletedVisitsForVisitId, VisitState } from './visit.types';
 
 const initialState: VisitState & ThunkStateStatus = {
   visitStatus: {},
   visitFormData: [],
+};
+
+const handleAddCompletedVisitsByVisitId = (
+  state: VisitState & ThunkStateStatus,
+  action: PayloadAction<CompletedVisitsForVisitId>
+) => {
+  return typeof state.completedVisitsForVisitId?.[0] === 'string'
+    ? state.completedVisitsForVisitId?.map((item) => {
+        if (item.visitId === action.payload.visitId) {
+          const uniqueVisits = [
+            ...new Set([...item.visits, ...action.payload.visits]),
+          ];
+          return {
+            ...item,
+            visits: uniqueVisits,
+          };
+        }
+        return item;
+      })
+    : [action.payload];
 };
 
 const visitSlice = createSlice({
@@ -37,12 +59,22 @@ const visitSlice = createSlice({
           : [action.payload];
       }
     },
+    addCompletedVisitsByVisitId: (
+      state,
+      action: PayloadAction<CompletedVisitsForVisitId>
+    ) => {
+      state.completedVisitsForVisitId = handleAddCompletedVisitsByVisitId(
+        state,
+        action
+      );
+    },
   },
   extraReducers: (builder) => {
     setThunkActionStatus(builder, getHealthCareWorkerVisitStatus);
     setThunkActionStatus(builder, addVisitFormData);
     setThunkActionStatus(builder, getHealthPromotion);
     setThunkActionStatus(builder, getMoreInformation);
+    setThunkActionStatus(builder, getCompletedVisitsForVisitId);
     setThunkActionStatus(builder, getVisitVideos);
     builder.addCase(addVisitFormData.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
@@ -69,6 +101,22 @@ const visitSlice = createSlice({
 
       setFulfilledThunkActionStatus(state, action);
     });
+    builder.addCase(getCompletedVisitsForVisitId.fulfilled, (state, action) => {
+      state.completedVisitsForVisitId = handleAddCompletedVisitsByVisitId(
+        state,
+        action
+      );
+
+      setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(
+      getPreviousVisitInformationForInfant.fulfilled,
+      (state, action) => {
+        state.previousVisitInformationForInfant = action.payload;
+
+        setFulfilledThunkActionStatus(state, action);
+      }
+    );
     builder.addCase(getVisitVideos.fulfilled, (state, action) => {
       state.visitVideos = !!state.visitVideos?.length
         ? [...new Set([...state.visitVideos, ...action.payload])]
