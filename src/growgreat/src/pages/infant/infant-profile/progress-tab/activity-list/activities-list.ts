@@ -80,7 +80,7 @@ export const activitiesList = [
   {
     id: activitiesTypes.pillar4,
     menuIconUrl: P4,
-    title: 'Pillar 4: Health care',
+    title: 'Pillar 4: Healthcare',
     hexBackgroundColor: '#ee83b34d',
     iconHexBackgroundColor: '#EE83B3',
   },

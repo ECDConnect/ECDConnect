@@ -185,7 +185,7 @@ export const MonthlyAttendanceReport = ({
         />
       </div>
 
-      {['1', ' 2', '3', "4"].map((report, idx) => {
+      {['1', ' 2', '3', '4'].map((report, idx) => {
         const reportItemColor = getColor(10);
         const reportItemShape = getShape(67);
         return (

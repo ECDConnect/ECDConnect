@@ -340,7 +340,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
             ? 'Submit & go to next day'
             : 'Submit'
         );
-        
+
         setAttendanceEditDay(allMissedAttendanceDays[-1]);
       } else {
         setEditAttendanceRegisterVisible(false);
@@ -372,7 +372,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
             visible={!props.hidePopup ?? successMessageVisible}
             isSmartStartUser={false}
             points={100}
-            onClose={()=>console.Console}
+            onClose={() => console.Console}
             message={getPointsMessage(isSmartStartUser)}
             icon={''}
           />

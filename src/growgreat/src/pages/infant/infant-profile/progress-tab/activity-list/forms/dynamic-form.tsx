@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { Button } from '@ecdlink/ui';
 import { InfantDto, usePrevious } from '@ecdlink/core';
 import { useAppDispatch } from '@/store';
@@ -11,7 +17,8 @@ import { visitActions, visitThunkActions } from '@/store/visit';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { VisitActions } from '@/store/visit/visit.actions';
 import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
-import { MOCKED_VISIT_ID } from '..';
+import { useSelector } from 'react-redux';
+import { getInfantVisitsSelector } from '@/store/infant/infant.selectors';
 
 export interface Question {
   question: string;
@@ -64,6 +71,9 @@ export const DynamicForm = ({
     VisitActions.ADD_VISIT_FORM_DATA
   );
   const wasLoading = usePrevious(isLoading);
+
+  const visits = useSelector(getInfantVisitsSelector);
+  const MOCKED_VISIT_ID = visits[0]?.id;
 
   const { successDialog } = useRequestResponseDialog();
 
@@ -134,9 +144,18 @@ export const DynamicForm = ({
       },
     };
 
+    appDispatch(
+      visitActions.addCompletedVisitsByVisitId({
+        visitId: MOCKED_VISIT_ID,
+        visits: [name || ''],
+      })
+    );
     appDispatch(visitActions.addVisitFormData(input));
     appDispatch(visitThunkActions.addVisitFormData(input));
-  }, [appDispatch, infant?.user?.id, name, sectionQuestions]);
+  }, [MOCKED_VISIT_ID, appDispatch, infant?.user?.id, name, sectionQuestions]);
+
+  // TODO: sync visit form
+  useLayoutEffect(() => {}, []);
 
   const renderContent = useMemo(() => {
     if (!steps) return;
