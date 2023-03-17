@@ -137,7 +137,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
               return vData;
           }
-
         public int GetTotalGrowthInfantsForWeek(string id)
         {
             //- the number of children for which either a weight. length. and/or MUAC measure was taken
@@ -152,7 +151,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             ).Distinct().Count();
 
         }
-
 
     }
 }
