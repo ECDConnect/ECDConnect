@@ -1,158 +1,36 @@
 import { Header } from '../../../components';
-import Infant from '@/assets/infant.svg';
-import { InfantDto } from '@ecdlink/core';
-import { useMemo } from 'react';
-import {
-  Button,
-  classNames,
-  Colours,
-  Divider,
-  ProgressBar,
-  renderIcon,
-  RoundIcon,
-  Typography,
-} from '@ecdlink/ui';
+import { InfantDto, toCamelCase } from '@ecdlink/core';
+import { useCallback, useMemo } from 'react';
+import { Button, Colours, Divider, ProgressBar, Typography } from '@ecdlink/ui';
 
 import { useSelector } from 'react-redux';
 import { getPreviousVisitInformationForInfantSelector } from '@/store/visit/visit.selectors';
+import { Card, CardProps } from './components/card';
+import { GrowthCard } from './components/growth-card';
+import { InfoCard, Item } from './components/info-card';
+import Pregnant from '@/assets/pregnant.svg';
+import Infant from '@/assets/infant.svg';
+import P1 from '@/assets/pillar/p1.svg';
+import P2 from '@/assets/pillar/p2.svg';
+import P3 from '@/assets/pillar/p3.svg';
+import P4 from '@/assets/pillar/p4.svg';
+import P5 from '@/assets/pillar/p5.svg';
+import { activitiesColours, activitiesTypes } from '../activities-list';
+import { VisitDataStatus } from '@ecdlink/graphql';
 
 interface IntroScreenProps {
   infant?: InfantDto;
   onStartVisit: () => void;
 }
 
-interface IData {
-  id: string;
-  comment: string;
-  color: string;
-  type: string;
-  section: string;
-}
-
 interface Status {
-  success: IData;
-  warning: IData;
-  error: IData;
-  none: IData;
+  success: VisitDataStatus[];
+  warning: VisitDataStatus[];
+  error: VisitDataStatus[];
+  none: VisitDataStatus[];
 }
 
-// TODO: add all props
-interface VisitStatus {
-  breastfeedingIssues: Status;
-  childDocumentation: Status;
-  clinicReferrals: Status;
-  dangerSigns: Status;
-  departmentOfHomeAffairsReferrals: Status;
-  growth: Status;
-  maternalDistressScreening: Status;
-  nutrition: Status;
-  referToClinicUrgently: Status;
-}
-
-interface CardProps {
-  label: string;
-  value: string;
-  date: string;
-  icon: string;
-  message: string;
-  primaryColour: Colours;
-  secondaryColour: Colours;
-  className?: string;
-}
-
-interface InfoCardProps {
-  icon: string;
-  items: {
-    icon?: string;
-    customIcon?: string;
-    title: string;
-    list?: string[];
-  }[];
-  primaryColour: Colours;
-  secondaryColour: Colours;
-  className?: string;
-}
-
-const Card = ({
-  className,
-  label,
-  value,
-  date,
-  icon,
-  message,
-  primaryColour,
-  secondaryColour,
-}: CardProps) => {
-  return (
-    <div
-      className={classNames(
-        className,
-        `rounded-10 p-4 bg-${secondaryColour} flex`
-      )}
-    >
-      <div className={`w-2/4 border-r border-dashed border-${primaryColour}`}>
-        <Typography type="h4" text={label} />
-        <span className="my-3 flex gap-1">
-          <Typography
-            type="h4"
-            className="text-3xl"
-            color={primaryColour}
-            text={value}
-          />
-          <Typography type="body" color="textMid" text="kg" />
-        </span>
-        <Typography color="textMid" type="body" text={date} />
-      </div>
-      <div className="flex w-2/4 flex-col items-center justify-center text-center">
-        {renderIcon(icon, `w-5 h-5 text-${primaryColour}`)}
-        <Typography color="textMid" type="body" text={message} />
-      </div>
-    </div>
-  );
-};
-
-const InfoCard = ({
-  icon,
-  items,
-  primaryColour,
-  secondaryColour,
-  className,
-}: InfoCardProps) => (
-  <div
-    className={classNames(
-      className,
-      `bg-${secondaryColour} border-2 border-${primaryColour} rounded-10 relative px-4 pt-8`
-    )}
-  >
-    <span className="absolute rounded-full bg-white" style={{ top: -14 }}>
-      {renderIcon(icon, `w-7 h-7 text-${primaryColour}`)}
-    </span>
-    {items.map((item) => (
-      <div key={item.title} className="mb-4 flex gap-2">
-        <RoundIcon
-          imageUrl={item.customIcon}
-          icon={item.icon}
-          iconColor="white"
-          backgroundColor="tertiary"
-        />
-        <div>
-          <Typography color="textMid" type="h4" text={item.title} />
-          {item?.list?.map((currentItem) => (
-            <li key={currentItem} className="text-textMid">
-              {currentItem}
-            </li>
-          ))}
-        </div>
-      </div>
-    ))}
-  </div>
-);
-
-const mocked_data = {
-  date: '2 Sep 2021',
-  value: '4.2',
-  message: 'Growth faltering: weight has not increased',
-};
+type StatusType = keyof Status;
 
 export const IntroScreen = ({ infant, onStartVisit }: IntroScreenProps) => {
   const name = useMemo(() => infant?.user?.firstName || '', [infant]);
@@ -165,126 +43,217 @@ export const IntroScreen = ({ infant, onStartVisit }: IntroScreenProps) => {
     getPreviousVisitInformationForInfantSelector
   );
 
-  function toCamelCase(str: string) {
-    return str
-      .replace(/(?:^\w|[A-Z]|\b\w)/g, (word, index) => {
-        return index === 0 ? word.toLowerCase() : word.toUpperCase();
-      })
-      .replace(/\s+/g, '');
-  }
+  const getColorAndIcon = useCallback(
+    (
+      color: string
+    ): { primaryColour: Colours; secondaryColour: Colours; icon: string } => {
+      const formattedColor = color.toLowerCase();
+      switch (formattedColor) {
+        case 'warning':
+          return {
+            primaryColour: 'alertMain',
+            secondaryColour: 'alertBg',
+            icon: 'ExclamationIcon',
+          };
+        case 'error':
+          return {
+            primaryColour: 'errorMain',
+            secondaryColour: 'errorBg',
+            icon: 'ExclamationCircleIcon',
+          };
+        case 'success':
+        default:
+          return {
+            primaryColour: 'successMain',
+            secondaryColour: 'successBg',
+            icon: 'BadgeCheckIcon',
+          };
+      }
+    },
+    []
+  );
 
-  const groupedDataByType = useMemo(() => {
-    const result = previousVisit?.visitDataStatus?.reduce(
-      (acc: { [key: string]: any }, currentValue) => {
-        const type = toCamelCase(currentValue?.type || '');
-        if (!type) return acc;
-        if (!acc[type]) {
-          acc[type] = [];
-        }
-        acc[type].push(currentValue);
-        return acc;
-      },
-      {}
-    );
+  const { weight, length, muac, grow } = useMemo(() => {
+    const weight = {
+      name: 'Weight',
+      value: previousVisit?.weight,
+      color: previousVisit?.weightColor,
+      comment: previousVisit?.weightComment,
+    };
+    const length = {
+      name: 'Length',
+      value: previousVisit?.length,
+      color: previousVisit?.lengthColor,
+      comment: previousVisit?.lengthComment,
+    };
+    const muac = {
+      name: 'MUAC',
+      value: previousVisit?.muac,
+      color: previousVisit?.muacColor,
+      comment: previousVisit?.muacComment,
+    };
+    const grow = {
+      comment: previousVisit?.growComment,
+      color: previousVisit?.growCommentColor,
+    };
 
-    return result;
-  }, [previousVisit?.visitDataStatus]);
+    return { weight, length, muac, grow };
+  }, [previousVisit]);
 
-  // TODO: remove this console
-  console.log({ groupedDataByType });
+  const progressBarOptions = useMemo((): {
+    primaryColour: Colours;
+    secondaryColour: Colours;
+    value: number;
+    message: string;
+  } => {
+    switch (previousVisit?.scoreColor) {
+      case 'Error':
+        return {
+          primaryColour: 'errorMain',
+          secondaryColour: 'errorBg',
+          message: `${caregiverName} & ${name} need urgent support`,
+          value: 25,
+        };
+      case 'Warning':
+        return {
+          primaryColour: 'alertMain',
+          secondaryColour: 'alertBg',
+          message: `${caregiverName} & ${name} need support`,
+          value: 50,
+        };
+      case 'Success':
+      default:
+        return {
+          primaryColour: 'successMain',
+          secondaryColour: 'successBg',
+          message: `${caregiverName} & ${name} are going well`,
+          value: 100,
+        };
+    }
+  }, [caregiverName, name, previousVisit?.scoreColor]);
+
+  const getVisitIcon = (visitName: string) => {
+    switch (visitName) {
+      case activitiesTypes.careForMom:
+        return { icon: Pregnant, color: activitiesColours.other.primaryColor };
+      case activitiesTypes.careForBaby:
+        return { icon: Infant, color: activitiesColours.other.primaryColor };
+      case activitiesTypes.pillar1:
+        return { icon: P1, color: activitiesColours.pillar1.primaryColor };
+      case activitiesTypes.pillar2:
+        return { icon: P2, color: activitiesColours.pillar2.primaryColor };
+      case activitiesTypes.pillar3:
+        return { icon: P3, color: activitiesColours.pillar3.primaryColor };
+      case activitiesTypes.pillar4:
+        return { icon: P4, color: activitiesColours.pillar4.primaryColor };
+      default:
+        return { icon: P5, color: activitiesColours.pillar5.primaryColor };
+    }
+  };
 
   const groupedData = useMemo(() => {
     const groupedData = previousVisit?.visitDataStatus?.reduce(
       (acc: { [key: string]: any }, currentValue) => {
-        const section = toCamelCase(currentValue?.section || '');
         const color = toCamelCase(currentValue?.color || '');
-
-        if (!section || !color) return acc;
-
+        if (!color) return acc;
         if (!acc[color]) {
-          acc[color] = {};
+          acc[color] = [];
         }
-
-        if (!acc[color][section]) {
-          acc[color][section] = [];
-        }
-
-        acc[color][section].push(currentValue);
+        acc[color].push(currentValue);
         return acc;
       },
       {}
     );
 
     return groupedData;
-  }, [previousVisit?.visitDataStatus]) as VisitStatus | undefined;
+  }, [previousVisit?.visitDataStatus]) as Status | undefined;
 
   return (
     <>
+      {/* TODO(header): add age and date (G5.0.1) */}
       <Header
         backgroundColor="tertiary"
         customIcon={Infant}
         title={`Summary of your last visit with ${name}`}
       />
-      <div className="p-4">
+      <div className="p-4 pt-8">
         <div className="flex gap-4">
           <Typography
             className="w-2/4"
             type="h4"
-            text={`Lorem ipsum Lorem ipsum Lorem ipsum`}
+            text={progressBarOptions.message}
           />
           <div className="w-2/4">
             <ProgressBar
               className="h-2"
               label={previousVisit?.score || ''}
               subLabel="score"
-              value={40}
+              value={progressBarOptions.value}
+              primaryColour={progressBarOptions.primaryColour}
+              secondaryColour={progressBarOptions.secondaryColour}
             />
           </div>
         </div>
         <Divider dividerType="dashed" className="my-8" />
         <Typography
-          className="mb-4"
+          className="mb-8"
           type="h4"
           text={`Here is a summary of how ${name} & ${caregiverName} are doing`}
         />
-        {['Weight', 'Length', 'MUAC'].map((label) => (
+        <GrowthCard
+          text={grow.comment || ''}
+          color={getColorAndIcon(grow.color || '').primaryColour}
+          icon={getColorAndIcon(grow.color || '').icon}
+        />
+        {[weight, length, muac].map((item) => (
           <Card
-            key={label}
+            key={item.name}
             className="my-4"
-            label={label}
-            value={mocked_data.value}
-            date={mocked_data.date}
-            icon="ExclamationIcon"
-            message="Growth faltering: weight has not increased"
-            primaryColour="alertMain"
-            secondaryColour="uiBg"
+            label={item.name}
+            value={item.value || ''}
+            date={
+              previousVisit?.visitDataStatus?.[0]?.insertedDate || ''
+            } /* TODO: add the correct date */
+            message={item.comment || ''}
+            color={item.color as CardProps['color']}
           />
         ))}
         <Divider dividerType="dashed" className="mt-4 mb-8" />
         {!!groupedData &&
-          Object.keys(groupedData).map((item) => (
-            <InfoCard
-              key={item}
-              className="my-6"
-              icon="ExclamationCircleIcon"
-              items={[
-                {
-                  customIcon: Infant,
-                  title: 'Lethabo is experiencing maternal distress:',
-                  list: [
-                    'Felt unable to stop worrying',
-                    'Had thoughts and plans to harm herself or commit suicide',
-                  ],
-                },
-                {
-                  customIcon: Infant,
-                  title: 'Missed 6 week immunisation',
-                },
-              ]}
-              primaryColour="errorMain"
-              secondaryColour="errorBg"
-            />
-          ))}
+          Object.keys(groupedData).map((item, index) => {
+            const { icon, primaryColour, secondaryColour } =
+              getColorAndIcon(item);
+
+            const dataByStatus = groupedData[item as StatusType];
+            const uniqueData = dataByStatus.filter((object, index, array) => {
+              return (
+                index ===
+                array.findIndex(
+                  (newObject) => newObject.comment === object.comment
+                )
+              );
+            });
+
+            return (
+              <InfoCard
+                key={index}
+                className="my-6"
+                icon={icon}
+                items={uniqueData.map((data): Item => {
+                  const { icon, color } = getVisitIcon(
+                    data?.visitData?.visitName || ''
+                  );
+                  return {
+                    customIcon: icon,
+                    iconHexBackgroundColour: color,
+                    title: `${data.comment}`,
+                  };
+                })}
+                primaryColour={primaryColour}
+                secondaryColour={secondaryColour}
+              />
+            );
+          })}
         <Button
           className="mt-8 w-full"
           type="filled"
