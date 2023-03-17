@@ -14,6 +14,7 @@ export const activitiesTypes = {
   pillar3: 'Pillar 3: Protection',
   pillar4: 'Pillar 4: Healthcare',
   pillar5: 'Pillar 5: Extra care',
+  followUp: 'Follow up',
 };
 
 export const activitiesColours = {
@@ -43,7 +44,7 @@ export const activitiesList = [
   {
     id: activitiesTypes.careForMom,
     menuIconUrl: Pregnant,
-    title: 'Care for moms',
+    title: 'Care for mom',
     backgroundColor: 'uiBg',
     iconBackgroundColor: 'tertiary',
   },
@@ -79,7 +80,7 @@ export const activitiesList = [
   {
     id: activitiesTypes.pillar4,
     menuIconUrl: P4,
-    title: 'Pillar 4: Health care',
+    title: 'Pillar 4: Healthcare',
     hexBackgroundColor: '#ee83b34d',
     iconHexBackgroundColor: '#EE83B3',
   },

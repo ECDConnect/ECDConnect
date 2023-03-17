@@ -1,7 +1,12 @@
 import { ChevronRightIcon } from '@heroicons/react/solid';
 import { useMemo } from 'react';
 import { Avatar } from '../../..';
-import { classNames, ComponentBaseProps, RoundIcon } from '../../../..';
+import {
+  classNames,
+  ComponentBaseProps,
+  renderIcon,
+  RoundIcon,
+} from '../../../..';
 import { MenuListDataItem } from '../../models/MenuListDataItem';
 import * as stackedListStyles from '../../stacked-list.styles';
 import * as styles from './menu-list-item.styles';
@@ -73,7 +78,11 @@ export const MenuListItem: React.FC<MenuListItemProps> = ({ item }) => {
               {item?.subItem}
             </p>
           )}
-          <ChevronRightIcon className={styles.menuChevron} />
+          {item?.rightIcon ? (
+            renderIcon(item.rightIcon, item.rightIconClassName)
+          ) : (
+            <ChevronRightIcon className={styles.menuChevron} />
+          )}
         </div>
       </div>
     </div>

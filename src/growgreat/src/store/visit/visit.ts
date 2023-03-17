@@ -5,15 +5,37 @@ import { ThunkStateStatus } from '../types';
 import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
 import {
   addVisitFormData,
+  getCompletedVisitsForVisitId,
   getHealthCareWorkerVisitStatus,
   getHealthPromotion,
   getMoreInformation,
+  getPreviousVisitInformationForInfant,
 } from './visit.actions';
-import { VisitState } from './visit.types';
+import { CompletedVisitsForVisitId, VisitState } from './visit.types';
 
 const initialState: VisitState & ThunkStateStatus = {
   visitStatus: {},
-  visitFormData: {},
+  visitFormData: [],
+};
+
+const handleAddCompletedVisitsByVisitId = (
+  state: VisitState & ThunkStateStatus,
+  action: PayloadAction<CompletedVisitsForVisitId>
+) => {
+  return typeof state.completedVisitsForVisitId?.[0] === 'string'
+    ? state.completedVisitsForVisitId?.map((item) => {
+        if (item.visitId === action.payload.visitId) {
+          const uniqueVisits = [
+            ...new Set([...item.visits, ...action.payload.visits]),
+          ];
+          return {
+            ...item,
+            visits: uniqueVisits,
+          };
+        }
+        return item;
+      })
+    : [action.payload];
 };
 
 const visitSlice = createSlice({
@@ -25,8 +47,25 @@ const visitSlice = createSlice({
       action: PayloadAction<CmsVisitDataInputModelInput>
     ) => {
       if (state.visitFormData) {
-        state.visitFormData = action.payload;
+        state.visitFormData = !!state.visitFormData.length
+          ? state.visitFormData.map((item) => {
+              if (item.visitId === action.payload.visitId) {
+                return action.payload;
+              }
+
+              return item;
+            })
+          : [action.payload];
       }
+    },
+    addCompletedVisitsByVisitId: (
+      state,
+      action: PayloadAction<CompletedVisitsForVisitId>
+    ) => {
+      state.completedVisitsForVisitId = handleAddCompletedVisitsByVisitId(
+        state,
+        action
+      );
     },
   },
   extraReducers: (builder) => {
@@ -34,6 +73,7 @@ const visitSlice = createSlice({
     setThunkActionStatus(builder, addVisitFormData);
     setThunkActionStatus(builder, getHealthPromotion);
     setThunkActionStatus(builder, getMoreInformation);
+    setThunkActionStatus(builder, getCompletedVisitsForVisitId);
     builder.addCase(addVisitFormData.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
     });
@@ -59,6 +99,22 @@ const visitSlice = createSlice({
 
       setFulfilledThunkActionStatus(state, action);
     });
+    builder.addCase(getCompletedVisitsForVisitId.fulfilled, (state, action) => {
+      state.completedVisitsForVisitId = handleAddCompletedVisitsByVisitId(
+        state,
+        action
+      );
+
+      setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(
+      getPreviousVisitInformationForInfant.fulfilled,
+      (state, action) => {
+        state.previousVisitInformationForInfant = action.payload;
+
+        setFulfilledThunkActionStatus(state, action);
+      }
+    );
   },
 });
 

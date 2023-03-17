@@ -3,6 +3,8 @@ import { Config, VisitStatusDto } from '@ecdlink/core';
 import {
   CmsVisitDataInputModelInput,
   MoreInformation,
+  Progress_VisitDataStatus,
+  VisitData,
   VisitVideos,
 } from '@ecdlink/graphql';
 import { HealthPromotion } from '@ecdlink/graphql';
@@ -201,6 +203,101 @@ class Visit {
     }
 
     return response.data.data.healthPromotion;
+  }
+
+  async getCompletedVisitsForVisitId(visitId: string): Promise<string[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { completedVisitsForVisitId: string[] };
+      errors?: {};
+    }>(``, {
+      query: `
+        query GetCompletedVisitsForVisitId($visitId: String) {
+          completedVisitsForVisitId(visitId: $visitId) {
+          }
+        }
+      `,
+      variables: {
+        visitId,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Get Completed Visits For Visit Id Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.completedVisitsForVisitId;
+  }
+
+  async getPreviousVisitInformationForInfant(
+    visitId: string
+  ): Promise<Progress_VisitDataStatus> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { previousVisitInformationForInfant: Progress_VisitDataStatus };
+      errors?: {};
+    }>(``, {
+      query: `
+        query GetPreviousVisitInformationForInfant($visitId: String) {
+          previousVisitInformationForInfant(visitId: $visitId) {
+                score
+                visitDataStatus {
+                  id
+                  comment
+                  color
+                  type
+                  section
+                }
+          }
+        }
+      `,
+      variables: {
+        visitId,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Get Previous Visit Information For Infant Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.previousVisitInformationForInfant;
+  }
+
+  async getGrowthDataForInfant(infantId: string): Promise<VisitData> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { growthDataForInfant: VisitData };
+      errors?: {};
+    }>(``, {
+      query: `
+        query GetGrowthDataForInfant($id: String) {
+          growthDataForInfant(id: $id) {
+            visitName
+            visitSection
+            question
+            questionAnswer
+            visit {
+              plannedVisitDate
+            }
+          }
+        }
+      `,
+      variables: {
+        id: infantId,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Get Growth Data For Infant Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.growthDataForInfant;
   }
 }
 
