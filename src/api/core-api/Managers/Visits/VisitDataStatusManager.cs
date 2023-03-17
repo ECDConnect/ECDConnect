@@ -1497,22 +1497,28 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
             result.GrowCommentColor = growthStatus.Color;
 
             var weightData = visitDataStatus.Where(y => y.VisitData.Question == Constants.GGSettings.q_weight).FirstOrDefault();
-
-            result.Weight = weightData.VisitData.QuestionAnswer;
-            result.WeightColor = weightData.Color;
-            result.WeightComment = weightData.Comment;
+            if (weightData != null)
+            {
+                result.Weight = weightData.VisitData.QuestionAnswer;
+                result.WeightColor = weightData.Color;
+                result.WeightComment = weightData.Comment;
+            }
 
             var lengthData = visitDataStatus.Where(y => y.VisitData.Question == Constants.GGSettings.q_length).FirstOrDefault();
-
-            result.Length = lengthData.VisitData.QuestionAnswer;
-            result.LengthColor = lengthData.Color;
-            result.LengthComment = lengthData.Comment;
+            if (lengthData != null)
+            {
+                result.Length = lengthData.VisitData.QuestionAnswer;
+                result.LengthColor = lengthData.Color;
+                result.LengthComment = lengthData.Comment;
+            }
 
             var muacData = visitDataStatus.Where(y => y.VisitData.Question == Constants.GGSettings.q_muac).FirstOrDefault();
-
-            result.Muac = muacData.VisitData.QuestionAnswer;
-            result.MuacColor = muacData.Color;
-            result.MuacComment = muacData.Comment;
+            if (muacData != null)
+            {
+                result.Muac = muacData.VisitData.QuestionAnswer;
+                result.MuacColor = muacData.Color;
+                result.MuacComment = muacData.Comment;
+            }
 
             return result;
         }
