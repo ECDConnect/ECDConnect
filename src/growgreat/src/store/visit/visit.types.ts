@@ -5,6 +5,7 @@ import {
   Progress_VisitDataStatus,
 } from '@ecdlink/graphql';
 import { VisitStatusDto } from '@ecdlink/core';
+import { VisitVideosWithLocale } from './visit.actions';
 
 export type CompletedVisitsForVisitId = {
   visitId: string;
@@ -18,4 +19,5 @@ export interface VisitState {
   moreInformation?: MoreInformation[];
   completedVisitsForVisitId?: CompletedVisitsForVisitId[];
   previousVisitInformationForInfant?: Progress_VisitDataStatus;
+  visitVideos?: VisitVideosWithLocale[];
 }

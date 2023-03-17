@@ -293,7 +293,7 @@ export const ActivityList: React.FC = () => {
     isShowCompletedForms,
     isStartVisit,
     options,
-    previousVisit?.score,
+    previousVisit?.visitDataStatus?.length,
     today,
     uncompletedForms,
     width,

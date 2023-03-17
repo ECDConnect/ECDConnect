@@ -5,12 +5,10 @@ import { Header } from '@/pages/infant/infant-profile/components';
 import P3 from '@/assets/pillar/p3.svg';
 import { DynamicFormProps } from '../../dynamic-form';
 import { useCallback, useEffect, useLayoutEffect, useMemo } from 'react';
-import LanguageSelector from '@/components/language-selector/language-selector';
 import { activitiesColours } from '../../../activities-list';
-// @ts-ignore
-import mockedVideo from '../../assets/mocked.mp4';
 import { useAppDispatch } from '@/store';
 import { visitThunkActions } from '@/store/visit';
+import { Video } from '../../components/video';
 
 export const ImmunisationsStep = ({
   infant,
@@ -22,6 +20,7 @@ export const ImmunisationsStep = ({
     () => infant?.caregiver?.firstName || '',
     [infant?.caregiver?.firstName]
   );
+  const videoSection = 'Immunisation';
 
   const getVideo = useCallback(async () => {
     await appDispatch(
@@ -75,8 +74,7 @@ export const ImmunisationsStep = ({
             </div>
           }
         />
-        <LanguageSelector selectLanguage={() => {}} />
-        <video src={mockedVideo} controls className="rounded-3xl" />
+        <Video section={videoSection} />
       </div>
     </>
   );

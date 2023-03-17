@@ -5,10 +5,8 @@ import { Header, TipCard } from '@/pages/infant/infant-profile/components';
 import Pregnant from '@/assets/pregnant.svg';
 import { DynamicFormProps } from '../../dynamic-form';
 import { useEffect } from 'react';
-import LanguageSelector from '@/components/language-selector/language-selector';
-// @ts-ignore
-import mockedVideo from './mocked.mp4';
 import { MoreInformation } from '../../components/more-information';
+import { Video } from '../../components/video';
 
 export const MaternalDistressStep = ({
   infant,
@@ -16,8 +14,10 @@ export const MaternalDistressStep = ({
   setIsTip,
   setEnableButton,
 }: DynamicFormProps) => {
+  const sectionName = 'Maternal distress';
+
   useEffect(() => {
-    setEnableButton && setEnableButton(true);
+    setEnableButton?.(true);
   }, [setEnableButton]);
 
   // TODO: add integration
@@ -100,8 +100,7 @@ export const MaternalDistressStep = ({
                 </div>
               }
             />
-            <LanguageSelector selectLanguage={() => {}} />
-            <video src={mockedVideo} controls className="rounded-3xl" />
+            <Video section={sectionName} />
           </>
         )}
       </div>

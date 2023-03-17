@@ -73,7 +73,7 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
     );
 
     const firstDay = startOfYear(new Date(today.setUTCHours(0, 0, 0, 0))); // Get the first day of the current year
-    console.log(new Date(firstDay));
+
     const firstDayOfYear = addDays(firstDay, 1);
 
     if (attendanceTracked) {
@@ -116,7 +116,10 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
           message={'Your attendance registers are up to date this week!'}
           icon={'SparklesIcon'}
         />
-        <AttendanceMonthlyReport attendanceSummary={attendanceData} />
+        <AttendanceMonthlyReport
+          attendanceSummary={attendanceData}
+          classroomId={classroom?.classroomId || classroom?.id!}
+        />
         {!isOnline && <OfflineCard />}
       </div>
       <div

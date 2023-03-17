@@ -30,3 +30,12 @@ export const getPreviousVisitInformationForInfantSelector = (
   state: RootState
 ): Progress_VisitDataStatus | undefined =>
   state.visits.previousVisitInformationForInfant;
+
+export const getVisitVideoBySectionAndLocale = (
+  state: RootState,
+  section: string,
+  locale: string
+) =>
+  state.visits.visitVideos?.find(
+    (item) => item.section === section && item.locale === locale
+  );

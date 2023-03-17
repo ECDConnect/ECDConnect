@@ -1,3 +1,4 @@
+using EcdLink.Api.CoreApi.Managers.Users.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
@@ -12,7 +13,8 @@ using Microsoft.AspNetCore.Http;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat {
+namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
+{
     [ExtendObjectType(OperationTypeNames.Query)]
     public class HealthCareWorkerQueryExtension
     {
@@ -52,7 +54,21 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat {
             return visitStatus;
         }
 
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public HCWHighlights GetHealthCareWorkerHighlights(
+            [Service] VisitManager visitManager,
+            [Service] VisitDataManager visitDataManager,
+            [Service] InfantManager infantManager,
+            [Service] MotherManager motherManager,
+            string userId) {
+            HCWHighlights highlights = new HCWHighlights();
+            
+            highlights.totalFamilyVisits = visitManager.GetTotalVisitsForWeek(userId, Constants.GGSettings.client_mother) + visitManager.GetTotalVisitsForWeek(userId, Constants.GGSettings.client_child);
+            highlights.totalGrowthMonitored = visitDataManager.GetTotalGrowthInfantsForWeek(userId);
+            highlights.totalNewClients = motherManager.GetTotalNewMothersForWeek(userId) + infantManager.GetTotalNewInfantsForWeek(userId);
 
+            return highlights;
+        }
 
     }
 }

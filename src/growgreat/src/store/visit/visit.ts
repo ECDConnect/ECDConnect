@@ -10,6 +10,7 @@ import {
   getHealthPromotion,
   getMoreInformation,
   getPreviousVisitInformationForInfant,
+  getVisitVideos,
 } from './visit.actions';
 import { CompletedVisitsForVisitId, VisitState } from './visit.types';
 
@@ -74,6 +75,7 @@ const visitSlice = createSlice({
     setThunkActionStatus(builder, getHealthPromotion);
     setThunkActionStatus(builder, getMoreInformation);
     setThunkActionStatus(builder, getCompletedVisitsForVisitId);
+    setThunkActionStatus(builder, getVisitVideos);
     builder.addCase(addVisitFormData.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
     });
@@ -115,6 +117,13 @@ const visitSlice = createSlice({
         setFulfilledThunkActionStatus(state, action);
       }
     );
+    builder.addCase(getVisitVideos.fulfilled, (state, action) => {
+      state.visitVideos = !!state.visitVideos?.length
+        ? [...new Set([...state.visitVideos, ...action.payload])]
+        : action.payload;
+
+      setFulfilledThunkActionStatus(state, action);
+    });
   },
 });
 
