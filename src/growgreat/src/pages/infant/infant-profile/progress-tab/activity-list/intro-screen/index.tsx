@@ -190,6 +190,7 @@ export const IntroScreen = ({ infant, onStartVisit }: IntroScreenProps) => {
     return result;
   }, [previousVisit?.visitDataStatus]);
 
+  // TODO: remove this console
   console.log({ groupedDataByType });
 
   const groupedData = useMemo(() => {

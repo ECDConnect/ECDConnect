@@ -61,7 +61,6 @@ export const ActivityList: React.FC = () => {
     getCompletedVisitsByVisitIdSelector(state, MOCKED_VISIT_ID)
   )?.visits;
 
-  console.log({ completedVisits });
   const previousVisit = useSelector(
     getPreviousVisitInformationForInfantSelector
   );
