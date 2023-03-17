@@ -185,6 +185,8 @@ export const MonthlyAttendanceReport = ({
         />
       </div>
 
+
+{/* TODO: integrate this with backend to get correct data */}
       {['1', ' 2', '3', "4"].map((report, idx) => {
         const reportItemColor = getColor(10);
         const reportItemShape = getShape(67);
@@ -196,6 +198,7 @@ export const MonthlyAttendanceReport = ({
             }`}
           >
             <>
+            
               <Typography
                 className={'w-1/2 pl-6'}
                 type="body"
