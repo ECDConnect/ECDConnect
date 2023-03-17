@@ -121,7 +121,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
 
             return true;
         }
-
         private Boolean ManageVisitDataStatusForInfant(List<VisitData> allVisitData, string firstName, string infantId, string gender, DateTime dob, string motherName) {
 
             var comment = "";
@@ -521,7 +520,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
 
             return true;
         }
-
         private Boolean ManageVisitDataStatusForMother(List<VisitData> allVisitData, string firstName, string motherId) {
             var maternalDistressScreening = new List<VisitData>();
             var alcoholUse = new List<VisitData>();
@@ -1371,7 +1369,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
 
             return allReferrals;
         }
-        
         public List<VisitDataStatus> GetReferralDataForVisitId(string visitId) {
             List<VisitDataStatus> allReferrals = new List<VisitDataStatus>();
 
@@ -1454,21 +1451,68 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
             var totalGreen = 0;
             var totalRed = 0;
             var totalAmber = 0;
+            var fScore = 0;
+            var scoreColor = "";
             Progress_VisitDataStatus result = new Progress_VisitDataStatus();
 
             List<VisitDataStatus> visitDataStatus = new List<VisitDataStatus>();
             visitDataStatus = (
                 from visitData in _visitDataRepo.GetAll().Where(x => x.VisitId.ToString() == visitId)
-                join visitStatusData in _visitDataStatusRepo.GetAll() on visitData.Id equals visitStatusData.VisitDataId
+                join visitStatusData in _visitDataStatusRepo.GetAll().Where(y => y.Type == Constants.GGSettings.visit_data_client_progress) on visitData.Id equals visitStatusData.VisitDataId
                 select visitStatusData
             ).ToList();
+
+            VisitDataStatus growthStatus;
+            growthStatus = (
+                from visitData in _visitDataRepo.GetAll().Where(x => x.VisitId.ToString() == visitId && x.Question == Constants.GGSettings.q_muac)
+                join visitStatusData in _visitDataStatusRepo.GetAll().Where(y => y.Type == Constants.GGSettings.visit_data_client_summary) on visitData.Id equals visitStatusData.VisitDataId
+                select visitStatusData
+            ).FirstOrDefault();
 
             totalGreen = visitDataStatus.Where(x => x.Color == _green).Count();
             totalRed = visitDataStatus.Where(x => x.Color == _red).Count();
             totalAmber = visitDataStatus.Where(x => x.Color == _amber).Count();
 
+            if ((totalGreen + totalRed + totalAmber) != 0)
+            {
+                fScore = (totalGreen / (totalGreen + totalRed + totalAmber)) * 100;
+            }
+
+            if (fScore > 80)
+            {
+                scoreColor = _green;
+            } else if (fScore >= 51 && fScore <= 80)
+            {
+                scoreColor = _amber;
+            } else if (fScore < 51)
+            {
+                scoreColor = _red;
+            }
+
             result.Score = totalGreen.ToString() + " / " + (totalGreen + totalRed + totalAmber).ToString();
+            result.ScoreColor = scoreColor;
             result.VisitDataStatus = visitDataStatus;
+
+            result.GrowComment = growthStatus.Comment;
+            result.GrowCommentColor = growthStatus.Color;
+
+            var weightData = visitDataStatus.Where(y => y.VisitData.Question == Constants.GGSettings.q_weight).FirstOrDefault();
+
+            result.Weight = weightData.VisitData.QuestionAnswer;
+            result.WeightColor = weightData.Color;
+            result.WeightComment = weightData.Comment;
+
+            var lengthData = visitDataStatus.Where(y => y.VisitData.Question == Constants.GGSettings.q_length).FirstOrDefault();
+
+            result.Length = lengthData.VisitData.QuestionAnswer;
+            result.LengthColor = lengthData.Color;
+            result.LengthComment = lengthData.Comment;
+
+            var muacData = visitDataStatus.Where(y => y.VisitData.Question == Constants.GGSettings.q_muac).FirstOrDefault();
+
+            result.Muac = muacData.VisitData.QuestionAnswer;
+            result.MuacColor = muacData.Color;
+            result.MuacComment = muacData.Comment;
 
             return result;
         }
