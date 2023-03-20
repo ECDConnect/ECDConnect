@@ -143,5 +143,14 @@ namespace ECDLink.Notifications.BulkSms
         {
             throw new NotImplementedException();
         }
+
+        // TODO: Should phone number be verified before being changed?
+        public INotificationProvider<ApplicationUser> UsePendingReceiver(ApplicationUser receiver)
+        {
+            _message.To = receiver.PendingPhoneNumber;
+            _model = receiver;
+
+            return this;
+        }
     }
 }

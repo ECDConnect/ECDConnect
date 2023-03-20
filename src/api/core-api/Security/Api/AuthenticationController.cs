@@ -138,10 +138,11 @@ namespace ECDLink.Security.Api
 
         [Route("verify-email-address")]
         [AllowAnonymous]
-        [HttpPost]
-        public async Task<IActionResult> VerifyEmailAddress([FromBody] VerifyEmailAddressModel verifyEmailModel)
+        [HttpGet]
+        public async Task<IActionResult> VerifyEmailAddress([FromQuery] VerifyEmailAddressModel verifyEmailModel)
         {
             var user = await _securityManager.GetUserByNameAsync(verifyEmailModel.Username);
+            var token = TokenHelper.DecodeToken(verifyEmailModel.Token);
 
             if (user == default(ApplicationUser))
             {
@@ -149,11 +150,11 @@ namespace ECDLink.Security.Api
             }
 
             //RequestVerifyEmailAsync
-            var changeResult = await _securityManager.ChangeEmailAddressAsync(user, verifyEmailModel.Token);
+            var changeResult = await _securityManager.ChangeEmailAddressAsync(user, token);
             if (changeResult == true)
                 return new OkObjectResult(user.PendingEmail);
 
-            return Unauthorized();
+            return Ok(changeResult);
         }
     }
 }

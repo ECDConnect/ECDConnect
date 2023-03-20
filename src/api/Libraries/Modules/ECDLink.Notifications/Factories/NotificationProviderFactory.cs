@@ -2,7 +2,6 @@ using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Notifications;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.Notifications.BulkSms;
-using ECDLink.Notifications.SendGrid;
 using ECDLink.Notifications.Smtp;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,9 +17,13 @@ namespace ECDLink.Notifications.Factories
             _providers = providers;
         }
 
-        public INotificationProvider<ApplicationUser> Create(ApplicationUser user)
+        public INotificationProvider<ApplicationUser> Create(ApplicationUser user, string overrideMessageType = null)
         {
-            switch (user.ContactPreference)
+            var actualMessageType = string.IsNullOrWhiteSpace(overrideMessageType) 
+                ? user.ContactPreference 
+                : overrideMessageType;
+
+            switch (actualMessageType)
             {
                 case MessageTypeConstants.SMS:
                     {
@@ -31,10 +34,10 @@ namespace ECDLink.Notifications.Factories
                     }
                 case MessageTypeConstants.EMAIL:
                     {
-                        var smsProvider = _providers.FirstOrDefault(p => p.GetType() == typeof(EmailSmtpSender));
-                        smsProvider.AddReceiver(user);
-                        return smsProvider;
-                    }
+                        var emailProvider = _providers.FirstOrDefault(p => p.GetType() == typeof(EmailSmtpSender));
+                        emailProvider.AddReceiver(user);
+                        return emailProvider;
+                    }   
                 default:
                     {
                         var emailProvider = _providers.FirstOrDefault(p => p.GetType() == typeof(EmailSmtpSender));

@@ -8,13 +8,16 @@ using ECDLink.Notifications.Model;
 using ECDLink.Notifications.Templates;
 using MailKit;
 using MailKit.Net.Smtp;
+using MailKit.Security;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using MimeKit;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -22,11 +25,13 @@ namespace ECDLink.Notifications.Smtp
 {
     public class EmailSmtpSender : NotificationBase<ApplicationUser>, INotificationProvider<ApplicationUser>
     {
+        private const string FallbackFromEmailAddress = "info@ecdconnect.co.za";
+        private const string _testingCatchAllEmailAddress = "ruald@ecdconnect.co.za";
+
         private readonly IMessageFactory _messageFactory;
         private readonly TemplateProcessor _templateProcessor;
+        private readonly ILogger<EmailSmtpSender> _logger;
         private readonly EmailSmtpOptions _optionsAccessor;
-        private readonly string _testingEmailAddress = "test@ecdconnect.co.za";
-        private readonly int emailRetryWaitMs = 300;
         private EmailMessage _message;
         private IWebHostEnvironment _currentEnvironment;
         private bool _smtpDisabled;
@@ -36,10 +41,12 @@ namespace ECDLink.Notifications.Smtp
             IConfiguration configuration,
             TemplateProcessor templateProcessor,
             ISystemSetting<EmailSmtpOptions> optionsAccessor,
-            IWebHostEnvironment environment)
+            IWebHostEnvironment environment,
+            ILogger<EmailSmtpSender> logger)
         {
             _messageFactory = messageFactory;
             _templateProcessor = templateProcessor;
+            _logger = logger;
             _optionsAccessor = optionsAccessor?.Value;
             _smtpDisabled = _optionsAccessor is null || _optionsAccessor.Disabled;
 
@@ -62,7 +69,6 @@ namespace ECDLink.Notifications.Smtp
 
             if (!_smtpDisabled)
             {
-
                 _templateProcessor.SetUserContext(_model)
                             .SetMessageTemplate(_messageTemplate)
                             .SetMessageBody(_message.MessageBody)
@@ -70,21 +76,21 @@ namespace ECDLink.Notifications.Smtp
                             .ParseMessageFilters(_fieldTransform);
 
                 var emailMessage = _templateProcessor.ProcessBody();
+                var processedSubject = _templateProcessor.ProcessSubject();
 
-                // TODO: Get Tenant Address
                 // Specify the email sender.
-                MailboxAddress from = new MailboxAddress("ECD Connect", "no-reply@dgmt.com");
+                MailboxAddress from = new MailboxAddress(
+                    _optionsAccessor?.FromEmailDisplayName ?? "ECD Connect",
+                    _optionsAccessor?.FromEmail ?? FallbackFromEmailAddress);
 
-                // TODO: Set Name of Sender?
                 // TODO: multiple "to" recipients?
-                // Set destinations for the email message.
                 MailboxAddress to;
                 if (_currentEnvironment.IsProduction())
                     to = new MailboxAddress(
                         _message.ToDisplayName ?? _message.To,
                         _message.To);
                 else
-                    to = new MailboxAddress("Testing Email", _testingEmailAddress);
+                    to = new MailboxAddress("Testing Email", _testingCatchAllEmailAddress);
 
                 var builder = new BodyBuilder();
                 builder.TextBody = emailMessage;
@@ -100,7 +106,6 @@ namespace ECDLink.Notifications.Smtp
                 //};
                 // await builder.Attachments.AddAsync(attachment);
 
-                var processedSubject = _templateProcessor.ProcessSubject();
 
                 var message = new MimeMessage();
                 message.From.Add(from);
@@ -110,52 +115,76 @@ namespace ECDLink.Notifications.Smtp
                 message.Body = builder.ToMessageBody();
 
                 // Create the client and send email.
-                using (var client = new SmtpClient())
+                using var client = new SmtpClient();
+                try
                 {
-                    await client.ConnectAsync(_optionsAccessor.SmtpServerAddress, _optionsAccessor.SmtpServerPort, _optionsAccessor.SmtpServerUseTLS, cancellationToken);
-
-                    // Note: only needed if the SMTP server requires authentication
-                    if (!string.IsNullOrEmpty(_optionsAccessor?.Username) 
-                        && !string.IsNullOrEmpty(_optionsAccessor?.Password))
-                        await client.AuthenticateAsync(_optionsAccessor.Username, _optionsAccessor.Password, cancellationToken);
-
-                    // TODO: Clean up retry code
-                    // Send message
-                    try
-                    {
-                        await client.SendAsync(message, cancellationToken);
-
-                    } catch (IOException ioException)
-                    {
-                        // TODO: Add logger
-                        // _logger.LogWarning("Smtp Email Send: IO Exception, retrying", ioException);
-                        await Task.Delay(emailRetryWaitMs);
-                        await client.SendAsync(message, cancellationToken);
-                    }
-                    catch (ProtocolException protocolException)
-                    {
-                        // TODO: Add logger
-                        // _logger.LogWarning("Smtp Email Send: Protocol Exception, retrying", protocolException);
-                        await Task.Delay(emailRetryWaitMs);
-
-                        if (client.IsConnected)
-                        {
-                            await client.SendAsync(message, cancellationToken);
-                        } else
-                        {
-                            await client.ConnectAsync(_optionsAccessor.SmtpServerAddress, _optionsAccessor.SmtpServerPort, _optionsAccessor.SmtpServerUseTLS);
-                            await client.SendAsync(message, cancellationToken);
-                        }
-                    }
-
-                    await client.DisconnectAsync(true);
+                    // TODO: Singleton email client.
+                    await client.ConnectAsync(_optionsAccessor.SmtpServerAddress, _optionsAccessor.SmtpServerPort, _optionsAccessor.SmtpServerUseTLS ? SecureSocketOptions.Auto : SecureSocketOptions.None, cancellationToken);
                 }
+                catch (Exception exception)
+                {
+                    _logger.LogError("Could not connect to Mail Server. Mail not sent.", exception);
+                    throw;
+                }
+
+                // AuthenticateAsync only needed if the SMTP server requires authentication
+                if (!string.IsNullOrEmpty(_optionsAccessor?.Username)
+                    && !string.IsNullOrEmpty(_optionsAccessor?.Password))
+                {
+                    await client.AuthenticateAsync(_optionsAccessor.Username, _optionsAccessor.Password, cancellationToken);
+                }
+
+                var emailRetryWaitMs = _optionsAccessor?.RetryWaitMiliseconds ?? 300;
+
+                // TODO: Clean up retry code, e.g. use Polly?
+                // Send message
+                try
+                {
+                    _logger.LogDebug("Sending email from:{fromAddress}, to: {toAddress}", message?.From?.FirstOrDefault(), message?.To?.FirstOrDefault());
+                    var mailServerResponse = await client.SendAsync(message, cancellationToken);
+                    _logger.LogInformation(mailServerResponse);
+                }
+                catch (IOException ioException)
+                {
+                    _logger.LogWarning(ioException, "Warning: Smtp Email: Failed to send mail, retrying in: {emailRetryWaitMs}ms", emailRetryWaitMs);
+                    await Task.Delay(emailRetryWaitMs);
+                    _logger.LogInformation("Retrying mail send.");
+                    var mailServerResponse = await client.SendAsync(message, cancellationToken);
+                    _logger.LogInformation(mailServerResponse);
+                }
+                catch (ProtocolException protocolException)
+                {
+                    _logger.LogWarning(protocolException, "Smtp Email Send: Protocol Exception, retrying in {emailRetryWaitMs}ms", emailRetryWaitMs);
+                    await Task.Delay(emailRetryWaitMs);
+
+                    if (client.IsConnected)
+                    {
+                        _logger.LogInformation("Retrying mail send.");
+                        var mailServerResponse = await client.SendAsync(message, cancellationToken);
+                        _logger.LogInformation(mailServerResponse);
+                    }
+                    else
+                    {
+                        _logger.LogInformation("Reconnecting mail client.");
+                        await client.ConnectAsync(_optionsAccessor.SmtpServerAddress, _optionsAccessor.SmtpServerPort, _optionsAccessor.SmtpServerUseTLS);
+                        _logger.LogInformation("Retrying mail send.");
+                        var mailServerResponse = await client.SendAsync(message, cancellationToken);
+                        _logger.LogInformation(mailServerResponse);
+                    }
+                }
+                catch (Exception exception)
+                {
+                    _logger.LogError(exception, "Fatal error sending email. Giving up.");
+                }
+
+                await client.DisconnectAsync(true);
             }
         }
 
         public INotificationProvider<ApplicationUser> AddReceiver(ApplicationUser receiver)
         {
             _message.To = receiver.Email;
+            _message.ToDisplayName = receiver.FullName;
             _model = receiver;
             return this;
         }
@@ -164,6 +193,7 @@ namespace ECDLink.Notifications.Smtp
         {
             var messageTemplate = GetTemplate(template);
             _message.MessageBody = messageTemplate.Message;
+            _message.Subject = messageTemplate.Subject;
 
             _messageTemplate = messageTemplate;
 
@@ -193,17 +223,28 @@ namespace ECDLink.Notifications.Smtp
 
         public INotificationProvider<ApplicationUser> OverrideSender(string sender)
         {
-            throw new NotImplementedException();
+            _message.From = sender;
+
+            return this;
         }
 
+        public INotificationProvider<ApplicationUser> UsePendingReceiver(ApplicationUser receiver)
+        {
+            _message.To = receiver.PendingEmail; 
+
+            return this;
+        }
+        
         public INotificationProvider<ApplicationUser> SetMessageMetaData<T>(T type) where T : IMessageMetaData
         {
             throw new NotImplementedException();
         }
 
-        public INotificationProvider<ApplicationUser> SetSubject(string sender)
+        public INotificationProvider<ApplicationUser> SetSubject(string messageSubject)
         {
-            throw new NotImplementedException();
+            _message.Subject = messageSubject;
+
+            return this;
         }
     }
 }

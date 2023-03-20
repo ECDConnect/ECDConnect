@@ -14,7 +14,7 @@ namespace ECDLink.Development.Notifications
             _providers = providers;
         }
 
-        public INotificationProvider<ApplicationUser> Create(ApplicationUser user)
+        public INotificationProvider<ApplicationUser> Create(ApplicationUser user, string overrideMessageType = null)
         {
             var provider = _providers.FirstOrDefault(p => p.GetType() == typeof(DevNotificationProvider));
             provider.AddReceiver(user);

@@ -6,6 +6,7 @@ using ECDLink.Core.SystemSettings.SystemOptions;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.Security.Helpers;
 using ECDLink.Tenancy.Context;
+using System;
 using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.Security.Managers
@@ -53,19 +54,21 @@ namespace EcdLink.Api.CoreApi.Security.Managers
               .SendMessageAsync();
         }
 
-        public async Task RequestVerifyEmailAsync(ApplicationUser user, string token)
+        public async Task RequestVerifyEmailAsync(ApplicationUser user, Uri hostUrl,string token)
         {
             var encodedToken = TokenHelper.EncodeToken(token);
-
-            var verifyEmailCallback = $"{_options.Value.VerifyEmail}?username={user.UserName}&token={encodedToken}";
+            var defaultVerificationUrl = new Uri(hostUrl, "/api/authentication/" + TemplateTypeConstants.VerifyEmailAddress.ToString()).ToString();
+            var verificationUrl = $"{_options?.Value?.VerifyEmailUrl ?? defaultVerificationUrl }";
+            var verifyEmailCallback = $"{verificationUrl}?username={user.UserName}&token={encodedToken}";
             var applicationName = TenantExecutionContext.Tenant.ApplicationName;
             var organisationName = TenantExecutionContext.Tenant.ApplicationName;
             string firstName = user.FirstName;
 
-            var notificationProvider = _notificationProviderFactory.Create(user);
+            var notificationProvider = _notificationProviderFactory.Create(user, MessageTypeConstants.EMAIL);
 
             await notificationProvider
-              .SetMessageTemplate(TemplateTypeEnum.ForgotPassword)
+              .UsePendingReceiver(user)
+              .SetMessageTemplate(TemplateTypeEnum.VerifyEmailAddress)
               .AddOrUpdateFieldReplacement(MessageTemplateConstants.VerifyEmailAddressLink, verifyEmailCallback)
               .AddOrUpdateFieldReplacement(MessageTemplateConstants.ApplicationName, applicationName)
               .AddOrUpdateFieldReplacement(MessageTemplateConstants.FirstName, firstName)

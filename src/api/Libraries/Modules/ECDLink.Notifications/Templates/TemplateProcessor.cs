@@ -21,6 +21,7 @@ namespace ECDLink.Notifications.Templates
 
         public TemplateProcessor(TemplateFilters filters)
         {
+            // TODO: Why is this called constatnly?
             _templateFilters = filters;
             messageActions = new Dictionary<string, Action<ITemplateOverrideModel>>();
         }
@@ -70,7 +71,7 @@ namespace ECDLink.Notifications.Templates
             {
                 return "";
             }
-            
+
             return ProcessText(_messageSubject, messageActions, startToken, endToken);
         }
 
@@ -112,35 +113,55 @@ namespace ECDLink.Notifications.Templates
                 throw new Exception("No Message Body Specified");
             }
 
-            var messagePlaceholder = new Dictionary<string, string>();
-
-            foreach (var item in _messageBody.GetMessagePlaceHolders())
+            var bodyFilters = ParseMessageFilterText(_messageBody, messageOverrides);
+            foreach (var p in bodyFilters)
             {
-                messagePlaceholder.Add(item.Split(':')[0], item);
+                messageActions.Add(p);
+            }
+            
+            var subjectFilters = ParseMessageFilterText(_messageSubject, messageOverrides);
+            
+            foreach (var p in subjectFilters ?? new Dictionary<string, Action<ITemplateOverrideModel>>())
+            {
+                messageActions.TryAdd(p.Key, p.Value);
             }
 
-            foreach (var item in messagePlaceholder)
+            return this;
+        }
+
+        public IDictionary<string, Action<ITemplateOverrideModel>> ParseMessageFilterText(string text, IDictionary<string, string> messageOverrides)
+        {
+            var messageActions = new Dictionary<string, Action<ITemplateOverrideModel>>();
+            
+            if (string.IsNullOrWhiteSpace(text))
             {
-                if (!messageOverrides.ContainsKey(item.Key))
+                return messageActions;
+            }
+
+
+            foreach (var item in text.GetMessagePlaceHolders())
+            {
+                var key = item.Split(':')?[0];
+                if (key is null || !messageOverrides.ContainsKey(key))
                 {
                     continue;
                 }
 
-                var overrideValue = messageOverrides[item.Key];
+                var overrideValue = messageOverrides[key];
 
                 Action<ITemplateOverrideModel> action = _templateFilters.ReplaceValue(overrideValue);
 
-                foreach (var filterId in GetTemplateFilters(item.Value))
+                foreach (var filterId in GetTemplateFilters(item))
                 {
                     var filter = GetFilter(filterId);
 
                     action = AddFilter(action, filter);
                 }
 
-                messageActions.Add(item.Value, action);
+                messageActions.Add(item, action);
             }
 
-            return this;
+            return messageActions;
         }
 
         private Action<ITemplateOverrideModel> GetFilter(string filter)

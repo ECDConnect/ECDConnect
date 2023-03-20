@@ -18,12 +18,12 @@ namespace ECDLink.Core.SystemSettings.SystemOptions
         /// <summary>
         /// Default "from" email address used to send messages from. (Address of sender)
         /// </summary>
-        public string DefaultEmail { get; set; }
+        public string FromEmail { get; set; }
 
         /// <summary>
         /// Display name to use for DefaultEmail. (Name of sender)
         /// </summary>
-        public string DefaultEmailDisplayName { get; set; }
+        public string FromEmailDisplayName { get; set; }
 
         /// <summary>
         /// Url for Smtp service used to send message
@@ -59,6 +59,11 @@ namespace ECDLink.Core.SystemSettings.SystemOptions
         /// Number of times to retry sending if error occurs.
         /// </summary>
         public int RetryCount { get; set; } = 0;
+        
+        /// <summary>
+        /// Time to wait between retries
+        /// </summary>
+        public int RetryWaitMiliseconds { get; set; } = 300;
 
         /// <summary>
         /// Disable SMTP email sending

@@ -164,6 +164,12 @@ namespace EcdLink.Api.CoreApi.Security.Managers
 
             var emailChangeRequest = await _userManager.ChangeEmailAsync(user, user.PendingEmail, token);
             
+            if (emailChangeRequest.Succeeded)
+            {
+                user.PendingEmail = "";
+                await _userManager.UpdateAsync(user);
+            }
+
             return emailChangeRequest.Succeeded;
         }
 

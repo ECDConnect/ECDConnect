@@ -146,5 +146,12 @@ namespace ECDLink.Development.Notifications
 
             return this;
         }
+
+        public INotificationProvider<ApplicationUser> UsePendingReceiver(ApplicationUser receiver)
+        {
+            _dropModel["To"] = receiver.PendingEmail;
+            _model = receiver;
+            return this;
+        }
     }
 }

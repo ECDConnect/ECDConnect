@@ -16,9 +16,11 @@ namespace ECDLink.Abstractrions.Notifications
         public INotificationProvider<ProviderContext> AddOrUpdateFieldReplacement(string key, string value);
 
         public INotificationProvider<ProviderContext> OverrideSender(string sender);
-        
-        public INotificationProvider<ProviderContext> SetSubject(string sender);
 
+        public INotificationProvider<ProviderContext> UsePendingReceiver(ProviderContext receiver);
+
+        public INotificationProvider<ProviderContext> SetSubject(string messageSubject);
+        
         public Task SendMessageAsync(CancellationToken cancellationToken = default);
     }
 }

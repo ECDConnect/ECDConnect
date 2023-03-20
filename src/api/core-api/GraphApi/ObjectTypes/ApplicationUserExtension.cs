@@ -7,6 +7,7 @@ using HotChocolate.Types;
 using Microsoft.AspNetCore.Identity;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.GraphApi.ObjectTypes
 {
@@ -14,12 +15,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.ObjectTypes
     public class ApplicationUserExtension
     {
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public IEnumerable<IdentityRole> GetRoles(
+        public async Task<IEnumerable<IdentityRole>> GetRolesAsync(
           [Parent] ApplicationUser user,
           [Service] RoleManager<IdentityRole> roleManager,
           [Service] UserManager<ApplicationUser> userManager)
         {
-            var roles = userManager.GetRolesAsync(user).Result;
+            var roles = await userManager.GetRolesAsync(user);
 
             return roleManager.Roles.Where(x => roles.Contains(x.Name)).ToList();
         }

@@ -78,5 +78,10 @@ namespace ECDLink.Notifications.SendGrid
         {
             return this;
         }
+
+        public INotificationProvider<ApplicationUser> UsePendingReceiver(ApplicationUser receiver)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
