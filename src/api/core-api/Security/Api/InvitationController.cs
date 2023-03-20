@@ -122,7 +122,7 @@ namespace ECDLink.Security.Api
                 return BadRequest();
             }
 
-            _notificationManager.SendAuthenticationCode(user, result);
+            await _notificationManager.SendAuthenticationCodeAsync(user, result);
 
             return new OkObjectResult(ApplicationUserHelper.GetObscureMessagePrefenceValue(user));
         }

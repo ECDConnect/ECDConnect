@@ -1,5 +1,6 @@
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.Notifications.Message;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ECDLink.Abstractrions.Notifications
@@ -12,10 +13,14 @@ namespace ECDLink.Abstractrions.Notifications
 
         public INotificationProvider<ProviderContext> SetMessageMetaData<T>(T type) where T : IMessageMetaData;
 
-        public INotificationProvider<ProviderContext> AddFieldReplacement(string key, string value);
+        public INotificationProvider<ProviderContext> AddOrUpdateFieldReplacement(string key, string value);
 
         public INotificationProvider<ProviderContext> OverrideSender(string sender);
 
-        public Task SendMessage();
+        public INotificationProvider<ProviderContext> UsePendingReceiver(ProviderContext receiver);
+
+        public INotificationProvider<ProviderContext> SetSubject(string messageSubject);
+        
+        public Task SendMessageAsync(CancellationToken cancellationToken = default);
     }
 }

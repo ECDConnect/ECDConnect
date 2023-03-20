@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -5,20 +6,15 @@ namespace ECDLink.Core.Extensions
 {
     public static class StringExtensions
     {
-        public static string[] GetMessagePlaceHolders(this string str, string startPlaceHolder = @"\[\[", string endPlaceHolder = @"\]\]")
+        public static string[] GetMessagePlaceHolders(this string str, string startPlaceHolder = "[[", string endPlaceHolder = "]]")
         {
-            var regex = $"({startPlaceHolder})[^\\]]*({endPlaceHolder})";
-            MatchCollection matches = Regex.Matches(str, regex,
-                                              RegexOptions.IgnoreCase);
+            var escapedStartPlaceHolder = Regex.Escape(startPlaceHolder);
+            var escapedEndPlaceHolder = Regex.Escape(endPlaceHolder);
+            var regex = $"({escapedStartPlaceHolder})[^\\]\\[]+({escapedEndPlaceHolder})";
 
-            return matches.Select(x => x.Value.Trim().Replace("[[", "").Replace("]]", "")).ToArray();
-        }
+            MatchCollection matches = Regex.Matches(str, regex, RegexOptions.IgnoreCase);
 
-        public static string LocaleSplit(this string locale)
-        {
-            var local = locale.Replace("-", string.Empty);
-
-            return local.ToUpper();
+            return matches.Select(x => x.Value.Trim().Replace(startPlaceHolder, "").Replace(endPlaceHolder, "")).ToArray();
         }
     }
 }

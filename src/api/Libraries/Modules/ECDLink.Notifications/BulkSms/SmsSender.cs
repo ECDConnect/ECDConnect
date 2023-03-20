@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ECDLink.Notifications.BulkSms
@@ -51,7 +52,7 @@ namespace ECDLink.Notifications.BulkSms
             _fieldTransform = new Dictionary<string, string>();
         }
 
-        public async Task SendMessage()
+        public async Task SendMessageAsync(CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(_message.To))
             {
@@ -63,19 +64,22 @@ namespace ECDLink.Notifications.BulkSms
                 throw new KeyNotFoundException("No message template found");
             }
 
+            if (cancellationToken.IsCancellationRequested)
+                return;
+
             _message.MessageBody = _templateProcessor
                                         .SetUserContext(_model)
                                         .SetMessageBody(_message.MessageBody)
                                         .SetMessageTemplate(_messageTemplate)
                                         .ParseMessageFilters(_fieldTransform)
-                                        .Process();
+                                        .ProcessBody();
 
             // build the request based on the supplied settings
             var request = new HttpRequestMessage(HttpMethod.Post, "messages");
 
             request.Content = new StringContent(JsonConvert.SerializeObject(_message), Encoding.UTF8, "application/json");
 
-            var response = await GetSmsClient.SendAsync(request);
+            var response = await GetSmsClient.SendAsync(request, cancellationToken);
 
             if (response.IsSuccessStatusCode)
             {
@@ -106,7 +110,7 @@ namespace ECDLink.Notifications.BulkSms
             return this;
         }
 
-        public INotificationProvider<ApplicationUser> AddFieldReplacement(string key, string value)
+        public INotificationProvider<ApplicationUser> AddOrUpdateFieldReplacement(string key, string value)
         {
             if (_fieldTransform.ContainsKey(key))
             {
@@ -122,17 +126,31 @@ namespace ECDLink.Notifications.BulkSms
 
         private IMessageTemplate GetTemplate(TemplateTypeEnum template)
         {
-            return _messageFactory.GetMessage(MessageTypeEnum.Sms, template);
+            return _messageFactory.GetMessageTemplate(MessageProtocolEnum.Sms, template);
         }
 
         public INotificationProvider<ApplicationUser> OverrideSender(string sender)
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
         public INotificationProvider<ApplicationUser> SetMessageMetaData<T>(T type) where T : IMessageMetaData
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
+        }
+
+        public INotificationProvider<ApplicationUser> SetSubject(string sender)
+        {
+            throw new NotImplementedException();
+        }
+
+        // TODO: Should phone number be verified before being changed?
+        public INotificationProvider<ApplicationUser> UsePendingReceiver(ApplicationUser receiver)
+        {
+            _message.To = receiver.PendingPhoneNumber;
+            _model = receiver;
+
+            return this;
         }
     }
 }

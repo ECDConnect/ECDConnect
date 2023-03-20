@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace ECDLink.SmartStart.Reports
 {
@@ -193,6 +194,68 @@ namespace ECDLink.SmartStart.Reports
 
             return report.OrderByDescending(report => report.Year).ThenBy(x => x.MonthNumber);
         }
+        public List<ClassroomGroupChildAttendanceReportModel> GetClassroomAttendance(Guid classgroupId, string userId, DateTime startMonth, DateTime endMonth)
+        {
+            var learners = GetAllLearnerInstances(userId, classgroupId);
+            List < ClassroomGroupChildAttendanceReportModel > classReports = new List<ClassroomGroupChildAttendanceReportModel> ();
+            if (!learners.Any())
+            {
+                return null;
+            }
+
+            // prolly one 1 for now
+            foreach (var learner in learners)
+            {
+                var attendanceForPeriod = GetAttendanceRecordsForPeriod(learner, userId, startMonth, endMonth);
+
+                var monthlyAttendance = new Dictionary<DateTime, List<Tuple<int, int>>>();
+
+                // Do monthly Tracking here
+                for (DateTime dt = startMonth; dt <= endMonth; dt = dt.AddMonths(1))
+                {
+                    var attendance = new List<Tuple<int, int>>();
+
+                    foreach (var programme in learner.ClassroomGroup.ClassProgrammes)
+                    {
+                        var daysOfClass = attendanceForPeriod.Where(x => string.Equals(x.UserId, userId)
+                                              && x.ClassroomProgrammeId == programme.Id
+                                              && x.MonthOfYear == dt.Month
+                                              && x.Year == dt.Year);
+
+                        var attendedClasses = attendanceForPeriod
+                                              .Where(x => string.Equals(x.UserId, userId)
+                                              && x.ClassroomProgrammeId == programme.Id
+                                              && x.MonthOfYear == dt.Month
+                                              && x.Year == dt.Year
+                                              && x.Attended == true);
+
+                        attendance.Add(Tuple.Create(daysOfClass.Count(), (attendedClasses != null ? attendedClasses.Count() : 0)));
+                    }
+                    monthlyAttendance.Add(dt, attendance);
+                }
+                var reports = GetMonthlyReport(monthlyAttendance);
+
+                if (reports != null)
+                {
+                    foreach (var report in reports.OrderByDescending(x => x.MonthNumber)) {
+                        classReports.Add(new ClassroomGroupChildAttendanceReportModel()
+                        {
+                            ChildUserId = learner.UserId,
+                            ClassgroupId = classgroupId,
+                            ChildFullName = learner.User.FullName,
+                            TotalActualAttendance = report.ActualAttendance,
+                            TotalExpectedAttendance = report.ExpectedAttendance,
+                            AttendancePercentage = report.AttendancePercentage,
+                            Month = report.MonthNumber,
+                            Year = report.Year
+                        });
+                    }
+                }
+            }
+
+            return classReports;
+        }
+
 
     }
 }

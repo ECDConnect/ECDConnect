@@ -17,6 +17,7 @@ namespace ECDLink.DataAccessLayer.Entities.Notifications
         public string Protocol { get; set; }
         public string TemplateType { get; set; }
         public string Message { get; set; }
+        public string Subject { get; set; }
     }
 
     public interface MessageTemplateJoin<TKey>
