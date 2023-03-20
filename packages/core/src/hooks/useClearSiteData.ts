@@ -1,9 +1,9 @@
 function useClearSiteData() {
   const clear = async () => {
-    const caches = await window.caches.keys();
+    const caches = await window?.caches?.keys();
     caches.forEach((name) => name && window.caches.delete(name));
 
-    const indexedDBs = await window.indexedDB.databases();
+    const indexedDBs = await window?.indexedDB?.databases();
     indexedDBs.forEach((db) => {
       db.name && window.indexedDB.deleteDatabase(db.name);
     });

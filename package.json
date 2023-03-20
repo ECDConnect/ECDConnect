@@ -56,6 +56,7 @@
     "@ionic/react": "^5.5.0",
     "@ionic/react-router": "^5.5.0",
     "@reach/window-size": "0.11.2",
+    "@react-aria/progress": "^3.4.0",
     "@reduxjs/toolkit": "^1.8.5",
     "@tailwindcss/forms": "^0.3.3",
     "@tailwindcss/postcss7-compat": "^2.2.4",

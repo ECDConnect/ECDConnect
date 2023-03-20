@@ -14,11 +14,12 @@ import { useState } from 'react';
 
 interface AttendanceMonthlyReportProps extends ComponentBaseProps {
   attendanceSummary: AttendanceSummary[];
+  classroomId: string;
 }
 
 export const AttendanceMonthlyReport: React.FC<
   AttendanceMonthlyReportProps
-> = ({ attendanceSummary }) => {
+> = ({ attendanceSummary, classroomId }) => {
   const [displayReport, setDisplayReport] = useState<boolean>(false);
   const [viewReportDate, setViewReportDate] = useState<string>();
 
@@ -106,6 +107,7 @@ export const AttendanceMonthlyReport: React.FC<
               reportMonth={viewReportDate ?? ''}
               onDownloadReport={() => console.log('>>')}
               onBack={() => closeReport()}
+              classroomGroupId={classroomId}
             />
           </div>
         </Dialog>

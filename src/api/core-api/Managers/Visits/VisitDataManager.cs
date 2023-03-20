@@ -128,7 +128,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
               List<VisitData> vData = new List<VisitData>();
               vData = (
-                  from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId.ToString() == id).OrderBy(x => x.PlannedVisitDate)
+                  from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId == id).OrderBy(x => x.PlannedVisitDate)
                   join visitData in _visitDataRepo.GetAll().Where(y => y.Question == Constants.GGSettings.q_weight || 
                                                                        y.Question == Constants.GGSettings.q_length || 
                                                                        y.Question == Constants.GGSettings.q_muac) on visit.Id equals visitData.VisitId
@@ -137,7 +137,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
               return vData;
           }
-
         public int GetTotalGrowthInfantsForWeek(string id)
         {
             //- the number of children for which either a weight. length. and/or MUAC measure was taken
@@ -152,7 +151,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             ).Distinct().Count();
 
         }
-
 
     }
 }

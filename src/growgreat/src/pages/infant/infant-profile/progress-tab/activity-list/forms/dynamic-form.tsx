@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { Button } from '@ecdlink/ui';
 import { InfantDto, usePrevious } from '@ecdlink/core';
 import { useAppDispatch } from '@/store';
@@ -7,12 +13,12 @@ import {
   CmsVisitSectionInput,
   InputMaybe,
 } from '@ecdlink/graphql';
-import { getInfantVisitsSelector } from '@/store/infant/infant.selectors';
-import { useSelector } from 'react-redux';
 import { visitActions, visitThunkActions } from '@/store/visit';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { VisitActions } from '@/store/visit/visit.actions';
 import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
+import { useSelector } from 'react-redux';
+import { getInfantVisitsSelector } from '@/store/infant/infant.selectors';
 
 export interface Question {
   question: string;
@@ -31,7 +37,7 @@ export interface SectionQuestions {
 }
 
 export interface DynamicFormProps {
-  name?: any;
+  name?: string;
   infant?: InfantDto;
   currentStep?: number;
   isTipPage?: boolean;
@@ -60,13 +66,14 @@ export const DynamicForm = ({
   const [sectionQuestions, setSectionQuestions] =
     useState<SectionQuestions[]>();
 
-  const visits = useSelector(getInfantVisitsSelector);
-
   const { isLoading } = useThunkFetchCall(
     'visits',
     VisitActions.ADD_VISIT_FORM_DATA
   );
   const wasLoading = usePrevious(isLoading);
+
+  const visits = useSelector(getInfantVisitsSelector);
+  const MOCKED_VISIT_ID = visits[0]?.id;
 
   const { successDialog } = useRequestResponseDialog();
 
@@ -116,7 +123,7 @@ export const DynamicForm = ({
 
   const handleOnNext = useCallback(() => {
     setIsEnableButton(false);
-    onNextStep && onNextStep();
+    onNextStep?.();
   }, [onNextStep]);
 
   const onSubmit = useCallback(() => {
@@ -129,7 +136,7 @@ export const DynamicForm = ({
     })) as InputMaybe<Array<InputMaybe<CmsVisitSectionInput>>>;
 
     const input: CmsVisitDataInputModelInput = {
-      visitId: visits[0]?.id,
+      visitId: MOCKED_VISIT_ID, // TODO: add integration
       infantId: infant?.user?.id,
       visitData: {
         visitName: name,
@@ -137,9 +144,18 @@ export const DynamicForm = ({
       },
     };
 
+    appDispatch(
+      visitActions.addCompletedVisitsByVisitId({
+        visitId: MOCKED_VISIT_ID,
+        visits: [name || ''],
+      })
+    );
     appDispatch(visitActions.addVisitFormData(input));
     appDispatch(visitThunkActions.addVisitFormData(input));
-  }, [appDispatch, infant?.user?.id, name, sectionQuestions, visits]);
+  }, [MOCKED_VISIT_ID, appDispatch, infant?.user?.id, name, sectionQuestions]);
+
+  // TODO: sync visit form
+  useLayoutEffect(() => {}, []);
 
   const renderContent = useMemo(() => {
     if (!steps) return;

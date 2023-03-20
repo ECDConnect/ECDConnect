@@ -44,17 +44,19 @@ export interface MonthlyAttendanceReportProps extends ComponentBaseProps {
   reportMonth: string;
   onDownloadReport: (date: Date) => void;
   onBack: () => void;
+  classroomGroupId: string;
 }
 
 export const MonthlyAttendanceReport = ({
   reportMonth,
   onDownloadReport,
   onBack,
+  classroomGroupId,
 }: MonthlyAttendanceReportProps) => {
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
   const { state } = useLocation<ChildAttendanceReportState>();
-  const { childId, classroomGroupId } = state;
+  const { childId } = state;
   const appDispatch = useAppDispatch();
 
   const child = useSelector(childrenSelectors.getChildById(childId));
@@ -80,18 +82,6 @@ export const MonthlyAttendanceReport = ({
 
   const authUser = useSelector(authSelectors.getAuthUser);
 
-  const getAttendanceText = (score: number): string => {
-    if (score >= goodScoreThreshold) {
-      return `${childUser?.firstName}'s attendance is good!`;
-    }
-
-    if (score <= badScoreThreshold) {
-      return `${childUser?.firstName}'s attendance has not been good!`;
-    }
-
-    return '';
-  };
-
   useEffect(() => {
     async function init() {
       if (attendanceData && attendanceData.length > 0) {
@@ -104,7 +94,7 @@ export const MonthlyAttendanceReport = ({
 
       new AttendanceService(authUser?.auth_token ?? '')
         .getChildAttendanceRecords(
-          child?.userId ?? '',
+          authUser?.id ?? '',
           classroomGroupId,
           startDate,
           endDate
@@ -113,8 +103,11 @@ export const MonthlyAttendanceReport = ({
           setChildAttendanceReportData(data);
         });
     }
+    init();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {}, [childAttendanceReportData]);
 
   useEffect(() => {
     if (!childAttendanceReportData) return;
@@ -123,6 +116,7 @@ export const MonthlyAttendanceReport = ({
       (x) => x.classroomGroupId === classroomGroupId
     );
     setClassroomGroup(group);
+    console.log('>', group);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [childAttendanceReportData]);
 
@@ -174,7 +168,7 @@ export const MonthlyAttendanceReport = ({
       </div>
       <div
         className={
-          'border-uiLight flex w-full flex-row items-center justify-between border-b border-solid py-3'
+          'border-uiLight flex w-full flex-row items-center justify-between border-b border-solid py-3 '
         }
       >
         <Typography
@@ -191,46 +185,58 @@ export const MonthlyAttendanceReport = ({
         />
       </div>
 
-      {classroomGroup &&
-        classroomGroup.monthlyAttendance.map((report, idx) => {
-          const reportItemColor = getColor(report.attendancePercentage);
-          const reportItemShape = getShape(report.attendancePercentage);
-          return (
-            <div
-              key={`child-attendance-report-month-${idx}`}
-              className={`flex w-full flex-row items-center justify-between py-4 bg-${
-                (idx + 1) % 2 === 0 ? 'uiBg' : 'white'
-              }`}
-            >
-              {report?.expectedAttendance > 0 && (
-                <>
-                  <Typography
-                    className={'w-1/2 pl-6'}
-                    type="body"
-                    weight="bold"
-                    color={'black'}
-                    text={report.month}
-                  />
-                  <div className={'flex w-1/2 flex-row items-center pl-6'}>
-                    <div
-                      className={getShapeClass(
-                        reportItemShape,
-                        reportItemColor
-                      )}
-                    ></div>
-                    <Typography
-                      align={'center'}
-                      className={'ml-2'}
-                      type="body"
-                      color={reportItemColor}
-                      text={`${report.attendancePercentage} %`}
-                    />
-                  </div>
-                </>
-              )}
-            </div>
-          );
-        })}
+      {['1', ' 2', '3', '4'].map((report, idx) => {
+        const reportItemColor = getColor(10);
+        const reportItemShape = getShape(67);
+        return (
+          <div
+            key={`child-attendance-report-month-${idx}`}
+            className={`flex w-full flex-row items-center justify-between py-4 bg-${
+              (idx + 1) % 2 === 0 ? 'uiBg' : 'white'
+            }`}
+          >
+            <>
+              <Typography
+                className={'w-1/2 pl-6'}
+                type="body"
+                weight="bold"
+                color={'black'}
+                text={'Elisha Bere'}
+              />
+              <div className={'flex w-1/2 flex-row items-center pl-6'}>
+                <div
+                  className={getShapeClass(reportItemShape, reportItemColor)}
+                ></div>
+                <Typography
+                  align={'center'}
+                  className={'ml-2'}
+                  type="body"
+                  color={reportItemColor}
+                  text={`10 %`}
+                />
+              </div>
+            </>
+          </div>
+        );
+      })}
+      <div className={'flex h-full w-full flex-1 flex-col px-4'}>
+        {
+          <Button
+            type="filled"
+            color="primary"
+            className={'mt-0'}
+            onClick={() => {}}
+          >
+            {renderIcon('DownloadIcon', 'h-5 w-5 text-primary')}
+            <Typography
+              type="h6"
+              color="white"
+              text={'Download Register'}
+              className="ml-2"
+            ></Typography>
+          </Button>
+        }
+      </div>
     </BannerWrapper>
   );
 };
