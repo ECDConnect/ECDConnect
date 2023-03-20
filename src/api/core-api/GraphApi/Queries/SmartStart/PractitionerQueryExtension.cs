@@ -217,14 +217,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             return classrooms;
         }
 
-        public List<Child> GetAllChildrenByRole([Service] IHttpContextAccessor contextAccessor,
+        public async Task<List<Child>> GetAllChildrenByRole([Service] IHttpContextAccessor contextAccessor,
             [Service] UserManager<ApplicationUser> userManager,
             [Service] RoleManager<IdentityRole> roleManager,
             IGenericRepositoryFactory repoFactory,
             [Service] PersonnelService practiManager,
             string userId)
         {
-            string role = new RoleQueryTypeExtension().GetRoleForUser(contextAccessor, userManager, repoFactory, roleManager, userId);
+            string role = await (new RoleQueryTypeExtension()).GetRoleForUser(contextAccessor, userManager, repoFactory, roleManager, userId);
             List<Child> children = new List<Child>();
             if (role != null)
             {

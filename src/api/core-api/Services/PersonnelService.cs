@@ -75,29 +75,29 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                             }
                             //add principal
                             Practitioner practiPrincipal = practiRepo.GetByUserId(practitioner.PrincipalHierarchy.ToString());
-                                if (practiPrincipal != null && !peers.Contains(practiPrincipal))
-                                {                                   
+                            if (practiPrincipal != null && !peers.Contains(practiPrincipal))
+                            {
                                 peers.Add(practiPrincipal);
                             }
                         }
                     }
                 }
-            } else
+            }
+            else
             {
                 peers.Add(practitioner);
-            }            
+            }
             return peers;
         }
 
         public List<Child> GetAllChildrenForPractitioner(
         string practitionerId)
         {
-            var childRepo = _repoFactory.CreateGenericRepository<Child>(userContext: _applicationUserId);
-
             var practiRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
             Practitioner practitioner = practiRepo.GetByUserId(practitionerId);
             if (practitioner != null && !string.IsNullOrEmpty(practitioner.Hierarchy))
             {
+                var childRepo = _repoFactory.CreateGenericRepository<Child>(userContext: _applicationUserId);
                 var children = childRepo.GetAll().Where(x => x.Hierarchy.StartsWith(practitioner.Hierarchy)).ToList();
                 return children;
             }
@@ -167,10 +167,11 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             var classroomRepo = _repoFactory.CreateGenericRepository<Classroom>(userContext: _applicationUserId);
 
             var classroomgroup = classroomGroupRepo.GetAll().Where(x => x.UserId.ToString() == userId).FirstOrDefault();
-            if (classroomgroup!= null) //principals and practitioners are assigned to classroom groups
+            if (classroomgroup != null) //principals and practitioners are assigned to classroom groups
             {
-                siteName = classroomRepo.GetAll().Where(x => x.Id.Equals(classroomgroup.ClassroomId)).Select(x => x.Name).FirstOrDefault();               
-            } else //only principals/FAA are assigfne dto classrooms only
+                siteName = classroomRepo.GetAll().Where(x => x.Id.Equals(classroomgroup.ClassroomId)).Select(x => x.Name).FirstOrDefault();
+            }
+            else //only principals/FAA are assigfne dto classrooms only
             {
                 siteName = classroomRepo.GetAll().Where(x => x.UserId.ToString() == userId).Select(y => y.Name).FirstOrDefault();
             }

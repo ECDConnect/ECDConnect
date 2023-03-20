@@ -181,6 +181,8 @@ export type ApplicationUser = {
   normalizedEmail?: Maybe<Scalars['String']>;
   normalizedUserName?: Maybe<Scalars['String']>;
   notes?: Maybe<Array<Maybe<Note>>>;
+  pendingEmail?: Maybe<Scalars['String']>;
+  pendingPhoneNumber?: Maybe<Scalars['String']>;
   phoneNumber?: Maybe<Scalars['String']>;
   phoneNumberConfirmed: Scalars['Boolean'];
   practitionerObjectData?: Maybe<Practitioner>;
@@ -227,6 +229,8 @@ export type ApplicationUserFilterInput = {
   normalizedUserName?: InputMaybe<StringOperationFilterInput>;
   notes?: InputMaybe<ListFilterInputTypeOfNoteFilterInput>;
   or?: InputMaybe<Array<ApplicationUserFilterInput>>;
+  pendingEmail?: InputMaybe<StringOperationFilterInput>;
+  pendingPhoneNumber?: InputMaybe<StringOperationFilterInput>;
   phoneNumber?: InputMaybe<StringOperationFilterInput>;
   phoneNumberConfirmed?: InputMaybe<BooleanOperationFilterInput>;
   practitionerObjectData?: InputMaybe<PractitionerFilterInput>;
@@ -270,6 +274,8 @@ export type ApplicationUserInput = {
   normalizedEmail?: InputMaybe<Scalars['String']>;
   normalizedUserName?: InputMaybe<Scalars['String']>;
   notes?: InputMaybe<Array<InputMaybe<NoteInput>>>;
+  pendingEmail?: InputMaybe<Scalars['String']>;
+  pendingPhoneNumber?: InputMaybe<Scalars['String']>;
   phoneNumber?: InputMaybe<Scalars['String']>;
   phoneNumberConfirmed: Scalars['Boolean'];
   practitionerObjectData?: InputMaybe<PractitionerInput>;
@@ -2330,6 +2336,7 @@ export type MessageTemplate = {
   isActive: Scalars['Boolean'];
   message?: Maybe<Scalars['String']>;
   protocol?: Maybe<Scalars['String']>;
+  subject?: Maybe<Scalars['String']>;
   templateType?: Maybe<Scalars['String']>;
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
@@ -2343,6 +2350,7 @@ export type MessageTemplateFilterInput = {
   message?: InputMaybe<StringOperationFilterInput>;
   or?: InputMaybe<Array<MessageTemplateFilterInput>>;
   protocol?: InputMaybe<StringOperationFilterInput>;
+  subject?: InputMaybe<StringOperationFilterInput>;
   templateType?: InputMaybe<StringOperationFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
@@ -2353,6 +2361,7 @@ export type MessageTemplateInput = {
   IsActive: Scalars['Boolean'];
   Message?: InputMaybe<Scalars['String']>;
   Protocol?: InputMaybe<Scalars['String']>;
+  Subject?: InputMaybe<Scalars['String']>;
   TemplateType?: InputMaybe<Scalars['String']>;
   UpdatedBy?: InputMaybe<Scalars['String']>;
 };
@@ -7354,6 +7363,21 @@ export type Setting_SmartLinkApi = {
   Key: Scalars['String'];
 };
 
+export type Setting_Smtp = {
+  __typename?: 'Setting_Smtp';
+  FromEmail: Scalars['String'];
+  FromEmailDisplayName: Scalars['String'];
+  Password: Scalars['String'];
+  RetryCount: Scalars['String'];
+  RetryWaitMiliseconds: Scalars['String'];
+  SmtpServerAddress: Scalars['String'];
+  SmtpServerPort: Scalars['String'];
+  SmtpServerSecondaryAddress: Scalars['String'];
+  SmtpServerSecondaryPort: Scalars['String'];
+  SmtpServerUseTLS: Scalars['String'];
+  Username: Scalars['String'];
+};
+
 export type Setting_SyncDelay = {
   __typename?: 'Setting_SyncDelay';
   SyncDelay: Scalars['String'];
@@ -7388,6 +7412,7 @@ export type SettingsType = {
   Security: Setting_Security;
   SendGrid: Setting_SendGrid;
   SmartLinkApi: Setting_SmartLinkApi;
+  Smtp: Setting_Smtp;
   SyncDelay: Setting_SyncDelay;
   Tokens: Setting_Tokens;
   UrlShortner: Setting_UrlShortner;
