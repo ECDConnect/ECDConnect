@@ -1,9 +1,13 @@
+using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.Notifications;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.Core.SystemSettings.SystemOptions;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.Security.Helpers;
+using ECDLink.Tenancy.Context;
+using System;
+using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.Security.Managers
 {
@@ -18,29 +22,91 @@ namespace EcdLink.Api.CoreApi.Security.Managers
             _options = optionAccessor;
         }
 
-        public void SendAuthenticationCode(ApplicationUser user, string otp)
+        public async Task SendAuthenticationCodeAsync(ApplicationUser user, string otp)
         {
             var provider = _notificationProviderFactory.Create(user);
+            
+            var applicationName = TenantExecutionContext.Tenant.ApplicationName;
 
-            provider.SetMessageTemplate(TemplateTypeEnum.AuthCode)
-                .AddFieldReplacement("code", otp)
-                .SendMessage()
-                .Wait();
+            await provider.SetMessageTemplate(TemplateTypeEnum.AuthCode)
+                .AddOrUpdateFieldReplacement(MessageTemplateConstants.OTPCode, otp)
+                .AddOrUpdateFieldReplacement(MessageTemplateConstants.ApplicationName, applicationName)
+                .SendMessageAsync();
         }
 
-        public void SendForgotPasswordMessage(ApplicationUser user, string token)
+        public async Task SendForgotPasswordMessageAsync(ApplicationUser user, string token)
         {
             var encodedToken = TokenHelper.EncodeToken(token);
 
             var forgotPasswordCallback = $"{_options.Value.ForgotPassword}?username={user.UserName}&token={encodedToken}";
+            var applicationName = TenantExecutionContext.Tenant.ApplicationName;
+            var organisationName = TenantExecutionContext.Tenant.ApplicationName;
+            string firstName = user.FirstName;
 
             var notificationProvider = _notificationProviderFactory.Create(user);
 
-            notificationProvider
+            await notificationProvider
               .SetMessageTemplate(TemplateTypeEnum.ForgotPassword)
-              .AddFieldReplacement("callback", forgotPasswordCallback)
-              .SendMessage()
-              .Wait();
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.PasswordResetLink, forgotPasswordCallback)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.ApplicationName, applicationName)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.FirstName, firstName)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.OrganisationName, organisationName)
+              .SendMessageAsync();
+        }
+
+        public async Task RequestVerifyEmailAsync(ApplicationUser user, Uri hostUrl,string token)
+        {
+            var encodedToken = TokenHelper.EncodeToken(token);
+            var defaultVerificationUrl = new Uri(hostUrl, "/api/authentication/" + TemplateTypeConstants.VerifyEmailAddress.ToString()).ToString();
+            var verificationUrl = $"{_options?.Value?.VerifyEmailUrl ?? defaultVerificationUrl }";
+            var verifyEmailCallback = $"{verificationUrl}?username={user.UserName}&token={encodedToken}";
+            var applicationName = TenantExecutionContext.Tenant.ApplicationName;
+            var organisationName = TenantExecutionContext.Tenant.ApplicationName;
+            string firstName = user.FirstName;
+
+            var notificationProvider = _notificationProviderFactory.Create(user, MessageTypeConstants.EMAIL);
+
+            await notificationProvider
+              .UsePendingReceiver(user)
+              .SetMessageTemplate(TemplateTypeEnum.VerifyEmailAddress)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.VerifyEmailAddressLink, verifyEmailCallback)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.ApplicationName, applicationName)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.FirstName, firstName)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.OrganisationName, organisationName)
+              .SendMessageAsync();
+        }
+
+        public async Task SendPasswordChangedMessageAsync(ApplicationUser user)
+        {
+            var applicationName = TenantExecutionContext.Tenant.ApplicationName;
+            var organisationName = TenantExecutionContext.Tenant.ApplicationName;
+            string firstName = user.FirstName;
+
+            var notificationProvider = _notificationProviderFactory.Create(user);
+
+            await notificationProvider
+              .SetMessageTemplate(TemplateTypeEnum.PasswordChangedBySelf)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.ApplicationName, applicationName)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.FirstName, firstName)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.OrganisationName, organisationName)
+              .SendMessageAsync();
+        }
+
+        public async Task SendPasswordChangedByAdminMessageAsync(ApplicationUser user, string nameOfAdminUserWhoMadeChange)
+        {
+            var applicationName = TenantExecutionContext.Tenant.ApplicationName;
+            var organisationName = TenantExecutionContext.Tenant.ApplicationName;
+            string firstName = user.FirstName;
+
+            var notificationProvider = _notificationProviderFactory.Create(user);
+
+            await notificationProvider
+              .SetMessageTemplate(TemplateTypeEnum.PasswordChangedByAdmin)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.FirstName, firstName)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.ApplicationName, applicationName)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.AdminUserFullName, nameOfAdminUserWhoMadeChange ?? "an Administrator")
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.OrganisationName, organisationName)
+              .SendMessageAsync();
         }
     }
 }

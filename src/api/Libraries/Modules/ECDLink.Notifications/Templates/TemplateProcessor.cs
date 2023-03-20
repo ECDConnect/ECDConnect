@@ -12,20 +12,18 @@ namespace ECDLink.Notifications.Templates
     public class TemplateProcessor
     {
         private TemplateFilters _templateFilters;
-
-        private IDictionary<string, Action<TemplateOverrideModel>> messageActions;
-
+        private IDictionary<string, Action<ITemplateOverrideModel>> messageActions;
         private ApplicationUser _user;
-
         private IMessageTemplate _messageTemplate;
 
-
         private string _messageBody;
+        private string _messageSubject;
 
         public TemplateProcessor(TemplateFilters filters)
         {
+            // TODO: Why is this called constatnly?
             _templateFilters = filters;
-            messageActions = new Dictionary<string, Action<TemplateOverrideModel>>();
+            messageActions = new Dictionary<string, Action<ITemplateOverrideModel>>();
         }
 
         public TemplateProcessor SetUserContext(ApplicationUser applicationUser)
@@ -49,21 +47,50 @@ namespace ECDLink.Notifications.Templates
             return this;
         }
 
-        public string Process()
+        public TemplateProcessor SetMessageSubject(string subject)
+        {
+            _messageSubject = subject;
+
+            return this;
+        }
+
+        public string ProcessBody(string startToken = null, string endToken = null)
         {
             if (string.IsNullOrWhiteSpace(_messageBody))
             {
                 throw new Exception("No Message Body Specified");
             }
 
-            var sb = new StringBuilder(_messageBody);
+            return ProcessText(_messageBody, messageActions, startToken, endToken);
+        }
 
-            if (!messageActions.Any())
+        public string ProcessSubject(string startToken = null, string endToken = null)
+        {
+            // some message types do not have "subjects"
+            if (string.IsNullOrWhiteSpace(_messageSubject))
             {
-                return sb.ToString();
+                return "";
             }
 
-            foreach (var kv in messageActions)
+            return ProcessText(_messageSubject, messageActions, startToken, endToken);
+        }
+
+        public string ProcessText(string text, IDictionary<string, Action<ITemplateOverrideModel>> ationDictionary, string startToken = null, string endToken = null)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                return "";
+            }
+
+            // TODO: Use span
+            var resultText = new StringBuilder(text);
+
+            if (ationDictionary?.Any() != true)
+            {
+                return resultText.ToString();
+            }
+
+            foreach (var kv in ationDictionary)
             {
 
                 var replacement = new TemplateOverrideModel
@@ -73,10 +100,10 @@ namespace ECDLink.Notifications.Templates
 
                 kv.Value(replacement);
 
-                sb.Replace($"[[{kv.Key}]]", replacement.Value);
+                resultText.Replace($"{startToken ?? "[["}{kv.Key}{endToken ?? "]]"}", replacement.Value);
             }
 
-            return sb.ToString();
+            return resultText.ToString();
         }
 
         public TemplateProcessor ParseMessageFilters(IDictionary<string, string> messageOverrides)
@@ -86,38 +113,58 @@ namespace ECDLink.Notifications.Templates
                 throw new Exception("No Message Body Specified");
             }
 
-            var messagePlaceholder = new Dictionary<string, string>();
-
-            foreach (var item in _messageBody.GetMessagePlaceHolders())
+            var bodyFilters = ParseMessageFilterText(_messageBody, messageOverrides);
+            foreach (var p in bodyFilters)
             {
-                messagePlaceholder.Add(item.Split(':')[0], item);
+                messageActions.Add(p);
+            }
+            
+            var subjectFilters = ParseMessageFilterText(_messageSubject, messageOverrides);
+            
+            foreach (var p in subjectFilters ?? new Dictionary<string, Action<ITemplateOverrideModel>>())
+            {
+                messageActions.TryAdd(p.Key, p.Value);
             }
 
-            foreach (var item in messagePlaceholder)
+            return this;
+        }
+
+        public IDictionary<string, Action<ITemplateOverrideModel>> ParseMessageFilterText(string text, IDictionary<string, string> messageOverrides)
+        {
+            var messageActions = new Dictionary<string, Action<ITemplateOverrideModel>>();
+            
+            if (string.IsNullOrWhiteSpace(text))
             {
-                if (!messageOverrides.ContainsKey(item.Key))
+                return messageActions;
+            }
+
+
+            foreach (var item in text.GetMessagePlaceHolders())
+            {
+                var key = item.Split(':')?[0];
+                if (key is null || !messageOverrides.ContainsKey(key))
                 {
                     continue;
                 }
 
-                var overrideValue = messageOverrides[item.Key];
+                var overrideValue = messageOverrides[key];
 
-                Action<TemplateOverrideModel> action = _templateFilters.ReplaceValue(overrideValue);
+                Action<ITemplateOverrideModel> action = _templateFilters.ReplaceValue(overrideValue);
 
-                foreach (var filterId in GetTemplateFilters(item.Value))
+                foreach (var filterId in GetTemplateFilters(item))
                 {
                     var filter = GetFilter(filterId);
 
                     action = AddFilter(action, filter);
                 }
 
-                messageActions.Add(item.Value, action);
+                messageActions.Add(item, action);
             }
 
-            return this;
+            return messageActions;
         }
 
-        private Action<TemplateOverrideModel> GetFilter(string filter)
+        private Action<ITemplateOverrideModel> GetFilter(string filter)
         {
             if (!filter.StartsWith(':'))
             {
@@ -139,7 +186,7 @@ namespace ECDLink.Notifications.Templates
             return key.Split(':').Skip(1).ToArray();
         }
 
-        public Action<TemplateOverrideModel> AddFilter(Action<TemplateOverrideModel> header, Action<TemplateOverrideModel> filter)
+        public Action<ITemplateOverrideModel> AddFilter(Action<ITemplateOverrideModel> header, Action<ITemplateOverrideModel> filter)
         {
             if (filter == null)
             {

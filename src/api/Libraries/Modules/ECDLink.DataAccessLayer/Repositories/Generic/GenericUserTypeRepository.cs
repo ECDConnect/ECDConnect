@@ -8,6 +8,8 @@ using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security;
 using ECDLink.Tenancy.Context;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,11 +32,11 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
         }
 
         public GenericUserTypeRepository(
-          AuthenticationDbContext context,
           HierarchyEngine hierarchyEngine,
           IDomainEventService domainEventService,
-          UserManager<ApplicationUser> userManager)
-          : base(context, domainEventService)
+          UserManager<ApplicationUser> userManager,
+          IDbContextFactory<AuthenticationDbContext> authDbContextFactory, ILogger<GenericRepositoryBase<T>> logger)
+          : base(domainEventService, authDbContextFactory, logger)
         {
             _hierarchyEngine = hierarchyEngine;
             _userManager = userManager;

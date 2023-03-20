@@ -78,7 +78,7 @@ namespace ECDLink.AzureStorage.Blob
             catch (Exception e)
             {
 
-                throw e;
+                throw;
             }
         }
 
@@ -105,7 +105,7 @@ namespace ECDLink.AzureStorage.Blob
             catch (Exception e)
             {
 
-                throw e;
+                throw;
             }
         }
 
@@ -134,7 +134,7 @@ namespace ECDLink.AzureStorage.Blob
             {
                 memoryStream.Dispose();
                 memoryStream.Close();
-                throw e;
+                throw;
             }
         }
 

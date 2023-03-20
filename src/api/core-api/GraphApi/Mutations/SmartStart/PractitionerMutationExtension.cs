@@ -1,10 +1,10 @@
 using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.Managers.Notifications;
 using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
+using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Helpers;
 using ECDLink.Core.Services.Interfaces;
-using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Caregiver;
 using ECDLink.DataAccessLayer.Entities.Classroom;
@@ -24,7 +24,6 @@ using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using NPOI.SS.UserModel;
 using System;
 using System.Collections.Generic;
@@ -213,7 +212,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         FirstName = practitioner.FirstName,
                         Surname = practitioner.Surname,
                         FullName = $"{practitioner.FirstName} {practitioner.Surname}",
-                        ContactPreference = "sms",
+                        ContactPreference = MessageTypeConstants.SMS,
                         IsActive = true,
                         TenantId = tenantId
                     };
@@ -542,7 +541,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                                 FirstName = practitioner.FirstName,
                                 Surname = practitioner.Surname,
                                 FullName = practitioner.FullName,
-                                ContactPreference = "sms",
+                                ContactPreference = MessageTypeConstants.SMS,
                                 IsActive = true,
                                 PasswordHash = password,
                                 TenantId = tenantId
@@ -891,7 +890,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                                     FirstName = childItem.FirstName,
                                     Surname = childItem.Surname,
                                     FullName = childItem.Fullname,
-                                    ContactPreference = "sms",
+                                    ContactPreference = MessageTypeConstants.SMS,
                                     IsActive = true,
                                     TenantId = tenantId
                                 };
@@ -1074,7 +1073,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     FirstName = coach.FirstName,
                     Surname = coach.Surname,
                     FullName = coach.FullName,//$"{practitioner.FirstName} {practitioner.Surname}",
-                    ContactPreference = "sms",
+                    ContactPreference = MessageTypeConstants.SMS,
                     IsActive = true,
                     PasswordHash = password,
                     SecurityStamp = securityStamp,
