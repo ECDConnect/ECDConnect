@@ -78,5 +78,18 @@ namespace ECDLink.EGraphQL.ObjectTypes.Extentions.Query
 
             return report.GetChildAttendance(classgroupId, userId, startMonth, endMonth);
         }
+
+        public async Task<List<ClassroomGroupChildAttendanceReportModel>> ClassroomAttendanceReport(
+  [Service] ChildAttendanceReport report,
+  string userId,
+  Guid classgroupId,
+  DateTime startDate,
+  DateTime endDate)
+        {
+            var startMonth = startDate.GetStartOfMonth();
+            var endMonth = endDate.GetEndOfMonth();
+
+            return report.GetClassroomAttendance(classgroupId, userId, startMonth, endMonth);
+        }
     }
 }
