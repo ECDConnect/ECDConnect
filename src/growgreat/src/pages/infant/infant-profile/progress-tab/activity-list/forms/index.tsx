@@ -12,6 +12,7 @@ import { DynamicForm, SectionQuestions } from './dynamic-form';
 import {
   careForBabySteps,
   careForMomSteps,
+  followUpSteps,
   getPillar1Steps,
   getPillar4Steps,
   pillar2Steps,
@@ -145,7 +146,7 @@ export const Form = ({ onBack }: FormProps) => {
       case activitiesTypes.pillar5:
         return pillar5Steps;
       default:
-        return [() => <div className="p-4">Coming soon</div>];
+        return followUpSteps;
     }
   }, [
     activityName,
