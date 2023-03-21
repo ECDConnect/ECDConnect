@@ -38,6 +38,10 @@ export const activitiesColours = {
     primaryColor: '#FF9D7B',
     secondaryColor: '#FDE6DD',
   },
+  other: {
+    primaryColor: '#FAAB35',
+    secondaryColor: '#FEF1E8',
+  },
 };
 
 export const activitiesList = [

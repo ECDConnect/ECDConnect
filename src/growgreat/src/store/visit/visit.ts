@@ -76,6 +76,7 @@ const visitSlice = createSlice({
     setThunkActionStatus(builder, getMoreInformation);
     setThunkActionStatus(builder, getCompletedVisitsForVisitId);
     setThunkActionStatus(builder, getVisitVideos);
+    setThunkActionStatus(builder, getPreviousVisitInformationForInfant);
     builder.addCase(addVisitFormData.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
     });

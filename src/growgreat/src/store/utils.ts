@@ -61,13 +61,20 @@ export const setFulfilledThunkActionStatus = (state: any, action: any) => {
     (currentStatus: Status) => currentStatus.actionName !== actionType
   );
 
-  const status = [
-    ...newStatus,
-    {
-      actionName: actionType,
-      value: ThunkActionStatuses.Fulfilled,
-    },
-  ];
+  const status = !!newStatus
+    ? [
+        ...newStatus,
+        {
+          actionName: actionType,
+          value: ThunkActionStatuses.Fulfilled,
+        },
+      ]
+    : [
+        {
+          actionName: actionType,
+          value: ThunkActionStatuses.Fulfilled,
+        },
+      ];
 
   state.status = status;
 };
