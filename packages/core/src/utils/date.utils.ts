@@ -1,3 +1,9 @@
+import {
+  differenceInCalendarMonths,
+  differenceInDays,
+  differenceInYears,
+} from 'date-fns';
+
 export function getWeeksDiff(startDate: Date, endDate: Date) {
   const msInWeek = 1000 * 60 * 60 * 24 * 7;
 
@@ -49,4 +55,22 @@ export const getNextDateByDay = (daysLater: number, currentDate?: Date) => {
   date.setDate(date.getDate() + daysLater);
 
   return date;
+};
+
+export const getAgeInYearsMonthsAndDays = (
+  dateString: string
+): { years: number; months: number; days: number } => {
+  const birthDate = new Date(dateString);
+  const currentDate = new Date();
+  const years = differenceInYears(currentDate, birthDate);
+  const months = differenceInCalendarMonths(currentDate, birthDate);
+  const days = differenceInDays(
+    currentDate,
+    new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      birthDate.getDate()
+    )
+  );
+  return { years, months, days };
 };

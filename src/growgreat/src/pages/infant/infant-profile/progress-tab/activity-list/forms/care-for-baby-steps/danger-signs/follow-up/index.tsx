@@ -1,21 +1,21 @@
 import { Alert } from '@ecdlink/ui';
 import { Header } from '@/pages/infant/infant-profile/components';
-import Pregnant from '@/assets/pregnant.svg';
+import Infant from '@/assets/infant.svg';
 import { useLayoutEffect, useMemo } from 'react';
 import { ReactComponent as PollyTime } from '@/assets/pollyTime.svg';
 import { useSelector } from 'react-redux';
 import { getPreviousVisitInformationForInfantSelector } from '@/store/visit/visit.selectors';
 import { DynamicFormProps } from '../../../dynamic-form';
 import { activitiesTypes } from '../../../../activities-list';
-import { dangerSignsVisitSection } from '..';
+import { dangerSignsVisitSectionForBaby } from '..';
 
 export const DangerSignsFollowUpStep = ({
   infant,
   setEnableButton,
 }: DynamicFormProps) => {
-  const caregiverName = useMemo(
-    () => infant?.caregiver?.firstName || '',
-    [infant?.caregiver?.firstName]
+  const name = useMemo(
+    () => infant?.user?.firstName || '',
+    [infant?.user?.firstName]
   );
 
   const previousVisit = useSelector(
@@ -25,8 +25,8 @@ export const DangerSignsFollowUpStep = ({
   const followUp = useMemo(() => {
     const followUp = previousVisit?.visitDataStatus?.find(
       (item) =>
-        item?.section === dangerSignsVisitSection &&
-        item.visitData?.visitName === activitiesTypes.careForMom
+        item?.section === dangerSignsVisitSectionForBaby &&
+        item.visitData?.visitName === activitiesTypes.careForBaby
     )?.comment;
 
     const [, message, list] = followUp?.match(/(.+?)(<.*>)/) ?? [];
@@ -38,8 +38,8 @@ export const DangerSignsFollowUpStep = ({
       li?.textContent?.trim()
     ) || []) as string[];
 
-    return { message: `${caregiverName} ${message}`, list: sentences };
-  }, [caregiverName, previousVisit?.visitDataStatus]);
+    return { message: `${name} ${message}`, list: sentences };
+  }, [name, previousVisit?.visitDataStatus]);
 
   useLayoutEffect(() => {
     setEnableButton?.(true);
@@ -48,8 +48,8 @@ export const DangerSignsFollowUpStep = ({
     <>
       <Header
         backgroundColor="tertiary"
-        customIcon={Pregnant}
-        title={dangerSignsVisitSection}
+        customIcon={Infant}
+        title={dangerSignsVisitSectionForBaby}
         subTitle="Follow up"
       />
       <Alert

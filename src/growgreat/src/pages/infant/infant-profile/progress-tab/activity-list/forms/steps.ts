@@ -12,6 +12,7 @@ import {
   CareForBabyStep,
   RoadToHeathBookStep,
   DangerSignsStep as BabyDangerSignsStep,
+  DangerSignsFollowUpStep as BabyDangerSignsFollowUpStep,
   NewbornCareStep,
   MotherCareStep,
 } from './care-for-baby-steps';
@@ -76,9 +77,10 @@ export const getCareForMomSteps = (isDangerSignsFollowUp: boolean) => [
   MaternalDistressScreeningStep,
 ];
 
-export const careForBabySteps = [
+export const careForBabySteps = (isDangerSignsFollowUp: boolean) => [
   CareForBabyStep,
   RoadToHeathBookStep,
+  ...(isDangerSignsFollowUp ? [BabyDangerSignsFollowUpStep] : []),
   BabyDangerSignsStep,
   NewbornCareStep,
   MotherCareStep,
