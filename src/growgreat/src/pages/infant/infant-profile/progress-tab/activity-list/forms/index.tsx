@@ -11,7 +11,7 @@ import { activitiesTypes } from '../activities-list';
 import { DynamicForm, SectionQuestions } from './dynamic-form';
 import {
   careForBabySteps,
-  careForMomSteps,
+  getCareForMomSteps,
   followUpSteps,
   getPillar1Steps,
   getPillar4Steps,
@@ -24,6 +24,8 @@ import {
   breastfeedingIssuesCheckboxQuestion,
   breastfeedingIssuesCheckboxOptions,
 } from './pillar-1-steps/nutrition/breast-milk-only-flow/breastfeeding-issues';
+import { getPreviousVisitInformationForInfantSelector } from '@/store/visit/visit.selectors';
+import { DangerSignsVisitSection } from './care-for-mom-steps/danger-signs';
 
 interface FormProps {
   onBack: () => void;
@@ -36,6 +38,16 @@ export const Form = ({ onBack }: FormProps) => {
   const [step, setStep] = useState(0);
   const [sectionQuestions, setSectionQuestions] =
     useState<SectionQuestions[]>();
+
+  const previousVisit = useSelector(
+    getPreviousVisitInformationForInfantSelector
+  );
+
+  const isDangerSignsFollowUp = !!previousVisit?.visitDataStatus?.some(
+    (item) =>
+      item?.section === DangerSignsVisitSection &&
+      item.visitData?.visitName === activitiesTypes.careForMom
+  );
 
   const nutritionAnswer = sectionQuestions
     ?.flatMap((section) => section.questions)
@@ -129,7 +141,7 @@ export const Form = ({ onBack }: FormProps) => {
   const currentSteps = useMemo(() => {
     switch (activityName) {
       case activitiesTypes.careForMom:
-        return careForMomSteps;
+        return getCareForMomSteps(isDangerSignsFollowUp);
       case activitiesTypes.careForBaby:
         return careForBabySteps;
       case activitiesTypes.pillar1:
@@ -150,6 +162,7 @@ export const Form = ({ onBack }: FormProps) => {
     }
   }, [
     activityName,
+    isDangerSignsFollowUp,
     isPillar4FollowUp,
     isToSkipBreastfeedingIssuesRelevantItemsStep,
     nutritionAnswer,
