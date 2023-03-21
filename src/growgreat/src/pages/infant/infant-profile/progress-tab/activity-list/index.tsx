@@ -6,6 +6,7 @@ import {
   BannerWrapper,
   Button,
   Colours,
+  LoadingSpinner,
   MenuListDataItem,
   StackedList,
   Typography,
@@ -29,6 +30,8 @@ import {
   getPreviousVisitInformationForInfantSelector,
 } from '@/store/visit/visit.selectors';
 import { IntroScreen } from './intro-screen';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { VisitActions } from '@/store/visit/visit.actions';
 
 export const INFANT_PROFILE_TABS = {
   VISITS: 0,
@@ -55,7 +58,8 @@ export const ActivityList: React.FC = () => {
   const location = useLocation();
 
   const visits = useSelector(getInfantVisitsSelector);
-  const MOCKED_VISIT_ID = visits[0]?.id;
+  const MOCKED_VISIT_ID =
+    visits[0]?.id; /* '454686a9-2142-4061-aa47-4e89d46110b9' */
 
   const completedVisits = useSelector((state: RootState) =>
     getCompletedVisitsByVisitIdSelector(state, MOCKED_VISIT_ID)
@@ -72,6 +76,11 @@ export const ActivityList: React.FC = () => {
 
   const infant = useSelector((state: RootState) =>
     getInfantById(state, infantId)
+  );
+
+  const { isLoading } = useThunkFetchCall(
+    'visits',
+    VisitActions.GET_PREVIOUS_VISIT_INFORMATION_FOR_INFANT
   );
 
   const isLargeName =
@@ -172,6 +181,7 @@ export const ActivityList: React.FC = () => {
 
   useLayoutEffect(() => {
     appDispatch(infantThunkActions.getInfantVisits({ infantId })).unwrap();
+    // TODO: add integration
     // appDispatch(visitThunkActions.getGrowthDataForInfant({ infantId })).unwrap()
   }, [appDispatch, infantId]);
 
@@ -193,6 +203,17 @@ export const ActivityList: React.FC = () => {
   }, [MOCKED_VISIT_ID, appDispatch]);
 
   const renderContent = useMemo(() => {
+    if (isLoading) {
+      return (
+        <LoadingSpinner
+          size="medium"
+          spinnerColor={'primary'}
+          backgroundColor={'uiLight'}
+          className="p-4"
+        />
+      );
+    }
+
     if (isStartVisit || !previousVisit?.visitDataStatus?.length) {
       return (
         <div className="p-4">
@@ -289,6 +310,7 @@ export const ActivityList: React.FC = () => {
     followUpForm,
     infant,
     isFollowUp,
+    isLoading,
     isShowCompletedForms,
     isStartVisit,
     options,

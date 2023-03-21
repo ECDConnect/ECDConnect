@@ -1,5 +1,6 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using ECDLink.Abstractrions.Enums;
+using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
@@ -7,6 +8,7 @@ using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -29,6 +31,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
         private IGenericRepository<VisitDataStatus, Guid> _visitDataStatusRepo;
         private IGenericRepository<VisitType, Guid> _visitTypeRepo;
         private IGenericRepository<VisitGrowthData, Guid> _visitGrowthData;
+        private readonly AuthenticationDbContext _visitContext;
 
         private string _green;
         private string _amber;
@@ -43,7 +46,9 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
         public VisitDataStatusManager(
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
-            VisitManager visitManager) {
+            VisitManager visitManager,
+            IDbContextFactory<AuthenticationDbContext> dbContextFactory
+            ) {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
             _visitManager = visitManager;
@@ -52,11 +57,13 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
 
             _motherRepo = _repoFactory.CreateGenericRepository<Mother>(userContext: _applicationUserId);
             _infantRepo = _repoFactory.CreateGenericRepository<Infant>(userContext: _applicationUserId);
-            _visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: _applicationUserId);
-            _visitDataRepo = _repoFactory.CreateGenericRepository<VisitData>(userContext: _applicationUserId);
-            _visitDataStatusRepo = _repoFactory.CreateGenericRepository<VisitDataStatus>(userContext: _applicationUserId);
             _visitTypeRepo = _repoFactory.CreateGenericRepository<VisitType>(userContext: _applicationUserId);
             _visitGrowthData = _repoFactory.CreateGenericRepository<VisitGrowthData>(userContext: _applicationUserId);
+
+            _visitContext = dbContextFactory.CreateDbContext();
+            _visitRepo = _repoFactory.CreateGenericRepository<Visit>(_visitContext, userContext: _applicationUserId);
+            _visitDataRepo = _repoFactory.CreateGenericRepository<VisitData>(_visitContext, userContext: _applicationUserId);
+            _visitDataStatusRepo = _repoFactory.CreateGenericRepository<VisitDataStatus>(_visitContext, userContext: _applicationUserId);
 
             _green = MetricsColorEnum.Success.ToString();
             _amber = MetricsColorEnum.Warning.ToString();
