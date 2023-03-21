@@ -69,7 +69,9 @@ export const ImmunisationsSupplementsDewormingStep = ({
         },
       ]);
 
-      const isCompleted = updatedQuestions.every((item) => !!item.answer);
+      const isCompleted = updatedQuestions.every(
+        (item) => item.answer !== undefined
+      );
 
       if (isCompleted) {
         setEnableButton?.(true);

@@ -38,6 +38,10 @@ export const activitiesColours = {
     primaryColor: '#FF9D7B',
     secondaryColor: '#FDE6DD',
   },
+  other: {
+    primaryColor: '#FAAB35',
+    secondaryColor: '#FEF1E8',
+  },
 };
 
 export const activitiesList = [
@@ -80,7 +84,7 @@ export const activitiesList = [
   {
     id: activitiesTypes.pillar4,
     menuIconUrl: P4,
-    title: 'Pillar 4: Health care',
+    title: 'Pillar 4: Healthcare',
     hexBackgroundColor: '#ee83b34d',
     iconHexBackgroundColor: '#EE83B3',
   },

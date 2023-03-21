@@ -1,4 +1,5 @@
-﻿using ECDLink.Abstractrions.Notifications;
+﻿using ECDLink.Abstractrions.Constants;
+using ECDLink.Abstractrions.Notifications;
 using ECDLink.AutomatedJobs.Cron;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.Core.SystemSettings.SystemOptions;
@@ -56,11 +57,18 @@ namespace ECDLink.AutomatedServiceWorkers.Notifications
 
                     var notificationProvider = notificationProviderFactory.Create(notification.User);
 
-                    notificationProvider
+                    var applicationName = TenantExecutionContext.Tenant.ApplicationName;
+                    var organisationName = TenantExecutionContext.Tenant.ApplicationName;
+                    string firstName = notification.User.FirstName;
+
+                    await notificationProvider
                         .SetMessageTemplate(notification.TemplateType)
-                        .AddFieldReplacement("callback", loginUrl)
-                        .SendMessage()
-                        .Wait();
+                        // TODO: Make a standard set of replacements with functions
+                        .AddOrUpdateFieldReplacement(MessageTemplateConstants.LoginLink, loginUrl)
+                        .AddOrUpdateFieldReplacement(MessageTemplateConstants.FirstName, firstName)
+                        .AddOrUpdateFieldReplacement(MessageTemplateConstants.ApplicationName, applicationName)
+                        .AddOrUpdateFieldReplacement(MessageTemplateConstants.OrganisationName, organisationName)
+                        .SendMessageAsync();
 
                     dbContext.JobNotifications.Remove(notification);
                     dbContext.SaveChanges();
