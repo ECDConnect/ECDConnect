@@ -7,4 +7,6 @@ export interface EditAttendanceRegisterProps extends ComponentBaseProps {
   onComplete: (attendanceSuccessList: AttendanceResult) => void;
   onBack: () => void;
   editAttendanceRegisterVisible?: boolean;
+  classroomName: string
+
 }
