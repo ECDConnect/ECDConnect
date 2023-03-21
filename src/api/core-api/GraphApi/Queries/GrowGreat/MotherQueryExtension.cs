@@ -3,6 +3,7 @@ using EcdLink.Api.CoreApi.Managers.Users.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.GraphQL.Enums;
+using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Visits;
@@ -13,6 +14,7 @@ using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -157,12 +159,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat {
         public List<VisitDataSummary> GetVisitClientSummaryForMother(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
+            IDbContextFactory<AuthenticationDbContext> dbContextFactory,
             string id)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
-            var visitRepo = repoFactory.CreateGenericRepository<Visit>(userContext: uId);
-            var visitDataRepo = repoFactory.CreateGenericRepository<VisitData>(userContext: uId);
-            var visitDataStatusRepo = repoFactory.CreateGenericRepository<VisitDataStatus>(userContext: uId);
+            var dbContext = dbContextFactory.CreateDbContext();
+            var visitRepo = repoFactory.CreateGenericRepository<Visit>(dbContext, userContext: uId);
+            var visitDataRepo = repoFactory.CreateGenericRepository<VisitData>(dbContext, userContext: uId);
+            var visitDataStatusRepo = repoFactory.CreateGenericRepository<VisitDataStatus>(dbContext, userContext: uId);
 
             List<VisitDataSummary> sumData = new List<VisitDataSummary>();
             List<String> visitSections = new List<String>();
