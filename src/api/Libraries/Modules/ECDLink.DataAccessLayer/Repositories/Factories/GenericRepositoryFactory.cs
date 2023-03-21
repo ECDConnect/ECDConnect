@@ -49,6 +49,10 @@ namespace ECDLink.DataAccessLayer.Repositories.Factories
           where T : EntityBase<Guid>
         {
             IGenericRepository<T, Guid> repo = _provider.GetService<GenericRepository<T>>();
+            if (CustomScope is not null)
+                repo.SetCustomScope(CustomScope);
+            if (userContext is not null)
+                repo.SetUserContext(userContext);
             return repo;
         }
     }
