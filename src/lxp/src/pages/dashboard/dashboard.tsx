@@ -463,6 +463,7 @@ export const Dashboard: React.FC = () => {
   const goToClassroom = () => {
     if (
       (classroom && classroom.id) ||
+      (classroom && classroom.classroomId) ||
       (classroomGroup && classroomGroup.length > 0)
     ) {
       history.push(ROUTES.CLASSROOM, { activeTabIndex: 1 });

@@ -74,7 +74,7 @@ export const EditProgrammeForm: React.FC<EditProgrammeFormProps> = ({
       <div className="space-y-4">
         <div className={'w-full'}>
           <label className={styles.label}>
-            Are you the principal or leader of the programme?
+            Are you the principal/owner of your ECD programme?
           </label>
           <div className="mt-1">
             <ButtonGroup<boolean>
