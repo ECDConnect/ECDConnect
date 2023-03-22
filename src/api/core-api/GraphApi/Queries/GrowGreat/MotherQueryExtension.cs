@@ -3,6 +3,7 @@ using EcdLink.Api.CoreApi.Managers.Users.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.GraphQL.Enums;
+using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Visits;
@@ -13,6 +14,7 @@ using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -157,12 +159,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat {
         public List<VisitDataSummary> GetVisitClientSummaryForMother(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
+            IDbContextFactory<AuthenticationDbContext> dbContextFactory,
             string id)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
-            var visitRepo = repoFactory.CreateGenericRepository<Visit>(userContext: uId);
-            var visitDataRepo = repoFactory.CreateGenericRepository<VisitData>(userContext: uId);
-            var visitDataStatusRepo = repoFactory.CreateGenericRepository<VisitDataStatus>(userContext: uId);
+            var dbContext = dbContextFactory.CreateDbContext();
+            var visitRepo = repoFactory.CreateGenericRepository<Visit>(dbContext, userContext: uId);
+            var visitDataRepo = repoFactory.CreateGenericRepository<VisitData>(dbContext, userContext: uId);
+            var visitDataStatusRepo = repoFactory.CreateGenericRepository<VisitDataStatus>(dbContext, userContext: uId);
 
             List<VisitDataSummary> sumData = new List<VisitDataSummary>();
             List<String> visitSections = new List<String>();
@@ -196,6 +200,88 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat {
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public List<VisitBackReferral> GetBackReferralsForMother([Service] VisitBackReferralManager visitBackReferralManager, string id, bool referralCompleted, bool backReferralCompleted) {
             return visitBackReferralManager.GetBackReferralDataForClient(id, Constants.GGSettings.client_mother, referralCompleted, backReferralCompleted);
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public List<ClientSummary> GetMotherSummaryByGroup(
+            [Service] VisitManager visitManager,
+            [Service] VisitDataStatusManager visitDataStatusManager,
+            string id)
+        {
+            List<ClientSummary> summary = new List<ClientSummary>();
+
+            // get most recent visit completed
+            var visitId = visitManager.GetLastCompletedVisitId(id, Constants.GGSettings.client_mother);
+
+            var sumObj = new ClientSummary();
+            sumObj.VisitName = Constants.GGSettings.antenatalCare;
+            sumObj.Order = 1;
+            sumObj.VisitDataStatus = visitDataStatusManager.GetSummaryDataForVisitByGroup(visitId, Constants.GGSettings.antenatalCare);
+            summary.Add(sumObj);
+
+            sumObj = new ClientSummary();
+            sumObj.VisitName = Constants.GGSettings.nutrition;
+            sumObj.Order = 2;
+            sumObj.VisitDataStatus = visitDataStatusManager.GetSummaryDataForVisitByGroup(visitId, Constants.GGSettings.nutrition);
+            summary.Add(sumObj);
+
+            sumObj = new ClientSummary();
+            sumObj.VisitName = Constants.GGSettings.pregnancyCare;
+            sumObj.Order = 3;
+            sumObj.VisitDataStatus = visitDataStatusManager.GetSummaryDataForVisitByGroup(visitId, Constants.GGSettings.pregnancyCare);
+            summary.Add(sumObj);
+
+            sumObj = new ClientSummary();
+            sumObj.VisitName = Constants.GGSettings.dangerSigns;
+            sumObj.Order = 4;
+            sumObj.VisitDataStatus = visitDataStatusManager.GetSummaryDataForVisitByGroup(visitId, Constants.GGSettings.dangerSigns);
+            summary.Add(sumObj);
+
+            sumObj = new ClientSummary();
+            sumObj.VisitName = Constants.GGSettings.q_ID_doc;
+            sumObj.Order = 5;
+            sumObj.IdDocStatus = visitDataStatusManager.GetIDSummaryDataForVisit(visitId);
+            summary.Add(sumObj);
+
+            return summary;
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public List<ClientSummaryByPriority> GetMotherSummaryByPriority(
+           [Service] VisitManager visitManager,
+           [Service] VisitDataStatusManager visitDataStatusManager,
+           string id)
+        {
+            List<ClientSummaryByPriority> summary = new List<ClientSummaryByPriority>();
+
+            // get most recent visit completed
+            var visitId = visitManager.GetLastCompletedVisitId(id, Constants.GGSettings.client_mother);
+           
+            var sumObj = new ClientSummaryByPriority();
+            sumObj.AreaName = Constants.GGSettings.doingWell;
+            sumObj.Order = 1;
+            sumObj.VisitDataStatus = visitDataStatusManager.GetSummaryDataForVisitByPriority(visitId, MetricsColorEnum.Success.ToString());
+            summary.Add(sumObj);
+
+            sumObj = new ClientSummaryByPriority();
+            sumObj.AreaName = Constants.GGSettings.needSupport;
+            sumObj.Order = 2;
+            sumObj.VisitDataStatus = visitDataStatusManager.GetSummaryDataForVisitByPriority(visitId, MetricsColorEnum.Warning.ToString());
+            summary.Add(sumObj);
+
+            sumObj = new ClientSummaryByPriority();
+            sumObj.AreaName = Constants.GGSettings.needUrgentSupport;
+            sumObj.Order = 3;
+            sumObj.VisitDataStatus = visitDataStatusManager.GetSummaryDataForVisitByPriority(visitId, MetricsColorEnum.Error.ToString());
+            summary.Add(sumObj);
+
+            sumObj = new ClientSummaryByPriority();
+            sumObj.AreaName = Constants.GGSettings.q_ID_doc;
+            sumObj.Order = 4;
+            sumObj.IdDocStatus = visitDataStatusManager.GetIDSummaryDataForVisit(visitId);
+            summary.Add(sumObj);
+
+            return summary;
         }
 
     }

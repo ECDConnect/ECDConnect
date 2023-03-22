@@ -20,6 +20,18 @@ namespace EcdLink.Api.CoreApi.Managers.Integration
             return dt.AddDays(-1 * diff).Date;
         }
 
+        public string FormatBulletList(Array arrData)
+        {
+            var result = "<ul>";
+            foreach (var item in arrData)
+            {
+                result = result + "<li>" + item + "</li>";
+            }
+            result = result + "<ul>";
+
+            return result;
+        }
+
     }
 }
 

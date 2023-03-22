@@ -123,7 +123,8 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<Visit> Visits { get; set; }
         public DbSet<VisitData> VisitData { get; set; }
         public DbSet<VisitDataStatus> VisitDataStatus { get; set; }
-        public DbSet<VisitGrowthData> VisitGrowthData { get; set; }
+        public DbSet<VisitGrowthDataDay> VisitGrowthDataDay { get; set; }
+        public DbSet<VisitGrowthDataHeight> VisitGrowthDataHeight { get; set; }
         public DbSet<VisitBackReferral> VisitBackReferral { get; set; }
 
         // Event Records

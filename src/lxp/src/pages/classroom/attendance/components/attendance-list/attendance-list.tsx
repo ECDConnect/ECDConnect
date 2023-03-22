@@ -100,7 +100,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
       setSelectedClassroomGroups(selectedGroups);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [editAttendanceRegisterVisible ? attendanceDate : null]);
 
   const updateAttendanceState = (attendanceGroups: AttendanceState[]) => {
     const attendanceStatusCheck = getAttendanceStatusCheck(
@@ -148,7 +148,6 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
   };
 
   const handleFormSubmit = async () => {
-    submitPrompt();
     const currentClassProgramme = classroomGroupHasAttendanceOnDate(
       classProgrammesUpdated,
       attendanceDate
@@ -227,12 +226,9 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
       attendanceDate,
       classroomGroupId: currentAttendanceGroup.cacheId,
     });
-
-    if (!editAttendanceRegisterVisible) {
-      setAttendanceGroups([]);
-      setSelectedClassroomGroups([]);
-      updateAttendanceState([]);
-    }
+    setAttendanceGroups([]);
+    setSelectedClassroomGroups([]);
+    updateAttendanceState([]);
   };
 
   const submitPrompt = () => {
@@ -266,7 +262,8 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
               type: 'filled',
               onClick: () => {
                 // onSubmit();
-                handleFormSubmit().then(() => onCancel());
+                handleFormSubmit();
+                onCancel();
               },
               leadingIcon: 'SaveIcon',
             },

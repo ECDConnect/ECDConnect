@@ -1,3 +1,5 @@
+using System.Threading.Tasks;
+
 namespace EcdLink.Api.CoreApi {
     public static class Constants
     {
@@ -201,17 +203,43 @@ namespace EcdLink.Api.CoreApi {
            
 
             // Growth names
-            public const string neg3SD = "-3 SD";
-            public const string neg2SD = "-2 SD";
-            public const string neg1SD = "-1 SD";
-            public const string median = "median";
-            public const string pos1SD = "1 SD";
-            public const string pos2SD = "2 SD";
-            public const string pos3SD = "3 SD";
-            public const string weightForAgeBoys = "weightForAgeBoys";
-            public const string weightForAgeGirls = "weightForAgeGirls";
-            public const string weightForHeightBoys = "weightForHeightBoys";
-            public const string weightForHeightGirls = "weightForHeightGirls";
+            public const string weightForAgeBoys = "weight-for-age-boys";
+            public const string weightForAgeGirls = "weight-for-age-girls";
+            public const string weightForLengthGirls = "weight-for-length-girls";
+            public const string weightForLengthBoys = "weight-for-length-boys";
+            public const string weightForHeightGirls = "weight-for-height-girls";
+            public const string weightForHeightBoys = "weight-for-height-boys";
+
+            public const string lengthHeightForAgeGirls = "length-height-for-age-girls";
+            public const string lengthHeightForAgeBoys = "length-height-for-age-boys";
+
+            // Visit names
+            public const string careForMom = "Care for mom";
+            public const string careForBaby = "Care for baby";
+
+            public const string pillar1_report = "Nutrition";
+            public const string pillar1_db = "Pillar 1: Nutrition";
+
+            public const string pillar2_report = "Love, talk and play";
+            public const string pillar2_db = "Pillar 2: Love, talk and play";
+
+            public const string pillar3_report = "Protection";
+            public const string pillar3_db = "Pillar 3: Protection";
+
+            public const string pillar4_report = "Healthcare";
+            public const string pillar4_db = "Pillar 4: Healthcare";
+
+            public const string pillar5_report = "Extra care";
+            public const string pillar5_db = "Pillar 5: Extra care";
+
+            public const string antenatalCare = "Antenatal care";
+            public const string nutrition = "Nutrition";
+            public const string pregnancyCare = "Pregnancy care";
+            public const string dangerSigns = "Danger signs";
+
+            public const string doingWell = "You are doing well in these areas:";
+            public const string needSupport = "You need support in these areas:";
+            public const string needUrgentSupport = "You need urgent support with these areas:";
 
         }
     }
