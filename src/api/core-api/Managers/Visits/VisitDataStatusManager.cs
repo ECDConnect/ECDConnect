@@ -847,7 +847,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                 var _weight = double.Parse(q1.QuestionAnswer, CultureInfo.InvariantCulture);
                 var _height = double.Parse(q2.QuestionAnswer, CultureInfo.InvariantCulture);
                 var _prevWeight = double.Parse(previousVisitWeight, CultureInfo.InvariantCulture);
-
                
                 wIndicator = GetHeightWeightIndicator(true, totalDaysOld, _weight, _height, gender);
                 Boolean weightIncreased = _weight > _prevWeight;
