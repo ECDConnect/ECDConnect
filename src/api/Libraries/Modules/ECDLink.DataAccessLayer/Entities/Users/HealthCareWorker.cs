@@ -56,4 +56,5 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public int totalGrowthMonitored { get; set; }
         public int totalNewClients { get; set; }
     }
+    
 }

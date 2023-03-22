@@ -1,4 +1,5 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+using EcdLink.Api.CoreApi.Managers.Integration;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities.Users;
@@ -15,7 +16,7 @@ using System.Globalization;
 using System.Linq;
 
 namespace EcdLink.Api.CoreApi.Managers.Visits {
-    public class VisitDataStatusManager {
+    public class VisitDataStatusManager: BaseManager {
         private IHttpContextAccessor _contextAccessor;
         private IGenericRepositoryFactory _repoFactory;
         private VisitManager _visitManager;
@@ -1260,15 +1261,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                 Section = ""
             };
         }
-        private string FormatBulletList(Array arrData) {
-            var result = "<ul>";
-            foreach (var item in arrData) {
-                result = result + "<li>" + item + "</li>";
-            }
-            result = result + "<ul>";
-
-            return result;
-        }
         private string FormatNutritionList(String options) {
             var result = "<ul>";
 
@@ -1547,6 +1539,41 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
 
             return result;
         }
-    
+
+        public List<VisitDataStatus> GetSummaryDataForVisitByGroup(Guid visitId, string visitName)
+        {
+            List<VisitDataStatus> allData = (
+                    from visitData in _visitDataRepo.GetAll().Where(x => x.VisitId == visitId && x.VisitName == visitName)
+                    join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.Type == _G9) on visitData.Id equals visitStatusData.VisitDataId
+                    select visitStatusData
+                ).ToList();
+            
+            return allData;
+        }
+
+        public List<VisitDataStatus> GetSummaryDataForVisitByPriority(Guid visitId, string color)
+        {
+            List<VisitDataStatus> allData = (
+                    from visitData in _visitDataRepo.GetAll().Where(x => x.VisitId == visitId)
+                    join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.Type == _G9 && x.Color == color) on visitData.Id equals visitStatusData.VisitDataId
+                    select visitStatusData
+                ).ToList();
+
+            allData = (List<VisitDataStatus>)allData.Take(3);
+
+            return allData;
+        }
+
+        public List<VisitDataStatus> GetIDSummaryDataForVisit(Guid visitId)
+        {
+            List<VisitDataStatus> allData = (
+                    from visitData in _visitDataRepo.GetAll().Where(x => x.VisitId == visitId && x.Question == Constants.GGSettings.q_ID_doc)
+                    join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.Type == _G9) on visitData.Id equals visitStatusData.VisitDataId
+                    select visitStatusData
+                ).ToList();
+
+            return allData;
+        }
+
     }
 }
