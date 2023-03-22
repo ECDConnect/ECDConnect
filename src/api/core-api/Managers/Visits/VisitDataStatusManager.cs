@@ -30,7 +30,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
         private IGenericRepository<VisitData, Guid> _visitDataRepo;
         private IGenericRepository<VisitDataStatus, Guid> _visitDataStatusRepo;
         private IGenericRepository<VisitType, Guid> _visitTypeRepo;
-        private IGenericRepository<VisitGrowthData, Guid> _visitGrowthData;
+        private IGenericRepository<VisitGrowthDataDay, Guid> _visitGrowthDataDay;
+        private IGenericRepository<VisitGrowthDataHeight, Guid> _visitGrowthDataHeight;
         private readonly AuthenticationDbContext _visitContext;
 
         private string _green;
@@ -58,7 +59,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
             _motherRepo = _repoFactory.CreateGenericRepository<Mother>(userContext: _applicationUserId);
             _infantRepo = _repoFactory.CreateGenericRepository<Infant>(userContext: _applicationUserId);
             _visitTypeRepo = _repoFactory.CreateGenericRepository<VisitType>(userContext: _applicationUserId);
-            _visitGrowthData = _repoFactory.CreateGenericRepository<VisitGrowthData>(userContext: _applicationUserId);
+            _visitGrowthDataDay = _repoFactory.CreateGenericRepository<VisitGrowthDataDay>(userContext: _applicationUserId);
+            _visitGrowthDataHeight = _repoFactory.CreateGenericRepository<VisitGrowthDataHeight>(userContext: _applicationUserId);
 
             _visitContext = dbContextFactory.CreateDbContext();
             _visitRepo = _repoFactory.CreateGenericRepository<Visit>(_visitContext, userContext: _applicationUserId);
@@ -846,9 +848,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                 var _height = double.Parse(q2.QuestionAnswer, CultureInfo.InvariantCulture);
                 var _prevWeight = double.Parse(previousVisitWeight, CultureInfo.InvariantCulture);
 
-                string ageSection = (gender == Constants.GGSettings.male ? Constants.GGSettings.weightForAgeBoys : Constants.GGSettings.weightForAgeGirls);
-                string heightSection = (gender == Constants.GGSettings.male ? Constants.GGSettings.weightForHeightBoys : Constants.GGSettings.weightForHeightGirls);
-                wIndicator = GetHeightWeightIndicator(true, totalMonthsOld, totalDaysOld, _weight, _height, ageSection, heightSection);
+               
+                wIndicator = GetHeightWeightIndicator(true, totalDaysOld, _weight, _height, gender);
                 Boolean weightIncreased = _weight > _prevWeight;
 
                 if (totalDaysOld < 7 && _prevWeight == 0 && _weight < 2.5) {
@@ -938,8 +939,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
             }
 
             if (q2 != null && q2.Question == Constants.GGSettings.q_length) {
-                string ageSection = (gender == Constants.GGSettings.male ? Constants.GGSettings.weightForAgeBoys : Constants.GGSettings.weightForAgeGirls);
-                lIndicator = GetHeightWeightIndicator(false, totalMonthsOld, totalDaysOld, double.Parse(q2.QuestionAnswer), double.Parse(q1.QuestionAnswer), ageSection, "");
+
+                lIndicator = GetHeightWeightIndicator(false, totalDaysOld, double.Parse(q2.QuestionAnswer, CultureInfo.InvariantCulture), double.Parse(q1.QuestionAnswer, CultureInfo.InvariantCulture), gender);
 
                 if (lIndicator == "Severely stunted") {
                     lColor = _red;
@@ -1301,55 +1302,79 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
 
             return result;
         }
-        private string GetHeightWeightIndicator(Boolean isWeightCalc, int totalMonthsOld, double totalDaysOld, double weight, double height, string ageSection, string heightSection) {
+        private string GetHeightWeightIndicator(Boolean isWeightCalc, double totalDaysOld, double weight, double height, string gender) {
             var indicator = "Normal";
 
-            List<VisitGrowthData> recordsForAge = _visitGrowthData.GetAll().Where(x => x.Section == ageSection && x.Month == totalMonthsOld).OrderBy(z => z.Weight).ToList();
-            VisitGrowthData neg3SD = recordsForAge.Where(x => x.Name == Constants.GGSettings.neg3SD).FirstOrDefault();
-            VisitGrowthData neg2SD = recordsForAge.Where(x => x.Name == Constants.GGSettings.neg2SD).FirstOrDefault();
-
-            if (isWeightCalc) {
-
-                if (totalDaysOld < 7) {
-                    if (neg2SD != null && weight <= neg2SD.Weight) {
-                        indicator = "Low birth length";
-                    } else if (neg2SD != null && weight > neg2SD.Weight) {
-                        indicator = "Normal";
-                    }
-                } else {
-                    if (neg3SD != null && weight <= neg3SD.Weight) {
-                        indicator = "Severely underweight";
-                    } else if ((neg2SD != null && neg3SD != null) && weight > neg3SD.Weight && weight <= neg2SD.Weight) {
-                        indicator = "Underweight";
-                    } else if (neg2SD != null && weight > neg2SD.Weight) {
-                        indicator = "Growth faltering";
-                    }
+            if (isWeightCalc)
+            {
+                string ageSection_primary = (gender == Constants.GGSettings.male ? Constants.GGSettings.weightForAgeBoys : Constants.GGSettings.weightForAgeGirls);
+                var ageSection_secondary = "";
+                if (totalDaysOld < 730)
+                {
+                    ageSection_secondary = (gender == Constants.GGSettings.male ? Constants.GGSettings.weightForLengthBoys : Constants.GGSettings.weightForLengthGirls);
+                } else
+                {
+                    ageSection_secondary = (gender == Constants.GGSettings.male ? Constants.GGSettings.weightForHeightBoys : Constants.GGSettings.weightForHeightGirls);
                 }
 
-                if (heightSection != "") {
-                    List<VisitGrowthData> recordsForHeight = _visitGrowthData.GetAll().Where(x => x.Section == heightSection && x.Height == height).OrderBy(z => z.Weight).ToList();
-                    VisitGrowthData pos2SD = recordsForHeight.Where(x => x.Name == Constants.GGSettings.pos2SD).FirstOrDefault();
-                    VisitGrowthData pos3SD = recordsForHeight.Where(x => x.Name == Constants.GGSettings.pos3SD).FirstOrDefault();
+                VisitGrowthDataDay recordsForAge = _visitGrowthDataDay.GetAll().Where(x => x.Section == ageSection_primary && x.Day == totalDaysOld).FirstOrDefault();
 
+                if (recordsForAge != null)
+                {
+                    if (weight <= recordsForAge.SD3neg)
+                    {
+                        indicator = "Severely underweight"; // priority 1
+                    }
+                    else if (weight > recordsForAge.SD3neg && weight <= recordsForAge.SD2neg)
+                    {
+                        indicator = "Underweight"; // priority 2
+                    }
+                    else if (weight > recordsForAge.SD2neg)
+                    {
+                        indicator = "Growth faltering"; // priority 3
+                    }
 
-                    if (pos3SD != null && (weight >= pos3SD.Weight)) {
-                        indicator = "Obese";
+                    if (indicator == "Normal")  // priority 6
+                    {
+                        VisitGrowthDataHeight recordsForWeight = _visitGrowthDataHeight.GetAll().Where(x => x.Section == ageSection_secondary && x.Height == height).FirstOrDefault();
+
+                        if (recordsForWeight != null)
+                        {
+                            if (weight >= recordsForWeight.SD3)
+                            {
+                                indicator = "Obese"; // priority 4
+                            }
+                            else if (weight >= recordsForWeight.SD2 && weight < recordsForWeight.SD3)
+                            {
+                                indicator = "Overweight"; // priority 5
+                            }
+                        }
                     }
-                    else if ((pos2SD != null && pos3SD != null) && (weight >= pos2SD.Weight && weight < pos3SD.Weight)) {
-                        indicator = "Overweight";
-                    }
+
                 }
 
-            } else {
+            } else
+            {
+                string heightSection = (gender == Constants.GGSettings.male ? Constants.GGSettings.lengthHeightForAgeBoys : Constants.GGSettings.lengthHeightForAgeGirls);
+                var recordsForHeight = _visitGrowthDataDay.GetAll().Where(x => x.Section == heightSection && x.Day == totalDaysOld).FirstOrDefault();
 
-                if (neg3SD != null && weight <= neg3SD.Weight) {
-                    indicator = "Severely stunted";
-                } else if ((neg2SD != null && neg3SD != null) && weight > neg3SD.Weight && weight <= neg2SD.Weight) {
-                    indicator = "Stunted";
-                } else if (neg2SD != null && weight > neg2SD.Weight) {
-                    indicator = "Normal";
+                if (recordsForHeight != null)
+                {
+                    if (weight <= recordsForHeight.SD3neg)
+                    {
+                        indicator = "Severely stunted"; // priority 1
+                    }
+                    else if (weight > recordsForHeight.SD3neg && weight <= recordsForHeight.SD2neg)
+                    {
+                        indicator = "Stunted"; // priority 2
+                    }
+                    else if (weight > recordsForHeight.SD2neg)
+                    {
+                        indicator = "Normal"; // priority 3
+                    }
                 }
             }
+            
             return indicator;
         }
         public List<VisitDataStatus> GetReferralDataForClient(string id, string clientType) {
