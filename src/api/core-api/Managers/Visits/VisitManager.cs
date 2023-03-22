@@ -1,13 +1,11 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Integration;
-using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,16 +23,14 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
         public VisitManager(
             IHttpContextAccessor contextAccessor,
-            IDbContextFactory<AuthenticationDbContext> dbContextFactory,
             IGenericRepositoryFactory repoFactory)
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
 
             _applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
-            var sharedDbContext = dbContextFactory.CreateDbContext();
-            _visitRepo = _repoFactory.CreateGenericRepository<Visit>(sharedDbContext, userContext: _applicationUserId);
-            _visitTypeRepo = _repoFactory.CreateGenericRepository<VisitType>(sharedDbContext, userContext: _applicationUserId);
+            _visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: _applicationUserId);
+            _visitTypeRepo = _repoFactory.CreateGenericRepository<VisitType>(userContext: _applicationUserId);
         }
 
         public Visit AddVisit(VisitModel input)
