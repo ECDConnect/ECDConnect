@@ -46,8 +46,13 @@ import { AttendanceSummaryState } from './attendance-summary.types';
 export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
   const [displaySmartStartMessage, setDisplaySmartStartMessage] =
     useState<boolean>(false);
+  const [classroomName, setClassroomName] = useState<string>('');
+
   const [successMessageVisible, setSuccessMessageVisible] =
     useState<boolean>(false);
+
+  const [missedAttendanceDays, setMissedAttendanceDays] = useState<Date[]>([]);
+
   const [isSmartStartUser, setIsSmartStartUser] = useState<boolean>(true);
   const [attendanceActionList, setAttendanceActionList] = useState<
     ActionListDataItem[]
@@ -103,13 +108,13 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
   let hasClosedAttendanceSmartStartPointsMessage = getStorageItem<boolean>(
     LocalStorageKeys.hasClosedAttendanceSmartStartPointsMessage
   );
+  let isCurrentSmartStartUser = getStorageItem<boolean>(
+    LocalStorageKeys.isSmartStartUser
+  );
 
   useEffect(() => {
     let hasClosedPointsMessage = getStorageItem<boolean>(
       LocalStorageKeys.hasClosedAttendanceSmartStartPointsMessage
-    );
-    let isCurrentSmartStartUser = getStorageItem<boolean>(
-      LocalStorageKeys.isSmartStartUser
     );
 
     if (hasClosedPointsMessage === undefined) {
@@ -122,11 +127,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
 
     setIsSmartStartUser(false);
 
-    if (
-      todayDate.getDay() === 1 &&
-      !hasClosedPointsMessage &&
-      !successMessageVisible
-    ) {
+    if (!hasClosedPointsMessage) {
       setDisplaySmartStartMessage(true);
       setSuccessMessageVisible(true);
     }
@@ -232,7 +233,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
         .map((x, idx) => ({
           ...x.item,
           onActionClick: () => {
-            openEditRegister(x.group.id ?? '', x.date, true);
+            openEditRegister(x.group.id ?? '', x.date, true, x.item.title);
           },
         }));
       setAttendanceActionList(actionListToDisplay);
@@ -266,7 +267,8 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
             openEditRegister(
               group.classroomGroup.id ?? '',
               group.missedDay,
-              idx === sortedMissedAttendanceGroups.length - 1
+              idx === sortedMissedAttendanceGroups.length - 1,
+              group?.classroomGroup?.name
             );
           },
         });
@@ -279,9 +281,11 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
   const openEditRegister = (
     classroomGroupCacheId: string,
     attendanceDay: Date,
-    isLast: boolean
+    isLast: boolean,
+    classGroupName: string
   ) => {
     if (isValidAttendanceDay) {
+      setClassroomName(classGroupName);
       const allMissedAttendanceDays =
         getAllMissedAttendanceGroupsByClassroomGroupId(missedAttendanceGroups);
 
@@ -336,17 +340,34 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
 
       if (allMissedAttendanceDays && allMissedAttendanceDays.length > 0) {
         setSubmitText(
-          allMissedAttendanceDays.length > 1
-            ? 'Submit & go to next day'
-            : 'Submit'
+          missedAttendanceDays.length > 1 ? 'Submit & go to next day' : 'Submit'
         );
 
-        setAttendanceEditDay(allMissedAttendanceDays[-1]);
+        const dateSubmitted = new Date(attendanceResult.attendanceDate);
+
+        if (missedAttendanceDays.length !== 0) {
+          const filteredDates = missedAttendanceDays.filter(
+            (date) => new Date(date).getTime() !== dateSubmitted.getTime()
+          );
+          setMissedAttendanceDays(filteredDates);
+        } else {
+          const filteredDates = allMissedAttendanceDays.filter(
+            (date) => new Date(date).getTime() !== dateSubmitted.getTime()
+          );
+          setMissedAttendanceDays(filteredDates);
+        }
       } else {
         setEditAttendanceRegisterVisible(false);
       }
     }
   };
+
+  useEffect(() => {
+    setAttendanceEditDay(missedAttendanceDays[0]);
+    if (missedAttendanceDays.length === 0) {
+      setAttendanceEditDay(missedAttendanceDays[-1]);
+    }
+  }, [missedAttendanceDays]);
 
   const closeMessage = () => {
     setDisplaySmartStartMessage(false);
@@ -364,15 +385,16 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
     setSuccessMessageVisible(false);
     setStorageItem(true, LocalStorageKeys.hasClosedSuccessAttendanceSubmitted);
   };
+
   return (
     <>
       <div className={'flex h-full flex-1 flex-col gap-4 px-4 pt-4'}>
         {isValidAttendanceDay ? (
           <PointsSuccessCard
-            visible={!props.hidePopup ?? successMessageVisible}
-            isSmartStartUser={false}
+            visible={successMessageVisible}
+            isSmartStartUser={isSmartStartUser}
             points={100}
-            onClose={() => console.Console}
+            onClose={() => closeNotification()}
             message={getPointsMessage(isSmartStartUser)}
             icon={''}
           />
@@ -438,6 +460,9 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
               }
               onBack={() => closeEditAttendanceRegister()}
               editAttendanceRegisterVisible={editAttendanceRegisterVisible}
+              classroomName={
+                missedAttendanceDays.length === 0 ? classroomName : ''
+              }
             />
           </div>
         </Dialog>

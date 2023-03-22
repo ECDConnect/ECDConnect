@@ -1,20 +1,36 @@
-import { Button, renderIcon, Typography } from '@ecdlink/ui';
+import { Button, classNames, renderIcon, Typography } from '@ecdlink/ui';
 
 interface TipCardProps {
+  title?: string;
   buttonText: string;
   buttonIcon?: string;
+  hideLeftIcon?: boolean;
+  className?: string;
   onClick: () => void;
 }
-export const TipCard = ({ buttonText, buttonIcon, onClick }: TipCardProps) => {
+export const TipCard = ({
+  className,
+  title = 'Need tips?',
+  hideLeftIcon,
+  buttonText,
+  buttonIcon,
+  onClick,
+}: TipCardProps) => {
   return (
-    <div className="bg-infoBb rounded-10 flex items-center justify-between p-4">
+    <div
+      className={classNames(
+        className,
+        'bg-infoBb rounded-10 flex items-center justify-between p-4'
+      )}
+    >
       <div className="flex items-center gap-2">
-        {renderIcon('InformationCircleIcon', 'w-5 h-5 text-infoMain')}
+        {!hideLeftIcon &&
+          renderIcon('InformationCircleIcon', 'w-5 h-5 text-infoMain')}
         <Typography
           type="body"
           align="left"
           weight="normal"
-          text="Need tips?"
+          text={title}
           color="infoDark"
         />
       </div>

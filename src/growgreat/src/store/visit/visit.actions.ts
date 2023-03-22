@@ -224,6 +224,7 @@ export const getPreviousVisitInformationForInfant = createAsyncThunk<
     const {
       auth: { userAuth },
     } = getState();
+    console.log({ visitId });
 
     try {
       let content: Progress_VisitDataStatus | undefined = undefined;

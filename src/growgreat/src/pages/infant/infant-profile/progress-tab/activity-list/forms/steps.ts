@@ -2,6 +2,7 @@ import {
   CareForMomStep,
   ClinicCheckupStep,
   DangerSignsStep,
+  DangerSignsFollowUpStep,
   SelfCareStep,
   SelfCareAndSupportStep,
   MaternalDistressStep,
@@ -54,13 +55,20 @@ import {
   ChildDocumentationStep,
   HIVCareAndMedicationStep,
 } from './pillar-5-steps';
+import {
+  NotesStep,
+  ReferralsStep,
+  ProgressStep,
+  NextVisitStep,
+} from './follow-up-steps';
 
 import { nutritionAnswers } from './pillar-1-steps/nutrition';
 import { Question } from './dynamic-form';
 
-export const careForMomSteps = [
+export const getCareForMomSteps = (isDangerSignsFollowUp: boolean) => [
   CareForMomStep,
   ClinicCheckupStep,
+  ...(isDangerSignsFollowUp ? [DangerSignsFollowUpStep] : []),
   DangerSignsStep,
   SelfCareStep,
   SelfCareAndSupportStep,
@@ -154,3 +162,10 @@ export const getPillar4Steps = (isFollowUp: boolean) => [
 ];
 
 export const pillar5Steps = [ChildDocumentationStep, HIVCareAndMedicationStep];
+
+export const followUpSteps = [
+  NotesStep,
+  ReferralsStep,
+  ProgressStep,
+  NextVisitStep,
+];
