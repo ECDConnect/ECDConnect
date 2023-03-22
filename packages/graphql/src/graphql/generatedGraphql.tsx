@@ -989,6 +989,22 @@ export type ClassroomMetricReport = {
   year: Scalars['Int'];
 };
 
+export type ClientSummary = {
+  __typename?: 'ClientSummary';
+  idDocStatus?: Maybe<Array<Maybe<VisitDataStatus>>>;
+  order: Scalars['Int'];
+  visitDataStatus?: Maybe<Array<Maybe<VisitDataStatus>>>;
+  visitName?: Maybe<Scalars['String']>;
+};
+
+export type ClientSummaryByPriority = {
+  __typename?: 'ClientSummaryByPriority';
+  areaName?: Maybe<Scalars['String']>;
+  idDocStatus?: Maybe<Array<Maybe<VisitDataStatus>>>;
+  order: Scalars['Int'];
+  visitDataStatus?: Maybe<Array<Maybe<VisitDataStatus>>>;
+};
+
 export type Clinic = {
   __typename?: 'Clinic';
   emergencyContactNumber?: Maybe<Scalars['String']>;
@@ -5547,6 +5563,8 @@ export type Query = {
   holidaysByMonth?: Maybe<Array<Maybe<Holiday>>>;
   holidaysByYear?: Maybe<Array<Maybe<Holiday>>>;
   infantCountForHealthCareWorkerForMonth: Scalars['Int'];
+  infantSummaryByGroup?: Maybe<Array<Maybe<ClientSummary>>>;
+  infantSummaryByPriority?: Maybe<Array<Maybe<ClientSummaryByPriority>>>;
   infantVisits?: Maybe<Array<Maybe<Visit>>>;
   infographics: Array<Maybe<Infographics>>;
   lastPractitionerInviteDate?: Maybe<Scalars['String']>;
@@ -5556,6 +5574,8 @@ export type Query = {
   moreInformation: Array<Maybe<MoreInformation>>;
   motherById?: Maybe<Mother>;
   motherCountForHealthCareWorkerForMonth: Scalars['Int'];
+  motherSummaryByGroup?: Maybe<Array<Maybe<ClientSummary>>>;
+  motherSummaryByPriority?: Maybe<Array<Maybe<ClientSummaryByPriority>>>;
   motherVisits?: Maybe<Array<Maybe<Visit>>>;
   openAccessAddChildDetail?: Maybe<ChildTokenAccessModel>;
   openConsent: Array<Maybe<Consent>>;
@@ -6736,6 +6756,14 @@ export type QueryInfantCountForHealthCareWorkerForMonthArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
+export type QueryInfantSummaryByGroupArgs = {
+  id?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryInfantSummaryByPriorityArgs = {
+  id?: InputMaybe<Scalars['String']>;
+};
+
 export type QueryInfantVisitsArgs = {
   id?: InputMaybe<Scalars['String']>;
 };
@@ -6776,6 +6804,14 @@ export type QueryMotherByIdArgs = {
 };
 
 export type QueryMotherCountForHealthCareWorkerForMonthArgs = {
+  id?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryMotherSummaryByGroupArgs = {
+  id?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryMotherSummaryByPriorityArgs = {
   id?: InputMaybe<Scalars['String']>;
 };
 
