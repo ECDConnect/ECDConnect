@@ -1,11 +1,11 @@
 using ECDLink.DataAccessLayer.Context;
+using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Base;
 using ECDLink.DataAccessLayer.Events;
 using ECDLink.Tenancy.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,22 +17,17 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
         where T : EntityBase<Guid>
     {
         protected AuthenticationDbContext context;
-        protected readonly Guid contextId = Guid.NewGuid();
         protected readonly IDomainEventService _domainEventService;
-        private readonly ILogger<GenericRepositoryBase<T>> _logger;
+
         protected DbSet<T> entities;
 
         protected string _userId;
         protected string errorMessage = string.Empty;
 
-        public GenericRepositoryBase(IDomainEventService domainEventService, IDbContextFactory<AuthenticationDbContext> authDbContextFactory, ILogger<GenericRepositoryBase<T>> logger)
+        public GenericRepositoryBase(AuthenticationDbContext context, IDomainEventService domainEventService)
         {
-            _logger = logger; 
-            context = authDbContextFactory.CreateDbContext();
-            _logger.LogDebug("Context created: {contextId}", contextId);
-
             SetCustomScope(context);
-            
+
             _domainEventService = domainEventService;
         }
 
@@ -176,8 +171,6 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
 
         public void Dispose()
         {
-            _logger.LogDebug("Disposing context: {contextId}", contextId);
-            this.context.Dispose();
             this.context = null;
             entities = null;
         }
