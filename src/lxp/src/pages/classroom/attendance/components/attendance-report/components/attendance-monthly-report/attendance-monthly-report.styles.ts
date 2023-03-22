@@ -9,9 +9,7 @@ export const wrapper = 'bg-white rounded-lg shadow-sm justify-center';
 
 export const resultsSection = 'flex flex-row justify-between items-center';
 
-export const attendanceItemWrapper = (
-  attendanceScore: number
-) => {
+export const attendanceItemWrapper = (attendanceScore: number) => {
   const baseStyle = `flex flex-col py-4 w-full rounded-lg p-5 pr-8 mt-2 `;
 
   return classNames(baseStyle, getColor(attendanceScore));

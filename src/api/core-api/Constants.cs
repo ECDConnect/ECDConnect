@@ -201,17 +201,15 @@ namespace EcdLink.Api.CoreApi {
            
 
             // Growth names
-            public const string neg3SD = "-3 SD";
-            public const string neg2SD = "-2 SD";
-            public const string neg1SD = "-1 SD";
-            public const string median = "median";
-            public const string pos1SD = "1 SD";
-            public const string pos2SD = "2 SD";
-            public const string pos3SD = "3 SD";
-            public const string weightForAgeBoys = "weightForAgeBoys";
-            public const string weightForAgeGirls = "weightForAgeGirls";
-            public const string weightForHeightBoys = "weightForHeightBoys";
-            public const string weightForHeightGirls = "weightForHeightGirls";
+            public const string weightForAgeBoys = "weight-for-age-boys";
+            public const string weightForAgeGirls = "weight-for-age-girls";
+            public const string weightForLengthGirls = "weight-for-length-girls";
+            public const string weightForLengthBoys = "weight-for-length-boys";
+            public const string weightForHeightGirls = "weight-for-height-girls";
+            public const string weightForHeightBoys = "weight-for-height-boys";
+
+            public const string lengthHeightForAgeGirls = "length-height-for-age-girls";
+            public const string lengthHeightForAgeBoys = "length-height-for-age-boys";
 
         }
     }
