@@ -6,6 +6,8 @@ import Infant from '@/assets/infant.svg';
 import { DynamicFormProps } from '../../dynamic-form';
 import { useEffect, useMemo } from 'react';
 import { Video } from '../../components/video';
+import { useSelector } from 'react-redux';
+import { getPreviousVisitInformationForInfantSelector } from '@/store/visit/visit.selectors';
 
 export const MotherCareStep = ({
   infant,
@@ -13,10 +15,22 @@ export const MotherCareStep = ({
 }: DynamicFormProps) => {
   const name = useMemo(() => infant?.user?.firstName || '', [infant]);
   const videoSection = 'Kangaroo Mother Care';
-  // TODO: add integration
-  const isFirstVisit = true;
 
-  // TODO: add integration
+  const previousVisit = useSelector(
+    getPreviousVisitInformationForInfantSelector
+  );
+
+  const isFirstVisit = !previousVisit?.visitDataStatus?.length;
+
+  const weightAtBirth = useMemo(
+    () => infant?.weightAtBirth,
+    [infant?.weightAtBirth]
+  );
+  const weightAtVisit = useMemo(
+    () => previousVisit?.weight,
+    [previousVisit?.weight]
+  );
+
   const orangeAlert = {
     message: `${name} had a low birth weight.`,
     list: [
@@ -54,7 +68,8 @@ export const MotherCareStep = ({
           }
         />
         {isFirstVisit && <Video section={videoSection} />}
-        {!!orangeAlert && (
+        {((!!weightAtBirth && Number(weightAtBirth) < 2.5) ||
+          (!!weightAtVisit && Number(weightAtBirth) < 2.5)) && (
           <Alert
             type="warning"
             title={orangeAlert.message}

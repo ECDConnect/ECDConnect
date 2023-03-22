@@ -15,7 +15,7 @@ import { useCallback, useState } from 'react';
 import { replaceBraces, useDialog } from '@ecdlink/core';
 import { Translations } from './translations';
 
-export const DangerSignsVisitSection = 'Danger signs';
+export const dangerSignsVisitSection = 'Danger signs';
 
 export const DangerSignsStep = ({
   infant,
@@ -94,7 +94,7 @@ export const DangerSignsStep = ({
         setEnableButton && setEnableButton(true);
         return setQuestions?.([
           {
-            visitSection: DangerSignsVisitSection,
+            visitSection: dangerSignsVisitSection,
             questions: [
               {
                 question,
@@ -110,7 +110,7 @@ export const DangerSignsStep = ({
       setAnswer(currentAnswers);
       return setQuestions?.([
         {
-          visitSection: DangerSignsVisitSection,
+          visitSection: dangerSignsVisitSection,
           questions: [
             {
               question,
@@ -144,7 +144,7 @@ export const DangerSignsStep = ({
       <Header
         backgroundColor="tertiary"
         customIcon={Pregnant}
-        title={DangerSignsVisitSection}
+        title={dangerSignsVisitSection}
       />
       <div className="flex flex-col p-4">
         <Alert

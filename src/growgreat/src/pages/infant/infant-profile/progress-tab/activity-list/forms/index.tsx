@@ -25,7 +25,8 @@ import {
   breastfeedingIssuesCheckboxOptions,
 } from './pillar-1-steps/nutrition/breast-milk-only-flow/breastfeeding-issues';
 import { getPreviousVisitInformationForInfantSelector } from '@/store/visit/visit.selectors';
-import { DangerSignsVisitSection } from './care-for-mom-steps/danger-signs';
+import { dangerSignsVisitSection } from './care-for-mom-steps/danger-signs';
+import { dangerSignsVisitSectionForBaby } from './care-for-baby-steps/danger-signs';
 
 interface FormProps {
   onBack: () => void;
@@ -43,10 +44,23 @@ export const Form = ({ onBack }: FormProps) => {
     getPreviousVisitInformationForInfantSelector
   );
 
-  const isDangerSignsFollowUp = !!previousVisit?.visitDataStatus?.some(
-    (item) =>
-      item?.section === DangerSignsVisitSection &&
-      item.visitData?.visitName === activitiesTypes.careForMom
+  const isFollowUp = useCallback(
+    (section: string, visitName: string) => {
+      return !!previousVisit?.visitDataStatus?.some(
+        (item) =>
+          item?.section === section && item.visitData?.visitName === visitName
+      );
+    },
+    [previousVisit?.visitDataStatus]
+  );
+
+  const isDangerSignsFollowUpForMom = isFollowUp(
+    dangerSignsVisitSection,
+    activitiesTypes.careForMom
+  );
+  const isDangerSignsFollowUpForBaby = isFollowUp(
+    dangerSignsVisitSectionForBaby,
+    activitiesTypes.careForBaby
   );
 
   const nutritionAnswer = sectionQuestions
@@ -141,9 +155,9 @@ export const Form = ({ onBack }: FormProps) => {
   const currentSteps = useMemo(() => {
     switch (activityName) {
       case activitiesTypes.careForMom:
-        return getCareForMomSteps(isDangerSignsFollowUp);
+        return getCareForMomSteps(isDangerSignsFollowUpForMom);
       case activitiesTypes.careForBaby:
-        return careForBabySteps;
+        return careForBabySteps(isDangerSignsFollowUpForBaby);
       case activitiesTypes.pillar1:
         return getPillar1Steps(
           nutritionAnswer,
@@ -162,7 +176,8 @@ export const Form = ({ onBack }: FormProps) => {
     }
   }, [
     activityName,
-    isDangerSignsFollowUp,
+    isDangerSignsFollowUpForMom,
+    isDangerSignsFollowUpForBaby,
     isPillar4FollowUp,
     isToSkipBreastfeedingIssuesRelevantItemsStep,
     nutritionAnswer,
