@@ -32,6 +32,7 @@ import {
 import { IntroScreen } from './intro-screen';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { VisitActions } from '@/store/visit/visit.actions';
+import { DevelopmentalScreeningVisitSection } from './forms/pillar-2-steps/developmental-screening-weeks';
 
 export const INFANT_PROFILE_TABS = {
   VISITS: 0,
@@ -58,8 +59,8 @@ export const ActivityList: React.FC = () => {
   const location = useLocation();
 
   const visits = useSelector(getInfantVisitsSelector);
-  const MOCKED_VISIT_ID =
-    visits[0]?.id; /* '454686a9-2142-4061-aa47-4e89d46110b9' */
+  const MOCKED_VISIT_ID = visits[0]?.id;
+  // '454686a9-2142-4061-aa47-4e89d46110b9'
 
   const completedVisits = useSelector((state: RootState) =>
     getCompletedVisitsByVisitIdSelector(state, MOCKED_VISIT_ID)
@@ -192,12 +193,19 @@ export const ActivityList: React.FC = () => {
         visitId: MOCKED_VISIT_ID,
       })
     );
+    appDispatch(
+      visitThunkActions.getPreviousVisitInformationForInfant({
+        visitId: MOCKED_VISIT_ID,
+      })
+    );
   }, [MOCKED_VISIT_ID, appDispatch]);
 
   useLayoutEffect(() => {
     appDispatch(
-      visitThunkActions.getPreviousVisitInformationForInfant({
+      visitThunkActions.getVisitAnswersForInfant({
         visitId: MOCKED_VISIT_ID,
+        visitName: activitiesTypes.pillar2,
+        visitSection: DevelopmentalScreeningVisitSection,
       })
     );
   }, [MOCKED_VISIT_ID, appDispatch]);

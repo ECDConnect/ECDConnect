@@ -3,6 +3,7 @@ import {
   HealthPromotion,
   MoreInformation,
   Progress_VisitDataStatus,
+  VisitData,
 } from '@ecdlink/graphql';
 import { VisitStatusDto } from '@ecdlink/core';
 import { VisitVideosWithLocale } from './visit.actions';
@@ -20,4 +21,5 @@ export interface VisitState {
   completedVisitsForVisitId?: CompletedVisitsForVisitId[];
   previousVisitInformationForInfant?: Progress_VisitDataStatus;
   visitVideos?: VisitVideosWithLocale[];
+  visitAnswersForInfant?: VisitData[];
 }
