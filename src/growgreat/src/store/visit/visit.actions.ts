@@ -26,6 +26,7 @@ export const VisitActions = {
   GET_PREVIOUS_VISIT_INFORMATION_FOR_INFANT:
     'getPreviousVisitInformationForInfant',
   GET_GROWTH_DATA_FOR_INFANT: 'getGrowthDataForInfant',
+  GET_VISIT_ANSWERS_FOR_INFANT: 'getVisitAnswersForInfant',
 };
 
 export const getHealthCareWorkerVisitStatus = createAsyncThunk<
@@ -281,11 +282,11 @@ export const getGrowthDataForInfant = createAsyncThunk<
 );
 
 export const getVisitAnswersForInfant = createAsyncThunk<
-  VisitData,
+  VisitData[],
   { visitId: string; visitName: string; visitSection: string },
   ThunkApiType<RootState>
 >(
-  VisitActions.GET_PREVIOUS_VISIT_INFORMATION_FOR_INFANT,
+  VisitActions.GET_VISIT_ANSWERS_FOR_INFANT,
   async (
     { visitId, visitName, visitSection },
     { getState, rejectWithValue }
@@ -295,7 +296,7 @@ export const getVisitAnswersForInfant = createAsyncThunk<
     } = getState();
 
     try {
-      let content: VisitData | undefined = undefined;
+      let content: VisitData[] | undefined = undefined;
 
       if (userAuth?.auth_token) {
         content = await new Visit(

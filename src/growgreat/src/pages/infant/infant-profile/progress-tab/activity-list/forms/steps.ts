@@ -42,6 +42,7 @@ import {
 import {
   DevelopmentalScreeningStep,
   DevelopmentalScreeningWeeksStep,
+  DevelopmentalScreeningWeeksFollowUpStep,
 } from './pillar-2-steps';
 import {
   ImmunisationsStep,
@@ -147,8 +148,13 @@ export const getPillar1Steps = (
   }
 };
 
-export const pillar2Steps = [
+export const pillar2Steps = (
+  isDevelopmentalScreeningWeeksFollowUp: boolean
+) => [
   DevelopmentalScreeningStep,
+  ...(isDevelopmentalScreeningWeeksFollowUp
+    ? [DevelopmentalScreeningWeeksFollowUpStep]
+    : []),
   DevelopmentalScreeningWeeksStep,
 ];
 

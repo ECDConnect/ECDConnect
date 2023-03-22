@@ -27,6 +27,7 @@ import {
 import { getPreviousVisitInformationForInfantSelector } from '@/store/visit/visit.selectors';
 import { dangerSignsVisitSection } from './care-for-mom-steps/danger-signs';
 import { dangerSignsVisitSectionForBaby } from './care-for-baby-steps/danger-signs';
+import { DevelopmentalScreeningVisitSection } from './pillar-2-steps/developmental-screening-weeks';
 
 interface FormProps {
   onBack: () => void;
@@ -48,7 +49,9 @@ export const Form = ({ onBack }: FormProps) => {
     (section: string, visitName: string) => {
       return !!previousVisit?.visitDataStatus?.some(
         (item) =>
-          item?.section === section && item.visitData?.visitName === visitName
+          item?.section === section &&
+          item.visitData?.visitName === visitName &&
+          item.color !== 'Success'
       );
     },
     [previousVisit?.visitDataStatus]
@@ -61,6 +64,11 @@ export const Form = ({ onBack }: FormProps) => {
   const isDangerSignsFollowUpForBaby = isFollowUp(
     dangerSignsVisitSectionForBaby,
     activitiesTypes.careForBaby
+  );
+
+  const isDevelopmentalScreeningWeeksFollowUp = isFollowUp(
+    DevelopmentalScreeningVisitSection,
+    activitiesTypes.pillar2
   );
 
   const nutritionAnswer = sectionQuestions
@@ -164,7 +172,7 @@ export const Form = ({ onBack }: FormProps) => {
           isToSkipBreastfeedingIssuesRelevantItemsStep
         );
       case activitiesTypes.pillar2:
-        return pillar2Steps;
+        return pillar2Steps(isDevelopmentalScreeningWeeksFollowUp);
       case activitiesTypes.pillar3:
         return pillar3Steps;
       case activitiesTypes.pillar4:
@@ -178,6 +186,7 @@ export const Form = ({ onBack }: FormProps) => {
     activityName,
     isDangerSignsFollowUpForMom,
     isDangerSignsFollowUpForBaby,
+    isDevelopmentalScreeningWeeksFollowUp,
     isPillar4FollowUp,
     isToSkipBreastfeedingIssuesRelevantItemsStep,
     nutritionAnswer,

@@ -301,10 +301,10 @@ class Visit {
     visitId: string,
     visitName: string,
     visitSection: string
-  ): Promise<VisitData> {
+  ): Promise<VisitData[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
-      data: { visitAnswersForInfant: VisitData };
+      data: { visitAnswersForInfant: VisitData[] };
       errors?: {};
     }>(``, {
       query: `
