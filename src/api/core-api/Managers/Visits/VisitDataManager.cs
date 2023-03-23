@@ -1,13 +1,11 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Integration;
-using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,23 +21,19 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         private IGenericRepository<VisitData, Guid> _visitDataRepo;
 
         private string _applicationUserId;
-        private readonly AuthenticationDbContext _dbContext;
 
         public VisitDataManager(
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
-            VisitDataStatusManager visitDataStatusManager,
-            IDbContextFactory<AuthenticationDbContext> dbContextFactory)
+            VisitDataStatusManager visitDataStatusManager)
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
             _visitDataStatusManager = visitDataStatusManager;
 
             _applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
-
-            _dbContext = dbContextFactory.CreateDbContext();
-            _visitRepo = _repoFactory.CreateGenericRepository<Visit>(_dbContext, userContext: _applicationUserId);
-            _visitDataRepo = _repoFactory.CreateGenericRepository<VisitData>(_dbContext, userContext: _applicationUserId);
+            _visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: _applicationUserId);
+            _visitDataRepo = _repoFactory.CreateGenericRepository<VisitData>(userContext: _applicationUserId);
         }
 
         public Boolean AddChildVisitData(CMSVisitDataInputModel input)
