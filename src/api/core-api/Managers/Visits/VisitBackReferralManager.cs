@@ -1,12 +1,10 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
-using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,7 +14,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
     {
         private IHttpContextAccessor _contextAccessor;
         private IGenericRepositoryFactory _repoFactory;
-        private readonly AuthenticationDbContext _dbContext;
+
         private IGenericRepository<Visit, Guid> _visitRepo;
         private IGenericRepository<VisitData, Guid> _visitDataRepo;
         private IGenericRepository<VisitDataStatus, Guid> _visitDataStatusRepo;
@@ -26,18 +24,16 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
 
         public VisitBackReferralManager(
             IHttpContextAccessor contextAccessor,
-            IGenericRepositoryFactory repoFactory,
-            IDbContextFactory<AuthenticationDbContext> dbContextFactory)
+            IGenericRepositoryFactory repoFactory)
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
-            _applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
 
-            _dbContext = dbContextFactory.CreateDbContext();
-            _visitRepo = _repoFactory.CreateGenericRepository<Visit>(_dbContext, userContext: _applicationUserId);
-            _visitDataRepo = _repoFactory.CreateGenericRepository<VisitData>(_dbContext, userContext: _applicationUserId);
-            _visitDataStatusRepo = _repoFactory.CreateGenericRepository<VisitDataStatus>(_dbContext, userContext: _applicationUserId);
-            _visitBackReferralRepo = _repoFactory.CreateGenericRepository<VisitBackReferral>(_dbContext, userContext: _applicationUserId);
+            _applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
+            _visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: _applicationUserId);
+            _visitDataRepo = _repoFactory.CreateGenericRepository<VisitData>(userContext: _applicationUserId);
+            _visitDataStatusRepo = _repoFactory.CreateGenericRepository<VisitDataStatus>(userContext: _applicationUserId);
+            _visitBackReferralRepo = _repoFactory.CreateGenericRepository<VisitBackReferral>(userContext: _applicationUserId);
         }
 
         public VisitBackReferral AddVisitBackReferral(VisitBackReferralModel input)
