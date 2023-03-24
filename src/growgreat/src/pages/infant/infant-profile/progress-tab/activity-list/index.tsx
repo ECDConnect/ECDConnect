@@ -3,9 +3,11 @@ import { useHistory, useLocation } from 'react-router';
 
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import {
+  ActionModal,
   BannerWrapper,
   Button,
   Colours,
+  DialogPosition,
   LoadingSpinner,
   MenuListDataItem,
   StackedList,
@@ -33,6 +35,9 @@ import { IntroScreen } from './intro-screen';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { VisitActions } from '@/store/visit/visit.actions';
 import { DevelopmentalScreeningVisitSection } from './forms/pillar-2-steps/developmental-screening-weeks';
+import { useDialog } from '@ecdlink/core';
+import { ReactComponent as PollyNeutral } from '@/assets/pollyNeutral.svg';
+import { Walkthrough } from './walkthrough';
 
 export const INFANT_PROFILE_TABS = {
   VISITS: 0,
@@ -47,6 +52,7 @@ export const ActivityList: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [isShowCompletedForms, setIsShowCompletedForms] = useState(false);
   const [isStartVisit, setIsStartVisit] = useState(false);
+  const [isDisplayWalkthrough, setIsDisplayWalkthrough] = useState(false);
 
   const selectedOption = window.sessionStorage.getItem(currentActivityKey);
 
@@ -74,6 +80,8 @@ export const ActivityList: React.FC = () => {
   const [, , , infantId] = location.pathname.split('/');
 
   const appDispatch = useAppDispatch();
+
+  const dialog = useDialog();
 
   const infant = useSelector((state: RootState) =>
     getInfantById(state, infantId)
@@ -172,6 +180,45 @@ export const ActivityList: React.FC = () => {
   const onFormBack = () => {
     setShowForm(false);
     window.sessionStorage.removeItem(currentActivityKey);
+  };
+
+  const onHelp = (detailText?: string) => {
+    dialog({
+      blocking: false,
+      position: DialogPosition.Middle,
+      color: 'bg-white',
+      render: (onClose) => {
+        return (
+          <ActionModal
+            className="z-50"
+            title="Hello!"
+            detailText="Would you like me to show you how to use this screen?"
+            customIcon={<PollyNeutral className="mb-3 h-24 w-24" />}
+            actionButtons={[
+              {
+                colour: 'primary',
+                text: 'Yes, help me!',
+                textColour: 'white',
+                type: 'filled',
+                leadingIcon: 'CheckCircleIcon',
+                onClick: () => {
+                  onClose();
+                  setIsDisplayWalkthrough(true);
+                },
+              },
+              {
+                colour: 'primary',
+                text: 'No, skip',
+                textColour: 'primary',
+                type: 'outlined',
+                leadingIcon: 'ClockIcon',
+                onClick: onClose,
+              },
+            ]}
+          />
+        );
+      },
+    });
   };
 
   useLayoutEffect(() => {
@@ -328,6 +375,15 @@ export const ActivityList: React.FC = () => {
     width,
   ]);
 
+  if (isDisplayWalkthrough) {
+    return (
+      <Walkthrough
+        infant={infant}
+        onClose={() => setIsDisplayWalkthrough(false)}
+      />
+    );
+  }
+
   if (showForm && selectedOption) {
     return <Form onBack={onFormBack} />;
   }
@@ -343,6 +399,8 @@ export const ActivityList: React.FC = () => {
       subTitle="Child visit activities"
       backgroundColour="white"
       displayOffline={!isOnline}
+      displayHelp
+      onHelp={onHelp}
     >
       {renderContent}
     </BannerWrapper>

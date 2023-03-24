@@ -160,7 +160,6 @@ export const DevelopmentalScreeningWeeksStep = ({
     );
   }, []);
 
-  console.log(previousNote);
   if (isTipPage) {
     return (
       <MoreInformation
