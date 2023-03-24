@@ -23,6 +23,7 @@ import { activitiesList, activitiesTypes } from './activities-list';
 import { Form } from './forms';
 import { useWindowSize } from '@reach/window-size';
 import { infantThunkActions } from '@/store/infant';
+import { referralThunkActions } from '@/store/referral';
 import { useAppDispatch } from '@/store';
 import { visitThunkActions } from '@/store/visit';
 import {
@@ -60,7 +61,7 @@ export const ActivityList: React.FC = () => {
 
   const visits = useSelector(getInfantVisitsSelector);
   const MOCKED_VISIT_ID = visits[0]?.id;
-  // '454686a9-2142-4061-aa47-4e89d46110b9'
+  // '454686a9-2142-4061-aa47-4e89d46110b9';
 
   const completedVisits = useSelector((state: RootState) =>
     getCompletedVisitsByVisitIdSelector(state, MOCKED_VISIT_ID)
@@ -182,6 +183,9 @@ export const ActivityList: React.FC = () => {
 
   useLayoutEffect(() => {
     appDispatch(infantThunkActions.getInfantVisits({ infantId })).unwrap();
+    appDispatch(
+      referralThunkActions.getReferralsForInfant({ infantId })
+    ).unwrap();
     // TODO: add integration
     // appDispatch(visitThunkActions.getGrowthDataForInfant({ infantId })).unwrap()
   }, [appDispatch, infantId]);

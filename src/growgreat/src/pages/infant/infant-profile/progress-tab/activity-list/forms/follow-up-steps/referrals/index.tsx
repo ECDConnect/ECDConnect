@@ -15,11 +15,11 @@ import { DynamicFormProps } from '../../dynamic-form';
 
 export const ReferralsStep = ({
   infant,
-  setSectionQuestions,
   setEnableButton,
 }: DynamicFormProps) => {
   const questionForMom = 'Clinic referrals:';
 
+  // TODO: get the info from getReferralsForInfant
   const [questions, setAnswers] = useState([
     {
       question: questionForMom,
@@ -79,7 +79,7 @@ export const ReferralsStep = ({
       //   },
       // ]);
     },
-    [questions, setSectionQuestions]
+    [questions]
   );
 
   const onCheckboxChange = useCallback(
@@ -108,7 +108,7 @@ export const ReferralsStep = ({
       <Header
         icon="CalendarIcon"
         iconHexBackgroundColor={activitiesColours.other.primaryColor}
-        title="Referrals"
+        title={visitSection}
       />
       <div className="flex flex-col gap-4 p-4">
         <Alert
