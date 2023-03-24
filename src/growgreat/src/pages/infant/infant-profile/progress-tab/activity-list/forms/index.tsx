@@ -11,7 +11,8 @@ import { activitiesTypes } from '../activities-list';
 import { DynamicForm, SectionQuestions } from './dynamic-form';
 import {
   careForBabySteps,
-  careForMomSteps,
+  getCareForMomSteps,
+  followUpSteps,
   getPillar1Steps,
   getPillar4Steps,
   pillar2Steps,
@@ -23,6 +24,10 @@ import {
   breastfeedingIssuesCheckboxQuestion,
   breastfeedingIssuesCheckboxOptions,
 } from './pillar-1-steps/nutrition/breast-milk-only-flow/breastfeeding-issues';
+import { getPreviousVisitInformationForInfantSelector } from '@/store/visit/visit.selectors';
+import { dangerSignsVisitSection } from './care-for-mom-steps/danger-signs';
+import { dangerSignsVisitSectionForBaby } from './care-for-baby-steps/danger-signs';
+import { DevelopmentalScreeningVisitSection } from './pillar-2-steps/developmental-screening-weeks';
 
 interface FormProps {
   onBack: () => void;
@@ -35,6 +40,36 @@ export const Form = ({ onBack }: FormProps) => {
   const [step, setStep] = useState(0);
   const [sectionQuestions, setSectionQuestions] =
     useState<SectionQuestions[]>();
+
+  const previousVisit = useSelector(
+    getPreviousVisitInformationForInfantSelector
+  );
+
+  const isFollowUp = useCallback(
+    (section: string, visitName: string) => {
+      return !!previousVisit?.visitDataStatus?.some(
+        (item) =>
+          item?.section === section &&
+          item.visitData?.visitName === visitName &&
+          item.color !== 'Success'
+      );
+    },
+    [previousVisit?.visitDataStatus]
+  );
+
+  const isDangerSignsFollowUpForMom = isFollowUp(
+    dangerSignsVisitSection,
+    activitiesTypes.careForMom
+  );
+  const isDangerSignsFollowUpForBaby = isFollowUp(
+    dangerSignsVisitSectionForBaby,
+    activitiesTypes.careForBaby
+  );
+
+  const isDevelopmentalScreeningWeeksFollowUp = isFollowUp(
+    DevelopmentalScreeningVisitSection,
+    activitiesTypes.pillar2
+  );
 
   const nutritionAnswer = sectionQuestions
     ?.flatMap((section) => section.questions)
@@ -128,16 +163,16 @@ export const Form = ({ onBack }: FormProps) => {
   const currentSteps = useMemo(() => {
     switch (activityName) {
       case activitiesTypes.careForMom:
-        return careForMomSteps;
+        return getCareForMomSteps(isDangerSignsFollowUpForMom);
       case activitiesTypes.careForBaby:
-        return careForBabySteps;
+        return careForBabySteps(isDangerSignsFollowUpForBaby);
       case activitiesTypes.pillar1:
         return getPillar1Steps(
           nutritionAnswer,
           isToSkipBreastfeedingIssuesRelevantItemsStep
         );
       case activitiesTypes.pillar2:
-        return pillar2Steps;
+        return pillar2Steps(isDevelopmentalScreeningWeeksFollowUp);
       case activitiesTypes.pillar3:
         return pillar3Steps;
       case activitiesTypes.pillar4:
@@ -145,10 +180,13 @@ export const Form = ({ onBack }: FormProps) => {
       case activitiesTypes.pillar5:
         return pillar5Steps;
       default:
-        return [() => <div className="p-4">Coming soon</div>];
+        return followUpSteps;
     }
   }, [
     activityName,
+    isDangerSignsFollowUpForMom,
+    isDangerSignsFollowUpForBaby,
+    isDevelopmentalScreeningWeeksFollowUp,
     isPillar4FollowUp,
     isToSkipBreastfeedingIssuesRelevantItemsStep,
     nutritionAnswer,

@@ -42,6 +42,23 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat {
         public string VisitSection { get; set; }
         public virtual ICollection<VisitDataStatus> VisitDataStatus { get; set; }
     }
+
+    public class ClientSummary
+    {
+        public string VisitName { get; set; }
+        public int Order { get; set; }
+        public virtual ICollection<VisitDataStatus> VisitDataStatus { get; set; }
+        public virtual ICollection<VisitDataStatus> IdDocStatus { get; set; }
+    }
+
+    public class ClientSummaryByPriority
+    {
+        public string AreaName { get; set; }
+        public int Order { get; set; }
+        public virtual ICollection<VisitDataStatus> VisitDataStatus { get; set; }
+
+        public virtual ICollection<VisitDataStatus> IdDocStatus { get; set; }
+    }
 }
 
 

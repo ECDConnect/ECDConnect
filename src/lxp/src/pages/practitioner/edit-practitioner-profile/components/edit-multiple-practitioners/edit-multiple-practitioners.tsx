@@ -243,7 +243,7 @@ export default function EditMultiplePractitioners({
                 size="normal"
                 className="mb-4 w-full"
                 type="filled"
-                color="quatenary"
+                color="primary"
                 text="Confirm"
                 textColor="white"
                 icon="CheckCircleIcon"

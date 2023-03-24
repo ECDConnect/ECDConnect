@@ -86,7 +86,7 @@ export const AddPractitioner = ({
           setIsPractitionerRegistered(false);
         }
         if (p?.appUser?.practitionerObjectData?.isRegistered === true) {
-          setIsPractitionerRegistered(false);
+          setIsPractitionerRegistered(true);
         }
 
         setIsValidPractitioner(!!p?.appUser?.idNumber);

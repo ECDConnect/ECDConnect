@@ -223,14 +223,30 @@ class Visit {
       query: `
         query GetPreviousVisitInformationForInfant($visitId: String) {
           previousVisitInformationForInfant(visitId: $visitId) {
-                score
-                visitDataStatus {
-                  id
-                  comment
-                  color
-                  type
-                  section
-                }
+            score
+            scoreColor
+            growComment
+            growCommentColor
+            weight
+            weightColor
+            weightComment
+            length
+            lengthColor
+            lengthComment
+            muac
+            muacColor
+            muacComment
+            visitDataStatus {
+              insertedDate
+              id
+              comment
+              color
+              type
+              section
+              visitData {
+                visitName
+              }
+            }
           }
         }
       `,
@@ -279,6 +295,43 @@ class Visit {
     }
 
     return response.data.data.growthDataForInfant;
+  }
+
+  async getVisitAnswersForInfant(
+    visitId: string,
+    visitName: string,
+    visitSection: string
+  ): Promise<VisitData[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { visitAnswersForInfant: VisitData[] };
+      errors?: {};
+    }>(``, {
+      query: `
+        query GetVisitAnswersForInfant($visitId: String, $visitName: String, $visitSection: String) {
+          visitAnswersForInfant(visitId: $visitId, visitName: $visitName, visitSection: $visitSection) {
+              id
+              question
+              questionAnswer
+              visitName
+              visitSection
+              visitId
+              insertedDate       
+          }
+        }
+      `,
+      variables: {
+        visitId,
+        visitName,
+        visitSection,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error('Get Visit Answers For Infant - Server connection error');
+    }
+
+    return response.data.data.visitAnswersForInfant;
   }
 }
 

@@ -13,9 +13,10 @@ import Infant from '@/assets/infant.svg';
 import { ReactComponent as Translation } from '@/assets/translation.svg';
 import { DynamicFormProps } from '../../dynamic-form';
 import { useCallback, useMemo, useState } from 'react';
-import { ReactComponent as PollyTime } from '@/assets/pollyTime.svg';
 import { replaceBraces, useDialog } from '@ecdlink/core';
 import { Translations } from './translations';
+
+export const dangerSignsVisitSectionForBaby = 'Danger signs';
 
 export const DangerSignsStep = ({
   infant,
@@ -33,17 +34,7 @@ export const DangerSignsStep = ({
     [infant?.caregiver?.firstName]
   );
 
-  const visitSection = 'Danger signs';
-  // TODO: add integration
-  const mockedFollowUp = {
-    message: `${name} had the following danger signs at your previous visit on 2 July:`,
-    list: ['Blue skin colour', 'Poor feeding or repeated vomiting'],
-  };
-
   const dialog = useDialog();
-
-  // TODO: add integration
-  const isFollowUp = false;
 
   const noneOption = 'None of the above';
 
@@ -106,7 +97,7 @@ export const DangerSignsStep = ({
 
         return setQuestions?.([
           {
-            visitSection,
+            visitSection: dangerSignsVisitSectionForBaby,
             questions: [
               {
                 question,
@@ -123,7 +114,7 @@ export const DangerSignsStep = ({
       setAnswer(currentAnswers);
       return setQuestions?.([
         {
-          visitSection,
+          visitSection: dangerSignsVisitSectionForBaby,
           questions: [
             {
               question,
@@ -150,77 +141,60 @@ export const DangerSignsStep = ({
       <Header
         backgroundColor="tertiary"
         customIcon={Infant}
-        title={visitSection}
-        {...(isFollowUp
-          ? {
-              subTitle: 'Follow up',
-            }
-          : {})}
+        title={dangerSignsVisitSectionForBaby}
       />
       <div className="flex flex-col p-4">
-        {isFollowUp ? (
-          <Alert
-            type="warning"
-            title={mockedFollowUp.message}
-            titleColor="textDark"
-            list={mockedFollowUp.list}
-            customIcon={<PollyTime className="w-28" />}
-          />
-        ) : (
-          <>
-            <Label text="If you or your family notice any of these danger signs after my visit, take the baby to the clinic or hospital immediately." />
-            <Divider dividerType="dashed" className="my-4" />
-            <Typography
-              type="h4"
-              text={replaceBraces(question, caregiverName)}
-              color="black"
+        <Label text="If you or your family notice any of these danger signs after my visit, take the baby to the clinic or hospital immediately." />
+        <Divider dividerType="dashed" className="my-4" />
+        <Typography
+          type="h4"
+          text={replaceBraces(question, caregiverName)}
+          color="black"
+        />
+        {options.map((option, index) => (
+          <div
+            className="bg-uiBg mt-2 flex items-center rounded-xl p-4"
+            key={option?.name}
+          >
+            <Checkbox
+              checked={answers?.some((item) => item === option.name)}
+              value={option.name}
+              onCheckboxChange={onCheckboxChange}
             />
-            {options.map((option, index) => (
-              <div
-                className="bg-uiBg mt-2 flex items-center rounded-xl p-4"
-                key={option?.name}
+            <Typography
+              type="body"
+              align="left"
+              weight="skinny"
+              text={option?.name || ''}
+              color="textMid"
+            />
+            {options.length - 1 > index && (
+              <button
+                className="ml-auto"
+                onClick={() => {
+                  setCurrentOption(option?.name);
+                  setIsTip && setIsTip(true);
+                }}
               >
-                <Checkbox
-                  checked={answers?.some((item) => item === option.name)}
-                  value={option.name}
-                  onCheckboxChange={onCheckboxChange}
-                />
-                <Typography
-                  type="body"
-                  align="left"
-                  weight="skinny"
-                  text={option?.name || ''}
-                  color="textMid"
-                />
-                {options.length - 1 > index && (
-                  <button
-                    className="ml-auto"
-                    onClick={() => {
-                      setCurrentOption(option?.name);
-                      setIsTip && setIsTip(true);
-                    }}
-                  >
-                    <Translation className="h-6 w-6" />
-                  </button>
+                <Translation className="h-6 w-6" />
+              </button>
+            )}
+          </div>
+        ))}
+        {answers?.some((item) => item !== noneOption) && (
+          <Alert
+            className="mt-4"
+            type="error"
+            title={`Eish! Refer ${caregiverName} & ${name} to the clinic urgently and discuss the importance of seeking help.`}
+            customIcon={
+              <div className="rounded-full">
+                {renderIcon(
+                  'ExclamationCircleIcon',
+                  'text-errorMain w-10 h-10'
                 )}
               </div>
-            ))}
-            {answers?.some((item) => item !== noneOption) && (
-              <Alert
-                className="mt-4"
-                type="error"
-                title={`Eish! Refer ${caregiverName} & ${name} to the clinic urgently and discuss the importance of seeking help.`}
-                customIcon={
-                  <div className="rounded-full">
-                    {renderIcon(
-                      'ExclamationCircleIcon',
-                      'text-errorMain w-10 h-10'
-                    )}
-                  </div>
-                }
-              />
-            )}
-          </>
+            }
+          />
         )}
       </div>
     </>

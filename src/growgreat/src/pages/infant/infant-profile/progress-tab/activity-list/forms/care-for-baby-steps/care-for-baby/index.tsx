@@ -5,8 +5,7 @@ import Infant from '@/assets/infant.svg';
 import { DynamicFormProps } from '../../dynamic-form';
 import { useEffect, useMemo } from 'react';
 import CareForBabyImage from '../../assets/careForBaby.png';
-
-const mock = '1 day';
+import { getAgeInYearsMonthsAndDays } from '@ecdlink/core';
 
 export const CareForBabyStep = ({
   infant,
@@ -14,8 +13,27 @@ export const CareForBabyStep = ({
 }: DynamicFormProps) => {
   const name = useMemo(() => infant?.user?.firstName || '', [infant]);
 
+  const age = useMemo(() => {
+    const dateOfBirth = infant?.user?.dateOfBirth as string;
+    const { years, months, days } = getAgeInYearsMonthsAndDays(dateOfBirth);
+
+    if (!dateOfBirth) return undefined;
+
+    if (years === 0 && months < 1) {
+      return `${days}`;
+    }
+
+    if (years === 0) {
+      return `${months} months ${days} ${days > 1 ? 'days' : 'day'}`;
+    }
+
+    return `${years} ${years > 1 ? 'years' : 'year'} ${months} ${
+      months > 1 ? 'months' : 'month'
+    }`;
+  }, [infant?.user?.dateOfBirth]);
+
   useEffect(() => {
-    setEnableButton && setEnableButton(true);
+    setEnableButton?.(true);
   }, [setEnableButton]);
 
   return (
@@ -25,7 +43,11 @@ export const CareForBabyStep = ({
         customIcon={Infant}
         title="Care for baby"
         subTitle={name}
-        tag={mock}
+        {...(!!age
+          ? {
+              tag: age,
+            }
+          : {})}
       />
       <img src={CareForBabyImage} className="w-full" alt="care for baby" />
       <div className="flex flex-col gap-4 p-4">

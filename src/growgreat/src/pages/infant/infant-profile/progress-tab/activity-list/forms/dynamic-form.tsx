@@ -73,7 +73,8 @@ export const DynamicForm = ({
   const wasLoading = usePrevious(isLoading);
 
   const visits = useSelector(getInfantVisitsSelector);
-  const MOCKED_VISIT_ID = visits[0]?.id;
+  const MOCKED_VISIT_ID =
+    visits[0]?.id; /* '454686a9-2142-4061-aa47-4e89d46110b9' */
 
   const { successDialog } = useRequestResponseDialog();
 

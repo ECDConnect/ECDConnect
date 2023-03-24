@@ -29,6 +29,7 @@ const acceptedFormats = ['jpg', 'pdf', 'jpeg'];
 export const RoadToHeathBookStep = ({
   infant,
   setEnableButton,
+  setSectionQuestions,
 }: DynamicFormProps) => {
   const { watch, formState, setValue, register } =
     useForm<InfantRoadToHealthModel>({
@@ -37,8 +38,15 @@ export const RoadToHeathBookStep = ({
       reValidateMode: 'onChange',
     });
 
-  const { weightAtBirth, roadToHealthBook, notRoadToHealthBook } = watch();
+  const {
+    weightAtBirth,
+    lengthAtBirth,
+    roadToHealthBook,
+    notRoadToHealthBook,
+  } = watch();
   const { isValid } = formState;
+
+  const visitSection = 'Road to Health Book';
 
   const [hasMaternalCaseRecord, setHasMaternalCaseRecord] = useState<
     boolean | null
@@ -61,6 +69,25 @@ export const RoadToHeathBookStep = ({
         (hasMaternalCaseRecord && isValid && roadToHealthBook) ||
         (!hasMaternalCaseRecord && notRoadToHealthBook)
       ) {
+        setSectionQuestions?.([
+          {
+            visitSection,
+            questions: [
+              {
+                question: 'Weight',
+                answer: String(weightAtBirth),
+              },
+              {
+                question: 'Length',
+                answer: String(lengthAtBirth),
+              },
+              {
+                question: 'Take a photo of page ii of the Road to Health Book.',
+                answer: roadToHealthBook,
+              },
+            ],
+          },
+        ]);
         return setEnableButton(true);
       }
 
@@ -69,9 +96,12 @@ export const RoadToHeathBookStep = ({
   }, [
     hasMaternalCaseRecord,
     isValid,
+    lengthAtBirth,
     notRoadToHealthBook,
     roadToHealthBook,
     setEnableButton,
+    setSectionQuestions,
+    weightAtBirth,
   ]);
 
   return (
@@ -79,7 +109,7 @@ export const RoadToHeathBookStep = ({
       <Header
         backgroundColor="tertiary"
         customIcon={Infant}
-        title="Road to Health Book"
+        title={visitSection}
         subTitle={name}
       />
       <div className="flex flex-col gap-4 p-4">
