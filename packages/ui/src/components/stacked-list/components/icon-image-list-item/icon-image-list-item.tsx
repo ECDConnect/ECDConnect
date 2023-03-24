@@ -6,13 +6,15 @@ export const IconImageListItem: React.FC<IconImageListItemProps> = ({
   icon,
   title,
   showDivider,
+  backgroundColor,
+  borderRadius,
   onClick,
 }) => {
   const iconSlotRender = () => {
     return (
       <div
         className={
-          'mr-2 rounded-full p-4 flex flex-row items-center justify-center'
+          'mr-2 flex flex-row items-center justify-center rounded-full p-4'
         }
         style={{ backgroundColor: color }}
       >
@@ -29,11 +31,12 @@ export const IconImageListItem: React.FC<IconImageListItemProps> = ({
         type: 'unspecified',
         fontSize: '16',
       }}
-      backgroundColor={'white'}
+      backgroundColor={backgroundColor ? backgroundColor : 'white'}
       onClick={onClick}
       dividerType={showDivider ? 'solid' : 'none'}
       dividerColor={showDivider ? 'uiBg' : 'transparent'}
       overwritePreSlotRender={iconSlotRender}
+      borderRadius={borderRadius ? borderRadius : ''}
     />
   );
 };

@@ -1,3 +1,4 @@
+import { getAvatarColor } from '@ecdlink/core';
 import {
   Alert,
   Button,
@@ -8,6 +9,8 @@ import {
   RoundIcon,
   Dialog,
   DialogPosition,
+  Radio,
+  renderIcon,
 } from '@ecdlink/ui/';
 import { progressTrackingSelectors } from '@store/progress-tracking';
 import { useState } from 'react';
@@ -36,30 +39,40 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
     onSelected();
   };
 
+  console.log({ activity });
+
+  const limitStringLength = (string = '', limit = 0) => {
+    if (string.trim().length > 50) {
+      return string.substring(0, limit) + '...';
+    } else {
+      return string.substring(0, limit);
+    }
+  };
+
   return (
     <>
       <Card
-        className={`flex flex-col w-full relative mt-4 ${
-          selected ? 'border-2 border-secondary' : ''
+        className={`relative mt-4 flex w-full flex-col ${
+          selected ? 'border-secondary border-2' : ''
         }`}
         shadowSize={'lg'}
         borderRaduis="lg"
       >
         {recommended && (
           <StatusChip
-            className="absolute top-0 left-1/2 transform -translate-y-1/2 -translate-x-1/2"
+            className="absolute top-0 left-1/2 -translate-y-1/2 -translate-x-1/2 transform"
             backgroundColour="infoDark"
             borderColour="transparent"
             textColour="white"
             text="Recommended"
           />
         )}
-        <div className="p-4">
-          <div className="flex flex-row justify-between items-center">
-            <Typography type="body" text={activity.name} color={'textDark'} />
-            <div className="flex flex-row">
+        <div className="bg-uiBg rounded-lg p-2">
+          <div className="flex flex-row items-center justify-start gap-2">
+            <div className="flex flex-row gap-2">
               {!!activity.subCategories &&
                 activity.subCategories.map((subCat, idx) => {
+                  console.log({ subCat });
                   const category = activityCategories.find((cat) =>
                     cat.subCategories.some((x) => x.id === subCat.id)
                   );
@@ -67,35 +80,29 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
                     <RoundIcon
                       key={subCat.id}
                       imageUrl={subCat.imageUrl}
-                      hexBackgroundColor={category?.color}
-                      className={`text-white transform ${
+                      hexBackgroundColor={category?.color || getAvatarColor()}
+                      className={`transform text-white ${
                         idx % 2 === 0 ? 'translate-x-2' : ''
                       } border-2 border-solid border-white`}
                     />
                   );
                 })}
             </div>
+            <Typography type="body" text={activity.name} color={'textDark'} />
           </div>
           <div>
-            <Typography
-              type="body"
-              text={'Materials'}
-              color={'textLight'}
-              fontSize={'14'}
-            />
-            <Typography
-              type="body"
-              text={activity.materials}
-              color={'textDark'}
-            />
-            <Button
-              type={'outlined'}
-              color="primary"
-              className="mt-2"
-              onClick={handleDetailsClick}
-            >
-              see details
-            </Button>
+            <div className="flex max-h-20 items-center gap-2">
+              <Radio
+                isActivity={true}
+                description={limitStringLength(activity.materials, 50)}
+                checked={selected}
+                onChange={() => onSelected()}
+                className={'max-h-20 truncate'}
+              />
+              <div onClick={handleDetailsClick} className={'mb-2'}>
+                {renderIcon('InformationCircleIcon', 'h-6 w-6 text-infoMain')}
+              </div>
+            </div>
           </div>
         </div>
         {recommended && !!recommendedText && (
@@ -106,7 +113,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
           <Alert type="warning" message={warningText} variant="flat" />
         )}
 
-        <FADButton
+        {/* <FADButton
           title={selected ? 'Activity chosen' : 'Choose activity'}
           icon={'CheckCircleIcon'}
           iconDirection={'left'}
@@ -115,9 +122,9 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
           background={'transparent'}
           color={selected ? 'white' : 'uiMidDark'}
           shape={'normal'}
-          className={`py-4 w-full ${selected ? 'bg-secondary ' : ''}`}
+          className={`w-full py-4 ${selected ? 'bg-secondary ' : ''}`}
           click={handleActivitySelected}
-        />
+        /> */}
       </Card>
       <Dialog
         visible={displayDetails}

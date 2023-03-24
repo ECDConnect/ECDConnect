@@ -47,6 +47,10 @@ import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import OnlineOnlyModal from '../../../../modals/offline-sync/online-only-modal';
 import { isFriday } from 'date-fns';
 import ROUTES from '@routes/routes';
+import { ProgrammePlanningHeaderUpdated } from '../components/programme-planning-header-updated/programme-planning-header-updated';
+import { programmeThemeSelectors } from '@/store/content/programme-theme';
+import { ProgrammePlanningRoutineListItemUpdated } from '../components/programme-planning-routine-list-item-updated/programme-planning-routine-list-item-updated';
+import { ProgrammePlanningRoutineListItemNotCompleted } from '../components/programme-planning-routine-not-completed-list-item/programme-planning-routine-list-item-not-completed';
 
 export const ProgrammeRoutine: React.FC = () => {
   const { state } = useLocation<ProgrammeRoutineRouteState>();
@@ -58,6 +62,9 @@ export const ProgrammeRoutine: React.FC = () => {
   const programme = useSelector(
     programmeSelectors.getProgrammeById(state.programmeId)
   );
+  const themes = useSelector(programmeThemeSelectors.getProgrammeThemes);
+  const chosedTheme = themes?.find((item) => item?.name === programme?.name);
+
   const prorgammeRoutine = useSelector(
     programmeRoutineSelectors.getProgrammeRoutineById(1)
   );
@@ -477,9 +484,11 @@ export const ProgrammeRoutine: React.FC = () => {
 
     const subTitleText = dayDate.toLocaleString(
       'en-ZA',
-      DateFormats.dayFullMonthYear
+      DateFormats.dayWithShortMonthName
     );
-    return isFriday(dayDate) ? `Mahala ${subTitleText}` : subTitleText;
+    // return isFriday(dayDate) ? dayDate : dayDate;
+
+    return dayDate;
   };
 
   return (
@@ -503,16 +512,18 @@ export const ProgrammeRoutine: React.FC = () => {
       ) : (
         <>
           {programme && (
-            <ProgrammePlanningHeader
-              className={'pt-4'}
+            <ProgrammePlanningHeaderUpdated
+              className={'flex pt-4'}
               headerText={isDayCompleted ? 'Your routine' : 'Plan your routine'}
               subHeaderText={getCurrentDateSubTitleText(currentDay)}
               themeName={programme?.name}
+              theme={programme}
               plannedWeeks={
                 programmeWeeks.filter((week) => week.totalIncompleteDays === 0)
                   .length
               }
               totalWeeks={programmeWeeks.length}
+              chosedTheme={chosedTheme}
             />
           )}
 
@@ -556,7 +567,7 @@ export const ProgrammeRoutine: React.FC = () => {
             isProgrammeCompleted &&
             isWeekComplete &&
             displayDayCompletedCard && (
-              <div className={'px-4 mt-2'}>
+              <div className={'mt-2 px-4'}>
                 <SuccessCard
                   icon={'SparklesIcon'}
                   text={`Great job, your whole “${programme?.name}” programme has been planned!`}
@@ -566,7 +577,7 @@ export const ProgrammeRoutine: React.FC = () => {
                   }}
                 />
                 <Button
-                  className={'w-full mt-4'}
+                  className={'mt-4 w-full'}
                   type={'filled'}
                   color={'primary'}
                   onClick={handleSummaryView}
@@ -580,7 +591,7 @@ export const ProgrammeRoutine: React.FC = () => {
           <div className={'pt-4'}>
             {isDayCompleted &&
               sortedRoutineItems.map((routineItem) => (
-                <ProgrammePlanningRoutineListItem
+                <ProgrammePlanningRoutineListItemUpdated
                   key={routineItem.id}
                   day={currentDay}
                   routineItem={routineItem}
@@ -590,7 +601,7 @@ export const ProgrammeRoutine: React.FC = () => {
 
             {!isDayCompleted &&
               activityRequiredProgrammeRoutineItems?.map((routineItem) => (
-                <ProgrammePlanningRoutineListItem
+                <ProgrammePlanningRoutineListItemNotCompleted
                   key={routineItem.id}
                   day={currentDay}
                   routineItem={routineItem}

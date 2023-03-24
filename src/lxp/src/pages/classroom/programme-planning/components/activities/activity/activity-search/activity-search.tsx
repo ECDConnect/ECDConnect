@@ -59,10 +59,15 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
   const subCategories = useSelector(
     progressTrackingSelectors.getProgressTrackingSubCategories
   );
+  const activities2 = useSelector(activitySelectors?.getActivities);
+  console.log({ activities2 });
+  console.log({ title });
 
   const allActivities = useSelector(
     activitySelectors.getActivitiesByType(title)
   );
+
+  console.log({ allActivities });
 
   const programme = useSelector(
     programmeSelectors.getProgrammeById(programmeId)
@@ -79,6 +84,8 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
   const dispatch = useAppDispatch();
   const [selectedThemeFilterOptions, setSelectedThemeFilterOptions] =
     useState<SearchDropDownOption<number>[]>();
+
+  console.log({ activities });
 
   const [selectedLanguageFilterOptions, setSelectedLanguageFilterOptions] =
     useState<SearchDropDownOption<string>[]>();
@@ -284,7 +291,7 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
         showBackground={false}
         size="medium"
         renderBorder={true}
-        title={title}
+        title={`${title} activity`}
         subTitle={subtitle}
         color={'primary'}
         backgroundColour="uiBg"
@@ -352,7 +359,12 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
             }}
           />
         </SearchHeader>
-        <div className="px-4 pt-2 pb-8">
+        <div className="bg-white px-4 pt-2 pb-8">
+          <Typography
+            type="h3"
+            text={`Choose a ${title} activity`}
+            className={'mt-4'}
+          />
           {recommendedActivity && !hasActiveFilters && (
             <div className={'flex flex-col items-center justify-start'}>
               {
@@ -421,21 +433,33 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
           })}
 
           {pageSize < filteredActivities.length && (
-            <Typography
-              onClick={() => setPageSize(pageSize + ACTIVITY_PAGE_SIZE)}
-              className={'mt-3'}
-              align={'center'}
-              text={'<u>See more activities</u>'}
-              hasMarkup
-              type={'unspecified'}
-              color={'primary'}
-            />
+            <>
+              <Button
+                size="normal"
+                className="mb-4 mt-3 w-full"
+                type="outlined"
+                color="primary"
+                text="See more activities"
+                textColor="primary"
+                icon="EyeIcon"
+                onClick={() => setPageSize(pageSize + ACTIVITY_PAGE_SIZE)}
+              />
+              {/* <Typography
+                onClick={() => setPageSize(pageSize + ACTIVITY_PAGE_SIZE)}
+                className={'mt-3'}
+                align={'center'}
+                text={'<u>See more activities</u>'}
+                hasMarkup
+                type={'unspecified'}
+                color={'primary'}
+              /> */}
+            </>
           )}
 
           <Divider className="my-2" />
           <Button
             type="filled"
-            className="w-full mb-32"
+            className="mb-32 w-full"
             color="primary"
             icon="SaveIcon"
             text={submitButtonText}

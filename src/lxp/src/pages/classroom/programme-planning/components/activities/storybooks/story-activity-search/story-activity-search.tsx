@@ -9,6 +9,7 @@ import {
   FilterInfo,
   SearchDropDown,
   SearchDropDownOption,
+  Typography,
 } from '@ecdlink/ui/';
 import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -53,7 +54,7 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
   const programme = useSelector(
     programmeSelectors.getProgrammeById(programmeId)
   );
-
+  console.log({ allStories, preSelectedStoryId });
   const [searchTextActive, setSearchTextActive] = useState(false);
   const [selectedThemeFilterOptions, setSelectedThemeFilterOptions] =
     useState<SearchDropDownOption<number>[]>();
@@ -329,6 +330,11 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
           />
         </SearchHeader>
         <div className="px-4 pt-2">
+          <Typography
+            type="body"
+            text={`Choose a ${title}`}
+            className={'mt-4'}
+          />
           {!selectedStory && (
             <>
               {hasActiveFilters && filteredStories.length === 0 && (
@@ -362,7 +368,7 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
 
           <Button
             type="filled"
-            className="w-full mb-32"
+            className="mb-32 w-full"
             color="primary"
             icon="SaveIcon"
             text={submitButtonText}

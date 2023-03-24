@@ -3,10 +3,10 @@ import { Colours } from '../../../../models/Colours';
 import { ComponentBaseProps } from '../../../../models/ComponentBaseProps';
 import { classNames, renderIcon } from '../../../../utils';
 import { DividerType } from '../../../divider/models/Divider';
-import * as styles from './base-list-item.styles';
+import * as styles from './base-list-item-updated.styles';
 import React from 'react';
 
-interface BaseListItemProps extends ComponentBaseProps {
+interface BaseListItemPropsUpdated extends ComponentBaseProps {
   dividerType?: DividerType;
   dividerColor?: Colours;
   backgroundColor?: Colours;
@@ -24,7 +24,7 @@ interface BaseListItemProps extends ComponentBaseProps {
   overwritePostSlotRender?: () => JSX.Element;
 }
 
-export const BaseListItem: React.FC<BaseListItemProps> = ({
+export const BaseListItemUpdated: React.FC<BaseListItemPropsUpdated> = ({
   className = '',
   dividerType = 'none',
   dividerColor = 'uiLight',
@@ -57,7 +57,7 @@ export const BaseListItem: React.FC<BaseListItemProps> = ({
             {renderIcon(iconName, `w-5 h-5 text-${iconColor}`)}
           </div>
         )}
-        <div className={'flex flex-col items-start justify-start truncate'}>
+        <div className={'flex flex-col items-start justify-start'}>
           {overwriteTextSlotRender !== undefined && overwriteTextSlotRender()}
           {overwriteTextSlotRender === undefined && (
             <>
@@ -88,4 +88,4 @@ export const BaseListItem: React.FC<BaseListItemProps> = ({
   );
 };
 
-export default BaseListItem;
+export default BaseListItemUpdated;

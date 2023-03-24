@@ -1,15 +1,21 @@
-import { BaseListItem, RoundIcon, StatusChip, renderIcon } from '@ecdlink/ui/';
+import {
+  RoundIcon,
+  StatusChip,
+  renderIcon,
+  Card,
+  Typography,
+} from '@ecdlink/ui/';
 import { DailyRoutineItemType } from '@enums/ProgrammeRoutineType';
 import { activitySelectors } from '@store/content/activity';
 import { useSelector } from 'react-redux';
-import { ProgrammePlanningRoutineListItemProps } from './programme-planning-routine-list-item.types';
+import { ProgrammePlanningRoutineListItemProps } from './programme-planning-routine-list-item-not-completed.types';
 import {
   getActivityIdForRoutineItem,
   getRoutineItemType,
 } from '@utils/classroom/programme-planning/programmes.utils';
-import ProgrammeBaseListItem from '../programme-base-list-item/programme-base-list-item';
+import BaseListItemUpdated from '../base-list-item-updated/base-list-item-updated';
 
-export const ProgrammePlanningRoutineListItem: React.FC<
+export const ProgrammePlanningRoutineListItemNotCompleted: React.FC<
   ProgrammePlanningRoutineListItemProps
 > = ({ routineItem, onClick, day }) => {
   const routineType = getRoutineItemType(routineItem.name);
@@ -23,8 +29,6 @@ export const ProgrammePlanningRoutineListItem: React.FC<
       getActivityIdForRoutineItem(routineItem.name, day)
     )
   );
-
-  console.log({ routineItem });
 
   const getTitle = () => {
     if (
@@ -79,26 +83,89 @@ export const ProgrammePlanningRoutineListItem: React.FC<
   };
 
   const getRoutineItemPostSlotRender = () => {
-    return (
-      <div className={'flex w-full flex-row items-center justify-end'}>
-        <StatusChip
-          className={'mr-2'}
-          padding={'px-2 py-1'}
-          backgroundColour={'infoBb'}
-          text={routineItem.timeSpan}
-          textColour={'infoDark'}
-          borderColour={'infoBb'}
-        >
-          {renderIcon('ClockIcon', `w-5 h-5 text-infoDark ml-1`)}
-        </StatusChip>
-        {renderIcon(
-          getRoutineItemActionIcon(),
-          `w-5 h-5 flex-shrink-0 text-${
-            canLinkActionToType && activity ? 'successMain' : 'uiMid'
-          } ml-1`
-        )}
-      </div>
-    );
+    if (!activity) {
+      return (
+        <Card className="border-secondary w-full rounded-xl border-2 bg-white py-4 px-2">
+          <div
+            className={
+              'ml-4 flex w-full flex-row items-center justify-start gap-4'
+            }
+          >
+            <Typography type={'h1'} text={'+'} color={'secondary'} />
+            <Typography type={'h4'} text={'Add Activity'} color={'secondary'} />
+
+            {renderIcon('ClockIcon', `w-5 h-5 text-white ml-1`)}
+            {/* {renderIcon(
+              getRoutineItemActionIcon(),
+              `w-5 h-5 flex-shrink-0 text-${
+                canLinkActionToType && activity ? 'successMain' : 'uiMid'
+              } ml-1`
+            )} */}
+          </div>
+        </Card>
+      );
+    }
+    if (
+      routineItem.name === DailyRoutineItemType.messageBoard ||
+      routineItem.name === DailyRoutineItemType.greeting ||
+      routineItem.name === DailyRoutineItemType.freePlay
+    ) {
+      return (
+        <Card className="bg-primaryAccent1 w-full rounded-xl py-4 px-2">
+          <div className={'flex w-full flex-row items-center justify-between'}>
+            <Typography
+              type={'help'}
+              text={routineItem?.name}
+              color={'white'}
+            />
+            <div className="flex">
+              <Typography
+                type={'help'}
+                text={routineItem.timeSpan}
+                color={'white'}
+              />
+
+              {renderIcon('ClockIcon', `w-5 h-5 text-white ml-1`)}
+            </div>
+            {/* {renderIcon(
+              getRoutineItemActionIcon(),
+              `w-5 h-5 flex-shrink-0 text-${
+                canLinkActionToType && activity ? 'successMain' : 'uiMid'
+              } ml-1`
+            )} */}
+          </div>
+        </Card>
+      );
+    } else {
+      return (
+        <Card className="bg-secondary w-full rounded-xl py-4 px-2">
+          <div className={'flex w-full flex-row items-center justify-between'}>
+            <Typography
+              type={'help'}
+              // className={'text-white'}
+              text={activity ? activity.name : ''}
+              color={'white'}
+            />
+            <StatusChip
+              className={'mr-2'}
+              padding={'px-2 py-1'}
+              backgroundColour={'secondaryAccent1'}
+              text={routineItem.timeSpan}
+              textColour={'white'}
+              borderColour={'secondaryAccent1'}
+            >
+              {renderIcon('ClockIcon', `w-5 h-5 text-white ml-1`)}
+            </StatusChip>
+            {/* {renderIcon(
+            getRoutineItemActionIcon(),
+            `w-5 h-5 flex-shrink-0 text-${
+              canLinkActionToType && activity ? 'successMain' : 'uiMid'
+            } ml-1`
+          )} */}
+          </div>
+        </Card>
+      );
+    }
   };
 
   const getRoutineItemPreSlotRender = () => {
@@ -141,7 +208,7 @@ export const ProgrammePlanningRoutineListItem: React.FC<
   };
 
   return (
-    <ProgrammeBaseListItem
+    <BaseListItemUpdated
       backgroundColor={'white'}
       overwritePreSlotRender={getRoutineItemPreSlotRender}
       titleTypography={{
@@ -160,6 +227,7 @@ export const ProgrammePlanningRoutineListItem: React.FC<
       dividerType={'solid'}
       dividerColor={'uiLight'}
       onClick={onClick}
+      routineItem={routineItem}
     />
   );
 };

@@ -1,3 +1,8 @@
+import {
+  DailyProgrammeDto,
+  ProgrammeDto,
+  ProgrammeThemeDto,
+} from '@/../../../packages/core/lib';
 import { ComponentBaseProps } from '@ecdlink/ui/';
 
 export interface ProgrammePlanningHeaderProps extends ComponentBaseProps {
@@ -8,4 +13,6 @@ export interface ProgrammePlanningHeaderProps extends ComponentBaseProps {
   totalWeeks?: number;
   showCount?: boolean;
   showChips?: boolean;
+  theme?: ProgrammeDto;
+  chosedTheme?: ProgrammeThemeDto;
 }
