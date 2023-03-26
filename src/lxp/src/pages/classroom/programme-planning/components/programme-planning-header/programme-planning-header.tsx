@@ -13,7 +13,6 @@ export const ProgrammePlanningHeader: React.FC<
   showChips = true,
   className,
 }) => {
-  console.log({ headerText, subHeaderText });
   return (
     <div className={classNames(className, 'w-full px-4')}>
       <div className="flex flex-row items-center ">

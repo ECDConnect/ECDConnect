@@ -24,8 +24,6 @@ export const ProgrammePlanningRoutineListItem: React.FC<
     )
   );
 
-  console.log({ routineItem });
-
   const getTitle = () => {
     if (
       routineType === DailyRoutineItemType.largeGroup ||

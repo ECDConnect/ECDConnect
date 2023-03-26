@@ -7,7 +7,10 @@ import {
   ActionModal,
   BannerWrapper,
   Button,
+  Card,
   DialogPosition,
+  renderIcon,
+  Typography,
 } from '@ecdlink/ui/';
 import { useHistory, useLocation } from 'react-router';
 import ActivitySearch from '../components/activities/activity/activity-search/activity-search';
@@ -51,6 +54,8 @@ import { ProgrammePlanningHeaderUpdated } from '../components/programme-planning
 import { programmeThemeSelectors } from '@/store/content/programme-theme';
 import { ProgrammePlanningRoutineListItemUpdated } from '../components/programme-planning-routine-list-item-updated/programme-planning-routine-list-item-updated';
 import { ProgrammePlanningRoutineListItemNotCompleted } from '../components/programme-planning-routine-not-completed-list-item/programme-planning-routine-list-item-not-completed';
+import PosiviteIcon from '../../../../assets/positive-bonus-emoticon.png';
+import { practitionerSelectors } from '@/store/practitioner';
 
 export const ProgrammeRoutine: React.FC = () => {
   const { state } = useLocation<ProgrammeRoutineRouteState>();
@@ -64,6 +69,7 @@ export const ProgrammeRoutine: React.FC = () => {
   );
   const themes = useSelector(programmeThemeSelectors.getProgrammeThemes);
   const chosedTheme = themes?.find((item) => item?.name === programme?.name);
+  const practitioner = useSelector(practitionerSelectors?.getPractitioner);
 
   const prorgammeRoutine = useSelector(
     programmeRoutineSelectors.getProgrammeRoutineById(1)
@@ -545,25 +551,6 @@ export const ProgrammeRoutine: React.FC = () => {
             )}
 
           {isDayCompleted &&
-            !isProgrammeCompleted &&
-            isWeekComplete &&
-            displayDayCompletedCard && (
-              <SuccessCard
-                className={'mx-4 mt-2'}
-                icon={'SparklesIcon'}
-                text={`All your days are planned for week ${
-                  activeWeekIndex + 1
-                }`}
-                subText={
-                  'You can see your daily routine and add a note to the message board.'
-                }
-                onClose={() => {
-                  setDisplayDayCompletedCard(false);
-                }}
-              />
-            )}
-
-          {isDayCompleted &&
             isProgrammeCompleted &&
             isWeekComplete &&
             displayDayCompletedCard && (
@@ -611,6 +598,38 @@ export const ProgrammeRoutine: React.FC = () => {
           </div>
         </>
       )}
+
+      {isDayCompleted &&
+        !isProgrammeCompleted &&
+        isWeekComplete &&
+        displayDayCompletedCard && (
+          <Card className={'bg-successMain mx-4 mt-2 rounded-xl p-4'}>
+            <div className="flex gap-3">
+              <img src={PosiviteIcon} alt="bonus" />
+              <Typography
+                type="h4"
+                color={'white'}
+                text={`Great job ${practitioner?.user?.firstName}! Your whole week is planned.`}
+                className="pt-2"
+              />
+              <div
+                onClick={() => setDisplayDayCompletedCard(false)}
+                className={'h-4 w-4'}
+              >
+                {renderIcon('XIcon', 'h-6 w-6 text-white')}
+              </div>
+            </div>
+            <Button
+              text="Plan next week"
+              icon="ClipboardListIcon"
+              type={'filled'}
+              color={'primary'}
+              textColor={'white'}
+              onClick={() => setActiveWeekIndex(activeWeekIndex + 1)}
+              className="mt-2 ml-14"
+            />
+          </Card>
+        )}
 
       {programmeWeeks && programmeWeeks.length > 1 && (
         <ProgrammeWeekPaging

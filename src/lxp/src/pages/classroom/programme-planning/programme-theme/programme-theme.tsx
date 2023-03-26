@@ -25,8 +25,6 @@ const ProgrammeTheme: React.FC = () => {
     history.replace('/classroom', { activeTabIndex: 2 });
   };
 
-  console.log({ themes });
-
   const handleDialog = () => {
     dialog({
       position: DialogPosition.Bottom,

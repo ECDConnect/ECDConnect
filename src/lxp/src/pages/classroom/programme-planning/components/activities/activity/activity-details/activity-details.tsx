@@ -27,8 +27,6 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({
     activitySelectors.getActivityById(activityId)
   );
 
-  console.log({ activityDetail });
-
   const date = new Date();
 
   if (!activityDetail) return <></>;

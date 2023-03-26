@@ -23,9 +23,7 @@ export const Radio = ({
     className={
       isActivity
         ? `text-textMid flex items-center rounded-lg p-4 ${
-            checked
-              ? 'bg-secondaryAccent2 border-secondary border-2'
-              : 'bg-uiBg'
+            checked ? 'bg-secondaryAccent2' : 'bg-uiBg'
           }`
         : `text-textDark flex items-center rounded-lg p-4 ${
             checked

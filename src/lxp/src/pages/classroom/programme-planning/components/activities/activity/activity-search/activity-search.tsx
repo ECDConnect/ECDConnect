@@ -59,15 +59,10 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
   const subCategories = useSelector(
     progressTrackingSelectors.getProgressTrackingSubCategories
   );
-  const activities2 = useSelector(activitySelectors?.getActivities);
-  console.log({ activities2 });
-  console.log({ title });
 
   const allActivities = useSelector(
     activitySelectors.getActivitiesByType(title)
   );
-
-  console.log({ allActivities });
 
   const programme = useSelector(
     programmeSelectors.getProgrammeById(programmeId)
@@ -84,8 +79,6 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
   const dispatch = useAppDispatch();
   const [selectedThemeFilterOptions, setSelectedThemeFilterOptions] =
     useState<SearchDropDownOption<number>[]>();
-
-  console.log({ activities });
 
   const [selectedLanguageFilterOptions, setSelectedLanguageFilterOptions] =
     useState<SearchDropDownOption<string>[]>();
@@ -444,15 +437,6 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
                 icon="EyeIcon"
                 onClick={() => setPageSize(pageSize + ACTIVITY_PAGE_SIZE)}
               />
-              {/* <Typography
-                onClick={() => setPageSize(pageSize + ACTIVITY_PAGE_SIZE)}
-                className={'mt-3'}
-                align={'center'}
-                text={'<u>See more activities</u>'}
-                hasMarkup
-                type={'unspecified'}
-                color={'primary'}
-              /> */}
             </>
           )}
 

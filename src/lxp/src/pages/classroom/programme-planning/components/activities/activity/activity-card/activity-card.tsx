@@ -1,9 +1,8 @@
+import { limitStringLength } from '@/utils/common/string.utils';
 import { getAvatarColor } from '@ecdlink/core';
 import {
   Alert,
-  Button,
   Card,
-  FADButton,
   StatusChip,
   Typography,
   RoundIcon,
@@ -39,20 +38,10 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
     onSelected();
   };
 
-  console.log({ activity });
-
-  const limitStringLength = (string = '', limit = 0) => {
-    if (string.trim().length > 50) {
-      return string.substring(0, limit) + '...';
-    } else {
-      return string.substring(0, limit);
-    }
-  };
-
   return (
     <>
       <Card
-        className={`relative mt-4 flex w-full flex-col ${
+        className={`bg-secondaryAccent2 relative mt-4 flex w-full flex-col ${
           selected ? 'border-secondary border-2' : ''
         }`}
         shadowSize={'lg'}
@@ -67,12 +56,13 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
             text="Recommended"
           />
         )}
-        <div className="bg-uiBg rounded-lg p-2">
+        <div
+          className={`bg-uiBg rounded-lg p-2 ${selected ? 'bg-secondary' : ''}`}
+        >
           <div className="flex flex-row items-center justify-start gap-2">
             <div className="flex flex-row gap-2">
               {!!activity.subCategories &&
                 activity.subCategories.map((subCat, idx) => {
-                  console.log({ subCat });
                   const category = activityCategories.find((cat) =>
                     cat.subCategories.some((x) => x.id === subCat.id)
                   );
@@ -112,19 +102,6 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
         {!!warningText && (
           <Alert type="warning" message={warningText} variant="flat" />
         )}
-
-        {/* <FADButton
-          title={selected ? 'Activity chosen' : 'Choose activity'}
-          icon={'CheckCircleIcon'}
-          iconDirection={'left'}
-          textToggle={true}
-          type={'ghost'}
-          background={'transparent'}
-          color={selected ? 'white' : 'uiMidDark'}
-          shape={'normal'}
-          className={`w-full py-4 ${selected ? 'bg-secondary ' : ''}`}
-          click={handleActivitySelected}
-        /> */}
       </Card>
       <Dialog
         visible={displayDetails}

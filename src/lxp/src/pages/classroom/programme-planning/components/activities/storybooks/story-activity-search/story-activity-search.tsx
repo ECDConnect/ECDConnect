@@ -54,7 +54,6 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
   const programme = useSelector(
     programmeSelectors.getProgrammeById(programmeId)
   );
-  console.log({ allStories, preSelectedStoryId });
   const [searchTextActive, setSearchTextActive] = useState(false);
   const [selectedThemeFilterOptions, setSelectedThemeFilterOptions] =
     useState<SearchDropDownOption<number>[]>();
@@ -329,7 +328,7 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
             }}
           />
         </SearchHeader>
-        <div className="px-4 pt-2">
+        <div className="bg-white px-4 pt-2">
           <Typography
             type="body"
             text={`Choose a ${title}`}
@@ -362,6 +361,7 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
               onActivitySelected={(activity?: ActivityDto) => {
                 setSelectedActivity(activity);
               }}
+              setSelectedStory={setSelectedStory}
             />
           )}
           <Divider className="my-2" />

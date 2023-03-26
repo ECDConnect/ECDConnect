@@ -64,15 +64,10 @@ const ProgrammeTiming: React.FC = () => {
     history.goBack();
   };
 
-  console.log(state?.theme);
-
   const handleSave = async () => {
     const formValue = getValues();
 
     const validatedDate = validateStartDate(new Date(formValue.date));
-
-    console.log(validatedDate, formValue.language, selectedTheme);
-    console.log({ endDate });
 
     const newProgramme = await createProgramme(
       validatedDate,

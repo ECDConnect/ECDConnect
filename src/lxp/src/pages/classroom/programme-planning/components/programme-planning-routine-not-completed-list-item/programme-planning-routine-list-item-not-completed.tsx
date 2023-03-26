@@ -95,12 +95,6 @@ export const ProgrammePlanningRoutineListItemNotCompleted: React.FC<
             <Typography type={'h4'} text={'Add Activity'} color={'secondary'} />
 
             {renderIcon('ClockIcon', `w-5 h-5 text-white ml-1`)}
-            {/* {renderIcon(
-              getRoutineItemActionIcon(),
-              `w-5 h-5 flex-shrink-0 text-${
-                canLinkActionToType && activity ? 'successMain' : 'uiMid'
-              } ml-1`
-            )} */}
           </div>
         </Card>
       );
@@ -127,12 +121,6 @@ export const ProgrammePlanningRoutineListItemNotCompleted: React.FC<
 
               {renderIcon('ClockIcon', `w-5 h-5 text-white ml-1`)}
             </div>
-            {/* {renderIcon(
-              getRoutineItemActionIcon(),
-              `w-5 h-5 flex-shrink-0 text-${
-                canLinkActionToType && activity ? 'successMain' : 'uiMid'
-              } ml-1`
-            )} */}
           </div>
         </Card>
       );
@@ -142,7 +130,6 @@ export const ProgrammePlanningRoutineListItemNotCompleted: React.FC<
           <div className={'flex w-full flex-row items-center justify-between'}>
             <Typography
               type={'help'}
-              // className={'text-white'}
               text={activity ? activity.name : ''}
               color={'white'}
             />
@@ -156,12 +143,6 @@ export const ProgrammePlanningRoutineListItemNotCompleted: React.FC<
             >
               {renderIcon('ClockIcon', `w-5 h-5 text-white ml-1`)}
             </StatusChip>
-            {/* {renderIcon(
-            getRoutineItemActionIcon(),
-            `w-5 h-5 flex-shrink-0 text-${
-              canLinkActionToType && activity ? 'successMain' : 'uiMid'
-            } ml-1`
-          )} */}
           </div>
         </Card>
       );

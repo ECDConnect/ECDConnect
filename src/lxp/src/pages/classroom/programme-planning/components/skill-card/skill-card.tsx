@@ -14,11 +14,6 @@ const SkillCard: React.FC<SkillCardProps> = ({
   hexBackgroundColor,
 }) => {
   return (
-    // <Card
-    //   shadowSize="lg"
-    //   borderRaduis="lg"
-    //   className={`flex flex-row p-4 items-center ${className}`}
-    // >
     <div className="flex items-center gap-2 p-3">
       <RoundIcon
         imageUrl={icon}
@@ -27,7 +22,6 @@ const SkillCard: React.FC<SkillCardProps> = ({
       />
       <Typography type="body" fontSize={'16'} text={title} color={'textDark'} />
     </div>
-    // </Card>
   );
 };
 
