@@ -139,8 +139,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat {
          }
 
          [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-         public Progress_VisitDataStatus GetPreviousVisitInformationForInfant([Service] VisitDataStatusManager visitDataStatusManager, string visitId) {
-             return visitDataStatusManager.GetPreviousVisitInformationForClient(visitId);
+         public Progress_VisitDataStatus GetPreviousVisitInformationForInfant([Service] VisitManager visitManager, [Service] VisitDataStatusManager visitDataStatusManager, string id) {
+            var visitId = visitManager.GetLastCompletedVisitId(id, Constants.GGSettings.client_child);
+            return visitDataStatusManager.GetPreviousVisitInformationForClient(visitId);
          }
 
          [Permission(PermissionGroups.USER, GraphActionEnum.View)]
@@ -204,7 +205,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat {
             sumObj = new ClientSummary();
             sumObj.VisitName = Constants.GGSettings.q_ID_doc;
             sumObj.Order = 8;
-            sumObj.IdDocStatus = visitDataStatusManager.GetIDSummaryDataForVisit(visitId);
+            sumObj.IdDocStatus = visitDataStatusManager.GetIDDocSummaryDataForVisit(visitId);
             summary.Add(sumObj);
 
             return summary;
@@ -242,7 +243,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat {
             sumObj = new ClientSummaryByPriority();
             sumObj.AreaName = Constants.GGSettings.q_ID_doc;
             sumObj.Order = 4;
-            sumObj.IdDocStatus = visitDataStatusManager.GetIDSummaryDataForVisit(visitId);
+            sumObj.IdDocStatus = visitDataStatusManager.GetIDDocSummaryDataForVisit(visitId);
             summary.Add(sumObj);
 
 

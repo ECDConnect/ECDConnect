@@ -6854,11 +6854,11 @@ export type QueryPractitionerNewSignupMetricArgs = {
 };
 
 export type QueryPreviousVisitInformationForInfantArgs = {
-  visitId?: InputMaybe<Scalars['String']>;
+  id?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryPreviousVisitInformationForMotherArgs = {
-  visitId?: InputMaybe<Scalars['String']>;
+  id?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryPrincipalByUserIdArgs = {

@@ -1463,7 +1463,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
 
             return allData;
         }
-        public Progress_VisitDataStatus GetPreviousVisitInformationForClient(string visitId) {
+        public Progress_VisitDataStatus GetPreviousVisitInformationForClient(Guid visitId) {
             var totalGreen = 0;
             var totalRed = 0;
             var totalAmber = 0;
@@ -1473,14 +1473,14 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
 
             List<VisitDataStatus> visitDataStatus = new List<VisitDataStatus>();
             visitDataStatus = (
-                from visitData in _visitDataRepo.GetAll().Where(x => x.VisitId.ToString() == visitId)
+                from visitData in _visitDataRepo.GetAll().Where(x => x.VisitId == visitId).OrderBy(x => x.InsertedDate)
                 join visitStatusData in _visitDataStatusRepo.GetAll().Where(y => y.Type == Constants.GGSettings.visit_data_client_progress) on visitData.Id equals visitStatusData.VisitDataId
                 select visitStatusData
             ).ToList();
 
             VisitDataStatus growthStatus;
             growthStatus = (
-                from visitData in _visitDataRepo.GetAll().Where(x => x.VisitId.ToString() == visitId && x.Question == Constants.GGSettings.q_muac)
+                from visitData in _visitDataRepo.GetAll().Where(x => x.VisitId == visitId && x.Question == Constants.GGSettings.q_muac)
                 join visitStatusData in _visitDataStatusRepo.GetAll().Where(y => y.Type == Constants.GGSettings.visit_data_client_summary) on visitData.Id equals visitStatusData.VisitDataId
                 select visitStatusData
             ).FirstOrDefault();
@@ -1536,7 +1536,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
         public List<VisitDataStatus> GetSummaryDataForVisitByGroup(Guid visitId, string visitName)
         {
             List<VisitDataStatus> allData = (
-                    from visitData in _visitDataRepo.GetAll().Where(x => x.VisitId == visitId && x.VisitName == visitName)
+                    from visitData in _visitDataRepo.GetAll().Where(x => x.VisitId == visitId && x.VisitName == visitName).OrderBy(x => x.InsertedDate)
                     join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.Type == _G9) on visitData.Id equals visitStatusData.VisitDataId
                     select visitStatusData
                 ).ToList();
@@ -1547,7 +1547,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
         public List<VisitDataStatus> GetSummaryDataForVisitByPriority(Guid visitId, string color)
         {
             List<VisitDataStatus> allData = (
-                    from visitData in _visitDataRepo.GetAll().Where(x => x.VisitId == visitId)
+                    from visitData in _visitDataRepo.GetAll().Where(x => x.VisitId == visitId).OrderBy(x => x.InsertedDate)
                     join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.Type == _G9 && x.Color == color) on visitData.Id equals visitStatusData.VisitDataId
                     select visitStatusData
                 ).ToList();
@@ -1557,10 +1557,10 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
             return allData;
         }
 
-        public List<VisitDataStatus> GetIDSummaryDataForVisit(Guid visitId)
+        public List<VisitDataStatus> GetIDDocSummaryDataForVisit(Guid visitId)
         {
             List<VisitDataStatus> allData = (
-                    from visitData in _visitDataRepo.GetAll().Where(x => x.VisitId == visitId && x.Question == Constants.GGSettings.q_ID_doc)
+                    from visitData in _visitDataRepo.GetAll().Where(x => x.VisitId == visitId && x.Question == Constants.GGSettings.q_ID_doc).OrderBy(x => x.InsertedDate)
                     join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.Type == _G9) on visitData.Id equals visitStatusData.VisitDataId
                     select visitStatusData
                 ).ToList();
