@@ -70,7 +70,6 @@ export const BaseListItemUpdated: React.FC<BaseListItemPropsUpdated> = ({
     >
       {!showTitle && (
         <div className={'flex w-1/4 flex-row items-center justify-start'}>
-          {/* {overwritePreSlotRender !== undefined && overwritePreSlotRender()} */}
           {overwritePreSlotRender === undefined && (
             <div className={`bg-${iconBackgroundColor} mr-4 rounded-full p-3`}>
               {renderIcon(iconName, `w-5 h-5 text-alertBg`)}
@@ -89,14 +88,6 @@ export const BaseListItemUpdated: React.FC<BaseListItemPropsUpdated> = ({
                       className={'text-textLight w-full'}
                     />
                   )}
-                {/* {!!subTitleTypography && (
-                <div className={styles.subTitle}>
-                  <Typography
-                    // className="truncate"
-                    {...subTitleTypography}
-                  ></Typography>
-                </div>
-              )} */}
               </>
             )}
           </div>

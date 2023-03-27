@@ -51,26 +51,6 @@ export const StoryActivitySelectView: React.FC<
         iconPosition={'start'}
         onClick={() => setSelectedStory(undefined)}
       />
-      {/* <StoryCard
-        storyBookId={story.id}
-        activityId={selectedActivityId}
-        title={story.name}
-        type={story.type}
-        languages={story.availableLanguages}
-        selected
-        onSelected={handleClearStory}
-        onCleared={handleClearStory}
-      />
-      <div className={'my-2 flex flex-row items-center justify-center'}>
-        {renderIcon('ArrowCircleLeftIcon', 'w-5 h-5 text-primary mr-2')}
-        <Typography
-          text={'<u>Choose a different story</u>'}
-          hasMarkup
-          color={'primary'}
-          type={'markdown'}
-          onClick={handleClearStory}
-        />
-      </div> */}
 
       <Typography
         text={'Choose a story activity'}

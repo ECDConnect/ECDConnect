@@ -77,31 +77,8 @@ const StoryCard: React.FC<StoryCardProps> = ({
                     </div>
                   </div>
                 </div>
-                {/* <Typography
-                  className={'mt-2'}
-                  type="body"
-                  text={'Available in'}
-                  color={'textDark'}
-                />
-                <Typography
-                  type="help"
-                  text={languages?.map((x) => x.description)?.join(', ')}
-                  color={'textDark'}
-                /> */}
               </>
             )}
-
-            {/* {!hideDetails && (
-              <Button
-                type={'outlined'}
-                color="primary"
-                className="mt-2"
-                size={'small'}
-                onClick={handleDetailsClick}
-              >
-                See details
-              </Button>
-            )} */}
           </div>
           <StatusChip
             backgroundColour={selected ? 'infoBb' : 'primaryAccent2'}
@@ -112,19 +89,6 @@ const StoryCard: React.FC<StoryCardProps> = ({
             className={'flex w-1/3 justify-center'}
           />
         </div>
-
-        {/* <FADButton
-          title={buttonText || selected ? `Story chosen` : `Choose story`}
-          icon={buttonIcon || 'CheckCircleIcon'}
-          iconDirection={'left'}
-          textToggle={true}
-          type={'ghost'}
-          background={'transparent'}
-          color={selected ? 'white' : 'uiMidDark'}
-          shape={'normal'}
-          className={`w-full border-t py-4 ${selected ? 'bg-secondary ' : ''}`}
-          click={onSelected}
-        /> */}
       </Card>
       <Dialog
         visible={displayDetails}

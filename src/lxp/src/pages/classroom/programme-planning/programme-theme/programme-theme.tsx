@@ -94,14 +94,6 @@ const ProgrammeTheme: React.FC = () => {
           </div>
         ))}
       </div>
-      {/* <div className="mx-4 mt-4" onClick={handleNoTheme}>
-        <Typography
-          type="body"
-          text="Or create your own programme →"
-          color={'primary'}
-        />
-        <Typography type="body" text="No theme" color={'textLight'} />
-      </div> */}
     </BannerWrapper>
   );
 };

@@ -99,21 +99,6 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({
             />
           ))}
         </Card>
-        {/* <Card>
-{activityDetail.subCategories?.map((subCategory, idx) => (
-          // <ActivitySubCategoryCard
-          //   key={`activity-details-sub-category-${idx}`}
-          //   subCategory={subCategory}
-          // />
-          <div>
-          <RoundIcon
-        imageUrl={subCategory?.imageUrl}
-        hexBackgroundColor={category?.color}
-        className={`mr-4 ${!hexBackgroundColor ? 'bg-primary' : ''} text-white`}
-      />
-      <Typography type="body" fontSize={'16'} text={title} color={'textDark'} />
-      </div>
-          </Card> */}
 
         <Typography
           type="body"

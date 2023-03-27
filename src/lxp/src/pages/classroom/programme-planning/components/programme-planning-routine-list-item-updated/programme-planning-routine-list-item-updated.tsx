@@ -105,12 +105,6 @@ export const ProgrammePlanningRoutineListItemUpdated: React.FC<
 
               {renderIcon('ClockIcon', `w-5 h-5 text-white ml-1`)}
             </div>
-            {/* {renderIcon(
-              getRoutineItemActionIcon(),
-              `w-5 h-5 flex-shrink-0 text-${
-                canLinkActionToType && activity ? 'successMain' : 'uiMid'
-              } ml-1`
-            )} */}
           </div>
         </Card>
       );
@@ -134,12 +128,6 @@ export const ProgrammePlanningRoutineListItemUpdated: React.FC<
             >
               {renderIcon('ClockIcon', `w-5 h-5 text-white ml-1`)}
             </StatusChip>
-            {/* {renderIcon(
-            getRoutineItemActionIcon(),
-            `w-5 h-5 flex-shrink-0 text-${
-              canLinkActionToType && activity ? 'successMain' : 'uiMid'
-            } ml-1`
-          )} */}
           </div>
         </Card>
       );

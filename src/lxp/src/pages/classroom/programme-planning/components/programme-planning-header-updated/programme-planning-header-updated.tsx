@@ -33,33 +33,6 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
 
   return (
     <div className={classNames(className, 'w-full px-4')}>
-      {/* {themeName && themeName !== 'No theme' && showCount && showChips && (
-          <>
-            <StatusChip
-              className={'ml-2'}
-              backgroundColour={
-                plannedWeeks < totalWeeks || totalWeeks === 0
-                  ? 'alertMain'
-                  : 'successMain'
-              }
-              borderColour="transparent"
-              textColour="white"
-              text={`${plannedWeeks} of ${totalWeeks}`}
-            />
-            <Typography
-              type={'small'}
-              text={'weeks planned'}
-              color={
-                plannedWeeks < totalWeeks || totalWeeks === 0
-                  ? 'alertMain'
-                  : 'successMain'
-              }
-              className={'ml-2'}
-            />
-          </>
-        )} */}
-
-      {/* <Typography type="h1" text={headerText} color={'primary'} /> */}
       <div className="flex w-1/4 p-2">
         <Card
           className={

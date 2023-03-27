@@ -24,7 +24,6 @@ export const ProgrammeSummaryListItem: React.FC<
         >
           {renderIcon('ClockIcon', `w-5 h-5 text-infoDark ml-1`)}
         </StatusChip>
-        {/* {renderIcon('ChevronRightIcon', `w-5 h-5 text-uiMid ml-1`)} */}
       </>
     );
   };

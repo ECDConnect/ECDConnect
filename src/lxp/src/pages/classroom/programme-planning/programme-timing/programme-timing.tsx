@@ -116,7 +116,6 @@ const ProgrammeTiming: React.FC = () => {
       endDate
     );
 
-    console.log({ overlappingProgramme, validatedDate });
     if (overlappingProgramme) {
       setAlertState({
         title: 'This start date causes conflicts',
