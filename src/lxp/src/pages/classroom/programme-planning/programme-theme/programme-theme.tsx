@@ -78,23 +78,21 @@ const ProgrammeTheme: React.FC = () => {
         text="Choose a theme"
         color={'primary'}
       />
-      {themes?.map((theme, idx) => (
-        <IconImageListItem
-          key={`theme-item-${theme.id}`}
-          color={theme.color}
-          title={theme.name}
-          icon={theme.imageUrl}
-          showDivider={idx > 0}
-          onClick={() => handelThemeSelected(theme)}
-        />
-      ))}
-      <div className="mx-4 mt-4" onClick={handleNoTheme}>
-        <Typography
-          type="body"
-          text="Or create your own programme →"
-          color={'primary'}
-        />
-        <Typography type="body" text="No theme" color={'textLight'} />
+      <div className="px-2">
+        {themes?.map((theme, idx) => (
+          <div className="mb-1 rounded-3xl">
+            <IconImageListItem
+              key={`theme-item-${theme.id}`}
+              color={theme.color}
+              title={theme.name}
+              icon={theme.imageUrl}
+              showDivider={idx > 0}
+              onClick={() => handelThemeSelected(theme)}
+              backgroundColor={'uiBg'}
+              borderRadius={'xl'}
+            />
+          </div>
+        ))}
       </div>
     </BannerWrapper>
   );
