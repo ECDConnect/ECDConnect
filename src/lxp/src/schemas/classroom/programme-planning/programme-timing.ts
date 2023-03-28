@@ -3,6 +3,7 @@ import * as Yup from 'yup';
 
 export interface ProgrammeTimingModel {
   date: string;
+  endDate?: string;
   language: string;
 }
 

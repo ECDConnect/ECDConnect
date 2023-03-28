@@ -312,7 +312,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
         totalWeeks={programmeWeeks.length}
       />
 
-      <div className={'w-full p-4 flex flex-row items-centers'}>
+      <div className={'items-centers flex w-full flex-row p-4'}>
         <Button
           className={'w-1/2'}
           size="small"
@@ -329,7 +329,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
         </Button>
         <Button
           id="gtm-add-programme"
-          className={'w-1/2 ml-2'}
+          className={'ml-2 w-1/2'}
           size="small"
           type={'filled'}
           color={'primary'}

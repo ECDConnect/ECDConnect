@@ -39,8 +39,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         public Coach UpdateCoach([Service] IHttpContextAccessor contextAccessor,
           [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
           IGenericRepositoryFactory repoFactory,
-          [Service] UserManager<ApplicationUser> userManager,
-          string id,
+          Guid? id,
           Coach input)
         {
             using var scope = dbFactory.CreateDbContext();
@@ -54,49 +53,53 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 {
                     if (input.FranchisorId != null)
                         coach.FranchisorId = input.FranchisorId;
-                    if (input.StartDate != null)
+                    if (input.StartDate != default)
                         coach.StartDate = input.StartDate;
                     if (input.AreaOfOperation != null)
                         coach.AreaOfOperation = input.AreaOfOperation;
-                    if (input.SiteAddressId != null)
+
+                    if (input.SiteAddress != null)
                     {
-                        var addressRepo = repoFactory.CreateRepository<SiteAddress>(userContext: uId);
-                        SiteAddress address = addressRepo.GetAll().Where(x => x.Id.Equals(input.SiteAddressId)).FirstOrDefault();
-                        if (input.SiteAddress.Ward != null)
-                            address.Ward = input.SiteAddress.Ward;
-                        if (input.SiteAddress.AddressLine1 != null)
-                            address.AddressLine1 = input.SiteAddress.AddressLine1;
-                        if (input.SiteAddress.AddressLine2 != null)
-                            address.AddressLine2 = input.SiteAddress.AddressLine2;
-                        if (input.SiteAddress.AddressLine3 != null)
-                            address.AddressLine3 = input.SiteAddress.AddressLine3;
-                        if (input.SiteAddress.PostalCode != null)
-                            address.PostalCode = input.SiteAddress.PostalCode;
-                        if (input.SiteAddress.ProvinceId != null)
-                            address.ProvinceId = input.SiteAddress.ProvinceId;
-                        var updateAddressResult = addressRepo.Update(address);
-                        //TODO: create address if not exists, but it really should
-                    }
-                    if (input.SiteAddress != null && input.SiteAddressId == null)
-                    {
-                        //create siteaddress
-                        var addressRepo = repoFactory.CreateRepository<SiteAddress>(userContext: uId);
-                        SiteAddress address = new SiteAddress();
-                        if (input.SiteAddress.Ward != null)
-                            address.Ward = input.SiteAddress.Ward;
-                        if (input.SiteAddress.AddressLine1 != null)
-                            address.AddressLine1 = input.SiteAddress.AddressLine1;
-                        if (input.SiteAddress.AddressLine2 != null)
-                            address.AddressLine2 = input.SiteAddress.AddressLine2;
-                        if (input.SiteAddress.AddressLine3 != null)
-                            address.AddressLine3 = input.SiteAddress.AddressLine3;
-                        if (input.SiteAddress.PostalCode != null)
-                            address.PostalCode = input.SiteAddress.PostalCode;
-                        if (input.SiteAddress.ProvinceId != null)
-                            address.ProvinceId = input.SiteAddress.ProvinceId;
-                        var updateAddressResult = addressRepo.Insert(address);
-                        if (updateAddressResult != null)
-                            coach.SiteAddressId = updateAddressResult.Id;
+                        if (input.SiteAddressId is not null)
+                        {
+                            var addressRepo = repoFactory.CreateRepository<SiteAddress>(userContext: uId);
+                            SiteAddress address = addressRepo.GetAll().Where(x => x.Id.Equals(input.SiteAddressId)).FirstOrDefault();
+                            if (input?.SiteAddress?.Ward != null)
+                                address.Ward = input.SiteAddress.Ward;
+                            if (input?.SiteAddress?.AddressLine1 != null)
+                                address.AddressLine1 = input.SiteAddress.AddressLine1;
+                            if (input?.SiteAddress?.AddressLine2 != null)
+                                address.AddressLine2 = input.SiteAddress.AddressLine2;
+                            if (input?.SiteAddress?.AddressLine3 != null)
+                                address.AddressLine3 = input.SiteAddress.AddressLine3;
+                            if (input?.SiteAddress?.PostalCode != null)
+                                address.PostalCode = input.SiteAddress.PostalCode;
+                            if (input?.SiteAddress.ProvinceId != null)
+                                address.ProvinceId = input.SiteAddress.ProvinceId;
+                            var updateAddressResult = addressRepo.Update(address);
+                        }
+
+                        if (input.SiteAddressId is null)
+                        {
+                            //create siteaddress
+                            var addressRepo = repoFactory.CreateRepository<SiteAddress>(userContext: uId);
+                            SiteAddress newAddress = new SiteAddress();
+                            if (input.SiteAddress.Ward != null)
+                                newAddress.Ward = input.SiteAddress.Ward;
+                            if (input.SiteAddress.AddressLine1 != null)
+                                newAddress.AddressLine1 = input.SiteAddress.AddressLine1;
+                            if (input.SiteAddress.AddressLine2 != null)
+                                newAddress.AddressLine2 = input.SiteAddress.AddressLine2;
+                            if (input.SiteAddress.AddressLine3 != null)
+                                newAddress.AddressLine3 = input.SiteAddress.AddressLine3;
+                            if (input.SiteAddress.PostalCode != null)
+                                newAddress.PostalCode = input.SiteAddress.PostalCode;
+                            if (input.SiteAddress.ProvinceId != null)
+                                newAddress.ProvinceId = input.SiteAddress.ProvinceId;
+                            var updateAddressResult = addressRepo.Insert(newAddress);
+                            if (updateAddressResult != null)
+                                coach.SiteAddressId = updateAddressResult.Id;
+                        }
                     }
                     if (input.SigningSignature != null)
                         coach.SigningSignature = input.SigningSignature;

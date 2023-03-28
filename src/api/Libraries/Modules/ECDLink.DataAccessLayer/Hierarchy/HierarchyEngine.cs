@@ -227,8 +227,7 @@ namespace ECDLink.DataAccessLayer.Hierarchy
         private static List<string> GetCoachIds(IGenericRepository<Practitioner, Guid> practRepo, Guid userIdGuid)
         {
             var coachPractitioners = practRepo.GetAll()
-                .Where(c => c.CoachHierarchy == userIdGuid
-                    && c != null)?
+                .Where(c => c.CoachHierarchy.HasValue == true && c.CoachHierarchy == userIdGuid)?
                 .Select(p => p.UserId)?
                 .ToList();
 

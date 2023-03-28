@@ -210,7 +210,7 @@ const ProgrammeSummary: React.FC<ProgrammeSummaryProps> = ({
                 <EmptyActivities
                   title="Information not available when offline"
                   subTitle="Please go online and refresh the page to see suggested activities."
-                  className="border-dashed border rounded-lg border-uiMid"
+                  className="border-uiMid rounded-lg border border-dashed"
                 />
               )}
             </div>
@@ -222,7 +222,7 @@ const ProgrammeSummary: React.FC<ProgrammeSummaryProps> = ({
             recommendations.length === 0 &&
             displayGoodMixCard && (
               <SuccessCard
-                className={'mt-4 mx-4'}
+                className={'mx-4 mt-4'}
                 icon={'SparklesIcon'}
                 text={`Good job, you have a good mix of skills in your daily routines!`}
                 onClose={() => {

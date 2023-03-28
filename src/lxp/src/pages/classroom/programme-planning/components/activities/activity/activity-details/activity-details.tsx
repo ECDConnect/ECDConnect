@@ -1,4 +1,11 @@
-import { BannerWrapper, Button, Divider, Typography } from '@ecdlink/ui';
+import {
+  BannerWrapper,
+  Button,
+  Card,
+  Divider,
+  RoundIcon,
+  Typography,
+} from '@ecdlink/ui';
 import LanguageSelector from '../../../../../../../components/language-selector/language-selector';
 import { activitySelectors } from '@store/content/activity';
 import React from 'react';
@@ -32,7 +39,7 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({
       title={activityDetail.name}
       subTitle={`${date.toDateString()}`}
       color={'primary'}
-      backgroundColour="uiBg"
+      backgroundColour="white"
       onBack={onBack}
       displayOffline={!isOnline}
     >
@@ -46,15 +53,15 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({
 
       <LanguageSelector currentLocale={'en-za'} selectLanguage={() => {}} />
       <Divider />
-      <div className="px-4 py-2">
-        <Typography type="h1" text={activityDetail.name} color={'primary'} />
+      <div className="px-4 py-3">
+        <Typography type="h1" text={activityDetail.name} color={'textDark'} />
 
         {!disabled &&
           (isSelected ? (
             <Button
               type={'filled'}
               color={'primary'}
-              className={'mt-2 w-full'}
+              className={'mt-2 mb-4 w-full'}
               textColor={'white'}
               text={`Change activity`}
               icon={'SwitchVerticalIcon'}
@@ -65,7 +72,7 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({
             <Button
               type={'filled'}
               color={'primary'}
-              className={'mt-2 w-full'}
+              className={'mt-2 mb-4 w-full'}
               textColor={'white'}
               text={'Choose this activity'}
               icon={'CheckCircleIcon'}
@@ -73,6 +80,8 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({
               onClick={onActivitySelected}
             />
           ))}
+
+        <Divider dividerType="dashed" />
 
         <Typography
           type="body"
@@ -82,12 +91,14 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({
           color={'textDark'}
           className="mt-5"
         />
-        {activityDetail.subCategories?.map((subCategory, idx) => (
-          <ActivitySubCategoryCard
-            key={`activity-details-sub-category-${idx}`}
-            subCategory={subCategory}
-          />
-        ))}
+        <Card className="border-primary mt-2 rounded-lg border">
+          {activityDetail.subCategories?.map((subCategory, idx) => (
+            <ActivitySubCategoryCard
+              key={`activity-details-sub-category-${idx}`}
+              subCategory={subCategory}
+            />
+          ))}
+        </Card>
 
         <Typography
           type="body"
@@ -102,7 +113,7 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({
           type="body"
           fontSize={'16'}
           text={activityDetail.materials}
-          color={'textDark'}
+          color={'textMid'}
         />
 
         <Typography
@@ -121,7 +132,7 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({
           color={'textDark'}
         />
       </div>
-      <div className="px-4 py-2 bg-uiLight">
+      <div className="bg-uiBg px-4 py-2">
         <Typography
           type="body"
           fontSize={'18'}
@@ -136,7 +147,7 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({
           color={'textDark'}
         />
       </div>
-      <div className="p-4 mb-20">
+      <div className="mb-20 p-4">
         {!disabled &&
           (isSelected ? (
             <Button
