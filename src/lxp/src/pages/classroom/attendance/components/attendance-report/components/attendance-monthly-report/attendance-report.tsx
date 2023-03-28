@@ -2,6 +2,7 @@ import { AttendanceResult } from '@/models/classroom/attendance/AttendanceResult
 import {
   ChildAttendanceReportModel,
   ChildGroupingAttendanceReportModel,
+  ClassRoomChildAttendanceMonthlyReportModel,
 } from '@ecdlink/core';
 import {
   ComponentBaseProps,
@@ -45,6 +46,7 @@ export interface MonthlyAttendanceReportProps extends ComponentBaseProps {
   onDownloadReport: (date: Date) => void;
   onBack: () => void;
   classroomGroupId: string;
+  reportData: ClassRoomChildAttendanceMonthlyReportModel[]
 }
 
 export const MonthlyAttendanceReport = ({
@@ -52,6 +54,7 @@ export const MonthlyAttendanceReport = ({
   onDownloadReport,
   onBack,
   classroomGroupId,
+  reportData
 }: MonthlyAttendanceReportProps) => {
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
@@ -116,13 +119,9 @@ export const MonthlyAttendanceReport = ({
       (x) => x.classroomGroupId === classroomGroupId
     );
     setClassroomGroup(group);
-    console.log('>', group);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [childAttendanceReportData]);
 
-  const contactCaregiver = () => {
-    history.push('/child-caregivers', { childId });
-  };
 
   const downloadReport = (attendanceSuccessList: AttendanceResult) => {
     if (onDownloadReport) {
@@ -141,6 +140,7 @@ export const MonthlyAttendanceReport = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOnline]);
+
   return (
     <BannerWrapper
       size={'small'}
