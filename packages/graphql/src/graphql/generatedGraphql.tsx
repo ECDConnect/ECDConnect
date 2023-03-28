@@ -2011,12 +2011,10 @@ export type IncomeStatements = {
   __typename?: 'IncomeStatements';
   description?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['Int']>;
-  name?: Maybe<Scalars['String']>;
 };
 
 export type IncomeStatementsInput = {
   description?: InputMaybe<Scalars['String']>;
-  name?: InputMaybe<Scalars['String']>;
 };
 
 export type Infant = {
@@ -2419,12 +2417,17 @@ export type MoreInformation = {
   descriptionBIcon?: Maybe<Scalars['String']>;
   descriptionC?: Maybe<Scalars['String']>;
   descriptionCColor?: Maybe<Scalars['String']>;
+  descriptionCIcon?: Maybe<Scalars['String']>;
   descriptionD?: Maybe<Scalars['String']>;
   descriptionDColor?: Maybe<Scalars['String']>;
   descriptionDIcon?: Maybe<Scalars['String']>;
+  descriptionE?: Maybe<Scalars['String']>;
+  descriptionEColor?: Maybe<Scalars['String']>;
+  descriptionEIcon?: Maybe<Scalars['String']>;
   headerA?: Maybe<Scalars['String']>;
   headerB?: Maybe<Scalars['String']>;
   headerC?: Maybe<Scalars['String']>;
+  headerD?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['Int']>;
   infoBoxDescription?: Maybe<Scalars['String']>;
   infoBoxIcon?: Maybe<Scalars['String']>;
@@ -2432,6 +2435,7 @@ export type MoreInformation = {
   section?: Maybe<Scalars['String']>;
   showDividerA?: Maybe<Scalars['String']>;
   showDividerB?: Maybe<Scalars['String']>;
+  showDividerC?: Maybe<Scalars['String']>;
   type?: Maybe<Scalars['String']>;
   visit?: Maybe<Scalars['String']>;
 };
@@ -2444,18 +2448,24 @@ export type MoreInformationInput = {
   descriptionBIcon?: InputMaybe<Scalars['String']>;
   descriptionC?: InputMaybe<Scalars['String']>;
   descriptionCColor?: InputMaybe<Scalars['String']>;
+  descriptionCIcon?: InputMaybe<Scalars['String']>;
   descriptionD?: InputMaybe<Scalars['String']>;
   descriptionDColor?: InputMaybe<Scalars['String']>;
   descriptionDIcon?: InputMaybe<Scalars['String']>;
+  descriptionE?: InputMaybe<Scalars['String']>;
+  descriptionEColor?: InputMaybe<Scalars['String']>;
+  descriptionEIcon?: InputMaybe<Scalars['String']>;
   headerA?: InputMaybe<Scalars['String']>;
   headerB?: InputMaybe<Scalars['String']>;
   headerC?: InputMaybe<Scalars['String']>;
+  headerD?: InputMaybe<Scalars['String']>;
   infoBoxDescription?: InputMaybe<Scalars['String']>;
   infoBoxIcon?: InputMaybe<Scalars['String']>;
   infoBoxTitle?: InputMaybe<Scalars['String']>;
   section?: InputMaybe<Scalars['String']>;
   showDividerA?: InputMaybe<Scalars['String']>;
   showDividerB?: InputMaybe<Scalars['String']>;
+  showDividerC?: InputMaybe<Scalars['String']>;
   type?: InputMaybe<Scalars['String']>;
   visit?: InputMaybe<Scalars['String']>;
 };
@@ -7294,6 +7304,16 @@ export type Setting_Google = {
   GoogleTagManager: Scalars['String'];
 };
 
+export type Setting_IncomeStatementSubmitEnd = {
+  __typename?: 'Setting_IncomeStatementSubmitEnd';
+  IncomeStatementSubmitEnd: Scalars['String'];
+};
+
+export type Setting_IncomeStatementSubmitStart = {
+  __typename?: 'Setting_IncomeStatementSubmitStart';
+  IncomeStatementSubmitStart: Scalars['String'];
+};
+
 export type Setting_IntegrationDelay = {
   __typename?: 'Setting_IntegrationDelay';
   IntegrationDelay: Scalars['String'];
@@ -7353,6 +7373,7 @@ export type Setting_Smtp = {
   FromEmailDisplayName: Scalars['String'];
   Password: Scalars['String'];
   RetryCount: Scalars['String'];
+  RetryWaitMiliseconds: Scalars['String'];
   SmtpServerAddress: Scalars['String'];
   SmtpServerPort: Scalars['String'];
   SmtpServerSecondaryAddress: Scalars['String'];
@@ -7384,6 +7405,9 @@ export type SettingsType = {
   BulkSms: Setting_BulkSms;
   Children: Setting_Children;
   Google: Setting_Google;
+  Holder?: Maybe<Scalars['String']>;
+  IncomeStatementSubmitEnd: Setting_IncomeStatementSubmitEnd;
+  IncomeStatementSubmitStart: Setting_IncomeStatementSubmitStart;
   IntegrationDelay: Setting_IntegrationDelay;
   InvitationCutoffDelay: Setting_InvitationCutoffDelay;
   Invitations: Setting_Invitations;
