@@ -6,6 +6,7 @@ import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
 import {
   addVisitFormData,
   getCompletedVisitsForVisitId,
+  getGrowthDataForInfant,
   getHealthCareWorkerVisitStatus,
   getHealthPromotion,
   getMoreInformation,
@@ -118,6 +119,11 @@ const visitSlice = createSlice({
         setFulfilledThunkActionStatus(state, action);
       }
     );
+    builder.addCase(getGrowthDataForInfant.fulfilled, (state, action) => {
+      state.growthDataForInfant = action.payload;
+
+      setFulfilledThunkActionStatus(state, action);
+    });
     builder.addCase(getVisitVideos.fulfilled, (state, action) => {
       state.visitVideos = !!state.visitVideos?.length
         ? [...new Set([...state.visitVideos, ...action.payload])]

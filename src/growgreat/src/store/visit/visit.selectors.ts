@@ -2,6 +2,7 @@ import {
   HealthPromotion,
   MoreInformation,
   Progress_VisitDataStatus,
+  VisitData,
 } from '@ecdlink/graphql';
 import { VisitStatusDto } from '@ecdlink/core';
 import { RootState } from '../types';
@@ -39,3 +40,7 @@ export const getVisitVideoBySectionAndLocale = (
   state.visits.visitVideos?.find(
     (item) => item.section === section && item.locale === locale
   );
+
+export const getGrowthDataForInfantSelector = (
+  state: RootState
+): VisitData[] | undefined => state.visits.growthDataForInfant;

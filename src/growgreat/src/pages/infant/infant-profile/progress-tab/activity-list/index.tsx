@@ -181,8 +181,9 @@ export const ActivityList: React.FC = () => {
 
   useLayoutEffect(() => {
     appDispatch(infantThunkActions.getInfantVisits({ infantId })).unwrap();
-    // TODO: add integration
-    // appDispatch(visitThunkActions.getGrowthDataForInfant({ infantId })).unwrap()
+    appDispatch(
+      visitThunkActions.getGrowthDataForInfant({ infantId })
+    ).unwrap();
   }, [appDispatch, infantId]);
 
   useLayoutEffect(() => {
