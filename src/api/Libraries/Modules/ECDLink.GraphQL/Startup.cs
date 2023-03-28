@@ -29,6 +29,7 @@ namespace ECDLink.EGraphQL
 
             var builder = services
               .AddGraphQLServer()
+              .ModifyOptions(o => o.DefaultResolverStrategy = HotChocolate.Execution.ExecutionStrategy.Serial)
               .AddQueryType<Query>()
               .AddTypeModule(sp => new ContentTypeModule(contentReloader))
               .AddTypeModule(sp => new SettingsModule(contentReloader))
