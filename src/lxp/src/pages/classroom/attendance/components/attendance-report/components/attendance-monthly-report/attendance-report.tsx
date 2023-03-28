@@ -1,4 +1,3 @@
-
 import {
   ChildAttendanceReportModel,
   ClassRoomChildAttendanceMonthlyReportModel,
@@ -39,7 +38,7 @@ export interface MonthlyAttendanceReportProps extends ComponentBaseProps {
   onDownloadReport: (date: Date) => void;
   onBack: () => void;
   classroomGroupId: string;
-  reportData: ClassRoomChildAttendanceMonthlyReportModel[]
+  reportData: ClassRoomChildAttendanceMonthlyReportModel[];
 }
 
 export const MonthlyAttendanceReport = ({
@@ -47,58 +46,12 @@ export const MonthlyAttendanceReport = ({
   onDownloadReport,
   onBack,
   classroomGroupId,
-  reportData
+  reportData,
 }: MonthlyAttendanceReportProps) => {
   // const history = useHistory();
   const { isOnline } = useOnlineStatus();
   const { state } = useLocation<ChildAttendanceReportState>();
-  const { childId } = state;
   const appDispatch = useAppDispatch();
-
-  const child = useSelector(childrenSelectors.getChildById(childId));
-
-  const attendanceData = useSelector(attendanceSelectors.getTrackedAttendance);
-  const learner = useSelector(
-    classroomsSelectors.getChildLearnerByClassroom(classroomGroupId, child)
-  );
-
-  const [childAttendanceReportData, setChildAttendanceReportData] =
-    useState<ChildAttendanceReportModel>({
-      totalActualAttendance: 0,
-      totalExpectedAttendance: 0,
-      classGroupAttendance: [],
-      attendancePercentage: 0,
-    });
-
-  const authUser = useSelector(authSelectors.getAuthUser);
-
-  useEffect(() => {
-    async function init() {
-      if (attendanceData && attendanceData.length > 0) {
-        await appDispatch(
-          attendanceThunkActions.trackAttendanceSync({})
-        ).unwrap();
-      }
-      const startDate = new Date(learner?.startedAttendance || new Date());
-      const endDate = new Date();
-
-      new AttendanceService(authUser?.auth_token ?? '')
-        .getChildAttendanceRecords(
-          authUser?.id ?? '',
-          classroomGroupId,
-          startDate,
-          endDate
-        )
-        .then((data) => {
-          setChildAttendanceReportData(data);
-        });
-    }
-    init();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {}, [childAttendanceReportData]);
-
 
   // const downloadReport = (attendanceSuccessList: AttendanceResult) => {
   //   if (onDownloadReport) {
@@ -163,9 +116,9 @@ export const MonthlyAttendanceReport = ({
       </div>
 
       {/* TODO: integrate this with backend to get correct data */}
-      {['1', ' 2', '3', '4'].map((report, idx) => {
-        const reportItemColor = getColor(10);
-        const reportItemShape = getShape(67);
+      {reportData?.map((report, idx) => {
+        const reportItemColor = getColor(report.attendancePercentage);
+        const reportItemShape = getShape(report?.attendancePercentage);
         return (
           <div
             key={`child-attendance-report-month-${idx}`}
@@ -179,7 +132,7 @@ export const MonthlyAttendanceReport = ({
                 type="body"
                 weight="bold"
                 color={'black'}
-                text={'Elisha Bere'}
+                text={report.childFullName}
               />
               <div className={'flex w-1/2 flex-row items-center pl-6'}>
                 <div
