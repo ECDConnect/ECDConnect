@@ -12,11 +12,10 @@ import { getMonthName } from '@utils/classroom/attendance/track-attendance-utils
 import * as styles from './attendance-monthly-report.styles';
 import { MonthlyAttendanceReport } from './attendance-report';
 import { AttendanceSummary } from '@models/classroom/attendance/AttendanceSummary';
-import { addDays, getYear } from 'date-fns';
+import { addDays, getYear, startOfMonth, endOfMonth, parse, add } from 'date-fns';
 import { useSelector } from 'react-redux';
 import { authSelectors } from '@/store/auth';
 import { ClassRoomChildAttendanceMonthlyReportModel } from '@ecdlink/core';
-import { startOfMonth, endOfMonth } from 'date-fns';
 
 interface AttendanceMonthlyReportProps extends ComponentBaseProps {
   attendanceSummary: AttendanceSummary[];
@@ -27,7 +26,6 @@ export const AttendanceMonthlyReport: React.FC<
   AttendanceMonthlyReportProps
 > = ({ attendanceSummary, classroomId }) => {
   const [displayReport, setDisplayReport] = useState<boolean>(false);
-  const [selectedmonth, setSelectedMonth] = useState<number>(0);
 
   const [viewReportDate, setViewReportDate] = useState<string>();
   const [reportData, setReportData] = useState<
@@ -39,34 +37,35 @@ export const AttendanceMonthlyReport: React.FC<
     setDisplayReport(!displayReport);
   };
 
-  function getMonthRange(monthNumber: number) {
-    // Get the current year
+  function getMonthRange(monthName: string) {
     const year = new Date().getFullYear();
-
+    // Parse the month name and get the corresponding month number
+    const monthNumber = parse(monthName, 'MMMM', new Date()).getMonth() + 1;
     // Get the start and end date of the month
     const startDate = startOfMonth(new Date(year, monthNumber - 1, 1));
+    
     const endDate = endOfMonth(new Date(year, monthNumber - 1, 1));
 
     return { startDate, endDate };
   }
 
   useEffect(() => {
-    const monthNumber = selectedmonth + 1;
-    const { startDate, endDate } = getMonthRange(monthNumber);
-    console.log(viewReportDate);
-    new AttendanceService(authUser?.auth_token ?? '')
-      .getClassroomAttendanceReport(
-        authUser?.id ?? '',
-        classroomId,
-        startDate,
-        endDate
-      )
-      .then((data) => {
-        setReportData(data);
-      });
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  });
+    if (viewReportDate) {
+      const { startDate, endDate } = getMonthRange(viewReportDate);
+      const nextDay = add(startDate, { days: 1 });
+      new AttendanceService(authUser?.auth_token ?? '')
+        .getClassroomAttendanceReport(
+          authUser?.id ?? '',
+          classroomId,
+          nextDay,
+          endDate
+        )
+        .then((data) => {
+          setReportData(data);
+        });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [viewReportDate]);
 
   return (
     <div className={styles.wrapper}>
@@ -135,7 +134,7 @@ export const AttendanceMonthlyReport: React.FC<
               onDownloadReport={() => console.log('>>')}
               onBack={() => closeReport()}
               classroomGroupId={classroomId}
-              reportData={reportData ?? []}
+              reportData={reportData}
             />
           </div>
         </Dialog>

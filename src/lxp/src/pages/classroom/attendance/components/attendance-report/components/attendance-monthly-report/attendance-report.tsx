@@ -1,27 +1,20 @@
-import { AttendanceResult } from '@/models/classroom/attendance/AttendanceResult';
+
 import {
   ChildAttendanceReportModel,
-  ChildGroupingAttendanceReportModel,
   ClassRoomChildAttendanceMonthlyReportModel,
 } from '@ecdlink/core';
 import {
   ComponentBaseProps,
   BannerWrapper,
   Button,
-  Divider,
-  StatusChip,
   Typography,
   renderIcon,
 } from '@ecdlink/ui';
-import { getYear } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import {
-  badScoreThreshold,
-  goodScoreThreshold,
-} from '@models/classroom/attendance/ClassAttendance';
+
 import { AttendanceService } from '@services/AttendanceService';
 import { useAppDispatch } from '@store';
 import { attendanceSelectors, attendanceThunkActions } from '@store/attendance';
@@ -56,22 +49,19 @@ export const MonthlyAttendanceReport = ({
   classroomGroupId,
   reportData
 }: MonthlyAttendanceReportProps) => {
-  const history = useHistory();
+  // const history = useHistory();
   const { isOnline } = useOnlineStatus();
   const { state } = useLocation<ChildAttendanceReportState>();
   const { childId } = state;
   const appDispatch = useAppDispatch();
 
   const child = useSelector(childrenSelectors.getChildById(childId));
-  const childUser = useSelector(
-    childrenSelectors.getChildUserById(child?.userId)
-  );
+
   const attendanceData = useSelector(attendanceSelectors.getTrackedAttendance);
   const learner = useSelector(
     classroomsSelectors.getChildLearnerByClassroom(classroomGroupId, child)
   );
 
-  const currentYear = getYear(new Date());
   const [childAttendanceReportData, setChildAttendanceReportData] =
     useState<ChildAttendanceReportModel>({
       totalActualAttendance: 0,
@@ -79,9 +69,6 @@ export const MonthlyAttendanceReport = ({
       classGroupAttendance: [],
       attendancePercentage: 0,
     });
-  const [attendancePercentage, setAttendancePercentage] = useState<number>(0);
-  const [classroomGroup, setClassroomGroup] =
-    useState<ChildGroupingAttendanceReportModel>();
 
   const authUser = useSelector(authSelectors.getAuthUser);
 
@@ -112,22 +99,12 @@ export const MonthlyAttendanceReport = ({
 
   useEffect(() => {}, [childAttendanceReportData]);
 
-  useEffect(() => {
-    if (!childAttendanceReportData) return;
-    setAttendancePercentage(childAttendanceReportData.attendancePercentage);
-    const group = childAttendanceReportData.classGroupAttendance.find(
-      (x) => x.classroomGroupId === classroomGroupId
-    );
-    setClassroomGroup(group);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [childAttendanceReportData]);
 
-
-  const downloadReport = (attendanceSuccessList: AttendanceResult) => {
-    if (onDownloadReport) {
-      onDownloadReport(new Date());
-    }
-  };
+  // const downloadReport = (attendanceSuccessList: AttendanceResult) => {
+  //   if (onDownloadReport) {
+  //     onDownloadReport(new Date());
+  //   }
+  // };
 
   useEffect(() => {
     if (!isOnline) {
