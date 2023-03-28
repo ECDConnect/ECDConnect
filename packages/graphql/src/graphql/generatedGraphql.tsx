@@ -3999,7 +3999,7 @@ export type MutationUpdateClubArgs = {
 };
 
 export type MutationUpdateCoachArgs = {
-  id?: InputMaybe<Scalars['String']>;
+  id?: InputMaybe<Scalars['UUID']>;
   input?: InputMaybe<CoachInput>;
 };
 
