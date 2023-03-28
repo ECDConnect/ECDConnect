@@ -7405,7 +7405,6 @@ export type SettingsType = {
   BulkSms: Setting_BulkSms;
   Children: Setting_Children;
   Google: Setting_Google;
-  Holder?: Maybe<Scalars['String']>;
   IncomeStatementSubmitEnd: Setting_IncomeStatementSubmitEnd;
   IncomeStatementSubmitStart: Setting_IncomeStatementSubmitStart;
   IntegrationDelay: Setting_IntegrationDelay;
