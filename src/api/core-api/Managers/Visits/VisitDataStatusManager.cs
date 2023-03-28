@@ -1,4 +1,5 @@
-﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+﻿using DotLiquid.Tags;
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Integration;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.DataAccessLayer.Entities.Users;
@@ -1361,6 +1362,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
             
             return indicator;
         }
+        
+        /* ALL METHODS BELOW ARE RETURNING DATA FOR FE VIA INFANT AND MOTHER MANAGERS/QUERY EXTENSIONS*/
         public List<VisitDataStatus> GetReferralDataForClient(string id, string clientType) {
             // This data is for the past 6 months
             List<VisitDataStatus> allReferrals = new List<VisitDataStatus>();
@@ -1532,7 +1535,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
 
             return result;
         }
-
         public List<VisitDataStatus> GetSummaryDataForVisitByGroup(Guid visitId, string visitName)
         {
             List<VisitDataStatus> allData = (
@@ -1543,20 +1545,18 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
             
             return allData;
         }
-
         public List<VisitDataStatus> GetSummaryDataForVisitByPriority(Guid visitId, string color)
         {
             List<VisitDataStatus> allData = (
                     from visitData in _visitDataRepo.GetAll().Where(x => x.VisitId == visitId).OrderBy(x => x.InsertedDate)
                     join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.Type == _G9 && x.Color == color) on visitData.Id equals visitStatusData.VisitDataId
                     select visitStatusData
-                ).ToList();
+                ).OrderByDescending(y => y.InsertedDate).ToList();
 
             allData = (List<VisitDataStatus>)allData.Take(3);
 
             return allData;
         }
-
         public List<VisitDataStatus> GetIDDocSummaryDataForVisit(Guid visitId)
         {
             List<VisitDataStatus> allData = (
@@ -1567,6 +1567,100 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
 
             return allData;
         }
+
+        public string GetGrowthStatusForInfant(string id, string firstName, string color)
+        {
+            var status = "";
+
+            List<VisitDataStatus> vData = new List<VisitDataStatus>();
+            vData = (
+                from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId == id && x.Attended == true).OrderBy(x => x.PlannedVisitDate)
+                join visitData in _visitDataRepo.GetAll().Where(y => y.Question == Constants.GGSettings.q_weight ||
+                                                                     y.Question == Constants.GGSettings.q_length ||
+                                                                     y.Question == Constants.GGSettings.q_muac).OrderByDescending(y => y.InsertedDate) on visit.Id equals visitData.VisitId
+                join visitDataStatus in _visitDataStatusRepo.GetAll() on visitData.Id equals visitDataStatus.VisitDataId
+                select visitDataStatus
+            ).ToList();
+
+            // Success/normal
+            if (color == MetricsIconEnum.Success.ToString())
+            {
+                string green_comment = firstName + Constants.GGSettings.growing_well;
+                VisitDataStatus result = vData.Where(x => x.Color == green_comment).FirstOrDefault();
+                if (result == null)
+                {
+                    status = "";
+                }
+            }
+
+            // Warning - Underweight, Growth faltering, Stunted, Obese, Overweight
+            if (color == MetricsIconEnum.Warning.ToString())
+            {
+                List<VisitDataStatus> amberData = vData.Where(x => x.Color == color).OrderByDescending(x => x.InsertedDate).ToList();
+                if (amberData.Count > 0)
+                {
+                    status = amberData.Select(x => x.Comment).FirstOrDefault();
+                }
+
+            }
+            return status;
+        }
+
+        public string GetRedAlertsForUser(string id, string type)
+        {
+            var status = "";
+            VisitDataStatus vData = new VisitDataStatus();
+
+            if (type == Constants.GGSettings.client_mother)
+            {
+
+                vData =  (
+                    from visit in _visitRepo.GetAll().Where(x => x.Mother.UserId == id && x.Attended == true).OrderBy(x => x.PlannedVisitDate)
+                    join visitData in _visitDataRepo.GetAll().OrderByDescending(y => y.InsertedDate) on visit.Id equals visitData.VisitId
+                    join visitDataStatus in _visitDataStatusRepo.GetAll().Where(z => z.Color == MetricsIconEnum.Error.ToString() && z.Comment == Constants.GGSettings.refer_to_clinic_urgently) on visitData.Id equals visitDataStatus.VisitDataId
+                    select visitDataStatus
+                ).FirstOrDefault();
+
+            } else
+            {
+                vData = (
+                    from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId == id && x.Attended == true).OrderBy(x => x.PlannedVisitDate)
+                    join visitData in _visitDataRepo.GetAll().OrderByDescending(y => y.InsertedDate) on visit.Id equals visitData.VisitId
+                    join visitDataStatus in _visitDataStatusRepo.GetAll().Where(z => z.Color == MetricsIconEnum.Error.ToString() && z.Comment == Constants.GGSettings.refer_to_clinic_urgently) on visitData.Id equals visitDataStatus.VisitDataId
+                    select visitDataStatus
+                ).FirstOrDefault();
+            }
+
+            if (vData != null)
+            {
+                status = Constants.GGSettings.refer_to_clinic_urgently;
+            }
+
+            return status;
+        }
+
+        public string GetAlertsForMother(string id)
+        {
+            var status = "";
+
+            VisitDataStatus vData = (
+                   from visit in _visitRepo.GetAll().Where(x => x.Mother.UserId == id && x.Attended == true).OrderBy(x => x.PlannedVisitDate)
+                   join visitData in _visitDataRepo.GetAll().OrderByDescending(y => y.InsertedDate) on visit.Id equals visitData.VisitId
+                   join visitDataStatus in _visitDataStatusRepo.GetAll().Where(z => z.Color == MetricsIconEnum.Error.ToString() || z.Color == MetricsIconEnum.Warning.ToString()) on visitData.Id equals visitDataStatus.VisitDataId
+                   select visitDataStatus
+               ).FirstOrDefault();
+
+            if (vData != null)
+            {
+                status = vData.Comment;
+            }
+
+            return status;
+        }
+
+        
+
+
 
     }
 }
