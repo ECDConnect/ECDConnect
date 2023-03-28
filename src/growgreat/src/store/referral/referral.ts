@@ -2,7 +2,10 @@ import { createSlice } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import { ThunkStateStatus } from '../types';
 import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
-import { getReferralsForInfant } from './referral.actions';
+import {
+  getReferralsForInfant,
+  updateVisitDataStatus,
+} from './referral.actions';
 import { ReferralState } from './referral.types';
 
 const initialState: ReferralState & ThunkStateStatus = {};
@@ -13,9 +16,13 @@ const referralSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     setThunkActionStatus(builder, getReferralsForInfant);
+    setThunkActionStatus(builder, updateVisitDataStatus);
     builder.addCase(getReferralsForInfant.fulfilled, (state, action) => {
       state.referralsForInfant = action.payload;
 
+      setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(updateVisitDataStatus.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
     });
   },

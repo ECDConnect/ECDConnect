@@ -1,6 +1,6 @@
 import { api } from '../axios.helper';
 import { Config } from '@ecdlink/core';
-import { VisitDataStatus } from '@ecdlink/graphql';
+import { VisitDataStatus, VisitDataStatusFilterInput } from '@ecdlink/graphql';
 
 class Referral {
   _accessToken: string;
@@ -37,6 +37,8 @@ class Referral {
           `,
       variables: {
         id,
+        // id: '6c2bc4ab-f06e-44d1-adee-be91dd98e1b0',
+        // test id
       },
     });
 
@@ -47,6 +49,35 @@ class Referral {
     }
 
     return response.data.data.referralsForInfant;
+  }
+
+  async updateVisitDataStatus(
+    input: VisitDataStatusFilterInput[]
+  ): Promise<{}> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: {};
+      errors?: {};
+    }>(``, {
+      query: `
+        mutation UpdateVisitDataStatus($input: VisitDataStatusReferralInput) {
+          updateVisitDataStatus(input: $input) {
+          
+          }
+        }
+          `,
+      variables: {
+        input: { referrals: input },
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Update Visit Data Status Failed - Server connection error'
+      );
+    }
+
+    return response.data.data;
   }
 }
 

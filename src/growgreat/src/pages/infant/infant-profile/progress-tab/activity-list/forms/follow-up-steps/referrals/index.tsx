@@ -6,40 +6,60 @@ import {
   useState,
 } from 'react';
 import { Alert, CheckboxChange, CheckboxGroup, Typography } from '@ecdlink/ui';
-import { replaceBraces } from '@ecdlink/core';
+import { toCamelCase } from '@ecdlink/core';
 import { Header } from '@/pages/infant/infant-profile/components';
 import { ReactComponent as Polly } from '@/assets/momImageSvg.svg';
 
 import { activitiesColours } from '../../../activities-list';
 import { DynamicFormProps } from '../../dynamic-form';
+import { useSelector } from 'react-redux';
+import { getReferralsForInfantSelector } from '@/store/referral/referral.selectors';
+import { VisitDataStatus } from '@ecdlink/graphql';
 
+interface GroupedData {
+  [key: string]: VisitDataStatus[];
+  clinicReferrals: VisitDataStatus[];
+  departmentOfHomeAffairsReferrals: VisitDataStatus[];
+  immunisationsSupplementsAndDeworming: VisitDataStatus[];
+}
 export const ReferralsStep = ({
   infant,
   setEnableButton,
+  setReferralsInput,
 }: DynamicFormProps) => {
-  const questionForMom = 'Clinic referrals:';
+  const referralsForInfant = useSelector(getReferralsForInfantSelector);
+  const referrals = referralsForInfant?.filter((object, index, array) => {
+    return (
+      index ===
+      array.findIndex((newObject) => newObject.comment === object.comment)
+    );
+  });
 
-  // TODO: get the info from getReferralsForInfant
-  const [questions, setAnswers] = useState([
-    {
-      question: questionForMom,
-      options: [
-        '{client} had thoughts and plans to harm herself or commit suicide',
-        'Missed clinic visit',
-      ],
-      answer: [],
-    },
-    {
-      question: 'SASSA referrals',
-      options: ['Has not applied for a child support grant'],
-      answer: [],
-    },
-    {
-      question: 'Department of Home Affairs referrals',
-      options: ['{client} does not have a birth certificate'],
-      answer: [],
-    },
-  ]);
+  const groupedData = useMemo(() => {
+    const groupedData = referrals?.reduce(
+      (acc: { [key: string]: any }, currentValue) => {
+        const section = toCamelCase(currentValue?.section || '');
+        if (!section) return acc;
+        if (!acc[section]) {
+          acc[section] = [];
+        }
+        acc[section].push(currentValue);
+        return acc;
+      },
+      {}
+    );
+
+    return groupedData;
+  }, [referrals]) as GroupedData;
+
+  const sections =
+    groupedData &&
+    Object.keys(groupedData)?.map((item) => ({
+      label: groupedData[item][0].section,
+      value: item,
+    }));
+
+  const [questions, setAnswers] = useState(groupedData);
 
   const name = useMemo(() => infant?.user?.firstName || '', [infant]);
   const caregiverName = useMemo(
@@ -53,48 +73,38 @@ export const ReferralsStep = ({
     (value, index) => {
       const currentQuestion = questions[index];
 
-      const updatedQuestions = questions.map((question) => {
-        if (question.question === currentQuestion.question) {
-          return {
-            ...question,
-            answer: value,
-          };
+      const updatedAnswers = currentQuestion?.map((question) => {
+        if (question.id === value.id) {
+          return value;
         }
+
         return question;
       });
 
-      const formattedQuestions = updatedQuestions.map((item) => {
-        const { options, ...rest } = item;
+      const updatedQuestions = { ...questions, [index]: updatedAnswers };
 
-        return rest;
+      const formattedQuestions = updatedAnswers.map((item) => {
+        const { id, isCompleted } = item;
+
+        return { id, isCompleted };
       });
 
+      setReferralsInput?.(formattedQuestions);
       setAnswers(updatedQuestions);
-
-      // TODO: add integration
-      // setSectionQuestions?.([
-      //   {
-      //     visitSection,
-      //     questions: formattedQuestions,
-      //   },
-      // ]);
     },
-    [questions]
+    [questions, setReferralsInput]
   );
 
   const onCheckboxChange = useCallback(
-    (event: CheckboxChange, index: number) => {
-      const answers = questions[index].answer;
-      if (event.checked) {
-        const currentAnswers = answers
-          ? [...answers, event.value]
-          : [event.value];
+    (event: CheckboxChange) => {
+      const referral = questions[event.name].find(
+        (item) => item.comment === event.value
+      );
 
-        return onOptionSelected(currentAnswers, index);
-      }
-      const currentAnswers = answers?.filter((item) => item !== event.value);
-
-      return onOptionSelected(currentAnswers, index);
+      return onOptionSelected(
+        { ...referral, isCompleted: event.checked },
+        event.name
+      );
     },
     [onOptionSelected, questions]
   );
@@ -124,21 +134,19 @@ export const ReferralsStep = ({
             </div>
           }
         />
-        {questions.map((item, index) => (
-          <Fragment key={item.question}>
-            <Typography type="h3" text={item.question} color="textDark" />
-            {item.options.map((option) => (
+        {sections?.map((section) => (
+          <Fragment key={section.value}>
+            <Typography type="h3" text={section.label || ''} color="textDark" />
+            {questions?.[section.value].map((item: VisitDataStatus) => (
               <CheckboxGroup
-                id={option}
-                key={option}
-                title={replaceBraces(
-                  option,
-                  item.question === questionForMom ? caregiverName : name
-                )}
+                id={item?.id}
+                key={item?.id}
+                title={item?.comment || ''}
                 titleColours="textMid"
-                checked={item.answer?.some((answer) => answer === option)}
-                value={option}
-                onChange={(event) => onCheckboxChange(event, index)}
+                checked={item?.isCompleted}
+                name={section?.value || ''}
+                value={item?.comment || ''}
+                onChange={(event) => onCheckboxChange(event)}
               />
             ))}
           </Fragment>

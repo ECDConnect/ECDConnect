@@ -16,6 +16,7 @@ export interface CheckboxProps<T extends FieldValues = {}>
   visible?: boolean;
   register?: UseFormRegister<T>;
   value?: number | string;
+  name?: string;
 }
 
 export const Checkbox = <T extends FieldValues>({
@@ -32,6 +33,7 @@ export const Checkbox = <T extends FieldValues>({
   checkboxColor = 'primary',
   value,
   id,
+  name,
 }: CheckboxProps<T>) => {
   const checkboxChange = (e: any) => {
     if (onCheckboxChange) {
@@ -65,6 +67,7 @@ export const Checkbox = <T extends FieldValues>({
             {!nameProp && (
               <input
                 id={id}
+                name={name}
                 disabled={disabled}
                 data-testid={testId}
                 type="checkbox"

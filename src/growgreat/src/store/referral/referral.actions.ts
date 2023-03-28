@@ -1,5 +1,9 @@
 import { Referral } from '@/services/ReferralService';
-import { VisitDataStatus, VisitVideos } from '@ecdlink/graphql';
+import {
+  VisitDataStatus,
+  VisitDataStatusFilterInput,
+  VisitVideos,
+} from '@ecdlink/graphql';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { RootState, ThunkApiType } from '../types';
 
@@ -7,8 +11,9 @@ export interface VisitVideosWithLocale extends VisitVideos {
   locale: string;
 }
 
-export const VisitActions = {
+export const ReferralActions = {
   GET_REFERRAL_FOR_INFANT: 'getReferralsForInfant',
+  UPDATE_VISIT_DATA_STATUS: 'updateVisitDataStatus',
 };
 
 export const getReferralsForInfant = createAsyncThunk<
@@ -16,7 +21,7 @@ export const getReferralsForInfant = createAsyncThunk<
   { infantId: string },
   ThunkApiType<RootState>
 >(
-  VisitActions.GET_REFERRAL_FOR_INFANT,
+  ReferralActions.GET_REFERRAL_FOR_INFANT,
   async ({ infantId }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
@@ -38,6 +43,29 @@ export const getReferralsForInfant = createAsyncThunk<
       }
 
       return content;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const updateVisitDataStatus = createAsyncThunk<
+  {},
+  { input: VisitDataStatusFilterInput[] },
+  ThunkApiType<RootState>
+>(
+  ReferralActions.UPDATE_VISIT_DATA_STATUS,
+  async ({ input }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        new Referral(userAuth?.auth_token ?? '').updateVisitDataStatus(input);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
     } catch (err) {
       return rejectWithValue(err);
     }

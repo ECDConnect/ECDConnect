@@ -171,8 +171,12 @@ export const ActivityList: React.FC = () => {
   }, [history, isStartVisit]);
 
   const onFormBack = () => {
-    setShowForm(false);
     window.sessionStorage.removeItem(currentActivityKey);
+    setShowForm(false);
+
+    if (selectedOption === activitiesTypes.followUp) {
+      history.push(ROUTES.CLIENTS.ROOT);
+    }
   };
 
   useLayoutEffect(() => {
@@ -252,14 +256,15 @@ export const ActivityList: React.FC = () => {
             color="textDark"
             className="mt-6 mb-4"
           />
-          {isFollowUp ? (
+          {isFollowUp && (
             <StackedList
               isFullHeight={false}
               className={'flex flex-col gap-2'}
               listItems={followUpForm}
               type={'MenuList'}
             />
-          ) : (
+          )}
+          {!!uncompletedForms.length && (
             <>
               <StackedList
                 isFullHeight={false}
