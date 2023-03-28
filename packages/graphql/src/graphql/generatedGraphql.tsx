@@ -4904,9 +4904,9 @@ export type PrincipalClassroom = {
   __typename?: 'PrincipalClassroom';
   classroomGroupId?: Maybe<Scalars['String']>;
   classroomGroupName?: Maybe<Scalars['String']>;
-  classroomId?: Maybe<Scalars['String']>;
-  classroomName?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
   insertedDate: Scalars['DateTime'];
+  name?: Maybe<Scalars['String']>;
   principalName?: Maybe<Scalars['String']>;
 };
 

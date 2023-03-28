@@ -82,7 +82,7 @@ export const PractitionerProfile: React.FC = () => {
         titleStyle,
         subTitle:
           classroomForPractitionerAnyType && practitioner?.isPrincipal !== true
-            ? classroomForPractitionerAnyType?.classroomName
+            ? classroomForPractitionerAnyType?.name
             : classroom?.name || 'N/A',
         subTitleStyle,
         menuIconUrl: classroomImage?.file,

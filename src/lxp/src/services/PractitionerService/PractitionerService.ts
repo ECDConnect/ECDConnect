@@ -302,14 +302,14 @@ class PractitionerService {
 
   async getClassroomDetailsForPractitioner(
     userId: string
-  ): Promise<{ principalName: string; classroomName: string }> {
+  ): Promise<{ principalName: string; name: string }> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         query classroomDetailsForPractitioner($userId: String) {
           classroomDetailsForPractitioner(userId: $userId) {
             principalName
-            classroomName
+            name
             classroomGroupName
             classroomGroupId
             classroomId

@@ -36,7 +36,7 @@ export const useProgrammePlanning = () => {
   ): Promise<ProgrammeDto> => {
     const newProgramme: ProgrammeDto = {
       id: newGuid(),
-      classroomId: classroom?.id || classroom?.classroomId || '',
+      classroomId: classroom?.id || '',
       name: theme?.name || 'No theme',
       preferredLanguage: language,
       startDate: startDate.toISOString(),
