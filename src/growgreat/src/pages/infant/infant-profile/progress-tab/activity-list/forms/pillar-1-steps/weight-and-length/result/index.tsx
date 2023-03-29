@@ -55,6 +55,7 @@ import {
   findClosestWeight,
   findLastIndex,
 } from './data/utils/utils';
+import { GrowthMonitoring } from '../..';
 
 interface GrowthStatus {
   length: VisitData[];
@@ -113,6 +114,7 @@ const Card = ({
 export const WeightAndLengthResultStep = ({
   infant,
   sectionQuestions,
+  setGrowthMonitoring,
   setEnableButton,
 }: DynamicFormProps) => {
   const [weightAxios, setWeightAxios] = useState<WeightOrHeightForAgeProps>();
@@ -209,6 +211,32 @@ export const WeightAndLengthResultStep = ({
     length,
     findLastIndex(lengthResult)
   )[0] as DataSetType;
+
+  const weightMonitoring = useMemo((): GrowthMonitoring['weight'] => {
+    switch (weightAlertResult) {
+      case 'SD2':
+        return { value: 'overweight', statusType: 'warning' };
+      case 'SD3':
+        return { value: 'obese', statusType: 'warning' };
+      case 'SD2neg':
+        return { value: 'underweight', statusType: 'warning' };
+      case 'SD3neg':
+        return { value: 'severely underweight', statusType: 'error' };
+      default:
+        return { value: 'normal', statusType: 'success' };
+    }
+  }, [weightAlertResult]);
+
+  const lengthMonitoring = useMemo((): GrowthMonitoring['length'] => {
+    switch (lengthAlertResult) {
+      case 'SD2neg':
+        return { value: 'stunted', statusType: 'warning' };
+      case 'SD3neg':
+        return { value: 'severely stunted', statusType: 'error' };
+      default:
+        return { value: 'normal', statusType: 'success' };
+    }
+  }, [lengthAlertResult]);
 
   const WeightAlert = useCallback(() => {
     let WeightAlert = <Fragment />;
@@ -594,6 +622,13 @@ export const WeightAndLengthResultStep = ({
     groupedGrowthData?.weight,
     infant?.user?.dateOfBirth,
   ]);
+
+  useEffect(() => {
+    setGrowthMonitoring?.({
+      weight: weightMonitoring,
+      length: lengthMonitoring,
+    });
+  }, [lengthMonitoring, setGrowthMonitoring, weightMonitoring]);
 
   useLayoutEffect(() => {
     setChartData();
