@@ -100,3 +100,41 @@ export function fillInMissingNumbers(
 
   return arr;
 }
+
+//TODO: add type
+export function findClosestWeight(datasets: any, input: number, index: number) {
+  if (!datasets) {
+    return [];
+  }
+  let result = {};
+  let minDiff = Infinity;
+  for (let key in datasets) {
+    if (
+      ((key === 'SD2' || key === 'SD3') &&
+        datasets[key].weight[index] <= input) ||
+      key !== 'SD2'
+    ) {
+      if (
+        datasets[key].hasOwnProperty('weight') &&
+        datasets[key].weight
+        // check if weight value is less than input
+      ) {
+        let diff = Math.abs(datasets[key].weight[index] - input);
+        if (diff < minDiff) {
+          minDiff = diff;
+          result = { [key]: datasets[key] };
+        }
+      }
+    }
+  }
+  return Object.keys(result);
+}
+
+export function findLastIndex(array: (number | undefined)[]) {
+  for (let i = array.length - 1; i >= 0; i--) {
+    if (array[i] !== undefined) {
+      return i;
+    }
+  }
+  return -1;
+}
