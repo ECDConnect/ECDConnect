@@ -194,7 +194,7 @@ export default function TeamLeadPanelCreate(props: UserPanelCreateProps) {
     const teamLeadForm = teamLeadGetValues();
     const teamLeadModel: TeamLeadModelInput = {
       userId: userId,
-      clinicId: teamLeadForm.clinicId,
+      clinicId: teamLeadForm.clinicId || null,
       jobTitle: teamLeadForm.jobTitle,
     };
 

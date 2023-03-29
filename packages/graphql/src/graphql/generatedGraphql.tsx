@@ -3999,7 +3999,7 @@ export type MutationUpdateClubArgs = {
 };
 
 export type MutationUpdateCoachArgs = {
-  id?: InputMaybe<Scalars['String']>;
+  id?: InputMaybe<Scalars['UUID']>;
   input?: InputMaybe<CoachInput>;
 };
 
@@ -6854,11 +6854,11 @@ export type QueryPractitionerNewSignupMetricArgs = {
 };
 
 export type QueryPreviousVisitInformationForInfantArgs = {
-  id?: InputMaybe<Scalars['String']>;
+  visitId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryPreviousVisitInformationForMotherArgs = {
-  id?: InputMaybe<Scalars['String']>;
+  visitId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryPrincipalByUserIdArgs = {
@@ -8384,14 +8384,14 @@ export type VisitDataInput = {
 export type VisitDataStatus = {
   __typename?: 'VisitDataStatus';
   backReferralCompleted: Scalars['Boolean'];
-  backReferralDateCompleted: Scalars['DateTime'];
+  backReferralDateCompleted?: Maybe<Scalars['DateTime']>;
   color?: Maybe<Scalars['String']>;
   comment?: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
   isCompleted: Scalars['Boolean'];
-  referralDateCompleted: Scalars['DateTime'];
+  referralDateCompleted?: Maybe<Scalars['DateTime']>;
   section?: Maybe<Scalars['String']>;
   type?: Maybe<Scalars['String']>;
   updatedBy?: Maybe<Scalars['String']>;
@@ -8403,7 +8403,7 @@ export type VisitDataStatus = {
 export type VisitDataStatusFilterInput = {
   and?: InputMaybe<Array<VisitDataStatusFilterInput>>;
   backReferralCompleted?: InputMaybe<BooleanOperationFilterInput>;
-  backReferralDateCompleted?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  backReferralDateCompleted?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   color?: InputMaybe<StringOperationFilterInput>;
   comment?: InputMaybe<StringOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
@@ -8411,7 +8411,7 @@ export type VisitDataStatusFilterInput = {
   isActive?: InputMaybe<BooleanOperationFilterInput>;
   isCompleted?: InputMaybe<BooleanOperationFilterInput>;
   or?: InputMaybe<Array<VisitDataStatusFilterInput>>;
-  referralDateCompleted?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  referralDateCompleted?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   section?: InputMaybe<StringOperationFilterInput>;
   type?: InputMaybe<StringOperationFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
@@ -8422,13 +8422,13 @@ export type VisitDataStatusFilterInput = {
 
 export type VisitDataStatusInput = {
   BackReferralCompleted: Scalars['Boolean'];
-  BackReferralDateCompleted: Scalars['DateTime'];
+  BackReferralDateCompleted?: InputMaybe<Scalars['DateTime']>;
   Color?: InputMaybe<Scalars['String']>;
   Comment?: InputMaybe<Scalars['String']>;
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
   IsCompleted: Scalars['Boolean'];
-  ReferralDateCompleted: Scalars['DateTime'];
+  ReferralDateCompleted?: InputMaybe<Scalars['DateTime']>;
   Section?: InputMaybe<Scalars['String']>;
   Type?: InputMaybe<Scalars['String']>;
   UpdatedBy?: InputMaybe<Scalars['String']>;
@@ -8438,12 +8438,12 @@ export type VisitDataStatusInput = {
 
 export type VisitDataStatusModelInput = {
   backReferralCompleted?: InputMaybe<Scalars['String']>;
-  backReferralDateCompleted: Scalars['DateTime'];
+  backReferralDateCompleted?: InputMaybe<Scalars['DateTime']>;
   color?: InputMaybe<Scalars['String']>;
   comment?: InputMaybe<Scalars['String']>;
   id?: InputMaybe<Scalars['String']>;
   isCompleted?: InputMaybe<Scalars['String']>;
-  referralDateCompleted: Scalars['DateTime'];
+  referralDateCompleted?: InputMaybe<Scalars['DateTime']>;
   type?: InputMaybe<Scalars['String']>;
   visitData?: InputMaybe<VisitDataInput>;
   visitDataId?: InputMaybe<Scalars['String']>;

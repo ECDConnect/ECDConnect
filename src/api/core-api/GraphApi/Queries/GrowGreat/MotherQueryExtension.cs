@@ -50,7 +50,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat {
             {
                 foreach (var mother in allMothers)
                 {
-                    mother.StatusInfo = motherManager.GetStatusInfo(mother.Id, true);
+                    mother.StatusInfo = motherManager.GetStatusInfo(mother, true);
                     mother.NextVisitDate = motherManager.GetClientsNextVisitDate(mother.Id);
                     if (mother.StatusInfo.Color == MetricsIconEnum.Warning.ToString() && mother.StatusInfo.Subject.Contains(" due "))
                     {
@@ -61,7 +61,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat {
             {
                 foreach (var mother in allMothers)
                 {
-                    mother.StatusInfo = motherManager.GetStatusInfo(mother.Id, true);
+                    mother.StatusInfo = motherManager.GetStatusInfo(mother, true);
                     mother.NextVisitDate = motherManager.GetClientsNextVisitDate(mother.Id);
                     if (mother.StatusInfo.Color == MetricsIconEnum.Error.ToString() && mother.StatusInfo.Subject.Contains(" overdue "))
                     {
@@ -72,7 +72,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat {
             {
                 foreach (var mother in allMothers)
                 {
-                    mother.StatusInfo = motherManager.GetStatusInfo(mother.Id, false);
+                    mother.StatusInfo = motherManager.GetStatusInfo(mother, false);
                     mother.NextVisitDate = motherManager.GetClientsNextVisitDate(mother.Id);
                     mothers.Add(mother);
                 }
@@ -129,9 +129,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat {
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public Progress_VisitDataStatus GetPreviousVisitInformationForMother([Service] VisitManager visitManager, [Service] VisitDataStatusManager visitDataStatusManager, string id) {
-            var visitId = visitManager.GetLastCompletedVisitId(id, Constants.GGSettings.client_child);
-            return visitDataStatusManager.GetPreviousVisitInformationForClient(visitId);
+        public Progress_VisitDataStatus GetPreviousVisitInformationForMother([Service] VisitManager visitManager, [Service] VisitDataStatusManager visitDataStatusManager, string visitId) {
+            var _visitId = new Guid(visitId);
+            return visitDataStatusManager.GetPreviousVisitInformationForClient(_visitId);
         }
         
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]

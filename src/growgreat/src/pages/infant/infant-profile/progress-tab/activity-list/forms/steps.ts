@@ -171,9 +171,9 @@ export const getPillar4Steps = (isFollowUp: boolean) => [
 
 export const pillar5Steps = [ChildDocumentationStep, HIVCareAndMedicationStep];
 
-export const followUpSteps = [
+export const followUpSteps = (isReferralsStep: boolean) => [
   NotesStep,
-  ReferralsStep,
+  ...(isReferralsStep ? [ReferralsStep] : []),
   ProgressStep,
   NextVisitStep,
 ];
