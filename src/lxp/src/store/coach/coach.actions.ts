@@ -24,15 +24,15 @@ export const getCoachByUserId = createAsyncThunk<
         let coach: CoachDto | undefined;
 
         if (userAuth?.auth_token) {
-          coach = await new CoachService(userAuth?.auth_token).getCoachByUserId(
-            userAuth.id
-          );
+          coach = await new CoachService(
+            userAuth?.auth_token
+          ).getCoachByCoachId(userAuth.id);
         } else {
           return rejectWithValue('no access token, profile check required');
         }
 
         if (!coach) {
-          return rejectWithValue('Error getting coach');
+          return rejectWithValue('getCoachByUserId: Error getting coach');
         }
         return coach;
       } catch (err) {
@@ -69,7 +69,7 @@ export const getCoachByCoachId = createAsyncThunk<
           return rejectWithValue('no access token, profile check required');
         }
         if (!coach) {
-          return rejectWithValue('Error getting coach');
+          return rejectWithValue('getCoachByCoachId: Error getting coach');
         }
         return coach;
       } catch (err) {
