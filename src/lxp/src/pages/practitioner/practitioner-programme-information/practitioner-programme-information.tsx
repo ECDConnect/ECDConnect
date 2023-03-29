@@ -196,10 +196,10 @@ export const PractitionerProgrammeInformation: React.FC = () => {
       {
         title: 'Programme name',
         subTitle:
-          classroomForPractitionerAnyType?.classroomId &&
+          classroomForPractitionerAnyType?.id &&
           practitioner?.isPrincipal !== true &&
           practitioner?.isRegistered
-            ? classroomForPractitionerAnyType?.classroomName
+            ? classroomForPractitionerAnyType?.name
             : practitioner?.isRegistered
             ? classroom?.name || 'None'
             : 'None',
@@ -212,7 +212,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
         onActionClick:
           practitioner?.isRegistered !== null ||
           practitioner?.isLeaving !== null
-            ? classroomForPractitionerAnyType?.classroomId &&
+            ? classroomForPractitionerAnyType?.id &&
               practitioner?.isPrincipal !== true
               ? () => {}
               : () => setEditFieldVisible(true)
@@ -341,7 +341,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
             <div className="flex justify-center">
               <Alert
                 type="info"
-                title={`You have been added to ${classroomForPractitionerAnyType?.classroomName}`}
+                title={`You have been added to ${classroomForPractitionerAnyType?.name}`}
                 list={[`Edit your profile to accept or disagree. `]}
                 className={'mt-4 w-11/12'}
                 button={
