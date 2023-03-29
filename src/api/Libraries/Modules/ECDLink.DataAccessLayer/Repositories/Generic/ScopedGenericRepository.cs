@@ -7,9 +7,9 @@ using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security;
 using ECDLink.Tenancy.Context;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,12 +32,12 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
         }
 
         public ScopedGenericRepository(
+            AuthenticationDbContext context,
             UserManager<ApplicationUser> userManager,
             HierarchyEngine hierarchyEngine,
             IDomainEventService domainEventService,
-            IDbContextFactory<AuthenticationDbContext> authDbContextFactory, 
-            ILogger<GenericRepositoryBase<T>> logger)
-          : base(domainEventService, authDbContextFactory, logger)
+            IHttpContextAccessor contextAccessor)
+          : base(context, domainEventService)
         {
             _hierarchyEngine = hierarchyEngine;
             _userManager = userManager;

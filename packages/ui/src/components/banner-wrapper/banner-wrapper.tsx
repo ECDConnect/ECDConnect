@@ -37,6 +37,7 @@ export interface BannerWrapperProps extends ComponentBaseProps {
   onClose?: () => void;
   onHelp?: () => void;
   version?: string;
+  helpId?: string;
 }
 
 export const BannerWrapper: React.FC<BannerWrapperProps> = ({
@@ -64,12 +65,15 @@ export const BannerWrapper: React.FC<BannerWrapperProps> = ({
   onClose,
   onHelp,
   version,
+  id,
+  helpId,
 }) => {
   const showMenu = (menuItems?.length || 0) > 0;
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
     <div
+      id={id}
       className={classNames(
         styles.backgroundWrapper,
         `bg-${backgroundColour}`,
@@ -142,6 +146,7 @@ export const BannerWrapper: React.FC<BannerWrapperProps> = ({
           )}
           {onHelp && displayHelp && (
             <QuestionMarkCircleIcon
+              id={helpId}
               className={styles.icons}
               width={25}
               height={30}

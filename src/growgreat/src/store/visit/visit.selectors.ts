@@ -44,3 +44,7 @@ export const getVisitVideoBySectionAndLocale = (
 export const getGrowthDataForInfantSelector = (
   state: RootState
 ): VisitData[] | undefined => state.visits.growthDataForInfant;
+
+export const getVisitAnswersForInfantSelector = (
+  state: RootState
+): VisitData[] | undefined => state.visits.visitAnswersForInfant;

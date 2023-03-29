@@ -12,9 +12,10 @@ import Pregnant from '@/assets/pregnant.svg';
 import { ReactComponent as Translation } from '@/assets/translation.svg';
 import { DynamicFormProps } from '../../dynamic-form';
 import { useCallback, useState } from 'react';
-import { ReactComponent as PollyTime } from '@/assets/pollyTime.svg';
 import { replaceBraces, useDialog } from '@ecdlink/core';
 import { Translations } from './translations';
+
+export const dangerSignsVisitSection = 'Danger signs';
 
 export const DangerSignsStep = ({
   infant,
@@ -26,18 +27,7 @@ export const DangerSignsStep = ({
   const [currentOption, setCurrentOption] = useState<string>();
   const [answers, setAnswer] = useState<(string | number | undefined)[]>();
 
-  const visitSection = 'Danger signs';
-
-  // TODO: add integration
-  const mockedFollowUp = {
-    message: `${infant?.caregiver?.firstName} had the following danger signs at your previous visit on 2 July:`,
-    list: ['Not feeling physically well', 'Not managing the baby'],
-  };
-
   const dialog = useDialog();
-
-  // TODO: add integration
-  const isFollowUp = false;
 
   const options = [
     {
@@ -104,7 +94,7 @@ export const DangerSignsStep = ({
         setEnableButton && setEnableButton(true);
         return setQuestions?.([
           {
-            visitSection,
+            visitSection: dangerSignsVisitSection,
             questions: [
               {
                 question,
@@ -120,7 +110,7 @@ export const DangerSignsStep = ({
       setAnswer(currentAnswers);
       return setQuestions?.([
         {
-          visitSection,
+          visitSection: dangerSignsVisitSection,
           questions: [
             {
               question,
@@ -154,97 +144,80 @@ export const DangerSignsStep = ({
       <Header
         backgroundColor="tertiary"
         customIcon={Pregnant}
-        title={visitSection}
-        {...(isFollowUp
-          ? {
-              subTitle: 'Follow up',
-            }
-          : {})}
+        title={dangerSignsVisitSection}
       />
       <div className="flex flex-col p-4">
-        {isFollowUp ? (
-          <Alert
-            type="warning"
-            title={mockedFollowUp.message}
-            titleColor="textDark"
-            list={mockedFollowUp.list}
-            customIcon={<PollyTime className="w-28" />}
-          />
-        ) : (
-          <>
-            <Alert
-              type="info"
-              title="The most common complications after delivery are infection and vaginal bleeding."
-              className="mb-4"
+        <Alert
+          type="info"
+          title="The most common complications after delivery are infection and vaginal bleeding."
+          className="mb-4"
+        />
+        <Typography
+          type="h4"
+          text={replaceBraces(question, infant?.caregiver?.firstName || '')}
+          color="black"
+        />
+        <Typography
+          type="body"
+          text="Tap the chat icons to see translations"
+          color="textMid"
+          className="mb-4"
+        />
+        {options.map((option, index) => (
+          <div
+            className="bg-uiBg mt-2 flex items-center rounded-xl p-4"
+            key={option?.name}
+          >
+            <Checkbox
+              checked={answers?.some((item) => item === option.name)}
+              value={option.name}
+              onCheckboxChange={onCheckboxChange}
             />
-            <Typography
-              type="h4"
-              text={replaceBraces(question, infant?.caregiver?.firstName || '')}
-              color="black"
-            />
-            <Typography
-              type="body"
-              text="Tap the chat icons to see translations"
-              color="textMid"
-              className="mb-4"
-            />
-            {options.map((option, index) => (
-              <div
-                className="bg-uiBg mt-2 flex items-center rounded-xl p-4"
-                key={option?.name}
-              >
-                <Checkbox
-                  checked={answers?.some((item) => item === option.name)}
-                  value={option.name}
-                  onCheckboxChange={onCheckboxChange}
+            <div>
+              <Typography
+                type="body"
+                align="left"
+                weight="skinny"
+                text={option?.name || ''}
+                color="textMid"
+              />
+              {option?.description && (
+                <Typography
+                  type="body"
+                  align="left"
+                  weight="skinny"
+                  color="textLight"
+                  text={option?.description}
                 />
-                <div>
-                  <Typography
-                    type="body"
-                    align="left"
-                    weight="skinny"
-                    text={option?.name || ''}
-                    color="textMid"
-                  />
-                  {option?.description && (
-                    <Typography
-                      type="body"
-                      align="left"
-                      weight="skinny"
-                      color="textLight"
-                      text={option?.description}
-                    />
-                  )}
-                </div>
-                {options.length - 1 > index && (
-                  <button
-                    className="ml-auto"
-                    onClick={() => {
-                      setCurrentOption(option?.name);
-                      setIsTip && setIsTip(true);
-                    }}
-                  >
-                    <Translation className="h-6 w-6" />
-                  </button>
+              )}
+            </div>
+            {options.length - 1 > index && (
+              <button
+                className="ml-auto"
+                onClick={() => {
+                  setCurrentOption(option?.name);
+                  setIsTip && setIsTip(true);
+                }}
+              >
+                <Translation className="h-6 w-6" />
+              </button>
+            )}
+          </div>
+        ))}
+        {answers?.find((item) => item === options[0].name) && (
+          <Alert
+            className="mt-4"
+            type="error"
+            title={options[0].alert}
+            customIcon={
+              <div className="rounded-full">
+                {renderIcon(
+                  'ExclamationCircleIcon',
+                  'text-errorMain w-10 h-10'
                 )}
               </div>
-            ))}
-            {answers?.find((item) => item === options[0].name) && (
-              <Alert
-                className="mt-4"
-                type="error"
-                title={options[0].alert}
-                customIcon={
-                  <div className="rounded-full">
-                    {renderIcon(
-                      'ExclamationCircleIcon',
-                      'text-errorMain w-10 h-10'
-                    )}
-                  </div>
-                }
-              />
-            )}
-          </>
+            }
+          />
         )}
       </div>
     </>

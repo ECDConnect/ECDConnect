@@ -203,8 +203,8 @@ export default function HealthCareWorkerPanelCreate(
     const healthCareWorkerForm = healthCareWorkerGetValues();
     const healthCareWorkeModel: HealthCareWorkerModelInput = {
       userId: userId,
-      teamLeadId: healthCareWorkerForm.teamLeadId,
-      languageId: healthCareWorkerForm.languageId,
+      teamLeadId: healthCareWorkerForm.teamLeadId || null,
+      languageId: healthCareWorkerForm.languageId || null,
       isRegistered: false,
     };
 

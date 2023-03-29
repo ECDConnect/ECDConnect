@@ -136,7 +136,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
               ).ToList();
 
               return vData;
-          }
+        }
         public int GetTotalGrowthInfantsForWeek(string id)
         {
             //- the number of children for which either a weight. length. and/or MUAC measure was taken
@@ -152,6 +152,58 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
         }
 
+        public string GetIDDocCSGStatusForInfant(string id)
+        {
+            var status = "";
+
+            List<VisitData> vData = (
+                from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId == id && x.Attended == true).OrderBy(x => x.PlannedVisitDate)
+                join visitData in _visitDataRepo.GetAll().Where(y => y.Question == Constants.GGSettings.q_birth_certificate || y.Question == Constants.GGSettings.q_csg_receiving)
+                                                        .OrderByDescending(y => y.InsertedDate) on visit.Id equals visitData.VisitId
+                select visitData
+            ).ToList();
+
+            if (vData.Count != 0)
+            {
+                var birth = vData.Where(x => x.Question == Constants.GGSettings.q_birth_certificate).FirstOrDefault();
+                var csg = vData.Where(x => x.Question == Constants.GGSettings.q_csg_receiving).FirstOrDefault();
+
+                if (birth?.QuestionAnswer == "false")
+                {
+                    status = "No birth certificate";
+                }
+
+                if (csg?.QuestionAnswer == "false")
+                {
+                    if (status == "")
+                    {
+                        status = "No CSG";
+                    } else
+                    {
+                        status = status + "/No CSG";
+                    }
+                }
+            }
+            return status;
+        }
+
+        public string GetCSGStatusForInfant(string id)
+        {
+            var status = "";
+
+            VisitData vData = (
+                from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId == id && x.Attended == true).OrderBy(x => x.PlannedVisitDate)
+                join visitData in _visitDataRepo.GetAll().Where(y => y.Question == Constants.GGSettings.q_csg_applied && y.QuestionAnswer == "false")
+                                                        .OrderByDescending(y => y.InsertedDate) on visit.Id equals visitData.VisitId
+                select visitData
+            ).FirstOrDefault();
+
+            if (vData != null)
+            {
+                status = "Not applied for CSG";
+            }
+            return status;
+        }
     }
 }
 

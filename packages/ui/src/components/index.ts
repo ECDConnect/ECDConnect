@@ -33,7 +33,7 @@ export * from './message-modal/message-modal';
 export * from './icon-title-description-tile/icon-title-description-tile';
 export * from './card/card';
 export * from './radio-group/radio-group';
-export * from '../components/stacked-list/components/base-list-item/base-list-item';
+export * from '../components/stacked-list/components/base-list-item-updated/base-list-item-updated';
 export * from './round-icon/round-icon';
 export * from '../components/stacked-list/components/base-list-item/base-list-item';
 export * from '../components/round-icon/round-icon';

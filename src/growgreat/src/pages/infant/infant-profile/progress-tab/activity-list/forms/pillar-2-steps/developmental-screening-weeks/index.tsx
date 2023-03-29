@@ -1,5 +1,4 @@
 import {
-  Alert,
   Button,
   ButtonGroup,
   ButtonGroupTypes,
@@ -20,11 +19,18 @@ import { ReactComponent as BrainIcon } from '@/assets/pillar/pillar2/brain.svg';
 import { ReactComponent as EarIcon } from '@/assets/pillar/pillar2/ear.svg';
 import { ReactComponent as EyeIcon } from '@/assets/pillar/pillar2/eye.svg';
 import { ReactComponent as ArmIcon } from '@/assets/pillar/pillar2/arm.svg';
-import { ReactComponent as PollyTime } from '@/assets/pollyTime.svg';
 import { MoreInformation } from '../../components/more-information';
 import { replaceBraces } from '@ecdlink/core';
+import { differenceInWeeks } from 'date-fns';
+import { useSelector } from 'react-redux';
+import {
+  getPreviousVisitInformationForInfantSelector,
+  getVisitAnswersForInfantSelector,
+} from '@/store/visit/visit.selectors';
 
-const mocked_week = 14;
+export const DevelopmentalScreeningVisitSection = 'Developmental screening';
+export const noteQuestion =
+  'Do you have any specific concerns about how {client} hears, sees, communicates, learns, behaves, interacts with others, or how they use their hands, arms, legs and body?';
 
 export const DevelopmentalScreeningWeeksStep = ({
   infant,
@@ -33,6 +39,7 @@ export const DevelopmentalScreeningWeeksStep = ({
   setEnableButton,
   setIsTip,
 }: DynamicFormProps) => {
+  const [isPreviousNotes, setIsPreviousNotes] = useState(false);
   const [questions, setAnswers] = useState([
     {
       icon: <EarIcon />,
@@ -59,15 +66,12 @@ export const DevelopmentalScreeningWeeksStep = ({
       answer: '',
     },
     {
-      question:
-        'Do you have any specific concerns about how {client} hears, sees, communicates, learns, behaves, interacts with others, or how they use their hands, arms, legs and body?',
+      question: noteQuestion,
       answer: '',
     },
   ]);
 
   const noteQuestionIndex = 4;
-
-  const visitSection = 'Developmental screening';
 
   const options = [
     { text: 'Yes', value: true },
@@ -75,28 +79,33 @@ export const DevelopmentalScreeningWeeksStep = ({
   ];
 
   const name = useMemo(() => infant?.user?.firstName || '', [infant]);
-  const caregiverName = useMemo(
-    () => infant?.caregiver?.firstName || '',
-    [infant]
+  const weeks = useMemo(
+    () =>
+      infant?.user?.dateOfBirth &&
+      differenceInWeeks(new Date(), new Date(infant?.user?.dateOfBirth)),
+    [infant?.user?.dateOfBirth]
   );
 
-  // TODO: add integration (G5.4.3)
-  const mockedFollowUp = {
-    message: `In the 14 week developmental screening, ${name} had issues with these skills:`,
-    list: ['Hearing', 'Seeing'],
-  };
+  const previousVisit = useSelector(
+    getPreviousVisitInformationForInfantSelector
+  );
+  const previousAnswers = useSelector(getVisitAnswersForInfantSelector);
 
-  // TODO: add integration (G5.4.3)
-  const mockedNote = {
-    name: 'Notes from 12 March visit',
-    type: 'formula milk only',
-    note: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-  };
-  // TODO: add integration (G5.4.3)
-  const isPreviousNote = true;
+  const previousNotes = useMemo(
+    () => previousAnswers?.filter((item) => item.question === noteQuestion),
+    [previousAnswers]
+  );
 
-  // TODO: add integration (G5.4.3)
-  const isFollowUp = false;
+  // TODO: get the last visit data, it's necessary check the date from the last visit
+  const previousNote = useMemo(() => {
+    const insertedDate = previousVisit?.visitDataStatus?.[0]?.insertedDate;
+    const date = !!insertedDate ? new Date(insertedDate) : undefined;
+    const note = previousNotes?.find(
+      (item) => item.question === noteQuestion
+    )?.questionAnswer;
+
+    return { date, note };
+  }, [previousNotes, previousVisit?.visitDataStatus]);
 
   const onOptionSelected = useCallback(
     (value, index) => {
@@ -121,7 +130,7 @@ export const DevelopmentalScreeningWeeksStep = ({
       setAnswers(updatedQuestions);
       setQuestions?.([
         {
-          visitSection,
+          visitSection: DevelopmentalScreeningVisitSection,
           questions: formattedQuestions,
         },
       ]);
@@ -135,16 +144,21 @@ export const DevelopmentalScreeningWeeksStep = ({
     [questions, setEnableButton, setQuestions]
   );
 
-  const renderNote = useMemo(() => {
+  const renderNote = useCallback((date: Date, note: string) => {
     return (
-      <>
-        <div className="bg-uiBg rounded-15 flex flex-col gap-2 p-4">
-          <Typography type="h3" text={mockedNote.name} color="textDark" />
-          <Typography type="body" text={mockedNote.note} color="textMid" />
-        </div>
-      </>
+      <div className="bg-uiBg rounded-15 flex flex-col gap-2 p-4">
+        <Typography
+          type="h3"
+          text={`Notes from ${date.toLocaleDateString('en-ZA', {
+            day: 'numeric',
+            month: 'long',
+          })} visit`}
+          color="textDark"
+        />
+        <Typography type="body" text={note || ''} color="textMid" />
+      </div>
     );
-  }, [mockedNote.name, mockedNote.note]);
+  }, []);
 
   if (isTipPage) {
     return (
@@ -161,104 +175,79 @@ export const DevelopmentalScreeningWeeksStep = ({
     <>
       <Header
         customIcon={P2}
-        title={visitSection}
+        title={DevelopmentalScreeningVisitSection}
         iconHexBackgroundColor={activitiesColours.pillar2.primaryColor}
         hexBackgroundColor={activitiesColours.pillar2.secondaryColor}
-        subTitle={
-          isFollowUp
-            ? 'Follow up'
-            : `${mocked_week} week${mocked_week > 1 && 's'}`
-        }
+        {...(weeks
+          ? {
+              subTitle: `${weeks} week${weeks > 1 && 's'}`,
+            }
+          : {})}
       />
       <div className="flex flex-col gap-4 p-4">
-        {isFollowUp ? (
-          <>
-            <Alert
-              type="warning"
-              title={mockedFollowUp.message}
-              titleColor="textDark"
-              list={mockedFollowUp.list}
-              customIcon={<PollyTime className="w-28" />}
-            />
-            <Typography
-              type="h3"
-              text={`Discuss with ${caregiverName}:`}
-              color="textDark"
-            />
-            <Label text="Do you have an update?" />
-            <Divider dividerType="dashed" />
-            <Label
-              text={`Remember, children develop at different speeds. Keep taking ${name} for check-ups and monitoring their development.`}
-            />
-            <Divider dividerType="dashed" />
-            {isPreviousNote && renderNote}
-          </>
-        ) : (
-          <>
-            <TipCard
-              buttonText="See activities to share"
-              buttonIcon="InformationCircleIcon"
-              onClick={() => setIsTip && setIsTip(true)}
-            />
-            <Typography
-              type="h3"
-              text={`${mocked_week} week developmental screening`}
-              color="textDark"
-            />
-            <Divider dividerType="dashed" />
-            {questions.map((item, index) => {
-              if (index === noteQuestionIndex) return null;
+        <TipCard
+          buttonText="See activities to share"
+          buttonIcon="InformationCircleIcon"
+          onClick={() => setIsTip && setIsTip(true)}
+        />
+        <Typography
+          type="h3"
+          text={`${weeks} week developmental screening`}
+          color="textDark"
+        />
+        <Divider dividerType="dashed" />
+        {questions.map((item, index) => {
+          if (index === noteQuestionIndex) return null;
 
-              return (
-                <div key={item.question}>
-                  <div className="mb-2 flex items-center gap-2">
-                    <div className="bg-tertiary flex h-9 w-9 items-center justify-center rounded-full">
-                      {item.icon}
-                    </div>
-                    <Typography type="h4" text={item.title} color="textDark" />
-                  </div>
-                  <Typography
-                    type="body"
-                    text={item.question}
-                    color="textDark"
-                  />
-                  <ButtonGroup<boolean>
-                    color="secondary"
-                    type={ButtonGroupTypes.Button}
-                    options={options}
-                    onOptionSelected={(value) => onOptionSelected(value, index)}
-                  />
+          return (
+            <div key={item.question}>
+              <div className="mb-2 flex items-center gap-2">
+                <div className="bg-tertiary flex h-9 w-9 items-center justify-center rounded-full">
+                  {item.icon}
                 </div>
-              );
-            })}
-            <Divider dividerType="dashed" />
-            <Label
-              text={replaceBraces(questions[noteQuestionIndex].question, name)}
-            />
-            <Divider dividerType="dashed" />
-            <FormInput
-              label="Add a note"
-              subLabel="Optional"
-              value={questions[noteQuestionIndex].answer}
-              onChange={(e) =>
-                onOptionSelected(e.target.value, noteQuestionIndex)
-              }
-              textInputType="textarea"
-              placeholder={'E.g. Caregiver is concerned about baby’s hearing.'}
-            />
-            {isPreviousNote && (
-              <>
-                {renderNote}
-                <Button
-                  type="outlined"
-                  color="primary"
-                  textColor="primary"
-                  text="See previous notes"
-                  icon="DocumentTextIcon"
-                />
-              </>
-            )}
-          </>
+                <Typography type="h4" text={item.title} color="textDark" />
+              </div>
+              <Typography type="body" text={item.question} color="textDark" />
+              <ButtonGroup<boolean>
+                color="secondary"
+                type={ButtonGroupTypes.Button}
+                options={options}
+                onOptionSelected={(value) => onOptionSelected(value, index)}
+              />
+            </div>
+          );
+        })}
+        <Divider dividerType="dashed" />
+        <Label
+          text={replaceBraces(questions[noteQuestionIndex].question, name)}
+        />
+        <Divider dividerType="dashed" />
+        <FormInput
+          label="Add a note"
+          subLabel="Optional"
+          value={questions[noteQuestionIndex].answer}
+          onChange={(e) => onOptionSelected(e.target.value, noteQuestionIndex)}
+          textInputType="textarea"
+          placeholder={'E.g. Caregiver is concerned about baby’s hearing.'}
+        />
+        {!!previousNote.date &&
+          !!previousNote.note &&
+          renderNote(previousNote.date, previousNote.note)}
+        {isPreviousNotes &&
+          previousNotes?.map((item) =>
+            renderNote(new Date(item.insertedDate), item.questionAnswer || '')
+          )}
+        {Number(previousNotes?.length) > 1 && (
+          <Button
+            type="outlined"
+            color="primary"
+            textColor="primary"
+            text={
+              isPreviousNotes ? 'Hide previous notes' : 'See previous notes'
+            }
+            icon="DocumentTextIcon"
+            onClick={() => setIsPreviousNotes((prevState) => !prevState)}
+          />
         )}
       </div>
     </>

@@ -22,4 +22,5 @@ export interface VisitState {
   previousVisitInformationForInfant?: Progress_VisitDataStatus;
   visitVideos?: VisitVideosWithLocale[];
   growthDataForInfant?: VisitData[];
+  visitAnswersForInfant?: VisitData[];
 }

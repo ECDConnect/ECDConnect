@@ -117,36 +117,42 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
   };
 
   return (
-    <div className={'flex flex-col'}>
+    <div className={'flex flex-col bg-white'}>
       <div className={'flex flex-col items-start justify-start'}>
         <LanguageSelector currentLocale={'en-za'} selectLanguage={() => {}} />
 
-        <div
-          className={
-            'items-stetch mb-24 flex w-full flex-col justify-start p-4'
-          }
-        >
-          <div className={'flex flex-row items-center justify-start'}>
+        <div className={'items-stetch flex w-full flex-col justify-start p-4'}>
+          <Typography
+            text={storyBook.name}
+            type={'h1'}
+            color={'textDark'}
+            className={'mt-2'}
+          />
+          <div
+            className={
+              'align-center flex flex-row items-center justify-between'
+            }
+          >
+            <Typography
+              text={`Author: ${storyBook.author}`}
+              type={'h4'}
+              color={'textDark'}
+              className={'mt-2'}
+            />
             <StatusChip
-              backgroundColour={'infoBb'}
-              borderColour={'infoBb'}
-              textColour={'infoDark'}
+              backgroundColour={'primaryAccent2'}
+              borderColour={'primaryAccent2'}
+              textColour={'primary'}
               textType={'help'}
               text={storyBook.type}
             />
           </div>
-          <Typography
-            text={storyBook.name}
-            type={'h1'}
-            color={'primary'}
-            className={'mt-2'}
-          />
           {!disabled &&
             (isSelected ? (
               <Button
                 type={'filled'}
                 color={'primary'}
-                className={'mt-2 w-full'}
+                className={'mt-6 w-full'}
                 textColor={'white'}
                 text={`Change story ${linkedActivity ? 'and activity' : ''}`}
                 icon={'SwitchVerticalIcon'}
@@ -157,7 +163,7 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
               <Button
                 type={'filled'}
                 color={'primary'}
-                className={'mt-2 w-full'}
+                className={'mt-6 w-full'}
                 textColor={'white'}
                 text={'Choose this story'}
                 icon={'CheckCircleIcon'}
@@ -165,8 +171,9 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
                 onClick={onStorySelected}
               />
             ))}
+          <Divider dividerType="dashed" className={'mt-4'} />
           {linkedActivity && (
-            <div className={'mt-2 flex flex-col'}>
+            <div className={'flex flex-col'}>
               <Typography type={'body'} text={'Linked activity'} />
               <StoryActivityCard
                 title={linkedActivity.name}
@@ -184,12 +191,13 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
         </div>
 
         {storyBook?.type !== StoryBookTypes.other && (
-          <div className={'bg-uiLight mt-2 p-4'}>
+          <div className={'bg-white p-4'}>
             {storyBook?.type === StoryBookTypes.storyBook && (
               <>
                 <Typography
                   text={'Where can you find a copy of this story book'}
                   type={'unspecified'}
+                  weight={'bold'}
                 />
                 <ul className={'ml-4 mt-4 list-disc'}>
                   <li>
@@ -212,17 +220,17 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
                 <Typography
                   text={'Key words:'}
                   type={'unspecified'}
-                  className={'mt-4'}
+                  className={'bold mt-4'}
                 />
                 <div className={'flex flex-row flex-wrap'}>
-                  {storyBook.keywords.split(',').map((keyword) => (
+                  {storyBook.keywords.split(',')?.map((keyword) => (
                     <StatusChip
                       key={keyword}
                       text={keyword}
                       className={'mr-2 mt-4'}
-                      textColour={'white'}
-                      backgroundColour={'infoDark'}
-                      borderColour={'infoDark'}
+                      textColour={'secondary'}
+                      backgroundColour={'secondaryAccent2'}
+                      borderColour={'secondaryAccent2'}
                     />
                   ))}
                 </div>
@@ -261,7 +269,7 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
           </div>
         )}
 
-        <div className={'flex flex-col px-4'}>
+        <div className={'bg-uiBg flex w-full flex-col px-4'}>
           {storyBook?.type === StoryBookTypes.other && (
             <div className={'flex flex-col items-start justify-start'}>
               <Typography
@@ -397,10 +405,12 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
           {storyBook &&
             storyBook.type !== StoryBookTypes.other &&
             storyBookParts &&
-            storyBookParts.map((bookPart) => (
+            storyBookParts?.map((bookPart) => (
               <div
                 key={bookPart.id}
-                className={'mt-4 flex flex-col items-stretch justify-start'}
+                className={
+                  'bg-uiBg mt-4 flex w-full flex-col items-stretch justify-start py-4'
+                }
               >
                 <div className={'flex flex-row items-start justify-start'}>
                   <div className={'mr-4 flex w-1/12 flex-row justify-center'}>
@@ -421,14 +431,14 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
 
                   <div className={'flex w-11/12 flex-col'}>
                     <Typography
-                      type={'markdown'}
+                      type={'h4'}
                       fontSize={'14'}
                       text={bookPart.partText}
                     />
                   </div>
                 </div>
 
-                {bookPart.storyBookPartQuestions.map((question) => (
+                {bookPart.storyBookPartQuestions?.map((question) => (
                   <div
                     className={'mt-2 flex flex-row items-start'}
                     key={question.id}
@@ -544,7 +554,7 @@ const StorybookActivityDetails: React.FC<StorybookActivityDetailsProps> = ({
             />
           ))}
         {!disabled && linkedStory && (
-          <div className={'flex flex-col'}>
+          <div className={'bg-uiBg flex flex-col'}>
             <Typography type={'body'} text={'Linked story'} />
             <StoryCard
               title={linkedStory.name}

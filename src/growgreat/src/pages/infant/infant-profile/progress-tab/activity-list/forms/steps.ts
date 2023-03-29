@@ -2,6 +2,7 @@ import {
   CareForMomStep,
   ClinicCheckupStep,
   DangerSignsStep,
+  DangerSignsFollowUpStep,
   SelfCareStep,
   SelfCareAndSupportStep,
   MaternalDistressStep,
@@ -11,6 +12,7 @@ import {
   CareForBabyStep,
   RoadToHeathBookStep,
   DangerSignsStep as BabyDangerSignsStep,
+  DangerSignsFollowUpStep as BabyDangerSignsFollowUpStep,
   NewbornCareStep,
   MotherCareStep,
 } from './care-for-baby-steps';
@@ -40,6 +42,7 @@ import {
 import {
   DevelopmentalScreeningStep,
   DevelopmentalScreeningWeeksStep,
+  DevelopmentalScreeningWeeksFollowUpStep,
 } from './pillar-2-steps';
 import {
   ImmunisationsStep,
@@ -54,13 +57,20 @@ import {
   ChildDocumentationStep,
   HIVCareAndMedicationStep,
 } from './pillar-5-steps';
+import {
+  NotesStep,
+  ReferralsStep,
+  ProgressStep,
+  NextVisitStep,
+} from './follow-up-steps';
 
 import { nutritionAnswers } from './pillar-1-steps/nutrition';
 import { Question } from './dynamic-form';
 
-export const careForMomSteps = [
+export const getCareForMomSteps = (isDangerSignsFollowUp: boolean) => [
   CareForMomStep,
   ClinicCheckupStep,
+  ...(isDangerSignsFollowUp ? [DangerSignsFollowUpStep] : []),
   DangerSignsStep,
   SelfCareStep,
   SelfCareAndSupportStep,
@@ -68,9 +78,10 @@ export const careForMomSteps = [
   MaternalDistressScreeningStep,
 ];
 
-export const careForBabySteps = [
+export const careForBabySteps = (isDangerSignsFollowUp: boolean) => [
   CareForBabyStep,
   RoadToHeathBookStep,
+  ...(isDangerSignsFollowUp ? [BabyDangerSignsFollowUpStep] : []),
   BabyDangerSignsStep,
   NewbornCareStep,
   MotherCareStep,
@@ -137,8 +148,13 @@ export const getPillar1Steps = (
   }
 };
 
-export const pillar2Steps = [
+export const pillar2Steps = (
+  isDevelopmentalScreeningWeeksFollowUp: boolean
+) => [
   DevelopmentalScreeningStep,
+  ...(isDevelopmentalScreeningWeeksFollowUp
+    ? [DevelopmentalScreeningWeeksFollowUpStep]
+    : []),
   DevelopmentalScreeningWeeksStep,
 ];
 
@@ -154,3 +170,10 @@ export const getPillar4Steps = (isFollowUp: boolean) => [
 ];
 
 export const pillar5Steps = [ChildDocumentationStep, HIVCareAndMedicationStep];
+
+export const followUpSteps = (isReferralsStep: boolean) => [
+  NotesStep,
+  ...(isReferralsStep ? [ReferralsStep] : []),
+  ProgressStep,
+  NextVisitStep,
+];

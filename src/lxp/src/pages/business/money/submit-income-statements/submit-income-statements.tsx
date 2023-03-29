@@ -167,12 +167,6 @@ export const SubmitIncomeStatements: React.FC = () => {
   const isSameMonth =
     today.getMonth() + 1 === balanceSheet?.[balanceSheet?.length - 1]?.month!;
 
-  console.log({ lastDayToSubmitNextMonth });
-  console.log(isSameMonth && disableSubmit);
-  console.log({ disableSubmit });
-  console.log(today.getMonth() + 1);
-  console.log(balanceSheet?.[balanceSheet?.length - 1]?.month!);
-
   const submitDateDaysCount =
     balanceSheet?.length === 1 || (isSameMonth && disableSubmit)
       ? differenceInDays(lastDayToSubmitNextMonth, today)

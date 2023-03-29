@@ -12,6 +12,7 @@ export const EditAttendanceRegister = ({
   submitText = 'Submit',
   onBack,
   editAttendanceRegisterVisible,
+  classroomName,
 }: EditAttendanceRegisterProps) => {
   const { isOnline } = useOnlineStatus();
 
@@ -27,7 +28,7 @@ export const EditAttendanceRegister = ({
       showBackground={false}
       color={'primary'}
       onBack={onBack}
-      title={'Edit Register'}
+      title={`Edit ${classroomName} Register`}
       subTitle={format(attendanceDate, 'EEEE, d LLLL')}
       className={styles.bannerContentWrapper}
       displayOffline={!isOnline}

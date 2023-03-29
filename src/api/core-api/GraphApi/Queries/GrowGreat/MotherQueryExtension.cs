@@ -50,7 +50,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat {
             {
                 foreach (var mother in allMothers)
                 {
-                    mother.StatusInfo = motherManager.GetStatusInfo(mother.Id, true);
+                    mother.StatusInfo = motherManager.GetStatusInfo(mother, true);
                     mother.NextVisitDate = motherManager.GetClientsNextVisitDate(mother.Id);
                     if (mother.StatusInfo.Color == MetricsIconEnum.Warning.ToString() && mother.StatusInfo.Subject.Contains(" due "))
                     {
@@ -61,7 +61,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat {
             {
                 foreach (var mother in allMothers)
                 {
-                    mother.StatusInfo = motherManager.GetStatusInfo(mother.Id, true);
+                    mother.StatusInfo = motherManager.GetStatusInfo(mother, true);
                     mother.NextVisitDate = motherManager.GetClientsNextVisitDate(mother.Id);
                     if (mother.StatusInfo.Color == MetricsIconEnum.Error.ToString() && mother.StatusInfo.Subject.Contains(" overdue "))
                     {
@@ -72,7 +72,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat {
             {
                 foreach (var mother in allMothers)
                 {
-                    mother.StatusInfo = motherManager.GetStatusInfo(mother.Id, false);
+                    mother.StatusInfo = motherManager.GetStatusInfo(mother, false);
                     mother.NextVisitDate = motherManager.GetClientsNextVisitDate(mother.Id);
                     mothers.Add(mother);
                 }
@@ -129,8 +129,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat {
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public Progress_VisitDataStatus GetPreviousVisitInformationForMother([Service] VisitDataStatusManager visitDataStatusManager, string visitId) {
-            return visitDataStatusManager.GetPreviousVisitInformationForClient(visitId);
+        public Progress_VisitDataStatus GetPreviousVisitInformationForMother([Service] VisitManager visitManager, [Service] VisitDataStatusManager visitDataStatusManager, string visitId) {
+            var _visitId = new Guid(visitId);
+            return visitDataStatusManager.GetPreviousVisitInformationForClient(_visitId);
         }
         
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
@@ -196,6 +197,88 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat {
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public List<VisitBackReferral> GetBackReferralsForMother([Service] VisitBackReferralManager visitBackReferralManager, string id, bool referralCompleted, bool backReferralCompleted) {
             return visitBackReferralManager.GetBackReferralDataForClient(id, Constants.GGSettings.client_mother, referralCompleted, backReferralCompleted);
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public List<ClientSummary> GetMotherSummaryByGroup(
+            [Service] VisitManager visitManager,
+            [Service] VisitDataStatusManager visitDataStatusManager,
+            string id)
+        {
+            List<ClientSummary> summary = new List<ClientSummary>();
+
+            // get most recent visit completed
+            var visitId = visitManager.GetLastCompletedVisitId(id, Constants.GGSettings.client_mother);
+
+            var sumObj = new ClientSummary();
+            sumObj.VisitName = Constants.GGSettings.antenatalCare;
+            sumObj.Order = 1;
+            sumObj.VisitDataStatus = visitDataStatusManager.GetSummaryDataForVisitByGroup(visitId, Constants.GGSettings.antenatalCare);
+            summary.Add(sumObj);
+
+            sumObj = new ClientSummary();
+            sumObj.VisitName = Constants.GGSettings.nutrition;
+            sumObj.Order = 2;
+            sumObj.VisitDataStatus = visitDataStatusManager.GetSummaryDataForVisitByGroup(visitId, Constants.GGSettings.nutrition);
+            summary.Add(sumObj);
+
+            sumObj = new ClientSummary();
+            sumObj.VisitName = Constants.GGSettings.pregnancyCare;
+            sumObj.Order = 3;
+            sumObj.VisitDataStatus = visitDataStatusManager.GetSummaryDataForVisitByGroup(visitId, Constants.GGSettings.pregnancyCare);
+            summary.Add(sumObj);
+
+            sumObj = new ClientSummary();
+            sumObj.VisitName = Constants.GGSettings.dangerSigns;
+            sumObj.Order = 4;
+            sumObj.VisitDataStatus = visitDataStatusManager.GetSummaryDataForVisitByGroup(visitId, Constants.GGSettings.dangerSigns);
+            summary.Add(sumObj);
+
+            sumObj = new ClientSummary();
+            sumObj.VisitName = Constants.GGSettings.q_ID_doc;
+            sumObj.Order = 5;
+            sumObj.IdDocStatus = visitDataStatusManager.GetIDDocSummaryDataForVisit(visitId);
+            summary.Add(sumObj);
+
+            return summary;
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public List<ClientSummaryByPriority> GetMotherSummaryByPriority(
+           [Service] VisitManager visitManager,
+           [Service] VisitDataStatusManager visitDataStatusManager,
+           string id)
+        {
+            List<ClientSummaryByPriority> summary = new List<ClientSummaryByPriority>();
+
+            // get most recent visit completed
+            var visitId = visitManager.GetLastCompletedVisitId(id, Constants.GGSettings.client_mother);
+           
+            var sumObj = new ClientSummaryByPriority();
+            sumObj.AreaName = Constants.GGSettings.doingWell;
+            sumObj.Order = 1;
+            sumObj.VisitDataStatus = visitDataStatusManager.GetSummaryDataForVisitByPriority(visitId, MetricsColorEnum.Success.ToString());
+            summary.Add(sumObj);
+
+            sumObj = new ClientSummaryByPriority();
+            sumObj.AreaName = Constants.GGSettings.needSupport;
+            sumObj.Order = 2;
+            sumObj.VisitDataStatus = visitDataStatusManager.GetSummaryDataForVisitByPriority(visitId, MetricsColorEnum.Warning.ToString());
+            summary.Add(sumObj);
+
+            sumObj = new ClientSummaryByPriority();
+            sumObj.AreaName = Constants.GGSettings.needUrgentSupport;
+            sumObj.Order = 3;
+            sumObj.VisitDataStatus = visitDataStatusManager.GetSummaryDataForVisitByPriority(visitId, MetricsColorEnum.Error.ToString());
+            summary.Add(sumObj);
+
+            sumObj = new ClientSummaryByPriority();
+            sumObj.AreaName = Constants.GGSettings.q_ID_doc;
+            sumObj.Order = 4;
+            sumObj.IdDocStatus = visitDataStatusManager.GetIDDocSummaryDataForVisit(visitId);
+            summary.Add(sumObj);
+
+            return summary;
         }
 
     }

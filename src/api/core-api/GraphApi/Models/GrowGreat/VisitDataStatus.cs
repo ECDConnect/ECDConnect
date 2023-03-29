@@ -11,9 +11,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat {
         public string Color { get; set; }
         public string Type { get; set; }
         public string IsCompleted { get; set; }
-        public DateTime ReferralDateCompleted { get; set; }
+        public DateTime? ReferralDateCompleted { get; set; }
         public string BackReferralCompleted { get; set; }
-        public DateTime BackReferralDateCompleted { get; set; }
+        public DateTime? BackReferralDateCompleted { get; set; }
 
     }
 
@@ -41,6 +41,23 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat {
     public class VisitDataSummary {
         public string VisitSection { get; set; }
         public virtual ICollection<VisitDataStatus> VisitDataStatus { get; set; }
+    }
+
+    public class ClientSummary
+    {
+        public string VisitName { get; set; }
+        public int Order { get; set; }
+        public virtual ICollection<VisitDataStatus> VisitDataStatus { get; set; }
+        public virtual ICollection<VisitDataStatus> IdDocStatus { get; set; }
+    }
+
+    public class ClientSummaryByPriority
+    {
+        public string AreaName { get; set; }
+        public int Order { get; set; }
+        public virtual ICollection<VisitDataStatus> VisitDataStatus { get; set; }
+
+        public virtual ICollection<VisitDataStatus> IdDocStatus { get; set; }
     }
 }
 

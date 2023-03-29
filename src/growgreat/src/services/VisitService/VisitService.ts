@@ -284,7 +284,8 @@ class Visit {
         }
       `,
       variables: {
-        id: '6c2bc4ab-f06e-44d1-adee-be91dd98e1b0',
+        id: infantId,
+        // '6c2bc4ab-f06e-44d1-adee-be91dd98e1b0',
       },
     });
 
@@ -301,10 +302,10 @@ class Visit {
     visitId: string,
     visitName: string,
     visitSection: string
-  ): Promise<VisitData> {
+  ): Promise<VisitData[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
-      data: { visitAnswersForInfant: VisitData };
+      data: { visitAnswersForInfant: VisitData[] };
       errors?: {};
     }>(``, {
       query: `

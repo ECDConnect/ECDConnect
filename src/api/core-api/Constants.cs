@@ -1,3 +1,5 @@
+using System.Threading.Tasks;
+
 namespace EcdLink.Api.CoreApi {
     public static class Constants
     {
@@ -16,6 +18,7 @@ namespace EcdLink.Api.CoreApi {
 
             public const string client_mother = "mother";
             public const string client_child = "child";
+            public const string client_new = "New client";
 
             public const string client_pregnant_mom = "Pregnant mom";
             public const string client_pregnant_mom_and_child = "Pregnant mom and child";
@@ -33,7 +36,6 @@ namespace EcdLink.Api.CoreApi {
             public const string visit_data_client_progress = "Progress";
 
             // Mother Questions
-
             public const string q_first_antenatal_visit = "Has {client} gone to the clinic for her first antenatal visit?";
             public const string q_antenatal_visits = "Is {client} up to date with their antenatal clinic visits?";
             public const string q_measurement = "MUAC measurement";
@@ -61,6 +63,7 @@ namespace EcdLink.Api.CoreApi {
             public const string clinic_visits_up_to_date_2 = "You are up to date with your clinic visits!";
             public const string clinic_referrals = "Clinic referrals";
             public const string home_affairs_referrals = "Department of Home Affairs referrals";
+            public const string sassa_refferals = "Refer to SASSA";
             public const string missed_clinic_visit = "You missed a clinic visit - make sure you go as soon as possible!";
             public const string all_clinic_visit = "You are up to date with your clinic visits!";
             public const string underweight = "May be underweight - MUAC less than 22cm";
@@ -201,17 +204,61 @@ namespace EcdLink.Api.CoreApi {
            
 
             // Growth names
-            public const string neg3SD = "-3 SD";
-            public const string neg2SD = "-2 SD";
-            public const string neg1SD = "-1 SD";
-            public const string median = "median";
-            public const string pos1SD = "1 SD";
-            public const string pos2SD = "2 SD";
-            public const string pos3SD = "3 SD";
-            public const string weightForAgeBoys = "weightForAgeBoys";
-            public const string weightForAgeGirls = "weightForAgeGirls";
-            public const string weightForHeightBoys = "weightForHeightBoys";
-            public const string weightForHeightGirls = "weightForHeightGirls";
+            public const string weightForAgeBoys = "weight-for-age-boys";
+            public const string weightForAgeGirls = "weight-for-age-girls";
+            public const string weightForLengthGirls = "weight-for-length-girls";
+            public const string weightForLengthBoys = "weight-for-length-boys";
+            public const string weightForHeightGirls = "weight-for-height-girls";
+            public const string weightForHeightBoys = "weight-for-height-boys";
+
+            public const string lengthHeightForAgeGirls = "length-height-for-age-girls";
+            public const string lengthHeightForAgeBoys = "length-height-for-age-boys";
+
+            // Visit names
+            public const string careForMom = "Care for mom";
+            public const string careForBaby = "Care for baby";
+
+            public const string pillar1_report = "Nutrition";
+            public const string pillar1_db = "Pillar 1: Nutrition";
+
+            public const string pillar2_report = "Love, talk and play";
+            public const string pillar2_db = "Pillar 2: Love, talk and play";
+
+            public const string pillar3_report = "Protection";
+            public const string pillar3_db = "Pillar 3: Protection";
+
+            public const string pillar4_report = "Healthcare";
+            public const string pillar4_db = "Pillar 4: Healthcare";
+
+            public const string pillar5_report = "Extra care";
+            public const string pillar5_db = "Pillar 5: Extra care";
+
+            public const string antenatalCare = "Antenatal care";
+            public const string nutrition = "Nutrition";
+            public const string pregnancyCare = "Pregnancy care";
+            public const string dangerSigns = "Danger signs";
+
+            public const string doingWell = "You are doing well in these areas:";
+            public const string needSupport = "You need support in these areas:";
+            public const string needUrgentSupport = "You need urgent support with these areas:";
+
+            // Infant Dates
+            public const string day_3 = "day_3";
+            public const string day_7 = "day_7";
+            public const string week_2 = "week_2";
+            public const string week_4 = "week_4";
+            public const string week_7_to_8 = "week_7_to_8";
+            public const string months_3 = "3_months";
+            public const string months_4 = "4_months";
+            public const string months_5 = "5_months";
+            public const string months_6 = "6_months";
+            public const string months_9 = "9_months";
+            public const string months_12 = "12_months";
+            public const string months_15 = "15_months";
+            public const string months_18 = "18_months";
+            public const string months_21 = "21_months";
+            public const string months_24 = "24_months";
+            public const string years_5 = "5_years";
 
         }
     }

@@ -3,9 +3,11 @@ import { useHistory, useLocation } from 'react-router';
 
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import {
+  ActionModal,
   BannerWrapper,
   Button,
   Colours,
+  DialogPosition,
   LoadingSpinner,
   MenuListDataItem,
   StackedList,
@@ -23,6 +25,7 @@ import { activitiesList, activitiesTypes } from './activities-list';
 import { Form } from './forms';
 import { useWindowSize } from '@reach/window-size';
 import { infantThunkActions } from '@/store/infant';
+import { referralThunkActions } from '@/store/referral';
 import { useAppDispatch } from '@/store';
 import { visitThunkActions } from '@/store/visit';
 import {
@@ -32,6 +35,10 @@ import {
 import { IntroScreen } from './intro-screen';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { VisitActions } from '@/store/visit/visit.actions';
+import { DevelopmentalScreeningVisitSection } from './forms/pillar-2-steps/developmental-screening-weeks';
+import { useDialog } from '@ecdlink/core';
+import { ReactComponent as PollyNeutral } from '@/assets/pollyNeutral.svg';
+import { Walkthrough } from './walkthrough';
 
 export const INFANT_PROFILE_TABS = {
   VISITS: 0,
@@ -46,6 +53,7 @@ export const ActivityList: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [isShowCompletedForms, setIsShowCompletedForms] = useState(false);
   const [isStartVisit, setIsStartVisit] = useState(false);
+  const [isDisplayWalkthrough, setIsDisplayWalkthrough] = useState(false);
 
   const selectedOption = window.sessionStorage.getItem(currentActivityKey);
 
@@ -58,8 +66,8 @@ export const ActivityList: React.FC = () => {
   const location = useLocation();
 
   const visits = useSelector(getInfantVisitsSelector);
-  const MOCKED_VISIT_ID =
-    visits[0]?.id; /* '454686a9-2142-4061-aa47-4e89d46110b9' */
+  const MOCKED_VISIT_ID = visits[0]?.id;
+  // '454686a9-2142-4061-aa47-4e89d46110b9';
 
   const completedVisits = useSelector((state: RootState) =>
     getCompletedVisitsByVisitIdSelector(state, MOCKED_VISIT_ID)
@@ -73,6 +81,8 @@ export const ActivityList: React.FC = () => {
   const [, , , infantId] = location.pathname.split('/');
 
   const appDispatch = useAppDispatch();
+
+  const dialog = useDialog();
 
   const infant = useSelector((state: RootState) =>
     getInfantById(state, infantId)
@@ -169,8 +179,51 @@ export const ActivityList: React.FC = () => {
   }, [history, isStartVisit]);
 
   const onFormBack = () => {
-    setShowForm(false);
     window.sessionStorage.removeItem(currentActivityKey);
+    setShowForm(false);
+
+    if (selectedOption === activitiesTypes.followUp) {
+      history.push(ROUTES.CLIENTS.ROOT);
+    }
+  };
+
+  const onHelp = (detailText?: string) => {
+    dialog({
+      blocking: false,
+      position: DialogPosition.Middle,
+      color: 'bg-white',
+      render: (onClose) => {
+        return (
+          <ActionModal
+            className="z-50"
+            title="Hello!"
+            detailText="Would you like me to show you how to use this screen?"
+            customIcon={<PollyNeutral className="mb-3 h-24 w-24" />}
+            actionButtons={[
+              {
+                colour: 'primary',
+                text: 'Yes, help me!',
+                textColour: 'white',
+                type: 'filled',
+                leadingIcon: 'CheckCircleIcon',
+                onClick: () => {
+                  onClose();
+                  setIsDisplayWalkthrough(true);
+                },
+              },
+              {
+                colour: 'primary',
+                text: 'No, skip',
+                textColour: 'primary',
+                type: 'outlined',
+                leadingIcon: 'ClockIcon',
+                onClick: onClose,
+              },
+            ]}
+          />
+        );
+      },
+    });
   };
 
   useLayoutEffect(() => {
@@ -184,6 +237,9 @@ export const ActivityList: React.FC = () => {
     appDispatch(
       visitThunkActions.getGrowthDataForInfant({ infantId })
     ).unwrap();
+    appDispatch(
+      referralThunkActions.getReferralsForInfant({ infantId })
+    ).unwrap();
   }, [appDispatch, infantId]);
 
   useLayoutEffect(() => {
@@ -193,12 +249,19 @@ export const ActivityList: React.FC = () => {
         visitId: MOCKED_VISIT_ID,
       })
     );
+    appDispatch(
+      visitThunkActions.getPreviousVisitInformationForInfant({
+        visitId: MOCKED_VISIT_ID,
+      })
+    );
   }, [MOCKED_VISIT_ID, appDispatch]);
 
   useLayoutEffect(() => {
     appDispatch(
-      visitThunkActions.getPreviousVisitInformationForInfant({
+      visitThunkActions.getVisitAnswersForInfant({
         visitId: MOCKED_VISIT_ID,
+        visitName: activitiesTypes.pillar2,
+        visitSection: DevelopmentalScreeningVisitSection,
       })
     );
   }, [MOCKED_VISIT_ID, appDispatch]);
@@ -241,14 +304,15 @@ export const ActivityList: React.FC = () => {
             color="textDark"
             className="mt-6 mb-4"
           />
-          {isFollowUp ? (
+          {isFollowUp && (
             <StackedList
               isFullHeight={false}
               className={'flex flex-col gap-2'}
               listItems={followUpForm}
               type={'MenuList'}
             />
-          ) : (
+          )}
+          {!!uncompletedForms.length && (
             <>
               <StackedList
                 isFullHeight={false}
@@ -321,6 +385,15 @@ export const ActivityList: React.FC = () => {
     width,
   ]);
 
+  if (isDisplayWalkthrough) {
+    return (
+      <Walkthrough
+        infant={infant}
+        onClose={() => setIsDisplayWalkthrough(false)}
+      />
+    );
+  }
+
   if (showForm && selectedOption) {
     return <Form onBack={onFormBack} />;
   }
@@ -336,6 +409,8 @@ export const ActivityList: React.FC = () => {
       subTitle="Child visit activities"
       backgroundColour="white"
       displayOffline={!isOnline}
+      displayHelp
+      onHelp={onHelp}
     >
       {renderContent}
     </BannerWrapper>

@@ -7,7 +7,11 @@ import {
   ActionModal,
   BannerWrapper,
   Button,
+  Card,
   DialogPosition,
+  renderIcon,
+  Typography,
+  Dialog,
 } from '@ecdlink/ui/';
 import { useHistory, useLocation } from 'react-router';
 import ActivitySearch from '../components/activities/activity/activity-search/activity-search';
@@ -47,6 +51,13 @@ import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import OnlineOnlyModal from '../../../../modals/offline-sync/online-only-modal';
 import { isFriday } from 'date-fns';
 import ROUTES from '@routes/routes';
+import { ProgrammePlanningHeaderUpdated } from '../components/programme-planning-header-updated/programme-planning-header-updated';
+import { programmeThemeSelectors } from '@/store/content/programme-theme';
+import { ProgrammePlanningRoutineListItemUpdated } from '../components/programme-planning-routine-list-item-updated/programme-planning-routine-list-item-updated';
+import { ProgrammePlanningRoutineListItemNotCompleted } from '../components/programme-planning-routine-not-completed-list-item/programme-planning-routine-list-item-not-completed';
+import PosiviteIcon from '../../../../assets/positive-bonus-emoticon.png';
+import { practitionerSelectors } from '@/store/practitioner';
+import walkthroughImage from '../../../../assets/walktroughImage.png';
 
 export const ProgrammeRoutine: React.FC = () => {
   const { state } = useLocation<ProgrammeRoutineRouteState>();
@@ -58,6 +69,10 @@ export const ProgrammeRoutine: React.FC = () => {
   const programme = useSelector(
     programmeSelectors.getProgrammeById(state.programmeId)
   );
+  const themes = useSelector(programmeThemeSelectors.getProgrammeThemes);
+  const chosedTheme = themes?.find((item) => item?.name === programme?.name);
+  const practitioner = useSelector(practitionerSelectors?.getPractitioner);
+
   const prorgammeRoutine = useSelector(
     programmeRoutineSelectors.getProgrammeRoutineById(1)
   );
@@ -83,6 +98,17 @@ export const ProgrammeRoutine: React.FC = () => {
   const isProgrammeCompleted =
     programmeWeeks.filter((week) => week.totalIncompleteDays === 0).length ===
     programmeWeeks.length;
+  const [successMessage, setSuccessMessage] = useState(false);
+  // const allProgrammesPlanned =
+  //   isDayCompleted &&
+  //   isProgrammeCompleted &&
+  //   isWeekComplete &&
+  //   displayDayCompletedCard;
+  const allProgrammesPlanned =
+    isDayCompleted &&
+    isProgrammeCompleted &&
+    isWeekComplete &&
+    displayDayCompletedCard;
 
   const { getCurrentProgrammeRecommendedActivities } =
     useProgrammePlanningRecommendations();
@@ -477,10 +503,18 @@ export const ProgrammeRoutine: React.FC = () => {
 
     const subTitleText = dayDate.toLocaleString(
       'en-ZA',
-      DateFormats.dayFullMonthYear
+      DateFormats.dayWithShortMonthName
     );
-    return isFriday(dayDate) ? `Mahala ${subTitleText}` : subTitleText;
+    // return isFriday(dayDate) ? dayDate : dayDate;
+
+    return dayDate;
   };
+
+  useEffect(() => {
+    if (allProgrammesPlanned) {
+      setSuccessMessage(true);
+    }
+  }, [allProgrammesPlanned]);
 
   return (
     <BannerWrapper
@@ -503,19 +537,21 @@ export const ProgrammeRoutine: React.FC = () => {
       ) : (
         <>
           {programme && (
-            <ProgrammePlanningHeader
-              className={'pt-4'}
+            <ProgrammePlanningHeaderUpdated
+              className={'flex pt-4'}
               headerText={isDayCompleted ? 'Your routine' : 'Plan your routine'}
               subHeaderText={getCurrentDateSubTitleText(currentDay)}
               themeName={programme?.name}
+              theme={programme}
               plannedWeeks={
                 programmeWeeks.filter((week) => week.totalIncompleteDays === 0)
                   .length
               }
               totalWeeks={programmeWeeks.length}
+              chosedTheme={chosedTheme}
+              weekSummary={true}
             />
           )}
-
           {isDayCompleted &&
             !isProgrammeCompleted &&
             !isWeekComplete &&
@@ -532,31 +568,12 @@ export const ProgrammeRoutine: React.FC = () => {
                 }}
               />
             )}
-
-          {isDayCompleted &&
-            !isProgrammeCompleted &&
-            isWeekComplete &&
-            displayDayCompletedCard && (
-              <SuccessCard
-                className={'mx-4 mt-2'}
-                icon={'SparklesIcon'}
-                text={`All your days are planned for week ${
-                  activeWeekIndex + 1
-                }`}
-                subText={
-                  'You can see your daily routine and add a note to the message board.'
-                }
-                onClose={() => {
-                  setDisplayDayCompletedCard(false);
-                }}
-              />
-            )}
-
-          {isDayCompleted &&
+          // check the necessity of this alert message
+          {/* {isDayCompleted &&
             isProgrammeCompleted &&
             isWeekComplete &&
             displayDayCompletedCard && (
-              <div className={'px-4 mt-2'}>
+              <div className={'mt-2 px-4'}>
                 <SuccessCard
                   icon={'SparklesIcon'}
                   text={`Great job, your whole “${programme?.name}” programme has been planned!`}
@@ -566,7 +583,7 @@ export const ProgrammeRoutine: React.FC = () => {
                   }}
                 />
                 <Button
-                  className={'w-full mt-4'}
+                  className={'mt-4 w-full'}
                   type={'filled'}
                   color={'primary'}
                   onClick={handleSummaryView}
@@ -575,12 +592,11 @@ export const ProgrammeRoutine: React.FC = () => {
                   textColor={'white'}
                 />
               </div>
-            )}
-
+            )} */}
           <div className={'pt-4'}>
             {isDayCompleted &&
               sortedRoutineItems.map((routineItem) => (
-                <ProgrammePlanningRoutineListItem
+                <ProgrammePlanningRoutineListItemUpdated
                   key={routineItem.id}
                   day={currentDay}
                   routineItem={routineItem}
@@ -590,7 +606,7 @@ export const ProgrammeRoutine: React.FC = () => {
 
             {!isDayCompleted &&
               activityRequiredProgrammeRoutineItems?.map((routineItem) => (
-                <ProgrammePlanningRoutineListItem
+                <ProgrammePlanningRoutineListItemNotCompleted
                   key={routineItem.id}
                   day={currentDay}
                   routineItem={routineItem}
@@ -601,6 +617,38 @@ export const ProgrammeRoutine: React.FC = () => {
         </>
       )}
 
+      {isDayCompleted &&
+        !isProgrammeCompleted &&
+        isWeekComplete &&
+        displayDayCompletedCard && (
+          <Card className={'bg-successMain mx-4 mt-2 rounded-xl p-4'}>
+            <div className="flex gap-3">
+              <img src={PosiviteIcon} alt="bonus" />
+              <Typography
+                type="h4"
+                color={'white'}
+                text={`Great job ${practitioner?.user?.firstName}! Your whole week is planned.`}
+                className="pt-2"
+              />
+              <div
+                onClick={() => setDisplayDayCompletedCard(false)}
+                className={'h-4 w-4'}
+              >
+                {renderIcon('XIcon', 'h-6 w-6 text-white')}
+              </div>
+            </div>
+            <Button
+              text="Plan next week"
+              icon="ClipboardListIcon"
+              type={'filled'}
+              color={'primary'}
+              textColor={'white'}
+              onClick={() => setActiveWeekIndex(activeWeekIndex + 1)}
+              className="mt-2 ml-14"
+            />
+          </Card>
+        )}
+
       {programmeWeeks && programmeWeeks.length > 1 && (
         <ProgrammeWeekPaging
           activeIndex={activeWeekIndex}
@@ -609,6 +657,52 @@ export const ProgrammeRoutine: React.FC = () => {
           onNext={() => setActiveWeekIndex(activeWeekIndex + 1)}
         />
       )}
+
+      <div>
+        <Dialog
+          className={'mb-16 px-4'}
+          stretch
+          visible={successMessage}
+          position={DialogPosition.Middle}
+        >
+          <ActionModal
+            customIcon={
+              <img
+                src={walkthroughImage}
+                alt="walkthroughImage"
+                className="mb-2"
+              />
+            }
+            iconColor="alertMain"
+            iconBorderColor="alertBg"
+            importantText={`Great, You have set up your ${programme?.name} programme week!`}
+            detailText={`Great job ${practitioner?.user?.firstName}! Your whole week is planned.`}
+            actionButtons={[
+              {
+                text: 'Plan next week',
+                textColour: 'white',
+                colour: 'primary',
+                type: 'filled',
+                onClick: () => {
+                  setActiveWeekIndex(activeWeekIndex + 1);
+                  setSuccessMessage(false);
+                },
+                leadingIcon: 'ClipboardCheckIcon',
+              },
+              {
+                text: 'Close',
+                textColour: 'primary',
+                colour: 'primary',
+                type: 'outlined',
+                onClick: () => {
+                  setSuccessMessage(false);
+                },
+                leadingIcon: 'XIcon',
+              },
+            ]}
+          />
+        </Dialog>
+      </div>
     </BannerWrapper>
   );
 };

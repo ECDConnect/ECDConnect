@@ -1,3 +1,4 @@
+import { limitStringLength } from '@/utils/common/string.utils';
 import {
   Button,
   Card,
@@ -7,6 +8,9 @@ import {
   Alert,
   DialogPosition,
   classNames,
+  StatusChip,
+  renderIcon,
+  Radio,
 } from '@ecdlink/ui';
 import { useState } from 'react';
 import StoryActivityDetails from '../story-activity-details/story-activity-details';
@@ -44,49 +48,46 @@ const StoryActivityCard: React.FC<StoryActivityCardProps> = ({
         shadowSize={'lg'}
         borderRaduis="lg"
       >
-        <div className="p-4">
+        <div
+          className={
+            selected
+              ? 'bg-secondaryAccent2 rounded-lg p-4'
+              : 'bg-uiBg rounded-lg p-4'
+          }
+        >
           <div className="flex flex-row items-center justify-between">
-            <Typography type="body" text={title} color={'textDark'} />
+            <Typography
+              type="body"
+              text={title}
+              color={'textDark'}
+              className={'semibold'}
+            />
           </div>
           <div>
-            <Typography
-              className={'mt-2'}
-              type="body"
-              text={'Materials'}
-              color={'textDark'}
-            />
-
-            <Typography type="help" text={material} color={'textDark'} />
-            {!hideDetails && (
-              <Button
-                type={'outlined'}
-                color="primary"
-                className="mt-2"
-                size={'small'}
-                onClick={handleDetailsClick}
-              >
-                see details
-              </Button>
-            )}
+            <>
+              <div className={selected ? 'bg-secondaryAccent2' : 'bg-uiBg'}>
+                <div className="flex max-h-20 items-center justify-between gap-2">
+                  <Radio
+                    isActivity={true}
+                    description={limitStringLength(
+                      material.charAt(0).toUpperCase() + material.slice(1),
+                      50
+                    )}
+                    checked={selected}
+                    onChange={() => onSelected()}
+                    className={'truncate border-0'}
+                  />
+                  <div onClick={handleDetailsClick} className={'mb-2'}>
+                    {renderIcon(
+                      'InformationCircleIcon',
+                      'h-6 w-6 text-infoMain'
+                    )}
+                  </div>
+                </div>
+              </div>
+            </>
           </div>
         </div>
-
-        {!!warningText && (
-          <Alert type="warning" message={warningText} variant="flat" />
-        )}
-
-        <FADButton
-          title={buttonText || selected ? 'Activity chosen' : 'Choose activity'}
-          icon={buttonIcon || 'CheckCircleIcon'}
-          iconDirection={'left'}
-          textToggle={true}
-          type={'ghost'}
-          background={'transparent'}
-          color={selected ? 'white' : 'uiMidDark'}
-          shape={'normal'}
-          className={`w-full border-t py-4 ${selected ? 'bg-secondary ' : ''}`}
-          click={() => onSelected()}
-        />
       </Card>
       <Dialog
         visible={displayDetails}

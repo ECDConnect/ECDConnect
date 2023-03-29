@@ -3,6 +3,7 @@ using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;

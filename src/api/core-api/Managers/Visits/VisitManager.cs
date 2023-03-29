@@ -62,7 +62,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 UpdatedBy = _applicationUserId
             };
         }
-
         public string GetFirstMissedVisit(Guid Id, string type)
         {
             var message = "";
@@ -91,7 +90,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
             return message;
         }
-
         public string GetNextVisitLessThan7DaysAway(Guid Id, string type, Boolean withinWeek)
         {
             var message = "";
@@ -151,7 +149,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             return message;
         }
-
         public string GetNextVisitMoreThan7DaysAway(Guid Id, string type)
         {
             var message = "";
@@ -184,7 +181,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             return message;
         }
-
         public int GetMissedVisitsForHCWCount(string HCWId, string type)
         {
             var visitCount = 0;
@@ -199,7 +195,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             return visitCount;
         }
-
         public int GetVisitsDueForHCWCount(string HCWId, string type)
         {
             var visitCount = 0;
@@ -218,7 +213,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             return visitCount;
         }
-
         public DateTime? GetClientsNextVisitDate(Guid Id, string type)
         {
             Visit nextVisit = null;
@@ -247,7 +241,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
             return null;
         }
-
         public List<Visit> GetVisitsForClient(string id, string type) {
 
             List<Visit> allVisits = new List<Visit>();
@@ -267,7 +260,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             return allVisits;
         }
-
         public int GetTotalVisitsForWeek(String id, string type)
         {
             DateTime today = DateTime.Today;
@@ -277,23 +269,35 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             if (type == Constants.GGSettings.client_mother)
             {
-                totalVisits = (
-                    from visit in _visitRepo.GetAll().Where(x => x.MotherId.Equals(id) && !x.Attended && x.PlannedVisitDate >= monday && x.PlannedVisitDate <= next7Days).OrderBy(x => x.PlannedVisitDate)
-                    join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GGSettings.client_mother)) on visit.VisitTypeId equals visitType.Id
-                    select visit
-                ).Count();
+                totalVisits = _visitRepo.GetAll().Where(x => x.MotherId.ToString() == id && !x.Attended && x.PlannedVisitDate >= monday && x.PlannedVisitDate <= next7Days).OrderBy(x => x.PlannedVisitDate).Count();
             }
             else
             {
-                totalVisits = (
-                    from visit in _visitRepo.GetAll().Where(x => x.InfantId.Equals(id) && !x.Attended && x.PlannedVisitDate >= monday && x.PlannedVisitDate <= next7Days).OrderBy(x => x.PlannedVisitDate)
-                    join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GGSettings.client_child)) on visit.VisitTypeId equals visitType.Id
-                    select visit
-                ).Count();
+                totalVisits = _visitRepo.GetAll().Where(x => x.InfantId.ToString() == id && !x.Attended && x.PlannedVisitDate >= monday && x.PlannedVisitDate <= next7Days).OrderBy(x => x.PlannedVisitDate).Count();
             }
-
             return totalVisits;
+        }
+        public Guid GetLastCompletedVisitId(String id, string type)
+        {
+            Guid visitId;
 
+            if (type == Constants.GGSettings.client_mother)
+            {
+                visitId = (
+                    from visit in _visitRepo.GetAll().Where(x => x.MotherId.ToString() == id && x.Attended == true).OrderBy(x => x.PlannedVisitDate)
+                    join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GGSettings.client_mother)) on visit.VisitTypeId equals visitType.Id
+                    select visit.Id
+                ).FirstOrDefault();
+            }
+            else
+            {
+                visitId = (
+                    from visit in _visitRepo.GetAll().Where(x => x.InfantId.ToString() == id && x.Attended == true).OrderBy(x => x.PlannedVisitDate)
+                    join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GGSettings.client_child)) on visit.VisitTypeId equals visitType.Id
+                    select visit.Id
+                ).FirstOrDefault();
+            }
+            return visitId;
         }
 
     }

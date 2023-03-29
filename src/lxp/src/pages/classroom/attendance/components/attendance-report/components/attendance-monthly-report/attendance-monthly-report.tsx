@@ -4,13 +4,25 @@ import {
   classNames,
   Dialog,
   DialogPosition,
+  renderIcon,
 } from '@ecdlink/ui';
+import { useEffect, useState } from 'react';
+import { AttendanceService } from '@services/AttendanceService';
 import { getMonthName } from '@utils/classroom/attendance/track-attendance-utils';
 import * as styles from './attendance-monthly-report.styles';
 import { MonthlyAttendanceReport } from './attendance-report';
 import { AttendanceSummary } from '@models/classroom/attendance/AttendanceSummary';
-import { getYear } from 'date-fns';
-import { useState } from 'react';
+import {
+  addDays,
+  getYear,
+  startOfMonth,
+  endOfMonth,
+  parse,
+  add,
+} from 'date-fns';
+import { useSelector } from 'react-redux';
+import { authSelectors } from '@/store/auth';
+import { ClassRoomChildAttendanceMonthlyReportModel } from '@ecdlink/core';
 
 interface AttendanceMonthlyReportProps extends ComponentBaseProps {
   attendanceSummary: AttendanceSummary[];
@@ -21,11 +33,47 @@ export const AttendanceMonthlyReport: React.FC<
   AttendanceMonthlyReportProps
 > = ({ attendanceSummary, classroomId }) => {
   const [displayReport, setDisplayReport] = useState<boolean>(false);
+
   const [viewReportDate, setViewReportDate] = useState<string>();
+  const [reportData, setReportData] = useState<
+    ClassRoomChildAttendanceMonthlyReportModel[]
+  >([]);
+  const authUser = useSelector(authSelectors.getAuthUser);
 
   const closeReport = () => {
     setDisplayReport(!displayReport);
   };
+
+  function getMonthRange(monthName: string) {
+    const year = new Date().getFullYear();
+    // Parse the month name and get the corresponding month number
+    const monthNumber = parse(monthName, 'MMMM', new Date()).getMonth() + 1;
+    // Get the start and end date of the month
+    const startDate = startOfMonth(new Date(year, monthNumber - 1, 1));
+
+    const endDate = endOfMonth(new Date(year, monthNumber - 1, 1));
+
+    return { startDate, endDate };
+  }
+
+  useEffect(() => {
+    if (viewReportDate) {
+      const { startDate, endDate } = getMonthRange(viewReportDate);
+      const nextDay = add(startDate, { days: 1 });
+      new AttendanceService(authUser?.auth_token ?? '')
+        .getClassroomAttendanceReport(
+          authUser?.id ?? '',
+          classroomId,
+          nextDay,
+          endDate
+        )
+        .then((data) => {
+          setReportData(data);
+        });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [viewReportDate]);
+
   return (
     <div className={styles.wrapper}>
       {attendanceSummary &&
@@ -40,10 +88,7 @@ export const AttendanceMonthlyReport: React.FC<
               }}
               key={`attendance-summary-item-${idx}`}
               className={classNames(
-                styles.attendanceItemWrapper(
-                  attendanceItem.attendanceScore,
-                  idx > 0
-                ),
+                styles.attendanceItemWrapper(attendanceItem.attendanceScore),
                 styles.getBgColor(attendanceItem.attendanceScore)
               )}
             >
@@ -76,19 +121,7 @@ export const AttendanceMonthlyReport: React.FC<
                     className={'text-4xl'}
                   />
                   <div className={'pl-6 pt-2'}>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                      aria-hidden="true"
-                      className="text-primary h-6"
-                    >
-                      <path
-                        fill-rule="evenodd"
-                        d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                        clip-rule="evenodd"
-                      ></path>
-                    </svg>
+                    {renderIcon('ChevronRightIcon', 'text-primary h-6')}
                   </div>
                 </div>
               </div>
@@ -108,6 +141,7 @@ export const AttendanceMonthlyReport: React.FC<
               onDownloadReport={() => console.log('>>')}
               onBack={() => closeReport()}
               classroomGroupId={classroomId}
+              reportData={reportData}
             />
           </div>
         </Dialog>

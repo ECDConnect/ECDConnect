@@ -11,6 +11,7 @@ import {
   getHealthPromotion,
   getMoreInformation,
   getPreviousVisitInformationForInfant,
+  getVisitAnswersForInfant,
   getVisitVideos,
 } from './visit.actions';
 import { CompletedVisitsForVisitId, VisitState } from './visit.types';
@@ -78,6 +79,7 @@ const visitSlice = createSlice({
     setThunkActionStatus(builder, getCompletedVisitsForVisitId);
     setThunkActionStatus(builder, getVisitVideos);
     setThunkActionStatus(builder, getPreviousVisitInformationForInfant);
+    setThunkActionStatus(builder, getVisitAnswersForInfant);
     builder.addCase(addVisitFormData.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
     });
@@ -130,6 +132,17 @@ const visitSlice = createSlice({
         : action.payload;
 
       setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(getVisitAnswersForInfant.fulfilled, (state, action) => {
+      const mergedDate = !!state.visitAnswersForInfant?.length
+        ? [...state.visitAnswersForInfant, ...action.payload]
+        : [];
+
+      state.visitAnswersForInfant = !!mergedDate.length
+        ? mergedDate.filter((item, index) => {
+            return index === mergedDate.findIndex((obj) => obj.id === item.id);
+          })
+        : action.payload;
     });
   },
 });

@@ -7,4 +7,5 @@ export type StoryActivitySelectViewProps = {
   onClearStory: () => void;
   onActivitySelected: (activity?: ActivityDto) => void;
   onActivityCleared: () => void;
+  setSelectedStory?: any;
 };
