@@ -40,6 +40,8 @@ export interface WeightOrHeightForAgeProps {
   SD2neg: WeightOrHeightForAge;
 }
 
+export type DataSetType = keyof WeightOrHeightForAgeProps;
+
 const colours = {
   severely: { primary: '#E20000', secondary: 'rgba(226, 0, 0, 0.05)' },
   underweight: { primary: '#FF7A00', secondary: 'rgba(255, 122, 0, 0.15)' },
