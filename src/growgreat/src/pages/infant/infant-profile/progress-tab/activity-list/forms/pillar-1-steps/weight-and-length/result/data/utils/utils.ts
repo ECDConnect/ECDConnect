@@ -112,13 +112,11 @@ export function findClosestWeight(datasets: any, input: number, index: number) {
     if (
       ((key === 'SD2' || key === 'SD3') &&
         datasets[key].weight[index] <= input) ||
-      key !== 'SD2'
+      ((key === 'SD2neg' || key === 'SD3neg') &&
+        datasets[key].weight[index] >= input) ||
+      key === 'median'
     ) {
-      if (
-        datasets[key].hasOwnProperty('weight') &&
-        datasets[key].weight
-        // check if weight value is less than input
-      ) {
+      if (datasets[key].hasOwnProperty('weight') && datasets[key].weight) {
         let diff = Math.abs(datasets[key].weight[index] - input);
         if (diff < minDiff) {
           minDiff = diff;
