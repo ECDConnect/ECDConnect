@@ -1,5 +1,5 @@
 export const weightPerYear = {
-  date: [1, 2, 3, 4, 5],
+  date: [0, 1, 2, 3, 4],
   median: {
     label: 'median',
     weight: [

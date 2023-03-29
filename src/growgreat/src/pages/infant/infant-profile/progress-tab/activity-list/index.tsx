@@ -235,10 +235,11 @@ export const ActivityList: React.FC = () => {
   useLayoutEffect(() => {
     appDispatch(infantThunkActions.getInfantVisits({ infantId })).unwrap();
     appDispatch(
+      visitThunkActions.getGrowthDataForInfant({ infantId })
+    ).unwrap();
+    appDispatch(
       referralThunkActions.getReferralsForInfant({ infantId })
     ).unwrap();
-    // TODO: add integration
-    // appDispatch(visitThunkActions.getGrowthDataForInfant({ infantId })).unwrap()
   }, [appDispatch, infantId]);
 
   useLayoutEffect(() => {
