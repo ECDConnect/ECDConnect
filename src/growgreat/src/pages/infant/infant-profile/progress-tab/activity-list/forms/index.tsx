@@ -28,6 +28,7 @@ import { getPreviousVisitInformationForInfantSelector } from '@/store/visit/visi
 import { dangerSignsVisitSection } from './care-for-mom-steps/danger-signs';
 import { dangerSignsVisitSectionForBaby } from './care-for-baby-steps/danger-signs';
 import { DevelopmentalScreeningVisitSection } from './pillar-2-steps/developmental-screening-weeks';
+import { getReferralsForInfantSelector } from '@/store/referral/referral.selectors';
 
 interface FormProps {
   onBack: () => void;
@@ -44,6 +45,7 @@ export const Form = ({ onBack }: FormProps) => {
   const previousVisit = useSelector(
     getPreviousVisitInformationForInfantSelector
   );
+  const referralsForInfant = useSelector(getReferralsForInfantSelector);
 
   const isFollowUp = useCallback(
     (section: string, visitName: string) => {
@@ -180,7 +182,7 @@ export const Form = ({ onBack }: FormProps) => {
       case activitiesTypes.pillar5:
         return pillar5Steps;
       default:
-        return followUpSteps;
+        return followUpSteps(!!referralsForInfant?.length);
     }
   }, [
     activityName,
@@ -190,6 +192,7 @@ export const Form = ({ onBack }: FormProps) => {
     isPillar4FollowUp,
     isToSkipBreastfeedingIssuesRelevantItemsStep,
     nutritionAnswer,
+    referralsForInfant,
   ]);
 
   return (

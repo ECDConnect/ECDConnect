@@ -39,10 +39,16 @@ import { useHolidays } from '@hooks/useHolidays';
 import { useEffect, useState } from 'react';
 import { PublicHolidayIndicator } from '../../../programme-routine/components/public-holiday-indicator/public-holiday-indicator';
 import ROUTES from '@routes/routes';
+import { ProgrammePlanningHeaderUpdated } from '../../../components/programme-planning-header-updated/programme-planning-header-updated';
+import { ProgrammePlanningRoutineListItemUpdated } from '../../../components/programme-planning-routine-list-item-updated/programme-planning-routine-list-item-updated';
+import { programmeThemeSelectors } from '@/store/content/programme-theme';
 
 export const DailyRoutine: React.FC<DailyRoutineProps> = ({
   programme,
   currentDailyProgramme,
+  onChangeAddDay,
+  onChangeSubDay,
+  setNewCurrentDailyProgrammeDate,
 }) => {
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
@@ -65,6 +71,8 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
     !currentDailyProgramme?.storyActivityId;
   const { isHoliday } = useHolidays();
   const [isCurrentDayHoliday, setIsCurrentDayHoliday] = useState(false);
+  const themes = useSelector(programmeThemeSelectors.getProgrammeThemes);
+  const chosedTheme = themes?.find((item) => item?.name === programme?.name);
 
   useEffect(() => {
     setIsCurrentDayHoliday(isHoliday(new Date()));
@@ -89,7 +97,9 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
   };
 
   const handleViewProgrammeSummary = () => {
-    history.push(ROUTES.PROGRAMMES.SUMMARY, { variation: 'view' });
+    history.push(ROUTES.PROGRAMMES.SUMMARY, {
+      variation: 'view',
+    });
   };
 
   const openInfoItem = (routineItem: ProgrammeRoutineItemDto) => {
@@ -298,18 +308,20 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
 
   return (
     <div className={'flex flex-col pt-4'}>
-      <ProgrammePlanningHeader
+      <ProgrammePlanningHeaderUpdated
         headerText={`Today's daily Routine`}
-        subHeaderText={currentDate.toLocaleString(
-          'en-ZA',
-          DateFormats.dayFullMonthYear
-        )}
+        subHeaderText={currentDate}
         themeName={programme?.name || 'No theme'}
+        theme={programme}
         showCount={false}
         plannedWeeks={
           programmeWeeks.filter((week) => week.totalIncompleteDays === 0).length
         }
         totalWeeks={programmeWeeks.length}
+        chosedTheme={chosedTheme}
+        onChangeAddDay={onChangeAddDay}
+        onChangeSubDay={onChangeSubDay}
+        setNewCurrentDailyProgrammeDate={setNewCurrentDailyProgrammeDate}
       />
 
       <div className={'items-centers flex w-full flex-row p-4'}>
@@ -336,7 +348,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
           onClick={handleAddProgramme}
         >
           {renderIcon('PlusIcon', 'h-5 w-5 text-white')}
-          <Typography type={'small'} color={'white'} text={'New programme'} />
+          <Typography type={'small'} color={'white'} text={'Add new theme'} />
         </Button>
       </div>
 
@@ -368,7 +380,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
         ) : (
           <div className="mt-4">
             {programmeRoutine?.routineItems.map((routineItem) => (
-              <ProgrammePlanningRoutineListItem
+              <ProgrammePlanningRoutineListItemUpdated
                 key={`id_${routineItem.id}`}
                 routineItem={routineItem}
                 day={currentDailyProgramme}
