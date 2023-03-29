@@ -1,12 +1,6 @@
 import { useDialog } from '@ecdlink/core';
-import {
-  Button,
-  ComponentBaseProps,
-  DialogPosition,
-  renderIcon,
-  Typography,
-} from '@ecdlink/ui';
-import { addDays, isSameDay, subDays } from 'date-fns';
+import { ComponentBaseProps, DialogPosition } from '@ecdlink/ui';
+import { isSameDay } from 'date-fns';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
@@ -15,7 +9,7 @@ import { programmeSelectors } from '@store/programme';
 import { IconInformationIndicator } from '../components/icon-information-indicator/icon-information-indicator';
 import { DailyRoutine } from './components/daily-routine/daily-routine';
 import ROUTES from '@routes/routes';
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 
 export const ProgrammeDashboard: React.FC<ComponentBaseProps> = () => {
   const history = useHistory();
@@ -28,8 +22,6 @@ export const ProgrammeDashboard: React.FC<ComponentBaseProps> = () => {
   const currentDailyProgramme = currentProgramme?.dailyProgrammes.find(
     (dailyRoutine) => isSameDay(new Date(dailyRoutine.dayDate), selectedDate)
   );
-  const [newCurrentDailyProgrammeDate, setNewCurrentDailyProgrammeDate] =
-    useState(currentDailyProgramme?.dayDate);
 
   const handleAddProgramme = () => {
     if (isOnline) {
@@ -37,14 +29,6 @@ export const ProgrammeDashboard: React.FC<ComponentBaseProps> = () => {
     } else {
       showOnlineOnly();
     }
-  };
-
-  const onChangeAddDay = useCallback(() => {
-    setSelectedDate(new Date(newCurrentDailyProgrammeDate!));
-  }, [newCurrentDailyProgrammeDate]);
-
-  const onChangeSubDay = () => {
-    setSelectedDate(new Date(newCurrentDailyProgrammeDate!));
   };
 
   const showOnlineOnly = () => {
@@ -59,8 +43,6 @@ export const ProgrammeDashboard: React.FC<ComponentBaseProps> = () => {
   const handleViewProgrammeSummary = () => {
     history.push(ROUTES.PROGRAMMES.SUMMARY, {
       variation: 'view',
-      onChangeAddDay,
-      onChangeSubDay,
     });
   };
 
@@ -135,9 +117,8 @@ export const ProgrammeDashboard: React.FC<ComponentBaseProps> = () => {
     <DailyRoutine
       programme={currentProgramme}
       currentDailyProgramme={currentDailyProgramme}
-      onChangeAddDay={onChangeAddDay}
-      onChangeSubDay={onChangeSubDay}
-      setNewCurrentDailyProgrammeDate={setNewCurrentDailyProgrammeDate}
+      setSelectedDate={setSelectedDate}
+      selectedDate={selectedDate}
     />
   );
 };

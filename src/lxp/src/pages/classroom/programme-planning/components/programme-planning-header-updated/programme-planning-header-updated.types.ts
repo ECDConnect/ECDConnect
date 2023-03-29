@@ -18,5 +18,6 @@ export interface ProgrammePlanningHeaderProps extends ComponentBaseProps {
   weekSummary?: boolean;
   onChangeAddDay?: () => void;
   onChangeSubDay?: () => void;
-  setNewCurrentDailyProgrammeDate?: any;
+  setSelectedDate?: any;
+  selectedDate?: Date;
 }
