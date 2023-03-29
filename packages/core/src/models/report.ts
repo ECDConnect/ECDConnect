@@ -31,3 +31,13 @@ export interface ChildAttendanceMonthlyReportModel {
   expectedAttendance: number;
   attendancePercentage: number;
 }
+
+export interface ClassRoomChildAttendanceMonthlyReportModel {
+  totalExpectedAttendance: number;
+  attendancePercentage: number;
+  classgroupId: string;
+  childFullName: string;
+  childUserId: string;
+  month: number;
+  year: number;
+}
