@@ -163,7 +163,7 @@ export const DynamicForm = ({
     onNextStep?.();
   }, [onNextStep]);
 
-  const onSubmit = useCallback(async () => {
+  const onSubmit = useCallback(() => {
     const sections = sectionQuestions?.map((item) => ({
       ...item,
       questions: item.questions.map((question) => ({
