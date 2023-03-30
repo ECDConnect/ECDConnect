@@ -1,4 +1,8 @@
-import { CoachInput, SiteAddressInput } from '@ecdlink/graphql';
+import {
+  ApplicationUserInput,
+  CoachInput,
+  SiteAddressInput,
+} from '@ecdlink/graphql';
 import { CoachDto, SiteAddressDto } from '@ecdlink/core';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 
@@ -151,6 +155,18 @@ export const updateCoach = createAsyncThunk<
 
         coachModelInput.UserId = userAuth.id;
         coachModelInput.SiteAddressId = null;
+        coachModelInput.User = {
+          id: coach.user?.id,
+          email: coach.user?.email,
+          emailConfirmed: false,
+          phoneNumberConfirmed: false,
+          twoFactorEnabled: false,
+          dateOfBirth: new Date(),
+          isSouthAfricanCitizen: coach.user?.isSouthAfricanCitizen,
+          isActive: true,
+          lastSeen: new Date(),
+          verifiedByHomeAffairs: coach.user?.verifiedByHomeAffairs,
+        } as unknown as ApplicationUserInput;
 
         update = await new CoachService(userAuth?.auth_token).updateCoach(
           coachModelInput.Id,

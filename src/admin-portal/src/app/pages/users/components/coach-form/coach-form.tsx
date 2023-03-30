@@ -60,6 +60,7 @@ const CoachForm: React.FC<CoachFormProps> = ({ formKey, errors, register }) => {
                 ).map((x: FranchisorDto) => {
                   return {
                     key: x.userId,
+                    selected: true,
                     value: x.user.firstName + ' ' + x.user.surname,
                   };
                 })
