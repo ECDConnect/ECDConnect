@@ -53,15 +53,16 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   const [reportData, setReportData] = useState<MonthlyAttendanceRecord[]>();
   const [attendanceTracked, setAttendanceTracked] = useState<boolean>(false);
 
-  useEffect(() => {
-    const trackAttendance = async () => {
-      return await appDispatch(attendanceThunkActions.trackAttendanceSync({}));
-    };
-    trackAttendance().then(() => {
-      setAttendanceTracked(true);
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // useEffect(() => {
+  //   const trackAttendance = async () => {
+  //     return await appDispatch(attendanceThunkActions.trackAttendanceSync({}));
+  //   };
+  //   trackAttendance().then(() => {
+  //     setAttendanceTracked(true);
+  //   });
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, []);
+
   const today = new Date();
 
   useEffect(() => {
@@ -76,7 +77,7 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
 
     const firstDayOfYear = addDays(firstDay, 1);
 
-    if (attendanceTracked) {
+    if (!attendanceTracked) {
       new AttendanceService(authUser?.auth_token ?? '')
         .getMonthlyAttendanceReport(
           authUser?.id ?? '',
@@ -89,7 +90,7 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
         });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [classroom, attendanceTracked]);
+  }, [classroom]);
 
   useEffect(() => {
     if (!reportData) return;

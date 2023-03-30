@@ -18,4 +18,5 @@ export interface AttendanceListProps extends ComponentBaseProps {
   attendanceDate?: Date;
   onSubmitSuccess: (attendanceSuccessList: AttendanceResult) => void;
   editAttendanceRegisterVisible?: boolean;
+  classroomgroupId?: string;
 }
