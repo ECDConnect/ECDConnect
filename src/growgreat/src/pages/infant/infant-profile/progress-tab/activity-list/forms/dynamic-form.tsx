@@ -224,14 +224,14 @@ export const DynamicForm = ({
 
   // TODO: sync visit form
   useLayoutEffect(() => {
-    if (completedVisits && status === ThunkActionStatuses.Fulfilled) {
+    if (completedVisits) {
       appDispatch(
         visitThunkActions.getCompletedVisitsForVisitId({
           visitId: MOCKED_VISIT_ID,
         })
       );
     }
-  }, [MOCKED_VISIT_ID, appDispatch, completedVisits, status]);
+  }, [MOCKED_VISIT_ID, appDispatch, completedVisits]);
 
   const renderContent = useMemo(() => {
     if (!steps) return;
