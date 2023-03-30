@@ -5,6 +5,7 @@ export const GetAllCoach = gql`
     GetAllCoach {
       id
       userId
+      franchisorId
       user {
         firstName
         surname
@@ -53,6 +54,7 @@ export const GetCoachById = gql`
         postalCode
         ward
       }
+      franchisorId
     }
   }
 `;
