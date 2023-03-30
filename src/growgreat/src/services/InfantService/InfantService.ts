@@ -25,6 +25,10 @@ class InfantService {
             caregiver {
               firstName
               surname
+              relation {
+                id
+                description
+              }
             }
             user {
               dateOfBirth

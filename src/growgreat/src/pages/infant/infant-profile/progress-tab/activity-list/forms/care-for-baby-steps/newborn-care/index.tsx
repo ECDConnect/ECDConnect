@@ -12,7 +12,10 @@ export const NewbornCareStep = ({
   setIsTip,
   setEnableButton,
 }: DynamicFormProps) => {
-  const name = useMemo(() => infant?.user?.firstName || '', [infant]);
+  const caregiverName = useMemo(
+    () => infant?.caregiver?.firstName || '',
+    [infant?.caregiver?.firstName]
+  );
 
   const sectionName = 'Newborn care';
   // TODO: add integration
@@ -25,7 +28,7 @@ export const NewbornCareStep = ({
   if (isTipPage) {
     return (
       <HealthPromotion
-        title={`Discuss with ${name}`}
+        title={`Discuss with ${caregiverName}`}
         subTitle={sectionName}
         section={sectionName}
         onClose={() => setIsTip && setIsTip(false)}
