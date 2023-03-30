@@ -165,11 +165,6 @@ export default function MultiRouteWrapper() {
         showProgress
         showSkipButton
         disableOverlayClose
-        styles={{
-          overlay: {
-            pointerEvents: 'none',
-          }
-        }}
       />
     </div>
   );
