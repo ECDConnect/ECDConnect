@@ -138,7 +138,6 @@ export const WalkthroughTutorial = ({
               }
               item={attendanceItem2}
               onBadgeClick={(currentAttendanceItem: AttendanceListDataItem) => {
-                console.log(currentAttendanceItem)
                 updateItemAttendance(currentAttendanceItem);
                 setState({ enableButton: true });
               }}
