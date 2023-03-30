@@ -23,6 +23,7 @@ import { getInfantVisitsSelector } from '@/store/infant/infant.selectors';
 import { referralThunkActions } from '@/store/referral';
 import { ReferralActions } from '@/store/referral/referral.actions';
 import { RootState, ThunkActionStatuses } from '@/store/types';
+import { GrowthMonitoring } from './pillar-1-steps';
 import { getCompletedVisitsByVisitIdSelector } from '@/store/visit/visit.selectors';
 
 export interface Question {
@@ -48,6 +49,7 @@ export interface DynamicFormProps {
   isTipPage?: boolean;
   steps?: any[]; // TODO: add type
   sectionQuestions?: SectionQuestions[];
+  growthMonitoring?: GrowthMonitoring;
   setIsTip?: (value: boolean) => void;
   setSectionQuestions?: (value?: SectionQuestions[]) => void;
   setReferralsInput?: (value?: VisitDataStatusFilterInput[]) => void;
@@ -55,6 +57,7 @@ export interface DynamicFormProps {
   onNextStep?: () => void;
   onPreviousStep?: () => void;
   onClose?: () => void;
+  setGrowthMonitoring?: (value: GrowthMonitoring) => void;
 }
 
 export const DynamicForm = ({
@@ -73,6 +76,7 @@ export const DynamicForm = ({
     useState<SectionQuestions[]>();
   const [referralsInput, setReferralsInput] =
     useState<VisitDataStatusFilterInput[]>();
+  const [growthMonitoring, setGrowthMonitoring] = useState<GrowthMonitoring>();
 
   const { isLoading } = useThunkFetchCall(
     'visits',
@@ -160,6 +164,10 @@ export const DynamicForm = ({
     []
   );
 
+  const handleGrowthMonitoring = useCallback((value: GrowthMonitoring) => {
+    setGrowthMonitoring?.((prevState) => ({ ...prevState, ...value }));
+  }, []);
+
   const handleOnNext = useCallback(() => {
     setIsEnableButton(false);
     onNextStep?.();
@@ -235,8 +243,10 @@ export const DynamicForm = ({
         infant={infant}
         isTipPage={isTipPage}
         setIsTip={setIsTip}
+        growthMonitoring={growthMonitoring}
         sectionQuestions={sectionQuestions}
         setSectionQuestions={handleSetQuestions}
+        setGrowthMonitoring={handleGrowthMonitoring}
         setReferralsInput={handleSetReferrals}
         setEnableButton={setIsEnableButton}
         onNextStep={onNextStep}
@@ -244,6 +254,8 @@ export const DynamicForm = ({
     );
   }, [
     currentStep,
+    growthMonitoring,
+    handleGrowthMonitoring,
     handleSetQuestions,
     handleSetReferrals,
     infant,

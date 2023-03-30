@@ -1,7 +1,8 @@
 import { Header } from '@/pages/infant/infant-profile/components';
 import P1 from '@/assets/pillar/p1.svg';
-import { Alert, Divider, Typography } from '@ecdlink/ui';
+import { Alert, Colours, Divider, renderIcon, Typography } from '@ecdlink/ui';
 import {
+  Fragment,
   useCallback,
   useEffect,
   useLayoutEffect,
@@ -12,7 +13,7 @@ import { DynamicFormProps } from '../../../dynamic-form';
 import { ReactComponent as Polly } from '@/assets/momImageSvg.svg';
 import { SuccessCard } from '@/components/success-card/success-card';
 import { ReactComponent as CelebrateIcon } from '@/assets/celebrateIcon.svg';
-import { Chart, WeightOrHeightForAgeProps } from './chart';
+import { Chart, DataSetType, WeightOrHeightForAgeProps } from './chart';
 
 import {
   weightAndLengthFormQuestions,
@@ -49,7 +50,12 @@ import {
 import { useSelector } from 'react-redux';
 import { getGrowthDataForInfantSelector } from '@/store/visit/visit.selectors';
 import { VisitData } from '@ecdlink/graphql';
-import { fillInMissingNumbers } from './data/utils/utils';
+import {
+  fillInMissingNumbers,
+  findClosestWeight,
+  findLastIndex,
+} from './data/utils/utils';
+import { GrowthMonitoring } from '../..';
 
 interface GrowthStatus {
   length: VisitData[];
@@ -60,31 +66,55 @@ const Card = ({
   value,
   title,
   subTitle,
+  status,
 }: {
   value: string;
   title: string;
   subTitle: string;
-}) => (
-  <div className="bg-successBg flex w-full flex-col items-center justify-center rounded-xl p-4">
-    <Typography type="h4" color="textDark" text={title} />
-    <Typography
-      type="body"
-      color="successMain"
-      className="my-3 text-4xl font-bold"
-      text={value}
-    />
-    <Typography
-      type="body"
-      color="textMid"
-      className="text-xs font-bold"
-      text={subTitle}
-    />
-  </div>
-);
+  status: DataSetType;
+}) => {
+  const getColor = (): { bg: Colours; main: Colours } => {
+    switch (status) {
+      case 'SD2':
+        return { bg: 'alertBg', main: 'alertMain' };
+      case 'SD2neg':
+        return { bg: 'alertBg', main: 'alertMain' };
+      case 'SD3neg':
+        return { bg: 'errorBg', main: 'errorMain' };
+      case 'SD3':
+        return { bg: 'errorBg', main: 'errorMain' };
+      default:
+        return { bg: 'successBg', main: 'successMain' };
+    }
+  };
+
+  return (
+    <div
+      className={`bg-${
+        getColor().bg
+      } flex w-full flex-col items-center justify-center rounded-xl p-4`}
+    >
+      <Typography type="h4" color="textDark" text={title} />
+      <Typography
+        type="body"
+        color={getColor().main}
+        className="my-3 text-4xl font-bold"
+        text={value}
+      />
+      <Typography
+        type="body"
+        color="textMid"
+        className="text-xs font-bold"
+        text={subTitle}
+      />
+    </div>
+  );
+};
 
 export const WeightAndLengthResultStep = ({
   infant,
   sectionQuestions,
+  setGrowthMonitoring,
   setEnableButton,
 }: DynamicFormProps) => {
   const [weightAxios, setWeightAxios] = useState<WeightOrHeightForAgeProps>();
@@ -170,6 +200,149 @@ export const WeightAndLengthResultStep = ({
       ),
     [answers]
   );
+
+  const weightAlertResult = findClosestWeight(
+    weightAxios,
+    weight,
+    findLastIndex(weightResult)
+  )[0] as DataSetType;
+  const lengthAlertResult = findClosestWeight(
+    lengthAxios,
+    length,
+    findLastIndex(lengthResult)
+  )[0] as DataSetType;
+
+  const weightMonitoring = useMemo((): GrowthMonitoring['weight'] => {
+    switch (weightAlertResult) {
+      case 'SD2':
+        return { value: 'overweight', statusType: 'warning' };
+      case 'SD3':
+        return { value: 'obese', statusType: 'warning' };
+      case 'SD2neg':
+        return { value: 'underweight', statusType: 'warning' };
+      case 'SD3neg':
+        return { value: 'severely underweight', statusType: 'error' };
+      default:
+        return { value: 'normal', statusType: 'success' };
+    }
+  }, [weightAlertResult]);
+
+  const lengthMonitoring = useMemo((): GrowthMonitoring['length'] => {
+    switch (lengthAlertResult) {
+      case 'SD2neg':
+        return { value: 'stunted', statusType: 'warning' };
+      case 'SD3neg':
+        return { value: 'severely stunted', statusType: 'error' };
+      default:
+        return { value: 'normal', statusType: 'success' };
+    }
+  }, [lengthAlertResult]);
+
+  const WeightAlert = useCallback(() => {
+    let WeightAlert = <Fragment />;
+
+    switch (weightAlertResult) {
+      case 'SD2':
+        WeightAlert = (
+          <Alert
+            type="warning"
+            title={`${name} is overweight.`}
+            customIcon={
+              <div className="rounded-full">
+                {renderIcon('ExclamationIcon', 'text-alertMain w-14 h-14')}
+              </div>
+            }
+          />
+        );
+        break;
+      case 'SD3':
+        WeightAlert = (
+          <Alert
+            type="warning"
+            title={`${name} is obese.`}
+            customIcon={
+              <div className="rounded-full">
+                {renderIcon('ExclamationIcon', 'text-alertMain w-14 h-14')}
+              </div>
+            }
+          />
+        );
+        break;
+      case 'SD2neg':
+        WeightAlert = (
+          <Alert
+            type="warning"
+            title={`${name} is underweight.`}
+            customIcon={
+              <div className="rounded-full">
+                {renderIcon('ExclamationIcon', 'text-alertMain w-14 h-14')}
+              </div>
+            }
+          />
+        );
+        break;
+      case 'SD3neg':
+        WeightAlert = (
+          <Alert
+            type="error"
+            title={`Refer ${name} to the clinic urgently.`}
+            list={[`${name} is severely underweight for their age.`]}
+            customIcon={
+              <div>
+                {renderIcon(
+                  'ExclamationCircleIcon',
+                  'w-14 h-14 text-errorMain'
+                )}
+              </div>
+            }
+          />
+        );
+        break;
+      default:
+        break;
+    }
+    return WeightAlert;
+  }, [name, weightAlertResult]);
+
+  const LengthAlert = useCallback(() => {
+    let LengthAlert = <Fragment />;
+
+    switch (lengthAlertResult) {
+      case 'SD2neg':
+        LengthAlert = (
+          <Alert
+            type="warning"
+            title={`${name} is stunted.`}
+            customIcon={
+              <div className="rounded-full">
+                {renderIcon('ExclamationIcon', 'text-alertMain w-14 h-14')}
+              </div>
+            }
+          />
+        );
+        break;
+      case 'SD3neg':
+        LengthAlert = (
+          <Alert
+            type="error"
+            title={`Refer ${name} to the clinic urgently.`}
+            list={[`${name} is severely stunted.`]}
+            customIcon={
+              <div>
+                {renderIcon(
+                  'ExclamationCircleIcon',
+                  'w-14 h-14 text-errorMain'
+                )}
+              </div>
+            }
+          />
+        );
+        break;
+      default:
+        break;
+    }
+    return LengthAlert;
+  }, [lengthAlertResult, name]);
 
   const {
     lengthPerDay,
@@ -450,12 +623,27 @@ export const WeightAndLengthResultStep = ({
     infant?.user?.dateOfBirth,
   ]);
 
+  useEffect(() => {
+    setGrowthMonitoring?.({
+      weight: weightMonitoring,
+      length: lengthMonitoring,
+    });
+  }, [lengthMonitoring, setGrowthMonitoring, weightMonitoring]);
+
   useLayoutEffect(() => {
     setChartData();
   }, [setChartData]);
 
   const renderCard = useMemo(() => {
-    // TODO: add integration
+    if (weightAlertResult !== 'median' || lengthAlertResult !== 'median') {
+      return (
+        <>
+          <WeightAlert />
+          <LengthAlert />
+        </>
+      );
+    }
+
     return (
       <SuccessCard
         text={`${name} is growing well! Great job ${caregiverName}.`}
@@ -463,7 +651,14 @@ export const WeightAndLengthResultStep = ({
         customIcon={<CelebrateIcon className="h-14	w-14" />}
       />
     );
-  }, [caregiverName, name]);
+  }, [
+    LengthAlert,
+    WeightAlert,
+    caregiverName,
+    lengthAlertResult,
+    name,
+    weightAlertResult,
+  ]);
 
   useEffect(() => {
     setEnableButton && setEnableButton(true);
@@ -491,8 +686,18 @@ export const WeightAndLengthResultStep = ({
         />
         {renderCard}
         <div className="flex gap-2">
-          <Card title="Weight" value={String(weight)} subTitle="KG" />
-          <Card title="Length" value={String(length)} subTitle="CM" />
+          <Card
+            status={weightAlertResult}
+            title="Weight"
+            value={String(weight)}
+            subTitle="KG"
+          />
+          <Card
+            status={lengthAlertResult}
+            title="Length"
+            value={String(length)}
+            subTitle="CM"
+          />
         </div>
         <Typography type="h3" color="textDark" text="Weight for age (kg)" />
         <Chart
