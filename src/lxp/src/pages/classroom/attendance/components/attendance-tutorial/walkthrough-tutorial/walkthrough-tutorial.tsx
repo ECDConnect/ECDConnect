@@ -23,8 +23,8 @@ export const WalkthroughTutorial = ({
   onClose,
 }: AttendanceTutorialProps) => {
   const { isOnline } = useOnlineStatus();
-  const tutorialCompleteClicks = 3;
-  const tutorialResetClicks = 4;
+  const tutorialCompleteClicks = 2;
+  const tutorialResetClicks = 3;
   const [tutorialProgressClicks, setTutorialProgressClicks] =
     useState<number>(0);
   const [attendanceItem, setAttendanceItem] = useState<AttendanceListDataItem>({
@@ -61,6 +61,8 @@ export const WalkthroughTutorial = ({
   useEffect(() => {
     const validateTutorial = () => {
       if (tutorialProgressClicks === tutorialCompleteClicks) {
+        
+
         setAttendanceItem({
           title: 'Amahle Khumalo',
           profileText: 'AM',
@@ -69,6 +71,8 @@ export const WalkthroughTutorial = ({
           avatarColor: getAvatarColor(),
         });
       } else if (tutorialProgressClicks === tutorialResetClicks) {
+  
+
         setAttendanceItem({
           title: 'Amahle Khumalo',
           profileText: 'AM',
@@ -90,10 +94,11 @@ export const WalkthroughTutorial = ({
 
   useSetState(() => {
     if (!tourActive) {
-      setState({ run: true, stepIndex: 1 });
+      setState({ run: true, stepIndex: 0 });
     }
   });
 
+ 
   return (
     <BannerWrapper
       size={'medium'}
@@ -119,20 +124,11 @@ export const WalkthroughTutorial = ({
           <AttendanceListItem
             className={'bg-successBg mb-1'}
             item={attendanceItem}
-            onBadgeClick={(currentAttendanceItem: AttendanceListDataItem) =>
-              updateItemAttendance(currentAttendanceItem)
-            }
+            walkthrough={true}
           />
 
           <div
             id="attendance-list-alone"
-            style={{
-              pointerEvents:
-                (attendanceStatus && tutorialProgressClicks === 0) ||
-                (!attendanceStatus && tutorialProgressClicks === 1)
-                  ? 'auto'
-                  : 'none',
-            }}
           >
             <AttendanceListItem
               className={
@@ -142,6 +138,7 @@ export const WalkthroughTutorial = ({
               }
               item={attendanceItem2}
               onBadgeClick={(currentAttendanceItem: AttendanceListDataItem) => {
+                console.log(currentAttendanceItem)
                 updateItemAttendance(currentAttendanceItem);
                 setState({ enableButton: true });
               }}
