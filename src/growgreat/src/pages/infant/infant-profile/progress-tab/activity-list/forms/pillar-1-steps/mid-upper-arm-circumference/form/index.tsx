@@ -7,6 +7,11 @@ import { ReactComponent as Polly } from '@/assets/momImageSvg.svg';
 import { activitiesColours } from '../../../../activities-list';
 import { replaceBraces } from '@ecdlink/core';
 
+export const muacFormSection =
+  'Growth monitoring (Mid-upper arm circumference)';
+
+export const muacQuestion = `What is {client}’s MUAC today?`;
+
 export const MidUpperArmCircumferenceFormStep = ({
   infant,
   setEnableButton,
@@ -16,25 +21,28 @@ export const MidUpperArmCircumferenceFormStep = ({
 
   const name = useMemo(() => infant?.user?.firstName || '', [infant]);
 
-  const question = `What is {client}’s MUAC today?`;
-  const visitSection = 'Growth monitoring (Mid-upper arm circumference)';
-
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    setAnswer(e.target.value);
+    const value = e.target.value;
+    setAnswer(value);
     setSectionQuestions?.([
       {
-        visitSection,
+        visitSection: muacFormSection,
         questions: [
           {
-            question,
-            answer: e.target.value,
+            question: muacQuestion,
+            answer: value,
           },
         ],
       },
     ]);
-    setEnableButton && setEnableButton(true);
+
+    if (Number(value) <= 30) {
+      return setEnableButton?.(true);
+    }
+
+    return setEnableButton?.(false);
   };
 
   return (
@@ -61,7 +69,7 @@ export const MidUpperArmCircumferenceFormStep = ({
         <Typography
           type="h4"
           color="textDark"
-          text={replaceBraces(question, name)}
+          text={replaceBraces(muacQuestion, name)}
         />
         <div className="mb-4 flex flex-row items-center gap-1">
           <FormInput
@@ -73,6 +81,13 @@ export const MidUpperArmCircumferenceFormStep = ({
           ></FormInput>
           <Typography type="body" color="textDark" text="cm" className="mt-2" />
         </div>
+        {Number(answer) > 30 && (
+          <Alert
+            className="mb-4"
+            type="error"
+            title="Please enter a MUAC measurement less than 30cm"
+          />
+        )}
         <Alert type="info" title="MUAC helps identify malnutrition" />
       </div>
     </>

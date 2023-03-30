@@ -22,6 +22,9 @@ import { useSelector } from 'react-redux';
 import { getInfantVisitsSelector } from '@/store/infant/infant.selectors';
 import { referralThunkActions } from '@/store/referral';
 import { ReferralActions } from '@/store/referral/referral.actions';
+import { GrowthMonitoring } from './pillar-1-steps';
+import { RootState } from '@/store/types';
+import { getCompletedVisitsByVisitIdSelector } from '@/store/visit/visit.selectors';
 
 export interface Question {
   question: string;
@@ -46,6 +49,7 @@ export interface DynamicFormProps {
   isTipPage?: boolean;
   steps?: any[]; // TODO: add type
   sectionQuestions?: SectionQuestions[];
+  growthMonitoring?: GrowthMonitoring;
   setIsTip?: (value: boolean) => void;
   setSectionQuestions?: (value?: SectionQuestions[]) => void;
   setReferralsInput?: (value?: VisitDataStatusFilterInput[]) => void;
@@ -53,6 +57,7 @@ export interface DynamicFormProps {
   onNextStep?: () => void;
   onPreviousStep?: () => void;
   onClose?: () => void;
+  setGrowthMonitoring?: (value: GrowthMonitoring) => void;
 }
 
 export const DynamicForm = ({
@@ -71,6 +76,7 @@ export const DynamicForm = ({
     useState<SectionQuestions[]>();
   const [referralsInput, setReferralsInput] =
     useState<VisitDataStatusFilterInput[]>();
+  const [growthMonitoring, setGrowthMonitoring] = useState<GrowthMonitoring>();
 
   const { isLoading } = useThunkFetchCall(
     'visits',
@@ -87,6 +93,10 @@ export const DynamicForm = ({
   const visits = useSelector(getInfantVisitsSelector);
   const MOCKED_VISIT_ID = visits[0]?.id;
   /* '454686a9-2142-4061-aa47-4e89d46110b9' */
+
+  const completedVisits = useSelector((state: RootState) =>
+    getCompletedVisitsByVisitIdSelector(state, MOCKED_VISIT_ID)
+  )?.visits;
 
   const { successDialog } = useRequestResponseDialog();
 
@@ -152,6 +162,10 @@ export const DynamicForm = ({
     []
   );
 
+  const handleGrowthMonitoring = useCallback((value: GrowthMonitoring) => {
+    setGrowthMonitoring?.((prevState) => ({ ...prevState, ...value }));
+  }, []);
+
   const handleOnNext = useCallback(() => {
     setIsEnableButton(false);
     onNextStep?.();
@@ -207,7 +221,15 @@ export const DynamicForm = ({
   ]);
 
   // TODO: sync visit form
-  useLayoutEffect(() => {}, []);
+  useLayoutEffect(() => {
+    if (completedVisits) {
+      appDispatch(
+        visitThunkActions.getCompletedVisitsForVisitId({
+          visitId: MOCKED_VISIT_ID,
+        })
+      );
+    }
+  }, [MOCKED_VISIT_ID, appDispatch, completedVisits]);
 
   const renderContent = useMemo(() => {
     if (!steps) return;
@@ -219,8 +241,10 @@ export const DynamicForm = ({
         infant={infant}
         isTipPage={isTipPage}
         setIsTip={setIsTip}
+        growthMonitoring={growthMonitoring}
         sectionQuestions={sectionQuestions}
         setSectionQuestions={handleSetQuestions}
+        setGrowthMonitoring={handleGrowthMonitoring}
         setReferralsInput={handleSetReferrals}
         setEnableButton={setIsEnableButton}
         onNextStep={onNextStep}
@@ -228,6 +252,8 @@ export const DynamicForm = ({
     );
   }, [
     currentStep,
+    growthMonitoring,
+    handleGrowthMonitoring,
     handleSetQuestions,
     handleSetReferrals,
     infant,

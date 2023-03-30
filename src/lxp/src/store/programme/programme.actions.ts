@@ -107,8 +107,7 @@ export const upsertProgrammes = createAsyncThunk<
 
           const input: ProgrammeInput = {
             Id: programme.id,
-            ClassroomId:
-              classroom?.classroomId || programme.classroomId || classroom?.id,
+            ClassroomId: programme.classroomId || classroom?.id,
             ClassroomGroupId:
               programme?.classroomGroupId ?? classroomGroups?.at(0)?.id,
             Name: programme.name,

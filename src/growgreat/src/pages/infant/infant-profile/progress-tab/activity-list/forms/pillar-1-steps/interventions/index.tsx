@@ -7,27 +7,73 @@ import {
   renderIcon,
   Typography,
 } from '@ecdlink/ui';
-import { useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { DynamicFormProps } from '../../dynamic-form';
+import { capitalizeFirstLetter } from '@ecdlink/core';
 
 export const InterventionsStep = ({
   infant,
+  growthMonitoring,
   setEnableButton,
 }: DynamicFormProps) => {
   const caregiverName = useMemo(
     () => infant?.caregiver?.firstName || '',
     [infant?.caregiver?.firstName]
   );
+  const name = useMemo(
+    () => infant?.user?.firstName || '',
+    [infant?.user?.firstName]
+  );
+
+  const items = useMemo(
+    () => growthMonitoring && Object.keys(growthMonitoring),
+    [growthMonitoring]
+  );
+
+  const getStatusIcon = useCallback((statusType: AlertSeverityType) => {
+    switch (statusType) {
+      case 'error':
+        return 'ExclamationIcon';
+      case 'warning':
+        return 'ExclamationCircleIcon';
+      default:
+        return 'CheckCircleIcon';
+    }
+  }, []);
 
   const renderInfoContent = useMemo(() => {
-    // TODO: add rules (G5.3.19)
+    const error = items?.some(
+      (item) => growthMonitoring?.[item].statusType === 'error'
+    );
+    const warning = items?.some(
+      (item) => growthMonitoring?.[item].statusType === 'warning'
+    );
+
+    if (error) {
+      return [
+        'Urgently refer to the nearest clinic.',
+        'Follow up with the family in a few days.',
+      ];
+    }
+
+    if (warning) {
+      return [
+        'Refer to clinic for nutrition support',
+        'Refer to social services for food insecurity support',
+        `Make sure ${name} is getting child support grant (if eligible)`,
+        'Check Vitamin A. deworming and immunizations up to date',
+        'Discuss nutrition messages on page 4-7 in Road to Health book',
+        'Continue to visit and support the family',
+      ];
+    }
+
     return [
       `Encourage ${caregiverName} to keep doing what they're doing`,
       'Discuss nutrition messages on page 4-7 in Road to Health book',
       'Continue to growth monitor',
       'Continue to visit and support the family',
     ];
-  }, [caregiverName]);
+  }, [caregiverName, growthMonitoring, items, name]);
 
   const renderStatus = useMemo((): {
     type: string;
@@ -35,31 +81,19 @@ export const InterventionsStep = ({
     status: string;
     statusType: AlertSeverityType;
   }[] => {
-    // TODO: add rules (G5.3.19)
-    return [
-      {
-        type: 'Weight',
-        icon: 'CheckCircleIcon',
-        statusType: 'success',
-        status: 'normal',
-      },
-      {
-        type: 'Length',
-        icon: 'CheckCircleIcon',
-        statusType: 'success',
-        status: 'normal',
-      },
-      {
-        type: 'MUAC',
-        icon: 'CheckCircleIcon',
-        statusType: 'success',
-        status: 'normal',
-      },
-    ];
-  }, []);
+    return items?.length
+      ? items.map((item) => ({
+          type:
+            item === 'muac' ? item.toUpperCase() : capitalizeFirstLetter(item),
+          icon: getStatusIcon(growthMonitoring?.[item].statusType),
+          statusType: growthMonitoring?.[item].statusType,
+          status: growthMonitoring?.[item].value,
+        }))
+      : [];
+  }, [getStatusIcon, growthMonitoring, items]);
 
   useEffect(() => {
-    setEnableButton && setEnableButton(true);
+    setEnableButton?.(true);
   }, [setEnableButton]);
 
   return (

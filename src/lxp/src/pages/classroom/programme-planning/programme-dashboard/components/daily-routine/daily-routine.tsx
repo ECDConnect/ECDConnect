@@ -13,8 +13,6 @@ import {
   getRoutineItemType,
 } from '@utils/classroom/programme-planning/programmes.utils';
 import { useHistory } from 'react-router';
-import { ProgrammePlanningHeader } from '../../../components/programme-planning-header/programme-planning-header';
-import { ProgrammePlanningRoutineListItem } from '../../../components/programme-planning-routine-list-item/programme-planning-routine-list-item';
 import { DailyRoutineProps } from './daily-routine.types';
 import { useSelector } from 'react-redux';
 import { programmeRoutineSelectors } from '@store/content/programme-routine';
@@ -46,9 +44,8 @@ import { programmeThemeSelectors } from '@/store/content/programme-theme';
 export const DailyRoutine: React.FC<DailyRoutineProps> = ({
   programme,
   currentDailyProgramme,
-  onChangeAddDay,
-  onChangeSubDay,
-  setNewCurrentDailyProgrammeDate,
+  setSelectedDate,
+  selectedDate,
 }) => {
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
@@ -319,9 +316,8 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
         }
         totalWeeks={programmeWeeks.length}
         chosedTheme={chosedTheme}
-        onChangeAddDay={onChangeAddDay}
-        onChangeSubDay={onChangeSubDay}
-        setNewCurrentDailyProgrammeDate={setNewCurrentDailyProgrammeDate}
+        setSelectedDate={setSelectedDate}
+        selectedDate={selectedDate}
       />
 
       <div className={'items-centers flex w-full flex-row p-4'}>
