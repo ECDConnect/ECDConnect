@@ -196,6 +196,11 @@ export const DevelopmentalScreeningWeeksStep = ({
           color="textDark"
         />
         <Divider dividerType="dashed" />
+        <Typography
+          type="h3"
+          text={`Check what ${name} can do`}
+          color="textDark"
+        />
         {questions.map((item, index) => {
           if (index === noteQuestionIndex) return null;
 

@@ -12,7 +12,14 @@ import { getMonthName } from '@utils/classroom/attendance/track-attendance-utils
 import * as styles from './attendance-monthly-report.styles';
 import { MonthlyAttendanceReport } from './attendance-report';
 import { AttendanceSummary } from '@models/classroom/attendance/AttendanceSummary';
-import { addDays, getYear, startOfMonth, endOfMonth, parse, add } from 'date-fns';
+import {
+  addDays,
+  getYear,
+  startOfMonth,
+  endOfMonth,
+  parse,
+  add,
+} from 'date-fns';
 import { useSelector } from 'react-redux';
 import { authSelectors } from '@/store/auth';
 import { ClassRoomChildAttendanceMonthlyReportModel } from '@ecdlink/core';
@@ -43,7 +50,7 @@ export const AttendanceMonthlyReport: React.FC<
     const monthNumber = parse(monthName, 'MMMM', new Date()).getMonth() + 1;
     // Get the start and end date of the month
     const startDate = startOfMonth(new Date(year, monthNumber - 1, 1));
-    
+
     const endDate = endOfMonth(new Date(year, monthNumber - 1, 1));
 
     return { startDate, endDate };
@@ -64,7 +71,7 @@ export const AttendanceMonthlyReport: React.FC<
           setReportData(data);
         });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [viewReportDate]);
 
   return (

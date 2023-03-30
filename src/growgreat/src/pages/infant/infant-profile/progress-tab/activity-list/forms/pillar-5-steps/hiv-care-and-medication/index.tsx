@@ -22,7 +22,7 @@ export const HIVCareAndMedicationStep = ({
     [infant?.caregiver?.firstName]
   );
 
-  const visitSection = 'Child documentation';
+  const visitSection = 'HIV care & medication';
 
   const options = [
     { text: 'Yes', value: true },

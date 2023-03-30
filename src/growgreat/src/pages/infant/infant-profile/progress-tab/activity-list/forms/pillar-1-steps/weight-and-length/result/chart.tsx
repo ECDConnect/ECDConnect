@@ -10,6 +10,7 @@ import {
   ChartData,
   ChartOptions,
   Filler,
+  TooltipItem,
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 
@@ -39,6 +40,8 @@ export interface WeightOrHeightForAgeProps {
   SD2neg: WeightOrHeightForAge;
 }
 
+export type DataSetType = keyof WeightOrHeightForAgeProps;
+
 const colours = {
   severely: { primary: '#E20000', secondary: 'rgba(226, 0, 0, 0.05)' },
   underweight: { primary: '#FF7A00', secondary: 'rgba(255, 122, 0, 0.15)' },
@@ -49,10 +52,14 @@ export const Chart = ({
   data: chartData,
   type,
   suffix,
+  result,
+  infantName,
 }: {
+  infantName: string;
   data: WeightOrHeightForAgeProps;
   type: 'weight' | 'length';
   suffix: string;
+  result: (number | undefined)[];
 }) => {
   const getLabel = (id: string) => {
     switch (id) {
@@ -71,9 +78,37 @@ export const Chart = ({
 
   const getData = (
     type: WeightOrHeightForAgeProps
-  ): ChartData<'line', number[], number> => ({
+  ): ChartData<'line', (number | undefined)[], number> => ({
     labels: type?.date,
     datasets: [
+      {
+        label: `hide`,
+        data: result,
+        borderColor: '#1D67D5',
+        backgroundColor: '#1D67D5',
+        borderWidth: 4,
+        pointRadius: (context) => {
+          const lastIndex = result.reduce((lastIndex, element, index) => {
+            if (typeof element !== 'undefined') {
+              return index;
+            }
+            return lastIndex;
+          }, -1);
+
+          if (context.dataIndex === lastIndex) {
+            return 6; // larger point radius for last data point
+          } else {
+            return 0; // smaller point radius for all other data points
+          }
+        },
+        pointBackgroundColor: 'white',
+      },
+      {
+        label: `${infantName}'s growth`,
+        data: result,
+        backgroundColor: '#1D67D5',
+        pointRadius: 0,
+      },
       {
         label: 'hide',
         data: type?.SD2?.weight || type?.SD2.height || [],
@@ -182,7 +217,35 @@ export const Chart = ({
     },
     plugins: {
       tooltip: {
-        enabled: false,
+        backgroundColor: 'white',
+        titleColor: 'black',
+        bodyColor: 'black',
+        callbacks: {
+          title: function (tooltipItem: TooltipItem<'line'>[]) {
+            const label = Number(tooltipItem[0].label);
+
+            switch (suffix) {
+              case 'w':
+                return `${label} ${label > 1 ? 'weeks' : 'week'}`;
+              case 'm':
+                return `${label} ${label > 1 ? 'months' : 'month'}`;
+              case 'y':
+                return `${label} ${label > 1 ? 'years' : 'year'}`;
+              default:
+                return `${label} ${label > 1 ? 'days' : 'day'}`;
+            }
+          },
+          label: function (tooltipItem: TooltipItem<'line'>) {
+            if (tooltipItem.datasetIndex === 0) {
+              // display tooltip only for first dataset
+              return `${tooltipItem.formattedValue.toString()} ${
+                type === 'weight' ? 'kg' : 'cm'
+              }`;
+            } else {
+              return '';
+            }
+          },
+        },
       },
       legend: {
         labels: {

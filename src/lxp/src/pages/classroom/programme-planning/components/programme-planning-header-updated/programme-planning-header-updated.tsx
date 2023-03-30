@@ -1,28 +1,15 @@
-import { DateFormats } from '@/constants/Dates';
-import { getMonthName } from '@/utils/classroom/attendance/track-attendance-utils';
-import { getWeekdayValue } from '@/utils/practitioner/playgroups-utils';
 import {
-  StatusChip,
   Typography,
   classNames,
   Card,
-  Button,
   renderIcon,
   Dropdown,
 } from '@ecdlink/ui/';
-import {
-  add,
-  formatDuration,
-  formatISO,
-  getDate,
-  getISODay,
-  getMonth,
-  getYear,
-} from 'date-fns';
+import { getDate, getISODay, getMonth, getYear } from 'date-fns';
 import { ProgrammePlanningHeaderProps } from './programme-planning-header-updated.types';
 import { Weekdays } from '@/utils/practitioner/playgroups-utils';
 import { format } from 'date-fns';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { monthsList } from '@ecdlink/core';
 
 export const ProgrammePlanningHeaderUpdated: React.FC<
@@ -38,31 +25,30 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
   className,
   theme,
   chosedTheme,
-  onChangeAddDay,
-  onChangeSubDay,
-  setNewCurrentDailyProgrammeDate,
+  setSelectedDate,
+  selectedDate,
   weekSummary,
 }) => {
   function titleCase(string: string) {
     return string[0].toUpperCase() + string.slice(1).toLowerCase();
   }
   const [programmeChooseDate, setProgrammeChooseDate] = useState(subHeaderText);
-  const day = getDate(programmeChooseDate);
-  const weekNumber = getISODay(programmeChooseDate);
+  const day = getDate(selectedDate! || programmeChooseDate);
+  const weekNumber = getISODay(selectedDate! || programmeChooseDate);
   const dayName = titleCase(String(Weekdays[weekNumber]));
   const dailyProgramme =
     programmeChooseDate &&
     theme?.dailyProgrammes?.find((item) => {
       return (
         format(new Date(item?.dayDate), 'd MMM yyyy') ===
-        format(new Date(programmeChooseDate), 'd MMM yyyy')
+        format(new Date(selectedDate! || programmeChooseDate), 'd MMM yyyy')
       );
     });
   const [chooseDayIndex, setChooseDayIndex] = useState(dailyProgramme?.day);
   const disableAddDay = dailyProgramme?.day === theme?.dailyProgrammes.length;
   const disableSubDay = dailyProgramme?.day === 1;
   const [month, setMonth] = useState<string | undefined>();
-  const currentMonth = getMonth(programmeChooseDate);
+  const currentMonth = getMonth(selectedDate || programmeChooseDate);
   const currentYear = getYear(programmeChooseDate);
   const monthDropdownLabel = monthsList[currentMonth]?.label;
 
@@ -72,42 +58,29 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
     }
   }, [subHeaderText]);
 
-  useEffect(() => {
-    if (chooseDayIndex) {
-      const newDate = theme?.dailyProgrammes?.find((item) => {
-        return item?.day === chooseDayIndex;
-      });
-      setProgrammeChooseDate(new Date(newDate?.dayDate!));
-    }
-  }, [chooseDayIndex, theme?.dailyProgrammes]);
-
   const addDay = () => {
     if (dailyProgramme?.day !== theme?.dailyProgrammes.length) {
-      setChooseDayIndex(chooseDayIndex + 1);
-      setNewCurrentDailyProgrammeDate(programmeChooseDate);
-      addCurrentDay();
+      const updatedIndex = chooseDayIndex + 1;
+      setChooseDayIndex(updatedIndex);
+      const newDate = theme?.dailyProgrammes?.find((item) => {
+        return Number(item?.day) === updatedIndex;
+      });
+      setProgrammeChooseDate(new Date(newDate?.dayDate!));
+      setSelectedDate(new Date(newDate?.dayDate!));
     }
   };
 
   const subDay = () => {
     if (dailyProgramme?.day !== 1) {
-      setChooseDayIndex(chooseDayIndex - 1);
-      setNewCurrentDailyProgrammeDate(programmeChooseDate);
-      subCurrentDay();
+      const updatedIndex = chooseDayIndex - 1;
+      setChooseDayIndex(updatedIndex);
+      const newDate = theme?.dailyProgrammes?.find((item) => {
+        return Number(item?.day) === updatedIndex;
+      });
+      setProgrammeChooseDate(new Date(newDate?.dayDate!));
+      setSelectedDate(new Date(newDate?.dayDate!));
     }
   };
-
-  const addCurrentDay = useCallback(() => {
-    if (programmeChooseDate !== subHeaderText && onChangeAddDay) {
-      onChangeAddDay();
-    }
-  }, [onChangeAddDay, programmeChooseDate, subHeaderText]);
-
-  const subCurrentDay = useCallback(() => {
-    if (programmeChooseDate && onChangeSubDay) {
-      onChangeSubDay();
-    }
-  }, [onChangeSubDay, programmeChooseDate]);
 
   return (
     <div>

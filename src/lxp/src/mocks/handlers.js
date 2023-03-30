@@ -125,7 +125,7 @@ export const handlers = [
       ctx.status(200),
       ctx.data({
         getClassroomDetailsForPractitioner: {
-          classroomName: 'Angel Day Care Two',
+          name: 'Angel Day Care Two',
           principalName: 'Bryce Mbaadi',
         },
       })
