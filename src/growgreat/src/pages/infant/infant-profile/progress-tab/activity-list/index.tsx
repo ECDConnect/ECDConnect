@@ -39,6 +39,7 @@ import { DevelopmentalScreeningVisitSection } from './forms/pillar-2-steps/devel
 import { useDialog } from '@ecdlink/core';
 import { ReactComponent as PollyNeutral } from '@/assets/pollyNeutral.svg';
 import { Walkthrough } from './walkthrough';
+import { relationshipTypes } from '../../../components/mother-details/mother-details.types';
 
 export const INFANT_PROFILE_TABS = {
   VISITS: 0,
@@ -109,11 +110,25 @@ export const ActivityList: React.FC = () => {
   );
 
   const { completedForms, uncompletedForms, followUpForm } = useMemo(() => {
-    const completedActivities = activitiesList.filter((item) =>
-      completedVisits?.includes(item.title)
+    const motherType = relationshipTypes.find(
+      (item) => item.label === 'Mother'
+    );
+
+    const completedActivities = activitiesList.filter(
+      (item) =>
+        (completedVisits?.includes(item.title) &&
+          item.title !== 'Care for mom') ||
+        (completedVisits?.includes(item.title) &&
+          item.title === 'Care for mom' &&
+          infant?.caregiver?.relation?.description === motherType?.label)
     );
     const uncompletedActivities = activitiesList.filter(
-      (item) => !completedVisits?.includes(item.title)
+      (item) =>
+        (!completedVisits?.includes(item.title) &&
+          item.title !== 'Care for mom') ||
+        (!completedVisits?.includes(item.title) &&
+          item.title === 'Care for mom' &&
+          infant?.caregiver?.relation?.description === motherType?.label)
     );
 
     const completedForms = completedActivities.map(
@@ -169,7 +184,7 @@ export const ActivityList: React.FC = () => {
     ];
 
     return { uncompletedForms, completedForms, followUpForm };
-  }, [completedVisits]);
+  }, [completedVisits, infant?.caregiver?.relation?.description]);
 
   const goBack = useCallback(() => {
     if (isStartVisit) {
