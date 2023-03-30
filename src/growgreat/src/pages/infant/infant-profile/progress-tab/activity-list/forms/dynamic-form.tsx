@@ -7,7 +7,7 @@ import {
 } from 'react';
 import { Button } from '@ecdlink/ui';
 import { InfantDto, usePrevious } from '@ecdlink/core';
-import { useAppDispatch } from '@/store';
+import { useAppDispatch, useAppSelector } from '@/store';
 import {
   CmsVisitDataInputModelInput,
   CmsVisitSectionInput,
@@ -22,8 +22,8 @@ import { useSelector } from 'react-redux';
 import { getInfantVisitsSelector } from '@/store/infant/infant.selectors';
 import { referralThunkActions } from '@/store/referral';
 import { ReferralActions } from '@/store/referral/referral.actions';
+import { RootState, ThunkActionStatuses } from '@/store/types';
 import { GrowthMonitoring } from './pillar-1-steps';
-import { RootState } from '@/store/types';
 import { getCompletedVisitsByVisitIdSelector } from '@/store/visit/visit.selectors';
 
 export interface Question {
@@ -98,6 +98,8 @@ export const DynamicForm = ({
     getCompletedVisitsByVisitIdSelector(state, MOCKED_VISIT_ID)
   )?.visits;
 
+  const { status } = useAppSelector((state) => state.sync);
+
   const { successDialog } = useRequestResponseDialog();
 
   const appDispatch = useAppDispatch();
@@ -171,7 +173,7 @@ export const DynamicForm = ({
     onNextStep?.();
   }, [onNextStep]);
 
-  const onSubmit = useCallback(() => {
+  const onSubmit = useCallback(async () => {
     const sections = sectionQuestions?.map((item) => ({
       ...item,
       questions: item.questions.map((question) => ({
@@ -222,14 +224,14 @@ export const DynamicForm = ({
 
   // TODO: sync visit form
   useLayoutEffect(() => {
-    if (completedVisits) {
+    if (completedVisits && status === ThunkActionStatuses.Fulfilled) {
       appDispatch(
         visitThunkActions.getCompletedVisitsForVisitId({
           visitId: MOCKED_VISIT_ID,
         })
       );
     }
-  }, [MOCKED_VISIT_ID, appDispatch, completedVisits]);
+  }, [MOCKED_VISIT_ID, appDispatch, completedVisits, status]);
 
   const renderContent = useMemo(() => {
     if (!steps) return;
