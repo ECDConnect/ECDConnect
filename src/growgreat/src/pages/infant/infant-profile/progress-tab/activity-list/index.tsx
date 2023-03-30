@@ -184,7 +184,7 @@ export const ActivityList: React.FC = () => {
     ];
 
     return { uncompletedForms, completedForms, followUpForm };
-  }, [completedVisits]);
+  }, [completedVisits, infant?.caregiver?.relation?.description]);
 
   const goBack = useCallback(() => {
     if (isStartVisit) {
