@@ -9,12 +9,16 @@ import OtherFruits from '@/assets/pillar/pillar1/otherFruits.jpg';
 
 export const noneOption = 'None of the above';
 
-export const options = [
-  {
-    icon: <img src={Breast} alt="breastMilk" className="rounded-full" />,
-    title: 'Breast milk',
-    description: '',
-  },
+export const options = (isChild6Months: boolean) => [
+  ...(isChild6Months
+    ? [
+        {
+          icon: <img src={Breast} alt="breastMilk" className="rounded-full" />,
+          title: 'Breast milk',
+          description: '',
+        },
+      ]
+    : []),
   {
     icon: <img src={Starch} alt="starch" className="rounded-full" />,
     title: 'Starch',

@@ -28,6 +28,11 @@ input::-webkit-inner-spin-button {
   -webkit-appearance: none;
 }
 
+.react-joyride__spotlight{
+  pointer-events:inherit !important
+}
+div.react-joyride__overlay {pointer-events: none !important;}
+
 @layer utilities {
   .placeholder-fontWeight::placeholder {
     font-weight: 300;

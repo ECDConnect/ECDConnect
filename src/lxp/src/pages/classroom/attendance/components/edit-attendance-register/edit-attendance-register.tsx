@@ -13,6 +13,7 @@ export const EditAttendanceRegister = ({
   onBack,
   editAttendanceRegisterVisible,
   classroomName,
+  classroomgroupId
 }: EditAttendanceRegisterProps) => {
   const { isOnline } = useOnlineStatus();
 
@@ -40,6 +41,7 @@ export const EditAttendanceRegister = ({
           attendanceSubmitted(attendanceSuccessList)
         }
         editAttendanceRegisterVisible={editAttendanceRegisterVisible}
+        classroomgroupId={classroomgroupId}
       />
     </BannerWrapper>
   );

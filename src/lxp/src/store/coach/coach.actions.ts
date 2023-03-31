@@ -1,4 +1,8 @@
-import { CoachInput, SiteAddressInput } from '@ecdlink/graphql';
+import {
+  ApplicationUserInput,
+  CoachInput,
+  SiteAddressInput,
+} from '@ecdlink/graphql';
 import { CoachDto, SiteAddressDto } from '@ecdlink/core';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 
@@ -24,15 +28,15 @@ export const getCoachByUserId = createAsyncThunk<
         let coach: CoachDto | undefined;
 
         if (userAuth?.auth_token) {
-          coach = await new CoachService(userAuth?.auth_token).getCoachByUserId(
-            userAuth.id
-          );
+          coach = await new CoachService(
+            userAuth?.auth_token
+          ).getCoachByCoachId(userAuth.id);
         } else {
           return rejectWithValue('no access token, profile check required');
         }
 
         if (!coach) {
-          return rejectWithValue('Error getting coach');
+          return rejectWithValue('getCoachByUserId: Error getting coach');
         }
         return coach;
       } catch (err) {
@@ -69,7 +73,7 @@ export const getCoachByCoachId = createAsyncThunk<
           return rejectWithValue('no access token, profile check required');
         }
         if (!coach) {
-          return rejectWithValue('Error getting coach');
+          return rejectWithValue('getCoachByCoachId: Error getting coach');
         }
         return coach;
       } catch (err) {
@@ -151,6 +155,18 @@ export const updateCoach = createAsyncThunk<
 
         coachModelInput.UserId = userAuth.id;
         coachModelInput.SiteAddressId = null;
+        coachModelInput.User = {
+          id: coach.user?.id,
+          email: coach.user?.email,
+          emailConfirmed: false,
+          phoneNumberConfirmed: false,
+          twoFactorEnabled: false,
+          dateOfBirth: new Date(),
+          isSouthAfricanCitizen: coach.user?.isSouthAfricanCitizen,
+          isActive: true,
+          lastSeen: new Date(),
+          verifiedByHomeAffairs: coach.user?.verifiedByHomeAffairs,
+        } as unknown as ApplicationUserInput;
 
         update = await new CoachService(userAuth?.auth_token).updateCoach(
           coachModelInput.Id,

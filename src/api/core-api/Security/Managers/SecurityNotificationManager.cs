@@ -4,8 +4,12 @@ using ECDLink.Abstractrions.Notifications;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.Core.SystemSettings.SystemOptions;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.Security.Helpers;
 using ECDLink.Tenancy.Context;
+using HotChocolate;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using System;
 using System.Threading.Tasks;
 
@@ -15,11 +19,16 @@ namespace EcdLink.Api.CoreApi.Security.Managers
     {
         private INotificationProviderFactory<ApplicationUser> _notificationProviderFactory;
         private ISystemSetting<SecurityNotificationOptions> _options;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public SecurityNotificationManager(INotificationProviderFactory<ApplicationUser> notificationProviderFactory, ISystemSetting<SecurityNotificationOptions> optionAccessor)
+        public SecurityNotificationManager(
+            INotificationProviderFactory<ApplicationUser> notificationProviderFactory, 
+            ISystemSetting<SecurityNotificationOptions> optionAccessor,
+            UserManager<ApplicationUser> userManager)
         {
             _notificationProviderFactory = notificationProviderFactory;
             _options = optionAccessor;
+            _userManager = userManager;
         }
 
         public async Task SendAuthenticationCodeAsync(ApplicationUser user, string otp)
@@ -54,8 +63,10 @@ namespace EcdLink.Api.CoreApi.Security.Managers
               .SendMessageAsync();
         }
 
-        public async Task RequestVerifyEmailAsync(ApplicationUser user, Uri hostUrl,string token)
+        public async Task RequestVerifyEmailAsync(ApplicationUser user, Uri hostUrl)
         {
+            var token = await _userManager.GenerateChangeEmailTokenAsync(user, user.PendingEmail);
+
             var encodedToken = TokenHelper.EncodeToken(token);
             var defaultVerificationUrl = new Uri(hostUrl, "/api/authentication/" + TemplateTypeConstants.VerifyEmailAddress.ToString()).ToString();
             var verificationUrl = $"{_options?.Value?.VerifyEmailUrl ?? defaultVerificationUrl }";
