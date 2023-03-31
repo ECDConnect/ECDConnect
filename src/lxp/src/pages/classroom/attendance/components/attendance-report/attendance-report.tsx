@@ -81,7 +81,7 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
       new AttendanceService(authUser?.auth_token ?? '')
         .getMonthlyAttendanceReport(
           authUser?.id ?? '',
-          classroom?.classroomId || classroom?.id!,
+          classroom?.id!,
           firstDayOfYear,
           new Date(lastDayCurrentMonth)
         )
@@ -119,7 +119,7 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
         />
         <AttendanceMonthlyReport
           attendanceSummary={attendanceData}
-          classroomId={classroom?.classroomId || classroom?.id!}
+          classroomId={classroom?.id || classroom?.id!}
         />
         {!isOnline && <OfflineCard />}
       </div>

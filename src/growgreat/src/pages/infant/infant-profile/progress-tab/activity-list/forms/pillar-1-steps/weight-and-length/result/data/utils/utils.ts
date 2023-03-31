@@ -72,3 +72,67 @@ export const getDataPerWeek = (data: number[]) => {
 
   return getDataPerTime(data, daysPerWeek);
 };
+
+export function fillInMissingNumbers(
+  arr: (number | undefined)[]
+): (number | undefined)[] {
+  const numericIndices = arr
+    .map((value, index) => ({ value, index }))
+    .filter(({ value }) => typeof value === 'number')
+    .map(({ index }) => index);
+
+  numericIndices.slice(0, -1).forEach((startIndex, segmentIndex) => {
+    const endIndex = numericIndices[segmentIndex + 1];
+    const startValue = arr[startIndex] as number;
+    const endValue = arr[endIndex] as number;
+    const segmentLength = endIndex - startIndex;
+
+    const interpolatedValues = Array.from(
+      { length: segmentLength - 1 },
+      (_, valueIndex) => {
+        const alpha = (valueIndex + 1) / segmentLength;
+        return startValue + (endValue - startValue) * alpha;
+      }
+    );
+
+    arr.splice(startIndex + 1, segmentLength - 1, ...interpolatedValues);
+  });
+
+  return arr;
+}
+
+//TODO: add type
+export function findClosestWeight(datasets: any, input: number, index: number) {
+  if (!datasets) {
+    return [];
+  }
+  let result = {};
+  let minDiff = Infinity;
+  for (let key in datasets) {
+    if (
+      ((key === 'SD2' || key === 'SD3') &&
+        datasets[key].weight[index] <= input) ||
+      ((key === 'SD2neg' || key === 'SD3neg') &&
+        datasets[key].weight[index] >= input) ||
+      key === 'median'
+    ) {
+      if (datasets[key].hasOwnProperty('weight') && datasets[key].weight) {
+        let diff = Math.abs(datasets[key].weight[index] - input);
+        if (diff < minDiff) {
+          minDiff = diff;
+          result = { [key]: datasets[key] };
+        }
+      }
+    }
+  }
+  return Object.keys(result);
+}
+
+export function findLastIndex(array: (number | undefined)[]) {
+  for (let i = array.length - 1; i >= 0; i--) {
+    if (array[i] !== undefined) {
+      return i;
+    }
+  }
+  return -1;
+}

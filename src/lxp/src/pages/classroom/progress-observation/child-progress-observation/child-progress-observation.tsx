@@ -257,31 +257,41 @@ export const ChildProgressObservationPage: React.FC = () => {
               className={'ml-4 mt-2 mb-2'}
             />
           )}
-          {notStartedCategories.map((cat: ProgressTrackingCategoryDto) => {
-            return (
-              <ListItem
-                backgroundColor={'white'}
-                withPaddingX={true}
-                withPaddingY={true}
-                key={`not-started-${cat.id}`}
-                iconImageSrc={cat.imageUrl}
-                iconImageBackgroundColor={cat.color}
-                showIcon={true}
-                title={capitalizeFirstLetter(cat.name.toLowerCase())}
-                subTitle={capitalizeFirstLetter(cat.subTitle.toLowerCase())}
-                showChevronIcon
-                showDivider
-                dividerColor={'uiBg'}
-                dividerType={'solid'}
-                onButtonClick={() => {
-                  onCategoryNavigation(
-                    cat.id,
-                    ChildProgressObservationStatus.NotStarted
-                  );
-                }}
-              />
-            );
-          })}
+          {notStartedCategories &&
+            notStartedCategories.length > 0 &&
+            notStartedCategories.map((cat: ProgressTrackingCategoryDto) => {
+              return (
+                <ListItem
+                  backgroundColor={'white'}
+                  withPaddingX={true}
+                  withPaddingY={true}
+                  key={`not-started-${cat.id}`}
+                  iconImageSrc={cat.imageUrl}
+                  iconImageBackgroundColor={cat.color}
+                  showIcon={cat.imageUrl ? true : false}
+                  title={
+                    cat.name
+                      ? capitalizeFirstLetter(cat.name.toLowerCase())
+                      : ''
+                  }
+                  subTitle={
+                    cat.subTitle
+                      ? capitalizeFirstLetter(cat.subTitle.toLowerCase())
+                      : ''
+                  }
+                  showChevronIcon
+                  showDivider
+                  dividerColor={'uiBg'}
+                  dividerType={'solid'}
+                  onButtonClick={() => {
+                    onCategoryNavigation(
+                      cat.id,
+                      ChildProgressObservationStatus.NotStarted
+                    );
+                  }}
+                />
+              );
+            })}
           {isReturningUser && inProgressCategories.length > 0 && (
             <>
               <Typography

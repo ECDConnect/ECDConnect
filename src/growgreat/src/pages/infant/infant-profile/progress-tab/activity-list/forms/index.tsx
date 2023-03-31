@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
-import { useDialog } from '@ecdlink/core';
+import { getAgeInYearsMonthsAndDays, useDialog } from '@ecdlink/core';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { getInfantById } from '@/store/infant/infant.selectors';
 import { RootState } from '@/store/types';
@@ -28,6 +28,7 @@ import { getPreviousVisitInformationForInfantSelector } from '@/store/visit/visi
 import { dangerSignsVisitSection } from './care-for-mom-steps/danger-signs';
 import { dangerSignsVisitSectionForBaby } from './care-for-baby-steps/danger-signs';
 import { DevelopmentalScreeningVisitSection } from './pillar-2-steps/developmental-screening-weeks';
+import { getReferralsForInfantSelector } from '@/store/referral/referral.selectors';
 
 interface FormProps {
   onBack: () => void;
@@ -43,6 +44,29 @@ export const Form = ({ onBack }: FormProps) => {
 
   const previousVisit = useSelector(
     getPreviousVisitInformationForInfantSelector
+  );
+  const referralsForInfant = useSelector(getReferralsForInfantSelector);
+
+  const { isOnline } = useOnlineStatus();
+
+  const dialog = useDialog();
+
+  const location = useLocation();
+
+  const [, , , infantId] = location.pathname.split('/');
+
+  const infant = useSelector((state: RootState) =>
+    getInfantById(state, infantId)
+  );
+
+  const dateOfBirth = infant?.user?.dateOfBirth as string;
+
+  const { years: ageYears, months: ageMonths } =
+    getAgeInYearsMonthsAndDays(dateOfBirth);
+
+  const isChild6Months = useMemo(
+    () => !ageYears && ageMonths < 7,
+    [ageMonths, ageYears]
   );
 
   const isFollowUp = useCallback(
@@ -89,18 +113,6 @@ export const Form = ({ onBack }: FormProps) => {
 
   // TODO: add integration (G5.6.2)
   const isPillar4FollowUp = true;
-
-  const { isOnline } = useOnlineStatus();
-
-  const dialog = useDialog();
-
-  const location = useLocation();
-
-  const [, , , infantId] = location.pathname.split('/');
-
-  const infant = useSelector((state: RootState) =>
-    getInfantById(state, infantId)
-  );
 
   const handleOnClose = useCallback(() => {
     dialog({
@@ -169,7 +181,8 @@ export const Form = ({ onBack }: FormProps) => {
       case activitiesTypes.pillar1:
         return getPillar1Steps(
           nutritionAnswer,
-          isToSkipBreastfeedingIssuesRelevantItemsStep
+          isToSkipBreastfeedingIssuesRelevantItemsStep,
+          isChild6Months
         );
       case activitiesTypes.pillar2:
         return pillar2Steps(isDevelopmentalScreeningWeeksFollowUp);
@@ -180,16 +193,18 @@ export const Form = ({ onBack }: FormProps) => {
       case activitiesTypes.pillar5:
         return pillar5Steps;
       default:
-        return followUpSteps;
+        return followUpSteps(!!referralsForInfant?.length);
     }
   }, [
     activityName,
     isDangerSignsFollowUpForMom,
     isDangerSignsFollowUpForBaby,
+    nutritionAnswer,
+    isToSkipBreastfeedingIssuesRelevantItemsStep,
+    isChild6Months,
     isDevelopmentalScreeningWeeksFollowUp,
     isPillar4FollowUp,
-    isToSkipBreastfeedingIssuesRelevantItemsStep,
-    nutritionAnswer,
+    referralsForInfant?.length,
   ]);
 
   return (

@@ -15,4 +15,9 @@ export interface ProgrammePlanningHeaderProps extends ComponentBaseProps {
   showChips?: boolean;
   theme?: ProgrammeDto;
   chosedTheme?: ProgrammeThemeDto;
+  weekSummary?: boolean;
+  onChangeAddDay?: () => void;
+  onChangeSubDay?: () => void;
+  setSelectedDate?: any;
+  selectedDate?: Date;
 }

@@ -3,78 +3,138 @@ import P1 from '@/assets/pillar/p1.svg';
 import {
   Alert,
   AlertSeverityType,
-  FormInput,
   getColourByAlertSeverity,
   getShapeClassByAlertSeverity,
   renderIcon,
   Typography,
 } from '@ecdlink/ui';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { DynamicFormProps } from '../../../dynamic-form';
 import { ReactComponent as Polly } from '@/assets/momImageSvg.svg';
 import { SuccessCard } from '@/components/success-card/success-card';
 import { ReactComponent as CelebrateIcon } from '@/assets/celebrateIcon.svg';
+import { muacFormSection, muacQuestion } from '../form';
+import { useSelector } from 'react-redux';
+import { getGrowthDataForInfantSelector } from '@/store/visit/visit.selectors';
+import { GrowthMonitoring } from '../..';
 
-const mocked_data: {
+interface MUACData {
   date: string;
   muac: string;
   type: AlertSeverityType;
   actionTaken: string;
-}[] = [
-  {
-    date: '5 Apr 2022',
-    muac: '10.8 cm',
-    type: 'error',
-    actionTaken: 'Referred',
-  },
-  {
-    date: '1 Apr 2022',
-    muac: '12.2 cm',
-    type: 'warning',
-    actionTaken: 'Referred',
-  },
-  {
-    date: '10 May 2021',
-    muac: '12.5 cm',
-    type: 'success',
-    actionTaken: 'None',
-  },
-  {
-    date: '12 Jun 2021',
-    muac: '13 cm',
-    type: 'success',
-    actionTaken: 'None',
-  },
-  {
-    date: '1 Aug 2021',
-    muac: '14.8 cm',
-    type: 'success',
-    actionTaken: 'None',
-  },
-  {
-    date: '1 Jan 2021',
-    muac: '15 cm',
-    type: 'success',
-    actionTaken: 'None',
-  },
-];
+}
 
 export const MidUpperArmCircumferenceResultStep = ({
   infant,
+  sectionQuestions,
   setEnableButton,
+  setGrowthMonitoring,
 }: DynamicFormProps) => {
+  const muac = useMemo(
+    () =>
+      sectionQuestions?.find(
+        (section) => section.visitSection === muacFormSection
+      )?.questions?.[0]?.answer,
+    [sectionQuestions]
+  );
+
+  const getMuacType = (muac: number): AlertSeverityType => {
+    if (muac < 11.5) {
+      return 'error';
+    }
+
+    if (muac < 12.5) {
+      return 'warning';
+    }
+
+    return 'success';
+  };
+
+  const [MUACs, setMUACs] = useState<MUACData[]>([
+    {
+      actionTaken: Number(muac) < 12.5 ? 'Referred' : 'None',
+      date: new Date().toLocaleDateString('en-ZA', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      }),
+      muac: String(muac),
+      type: getMuacType(Number(muac)),
+    },
+  ]);
+
+  const growthData = useSelector(getGrowthDataForInfantSelector);
+
+  const uniqueGrowthData = useMemo(
+    () =>
+      growthData?.filter((object, index, array) => {
+        return (
+          index ===
+          array.findIndex(
+            (newObject) =>
+              newObject.visit?.plannedVisitDate ===
+                object.visit?.plannedVisitDate &&
+              newObject.question === object.question
+          )
+        );
+      }),
+    [growthData]
+  );
+
+  const previousMuacs = uniqueGrowthData?.filter(
+    (item) => item.question === muacQuestion
+  );
+
+  const muacMonitoring = useMemo((): GrowthMonitoring['muac'] => {
+    if (Number(muac) < 11.5) {
+      return { value: 'severe acute malnutrition', statusType: 'error' };
+    }
+
+    if (Number(muac) < 12.5) {
+      return { value: 'moderate acute malnutrition', statusType: 'warning' };
+    }
+    return { value: 'normal', statusType: 'success' };
+  }, [muac]);
+
   const name = useMemo(() => infant?.user?.firstName || '', [infant]);
   const caregiverName = useMemo(
     () => infant?.caregiver?.firstName || '',
     [infant?.caregiver?.firstName]
   );
 
-  // TODO: add integration
-  const showResult = true;
+  useEffect(() => {
+    setGrowthMonitoring?.({ muac: muacMonitoring });
+  }, [muacMonitoring, setGrowthMonitoring]);
 
-  // TODO: add integration
+  useEffect(() => {
+    if (!!previousMuacs?.length) {
+      const formattedMuacs = previousMuacs.map(
+        (item): MUACData => ({
+          actionTaken: Number(item.questionAnswer) < 12.5 ? 'Referred' : 'None',
+          date: new Date(item.visit?.plannedVisitDate).toLocaleDateString(
+            'en-ZA',
+            {
+              day: 'numeric',
+              month: 'short',
+              year: 'numeric',
+            }
+          ),
+          muac: String(item?.questionAnswer),
+          type: getMuacType(Number(item?.questionAnswer)),
+        })
+      );
+
+      setMUACs((prevState) => [...prevState, ...formattedMuacs]);
+    }
+  }, [previousMuacs]);
+
+  useEffect(() => {
+    setEnableButton?.(true);
+  }, [setEnableButton]);
+
   const renderCard = useMemo(() => {
-    if (mocked_data.some((item) => item.type === 'error')) {
+    if (MUACs.some((item) => item.type === 'error')) {
       return (
         <Alert
           type="error"
@@ -89,7 +149,7 @@ export const MidUpperArmCircumferenceResultStep = ({
       );
     }
 
-    if (mocked_data.some((item) => item.type === 'warning')) {
+    if (MUACs.some((item) => item.type === 'warning')) {
       return (
         <Alert
           type="warning"
@@ -110,11 +170,7 @@ export const MidUpperArmCircumferenceResultStep = ({
         customIcon={<CelebrateIcon className="h-14	w-14" />}
       />
     );
-  }, [caregiverName, name]);
-
-  useEffect(() => {
-    setEnableButton && setEnableButton(true);
-  }, [setEnableButton]);
+  }, [MUACs, caregiverName, name]);
 
   return (
     <>
@@ -126,82 +182,49 @@ export const MidUpperArmCircumferenceResultStep = ({
         subTitle="Mid-upper arm circumference"
       />
       <div className="relative flex flex-col gap-3 p-4">
-        {showResult ? (
-          <>
-            <Alert
-              type="warning"
-              title={`Discuss ${name}'s growth with ${caregiverName}`}
-              titleColor="textDark"
-              customIcon={
-                <div className="bg-tertiary h-14 w-14 rounded-full">
-                  <Polly className="h-14 w-14" />
-                </div>
-              }
-            />
-            {renderCard}
-            <table className="mb-6 border border-gray-100">
-              <thead>
-                <tr className="bg-uiBg border-primary border-b text-left">
-                  <th className={'py-4 px-6'}>DATE</th>
-                  <th>MUAC</th>
-                  <th>ACTION TAKEN</th>
-                </tr>
-              </thead>
-              <tbody>
-                {mocked_data.map((item, index) => (
-                  <tr
-                    key={`${item.date}->${item.muac}`}
-                    className={index % 2 === 0 ? '' : 'bg-uiBg'}
-                  >
-                    <td className="py-4 pl-6">{item.date}</td>
-                    <td className="flex items-center gap-1 py-4">
-                      <div
-                        className={getShapeClassByAlertSeverity(item.type)}
-                      ></div>
-                      <Typography
-                        className="truncate pl-1"
-                        type="small"
-                        weight="skinny"
-                        color={getColourByAlertSeverity(item.type)}
-                        text={item.muac}
-                      ></Typography>
-                    </td>
-                    <td>{item.actionTaken}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </>
-        ) : (
-          <>
-            <div className="flex items-center gap-1">
-              <FormInput
-                label={'Weight'}
-                placeholder={'Tap to add'}
-                type={'number'}
-              ></FormInput>
-              <Typography
-                type="body"
-                color="textDark"
-                text={'kg'}
-                className="mt-7"
-              />
+        <Alert
+          type="warning"
+          title={`Discuss ${name}'s growth with ${caregiverName}`}
+          titleColor="textDark"
+          customIcon={
+            <div className="bg-tertiary h-14 w-14 rounded-full">
+              <Polly className="h-14 w-14" />
             </div>
-            <div className="flex items-center gap-1">
-              <FormInput
-                label={'Length'}
-                placeholder={'Tap to add'}
-                type={'number'}
-              ></FormInput>
-              <Typography
-                type="body"
-                color="textDark"
-                text="cm"
-                className="mt-7"
-              />
-            </div>
-          </>
-        )}
+          }
+        />
+        {renderCard}
+        <table className="mb-6 border border-gray-100">
+          <thead>
+            <tr className="bg-uiBg border-primary border-b text-left">
+              <th className={'py-4 px-6'}>DATE</th>
+              <th>MUAC</th>
+              <th>ACTION TAKEN</th>
+            </tr>
+          </thead>
+          <tbody>
+            {MUACs.map((item, index) => (
+              <tr
+                key={`${item.date}->${item.muac}`}
+                className={index % 2 === 0 ? '' : 'bg-uiBg'}
+              >
+                <td className="py-4 pl-6">{item.date}</td>
+                <td className="flex items-center gap-1 py-4">
+                  <div
+                    className={getShapeClassByAlertSeverity(item.type)}
+                  ></div>
+                  <Typography
+                    className="truncate pl-1"
+                    type="small"
+                    weight="skinny"
+                    color={getColourByAlertSeverity(item.type)}
+                    text={`${item.muac} cm`}
+                  ></Typography>
+                </td>
+                <td>{item.actionTaken}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </>
   );

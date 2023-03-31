@@ -144,8 +144,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                         //if no classroomgroup is available to look at, use the classroom for principal
                         classroom = classroomRepo.GetByUserId(principal.UserId);
                     }
-                    principalClassroom.ClassroomName = classroom.Name;
-                    principalClassroom.ClassroomId = classroom.Id.ToString();
+                    principalClassroom.Name = classroom.Name;
+                    principalClassroom.Id = classroom.Id.ToString();
                     principalClassroom.InsertedDate = classroom.InsertedDate;
                 }
             }

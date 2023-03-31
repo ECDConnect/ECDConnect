@@ -1,5 +1,6 @@
 import { ReactElement } from 'react';
 import { Colours } from '../../../models';
+import { classNames } from '../../../utils';
 import Checkbox, { CheckboxProps } from '../checkbox-input/checkbox-input';
 import { CheckboxChange } from '../checkbox-input/models/Checkbox';
 
@@ -51,9 +52,17 @@ export const CheckboxGroup = ({
             {icon}
           </div>
         )}
-        <p className={`text-${titleColours} text-base font-bold`}>{title}</p>
+        <article
+          className={classNames(
+            'prose',
+            `text-${titleColours} text-base font-bold`
+          )}
+          dangerouslySetInnerHTML={{ __html: title || '' }}
+        />
       </div>
-      <p className="text-textMid text-sm font-normal">{description}</p>
+      {description && (
+        <p className="text-textMid text-sm font-normal">{description}</p>
+      )}
     </label>
     {extraChildren}
     {disabled && (

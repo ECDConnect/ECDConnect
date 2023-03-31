@@ -48,9 +48,11 @@ export const replaceBraces = (sentenceWithBraces: string, value: string) => {
 
 export const toCamelCase = (str: string) => {
   return str
-    .replace(/[:\s]+/g, '')
     .replace(/(?:^\w|[A-Z]|\b\w)/g, (word, index) => {
       return index === 0 ? word.toLowerCase() : word.toUpperCase();
     })
-    .replace(/\s+/g, '');
+    .replace(/\s+/g, '')
+    .replace(/[:\s]+/g, '')
+    .replace(/[,\s]+/g, '')
+    .replace(/[&\s]+/g, 'And');
 };

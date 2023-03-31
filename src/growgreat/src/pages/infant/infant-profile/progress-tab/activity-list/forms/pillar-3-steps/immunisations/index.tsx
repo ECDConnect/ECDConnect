@@ -20,7 +20,7 @@ export const ImmunisationsStep = ({
     () => infant?.caregiver?.firstName || '',
     [infant?.caregiver?.firstName]
   );
-  const videoSection = 'Immunisation';
+  const videoSection = 'Immunisations';
 
   const getVideo = useCallback(async () => {
     await appDispatch(

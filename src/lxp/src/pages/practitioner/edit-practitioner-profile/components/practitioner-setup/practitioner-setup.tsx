@@ -60,7 +60,7 @@ export const PractitionerSetup = ({
     };
 
     getClassroomDetails().then((data) => {
-      setProgramName(data?.classroomName || '');
+      setProgramName(data?.name || '');
       setPrincipalName(data?.principalName || '');
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps

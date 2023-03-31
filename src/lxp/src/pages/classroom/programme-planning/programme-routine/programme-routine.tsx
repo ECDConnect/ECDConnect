@@ -11,6 +11,7 @@ import {
   DialogPosition,
   renderIcon,
   Typography,
+  Dialog,
 } from '@ecdlink/ui/';
 import { useHistory, useLocation } from 'react-router';
 import ActivitySearch from '../components/activities/activity/activity-search/activity-search';
@@ -56,6 +57,7 @@ import { ProgrammePlanningRoutineListItemUpdated } from '../components/programme
 import { ProgrammePlanningRoutineListItemNotCompleted } from '../components/programme-planning-routine-not-completed-list-item/programme-planning-routine-list-item-not-completed';
 import PosiviteIcon from '../../../../assets/positive-bonus-emoticon.png';
 import { practitionerSelectors } from '@/store/practitioner';
+import walkthroughImage from '../../../../assets/walktroughImage.png';
 
 export const ProgrammeRoutine: React.FC = () => {
   const { state } = useLocation<ProgrammeRoutineRouteState>();
@@ -96,6 +98,17 @@ export const ProgrammeRoutine: React.FC = () => {
   const isProgrammeCompleted =
     programmeWeeks.filter((week) => week.totalIncompleteDays === 0).length ===
     programmeWeeks.length;
+  const [successMessage, setSuccessMessage] = useState(false);
+  // const allProgrammesPlanned =
+  //   isDayCompleted &&
+  //   isProgrammeCompleted &&
+  //   isWeekComplete &&
+  //   displayDayCompletedCard;
+  const allProgrammesPlanned =
+    isDayCompleted &&
+    isProgrammeCompleted &&
+    isWeekComplete &&
+    displayDayCompletedCard;
 
   const { getCurrentProgrammeRecommendedActivities } =
     useProgrammePlanningRecommendations();
@@ -497,6 +510,12 @@ export const ProgrammeRoutine: React.FC = () => {
     return dayDate;
   };
 
+  useEffect(() => {
+    if (allProgrammesPlanned) {
+      setSuccessMessage(true);
+    }
+  }, [allProgrammesPlanned]);
+
   return (
     <BannerWrapper
       showBackground={false}
@@ -530,9 +549,9 @@ export const ProgrammeRoutine: React.FC = () => {
               }
               totalWeeks={programmeWeeks.length}
               chosedTheme={chosedTheme}
+              weekSummary={true}
             />
           )}
-
           {isDayCompleted &&
             !isProgrammeCompleted &&
             !isWeekComplete &&
@@ -549,8 +568,8 @@ export const ProgrammeRoutine: React.FC = () => {
                 }}
               />
             )}
-
-          {isDayCompleted &&
+          // check the necessity of this alert message
+          {/* {isDayCompleted &&
             isProgrammeCompleted &&
             isWeekComplete &&
             displayDayCompletedCard && (
@@ -573,8 +592,7 @@ export const ProgrammeRoutine: React.FC = () => {
                   textColor={'white'}
                 />
               </div>
-            )}
-
+            )} */}
           <div className={'pt-4'}>
             {isDayCompleted &&
               sortedRoutineItems.map((routineItem) => (
@@ -639,6 +657,52 @@ export const ProgrammeRoutine: React.FC = () => {
           onNext={() => setActiveWeekIndex(activeWeekIndex + 1)}
         />
       )}
+
+      <div>
+        <Dialog
+          className={'mb-16 px-4'}
+          stretch
+          visible={successMessage}
+          position={DialogPosition.Middle}
+        >
+          <ActionModal
+            customIcon={
+              <img
+                src={walkthroughImage}
+                alt="walkthroughImage"
+                className="mb-2"
+              />
+            }
+            iconColor="alertMain"
+            iconBorderColor="alertBg"
+            importantText={`Great, You have set up your ${programme?.name} programme week!`}
+            detailText={`Great job ${practitioner?.user?.firstName}! Your whole week is planned.`}
+            actionButtons={[
+              {
+                text: 'Plan next week',
+                textColour: 'white',
+                colour: 'primary',
+                type: 'filled',
+                onClick: () => {
+                  setActiveWeekIndex(activeWeekIndex + 1);
+                  setSuccessMessage(false);
+                },
+                leadingIcon: 'ClipboardCheckIcon',
+              },
+              {
+                text: 'Close',
+                textColour: 'primary',
+                colour: 'primary',
+                type: 'outlined',
+                onClick: () => {
+                  setSuccessMessage(false);
+                },
+                leadingIcon: 'XIcon',
+              },
+            ]}
+          />
+        </Dialog>
+      </div>
     </BannerWrapper>
   );
 };
