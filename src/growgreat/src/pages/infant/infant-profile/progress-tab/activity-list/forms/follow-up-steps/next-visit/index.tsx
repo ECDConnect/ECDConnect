@@ -17,7 +17,7 @@ export const NextVisitStep = ({
   );
 
   // TODO: add integration (G5.8.3)
-  const date = 'lorem ipsum';
+  const date = 'TODO: EC-141';
 
   useLayoutEffect(() => {
     setEnableButton?.(true);

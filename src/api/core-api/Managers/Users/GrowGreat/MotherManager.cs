@@ -10,6 +10,8 @@ using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
+using NPOI.POIFS.Properties;
+using Org.BouncyCastle.Asn1.Ocsp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,6 +25,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
         private HealthCareWorkerManager _healthCareWorkerManager;
         private InfantManager _infantManager;
         private VisitManager _visitManager;
+        private VisitDataStatusManager _visitDataStatusManager;
 
         private string _applicationUserId;
         private IGenericRepository<Mother, Guid> _motherRepo;
@@ -32,13 +35,15 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             IGenericRepositoryFactory repoFactory,
             HealthCareWorkerManager healthCareWorkerManager,
             InfantManager infantManager,
-            VisitManager visitManager)
+            VisitManager visitManager,
+            VisitDataStatusManager visitDataStatusManager)
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
             _healthCareWorkerManager = healthCareWorkerManager;
             _infantManager = infantManager;
             _visitManager = visitManager;
+            _visitDataStatusManager = visitDataStatusManager;
 
             _applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
             _motherRepo = _repoFactory.CreateGenericRepository<Mother>(userContext: _applicationUserId);
@@ -316,14 +321,16 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             return dateList;
         }
 
-        public DisplaySet GetStatusInfo(Guid motherId, Boolean withinWeek)
+        public DisplaySet GetStatusInfo(Mother mother, Boolean withinWeek)
         {
             DisplaySet statusInfo = new DisplaySet();
             DateTime today = DateTime.Today;
 
+            var totalMonths = ((today.Year - mother.InsertedDate.Year) * 12) + today.Month - mother.InsertedDate.Month;
+
             // Determine note display for mother
             var note = Constants.GGSettings.client_pregnant_mom;
-            var childrenCount = _infantManager.GetChildCountForMother(motherId);
+            var childrenCount = _infantManager.GetChildCountForMother(mother.Id);
             if (childrenCount == 1)
             {
                 note = Constants.GGSettings.client_pregnant_mom_and_child;
@@ -344,13 +351,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             // 3. don't show a visit date if the booked date has passed; or if the last possible day to conduct that visit has passed (see timing in G5 & G6) -> DEVELOPMENT PENDING
             // 4. Healthy:- for pregnant mom clients only, show if there are no alerts/flags raised for the mom.
 
-            // Default green status
-            statusInfo.Icon = MetricsIconEnum.Success.ToString();
-            statusInfo.Color = MetricsColorEnum.Success.ToString();
-            statusInfo.Subject = "Healthy";
-
             // No color alert notification
-            var nextVisitAfter7Days = _visitManager.GetNextVisitMoreThan7DaysAway(motherId, Constants.GGSettings.client_mother);
+            var nextVisitAfter7Days = _visitManager.GetNextVisitMoreThan7DaysAway(mother.Id, Constants.GGSettings.client_mother);
             if (nextVisitAfter7Days != "")
             {
                 statusInfo.Icon = MetricsIconEnum.None.ToString();
@@ -359,11 +361,22 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             }
 
             //
+            // Green Alerts
+            //
+            var healthMom = _visitDataStatusManager.GetAlertsForMother(mother.Id.ToString());
+            if (healthMom == "")
+            {
+                statusInfo.Icon = MetricsIconEnum.Success.ToString();
+                statusInfo.Color = MetricsColorEnum.Success.ToString();
+                statusInfo.Subject = "Healthy";
+            }
+
+            //
             // Orange Alerts
             //
 
             // 1. show if the visit deadline is less than 7 days away
-            var nextVisitWithin7Days = _visitManager.GetNextVisitLessThan7DaysAway(motherId, Constants.GGSettings.client_mother, withinWeek);
+            var nextVisitWithin7Days = _visitManager.GetNextVisitLessThan7DaysAway(mother.Id, Constants.GGSettings.client_mother, withinWeek);
             if (nextVisitWithin7Days != "")
             {
                 statusInfo.Icon = MetricsIconEnum.Warning.ToString();
@@ -376,12 +389,23 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             //
 
             // 1. Missed visits for pregnant mom - it could be Visit 1, 2, 3, or 4 
-            var missedVisit = _visitManager.GetFirstMissedVisit(motherId, Constants.GGSettings.client_mother);
+            var missedVisit = _visitManager.GetFirstMissedVisit(mother.Id, Constants.GGSettings.client_mother);
             if (missedVisit != "")
             {
                 statusInfo.Icon = MetricsIconEnum.Error.ToString();
                 statusInfo.Color = MetricsColorEnum.Error.ToString();
                 statusInfo.Subject = missedVisit;
+            }
+
+            if (totalMonths <= 3)
+            {
+                var lastVisit = _visitManager.GetLastCompletedVisitId(mother.Id.ToString(), Constants.GGSettings.client_mother);
+                if (lastVisit == Guid.Empty)
+                {
+                    statusInfo.Color = MetricsIconEnum.None.ToString();
+                    statusInfo.Icon = MetricsIconEnum.None.ToString();
+                    statusInfo.Subject = Constants.GGSettings.client_new;
+                }
             }
 
             return statusInfo;

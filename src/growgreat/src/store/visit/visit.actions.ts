@@ -250,18 +250,18 @@ export const getPreviousVisitInformationForInfant = createAsyncThunk<
 );
 
 export const getGrowthDataForInfant = createAsyncThunk<
-  VisitData,
+  VisitData[],
   { infantId: string },
   ThunkApiType<RootState>
 >(
-  VisitActions.GET_PREVIOUS_VISIT_INFORMATION_FOR_INFANT,
+  VisitActions.GET_GROWTH_DATA_FOR_INFANT,
   async ({ infantId }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
     } = getState();
 
     try {
-      let content: VisitData | undefined = undefined;
+      let content: VisitData[] | undefined = undefined;
 
       if (userAuth?.auth_token) {
         content = await new Visit(

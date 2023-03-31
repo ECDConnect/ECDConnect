@@ -89,7 +89,8 @@ export const careForBabySteps = (isDangerSignsFollowUp: boolean) => [
 
 export const getPillar1Steps = (
   nutritionAnswer: Question['answer'],
-  isToSkipBreastfeedingIssuesRelevantItemsStep: boolean
+  isToSkipBreastfeedingIssuesRelevantItemsStep: boolean,
+  isShowNutritionStep: boolean
 ) => {
   const defaultScreens = [
     WeightAndLengthFormStep,
@@ -97,7 +98,7 @@ export const getPillar1Steps = (
     MidUpperArmCircumferenceFormStep,
     MidUpperArmCircumferenceResultStep,
     InterventionsStep,
-    NutritionStep,
+    ...(isShowNutritionStep ? [NutritionStep] : []),
   ];
 
   const breastMilkOnlyFlow = [
@@ -126,26 +127,30 @@ export const getPillar1Steps = (
 
   const complementaryFeedingFlow = [DietFormStep, ResourcesStep];
 
-  switch (nutritionAnswer) {
-    case nutritionAnswers.mixedFeeding:
-      return [
-        ...defaultScreens,
-        ...mixedFeedingFlow,
-        ...complementaryFeedingFlow,
-      ];
-    case nutritionAnswers.formulaMilkOnly:
-      return [
-        ...defaultScreens,
-        ...formulaMilkOnlyFlow,
-        ...complementaryFeedingFlow,
-      ];
-    default:
-      return [
-        ...defaultScreens,
-        ...breastMilkOnlyFlow,
-        ...complementaryFeedingFlow,
-      ];
+  if (!!nutritionAnswer) {
+    switch (nutritionAnswer) {
+      case nutritionAnswers.mixedFeeding:
+        return [
+          ...defaultScreens,
+          ...mixedFeedingFlow,
+          ...complementaryFeedingFlow,
+        ];
+      case nutritionAnswers.formulaMilkOnly:
+        return [
+          ...defaultScreens,
+          ...formulaMilkOnlyFlow,
+          ...complementaryFeedingFlow,
+        ];
+      default:
+        return [
+          ...defaultScreens,
+          ...breastMilkOnlyFlow,
+          ...complementaryFeedingFlow,
+        ];
+    }
   }
+
+  return [...defaultScreens, ...complementaryFeedingFlow];
 };
 
 export const pillar2Steps = (
@@ -171,9 +176,9 @@ export const getPillar4Steps = (isFollowUp: boolean) => [
 
 export const pillar5Steps = [ChildDocumentationStep, HIVCareAndMedicationStep];
 
-export const followUpSteps = [
+export const followUpSteps = (isReferralsStep: boolean) => [
   NotesStep,
-  ReferralsStep,
+  ...(isReferralsStep ? [ReferralsStep] : []),
   ProgressStep,
   NextVisitStep,
 ];

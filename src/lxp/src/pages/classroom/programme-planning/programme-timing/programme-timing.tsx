@@ -29,6 +29,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import ROUTES from '@routes/routes';
 import { useAppDispatch } from '@/store';
 import { programmeThunkActions } from '@/store/programme';
+import { addDays } from 'date-fns';
 
 const ProgrammeTiming: React.FC = () => {
   const history = useHistory();
@@ -51,7 +52,11 @@ const ProgrammeTiming: React.FC = () => {
   });
   const appDispatch = useAppDispatch();
 
-  const { date: selectedDate, language: selectedLanguage } = useWatch({
+  const {
+    date: selectedDate,
+    language: selectedLanguage,
+    endDate,
+  } = useWatch({
     control: control,
   });
 
@@ -110,6 +115,7 @@ const ProgrammeTiming: React.FC = () => {
       new Date(validatedDate),
       endDate
     );
+
     if (overlappingProgramme) {
       setAlertState({
         title: 'This start date causes conflicts',
@@ -202,8 +208,29 @@ const ProgrammeTiming: React.FC = () => {
           placeholderText={`Please select a date`}
           className="border-uiLight w-full rounded-md"
           selected={selectedDate ? new Date(selectedDate) : undefined}
+          onChange={(date: Date) => {
+            const endDateUpdate = addDays(
+              date,
+              selectedTheme?.themeDays?.length! - 1
+            );
+            setValue('date', date ? date.toString() : '');
+            setValue('endDate', date ? endDateUpdate.toString() : '');
+          }}
+          dateFormat="EEE, dd MMM yyyy"
+          minDate={new Date()}
+        />
+
+        <Typography
+          className="mt-4"
+          type="body"
+          text="When would you like to end this programme?"
+        />
+        <DatePicker
+          placeholderText={`Please select a date`}
+          className="border-uiLight w-full rounded-md"
+          selected={endDate ? new Date(endDate) : undefined}
           onChange={(date: Date) =>
-            setValue('date', date ? date.toString() : '')
+            setValue('endDate', endDate ? endDate.toString() : '')
           }
           dateFormat="EEE, dd MMM yyyy"
           minDate={new Date()}

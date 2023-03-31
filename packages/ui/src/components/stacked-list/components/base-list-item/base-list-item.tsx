@@ -17,6 +17,7 @@ interface BaseListItemProps extends ComponentBaseProps {
   iconColor?: Colours;
   actionIconName?: string;
   actionIconColor?: Colours;
+  borderRadius?: string;
   onClick?: () => void;
   overwritePreSlotRender?: () => JSX.Element;
   overwriteTextSlotRender?: () => JSX.Element;
@@ -35,6 +36,7 @@ export const BaseListItem: React.FC<BaseListItemProps> = ({
   iconName = 'InformationIcon',
   iconBackgroundColor = 'uiBg',
   iconColor = 'white',
+  borderRadius = '',
   onClick,
   overwritePreSlotRender,
   overwriteTextSlotRender,
@@ -48,10 +50,10 @@ export const BaseListItem: React.FC<BaseListItemProps> = ({
         styles.container(backgroundColor, dividerType, dividerColor)
       )}
     >
-      <div className={'flex flex-row justify-start items-center w-2/3'}>
+      <div className={'flex w-2/3 flex-row items-center justify-start'}>
         {overwritePreSlotRender !== undefined && overwritePreSlotRender()}
         {overwritePreSlotRender === undefined && (
-          <div className={`bg-${iconBackgroundColor} p-3 rounded-full mr-4`}>
+          <div className={`bg-${iconBackgroundColor} mr-4 rounded-full p-3`}>
             {renderIcon(iconName, `w-5 h-5 text-${iconColor}`)}
           </div>
         )}
@@ -77,7 +79,7 @@ export const BaseListItem: React.FC<BaseListItemProps> = ({
           )}
         </div>
       </div>
-      <div className={`flex flex-row items-center justify-end w-1/3`}>
+      <div className={`flex w-1/3 flex-row items-center justify-end`}>
         {overwritePostSlotRender !== undefined && overwritePostSlotRender()}
         {overwritePostSlotRender === undefined &&
           renderIcon(actionIconName, styles.icon(actionIconColor))}

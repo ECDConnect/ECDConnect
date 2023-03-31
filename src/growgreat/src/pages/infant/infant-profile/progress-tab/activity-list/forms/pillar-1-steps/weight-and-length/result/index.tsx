@@ -1,72 +1,649 @@
 import { Header } from '@/pages/infant/infant-profile/components';
 import P1 from '@/assets/pillar/p1.svg';
-import { Alert, Divider, Typography } from '@ecdlink/ui';
-import { useEffect, useMemo } from 'react';
+import { Alert, Colours, Divider, renderIcon, Typography } from '@ecdlink/ui';
+import {
+  Fragment,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { DynamicFormProps } from '../../../dynamic-form';
 import { ReactComponent as Polly } from '@/assets/momImageSvg.svg';
 import { SuccessCard } from '@/components/success-card/success-card';
 import { ReactComponent as CelebrateIcon } from '@/assets/celebrateIcon.svg';
-import { Chart } from './chart';
-import {
-  weightForAgeBoys,
-  weightForAgeGirls,
-  heightForAgeBoys,
-  heightForAgeGirls,
-} from './data';
+import { Chart, DataSetType, WeightOrHeightForAgeProps } from './chart';
+
 import {
   weightAndLengthFormQuestions,
   weightAndLengthFormSection,
 } from '../form';
+import {
+  lengthHeightForAgeBoys,
+  lengthPerMonthBoys,
+  lengthPerYearBoys,
+  lengthPerWeekBoys,
+  weightPerWeekBoys,
+  weightForAgeBoys,
+  weightPerMonthBoys,
+  weightPerYearBoys,
+} from './data/boys';
+import {
+  lengthHeightForAgeGirls,
+  weightPerMonthGirls,
+  weightPerYearGirls,
+  lengthPerWeekGirls,
+  weightPerWeekGirls,
+  lengthPerMonthGirls,
+  lengthPerYearGirls,
+  weightForAgeGirls,
+} from './data/girls';
+
+import { getAgeInYearsMonthsAndDays, toCamelCase } from '@ecdlink/core';
+import {
+  differenceInDays,
+  differenceInMonths,
+  differenceInWeeks,
+  differenceInYears,
+} from 'date-fns';
+import { useSelector } from 'react-redux';
+import { getGrowthDataForInfantSelector } from '@/store/visit/visit.selectors';
+import { VisitData } from '@ecdlink/graphql';
+import {
+  fillInMissingNumbers,
+  findClosestWeight,
+  findLastIndex,
+} from './data/utils/utils';
+import { GrowthMonitoring } from '../..';
+
+interface GrowthStatus {
+  length: VisitData[];
+  weight: VisitData[];
+}
 
 const Card = ({
   value,
   title,
   subTitle,
+  status,
 }: {
   value: string;
   title: string;
   subTitle: string;
-}) => (
-  <div className="bg-successBg flex w-full flex-col items-center justify-center rounded-xl p-4">
-    <Typography type="h4" color="textDark" text={title} />
-    <Typography
-      type="body"
-      color="successMain"
-      className="my-3 text-4xl font-bold"
-      text={value}
-    />
-    <Typography
-      type="body"
-      color="textMid"
-      className="text-xs font-bold"
-      text={subTitle}
-    />
-  </div>
-);
+  status: DataSetType;
+}) => {
+  const getColor = (): { bg: Colours; main: Colours } => {
+    switch (status) {
+      case 'SD2':
+        return { bg: 'alertBg', main: 'alertMain' };
+      case 'SD2neg':
+        return { bg: 'alertBg', main: 'alertMain' };
+      case 'SD3neg':
+        return { bg: 'errorBg', main: 'errorMain' };
+      case 'SD3':
+        return { bg: 'errorBg', main: 'errorMain' };
+      default:
+        return { bg: 'successBg', main: 'successMain' };
+    }
+  };
+
+  return (
+    <div
+      className={`bg-${
+        getColor().bg
+      } flex w-full flex-col items-center justify-center rounded-xl p-4`}
+    >
+      <Typography type="h4" color="textDark" text={title} />
+      <Typography
+        type="body"
+        color={getColor().main}
+        className="my-3 text-4xl font-bold"
+        text={value}
+      />
+      <Typography
+        type="body"
+        color="textMid"
+        className="text-xs font-bold"
+        text={subTitle}
+      />
+    </div>
+  );
+};
 
 export const WeightAndLengthResultStep = ({
   infant,
   sectionQuestions,
+  setGrowthMonitoring,
   setEnableButton,
 }: DynamicFormProps) => {
+  const [weightAxios, setWeightAxios] = useState<WeightOrHeightForAgeProps>();
+  const [lengthAxios, setLengthAxios] = useState<WeightOrHeightForAgeProps>();
+  const [weightResult, setWeightResult] = useState<(number | undefined)[]>([
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+  ]);
+  const [lengthResult, setLengthResult] = useState<(number | undefined)[]>([
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+  ]);
+
+  const [suffix, setSuffix] = useState<string>('d');
+
+  const growthData = useSelector(getGrowthDataForInfantSelector);
+  const uniqueGrowthData = useMemo(
+    () =>
+      growthData?.filter((object, index, array) => {
+        return (
+          index ===
+          array.findIndex(
+            (newObject) =>
+              newObject.visit?.plannedVisitDate ===
+                object.visit?.plannedVisitDate &&
+              newObject.question === object.question
+          )
+        );
+      }),
+    [growthData]
+  );
+
+  const groupedGrowthData = useMemo(() => {
+    return uniqueGrowthData?.reduce(
+      (acc: { [key: string]: any }, currentValue) => {
+        const question = toCamelCase(currentValue?.question || '');
+        if (!question) return acc;
+        if (!acc[question]) {
+          acc[question] = [];
+        }
+        acc[question].push(currentValue);
+        return acc;
+      },
+      {}
+    );
+  }, [uniqueGrowthData]) as GrowthStatus | undefined;
+
   const name = useMemo(() => infant?.user?.firstName || '', [infant]);
   const caregiverName = useMemo(
     () => infant?.caregiver?.firstName || '',
     [infant?.caregiver?.firstName]
   );
+  const answers = useMemo(
+    () =>
+      sectionQuestions?.find(
+        (section) => section.visitSection === weightAndLengthFormSection
+      )?.questions,
+    [sectionQuestions]
+  );
+  const weight = useMemo(
+    () =>
+      Number(
+        answers?.find(
+          (item) => item.question === weightAndLengthFormQuestions.weight
+        )?.answer || 0
+      ),
+    [answers]
+  );
+  const length = useMemo(
+    () =>
+      Number(
+        answers?.find(
+          (item) => item.question === weightAndLengthFormQuestions.length
+        )?.answer || 0
+      ),
+    [answers]
+  );
 
-  const answers = sectionQuestions?.find(
-    (section) => section.visitSection === weightAndLengthFormSection
-  )?.questions;
-  const weight = answers?.find(
-    (item) => item.question === weightAndLengthFormQuestions.weight
-  )?.answer;
-  const length = answers?.find(
-    (item) => item.question === weightAndLengthFormQuestions.length
-  )?.answer;
+  const weightAlertResult = findClosestWeight(
+    weightAxios,
+    weight,
+    findLastIndex(weightResult)
+  )[0] as DataSetType;
+  const lengthAlertResult = findClosestWeight(
+    lengthAxios,
+    length,
+    findLastIndex(lengthResult)
+  )[0] as DataSetType;
+
+  const weightMonitoring = useMemo((): GrowthMonitoring['weight'] => {
+    switch (weightAlertResult) {
+      case 'SD2':
+        return { value: 'overweight', statusType: 'warning' };
+      case 'SD3':
+        return { value: 'obese', statusType: 'warning' };
+      case 'SD2neg':
+        return { value: 'underweight', statusType: 'warning' };
+      case 'SD3neg':
+        return { value: 'severely underweight', statusType: 'error' };
+      default:
+        return { value: 'normal', statusType: 'success' };
+    }
+  }, [weightAlertResult]);
+
+  const lengthMonitoring = useMemo((): GrowthMonitoring['length'] => {
+    switch (lengthAlertResult) {
+      case 'SD2neg':
+        return { value: 'stunted', statusType: 'warning' };
+      case 'SD3neg':
+        return { value: 'severely stunted', statusType: 'error' };
+      default:
+        return { value: 'normal', statusType: 'success' };
+    }
+  }, [lengthAlertResult]);
+
+  const WeightAlert = useCallback(() => {
+    let WeightAlert = <Fragment />;
+
+    switch (weightAlertResult) {
+      case 'SD2':
+        WeightAlert = (
+          <Alert
+            type="warning"
+            title={`${name} is overweight.`}
+            customIcon={
+              <div className="rounded-full">
+                {renderIcon('ExclamationIcon', 'text-alertMain w-14 h-14')}
+              </div>
+            }
+          />
+        );
+        break;
+      case 'SD3':
+        WeightAlert = (
+          <Alert
+            type="warning"
+            title={`${name} is obese.`}
+            customIcon={
+              <div className="rounded-full">
+                {renderIcon('ExclamationIcon', 'text-alertMain w-14 h-14')}
+              </div>
+            }
+          />
+        );
+        break;
+      case 'SD2neg':
+        WeightAlert = (
+          <Alert
+            type="warning"
+            title={`${name} is underweight.`}
+            customIcon={
+              <div className="rounded-full">
+                {renderIcon('ExclamationIcon', 'text-alertMain w-14 h-14')}
+              </div>
+            }
+          />
+        );
+        break;
+      case 'SD3neg':
+        WeightAlert = (
+          <Alert
+            type="error"
+            title={`Refer ${name} to the clinic urgently.`}
+            list={[`${name} is severely underweight for their age.`]}
+            customIcon={
+              <div>
+                {renderIcon(
+                  'ExclamationCircleIcon',
+                  'w-14 h-14 text-errorMain'
+                )}
+              </div>
+            }
+          />
+        );
+        break;
+      default:
+        break;
+    }
+    return WeightAlert;
+  }, [name, weightAlertResult]);
+
+  const LengthAlert = useCallback(() => {
+    let LengthAlert = <Fragment />;
+
+    switch (lengthAlertResult) {
+      case 'SD2neg':
+        LengthAlert = (
+          <Alert
+            type="warning"
+            title={`${name} is stunted.`}
+            customIcon={
+              <div className="rounded-full">
+                {renderIcon('ExclamationIcon', 'text-alertMain w-14 h-14')}
+              </div>
+            }
+          />
+        );
+        break;
+      case 'SD3neg':
+        LengthAlert = (
+          <Alert
+            type="error"
+            title={`Refer ${name} to the clinic urgently.`}
+            list={[`${name} is severely stunted.`]}
+            customIcon={
+              <div>
+                {renderIcon(
+                  'ExclamationCircleIcon',
+                  'w-14 h-14 text-errorMain'
+                )}
+              </div>
+            }
+          />
+        );
+        break;
+      default:
+        break;
+    }
+    return LengthAlert;
+  }, [lengthAlertResult, name]);
+
+  const {
+    lengthPerDay,
+    lengthPerMonth,
+    lengthPerWeek,
+    lengthPerYear,
+    weightPerDay,
+    weightPerMonth,
+    weightPerWeek,
+    weightPerYear,
+  } = useMemo(() => {
+    const gender = infant?.gender?.description;
+
+    const weightPerDay =
+      gender === 'Girl' ? weightForAgeGirls : weightForAgeBoys;
+    const lengthPerDay =
+      gender === 'Girl' ? lengthHeightForAgeGirls : lengthHeightForAgeBoys;
+    const weightPerWeek =
+      gender === 'Girl' ? weightPerWeekGirls : weightPerWeekBoys;
+    const lengthPerWeek =
+      gender === 'Girl' ? lengthPerWeekGirls : lengthPerWeekBoys;
+    const weightPerMonth =
+      gender === 'Girl' ? weightPerMonthGirls : weightPerMonthBoys;
+    const lengthPerMonth =
+      gender === 'Girl' ? lengthPerMonthGirls : lengthPerMonthBoys;
+    const weightPerYear =
+      gender === 'Girl' ? weightPerYearGirls : weightPerYearBoys;
+    const lengthPerYear =
+      gender === 'Girl' ? lengthPerYearGirls : lengthPerYearBoys;
+
+    return {
+      weightPerDay,
+      weightPerMonth,
+      weightPerWeek,
+      weightPerYear,
+      lengthPerDay,
+      lengthPerWeek,
+      lengthPerMonth,
+      lengthPerYear,
+    };
+  }, [infant?.gender?.description]);
+
+  function getScale(age: number, date: number[], input: number[]) {
+    let startIndex = Math.max(0, date.indexOf(age) - 4);
+    let endIndex = Math.min(startIndex + 6, date.length);
+
+    return input.slice(startIndex, endIndex);
+  }
+
+  const getChartData = useCallback(
+    (age: number, input: WeightOrHeightForAgeProps) => {
+      return {
+        date: getScale(age, input.date, input.date),
+        median: {
+          label: 'median',
+          weight: getScale(age, input.date, input.median?.weight as number[]),
+        },
+        SD2: {
+          label: '2 SD',
+          weight: getScale(age, input.date, input.SD2.weight as number[]),
+        },
+        SD3: {
+          label: '3 SD',
+          weight: getScale(age, input.date, input.SD3.weight as number[]),
+        },
+        SD3neg: {
+          label: '-3 SD',
+          weight: getScale(age, input.date, input.SD3neg.weight as number[]),
+        },
+        SD2neg: {
+          label: '-2 SD',
+          weight: getScale(age, input.date, input.SD2neg.weight as number[]),
+        },
+      };
+    },
+    []
+  );
+
+  const getWeightOrLengthResult = useCallback(
+    (
+      age: string,
+      data: (
+        | VisitData
+        | {
+            visit: {
+              plannedVisitDate: Date;
+            };
+            questionAnswer: number;
+          }
+      )[],
+      dateAxios: number[],
+      suffix: 'd' | 'w' | 'm' | 'y',
+      result: (number | undefined)[]
+    ) => {
+      let differenceFunction = (
+        dateLeft: number | Date,
+        dateRight: number | Date
+      ) => 0;
+
+      switch (suffix) {
+        case 'd':
+          differenceFunction = differenceInDays;
+          break;
+        case 'w':
+          differenceFunction = differenceInWeeks;
+          break;
+        case 'm':
+          differenceFunction = differenceInMonths;
+          break;
+        default:
+          differenceFunction = differenceInYears;
+          break;
+      }
+
+      const newResult = [...result];
+
+      return data.map((item) => {
+        const date = differenceFunction(
+          new Date(item.visit?.plannedVisitDate),
+          new Date(age)
+        );
+        const scale = dateAxios;
+        const index = scale.indexOf(date);
+
+        if (index !== -1) {
+          newResult[index] = Number(item?.questionAnswer);
+
+          return newResult;
+        }
+
+        return result;
+      });
+    },
+    []
+  );
+
+  const setChartData = useCallback(() => {
+    const dateOfBirth = infant?.user?.dateOfBirth as string;
+    const weightHistory =
+      [
+        ...(groupedGrowthData?.weight ? [...groupedGrowthData?.weight] : []),
+        ...[
+          { visit: { plannedVisitDate: new Date() }, questionAnswer: weight },
+        ],
+      ] || [];
+    const lengthHistory =
+      [
+        ...(groupedGrowthData?.weight ? [...groupedGrowthData?.length] : []),
+        ...[
+          { visit: { plannedVisitDate: new Date() }, questionAnswer: length },
+        ],
+      ] || [];
+
+    const {
+      years: ageYears,
+      months: ageMonths,
+      days: ageDays,
+    } = getAgeInYearsMonthsAndDays(dateOfBirth);
+    const ageWeeks = differenceInWeeks(new Date(), new Date(dateOfBirth));
+
+    if (!ageYears && !ageMonths && ageDays <= 14) {
+      setWeightResult(
+        fillInMissingNumbers(
+          getWeightOrLengthResult(
+            dateOfBirth,
+            weightHistory,
+            weightPerDay.date,
+            'd',
+            weightResult
+          )[0]
+        )
+      );
+      setLengthResult(
+        fillInMissingNumbers(
+          getWeightOrLengthResult(
+            dateOfBirth,
+            lengthHistory,
+            lengthPerDay.date,
+            'd',
+            lengthResult
+          )[0]
+        )
+      );
+      setSuffix('d');
+      setLengthAxios(getChartData(ageDays, weightPerWeek));
+      return setWeightAxios(getChartData(ageDays, lengthPerWeek));
+    }
+
+    if (ageWeeks <= 12) {
+      setWeightResult(
+        fillInMissingNumbers(
+          getWeightOrLengthResult(
+            dateOfBirth,
+            weightHistory,
+            weightPerWeek.date,
+            'w',
+            weightResult
+          )[0]
+        )
+      );
+      setLengthResult(
+        fillInMissingNumbers(
+          getWeightOrLengthResult(
+            dateOfBirth,
+            lengthHistory,
+            lengthPerWeek.date,
+            'w',
+            lengthResult
+          )[0]
+        )
+      );
+      setSuffix('w');
+      setLengthAxios(getChartData(ageWeeks, lengthPerDay));
+      return setWeightAxios(getChartData(ageWeeks, weightPerDay));
+    }
+
+    if (!ageYears && ageMonths <= 12) {
+      setWeightResult(
+        fillInMissingNumbers(
+          getWeightOrLengthResult(
+            dateOfBirth,
+            weightHistory,
+            weightPerMonth.date,
+            'm',
+            weightResult
+          )[0]
+        )
+      );
+      setLengthResult(
+        fillInMissingNumbers(
+          getWeightOrLengthResult(
+            dateOfBirth,
+            lengthHistory,
+            lengthPerMonth.date,
+            'm',
+            lengthResult
+          )[0]
+        )
+      );
+      setSuffix('m');
+      setLengthAxios(getChartData(ageMonths, lengthPerMonth));
+      return setWeightAxios(getChartData(ageMonths, weightPerMonth));
+    }
+
+    setWeightResult(
+      fillInMissingNumbers(
+        getWeightOrLengthResult(
+          dateOfBirth,
+          weightHistory,
+          weightPerYear.date,
+          'm',
+          weightResult
+        )[0]
+      )
+    );
+    setLengthResult(
+      fillInMissingNumbers(
+        getWeightOrLengthResult(
+          dateOfBirth,
+          lengthHistory,
+          lengthPerYear.date,
+          'm',
+          lengthResult
+        )[0]
+      )
+    );
+    setSuffix('y');
+    setLengthAxios(getChartData(ageDays, lengthPerYear));
+    return setWeightAxios(getChartData(ageYears, weightPerYear));
+
+    // I've really put this eslint rule
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    getChartData,
+    getWeightOrLengthResult,
+    groupedGrowthData?.length,
+    groupedGrowthData?.weight,
+    infant?.user?.dateOfBirth,
+  ]);
+
+  useEffect(() => {
+    setGrowthMonitoring?.({
+      weight: weightMonitoring,
+      length: lengthMonitoring,
+    });
+  }, [lengthMonitoring, setGrowthMonitoring, weightMonitoring]);
+
+  useLayoutEffect(() => {
+    setChartData();
+  }, [setChartData]);
 
   const renderCard = useMemo(() => {
-    // TODO: add integration
+    if (weightAlertResult !== 'median' || lengthAlertResult !== 'median') {
+      return (
+        <>
+          <WeightAlert />
+          <LengthAlert />
+        </>
+      );
+    }
+
     return (
       <SuccessCard
         text={`${name} is growing well! Great job ${caregiverName}.`}
@@ -74,7 +651,14 @@ export const WeightAndLengthResultStep = ({
         customIcon={<CelebrateIcon className="h-14	w-14" />}
       />
     );
-  }, [caregiverName, name]);
+  }, [
+    LengthAlert,
+    WeightAlert,
+    caregiverName,
+    lengthAlertResult,
+    name,
+    weightAlertResult,
+  ]);
 
   useEffect(() => {
     setEnableButton && setEnableButton(true);
@@ -102,25 +686,35 @@ export const WeightAndLengthResultStep = ({
         />
         {renderCard}
         <div className="flex gap-2">
-          <Card title="Weight" value={String(weight)} subTitle="KG" />
-          <Card title="Length" value={String(length)} subTitle="CM" />
+          <Card
+            status={weightAlertResult}
+            title="Weight"
+            value={String(weight)}
+            subTitle="KG"
+          />
+          <Card
+            status={lengthAlertResult}
+            title="Length"
+            value={String(length)}
+            subTitle="CM"
+          />
         </div>
         <Typography type="h3" color="textDark" text="Weight for age (kg)" />
         <Chart
-          data={
-            infant?.gender?.description === 'Girl'
-              ? weightForAgeGirls
-              : weightForAgeBoys
-          }
+          infantName={name}
+          result={weightResult}
+          data={weightAxios as WeightOrHeightForAgeProps}
+          type="weight"
+          suffix={suffix}
         />
         <Divider dividerType="dashed" />
         <Typography type="h3" color="textDark" text="Length for age (cm)" />
         <Chart
-          data={
-            infant?.gender?.description === 'Girl'
-              ? heightForAgeGirls
-              : heightForAgeBoys
-          }
+          infantName={name}
+          result={lengthResult}
+          data={lengthAxios as WeightOrHeightForAgeProps}
+          type="length"
+          suffix={suffix}
         />
       </div>
     </>

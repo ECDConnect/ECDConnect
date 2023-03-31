@@ -21,5 +21,6 @@ export interface VisitState {
   completedVisitsForVisitId?: CompletedVisitsForVisitId[];
   previousVisitInformationForInfant?: Progress_VisitDataStatus;
   visitVideos?: VisitVideosWithLocale[];
+  growthDataForInfant?: VisitData[];
   visitAnswersForInfant?: VisitData[];
 }
