@@ -8,4 +8,5 @@ export interface EditAttendanceRegisterProps extends ComponentBaseProps {
   onBack: () => void;
   editAttendanceRegisterVisible?: boolean;
   classroomName: string;
+  classroomgroupId: string;
 }

@@ -43,6 +43,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
   attendanceDate = new Date(),
   onSubmitSuccess,
   editAttendanceRegisterVisible,
+  classroomgroupId
 }) => {
   const appDispatch = useAppDispatch();
   const [presentChildrenCount, setPresentChildrenCount] = useState<number>(0);
@@ -118,6 +119,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
     setSelectedClassroomGroups(value.map((x) => x.value));
   };
 
+
   const validateAttendanceList = (
     attendanceListId: string,
     updateList: AttendanceListDataItem[],
@@ -170,6 +172,8 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
       attendanceDate
     );
 
+   
+
     if (!currentProgramme) return;
 
     const allAttendanceGroupLists = attendanceGroups?.reduce((prev, curr) => {
@@ -202,6 +206,8 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
     let newAttDate = !editAttendanceRegisterVisible
       ? attendanceDate.toISOString()
       : updatedAttendanceDateString;
+
+
 
     const trackAttendanceInput = mapTrackAttendance(
       user?.id || '',
