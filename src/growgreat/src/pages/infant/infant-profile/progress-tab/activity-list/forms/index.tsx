@@ -29,6 +29,7 @@ import { dangerSignsVisitSection } from './care-for-mom-steps/danger-signs';
 import { dangerSignsVisitSectionForBaby } from './care-for-baby-steps/danger-signs';
 import { DevelopmentalScreeningVisitSection } from './pillar-2-steps/developmental-screening-weeks';
 import { getReferralsForInfantSelector } from '@/store/referral/referral.selectors';
+import { differenceInDays } from 'date-fns';
 
 interface FormProps {
   onBack: () => void;
@@ -63,10 +64,23 @@ export const Form = ({ onBack }: FormProps) => {
 
   const { years: ageYears, months: ageMonths } =
     getAgeInYearsMonthsAndDays(dateOfBirth);
+  const ageDays = differenceInDays(new Date(), new Date(dateOfBirth));
 
   const isChild6Months = useMemo(
     () => !ageYears && ageMonths < 7,
     [ageMonths, ageYears]
+  );
+
+  // TODO: add G3 visits tab integration
+  const isFirstVisit = true;
+
+  const isFormulaMilkHowBreastfeedingWorks = useMemo(
+    () => isFirstVisit && ageDays >= 7 && ageDays <= 13,
+    [ageDays, isFirstVisit]
+  );
+  const isFormulaMilkUnsafeFeedingPractices = useMemo(
+    () => isFirstVisit && ageDays >= 14 && ageDays <= 48,
+    [ageDays, isFirstVisit]
   );
 
   const isFollowUp = useCallback(
@@ -182,7 +196,9 @@ export const Form = ({ onBack }: FormProps) => {
         return getPillar1Steps(
           nutritionAnswer,
           isToSkipBreastfeedingIssuesRelevantItemsStep,
-          isChild6Months
+          isChild6Months,
+          isFormulaMilkHowBreastfeedingWorks,
+          isFormulaMilkUnsafeFeedingPractices
         );
       case activitiesTypes.pillar2:
         return pillar2Steps(isDevelopmentalScreeningWeeksFollowUp);
@@ -202,6 +218,8 @@ export const Form = ({ onBack }: FormProps) => {
     nutritionAnswer,
     isToSkipBreastfeedingIssuesRelevantItemsStep,
     isChild6Months,
+    isFormulaMilkHowBreastfeedingWorks,
+    isFormulaMilkUnsafeFeedingPractices,
     isDevelopmentalScreeningWeeksFollowUp,
     isPillar4FollowUp,
     referralsForInfant?.length,

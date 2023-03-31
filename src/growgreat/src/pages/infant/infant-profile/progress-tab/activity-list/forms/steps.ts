@@ -90,7 +90,9 @@ export const careForBabySteps = (isDangerSignsFollowUp: boolean) => [
 export const getPillar1Steps = (
   nutritionAnswer: Question['answer'],
   isToSkipBreastfeedingIssuesRelevantItemsStep: boolean,
-  isShowNutritionStep: boolean
+  isShowNutritionStep: boolean,
+  isHowBreastfeedingWorks: boolean,
+  isUnsafeFeedingPractices: boolean
 ) => {
   const defaultScreens = [
     WeightAndLengthFormStep,
@@ -112,8 +114,8 @@ export const getPillar1Steps = (
   const formulaMilkOnlyFlow = [
     FormulaMilkNotesStep,
     BenefitsOfBreastfeedingStep,
-    BreastfeedingWorksStep,
-    UnsafeFeedingPracticesStep,
+    ...(isHowBreastfeedingWorks ? [BreastfeedingWorksStep] : []),
+    ...(isUnsafeFeedingPractices ? [UnsafeFeedingPracticesStep] : []),
   ];
 
   const mixedFeedingFlow = [
