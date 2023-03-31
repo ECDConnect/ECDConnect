@@ -148,7 +148,7 @@ export const DangerSignsStep = ({
         <Divider dividerType="dashed" className="my-4" />
         <Typography
           type="h4"
-          text={replaceBraces(question, caregiverName)}
+          text={replaceBraces(question, name)}
           color="black"
         />
         {options.map((option, index) => (

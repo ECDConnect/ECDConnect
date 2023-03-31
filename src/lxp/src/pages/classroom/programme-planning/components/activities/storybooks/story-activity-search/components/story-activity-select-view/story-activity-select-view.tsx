@@ -1,4 +1,4 @@
-import { renderIcon, Typography } from '@ecdlink/ui';
+import { Button, renderIcon, Typography } from '@ecdlink/ui';
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { ACTIVITY_PAGE_SIZE } from '../../../../../../../../../constants/ActivitySearch';
@@ -18,6 +18,7 @@ export const StoryActivitySelectView: React.FC<
   onActivitySelected,
   onActivityCleared,
   onClearStory,
+  setSelectedStory,
 }) => {
   const storyActivities = useSelector(
     activitySelectors.getStoryActivitiesByType(story.type)
@@ -33,33 +34,38 @@ export const StoryActivitySelectView: React.FC<
 
   return (
     <div className={'flex flex-col'}>
-      <StoryCard
-        storyBookId={story.id}
-        activityId={selectedActivityId}
-        title={story.name}
-        type={story.type}
-        languages={story.availableLanguages}
-        selected
-        onSelected={handleClearStory}
-        onCleared={handleClearStory}
+      <Typography
+        text={`Story chosen: ${story.name}`}
+        hasMarkup
+        color={'textDark'}
+        type={'h1'}
+        onClick={handleClearStory}
       />
-      <div className={'flex flex-row items-center justify-center my-2'}>
-        {renderIcon('ArrowCircleLeftIcon', 'w-5 h-5 text-primary mr-2')}
-        <Typography
-          text={'<u>Choose a different story</u>'}
-          hasMarkup
-          color={'primary'}
-          type={'markdown'}
-          onClick={handleClearStory}
-        />
-      </div>
+      <Button
+        type={'filled'}
+        color={'primary'}
+        className={'mt-4 w-full'}
+        textColor={'white'}
+        text={'Choose a different story'}
+        icon={'CheckCircleIcon'}
+        iconPosition={'start'}
+        onClick={() => setSelectedStory(undefined)}
+      />
 
       <Typography
-        text={'Now, choose an <u>activity</u> for this story'}
+        text={'Choose a story activity'}
+        color={'black'}
+        type={'h2'}
+        align={'left'}
+        className={'mt-4'}
+      />
+      <Typography
+        text={'Step 2 of 2'}
         hasMarkup
         color={'black'}
         type={'markdown'}
         align={'left'}
+        className={'mt-2'}
       />
 
       {storyActivities &&
@@ -89,14 +95,15 @@ export const StoryActivitySelectView: React.FC<
           );
         })}
       {pageSize < storyActivities.length && (
-        <Typography
+        <Button
+          size="normal"
+          className="mb-4 mt-3 w-full"
+          type="outlined"
+          color="primary"
+          text="See more activities"
+          textColor="primary"
+          icon="EyeIcon"
           onClick={() => setPageSize(pageSize + ACTIVITY_PAGE_SIZE)}
-          className={'mt-2'}
-          align={'center'}
-          text={'<u>See more activities</u>'}
-          hasMarkup
-          type={'unspecified'}
-          color={'primary'}
         />
       )}
     </div>

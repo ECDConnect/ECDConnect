@@ -28,12 +28,10 @@ export const DangerSignsStep = ({
   const [answers, setAnswer] = useState<(string | number | undefined)[]>();
 
   const dialog = useDialog();
+  const noneOption = 'None of the above';
 
   const options = [
-    {
-      name: 'Not feeling physically well',
-      alert: `Eish! Refer ${infant?.caregiver?.firstName} to the clinic and discuss the importance of seeking help.`,
-    },
+    { name: 'Not feeling physically well' },
     { name: 'Abdominal pain' },
     { name: 'Heavy bleeding' },
     {
@@ -44,7 +42,7 @@ export const DangerSignsStep = ({
     { name: 'Unable to manage the baby' },
     { name: 'High stress' },
     { name: 'Problems with breastfeeding' },
-    { name: 'None of the above' },
+    { name: noneOption },
   ];
 
   const question = `Tick the danger signs {client} is experiencing:`;
@@ -204,11 +202,11 @@ export const DangerSignsStep = ({
             )}
           </div>
         ))}
-        {answers?.find((item) => item === options[0].name) && (
+        {answers?.some((item) => item !== noneOption) && (
           <Alert
             className="mt-4"
             type="error"
-            title={options[0].alert}
+            title={`Eish! Refer ${infant?.caregiver?.firstName} to the clinic and discuss the importance of seeking help.`}
             customIcon={
               <div className="rounded-full">
                 {renderIcon(

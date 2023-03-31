@@ -116,7 +116,7 @@ export const RoadToHeathBookStep = ({
         <Label
           text={replaceBraces(
             "Does the caregiver have {client}'s Road to Health Book?",
-            infant?.caregiver?.firstName || ''
+            name || ''
           )}
         />
         <ButtonGroup<boolean>

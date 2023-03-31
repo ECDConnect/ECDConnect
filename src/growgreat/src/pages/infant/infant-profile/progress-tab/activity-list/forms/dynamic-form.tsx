@@ -12,6 +12,7 @@ import {
   CmsVisitDataInputModelInput,
   CmsVisitSectionInput,
   InputMaybe,
+  VisitDataStatusFilterInput,
 } from '@ecdlink/graphql';
 import { visitActions, visitThunkActions } from '@/store/visit';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
@@ -19,6 +20,9 @@ import { VisitActions } from '@/store/visit/visit.actions';
 import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
 import { useSelector } from 'react-redux';
 import { getInfantVisitsSelector } from '@/store/infant/infant.selectors';
+import { referralThunkActions } from '@/store/referral';
+import { ReferralActions } from '@/store/referral/referral.actions';
+import { GrowthMonitoring } from './pillar-1-steps';
 
 export interface Question {
   question: string;
@@ -43,12 +47,15 @@ export interface DynamicFormProps {
   isTipPage?: boolean;
   steps?: any[]; // TODO: add type
   sectionQuestions?: SectionQuestions[];
+  growthMonitoring?: GrowthMonitoring;
   setIsTip?: (value: boolean) => void;
   setSectionQuestions?: (value?: SectionQuestions[]) => void;
+  setReferralsInput?: (value?: VisitDataStatusFilterInput[]) => void;
   setEnableButton?: (value: boolean) => void;
   onNextStep?: () => void;
   onPreviousStep?: () => void;
   onClose?: () => void;
+  setGrowthMonitoring?: (value: GrowthMonitoring) => void;
 }
 
 export const DynamicForm = ({
@@ -65,16 +72,25 @@ export const DynamicForm = ({
   const [isEnableButton, setIsEnableButton] = useState(false);
   const [sectionQuestions, setSectionQuestions] =
     useState<SectionQuestions[]>();
+  const [referralsInput, setReferralsInput] =
+    useState<VisitDataStatusFilterInput[]>();
+  const [growthMonitoring, setGrowthMonitoring] = useState<GrowthMonitoring>();
 
   const { isLoading } = useThunkFetchCall(
     'visits',
     VisitActions.ADD_VISIT_FORM_DATA
   );
+  const { isLoading: isLoadingReferral } = useThunkFetchCall(
+    'referrals',
+    ReferralActions.UPDATE_VISIT_DATA_STATUS
+  );
+
   const wasLoading = usePrevious(isLoading);
+  const wasLoadingReferral = usePrevious(isLoadingReferral);
 
   const visits = useSelector(getInfantVisitsSelector);
-  const MOCKED_VISIT_ID =
-    visits[0]?.id; /* '454686a9-2142-4061-aa47-4e89d46110b9' */
+  const MOCKED_VISIT_ID = visits[0]?.id;
+  /* '454686a9-2142-4061-aa47-4e89d46110b9' */
 
   const { successDialog } = useRequestResponseDialog();
 
@@ -122,12 +138,34 @@ export const DynamicForm = ({
     [setSectionQuestionsForm]
   );
 
+  const handleSetReferrals = useCallback(
+    (value: VisitDataStatusFilterInput[]) => {
+      setReferralsInput((prevState) => {
+        const newState = [...(prevState || [])];
+        value.forEach((item) => {
+          const index = newState.findIndex((element) => element.id === item.id);
+          if (index !== -1) {
+            newState[index].isCompleted = item.isCompleted;
+          } else {
+            newState.push(item);
+          }
+        });
+        return newState;
+      });
+    },
+    []
+  );
+
+  const handleGrowthMonitoring = useCallback((value: GrowthMonitoring) => {
+    setGrowthMonitoring?.((prevState) => ({ ...prevState, ...value }));
+  }, []);
+
   const handleOnNext = useCallback(() => {
     setIsEnableButton(false);
     onNextStep?.();
   }, [onNextStep]);
 
-  const onSubmit = useCallback(() => {
+  const onSubmit = useCallback(async () => {
     const sections = sectionQuestions?.map((item) => ({
       ...item,
       questions: item.questions.map((question) => ({
@@ -145,15 +183,42 @@ export const DynamicForm = ({
       },
     };
 
+    const referrals = referralsInput?.map((item) => ({
+      ...item,
+      isCompleted: String(item.isCompleted),
+    })) as VisitDataStatusFilterInput[];
+
     appDispatch(
       visitActions.addCompletedVisitsByVisitId({
         visitId: MOCKED_VISIT_ID,
         visits: [name || ''],
       })
     );
-    appDispatch(visitActions.addVisitFormData(input));
-    appDispatch(visitThunkActions.addVisitFormData(input));
-  }, [MOCKED_VISIT_ID, appDispatch, infant?.user?.id, name, sectionQuestions]);
+
+    if (!!sections?.length) {
+      appDispatch(visitActions.addVisitFormData(input));
+      await appDispatch(visitThunkActions.addVisitFormData(input));
+
+      await appDispatch(
+        visitThunkActions.getCompletedVisitsForVisitId({
+          visitId: MOCKED_VISIT_ID,
+        })
+      );
+    }
+
+    if (!!referrals?.length) {
+      appDispatch(
+        referralThunkActions.updateVisitDataStatus({ input: referrals })
+      );
+    }
+  }, [
+    MOCKED_VISIT_ID,
+    appDispatch,
+    infant?.user?.id,
+    name,
+    referralsInput,
+    sectionQuestions,
+  ]);
 
   // TODO: sync visit form
   useLayoutEffect(() => {}, []);
@@ -168,15 +233,21 @@ export const DynamicForm = ({
         infant={infant}
         isTipPage={isTipPage}
         setIsTip={setIsTip}
+        growthMonitoring={growthMonitoring}
         sectionQuestions={sectionQuestions}
         setSectionQuestions={handleSetQuestions}
+        setGrowthMonitoring={handleGrowthMonitoring}
+        setReferralsInput={handleSetReferrals}
         setEnableButton={setIsEnableButton}
         onNextStep={onNextStep}
       />
     );
   }, [
     currentStep,
+    growthMonitoring,
+    handleGrowthMonitoring,
     handleSetQuestions,
+    handleSetReferrals,
     infant,
     isTipPage,
     onNextStep,
@@ -210,11 +281,21 @@ export const DynamicForm = ({
   }, [currentStep, handleOnNext, onSubmit, steps?.length]);
 
   useEffect(() => {
-    if (wasLoading && !isLoading) {
+    if (
+      (wasLoading && !isLoading) ||
+      (wasLoadingReferral && !isLoadingReferral)
+    ) {
       successDialog();
       onClose?.();
     }
-  }, [isLoading, onClose, successDialog, wasLoading]);
+  }, [
+    isLoading,
+    isLoadingReferral,
+    onClose,
+    successDialog,
+    wasLoading,
+    wasLoadingReferral,
+  ]);
 
   return (
     <div className="flex h-full flex-col">

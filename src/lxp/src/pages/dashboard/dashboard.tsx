@@ -463,7 +463,6 @@ export const Dashboard: React.FC = () => {
   const goToClassroom = () => {
     if (
       (classroom && classroom.id) ||
-      (classroom && classroom.classroomId) ||
       (classroomGroup && classroomGroup.length > 0)
     ) {
       history.push(ROUTES.CLASSROOM, { activeTabIndex: 1 });
@@ -479,10 +478,7 @@ export const Dashboard: React.FC = () => {
   };
 
   const onNavigation = (navItem: any) => {
-    if (
-      ((classroom && classroom.id) || (classroom && classroom.classroomId)) &&
-      navItem.href.includes('classroom')
-    ) {
+    if (classroom && classroom.id && navItem.href.includes('classroom')) {
       history.push(navItem.href, navItem.params);
     } else if (navItem.href.includes('classroom')) {
       showCompleteProfileBlockingDialog();

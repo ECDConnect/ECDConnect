@@ -7,6 +7,7 @@ import {
   getActivityIdForRoutineItem,
   getRoutineItemType,
 } from '@utils/classroom/programme-planning/programmes.utils';
+import ProgrammeBaseListItem from '../programme-base-list-item/programme-base-list-item';
 
 export const ProgrammePlanningRoutineListItem: React.FC<
   ProgrammePlanningRoutineListItemProps
@@ -77,7 +78,7 @@ export const ProgrammePlanningRoutineListItem: React.FC<
 
   const getRoutineItemPostSlotRender = () => {
     return (
-      <div className={'w-full flex flex-row items-center justify-end'}>
+      <div className={'flex w-full flex-row items-center justify-end'}>
         <StatusChip
           className={'mr-2'}
           padding={'px-2 py-1'}
@@ -105,7 +106,7 @@ export const ProgrammePlanningRoutineListItem: React.FC<
     ) {
       return (
         <div
-          className={`mr-2 rounded-full p-4 flex flex-row items-center justify-center bg-primary}`}
+          className={`bg-primary} mr-2 flex flex-row items-center justify-center rounded-full p-4`}
           style={{ backgroundColor: routineItem.iconBackgroundColor }}
         >
           <img
@@ -120,14 +121,14 @@ export const ProgrammePlanningRoutineListItem: React.FC<
       return (
         <RoundIcon
           icon={'CheckIcon'}
-          className={'text-white bg-primary mr-2'}
+          className={'bg-primary mr-2 text-white'}
         />
       );
     }
 
     return (
       <div
-        className={`mr-2 rounded-full p-4 flex flex-row items-center justify-center bg-${
+        className={`mr-2 flex flex-row items-center justify-center rounded-full p-4 bg-${
           canLinkActionToType || isMessageBoard ? 'uiLight' : 'primary'
         }`}
         style={{ backgroundColor: routineItem.iconBackgroundColor }}
@@ -138,7 +139,7 @@ export const ProgrammePlanningRoutineListItem: React.FC<
   };
 
   return (
-    <BaseListItem
+    <ProgrammeBaseListItem
       backgroundColor={'white'}
       overwritePreSlotRender={getRoutineItemPreSlotRender}
       titleTypography={{

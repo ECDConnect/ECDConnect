@@ -2,7 +2,7 @@ import { Header, Label } from '@/pages/infant/infant-profile/components';
 import P1 from '@/assets/pillar/p1.svg';
 import { DynamicFormProps } from '../../../../dynamic-form';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { replaceBraces } from '@ecdlink/core';
+import { getAgeInYearsMonthsAndDays, replaceBraces } from '@ecdlink/core';
 import { CheckboxChange, Colours, Divider, Typography } from '@ecdlink/ui';
 import { noneOption, options } from './options';
 import { CheckboxGroup } from '@ecdlink/ui';
@@ -12,7 +12,7 @@ export const getGroupColor = (count: number): Colours => {
     return 'errorDark';
   }
 
-  if (count < 6) {
+  if (count < 5) {
     return 'alertDark';
   }
 
@@ -27,6 +27,19 @@ export const DietFormStep = ({
   setEnableButton,
   setSectionQuestions: setQuestions,
 }: DynamicFormProps) => {
+  const dateOfBirth = useMemo(
+    () => infant?.user?.dateOfBirth,
+    [infant?.user?.dateOfBirth]
+  ) as string;
+
+  const { years: ageYears, months: ageMonths } =
+    getAgeInYearsMonthsAndDays(dateOfBirth);
+
+  const isChild6Months = useMemo(
+    () => !ageYears && ageMonths < 7,
+    [ageMonths, ageYears]
+  );
+
   const [optionList, setOptionList] = useState<
     {
       icon?: JSX.Element;
@@ -34,7 +47,7 @@ export const DietFormStep = ({
       description?: string;
       disabled?: boolean;
     }[]
-  >(options);
+  >(options(isChild6Months));
 
   const [question, setAnswers] = useState({
     question: dietFormQuestion,

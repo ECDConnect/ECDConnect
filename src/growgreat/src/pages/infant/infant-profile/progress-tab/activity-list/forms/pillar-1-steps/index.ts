@@ -1,3 +1,5 @@
+import { AlertSeverityType } from '@ecdlink/ui';
+
 export { WeightAndLengthFormStep } from './weight-and-length/form';
 export { WeightAndLengthResultStep } from './weight-and-length/result';
 export { MidUpperArmCircumferenceResultStep } from './mid-upper-arm-circumference/result';
@@ -19,3 +21,27 @@ export { FirstFoodsStep } from './nutrition/mixed-feeding-flow/first-food';
 export { ComplementaryFeedingStep } from './nutrition/mixed-feeding-flow/complementary-feeding';
 export { DietFormStep } from './nutrition/complementary-feeding-flow/diet-form';
 export { ResourcesStep } from './nutrition/complementary-feeding-flow/resources';
+
+export interface GrowthMonitoring {
+  [key: string]: any;
+  weight?: {
+    value:
+      | 'normal'
+      | 'severely underweight'
+      | 'underweight'
+      | 'overweight'
+      | 'obese';
+    statusType: AlertSeverityType;
+  };
+  length?: {
+    value: 'normal' | 'severely stunted' | 'stunted';
+    statusType: AlertSeverityType;
+  };
+  muac?: {
+    value:
+      | 'normal'
+      | 'severe acute malnutrition'
+      | 'moderate acute malnutrition';
+    statusType: AlertSeverityType;
+  };
+}

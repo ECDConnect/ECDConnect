@@ -17,7 +17,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart {
+namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
+{
     [ExtendObjectType(OperationTypeNames.Query)]
     public class ProgrammeQueryExtension
     {
@@ -58,15 +59,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart {
                 return programmes;
 
             var programmeRepo = repoFactory.CreateGenericRepository<Programme>(userContext: requestingUser.Id);
-            programmes = programmeRepo
+
+            return programmeRepo
                 .GetAll()
-                .Include(p => p.ClassroomGroup)
+                .Where(p => p.IsActive
+                    && p.ClassroomGroupId != null
+                    && p.ClassroomGroup.UserId == Guid.ParseExact(targetPractitioner.UserId, "D"))
                 .Include(c => c.DailyProgrammes)
-                .Where(p => p.IsActive && p.ClassroomGroupId != null && p.ClassroomGroup.UserId == Guid.ParseExact(targetPractitioner.UserId, "D"))
+                .Include(p => p.ClassroomGroup)
                 .OrderBy(c => c.StartDate)
                 .ToList();
-
-            return programmes;
         }
 
 

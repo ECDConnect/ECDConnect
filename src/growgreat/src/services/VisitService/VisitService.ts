@@ -264,10 +264,10 @@ class Visit {
     return response.data.data.previousVisitInformationForInfant;
   }
 
-  async getGrowthDataForInfant(infantId: string): Promise<VisitData> {
+  async getGrowthDataForInfant(infantId: string): Promise<VisitData[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
-      data: { growthDataForInfant: VisitData };
+      data: { growthDataForInfant: VisitData[] };
       errors?: {};
     }>(``, {
       query: `
@@ -285,6 +285,7 @@ class Visit {
       `,
       variables: {
         id: infantId,
+        // '6c2bc4ab-f06e-44d1-adee-be91dd98e1b0',
       },
     });
 

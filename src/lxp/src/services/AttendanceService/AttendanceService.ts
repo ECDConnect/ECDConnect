@@ -1,6 +1,7 @@
 import {
   AttendanceDto,
   ChildAttendanceReportModel,
+  ClassRoomChildAttendanceMonthlyReportModel,
   Config,
   MonthlyAttendanceRecord,
 } from '@ecdlink/core';
@@ -50,6 +51,53 @@ class AttendanceService {
     }
 
     return response.data.data.attendance;
+  }
+
+  async getClassroomAttendanceReport(
+    userId: string,
+    classgroupId: string,
+    startDate: Date,
+    endDate: Date
+  ): Promise<ClassRoomChildAttendanceMonthlyReportModel[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      query classroomAttendanceReport(
+        $userId: String
+        $classgroupId: UUID!
+        $startDate: DateTime!
+        $endDate: DateTime!) {
+        classroomAttendanceReport(
+          userId: $userId
+          classgroupId: $classgroupId
+          startDate: $startDate
+          endDate: $endDate
+          ){
+          totalActualAttendance
+          totalExpectedAttendance
+          attendancePercentage
+          classgroupId
+          childFullName
+          childUserId
+          month
+          year 
+        }
+    }
+      `,
+      variables: {
+        userId: userId,
+        classgroupId: classgroupId,
+        startDate: startDate,
+        endDate: endDate,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Get Monthly Attendance Report failed - Server connection error'
+      );
+    }
+    return response.data.data.classroomAttendanceReport;
   }
 
   async getMonthlyAttendanceReport(
