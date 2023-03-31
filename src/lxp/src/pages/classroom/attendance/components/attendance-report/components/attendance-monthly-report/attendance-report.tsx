@@ -117,7 +117,7 @@ export const MonthlyAttendanceReport = ({
 
       {/* TODO: integrate this with backend to get correct data */}
       {reportData?.map((report, idx) => {
-        const reportItemColor = getColor(report.attendancePercentage);
+        const reportItemColor = getColor(report?.attendancePercentage);
         const reportItemShape = getShape(report?.attendancePercentage);
         return (
           <div
@@ -143,7 +143,7 @@ export const MonthlyAttendanceReport = ({
                   className={'ml-2'}
                   type="body"
                   color={reportItemColor}
-                  text={`10 %`}
+                  text={`${report?.attendancePercentage} %`}
                 />
               </div>
             </>

@@ -208,11 +208,13 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
       ? attendanceDate.toISOString()
       : updatedAttendanceDateString;
 
+
+
     const trackAttendanceInput = mapTrackAttendance(
       user?.id || '',
       allAttendedChildren,
       newAttDate,
-      editAttendanceRegisterVisible ? (classroomgroupId ?? '') :(currentProgramme.id ?? '') 
+      currentProgramme.id ?? ''
     );
 
     appDispatch(attendanceActions.trackAttendance(trackAttendanceInput));
