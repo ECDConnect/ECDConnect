@@ -9,24 +9,16 @@ import {
   Typography,
   renderIcon,
 } from '@ecdlink/ui';
-import { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useEffect } from 'react';
 import { useHistory, useLocation } from 'react-router';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
-
-import { AttendanceService } from '@services/AttendanceService';
 import { useAppDispatch } from '@store';
-import { attendanceSelectors, attendanceThunkActions } from '@store/attendance';
-import { authSelectors } from '@store/auth';
-import { childrenSelectors } from '@store/children';
 import { analyticsActions } from '@store/analytics';
 import {
   getColor,
   getShape,
   getShapeClass,
 } from '@utils/classroom/attendance/track-attendance-utils';
-
-import { classroomsSelectors } from '@/store/classroom';
 
 export interface ChildAttendanceReportState {
   childId: string;

@@ -119,7 +119,6 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
     setSelectedClassroomGroups(value.map((x) => x.value));
   };
 
-  console.log("GID", classroomgroupId, editAttendanceRegisterVisible)
 
   const validateAttendanceList = (
     attendanceListId: string,
