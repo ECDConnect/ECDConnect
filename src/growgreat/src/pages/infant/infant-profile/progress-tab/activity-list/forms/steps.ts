@@ -87,13 +87,31 @@ export const careForBabySteps = (isDangerSignsFollowUp: boolean) => [
   MotherCareStep,
 ];
 
-export const getPillar1Steps = (
-  nutritionAnswer: Question['answer'],
-  isToSkipBreastfeedingIssuesRelevantItemsStep: boolean,
-  isShowNutritionStep: boolean,
-  isHowBreastfeedingWorks: boolean,
-  isUnsafeFeedingPractices: boolean
-) => {
+export const getPillar1Steps = ({
+  nutritionAnswer,
+  isToSkipBreastfeedingIssuesRelevantItemsStep,
+  isShowNutritionStep,
+  isFormulaMilkHowBreastfeedingWorks,
+  isFormulaMilkUnsafeFeedingPractices,
+  isMixedFeedingFoodsForm,
+  isMixedFeedingBenefitsOfBreastfeeding,
+  isMixedFeedingHowBreastfeedingWorks,
+  isMixedFeedingUnsafeFeedingPractices,
+  isMixedFeedingFistFoods,
+  isMixedFeedingComplementaryFeeding,
+}: {
+  nutritionAnswer: Question['answer'];
+  isToSkipBreastfeedingIssuesRelevantItemsStep: boolean;
+  isShowNutritionStep: boolean;
+  isFormulaMilkHowBreastfeedingWorks: boolean;
+  isFormulaMilkUnsafeFeedingPractices: boolean;
+  isMixedFeedingFoodsForm: boolean;
+  isMixedFeedingBenefitsOfBreastfeeding: boolean;
+  isMixedFeedingHowBreastfeedingWorks: boolean;
+  isMixedFeedingUnsafeFeedingPractices: boolean;
+  isMixedFeedingFistFoods: boolean;
+  isMixedFeedingComplementaryFeeding: boolean;
+}) => {
   const defaultScreens = [
     WeightAndLengthFormStep,
     WeightAndLengthResultStep,
@@ -114,17 +132,25 @@ export const getPillar1Steps = (
   const formulaMilkOnlyFlow = [
     FormulaMilkNotesStep,
     BenefitsOfBreastfeedingStep,
-    ...(isHowBreastfeedingWorks ? [BreastfeedingWorksStep] : []),
-    ...(isUnsafeFeedingPractices ? [UnsafeFeedingPracticesStep] : []),
+    ...(isFormulaMilkHowBreastfeedingWorks ? [BreastfeedingWorksStep] : []),
+    ...(isFormulaMilkUnsafeFeedingPractices
+      ? [UnsafeFeedingPracticesStep]
+      : []),
   ];
 
   const mixedFeedingFlow = [
-    FoodsFormStep,
-    MixedBenefitsOfBreastfeedingStep,
-    MixedBreastfeedingWorksStep,
-    MixedUnsafeFeedingPracticesStep,
-    FirstFoodsStep,
-    ComplementaryFeedingStep,
+    ...(isMixedFeedingFoodsForm ? [FoodsFormStep] : []),
+    ...(isMixedFeedingBenefitsOfBreastfeeding
+      ? [MixedBenefitsOfBreastfeedingStep]
+      : []),
+    ...(isMixedFeedingHowBreastfeedingWorks
+      ? [MixedBreastfeedingWorksStep]
+      : []),
+    ...(isMixedFeedingUnsafeFeedingPractices
+      ? [MixedUnsafeFeedingPracticesStep]
+      : []),
+    ...(isMixedFeedingFistFoods ? [FirstFoodsStep] : []),
+    ...(isMixedFeedingComplementaryFeeding ? [ComplementaryFeedingStep] : []),
   ];
 
   const complementaryFeedingFlow = [DietFormStep, ResourcesStep];

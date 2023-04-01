@@ -83,6 +83,28 @@ export const Form = ({ onBack }: FormProps) => {
     [ageDays, isFirstVisit]
   );
 
+  const isMixedFeedingFoodsForm = isChild6Months;
+  const isMixedFeedingBenefitsOfBreastfeeding = useMemo(
+    () => isFirstVisit && ageDays < 7,
+    [ageDays, isFirstVisit]
+  );
+  const isMixedFeedingHowBreastfeedingWorks = useMemo(
+    () => isFirstVisit && ageDays >= 7 && ageDays <= 13,
+    [ageDays, isFirstVisit]
+  );
+  const isMixedFeedingUnsafeFeedingPractices = useMemo(
+    () => isFirstVisit && ageDays >= 14 && ageDays <= 56,
+    [ageDays, isFirstVisit]
+  );
+  const isMixedFeedingFistFoods = useMemo(
+    () => isFirstVisit && !ageYears && ageMonths < 6,
+    [ageMonths, ageYears, isFirstVisit]
+  );
+  const isMixedFeedingComplementaryFeeding = useMemo(
+    () => isFirstVisit && !ageYears && ageMonths >= 6 && ageMonths < 9,
+    [ageMonths, ageYears, isFirstVisit]
+  );
+
   const isFollowUp = useCallback(
     (section: string, visitName: string) => {
       return !!previousVisit?.visitDataStatus?.some(
@@ -193,13 +215,19 @@ export const Form = ({ onBack }: FormProps) => {
       case activitiesTypes.careForBaby:
         return careForBabySteps(isDangerSignsFollowUpForBaby);
       case activitiesTypes.pillar1:
-        return getPillar1Steps(
+        return getPillar1Steps({
           nutritionAnswer,
           isToSkipBreastfeedingIssuesRelevantItemsStep,
-          isChild6Months,
+          isShowNutritionStep: isChild6Months,
           isFormulaMilkHowBreastfeedingWorks,
-          isFormulaMilkUnsafeFeedingPractices
-        );
+          isFormulaMilkUnsafeFeedingPractices,
+          isMixedFeedingBenefitsOfBreastfeeding,
+          isMixedFeedingComplementaryFeeding,
+          isMixedFeedingFistFoods,
+          isMixedFeedingFoodsForm,
+          isMixedFeedingHowBreastfeedingWorks,
+          isMixedFeedingUnsafeFeedingPractices,
+        });
       case activitiesTypes.pillar2:
         return pillar2Steps(isDevelopmentalScreeningWeeksFollowUp);
       case activitiesTypes.pillar3:
@@ -220,6 +248,12 @@ export const Form = ({ onBack }: FormProps) => {
     isChild6Months,
     isFormulaMilkHowBreastfeedingWorks,
     isFormulaMilkUnsafeFeedingPractices,
+    isMixedFeedingBenefitsOfBreastfeeding,
+    isMixedFeedingComplementaryFeeding,
+    isMixedFeedingFistFoods,
+    isMixedFeedingFoodsForm,
+    isMixedFeedingHowBreastfeedingWorks,
+    isMixedFeedingUnsafeFeedingPractices,
     isDevelopmentalScreeningWeeksFollowUp,
     isPillar4FollowUp,
     referralsForInfant?.length,
