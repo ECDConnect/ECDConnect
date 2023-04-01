@@ -3,40 +3,105 @@ import { ReactComponent as Polly } from '@/assets/momImageSvg.svg';
 import { Header, TipCard } from '@/pages/infant/infant-profile/components';
 import P1 from '@/assets/pillar/p1.svg';
 import { DynamicFormProps } from '../../../../dynamic-form';
-import { Fragment, useEffect, useMemo } from 'react';
+import {
+  ChangeEvent,
+  Fragment,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { HealthPromotion } from '../../../../components/health-promotion';
+import { useSelector } from 'react-redux';
+import {
+  getPreviousVisitInformationForInfantSelector,
+  getVisitAnswersForInfantSelector,
+} from '@/store/visit/visit.selectors';
 
 export const FormulaMilkNotesStep = ({
   infant,
   isTipPage,
   setIsTip,
   setEnableButton,
+  setSectionQuestions,
 }: DynamicFormProps) => {
+  const [isPreviousNotes, setIsPreviousNotes] = useState(false);
+  const [answer, setAnswer] = useState<string>();
+
   const caregiverName = useMemo(
     () => infant?.caregiver?.firstName || '',
     [infant?.caregiver?.firstName]
   );
-  const sectionName = 'Formula milk only';
+  const visitSection = 'Formula milk only';
+  const noteQuestion = 'Add a note';
 
-  // TODO: add integration (G5.3.11)
-  const mockedNote = {
-    name: 'Notes from 12 March visit',
-    type: 'formula milk only',
-    note: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-  };
-  // TODO: add integration (G5.3.11)
-  const isPreviousNote = true;
+  const previousVisit = useSelector(
+    getPreviousVisitInformationForInfantSelector
+  );
+  const previousAnswers = useSelector(getVisitAnswersForInfantSelector);
+
+  const previousNotes = useMemo(
+    () => previousAnswers?.filter((item) => item.question === noteQuestion),
+    [previousAnswers]
+  );
+
+  // TODO: get the last visit data, it's necessary check the date from the last visit
+  const previousNote = useMemo(() => {
+    const insertedDate = previousVisit?.visitDataStatus?.[0]?.insertedDate;
+    const date = !!insertedDate ? new Date(insertedDate) : undefined;
+    const note = previousNotes?.find(
+      (item) => item.question === noteQuestion
+    )?.questionAnswer;
+
+    return { date, note };
+  }, [previousNotes, previousVisit?.visitDataStatus]);
+
+  const onOptionSelected = useCallback(
+    (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      const value = event.target.value;
+
+      setAnswer(value);
+      setSectionQuestions?.([
+        {
+          visitSection,
+          questions: [
+            {
+              question: noteQuestion,
+              answer: value,
+            },
+          ],
+        },
+      ]);
+    },
+    [setSectionQuestions]
+  );
+
+  const renderNote = useCallback((date: Date, note: string) => {
+    return (
+      <div className="bg-uiBg rounded-15 flex flex-col gap-2 p-4">
+        <Typography
+          type="h3"
+          text={`Notes from ${date.toLocaleDateString('en-ZA', {
+            day: 'numeric',
+            month: 'long',
+          })} visit`}
+          color="textDark"
+        />
+        <Typography type="body" text={note || ''} color="textMid" />
+      </div>
+    );
+  }, []);
 
   useEffect(() => {
-    setEnableButton && setEnableButton(true);
+    setEnableButton?.(true);
   }, [setEnableButton]);
 
   if (isTipPage) {
     return (
       <HealthPromotion
         title={`Discuss with ${caregiverName}`}
-        subTitle={sectionName}
-        section={sectionName}
+        subTitle={visitSection}
+        section={visitSection}
         client={caregiverName}
         onClose={() => setIsTip && setIsTip(false)}
       />
@@ -68,53 +133,32 @@ export const FormulaMilkNotesStep = ({
           }
         />
         <FormInput
-          label="Add a note"
+          label={noteQuestion}
           subLabel="Optional"
           className={'mt-3'}
           textInputType="textarea"
           placeholder={'E.g. Not able to breastfeed for health reasons.'}
+          value={answer}
+          onChange={onOptionSelected}
         />
-        {isPreviousNote && (
-          <>
-            <div className="bg-uiBg rounded-15 flex flex-col gap-2 p-4">
-              <Typography type="h3" text={mockedNote.name} color="textDark" />
-              <div className="flex">
-                <Typography
-                  type="body"
-                  text="Feeding type:"
-                  color="textMid"
-                  weight="bold"
-                  className="pr-1"
-                />
-                <Typography
-                  type="body"
-                  text={mockedNote.type}
-                  color="textMid"
-                />
-              </div>
-              <div className="flex">
-                <Typography
-                  type="body"
-                  text="Your note:"
-                  color="textMid"
-                  weight="bold"
-                  className="w-36"
-                />
-                <Typography
-                  type="body"
-                  text={mockedNote.note}
-                  color="textMid"
-                />
-              </div>
-            </div>
-            <Button
-              type="outlined"
-              color="primary"
-              textColor="primary"
-              text="See previous notes"
-              icon="DocumentTextIcon"
-            />
-          </>
+        {!!previousNote.date &&
+          !!previousNote.note &&
+          renderNote(previousNote.date, previousNote.note)}
+        {isPreviousNotes &&
+          previousNotes?.map((item) =>
+            renderNote(new Date(item.insertedDate), item.questionAnswer || '')
+          )}
+        {Number(previousNotes?.length) > 1 && (
+          <Button
+            type="outlined"
+            color="primary"
+            textColor="primary"
+            text={
+              isPreviousNotes ? 'Hide previous notes' : 'See previous notes'
+            }
+            icon="DocumentTextIcon"
+            onClick={() => setIsPreviousNotes((prevState) => !prevState)}
+          />
         )}
       </div>
     </>
