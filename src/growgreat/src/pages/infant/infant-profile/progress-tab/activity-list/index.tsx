@@ -10,6 +10,7 @@ import {
   DialogPosition,
   LoadingSpinner,
   MenuListDataItem,
+  renderIcon,
   StackedList,
   Typography,
 } from '@ecdlink/ui';
@@ -40,6 +41,8 @@ import { useDialog } from '@ecdlink/core';
 import { ReactComponent as PollyNeutral } from '@/assets/pollyNeutral.svg';
 import { Walkthrough } from './walkthrough';
 import { relationshipTypes } from '../../../components/mother-details/mother-details.types';
+import { ReactComponent as PollyImpressed } from '@/assets/pollyImpressed.svg';
+import { userSelectors } from '@/store/user';
 
 export const INFANT_PROFILE_TABS = {
   VISITS: 0,
@@ -66,6 +69,8 @@ export const ActivityList: React.FC = () => {
 
   const location = useLocation();
 
+  const user = useSelector(userSelectors.getUser);
+
   const visits = useSelector(getInfantVisitsSelector);
   const MOCKED_VISIT_ID = visits[0]?.id;
   // '454686a9-2142-4061-aa47-4e89d46110b9';
@@ -78,6 +83,7 @@ export const ActivityList: React.FC = () => {
     getPreviousVisitInformationForInfantSelector
   );
   const isFollowUp = completedVisits?.length === 7;
+  const isAllCompleted = completedVisits?.length === 8;
 
   const [, , , infantId] = location.pathname.split('/');
 
@@ -87,6 +93,16 @@ export const ActivityList: React.FC = () => {
 
   const infant = useSelector((state: RootState) =>
     getInfantById(state, infantId)
+  );
+
+  const infantName = useMemo(
+    () => infant?.user?.firstName || '',
+    [infant?.user?.firstName]
+  );
+
+  const caregiverName = useMemo(
+    () => infant?.caregiver?.firstName || '',
+    [infant?.caregiver?.firstName]
   );
 
   const { isLoading } = useThunkFetchCall(
@@ -196,10 +212,6 @@ export const ActivityList: React.FC = () => {
   const onFormBack = () => {
     window.sessionStorage.removeItem(currentActivityKey);
     setShowForm(false);
-
-    if (selectedOption === activitiesTypes.followUp) {
-      history.push(ROUTES.CLIENTS.ROOT);
-    }
   };
 
   const onHelp = (detailText?: string) => {
@@ -311,52 +323,92 @@ export const ActivityList: React.FC = () => {
             text={today.toLocaleDateString('en-ZA', options)}
             color="textMid"
           />
-          <Typography
-            type="h4"
-            align="left"
-            weight="bold"
-            text="Tap a button below to get started."
-            color="textDark"
-            className="mt-6 mb-4"
-          />
-          {isFollowUp && (
-            <StackedList
-              isFullHeight={false}
-              className={'flex flex-col gap-2'}
-              listItems={followUpForm}
-              type={'MenuList'}
-            />
-          )}
-          {!!uncompletedForms.length && (
+          {isAllCompleted ? (
             <>
-              <StackedList
-                isFullHeight={false}
-                className={'flex flex-col gap-2'}
-                listItems={uncompletedForms}
-                type={'MenuList'}
+              <PollyImpressed className="mt-11 h-28 w-full self-center" />
+              <Typography
+                type="h3"
+                align="center"
+                weight="bold"
+                text={`Well done ${user?.firstName}`}
+                color="textDark"
+                className="w- mt-6 mb-2"
+              />
+              <Typography
+                type="body"
+                align="center"
+                text={`You supported ${caregiverName} and ${infantName} through their first thousand days by completing all activities. Thank you!`}
+                color="textMid"
+                className="mb-4"
+              />
+              <div className="flex items-center justify-center gap-2">
+                {renderIcon('GiftIcon', 'text-primary w-4 h-4')}
+                <Typography
+                  type="body"
+                  align="center"
+                  text={`You earned X points!`}
+                  color="textDark"
+                />
+              </div>
+              <Button
+                className="mt-20 w-full"
+                color="primary"
+                textColor="white"
+                type="filled"
+                text="Back to client profile"
+                onClick={goBack}
               />
             </>
-          )}
-          <div className="mt-8 flex gap-1">
-            {Object.values(activitiesTypes).map((item, index) => (
-              <span
-                key={item}
-                className="rounded-10 h-2"
-                style={{
-                  minWidth: 37,
-                  background:
-                    !!completedVisits?.length &&
-                    index + 1 <= completedVisits?.length
-                      ? '#26ACAF'
-                      : '#D4EEEF',
-                  width: width / Object.values(activitiesTypes).length,
-                }}
+          ) : (
+            <>
+              <Typography
+                type="h4"
+                align="left"
+                weight="bold"
+                text="Tap a button below to get started."
+                color="textDark"
+                className="mt-6 mb-4"
               />
-            ))}
-          </div>
+              {isFollowUp && (
+                <StackedList
+                  isFullHeight={false}
+                  className={'flex flex-col gap-2'}
+                  listItems={followUpForm}
+                  type={'MenuList'}
+                />
+              )}
+              {!!uncompletedForms.length && (
+                <>
+                  <StackedList
+                    isFullHeight={false}
+                    className={'flex flex-col gap-2'}
+                    listItems={uncompletedForms}
+                    type={'MenuList'}
+                  />
+                </>
+              )}
+              <div className="mt-8 flex gap-1">
+                {Object.values(activitiesTypes).map((item, index) => (
+                  <span
+                    key={item}
+                    className="rounded-10 h-2"
+                    style={{
+                      minWidth: 37,
+                      background:
+                        !!completedVisits?.length &&
+                        index + 1 <= completedVisits?.length
+                          ? '#26ACAF'
+                          : '#D4EEEF',
+                      width: width / Object.values(activitiesTypes).length,
+                    }}
+                  />
+                ))}
+              </div>
+            </>
+          )}
           {!!completedVisits?.length && (
             <Button
-              className="mt-8 w-full"
+              className={`${isAllCompleted ? 'mt-4' : 'mt-8'} w-full`}
               type="outlined"
               color="primary"
               textColor="primary"
@@ -385,10 +437,14 @@ export const ActivityList: React.FC = () => {
       <IntroScreen infant={infant} onStartVisit={() => setIsStartVisit(true)} />
     );
   }, [
+    caregiverName,
     completedForms,
     completedVisits?.length,
     followUpForm,
+    goBack,
     infant,
+    infantName,
+    isAllCompleted,
     isFollowUp,
     isLoading,
     isShowCompletedForms,
@@ -397,6 +453,7 @@ export const ActivityList: React.FC = () => {
     previousVisit?.visitDataStatus?.length,
     today,
     uncompletedForms,
+    user?.firstName,
     width,
   ]);
 
