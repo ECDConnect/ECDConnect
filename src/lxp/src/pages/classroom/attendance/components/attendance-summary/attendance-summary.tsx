@@ -231,12 +231,10 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
         .map((x, idx) => ({
           ...x.item,
           onActionClick: () => {
-            openEditRegister(x.group.id ?? '', x.date, true, x.item.title);
+            openEditRegister("x.group.id" ?? '', x.date, true, x.item.title);
           },
         }));
       setAttendanceActionList(actionListToDisplay);
-    } else {
-      setAttendanceActionList([]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
