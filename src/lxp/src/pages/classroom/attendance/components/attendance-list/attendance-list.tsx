@@ -43,6 +43,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
   attendanceDate = new Date(),
   onSubmitSuccess,
   editAttendanceRegisterVisible,
+  classroomgroupId,
 }) => {
   const appDispatch = useAppDispatch();
   const [presentChildrenCount, setPresentChildrenCount] = useState<number>(0);

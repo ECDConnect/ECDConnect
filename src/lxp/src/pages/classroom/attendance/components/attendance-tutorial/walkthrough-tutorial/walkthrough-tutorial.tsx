@@ -23,8 +23,8 @@ export const WalkthroughTutorial = ({
   onClose,
 }: AttendanceTutorialProps) => {
   const { isOnline } = useOnlineStatus();
-  const tutorialCompleteClicks = 3;
-  const tutorialResetClicks = 4;
+  const tutorialCompleteClicks = 2;
+  const tutorialResetClicks = 3;
   const [tutorialProgressClicks, setTutorialProgressClicks] =
     useState<number>(0);
   const [attendanceItem, setAttendanceItem] = useState<AttendanceListDataItem>({
@@ -90,7 +90,7 @@ export const WalkthroughTutorial = ({
 
   useSetState(() => {
     if (!tourActive) {
-      setState({ run: true, stepIndex: 1 });
+      setState({ run: true, stepIndex: 0 });
     }
   });
 
@@ -119,21 +119,10 @@ export const WalkthroughTutorial = ({
           <AttendanceListItem
             className={'bg-successBg mb-1'}
             item={attendanceItem}
-            onBadgeClick={(currentAttendanceItem: AttendanceListDataItem) =>
-              updateItemAttendance(currentAttendanceItem)
-            }
+            walkthrough={true}
           />
 
-          <div
-            id="attendance-list-alone"
-            style={{
-              pointerEvents:
-                (attendanceStatus && tutorialProgressClicks === 0) ||
-                (!attendanceStatus && tutorialProgressClicks === 1)
-                  ? 'auto'
-                  : 'none',
-            }}
-          >
+          <div id="attendance-list-alone">
             <AttendanceListItem
               className={
                 tutorialProgressClicks === 1

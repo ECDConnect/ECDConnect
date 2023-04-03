@@ -4,6 +4,7 @@ using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
+using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Types;
@@ -81,7 +82,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             Guid tenantId = TenantExecutionContext.Tenant.Id;
             input.Id = id;
 
-            user.PhoneNumber = input.PhoneNumber;
+            user.PhoneNumber = replaceIfNotNullOrWhiteSpace(user.PhoneNumber, input.PhoneNumber);
             user.IdNumber = input.IdNumber;
             user.IsSouthAfricanCitizen = input.IsSouthAfricanCitizen;
             user.VerifiedByHomeAffairs = input.VerifiedByHomeAffairs;
@@ -100,16 +101,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 user.UserName = input.IdNumber;
             }
 
+            // If the user changing the email, is different to the user being changed
             // Don't allow changing email address without verification first.
-            if (!string.IsNullOrWhiteSpace(input.Email) && user.Email != input.Email)
+            if (!string.IsNullOrWhiteSpace(input.Email) 
+                && !string.IsNullOrWhiteSpace(user.Email) 
+                && user.Email != input.Email
+                && user.Id != httpContextAccessor.HttpContext.GetUser().Id)
             {
                 user.PendingEmail = input.Email;
                 try
                 {
-                    var token = await userManager.GenerateChangeEmailTokenAsync(user, user.PendingEmail);
                     var apiUrl = new Uri("https://" + httpContextAccessor.HttpContext.Request.Host.ToString());
-                    // TODO: Add emails to a message queue instead
-                    await securityNotificationManager.RequestVerifyEmailAsync(user, apiUrl, token);
+                    await securityNotificationManager.RequestVerifyEmailAsync(user, apiUrl);
                 }
                 catch (Exception exception)
                 {
@@ -118,6 +121,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
                 // Set email back to original so that it must first be verified.
                 input.Email = user.Email;
+            }
+
+            // If the email is different (or will become unconfirmed)
+            // and if there's an email to set,
+            // and if the user is changing their own email (changes from portal must be verified)
+            // allow them to change it without verification
+            if (user.Email != input.Email 
+                && !string.IsNullOrWhiteSpace(input.Email)
+                && user.Id == httpContextAccessor.HttpContext.GetUser().Id)
+            {
+                user.Email = input.Email;
+                user.EmailConfirmed = false;
             }
 
             if (!string.IsNullOrWhiteSpace(input.ProfileImageUrl))
@@ -133,6 +148,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             }
 
             return user;
+        }
+
+        private static string replaceIfNotNullOrWhiteSpace(string original, string @new)
+        {
+            return string.IsNullOrWhiteSpace(@new) ? original : @new;
+        }
+
+        private static bool replaceIfNotNull(bool original, bool? @new)
+        {
+            return @new is null ? original : @new ?? false;
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Delete)]

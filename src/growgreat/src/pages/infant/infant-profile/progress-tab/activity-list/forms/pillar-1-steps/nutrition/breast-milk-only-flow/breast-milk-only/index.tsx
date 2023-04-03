@@ -9,6 +9,9 @@ import { useEffect, useMemo } from 'react';
 import { HealthPromotion } from '../../../../components/health-promotion';
 import { activitiesColours } from '../../../../../activities-list';
 import { Video } from '../../../../components/video';
+import { getAgeInYearsMonthsAndDays } from '@ecdlink/core';
+import { differenceInDays } from 'date-fns';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 export const BreastMilkOnlyStep = ({
   infant,
@@ -17,6 +20,8 @@ export const BreastMilkOnlyStep = ({
   setEnableButton,
   onNextStep,
 }: DynamicFormProps) => {
+  const { isOnline } = useOnlineStatus();
+
   const name = useMemo(
     () => infant?.user?.firstName || '',
     [infant?.user?.firstName]
@@ -26,12 +31,87 @@ export const BreastMilkOnlyStep = ({
     [infant?.caregiver?.firstName]
   );
   const sectionName = 'Breast milk only';
-  const videoSection = 'Benefits of Breastfeeding';
 
-  // TODO: add integration
-  const isVideo = true;
-  // TODO: add integration
-  const isAfter6Months = false;
+  const dateOfBirth = infant?.user?.dateOfBirth as string;
+
+  const { years: ageYears, months: ageMonths } =
+    getAgeInYearsMonthsAndDays(dateOfBirth);
+  const ageDays = differenceInDays(new Date(), new Date(dateOfBirth));
+
+  // TODO: add G3 visits tab integration
+  const isFirstVisit = true;
+
+  const isBenefitsOfBreastfeeding = useMemo(
+    () => isFirstVisit && ageDays < 7,
+    [ageDays, isFirstVisit]
+  );
+  const isHowBreastfeedingWorks = useMemo(
+    () => isFirstVisit && ageDays >= 7 && ageDays <= 13,
+    [ageDays, isFirstVisit]
+  );
+  const isBreastfeedingChallenges = useMemo(
+    () => isFirstVisit && ageDays >= 14 && ageDays <= 27,
+    [ageDays, isFirstVisit]
+  );
+  const isUnsafeFeedingPractices = useMemo(
+    () => isFirstVisit && ageDays >= 28 && ageDays <= 48,
+    [ageDays, isFirstVisit]
+  );
+  const isBreastfeedingInTheWorkplace = useMemo(
+    () => isFirstVisit && !ageYears && ageMonths <= 4,
+    [ageMonths, ageYears, isFirstVisit]
+  );
+
+  const isAfter6Months = !ageYears && ageMonths === 6;
+
+  const { promptMessage, videoSection } = useMemo(() => {
+    if (isBenefitsOfBreastfeeding) {
+      return {
+        promptMessage: `Watch the Benefits of Breastfeeding video with ${caregiverName} and answer any questions.`,
+        videoSection: 'Benefits of Breastfeeding',
+      };
+    }
+
+    if (isHowBreastfeedingWorks) {
+      return {
+        promptMessage: `Watch the How Breastfeeding Works video with ${caregiverName} and answer any questions.`,
+        videoSection: 'How Breastfeeding Works',
+      };
+    }
+
+    if (isBreastfeedingChallenges) {
+      return {
+        promptMessage: `Watch the Breastfeeding Challenges video with ${caregiverName} and answer any questions.`,
+        videoSection: 'Breastfeeding Challenges',
+      };
+    }
+
+    if (isUnsafeFeedingPractices) {
+      return {
+        promptMessage: `Watch the Unsafe Feeding Practices video with ${caregiverName} and answer any questions.`,
+        videoSection: 'Unsafe Feeding Practices',
+      };
+    }
+
+    if (isBreastfeedingInTheWorkplace) {
+      return {
+        promptMessage: `Watch the Breastfeeding in the Workplace video with ${caregiverName} and answer any questions.`,
+        videoSection: 'Breastfeeding in the Workplace',
+      };
+    }
+
+    return {
+      promptMessage: undefined,
+      videoSection: undefined,
+    };
+  }, [
+    caregiverName,
+    isBenefitsOfBreastfeeding,
+    isBreastfeedingChallenges,
+    isBreastfeedingInTheWorkplace,
+    isHowBreastfeedingWorks,
+    isUnsafeFeedingPractices,
+  ]);
 
   useEffect(() => {
     setEnableButton && setEnableButton(true);
@@ -57,7 +137,7 @@ export const BreastMilkOnlyStep = ({
       );
     }
 
-    if (isVideo) {
+    if (!!promptMessage) {
       return (
         <>
           <TipCard
@@ -77,7 +157,7 @@ export const BreastMilkOnlyStep = ({
           />
           <Alert
             type="warning"
-            title={`Watch the Benefits of Breastfeeding video with ${caregiverName} and answer any questions.`}
+            title={promptMessage}
             titleColor="textDark"
             customIcon={
               <div className="rounded-full">
@@ -85,7 +165,11 @@ export const BreastMilkOnlyStep = ({
               </div>
             }
           />
-          <Video section={videoSection} />
+          {isOnline ? (
+            <Video section={videoSection} />
+          ) : (
+            <Alert type="error" title="You can only view this online" />
+          )}
         </>
       );
     }
@@ -109,7 +193,15 @@ export const BreastMilkOnlyStep = ({
         />
       </>
     );
-  }, [caregiverName, isAfter6Months, isVideo, name, setIsTip]);
+  }, [
+    caregiverName,
+    isAfter6Months,
+    isOnline,
+    name,
+    promptMessage,
+    setIsTip,
+    videoSection,
+  ]);
 
   if (isTipPage) {
     return (

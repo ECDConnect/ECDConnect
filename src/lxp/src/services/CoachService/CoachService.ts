@@ -24,7 +24,7 @@ class CoachService {
               isSouthAfricanCitizen
               verifiedByHomeAffairs
               dateOfBirth
-              idNumber            
+              idNumber
               firstName
               surname
               fullName
@@ -70,7 +70,7 @@ class CoachService {
                 postalCode
                 ward
               }
-            } 
+            }
             signingSignature
             isActive
           }
@@ -92,65 +92,65 @@ class CoachService {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-      query coachByCoachUserId($userId: String) { 
-              coachByCoachUserId(userId: $userId) { 
+      query coachByCoachUserId($userId: String) {
+        GetAllCoach(where: { userId: { eq: $userId } }) {
                signingSignature
-               id       
-               startDate     
-               user { 
-                 id 
-                 userName 
-                 email 
-                 isSouthAfricanCitizen 
-                  verifiedByHomeAffairs     
-                  dateOfBirth       
-                  idNumber   
-                  firstName    
-                  surname   
-                  fullName       
-                  contactPreference    
-                  genderId   
-                  phoneNumber 
-                  profileImageUrl 
-                  roles { 
-                   id 
-                   name 
+               id
+               startDate
+               user {
+                 id
+                 userName
+                 email
+                 isSouthAfricanCitizen
+                  verifiedByHomeAffairs
+                  dateOfBirth
+                  idNumber
+                  firstName
+                  surname
+                  fullName
+                  contactPreference
+                  genderId
+                  phoneNumber
+                  profileImageUrl
+                  roles {
+                   id
+                   name
                   }
-                 } 
+                 }
                  siteAddressId
-                 siteAddress { 
-                   id 
-                   provinceId 
-                   province { 
-                     id 
-                     description 
-                    } 
-                     name 
+                 siteAddress {
+                   id
+                   provinceId
+                   province {
+                     id
+                     description
+                    }
+                     name
                      addressLine1
                      addressLine2
                      addressLine3
                      postalCode
                      ward
                      isActive
-                   } 
-                   franchisorId 
-                   franchisor { 
-                     siteAddressId 
-                     siteAddress { 
-                       id 
-                       provinceId 
+                   }
+                   franchisorId
+                   franchisor {
+                     siteAddressId
+                     siteAddress {
+                       id
+                       provinceId
                        province {
-                         id 
-                         description 
+                         id
+                         description
                         }
-                       name 
+                       name
                        addressLine1
                         addressLine2
                         addressLine3
                         postalCode
                         ward
-                       } 
-                     } 
+                       }
+                     }
                      signingSignature
                      isActive
                    }
@@ -165,7 +165,7 @@ class CoachService {
       throw new Error('Get Coach Failed - Server connection error');
     }
 
-    return response.data.data.coachByCoachUserId;
+    return response.data.data.GetAllCoach[0];
   }
 
   async coachNameByUserId(userId: string): Promise<CoachDto> {
@@ -174,9 +174,9 @@ class CoachService {
       query: `
       query coachNameByUserId($userId: String) {
         coachNameByUserId(userId: $userId) {
-            
+
         }
-      }    
+      }
       `,
       variables: {
         userId: userId,
@@ -190,18 +190,18 @@ class CoachService {
     return response.data.data.coachNameByUserId;
   }
 
-  async updateCoach(userId: string, coach: CoachInput): Promise<boolean> {
+  async updateCoach(coachId: string, coach: CoachInput): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-        mutation updateCoach($id: String!, $input: CoachInput) {
+        mutation updateCoach($id: UUID!, $input: CoachInput) {
           updateCoach(id: $id, input: $input) {
             id
           }
         }
       `,
       variables: {
-        id: userId,
+        id: coachId,
         input: coach,
       },
     });

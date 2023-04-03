@@ -105,9 +105,6 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
     usePrevious(missedAttendanceGroups) || [];
   const previousAttendanceData = usePrevious(attendanceData);
 
-  let hasClosedAttendanceSmartStartPointsMessage = getStorageItem<boolean>(
-    LocalStorageKeys.hasClosedAttendanceSmartStartPointsMessage
-  );
   let isCurrentSmartStartUser = getStorageItem<boolean>(
     LocalStorageKeys.isSmartStartUser
   );
@@ -161,7 +158,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
           holidays,
           todayDate
         );
-
+      console.log(attendanceToDoList);
       if (attendanceToDoList) {
         setMissedAttendanceGroups(attendanceToDoList);
       }
@@ -264,6 +261,8 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
           actionIcon: 'PencilIcon',
           switchTextStyles: true,
           onActionClick: () => {
+            console.log('gid', group.classroomGroup.id);
+            setCurrentEditClassroomGroupId(group.classroomGroup.id);
             openEditRegister(
               group.classroomGroup.id ?? '',
               group.missedDay,
@@ -460,9 +459,8 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
               }
               onBack={() => closeEditAttendanceRegister()}
               editAttendanceRegisterVisible={editAttendanceRegisterVisible}
-              classroomName={
-                missedAttendanceDays.length === 0 ? classroomName : ''
-              }
+              classroomName={classroomName ?? ''}
+              classroomgroupId={currentEditClassroomGroupId ?? ''}
             />
           </div>
         </Dialog>

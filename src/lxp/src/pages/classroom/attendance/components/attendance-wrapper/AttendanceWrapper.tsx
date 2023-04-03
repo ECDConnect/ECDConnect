@@ -139,14 +139,16 @@ export default function MultiRouteWrapper() {
       setState({ attendanceStatus: false });
     } else if (type === 'step:after' && index === 2) {
       setState({ run: true, stepIndex: 3 });
-    } else if (type === 'step:after' && index === 3) {
-      setState({ run: false, stepIndex: 0 });
+    } else if (
+      type === 'step:after' &&
+      index === 3 &&
+      (action === 'reset' || lifecycle === 'complete')
+    ) {
+      setState({ run: false, stepIndex: 0, tourActive: false });
       if (practitioner?.progress! < 3) {
         await updatePractitionerProgress();
       }
       history.push(ROUTES.CLASSROOM, { activeTabIndex: 0 });
-    } else if (action === 'reset' || lifecycle === 'complete') {
-      setState({ run: false, stepIndex: 0, tourActive: false });
     }
   };
 
