@@ -3,11 +3,11 @@ import { useHistory, useLocation } from 'react-router';
 
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import {
-  ActionModal,
   BannerWrapper,
   Button,
   Colours,
   DialogPosition,
+  Dialog,
   LoadingSpinner,
   MenuListDataItem,
   renderIcon,
@@ -37,12 +37,10 @@ import { IntroScreen } from './intro-screen';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { VisitActions } from '@/store/visit/visit.actions';
 import { DevelopmentalScreeningVisitSection } from './forms/pillar-2-steps/developmental-screening-weeks';
-import { useDialog } from '@ecdlink/core';
-import { ReactComponent as PollyNeutral } from '@/assets/pollyNeutral.svg';
-import { Walkthrough } from './walkthrough';
 import { relationshipTypes } from '../../../components/mother-details/mother-details.types';
 import { ReactComponent as PollyImpressed } from '@/assets/pollyImpressed.svg';
 import { userSelectors } from '@/store/user';
+import { ActivityInfoPage } from './activity-info-page';
 
 export const INFANT_PROFILE_TABS = {
   VISITS: 0,
@@ -57,7 +55,7 @@ export const ActivityList: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [isShowCompletedForms, setIsShowCompletedForms] = useState(false);
   const [isStartVisit, setIsStartVisit] = useState(false);
-  const [isDisplayWalkthrough, setIsDisplayWalkthrough] = useState(false);
+  const [displayHelp, setDisplayHelp] = useState(false);
 
   const selectedOption = window.sessionStorage.getItem(currentActivityKey);
 
@@ -88,8 +86,6 @@ export const ActivityList: React.FC = () => {
   const [, , , infantId] = location.pathname.split('/');
 
   const appDispatch = useAppDispatch();
-
-  const dialog = useDialog();
 
   const infant = useSelector((state: RootState) =>
     getInfantById(state, infantId)
@@ -214,43 +210,8 @@ export const ActivityList: React.FC = () => {
     setShowForm(false);
   };
 
-  const onHelp = (detailText?: string) => {
-    dialog({
-      blocking: false,
-      position: DialogPosition.Middle,
-      color: 'bg-white',
-      render: (onClose) => {
-        return (
-          <ActionModal
-            className="z-50"
-            title="Hello!"
-            detailText="Would you like me to show you how to use this screen?"
-            customIcon={<PollyNeutral className="mb-3 h-24 w-24" />}
-            actionButtons={[
-              {
-                colour: 'primary',
-                text: 'Yes, help me!',
-                textColour: 'white',
-                type: 'filled',
-                leadingIcon: 'CheckCircleIcon',
-                onClick: () => {
-                  onClose();
-                  setIsDisplayWalkthrough(true);
-                },
-              },
-              {
-                colour: 'primary',
-                text: 'No, skip',
-                textColour: 'primary',
-                type: 'outlined',
-                leadingIcon: 'ClockIcon',
-                onClick: onClose,
-              },
-            ]}
-          />
-        );
-      },
-    });
+  const onHelp = () => {
+    setDisplayHelp(true);
   };
 
   useLayoutEffect(() => {
@@ -457,34 +418,38 @@ export const ActivityList: React.FC = () => {
     width,
   ]);
 
-  if (isDisplayWalkthrough) {
-    return (
-      <Walkthrough
-        infant={infant}
-        onClose={() => setIsDisplayWalkthrough(false)}
-      />
-    );
-  }
-
   if (showForm && selectedOption) {
     return <Form onBack={onFormBack} />;
   }
 
   return (
-    <BannerWrapper
-      size="medium"
-      renderBorder
-      onBack={goBack}
-      title={`${infant?.user?.firstName || ''} ${
-        !isLargeName ? infant?.user?.surname || '' : ''
-      }`}
-      subTitle="Child visit activities"
-      backgroundColour="white"
-      displayOffline={!isOnline}
-      displayHelp
-      onHelp={onHelp}
-    >
-      {renderContent}
-    </BannerWrapper>
+    <>
+      <BannerWrapper
+        size="medium"
+        renderBorder
+        onBack={goBack}
+        title={`${infant?.user?.firstName || ''} ${
+          !isLargeName ? infant?.user?.surname || '' : ''
+        }`}
+        subTitle="Child visit activities"
+        backgroundColour="white"
+        displayOffline={!isOnline}
+        displayHelp
+        onHelp={onHelp}
+      >
+        {renderContent}
+      </BannerWrapper>
+      <Dialog
+        fullScreen={false}
+        visible={displayHelp}
+        position={DialogPosition.Full}
+      >
+        <ActivityInfoPage
+          section="Activity Info"
+          subTitle="Road to health activities"
+          setDisplayHelp={setDisplayHelp}
+        />
+      </Dialog>
+    </>
   );
 };

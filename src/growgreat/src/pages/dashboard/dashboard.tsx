@@ -36,12 +36,13 @@ import { CLIENT_TABS } from '../client/client-dashboard/class-dashboard';
 export enum NavigationTypes {
   Home = 'Home',
   ClientFolders = 'Client folders',
-  Pregnant_Mom = 'Pregnant Mom',
-  Child = 'Child',
+  Clients = 'Clients',
+  Visits = 'Visits',
+  Highlights = 'Highlights',
   Profile = 'Profile',
   Messages = 'Messages',
   Training = 'Training',
-  Logout = 'Logout',
+  Logout = 'Log out',
 }
 
 export const Dashboard: React.FC = () => {
@@ -231,15 +232,21 @@ export const Dashboard: React.FC = () => {
       current: false,
       nestedChildren: [
         {
-          name: NavigationTypes.Pregnant_Mom,
-          href: ROUTES.MOM_REGISTER,
+          name: NavigationTypes.Clients,
+          href: ROUTES.CLIENTS.ROOT,
           params: { activeTabIndex: 0 },
           current: false,
         },
         {
-          name: NavigationTypes.Child,
-          href: ROUTES.INFANT_REGISTER,
+          name: NavigationTypes.Visits,
+          href: ROUTES.CLIENTS.ROOT,
           params: { activeTabIndex: 1 },
+          current: false,
+        },
+        {
+          name: NavigationTypes.Highlights,
+          href: ROUTES.CLIENTS.ROOT,
+          params: { activeTabIndex: 2 },
           current: false,
         },
       ],

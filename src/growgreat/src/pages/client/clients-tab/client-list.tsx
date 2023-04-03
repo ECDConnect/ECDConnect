@@ -322,10 +322,10 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
   }, [appDispatch]);
 
   useEffect(() => {
-    if (location.state?.isFindClient) {
+    if (location.state?.isFindClient && !isEmptyState) {
       setSearchTextActive(true);
     }
-  }, [location]);
+  }, [location, isEmptyState]);
 
   return (
     <div className={styles.overlay}>
@@ -384,7 +384,7 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
           <IconInformationIndicator
             className="px-10 pt-28"
             title={
-              isEmptyState ? "You don't have any client yet!" : 'No results'
+              isEmptyState ? "You don't have any clients yet!" : 'No results'
             }
             subTitle={
               isEmptyState

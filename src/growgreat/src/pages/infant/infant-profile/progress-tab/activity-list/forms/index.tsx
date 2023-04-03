@@ -147,8 +147,10 @@ export const Form = ({ onBack }: FormProps) => {
 
   const activityName = window.sessionStorage.getItem(currentActivityKey) || '';
 
-  // TODO: add integration (G5.6.2)
-  const isPillar4FollowUp = true;
+  const isPillar4FollowUp = isFollowUp(
+    dangerSignsVisitSection,
+    activitiesTypes.pillar4
+  );
 
   const handleOnClose = useCallback(() => {
     dialog({
