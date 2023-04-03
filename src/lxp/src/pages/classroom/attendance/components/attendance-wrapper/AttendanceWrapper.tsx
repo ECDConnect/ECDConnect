@@ -16,8 +16,6 @@ import { useSelector } from 'react-redux';
 import { authSelectors } from '@/store/auth';
 import { practitionerSelectors } from '@/store/practitioner';
 
-
-
 export default function MultiRouteWrapper() {
   const history = useHistory();
   const userAuth = useSelector(authSelectors.getAuthUser);
@@ -26,8 +24,6 @@ export default function MultiRouteWrapper() {
     setState,
     state: { run, stepIndex, steps, attendanceStatus, enableButton },
   } = useAppContext();
-  
-
 
   useSetState(() => {
     setState({
@@ -143,13 +139,17 @@ export default function MultiRouteWrapper() {
       setState({ attendanceStatus: false });
     } else if (type === 'step:after' && index === 2) {
       setState({ run: true, stepIndex: 3 });
-    } else if (type === 'step:after' && index === 3 && (action === 'reset' ||lifecycle === 'complete')) {
+    } else if (
+      type === 'step:after' &&
+      index === 3 &&
+      (action === 'reset' || lifecycle === 'complete')
+    ) {
       setState({ run: false, stepIndex: 0, tourActive: false });
       if (practitioner?.progress! < 3) {
         await updatePractitionerProgress();
       }
       history.push(ROUTES.CLASSROOM, { activeTabIndex: 0 });
-    } 
+    }
   };
 
   return (

@@ -121,14 +121,13 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
         setMyMonth(twoMonthsLater);
         return setMyYear(twoMonthsLater);
       }
-    }
 
-    if (date.getFullYear() > myYear.getFullYear()) {
-      setMyDay(currentDate);
-      setMyMonth(currentDate);
-      return setMyYear(currentDate);
+      if (date.getFullYear() > myYear.getFullYear()) {
+        setMyDay(currentDate);
+        setMyMonth(currentDate);
+        return setMyYear(currentDate);
+      }
     }
-
     return setMyYear(date);
   };
 
@@ -173,7 +172,7 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
             placeholderText={'Please select a date'}
             className="text-textMid bg-uiBg focus:border-primary focus:ring-primary mt-1 w-full rounded-md border-none text-lg shadow-sm"
             selected={myDay}
-            onChange={(date: Date) => setMyDay(date)}
+            onChange={(date: Date) => setMyDay(date || currentDate)}
             dateFormat="dd"
             renderDayContents={renderDayContents}
             renderCustomHeader={() => <></>}
@@ -189,7 +188,7 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
             placeholderText={'Please select a date'}
             className="text-textMid bg-uiBg focus:border-primary focus:ring-primary mt-1 w-full rounded-md border-none text-lg shadow-sm"
             selected={myMonth}
-            onChange={(date: Date) => setMyMonth(date)}
+            onChange={(date: Date) => setMyMonth(date || currentDate)}
             renderCustomHeader={() => <></>}
             dateFormat="MMMM"
             showMonthYearPicker
@@ -207,7 +206,7 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
             placeholderText={'Please select a date'}
             className="bg-uiBg text-textMid focus:border-primary focus:ring-primary mt-1 w-full rounded-md border-none text-lg shadow-sm"
             selected={myYear}
-            onChange={onChangeYear}
+            onChange={(date: Date) => onChangeYear(date || currentDate)}
             dateFormat="yyyy"
             showYearPicker
             {...(!!expectedDateOfDelivery

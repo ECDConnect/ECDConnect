@@ -63,9 +63,7 @@ export const SicknessStep = ({
         hexBackgroundColor={activitiesColours.pillar4.secondaryColor}
       />
       <div className="flex flex-col gap-4 p-4">
-        <Label
-          text={replaceBraces(question, infant?.caregiver?.firstName || '')}
-        />
+        <Label text={replaceBraces(question, name || '')} />
         <ButtonGroup<boolean>
           color="secondary"
           type={ButtonGroupTypes.Button}

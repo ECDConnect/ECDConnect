@@ -60,7 +60,6 @@ export const UnsafeFeedingPracticesStep = ({
           }
         />
         <Video section={videoSection} />
-        <>TODO: Add G5.3.13</>
       </div>
     </>
   );

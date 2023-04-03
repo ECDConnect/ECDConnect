@@ -103,13 +103,6 @@ const InitialStoreSetup: React.FC = ({ children }) => {
 
   useEffect(() => {
     if (userData) {
-      (async () =>
-        await appDispatch(coachThunkActions.getCoachByUserId({})).unwrap())();
-    }
-  }, [appDispatch, userData]);
-
-  useEffect(() => {
-    if (userData) {
       if (practitioners && practitioners?.length > 0) {
         const currentPractitioner = practitioners.find(
           (item) => item?.userId === userData?.id!
@@ -121,8 +114,12 @@ const InitialStoreSetup: React.FC = ({ children }) => {
             })
           ).unwrap())();
       }
+      if (isCoach) {
+        (async () =>
+          await appDispatch(coachThunkActions.getCoachByUserId({})).unwrap())();
+      }
     }
-  }, [appDispatch, userData, practitioners]);
+  }, [appDispatch, userData, practitioners, isCoach]);
 
   useEffect(() => {
     if (userData) {
