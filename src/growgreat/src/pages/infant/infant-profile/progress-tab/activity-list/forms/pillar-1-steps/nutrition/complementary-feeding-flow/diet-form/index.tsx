@@ -141,7 +141,7 @@ export const DietFormStep = ({
         title={replaceBraces(visitSection, name)}
       />
       <div className="flex flex-col gap-2 p-4">
-        <Label text={replaceBraces(question.question, caregiverName)} />
+        <Label text={replaceBraces(question.question, name)} />
         <Divider dividerType="dashed" />
         <Typography
           type="h4"
