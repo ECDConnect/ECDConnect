@@ -36,10 +36,10 @@ export const Logout: React.FC = () => {
             leadingIcon: 'CheckCircleIcon',
           },
           {
-            type: 'filled',
+            type: 'outlined',
             colour: 'primary',
             text: 'No, cancel',
-            textColour: 'white',
+            textColour: 'primary',
             leadingIcon: 'XCircleIcon',
             onClick: () => history.push(ROUTES.DASHBOARD),
           },
