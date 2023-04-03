@@ -141,6 +141,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
       const attendance = attendanceData as AttendanceDto[];
       const holidays = publicHolidays as Holiday[];
 
+     
       const meetingDays: number[] = getClassroomGroupSchoolDays(
         classProgrammesUpdated
       );
@@ -158,7 +159,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
           holidays,
           todayDate
         );
-      console.log(attendanceToDoList);
+
       if (attendanceToDoList) {
         setMissedAttendanceGroups(attendanceToDoList);
       }
@@ -230,11 +231,11 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
         .map((x, idx) => ({
           ...x.item,
           onActionClick: () => {
-            openEditRegister("x.group.id" ?? '', x.date, true, x.item.title);
+            openEditRegister(x.group.id ?? '', x.date, true, x.item.title);
           },
         }));
       setAttendanceActionList(actionListToDisplay);
-    }
+    } 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     isValidAttendanceDay,
@@ -259,7 +260,6 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
           actionIcon: 'PencilIcon',
           switchTextStyles: true,
           onActionClick: () => {
-            console.log('gid', group.classroomGroup.id);
             setCurrentEditClassroomGroupId(group.classroomGroup.id);
             openEditRegister(
               group.classroomGroup.id ?? '',
@@ -281,10 +281,12 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
     isLast: boolean,
     classGroupName: string
   ) => {
+
     if (isValidAttendanceDay) {
       setClassroomName(classGroupName);
       const allMissedAttendanceDays =
         getAllMissedAttendanceGroupsByClassroomGroupId(missedAttendanceGroups);
+
 
       if (allMissedAttendanceDays && allMissedAttendanceDays.length > 0) {
         allMissedAttendanceDays.sort(sortDateFunction);
@@ -317,6 +319,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
       missedAttendanceGroups &&
       attendanceResult
     ) {
+
       const updatedMissedAttendanceItemIndex = missedAttendanceGroups.findIndex(
         (x) => {
           return isSameDay(x.missedDay, attendanceResult.attendanceDate);
@@ -326,6 +329,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
       const updatedMissedAttendance: MissedAttendanceGroups[] = _.cloneDeep(
         missedAttendanceGroups
       );
+
 
       if (updatedMissedAttendanceItemIndex >= 0) {
         updatedMissedAttendance.splice(updatedMissedAttendanceItemIndex, 1);
@@ -457,7 +461,9 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
               }
               onBack={() => closeEditAttendanceRegister()}
               editAttendanceRegisterVisible={editAttendanceRegisterVisible}
-              classroomName={classroomName ?? ''}
+              classroomName={
+                classroomName ?? ''
+              }
               classroomgroupId={currentEditClassroomGroupId ?? ''}
             />
           </div>
