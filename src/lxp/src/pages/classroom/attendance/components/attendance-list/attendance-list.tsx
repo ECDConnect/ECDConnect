@@ -375,7 +375,9 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
                 attendanceDate={attendanceDate}
                 onAttendanceUpdated={(state) => {
                   validateAttendanceList(
-                    selectedGroup.id ?? '',
+                    editAttendanceRegisterVisible
+                      ? classroomgroupId ?? ''
+                      : selectedGroup.id ?? '',
                     state.listItems,
                     isPrimaryList
                   );
