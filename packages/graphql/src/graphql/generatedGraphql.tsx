@@ -1871,9 +1871,12 @@ export enum GraphActionEnum {
 
 export type HcwHighlights = {
   __typename?: 'HCWHighlights';
-  totalFamilyVisits: Scalars['Int'];
-  totalGrowthMonitored: Scalars['Int'];
-  totalNewClients: Scalars['Int'];
+  totalLastWeekFamilyVisits: Scalars['Int'];
+  totalLastWeekGrowthMonitored: Scalars['Int'];
+  totalLastWeekNewClients: Scalars['Int'];
+  totalThisWeekFamilyVisits: Scalars['Int'];
+  totalThisWeekGrowthMonitored: Scalars['Int'];
+  totalThisWeekNewClients: Scalars['Int'];
 };
 
 export type HcwVisitStatus = {

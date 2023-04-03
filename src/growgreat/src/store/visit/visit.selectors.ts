@@ -1,4 +1,5 @@
 import {
+  HcwHighlights,
   HealthPromotion,
   MoreInformation,
   Progress_VisitDataStatus,
@@ -48,3 +49,7 @@ export const getGrowthDataForInfantSelector = (
 export const getVisitAnswersForInfantSelector = (
   state: RootState
 ): VisitData[] | undefined => state.visits.visitAnswersForInfant;
+
+export const getHealthCareWorkerHighlightsSelector = (
+  state: RootState
+): HcwHighlights | undefined => state.visits.healthCareWorkerHighlights;

@@ -13,7 +13,7 @@ export const EditAttendanceRegister = ({
   onBack,
   editAttendanceRegisterVisible,
   classroomName,
-  classroomgroupId
+  classroomgroupId,
 }: EditAttendanceRegisterProps) => {
   const { isOnline } = useOnlineStatus();
 

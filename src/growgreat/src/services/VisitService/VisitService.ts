@@ -2,6 +2,7 @@ import { api } from '../axios.helper';
 import { Config, VisitStatusDto } from '@ecdlink/core';
 import {
   CmsVisitDataInputModelInput,
+  HcwHighlights,
   MoreInformation,
   Progress_VisitDataStatus,
   VisitData,
@@ -333,6 +334,37 @@ class Visit {
     }
 
     return response.data.data.visitAnswersForInfant;
+  }
+
+  async getHealthCareWorkerHighlights(userId: string): Promise<HcwHighlights> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { healthCareWorkerHighlights: HcwHighlights };
+      errors?: {};
+    }>(``, {
+      query: `
+        query GetHealthCareWorkerHighlights($userId: String) {
+          healthCareWorkerHighlights(userId: $userId) {
+            totalThisWeekFamilyVisits
+            totalThisWeekGrowthMonitored
+            totalThisWeekNewClients
+            totalLastWeekFamilyVisits
+            totalLastWeekGrowthMonitored
+            totalLastWeekNewClients
+          }
+        } 
+          `,
+      variables: {
+        userId,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Get Health Care Worker Highlights Failed - Server connection error'
+      );
+    }
+    return response.data.data.healthCareWorkerHighlights;
   }
 }
 

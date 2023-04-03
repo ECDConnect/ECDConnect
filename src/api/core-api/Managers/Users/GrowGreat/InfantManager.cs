@@ -474,11 +474,19 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             return _visitManager.GetClientsNextVisitDate(infantId, Constants.GGSettings.client_child);
         }
 
-        public int GetTotalNewInfantsForWeek(String id)
+        public int GetTotalNewInfantsForWeek(string id, Boolean currentWeek)
         {
             DateTime today = DateTime.Today;
-            DateTime monday = StartOfWeek(today, DayOfWeek.Monday);
-            DateTime next7Days = monday.AddDays(6);
+            var monday = StartOfWeek(today, DayOfWeek.Monday);
+            var next7Days = monday.AddDays(6);
+
+            if (!currentWeek)
+            {
+                int days = DateTime.Now.DayOfWeek - DayOfWeek.Sunday;
+                DateTime pastDate = DateTime.Now.AddDays(-days);
+                monday = StartOfWeek(pastDate, DayOfWeek.Monday);
+                next7Days = monday.AddDays(6);
+            }
 
             return _infantRepo.GetAll().Where(x => x.Caregiver.HealthCareWorker.UserId.Equals(id) && x.IsActive.Equals(true) && x.InsertedDate >= monday && x.InsertedDate <= next7Days).Select(x => x.Id).Distinct().Count();
         }
