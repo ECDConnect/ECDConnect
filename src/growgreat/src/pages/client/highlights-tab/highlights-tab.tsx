@@ -30,22 +30,30 @@ interface CardProps {
 const HEADER_HEIGHT = 122;
 
 export const HighlightsTab = () => {
-  const highlightsData = useSelector(
-    visitSelectors.getHealthCareWorkerHighlightsSelector
-  );
-
   const [showSuccessCard, setShowSuccessCard] = useState(true); // TODO: add integration
-  const [isHighlights, setisHighlights] = useState(false);
+  // const [isHighlights, setisHighlights] = useState(false);
 
   const history = useHistory();
   const { height } = useWindowSize();
   const appDispatch = useAppDispatch();
 
+  const user = useSelector(userSelectors.getUser);
+  const highlightsData = useSelector(
+    visitSelectors.getHealthCareWorkerHighlightsSelector
+  );
+
   // Display Monday through Friday of the current week as subtitle text (show this from Monday 00:00 to Sunday 23:59; then switch to the next week -
   // so the user can review the summary for the previous week's visits on Saturday & Sunday as well)
   const dayNumber = new Date().getUTCDay(); // Mon 1 Tue 2 Wed 3 Thu 4 Fri 5 Sat 6 Sun 7
 
-  var showThisWeek = true;
+  let showThisWeek = true;
+  let isHighlights = false;
+  if (dayNumber >= 1 && dayNumber <= 5) {
+    showThisWeek = true;
+  } else {
+    showThisWeek = false;
+  }
+
   const thisWeek_startDate = `${getWeekDate('monday').getDate()} ${getWeekDate(
     'monday'
   ).toLocaleString('default', { month: 'long' })}`;
@@ -59,14 +67,8 @@ export const HighlightsTab = () => {
     getWeekDate('friday').getDate() - 7
   } ${getWeekDate('friday').toLocaleString('default', { month: 'long' })}`;
 
-  if (dayNumber >= 1 && dayNumber <= 5) {
-    showThisWeek = true;
-  } else {
-    showThisWeek = false;
-  }
-
   if (showThisWeek) {
-    //"IF 0 visits have been completed. 0 children's growth monitored and 0 new clients registered so far this week:
+    //-- IF 0 visits have been completed. 0 children's growth monitored and 0 new clients registered so far this week:
     if (
       highlightsData?.totalThisWeekFamilyVisits === 0 &&
       highlightsData.totalThisWeekGrowthMonitored === 0 &&
@@ -74,17 +76,16 @@ export const HighlightsTab = () => {
     ) {
       //-- IF today is Monday. show the ""last week"" celebratory card shown in UI
       if (dayNumber === 1) {
-        setisHighlights(true);
+        isHighlights = false;
       } else {
         //-- IF today is NOT Monday. show dismissable info message (once user dismisses it. don't show again until the next week)"
-        setisHighlights(false);
+        isHighlights = true;
       }
     } else {
-      setisHighlights(true);
+      isHighlights = true;
     }
   }
 
-  const user = useSelector(userSelectors.getUser);
   const onCloseSuccessCard = useCallback(() => {
     setShowSuccessCard(false);
   }, []);

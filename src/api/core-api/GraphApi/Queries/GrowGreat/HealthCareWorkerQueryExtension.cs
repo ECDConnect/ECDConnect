@@ -72,8 +72,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             highlights.totalLastWeekGrowthMonitored = visitDataManager.GetTotalGrowthInfantsForWeek(userId, false);
             highlights.totalLastWeekNewClients = motherManager.GetTotalNewMothersForWeek(userId, false) + infantManager.GetTotalNewInfantsForWeek(userId, false);
 
-
-
             return highlights;
         }
 
