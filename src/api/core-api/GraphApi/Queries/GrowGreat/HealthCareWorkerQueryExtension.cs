@@ -64,9 +64,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             string userId) {
             HCWHighlights highlights = new HCWHighlights();
             
-            highlights.totalFamilyVisits = visitManager.GetTotalVisitsForWeek(userId, Constants.GGSettings.client_mother) + visitManager.GetTotalVisitsForWeek(userId, Constants.GGSettings.client_child);
-            highlights.totalGrowthMonitored = visitDataManager.GetTotalGrowthInfantsForWeek(userId);
-            highlights.totalNewClients = motherManager.GetTotalNewMothersForWeek(userId) + infantManager.GetTotalNewInfantsForWeek(userId);
+            highlights.totalThisWeekFamilyVisits = visitManager.GetTotalVisitsForWeek(userId, Constants.GGSettings.client_mother, true) + visitManager.GetTotalVisitsForWeek(userId, Constants.GGSettings.client_child, true);
+            highlights.totalThisWeekGrowthMonitored = visitDataManager.GetTotalGrowthInfantsForWeek(userId, true);
+            highlights.totalThisWeekNewClients = motherManager.GetTotalNewMothersForWeek(userId, true) + infantManager.GetTotalNewInfantsForWeek(userId, true);
+
+            highlights.totalLastWeekFamilyVisits = visitManager.GetTotalVisitsForWeek(userId, Constants.GGSettings.client_mother, false) + visitManager.GetTotalVisitsForWeek(userId, Constants.GGSettings.client_child, false); ;
+            highlights.totalLastWeekGrowthMonitored = visitDataManager.GetTotalGrowthInfantsForWeek(userId, false);
+            highlights.totalLastWeekNewClients = motherManager.GetTotalNewMothersForWeek(userId, false) + infantManager.GetTotalNewInfantsForWeek(userId, false);
+
+
 
             return highlights;
         }
