@@ -13,6 +13,7 @@ import { Fragment, useCallback, useMemo, useState } from 'react';
 import { activitiesColours } from '../../../activities-list';
 import { SuccessCard } from '@/components/success-card/success-card';
 import { ReactComponent as CelebrateIcon } from '@/assets/celebrateIcon.svg';
+import { differenceInDays, differenceInMonths } from 'date-fns';
 
 export const ImmunisationsSupplementsDewormingStep = ({
   infant,
@@ -38,6 +39,61 @@ export const ImmunisationsSupplementsDewormingStep = ({
     { text: 'Yes', value: true },
     { text: 'No', value: false },
   ];
+
+  const dateOfBirth = infant?.user?.dateOfBirth as string;
+
+  const ageDays = differenceInDays(new Date(), new Date(dateOfBirth));
+  const ageMonths = differenceInMonths(new Date(), new Date(dateOfBirth));
+
+  const isFirstVisit = true;
+
+  const is6Week = ageDays >= 49 && ageDays <= 56;
+  const is10Week = ageDays >= 57 && ageMonths <= 3;
+  const is14Week = ageMonths === 4;
+  const is6Month = ageMonths >= 6 && ageMonths < 9;
+  const is9Month = ageMonths >= 9 && ageMonths < 12;
+  const is12Month = ageMonths >= 12 && ageMonths < 15;
+  const is18Month = ageMonths >= 18 && ageMonths < 21;
+  const is2Years = ageMonths >= 24 && ageMonths < 30;
+  const is2YearsAHalfYears = ageMonths >= 30 && ageMonths < 36;
+  const is3Years = ageMonths >= 36 && ageMonths < 42;
+  const is3YearsAHalfYears = ageMonths >= 42 && ageMonths < 48;
+  const is4Years = ageMonths >= 48 && ageMonths < 54;
+  const is4AHalfYears = ageMonths >= 54 && ageMonths < 60;
+  const is5Years = ageMonths >= 60;
+
+  const isImmunisationQuestion =
+    isFirstVisit &&
+    (is6Week ||
+      is10Week ||
+      is14Week ||
+      is6Month ||
+      is9Month ||
+      is12Month ||
+      is18Month);
+  const isVitaminAQuestion =
+    isFirstVisit &&
+    (is6Month ||
+      is12Month ||
+      is18Month ||
+      is2Years ||
+      is2YearsAHalfYears ||
+      is3Years ||
+      is3YearsAHalfYears ||
+      is4Years ||
+      is4AHalfYears ||
+      is5Years);
+  const isDewormingQuestion =
+    isFirstVisit &&
+    (is12Month ||
+      is18Month ||
+      is2Years ||
+      is2YearsAHalfYears ||
+      is3Years ||
+      is3YearsAHalfYears ||
+      is4Years ||
+      is4AHalfYears ||
+      is5Years);
 
   const name = useMemo(() => infant?.user?.firstName || '', [infant]);
   const caregiverName = useMemo(
@@ -69,15 +125,27 @@ export const ImmunisationsSupplementsDewormingStep = ({
         },
       ]);
 
-      const isCompleted = updatedQuestions.every(
-        (item) => item.answer !== undefined
-      );
+      const undefinedAnswersCount = updatedQuestions.filter(
+        (item) => item.answer === undefined
+      ).length;
 
-      if (isCompleted) {
+      if (
+        (undefinedAnswersCount === 2 &&
+          !isVitaminAQuestion &&
+          !isDewormingQuestion) ||
+        (undefinedAnswersCount === 1 && !isDewormingQuestion) ||
+        undefinedAnswersCount === 0
+      ) {
         setEnableButton?.(true);
       }
     },
-    [questions, setEnableButton, setQuestions]
+    [
+      isDewormingQuestion,
+      isVitaminAQuestion,
+      questions,
+      setEnableButton,
+      setQuestions,
+    ]
   );
 
   return (
@@ -98,36 +166,42 @@ export const ImmunisationsSupplementsDewormingStep = ({
           type="info"
           title={`If ${caregiverName} has the old Road to Health Booklet, check page 5.`}
         />
-        {questions.map((item, index) => (
-          <Fragment key={item.question}>
-            {index === 1 && (
-              <>
-                <Divider dividerType="dashed" />
-                <Typography
-                  type="h3"
-                  text="Check page 28 of the Road to Health Booklet."
-                  color="textDark"
-                />
-                <Alert
-                  type="info"
-                  title="Or page 9 of the old Road to Health Booklet."
-                />
-              </>
-            )}
-            <Typography type="body" text={item.question} color="textDark" />
-            <ButtonGroup<boolean>
-              color="secondary"
-              type={ButtonGroupTypes.Button}
-              options={options}
-              onOptionSelected={(value) => onOptionSelected(value, index)}
-            />
-          </Fragment>
-        ))}
+        {questions.map((item, index) => {
+          if (index === 0 && !isImmunisationQuestion) return <></>;
+          if (index === 1 && !isVitaminAQuestion) return <></>;
+          if (index === 2 && !isDewormingQuestion) return <></>;
+
+          return (
+            <Fragment key={item.question}>
+              {index === 1 && (
+                <>
+                  <Divider dividerType="dashed" />
+                  <Typography
+                    type="h3"
+                    text="Check page 28 of the Road to Health Booklet."
+                    color="textDark"
+                  />
+                  <Alert
+                    type="info"
+                    title="Or page 9 of the old Road to Health Booklet."
+                  />
+                </>
+              )}
+              <Typography type="body" text={item.question} color="textDark" />
+              <ButtonGroup<boolean>
+                color="secondary"
+                type={ButtonGroupTypes.Button}
+                options={options}
+                onOptionSelected={(value) => onOptionSelected(value, index)}
+              />
+            </Fragment>
+          );
+        })}
         {questions.every((item) => !!item.answer) && (
           <SuccessCard
             customIcon={<CelebrateIcon className="h-14	w-14" />}
             text={`Well done ${caregiverName}!`}
-            subText={`Remind Lethabo to take Themba to the clinic at 9 months for more immunisations.`}
+            subText={`Remind ${caregiverName} to take ${name} to the clinic at 9 months for more immunisations.`}
             textColour="successDark"
             subTextColours="textDark"
             color="successBg"
