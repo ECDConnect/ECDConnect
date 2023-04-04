@@ -36,6 +36,12 @@ class InfantService {
               genderId
               id
             }
+            statusInfo {
+              icon
+              color
+              notes
+              subject
+            }
             weightAtBirth
             lengthAtBirth
           }
