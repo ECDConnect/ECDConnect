@@ -32,6 +32,8 @@ import PointsSummary from '@/pages/client/highlights-tab/points-summary';
 import UpcomingVisit from '@/pages/client/highlights-tab/upcoming-visit';
 import { InfantProfile } from '@/pages/infant/infant-profile';
 import { ActivityList } from '@/pages/infant/infant-profile/progress-tab/activity-list';
+import { MotherContactAddress } from '@/pages/mom/pregnant-profile/contact/edit-address';
+import { MotherContactNumber } from '@/pages/mom/pregnant-profile/contact/edit-number';
 
 function PublicRoutes() {
   return (
@@ -165,6 +167,17 @@ function AuthRoutes() {
         exact
         path={ROUTES.CLIENTS.HIGHLIGHTS_TAB.UPCOMING_VISIT}
         component={UpcomingVisit}
+      />
+
+      <Route
+        exact
+        path={ROUTES.CLIENTS.MOM_PROFILE.CONTACT_TAB.UPDATE_ADDRESS}
+        component={MotherContactAddress}
+      />
+      <Route
+        exact
+        path={ROUTES.CLIENTS.MOM_PROFILE.CONTACT_TAB.UPDATE_NUMBERS}
+        component={MotherContactNumber}
       />
 
       <Route path={ROUTES.MESSAGES} component={Messages} />

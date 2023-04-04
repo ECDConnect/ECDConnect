@@ -84,9 +84,7 @@ export const Contact: React.FC = () => {
                   onSubmit();
                   history.push(
                     ROUTES.CLIENTS.MOM_PROFILE.CONTACT_TAB.UPDATE_NUMBERS,
-                    {
-                      activeTabIndex: 3,
-                    }
+                    { activeTabIndex: 3, id: motherId }
                   );
                 },
               },
@@ -100,9 +98,7 @@ export const Contact: React.FC = () => {
                   onSubmit();
                   history.push(
                     ROUTES.CLIENTS.MOM_PROFILE.CONTACT_TAB.UPDATE_ADDRESS,
-                    {
-                      activeTabIndex: 3,
-                    }
+                    { activeTabIndex: 3, id: motherId }
                   );
                 },
               },
