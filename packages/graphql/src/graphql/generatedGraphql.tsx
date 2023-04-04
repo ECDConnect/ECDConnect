@@ -3931,7 +3931,7 @@ export type MutationSubmitStatementArgs = {
 };
 
 export type MutationTrackAttendanceArgs = {
-  attendance?: InputMaybe<TrackAttendanceModelInput>;
+  attendance?: InputMaybe<Array<InputMaybe<TrackAttendanceModelInput>>>;
 };
 
 export type MutationUpdateAbsenteesArgs = {

@@ -262,7 +262,6 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
               colour: 'primary',
               type: 'filled',
               onClick: () => {
-                // onSubmit();
                 handleFormSubmit();
                 onCancel();
               },
@@ -370,7 +369,9 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
                 attendanceDate={attendanceDate}
                 onAttendanceUpdated={(state) => {
                   validateAttendanceList(
-                    selectedGroup.id ?? '',
+                    editAttendanceRegisterVisible
+                      ? classroomgroupId ?? ''
+                      : selectedGroup.id ?? '',
                     state.listItems,
                     isPrimaryList
                   );
