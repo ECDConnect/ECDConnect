@@ -12,6 +12,8 @@ export interface VisitDto {
     order: number;
     type?: string;
     updatedBy?: string;
+    insertedDate?: string;
+    updatedDate?: string;
   };
 }
 

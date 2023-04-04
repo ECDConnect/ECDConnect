@@ -19,6 +19,12 @@ export const getInfantCountForMonth = (state: RootState): number =>
 export const getInfantVisitsSelector = (state: RootState): VisitDto[] =>
   state.infants.visits || [];
 
+export const getInfantVisitByVisitIdSelector = (
+  state: RootState,
+  visitId: string
+): VisitDto | undefined =>
+  state.infants.visits?.find((item) => item.id === visitId);
+
 export const getInfantCurrentVisitSelector = (
   state: RootState
 ): VisitDto | undefined => {

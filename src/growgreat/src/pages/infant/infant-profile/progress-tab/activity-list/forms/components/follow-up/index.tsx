@@ -2,7 +2,7 @@ import { Colours, Divider, ProgressBar, Typography } from '@ecdlink/ui';
 import { getPreviousVisitInformationForInfantSelector } from '@/store/visit/visit.selectors';
 import { InfantDto, toCamelCase } from '@ecdlink/core';
 import { VisitDataStatus } from '@ecdlink/graphql';
-import { useCallback, useMemo } from 'react';
+import { Fragment, useCallback, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import Pregnant from '@/assets/pregnant.svg';
 import Infant from '@/assets/infant.svg';
@@ -109,14 +109,18 @@ export const FollowUp = ({ infant }: FollowUpComponentProps) => {
         return {
           primaryColour: 'errorMain',
           secondaryColour: 'errorBg',
-          message: `${caregiverName} & ${name} need urgent support`,
+          message: `${
+            !!caregiverName ? '& ' + caregiverName : ''
+          } ${name} need urgent support`,
           value: 25,
         };
       case 'Warning':
         return {
           primaryColour: 'alertMain',
           secondaryColour: 'alertBg',
-          message: `${caregiverName} & ${name} need support`,
+          message: `${
+            !!caregiverName ? '& ' + caregiverName : ''
+          } ${name} need support`,
           value: 50,
         };
       case 'Success':
@@ -124,7 +128,9 @@ export const FollowUp = ({ infant }: FollowUpComponentProps) => {
         return {
           primaryColour: 'successMain',
           secondaryColour: 'successBg',
-          message: `${caregiverName} & ${name} are going well`,
+          message: `${!!caregiverName ? '& ' + caregiverName : ''} ${name} ${
+            !!caregiverName ? 'are' : 'is'
+          } going well`,
           value: 100,
         };
     }
@@ -189,26 +195,34 @@ export const FollowUp = ({ infant }: FollowUpComponentProps) => {
       <Typography
         className="mb-8"
         type="h4"
-        text={`Here is a summary of how ${name} & ${caregiverName} are doing`}
+        text={`Here is a summary of how ${name} ${
+          !!caregiverName ? '&' + caregiverName : ''
+        } ${!!caregiverName ? 'are' : 'is'} doing`}
       />
-      <GrowthCard
-        text={grow.comment || ''}
-        color={getColorAndIcon(grow.color || '').primaryColour}
-        icon={getColorAndIcon(grow.color || '').icon}
-      />
-      {[weight, length, muac].map((item) => (
-        <Card
-          key={item.name}
-          className="my-4"
-          label={item.name}
-          value={item.value || ''}
-          date={
-            previousVisit?.visitDataStatus?.[0]?.insertedDate || ''
-          } /* TODO: add the correct date */
-          message={item.comment || ''}
-          color={item.color as CardProps['color']}
+      {grow.comment && (
+        <GrowthCard
+          text={grow.comment || ''}
+          color={getColorAndIcon(grow.color || '').primaryColour}
+          icon={getColorAndIcon(grow.color || '').icon}
         />
-      ))}
+      )}
+      {[weight, length, muac].map((item) => {
+        if (!item.value) return <Fragment key={item.name} />;
+
+        return (
+          <Card
+            key={item.name}
+            className="my-4"
+            label={item.name}
+            value={item.value || ''}
+            date={
+              previousVisit?.visitDataStatus?.[0]?.insertedDate || ''
+            } /* TODO: add the correct date */
+            message={item.comment || ''}
+            color={item.color as CardProps['color']}
+          />
+        );
+      })}
       <Divider dividerType="dashed" className="mt-4 mb-8" />
       {!!groupedData &&
         Object.keys(groupedData).map((item, index) => {

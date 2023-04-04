@@ -13,7 +13,7 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import Pregnant from '@/assets/pregnant.svg';
-import { useHistory, useLocation } from 'react-router';
+import { useHistory, useLocation, useParams } from 'react-router';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/types';
 import { useAppDispatch } from '@/store';
@@ -26,8 +26,14 @@ import {
   getInfantVisitsSelector,
 } from '@/store/infant/infant.selectors';
 import { infantThunkActions } from '@/store/infant';
+import { InfantProfileParams } from '../infant-profile.types';
 
 const HEADER_HEIGHT = 64;
+
+export const filterArrayBeforeId = (arr: VisitDto[], id: string) => {
+  const index = arr.findIndex((obj) => obj.id === id);
+  return index !== -1 ? arr.slice(0, index) : [];
+};
 
 export const VisitsTab: React.FC = () => {
   const { height } = useWindowSize();
@@ -40,7 +46,7 @@ export const VisitsTab: React.FC = () => {
 
   const dialog = useDialog();
 
-  const [, , , infantId] = location.pathname.split('/');
+  const { id: infantId } = useParams<InfantProfileParams>();
 
   const infant = useSelector((state: RootState) =>
     getInfantById(state, infantId)
@@ -61,9 +67,18 @@ export const VisitsTab: React.FC = () => {
   const isWeekDeadline =
     dateToCheck && dateToCheck >= currentDate && dateToCheck <= next7Days;
 
-  const insertedDate = useMemo(
+  const infantInsertedDate = useMemo(
     () => new Date(infant?.insertedDate || ''),
     [infant?.insertedDate]
+  );
+
+  const filteredVisits = useMemo(
+    () =>
+      visits.filter(
+        (item) =>
+          new Date(item.visitType?.insertedDate || '') >= infantInsertedDate
+      ),
+    [infantInsertedDate, visits]
   );
 
   const getType = useCallback(
@@ -95,12 +110,15 @@ export const VisitsTab: React.FC = () => {
       visits,
       currentVisit?.id || ''
     );
-    const filteredVisits = visitsFromCurrentVisit.filter(
+    const visitsNoAttend = visitsFromCurrentVisit.filter(
       (item) => !item.attended
     );
-    const isPastVisits = visits.length > filteredVisits.length;
+    const isPastVisits = !!filterArrayBeforeId(
+      filteredVisits,
+      currentVisit?.id || ''
+    ).length;
 
-    const sortedVisits = filteredVisits.sort(
+    const sortedVisits = visitsNoAttend.sort(
       (a, b) => (a.visitType?.order || 0) - (b.visitType?.order || 0)
     );
 
@@ -134,9 +152,12 @@ export const VisitsTab: React.FC = () => {
       title: isPastVisits ? 'Past visits' : 'Folder opened',
       subTitle: isPastVisits
         ? ''
-        : `${insertedDate.getDate()} ${insertedDate.toLocaleString('default', {
-            month: 'long',
-          })} ${insertedDate.getFullYear()}`,
+        : `${infantInsertedDate.getDate()} ${infantInsertedDate.toLocaleString(
+            'default',
+            {
+              month: 'long',
+            }
+          )} ${infantInsertedDate.getFullYear()}`,
       type: 'completed',
       showActionButton: isPastVisits,
       actionButtonText: 'See info',
@@ -149,10 +170,12 @@ export const VisitsTab: React.FC = () => {
     return array;
   }, [
     currentDate,
-    currentVisit,
+    currentVisit?.id,
+    currentVisit?.visitType?.id,
+    filteredVisits,
     getType,
     history,
-    insertedDate,
+    infantInsertedDate,
     isWeekDeadline,
     location.pathname,
     visits,
