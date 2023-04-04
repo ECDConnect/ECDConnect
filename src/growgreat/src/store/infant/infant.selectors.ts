@@ -18,6 +18,24 @@ export const getInfantCountForMonth = (state: RootState): number =>
 
 export const getInfantVisitsSelector = (state: RootState): VisitDto[] =>
   state.infants.visits || [];
+
+export const getInfantCurrentVisitSelector = (
+  state: RootState
+): VisitDto | undefined => {
+  const visits = state.infants.visits || [];
+  const noAttended =
+    visits?.filter(
+      (item) => !item.attended && new Date(item.plannedVisitDate) >= new Date()
+    ) || [];
+
+  return noAttended.length
+    ? noAttended.reduce((prev, curr) =>
+        (prev.visitType?.order || 0) < (curr.visitType?.order || 0)
+          ? prev
+          : curr
+      )
+    : undefined;
+};
 // export const getCaregiverById = (id?: string) =>
 //   createSelector(
 //     (state: RootState) => state.caregivers.caregivers,
