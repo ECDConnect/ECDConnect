@@ -2,14 +2,24 @@ import React, { useCallback, useState } from 'react';
 import { useHistory, useLocation } from 'react-router';
 
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { BannerWrapper, TabItem, TabList, Typography } from '@ecdlink/ui';
+import {
+  ActionModal,
+  BannerWrapper,
+  DialogPosition,
+  TabItem,
+  TabList,
+  Typography,
+} from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/types';
 import ROUTES from '@/routes/routes';
+import { ReactComponent as PollyNeutral } from '@/assets/pollyNeutral.svg';
 
 import { InfantProfileRouteState } from './index.types';
 import { ProgressTab } from './progress-tab';
 import { getInfantById } from '@/store/infant/infant.selectors';
+import { VisitsTab } from './visits-tab';
+import { useDialog } from '@ecdlink/core';
 
 export const INFANT_PROFILE_TABS = {
   VISITS: 0,
@@ -24,6 +34,8 @@ export const InfantProfile: React.FC = () => {
   const [selectedTabIndex, setSelectedTabIndex] = useState<number>(
     state?.activeTabIndex !== undefined ? state?.activeTabIndex : 0
   );
+
+  const dialog = useDialog();
 
   const { isOnline } = useOnlineStatus();
 
@@ -46,14 +58,7 @@ export const InfantProfile: React.FC = () => {
     {
       title: 'Visits',
       initActive: true,
-      child: (
-        <Typography
-          className={'mt-16 p-4'}
-          type={'body'}
-          color="textDark"
-          text={'Coming soon'}
-        />
-      ),
+      child: <VisitsTab />,
     },
     {
       title: 'Progress',
@@ -86,6 +91,36 @@ export const InfantProfile: React.FC = () => {
     },
   ];
 
+  const onWalkThrough = (detailText?: string) => {
+    dialog({
+      blocking: false,
+      position: DialogPosition.Middle,
+      color: 'bg-white',
+      render: (onClose) => {
+        return (
+          <ActionModal
+            className="z-50"
+            title="Hello!"
+            detailText="Coming soon"
+            customIcon={<PollyNeutral className="mb-3 h-24 w-24" />}
+            actionButtons={[
+              {
+                colour: 'primary',
+                text: 'Ok',
+                textColour: 'white',
+                type: 'filled',
+                leadingIcon: 'CheckCircleIcon',
+                onClick: () => {
+                  onClose();
+                },
+              },
+            ]}
+          />
+        );
+      },
+    });
+  };
+
   const goBack = useCallback(
     () => history.push(ROUTES.CLIENTS.ROOT),
     [history]
@@ -101,6 +136,8 @@ export const InfantProfile: React.FC = () => {
       }`}
       backgroundColour="white"
       displayOffline={!isOnline}
+      displayHelp
+      onHelp={onWalkThrough}
     >
       <TabList
         tabClassName="min-w-0 w-24"
