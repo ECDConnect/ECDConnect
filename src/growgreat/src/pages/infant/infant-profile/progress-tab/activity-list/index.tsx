@@ -18,7 +18,10 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/store/types';
 import ROUTES from '@/routes/routes';
 
-import { getInfantById } from '@/store/infant/infant.selectors';
+import {
+  getInfantById,
+  getInfantVisitByVisitIdSelector,
+} from '@/store/infant/infant.selectors';
 import { activitiesList, activitiesTypes } from './activities-list';
 import { Form } from './forms';
 import { useWindowSize } from '@reach/window-size';
@@ -67,6 +70,9 @@ export const ActivityList: React.FC = () => {
 
   const user = useSelector(userSelectors.getUser);
 
+  const visit = useSelector((state: RootState) =>
+    getInfantVisitByVisitIdSelector(state, visitId)
+  );
   const completedVisits = useSelector((state: RootState) =>
     getCompletedVisitsByVisitIdSelector(state, visitId)
   )?.visits;
@@ -103,7 +109,6 @@ export const ActivityList: React.FC = () => {
       (infant?.user?.surname || '').length >
     22;
 
-  const today = useMemo(() => new Date(), []);
   const options: Intl.DateTimeFormatOptions = useMemo(
     () => ({
       year: 'numeric',
@@ -268,13 +273,18 @@ export const ActivityList: React.FC = () => {
             color="textDark"
             className="col-span-2"
           />
-          <Typography
-            type="body"
-            align="left"
-            weight="skinny"
-            text={today.toLocaleDateString('en-ZA', options)}
-            color="textMid"
-          />
+          {!!visit?.visitType?.insertedDate && (
+            <Typography
+              type="body"
+              align="left"
+              weight="skinny"
+              text={new Date(visit?.visitType?.insertedDate).toLocaleDateString(
+                'en-ZA',
+                options
+              )}
+              color="textMid"
+            />
+          )}
           {isAllCompleted ? (
             <>
               <PollyImpressed className="mt-11 h-28 w-full self-center" />
@@ -403,9 +413,9 @@ export const ActivityList: React.FC = () => {
     isStartVisit,
     options,
     previousVisit?.visitDataStatus?.length,
-    today,
     uncompletedForms,
     user?.firstName,
+    visit?.visitType?.insertedDate,
     width,
   ]);
 

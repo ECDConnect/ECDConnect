@@ -17,7 +17,7 @@ import {
   getInfantCurrentVisitSelector,
   getInfantVisitsSelector,
 } from '@/store/infant/infant.selectors';
-import { VisitDto } from '@ecdlink/core';
+import { filterArrayBeforeId } from '..';
 
 export const PastVisits: React.FC = () => {
   const { isOnline } = useOnlineStatus();
@@ -35,19 +35,28 @@ export const PastVisits: React.FC = () => {
   const visits = useSelector(getInfantVisitsSelector);
   const currentVisit = useSelector(getInfantCurrentVisitSelector);
 
-  const filterArrayBeforeId = (arr: VisitDto[], id: string) => {
-    const index = arr.findIndex((obj) => obj.id === id);
-    return index !== -1 ? arr.slice(0, index) : [];
-  };
+  const infantInsertedDate = useMemo(
+    () => new Date(infant?.insertedDate || ''),
+    [infant?.insertedDate]
+  );
+
+  const filteredVisits = useMemo(
+    () =>
+      visits.filter(
+        (item) =>
+          new Date(item.visitType?.insertedDate || '') >= infantInsertedDate
+      ),
+    [infantInsertedDate, visits]
+  );
 
   const visitSteps = useMemo(() => {
     const visitsBeforeCurrentVisit = filterArrayBeforeId(
-      visits,
+      filteredVisits,
       currentVisit?.id || ''
     );
     const pastVisits = visitsBeforeCurrentVisit.length
       ? visitsBeforeCurrentVisit
-      : visits;
+      : filteredVisits;
 
     const array: StepItem[] = pastVisits.map((item, index) => {
       const getType = (): StepItem['type'] => {
@@ -70,7 +79,7 @@ export const PastVisits: React.FC = () => {
         actionButtonColor: 'secondaryAccent2',
         actionButtonOnClick: () =>
           history.push(
-            `${ROUTES.CLIENTS.INFANT_PROFILE.ROOT}${infantId}/antenatal-visit`
+            `${ROUTES.CLIENTS.INFANT_PROFILE.ROOT}${infantId}/activities-form/${item.id}`
           ),
       };
     });
@@ -81,7 +90,7 @@ export const PastVisits: React.FC = () => {
     });
 
     return array;
-  }, [currentVisit?.id, history, infantId, visits]);
+  }, [currentVisit?.id, filteredVisits, history, infantId]);
 
   const goBack = useCallback(() => {
     history.push(`${ROUTES.CLIENTS.INFANT_PROFILE.ROOT}${infantId}`);

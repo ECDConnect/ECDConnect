@@ -60,7 +60,7 @@ export const StartVisitFromVisitDashboard: React.FC = () => {
   const infantOptions = useMemo(
     () =>
       infants.map((infant) => ({
-        value: { id: infant.user?.id, type: 'infant' },
+        value: { id: infant.user?.id, type: 'infant' } as DropdownOnChange,
         label: `${infant.user?.firstName || ''} ${infant.user?.surname || ''}`,
       })),
     [infants]
@@ -69,7 +69,7 @@ export const StartVisitFromVisitDashboard: React.FC = () => {
   const motherOptions = useMemo(
     () =>
       mothers.map((mom) => ({
-        value: { id: mom.user?.id, type: 'mother' },
+        value: { id: mom.user?.id, type: 'mother' } as DropdownOnChange,
         label: `${mom.user?.firstName || ''} ${mom.user?.surname || ''}`,
       })),
     [mothers]
@@ -109,7 +109,6 @@ export const StartVisitFromVisitDashboard: React.FC = () => {
 
     switch (client?.type) {
       case 'infant':
-        console.log(infantCurrentVisit);
         history.push(
           `${ROUTES.CLIENTS.INFANT_PROFILE.ROOT}${client.id}/activities-form/${infantCurrentVisit?.id}`
         );
@@ -148,7 +147,6 @@ export const StartVisitFromVisitDashboard: React.FC = () => {
           className="pt-4"
           label="Who are you visiting?"
           placeholder="Tap to search for client"
-          // @ts-ignore
           list={clients}
           selectedValue={client}
           onChange={onChangeClient}
