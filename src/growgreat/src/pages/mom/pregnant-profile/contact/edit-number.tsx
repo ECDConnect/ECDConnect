@@ -1,22 +1,19 @@
 import { useWindowSize } from '@reach/window-size';
 import { BannerWrapper, Typography } from '@ecdlink/ui';
-import { useHistory, useLocation } from 'react-router';
+import { useHistory } from 'react-router';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/store/types';
-import { getMotherById } from '@/store/mother/mother.selectors';
 
 const HEADER_HEIGHT = 122;
 
 export const MotherContactNumber: React.FC = () => {
-  const location = useLocation();
+  //   const location = useLocation();
   const { height } = useWindowSize();
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
-  const [, , , motherId] = location.pathname.split('/');
-  const mother = useSelector((state: RootState) =>
-    getMotherById(state, motherId)
-  );
+  //   const [, , , motherId] = location.pathname.split('/');
+  //   const mother = useSelector((state: RootState) =>
+  //     getMotherById(state, motherId)
+  //   );
 
   return (
     <BannerWrapper

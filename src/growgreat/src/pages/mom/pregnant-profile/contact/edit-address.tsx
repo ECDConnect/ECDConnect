@@ -1,22 +1,19 @@
 import { useWindowSize } from '@reach/window-size';
 import { BannerWrapper, Typography } from '@ecdlink/ui';
-import { useHistory, useLocation } from 'react-router';
+import { useHistory } from 'react-router';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/store/types';
-import { getMotherById } from '@/store/mother/mother.selectors';
 
 const HEADER_HEIGHT = 122;
 
 export const MotherContactAddress: React.FC = () => {
-  const location = useLocation();
+  //   const location = useLocation();
   const { height } = useWindowSize();
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
-  const [, , , motherId] = location.pathname.split('/');
-  const mother = useSelector((state: RootState) =>
-    getMotherById(state, motherId)
-  );
+  //   const [, , , motherId] = location.pathname.split('/');
+  //   const mother = useSelector((state: RootState) =>
+  //     getMotherById(state, motherId)
+  //   );
 
   return (
     <BannerWrapper
@@ -28,7 +25,7 @@ export const MotherContactAddress: React.FC = () => {
       displayOffline={!isOnline}
     >
       <div
-        className="mt-16 flex flex-col p-4 "
+        className="flex flex-col p-4 "
         style={{ height: height - HEADER_HEIGHT }}
       >
         <Typography
