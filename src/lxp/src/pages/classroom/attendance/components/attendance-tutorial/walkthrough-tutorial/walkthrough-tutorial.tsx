@@ -61,8 +61,6 @@ export const WalkthroughTutorial = ({
   useEffect(() => {
     const validateTutorial = () => {
       if (tutorialProgressClicks === tutorialCompleteClicks) {
-        
-
         setAttendanceItem({
           title: 'Amahle Khumalo',
           profileText: 'AM',
@@ -71,8 +69,6 @@ export const WalkthroughTutorial = ({
           avatarColor: getAvatarColor(),
         });
       } else if (tutorialProgressClicks === tutorialResetClicks) {
-  
-
         setAttendanceItem({
           title: 'Amahle Khumalo',
           profileText: 'AM',
@@ -98,7 +94,6 @@ export const WalkthroughTutorial = ({
     }
   });
 
- 
   return (
     <BannerWrapper
       size={'medium'}
@@ -127,9 +122,7 @@ export const WalkthroughTutorial = ({
             walkthrough={true}
           />
 
-          <div
-            id="attendance-list-alone"
-          >
+          <div id="attendance-list-alone">
             <AttendanceListItem
               className={
                 tutorialProgressClicks === 1

@@ -32,7 +32,6 @@ namespace ECDLink.SmartStart.Reports
 
             var validClassDays = GetDayRangeWithoutHolidays(startMonth, endMonth);
 
-            // prolly one 1 for now
             foreach (var learner in learners)
             {
                 var attendanceForPeriod = GetAttendanceRecordsForPeriod(learner, userId, startMonth, endMonth);
