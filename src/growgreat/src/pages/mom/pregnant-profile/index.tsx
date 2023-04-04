@@ -10,6 +10,7 @@ import ROUTES from '@/routes/routes';
 
 import { Visits } from './visits';
 import { PregnantProfileRouteState } from './index.types';
+import { Contact } from './contact';
 
 export const PREGNANT_PROFILE_TABS = {
   VISITS: 0,
@@ -75,14 +76,7 @@ export const PregnantProfile: React.FC = () => {
     {
       title: 'Contact',
       initActive: false,
-      child: (
-        <Typography
-          className={'mt-16 p-4'}
-          type={'body'}
-          color="textDark"
-          text={'Coming soon'}
-        />
-      ),
+      child: <Contact />,
     },
   ];
 
