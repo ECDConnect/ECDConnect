@@ -131,9 +131,6 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       publicHolidays || []
     );
 
-    console.log(">>", isValidDayForAttendance)
-    console.log(">>", attendanceAlreadyTaken)
-
     if (!attendanceAlreadyTaken && isValidDayForAttendance) {
       setAttendanceComponentType('attendance');
       return;
