@@ -94,7 +94,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                     Caregiver = caregiver,
                     GenderId = input.GenderId,
                     WeightAtBirth = input.WeightAtBirth,
-                    LengthAtBirth = input.LengthAtBirth
+                    LengthAtBirth = input.LengthAtBirth,
+                    Completed24MonthVisits = false
                 };
             }
             else
@@ -114,7 +115,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                         Mother = mother,
                         GenderId = input.GenderId,
                         WeightAtBirth = input.WeightAtBirth,
-                        LengthAtBirth = input.LengthAtBirth
+                        LengthAtBirth = input.LengthAtBirth,
+                        Completed24MonthVisits = false
                     };
                 }
                 else
@@ -132,7 +134,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                         Caregiver = caregiver,
                         GenderId = input.GenderId,
                         WeightAtBirth = input.WeightAtBirth,
-                        LengthAtBirth = input.LengthAtBirth
+                        LengthAtBirth = input.LengthAtBirth,
+                        Completed24MonthVisits = false
                     };
                 }
             }
