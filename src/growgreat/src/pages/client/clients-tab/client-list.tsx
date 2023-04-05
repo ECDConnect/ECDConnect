@@ -9,7 +9,7 @@ import {
   SearchDropDown,
   SearchDropDownOption,
 } from '@ecdlink/ui';
-import { format, intervalToDuration } from 'date-fns';
+import { intervalToDuration } from 'date-fns';
 import { useDialog, getAvatarColor, MotherDto, InfantDto } from '@ecdlink/core';
 import { IconInformationIndicator } from '@/components/icon-information-indicator/icon-information-indicator';
 import * as styles from './client-list.styles';
@@ -118,43 +118,11 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
     [history]
   );
 
-  useEffect(() => {
-    const infantsList: UserAlertListDataItem<ExtraInfantData>[] = infants.map(
-      (infant) => {
-        const { years, months } = intervalToDuration({
-          start: new Date(infant?.user?.dateOfBirth || ''),
-          end: new Date(),
-        });
-
-        return {
-          icon: Infant,
-          title: infant?.firstName ?? infant?.user?.firstName!,
-          // TODO: add correct subTitle (alert status)
-          subTitle: infant?.user?.dateOfBirth
-            ? `Birth date: ${format(
-                new Date(infant?.user?.dateOfBirth!),
-                'PP'
-              )}`
-            : `Birth date: ${format(new Date(infant?.dateOfBirth!), 'PP')}`,
-          switchTextStyles: true,
-          alertSeverity: 'none',
-          avatarColor: getAvatarColor('growgreat') || '',
-          extraData: {
-            ...infant,
-            under6Months: !!years || (!!months && months > 6),
-            age: `${years}.${months}`,
-          },
-          onActionClick: () =>
-            navigate(INFANT_PROFILE_TABS.PROGRESS, infant, 'infant', () => {}),
-        };
-      }
-    );
-
-    setInfantsListItems(infantsList);
-  }, [infants, navigate]);
-
   const showClientProfileDialog = useCallback(
-    (client: MotherDto) => {
+    (client: MotherDto | InfantDto, clientType: 'infant' | 'mother') => {
+      const NAVIGATE =
+        clientType === 'infant' ? INFANT_PROFILE_TABS : PREGNANT_PROFILE_TABS;
+
       return dialog({
         position: DialogPosition.Middle,
         color: 'bg-white',
@@ -168,12 +136,7 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
                   text: 'Visit client',
                   colour: 'primary',
                   onClick: () =>
-                    navigate(
-                      PREGNANT_PROFILE_TABS.VISITS,
-                      client,
-                      'mother',
-                      onClose
-                    ),
+                    navigate(NAVIGATE.VISITS, client, clientType, onClose),
                   type: 'filled',
                   textColour: 'white',
                   leadingIcon: 'HomeIcon',
@@ -182,12 +145,7 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
                   text: 'See client’s progress',
                   colour: 'primary',
                   onClick: () =>
-                    navigate(
-                      PREGNANT_PROFILE_TABS.PROGRESS,
-                      client,
-                      'mother',
-                      onClose
-                    ),
+                    navigate(NAVIGATE.PROGRESS, client, clientType, onClose),
                   type: 'outlined',
                   textColour: 'primary',
                   leadingIcon: 'PresentationChartLineIcon',
@@ -196,12 +154,7 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
                   text: 'See referrals',
                   colour: 'primary',
                   onClick: () =>
-                    navigate(
-                      PREGNANT_PROFILE_TABS.REFERRALS,
-                      client,
-                      'mother',
-                      onClose
-                    ),
+                    navigate(NAVIGATE.REFERRALS, client, clientType, onClose),
                   type: 'outlined',
                   textColour: 'primary',
                   leadingIcon: 'ClipboardListIcon',
@@ -210,12 +163,7 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
                   text: 'Contact client',
                   colour: 'primary',
                   onClick: () =>
-                    navigate(
-                      PREGNANT_PROFILE_TABS.CONTACT,
-                      client,
-                      'mother',
-                      onClose
-                    ),
+                    navigate(NAVIGATE.CONTACT, client, clientType, onClose),
                   type: 'outlined',
                   textColour: 'primary',
                   leadingIcon: 'PhoneIcon',
@@ -224,12 +172,7 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
                   text: 'Something else',
                   colour: 'primary',
                   onClick: () =>
-                    navigate(
-                      PREGNANT_PROFILE_TABS.VISITS,
-                      client,
-                      'mother',
-                      onClose
-                    ),
+                    navigate(NAVIGATE.VISITS, client, clientType, onClose),
                   type: 'outlined',
                   textColour: 'primary',
                 },
@@ -241,6 +184,38 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
     },
     [dialog, navigate]
   );
+
+  useLayoutEffect(() => {
+    const infantsList: UserAlertListDataItem<ExtraInfantData>[] = infants.map(
+      (infant) => {
+        const { years, months } = intervalToDuration({
+          start: new Date(infant?.user?.dateOfBirth || ''),
+          end: new Date(),
+        });
+
+        return {
+          icon: Infant,
+          title: infant?.firstName ?? infant?.user?.firstName!,
+          subTitle: infant?.statusInfo?.subject || 'No visit',
+          switchTextStyles: true,
+          alertSeverity:
+            (infant.statusInfo?.color?.toLocaleLowerCase() as AlertSeverityType) ||
+            'none',
+          alertSeverityNoneIcon: 'CalendarIcon',
+          alertSeverityNoneColor: 'black',
+          avatarColor: getAvatarColor('growgreat') || '',
+          extraData: {
+            ...infant,
+            under6Months: !!years || (!!months && months > 6),
+            age: `${years}.${months}`,
+          },
+          onActionClick: () => showClientProfileDialog(infant, 'infant'),
+        };
+      }
+    );
+
+    setInfantsListItems(infantsList);
+  }, [infants, navigate, showClientProfileDialog]);
 
   useLayoutEffect(() => {
     const mothersList: UserAlertListDataItem<ExtraMotherData>[] = mothers.map(
@@ -260,7 +235,7 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
             ...mother,
             under6Months: true,
           },
-          onActionClick: () => showClientProfileDialog(mother),
+          onActionClick: () => showClientProfileDialog(mother, 'mother'),
         };
       }
     );
@@ -322,10 +297,10 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
   }, [appDispatch]);
 
   useEffect(() => {
-    if (location.state?.isFindClient) {
+    if (location.state?.isFindClient && !isEmptyState) {
       setSearchTextActive(true);
     }
-  }, [location]);
+  }, [location, isEmptyState]);
 
   return (
     <div className={styles.overlay}>
@@ -384,7 +359,7 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
           <IconInformationIndicator
             className="px-10 pt-28"
             title={
-              isEmptyState ? "You don't have any client yet!" : 'No results'
+              isEmptyState ? "You don't have any clients yet!" : 'No results'
             }
             subTitle={
               isEmptyState

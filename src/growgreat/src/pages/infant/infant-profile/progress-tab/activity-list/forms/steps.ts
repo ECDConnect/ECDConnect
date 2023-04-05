@@ -67,37 +67,75 @@ import {
 import { nutritionAnswers } from './pillar-1-steps/nutrition';
 import { Question } from './dynamic-form';
 
-export const getCareForMomSteps = (isDangerSignsFollowUp: boolean) => [
+export const getCareForMomSteps = (
+  isChildBefore49Days: boolean,
+  isDangerSignsFollowUp: boolean,
+  isShowClinicCheckUps: boolean,
+  isSelfCareAndSupport: boolean
+) => [
   CareForMomStep,
-  ClinicCheckupStep,
+  ...(isShowClinicCheckUps ? [ClinicCheckupStep] : []),
   ...(isDangerSignsFollowUp ? [DangerSignsFollowUpStep] : []),
-  DangerSignsStep,
-  SelfCareStep,
-  SelfCareAndSupportStep,
+  ...(isChildBefore49Days ? [DangerSignsStep] : []),
+  ...(isChildBefore49Days ? [SelfCareStep] : []),
+  ...(isSelfCareAndSupport ? [SelfCareAndSupportStep] : []),
   MaternalDistressStep,
   MaternalDistressScreeningStep,
 ];
 
-export const careForBabySteps = (isDangerSignsFollowUp: boolean) => [
+export const careForBabySteps = (
+  isDangerSignsFollowUp: boolean,
+  isChildBefore49Days: boolean,
+  isNewBornCare: boolean,
+  isKangarooMotherCare: boolean
+) => [
   CareForBabyStep,
   RoadToHeathBookStep,
   ...(isDangerSignsFollowUp ? [BabyDangerSignsFollowUpStep] : []),
-  BabyDangerSignsStep,
-  NewbornCareStep,
-  MotherCareStep,
+  ...(isChildBefore49Days ? [BabyDangerSignsStep] : []),
+  ...(isNewBornCare ? [NewbornCareStep] : []),
+  ...(isKangarooMotherCare ? [MotherCareStep] : []),
 ];
 
-export const getPillar1Steps = (
-  nutritionAnswer: Question['answer'],
-  isToSkipBreastfeedingIssuesRelevantItemsStep: boolean,
-  isShowNutritionStep: boolean
-) => {
+export const getPillar1Steps = ({
+  nutritionAnswer,
+  isToSkipBreastfeedingIssuesRelevantItemsStep,
+  isShowNutritionStep,
+  isFormulaMilkHowBreastfeedingWorks,
+  isFormulaMilkUnsafeFeedingPractices,
+  isMixedFeedingFoodsForm,
+  isMixedFeedingBenefitsOfBreastfeeding,
+  isMixedFeedingHowBreastfeedingWorks,
+  isMixedFeedingUnsafeFeedingPractices,
+  isMixedFeedingFistFoods,
+  isMixedFeedingComplementaryFeeding,
+  isMixedFeedingComplementaryFeedingAfter9Months,
+  isShowInterventionStep,
+  isShowMuacStep,
+  isDietFormStep,
+}: {
+  nutritionAnswer: Question['answer'];
+  isToSkipBreastfeedingIssuesRelevantItemsStep: boolean;
+  isShowNutritionStep: boolean;
+  isFormulaMilkHowBreastfeedingWorks: boolean;
+  isFormulaMilkUnsafeFeedingPractices: boolean;
+  isMixedFeedingFoodsForm: boolean;
+  isMixedFeedingBenefitsOfBreastfeeding: boolean;
+  isMixedFeedingHowBreastfeedingWorks: boolean;
+  isMixedFeedingUnsafeFeedingPractices: boolean;
+  isMixedFeedingFistFoods: boolean;
+  isMixedFeedingComplementaryFeeding: boolean;
+  isMixedFeedingComplementaryFeedingAfter9Months: boolean;
+  isShowInterventionStep: boolean;
+  isShowMuacStep: boolean;
+  isDietFormStep: boolean;
+}) => {
   const defaultScreens = [
     WeightAndLengthFormStep,
     WeightAndLengthResultStep,
-    MidUpperArmCircumferenceFormStep,
-    MidUpperArmCircumferenceResultStep,
-    InterventionsStep,
+    ...(isShowMuacStep ? [MidUpperArmCircumferenceFormStep] : []),
+    ...(isShowMuacStep ? [MidUpperArmCircumferenceResultStep] : []),
+    ...(isShowInterventionStep ? [InterventionsStep] : []),
     ...(isShowNutritionStep ? [NutritionStep] : []),
   ];
 
@@ -112,20 +150,33 @@ export const getPillar1Steps = (
   const formulaMilkOnlyFlow = [
     FormulaMilkNotesStep,
     BenefitsOfBreastfeedingStep,
-    BreastfeedingWorksStep,
-    UnsafeFeedingPracticesStep,
+    ...(isFormulaMilkHowBreastfeedingWorks ? [BreastfeedingWorksStep] : []),
+    ...(isFormulaMilkUnsafeFeedingPractices
+      ? [UnsafeFeedingPracticesStep]
+      : []),
   ];
 
   const mixedFeedingFlow = [
-    FoodsFormStep,
-    MixedBenefitsOfBreastfeedingStep,
-    MixedBreastfeedingWorksStep,
-    MixedUnsafeFeedingPracticesStep,
-    FirstFoodsStep,
-    ComplementaryFeedingStep,
+    ...(isMixedFeedingFoodsForm ? [FoodsFormStep] : []),
+    ...(isMixedFeedingBenefitsOfBreastfeeding
+      ? [MixedBenefitsOfBreastfeedingStep]
+      : []),
+    ...(isMixedFeedingHowBreastfeedingWorks
+      ? [MixedBreastfeedingWorksStep]
+      : []),
+    ...(isMixedFeedingUnsafeFeedingPractices
+      ? [MixedUnsafeFeedingPracticesStep]
+      : []),
+    ...(isMixedFeedingFistFoods ? [FirstFoodsStep] : []),
+    ...(isMixedFeedingComplementaryFeeding ||
+    isMixedFeedingComplementaryFeedingAfter9Months
+      ? [ComplementaryFeedingStep]
+      : []),
   ];
 
-  const complementaryFeedingFlow = [DietFormStep, ResourcesStep];
+  const complementaryFeedingFlow = isDietFormStep
+    ? [DietFormStep, ResourcesStep]
+    : [ResourcesStep];
 
   if (!!nutritionAnswer) {
     switch (nutritionAnswer) {
@@ -154,9 +205,10 @@ export const getPillar1Steps = (
 };
 
 export const pillar2Steps = (
-  isDevelopmentalScreeningWeeksFollowUp: boolean
+  isDevelopmentalScreeningWeeksFollowUp: boolean,
+  isDevelopmentalScreening: boolean
 ) => [
-  DevelopmentalScreeningStep,
+  ...(isDevelopmentalScreening ? [DevelopmentalScreeningStep] : []),
   ...(isDevelopmentalScreeningWeeksFollowUp
     ? [DevelopmentalScreeningWeeksFollowUpStep]
     : []),
@@ -168,9 +220,9 @@ export const pillar3Steps = [
   ImmunisationsSupplementsDewormingStep,
 ];
 
-export const getPillar4Steps = (isFollowUp: boolean) => [
+export const getPillar4Steps = (isFollowUp: boolean, isSickness: boolean) => [
   ...(isFollowUp ? [FollowUpStep] : []),
-  SicknessStep,
+  ...(isSickness ? [SicknessStep] : []),
   Pillar4DangerSignsStep,
 ];
 

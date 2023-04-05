@@ -1,5 +1,6 @@
 import {
   CmsVisitDataInputModelInput,
+  HcwHighlights,
   HealthPromotion,
   MoreInformation,
   Progress_VisitDataStatus,
@@ -23,4 +24,5 @@ export interface VisitState {
   visitVideos?: VisitVideosWithLocale[];
   growthDataForInfant?: VisitData[];
   visitAnswersForInfant?: VisitData[];
+  healthCareWorkerHighlights?: HcwHighlights;
 }

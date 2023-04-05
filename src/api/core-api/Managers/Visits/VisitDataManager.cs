@@ -137,12 +137,20 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
               return vData;
         }
-        public int GetTotalGrowthInfantsForWeek(string id)
+        public int GetTotalGrowthInfantsForWeek(string id, Boolean currentWeek)
         {
             //- the number of children for which either a weight. length. and/or MUAC measure was taken
             DateTime today = DateTime.Today;
-            DateTime monday = StartOfWeek(today, DayOfWeek.Monday);
-            DateTime next7Days = monday.AddDays(6);
+            var monday = StartOfWeek(today, DayOfWeek.Monday);
+            var next7Days = monday.AddDays(6);
+
+            if (!currentWeek)
+            {
+                int days = DateTime.Now.DayOfWeek - DayOfWeek.Sunday;
+                DateTime pastDate = DateTime.Now.AddDays(-days);
+                monday = StartOfWeek(pastDate, DayOfWeek.Monday);
+                next7Days = monday.AddDays(6);
+            }
 
             return (
                 from visit in _visitRepo.GetAll().Where(x => x.Infant.Caregiver.HealthCareWorker.Id.ToString() == id && x.ActualVisitDate >= monday && x.ActualVisitDate <= next7Days)

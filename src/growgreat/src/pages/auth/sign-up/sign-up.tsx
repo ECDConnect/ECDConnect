@@ -181,13 +181,13 @@ export const SignUp: React.FC = () => {
     <div className={styles.wrapper}>
       <BannerWrapper
         color={'primary'}
-        showBackground
+        showBackground={true}
         backgroundUrl={theme?.images.graphicOverlayUrl}
         backgroundImageColour={'primary'}
-        className={styles.contentWrapper}
         size={'signup'}
         renderBorder={false}
         renderOverflow={false}
+        displayOffline={!isOnline}
       >
         <HeaderSlider
           className="h-100 mx-4 mt-16"
@@ -384,61 +384,62 @@ export const SignUp: React.FC = () => {
             <Typography type="help" color="primary" text={'Log in'} />
           </Button>
         </form>
-      </BannerWrapper>
-      {contentConsentTypeEnum && (
-        <Article
-          consentEnumType={contentConsentTypeEnum}
-          visible={presentArticle}
-          title={articleTitle}
-          onClose={() => setPresentArticle(false)}
-          isOpen={true}
-        />
-      )}
 
-      <Dialog
-        visible={presentCellNumberMismatch}
-        position={DialogPosition.Middle}
-      >
-        <ActionModal
-          icon={'InformationCircleIcon'}
-          iconColor={'alertMain'}
-          importantText={`Grow Great has a different cellphone number for you: ${
-            signUpFormGetValues().cellphone
-          }`}
-          detailText={
-            'Please check you have entered the correct cellphone number or call our toll free number to have it changed.'
-          }
-          actionButtons={[
-            {
-              colour: 'primary',
-              text: 'Edit cellphone number',
-              textColour: 'white',
-              leadingIcon: 'PencilIcon',
-              onClick: () => {
-                setPresentCellNumberMismatch(false);
+        {contentConsentTypeEnum && (
+          <Article
+            consentEnumType={contentConsentTypeEnum}
+            visible={presentArticle}
+            title={articleTitle}
+            onClose={() => setPresentArticle(false)}
+            isOpen={true}
+          />
+        )}
+
+        <Dialog
+          visible={presentCellNumberMismatch}
+          position={DialogPosition.Middle}
+        >
+          <ActionModal
+            icon={'InformationCircleIcon'}
+            iconColor={'alertMain'}
+            importantText={`Grow Great has a different cellphone number for you: ${
+              signUpFormGetValues().cellphone
+            }`}
+            detailText={
+              'Please check you have entered the correct cellphone number or call our toll free number to have it changed.'
+            }
+            actionButtons={[
+              {
+                colour: 'primary',
+                text: 'Edit cellphone number',
+                textColour: 'white',
+                leadingIcon: 'PencilIcon',
+                onClick: () => {
+                  setPresentCellNumberMismatch(false);
+                },
+                type: 'filled',
               },
-              type: 'filled',
-            },
-            {
-              colour: 'primary',
-              text: 'Call 0800 014 817',
-              textColour: 'primary',
-              leadingIcon: 'PhoneIcon',
-              onClick: () => {
-                setPresentCellNumberMismatch(false);
+              {
+                colour: 'primary',
+                text: 'Call 0800 014 817',
+                textColour: 'primary',
+                leadingIcon: 'PhoneIcon',
+                onClick: () => {
+                  setPresentCellNumberMismatch(false);
+                },
+                type: 'outlined',
               },
-              type: 'outlined',
-            },
-          ]}
-        />
-      </Dialog>
-      <Offline>
-        <Alert
-          className={'mt-5 mb-3'}
-          title="Your internet connection is unstable."
-          type={'warning'}
-        />
-      </Offline>
+            ]}
+          />
+        </Dialog>
+        <Offline>
+          <Alert
+            className={'mt-5 mb-3'}
+            title="Your internet connection is unstable."
+            type={'warning'}
+          />
+        </Offline>
+      </BannerWrapper>
     </div>
   );
 };

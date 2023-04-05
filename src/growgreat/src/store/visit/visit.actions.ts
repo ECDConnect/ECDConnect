@@ -2,6 +2,7 @@ import {} from '@/services/EventRecordService';
 import { Visit } from '@/services/VisitService';
 import {
   CmsVisitDataInputModelInput,
+  HcwHighlights,
   HealthPromotion,
   MoreInformation,
   Progress_VisitDataStatus,
@@ -27,6 +28,7 @@ export const VisitActions = {
     'getPreviousVisitInformationForInfant',
   GET_GROWTH_DATA_FOR_INFANT: 'getGrowthDataForInfant',
   GET_VISIT_ANSWERS_FOR_INFANT: 'getVisitAnswersForInfant',
+  GET_HCW_HIGHLIGHTS: 'getHealthCareWorkerHighlights',
 };
 
 export const getHealthCareWorkerVisitStatus = createAsyncThunk<
@@ -308,6 +310,40 @@ export const getVisitAnswersForInfant = createAsyncThunk<
 
       if (!content) {
         return rejectWithValue('Error getting visit answers for infant');
+      }
+      return content;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getHealthCareWorkerHighlights = createAsyncThunk<
+  HcwHighlights,
+  { userId: string },
+  ThunkApiType<RootState>
+>(
+  VisitActions.GET_HCW_HIGHLIGHTS,
+  async ({ userId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      let content: HcwHighlights | undefined = undefined;
+
+      if (userAuth?.auth_token) {
+        content = await new Visit(
+          userAuth?.auth_token ?? ''
+        ).getHealthCareWorkerHighlights(userId);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      if (!content) {
+        return rejectWithValue(
+          'Error getting highlights for health care worker'
+        );
       }
       return content;
     } catch (err) {

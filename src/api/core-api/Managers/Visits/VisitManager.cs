@@ -260,12 +260,20 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             return allVisits;
         }
-        public int GetTotalVisitsForWeek(String id, string type)
+        public int GetTotalVisitsForWeek(String id, string type, Boolean currentWeek)
         {
             DateTime today = DateTime.Today;
-            DateTime monday = StartOfWeek(today, DayOfWeek.Monday);
-            DateTime next7Days = monday.AddDays(6);
+            var monday = StartOfWeek(today, DayOfWeek.Monday);
+            var next7Days = monday.AddDays(6);
             var totalVisits = 0;
+
+            if (!currentWeek)
+            {
+                int days = DateTime.Now.DayOfWeek - DayOfWeek.Sunday;
+                DateTime pastDate = DateTime.Now.AddDays(-days);
+                monday = StartOfWeek(pastDate, DayOfWeek.Monday);
+                next7Days = monday.AddDays(6);
+            } 
 
             if (type == Constants.GGSettings.client_mother)
             {

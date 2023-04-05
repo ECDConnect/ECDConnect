@@ -192,6 +192,7 @@ const mapInfant = (x: Partial<InfantDto>): InfantModelInput => ({
   genderId: x.genderId,
   weightAtBirth: x.weightAtBirth,
   lengthAtBirth: x.lengthAtBirth,
+  completed24MonthVisits: x.completed24MonthVisits,
 });
 
 const mapCaregiver = (x: Partial<CaregiverDto>): CaregiverModelInput => ({

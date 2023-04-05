@@ -32,6 +32,11 @@ import PointsSummary from '@/pages/client/highlights-tab/points-summary';
 import UpcomingVisit from '@/pages/client/highlights-tab/upcoming-visit';
 import { InfantProfile } from '@/pages/infant/infant-profile';
 import { ActivityList } from '@/pages/infant/infant-profile/progress-tab/activity-list';
+import { RecordEvent as InfantRecordEvent } from '@/pages/infant/infant-profile/visits-tab/record-event';
+import { BookVisit as InfantBookVisit } from '@/pages/infant/infant-profile/visits-tab/book-visit';
+import { PastVisits as InfantPastVisits } from '@/pages/infant/infant-profile/visits-tab/past-visits';
+import { MotherContactAddress } from '@/pages/mom/pregnant-profile/contact/edit-address';
+import { MotherContactNumber } from '@/pages/mom/pregnant-profile/contact/edit-number';
 
 function PublicRoutes() {
   return (
@@ -137,6 +142,26 @@ function AuthRoutes() {
       />
       <Route
         exact
+        path={ROUTES.CLIENTS.INFANT_PROFILE.VISITS.RECORD_EVENT}
+        component={InfantRecordEvent}
+      />
+      <Route
+        exact
+        path={ROUTES.CLIENTS.INFANT_PROFILE.VISITS.BOOK_VISIT}
+        component={InfantBookVisit}
+      />
+      <Route
+        exact
+        path={ROUTES.CLIENTS.INFANT_PROFILE.VISITS.PAST_VISITS}
+        component={InfantPastVisits}
+      />
+      <Route
+        exact
+        path={ROUTES.CLIENTS.INFANT_PROFILE.VISITS.ANTENATAL_VISIT}
+        component={ActivityList}
+      />
+      <Route
+        exact
         path={ROUTES.CLIENTS.VISIT_TAB.START_VISIT}
         component={StartVisitFromVisitDashboard}
       />
@@ -165,6 +190,17 @@ function AuthRoutes() {
         exact
         path={ROUTES.CLIENTS.HIGHLIGHTS_TAB.UPCOMING_VISIT}
         component={UpcomingVisit}
+      />
+
+      <Route
+        exact
+        path={ROUTES.CLIENTS.MOM_PROFILE.CONTACT_TAB.UPDATE_ADDRESS}
+        component={MotherContactAddress}
+      />
+      <Route
+        exact
+        path={ROUTES.CLIENTS.MOM_PROFILE.CONTACT_TAB.UPDATE_NUMBERS}
+        component={MotherContactNumber}
       />
 
       <Route path={ROUTES.MESSAGES} component={Messages} />
