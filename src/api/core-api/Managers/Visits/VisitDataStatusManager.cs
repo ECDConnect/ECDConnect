@@ -974,7 +974,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
             }
 
             if (q3 != null && q3.Question == Constants.GGSettings.q_muac) {
-                var questionAnswer = Int32.Parse(q3.QuestionAnswer);
+                var questionAnswer = q2.QuestionAnswer != "undefined" ? Int32.Parse(q3.QuestionAnswer) : 0;
                 mIndicator = "Normal";
                 if (questionAnswer < 11.5) {
                     mIndicator = "Severe acute malnutrition";
