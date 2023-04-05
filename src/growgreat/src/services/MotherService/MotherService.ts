@@ -33,6 +33,7 @@ class MotherService {
             age
             insertedDate
             expectedDateOfDelivery
+            whatsAppNumber
             siteAddress {
               id
               province {

@@ -1,5 +1,5 @@
 import React, { useCallback, useLayoutEffect, useMemo, useState } from 'react';
-import { useHistory, useLocation } from 'react-router';
+import { useHistory, useParams } from 'react-router';
 
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import {
@@ -20,7 +20,7 @@ import ROUTES from '@/routes/routes';
 
 import {
   getInfantById,
-  getInfantVisitsSelector,
+  getInfantVisitByVisitIdSelector,
 } from '@/store/infant/infant.selectors';
 import { activitiesList, activitiesTypes } from './activities-list';
 import { Form } from './forms';
@@ -41,6 +41,7 @@ import { relationshipTypes } from '../../../components/mother-details/mother-det
 import { ReactComponent as PollyImpressed } from '@/assets/pollyImpressed.svg';
 import { userSelectors } from '@/store/user';
 import { ActivityInfoPage } from './activity-info-page';
+import { InfantProfileParams } from '../../infant-profile.types';
 
 export const INFANT_PROFILE_TABS = {
   VISITS: 0,
@@ -65,16 +66,15 @@ export const ActivityList: React.FC = () => {
 
   const history = useHistory();
 
-  const location = useLocation();
+  const { visitId, id: infantId } = useParams<InfantProfileParams>();
 
   const user = useSelector(userSelectors.getUser);
 
-  const visits = useSelector(getInfantVisitsSelector);
-  const MOCKED_VISIT_ID = visits[0]?.id;
-  // '454686a9-2142-4061-aa47-4e89d46110b9';
-
+  const visit = useSelector((state: RootState) =>
+    getInfantVisitByVisitIdSelector(state, visitId)
+  );
   const completedVisits = useSelector((state: RootState) =>
-    getCompletedVisitsByVisitIdSelector(state, MOCKED_VISIT_ID)
+    getCompletedVisitsByVisitIdSelector(state, visitId)
   )?.visits;
 
   const previousVisit = useSelector(
@@ -82,8 +82,6 @@ export const ActivityList: React.FC = () => {
   );
   const isFollowUp = completedVisits?.length === 7;
   const isAllCompleted = completedVisits?.length === 8;
-
-  const [, , , infantId] = location.pathname.split('/');
 
   const appDispatch = useAppDispatch();
 
@@ -111,7 +109,6 @@ export const ActivityList: React.FC = () => {
       (infant?.user?.surname || '').length >
     22;
 
-  const today = useMemo(() => new Date(), []);
   const options: Intl.DateTimeFormatOptions = useMemo(
     () => ({
       year: 'numeric',
@@ -202,8 +199,8 @@ export const ActivityList: React.FC = () => {
     if (isStartVisit) {
       return setIsStartVisit(false);
     }
-    return history.push(ROUTES.CLIENTS.ROOT);
-  }, [history, isStartVisit]);
+    return history.push(`${ROUTES.CLIENTS.INFANT_PROFILE.ROOT}${infantId}`);
+  }, [history, infantId, isStartVisit]);
 
   const onFormBack = () => {
     window.sessionStorage.removeItem(currentActivityKey);
@@ -231,28 +228,27 @@ export const ActivityList: React.FC = () => {
   }, [appDispatch, infantId]);
 
   useLayoutEffect(() => {
-    // TODO: add integration
     appDispatch(
       visitThunkActions.getCompletedVisitsForVisitId({
-        visitId: MOCKED_VISIT_ID,
+        visitId,
       })
     );
     appDispatch(
       visitThunkActions.getPreviousVisitInformationForInfant({
-        visitId: MOCKED_VISIT_ID,
+        visitId,
       })
     );
-  }, [MOCKED_VISIT_ID, appDispatch]);
+  }, [visitId, appDispatch]);
 
   useLayoutEffect(() => {
     appDispatch(
       visitThunkActions.getVisitAnswersForInfant({
-        visitId: MOCKED_VISIT_ID,
+        visitId,
         visitName: activitiesTypes.pillar2,
         visitSection: DevelopmentalScreeningVisitSection,
       })
     );
-  }, [MOCKED_VISIT_ID, appDispatch]);
+  }, [visitId, appDispatch]);
 
   const renderContent = useMemo(() => {
     if (isLoading) {
@@ -277,13 +273,18 @@ export const ActivityList: React.FC = () => {
             color="textDark"
             className="col-span-2"
           />
-          <Typography
-            type="body"
-            align="left"
-            weight="skinny"
-            text={today.toLocaleDateString('en-ZA', options)}
-            color="textMid"
-          />
+          {!!visit?.visitType?.insertedDate && (
+            <Typography
+              type="body"
+              align="left"
+              weight="skinny"
+              text={new Date(visit?.visitType?.insertedDate).toLocaleDateString(
+                'en-ZA',
+                options
+              )}
+              color="textMid"
+            />
+          )}
           {isAllCompleted ? (
             <>
               <PollyImpressed className="mt-11 h-28 w-full self-center" />
@@ -412,9 +413,9 @@ export const ActivityList: React.FC = () => {
     isStartVisit,
     options,
     previousVisit?.visitDataStatus?.length,
-    today,
     uncompletedForms,
     user?.firstName,
+    visit?.visitType?.insertedDate,
     width,
   ]);
 

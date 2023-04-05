@@ -18,11 +18,11 @@ import { visitActions, visitThunkActions } from '@/store/visit';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { VisitActions } from '@/store/visit/visit.actions';
 import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
-import { useSelector } from 'react-redux';
-import { getInfantVisitsSelector } from '@/store/infant/infant.selectors';
 import { referralThunkActions } from '@/store/referral';
 import { ReferralActions } from '@/store/referral/referral.actions';
 import { GrowthMonitoring } from './pillar-1-steps';
+import { useParams } from 'react-router';
+import { InfantProfileParams } from '../../../infant-profile.types';
 
 export interface Question {
   question: string;
@@ -88,9 +88,7 @@ export const DynamicForm = ({
   const wasLoading = usePrevious(isLoading);
   const wasLoadingReferral = usePrevious(isLoadingReferral);
 
-  const visits = useSelector(getInfantVisitsSelector);
-  const MOCKED_VISIT_ID = visits[0]?.id;
-  /* '454686a9-2142-4061-aa47-4e89d46110b9' */
+  const { visitId } = useParams<InfantProfileParams>();
 
   const { successDialog } = useRequestResponseDialog();
 
@@ -175,7 +173,7 @@ export const DynamicForm = ({
     })) as InputMaybe<Array<InputMaybe<CmsVisitSectionInput>>>;
 
     const input: CmsVisitDataInputModelInput = {
-      visitId: MOCKED_VISIT_ID, // TODO: add integration
+      visitId,
       infantId: infant?.user?.id,
       visitData: {
         visitName: name,
@@ -190,7 +188,7 @@ export const DynamicForm = ({
 
     appDispatch(
       visitActions.addCompletedVisitsByVisitId({
-        visitId: MOCKED_VISIT_ID,
+        visitId,
         visits: [name || ''],
       })
     );
@@ -201,7 +199,7 @@ export const DynamicForm = ({
 
       await appDispatch(
         visitThunkActions.getCompletedVisitsForVisitId({
-          visitId: MOCKED_VISIT_ID,
+          visitId,
         })
       );
     }
@@ -212,7 +210,7 @@ export const DynamicForm = ({
       );
     }
   }, [
-    MOCKED_VISIT_ID,
+    visitId,
     appDispatch,
     infant?.user?.id,
     name,
