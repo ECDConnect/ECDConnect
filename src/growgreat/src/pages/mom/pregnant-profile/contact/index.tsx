@@ -82,10 +82,7 @@ export const Contact: React.FC = () => {
                 leadingIcon: 'PhoneIcon',
                 onClick: () => {
                   onSubmit();
-                  history.push(
-                    ROUTES.CLIENTS.MOM_PROFILE.CONTACT_TAB.UPDATE_NUMBERS,
-                    { activeTabIndex: 3, id: motherId }
-                  );
+                  history.push(`${location.pathname}/edit-numbers`);
                 },
               },
               {
@@ -96,10 +93,7 @@ export const Contact: React.FC = () => {
                 leadingIcon: 'LocationMarkerIcon',
                 onClick: () => {
                   onSubmit();
-                  history.push(
-                    ROUTES.CLIENTS.MOM_PROFILE.CONTACT_TAB.UPDATE_ADDRESS,
-                    { activeTabIndex: 3, id: motherId }
-                  );
+                  history.push(`${location.pathname}/edit-address`);
                 },
               },
             ]}
