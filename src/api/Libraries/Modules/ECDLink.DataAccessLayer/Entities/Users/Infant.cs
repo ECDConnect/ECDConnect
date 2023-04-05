@@ -2,7 +2,6 @@ using ECDLink.DataAccessLayer.Entities.Base;
 using ECDLink.DataAccessLayer.Entities.Caregiver;
 using ECDLink.Security;
 using ECDLink.Security.Attributes;
-using HotChocolate;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -39,6 +38,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public decimal? WeightAtBirth { get; set; }
 
         public decimal? LengthAtBirth { get; set; }
+        public Boolean Completed24MonthVisits { get; set; }
 
         [NotMapped]
         public virtual DisplaySet StatusInfo { get; set; }

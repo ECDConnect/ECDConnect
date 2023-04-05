@@ -160,6 +160,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             infantToUpdate.GenderId = input.GenderId;
             infantToUpdate.WeightAtBirth = input.WeightAtBirth;
             infantToUpdate.LengthAtBirth = input.LengthAtBirth;
+            infantToUpdate.Completed24MonthVisits = input.Completed24MonthVisits;
 
             return _infantRepo.Update(infantToUpdate);
         }
