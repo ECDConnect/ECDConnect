@@ -32,8 +32,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             {
                 case "GrowGreat":
                     return "growgreat.json";
-                default:
+                case "Funda":
                     return "smartstart.json";
+                case "ECDConnect":
+                    return "whitelabel.json";
+                default:
+                    return "whitelabel.json";
             }
         }
     }
