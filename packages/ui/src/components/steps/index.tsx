@@ -76,7 +76,7 @@ export const Steps = ({ items }: StepsProps) => {
 
   useEffect(() => {
     setTimeout(() => {
-      setRefs(divRefs.current);
+      setRefs(divRefs?.current);
     }, 100);
   }, [items]);
 
@@ -87,7 +87,7 @@ export const Steps = ({ items }: StepsProps) => {
           <div
             id={String(index)}
             key={`step-${item.title}-${index}`}
-            ref={divRefs.current[index]}
+            ref={divRefs?.current[index]}
             className="relative flex gap-5 pb-6"
           >
             {items.length !== index + 1 && (
@@ -106,7 +106,7 @@ export const Steps = ({ items }: StepsProps) => {
                     items[index + 1].type === 'completed'
                       ? '#26ACAF'
                       : '#F47C24',
-                  height: refs && refs[index].current?.clientHeight,
+                  height: refs && refs[index]?.current?.clientHeight,
                   left: 14,
                 }}
               ></div>

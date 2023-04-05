@@ -14,6 +14,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
         public decimal? LengthAtBirth { get; set; }
         public Guid? MotherCaregiverId { get; set; }
         public MotherModel Mother { get; set; }
+        public Boolean? Completed24MonthVisits { get; set; }
     }
 }
 

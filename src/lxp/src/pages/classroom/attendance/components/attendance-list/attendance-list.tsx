@@ -262,7 +262,6 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
               colour: 'primary',
               type: 'filled',
               onClick: () => {
-                // onSubmit();
                 handleFormSubmit();
                 onCancel();
               },
