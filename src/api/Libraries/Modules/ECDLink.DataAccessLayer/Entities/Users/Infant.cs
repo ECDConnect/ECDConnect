@@ -38,7 +38,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public decimal? WeightAtBirth { get; set; }
 
         public decimal? LengthAtBirth { get; set; }
-        public Boolean Completed24MonthVisits { get; set; }
+        public Boolean? Completed24MonthVisits { get; set; }
 
         [NotMapped]
         public virtual DisplaySet StatusInfo { get; set; }

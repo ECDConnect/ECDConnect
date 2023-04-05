@@ -2024,7 +2024,7 @@ export type Infant = {
   __typename?: 'Infant';
   caregiver?: Maybe<Caregiver>;
   caregiverId?: Maybe<Scalars['UUID']>;
-  completed24MonthVisits: Scalars['Boolean'];
+  completed24MonthVisits?: Maybe<Scalars['Boolean']>;
   gender?: Maybe<Gender>;
   genderId?: Maybe<Scalars['UUID']>;
   id: Scalars['UUID'];
@@ -2068,7 +2068,7 @@ export type InfantFilterInput = {
 export type InfantInput = {
   Caregiver?: InputMaybe<CaregiverInput>;
   CaregiverId?: InputMaybe<Scalars['UUID']>;
-  Completed24MonthVisits: Scalars['Boolean'];
+  Completed24MonthVisits?: InputMaybe<Scalars['Boolean']>;
   Gender?: InputMaybe<GenderInput>;
   GenderId?: InputMaybe<Scalars['UUID']>;
   Id?: InputMaybe<Scalars['UUID']>;
@@ -2087,7 +2087,7 @@ export type InfantInput = {
 export type InfantModelInput = {
   caregiver?: InputMaybe<CaregiverModelInput>;
   caregiverId?: InputMaybe<Scalars['UUID']>;
-  completed24MonthVisits: Scalars['Boolean'];
+  completed24MonthVisits?: InputMaybe<Scalars['Boolean']>;
   dateOfBirth: Scalars['DateTime'];
   firstName?: InputMaybe<Scalars['String']>;
   genderId?: InputMaybe<Scalars['UUID']>;
