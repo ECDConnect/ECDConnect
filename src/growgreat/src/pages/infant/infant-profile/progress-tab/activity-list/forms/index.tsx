@@ -29,6 +29,7 @@ import { dangerSignsVisitSection } from './care-for-mom-steps/danger-signs';
 import { dangerSignsVisitSectionForBaby } from './care-for-baby-steps/danger-signs';
 import { DevelopmentalScreeningVisitSection } from './pillar-2-steps/developmental-screening-weeks';
 import { getReferralsForInfantSelector } from '@/store/referral/referral.selectors';
+import { differenceInDays } from 'date-fns';
 
 interface FormProps {
   onBack: () => void;
@@ -63,10 +64,45 @@ export const Form = ({ onBack }: FormProps) => {
 
   const { years: ageYears, months: ageMonths } =
     getAgeInYearsMonthsAndDays(dateOfBirth);
+  const ageDays = differenceInDays(new Date(), new Date(dateOfBirth));
 
   const isChild6Months = useMemo(
     () => !ageYears && ageMonths < 7,
     [ageMonths, ageYears]
+  );
+
+  // TODO: add G3 visits tab integration
+  const isFirstVisit = true;
+
+  const isFormulaMilkHowBreastfeedingWorks = useMemo(
+    () => isFirstVisit && ageDays >= 7 && ageDays <= 13,
+    [ageDays, isFirstVisit]
+  );
+  const isFormulaMilkUnsafeFeedingPractices = useMemo(
+    () => isFirstVisit && ageDays >= 14 && ageDays <= 48,
+    [ageDays, isFirstVisit]
+  );
+
+  const isMixedFeedingFoodsForm = isChild6Months;
+  const isMixedFeedingBenefitsOfBreastfeeding = useMemo(
+    () => isFirstVisit && ageDays < 7,
+    [ageDays, isFirstVisit]
+  );
+  const isMixedFeedingHowBreastfeedingWorks = useMemo(
+    () => isFirstVisit && ageDays >= 7 && ageDays <= 13,
+    [ageDays, isFirstVisit]
+  );
+  const isMixedFeedingUnsafeFeedingPractices = useMemo(
+    () => isFirstVisit && ageDays >= 14 && ageDays <= 56,
+    [ageDays, isFirstVisit]
+  );
+  const isMixedFeedingFistFoods = useMemo(
+    () => isFirstVisit && !ageYears && ageMonths < 6,
+    [ageMonths, ageYears, isFirstVisit]
+  );
+  const isMixedFeedingComplementaryFeeding = useMemo(
+    () => isFirstVisit && !ageYears && ageMonths >= 6 && ageMonths < 9,
+    [ageMonths, ageYears, isFirstVisit]
   );
 
   const isFollowUp = useCallback(
@@ -111,8 +147,10 @@ export const Form = ({ onBack }: FormProps) => {
 
   const activityName = window.sessionStorage.getItem(currentActivityKey) || '';
 
-  // TODO: add integration (G5.6.2)
-  const isPillar4FollowUp = true;
+  const isPillar4FollowUp = isFollowUp(
+    dangerSignsVisitSection,
+    activitiesTypes.pillar4
+  );
 
   const handleOnClose = useCallback(() => {
     dialog({
@@ -179,11 +217,19 @@ export const Form = ({ onBack }: FormProps) => {
       case activitiesTypes.careForBaby:
         return careForBabySteps(isDangerSignsFollowUpForBaby);
       case activitiesTypes.pillar1:
-        return getPillar1Steps(
+        return getPillar1Steps({
           nutritionAnswer,
           isToSkipBreastfeedingIssuesRelevantItemsStep,
-          isChild6Months
-        );
+          isShowNutritionStep: isChild6Months,
+          isFormulaMilkHowBreastfeedingWorks,
+          isFormulaMilkUnsafeFeedingPractices,
+          isMixedFeedingBenefitsOfBreastfeeding,
+          isMixedFeedingComplementaryFeeding,
+          isMixedFeedingFistFoods,
+          isMixedFeedingFoodsForm,
+          isMixedFeedingHowBreastfeedingWorks,
+          isMixedFeedingUnsafeFeedingPractices,
+        });
       case activitiesTypes.pillar2:
         return pillar2Steps(isDevelopmentalScreeningWeeksFollowUp);
       case activitiesTypes.pillar3:
@@ -202,6 +248,14 @@ export const Form = ({ onBack }: FormProps) => {
     nutritionAnswer,
     isToSkipBreastfeedingIssuesRelevantItemsStep,
     isChild6Months,
+    isFormulaMilkHowBreastfeedingWorks,
+    isFormulaMilkUnsafeFeedingPractices,
+    isMixedFeedingBenefitsOfBreastfeeding,
+    isMixedFeedingComplementaryFeeding,
+    isMixedFeedingFistFoods,
+    isMixedFeedingFoodsForm,
+    isMixedFeedingHowBreastfeedingWorks,
+    isMixedFeedingUnsafeFeedingPractices,
     isDevelopmentalScreeningWeeksFollowUp,
     isPillar4FollowUp,
     referralsForInfant?.length,
