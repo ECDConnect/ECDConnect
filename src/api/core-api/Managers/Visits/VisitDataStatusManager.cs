@@ -839,8 +839,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
 
             if (q1 != null && q1.Question == Constants.GGSettings.q_weight) {
 
-                var _weight = double.Parse(q1.QuestionAnswer, CultureInfo.InvariantCulture);
-                var _height = double.Parse(q2.QuestionAnswer, CultureInfo.InvariantCulture);
+                var _weight = q1.QuestionAnswer != "undefined" ? double.Parse(q1.QuestionAnswer, CultureInfo.InvariantCulture) : 0;
+                var _height = q2.QuestionAnswer != "undefined" ? double.Parse(q2.QuestionAnswer, CultureInfo.InvariantCulture) : 0;
                 var _prevWeight = double.Parse(previousVisitWeight, CultureInfo.InvariantCulture);
                
                 wIndicator = GetHeightWeightIndicator(true, totalDaysOld, _weight, _height, gender);
@@ -974,7 +974,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
             }
 
             if (q3 != null && q3.Question == Constants.GGSettings.q_muac) {
-                var questionAnswer = Int32.Parse(q3.QuestionAnswer);
+                var questionAnswer = q2.QuestionAnswer != "undefined" ? Int32.Parse(q3.QuestionAnswer) : 0;
                 mIndicator = "Normal";
                 if (questionAnswer < 11.5) {
                     mIndicator = "Severe acute malnutrition";
