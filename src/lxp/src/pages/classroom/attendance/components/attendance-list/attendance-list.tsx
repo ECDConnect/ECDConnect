@@ -59,6 +59,8 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
   const [shouldFilter] = useState<boolean>(true);
 
   const [attendanceGroups, setAttendanceGroups] = useState<AttendanceState[]>();
+  const [classProgrammeID, setClassProgrammeID] = useState<string>();
+
   const [selectedClassroomGroups, setSelectedClassroomGroups] = useState<
     ClassroomGroupDto[]
   >([]);
@@ -85,18 +87,20 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
     ? classProgrammesForPrincipal
     : classProgrammes;
 
-  const primaryClassProgramme = classProgrammesUpdated.find(
+  const primaryClassProgramme = classProgrammesUpdated.filter(
     (prog) => prog.meetingDay === getDay(attendanceDate)
   );
 
+  
   useEffect(() => {
+    console.log("", primaryClassProgramme)
     if (classroomGroups) {
       const selectedGroups = isPrincipal
         ? classroomGroupsForPrincipal.filter(
-            (x) => x.id === primaryClassProgramme?.classroomGroupId
+            (x) => x.id === primaryClassProgramme[0]?.classroomGroupId
           )
         : classroomGroups.filter(
-            (x) => x.id === primaryClassProgramme?.classroomGroupId
+            (x) => x.id === primaryClassProgramme[0]?.classroomGroupId
           );
       setSelectedClassroomGroups(selectedGroups);
     }
@@ -116,6 +120,10 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
   };
 
   const onFilterItemsChanges = (value: SearchDropDownOption<any>[]) => {
+    console.log("rtesf>", primaryClassProgramme)
+    console.log(">",value.map((x) => x.id));
+
+
     setSelectedClassroomGroups(value.map((x) => x.value));
   };
 
@@ -298,8 +306,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
                         id: x.id ?? '',
                         value: x,
                         label: x.name,
-                        disabled:
-                          x.id === primaryClassProgramme?.classroomGroupId,
+                        disabled: false
                       };
                     })
                   : classroomGroups.map((x) => {
@@ -307,8 +314,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
                         id: x.id ?? '',
                         value: x,
                         label: x.name,
-                        disabled:
-                          x.id === primaryClassProgramme?.classroomGroupId,
+                        disabled:false
                       };
                     })) || []
               }
@@ -322,7 +328,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
                   id: x.id ?? '',
                   value: x,
                   label: x.name,
-                  disabled: x.id === primaryClassProgramme?.classroomGroupId,
+                  // disabled: x.id === primaryClassProgramme?.classroomGroupId,
                 };
               })}
               info={{
@@ -358,8 +364,9 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
       </div>
       <div className={styles.attendanceListsWrapper}>
         {selectedClassroomGroups.map((selectedGroup, idx) => {
+          console.log("food")
           const isPrimaryList =
-            selectedGroup.id === primaryClassProgramme?.classroomGroupId;
+            selectedGroup.id === primaryClassProgramme[0]?.classroomGroupId;
           return (
             <div id="attendanceList">
               <ClassProgrammeAttendanceList
