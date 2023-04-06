@@ -10,6 +10,7 @@ import ROUTES from '@/routes/routes';
 
 import { Visits } from './visits';
 import { PregnantProfileRouteState } from './index.types';
+import { ProgressTab } from './progress-tab';
 
 export const PREGNANT_PROFILE_TABS = {
   VISITS: 0,
@@ -51,14 +52,7 @@ export const PregnantProfile: React.FC = () => {
     {
       title: 'Progress',
       initActive: false,
-      child: (
-        <Typography
-          className={'mt-16 p-4'}
-          type={'body'}
-          color="textDark"
-          text={'Coming soon'}
-        />
-      ),
+      child: <ProgressTab />,
     },
     {
       title: 'Referrals',

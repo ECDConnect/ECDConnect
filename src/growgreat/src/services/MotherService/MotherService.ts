@@ -212,6 +212,7 @@ class MotherService {
               actualVisitDate,
               plannedVisitDate,
               attended,
+              id,
               risk
               visitType{
                 id

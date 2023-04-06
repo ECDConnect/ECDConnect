@@ -17,6 +17,7 @@ export type CompletedVisitsForVisitId = {
 export interface VisitState {
   visitStatus?: VisitStatusDto;
   visitFormData?: CmsVisitDataInputModelInput[];
+  visitFormDataForMother?: CmsVisitDataInputModelInput[];
   healthPromotion?: HealthPromotion[];
   moreInformation?: MoreInformation[];
   completedVisitsForVisitId?: CompletedVisitsForVisitId[];
@@ -25,4 +26,5 @@ export interface VisitState {
   growthDataForInfant?: VisitData[];
   visitAnswersForInfant?: VisitData[];
   healthCareWorkerHighlights?: HcwHighlights;
+  previousVisitInformationForMother?: Progress_VisitDataStatus;
 }

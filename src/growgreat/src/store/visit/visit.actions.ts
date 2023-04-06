@@ -29,6 +29,8 @@ export const VisitActions = {
   GET_GROWTH_DATA_FOR_INFANT: 'getGrowthDataForInfant',
   GET_VISIT_ANSWERS_FOR_INFANT: 'getVisitAnswersForInfant',
   GET_HCW_HIGHLIGHTS: 'getHealthCareWorkerHighlights',
+  GET_PREVIOUS_VISIT_INFORMATION_FOR_MOTHER:
+    'getPreviousVisitInformationForMother',
 };
 
 export const getHealthCareWorkerVisitStatus = createAsyncThunk<
@@ -343,6 +345,40 @@ export const getHealthCareWorkerHighlights = createAsyncThunk<
       if (!content) {
         return rejectWithValue(
           'Error getting highlights for health care worker'
+        );
+      }
+      return content;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getPreviousVisitInformationForMother = createAsyncThunk<
+  Progress_VisitDataStatus,
+  { visitId: string },
+  ThunkApiType<RootState>
+>(
+  VisitActions.GET_PREVIOUS_VISIT_INFORMATION_FOR_MOTHER,
+  async ({ visitId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      let content: Progress_VisitDataStatus | undefined = undefined;
+
+      if (userAuth?.auth_token) {
+        content = await new Visit(
+          userAuth?.auth_token ?? ''
+        ).getPreviousVisitInformationForMother(visitId);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      if (!content) {
+        return rejectWithValue(
+          'Error getting previous visit information for infant'
         );
       }
       return content;

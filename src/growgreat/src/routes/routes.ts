@@ -33,6 +33,9 @@ const ROUTES = {
         PAST_VISITS: '/:id/past-visits',
         ANTENATAL_VISIT: '/:id/antenatal-visit',
       },
+      PROGRESS: {
+        ACTIVITIES_FORM: '/:id/activities-form',
+      },
     }),
     INFANT_PROFILE: addPrefix('/infant-profile', {
       ROOT: '/',

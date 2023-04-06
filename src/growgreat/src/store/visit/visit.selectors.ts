@@ -53,3 +53,8 @@ export const getVisitAnswersForInfantSelector = (
 export const getHealthCareWorkerHighlightsSelector = (
   state: RootState
 ): HcwHighlights | undefined => state.visits.healthCareWorkerHighlights;
+
+export const getPreviousVisitInformationForMotherSelector = (
+  state: RootState
+): Progress_VisitDataStatus | undefined =>
+  state.visits.previousVisitInformationForMother;

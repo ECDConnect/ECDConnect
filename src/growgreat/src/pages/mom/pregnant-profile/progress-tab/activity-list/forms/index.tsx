@@ -1,0 +1,284 @@
+import { useCallback, useMemo, useState } from 'react';
+import { getAgeInYearsMonthsAndDays, useDialog } from '@ecdlink/core';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { getInfantById } from '@/store/infant/infant.selectors';
+import { RootState } from '@/store/types';
+import { ActionModal, BannerWrapper, DialogPosition } from '@ecdlink/ui';
+import { useSelector } from 'react-redux';
+import { useLocation } from 'react-router';
+import { currentActivityKey } from '..';
+import { activitiesTypes } from '../activities-list';
+import { DynamicForm, SectionQuestions } from './dynamic-form';
+import {
+  careForBabySteps,
+  getHealhcareteps,
+  followUpSteps,
+  getPillar1Steps,
+  getPillar4Steps,
+  pillar2Steps,
+  pillar3Steps,
+  pillar5Steps,
+} from './steps';
+import { nutritionQuestion } from './pillar-1-steps/nutrition';
+import {
+  breastfeedingIssuesCheckboxQuestion,
+  breastfeedingIssuesCheckboxOptions,
+} from './pillar-1-steps/nutrition/breast-milk-only-flow/breastfeeding-issues';
+import { getPreviousVisitInformationForInfantSelector } from '@/store/visit/visit.selectors';
+import { dangerSignsVisitSectionForBaby } from './nutrition-steps/danger-signs';
+import { DevelopmentalScreeningVisitSection } from './pillar-2-steps/developmental-screening-weeks';
+import { getReferralsForInfantSelector } from '@/store/referral/referral.selectors';
+import { differenceInDays } from 'date-fns';
+import { getMotherById } from '@/store/mother/mother.selectors';
+import { dangerSignsVisitSection } from '@/pages/infant/infant-profile/progress-tab/activity-list/forms/care-for-mom-steps/danger-signs';
+
+interface FormProps {
+  onBack: () => void;
+}
+
+const sessionStorageKey = 'currentStepNumber';
+
+export const Form = ({ onBack }: FormProps) => {
+  const [isTip, setIsTip] = useState(false);
+  const [step, setStep] = useState(0);
+  const [sectionQuestions, setSectionQuestions] =
+    useState<SectionQuestions[]>();
+
+  const previousVisit = useSelector(
+    getPreviousVisitInformationForInfantSelector
+  );
+  const referralsForInfant = useSelector(getReferralsForInfantSelector);
+
+  const { isOnline } = useOnlineStatus();
+
+  const dialog = useDialog();
+
+  const location = useLocation();
+
+  const [, , , infantId] = location.pathname.split('/');
+  const [, , , motherId] = location.pathname.split('/');
+
+  const infant = useSelector((state: RootState) =>
+    getInfantById(state, infantId)
+  );
+
+  const mother = useSelector((state: RootState) =>
+    getMotherById(state, motherId)
+  );
+
+  const dateOfBirth = infant?.user?.dateOfBirth as string;
+
+  const { years: ageYears, months: ageMonths } =
+    getAgeInYearsMonthsAndDays(dateOfBirth);
+  const ageDays = differenceInDays(new Date(), new Date(dateOfBirth));
+
+  const isChild6Months = useMemo(
+    () => !ageYears && ageMonths < 7,
+    [ageMonths, ageYears]
+  );
+
+  // TODO: add G3 visits tab integration
+  const isFirstVisit = true;
+
+  const isFormulaMilkHowBreastfeedingWorks = useMemo(
+    () => isFirstVisit && ageDays >= 7 && ageDays <= 13,
+    [ageDays, isFirstVisit]
+  );
+  const isFormulaMilkUnsafeFeedingPractices = useMemo(
+    () => isFirstVisit && ageDays >= 14 && ageDays <= 48,
+    [ageDays, isFirstVisit]
+  );
+
+  const isMixedFeedingFoodsForm = isChild6Months;
+  const isMixedFeedingBenefitsOfBreastfeeding = useMemo(
+    () => isFirstVisit && ageDays < 7,
+    [ageDays, isFirstVisit]
+  );
+  const isMixedFeedingHowBreastfeedingWorks = useMemo(
+    () => isFirstVisit && ageDays >= 7 && ageDays <= 13,
+    [ageDays, isFirstVisit]
+  );
+  const isMixedFeedingUnsafeFeedingPractices = useMemo(
+    () => isFirstVisit && ageDays >= 14 && ageDays <= 56,
+    [ageDays, isFirstVisit]
+  );
+  const isMixedFeedingFistFoods = useMemo(
+    () => isFirstVisit && !ageYears && ageMonths < 6,
+    [ageMonths, ageYears, isFirstVisit]
+  );
+  const isMixedFeedingComplementaryFeeding = useMemo(
+    () => isFirstVisit && !ageYears && ageMonths >= 6 && ageMonths < 9,
+    [ageMonths, ageYears, isFirstVisit]
+  );
+
+  const isFollowUp = useCallback(
+    (section: string, visitName: string) => {
+      return !!previousVisit?.visitDataStatus?.some(
+        (item) =>
+          item?.section === section &&
+          item.visitData?.visitName === visitName &&
+          item.color !== 'Success'
+      );
+    },
+    [previousVisit?.visitDataStatus]
+  );
+
+  const isDangerSignsFollowUpForMom = isFollowUp(
+    dangerSignsVisitSection,
+    activitiesTypes.healthCare
+  );
+  const isDangerSignsFollowUpForBaby = isFollowUp(
+    dangerSignsVisitSectionForBaby,
+    activitiesTypes.nutrition
+  );
+
+  const isDevelopmentalScreeningWeeksFollowUp = isFollowUp(
+    DevelopmentalScreeningVisitSection,
+    activitiesTypes.pregnancyCare
+  );
+
+  const nutritionAnswer = sectionQuestions
+    ?.flatMap((section) => section.questions)
+    .find((item) => item.question === nutritionQuestion)?.answer;
+
+  const breastfeedingIssuesAnswers = sectionQuestions
+    ?.flatMap((section) => section.questions)
+    .find((item) => item.question === breastfeedingIssuesCheckboxQuestion)
+    ?.answer as string[];
+
+  const isToSkipBreastfeedingIssuesRelevantItemsStep =
+    breastfeedingIssuesAnswers?.includes(
+      breastfeedingIssuesCheckboxOptions.noneOption
+    );
+
+  const activityName = window.sessionStorage.getItem(currentActivityKey) || '';
+
+  const handleOnClose = useCallback(() => {
+    dialog({
+      blocking: false,
+      position: DialogPosition.Middle,
+      color: 'bg-white',
+      render: (onClose) => {
+        return (
+          <ActionModal
+            className="z-50"
+            icon="ExclamationCircleIcon"
+            iconColor="alertMain"
+            iconClassName="h-10 w-10"
+            title="Are you sure you want to exit?"
+            detailText="If you exit now you will lose your progress."
+            actionButtons={[
+              {
+                colour: 'primary',
+                text: 'Exit',
+                textColour: 'white',
+                type: 'filled',
+                leadingIcon: 'LoginIcon',
+                onClick: () => {
+                  window.sessionStorage.removeItem(sessionStorageKey);
+                  onClose();
+                  onBack();
+                },
+              },
+              {
+                colour: 'primary',
+                text: 'Continue editing',
+                textColour: 'primary',
+                type: 'outlined',
+                leadingIcon: 'PencilIcon',
+                onClick: onClose,
+              },
+            ]}
+          />
+        );
+      },
+    });
+  }, [dialog, onBack]);
+
+  const handleOnBack = useCallback(() => {
+    if (isTip) {
+      return setIsTip(false);
+    }
+
+    if (step === 0) {
+      return onBack();
+    }
+
+    return setStep((prevState) => prevState - 1);
+  }, [isTip, onBack, step]);
+
+  const handleOnNext = useCallback(() => {
+    setStep((preState) => preState + 1);
+  }, []);
+
+  const currentSteps = useMemo(() => {
+    switch (activityName) {
+      case activitiesTypes.healthCare:
+        return getHealhcareteps(isDangerSignsFollowUpForMom);
+      case activitiesTypes.nutrition:
+        return careForBabySteps(isDangerSignsFollowUpForBaby);
+      case activitiesTypes.pregnancyCare:
+        return getPillar1Steps({
+          nutritionAnswer,
+          isToSkipBreastfeedingIssuesRelevantItemsStep,
+          isShowNutritionStep: isChild6Months,
+          isFormulaMilkHowBreastfeedingWorks,
+          isFormulaMilkUnsafeFeedingPractices,
+          isMixedFeedingBenefitsOfBreastfeeding,
+          isMixedFeedingComplementaryFeeding,
+          isMixedFeedingFistFoods,
+          isMixedFeedingFoodsForm,
+          isMixedFeedingHowBreastfeedingWorks,
+          isMixedFeedingUnsafeFeedingPractices,
+        });
+      case activitiesTypes.dangerSigns:
+        return pillar2Steps(isDevelopmentalScreeningWeeksFollowUp);
+      default:
+        return followUpSteps(!!referralsForInfant?.length);
+    }
+  }, [
+    activityName,
+    isDangerSignsFollowUpForMom,
+    isDangerSignsFollowUpForBaby,
+    nutritionAnswer,
+    isToSkipBreastfeedingIssuesRelevantItemsStep,
+    isChild6Months,
+    isFormulaMilkHowBreastfeedingWorks,
+    isFormulaMilkUnsafeFeedingPractices,
+    isMixedFeedingBenefitsOfBreastfeeding,
+    isMixedFeedingComplementaryFeeding,
+    isMixedFeedingFistFoods,
+    isMixedFeedingFoodsForm,
+    isMixedFeedingHowBreastfeedingWorks,
+    isMixedFeedingUnsafeFeedingPractices,
+    isDevelopmentalScreeningWeeksFollowUp,
+    referralsForInfant?.length,
+  ]);
+
+  return (
+    <BannerWrapper
+      size="medium"
+      renderBorder
+      onBack={handleOnBack}
+      onClose={handleOnClose}
+      title={activityName}
+      subTitle={`${step + 1} of ${currentSteps.length}`}
+      backgroundColour="white"
+      displayOffline={!isOnline}
+    >
+      <DynamicForm
+        name={activityName}
+        steps={currentSteps}
+        infant={infant}
+        mother={mother}
+        isTipPage={isTip}
+        currentStep={step}
+        setIsTip={setIsTip}
+        setSectionQuestions={setSectionQuestions}
+        onPreviousStep={handleOnBack}
+        onNextStep={handleOnNext}
+        onClose={onBack}
+      />
+    </BannerWrapper>
+  );
+};
