@@ -94,7 +94,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                     Caregiver = caregiver,
                     GenderId = input.GenderId,
                     WeightAtBirth = input.WeightAtBirth,
-                    LengthAtBirth = input.LengthAtBirth
+                    LengthAtBirth = input.LengthAtBirth,
+                    Completed24MonthVisits = false
                 };
             }
             else
@@ -114,7 +115,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                         Mother = mother,
                         GenderId = input.GenderId,
                         WeightAtBirth = input.WeightAtBirth,
-                        LengthAtBirth = input.LengthAtBirth
+                        LengthAtBirth = input.LengthAtBirth,
+                        Completed24MonthVisits = false
                     };
                 }
                 else
@@ -132,7 +134,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                         Caregiver = caregiver,
                         GenderId = input.GenderId,
                         WeightAtBirth = input.WeightAtBirth,
-                        LengthAtBirth = input.LengthAtBirth
+                        LengthAtBirth = input.LengthAtBirth,
+                        Completed24MonthVisits = false
                     };
                 }
             }
@@ -148,20 +151,28 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
         }
         public Infant UpdateInfant(string id, InfantModel input)
         {
-            var infantToUpdate = _infantRepo.GetAll().Where(x => x.Id.Equals(Guid.Parse(id))).FirstOrDefault();
-            var infantUser = GetUserFromInputModel(input);
+            var infantToUpdate = _infantRepo.GetAll().Where(x => x.User.Id == id).FirstOrDefault();
+            input.UserId = id;
+            var infantUser = GetUserFromUpdateInputModel(input);
 
             infantToUpdate.UpdatedDate = DateTime.Now;
             infantToUpdate.UpdatedBy = _applicationUserId;
             infantToUpdate.UserId = input.UserId;
             infantToUpdate.User = infantUser;
-            infantToUpdate.CaregiverId = input.CaregiverId;
-            infantToUpdate.Caregiver = GetCaregiverFromInput(input);
-            infantToUpdate.GenderId = input.GenderId;
-            infantToUpdate.WeightAtBirth = input.WeightAtBirth;
-            infantToUpdate.LengthAtBirth = input.LengthAtBirth;
+            infantToUpdate.Completed24MonthVisits = input.Completed24MonthVisits;
 
             return _infantRepo.Update(infantToUpdate);
+        }
+
+        private ApplicationUser GetUserFromUpdateInputModel(InfantModel input)
+        {
+            return new ApplicationUser()
+            {
+                Id = GetUserIdOrGenerateNew(input.UserId),
+                DateOfBirth = input.DateOfBirth,
+                LastSeen = DateTime.Now
+            };
+
         }
         private ApplicationUser GetUserFromInputModel(InfantModel input)
         {

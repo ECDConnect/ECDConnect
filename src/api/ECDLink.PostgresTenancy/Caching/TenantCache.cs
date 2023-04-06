@@ -70,6 +70,16 @@ namespace ECDLink.PostgresTenancy.Caching
         public TenantModel GetTenantByUrl(string url)
         {
             var tenants = Tenants.AsQueryable();
+            var uri = new Uri((url.StartsWith("http:") || url.StartsWith("https:")) ? url : "http://" + url);
+            if (!uri.IsDefaultPort)
+            {
+                var check = uri.Host + ":" + uri.Port.ToString();
+                var portTenant = tenants
+                        .Where(x => x.SiteAddress.Contains(check) || x.AdminSiteAddress.Contains(check) || x.TestSiteAddress.Contains(check) || x.AdminTestSiteAddress.Contains(check))
+                        .FirstOrDefault();
+                if (portTenant != null) return portTenant;
+
+            }
             return tenants
                     .Where(x => url.Contains(x.SiteAddress) || url.Contains(x.AdminSiteAddress) || url.Contains(x.TestSiteAddress) || url.Contains(x.AdminTestSiteAddress))
                     .FirstOrDefault();
