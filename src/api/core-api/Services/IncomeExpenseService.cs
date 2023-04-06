@@ -89,7 +89,7 @@ namespace ECDLink.Core.Services
                             allMonths.OrderDescending();
                             foreach (var loopMonth in allMonths)
                             {
-                                var statementCheck = statements.Where(x => x.Year.Equals(currentYear) && x.Month.Equals(loopMonth)).FirstOrDefault();
+                                var statementCheck = statements.Where(x => x.Year.Equals(currentYear) && x.Month.Equals(loopMonth)).OrderBy(x => x.Id).FirstOrDefault();
                                 bool isAutoSubmitted = (statementCheck != null ? statementCheck.AutoSubmitted : false);
                                 DateTime? submittedDate = (statementCheck != null ? statementCheck.SubmittedDate : null);
                                 var allIncome = statements.Where(x => x.Year.Equals(currentYear) && x.Month.Equals(loopMonth)).Select(y => y.IncomeTotal).ToList();
@@ -208,6 +208,7 @@ namespace ECDLink.Core.Services
             var statementRepo = _repoFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _applicationUserId);
             return statementRepo.GetAll() //get all rows for year to date
                     .Where(x => string.Equals(x.Id, lineId) && x.IsActive == true)
+                    .OrderBy(x => x.Id)
                     .FirstOrDefault();
         }
 
@@ -388,11 +389,11 @@ namespace ECDLink.Core.Services
             double incomeAmount = Math.Round(model.Amount, 2);
             model.Amount = incomeAmount;
 
-            StatementsIncome income = incomeRepo.GetAll().Where(x => x.Id.Equals(model.Id)).FirstOrDefault();
+            StatementsIncome income = incomeRepo.GetById(model.Id);
             if (income == null)
             {
                 //validity duplication check
-                StatementsIncome incomeCheck = incomeRepo.GetAll().Where(x => x.Amount.Equals(model.Amount) && x.DateReceived.Equals(model.DateReceived) && x.IncomeTypeId.Equals(model.IncomeTypeId) && x.PayTypeId.Equals(model.PayTypeId) && x.UserId.Equals(model.UserId) && x.ChildUserId.Equals(model.ChildUserId)).FirstOrDefault();
+                StatementsIncome incomeCheck = incomeRepo.GetAll().Where(x => x.Amount.Equals(model.Amount) && x.DateReceived.Equals(model.DateReceived) && x.IncomeTypeId.Equals(model.IncomeTypeId) && x.PayTypeId.Equals(model.PayTypeId) && x.UserId.Equals(model.UserId) && x.ChildUserId.Equals(model.ChildUserId)).OrderBy(x => x.Id).FirstOrDefault();
                 if (incomeCheck == null){
 
                     model.Submitted = false;
@@ -419,11 +420,11 @@ namespace ECDLink.Core.Services
             double expenseAmount = Math.Round(model.Amount, 2);
             model.Amount = expenseAmount;
 
-            StatementsExpenses expense = expenseRepo.GetAll().Where(x => x.Id.Equals(model.Id)).FirstOrDefault();
+            StatementsExpenses expense = expenseRepo.GetById(model.Id);
             if (expense == null)
             {
                 //validity duplication check
-                StatementsExpenses expenseCheck = expenseRepo.GetAll().Where(x => x.Amount.Equals(model.Amount) && x.DatePaid.Equals(model.DatePaid) && x.ExpenseTypeId.Equals(model.ExpenseTypeId)).FirstOrDefault();
+                StatementsExpenses expenseCheck = expenseRepo.GetAll().Where(x => x.Amount.Equals(model.Amount) && x.DatePaid.Equals(model.DatePaid) && x.ExpenseTypeId.Equals(model.ExpenseTypeId)).OrderBy(x => x.Id).FirstOrDefault();
                 if (expenseCheck == null)
                 {
                     model.Submitted = false;
@@ -446,7 +447,7 @@ namespace ECDLink.Core.Services
         public StatementsStartupSupport UpdateStartupSupport(StatementsStartupSupport model)
         {
             var startupRepo = _repoFactory.CreateGenericRepository<StatementsStartupSupport>(userContext: _applicationUserId);
-            StatementsStartupSupport supportEntry = startupRepo.GetAll().Where(x => x.Id.Equals(model.Id)).FirstOrDefault();
+            StatementsStartupSupport supportEntry = startupRepo.GetById(model.Id);
             if (supportEntry != null)
             {
                 startupRepo.Update(model);

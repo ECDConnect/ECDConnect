@@ -51,6 +51,7 @@ namespace ECDLink.PostgresTenancy.Repository
             return entities
                     .Where(e => string.Equals(e.UserId, id))
                     .Where(g => string.Equals(g.TenantId, _tenantId))
+                    .OrderByDescending(x => x.InsertedDate)
                     .FirstOrDefault();
         }
 
@@ -59,6 +60,7 @@ namespace ECDLink.PostgresTenancy.Repository
             return entities
                     .Where(e => string.Equals(e.TokenKey, key))
                     .Where(g => string.Equals(g.TenantId, _tenantId))
+                    .OrderByDescending(x => x.InsertedDate)
                     .FirstOrDefault();
         }
 
@@ -67,6 +69,7 @@ namespace ECDLink.PostgresTenancy.Repository
             return entities
                     .Where(e => string.Equals(e.Token, token))
                     .Where(g => string.Equals(g.TenantId, _tenantId))
+                    .OrderByDescending(x => x.InsertedDate)
                     .FirstOrDefault();
         }
 
@@ -84,7 +87,7 @@ namespace ECDLink.PostgresTenancy.Repository
         public void Delete(string key)
         {
             if (key == null) throw new ArgumentNullException("entity");
-            JWTUserTokensEntity entity = entities.Where(x => x.TokenKey.Equals(key)).Where(g => string.Equals(g.TenantId, _tenantId)).FirstOrDefault();
+            JWTUserTokensEntity entity = entities.Where(x => x.TokenKey.Equals(key)).Where(g => string.Equals(g.TenantId, _tenantId)).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
             entities.Remove(entity);
             _context.SaveChanges();
 

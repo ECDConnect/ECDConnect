@@ -95,6 +95,7 @@ namespace ECDLink.ContentManagement.Repositories
                               .ThenInclude(ti => ti.FieldType)
                               .Where(x => x.IsActive)
                               .Where(x => x.Id == Id)
+                              .OrderBy(x => x.Id)
                               .FirstOrDefault();
         }
 
