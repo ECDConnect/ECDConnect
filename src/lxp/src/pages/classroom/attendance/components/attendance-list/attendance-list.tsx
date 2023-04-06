@@ -137,17 +137,21 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
         isRequired: isPrimaryList,
         list: updateList,
       });
+      setAttendanceGroups(newAttendanceGroups);
+      updateAttendanceState(newAttendanceGroups);
     } else {
       newAttendanceGroups.splice(groupIndex, 1, {
         cacheId: attendanceListId,
         isRequired: isPrimaryList,
         list: updateList,
       });
+      setAttendanceGroups(
+        newAttendanceGroups.filter((x) => x.cacheId === attendanceListId)
+      );
+      updateAttendanceState(
+        newAttendanceGroups.filter((x) => x.cacheId === attendanceListId)
+      );
     }
- 
-
-    setAttendanceGroups(newAttendanceGroups);
-    updateAttendanceState(newAttendanceGroups.filter((x)=> x.cacheId === attendanceListId));
   };
 
   const handleFormSubmit = async () => {
