@@ -71,7 +71,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
         {
             var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
             var repository = _repoFactory.CreateGenericRepository<Mother>(userContext: applicationUserId);
-            var entityToUpdate = repository.GetAll().Where(x => x.Id.Equals(Guid.Parse(id))).FirstOrDefault();
+            var entityToUpdate = repository.GetById(Guid.Parse(id));
             var motherUser = GetUserFromInputModel(input);
 
             entityToUpdate.UpdatedDate = DateTime.Now;
@@ -89,7 +89,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
         public Mother UpdateContactDetails(string id, MotherModel input) {
             var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
             var repository = _repoFactory.CreateGenericRepository<Mother>(userContext: applicationUserId);
-            var entityToUpdate = repository.GetAll().Where(x => x.Id.Equals(Guid.Parse(id))).FirstOrDefault();
+            var entityToUpdate = repository.GetById(Guid.Parse(id));
             var motherUser = GetUserFromInputModel(input);
 
             entityToUpdate.UpdatedDate = DateTime.Now;
@@ -115,7 +115,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             if (input.SiteAddressId == null)
             {
                 var repository = _repoFactory.CreateGenericRepository<Province>(userContext: applicationUserId);
-                var naProvince = repository.GetAll().Where(x => x.Description.Equals("N/A")).FirstOrDefault();
+                var naProvince = repository.GetAll().Where(x => x.Description.Equals("N/A")).OrderBy(x => x.Id).FirstOrDefault();
                 input.SiteAddress.ProvinceId = naProvince.Id;
             }
 

@@ -50,7 +50,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var classRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);
-            ClassroomGroup classRoomGroup = classRepo.GetAll().Where(x => x.Id.Equals(id)).FirstOrDefault();
+            ClassroomGroup classRoomGroup = classRepo.GetAll().Where(x => x.Id.Equals(id)).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
 
             Guid? programmeType = input.ProgrammeTypeId;
             //if a programmetype already exists on a previously created classroomgroup, use that to avoid mismatching programmes
@@ -134,7 +134,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         {
             string uId = contextAccessor.HttpContext.GetUser().Id;
             IGenericRepository<ClassroomGroup, Guid> classRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);
-            ClassroomGroup classroomGroup = classRepo.GetAll().Where(x => x.Id.Equals(input.ClassroomGroupId)).FirstOrDefault();
+            ClassroomGroup classroomGroup = classRepo.GetAll().Where(x => x.Id.Equals(input.ClassroomGroupId)).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
             string hierarchy = engine.GetUserHierarchy(classroomGroup.UserId != null ? classroomGroup.UserId.ToString() : uId);
 
             if (classroomGroup != null)
@@ -190,7 +190,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             var uId = contextAccessor.HttpContext.GetUser().Id;
 
             var classProgrammeRepo = repoFactory.CreateGenericRepository<ClassProgramme>(userContext: uId);
-            ClassProgramme classProgramme = classProgrammeRepo.GetAll().Where(x => x.ClassroomGroupId.Equals(classroomId)).FirstOrDefault();
+            ClassProgramme classProgramme = classProgrammeRepo.GetAll().Where(x => x.ClassroomGroupId.Equals(classroomId)).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
             if (classProgramme != null && !string.IsNullOrWhiteSpace(newHierarchy))
             {
                 classProgramme.Hierarchy = newHierarchy;

@@ -88,7 +88,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat {
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var motherRepo = repoFactory.CreateGenericRepository<Mother>(userContext: uId);
-            Mother mother = motherRepo.GetAll().Where(x => x.Id.Equals(Guid.Parse(id))).FirstOrDefault();
+            Mother mother = motherRepo.GetById(Guid.Parse(id));
 
             return mother;
         }

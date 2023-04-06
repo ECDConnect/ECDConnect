@@ -69,13 +69,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var principalRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            Practitioner principal = new Practitioner();
-            List<Practitioner> principals = principalRepo.GetAll().Where(x => x.UserId.Contains(userId)).ToList();
-            if (principals.Count > 0)
-            {
-                principal = principals.FirstOrDefault();
-            }
-
+            var principal = principalRepo.GetAll().Where(x => x.UserId.Contains(userId)).OrderBy(x => x.Id).FirstOrDefault();
+            if (principal == null) principal = new Practitioner();
             return principal;
         }
 
