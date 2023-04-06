@@ -59,7 +59,6 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
   const [shouldFilter] = useState<boolean>(true);
 
   const [attendanceGroups, setAttendanceGroups] = useState<AttendanceState[]>();
-  const [classProgrammeID, setClassProgrammeID] = useState<string>();
 
   const [selectedClassroomGroups, setSelectedClassroomGroups] = useState<
     ClassroomGroupDto[]
@@ -91,9 +90,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
     (prog) => prog.meetingDay === getDay(attendanceDate)
   );
 
-  
   useEffect(() => {
-    console.log("", primaryClassProgramme)
     if (classroomGroups) {
       const selectedGroups = isPrincipal
         ? classroomGroupsForPrincipal.filter(
@@ -120,10 +117,6 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
   };
 
   const onFilterItemsChanges = (value: SearchDropDownOption<any>[]) => {
-    console.log("rtesf>", primaryClassProgramme)
-    console.log(">",value.map((x) => x.id));
-
-
     setSelectedClassroomGroups(value.map((x) => x.value));
   };
 
@@ -151,9 +144,10 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
         list: updateList,
       });
     }
+ 
 
     setAttendanceGroups(newAttendanceGroups);
-    updateAttendanceState(newAttendanceGroups);
+    updateAttendanceState(newAttendanceGroups.filter((x)=> x.cacheId === attendanceListId));
   };
 
   const handleFormSubmit = async () => {
@@ -306,7 +300,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
                         id: x.id ?? '',
                         value: x,
                         label: x.name,
-                        disabled: false
+                        disabled: false,
                       };
                     })
                   : classroomGroups.map((x) => {
@@ -314,7 +308,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
                         id: x.id ?? '',
                         value: x,
                         label: x.name,
-                        disabled:false
+                        disabled: false,
                       };
                     })) || []
               }
@@ -328,7 +322,6 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
                   id: x.id ?? '',
                   value: x,
                   label: x.name,
-                  // disabled: x.id === primaryClassProgramme?.classroomGroupId,
                 };
               })}
               info={{
@@ -364,7 +357,6 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
       </div>
       <div className={styles.attendanceListsWrapper}>
         {selectedClassroomGroups.map((selectedGroup, idx) => {
-          console.log("food")
           const isPrimaryList =
             selectedGroup.id === primaryClassProgramme[0]?.classroomGroupId;
           return (
