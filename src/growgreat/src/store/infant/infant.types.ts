@@ -1,3 +1,4 @@
+import { EventRecordType } from '@ecdlink/graphql';
 import { InfantDto, VisitDto } from '@ecdlink/core';
 
 export interface InfantState {
@@ -5,4 +6,5 @@ export interface InfantState {
   infantsWeeklyVisits?: InfantDto[];
   infantCountForMonth?: number;
   visits?: VisitDto[];
+  eventRecordTypes?: EventRecordType[];
 }
