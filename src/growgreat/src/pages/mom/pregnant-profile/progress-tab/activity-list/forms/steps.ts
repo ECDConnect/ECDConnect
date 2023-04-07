@@ -36,7 +36,7 @@ import {
   FirstFoodsStep,
   ComplementaryFeedingStep,
   AlcoholUseStep,
-  ResourcesStep,
+  HivCareAndMedicationStep,
 } from './pillar-1-steps';
 import {
   DevelopmentalScreeningStep,
@@ -65,6 +65,8 @@ import {
 
 import { nutritionAnswers } from './pillar-1-steps/nutrition';
 import { Question } from './dynamic-form';
+import { IdDocumentStep } from './pillar-1-steps/nutrition/complementary-feeding-flow/id-document';
+import { InfantCareStep } from './pillar-1-steps/nutrition/complementary-feeding-flow/infant-care';
 
 export const getHealhcareteps = (isDangerSignsFollowUp: boolean) => [
   AntenatalCare,
@@ -149,7 +151,12 @@ export const getPillar1Steps = ({
     ...(isMixedFeedingComplementaryFeeding ? [ComplementaryFeedingStep] : []),
   ];
 
-  const complementaryFeedingFlow = [AlcoholUseStep, ResourcesStep];
+  const complementaryFeedingFlow = [
+    AlcoholUseStep,
+    HivCareAndMedicationStep,
+    IdDocumentStep,
+    InfantCareStep,
+  ];
 
   if (!!nutritionAnswer) {
     switch (nutritionAnswer) {

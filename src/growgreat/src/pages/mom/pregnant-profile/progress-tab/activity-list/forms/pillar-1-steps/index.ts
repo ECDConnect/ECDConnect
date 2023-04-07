@@ -20,7 +20,7 @@ export { MixedUnsafeFeedingPracticesStep } from './nutrition/mixed-feeding-flow/
 export { FirstFoodsStep } from './nutrition/mixed-feeding-flow/first-food';
 export { ComplementaryFeedingStep } from './nutrition/mixed-feeding-flow/complementary-feeding';
 export { AlcoholUseStep } from './nutrition/complementary-feeding-flow/alcohol-use';
-export { ResourcesStep } from './nutrition/complementary-feeding-flow/resources';
+export { HivCareAndMedicationStep } from './nutrition/complementary-feeding-flow/hiv-care';
 
 export interface GrowthMonitoring {
   [key: string]: any;

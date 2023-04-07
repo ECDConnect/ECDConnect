@@ -66,28 +66,6 @@ export const AntenatalCare = ({
         color="textMid"
         className="px-4 pb-4 pt-2"
       />
-      {/* <div className="flex flex-col gap-4 p-4">
-        <TipCard
-          buttonText="See more info"
-          buttonIcon="InformationCircleIcon"
-          onClick={() => setIsTip && setIsTip(true)}
-        />
-
-        <SuccessCard
-          customIcon={<CelebrateIcon className="h-14	w-14" />}
-          text={`Congratulations to ${infant?.caregiver?.firstName || ''}!`}
-          textColour="successDark"
-          subTextColours="textDark"
-          color="successBg"
-        />
-        <Divider dividerType="dashed" />
-        <Label
-          text={`Ask ${
-            infant?.caregiver?.firstName || ''
-          } how they are feeling.`}
-        />
-        <Divider dividerType="dashed" /> */}
-      {/* </div> */}
     </>
   );
 };

@@ -1,29 +1,24 @@
 import { Header, Label } from '@/pages/infant/infant-profile/components';
 import P1 from '@/assets/pillar/p1.svg';
 import { DynamicFormProps } from '../../../../dynamic-form';
-import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  getAgeInYearsMonthsAndDays,
-  replaceBraces,
-  useDialog,
-} from '@ecdlink/core';
+import { Fragment, useCallback, useMemo, useState } from 'react';
 import {
   ActionModal,
   Alert,
   ButtonGroup,
   ButtonGroupTypes,
-  CheckboxChange,
   Colours,
   Dialog,
   DialogPosition,
   Divider,
+  renderIcon,
   Typography,
 } from '@ecdlink/ui';
-import { noneOption, options } from './options';
-import { CheckboxGroup } from '@ecdlink/ui';
 import Pregnant from '@/assets/pregnant.svg';
 import { TipCard } from '@/pages/mom/pregnant-profile/components';
 import { QuestionMarkCircleIcon } from '@heroicons/react/solid';
+import { noneOption } from './options';
+import { HealthPromotion } from '../../../../components/health-promotion';
 
 export const getGroupColor = (count: number): Colours => {
   if (count < 4) {
@@ -45,11 +40,21 @@ export const AlcoholUseStep = ({
   setIsTip,
   setEnableButton,
   setSectionQuestions: setQuestions,
+  sectionQuestions,
+  isTipPage,
 }: DynamicFormProps) => {
-  const dialog = useDialog();
   const name = useMemo(() => mother?.user?.firstName || '', [mother]);
+  const sectionQuestionsValues = sectionQuestions?.[0].questions;
   const visitSection = `Alcohol use`;
   const [alcoholAbuseInfo, setAlcoholAbuseInfo] = useState(false);
+
+  const getGroupColor = (count: number): Colours => {
+    if (count >= 2) {
+      return 'errorDark';
+    }
+
+    return 'successDark';
+  };
 
   const [questions, setAnswers] = useState([
     {
@@ -113,39 +118,62 @@ export const AlcoholUseStep = ({
     [questions, setEnableButton, setQuestions, visitSection]
   );
 
-  function standardDrinkAlert() {
-    return dialog({
-      position: DialogPosition.Middle,
-      color: 'white',
-      render(close) {
-        return (
-          <ActionModal
-            className={'mx-4 bg-white'}
-            title="What is 1 standard drink?"
-            paragraphs={[
-              'About:',
-              '• 300ml (1 small bottle) of 5% beer',
-              '• 117ml (1 small glass) of 13% wine',
-              '• 37ml (1 shotglass) of 40% spirits (for example: gin whiskey, vodka).',
-            ]}
-            icon={'QuestionMarkCircleIcon'}
-            iconColor={'infoDark'}
-            iconBorderColor={'transparent'}
-            iconClassName={'h-16 w-16'}
-            actionButtons={[
-              {
-                text: 'Close',
-                colour: 'primary',
-                onClick: close,
-                type: 'outlined',
-                textColour: 'primary',
-                leadingIcon: 'XIcon',
-              },
-            ]}
+  const tAceAnswers = sectionQuestionsValues?.filter((item) => {
+    return item?.answer === true;
+  });
+  const tAceAnswersScore =
+    tAceAnswers?.[0]?.answer === true &&
+    tAceAnswers?.[0]?.question ===
+      '(T) Tolerance: how many drinks does it take to make you high?'
+      ? tAceAnswers?.length + 1
+      : tAceAnswers?.length;
+
+  const renderScore = useMemo(() => {
+    if (tAceAnswersScore !== undefined) {
+      return (
+        <div className="mt-2 flex items-center gap-2">
+          <Typography
+            type="h4"
+            color={getGroupColor(tAceAnswersScore!)}
+            text={`Score:`}
           />
-        );
-      },
-    });
+          <div
+            className={`text-14 flex h-5 w-5 rounded-full bg-${getGroupColor(
+              tAceAnswersScore
+            )} items-center justify-center font-bold text-white`}
+          >
+            {tAceAnswersScore}
+          </div>
+        </div>
+      );
+    }
+    return (
+      <div className="mt-2 flex items-center gap-2">
+        <Typography
+          type="h4"
+          color={getGroupColor(tAceAnswersScore!)}
+          text={`Score:`}
+        />
+        <div
+          className={`text-14 flex h-5 w-5 rounded-full bg-${getGroupColor(
+            tAceAnswersScore!
+          )} items-center justify-center font-bold text-white`}
+        >
+          {0}
+        </div>
+      </div>
+    );
+  }, [tAceAnswersScore]);
+
+  if (isTipPage) {
+    return (
+      <HealthPromotion
+        title={`Discuss with ${name}`}
+        subTitle={visitSection}
+        section={visitSection}
+        onClose={() => setIsTip && setIsTip(false)}
+      />
+    );
   }
 
   return (
@@ -217,54 +245,68 @@ export const AlcoholUseStep = ({
                 />
               </>
             )}
-            {/* <Typography
-              className="mt-4"
-              type="body"
-              text={item.question}
-              color="textDark"
-            />
-            <ButtonGroup<boolean>
-              color="secondary"
-              type={ButtonGroupTypes.Button}
-              options={options}
-              onOptionSelected={(value) => onOptionSelected(value, index)}
-            /> */}
           </Fragment>
         ))}
         <Dialog
           // fullScreen
           visible={alcoholAbuseInfo}
           position={DialogPosition.Middle}
+          className={'px-4'}
         >
           <div>
             <ActionModal
               className="z-50"
-              title={`Only share this with ${name}`}
-              detailText={`You can only share this information with your client, ${name}.`}
-              icon="ExclamationCircleIcon"
+              title={`What is 1 standard drink?`}
+              customDetailText={
+                <div className="flex flex-col items-start" color="textMid">
+                  <Typography type="body" text="The primary caregiver must:" />
+                  {[
+                    '300ml (1 small bottle) of 5% beer',
+                    '117ml (1 small glass) of 13% wine',
+                    'Not be paid to care for the child',
+                    '37ml (1 shotglass) of 40% spirits (for example: gin whiskey, vodka).',
+                  ].map((item) => (
+                    <li key={item} className="text-textMid">
+                      {item}
+                    </li>
+                  ))}
+                </div>
+              }
+              icon="QuestionMarkCircleIcon"
+              iconColor="infoDark"
+              iconClassName="h-10 w-10"
               actionButtons={[
                 {
                   colour: 'primary',
-                  text: 'Share',
-                  textColour: 'white',
-                  type: 'filled',
-                  leadingIcon: 'ShareIcon',
+                  text: 'Close',
+                  textColour: 'primary',
+                  type: 'outlined',
+                  leadingIcon: 'XIcon',
                   onClick: () => {
                     setAlcoholAbuseInfo(false);
                   },
                 },
-                // {
-                //   colour: 'primary',
-                //   text: 'Cancel',
-                //   textColour: 'primary',
-                //   type: 'outlined',
-                //   leadingIcon: 'XIcon',
-                //   onClick: onClose,
-                // },
               ]}
             />
           </div>
         </Dialog>
+        {renderScore}
+        {tAceAnswersScore! >= 2 && (
+          <div className="flex flex-col gap-4 p-4">
+            <Alert
+              type="error"
+              title={`Refer ${name} to the clinic. ${name} may need support to reduce drinking while pregnant`}
+              customIcon={
+                <div className="rounded-full">
+                  {renderIcon(
+                    'ExclamationCircleIcon',
+                    'text-errorMain w-10 h-10'
+                  )}
+                </div>
+              }
+            />
+          </div>
+        )}
       </div>
     </>
   );

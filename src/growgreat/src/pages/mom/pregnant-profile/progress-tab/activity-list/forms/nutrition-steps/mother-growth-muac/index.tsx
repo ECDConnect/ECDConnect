@@ -24,7 +24,7 @@ export const MotherGrowthMUACStep = ({
   const notUnderWeightMessage = notUnderWeight > 20 && notUnderWeight < 100;
 
   const muacQuestion = `What is ${mother?.user?.firstName} mid-upper arm circumference (MUAC) today?`;
-  console.log({ answer });
+
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -41,12 +41,6 @@ export const MotherGrowthMUACStep = ({
         ],
       },
     ]);
-
-    // if (notUnderWeightMessage) {
-    //   return setEnableButton?.(true);
-    // }
-
-    // return setEnableButton?.(false);
   };
 
   useEffect(() => {

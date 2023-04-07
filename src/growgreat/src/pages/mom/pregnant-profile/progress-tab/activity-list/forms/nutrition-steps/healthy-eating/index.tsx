@@ -13,7 +13,6 @@ import { getPreviousVisitInformationForInfantSelector } from '@/store/visit/visi
 import NutritionCare from '@/assets/nutritionCare.svg';
 import { getGroupColor } from '../nutrition-eating';
 import { noneOption } from '../nutrition-eating/options';
-import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 export const HealthyEatingStep = ({
   mother,
@@ -26,9 +25,6 @@ export const HealthyEatingStep = ({
 
   const nutritionAnswers = sectionQuestions?.[1].questions?.[0]
     .answer as string[];
-
-  console.log({ nutritionAnswers });
-  console.log(nutritionAnswers?.length);
 
   const previousVisit = useSelector(
     getPreviousVisitInformationForInfantSelector
@@ -141,17 +137,11 @@ export const HealthyEatingStep = ({
         />
       </div>
     );
-  }, [mother?.user?.firstName, nutritionAnswers.length]);
+  }, [name, nutritionAnswers.length]);
 
   useEffect(() => {
     setEnableButton && setEnableButton(true);
   }, [setEnableButton]);
-
-  // useEffect(() => {
-  //   if (nutritionAnswers) {
-  //     renderHealthyFoodAlerts();
-  //   }
-  // }, [nutritionAnswers, renderHealthyFoodAlerts]);
 
   const renderFoodGroupsNumber = useMemo(() => {
     return (
@@ -246,23 +236,6 @@ export const HealthyEatingStep = ({
           }
         />
         {renderMedia}
-
-        {/* {isFirstVisit && <Video section={videoSection} />}
-        {((!!weightAtBirth && Number(weightAtBirth) < 2.5) ||
-          (!!weightAtVisit && Number(weightAtBirth) < 2.5)) && (
-          <Alert
-            type="warning"
-            title={orangeAlert.message}
-            list={orangeAlert.list}
-          />
-        )}
-        {!isFirstVisit && (
-          <>
-            <Divider dividerType="dashed" />
-            <Label text={`Do you remember how to keep ${name} warm?`} />
-            <Divider dividerType="dashed" />
-          </>
-        )} */}
       </div>
     </>
   );

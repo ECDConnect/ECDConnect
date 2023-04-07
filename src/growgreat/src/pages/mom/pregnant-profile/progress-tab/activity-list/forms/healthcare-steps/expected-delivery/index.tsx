@@ -1,23 +1,18 @@
 import {
-  ActionModal,
   Alert,
   Button,
   ButtonGroup,
   ButtonGroupTypes,
   Checkbox,
-  CheckboxChange,
   Dialog,
   DialogPosition,
   ImageInput,
-  renderIcon,
   Typography,
 } from '@ecdlink/ui';
 import { Header } from '@/pages/infant/infant-profile/components';
 import Pregnant from '@/assets/pregnant.svg';
-import { ReactComponent as Translation } from '@/assets/translation.svg';
 import { DynamicFormProps } from '../../dynamic-form';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { replaceBraces, useDialog } from '@ecdlink/core';
 import { Translations } from './translations';
 import ReactDatePicker from 'react-datepicker';
 import { getNextDateByDay, getWeeksDiff } from '@ecdlink/core';
@@ -63,7 +58,6 @@ export const ExpectedDeliveryStep = ({
   });
 
   const [currentOption, setCurrentOption] = useState<string>();
-  const [answers, setAnswer] = useState<(string | number | undefined)[]>();
 
   const [hasMaternalCaseRecord, setHasMaternalCaseRecord] = useState<boolean>();
   const acceptedFormats = ['jpg', 'pdf', 'jpeg'];
@@ -125,31 +119,9 @@ export const ExpectedDeliveryStep = ({
     trigger();
   };
 
-  const dialog = useDialog();
-  const noneOption = 'None of the above';
-
-  const options = [
-    { name: 'Not feeling physically well' },
-    { name: 'Abdominal pain' },
-    { name: 'Heavy bleeding' },
-    {
-      name: 'Feeling too hot or too cold',
-      description: 'A temperature above 37.5 degrees suggests an infection.',
-    },
-    { name: 'Offensive or bad-smelling vaginal fluid' },
-    { name: 'Unable to manage the baby' },
-    { name: 'High stress' },
-    { name: 'Problems with breastfeeding' },
-    { name: noneOption },
-  ];
-
-  const question = `Tick the danger signs {client} is experiencing:`;
-
   const { maternalCaseRecord, notHaveAMaternalRecord } = useWatch({
     control: pregnantMaternalCaseRecordControl,
   });
-
-  console.log({ confirmHasNoRecord, hasMaternalCaseRecord });
 
   useEffect(() => {
     if (setEnableButton) {
