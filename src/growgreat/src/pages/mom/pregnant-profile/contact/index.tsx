@@ -13,11 +13,17 @@ import { useHistory, useLocation } from 'react-router';
 import { useWindowSize } from '@reach/window-size';
 import { getLogo } from '@/utils/common/svg.utils';
 import { LogoSvgs } from '@/utils/common/svg.utils';
-import { useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import ROUTES from '@/routes/routes';
 import { useDialog } from '@ecdlink/core';
 
 const HEADER_HEIGHT = 122;
+
+export interface Address {
+  long_name: string;
+  short_name: string;
+  types: string[];
+}
 
 export const Contact: React.FC = () => {
   const location = useLocation();
@@ -34,16 +40,40 @@ export const Contact: React.FC = () => {
       (mother?.user?.surname || '').length >
     22;
 
-  const address =
-    mother?.siteAddress?.addressLine1 !== null
-      ? mother?.siteAddress?.addressLine1
-      : '' + mother?.siteAddress?.addressLine2 !== null
-      ? ',' + mother?.siteAddress?.addressLine2
-      : '' + mother?.siteAddress?.addressLine3 !== null
-      ? ',' + mother?.siteAddress?.addressLine3
-      : '' + mother?.siteAddress?.province !== null
-      ? ',' + mother?.siteAddress?.province
-      : '';
+  const [formattedAddress, setFormattedAddress] = useState('');
+  const getAddress = useCallback(() => {
+    setFormattedAddress('');
+
+    let address = '';
+    if (
+      mother?.siteAddress?.addressLine1 !== undefined &&
+      mother?.siteAddress?.addressLine1 !== null
+    ) {
+      address = address + mother?.siteAddress?.addressLine1;
+    }
+    if (
+      mother?.siteAddress?.addressLine2 !== undefined &&
+      mother?.siteAddress?.addressLine2 !== null
+    ) {
+      address = address + ', ' + mother?.siteAddress?.addressLine2;
+    }
+    if (
+      mother?.siteAddress?.addressLine3 !== undefined &&
+      mother?.siteAddress?.addressLine3 !== null
+    ) {
+      address = address + ', ' + mother?.siteAddress?.addressLine3;
+    }
+    if (
+      mother?.siteAddress?.province !== undefined &&
+      mother?.siteAddress?.province !== null
+    ) {
+      address = address + ', ' + mother?.siteAddress?.province;
+    }
+
+    setFormattedAddress(address);
+  }, [mother?.siteAddress]);
+
+  useEffect(() => getAddress(), [getAddress]);
 
   const callForHelp = () => {
     window.open('tel:' + mother?.user?.phoneNumber);
@@ -54,7 +84,7 @@ export const Contact: React.FC = () => {
   };
 
   const gotomap = () => {
-    window.open(`https://maps.google.com/maps?q=` + address);
+    window.open(`https://maps.google.com/maps?q=` + formattedAddress);
   };
 
   const navigate = useCallback(
@@ -187,7 +217,12 @@ export const Contact: React.FC = () => {
       </div>
       <div className="flex-col">
         <Typography type="h4" weight="bold" lineHeight="snug" text="Address" />
-        <Typography type="h5" weight="bold" lineHeight="snug" text={address} />
+        <Typography
+          type="h5"
+          weight="bold"
+          lineHeight="snug"
+          text={formattedAddress}
+        />
         <Button
           text="Go to your phone's map"
           icon="LocationMarkerIcon"

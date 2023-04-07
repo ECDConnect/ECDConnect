@@ -18,6 +18,7 @@ export const MotherActions = {
   ADD_ADDITIONAL_MOTHER_VISIT: 'addAdditionalMotherVisit',
   GET_MOTHER_COUNT_FOR_MONTH: 'getMotherCountForMonth',
   GET_MOTHERS_WEEKLY_VISITS: 'getMothersWeeklyVisits',
+  UPDATE_MOTHER_ADDRESS: 'updateMotherAddress',
 };
 
 export const getMothers = createAsyncThunk<
@@ -290,6 +291,56 @@ export const getAllMotherEventRecordTypes = createAsyncThunk<
       }
 
       return eventRecordTypes;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const updateMotherAddress = createAsyncThunk<
+  MotherDto,
+  UpdateMotherRequest,
+  ThunkApiType<RootState>
+>(
+  'updateMotherAddress',
+  async ({ mother, id }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+    try {
+      let mappedMotherInput = mapMother(mother);
+      if (userAuth?.auth_token) {
+        return await new MotherService(
+          userAuth?.auth_token
+        ).updateMotherAddress(id, mappedMotherInput);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const updateMotherContactDetails = createAsyncThunk<
+  MotherDto,
+  UpdateMotherRequest,
+  ThunkApiType<RootState>
+>(
+  'updateMotherContactDetails',
+  async ({ mother, id }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+    try {
+      let mappedMotherInput = mapMother(mother);
+      if (userAuth?.auth_token) {
+        return await new MotherService(
+          userAuth?.auth_token
+        ).updateMotherContactDetails(id, mappedMotherInput);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
     } catch (err) {
       return rejectWithValue(err);
     }

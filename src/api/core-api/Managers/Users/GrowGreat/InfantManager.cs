@@ -152,28 +152,19 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
         public Infant UpdateInfant(string id, InfantModel input)
         {
             var infantToUpdate = _infantRepo.GetAll().Where(x => x.User.Id == id).FirstOrDefault();
-            input.UserId = id;
-            var infantUser = GetUserFromUpdateInputModel(input);
+            
+            var infantUser = infantToUpdate.User;
+            infantUser.DateOfBirth = input.DateOfBirth;
 
             infantToUpdate.UpdatedDate = DateTime.Now;
             infantToUpdate.UpdatedBy = _applicationUserId;
-            infantToUpdate.UserId = input.UserId;
+            infantToUpdate.UserId = infantUser.Id;
             infantToUpdate.User = infantUser;
             infantToUpdate.Completed24MonthVisits = input.Completed24MonthVisits;
 
             return _infantRepo.Update(infantToUpdate);
         }
 
-        private ApplicationUser GetUserFromUpdateInputModel(InfantModel input)
-        {
-            return new ApplicationUser()
-            {
-                Id = GetUserIdOrGenerateNew(input.UserId),
-                DateOfBirth = input.DateOfBirth,
-                LastSeen = DateTime.Now
-            };
-
-        }
         private ApplicationUser GetUserFromInputModel(InfantModel input)
         {
             return new ApplicationUser()

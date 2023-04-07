@@ -29,5 +29,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
         public Mother UpdateMotherContactDetails([Service] MotherManager motherManager, string id, MotherModel input) {
             return motherManager.UpdateContactDetails(id, input);
         }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
+        public Mother UpdateMotherAddress([Service] MotherManager motherManager, string id, MotherModel input)
+        {
+            return motherManager.UpdateMotherAddress(id, input);
+        }
     }
 }

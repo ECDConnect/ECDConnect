@@ -4,6 +4,8 @@ import {
   Button,
   ButtonGroup,
   ButtonGroupTypes,
+  Card,
+  DialogPosition,
   Divider,
   FormInput,
   Typography,
@@ -23,34 +25,132 @@ import {
   pregnantContactInformationModelSchema,
 } from '@/schemas/pregnant/pregnant-contact-information';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
+import { useAppDispatch } from '@/store';
+import { MotherDto, UserDto, useDialog } from '@ecdlink/core/lib';
+import { motherActions, motherThunkActions } from '@/store/mother';
 
 const HEADER_HEIGHT = 122;
 
 export const MotherContactNumber: React.FC<
   EditPregnantContactInformationProps
-> = ({ onSubmit, details }) => {
+> = () => {
+  const location = useLocation();
+  const history = useHistory();
+  const appDispatch = useAppDispatch();
+  const dialog = useDialog();
+  const { isOnline } = useOnlineStatus();
+  const [, , , motherId] = location.pathname.split('/');
+  const mother = useSelector((state: RootState) =>
+    getMotherById(state, motherId)
+  );
+
+  const cellphone = mother?.user?.phoneNumber
+    ? mother?.user?.phoneNumber.replace('+27', '0')
+    : '';
+  const whatsapp = mother?.whatsAppNumber
+    ? mother?.whatsAppNumber.replace('+27', '0')
+    : '';
+
+  const _defaultValues = {
+    cellphone: cellphone,
+    whatsapp: whatsapp,
+    details: {
+      id: mother?.user?.id,
+    },
+  };
+
   const {
     getValues: getMomContactInformationFormValues,
     register: consentFormRegister,
     control: momContactInformationControl,
   } = useForm<PregnantContactInformationModel>({
     resolver: yupResolver(pregnantContactInformationModelSchema),
-    mode: 'onBlur',
-    // defaultValues: playgroup,
+    mode: 'onChange',
+    defaultValues: _defaultValues,
     reValidateMode: 'onChange',
   });
 
-  const location = useLocation();
-  const [, , , motherId] = location.pathname.split('/');
-  const mother = useSelector((state: RootState) =>
-    getMotherById(state, motherId)
-  );
   const { isValid } = useFormState({ control: momContactInformationControl });
-  const [hasWhatsapp, setHasWhatsapp] = useState<any>(null);
+  const [hasWhatsapp, setHasWhatsapp] = useState<any>(cellphone === whatsapp);
   const { height } = useWindowSize();
-  const history = useHistory();
-  const { isOnline } = useOnlineStatus();
+
+  const saveMotherContactInformation = () => {
+    let whatsAppNumber = getMomContactInformationFormValues().cellphone;
+    if (!hasWhatsapp) {
+      whatsAppNumber = getMomContactInformationFormValues().whatsapp;
+    }
+
+    const userModel: UserDto = {
+      id: mother?.user?.id,
+      phoneNumber: getMomContactInformationFormValues().cellphone,
+      firstName: mother?.user?.firstName,
+      surname: mother?.user?.surname,
+    };
+
+    const motherInputModel: MotherDto = {
+      age: mother?.age,
+      expectedDateOfDelivery: mother?.expectedDateOfDelivery,
+      insertedDate: mother?.insertedDate,
+      nextVisitDate: mother?.nextVisitDate,
+      siteAddress: mother?.siteAddress,
+      statusInfo: mother?.statusInfo,
+      isActive: mother?.isActive,
+      user: userModel,
+      whatsAppNumber: whatsAppNumber,
+      phoneNumber: getMomContactInformationFormValues().cellphone,
+    };
+
+    appDispatch(motherActions.updateMother(motherInputModel));
+    appDispatch(
+      motherThunkActions.updateMotherContactDetails({
+        mother: motherInputModel,
+        id: motherId,
+      })
+    ).unwrap();
+    showSuccessMessage();
+  };
+
+  const showSuccessMessage = useCallback(
+    () =>
+      dialog({
+        position: DialogPosition.Middle,
+        color: 'bg-transparent',
+        render(onSubmit, onClose) {
+          return (
+            <Card
+              shadowSize={'lg'}
+              borderRaduis={'3xl'}
+              className="flex flex-col items-center justify-center px-4 py-6"
+            >
+              <Typography
+                type="h3"
+                weight="bold"
+                className="mt-4"
+                lineHeight="snug"
+                text={'Contact numbers saved!'}
+              />
+              <div className={'mt-4 flex w-full justify-center'}>
+                <Button
+                  text={`Close`}
+                  icon={'XIcon'}
+                  type={'filled'}
+                  color={'primary'}
+                  textColor={'white'}
+                  className={'max-h-10 w-full'}
+                  iconPosition={'start'}
+                  onClick={() => {
+                    history.goBack();
+                    onClose();
+                  }}
+                />
+              </div>
+            </Card>
+          );
+        },
+      }),
+    [dialog, history]
+  );
 
   return (
     <BannerWrapper
@@ -87,7 +187,6 @@ export const MotherContactNumber: React.FC<
             nameProp={'cellphone'}
             placeholder={'e.g 012 345 6789'}
             type={'number'}
-            value={'333333333333333'}
             className="mt-4"
           ></FormInput>
           <div className="mt-4">
@@ -100,6 +199,7 @@ export const MotherContactNumber: React.FC<
             <div className="mt-2">
               <ButtonGroup<boolean>
                 options={yesNoOptions}
+                selectedOptions={hasWhatsapp}
                 onOptionSelected={(value: boolean | boolean[]) =>
                   setHasWhatsapp(value)
                 }
@@ -118,7 +218,6 @@ export const MotherContactNumber: React.FC<
                 placeholder={'e.g 012 345 6789'}
                 type={'number'}
                 className="mt-4"
-                value={'23452352353'}
               ></FormInput>
             </>
           )}
@@ -133,7 +232,7 @@ export const MotherContactNumber: React.FC<
             icon={'SaveIcon'}
             iconPosition={'start'}
             onClick={() => {
-              onSubmit(getMomContactInformationFormValues());
+              saveMotherContactInformation();
             }}
             disabled={!isValid}
           />
