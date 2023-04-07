@@ -321,9 +321,14 @@ export const classroomGroupHasAttendanceOnDate = (
 
 export const getPlaygroup = (
   classProgrammes: ClassProgrammeDto[],
-  date: Date
+  date: Date,
+  selectedclassroomGroupId?: string
 ) => {
-  return classProgrammes?.find((x) => x.meetingDay === getDay(date));
+  return classProgrammes?.find(
+    (x) =>
+      x.meetingDay === getDay(date) &&
+      x.classroomGroupId === selectedclassroomGroupId
+  );
 };
 
 export const getDistinctMeetingDays = (attendance: AttendanceDto[]) => {
