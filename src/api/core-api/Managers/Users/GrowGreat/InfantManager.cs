@@ -71,10 +71,10 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 
             // The caregiverId arriving here, could be a caregiver or mother from select box when adding an infant
             var caregiverRepo = _repoFactory.CreateGenericRepository<Caregiver>(userContext: _applicationUserId);
-            Caregiver caregiver = caregiverRepo.GetAll().Where(x => x.Id.Equals(input.CaregiverId)).FirstOrDefault();
+            Caregiver caregiver = input.CaregiverId.HasValue ? caregiverRepo.GetById(input.CaregiverId.Value) : null;
 
             var motherRepo = _repoFactory.CreateGenericRepository<Mother>(userContext: _applicationUserId);
-            Mother mother = motherRepo.GetAll().Where(x => x.UserId.Equals(input.CaregiverId.ToString())).FirstOrDefault();
+            Mother mother = motherRepo.GetAll().Where(x => x.UserId.Equals(input.CaregiverId.ToString())).OrderBy(x => x.Id).FirstOrDefault();
 
             // if both are null we create a new caregiver from request data
             if (caregiver == null && mother == null)
@@ -201,7 +201,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             {
                 caregiverInput.HealthCareWorkerId = healthCareWorkerId;
             }
-            SiteAddress siteAddress = _addressRepo.GetAll().Where(x => x.Id.Equals(caregiverInput.SiteAddress.Id)).FirstOrDefault();
+            SiteAddress siteAddress = _addressRepo.GetById(caregiverInput.SiteAddress.Id);
             if (siteAddress == null)
             {
                 caregiverInput.SiteAddress.Id = Guid.NewGuid();
@@ -214,7 +214,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             // Populate province id with N/A option when site address is null
             if (caregiverInput.SiteAddressId == null)
             {
-                var naProvince = _provinceRepo.GetAll().Where(x => x.Description.Equals("N/A")).FirstOrDefault();
+                var naProvince = _provinceRepo.GetAll().Where(x => x.Description.Equals("N/A")).OrderBy(x => x.Id).FirstOrDefault();
                 caregiverInput.SiteAddress.ProvinceId = naProvince.Id;
             }
 
@@ -463,7 +463,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 
         public Guid? GetInfantIdByUserId(string userId)
         {
-            var infant = _infantRepo.GetAll().Where(x => x.UserId == userId).FirstOrDefault();
+            var infant = _infantRepo.GetAll().Where(x => x.UserId == userId).OrderBy(x => x.Id).FirstOrDefault();
             if (infant != null)
             {
                 return infant.Id;

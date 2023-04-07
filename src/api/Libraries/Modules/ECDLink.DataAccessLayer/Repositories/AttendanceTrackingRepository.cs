@@ -138,7 +138,9 @@ namespace ECDLink.DataAccessLayer.Repositories
             {
                 var existingAttendance = _context.Attendances
                     .Where(x => x.UserId == attendance.UserId && x.ClassroomProgrammeId == attendance.ClassroomProgrammeId)
-                    .Where(y => y.ParentRecordId == attendance.ParentRecordId && y.AttendanceDate == attendance.AttendanceDate).FirstOrDefault();
+                    .Where(y => y.ParentRecordId == attendance.ParentRecordId && y.AttendanceDate == attendance.AttendanceDate)
+                    .OrderBy(x => x.UserId)
+                    .FirstOrDefault();
 
                 existingAttendance.ParentRecordId = newParentRecordId;
 

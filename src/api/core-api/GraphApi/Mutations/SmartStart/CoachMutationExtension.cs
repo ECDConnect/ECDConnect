@@ -47,7 +47,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var dbRepo = repoFactory.CreateGenericRepository<Coach>(userContext: uId);
 
-            Coach coach = dbRepo.GetAll().Where(x => x.Id.Equals(input.Id)).FirstOrDefault();
+            Coach coach = dbRepo.GetById(input.Id);
             
             if (coach != null)
             {
@@ -60,10 +60,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
                 if (input.SiteAddress != null)
                 {
-                    if (input.SiteAddressId is not null)
+                    if (input.SiteAddressId is not null && input.SiteAddressId.HasValue)
                     {
                         var addressRepo = repoFactory.CreateRepository<SiteAddress>(userContext: uId);
-                        SiteAddress address = addressRepo.GetAll().Where(x => x.Id.Equals(input.SiteAddressId)).FirstOrDefault();
+                        SiteAddress address = addressRepo.GetById(input.SiteAddressId.Value);
                         if (input?.SiteAddress?.Ward != null)
                             address.Ward = input.SiteAddress.Ward;
                         if (input?.SiteAddress?.AddressLine1 != null)

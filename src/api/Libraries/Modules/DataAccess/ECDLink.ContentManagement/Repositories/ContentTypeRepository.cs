@@ -41,6 +41,7 @@ namespace ECDLink.ContentManagement.Repositories
               .Include(x => x.Fields)
                 .ThenInclude(x => x.FieldType)
                 .Where(x => x.Id == id)
+              .OrderBy(x => x.Id)
               .FirstOrDefault();
         }
 
@@ -50,9 +51,10 @@ namespace ECDLink.ContentManagement.Repositories
               .Include(x => x.Content)
                 .ThenInclude(x => x.ContentValues)
                 .Where(x => x.Id == id)
+              .OrderBy(x => x.Id)
               .FirstOrDefaultAsync();
 
-            var content = contentType.Content.Where(x => x.ContentValues.Any(z => z.LocaleId == localId)).FirstOrDefault();
+            var content = contentType.Content.Where(x => x.ContentValues.Any(z => z.LocaleId == localId)).OrderBy(x => x.Id).FirstOrDefault();
 
             return content != null ? true : false;
         }

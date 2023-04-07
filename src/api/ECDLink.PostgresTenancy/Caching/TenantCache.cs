@@ -76,12 +76,14 @@ namespace ECDLink.PostgresTenancy.Caching
                 var check = uri.Host + ":" + uri.Port.ToString();
                 var portTenant = tenants
                         .Where(x => x.SiteAddress.Contains(check) || x.AdminSiteAddress.Contains(check) || x.TestSiteAddress.Contains(check) || x.AdminTestSiteAddress.Contains(check))
+                        .OrderBy(x => x.Id)
                         .FirstOrDefault();
                 if (portTenant != null) return portTenant;
 
             }
             return tenants
                     .Where(x => url.Contains(x.SiteAddress) || url.Contains(x.AdminSiteAddress) || url.Contains(x.TestSiteAddress) || url.Contains(x.AdminTestSiteAddress))
+                    .OrderBy(x => x.Id)
                     .FirstOrDefault();
         }
 

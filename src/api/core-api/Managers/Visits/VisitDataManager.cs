@@ -48,7 +48,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
 
             // update the visit record to show attended/completed
-            var entityToUpdate = _visitRepo.GetAll().Where(x => x.Id.ToString() == input.VisitId).FirstOrDefault();
+            var entityToUpdate = _visitRepo.GetById(Guid.Parse(input.VisitId));
             entityToUpdate.UpdatedDate = DateTime.Now;
             entityToUpdate.UpdatedBy = _applicationUserId;
             entityToUpdate.Attended = true;
@@ -71,7 +71,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
 
             // update the visit record to show attended/completed
-            var entityToUpdate = _visitRepo.GetAll().Where(x => x.Id.ToString() == input.VisitId).FirstOrDefault();
+            var entityToUpdate = _visitRepo.GetById(Guid.Parse(input.VisitId));
             entityToUpdate.UpdatedDate = DateTime.Now;
             entityToUpdate.UpdatedBy = _applicationUserId;
             entityToUpdate.Attended = true;
@@ -173,8 +173,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             if (vData.Count != 0)
             {
-                var birth = vData.Where(x => x.Question == Constants.GGSettings.q_birth_certificate).FirstOrDefault();
-                var csg = vData.Where(x => x.Question == Constants.GGSettings.q_csg_receiving).FirstOrDefault();
+                var birth = vData.Where(x => x.Question == Constants.GGSettings.q_birth_certificate).OrderBy(x => x.Id).FirstOrDefault();
+                var csg = vData.Where(x => x.Question == Constants.GGSettings.q_csg_receiving).OrderBy(x => x.Id).FirstOrDefault();
 
                 if (birth?.QuestionAnswer == "false")
                 {
