@@ -10,6 +10,7 @@ using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using NPOI.POIFS.Properties;
 using Org.BouncyCastle.Asn1.Ocsp;
 using System;
@@ -36,7 +37,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             HealthCareWorkerManager healthCareWorkerManager,
             InfantManager infantManager,
             VisitManager visitManager,
-            VisitDataStatusManager visitDataStatusManager)
+            VisitDataStatusManager visitDataStatusManager
+            )
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
@@ -56,10 +58,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 
         public Mother AddMother(MotherModel input)
         {
-            var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
             var mother = GetMotherFromInputModel(input);
-            var repository = _repoFactory.CreateGenericRepository<Mother>(userContext: applicationUserId);
-            var createdMom = repository.Insert(mother);
+            var createdMom = _motherRepo.Insert(mother);
             if (createdMom != null)
             {
                 AddVisits(createdMom.Id, createdMom.ExpectedDateOfDelivery, createdMom.InsertedDate);
@@ -69,13 +69,11 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 
         public Mother UpdateMother(string id, MotherModel input)
         {
-            var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
-            var repository = _repoFactory.CreateGenericRepository<Mother>(userContext: applicationUserId);
-            var entityToUpdate = repository.GetById(Guid.Parse(id));
+            var entityToUpdate = _motherRepo.GetAll().Where(x => x.Id.Equals(Guid.Parse(id))).FirstOrDefault();
             var motherUser = GetUserFromInputModel(input);
 
             entityToUpdate.UpdatedDate = DateTime.Now;
-            entityToUpdate.UpdatedBy = applicationUserId;
+            entityToUpdate.UpdatedBy = _applicationUserId;
             entityToUpdate.UserId = input.UserId;
             entityToUpdate.User = motherUser;
             entityToUpdate.WhatsAppNumber = input.WhatsAppNumber;
@@ -83,21 +81,33 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             entityToUpdate.HealthCareWorkerId = input.HealthCareWorkerId;
             entityToUpdate.SiteAddress = input.SiteAddress;
 
-            return repository.Update(entityToUpdate);
+            return _motherRepo.Update(entityToUpdate);
         }
 
         public Mother UpdateContactDetails(string id, MotherModel input) {
-            var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
-            var repository = _repoFactory.CreateGenericRepository<Mother>(userContext: applicationUserId);
-            var entityToUpdate = repository.GetById(Guid.Parse(id));
-            var motherUser = GetUserFromInputModel(input);
+            var entityToUpdate = _motherRepo.GetAll().Where(x => x.User.Id == id).FirstOrDefault();
+
+            var user = entityToUpdate.User;
+            user.Id = input.UserId;
+            user.PhoneNumber = input.PhoneNumber;
+
+            entityToUpdate.UpdatedBy = _applicationUserId;
+            entityToUpdate.UpdatedDate = DateTime.Now;
+            entityToUpdate.WhatsAppNumber = input.WhatsAppNumber;
+            entityToUpdate.UserId = user.Id;
+            entityToUpdate.User = user;
+            return _motherRepo.Update(entityToUpdate);
+        }
+       
+
+        public Mother UpdateMotherAddress(string id, MotherModel input)
+        {
+            var entityToUpdate = _motherRepo.GetAll().Where(x => x.User.Id == id).FirstOrDefault();
 
             entityToUpdate.UpdatedDate = DateTime.Now;
-            entityToUpdate.UpdatedBy = applicationUserId;
-            entityToUpdate.WhatsAppNumber = input.WhatsAppNumber;
+            entityToUpdate.UpdatedBy = _applicationUserId;
             entityToUpdate.SiteAddress = input.SiteAddress;
-            entityToUpdate.User = motherUser;
-            return repository.Update(entityToUpdate);
+            return _motherRepo.Update(entityToUpdate);
         }
 
         public Mother GetMotherFromInputModel(MotherModel input)
@@ -107,15 +117,14 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 return null;
             }
 
-            var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
-            var healthCareWorkerId = _healthCareWorkerManager.GetHealthCareWorkerIdByUserId(applicationUserId);
+            var healthCareWorkerId = _healthCareWorkerManager.GetHealthCareWorkerIdByUserId(_applicationUserId);
             var motherUser = GetUserFromInputModel(input);
 
             // Populate province id with N/A option when site address is null
             if (input.SiteAddressId == null)
             {
-                var repository = _repoFactory.CreateGenericRepository<Province>(userContext: applicationUserId);
-                var naProvince = repository.GetAll().Where(x => x.Description.Equals("N/A")).OrderBy(x => x.Id).FirstOrDefault();
+                var repository = _repoFactory.CreateGenericRepository<Province>(userContext: _applicationUserId);
+                var naProvince = repository.GetAll().Where(x => x.Description.Equals("N/A")).FirstOrDefault();
                 input.SiteAddress.ProvinceId = naProvince.Id;
             }
 
@@ -125,7 +134,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 IsActive = true,
                 InsertedDate = DateTime.Now,
                 UpdatedDate = DateTime.Now,
-                UpdatedBy = applicationUserId,
+                UpdatedBy = _applicationUserId,
                 UserId = input.UserId,
                 User = motherUser,
                 Age = input.Age,
@@ -165,10 +174,9 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 
             var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
             var visitTypeRepo = _repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
-            var _type = "mother";
 
             // Get all visit types linked to mother excluding additional_visits
-            List<VisitType> visitTypes = visitTypeRepo.GetAll().Where(x => x.Type.Equals(_type) && x.Name != Constants.GGSettings.additional_visits).OrderBy(x => x.Order).ToList();
+            List<VisitType> visitTypes = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.GGSettings.client_mother) && x.Name != Constants.GGSettings.additional_visits).OrderBy(x => x.Order).ToList();
 
             // Get dates for each visit
             List<VisitModel> visits = getVisitDates(ExpectedDateOfDelivery, InsertedDate, visitTypes);

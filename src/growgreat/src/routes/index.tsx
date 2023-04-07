@@ -35,6 +35,8 @@ import { ActivityList } from '@/pages/infant/infant-profile/progress-tab/activit
 import { RecordEvent as InfantRecordEvent } from '@/pages/infant/infant-profile/visits-tab/record-event';
 import { BookVisit as InfantBookVisit } from '@/pages/infant/infant-profile/visits-tab/book-visit';
 import { PastVisits as InfantPastVisits } from '@/pages/infant/infant-profile/visits-tab/past-visits';
+import { MotherContactAddress } from '@/pages/mom/pregnant-profile/contact/edit-address';
+import { MotherContactNumber } from '@/pages/mom/pregnant-profile/contact/edit-number';
 
 function PublicRoutes() {
   return (
@@ -188,6 +190,17 @@ function AuthRoutes() {
         exact
         path={ROUTES.CLIENTS.HIGHLIGHTS_TAB.UPCOMING_VISIT}
         component={UpcomingVisit}
+      />
+
+      <Route
+        exact
+        path={ROUTES.CLIENTS.MOM_PROFILE.CONTACT_TAB.UPDATE_ADDRESS}
+        component={MotherContactAddress}
+      />
+      <Route
+        exact
+        path={ROUTES.CLIENTS.MOM_PROFILE.CONTACT_TAB.UPDATE_NUMBERS}
+        component={MotherContactNumber}
       />
 
       <Route path={ROUTES.MESSAGES} component={Messages} />
