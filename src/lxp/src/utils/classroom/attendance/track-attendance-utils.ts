@@ -310,13 +310,19 @@ export const classroomGroupHasAttendanceOnDate = (
   date: Date,
   selectedclassroomGroupId?: string
 ): ClassProgrammeDto | undefined => {
-  return classProgrammes
-    ? classProgrammes.find(
-        (x) =>
-          x.meetingDay === getDay(date) &&
-          x.classroomGroupId === selectedclassroomGroupId
-      )
-    : undefined;
+  if (selectedclassroomGroupId === '') {
+    return classProgrammes
+      ? classProgrammes.find((x) => x.meetingDay === getDay(date))
+      : undefined;
+  } else {
+    return classProgrammes
+      ? classProgrammes.find(
+          (x) =>
+            x.meetingDay === getDay(date) &&
+            x.classroomGroupId === selectedclassroomGroupId
+        )
+      : undefined;
+  }
 };
 
 export const getPlaygroup = (
@@ -324,11 +330,15 @@ export const getPlaygroup = (
   date: Date,
   selectedclassroomGroupId?: string
 ) => {
-  return classProgrammes?.find(
-    (x) =>
-      x.meetingDay === getDay(date) &&
-      x.classroomGroupId === selectedclassroomGroupId
-  );
+  if (selectedclassroomGroupId === '') {
+    return classProgrammes?.find((x) => x.meetingDay === getDay(date));
+  } else {
+    return classProgrammes?.find(
+      (x) =>
+        x.meetingDay === getDay(date) &&
+        x.classroomGroupId === selectedclassroomGroupId
+    );
+  }
 };
 
 export const getDistinctMeetingDays = (attendance: AttendanceDto[]) => {
