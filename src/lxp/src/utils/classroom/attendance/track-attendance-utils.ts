@@ -307,10 +307,15 @@ export const getAttendanceStatusCheck = (
 
 export const classroomGroupHasAttendanceOnDate = (
   classProgrammes: ClassProgrammeDto[],
-  date: Date
+  date: Date,
+  selectedclassroomGroupId?: string
 ): ClassProgrammeDto | undefined => {
   return classProgrammes
-    ? classProgrammes.find((x) => x.meetingDay === getDay(date))
+    ? classProgrammes.find(
+        (x) =>
+          x.meetingDay === getDay(date) &&
+          x.classroomGroupId === selectedclassroomGroupId
+      )
     : undefined;
 };
 
