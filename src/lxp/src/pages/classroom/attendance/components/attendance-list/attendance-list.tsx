@@ -94,13 +94,22 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
     if (classroomGroups) {
       const selectedGroups = isPrincipal
         ? classroomGroupsForPrincipal.filter(
-            (x) => x.id === primaryClassProgramme[0]?.classroomGroupId
+            (x) =>
+              x.id ===
+              (editAttendanceRegisterVisible
+                ? classroomgroupId
+                : primaryClassProgramme[0]?.classroomGroupId)
           )
         : classroomGroups.filter(
-            (x) => x.id === primaryClassProgramme[0]?.classroomGroupId
+            (x) =>
+              x.id ===
+              (editAttendanceRegisterVisible
+                ? classroomgroupId
+                : primaryClassProgramme[0]?.classroomGroupId)
           );
       setSelectedClassroomGroups(selectedGroups);
     }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editAttendanceRegisterVisible ? attendanceDate : null]);
 
@@ -126,7 +135,6 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
     isPrimaryList: boolean
   ) => {
     const newAttendanceGroups = [...(attendanceGroups || [])];
-
     const groupIndex = newAttendanceGroups.findIndex(
       (x) => x.cacheId === attendanceListId
     );
@@ -157,7 +165,8 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
   const handleFormSubmit = async () => {
     const currentClassProgramme = classroomGroupHasAttendanceOnDate(
       classProgrammesUpdated,
-      attendanceDate
+      attendanceDate,
+      editAttendanceRegisterVisible ? classroomgroupId : ''
     );
 
     const currentGroup = classroomGroups.find(
@@ -174,7 +183,8 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
 
     const currentProgramme = getPlaygroup(
       classProgrammesUpdated,
-      attendanceDate
+      attendanceDate,
+      editAttendanceRegisterVisible ? classroomgroupId : ''
     );
 
     if (!currentProgramme) return;
@@ -228,7 +238,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
         category: 'Attendance tracking click',
       })
     );
-
+    
     onSubmitSuccess({
       attendanceDate,
       classroomGroupId: currentAttendanceGroup.cacheId,
