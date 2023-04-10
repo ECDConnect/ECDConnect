@@ -21,6 +21,10 @@ import {
 } from '@/schemas/pregnant/pregnant-details';
 import { useSelector } from 'react-redux';
 import { caregiverSelectors } from '@/store/caregiver';
+import { useLocation } from 'react-router';
+import { PregnantProfileRouteState } from '../../pregnant-profile/index.types';
+import { RootState } from '@/store/types';
+import { getInfantById } from '@/store/infant/infant.selectors';
 
 export const PregnantDetails: React.FC<EditPregnantDetailsProps> = ({
   onSubmit,
@@ -44,6 +48,17 @@ export const PregnantDetails: React.FC<EditPregnantDetailsProps> = ({
     reValidateMode: 'onChange',
   });
 
+  const location = useLocation<PregnantProfileRouteState>();
+  const infant = useSelector((state: RootState) => {
+    const infantId = location?.state?.linkedInfantId;
+
+    if (!!infantId) {
+      return getInfantById(state, infantId);
+    }
+
+    return undefined;
+  });
+
   const { isValid } = useFormState({ control: momDetailsFormControl });
 
   const caregivers = useSelector(caregiverSelectors.getCaregivers);
@@ -62,6 +77,19 @@ export const PregnantDetails: React.FC<EditPregnantDetailsProps> = ({
     },
     [caregivers, setAddress, setContactInformation, setPregnantDetailsFormValue]
   );
+
+  const setDataFromRecordAnEvent = useCallback(() => {
+    if (infant?.id) {
+      setPregnantDetailsFormValue('name', infant.caregiver?.firstName);
+      setPregnantDetailsFormValue('surname', infant.caregiver?.surname);
+      setPregnantDetailsFormValue('age', infant.caregiver?.age);
+      setIsAlreadyClient(false);
+    }
+  }, [infant, setIsAlreadyClient, setPregnantDetailsFormValue]);
+
+  useEffect(() => {
+    setDataFromRecordAnEvent();
+  }, [setDataFromRecordAnEvent]);
 
   useEffect(() => {
     watch();
@@ -85,27 +113,31 @@ export const PregnantDetails: React.FC<EditPregnantDetailsProps> = ({
         <Divider dividerType="dashed" />
       </div>
       <div>
-        <Typography
-          type="h3"
-          color={'textDark'}
-          text={'Is this client already on CHW Connect?'}
-          className="z-50 w-11/12 pt-2"
-        />
-        <div className="mt-2">
-          <ButtonGroup<boolean>
-            options={yesNoOptions}
-            onOptionSelected={(value: boolean | boolean[]) => {
-              setPregnantDetailsFormValue('age', '');
-              setPregnantDetailsFormValue('name', '');
-              setPregnantDetailsFormValue('surname', '');
-              setPregnantDetailsFormValue('id', '');
-              setIsAlreadyClient(value);
-            }}
-            color="secondary"
-            type={ButtonGroupTypes.Button}
-            className={'w-full'}
-          />
-        </div>
+        {!infant?.id && (
+          <>
+            <Typography
+              type="h3"
+              color={'textDark'}
+              text={'Is this client already on CHW Connect?'}
+              className="z-50 w-11/12 pt-2"
+            />
+            <div className="mt-2">
+              <ButtonGroup<boolean>
+                options={yesNoOptions}
+                onOptionSelected={(value: boolean | boolean[]) => {
+                  setPregnantDetailsFormValue('age', '');
+                  setPregnantDetailsFormValue('name', '');
+                  setPregnantDetailsFormValue('surname', '');
+                  setPregnantDetailsFormValue('id', '');
+                  setIsAlreadyClient(value);
+                }}
+                color="secondary"
+                type={ButtonGroupTypes.Button}
+                className={'w-full'}
+              />
+            </div>
+          </>
+        )}
         {isAlreadyClient === false && (
           <>
             <FormInput<PregnantDetailsModel>

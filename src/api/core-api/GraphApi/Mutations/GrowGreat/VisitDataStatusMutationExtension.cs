@@ -28,7 +28,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat {
 
             foreach (VisitDataStatusModel inputItem in input.Referrals)
             {
-                var entityToUpdate = visitDataStatusRepo.GetAll().Where(x => x.Id.ToString() == inputItem.Id).FirstOrDefault();
+                var entityToUpdate = visitDataStatusRepo.GetAll().Where(x => x.Id.ToString() == inputItem.Id).OrderBy(x => x.Id).FirstOrDefault();
                 entityToUpdate.UpdatedDate = DateTime.Now;
                 entityToUpdate.UpdatedBy = applicationUserId;
                 entityToUpdate.IsCompleted = (inputItem.IsCompleted == "true" ? true : false);

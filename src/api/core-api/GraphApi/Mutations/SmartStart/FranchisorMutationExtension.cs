@@ -31,7 +31,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var dbRepo = repoFactory.CreateRepository<Franchisor>(userContext: uId);
 
-            Franchisor franchisor = dbRepo.GetAll().Where(x => x.Id.Equals(input.Id)).FirstOrDefault();
+            Franchisor franchisor = dbRepo.GetById(input.Id);
             {
                 if (franchisor != null)
                 {
@@ -39,10 +39,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         franchisor.StartDate = input.StartDate;
                     if (input.AreaOfOperation != null)
                         franchisor.AreaOfOperation = input.AreaOfOperation;
-                    if (input.SiteAddressId != null)
+                    if (input.SiteAddressId != null && input.SiteAddressId.HasValue)
                     {
                         var addressRepo = repoFactory.CreateRepository<SiteAddress>(userContext: uId);
-                        SiteAddress address = addressRepo.GetAll().Where(x => x.Id.Equals(input.SiteAddressId)).FirstOrDefault();
+                        SiteAddress address = addressRepo.GetById(input.SiteAddressId.Value);
                         if (input.SiteAddress.Ward != null)
                             address.Ward = input.SiteAddress.Ward;
                         if (input.SiteAddress.AddressLine1 != null)

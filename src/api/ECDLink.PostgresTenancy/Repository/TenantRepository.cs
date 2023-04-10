@@ -47,6 +47,7 @@ namespace ECDLink.PostgresTenancy.Repository
         {
             return entities
                     .Where(e => string.Equals(e.Id, id))
+                    .OrderBy(x => x.Id)
                     .FirstOrDefault();
         }
 
