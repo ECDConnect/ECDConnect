@@ -16,6 +16,7 @@ import { useCallback, useEffect, useState } from 'react';
 import ROUTES from '@/routes/routes';
 import { useDialog } from '@ecdlink/core';
 import { getInfantById } from '@/store/infant/infant.selectors';
+import { INFANT_PROFILE_TABS } from '..';
 
 const HEADER_HEIGHT = 122;
 
@@ -115,7 +116,9 @@ export const Contact: React.FC = () => {
                 leadingIcon: 'PhoneIcon',
                 onClick: () => {
                   onSubmit();
-                  history.push(`${location.pathname}/edit-numbers`);
+                  history.push(`${location.pathname}/edit-numbers`, {
+                    activeTabIndex: INFANT_PROFILE_TABS.CONTACT,
+                  });
                 },
               },
               {
@@ -126,7 +129,9 @@ export const Contact: React.FC = () => {
                 leadingIcon: 'LocationMarkerIcon',
                 onClick: () => {
                   onSubmit();
-                  history.push(`${location.pathname}/edit-address`);
+                  history.push(`${location.pathname}/edit-address`, {
+                    activeTabIndex: INFANT_PROFILE_TABS.CONTACT,
+                  });
                 },
               },
             ]}
