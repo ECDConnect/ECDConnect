@@ -17,6 +17,8 @@ import { activitiesColours } from '../../../activities-list';
 import { ReactComponent as CelebrateIcon } from '@/assets/celebrateIcon.svg';
 import { SuccessCard } from '@/components/success-card/success-card';
 import { showDialog } from './dialog';
+import { getNextDateByDay } from '@ecdlink/core';
+import { differenceInDays } from 'date-fns';
 
 enum Question {
   one = 0,
@@ -83,6 +85,15 @@ export const ChildDocumentationStep = ({
     () => infant?.caregiver?.firstName || '',
     [infant?.caregiver?.firstName]
   );
+
+  const dateOfBirth = infant?.user?.dateOfBirth as string;
+  const ageDays = differenceInDays(new Date(), new Date(dateOfBirth));
+  const daysAfterBirth = getNextDateByDay(
+    30,
+    infant?.user?.dateOfBirth as Date
+  );
+  const isChildBefore30Days = useMemo(() => ageDays <= 30, [ageDays]);
+  const isChildBefore1Year = useMemo(() => ageDays <= 365, [ageDays]);
 
   const visitSection = 'Child documentation';
 
@@ -171,8 +182,12 @@ export const ChildDocumentationStep = ({
       return item.answer !== undefined && item.answer !== '';
     });
 
-    if (!!questionThree.answer && questionSix.answer !== undefined) {
-      isCompleted = true;
+    if (!!questionThree.answer) {
+      if (questionThree.answer === true && isChildBefore1Year)
+        isCompleted = true;
+      else if (questionSix.answer !== undefined) {
+        isCompleted = true;
+      }
     }
 
     if (questionThree.answer === false && questionFour.answer !== undefined) {
@@ -199,6 +214,7 @@ export const ChildDocumentationStep = ({
     questionThree.answer,
     questions,
     setEnableButton,
+    isChildBefore1Year,
   ]);
 
   useEffect(() => {
@@ -215,7 +231,7 @@ export const ChildDocumentationStep = ({
       />
       <div className="flex flex-col p-4">
         <Typography
-          type="h4"
+          type="h3"
           text="Birth certificate"
           color="textDark"
           className="mb-4"
@@ -245,7 +261,7 @@ export const ChildDocumentationStep = ({
               }
             ></FormInput>
             <Typography
-              type="h4"
+              type="h3"
               text="Child support grant (CSG)"
               color="textDark"
               className="mt-4"
@@ -290,7 +306,7 @@ export const ChildDocumentationStep = ({
             })}
           </>
         )}
-        {!!questionThree.answer && (
+        {!!questionThree.answer && !isChildBefore1Year && (
           <>
             <Typography
               className="mt-4"
@@ -365,7 +381,7 @@ export const ChildDocumentationStep = ({
             />
           </div>
         )}
-        {questionOne.answer === false && (
+        {questionOne.answer === false && !isChildBefore30Days && (
           <Alert
             className="mt-8"
             type="warning"
@@ -375,7 +391,25 @@ export const ChildDocumentationStep = ({
             ]}
           />
         )}
-        {!!questionSix.answer && (
+        {questionOne.answer === false && isChildBefore30Days && (
+          <Alert
+            className="mt-8"
+            type="warning"
+            title={`Encourage the family to get the Birth Certificate from the clinic/hospital where the baby was born before ${daysAfterBirth.toLocaleDateString(
+              'en-ZA',
+              {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
+              }
+            )}.`}
+            list={[
+              'Note that the hospital can only provide a Birth Certificate within 30 days of the baby’s birth.',
+            ]}
+          />
+        )}
+        {(!!questionSix.answer ||
+          (questionThree.answer === true && isChildBefore1Year)) && (
           <SuccessCard
             className="my-4"
             customIcon={<CelebrateIcon className="h-14	w-14" />}
