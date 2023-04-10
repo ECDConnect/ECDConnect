@@ -206,7 +206,6 @@ class AttendanceService {
   async trackAttendance(
     attendance: TrackAttendanceModelInput[]
   ): Promise<boolean> {
-
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `

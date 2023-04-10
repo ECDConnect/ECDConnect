@@ -8,7 +8,6 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
-import { getMotherById } from '@/store/mother/mother.selectors';
 import { useHistory, useLocation } from 'react-router';
 import { useWindowSize } from '@reach/window-size';
 import { getLogo } from '@/utils/common/svg.utils';
@@ -16,7 +15,8 @@ import { LogoSvgs } from '@/utils/common/svg.utils';
 import { useCallback, useEffect, useState } from 'react';
 import ROUTES from '@/routes/routes';
 import { useDialog } from '@ecdlink/core';
-import { PREGNANT_PROFILE_TABS } from '..';
+import { getInfantById } from '@/store/infant/infant.selectors';
+import { INFANT_PROFILE_TABS } from '..';
 
 const HEADER_HEIGHT = 122;
 
@@ -32,13 +32,14 @@ export const Contact: React.FC = () => {
   const history = useHistory();
   const dialog = useDialog();
 
-  const [, , , motherId] = location.pathname.split('/');
-  const mother = useSelector((state: RootState) =>
-    getMotherById(state, motherId)
+  const [, , , childId] = location.pathname.split('/');
+  const child = useSelector((state: RootState) =>
+    getInfantById(state, childId)
   );
+
   const isLargeName =
-    (mother?.user?.firstName || '').length +
-      (mother?.user?.surname || '').length >
+    (child?.user?.firstName || '').length +
+      (child?.user?.surname || '').length >
     22;
 
   const [formattedAddress, setFormattedAddress] = useState('');
@@ -47,42 +48,43 @@ export const Contact: React.FC = () => {
 
     let address = '';
     if (
-      mother?.siteAddress?.addressLine1 !== undefined &&
-      mother?.siteAddress?.addressLine1 !== null
+      child?.caregiver?.siteAddress?.addressLine1 !== undefined &&
+      child?.caregiver?.siteAddress?.addressLine1 !== null
     ) {
-      address = address + mother?.siteAddress?.addressLine1;
+      address = address + child?.caregiver?.siteAddress?.addressLine1;
     }
     if (
-      mother?.siteAddress?.addressLine2 !== undefined &&
-      mother?.siteAddress?.addressLine2 !== null
+      child?.caregiver?.siteAddress?.addressLine2 !== undefined &&
+      child?.caregiver?.siteAddress?.addressLine2 !== null
     ) {
-      address = address + ', ' + mother?.siteAddress?.addressLine2;
+      address = address + ', ' + child?.caregiver?.siteAddress?.addressLine2;
     }
     if (
-      mother?.siteAddress?.addressLine3 !== undefined &&
-      mother?.siteAddress?.addressLine3 !== null
+      child?.caregiver?.siteAddress?.addressLine3 !== undefined &&
+      child?.caregiver?.siteAddress?.addressLine3 !== null
     ) {
-      address = address + ', ' + mother?.siteAddress?.addressLine3;
+      address = address + ', ' + child?.caregiver?.siteAddress?.addressLine3;
     }
     if (
-      mother?.siteAddress?.province !== undefined &&
-      mother?.siteAddress?.province !== null &&
-      mother?.siteAddress?.province.description !== 'N/A'
+      child?.caregiver?.siteAddress?.province !== undefined &&
+      child?.caregiver?.siteAddress?.province !== null &&
+      child?.caregiver?.siteAddress?.province.description !== 'N/A'
     ) {
-      address = address + ', ' + mother?.siteAddress?.province.description;
+      address =
+        address + ', ' + child?.caregiver?.siteAddress?.province.description;
     }
 
     setFormattedAddress(address);
-  }, [mother?.siteAddress]);
+  }, [child?.caregiver?.siteAddress]);
 
   useEffect(() => getAddress(), [getAddress]);
 
   const callForHelp = () => {
-    window.open('tel:' + mother?.user?.phoneNumber);
+    window.open('tel:' + child?.caregiver?.phoneNumber);
   };
 
   const whatsapp = () => {
-    window.open(`https://wa.me/${mother?.whatsAppNumber}`);
+    window.open(`https://wa.me/${child?.caregiver?.whatsAppNumber}`);
   };
 
   const gotomap = () => {
@@ -115,7 +117,7 @@ export const Contact: React.FC = () => {
                 onClick: () => {
                   onSubmit();
                   history.push(`${location.pathname}/edit-numbers`, {
-                    activeTabIndex: PREGNANT_PROFILE_TABS.CONTACT,
+                    activeTabIndex: INFANT_PROFILE_TABS.CONTACT,
                   });
                 },
               },
@@ -128,7 +130,7 @@ export const Contact: React.FC = () => {
                 onClick: () => {
                   onSubmit();
                   history.push(`${location.pathname}/edit-address`, {
-                    activeTabIndex: PREGNANT_PROFILE_TABS.CONTACT,
+                    activeTabIndex: INFANT_PROFILE_TABS.CONTACT,
                   });
                 },
               },
@@ -148,11 +150,16 @@ export const Contact: React.FC = () => {
         type="h2"
         weight="bold"
         lineHeight="snug"
-        text={`${mother?.user?.firstName || ''} ${
-          !isLargeName ? mother?.user?.surname || '' : ''
+        text={`${child?.caregiver?.firstName || ''} ${
+          !isLargeName ? child?.caregiver?.surname || '' : ''
         }`}
       />
-      <Typography type="h5" weight="bold" lineHeight="snug" text="Mother" />
+      <Typography
+        type="h5"
+        weight="bold"
+        lineHeight="snug"
+        text={`Primary Caregiver - ${child?.caregiver?.relation?.description}`}
+      />
 
       <div className="mt-4 flex-col">
         <Typography
@@ -166,7 +173,7 @@ export const Contact: React.FC = () => {
           weight="bold"
           lineHeight="snug"
           color="secondary"
-          text={`${mother?.user?.phoneNumber}`}
+          text={`${child?.caregiver?.phoneNumber}`}
         />
         <Button
           text="Call client"
@@ -192,7 +199,7 @@ export const Contact: React.FC = () => {
           weight="bold"
           lineHeight="snug"
           color="secondary"
-          text={`${mother?.whatsAppNumber}`}
+          text={`${child?.caregiver?.whatsAppNumber}`}
         />
         <Button
           color={'primary'}
@@ -250,7 +257,7 @@ export const Contact: React.FC = () => {
           textColor="white"
           className="mt-4 w-full"
           iconPosition="start"
-          onClick={navigate(ROUTES.CLIENTS.MOM_PROFILE.VISITS.BOOK_VISIT)}
+          onClick={navigate(ROUTES.CLIENTS.INFANT_PROFILE.VISITS.BOOK_VISIT)}
         />
         <Button
           text="Edit information"
