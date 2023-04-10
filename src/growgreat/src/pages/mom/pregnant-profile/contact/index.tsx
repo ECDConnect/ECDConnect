@@ -16,6 +16,7 @@ import { LogoSvgs } from '@/utils/common/svg.utils';
 import { useCallback, useEffect, useState } from 'react';
 import ROUTES from '@/routes/routes';
 import { useDialog } from '@ecdlink/core';
+import { PREGNANT_PROFILE_TABS } from '..';
 
 const HEADER_HEIGHT = 122;
 
@@ -113,7 +114,9 @@ export const Contact: React.FC = () => {
                 leadingIcon: 'PhoneIcon',
                 onClick: () => {
                   onSubmit();
-                  history.push(`${location.pathname}/edit-numbers`);
+                  history.push(`${location.pathname}/edit-numbers`, {
+                    activeTabIndex: PREGNANT_PROFILE_TABS.CONTACT,
+                  });
                 },
               },
               {
@@ -124,7 +127,9 @@ export const Contact: React.FC = () => {
                 leadingIcon: 'LocationMarkerIcon',
                 onClick: () => {
                   onSubmit();
-                  history.push(`${location.pathname}/edit-address`);
+                  history.push(`${location.pathname}/edit-address`, {
+                    activeTabIndex: PREGNANT_PROFILE_TABS.CONTACT,
+                  });
                 },
               },
             ]}
