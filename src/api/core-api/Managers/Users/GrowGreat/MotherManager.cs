@@ -60,6 +60,14 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
         {
             var mother = GetMotherFromInputModel(input);
             var createdMom = _motherRepo.Insert(mother);
+
+            // When the linkedInfantId is available and contains a guid, then we know that a mother is created from 'Record an event' - EC-246 (post conditions)
+            // and we need to link the newly created mother to an existing child.
+            if (input.LinkedInfantId != null)
+            {
+                _infantManager.UpdateInfantCaregiverToMother(input.LinkedInfantId, mother.Id);
+            }
+
             if (createdMom != null)
             {
                 AddVisits(createdMom.Id, createdMom.ExpectedDateOfDelivery, createdMom.InsertedDate);
