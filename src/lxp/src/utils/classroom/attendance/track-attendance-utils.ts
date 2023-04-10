@@ -204,13 +204,20 @@ export const getClassroomGroupSchoolDays = (
 };
 
 export const getAllMissedAttendanceGroupsByClassroomGroupId = (
-  missedAttendanceGroups: MissedAttendanceGroups[]
+  missedAttendanceGroups: MissedAttendanceGroups[],
+  id: string
 ) => {
-  const allMissedAttendanceDays = missedAttendanceGroups.map(
-    (missedAttendance) => missedAttendance.missedDay
-  );
-
-  return allMissedAttendanceDays.sort((a, b) => (isAfter(a, b) ? 1 : -1));
+  const missedDays: Date[] = [];
+  missedAttendanceGroups.forEach((obj) => {
+    if (obj.classroomGroup.id === id) {
+      const missedDay = new Date(obj.missedDay);
+      if (!isNaN(missedDay.getTime())) {
+        missedDays.push(missedDay);
+      }
+    }
+  });
+  
+  return missedDays;
 };
 
 export const getMissedAttendanceSummaryGroups = (
