@@ -177,6 +177,19 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             return _infantRepo.GetAll().Where(x => x.User.Id == id).FirstOrDefault();
         }
 
+        public Boolean UpdateInfantCaregiverToMother(string infantId, Guid motherId)
+        {
+            // Called from add mother in mother manager.
+            // Business Rule scenario 1 at the top of this file is enforced
+            var infantToUpdate = _infantRepo.GetAll().Where(x => x.User.Id == infantId).FirstOrDefault();
+            infantToUpdate.MotherCaregiverId = motherId;
+            infantToUpdate.CaregiverId = null;
+            infantToUpdate.UpdatedDate = DateTime.Now;
+            infantToUpdate.UpdatedBy = _applicationUserId;
+            _infantRepo.Update(infantToUpdate);
+            return true;
+        }
+
         public Infant UpdateInfantCaregiverAddress(string id, InfantModel input)
         {
             var entityToUpdate = _addressRepo.GetAll().Where(x => x.Id == input.Caregiver.SiteAddress.Id).FirstOrDefault();
