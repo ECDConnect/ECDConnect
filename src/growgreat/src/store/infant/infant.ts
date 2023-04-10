@@ -9,6 +9,7 @@ import {
   getInfantCountForMonth,
   getInfantsWeeklyVisits,
   getInfantVisits,
+  updateInfant,
 } from './infant.actions';
 import { InfantState } from './infant.types';
 
@@ -63,6 +64,16 @@ const infantSlice = createSlice({
     builder.addCase(getInfantVisits.fulfilled, (state, action) => {
       state.visits = action.payload;
       setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(updateInfant.fulfilled, (state, action) => {
+      if (!action.payload || !state.infants) return;
+
+      state.infants = state.infants?.map((item) => {
+        if (item.id === action.payload.id) {
+          return { ...item, ...action };
+        }
+        return item;
+      });
     });
   },
 });

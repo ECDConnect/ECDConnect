@@ -17,6 +17,7 @@ import { RootState, ThunkApiType } from '../types';
 
 export const InfantActions = {
   ADD_INFANTS: 'addInfant',
+  UPDATE_INFANT: 'updateInfant',
   GET_INFANTS: 'getInfants',
   GET_INFANT_VISITS: 'getInfantVisits',
   GET_INFANTS_WEEKLY_VISITS: 'getInfantsWeeklyVisits',
@@ -109,6 +110,30 @@ export const addInfant = createAsyncThunk<
         );
 
         return { motherId };
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const updateInfant = createAsyncThunk<
+  InfantModelInput & { id: string },
+  { input: InfantModelInput; id: string },
+  ThunkApiType<RootState>
+>(
+  InfantActions.UPDATE_INFANT,
+  async ({ id, input }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+    try {
+      if (userAuth?.auth_token) {
+        await new InfantService(userAuth?.auth_token).updateInfant(id, input);
+
+        return { id, ...input };
       } else {
         return rejectWithValue('no access token, profile check required');
       }
