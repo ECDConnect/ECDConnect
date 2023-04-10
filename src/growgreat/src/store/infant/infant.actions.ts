@@ -181,6 +181,56 @@ export const getInfantVisits = createAsyncThunk<
   }
 );
 
+export const updateInfantCaregiverAddress = createAsyncThunk<
+  InfantDto,
+  UpdateMotherRequest,
+  ThunkApiType<RootState>
+>(
+  'updateInfantCaregiverAddress',
+  async ({ infant, id }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+    try {
+      let mappedInfantInput = mapInfant(infant);
+      if (userAuth?.auth_token) {
+        return await new InfantService(
+          userAuth?.auth_token
+        ).updateInfantCaregiverAddress(id, mappedInfantInput);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const updateInfantCaregiverContactDetails = createAsyncThunk<
+  InfantDto,
+  UpdateMotherRequest,
+  ThunkApiType<RootState>
+>(
+  'updateInfantCaregiverContactDetails',
+  async ({ infant, id }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+    try {
+      let mappedInfantInput = mapInfant(infant);
+      if (userAuth?.auth_token) {
+        return await new InfantService(
+          userAuth?.auth_token
+        ).updateInfantCaregiverContactDetails(id, mappedInfantInput);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
 export const getAllInfantEventRecordTypes = createAsyncThunk<
   EventRecordType[],
   undefined,
