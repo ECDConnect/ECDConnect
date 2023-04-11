@@ -546,5 +546,11 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 
             return _infantRepo.GetAll().Where(x => x.Caregiver.HealthCareWorker.UserId.Equals(id) && x.IsActive.Equals(true) && x.InsertedDate >= monday && x.InsertedDate <= next7Days).Select(x => x.Id).Distinct().Count();
         }
+        public List<Infant> GetAllInfantsForCaregiver(string caregiverId)
+        {
+            return _infantRepo.GetAll().Where(x => x.CaregiverId.ToString() == caregiverId && x.IsActive == true).OrderBy(y => y.User.FirstName).ToList();
+        }
+
+       
     }
 }
