@@ -238,7 +238,9 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     isValidAttendanceDay,
-    missedAttendanceGroups
+    missedAttendanceGroups,
+    previousMissedAttendanceGroups,
+    classProgrammesUpdated,
   ]);
 
   useEffect(() => {

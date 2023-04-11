@@ -118,12 +118,17 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
       attendanceGroups,
       isButtonActive
     );
-
     setPresentChildrenCount(attendanceStatusCheck.presentCount);
     setAbsentChildrenCount(attendanceStatusCheck.absentCount);
-    setAttendanceGroups(attendanceGroups);
     setIsButtonActive(attendanceStatusCheck.isValid);
   };
+  
+
+  useEffect(() => {
+    updateAttendanceState(attendanceGroups ?? []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedClassroomGroups, attendanceGroups])
+  
 
   const onFilterItemsChanges = (value: SearchDropDownOption<any>[]) => {
     setSelectedClassroomGroups(value.map((x) => x.value));
@@ -329,7 +334,6 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
               onChange={(value) => onFilterItemsChanges(value)}
               placeholder={'Class'}
               pluralSelectionText={'Classes'}
-              multiple
               color={'secondary'}
               selectedOptions={selectedClassroomGroups.map((x) => {
                 return {
