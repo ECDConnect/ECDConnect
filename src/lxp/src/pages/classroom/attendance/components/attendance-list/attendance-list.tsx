@@ -232,17 +232,17 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
       currentProgramme.id ?? ''
     );
 
-    // appDispatch(attendanceActions.trackAttendance(trackAttendanceInput));
-    // appDispatch(
-    //   attendanceThunkActions.trackAttendanceSync(trackAttendanceInput)
-    // );
+    appDispatch(attendanceActions.trackAttendance(trackAttendanceInput));
+    appDispatch(
+      attendanceThunkActions.trackAttendanceSync(trackAttendanceInput)
+    );
 
-    // appDispatch(
-    //   analyticsActions.createEventTracking({
-    //     action: 'Attendance tracking click',
-    //     category: 'Attendance tracking click',
-    //   })
-    // );
+    appDispatch(
+      analyticsActions.createEventTracking({
+        action: 'Attendance tracking click',
+        category: 'Attendance tracking click',
+      })
+    );
     
     onSubmitSuccess({
       attendanceDate,
