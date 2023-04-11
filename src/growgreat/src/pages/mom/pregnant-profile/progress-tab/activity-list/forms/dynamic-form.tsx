@@ -22,8 +22,9 @@ import { useSelector } from 'react-redux';
 import { getInfantVisitsSelector } from '@/store/infant/infant.selectors';
 import { referralThunkActions } from '@/store/referral';
 import { ReferralActions } from '@/store/referral/referral.actions';
-import { GrowthMonitoring } from './pillar-1-steps';
+import { GrowthMonitoring } from './pregnancy-care-steps';
 import { getMotherVisits } from '@/store/mother/mother.selectors';
+import { useParams } from 'react-router';
 
 export interface Question {
   question: string;
@@ -60,6 +61,11 @@ export interface DynamicFormProps {
   setGrowthMonitoring?: (value: GrowthMonitoring) => void;
 }
 
+export interface MotherProfileParams {
+  id: string;
+  visitId: string;
+}
+
 export const DynamicForm = ({
   name,
   infant,
@@ -81,7 +87,7 @@ export const DynamicForm = ({
 
   const { isLoading } = useThunkFetchCall(
     'visits',
-    VisitActions.ADD_VISIT_FORM_DATA
+    VisitActions.ADD_VISIT_FOR_MOM_FORM_DATA
   );
   const { isLoading: isLoadingReferral } = useThunkFetchCall(
     'referrals',
@@ -90,10 +96,11 @@ export const DynamicForm = ({
 
   const wasLoading = usePrevious(isLoading);
   const wasLoadingReferral = usePrevious(isLoadingReferral);
+  const { visitId } = useParams<MotherProfileParams>();
 
   const visits = useSelector(getInfantVisitsSelector);
   const motherVisits = useSelector(getMotherVisits);
-  const MOCKED_VISIT_ID = motherVisits[0]?.id;
+  const MOCKED_VISIT_ID = visitId;
   /* '454686a9-2142-4061-aa47-4e89d46110b9' */
 
   const { successDialog } = useRequestResponseDialog();
@@ -195,7 +202,7 @@ export const DynamicForm = ({
     })) as VisitDataStatusFilterInput[];
 
     appDispatch(
-      visitActions.addCompletedVisitsByVisitId({
+      visitActions.addMomCompletedVisitsByVisitId({
         visitId: MOCKED_VISIT_ID,
         visits: [name || ''],
       })
@@ -203,10 +210,10 @@ export const DynamicForm = ({
 
     if (!!sections?.length) {
       appDispatch(visitActions.addVisitFormDataForMother(input));
-      // await appDispatch(visitThunkActions.addVisitFormData(input));
+      await appDispatch(visitThunkActions.addVisitForMomFormData(input));
 
       await appDispatch(
-        visitThunkActions.getCompletedVisitsForVisitId({
+        visitThunkActions.getMomCompletedVisitsForVisitId({
           visitId: MOCKED_VISIT_ID,
         })
       );

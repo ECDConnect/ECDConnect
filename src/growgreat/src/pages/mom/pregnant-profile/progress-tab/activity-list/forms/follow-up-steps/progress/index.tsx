@@ -8,11 +8,11 @@ import mockedImg from './mockedImg.png';
 import { useDialog } from '@ecdlink/core';
 import { ActionModal, DialogPosition } from '@ecdlink/ui';
 
-export const ProgressStep = ({ infant, setEnableButton }: DynamicFormProps) => {
-  const name = useMemo(() => infant?.user?.firstName || '', [infant]);
+export const ProgressStep = ({ mother, setEnableButton }: DynamicFormProps) => {
+  const name = useMemo(() => mother?.user?.firstName || '', [mother]);
   const caregiverName = useMemo(
-    () => infant?.caregiver?.firstName || '',
-    [infant?.caregiver?.firstName]
+    () => mother?.user?.firstName || '',
+    [mother?.user?.firstName]
   );
 
   const dialog = useDialog();
@@ -86,7 +86,7 @@ export const ProgressStep = ({ infant, setEnableButton }: DynamicFormProps) => {
           buttonIcon="ShareIcon"
           onClick={onShare}
         />
-        <FollowUp infant={infant || {}} />
+        <FollowUp mother={mother || {}} />
       </div>
     </>
   );

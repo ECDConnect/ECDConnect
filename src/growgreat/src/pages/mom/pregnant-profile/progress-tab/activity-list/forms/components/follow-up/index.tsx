@@ -1,6 +1,6 @@
 import { Colours, Divider, ProgressBar, Typography } from '@ecdlink/ui';
 import { getPreviousVisitInformationForInfantSelector } from '@/store/visit/visit.selectors';
-import { InfantDto, toCamelCase } from '@ecdlink/core';
+import { InfantDto, MotherDto, toCamelCase } from '@ecdlink/core';
 import { VisitDataStatus } from '@ecdlink/graphql';
 import { useCallback, useMemo } from 'react';
 import { useSelector } from 'react-redux';
@@ -18,7 +18,7 @@ import { Card, CardProps } from './card';
 import { GrowthCard } from './growth-card';
 
 interface FollowUpComponentProps {
-  infant: InfantDto;
+  mother: MotherDto;
 }
 
 interface Status {
@@ -30,12 +30,8 @@ interface Status {
 
 type StatusType = keyof Status;
 
-export const FollowUp = ({ infant }: FollowUpComponentProps) => {
-  const name = useMemo(() => infant?.user?.firstName || '', [infant]);
-  const caregiverName = useMemo(
-    () => infant?.caregiver?.firstName || '',
-    [infant?.caregiver?.firstName]
-  );
+export const FollowUp = ({ mother }: FollowUpComponentProps) => {
+  const name = useMemo(() => mother?.user?.firstName || '', [mother]);
 
   const previousVisit = useSelector(
     getPreviousVisitInformationForInfantSelector
@@ -109,14 +105,14 @@ export const FollowUp = ({ infant }: FollowUpComponentProps) => {
         return {
           primaryColour: 'errorMain',
           secondaryColour: 'errorBg',
-          message: `${caregiverName} & ${name} need urgent support`,
+          message: `${name} need urgent support`,
           value: 25,
         };
       case 'Warning':
         return {
           primaryColour: 'alertMain',
           secondaryColour: 'alertBg',
-          message: `${caregiverName} & ${name} need support`,
+          message: `${name} need support`,
           value: 50,
         };
       case 'Success':
@@ -124,11 +120,11 @@ export const FollowUp = ({ infant }: FollowUpComponentProps) => {
         return {
           primaryColour: 'successMain',
           secondaryColour: 'successBg',
-          message: `${caregiverName} & ${name} are going well`,
+          message: `${name} are going well`,
           value: 100,
         };
     }
-  }, [caregiverName, name, previousVisit?.scoreColor]);
+  }, [name, previousVisit?.scoreColor]);
 
   const getVisitIcon = (visitName: string) => {
     switch (visitName) {
@@ -183,7 +179,7 @@ export const FollowUp = ({ infant }: FollowUpComponentProps) => {
       <Typography
         className="mb-8"
         type="h4"
-        text={`Here is a summary of how ${name} & ${caregiverName} are doing`}
+        text={`Here is a summary of how ${name} is doing:`}
       />
       <GrowthCard
         text={grow.comment || ''}

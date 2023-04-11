@@ -37,25 +37,13 @@ import {
   ComplementaryFeedingStep,
   AlcoholUseStep,
   HivCareAndMedicationStep,
-} from './pillar-1-steps';
+} from './pregnancy-care-steps';
 import {
   DevelopmentalScreeningStep,
   DevelopmentalScreeningWeeksStep,
   DevelopmentalScreeningWeeksFollowUpStep,
-} from './pillar-2-steps';
-import {
-  ImmunisationsStep,
-  ImmunisationsSupplementsDewormingStep,
-} from './pillar-3-steps';
-import {
-  FollowUpStep,
-  SicknessStep,
-  DangerSignsStep as Pillar4DangerSignsStep,
-} from './pillar-4-steps';
-import {
-  ChildDocumentationStep,
-  HIVCareAndMedicationStep,
-} from './pillar-5-steps';
+  DangerSignsStep,
+} from './danger-signs-steps';
 import {
   NotesStep,
   ReferralsStep,
@@ -63,10 +51,10 @@ import {
   NextVisitStep,
 } from './follow-up-steps';
 
-import { nutritionAnswers } from './pillar-1-steps/nutrition';
+import { nutritionAnswers } from './pregnancy-care-steps/nutrition';
 import { Question } from './dynamic-form';
-import { IdDocumentStep } from './pillar-1-steps/nutrition/complementary-feeding-flow/id-document';
-import { InfantCareStep } from './pillar-1-steps/nutrition/complementary-feeding-flow/infant-care';
+import { IdDocumentStep } from './pregnancy-care-steps/nutrition/complementary-feeding-flow/id-document';
+import { InfantCareStep } from './pregnancy-care-steps/nutrition/complementary-feeding-flow/infant-care';
 
 export const getHealhcareteps = (isDangerSignsFollowUp: boolean) => [
   AntenatalCare,
@@ -184,28 +172,15 @@ export const getPillar1Steps = ({
   return [...defaultScreens, ...complementaryFeedingFlow];
 };
 
-export const pillar2Steps = (
+export const dangerSignsSteps = (
   isDevelopmentalScreeningWeeksFollowUp: boolean
 ) => [
   DevelopmentalScreeningStep,
-  ...(isDevelopmentalScreeningWeeksFollowUp
-    ? [DevelopmentalScreeningWeeksFollowUpStep]
-    : []),
-  DevelopmentalScreeningWeeksStep,
+  // ...(isDevelopmentalScreeningWeeksFollowUp
+  //   ? [DevelopmentalScreeningWeeksFollowUpStep]
+  //   : []),
+  DangerSignsStep,
 ];
-
-export const pillar3Steps = [
-  ImmunisationsStep,
-  ImmunisationsSupplementsDewormingStep,
-];
-
-export const getPillar4Steps = (isFollowUp: boolean) => [
-  ...(isFollowUp ? [FollowUpStep] : []),
-  SicknessStep,
-  Pillar4DangerSignsStep,
-];
-
-export const pillar5Steps = [ChildDocumentationStep, HIVCareAndMedicationStep];
 
 export const followUpSteps = (isReferralsStep: boolean) => [
   NotesStep,

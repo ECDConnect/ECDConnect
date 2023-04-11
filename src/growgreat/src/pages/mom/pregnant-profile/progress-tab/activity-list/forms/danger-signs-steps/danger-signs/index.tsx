@@ -32,7 +32,7 @@ export const dietFormQuestion =
   'What did you give {client} to eat or drink in the last 24 hours?';
 
 export const DangerSignsStep = ({
-  infant,
+  mother,
   isTipPage,
   setIsTip,
   setEnableButton,
@@ -52,7 +52,7 @@ export const DangerSignsStep = ({
 
   const answers = question.answer as string[];
 
-  const name = useMemo(() => infant?.user?.firstName || '', [infant]);
+  const name = useMemo(() => mother?.user?.firstName || '', [mother]);
 
   const visitSection = 'Danger signs';
 
@@ -138,10 +138,13 @@ export const DangerSignsStep = ({
         customIcon={P4}
         title={visitSection}
         subTitle="Check for these signs"
-        iconHexBackgroundColor={activitiesColours.pillar4.primaryColor}
-        hexBackgroundColor={activitiesColours.pillar4.secondaryColor}
+        backgroundColor="tertiary"
       />
       <div className="flex flex-col gap-2 p-4">
+        <Alert
+          type={'info'}
+          message={`Tell ${name} to watch out for any of these signs and go to the clinic if she experiences any of them.`}
+        />
         <Typography
           type="h4"
           color="black"

@@ -44,11 +44,13 @@ export const MidUpperArmCircumferenceResultStep = ({
   const visitSection = 'Maternal distress screening';
   const sectionQuestionsValues = sectionQuestions?.[0]?.questions;
 
-  console?.log({ sectionQuestionsValues });
-
   useEffect(() => {
-    setEnableButton?.(true);
-  }, [setEnableButton]);
+    if (
+      sectionQuestionsValues?.filter((item) => item?.answer !== undefined)
+        .length === 3
+    )
+      setEnableButton?.(true);
+  }, [sectionQuestionsValues, sectionQuestionsValues?.length, setEnableButton]);
 
   const options = [
     { text: 'Yes', value: true },

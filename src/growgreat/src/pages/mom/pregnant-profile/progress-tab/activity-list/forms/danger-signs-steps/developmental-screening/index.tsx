@@ -19,6 +19,7 @@ export const DevelopmentalScreeningStep = ({
     [infant?.caregiver?.firstName]
   );
   const videoSection = 'Bonding';
+  const visitSection = 'Danger signs';
 
   useEffect(() => {
     setEnableButton && setEnableButton(true);
@@ -27,8 +28,8 @@ export const DevelopmentalScreeningStep = ({
   if (isTipPage) {
     return (
       <MoreInformation
-        section="Developmental Screening"
-        subTitle="Developmental Screening"
+        section={visitSection}
+        subTitle={visitSection}
         onClose={() => setIsTip?.(false)}
       />
     );
@@ -38,7 +39,7 @@ export const DevelopmentalScreeningStep = ({
     <>
       <Header
         customIcon={P2}
-        title="Developmental screening"
+        title={visitSection}
         iconHexBackgroundColor={activitiesColours.pillar2.primaryColor}
         hexBackgroundColor={activitiesColours.pillar2.secondaryColor}
       />

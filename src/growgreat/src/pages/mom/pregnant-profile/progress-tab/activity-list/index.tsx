@@ -1,5 +1,5 @@
 import React, { useCallback, useLayoutEffect, useMemo, useState } from 'react';
-import { useHistory, useLocation } from 'react-router';
+import { useHistory, useLocation, useParams } from 'react-router';
 
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import {
@@ -30,20 +30,23 @@ import { referralThunkActions } from '@/store/referral';
 import { useAppDispatch } from '@/store';
 import { visitThunkActions } from '@/store/visit';
 import {
-  getCompletedVisitsByVisitIdSelector,
+  getMomCompletedVisitsByVisitIdSelector,
   getPreviousVisitInformationForInfantSelector,
   getPreviousVisitInformationForMotherSelector,
 } from '@/store/visit/visit.selectors';
 import { IntroScreen } from './intro-screen';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { VisitActions } from '@/store/visit/visit.actions';
-import { DevelopmentalScreeningVisitSection } from './forms/pillar-2-steps/developmental-screening-weeks';
+import { DevelopmentalScreeningVisitSection } from './forms/danger-signs-steps/developmental-screening-weeks';
 import { relationshipTypes } from '../../../../infant/components/mother-details/mother-details.types';
 import { ReactComponent as PollyImpressed } from '@/assets/pollyImpressed.svg';
 import { userSelectors } from '@/store/user';
 import { ActivityInfoPage } from './activity-info-page';
 import { motherThunkActions } from '@/store/mother';
-import { getMotherVisits } from '@/store/mother/mother.selectors';
+import {
+  getMotherById,
+  getMotherVisits,
+} from '@/store/mother/mother.selectors';
 
 export const INFANT_PROFILE_TABS = {
   VISITS: 0,
@@ -52,6 +55,11 @@ export const INFANT_PROFILE_TABS = {
   CONTACT: 3,
 };
 
+export interface MotherProfileParams {
+  id: string;
+  visitId: string;
+}
+
 export const currentActivityKey = 'selectedOption';
 
 export const MomActivityList: React.FC = () => {
@@ -59,6 +67,9 @@ export const MomActivityList: React.FC = () => {
   const [isShowCompletedForms, setIsShowCompletedForms] = useState(false);
   const [isStartVisit, setIsStartVisit] = useState(false);
   const [displayHelp, setDisplayHelp] = useState(false);
+  const { visitId } = useParams<MotherProfileParams>();
+
+  console.log({ visitId });
 
   const selectedOption = window.sessionStorage.getItem(currentActivityKey);
 
@@ -72,19 +83,15 @@ export const MomActivityList: React.FC = () => {
 
   const user = useSelector(userSelectors.getUser);
 
-  const visits = useSelector(getInfantVisitsSelector);
   const visits2 = useSelector(getMotherVisits);
 
-  const MOCKED_VISIT_ID = visits2[0]?.id;
+  const MOCKED_VISIT_ID = visitId;
   // '454686a9-2142-4061-aa47-4e89d46110b9';
 
   const completedVisits = useSelector((state: RootState) =>
-    getCompletedVisitsByVisitIdSelector(state, MOCKED_VISIT_ID)
+    getMomCompletedVisitsByVisitIdSelector(state, MOCKED_VISIT_ID)
   )?.visits;
 
-  const previousVisit = useSelector(
-    getPreviousVisitInformationForInfantSelector
-  );
   const previousMotherVisit = useSelector(
     getPreviousVisitInformationForMotherSelector
   );
@@ -99,6 +106,9 @@ export const MomActivityList: React.FC = () => {
 
   const infant = useSelector((state: RootState) =>
     getInfantById(state, infantId)
+  );
+  const mother = useSelector((state: RootState) =>
+    getMotherById(state, motherId)
   );
 
   const infantName = useMemo(
@@ -136,21 +146,11 @@ export const MomActivityList: React.FC = () => {
       (item) => item.label === 'Mother'
     );
 
-    const completedActivities = activitiesList.filter(
-      (item) =>
-        (completedVisits?.includes(item.title) &&
-          item.title !== 'Healthcare') ||
-        (completedVisits?.includes(item.title) &&
-          item.title === 'Healthcare' &&
-          infant?.caregiver?.relation?.description === motherType?.label)
+    const completedActivities = activitiesList.filter((item) =>
+      completedVisits?.includes(item.title)
     );
     const uncompletedActivities = activitiesList.filter(
-      (item) =>
-        (!completedVisits?.includes(item.title) &&
-          item.title !== 'Healthcare') ||
-        (!completedVisits?.includes(item.title) &&
-          item.title === 'Healthcare' &&
-          infant?.caregiver?.relation?.description === motherType?.label)
+      (item) => !completedVisits?.includes(item.title)
     );
 
     const completedForms = completedActivities.map(
@@ -159,6 +159,7 @@ export const MomActivityList: React.FC = () => {
         menuIconUrl: item?.menuIconUrl,
         menuIconClassName: 'border-0',
         title: item?.title,
+        titleStyle: 'text-textDark',
         subTitle: '',
         iconBackgroundColor: 'successMain' as Colours,
         backgroundColor: 'successBg' as Colours,
@@ -167,7 +168,7 @@ export const MomActivityList: React.FC = () => {
       })
     );
 
-    const uncompletedForms = activitiesList.map(
+    const uncompletedForms = uncompletedActivities.map(
       (item): MenuListDataItem => ({
         showIcon: true,
         menuIconUrl: item?.menuIconUrl,
@@ -206,7 +207,7 @@ export const MomActivityList: React.FC = () => {
     ];
 
     return { uncompletedForms, completedForms, followUpForm };
-  }, [completedVisits, infant?.caregiver?.relation?.description]);
+  }, [completedVisits]);
 
   const goBack = useCallback(() => {
     if (isStartVisit) {
@@ -245,12 +246,7 @@ export const MomActivityList: React.FC = () => {
   useLayoutEffect(() => {
     // TODO: add integration
     appDispatch(
-      visitThunkActions.getCompletedVisitsForVisitId({
-        visitId: MOCKED_VISIT_ID,
-      })
-    );
-    appDispatch(
-      visitThunkActions.getPreviousVisitInformationForInfant({
+      visitThunkActions.getMomCompletedVisitsForVisitId({
         visitId: MOCKED_VISIT_ID,
       })
     );
@@ -261,15 +257,15 @@ export const MomActivityList: React.FC = () => {
     );
   }, [MOCKED_VISIT_ID, appDispatch]);
 
-  // useLayoutEffect(() => {
-  //   appDispatch(
-  //     visitThunkActions.getVisitAnswersForInfant({
-  //       visitId: MOCKED_VISIT_ID,
-  //       visitName: activitiesTypes.nutrition,
-  //       visitSection: DevelopmentalScreeningVisitSection,
-  //     })
-  //   );
-  // }, [MOCKED_VISIT_ID, appDispatch]);
+  useLayoutEffect(() => {
+    appDispatch(
+      visitThunkActions.getVisitAnswersForMother({
+        visitId: MOCKED_VISIT_ID,
+        visitName: activitiesTypes.nutrition,
+        visitSection: DevelopmentalScreeningVisitSection,
+      })
+    );
+  }, [MOCKED_VISIT_ID, appDispatch]);
 
   const renderContent = useMemo(() => {
     if (isLoading) {
@@ -412,7 +408,7 @@ export const MomActivityList: React.FC = () => {
     }
 
     return (
-      <IntroScreen infant={infant} onStartVisit={() => setIsStartVisit(true)} />
+      <IntroScreen mother={mother} onStartVisit={() => setIsStartVisit(true)} />
     );
   }, [
     caregiverName,
@@ -420,7 +416,7 @@ export const MomActivityList: React.FC = () => {
     completedVisits?.length,
     followUpForm,
     goBack,
-    infant,
+    mother,
     infantName,
     isAllCompleted,
     isFollowUp,

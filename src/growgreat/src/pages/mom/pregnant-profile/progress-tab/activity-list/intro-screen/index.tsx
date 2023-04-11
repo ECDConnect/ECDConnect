@@ -1,5 +1,5 @@
 import { Header } from '../../../components';
-import { InfantDto } from '@ecdlink/core';
+import { InfantDto, MotherDto } from '@ecdlink/core';
 import { useMemo } from 'react';
 import { Button } from '@ecdlink/ui';
 import Infant from '@/assets/infant.svg';
@@ -7,12 +7,12 @@ import Infant from '@/assets/infant.svg';
 import { FollowUp } from '../forms/components/follow-up';
 
 interface IntroScreenProps {
-  infant?: InfantDto;
+  mother?: MotherDto;
   onStartVisit: () => void;
 }
 
-export const IntroScreen = ({ infant, onStartVisit }: IntroScreenProps) => {
-  const name = useMemo(() => infant?.user?.firstName || '', [infant]);
+export const IntroScreen = ({ mother, onStartVisit }: IntroScreenProps) => {
+  const name = useMemo(() => mother?.user?.firstName || '', [mother]);
 
   return (
     <>
@@ -23,7 +23,7 @@ export const IntroScreen = ({ infant, onStartVisit }: IntroScreenProps) => {
         title={`Summary of your last visit with ${name}`}
       />
       <div className="p-4 pt-8">
-        <FollowUp infant={infant || {}} />
+        <FollowUp mother={mother || {}} />
         <Button
           className="mt-8 w-full"
           type="filled"

@@ -15,6 +15,9 @@ import {
   getVisitVideos,
   getHealthCareWorkerHighlights,
   getPreviousVisitInformationForMother,
+  getMomCompletedVisitsForVisitId,
+  addVisitForMomFormData,
+  getVisitAnswersForMother,
 } from './visit.actions';
 import { CompletedVisitsForVisitId, VisitState } from './visit.types';
 
@@ -44,6 +47,26 @@ const handleAddCompletedVisitsByVisitId = (
     : [action.payload];
 };
 
+const handleAddMomCompletedVisitsByVisitId = (
+  state: VisitState & ThunkStateStatus,
+  action: PayloadAction<CompletedVisitsForVisitId>
+) => {
+  return typeof state.momcompletedVisitsForVisitId?.[0] === 'string'
+    ? state.momcompletedVisitsForVisitId?.map((item) => {
+        if (item.visitId === action.payload.visitId) {
+          const uniqueVisits = [
+            ...new Set([...item.visits, ...action.payload.visits]),
+          ];
+          return {
+            ...item,
+            visits: uniqueVisits,
+          };
+        }
+        return item;
+      })
+    : [action.payload];
+};
+
 const visitSlice = createSlice({
   name: 'visit',
   initialState,
@@ -53,7 +76,6 @@ const visitSlice = createSlice({
       action: PayloadAction<CmsVisitDataInputModelInput>
     ) => {
       if (state.visitFormData) {
-        console.log(action?.payload);
         state.visitFormData = !!state.visitFormData.length
           ? state.visitFormData.map((item) => {
               if (item.visitId === action.payload.visitId) {
@@ -90,18 +112,32 @@ const visitSlice = createSlice({
         action
       );
     },
+    addMomCompletedVisitsByVisitId: (
+      state,
+      action: PayloadAction<CompletedVisitsForVisitId>
+    ) => {
+      state.momcompletedVisitsForVisitId = handleAddMomCompletedVisitsByVisitId(
+        state,
+        action
+      );
+    },
   },
   extraReducers: (builder) => {
     setThunkActionStatus(builder, getHealthCareWorkerVisitStatus);
     setThunkActionStatus(builder, addVisitFormData);
+    setThunkActionStatus(builder, addVisitForMomFormData);
     setThunkActionStatus(builder, getHealthPromotion);
     setThunkActionStatus(builder, getMoreInformation);
     setThunkActionStatus(builder, getCompletedVisitsForVisitId);
     setThunkActionStatus(builder, getVisitVideos);
     setThunkActionStatus(builder, getPreviousVisitInformationForInfant);
     setThunkActionStatus(builder, getVisitAnswersForInfant);
+    setThunkActionStatus(builder, getVisitAnswersForMother);
     setThunkActionStatus(builder, getHealthCareWorkerHighlights);
     builder.addCase(addVisitFormData.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(addVisitForMomFormData.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(
@@ -135,6 +171,15 @@ const visitSlice = createSlice({
       setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(
+      getMomCompletedVisitsForVisitId.fulfilled,
+      (state, action) => {
+        state.momcompletedVisitsForVisitId =
+          handleAddMomCompletedVisitsByVisitId(state, action);
+
+        setFulfilledThunkActionStatus(state, action);
+      }
+    );
+    builder.addCase(
       getPreviousVisitInformationForInfant.fulfilled,
       (state, action) => {
         state.previousVisitInformationForInfant = action.payload;
@@ -160,6 +205,17 @@ const visitSlice = createSlice({
         : [];
 
       state.visitAnswersForInfant = !!mergedDate.length
+        ? mergedDate.filter((item, index) => {
+            return index === mergedDate.findIndex((obj) => obj.id === item.id);
+          })
+        : action.payload;
+    });
+    builder.addCase(getVisitAnswersForMother.fulfilled, (state, action) => {
+      const mergedDate = !!state.visitAnswersForMother?.length
+        ? [...state.visitAnswersForMother, ...action.payload]
+        : [];
+
+      state.visitAnswersForMother = !!mergedDate.length
         ? mergedDate.filter((item, index) => {
             return index === mergedDate.findIndex((obj) => obj.id === item.id);
           })

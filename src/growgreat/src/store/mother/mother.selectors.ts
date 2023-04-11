@@ -23,3 +23,22 @@ export const getMotherCountForMonth = (state: RootState): number =>
 
 export const getMotherVisits = (state: RootState): VisitDto[] =>
   state.mothers.visits || [];
+
+export const getMotherCurrentVisitSelector = (
+  state: RootState
+): VisitDto | undefined => {
+  const visits = state.mothers.visits || [];
+  console.log({ visits });
+  const noAttended =
+    visits?.filter(
+      (item) => !item.attended && new Date(item.plannedVisitDate) >= new Date()
+    ) || [];
+
+  return noAttended.length
+    ? noAttended.reduce((prev, curr) =>
+        (prev.visitType?.order || 0) < (curr.visitType?.order || 0)
+          ? prev
+          : curr
+      )
+    : undefined;
+};

@@ -34,7 +34,7 @@ const ROUTES = {
         ANTENATAL_VISIT: '/:id/antenatal-visit',
       },
       PROGRESS: {
-        ACTIVITIES_FORM: '/:id/activities-form',
+        ACTIVITIES_FORM: '/:id/activities-form/:visitId',
       },
     }),
     INFANT_PROFILE: addPrefix('/infant-profile', {

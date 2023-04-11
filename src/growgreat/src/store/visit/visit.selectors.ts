@@ -58,3 +58,11 @@ export const getPreviousVisitInformationForMotherSelector = (
   state: RootState
 ): Progress_VisitDataStatus | undefined =>
   state.visits.previousVisitInformationForMother;
+
+export const getMomCompletedVisitsByVisitIdSelector = (
+  state: RootState,
+  visitId: string
+): CompletedVisitsForVisitId | undefined =>
+  state.visits.momcompletedVisitsForVisitId?.find(
+    (item) => item.visitId === visitId
+  );

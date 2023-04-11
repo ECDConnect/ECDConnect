@@ -10,6 +10,7 @@ import ROUTES from '@/routes/routes';
 import { InfantProfileRouteState } from './index.types';
 import { ProgressTab } from './progress-tab';
 import { getInfantById } from '@/store/infant/infant.selectors';
+import { MomActivityList } from '@/pages/mom/pregnant-profile/progress-tab/activity-list';
 
 export const INFANT_PROFILE_TABS = {
   VISITS: 0,

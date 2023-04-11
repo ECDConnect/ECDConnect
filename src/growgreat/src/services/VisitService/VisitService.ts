@@ -404,6 +404,40 @@ class Visit {
 
     return response.data.data.previousVisitInformationForMother;
   }
+
+  async getVisitAnswersForMother(
+    visitId: string,
+    visitName: string,
+    visitSection: string
+  ): Promise<VisitData[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { visitAnswersForMother: VisitData[] };
+      errors?: {};
+    }>(``, {
+      query: `
+      query GetVisitAnswersForMother($visitId: String, $visitName: String, $visitSection: String) {
+        visitAnswersForMother(visitId: $visitId, visitName: $visitName, visitSection: $visitSection) {
+              visitName
+              visitSection
+              question
+              questionAnswer        
+        }
+      }
+      `,
+      variables: {
+        visitId,
+        visitName,
+        visitSection,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error('Get Visit Answers For Mother - Server connection error');
+    }
+
+    return response.data.data.visitAnswersForMother;
+  }
 }
 
 export default Visit;

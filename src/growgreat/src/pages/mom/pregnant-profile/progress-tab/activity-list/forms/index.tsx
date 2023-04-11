@@ -14,19 +14,16 @@ import {
   getHealhcareteps,
   followUpSteps,
   getPillar1Steps,
-  getPillar4Steps,
-  pillar2Steps,
-  pillar3Steps,
-  pillar5Steps,
+  dangerSignsSteps,
 } from './steps';
-import { nutritionQuestion } from './pillar-1-steps/nutrition';
+import { nutritionQuestion } from './pregnancy-care-steps/nutrition';
 import {
   breastfeedingIssuesCheckboxQuestion,
   breastfeedingIssuesCheckboxOptions,
-} from './pillar-1-steps/nutrition/breast-milk-only-flow/breastfeeding-issues';
+} from './pregnancy-care-steps/nutrition/breast-milk-only-flow/breastfeeding-issues';
 import { getPreviousVisitInformationForInfantSelector } from '@/store/visit/visit.selectors';
 import { dangerSignsVisitSectionForBaby } from './nutrition-steps/danger-signs';
-import { DevelopmentalScreeningVisitSection } from './pillar-2-steps/developmental-screening-weeks';
+import { DevelopmentalScreeningVisitSection } from './danger-signs-steps/developmental-screening-weeks';
 import { getReferralsForInfantSelector } from '@/store/referral/referral.selectors';
 import { differenceInDays } from 'date-fns';
 import { getMotherById } from '@/store/mother/mother.selectors';
@@ -232,7 +229,7 @@ export const Form = ({ onBack }: FormProps) => {
           isMixedFeedingUnsafeFeedingPractices,
         });
       case activitiesTypes.dangerSigns:
-        return pillar2Steps(isDevelopmentalScreeningWeeksFollowUp);
+        return dangerSignsSteps(isDevelopmentalScreeningWeeksFollowUp);
       default:
         return followUpSteps(!!referralsForInfant?.length);
     }

@@ -80,8 +80,8 @@ export const ActivityList: React.FC = () => {
   const previousVisit = useSelector(
     getPreviousVisitInformationForInfantSelector
   );
-  const isFollowUp = completedVisits?.length === 7;
-  const isAllCompleted = completedVisits?.length === 8;
+  const isFollowUp = completedVisits?.length === 4;
+  const isAllCompleted = completedVisits?.length === 5;
 
   const [, , , infantId] = location.pathname.split('/');
 
@@ -126,6 +126,7 @@ export const ActivityList: React.FC = () => {
       (item) => item.label === 'Mother'
     );
 
+    console.log({ activitiesList });
     const completedActivities = activitiesList.filter(
       (item) =>
         (completedVisits?.includes(item.title) &&

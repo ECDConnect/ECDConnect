@@ -44,7 +44,7 @@ export const AlcoholUseStep = ({
   isTipPage,
 }: DynamicFormProps) => {
   const name = useMemo(() => mother?.user?.firstName || '', [mother]);
-  const sectionQuestionsValues = sectionQuestions?.[0].questions;
+  const sectionQuestionsValues = sectionQuestions?.[1]?.questions;
   const visitSection = `Alcohol use`;
   const [alcoholAbuseInfo, setAlcoholAbuseInfo] = useState(false);
 
@@ -82,9 +82,9 @@ export const AlcoholUseStep = ({
   ];
 
   const toleranceOptions = [
-    { text: 'NA', value: false },
-    { text: '1 or 2', value: false },
-    { text: 'More than 2', value: true },
+    { text: 'NA', value: 'NA' },
+    { text: '1 or 2', value: '1 or 2' },
+    { text: 'More than 2', value: 'More than 2' },
   ];
 
   const onOptionSelected = useCallback(
@@ -119,10 +119,15 @@ export const AlcoholUseStep = ({
   );
 
   const tAceAnswers = sectionQuestionsValues?.filter((item) => {
-    return item?.answer === true;
+    return (
+      item?.answer === true ||
+      item?.answer === 'More than 2' ||
+      item?.answer === '1 or 2'
+    );
   });
+
   const tAceAnswersScore =
-    tAceAnswers?.[0]?.answer === true &&
+    tAceAnswers?.[0]?.answer === 'More than 2' &&
     tAceAnswers?.[0]?.question ===
       '(T) Tolerance: how many drinks does it take to make you high?'
       ? tAceAnswers?.length + 1
@@ -222,7 +227,7 @@ export const AlcoholUseStep = ({
                   text={`Choose NA if the client does not drink.`}
                   color="textMid"
                 />
-                <ButtonGroup<boolean>
+                <ButtonGroup<string>
                   color="secondary"
                   type={ButtonGroupTypes.Button}
                   options={toleranceOptions}
@@ -259,7 +264,7 @@ export const AlcoholUseStep = ({
               title={`What is 1 standard drink?`}
               customDetailText={
                 <div className="flex flex-col items-start" color="textMid">
-                  <Typography type="body" text="The primary caregiver must:" />
+                  <Typography type="body" text="About:" />
                   {[
                     '300ml (1 small bottle) of 5% beer',
                     '117ml (1 small glass) of 13% wine',

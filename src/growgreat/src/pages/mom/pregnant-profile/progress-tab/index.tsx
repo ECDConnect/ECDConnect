@@ -1,10 +1,18 @@
+import { motherSelectors } from '@/store/mother';
 import { Button } from '@ecdlink/ui';
+import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
 
 export const ProgressTab = () => {
   const history = useHistory();
 
   const location = useLocation();
+
+  const currentVisit = useSelector(
+    motherSelectors.getMotherCurrentVisitSelector
+  );
+
+  console.log({ currentVisit });
 
   return (
     <div className="mt-16 p-4">
@@ -14,7 +22,11 @@ export const ProgressTab = () => {
         color="primary"
         textColor="white"
         text="Start visit"
-        onClick={() => history.push(`${location.pathname}/activities-form`)}
+        onClick={() =>
+          history.push(
+            `${location.pathname}/activities-form/${currentVisit?.id}`
+          )
+        }
       />
     </div>
   );
