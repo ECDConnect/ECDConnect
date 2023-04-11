@@ -157,7 +157,6 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
         holidays
       );
     });
-    console.log(removeTodaysAttendance);
     if (removeHolidays.length === 0) {
       setAttendanceComponentType('report');
     } else {

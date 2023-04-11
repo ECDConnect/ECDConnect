@@ -122,6 +122,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
     setAbsentChildrenCount(attendanceStatusCheck.absentCount);
     setIsButtonActive(attendanceStatusCheck.isValid);
   };
+  
 
   useEffect(() => {
     updateAttendanceState(attendanceGroups ?? []);
@@ -333,7 +334,6 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
               onChange={(value) => onFilterItemsChanges(value)}
               placeholder={'Class'}
               pluralSelectionText={'Classes'}
-              multiple
               color={'secondary'}
               selectedOptions={selectedClassroomGroups.map((x) => {
                 return {
