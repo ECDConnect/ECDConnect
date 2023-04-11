@@ -16,7 +16,7 @@ import { classroomsSelectors } from '@store/classroom';
 import { staticDataSelectors } from '@store/static-data';
 import {
   classroomGroupHasAttendanceDate,
-  classroomGroupHasAttendanceOnDate,
+
   getClassroomGroupSchoolDays,
   getMissedClassAttendance,
   isValidAttendableDate,
@@ -157,15 +157,18 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
         holidays
       );
     });
+
     if (removeHolidays.length === 0) {
       setAttendanceComponentType('report');
     } else {
       setAttendanceComponentType('summary');
     }
 
-  }, [classroomGroups, attendance, learners, classProgrammesUpdated, currentDate, publicHolidays, holidays]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [classroomGroups, attendance]);
 
   const attendanceSubmitted = async (attendanceResult: AttendanceResult) => {
+    setSeeRegister(true);
     // is attendance complete for whole weeek?
     if (!classroom) return;
 
@@ -190,10 +193,10 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       return isWorkingDay(
         addDays(startOfWeek(currentDate), x.meetingDay),
         holidays
-      );
+      )
     });
 
-    if (removeHolidays.length === 0) {
+    if (removeHolidays.length === 0 ) {
       setAttendanceComponentType('report');
     } else {
       setAttendanceComponentType('summary');
