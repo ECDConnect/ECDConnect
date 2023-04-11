@@ -118,12 +118,16 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
       attendanceGroups,
       isButtonActive
     );
-
     setPresentChildrenCount(attendanceStatusCheck.presentCount);
     setAbsentChildrenCount(attendanceStatusCheck.absentCount);
-    setAttendanceGroups(attendanceGroups);
     setIsButtonActive(attendanceStatusCheck.isValid);
   };
+
+  useEffect(() => {
+    updateAttendanceState(attendanceGroups ?? []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedClassroomGroups, attendanceGroups])
+  
 
   const onFilterItemsChanges = (value: SearchDropDownOption<any>[]) => {
     setSelectedClassroomGroups(value.map((x) => x.value));
@@ -227,17 +231,17 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
       currentProgramme.id ?? ''
     );
 
-    appDispatch(attendanceActions.trackAttendance(trackAttendanceInput));
-    appDispatch(
-      attendanceThunkActions.trackAttendanceSync(trackAttendanceInput)
-    );
+    // appDispatch(attendanceActions.trackAttendance(trackAttendanceInput));
+    // appDispatch(
+    //   attendanceThunkActions.trackAttendanceSync(trackAttendanceInput)
+    // );
 
-    appDispatch(
-      analyticsActions.createEventTracking({
-        action: 'Attendance tracking click',
-        category: 'Attendance tracking click',
-      })
-    );
+    // appDispatch(
+    //   analyticsActions.createEventTracking({
+    //     action: 'Attendance tracking click',
+    //     category: 'Attendance tracking click',
+    //   })
+    // );
     
     onSubmitSuccess({
       attendanceDate,
