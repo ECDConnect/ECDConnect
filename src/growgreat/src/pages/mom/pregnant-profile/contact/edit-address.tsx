@@ -4,6 +4,8 @@ import {
   Button,
   ButtonGroup,
   ButtonGroupTypes,
+  Card,
+  DialogPosition,
   FormInput,
   Typography,
 } from '@ecdlink/ui';
@@ -24,6 +26,14 @@ import {
   PregnantAddressModel,
   pregnantAddressModelSchema,
 } from '@/schemas/pregnant/pregnant-address';
+import { useAppDispatch } from '@/store';
+import { motherActions, motherThunkActions } from '@/store/mother';
+import {
+  MotherDto,
+  SiteAddressDto,
+  UserDto,
+  useDialog,
+} from '@ecdlink/core/lib';
 
 const MARGIN = 16;
 const COMPONENT_HEIGHT = 280;
@@ -33,42 +43,45 @@ const getInfo = (address: Address[] | undefined, type: string) =>
     item?.types.find((currentType) => currentType.includes(type))
   )?.short_name;
 
-const MotherContactAddressView: React.FC<PregnantAddressProps> = ({
-  onSubmit,
-  details,
-}) => {
-  const {
-    getValues: getPregnantAddressFormValues,
-    // formState: pregnantAddressFormState,
-    setValue: setPregnantAddressFormValue,
-    register: pregnantAddressFormRegister,
-    // reset: resetPregnantAddressFormValue,
-    control: momContactInformationControl,
-  } = useForm<PregnantAddressModel>({
-    resolver: yupResolver(pregnantAddressModelSchema),
-    mode: 'onBlur',
-    // defaultValues: playgroup,
-    reValidateMode: 'onChange',
-  });
-
+const MotherContactAddressView: React.FC<PregnantAddressProps> = () => {
   const location = useLocation();
   const history = useHistory();
+  const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
   const [, , , motherId] = location.pathname.split('/');
   const mother = useSelector((state: RootState) =>
     getMotherById(state, motherId)
   );
+
+  const _defaultValues = {
+    address: mother?.siteAddress?.addressLine1,
+    addressLine1: mother?.siteAddress?.addressLine1,
+    details: {
+      id: mother?.user?.id,
+    },
+  };
+
+  const {
+    getValues: getPregnantAddressFormValues,
+    setValue: setPregnantAddressFormValue,
+    register: pregnantAddressFormRegister,
+    control: momContactInformationControl,
+  } = useForm<PregnantAddressModel>({
+    resolver: yupResolver(pregnantAddressModelSchema),
+    mode: 'onBlur',
+    defaultValues: _defaultValues,
+    reValidateMode: 'onChange',
+  });
+
+  const dialog = useDialog();
   const { isValid } = useFormState({ control: momContactInformationControl });
-  const [isMapTab, setIsMapTab] = useState<boolean | undefined>();
+  const [isMapTab, setIsMapTab] = useState<boolean | undefined>(false);
   const [isMapView, setIsMapView] = useState(false);
   const [address, setAddress] = useState<Address[]>();
   const [formattedAddress, setFormattedAddress] = useState('');
 
   const onToggleMapView = () => setIsMapView((prevState) => !prevState);
-
   const saveAddress = () => {
-    // TODO: add integration
-    console.log('saveAddress', formattedAddress);
     setPregnantAddressFormValue('address', formattedAddress);
     onToggleMapView();
   };
@@ -86,6 +99,82 @@ const MotherContactAddressView: React.FC<PregnantAddressProps> = ({
   }, [address]);
 
   useEffect(() => getAddress(), [getAddress]);
+
+  const saveMotherAddress = () => {
+    const siteAddressDto: SiteAddressDto = {
+      id: mother?.siteAddress?.id,
+      addressLine1: getPregnantAddressFormValues().address || '',
+    };
+
+    const userModel: UserDto = {
+      id: mother?.user?.id,
+      phoneNumber: mother?.user?.phoneNumber,
+      firstName: mother?.user?.firstName,
+      surname: mother?.user?.surname,
+    };
+
+    const motherInputModel: MotherDto = {
+      age: mother?.age,
+      expectedDateOfDelivery: mother?.expectedDateOfDelivery,
+      insertedDate: mother?.insertedDate,
+      nextVisitDate: mother?.nextVisitDate,
+      siteAddress: siteAddressDto,
+      statusInfo: mother?.statusInfo,
+      isActive: mother?.isActive,
+      user: userModel,
+      whatsAppNumber: mother?.whatsAppNumber,
+    };
+
+    appDispatch(motherActions.updateMother(motherInputModel));
+    appDispatch(
+      motherThunkActions.updateMotherAddress({
+        mother: motherInputModel,
+        id: motherId,
+      })
+    ).unwrap();
+    showSuccessMessage();
+  };
+
+  const showSuccessMessage = useCallback(
+    () =>
+      dialog({
+        position: DialogPosition.Middle,
+        color: 'bg-transparent',
+        render(onSubmit, onClose) {
+          return (
+            <Card
+              shadowSize={'lg'}
+              borderRaduis={'3xl'}
+              className="flex flex-col items-center justify-center px-4 py-6"
+            >
+              <Typography
+                type="h3"
+                weight="bold"
+                className="mt-4"
+                lineHeight="snug"
+                text={'Address saved!'}
+              />
+              <div className={'mt-4 flex w-full justify-center'}>
+                <Button
+                  text={`Close`}
+                  icon={'XIcon'}
+                  type={'filled'}
+                  color={'primary'}
+                  textColor={'white'}
+                  className={'max-h-10 w-full'}
+                  iconPosition={'start'}
+                  onClick={() => {
+                    history.goBack();
+                    onClose();
+                  }}
+                />
+              </div>
+            </Card>
+          );
+        },
+      }),
+    [dialog, history]
+  );
 
   if (isMapView) {
     return (
@@ -229,7 +318,7 @@ const MotherContactAddressView: React.FC<PregnantAddressProps> = ({
           icon={'SaveIcon'}
           iconPosition={'start'}
           disabled={!isValid}
-          onClick={() => onSubmit(getPregnantAddressFormValues())}
+          onClick={() => saveMotherAddress()}
         />
       </div>
     </BannerWrapper>

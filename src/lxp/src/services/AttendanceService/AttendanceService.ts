@@ -204,12 +204,12 @@ class AttendanceService {
   }
 
   async trackAttendance(
-    attendance: TrackAttendanceModelInput
+    attendance: TrackAttendanceModelInput[]
   ): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-        mutation trackAttendance($attendance: TrackAttendanceModelInput) {
+        mutation trackAttendance($attendance: [TrackAttendanceModelInput]) {
           trackAttendance(attendance: $attendance)
         }
       `,

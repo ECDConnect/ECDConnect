@@ -166,14 +166,14 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             var classroomGroupRepo = _repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: _applicationUserId);
             var classroomRepo = _repoFactory.CreateGenericRepository<Classroom>(userContext: _applicationUserId);
 
-            var classroomgroup = classroomGroupRepo.GetAll().Where(x => x.UserId.ToString() == userId).FirstOrDefault();
+            var classroomgroup = classroomGroupRepo.GetAll().Where(x => x.UserId.ToString() == userId).OrderBy(x => x.Id).FirstOrDefault();
             if (classroomgroup != null) //principals and practitioners are assigned to classroom groups
             {
-                siteName = classroomRepo.GetAll().Where(x => x.Id.Equals(classroomgroup.ClassroomId)).Select(x => x.Name).FirstOrDefault();
+                siteName = classroomRepo.GetAll().Where(x => x.Id.Equals(classroomgroup.ClassroomId)).OrderBy(x => x.Id).Select(x => x.Name).FirstOrDefault();
             }
             else //only principals/FAA are assigfne dto classrooms only
             {
-                siteName = classroomRepo.GetAll().Where(x => x.UserId.ToString() == userId).Select(y => y.Name).FirstOrDefault();
+                siteName = classroomRepo.GetAll().Where(x => x.UserId.ToString() == userId).OrderBy(x => x.Id).Select(y => y.Name).FirstOrDefault();
             }
 
             return siteName;

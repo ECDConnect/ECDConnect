@@ -7,6 +7,7 @@ import {
 } from '@/../../../packages/core/lib';
 import {
   CaregiverModelInput,
+  EventRecordType,
   InfantModelInput,
   SiteAddressInput,
 } from '@ecdlink/graphql';
@@ -14,6 +15,7 @@ import {
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { InfantService } from '@/services/InfantService';
 import { RootState, ThunkApiType } from '../types';
+import { EventRecordService } from '@/services/EventRecordService';
 
 export const InfantActions = {
   ADD_INFANTS: 'addInfant',
@@ -21,6 +23,7 @@ export const InfantActions = {
   GET_INFANT_VISITS: 'getInfantVisits',
   GET_INFANTS_WEEKLY_VISITS: 'getInfantsWeeklyVisits',
   GET_INFANT_COUNT_FOR_MONTH: 'getInfantCountForMonth',
+  GET_ALL_INFANT_EVENT_RECORD_TYPES: 'getAllInfantEventRecordTypes',
 };
 
 export const getInfants = createAsyncThunk<
@@ -172,6 +175,85 @@ export const getInfantVisits = createAsyncThunk<
       }
 
       return visits;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const updateInfantCaregiverAddress = createAsyncThunk<
+  InfantDto,
+  UpdateMotherRequest,
+  ThunkApiType<RootState>
+>(
+  'updateInfantCaregiverAddress',
+  async ({ infant, id }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+    try {
+      let mappedInfantInput = mapInfant(infant);
+      if (userAuth?.auth_token) {
+        return await new InfantService(
+          userAuth?.auth_token
+        ).updateInfantCaregiverAddress(id, mappedInfantInput);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const updateInfantCaregiverContactDetails = createAsyncThunk<
+  InfantDto,
+  UpdateMotherRequest,
+  ThunkApiType<RootState>
+>(
+  'updateInfantCaregiverContactDetails',
+  async ({ infant, id }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+    try {
+      let mappedInfantInput = mapInfant(infant);
+      if (userAuth?.auth_token) {
+        return await new InfantService(
+          userAuth?.auth_token
+        ).updateInfantCaregiverContactDetails(id, mappedInfantInput);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getAllInfantEventRecordTypes = createAsyncThunk<
+  EventRecordType[],
+  undefined,
+  ThunkApiType<RootState>
+>(
+  InfantActions.GET_ALL_INFANT_EVENT_RECORD_TYPES,
+  async (_, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      let eventRecordTypes: EventRecordType[];
+
+      if (userAuth?.auth_token) {
+        eventRecordTypes = await new EventRecordService(
+          userAuth?.auth_token
+        ).getAllEventRecordTypes('child');
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      return eventRecordTypes;
     } catch (err) {
       return rejectWithValue(err);
     }

@@ -20,6 +20,7 @@ import { ProgressTab } from './progress-tab';
 import { getInfantById } from '@/store/infant/infant.selectors';
 import { VisitsTab } from './visits-tab';
 import { useDialog } from '@ecdlink/core';
+import { Contact } from './contact';
 
 export const INFANT_PROFILE_TABS = {
   VISITS: 0,
@@ -80,14 +81,7 @@ export const InfantProfile: React.FC = () => {
     {
       title: 'Contact',
       initActive: false,
-      child: (
-        <Typography
-          className={'mt-16 p-4'}
-          type={'body'}
-          color="textDark"
-          text={'Coming soon'}
-        />
-      ),
+      child: <Contact />,
     },
   ];
 
