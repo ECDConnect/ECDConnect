@@ -18,10 +18,9 @@ import { ReactComponent as PollyNeutral } from '@/assets/pollyNeutral.svg';
 import { InfantProfileRouteState } from './index.types';
 import { ProgressTab } from './progress-tab';
 import { getInfantById } from '@/store/infant/infant.selectors';
-import { MomActivityList } from '@/pages/mom/pregnant-profile/progress-tab/activity-list';
 import { Contact } from './contact';
 import { VisitsTab } from './visits-tab';
-import { useDialog } from '@/../../../packages/core/lib';
+// import { useDialog } from '@/../../../packages/core/lib';
 
 export const INFANT_PROFILE_TABS = {
   VISITS: 0,
@@ -37,7 +36,7 @@ export const InfantProfile: React.FC = () => {
     state?.activeTabIndex !== undefined ? state?.activeTabIndex : 0
   );
 
-  const dialog = useDialog();
+  // const dialog = useDialog();
 
   const { isOnline } = useOnlineStatus();
 
@@ -86,35 +85,35 @@ export const InfantProfile: React.FC = () => {
     },
   ];
 
-  const onWalkThrough = (detailText?: string) => {
-    dialog({
-      blocking: false,
-      position: DialogPosition.Middle,
-      color: 'bg-white',
-      render: (onClose: () => void) => {
-        return (
-          <ActionModal
-            className="z-50"
-            title="Hello!"
-            detailText="Coming soon"
-            customIcon={<PollyNeutral className="mb-3 h-24 w-24" />}
-            actionButtons={[
-              {
-                colour: 'primary',
-                text: 'Ok',
-                textColour: 'white',
-                type: 'filled',
-                leadingIcon: 'CheckCircleIcon',
-                onClick: () => {
-                  onClose();
-                },
-              },
-            ]}
-          />
-        );
-      },
-    });
-  };
+  // const onWalkThrough = (detailText?: string) => {
+  //   dialog({
+  //     blocking: false,
+  //     position: DialogPosition.Middle,
+  //     color: 'bg-white',
+  //     render: (onClose: () => void) => {
+  //       return (
+  //         <ActionModal
+  //           className="z-50"
+  //           title="Hello!"
+  //           detailText="Coming soon"
+  //           customIcon={<PollyNeutral className="mb-3 h-24 w-24" />}
+  //           actionButtons={[
+  //             {
+  //               colour: 'primary',
+  //               text: 'Ok',
+  //               textColour: 'white',
+  //               type: 'filled',
+  //               leadingIcon: 'CheckCircleIcon',
+  //               onClick: () => {
+  //                 onClose();
+  //               },
+  //             },
+  //           ]}
+  //         />
+  //       );
+  //     },
+  //   });
+  // };
 
   const goBack = useCallback(
     () => history.push(ROUTES.CLIENTS.ROOT),
@@ -132,7 +131,7 @@ export const InfantProfile: React.FC = () => {
       backgroundColour="white"
       displayOffline={!isOnline}
       displayHelp
-      onHelp={onWalkThrough}
+      // onHelp={onWalkThrough}
     >
       <TabList
         tabClassName="min-w-0 w-24"
