@@ -20,6 +20,73 @@ export const getInfantCountForMonth = (state: RootState): number =>
 export const getInfantVisitsSelector = (state: RootState): VisitDto[] =>
   state.infants.visits || [];
 
+export const getInfantFirstVisitSelector = (
+  state: RootState
+): VisitDto | null => {
+  const visits = state.infants.visits;
+
+  if (!visits) return null;
+
+  const filteredVisits = visits.filter((visit) => {
+    const plannedVisitDate = new Date(visit.plannedVisitDate);
+    return plannedVisitDate.getFullYear() !== 0;
+  });
+  const firstVisit = filteredVisits.reduce(
+    (oldest: VisitDto | null, current: VisitDto) => {
+      const currentPlannedVisitDate = new Date(current.plannedVisitDate);
+      if (
+        !oldest ||
+        currentPlannedVisitDate < new Date(oldest.plannedVisitDate)
+      ) {
+        return current;
+      }
+      return oldest;
+    },
+    null
+  );
+
+  return firstVisit;
+};
+
+export const getInfantPreviousVisitSelector = (
+  state: RootState,
+  currentPlannedVisitDate: string
+) => {
+  const visits = state.infants.visits;
+
+  if (!visits) return;
+
+  const filteredVisits = visits.filter((visit) => {
+    const plannedVisitDate = new Date(visit.plannedVisitDate);
+    return plannedVisitDate < new Date(currentPlannedVisitDate);
+  });
+
+  const previousVisit = filteredVisits.reduce(
+    (previous: VisitDto | null, current: VisitDto) => {
+      const currentPlannedVisitDate = new Date(current.plannedVisitDate);
+      if (
+        !previous ||
+        currentPlannedVisitDate > new Date(previous.plannedVisitDate)
+      ) {
+        return current;
+      }
+      return previous;
+    },
+    null
+  );
+
+  return previousVisit;
+};
+
+export const getIsInfantFirstVisitSelector = (
+  state: RootState,
+  currentVisitId: string
+): boolean => {
+  const firstVisit = getInfantFirstVisitSelector(state);
+
+  return currentVisitId === firstVisit?.id;
+};
+
 export const getInfantVisitByVisitIdSelector = (
   state: RootState,
   visitId: string

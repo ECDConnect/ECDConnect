@@ -16,6 +16,13 @@ import { activitiesColours, activitiesTypes } from '../../../activities-list';
 import { InfoCard, Item } from './info-card';
 import { Card, CardProps } from './card';
 import { GrowthCard } from './growth-card';
+import { useParams } from 'react-router';
+import { InfantProfileParams } from '@/pages/infant/infant-profile/infant-profile.types';
+import { RootState } from '@/store/types';
+import {
+  getInfantPreviousVisitSelector,
+  getInfantVisitByVisitIdSelector,
+} from '@/store/infant/infant.selectors';
 
 interface FollowUpComponentProps {
   infant: InfantDto;
@@ -37,6 +44,14 @@ export const FollowUp = ({ infant }: FollowUpComponentProps) => {
     [infant?.caregiver?.firstName]
   );
 
+  const { visitId } = useParams<InfantProfileParams>();
+
+  const visit = useSelector((state: RootState) =>
+    getInfantVisitByVisitIdSelector(state, visitId)
+  );
+  const previousPlannedVisit = useSelector((state: RootState) =>
+    getInfantPreviousVisitSelector(state, visit?.plannedVisitDate || '')
+  );
   const previousVisit = useSelector(
     getPreviousVisitInformationForInfantSelector
   );
@@ -215,9 +230,7 @@ export const FollowUp = ({ infant }: FollowUpComponentProps) => {
             className="my-4"
             label={item.name}
             value={item.value || ''}
-            date={
-              previousVisit?.visitDataStatus?.[0]?.insertedDate || ''
-            } /* TODO: add the correct date */
+            date={previousPlannedVisit?.plannedVisitDate || ''}
             message={item.comment || ''}
             color={item.color as CardProps['color']}
           />

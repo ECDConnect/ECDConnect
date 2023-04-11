@@ -15,6 +15,11 @@ import { SuccessCard } from '@/components/success-card/success-card';
 import { ReactComponent as CelebrateIcon } from '@/assets/celebrateIcon.svg';
 import { differenceInDays } from 'date-fns';
 import { getAgeInYearsMonthsAndDays } from '@ecdlink/core';
+import { useParams } from 'react-router';
+import { InfantProfileParams } from '@/pages/infant/infant-profile/infant-profile.types';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store/types';
+import { getIsInfantFirstVisitSelector } from '@/store/infant/infant.selectors';
 
 export const ImmunisationsSupplementsDewormingStep = ({
   infant,
@@ -41,6 +46,8 @@ export const ImmunisationsSupplementsDewormingStep = ({
     { text: 'No', value: false },
   ];
 
+  const { visitId } = useParams<InfantProfileParams>();
+
   const dateOfBirth = infant?.user?.dateOfBirth as string;
   const name = useMemo(() => infant?.user?.firstName || '', [infant]);
   const { months: ageMonths } = getAgeInYearsMonthsAndDays(dateOfBirth);
@@ -53,8 +60,9 @@ export const ImmunisationsSupplementsDewormingStep = ({
 
   const visitSection = 'Immunisations, supplements & deworming';
 
-  // TODO: add G3 visits tab integration
-  const isFirstVisit = true;
+  const isFirstVisit = useSelector((state: RootState) =>
+    getIsInfantFirstVisitSelector(state, visitId)
+  );
 
   const is6Week = ageDays >= 49 && ageDays <= 56;
   const is10Week = ageDays >= 57 && ageMonths <= 3;
