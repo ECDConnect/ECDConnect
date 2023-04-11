@@ -65,6 +65,9 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
   );
 
   const motherType = relationshipTypes.find((item) => item.label === 'Mother');
+  const caregiverType = relationshipTypes.find(
+    (item) => item.value === motherInfo?.relationId
+  );
 
   const mothersUpdatedToCaregivers = mothers?.map((item) => ({
     firstName: item?.user?.firstName,
@@ -79,14 +82,17 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
 
   const motherAndCaregivers = [...caregivers, ...mothersUpdatedToCaregivers];
 
-  const isMother = useMemo(() => !!motherInfo?.user, [motherInfo?.user]);
+  const isCaregiver = useMemo(
+    () => !!motherInfo?.user || !!motherInfo?.id,
+    [motherInfo]
+  );
 
   const isShowCaregiversDropdown = useMemo(
     () =>
-      isMother
-        ? isMother && isAlreadyClient
+      isCaregiver
+        ? isCaregiver && isAlreadyClient
         : isAlreadyClient && !!motherAndCaregivers?.length,
-    [isAlreadyClient, motherAndCaregivers?.length, isMother]
+    [isAlreadyClient, motherAndCaregivers?.length, isCaregiver]
   );
 
   useEffect(() => {
@@ -94,7 +100,7 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
   }, [watch]);
 
   useEffect(() => {
-    if (isMother) {
+    if (isCaregiver) {
       setButtonGroupOptions((prevState) =>
         prevState.map((item) => ({
           ...item,
@@ -102,14 +108,24 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
         }))
       );
       setIsAlreadyClient(true);
-      setMotherDetailsFormValue('id', motherInfo?.user?.id);
-      setMotherDetailsFormValue('name', motherInfo?.user?.firstName);
-      setMotherDetailsFormValue('surname', motherInfo?.user?.surname);
-      setMotherDetailsFormValue('relationshipId', motherType?.value);
-      setMotherDetailsFormValue('isMother', true);
+      setMotherDetailsFormValue('id', motherInfo?.user?.id || motherInfo?.id);
+      setMotherDetailsFormValue(
+        'name',
+        motherInfo?.user?.firstName || motherInfo?.firstName
+      );
+      setMotherDetailsFormValue(
+        'surname',
+        motherInfo?.user?.surname || motherInfo?.surname
+      );
+      setMotherDetailsFormValue(
+        'relationshipId',
+        caregiverType?.value || motherType?.value
+      );
+      setMotherDetailsFormValue('isMother', !!motherInfo?.user?.id);
     }
   }, [
-    isMother,
+    caregiverType?.value,
+    isCaregiver,
     motherInfo,
     motherType,
     setIsAlreadyClient,
@@ -151,10 +167,10 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
                   key={index + 3}
                   placeholder={'Please choose the client:'}
                   fillType="clear"
-                  disabled={isMother}
+                  disabled={isCaregiver}
                   selectedValue={
-                    isMother
-                      ? motherType?.value
+                    isCaregiver
+                      ? caregiverType?.value || motherType?.value
                       : getMotherDetailsFormValues('relationshipId') ||
                         multipleChildrenArray[index].relationshipId
                   }
@@ -198,8 +214,8 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
                 <Dropdown
                   placeholder={'Please choose the client:'}
                   fillType="clear"
-                  disabled={isMother}
-                  selectedValue={isMother ? motherType?.value : value}
+                  disabled={isCaregiver}
+                  selectedValue={isCaregiver ? motherType?.value : value}
                   list={
                     (relationshipTypes &&
                       relationshipTypes
@@ -293,7 +309,7 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
                 <Dropdown
                   placeholder={'Please choose the client:'}
                   fillType="clear"
-                  disabled={isMother}
+                  disabled={isCaregiver}
                   selectedValue={
                     !!motherInfo?.user?.id ? motherInfo.user.id : value
                   }
@@ -365,7 +381,7 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
             (!multipleChildrenArray && !isValid) ||
             (isAlreadyClient && !getMotherDetailsFormValues('id')) ||
             (!isAlreadyClient && !getMotherDetailsFormValues('age')) ||
-            (!isMother &&
+            (!isCaregiver &&
               multipleChildrenArray?.filter((child) => child?.relationshipId)
                 .length !== multipleChildrenArray?.length)
           }
