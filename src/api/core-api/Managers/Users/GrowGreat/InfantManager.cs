@@ -202,6 +202,28 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             return _infantRepo.GetAll().Where(x => x.User.Id == id).FirstOrDefault();
         }
 
+        public Boolean UpdateInfantCaregiver(string infantId, string caregiverId)
+        {
+            Caregiver caregiver = _caregiverRepo.GetAll().Where(x => x.Id.ToString() == caregiverId).OrderBy(x => x.Id).FirstOrDefault();
+            Mother mother = _motherRepo.GetAll().Where(x => x.UserId == caregiverId).OrderBy(x => x.Id).FirstOrDefault();
+
+            var infantToUpdate = _infantRepo.GetAll().Where(x => x.User.Id == infantId).FirstOrDefault();
+            infantToUpdate.UpdatedDate = DateTime.Now;
+            infantToUpdate.UpdatedBy = _applicationUserId;
+
+            if (mother != null)
+            {
+                infantToUpdate.MotherCaregiverId = new Guid(caregiverId);
+                infantToUpdate.CaregiverId = null;
+            } else
+            {
+                infantToUpdate.MotherCaregiverId = null;
+                infantToUpdate.CaregiverId = new Guid(caregiverId);
+            }
+            _infantRepo.Update(infantToUpdate);
+            return true;
+        }
+
         private ApplicationUser GetUserFromInputModel(InfantModel input)
         {
             return new ApplicationUser()
