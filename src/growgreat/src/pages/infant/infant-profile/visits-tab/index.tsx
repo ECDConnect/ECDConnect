@@ -1,4 +1,4 @@
-import React, { useCallback, useLayoutEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo } from 'react';
 import { useWindowSize } from '@reach/window-size';
 
 import {
@@ -12,14 +12,13 @@ import {
   Steps,
   Typography,
 } from '@ecdlink/ui';
-import Pregnant from '@/assets/pregnant.svg';
+import Infant from '@/assets/infant.svg';
 import { useHistory, useLocation, useParams } from 'react-router';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/types';
 import { useAppDispatch } from '@/store';
-import { useDialog, VisitDto } from '@ecdlink/core';
+import { useDialog, usePrevious, VisitDto } from '@ecdlink/core';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
-import { MotherActions } from '@/store/mother/mother.actions';
 import {
   getInfantById,
   getInfantCurrentVisitSelector,
@@ -27,6 +26,11 @@ import {
 } from '@/store/infant/infant.selectors';
 import { infantThunkActions } from '@/store/infant';
 import { InfantProfileParams } from '../infant-profile.types';
+import { SuccessCard } from '@/components/success-card/success-card';
+import { ReactComponent as CelebrateIcon } from '@/assets/celebrateIcon.svg';
+import { InfantActions } from '@/store/infant/infant.actions';
+import { differenceInDays } from 'date-fns';
+import { ReactComponent as PollyImpressed } from '@/assets/pollyImpressed.svg';
 
 const HEADER_HEIGHT = 64;
 
@@ -56,13 +60,24 @@ export const VisitsTab: React.FC = () => {
   const currentVisit = useSelector(getInfantCurrentVisitSelector);
 
   const { isLoading } = useThunkFetchCall(
-    'mothers',
-    MotherActions.GET_MOTHER_VISITS
+    'infants',
+    InfantActions.GET_INFANT_VISITS
   );
+  const wasLoading = usePrevious(isLoading);
 
+  const { infantName, caregiverName } = useMemo(
+    () => ({
+      infantName: infant?.user?.firstName,
+      caregiverName: infant?.caregiver?.firstName,
+    }),
+    [infant?.caregiver?.firstName, infant?.user?.firstName]
+  );
   const currentDate = useMemo(() => new Date(), []);
   const next7Days = new Date(new Date().setDate(currentDate.getDate() + 7));
   const dateToCheck = currentVisit && new Date(currentVisit?.plannedVisitDate);
+  const infantAgeDays = infant?.user?.dateOfBirth
+    ? differenceInDays(currentDate, new Date(infant?.user?.dateOfBirth))
+    : 0;
 
   const isWeekDeadline =
     dateToCheck && dateToCheck >= currentDate && dateToCheck <= next7Days;
@@ -181,6 +196,11 @@ export const VisitsTab: React.FC = () => {
     visits,
   ]);
 
+  const isCompletedAllVisits = useMemo(
+    () => visitSteps.length === 1,
+    [visitSteps.length]
+  );
+
   const onAddVisit = useCallback(() => {
     return dialog({
       position: DialogPosition.Middle,
@@ -225,6 +245,104 @@ export const VisitsTab: React.FC = () => {
     [history, location.pathname]
   );
 
+  const on1000days = useCallback(
+    () =>
+      dialog({
+        blocking: false,
+        position: DialogPosition.Middle,
+        color: 'bg-white',
+        render: (onClose) => {
+          return (
+            <ActionModal
+              className="z-50"
+              title="Great job!"
+              detailText={`You supported ${infantName} ${
+                !caregiverName ? 'and' + caregiverName : ''
+              } through the First 1000 Days and ensured ${infantName} has the best possible start in life.
+
+          You can continue to visit and support this family.`}
+              customIcon={
+                <div>
+                  <PollyImpressed className="mb-3 h-24 w-24" />
+                </div>
+              }
+              actionButtons={[
+                {
+                  colour: 'primary',
+                  text: 'Close',
+                  textColour: 'primary',
+                  type: 'outlined',
+                  leadingIcon: 'XIcon',
+                  onClick: onClose,
+                },
+              ]}
+            />
+          );
+        },
+      }),
+    [caregiverName, dialog, infantName]
+  );
+
+  const renderContent = useMemo(() => {
+    if (isLoading) {
+      return (
+        <LoadingSpinner
+          size="big"
+          spinnerColor="white"
+          backgroundColor="secondary"
+          className="mb-7"
+        />
+      );
+    }
+
+    return (
+      <>
+        {isCompletedAllVisits && (
+          <SuccessCard
+            className="mb-7"
+            customIcon={<CelebrateIcon className="h-14	w-14" />}
+            text="Finished all visits!"
+            color="successMain"
+          />
+        )}
+        <Steps items={visitSteps.slice(0, 3)} />
+      </>
+    );
+  }, [isCompletedAllVisits, isLoading, visitSteps]);
+
+  useEffect(() => {
+    if (
+      wasLoading &&
+      !isLoading &&
+      infantAgeDays >= 1000 &&
+      !infant?.completed24MonthVisits
+    ) {
+      if (isCompletedAllVisits) {
+        on1000days();
+      }
+
+      appDispatch(
+        infantThunkActions.updateInfant({
+          id: infantId,
+          input: {
+            completed24MonthVisits: true,
+            dateOfBirth: infant?.user?.dateOfBirth,
+          },
+        })
+      );
+    }
+  }, [
+    appDispatch,
+    infant?.completed24MonthVisits,
+    infant?.user?.dateOfBirth,
+    infantAgeDays,
+    infantId,
+    isCompletedAllVisits,
+    isLoading,
+    on1000days,
+    wasLoading,
+  ]);
+
   useLayoutEffect(() => {
     appDispatch(infantThunkActions.getInfantVisits({ infantId })).unwrap();
   }, [appDispatch, infantId]);
@@ -233,7 +351,7 @@ export const VisitsTab: React.FC = () => {
     <div className="flex flex-col" style={{ height: height - HEADER_HEIGHT }}>
       <div className="bg-uiBg mt-14 flex items-center gap-2 p-4">
         <RoundIcon
-          imageUrl={Pregnant}
+          imageUrl={Infant}
           backgroundColor="tertiary"
           className="row-span-3"
         />
@@ -253,16 +371,7 @@ export const VisitsTab: React.FC = () => {
         </div>
       </div>
       <div className="px-4 pb-4 pt-7">
-        {isLoading ? (
-          <LoadingSpinner
-            size="big"
-            spinnerColor="white"
-            backgroundColor="secondary"
-            className="mb-7"
-          />
-        ) : (
-          <Steps items={visitSteps.slice(0, 3)} />
-        )}
+        {renderContent}
         <Divider dividerType="dashed" />
         <div className="my-4 flex items-center gap-3">
           <div className="flex flex-col">
