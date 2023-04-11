@@ -18,6 +18,7 @@ class InfantService {
         query getAllInfantsForHealthCareWorker($id: String, $visitType: String) {
           allInfantsForHealthCareWorker(id: $id, visitType: $visitType) {
             id
+            completed24MonthVisits
             insertedDate
             nextVisitDate
             gender {
@@ -101,6 +102,38 @@ class InfantService {
 
     if (response.status !== 200) {
       throw new Error('Updating mother failed - Server connection error');
+    }
+
+    return response.data.data.createInfant;
+  }
+
+  async updateInfant(id: string, input: InfantModelInput): Promise<InfantDto> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        mutation updateInfant($input: InfantModelInput, $id: String) {
+          updateInfant(input: $input, id: $id) {
+            user {
+              dateOfBirth
+              firstName
+              genderId
+              id
+            }
+            id
+            weightAtBirth
+            lengthAtBirth
+            completed24MonthVisits
+          }
+        }
+      `,
+      variables: {
+        input,
+        id,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error('Updating infant failed - Server connection error');
     }
 
     return response.data.data.createInfant;

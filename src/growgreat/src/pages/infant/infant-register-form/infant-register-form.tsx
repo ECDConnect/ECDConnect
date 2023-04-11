@@ -36,13 +36,18 @@ import {
   UserDto,
   useDialog,
   getPreviousAndNextMonths,
+  MotherDto,
 } from '@ecdlink/core/lib';
 import { EditConsentAgreementProps } from '../components/consent-agrement/consent-agreement.types';
 import { infantActions, infantThunkActions } from '@/store/infant';
 import momImage from '@/assets/happyMom.svg';
 import { useSelector } from 'react-redux';
 import { userSelectors } from '@store/user';
-import { caregiverActions, caregiverThunkActions } from '@/store/caregiver';
+import {
+  caregiverActions,
+  caregiverSelectors,
+  caregiverThunkActions,
+} from '@/store/caregiver';
 import { MotherDetailsProps } from '../components/mother-details/mother-details.types';
 import { useStaticData } from '@/hooks/useStaticData';
 import { FileTypeEnum, WorkflowStatusEnum } from '@ecdlink/graphql';
@@ -59,6 +64,7 @@ import { RootState } from '@/store/types';
 import { eventRecordThunkActions } from '@/store/eventRecord';
 import { EventRecordActions } from '@/store/eventRecord/eventRecord.actions';
 import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
+import { PregnantProfileRouteState } from '@/pages/mom/pregnant-profile/index.types';
 
 const BANNER_HEIGHT = 64;
 
@@ -97,9 +103,10 @@ export const InfantRegisterForm: React.FC = () => {
 
   const { height } = useWindowSize();
 
-  const location = useLocation<InfantRouteState>();
-
+  const location = useLocation<InfantRouteState & PregnantProfileRouteState>();
   const motherId = location.state?.motherId;
+  const infantId = location.state.linkedInfantId;
+  const isInfantEvent = !!location.state.isInfantEvent;
   const bornEventId = location.state?.bornEventId;
 
   const mother = useSelector((state: RootState) => {
@@ -112,6 +119,9 @@ export const InfantRegisterForm: React.FC = () => {
 
     return {};
   });
+  const caregiver = useSelector(
+    caregiverSelectors.getCaregiverById(motherId || '')
+  );
 
   const dialog = useDialog();
 
@@ -139,10 +149,19 @@ export const InfantRegisterForm: React.FC = () => {
 
   const { errorDialog } = useRequestResponseDialog();
 
-  const motherInfoFromRecordEvent = useMemo(
-    () => (motherId ? mother : undefined),
-    [mother, motherId]
-  );
+  const caregiverInfoFromRecordEvent = useMemo(() => {
+    if (isInfantEvent) {
+      return caregiver || mother;
+    }
+
+    if (motherId) {
+      return mother;
+    }
+
+    return undefined;
+  }, [caregiver, isInfantEvent, mother, motherId]) as
+    | (MotherDto & CaregiverDto)
+    | undefined;
 
   const successMessage = useMemo(
     () =>
@@ -370,7 +389,7 @@ export const InfantRegisterForm: React.FC = () => {
           <InfantDetails
             multipleChildrenCount={multipleChildrenCount}
             numberOfChildren={numberOfChildren}
-            motherInfo={motherInfoFromRecordEvent}
+            motherInfo={caregiverInfoFromRecordEvent}
             onSubmit={(value) => {
               setLabel(`step 3 of 6`);
               setInfantDetails(value);
@@ -398,7 +417,7 @@ export const InfantRegisterForm: React.FC = () => {
             setAddress={setAddress}
             setIsAlreadyClient={setIsAlreadyClient}
             isAlreadyClient={isAlreadyClient}
-            motherInfo={motherInfoFromRecordEvent}
+            motherInfo={caregiverInfoFromRecordEvent}
             onSubmit={(value) => {
               setDetails(value as any);
               handleExistingUser({ caregiverDetails: value });
@@ -603,10 +622,12 @@ export const InfantRegisterForm: React.FC = () => {
 
   const onSuccess = useCallback(() => {
     if (isFulfilled) {
-      if (motherId) {
+      if (motherId || isInfantEvent) {
         const input = {
-          eventRecordTypeId: bornEventId,
-          motherId,
+          eventRecordTypeId:
+            bornEventId || location.state.recordEventInput?.eventRecordTypeId,
+          ...(isInfantEvent ? { infantId } : { motherId }),
+          notes: location.state.recordEventInput?.notes,
         };
 
         return appDispatch(
@@ -638,15 +659,19 @@ export const InfantRegisterForm: React.FC = () => {
       showSuccessMessage();
     }
   }, [
-    appDispatch,
-    bornEventId,
-    displayRecordEventDialog,
-    relationshipId,
-    getChildWithCloseBirthday,
-    getInfantCount,
-    healthCareWorker,
     isFulfilled,
     motherId,
+    isInfantEvent,
+    relationshipId,
+    getInfantCount,
+    healthCareWorker,
+    bornEventId,
+    location.state.recordEventInput?.eventRecordTypeId,
+    location.state.recordEventInput?.notes,
+    infantId,
+    appDispatch,
+    getChildWithCloseBirthday,
+    displayRecordEventDialog,
     showSuccessMessage,
   ]);
 
@@ -660,9 +685,7 @@ export const InfantRegisterForm: React.FC = () => {
     if (wasLoadingEventRecord && !isLoadingEventRecord) {
       if (isRejectedEventRecord) {
         errorDialog(
-          `The child has been registered, but it was not possible to record the event 'Baby was born'. Please navigate to the ${
-            mother?.user?.firstName || 'mom'
-          }'s profile and try again.`
+          `The child has been registered, but it was not possible to record the event. Please try to record the event again.`
         );
         return history.push(ROUTES.CLIENTS.ROOT);
       }
