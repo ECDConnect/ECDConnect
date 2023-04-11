@@ -85,7 +85,8 @@ export const DynamicForm = ({
   const [referralsInput, setReferralsInput] =
     useState<VisitDataStatusFilterInput[]>();
   const [growthMonitoring, setGrowthMonitoring] = useState<GrowthMonitoring>();
-  const [risk, setRisk] = useState(0);
+  type Risk = 0 | 1 | 2;
+  const [risk, setRisk] = useState<Risk>(0);
 
   const { isLoading } = useThunkFetchCall(
     'visits',
@@ -181,7 +182,7 @@ export const DynamicForm = ({
     setGrowthMonitoring?.((prevState) => ({ ...prevState, ...value }));
   }, []);
 
-  const handleRisk = useCallback((value: number) => {
+  const handleRisk = useCallback((value: Risk) => {
     setRisk(value);
   }, []);
 
@@ -220,16 +221,14 @@ export const DynamicForm = ({
       })
     );
 
-    if (!!sections?.length) {
-      appDispatch(visitActions.addVisitFormData(input));
-      await appDispatch(visitThunkActions.addVisitFormData(input));
+    appDispatch(visitActions.addVisitFormData(input));
+    await appDispatch(visitThunkActions.addVisitFormData(input));
 
-      await appDispatch(
-        visitThunkActions.getCompletedVisitsForVisitId({
-          visitId,
-        })
-      );
-    }
+    await appDispatch(
+      visitThunkActions.getCompletedVisitsForVisitId({
+        visitId,
+      })
+    );
 
     if (!!referrals?.length) {
       appDispatch(

@@ -123,12 +123,12 @@ export const ActivityList: React.FC = () => {
     []
   );
 
-  const { useActivities } = useMemo(() => {
+  const { visibleActivities } = useMemo(() => {
     const motherType = relationshipTypes.find(
       (item) => item.label === 'Mother'
     );
 
-    const useActivities = activitiesList.filter(
+    const visibleActivities = activitiesList.filter(
       (item) =>
         (item.id !== activitiesTypes.careForMom &&
           item.id !== activitiesTypes.pillar4) ||
@@ -137,29 +137,15 @@ export const ActivityList: React.FC = () => {
         (item.id === activitiesTypes.pillar4 && isChildAfter49Days)
     );
 
-    return { useActivities };
+    return { visibleActivities };
   }, [infant?.caregiver?.relation?.description, isChildAfter49Days]);
 
   const { completedForms, uncompletedForms, followUpForm } = useMemo(() => {
-    const motherType = relationshipTypes.find(
-      (item) => item.label === 'Mother'
+    const completedActivities = visibleActivities.filter((item) =>
+      completedVisits?.includes(item.title)
     );
-
-    const completedActivities = useActivities.filter(
-      (item) =>
-        (completedVisits?.includes(item.title) &&
-          item.title !== 'Care for mom') ||
-        (completedVisits?.includes(item.title) &&
-          item.title === 'Care for mom' &&
-          infant?.caregiver?.relation?.description === motherType?.label)
-    );
-    const uncompletedActivities = useActivities.filter(
-      (item) =>
-        (!completedVisits?.includes(item.title) &&
-          item.title !== 'Care for mom') ||
-        (!completedVisits?.includes(item.title) &&
-          item.title === 'Care for mom' &&
-          infant?.caregiver?.relation?.description === motherType?.label)
+    const uncompletedActivities = visibleActivities.filter(
+      (item) => !completedVisits?.includes(item.title)
     );
 
     const completedForms = completedActivities.map(
@@ -215,11 +201,7 @@ export const ActivityList: React.FC = () => {
     ];
 
     return { uncompletedForms, completedForms, followUpForm };
-  }, [
-    completedVisits,
-    infant?.caregiver?.relation?.description,
-    useActivities,
-  ]);
+  }, [completedVisits, visibleActivities]);
 
   const goBack = useCallback(() => {
     if (isStartVisit) {
