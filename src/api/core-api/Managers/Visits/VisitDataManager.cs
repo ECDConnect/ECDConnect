@@ -38,9 +38,26 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
         public Boolean AddChildVisitData(CMSVisitDataInputModel input)
         {
-            // first add all your questions and answers
-            foreach (CMSVisitSection section in input.VisitData.Sections)
+
+            if (input.VisitData.Sections == null)
             {
+                var _section = new CMSVisitSection();
+                _section.VisitSection = "";
+                if (input.VisitData.VisitName == Constants.GGSettings.pillar3_db)
+                {
+                    _section.VisitSection = Constants.GGSettings.pillar3_section;
+                }
+                _section.Questions = new List<CMSQuestion>();
+                var _question = new CMSQuestion();
+                _question.Question = "";
+                _question.Answer = "";
+                _section.Questions.Add(_question);
+                input.VisitData.Sections = new CMSVisitSection[] { _section };
+            }
+
+
+            // first add all your questions and answers
+            foreach (CMSVisitSection section in input.VisitData.Sections) {
                 foreach (CMSQuestion question in section.Questions) {
                     VisitData visitData = (VisitData)GetVisitDataFromInputModel(question, input.VisitId, input.VisitData.VisitName, section.VisitSection);
                     _visitDataRepo.Insert(visitData);
@@ -62,6 +79,20 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         }
         public Boolean AddAntenatalVisitData(CMSVisitDataInputModel input)
         {
+
+            if (input.VisitData.Sections == null)
+            {
+                var _section = new CMSVisitSection();
+                _section.VisitSection = "";
+                _section.Questions = new List<CMSQuestion>();
+               
+                var _question = new CMSQuestion();
+                _question.Question = "";
+                _question.Answer = "";
+                _section.Questions.Add(_question);
+                input.VisitData.Sections = new CMSVisitSection[] { _section };
+            }
+
             // first add all your questions and answers
             foreach (CMSVisitSection section in input.VisitData.Sections) {
                 foreach (CMSQuestion question in section.Questions) {
