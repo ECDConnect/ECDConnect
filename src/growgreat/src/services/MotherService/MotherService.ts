@@ -33,6 +33,7 @@ class MotherService {
             age
             insertedDate
             expectedDateOfDelivery
+            whatsAppNumber
             siteAddress {
               id
               province {
@@ -279,6 +280,79 @@ class MotherService {
     }
 
     return response.data.data.allEventRecordTypesForType;
+  }
+
+  async updateMotherAddress(
+    id: string,
+    input: MotherModelInput
+  ): Promise<MotherDto> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        mutation updateMotherAddress($input: MotherModelInput, $id: String) {
+          updateMotherAddress(input: $input, id: $id) {
+            id
+            siteAddress {
+              id
+              province {
+                id
+                description
+              }
+              name
+              addressLine1
+              addressLine2
+              addressLine3
+              postalCode
+              ward
+            }
+          }
+        }
+      `,
+      variables: {
+        id: id,
+        input: input,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Updating mother address failed - Server connection error'
+      );
+    }
+
+    return response.data.data.updateMotherAddress;
+  }
+
+  async updateMotherContactDetails(
+    id: string,
+    input: MotherModelInput
+  ): Promise<MotherDto> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        mutation updateMotherContactDetails($input: MotherModelInput, $id: String) {
+          updateMotherContactDetails(input: $input, id: $id) {
+            id
+            whatsAppNumber
+            user {
+              phoneNumber
+            }
+          }
+        }
+      `,
+      variables: {
+        id: id,
+        input: input,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Updating mother contact details failed - Server connection error'
+      );
+    }
+
+    return response.data.data.updateMotherContactDetails;
   }
 }
 

@@ -1,5 +1,5 @@
 import { useSelector } from 'react-redux';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import { useCallback, useEffect, useState } from 'react';
 import {
   BannerWrapper,
@@ -44,6 +44,10 @@ import { motherActions, motherThunkActions } from '@/store/mother';
 import { documentActions, documentThunkActions } from '@/store/document';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { MotherActions } from '@/store/mother/mother.actions';
+import { PregnantProfileRouteState } from '../pregnant-profile/index.types';
+import { eventRecordThunkActions } from '@/store/eventRecord';
+import { EventRecordActions } from '@/store/eventRecord/eventRecord.actions';
+import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
 
 const BANNER_HEIGHT = 64;
 
@@ -53,6 +57,7 @@ export const PregnantRegisterForm: React.FC = () => {
   const appDispatch = useAppDispatch();
 
   const history = useHistory();
+  const location = useLocation<PregnantProfileRouteState>();
 
   const [label, setLabel] = useState('');
   const [details, setDetails] = useState<EditPregnantDetailsProps>();
@@ -78,13 +83,17 @@ export const PregnantRegisterForm: React.FC = () => {
     'mothers',
     MotherActions.ADD_MOTHER
   );
-
   const { isRejected: isRejectedGetMotherCount } = useThunkFetchCall(
     'mothers',
     MotherActions.GET_MOTHER_COUNT_FOR_MONTH
   );
+  const { isLoading: isLoadingEventRecord, isRejected: isRejectedEventRecord } =
+    useThunkFetchCall('eventRecord', EventRecordActions.ADD_EVENT_RECORD);
 
   const wasLoading = usePrevious(isLoading);
+  const wasLoadingEventRecord = usePrevious(isLoadingEventRecord);
+
+  const { errorDialog } = useRequestResponseDialog();
 
   const handleExistingUser = () => {
     if (isAlreadyClient) {
@@ -95,8 +104,20 @@ export const PregnantRegisterForm: React.FC = () => {
   };
 
   useEffect(() => {
-    if (pregnantMaternalCaseRecord?.deliveryDate !== undefined) {
+    const isOnSubmit = pregnantMaternalCaseRecord?.deliveryDate !== undefined;
+    const recordEventInput = location?.state?.recordEventInput;
+    if (isOnSubmit && !recordEventInput) {
       completeAllSteps();
+    }
+
+    if (isOnSubmit && recordEventInput) {
+      if (location?.state?.recordEventInput) {
+        appDispatch(
+          eventRecordThunkActions.addEventRecord({
+            input: location.state.recordEventInput,
+          })
+        );
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pregnantMaternalCaseRecord?.deliveryDate]);
@@ -127,6 +148,9 @@ export const PregnantRegisterForm: React.FC = () => {
         pregnantMaternalCaseRecord?.deliveryDate?.toISOString(),
       whatsAppNumber:
         contactInformation?.whatsapp ?? contactInformation?.cellphone,
+      ...(!!location?.state?.linkedInfantId
+        ? { linkedInfantId: location?.state?.linkedInfantId }
+        : {}),
     };
     const caregiverInput: CaregiverDto = {
       firstName: details?.name ?? '',
@@ -169,15 +193,22 @@ export const PregnantRegisterForm: React.FC = () => {
       documentThunkActions.createDocument(documentInputModel)
     ).unwrap();
   }, [
-    appDispatch,
+    address?.address,
+    address?.addressLine1,
+    address?.id,
+    contactInformation?.cellphone,
+    contactInformation?.whatsapp,
+    details?.name,
+    details?.surname,
+    details?.age,
+    user?.id,
+    pregnantMaternalCaseRecord?.deliveryDate,
+    pregnantMaternalCaseRecord?.maternalCaseRecord,
+    location?.state?.linkedInfantId,
     relations,
-    getDocumentTypeIdByEnum,
+    appDispatch,
     getWorkflowStatusIdByEnum,
-    pregnantMaternalCaseRecord,
-    user,
-    contactInformation,
-    address,
-    details,
+    getDocumentTypeIdByEnum,
   ]);
 
   const steps = (step: PregnantRegisterSteps) => {
@@ -314,6 +345,24 @@ export const PregnantRegisterForm: React.FC = () => {
       showSuccessMessage();
     }
   }, [appDispatch, isRejected, showSuccessMessage]);
+
+  useEffect(() => {
+    if (wasLoadingEventRecord && !isLoadingEventRecord) {
+      if (isRejectedEventRecord) {
+        errorDialog('Could not record the event, please try again');
+        return history.push(ROUTES.CLIENTS.ROOT);
+      }
+
+      completeAllSteps();
+    }
+  }, [
+    completeAllSteps,
+    errorDialog,
+    history,
+    isLoadingEventRecord,
+    isRejectedEventRecord,
+    wasLoadingEventRecord,
+  ]);
 
   useEffect(() => {
     if (wasLoading && !isLoading) {

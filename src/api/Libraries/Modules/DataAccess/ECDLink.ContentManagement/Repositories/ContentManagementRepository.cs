@@ -32,6 +32,7 @@ namespace ECDLink.ContentManagement.Repositories {
               .ThenInclude(ti => ti.ContentValues)
               .ThenInclude(ti => ti.ContentTypeField)
               .Where(x => x.Id == contentTypeId)
+              .OrderBy(x => x.Id)
               .FirstOrDefault();
 
             if (contentType != null)
@@ -60,6 +61,7 @@ namespace ECDLink.ContentManagement.Repositories {
                             .ThenInclude(ti => ti.ContentTypeField)
                             .Where(x => x.Id == contentId)
                             .Where(x => x.IsActive)
+                            .OrderBy(x => x.Id)
                             .FirstOrDefault();
 
             if (content == default)
@@ -144,6 +146,7 @@ namespace ECDLink.ContentManagement.Repositories {
             var contentType = _context.ContentTypes
                                 .Include(i => i.Fields)
                                 .Where(x => x.Id == contentTypeId)
+                                .OrderBy(x => x.Id)
                                 .FirstOrDefault();
 
             if (contentType == default) {
@@ -246,6 +249,7 @@ namespace ECDLink.ContentManagement.Repositories {
                             .ThenInclude(ti => ti.ContentTypeField)
                             .Where(x => x.Id == contentId)
                             .Where(x => x.IsActive)
+                            .OrderBy(x => x.Id)
                             .FirstOrDefault();
 
             // No Content Found
@@ -318,6 +322,7 @@ namespace ECDLink.ContentManagement.Repositories {
         {
             var content = _context.Contents
                           .Where(x => x.Id == contentId)
+                          .OrderBy(x => x.Id)
                           .FirstOrDefault();
 
             if (content == default)

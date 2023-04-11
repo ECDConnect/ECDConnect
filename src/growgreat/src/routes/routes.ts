@@ -33,6 +33,10 @@ const ROUTES = {
         PAST_VISITS: '/:id/past-visits',
         ANTENATAL_VISIT: '/:id/antenatal-visit',
       },
+      CONTACT_TAB: {
+        UPDATE_NUMBERS: '/:id/edit-numbers',
+        UPDATE_ADDRESS: '/:id/edit-address',
+      },
       PROGRESS: {
         ACTIVITIES_FORM: '/:id/activities-form/:visitId',
       },
@@ -40,7 +44,17 @@ const ROUTES = {
     INFANT_PROFILE: addPrefix('/infant-profile', {
       ROOT: '/',
       PROGRESS: {
-        ACTIVITIES_FORM: '/:id/activities-form',
+        ACTIVITIES_FORM: '/:id/activities-form/:visitId',
+      },
+      VISITS: {
+        RECORD_EVENT: '/:id/record-event',
+        BOOK_VISIT: '/:id/book-visit',
+        PAST_VISITS: '/:id/past-visits',
+        ANTENATAL_VISIT: '/:id/antenatal-visit',
+      },
+      CONTACT_TAB: {
+        UPDATE_NUMBERS: '/:id/edit-numbers',
+        UPDATE_ADDRESS: '/:id/edit-address',
       },
     }),
     VISIT_TAB: {

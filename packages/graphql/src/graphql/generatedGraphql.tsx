@@ -432,6 +432,12 @@ export type Caregiver = {
   whatsAppNumber?: Maybe<Scalars['String']>;
 };
 
+export type CaregiverClients = {
+  __typename?: 'CaregiverClients';
+  infants?: Maybe<Array<Maybe<Infant>>>;
+  mother?: Maybe<Mother>;
+};
+
 export type CaregiverFilterInput = {
   additionalFirstName?: InputMaybe<StringOperationFilterInput>;
   additionalPhoneNumber?: InputMaybe<StringOperationFilterInput>;
@@ -2024,6 +2030,7 @@ export type Infant = {
   __typename?: 'Infant';
   caregiver?: Maybe<Caregiver>;
   caregiverId?: Maybe<Scalars['UUID']>;
+  completed24MonthVisits?: Maybe<Scalars['Boolean']>;
   gender?: Maybe<Gender>;
   genderId?: Maybe<Scalars['UUID']>;
   id: Scalars['UUID'];
@@ -2045,6 +2052,7 @@ export type InfantFilterInput = {
   and?: InputMaybe<Array<InfantFilterInput>>;
   caregiver?: InputMaybe<CaregiverFilterInput>;
   caregiverId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
+  completed24MonthVisits?: InputMaybe<BooleanOperationFilterInput>;
   gender?: InputMaybe<GenderFilterInput>;
   genderId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
@@ -2066,6 +2074,7 @@ export type InfantFilterInput = {
 export type InfantInput = {
   Caregiver?: InputMaybe<CaregiverInput>;
   CaregiverId?: InputMaybe<Scalars['UUID']>;
+  Completed24MonthVisits?: InputMaybe<Scalars['Boolean']>;
   Gender?: InputMaybe<GenderInput>;
   GenderId?: InputMaybe<Scalars['UUID']>;
   Id?: InputMaybe<Scalars['UUID']>;
@@ -2084,6 +2093,7 @@ export type InfantInput = {
 export type InfantModelInput = {
   caregiver?: InputMaybe<CaregiverModelInput>;
   caregiverId?: InputMaybe<Scalars['UUID']>;
+  completed24MonthVisits?: InputMaybe<Scalars['Boolean']>;
   dateOfBirth: Scalars['DateTime'];
   firstName?: InputMaybe<Scalars['String']>;
   genderId?: InputMaybe<Scalars['UUID']>;
@@ -2544,6 +2554,7 @@ export type MotherModelInput = {
   firstName?: InputMaybe<Scalars['String']>;
   healthCareWorkerId?: InputMaybe<Scalars['UUID']>;
   linkedCaregiverId?: InputMaybe<Scalars['UUID']>;
+  linkedInfantId?: InputMaybe<Scalars['String']>;
   phoneNumber?: InputMaybe<Scalars['String']>;
   relation?: InputMaybe<RelationInput>;
   relationId?: InputMaybe<Scalars['UUID']>;
@@ -2821,6 +2832,9 @@ export type Mutation = {
   updateIncome?: Maybe<ResultReturnObject>;
   updateIncomeStatements?: Maybe<IncomeStatements>;
   updateInfant?: Maybe<Infant>;
+  updateInfantCaregiver: Scalars['Boolean'];
+  updateInfantCaregiverAddress?: Maybe<Infant>;
+  updateInfantCaregiverContactDetails?: Maybe<Infant>;
   updateInfographics?: Maybe<Infographics>;
   updateIntegrationMapping?: Maybe<IntegrationMapping>;
   updateLanguage?: Maybe<Language>;
@@ -2828,6 +2842,7 @@ export type Mutation = {
   updateMessageTemplate?: Maybe<MessageTemplate>;
   updateMoreInformation?: Maybe<MoreInformation>;
   updateMother?: Maybe<Mother>;
+  updateMotherAddress?: Maybe<Mother>;
   updateMotherContactDetails?: Maybe<Mother>;
   updateNavigation?: Maybe<Navigation>;
   updateNote?: Maybe<Note>;
@@ -3931,7 +3946,7 @@ export type MutationSubmitStatementArgs = {
 };
 
 export type MutationTrackAttendanceArgs = {
-  attendance?: InputMaybe<TrackAttendanceModelInput>;
+  attendance?: InputMaybe<Array<InputMaybe<TrackAttendanceModelInput>>>;
 };
 
 export type MutationUpdateAbsenteesArgs = {
@@ -4098,6 +4113,21 @@ export type MutationUpdateInfantArgs = {
   input?: InputMaybe<InfantModelInput>;
 };
 
+export type MutationUpdateInfantCaregiverArgs = {
+  caregiverId?: InputMaybe<Scalars['String']>;
+  infantId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationUpdateInfantCaregiverAddressArgs = {
+  id?: InputMaybe<Scalars['String']>;
+  input?: InputMaybe<InfantModelInput>;
+};
+
+export type MutationUpdateInfantCaregiverContactDetailsArgs = {
+  id?: InputMaybe<Scalars['String']>;
+  input?: InputMaybe<InfantModelInput>;
+};
+
 export type MutationUpdateInfographicsArgs = {
   id: Scalars['String'];
   input: InfographicsInput;
@@ -4133,6 +4163,11 @@ export type MutationUpdateMoreInformationArgs = {
 };
 
 export type MutationUpdateMotherArgs = {
+  id?: InputMaybe<Scalars['String']>;
+  input?: InputMaybe<MotherModelInput>;
+};
+
+export type MutationUpdateMotherAddressArgs = {
   id?: InputMaybe<Scalars['String']>;
   input?: InputMaybe<MotherModelInput>;
 };
@@ -5523,6 +5558,7 @@ export type Query = {
   attendance?: Maybe<Array<Maybe<Attendance>>>;
   backReferralsForInfant?: Maybe<Array<Maybe<VisitBackReferral>>>;
   backReferralsForMother?: Maybe<Array<Maybe<VisitBackReferral>>>;
+  caregiverClients?: Maybe<CaregiverClients>;
   caregiverGrants?: Maybe<Array<Maybe<UserGrant>>>;
   childAttendanceReport?: Maybe<ChildAttendanceReportModel>;
   childByUserId?: Maybe<Child>;
@@ -6604,6 +6640,10 @@ export type QueryBackReferralsForMotherArgs = {
   backReferralCompleted: Scalars['Boolean'];
   id?: InputMaybe<Scalars['String']>;
   referralCompleted: Scalars['Boolean'];
+};
+
+export type QueryCaregiverClientsArgs = {
+  caregiverId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryCaregiverGrantsArgs = {
