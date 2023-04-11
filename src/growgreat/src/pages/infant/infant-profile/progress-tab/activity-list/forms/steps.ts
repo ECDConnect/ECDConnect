@@ -215,15 +215,24 @@ export const pillar2Steps = (
   DevelopmentalScreeningWeeksStep,
 ];
 
-export const pillar3Steps = [
+export const pillar3Steps = (
+  isImmunisationQuestion: boolean,
+  isVitaminAQuestion: boolean,
+  isDewormingQuestion: boolean
+) => [
   ImmunisationsStep,
-  ImmunisationsSupplementsDewormingStep,
+  ...(isImmunisationQuestion || isVitaminAQuestion || isDewormingQuestion
+    ? [ImmunisationsSupplementsDewormingStep]
+    : []),
 ];
 
-export const getPillar4Steps = (isFollowUp: boolean, isSickness: boolean) => [
+export const getPillar4Steps = (
+  isFollowUp: boolean,
+  isChildBefore49Days: boolean
+) => [
   ...(isFollowUp ? [FollowUpStep] : []),
-  ...(isSickness ? [SicknessStep] : []),
-  Pillar4DangerSignsStep,
+  ...(isChildBefore49Days ? [SicknessStep] : []),
+  ...(isChildBefore49Days ? [Pillar4DangerSignsStep] : []),
 ];
 
 export const pillar5Steps = [ChildDocumentationStep, HIVCareAndMedicationStep];

@@ -2548,6 +2548,7 @@ export type MotherModelInput = {
   firstName?: InputMaybe<Scalars['String']>;
   healthCareWorkerId?: InputMaybe<Scalars['UUID']>;
   linkedCaregiverId?: InputMaybe<Scalars['UUID']>;
+  linkedInfantId?: InputMaybe<Scalars['String']>;
   phoneNumber?: InputMaybe<Scalars['String']>;
   relation?: InputMaybe<RelationInput>;
   relationId?: InputMaybe<Scalars['UUID']>;
