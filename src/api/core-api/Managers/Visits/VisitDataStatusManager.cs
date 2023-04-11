@@ -934,13 +934,16 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
 
             if (q2 != null && q2.Question == Constants.GGSettings.q_length) {
 
-                lIndicator = GetHeightWeightIndicator(false, totalDaysOld, double.Parse(q2.QuestionAnswer, CultureInfo.InvariantCulture), double.Parse(q1.QuestionAnswer, CultureInfo.InvariantCulture), gender);
+                var _weight = q1.QuestionAnswer != "undefined" ? double.Parse(q1.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
+                var _height = q2.QuestionAnswer != "undefined" ? double.Parse(q2.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
+
+                lIndicator = GetHeightWeightIndicator(false, totalDaysOld, _height, _weight, gender);
 
                 if (lIndicator == "Severely stunted") {
                     lColor = _red;
                     
                     // Red progress
-                    comment = lIndicator + " " + q2.QuestionAnswer;
+                    comment = lIndicator + " " + _height;
                     AddVisitDataStatus(q2, comment, lColor, _progress, q2.VisitSection, false);
 
                     // additional visit
@@ -974,14 +977,14 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
             }
 
             if (q3 != null && q3.Question == Constants.GGSettings.q_muac) {
-                var questionAnswer = q2.QuestionAnswer != "undefined" ? Int32.Parse(q3.QuestionAnswer) : 0;
+                var questionAnswer = q3.QuestionAnswer != "undefined" ? Int32.Parse(q3.QuestionAnswer) : 0;
                 mIndicator = "Normal";
                 if (questionAnswer < 11.5) {
                     mIndicator = "Severe acute malnutrition";
                     mColor = _red;
 
                     // Red progress
-                    comment = mIndicator + " " + q3.QuestionAnswer;
+                    comment = mIndicator + " " + questionAnswer;
                     AddVisitDataStatus(q3, comment, mColor, _progress, q3.VisitSection, false);
 
                     // additional visit
@@ -997,7 +1000,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                     mColor = _amber;
 
                     // Amber progress
-                    comment = Constants.GGSettings.severely_stunted + " " + q3.QuestionAnswer;
+                    comment = Constants.GGSettings.severely_stunted + " " + questionAnswer;
                     AddVisitDataStatus(q3, comment, mColor, _progress, q3.VisitSection, false);
 
                     // additional visit
@@ -1012,7 +1015,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                     mColor = _green;
 
                     // Green progress
-                    comment = mIndicator + " " + q3.QuestionAnswer;
+                    comment = mIndicator + " " + questionAnswer;
                     AddVisitDataStatus(q3, comment, mColor, _progress, q3.VisitSection, false);
 
                     // Green G4 
@@ -1198,7 +1201,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
             newVisit.InfantId = (Constants.GGSettings.client_child == userType ? new Guid(clientId) : null);
             newVisit.Risk = Constants.GGSettings.normal_risk;
             newVisit.Comment = comment;
-            _visitManager.AddVisit(newVisit);
+            _visitManager.AddAdditionalVisit(newVisit);
             return true;
         }
         private Boolean AddVisitDataStatus(VisitData input, string comment, string color, string type, string section, Boolean isCompleted)

@@ -240,7 +240,6 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
     isValidAttendanceDay,
     missedAttendanceGroups,
     previousMissedAttendanceGroups,
-    attendanceActionList,
     classProgrammesUpdated,
   ]);
 
@@ -283,7 +282,10 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
     if (isValidAttendanceDay) {
       setClassroomName(classGroupName);
       const allMissedAttendanceDays =
-        getAllMissedAttendanceGroupsByClassroomGroupId(missedAttendanceGroups);
+        getAllMissedAttendanceGroupsByClassroomGroupId(
+          missedAttendanceGroups,
+          classroomGroupCacheId
+        );
 
       if (allMissedAttendanceDays && allMissedAttendanceDays.length > 0) {
         allMissedAttendanceDays.sort(sortDateFunction);
@@ -332,7 +334,13 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
       setMissedAttendanceGroups(updatedMissedAttendance);
 
       const allMissedAttendanceDays =
-        getAllMissedAttendanceGroupsByClassroomGroupId(updatedMissedAttendance);
+        getAllMissedAttendanceGroupsByClassroomGroupId(
+          updatedMissedAttendance,
+          currentEditClassroomGroupId
+        );
+
+      console.log('>>?', updatedMissedAttendance);
+      console.log(currentEditClassroomGroupId);
 
       if (allMissedAttendanceDays && allMissedAttendanceDays.length > 0) {
         setSubmitText(
@@ -341,8 +349,8 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
 
         const dateSubmitted = new Date(attendanceResult.attendanceDate);
 
-        if (missedAttendanceDays.length !== 0) {
-          const filteredDates = missedAttendanceDays.filter(
+        if (allMissedAttendanceDays.length !== 0) {
+          const filteredDates = allMissedAttendanceDays.filter(
             (date) => new Date(date).getTime() !== dateSubmitted.getTime()
           );
           setMissedAttendanceDays(filteredDates);

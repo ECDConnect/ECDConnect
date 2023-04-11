@@ -10,6 +10,7 @@ using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
+using System;
 using System.Linq;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
@@ -32,7 +33,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             input.Attended = false;
             input.InfantId = null;
 
-            return visitManager.AddVisit(input);
+            return visitManager.AddAdditionalVisit(input);
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
@@ -50,7 +51,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             input.Attended = false;
             input.MotherId = null;
 
-            return visitManager.AddVisit(input);
+            return visitManager.AddAdditionalVisit(input);
         }
     }
 }
