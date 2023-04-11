@@ -87,7 +87,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
             // Progress
 
             if (clientType == Constants.GGSettings.client_mother) {
-                Mother mother = _motherRepo.GetAll().Where(x => x.User.Id == id).FirstOrDefault();
+                Mother mother = _motherRepo.GetAll().Where(x => x.User.Id == id).OrderBy(x => x.Id).FirstOrDefault();
 
                 _clientVisitDataIds = (
                     from visit in _visitRepo.GetAll().Where(x => x.MotherId == mother.Id)
@@ -102,7 +102,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
 
                 ManageVisitDataStatusForMother(allVisitData, mother.User.FirstName, mother.Id.ToString());
             } else {
-                Infant infant = _infantRepo.GetAll().Where(x => x.User.Id == id).FirstOrDefault();
+                Infant infant = _infantRepo.GetAll().Where(x => x.User.Id == id).OrderBy(x => x.Id).FirstOrDefault();
 
                 _clientVisitDataIds = (
                     from visit in _visitRepo.GetAll().Where(x => x.InfantId == infant.Id)
@@ -692,9 +692,9 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
             var comment = "";
             var section = Constants.GGSettings.clinic_referrals;
 
-            var q1 = maternalDistressScreening.Where(x => x.Question == Constants.GGSettings.q_stop_worry).FirstOrDefault();
-            var q2 = maternalDistressScreening.Where(x => x.Question == Constants.GGSettings.q_felt_down).FirstOrDefault();
-            var q3 = maternalDistressScreening.Where(x => x.Question == Constants.GGSettings.q_suicide).FirstOrDefault();
+            var q1 = maternalDistressScreening.Where(x => x.Question == Constants.GGSettings.q_stop_worry).OrderBy(x => x.Id).FirstOrDefault();
+            var q2 = maternalDistressScreening.Where(x => x.Question == Constants.GGSettings.q_felt_down).OrderBy(x => x.Id).FirstOrDefault();
+            var q3 = maternalDistressScreening.Where(x => x.Question == Constants.GGSettings.q_suicide).OrderBy(x => x.Id).FirstOrDefault();
 
             // a Constants.GGSettings.answer_yes response to the 3rd question trumps all.
             if (q3.QuestionAnswer == Constants.GGSettings.answer_yes) {
@@ -746,10 +746,10 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
             var score = 0;
             var section = Constants.GGSettings.clinic_referrals;
 
-            var q1 = alcoholUse.Where(x => x.Question == Constants.GGSettings.q_T).FirstOrDefault();
-            var q2 = alcoholUse.Where(x => x.Question == Constants.GGSettings.q_A).FirstOrDefault();
-            var q3 = alcoholUse.Where(x => x.Question == Constants.GGSettings.q_C).FirstOrDefault();
-            var q4 = alcoholUse.Where(x => x.Question == Constants.GGSettings.q_E).FirstOrDefault();
+            var q1 = alcoholUse.Where(x => x.Question == Constants.GGSettings.q_T).OrderBy(x => x.Id).FirstOrDefault();
+            var q2 = alcoholUse.Where(x => x.Question == Constants.GGSettings.q_A).OrderBy(x => x.Id).FirstOrDefault();
+            var q3 = alcoholUse.Where(x => x.Question == Constants.GGSettings.q_C).OrderBy(x => x.Id).FirstOrDefault();
+            var q4 = alcoholUse.Where(x => x.Question == Constants.GGSettings.q_E).OrderBy(x => x.Id).FirstOrDefault();
 
             if (q1.QuestionAnswer == Constants.GGSettings.more_than_2) {
                 score++;
@@ -794,8 +794,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
         private Boolean ManageIdDocs(List<VisitData> idDocs, string firstName) {
             var comment = "";
 
-            var q1 = idDocs.Where(x => x.Question == Constants.GGSettings.q_ID_doc).FirstOrDefault();
-            var q2 = idDocs.Where(x => x.Question == Constants.GGSettings.q_citizen).FirstOrDefault();
+            var q1 = idDocs.Where(x => x.Question == Constants.GGSettings.q_ID_doc).OrderBy(x => x.Id).FirstOrDefault();
+            var q2 = idDocs.Where(x => x.Question == Constants.GGSettings.q_citizen).OrderBy(x => x.Id).FirstOrDefault();
 
             if (q1.QuestionAnswer == Constants.GGSettings.answer_no && q2.QuestionAnswer == Constants.GGSettings.answer_yes) {
                 // IF this is not already unchecked in the referrals list for this client; add to referrals items list under Department of Home Affairs referrals(""Lethabo doesn't have an ID book)
@@ -833,9 +833,9 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
             var lColor = "";
             var mColor = "";
 
-            var q1 = growthData.Where(x => x.Question == Constants.GGSettings.q_weight).FirstOrDefault();
-            var q2 = growthData.Where(x => x.Question == Constants.GGSettings.q_length).FirstOrDefault();
-            var q3 = growthData.Where(x => x.Question == Constants.GGSettings.q_muac).FirstOrDefault();
+            var q1 = growthData.Where(x => x.Question == Constants.GGSettings.q_weight).OrderBy(x => x.Id).FirstOrDefault();
+            var q2 = growthData.Where(x => x.Question == Constants.GGSettings.q_length).OrderBy(x => x.Id).FirstOrDefault();
+            var q3 = growthData.Where(x => x.Question == Constants.GGSettings.q_muac).OrderBy(x => x.Id).FirstOrDefault();
 
             if (q1 != null && q1.Question == Constants.GGSettings.q_weight) {
 
@@ -934,13 +934,16 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
 
             if (q2 != null && q2.Question == Constants.GGSettings.q_length) {
 
-                lIndicator = GetHeightWeightIndicator(false, totalDaysOld, double.Parse(q2.QuestionAnswer, CultureInfo.InvariantCulture), double.Parse(q1.QuestionAnswer, CultureInfo.InvariantCulture), gender);
+                var _weight = q1.QuestionAnswer != "undefined" ? double.Parse(q1.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
+                var _height = q2.QuestionAnswer != "undefined" ? double.Parse(q2.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
+
+                lIndicator = GetHeightWeightIndicator(false, totalDaysOld, _height, _weight, gender);
 
                 if (lIndicator == "Severely stunted") {
                     lColor = _red;
                     
                     // Red progress
-                    comment = lIndicator + " " + q2.QuestionAnswer;
+                    comment = lIndicator + " " + _height;
                     AddVisitDataStatus(q2, comment, lColor, _progress, q2.VisitSection, false);
 
                     // additional visit
@@ -974,14 +977,14 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
             }
 
             if (q3 != null && q3.Question == Constants.GGSettings.q_muac) {
-                var questionAnswer = q2.QuestionAnswer != "undefined" ? Int32.Parse(q3.QuestionAnswer) : 0;
+                var questionAnswer = q3.QuestionAnswer != "undefined" ? Int32.Parse(q3.QuestionAnswer) : 0;
                 mIndicator = "Normal";
                 if (questionAnswer < 11.5) {
                     mIndicator = "Severe acute malnutrition";
                     mColor = _red;
 
                     // Red progress
-                    comment = mIndicator + " " + q3.QuestionAnswer;
+                    comment = mIndicator + " " + questionAnswer;
                     AddVisitDataStatus(q3, comment, mColor, _progress, q3.VisitSection, false);
 
                     // additional visit
@@ -997,7 +1000,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                     mColor = _amber;
 
                     // Amber progress
-                    comment = Constants.GGSettings.severely_stunted + " " + q3.QuestionAnswer;
+                    comment = Constants.GGSettings.severely_stunted + " " + questionAnswer;
                     AddVisitDataStatus(q3, comment, mColor, _progress, q3.VisitSection, false);
 
                     // additional visit
@@ -1012,7 +1015,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                     mColor = _green;
 
                     // Green progress
-                    comment = mIndicator + " " + q3.QuestionAnswer;
+                    comment = mIndicator + " " + questionAnswer;
                     AddVisitDataStatus(q3, comment, mColor, _progress, q3.VisitSection, false);
 
                     // Green G4 
@@ -1048,7 +1051,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
             return true;
         }
         private Boolean ManageFeedingData(List<VisitData> feedingData, string firstName, string infantId) {
-            var q1 = feedingData.Where(x => x.Question == Constants.GGSettings.q_eat_drink).FirstOrDefault();
+            var q1 = feedingData.Where(x => x.Question == Constants.GGSettings.q_eat_drink).OrderBy(x => x.Id).FirstOrDefault();
             var comment = "";
 
             if (q1.QuestionAnswer == Constants.GGSettings.breast_milk_only) {
@@ -1198,7 +1201,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
             newVisit.InfantId = (Constants.GGSettings.client_child == userType ? new Guid(clientId) : null);
             newVisit.Risk = Constants.GGSettings.normal_risk;
             newVisit.Comment = comment;
-            _visitManager.AddVisit(newVisit);
+            _visitManager.AddAdditionalVisit(newVisit);
             return true;
         }
         private Boolean AddVisitDataStatus(VisitData input, string comment, string color, string type, string section, Boolean isCompleted)
@@ -1226,7 +1229,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
         }
         private Boolean ValidateVisitDataStatusRecord(VisitDataStatus input)
         {
-            var visitStatusRecord = _visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == false && x.Comment == input.Comment && _clientVisitDataIds.Contains(x.VisitDataId.ToString())).FirstOrDefault();
+            var visitStatusRecord = _visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == false && x.Comment == input.Comment && _clientVisitDataIds.Contains(x.VisitDataId.ToString())).OrderBy(x => x.Id).FirstOrDefault();
 
             if (visitStatusRecord != null)
             {
@@ -1302,7 +1305,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                     ageSection_secondary = (gender == Constants.GGSettings.male ? Constants.GGSettings.weightForHeightBoys : Constants.GGSettings.weightForHeightGirls);
                 }
 
-                VisitGrowthDataDay recordsForAge = _visitGrowthDataDay.GetAll().Where(x => x.Section == ageSection_primary && x.Day == totalDaysOld).FirstOrDefault();
+                VisitGrowthDataDay recordsForAge = _visitGrowthDataDay.GetAll().Where(x => x.Section == ageSection_primary && x.Day == totalDaysOld).OrderBy(x => x.Id).FirstOrDefault();
 
                 if (recordsForAge != null)
                 {
@@ -1321,7 +1324,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
 
                     if (indicator == "Normal")  // priority 6
                     {
-                        VisitGrowthDataHeight recordsForWeight = _visitGrowthDataHeight.GetAll().Where(x => x.Section == ageSection_secondary && x.Height == height).FirstOrDefault();
+                        VisitGrowthDataHeight recordsForWeight = _visitGrowthDataHeight.GetAll().Where(x => x.Section == ageSection_secondary && x.Height == height).OrderBy(x => x.Id).FirstOrDefault();
 
                         if (recordsForWeight != null)
                         {
@@ -1341,7 +1344,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
             } else
             {
                 string heightSection = (gender == Constants.GGSettings.male ? Constants.GGSettings.lengthHeightForAgeBoys : Constants.GGSettings.lengthHeightForAgeGirls);
-                var recordsForHeight = _visitGrowthDataDay.GetAll().Where(x => x.Section == heightSection && x.Day == totalDaysOld).FirstOrDefault();
+                var recordsForHeight = _visitGrowthDataDay.GetAll().Where(x => x.Section == heightSection && x.Day == totalDaysOld).OrderBy(x => x.Id).FirstOrDefault();
 
                 if (recordsForHeight != null)
                 {
@@ -1515,19 +1518,19 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
             result.GrowComment = growthStatus?.Comment;
             result.GrowCommentColor = growthStatus?.Color;
 
-            var weightData = visitDataStatus?.Where(y => y.VisitData.Question == Constants.GGSettings.q_weight).FirstOrDefault();
+            var weightData = visitDataStatus?.Where(y => y.VisitData.Question == Constants.GGSettings.q_weight).OrderBy(x => x.Id).FirstOrDefault();
 
             result.Weight = weightData?.VisitData.QuestionAnswer;
             result.WeightColor = weightData?.Color;
             result.WeightComment = weightData?.Comment;
 
-            var lengthData = visitDataStatus?.Where(y => y.VisitData.Question == Constants.GGSettings.q_length).FirstOrDefault();
+            var lengthData = visitDataStatus?.Where(y => y.VisitData.Question == Constants.GGSettings.q_length).OrderBy(x => x.Id).FirstOrDefault();
 
             result.Length = lengthData?.VisitData.QuestionAnswer;
             result.LengthColor = lengthData?.Color;
             result.LengthComment = lengthData?.Comment;
 
-            var muacData = visitDataStatus?.Where(y => y.VisitData.Question == Constants.GGSettings.q_muac).FirstOrDefault();
+            var muacData = visitDataStatus?.Where(y => y.VisitData.Question == Constants.GGSettings.q_muac).OrderBy(x => x.Id).FirstOrDefault();
 
             result.Muac = muacData?.VisitData.QuestionAnswer;
             result.MuacColor = muacData?.Color;

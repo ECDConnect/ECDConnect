@@ -49,6 +49,10 @@ const ROUTES = {
         PAST_VISITS: '/:id/past-visits',
         ANTENATAL_VISIT: '/:id/antenatal-visit',
       },
+      CONTACT_TAB: {
+        UPDATE_NUMBERS: '/:id/edit-numbers',
+        UPDATE_ADDRESS: '/:id/edit-address',
+      },
     }),
     VISIT_TAB: {
       START_VISIT: '/start-visit',

@@ -1,1 +1,1 @@
-export { default as EventRecord } from './EventRecordService';
+export { default as EventRecordService } from './EventRecordService';

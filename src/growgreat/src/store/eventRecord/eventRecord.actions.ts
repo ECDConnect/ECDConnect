@@ -1,4 +1,4 @@
-import { EventRecord } from '@/services/EventRecordService';
+import { EventRecordService } from '@/services/EventRecordService';
 import { EventRecordModelInput } from '@ecdlink/graphql';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { RootState, ThunkApiType } from '../types';
@@ -23,7 +23,9 @@ export const addEventRecord = createAsyncThunk<
 
     try {
       if (userAuth?.auth_token) {
-        await new EventRecord(userAuth?.auth_token).addEventRecord(input);
+        await new EventRecordService(userAuth?.auth_token).addEventRecord(
+          input
+        );
 
         if (isCloseFolder) {
           return { isCloseFolder, input };

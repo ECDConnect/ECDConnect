@@ -43,7 +43,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
             var visit = GetVisitBackReferralFromInputModel(input, applicationUserId);
 
             // update the status record
-            var entityToUpdate = _visitDataStatusRepo.GetAll().Where(x => x.Id.ToString() == input.VisitDataStatusId).FirstOrDefault();
+            var entityToUpdate = _visitDataStatusRepo.GetById(Guid.Parse(input.VisitDataStatusId));
             entityToUpdate.UpdatedDate = DateTime.Now;
             entityToUpdate.UpdatedBy = _applicationUserId;
             entityToUpdate.BackReferralCompleted = true;

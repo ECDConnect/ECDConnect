@@ -105,9 +105,6 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
     usePrevious(missedAttendanceGroups) || [];
   const previousAttendanceData = usePrevious(attendanceData);
 
-  let hasClosedAttendanceSmartStartPointsMessage = getStorageItem<boolean>(
-    LocalStorageKeys.hasClosedAttendanceSmartStartPointsMessage
-  );
   let isCurrentSmartStartUser = getStorageItem<boolean>(
     LocalStorageKeys.isSmartStartUser
   );
@@ -237,15 +234,12 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
           },
         }));
       setAttendanceActionList(actionListToDisplay);
-    } else {
-      setAttendanceActionList([]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     isValidAttendanceDay,
     missedAttendanceGroups,
     previousMissedAttendanceGroups,
-    attendanceActionList,
     classProgrammesUpdated,
   ]);
 
@@ -264,6 +258,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
           actionIcon: 'PencilIcon',
           switchTextStyles: true,
           onActionClick: () => {
+            setCurrentEditClassroomGroupId(group.classroomGroup.id);
             openEditRegister(
               group.classroomGroup.id ?? '',
               group.missedDay,
@@ -287,7 +282,10 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
     if (isValidAttendanceDay) {
       setClassroomName(classGroupName);
       const allMissedAttendanceDays =
-        getAllMissedAttendanceGroupsByClassroomGroupId(missedAttendanceGroups);
+        getAllMissedAttendanceGroupsByClassroomGroupId(
+          missedAttendanceGroups,
+          classroomGroupCacheId
+        );
 
       if (allMissedAttendanceDays && allMissedAttendanceDays.length > 0) {
         allMissedAttendanceDays.sort(sortDateFunction);
@@ -336,7 +334,13 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
       setMissedAttendanceGroups(updatedMissedAttendance);
 
       const allMissedAttendanceDays =
-        getAllMissedAttendanceGroupsByClassroomGroupId(updatedMissedAttendance);
+        getAllMissedAttendanceGroupsByClassroomGroupId(
+          updatedMissedAttendance,
+          currentEditClassroomGroupId
+        );
+
+      console.log('>>?', updatedMissedAttendance);
+      console.log(currentEditClassroomGroupId);
 
       if (allMissedAttendanceDays && allMissedAttendanceDays.length > 0) {
         setSubmitText(
@@ -345,8 +349,8 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
 
         const dateSubmitted = new Date(attendanceResult.attendanceDate);
 
-        if (missedAttendanceDays.length !== 0) {
-          const filteredDates = missedAttendanceDays.filter(
+        if (allMissedAttendanceDays.length !== 0) {
+          const filteredDates = allMissedAttendanceDays.filter(
             (date) => new Date(date).getTime() !== dateSubmitted.getTime()
           );
           setMissedAttendanceDays(filteredDates);
@@ -460,9 +464,8 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
               }
               onBack={() => closeEditAttendanceRegister()}
               editAttendanceRegisterVisible={editAttendanceRegisterVisible}
-              classroomName={
-                missedAttendanceDays.length === 0 ? classroomName : ''
-              }
+              classroomName={classroomName ?? ''}
+              classroomgroupId={currentEditClassroomGroupId ?? ''}
             />
           </div>
         </Dialog>
