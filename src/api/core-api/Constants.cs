@@ -226,6 +226,7 @@ namespace EcdLink.Api.CoreApi {
 
             public const string pillar3_report = "Protection";
             public const string pillar3_db = "Pillar 3: Protection";
+            public const string pillar3_section = "Immunisations, supplements & deworming";
 
             public const string pillar4_report = "Healthcare";
             public const string pillar4_db = "Pillar 4: Healthcare";

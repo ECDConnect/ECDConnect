@@ -33,10 +33,12 @@ import {
   recordEventModelSchema,
 } from '@/schemas/record-event/record-event';
 import { PregnantProfileRouteState } from '@/pages/mom/pregnant-profile/index.types';
+import { InfantRouteState } from '@/pages/infant/infant.types';
 
 const eventNames = {
   close: 'close_folder',
   caregiverIsPregnant: 'caregiver_is_pregnant',
+  newChildInFamily: 'new_child_in_family',
 };
 
 export const RecordEvent: React.FC = () => {
@@ -180,23 +182,31 @@ export const RecordEvent: React.FC = () => {
   );
 
   const handleOnSubmit = useCallback(() => {
-    const newPregnantState: PregnantProfileRouteState = {
+    const historyState: PregnantProfileRouteState & InfantRouteState = {
+      isInfantEvent: true,
+      motherId: infant?.caregiver?.id,
       linkedInfantId: infantId,
       recordEventInput,
     };
 
-    // TODO: add integration
-    // if (selectedOption?.name === eventNames.close) {
-    //   return displayCloseFolderDialog();
-    // }
+    switch (selectedOption?.name) {
+      case eventNames.caregiverIsPregnant:
+        return displayConfirmDialog({
+          title: 'Great! Would you like to open a new pregnant mom folder now?',
+          onOk: () => history.push(ROUTES.MOM_REGISTER, historyState),
+          onOkIcon: 'FolderAddIcon',
+          onOkText: 'Yes, open folder',
+        });
 
-    if (selectedOption?.name === eventNames.caregiverIsPregnant) {
-      return displayConfirmDialog({
-        title: 'Great! Would you like to open a new pregnant mom folder now?',
-        onOk: () => history.push(ROUTES.MOM_REGISTER, newPregnantState),
-        onOkIcon: 'FolderAddIcon',
-        onOkText: 'Yes, open folder',
-      });
+      case eventNames.newChildInFamily:
+        return displayConfirmDialog({
+          title: 'Great! Would you like to open a new child folder now?',
+          onOk: () => history.push(ROUTES.INFANT_REGISTER, historyState),
+          onOkIcon: 'FolderAddIcon',
+          onOkText: 'Yes, open folder',
+        });
+      default:
+        break;
     }
 
     return '';
@@ -205,6 +215,7 @@ export const RecordEvent: React.FC = () => {
   }, [
     displayConfirmDialog,
     history,
+    infant?.caregiver?.id,
     infantId,
     recordEventInput,
     selectedOption?.name,

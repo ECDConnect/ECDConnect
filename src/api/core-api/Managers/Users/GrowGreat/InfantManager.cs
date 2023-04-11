@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static ECDLink.Core.SystemSettings.SettingGroups;
 
 namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 {
@@ -200,6 +201,28 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             _addressRepo.Update(entityToUpdate);
 
             return _infantRepo.GetAll().Where(x => x.User.Id == id).FirstOrDefault();
+        }
+
+        public Boolean UpdateInfantCaregiver(string infantId, string caregiverId)
+        {
+            Caregiver caregiver = _caregiverRepo.GetAll().Where(x => x.Id.ToString() == caregiverId).OrderBy(x => x.Id).FirstOrDefault();
+            Mother mother = _motherRepo.GetAll().Where(x => x.UserId == caregiverId).OrderBy(x => x.Id).FirstOrDefault();
+
+            var infantToUpdate = _infantRepo.GetAll().Where(x => x.User.Id == infantId).FirstOrDefault();
+            infantToUpdate.UpdatedDate = DateTime.Now;
+            infantToUpdate.UpdatedBy = _applicationUserId;
+
+            if (mother != null)
+            {
+                infantToUpdate.MotherCaregiverId = new Guid(caregiverId);
+                infantToUpdate.CaregiverId = null;
+            } else
+            {
+                infantToUpdate.MotherCaregiverId = null;
+                infantToUpdate.CaregiverId = new Guid(caregiverId);
+            }
+            _infantRepo.Update(infantToUpdate);
+            return true;
         }
 
         private ApplicationUser GetUserFromInputModel(InfantModel input)
@@ -524,5 +547,23 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 
             return _infantRepo.GetAll().Where(x => x.Caregiver.HealthCareWorker.UserId.Equals(id) && x.IsActive.Equals(true) && x.InsertedDate >= monday && x.InsertedDate <= next7Days).Select(x => x.Id).Distinct().Count();
         }
+        public List<Infant> GetAllInfantsForCaregiver(string caregiverId)
+        {
+            List<Infant> infants = new List<Infant>();
+            var children = _infantRepo.GetAll().Where(x => x.CaregiverId.ToString() == caregiverId && x.IsActive == true).OrderBy(y => y.User.FirstName).ToList();
+            foreach (var child in children)
+            {
+                child.StatusInfo = GetStatusInfo(child, true);
+                child.NextVisitDate = GetClientsNextVisitDate(child.Id);
+                if (child.StatusInfo.Color == MetricsIconEnum.Warning.ToString() && child.StatusInfo.Subject.Contains(" due "))
+                {
+                    infants.Add(child);
+                }
+            }
+
+            return infants;
+        }
+
+       
     }
 }
