@@ -42,6 +42,7 @@ import { ReactComponent as PollyImpressed } from '@/assets/pollyImpressed.svg';
 import { userSelectors } from '@/store/user';
 import { ActivityInfoPage } from './activity-info-page';
 import { InfantProfileParams } from '../../infant-profile.types';
+import { differenceInDays } from 'date-fns';
 
 export const INFANT_PROFILE_TABS = {
   VISITS: 0,
@@ -99,6 +100,10 @@ export const ActivityList: React.FC = () => {
     [infant?.caregiver?.firstName]
   );
 
+  const dateOfBirth = infant?.user?.dateOfBirth as string;
+  const ageDays = differenceInDays(new Date(), new Date(dateOfBirth));
+  const isChildAfter49Days = useMemo(() => ageDays >= 50, [ageDays]);
+
   const { isLoading } = useThunkFetchCall(
     'visits',
     VisitActions.GET_PREVIOUS_VISIT_INFORMATION_FOR_INFANT
@@ -118,26 +123,29 @@ export const ActivityList: React.FC = () => {
     []
   );
 
-  const { completedForms, uncompletedForms, followUpForm } = useMemo(() => {
+  const { visibleActivities } = useMemo(() => {
     const motherType = relationshipTypes.find(
       (item) => item.label === 'Mother'
     );
 
-    const completedActivities = activitiesList.filter(
+    const visibleActivities = activitiesList.filter(
       (item) =>
-        (completedVisits?.includes(item.title) &&
-          item.title !== 'Care for mom') ||
-        (completedVisits?.includes(item.title) &&
-          item.title === 'Care for mom' &&
-          infant?.caregiver?.relation?.description === motherType?.label)
+        (item.id !== activitiesTypes.careForMom &&
+          item.id !== activitiesTypes.pillar4) ||
+        (item.id === activitiesTypes.careForMom &&
+          infant?.caregiver?.relation?.description === motherType?.label) ||
+        (item.id === activitiesTypes.pillar4 && isChildAfter49Days)
     );
-    const uncompletedActivities = activitiesList.filter(
-      (item) =>
-        (!completedVisits?.includes(item.title) &&
-          item.title !== 'Care for mom') ||
-        (!completedVisits?.includes(item.title) &&
-          item.title === 'Care for mom' &&
-          infant?.caregiver?.relation?.description === motherType?.label)
+
+    return { visibleActivities };
+  }, [infant?.caregiver?.relation?.description, isChildAfter49Days]);
+
+  const { completedForms, uncompletedForms, followUpForm } = useMemo(() => {
+    const completedActivities = visibleActivities.filter((item) =>
+      completedVisits?.includes(item.title)
+    );
+    const uncompletedActivities = visibleActivities.filter(
+      (item) => !completedVisits?.includes(item.title)
     );
 
     const completedForms = completedActivities.map(
@@ -193,7 +201,7 @@ export const ActivityList: React.FC = () => {
     ];
 
     return { uncompletedForms, completedForms, followUpForm };
-  }, [completedVisits, infant?.caregiver?.relation?.description]);
+  }, [completedVisits, visibleActivities]);
 
   const goBack = useCallback(() => {
     if (isStartVisit) {
