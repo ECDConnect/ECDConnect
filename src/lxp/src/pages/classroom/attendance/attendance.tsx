@@ -15,6 +15,7 @@ import { childrenSelectors } from '@store/children';
 import { classroomsSelectors } from '@store/classroom';
 import { staticDataSelectors } from '@store/static-data';
 import {
+  classroomGroupHasAttendanceDate,
   classroomGroupHasAttendanceOnDate,
   getClassroomGroupSchoolDays,
   getMissedClassAttendance,
@@ -80,10 +81,11 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
     const currentWeekAttendance: AttendanceDto[] = attendance;
     const _learners: LearnerDto[] = learners;
 
-    const currentClassProgramme = classroomGroupHasAttendanceOnDate(
+    const currentClassProgramme = classroomGroupHasAttendanceDate(
       classProgrammesUpdated,
       currentDate
     );
+
     const currentDayClassroomGroup = classroomGroups.find(
       (x) => x.id === currentClassProgramme?.classroomGroupId
     );
@@ -155,7 +157,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
         holidays
       );
     });
- 
+    console.log(removeTodaysAttendance);
     if (removeHolidays.length === 0) {
       setAttendanceComponentType('report');
     } else {
