@@ -236,14 +236,13 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   }
 
 
-
   return (
     <div>
       <MultiRouteWrapper />
       {attendanceComponentType && !seeRegister ? (
         getComponentToRender(attendanceComponentType)
       ) : (
-        <AttendanceSummary hidePopup={seeRegister} />
+        <AttendanceSummary hidePopup={seeRegister}  />
       )}
       <div className={'flex h-full w-full flex-1 flex-col px-4'}>
         {attendanceComponentType === 'attendance' && !seeRegister && (
