@@ -16,8 +16,7 @@ import { useCallback, useEffect, useState } from 'react';
 import ROUTES from '@/routes/routes';
 import { useDialog } from '@ecdlink/core';
 import { getInfantById } from '@/store/infant/infant.selectors';
-import { INFANT_PROFILE_TABS } from '../progress-tab/activity-list';
-// import { INFANT_PROFILE_TABS } from '..';
+import { INFANT_PROFILE_TABS } from '..';
 
 const HEADER_HEIGHT = 122;
 

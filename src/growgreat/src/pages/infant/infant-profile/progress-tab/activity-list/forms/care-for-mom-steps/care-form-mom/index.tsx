@@ -58,7 +58,11 @@ export const CareForMomStep = ({
           color="successBg"
         />
         <Divider dividerType="dashed" />
-        <Label text={`Ask ${infant?.caregiver?.firstName || ''} z.`} />
+        <Label
+          text={`Ask ${
+            infant?.caregiver?.firstName || ''
+          } how they are feeling.`}
+        />
         <Divider dividerType="dashed" />
       </div>
     </>

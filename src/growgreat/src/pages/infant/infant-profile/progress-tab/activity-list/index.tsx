@@ -81,8 +81,8 @@ export const ActivityList: React.FC = () => {
   const previousVisit = useSelector(
     getPreviousVisitInformationForInfantSelector
   );
-  const isFollowUp = completedVisits?.length === 4;
-  const isAllCompleted = completedVisits?.length === 5;
+  const isFollowUp = completedVisits?.length === 7;
+  const isAllCompleted = completedVisits?.length === 8;
 
   const appDispatch = useAppDispatch();
 
