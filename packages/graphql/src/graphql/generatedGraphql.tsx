@@ -2832,7 +2832,7 @@ export type Mutation = {
   updateIncome?: Maybe<ResultReturnObject>;
   updateIncomeStatements?: Maybe<IncomeStatements>;
   updateInfant?: Maybe<Infant>;
-  updateInfantCaregiver: Scalars['Boolean'];
+  updateInfantCaregiver?: Maybe<Infant>;
   updateInfantCaregiverAddress?: Maybe<Infant>;
   updateInfantCaregiverContactDetails?: Maybe<Infant>;
   updateInfographics?: Maybe<Infographics>;
@@ -4114,8 +4114,8 @@ export type MutationUpdateInfantArgs = {
 };
 
 export type MutationUpdateInfantCaregiverArgs = {
-  caregiverId?: InputMaybe<Scalars['String']>;
   infantId?: InputMaybe<Scalars['String']>;
+  input?: InputMaybe<InfantModelInput>;
 };
 
 export type MutationUpdateInfantCaregiverAddressArgs = {
