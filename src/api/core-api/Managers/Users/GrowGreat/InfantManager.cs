@@ -215,6 +215,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             if (mother == null && caregiver == null)
             {
                 caregiver = GetCaregiverFromInput(input);
+                caregiver = _caregiverRepo.Insert(caregiver);
+
                 infantToUpdate.MotherCaregiverId = null;
                 infantToUpdate.CaregiverId = caregiver.Id;
                 infantToUpdate.Caregiver = caregiver;
