@@ -1,4 +1,4 @@
-import { InfantDto, Config, VisitDto, VisitDataStatusDto } from '@ecdlink/core';
+import { InfantDto, Config, VisitDto } from '@ecdlink/core';
 import { InfantModelInput } from '@ecdlink/graphql';
 import { api } from '../axios.helper';
 class InfantService {
@@ -274,37 +274,6 @@ class InfantService {
     }
 
     return response.data.data.updateInfantCaregiverContactDetails;
-  }
-
-  async GetReferralsForInfant(id: string): Promise<VisitDataStatusDto[]> {
-    const apiInstance = api(Config.graphQlApi, this._accessToken);
-    const response = await apiInstance.post<{
-      data: { referralsForInfant: VisitDataStatusDto[] };
-    }>(``, {
-      query: `
-        query GetReferralsForInfant($userId: String) {
-          referralsForInfant(id: $userId) {
-            id
-            comment,
-            type,
-            section,
-            isCompleted
-            insertedDate
-          }
-        }
-        `,
-      variables: {
-        userId: id,
-      },
-    });
-
-    if (response.status !== 200) {
-      throw new Error(
-        'Getting referrals for infant failed - Server connection error'
-      );
-    }
-
-    return response.data.data.referralsForInfant;
   }
 }
 

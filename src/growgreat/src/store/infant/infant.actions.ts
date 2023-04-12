@@ -10,12 +10,14 @@ import {
   EventRecordType,
   InfantModelInput,
   SiteAddressInput,
+  VisitDataStatus,
 } from '@ecdlink/graphql';
 
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { InfantService } from '@/services/InfantService';
 import { RootState, ThunkApiType } from '../types';
 import { EventRecordService } from '@/services/EventRecordService';
+import { Referral } from '@/services/ReferralService';
 
 export const InfantActions = {
   ADD_INFANTS: 'addInfant',
@@ -25,6 +27,7 @@ export const InfantActions = {
   GET_INFANTS_WEEKLY_VISITS: 'getInfantsWeeklyVisits',
   GET_INFANT_COUNT_FOR_MONTH: 'getInfantCountForMonth',
   GET_ALL_INFANT_EVENT_RECORD_TYPES: 'getAllInfantEventRecordTypes',
+  GET_REFERRALS_FOR_INFANT: 'getReferralsForInfant',
 };
 
 export const getInfants = createAsyncThunk<
@@ -279,6 +282,39 @@ export const getAllInfantEventRecordTypes = createAsyncThunk<
       }
 
       return eventRecordTypes;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getReferralsForInfant = createAsyncThunk<
+  VisitDataStatus[],
+  { infantId: string },
+  ThunkApiType<RootState>
+>(
+  InfantActions.GET_REFERRALS_FOR_INFANT,
+  async ({ infantId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      let content: VisitDataStatus[] | undefined = undefined;
+
+      if (userAuth?.auth_token) {
+        content = await new Referral(
+          userAuth?.auth_token ?? ''
+        ).getReferralsForInfant(infantId);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      if (!content) {
+        return rejectWithValue('Error getting more information');
+      }
+
+      return content;
     } catch (err) {
       return rejectWithValue(err);
     }
