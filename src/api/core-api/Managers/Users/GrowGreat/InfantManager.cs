@@ -152,34 +152,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
         {
             var infantToUpdate = _infantRepo.GetAll().Where(x => x.User.Id == id).FirstOrDefault();
 
-            // The caregiverId arriving here, could be a caregiver or mother from select box when adding an infant
-            Caregiver caregiver = _caregiverRepo.GetAll().Where(x => x.Id == input.CaregiverId).OrderBy(x => x.Id).FirstOrDefault();
-            Mother mother = _motherRepo.GetAll().Where(x => x.UserId == input.CaregiverId.ToString()).OrderBy(x => x.Id).FirstOrDefault();
-
-            if (mother == null && caregiver == null)
-            {
-                caregiver = GetCaregiverFromInput(input);
-            } else
-            {
-                if (mother != null)
-                {
-                    infantToUpdate.MotherCaregiverId = input.CaregiverId;
-                    infantToUpdate.CaregiverId = null;
-                    infantToUpdate.MotherCaregiverId = mother.Id;
-                    infantToUpdate.Mother = mother;
-                }
-                else
-                {
-                    infantToUpdate.MotherCaregiverId = null;
-                    infantToUpdate.CaregiverId = caregiver.Id;
-                    infantToUpdate.Caregiver = caregiver;
-                }
-            }
-
             var infantUser = infantToUpdate.User;
             infantUser.DateOfBirth = (DateTime)input.DateOfBirth;
-
-            var infantCaregiver = infantToUpdate.Caregiver;
 
             infantToUpdate.UpdatedDate = DateTime.Now;
             infantToUpdate.UpdatedBy = _applicationUserId;
@@ -228,26 +202,43 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             return _infantRepo.GetAll().Where(x => x.User.Id == id).FirstOrDefault();
         }
 
-        public Boolean UpdateInfantCaregiver(string infantId, string caregiverId)
+        public Infant UpdateInfantCaregiver(string infantId, InfantModel input)
         {
-            Caregiver caregiver = _caregiverRepo.GetAll().Where(x => x.Id.ToString() == caregiverId).OrderBy(x => x.Id).FirstOrDefault();
-            Mother mother = _motherRepo.GetAll().Where(x => x.UserId == caregiverId).OrderBy(x => x.Id).FirstOrDefault();
+            // The caregiverId arriving here, could be a caregiver or mother from select box when adding an infant
+            Caregiver caregiver = _caregiverRepo.GetAll().Where(x => x.Id == input.CaregiverId).OrderBy(x => x.Id).FirstOrDefault();
+            Mother mother = _motherRepo.GetAll().Where(x => x.UserId == input.CaregiverId.ToString()).OrderBy(x => x.Id).FirstOrDefault();
 
             var infantToUpdate = _infantRepo.GetAll().Where(x => x.User.Id == infantId).FirstOrDefault();
             infantToUpdate.UpdatedDate = DateTime.Now;
             infantToUpdate.UpdatedBy = _applicationUserId;
 
-            if (mother != null)
+            if (mother == null && caregiver == null)
             {
-                infantToUpdate.MotherCaregiverId = new Guid(caregiverId);
-                infantToUpdate.CaregiverId = null;
-            } else
-            {
+                caregiver = GetCaregiverFromInput(input);
+                caregiver = _caregiverRepo.Insert(caregiver);
+
                 infantToUpdate.MotherCaregiverId = null;
-                infantToUpdate.CaregiverId = new Guid(caregiverId);
+                infantToUpdate.CaregiverId = caregiver.Id;
+                infantToUpdate.Caregiver = caregiver;
             }
-            _infantRepo.Update(infantToUpdate);
-            return true;
+            else
+            {
+                if (mother != null)
+                {
+                    infantToUpdate.MotherCaregiverId = input.CaregiverId;
+                    infantToUpdate.CaregiverId = null;
+                    infantToUpdate.MotherCaregiverId = mother.Id;
+                    infantToUpdate.Mother = mother;
+                }
+                else
+                {
+                    infantToUpdate.MotherCaregiverId = null;
+                    infantToUpdate.CaregiverId = caregiver.Id;
+                    infantToUpdate.Caregiver = caregiver;
+                }
+            }
+
+            return _infantRepo.Update(infantToUpdate);
         }
 
         private ApplicationUser GetUserFromInputModel(InfantModel input)
@@ -574,16 +565,11 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
         }
         public List<Infant> GetAllInfantsForCaregiver(string caregiverId)
         {
-            List<Infant> infants = new List<Infant>();
-            var children = _infantRepo.GetAll().Where(x => x.CaregiverId.ToString() == caregiverId && x.IsActive == true).OrderBy(y => y.User.FirstName).ToList();
-            foreach (var child in children)
+            List<Infant> infants = _infantRepo.GetAll().Where(x => x.CaregiverId.ToString() == caregiverId && x.IsActive == true).OrderBy(y => y.User.FirstName).ToList();
+            foreach (var infant in infants)
             {
-                child.StatusInfo = GetStatusInfo(child, true);
-                child.NextVisitDate = GetClientsNextVisitDate(child.Id);
-                if (child.StatusInfo.Color == MetricsIconEnum.Warning.ToString() && child.StatusInfo.Subject.Contains(" due "))
-                {
-                    infants.Add(child);
-                }
+                infant.StatusInfo = GetStatusInfo(infant, true);
+                infant.NextVisitDate = GetClientsNextVisitDate(infant.Id);
             }
 
             return infants;
