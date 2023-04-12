@@ -13,6 +13,7 @@ import {
   updateInfantCaregiverAddress,
   updateInfantCaregiverContactDetails,
   getAllInfantEventRecordTypes,
+  updateInfantCaregiver,
 } from './infant.actions';
 import { InfantState } from './infant.types';
 
@@ -47,6 +48,7 @@ const infantSlice = createSlice({
     setThunkActionStatus(builder, updateInfantCaregiverAddress);
     setThunkActionStatus(builder, updateInfantCaregiverContactDetails);
     setThunkActionStatus(builder, getAllInfantEventRecordTypes);
+    setThunkActionStatus(builder, updateInfantCaregiver);
     builder.addCase(getInfantCountForMonth.fulfilled, (state, action) => {
       state.infantCountForMonth = action.payload;
 
@@ -83,6 +85,9 @@ const infantSlice = createSlice({
     });
     builder.addCase(getAllInfantEventRecordTypes.fulfilled, (state, action) => {
       state.eventRecordTypes = action.payload;
+      setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(updateInfantCaregiver.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
     });
   },
