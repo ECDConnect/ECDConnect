@@ -20,7 +20,7 @@ export const CareForBabyStep = ({
     if (!dateOfBirth) return undefined;
 
     if (years === 0 && months < 1) {
-      return `${days}`;
+      return `${days} ${days > 1 ? 'days' : 'day'}`;
     }
 
     if (years === 0) {

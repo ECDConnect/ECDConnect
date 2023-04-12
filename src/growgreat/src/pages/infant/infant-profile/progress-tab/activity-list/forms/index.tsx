@@ -1,11 +1,13 @@
 import { useCallback, useMemo, useState } from 'react';
 import { getAgeInYearsMonthsAndDays, useDialog } from '@ecdlink/core';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { getInfantById } from '@/store/infant/infant.selectors';
+import {
+  getInfantById,
+  getIsInfantFirstVisitSelector,
+} from '@/store/infant/infant.selectors';
 import { RootState } from '@/store/types';
 import { ActionModal, BannerWrapper, DialogPosition } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
-import { useLocation } from 'react-router';
 import { currentActivityKey } from '..';
 import { activitiesTypes } from '../activities-list';
 import { DynamicForm, SectionQuestions } from './dynamic-form';
@@ -30,6 +32,9 @@ import { dangerSignsVisitSectionForBaby } from './care-for-baby-steps/danger-sig
 import { DevelopmentalScreeningVisitSection } from './pillar-2-steps/developmental-screening-weeks';
 import { getReferralsForInfantSelector } from '@/store/referral/referral.selectors';
 import { differenceInDays } from 'date-fns';
+import { InfantProfileParams } from '../../../infant-profile.types';
+import { useParams } from 'react-router';
+import { maternalDistressVisitSection } from './care-for-mom-steps/maternal-distress-screening';
 
 interface FormProps {
   onBack: () => void;
@@ -52,9 +57,7 @@ export const Form = ({ onBack }: FormProps) => {
 
   const dialog = useDialog();
 
-  const location = useLocation();
-
-  const [, , , infantId] = location.pathname.split('/');
+  const { id: infantId, visitId } = useParams<InfantProfileParams>();
 
   const infant = useSelector((state: RootState) =>
     getInfantById(state, infantId)
@@ -71,8 +74,9 @@ export const Form = ({ onBack }: FormProps) => {
     [ageMonths, ageYears]
   );
 
-  // TODO: add G3 visits tab integration
-  const isFirstVisit = true;
+  const isFirstVisit = useSelector((state: RootState) =>
+    getIsInfantFirstVisitSelector(state, visitId)
+  );
 
   const isFormulaMilkHowBreastfeedingWorks = useMemo(
     () => isFirstVisit && ageDays >= 7 && ageDays <= 13,
@@ -142,6 +146,11 @@ export const Form = ({ onBack }: FormProps) => {
   const isDevelopmentalScreeningWeeksFollowUp = isFollowUp(
     DevelopmentalScreeningVisitSection,
     activitiesTypes.pillar2
+  );
+
+  const isMaternalDistressFollowUp = isFollowUp(
+    maternalDistressVisitSection,
+    activitiesTypes.careForMom
   );
 
   const isDevelopmentalScreening = useMemo(
@@ -307,7 +316,8 @@ export const Form = ({ onBack }: FormProps) => {
           isChildBefore49Days,
           isDangerSignsFollowUpForMom,
           isShowClinicCheckUps,
-          isSelfCareAndSupport
+          isSelfCareAndSupport,
+          isMaternalDistressFollowUp
         );
       case activitiesTypes.careForBaby:
         return careForBabySteps(
@@ -354,8 +364,14 @@ export const Form = ({ onBack }: FormProps) => {
     }
   }, [
     activityName,
+    isChildBefore49Days,
     isDangerSignsFollowUpForMom,
+    isShowClinicCheckUps,
+    isSelfCareAndSupport,
+    isMaternalDistressFollowUp,
     isDangerSignsFollowUpForBaby,
+    isNewBornCare,
+    isKangarooMotherCare,
     nutritionAnswer,
     isToSkipBreastfeedingIssuesRelevantItemsStep,
     isChild6Months,
@@ -368,20 +384,15 @@ export const Form = ({ onBack }: FormProps) => {
     isMixedFeedingFoodsForm,
     isMixedFeedingHowBreastfeedingWorks,
     isMixedFeedingUnsafeFeedingPractices,
-    isDevelopmentalScreeningWeeksFollowUp,
-    isPillar4FollowUp,
-    referralsForInfant?.length,
-    isShowClinicCheckUps,
-    isChildBefore49Days,
-    isSelfCareAndSupport,
-    isNewBornCare,
-    isKangarooMotherCare,
     ageDays,
     isDietFormStep,
+    isDevelopmentalScreeningWeeksFollowUp,
     isDevelopmentalScreening,
     isImmunisationQuestion,
     isVitaminAQuestion,
     isDewormingQuestion,
+    isPillar4FollowUp,
+    referralsForInfant?.length,
   ]);
 
   return (
