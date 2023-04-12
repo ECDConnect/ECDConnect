@@ -72,6 +72,11 @@ namespace ECDLink.DataAccessLayer.Entities.Caregiver
         public Guid? LanguageId { get; set; }
         public Boolean isMother { get; set; }
 
+        [NotMapped]
+        public virtual ICollection<Infant> Infants { get; set; }
+        [NotMapped]
+        public Mother Mother { get; set; }
+
     }
 
     public interface CaregiverJoin<TKey>

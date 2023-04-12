@@ -15,6 +15,13 @@ import {
 import { DevelopmentalScreeningVisitSection, noteQuestion } from '..';
 import P2 from '@/assets/pillar/p2.svg';
 import { differenceInWeeks } from 'date-fns';
+import { useParams } from 'react-router';
+import { InfantProfileParams } from '@/pages/infant/infant-profile/infant-profile.types';
+import {
+  getInfantPreviousVisitSelector,
+  getInfantVisitByVisitIdSelector,
+} from '@/store/infant/infant.selectors';
+import { RootState } from '@/store/types';
 
 export const DevelopmentalScreeningWeeksFollowUpStep = ({
   infant,
@@ -26,13 +33,20 @@ export const DevelopmentalScreeningWeeksFollowUpStep = ({
     [infant?.caregiver?.firstName]
   );
 
+  const { visitId } = useParams<InfantProfileParams>();
+
+  const visit = useSelector((state: RootState) =>
+    getInfantVisitByVisitIdSelector(state, visitId)
+  );
+  const previousPlannedVisit = useSelector((state: RootState) =>
+    getInfantPreviousVisitSelector(state, visit?.plannedVisitDate || '')
+  );
   const previousVisit = useSelector(
     getPreviousVisitInformationForInfantSelector
   );
 
   const previousAnswers = useSelector(getVisitAnswersForInfantSelector);
 
-  // TODO: get the last visit data, it's necessary check the date from the last visit
   const followUp = useMemo(() => {
     const visitDataStatus = previousVisit?.visitDataStatus?.find(
       (item) =>
@@ -41,12 +55,15 @@ export const DevelopmentalScreeningWeeksFollowUpStep = ({
     );
 
     const followUp = visitDataStatus?.comment;
-    const date = new Date(previousVisit?.visitDataStatus?.[0]?.insertedDate);
+    const date = !!previousPlannedVisit?.plannedVisitDate
+      ? new Date(previousPlannedVisit?.plannedVisitDate)
+      : undefined;
     const note = previousAnswers?.find(
       (item) => item.question === noteQuestion
     )?.questionAnswer;
     const weeks =
       !!infant?.user?.dateOfBirth &&
+      date &&
       differenceInWeeks(new Date(date), new Date(infant?.user?.dateOfBirth));
     const [, message, list] = followUp?.match(/(.+?)(<.*>)/) ?? [];
 
@@ -69,6 +86,7 @@ export const DevelopmentalScreeningWeeksFollowUpStep = ({
     infant?.user?.dateOfBirth,
     name,
     previousAnswers,
+    previousPlannedVisit?.plannedVisitDate,
     previousVisit?.visitDataStatus,
   ]);
 
@@ -101,7 +119,7 @@ export const DevelopmentalScreeningWeeksFollowUpStep = ({
         <div className="bg-uiBg rounded-15 flex flex-col gap-2 p-4">
           <Typography
             type="h3"
-            text={`Notes from ${followUp.date.toLocaleDateString('en-ZA', {
+            text={`Notes from ${followUp?.date?.toLocaleDateString('en-ZA', {
               day: 'numeric',
               month: 'long',
             })} visit`}
